@@ -38,7 +38,7 @@ export async function buildApp({
 }: AppOptions) {
   const app = Fastify({
     // Signierte Download-Links sind länger als die Standardgrenze von 100 Zeichen
-    maxParamLength: 500,
+    routerOptions: { maxParamLength: 500 },
     logger: logger ? { redact: ['req.headers.authorization', 'req.body.password'] } : false,
   });
   app.setValidatorCompiler(validatorCompiler);
