@@ -32,7 +32,7 @@ Stand: 05.10.2026
 | Neuigkeiten für dich (nach Priorität und Betroffenheit sortiert) | M 3, K 3 | ✅ | |
 | Nächste Termine (eigene, Kinder, Trainerrollen, Gastspiele) | M 3, K 3 | ✅ | |
 | Offene Aktionen (Zusagen, Umfragen, Freigaben, Aufgaben) | M 3–4, K 3 | 🟡 | Zusagen und Umfragen bedienbar; Freigaben folgen mit der Verwaltung |
-| Persönliche Kasse / Teamkasse | M 3, K 3 | 🟡 | Saldo sichtbar; Details fehlen |
+| Persönliche Kasse / Teamkasse | M 3, K 3 | ✅ | Karte führt zur Mannschaftskasse |
 | Vorstand: Verein im Überblick (Teams, Mitglieder, Freigaben, Event) | M 4 | ✅ | |
 | Umfragen mit Schnellantwort | K 3 | 🟡 | über „Offene Aktionen“ direkt zur Umfrage; Antwort auf der Startseite selbst fehlt |
 | Persönliche Statistik | K 3 | ⬜ | |
@@ -42,17 +42,17 @@ Stand: 05.10.2026
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | „Meine Teams“ für Trainer mehrerer Mannschaften | M 6 | 🟡 | Umschalten zwischen Teams fertig; Kacheln mit Zusagequote und offenen Aufgaben fehlen |
-| Team-Cockpit mit Tabs Übersicht / Termine / Kader / Statistik | M 7, K 4 | 🟡 | nur Termine |
-| Kaderstatus (Spieler, verfügbar, abgesagt, Urlaub) | M 7 | ⬜ | |
-| Letzte Ergebnisse | M 7 | ⬜ | Ergebnisse in Demodaten vorhanden |
-| Trainingswoche mit Zusagen | M 7 | ⬜ | |
-| Team-Highlights (Tabellenplatz, Tore, Trainingsquote) | M 7 | ⬜ | |
-| Teamliste: Spieler, Trainer, Betreuer, Rückennummern, Positionen | K 4 | ⬜ | Daten vorhanden |
+| Team-Cockpit mit Übersicht / Termine / Kader / Statistik | M 7, K 4 | ✅ | als Übersicht mit Kacheln |
+| Kaderstatus (Spieler, verfügbar, abgesagt, Urlaub) | M 7 | ✅ | für den nächsten Termin |
+| Letzte Ergebnisse | M 7 | ✅ | |
+| Trainingswoche mit Zusagen | M 7 | ✅ | |
+| Team-Highlights (Tabellenplatz, Tore, Trainingsquote) | M 7 | 🟡 | Bilanz, Tore, Trainingsquote; Tabellenplatz braucht FUSSBALL.DE-Anbindung |
+| Teamliste: Spieler, Trainer, Betreuer, Rückennummern, Positionen | K 4 | ✅ | mit heutiger Verfügbarkeit |
 | Kader / Aufstellung / Nominierung für ein Spiel | M 4, K 4 | ⬜ | |
 | Spielbericht: Ergebnis, Tore, Assists, Karten | K 4 | ⬜ | |
-| Statistik (Aus / Basis / Erweitert / Individuell) | K 4 | ⬜ | |
-| Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | 🟡 | in Daten und Modulen hinterlegt |
-| Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | 🟡 | Daten vorhanden; nur Saldo sichtbar |
+| Statistik (Aus / Basis / Erweitert / Individuell) | K 4 | 🟡 | Basis: Bilanz, Tore, Trainingsbeteiligung; Spielerstatistik (Tore, Assists) folgt mit dem Spielbericht |
+| Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | 🟡 | im Kader sichtbar; Einstellung folgt mit der Mannschafts-Einrichtung |
+| Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | 🟡 | alles außer Bericht-Export; Buchen nur für Kassenverantwortliche |
 | Teambezogene Dokumente und Aufgaben | K 4 | ⬜ | |
 | Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ⬜ | optionales Modul |
 
@@ -66,11 +66,11 @@ Stand: 05.10.2026
 | Drei Teilnahme-Modelle (automatische Zusage, aktive Antwort, nur Abwesenheiten) | M 10, K 9 | ✅ | |
 | Teilnehmerübersicht (zugesagt, offen, abgesagt) | M 15 | ✅ | |
 | Gründe nur für Verantwortliche sichtbar (Datensparsamkeit) | K 7 | ✅ | |
-| Trainer korrigiert Zu-/Absagen nach Fristablauf | K 9 | 🟡 | im Backend fertig; Bedienung in der App fehlt |
+| Trainer korrigiert Zu-/Absagen nach Fristablauf | K 9 | ✅ | |
 | Absagegrund angeben | M 16 | ✅ | Auswahl und optionaler Hinweis |
 | Abwesenheiten melden (Urlaub, Verletzt, Gesperrt, Sonstiges; alle oder einzelne Teams) | M 16, K 9 | ✅ | auch für Kinder; Löschen nimmt automatische Absagen zurück |
 | Kalenderexport | M 15, 17 | ⬜ | |
-| Termine anlegen, ändern, absagen; Serientermine | K 4, 6 | ⬜ | |
+| Termine anlegen, ändern, absagen; Serientermine | K 4, 6 | 🟡 | Anlegen und Absagen (mit Benachrichtigung); Ändern und Serien folgen |
 | Änderungen zeigen alt und neu (z. B. Treffpunkt) | K 10 | ⬜ | |
 
 ## 5. Gastspieler & Spielerbedarf
@@ -184,9 +184,9 @@ Stand: 05.10.2026
 | Bereich | ✅ | 🟡 | ⬜ |
 | --- | ---: | ---: | ---: |
 | Grundstruktur & Design | 6 | 0 | 1 |
-| Home | 5 | 3 | 1 |
-| Mannschaft | 0 | 4 | 10 |
-| Termine & Teilnahme | 8 | 1 | 3 |
+| Home | 6 | 2 | 1 |
+| Mannschaft | 5 | 5 | 4 |
+| Termine & Teilnahme | 9 | 1 | 2 |
 | Gastspieler & Spielerbedarf | 1 | 0 | 4 |
 | Verein | 2 | 1 | 8 |
 | Kommunikation | 4 | 1 | 2 |
@@ -196,4 +196,4 @@ Stand: 05.10.2026
 | Verwaltung | 0 | 2 | 7 |
 | Einrichtung & Module | 0 | 1 | 4 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **33** | **16** | **52** |
+| **Gesamt** | **40** | **16** | **45** |
