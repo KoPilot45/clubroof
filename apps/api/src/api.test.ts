@@ -5,6 +5,7 @@
  */
 import type {
   Absence,
+  PersonProfile,
   ClubTeamGroup,
   ContactGroup,
   DocumentItem,
@@ -71,7 +72,7 @@ describe.skipIf(!url)('API', () => {
   }
 
   async function send<T>(
-    method: 'POST' | 'PUT' | 'DELETE',
+    method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     path: string,
     token: string,
     payload?: unknown,
@@ -722,6 +723,119 @@ describe.skipIf(!url)('API', () => {
       const today = await get<EventSummary[]>('/club/today', token);
       expect(today.length).toBeGreaterThan(0);
       expect(today.every((e) => e.location !== null)).toBe(true);
+    });
+  });
+  describe('Profile', () => {
+    const personId = async (first: string, last: string) => {
+      const [row] =
+        await sql`select id from persons where first_name = ${first} and last_name = ${last}`;
+      return row!.id as string;
+    };
+
+    it('eigenes Profil mit Saisonwerten und Bearbeitungsrecht', async () => {
+      const { token, me } = await login('spieler');
+      const profile = await get<PersonProfile>(`/persons/${me.person.id}`, token);
+      expect(profile).toMatchObject({
+        relation: 'self',
+        canEdit: true,
+        position: 'Zentrales Mittelfeld',
+      });
+      expect(profile.teams[0]).toMatchObject({ badge: 'B1', jerseyNumber: 14 });
+      expect(profile.stats!.trainings).toBeGreaterThan(5);
+      expect(profile.contactVisibility).toBe('team_and_coaches');
+    });
+
+    it('Mitspieler sehen Position, aber weder Statistik noch Verfügbarkeitsgrund', async () => {
+      const { token } = await login('spieler');
+      const sick = await sql`
+        select p.id from persons p join absences a on a.person_id = p.id
+        join team_memberships tm on tm.person_id = p.id join teams t on t.id = tm.team_id
+        where t.badge = 'B1' and a.kind = 'illness' limit 1`;
+      const mate = await get<PersonProfile>(`/persons/${sick[0]!.id}`, token);
+      expect(mate.relation).toBe('other');
+      expect(mate.stats).toBeNull();
+      expect(mate.canEdit).toBe(false);
+      expect(mate.contactVisibility).toBeNull();
+      expect(mate.availability.available).toBe(false);
+      expect(mate.availability.reason).toBeNull();
+
+      const asCoach = await get<PersonProfile>(
+        `/persons/${sick[0]!.id}`,
+        (await login('trainer')).token,
+      );
+      expect(asCoach.availability.reason).toBe('Krank');
+      expect(asCoach.stats).not.toBeNull();
+    });
+
+    it('Personen ohne Bezug sind nicht sichtbar', async () => {
+      const stranger = await personId('Thomas', 'Becker'); // Trainer der 1. Mannschaft
+      const res = await app.inject({
+        method: 'GET',
+        url: `/persons/${stranger}`,
+        headers: { authorization: `Bearer ${(await login('spieler')).token}` },
+      });
+      expect(res.statusCode).toBe(404);
+    });
+
+    it('Kontaktdaten richten sich nach der Einstellung der Person', async () => {
+      const player = await login('spieler');
+      const parent = await login('eltern');
+      const board = await login('vorstand');
+      const target = player.me.person.id;
+      await send('PATCH', `/persons/${target}`, player.token, {
+        phone: '0151 1234567',
+        contactVisibility: 'coaches_only',
+      });
+
+      // Julia ist Trainerin der E-Jugend, aber nicht der B-Jugend und kein Mitspieler
+      const forParent = await app.inject({
+        method: 'GET',
+        url: `/persons/${target}`,
+        headers: { authorization: `Bearer ${parent.token}` },
+      });
+      expect(forParent.statusCode).toBe(404);
+
+      // Vorstand mit Mitgliederrechten sieht Kontaktdaten immer
+      expect((await get<PersonProfile>(`/persons/${target}`, board.token)).contact?.phone).toBe(
+        '0151 1234567',
+      );
+      // Das Trainerteam der B-Jugend sieht sie ebenfalls
+      const asCoach = await get<PersonProfile>(
+        `/persons/${target}`,
+        (await login('trainer')).token,
+      );
+      expect(asCoach.contact?.phone).toBe('0151 1234567');
+
+      await send('PATCH', `/persons/${target}`, player.token, { contactVisibility: 'club' });
+      const open = await get<PersonProfile>(`/persons/${target}`, board.token);
+      expect(open.contact?.phone).toBe('0151 1234567');
+      const own = await get<PersonProfile>(`/persons/${target}`, player.token);
+      expect(own.contactVisibility).toBe('club');
+    });
+
+    it('Eltern bearbeiten das Profil ihres Kindes, aber nicht das anderer', async () => {
+      const parent = await login('eltern');
+      const leon = parent.me.managedPersons.find((p) => p.firstName === 'Leon')!;
+      const ok = await send<PersonProfile>('PATCH', `/persons/${leon.id}`, parent.token, {
+        position: 'Torwart',
+        preferredFoot: 'left',
+      });
+      expect(ok.status).toBe(200);
+      expect(ok.body).toMatchObject({
+        relation: 'child',
+        position: 'Torwart',
+        preferredFoot: 'left',
+      });
+
+      const player = await login('spieler');
+      const denied = await send('PATCH', `/persons/${player.me.person.id}`, parent.token, {
+        position: 'Sturm',
+      });
+      expect(denied.status).toBe(404);
+      const invalid = await send('PATCH', `/persons/${leon.id}`, parent.token, {
+        position: 'Zauberer',
+      });
+      expect(invalid.status).toBe(400);
     });
   });
 });
