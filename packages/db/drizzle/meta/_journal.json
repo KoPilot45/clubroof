@@ -78,6 +78,13 @@
       "when": 1791236649103,
       "tag": "0010_match_reports",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791237734784,
+      "tag": "0011_auth_invitations",
+      "breakpoints": true
     }
   ]
 }

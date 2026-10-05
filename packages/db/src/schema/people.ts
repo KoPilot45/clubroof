@@ -25,6 +25,13 @@ export const users = pgTable('users', {
   displayName: text().notNull(),
   passwordHash: text(),
   lastLoginAt: timestamp({ withTimezone: true }),
+  passwordChangedAt: timestamp({ withTimezone: true }),
+  /** TOTP-Geheimnis (verschlüsselt). Gesetzt = 2-Faktor-Anmeldung aktiv */
+  totpSecret: text(),
+  /** Noch nicht bestätigtes TOTP-Geheimnis während der Einrichtung (verschlüsselt) */
+  totpPendingSecret: text(),
+  /** Gehashte Wiederherstellungscodes, je Code einmal verwendbar */
+  recoveryCodes: text().array(),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -95,4 +102,24 @@ export const sessions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index().on(t.userId)],
+);
+
+/**
+ * Einmal-Token für Konten: Passwort zurücksetzen, zweiter Anmeldeschritt (2-Faktor).
+ * Gespeichert wird nur der Hash; der Token selbst steht im Link bzw. geht an die App.
+ */
+export const authTokens = pgTable(
+  'auth_tokens',
+  {
+    id: id(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    purpose: text().notNull(),
+    tokenHash: text().notNull().unique(),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    usedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.userId, t.purpose)],
 );

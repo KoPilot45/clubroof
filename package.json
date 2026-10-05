@@ -13,7 +13,7 @@
     "test": "turbo run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:up": "docker compose -f infra/docker-compose.yml up -d --wait postgres",
+    "db:up": "docker compose -f infra/docker-compose.yml up -d --wait postgres mailpit",
     "db:down": "docker compose -f infra/docker-compose.yml down",
     "db:generate": "pnpm --filter @clubroof/db generate",
     "db:migrate": "pnpm --filter @clubroof/db migrate",

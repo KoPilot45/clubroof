@@ -10,8 +10,15 @@ const processes = [
   { name: 'APP', color: '\x1b[35m', args: ['--filter', '@clubroof/mobile', 'web'] },
 ];
 
+// E-Mails (Einladungen, Passwort vergessen) landen lokal im Test-Postfach Mailpit
+const env = {
+  ...process.env,
+  SMTP_URL: process.env.SMTP_URL ?? 'smtp://localhost:1025',
+  APP_URL: process.env.APP_URL ?? 'http://localhost:8081',
+};
+
 const children = processes.map(({ name, color, args }) => {
-  const child = spawn('pnpm', args, { shell: isWindows, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn('pnpm', args, { shell: isWindows, stdio: ['ignore', 'pipe', 'pipe'], env });
   const prefix = (line) => `${color}[${name}]\x1b[0m ${line}`;
   for (const stream of [child.stdout, child.stderr]) {
     let buffer = '';

@@ -1,6 +1,6 @@
 # Lokale Entwicklungsumgebung.
-# Start: pnpm db:up (nur Datenbank)   ·   Stopp: pnpm db:down
-# Test-Mailserver zusätzlich: docker compose -f infra/docker-compose.yml --profile mail up -d
+# Start: pnpm db:up (Datenbank und Test-Postfach)   ·   Stopp: pnpm db:down
+# Test-Postfach (Mailpit): http://localhost:8025 – zeigt alle E-Mails, die die App lokal verschickt
 # Ein S3-kompatibler Dateispeicher folgt mit dem Dokumenten-Upload. Das bisher vorgesehene
 # MinIO-Image wird vom Hersteller nicht mehr öffentlich bereitgestellt.
 name: clubroof

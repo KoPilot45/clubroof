@@ -7,6 +7,7 @@ import type { LoginResponse } from '@clubroof/core';
 import { loadActor } from '../actor';
 import { createSession, deleteSession } from '../auth/session';
 import { HttpError } from '../errors';
+import { changePassword, requestPasswordReset, resetPassword } from '../services/account';
 import { buildMe } from '../services/me';
 
 const invalidLogin = () =>
@@ -53,6 +54,56 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         expiresAt: session.expiresAt.toISOString(),
         me: await buildMe(app.db, actor),
       };
+    },
+  );
+
+  app.post(
+    '/auth/password/forgot',
+    {
+      config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+      schema: { body: z.object({ email: z.string().trim().toLowerCase().email() }) },
+    },
+    async (request, reply) => {
+      await requestPasswordReset(app.db, app.mailer, app.config, request.body.email, app.now());
+      // Immer dieselbe Antwort, egal ob das Konto existiert
+      return reply.status(202).send({ ok: true });
+    },
+  );
+
+  app.post(
+    '/auth/password/reset',
+    {
+      config: { rateLimit: { max: app.config.loginRateLimit, timeWindow: '1 minute' } },
+      schema: {
+        body: z.object({ token: z.string().min(20).max(200), password: z.string().max(200) }),
+      },
+    },
+    async (request, reply) => {
+      await resetPassword(app.db, request.body.token, request.body.password, app.now());
+      return reply.status(204).send();
+    },
+  );
+
+  app.post(
+    '/auth/password/change',
+    {
+      preHandler: app.authenticate,
+      schema: {
+        body: z.object({
+          currentPassword: z.string().min(1).max(200),
+          newPassword: z.string().max(200),
+        }),
+      },
+    },
+    async (request, reply) => {
+      await changePassword(
+        app.db,
+        request.sessionUser!,
+        request.body.currentPassword,
+        request.body.newPassword,
+        app.now(),
+      );
+      return reply.status(204).send();
     },
   );
 

@@ -52,6 +52,7 @@ import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from './app';
 import { loadConfig } from './config';
+import { memoryMailer } from './security/mailer';
 
 const url = process.env.DATABASE_URL;
 const NOW = new Date('2026-10-05T08:00:00Z'); // Montag, 10:00 Uhr in Berlin
@@ -61,6 +62,7 @@ const email = (who: string) => `${who}@sv-gruen-weiss.example`;
 describe.skipIf(!url)('API', () => {
   const { db, sql } = createDb(url);
   let app: Awaited<ReturnType<typeof buildApp>>;
+  const mailer = memoryMailer();
 
   beforeAll(async () => {
     await runMigrations(url);
@@ -72,6 +74,7 @@ describe.skipIf(!url)('API', () => {
         UPLOADS_DIR: await mkdtemp(join(tmpdir(), 'clubroof-')),
       }),
       now: () => NOW,
+      mailer,
     });
   }, 60_000);
 
@@ -2231,6 +2234,68 @@ describe.skipIf(!url)('API', () => {
         externalClub: 'SG Reinstetten',
       });
       expect((await players('AH')).some((r) => r.personId === leaver.personId)).toBe(false);
+    });
+  });
+
+  describe('Konto: Passwort vergessen und ändern', () => {
+    const NEW = 'Sommerfest-2026-Grillstand';
+
+    it('setzt das Passwort per Link zurück und beendet alle Sitzungen', async () => {
+      const before = mailer.outbox.length;
+      const unknown = await send('POST', '/auth/password/forgot', '', {
+        email: 'niemand@example.org',
+      });
+      expect(unknown.status).toBe(202);
+      expect(mailer.outbox.length).toBe(before);
+
+      const parent = await login('eltern');
+      const known = await send('POST', '/auth/password/forgot', '', { email: email('eltern') });
+      expect(known.status).toBe(202);
+      const mail = mailer.outbox.at(-1)!;
+      expect(mail.to).toBe(email('eltern'));
+      const token = /\/reset\/([A-Za-z0-9_-]+)/.exec(mail.text)![1]!;
+
+      const weak = await send<{ error: string }>('POST', '/auth/password/reset', '', {
+        token,
+        password: 'kurz',
+      });
+      expect(weak.body.error).toBe('password_weak');
+      // Ein zu schwaches Passwort verbraucht den Link nicht
+      const token2 = token;
+      expect(
+        (await send('POST', '/auth/password/reset', '', { token: token2, password: NEW })).status,
+      ).toBe(204);
+      expect(
+        (await send('POST', '/auth/password/reset', '', { token: token2, password: NEW })).status,
+      ).toBe(400);
+
+      const old = await app.inject({
+        method: 'GET',
+        url: '/me',
+        headers: { authorization: `Bearer ${parent.token}` },
+      });
+      expect(old.statusCode).toBe(401);
+      const relogin = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: { email: email('eltern'), password: NEW },
+      });
+      expect(relogin.statusCode).toBe(200);
+
+      // Zurück zum Demo-Passwort über „Passwort ändern“
+      const tokenNew = relogin.json<LoginResponse>().token;
+      const wrong = await send('POST', '/auth/password/change', tokenNew, {
+        currentPassword: 'falsch',
+        newPassword: PASSWORD,
+      });
+      expect(wrong.status).toBe(400);
+      const changed = await send('POST', '/auth/password/change', tokenNew, {
+        currentPassword: NEW,
+        newPassword: PASSWORD,
+      });
+      expect(changed.status).toBe(204);
+      expect((await get<LoginResponse['me']>('/me', tokenNew)).user.email).toBe(email('eltern'));
+      await login('eltern');
     });
   });
 

@@ -1,6 +1,18 @@
-import { boolean, index, integer, jsonb, pgTable, text, unique, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  date,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { clubs } from './club';
-import { persons } from './people';
+import { persons, users } from './people';
+import { teams } from './teams';
 import {
   createdAt,
   id,
@@ -74,4 +86,64 @@ export const moduleSettings = pgTable(
     index().on(t.clubId),
     unique().on(t.clubId, t.scopeType, t.scopeId, t.moduleKey).nullsNotDistinct(),
   ],
+);
+
+/**
+ * Einladung (Konzept §8): persönlich für eine bestehende Person (direkte Kontoeinrichtung) oder als
+ * Mannschafts-Link/QR-Code, über den Interessierte eine Beitrittsanfrage stellen (mit Freigabe).
+ */
+export const invitations = pgTable(
+  'invitations',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    kind: text().notNull(),
+    tokenHash: text().notNull().unique(),
+    /** Verschlüsselter Token, damit Mannschafts-Links/QR-Codes erneut angezeigt werden können */
+    tokenEncrypted: text(),
+    personId: uuid().references(() => persons.id, { onDelete: 'cascade' }),
+    teamId: uuid().references(() => teams.id, { onDelete: 'cascade' }),
+    email: text(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    maxUses: integer(),
+    useCount: integer().notNull().default(0),
+    revokedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId), index().on(t.personId), index().on(t.teamId)],
+);
+
+/** Beitrittsanfrage über einen Mannschafts-Link; wird vom Trainerteam/der Verwaltung freigegeben. */
+export const joinRequests = pgTable(
+  'join_requests',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    invitationId: uuid()
+      .notNull()
+      .references(() => invitations.id, { onDelete: 'cascade' }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** player = tritt selbst bei, parent = Elternteil meldet ein Kind an */
+    relation: text().notNull(),
+    firstName: text().notNull(),
+    lastName: text().notNull(),
+    birthDate: date(),
+    childFirstName: text(),
+    childLastName: text(),
+    childBirthDate: date(),
+    message: text(),
+    status: text().notNull().default('pending'),
+    decidedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    decidedAt: timestamp({ withTimezone: true }),
+    decisionNote: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.status)],
 );

@@ -35,6 +35,7 @@ if errorlevel 1 goto fehler
 echo [4/4] Backend und App starten ...
 echo.
 echo   Die App oeffnet sich gleich im Browser (http://localhost:8081).
+echo   E-Mails der App (Einladungen, Passwort vergessen): http://localhost:8025
 echo   Anmelden: trainer@sv-gruen-weiss.example / clubroof-demo
 echo   Zum Beenden dieses Fenster schliessen oder Strg + C druecken.
 echo.

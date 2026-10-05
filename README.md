@@ -37,6 +37,8 @@ Voraussetzungen: Node.js 22, pnpm (`corepack enable`) und Docker Desktop (muss l
 
 Die Datei prüft die Bausteine, startet die Datenbank, setzt den Demoverein auf das heutige Datum zurück und
 startet Backend und App gemeinsam. Danach öffnet sich die App unter <http://localhost:8081>.
+E-Mails, die die App lokal verschickt (Einladungen, Passwort vergessen), erscheinen im Test-Postfach
+unter <http://localhost:8025>.
 Anmelden mit einem Demo-Login aus [docs/DEMODATEN.md](docs/DEMODATEN.md), Passwort `clubroof-demo`.
 
 ## Manuell (Terminal)
