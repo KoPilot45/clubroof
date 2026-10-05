@@ -1,7 +1,7 @@
 import type { EventDetail, Participant } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import { AttendanceChip, ResponseControls, useRespond } from '@/components/events';
 import { ShiftRow } from '@/components/helpers';
@@ -201,12 +201,20 @@ function CoachActions({ event }: { event: EventDetail }) {
           </View>
         </>
       ) : (
-        <Button
-          label="Termin absagen"
-          variant="danger"
-          icon="close-circle-outline"
-          onPress={() => setOpen(true)}
-        />
+        <>
+          <Button
+            label="Termin bearbeiten"
+            variant="outline"
+            icon="create-outline"
+            onPress={() => router.push(`/event-edit/${event.id}`)}
+          />
+          <Button
+            label="Termin absagen"
+            variant="danger"
+            icon="close-circle-outline"
+            onPress={() => setOpen(true)}
+          />
+        </>
       )}
     </Card>
   );
@@ -251,6 +259,18 @@ export default function EventScreen() {
             ) : null}
             {e.description ? <T color={colors.onSurfaceMuted}>{e.description}</T> : null}
           </Card>
+
+          {e.lastChange && e.status === 'scheduled' ? (
+            <Card style={{ gap: 6 }}>
+              <Chip tone="action" icon="swap-horizontal" label="Zuletzt geändert" />
+              {e.lastChange.items.map((c) => (
+                <T key={c.label} variant="caption">
+                  <T variant="label">{c.label}: </T>
+                  {c.from ?? '–'} → {c.to ?? '–'}
+                </T>
+              ))}
+            </Card>
+          ) : null}
 
           <Card>
             <ListRow

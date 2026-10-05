@@ -70,8 +70,8 @@ Stand: 05.10.2026
 | Absagegrund angeben | M 16 | ✅ | Auswahl und optionaler Hinweis |
 | Abwesenheiten melden (Urlaub, Verletzt, Gesperrt, Sonstiges; alle oder einzelne Teams) | M 16, K 9 | ✅ | auch für Kinder; Löschen nimmt automatische Absagen zurück |
 | Kalenderexport | M 15, 17 | ⬜ | |
-| Termine anlegen, ändern, absagen; Serientermine | K 4, 6 | 🟡 | Anlegen und Absagen (mit Benachrichtigung); Ändern und Serien folgen |
-| Änderungen zeigen alt und neu (z. B. Treffpunkt) | K 10 | ⬜ | |
+| Termine anlegen, ändern, absagen; Serientermine | K 4, 6 | ✅ | Wöchentliche Serien (bis 26 Wochen, Ortszeit bleibt bei Zeitumstellung); Ändern einzeln oder „diesen und folgende“; Platzkonflikt-Prüfung |
+| Änderungen zeigen alt und neu (z. B. Treffpunkt) | K 10 | ✅ | Karte „Zuletzt geändert“ im Termin (14 Tage) und Benachrichtigung mit alt → neu |
 
 ## 5. Gastspieler & Spielerbedarf
 
@@ -186,7 +186,7 @@ Stand: 05.10.2026
 | Grundstruktur & Design | 6 | 0 | 1 |
 | Home | 7 | 2 | 0 |
 | Mannschaft | 5 | 6 | 3 |
-| Termine & Teilnahme | 9 | 1 | 2 |
+| Termine & Teilnahme | 11 | 0 | 1 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
 | Verein | 7 | 2 | 2 |
 | Kommunikation | 4 | 1 | 2 |
@@ -196,4 +196,4 @@ Stand: 05.10.2026
 | Verwaltung | 0 | 2 | 7 |
 | Einrichtung & Module | 0 | 1 | 4 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **54** | **19** | **28** |
+| **Gesamt** | **56** | **18** | **27** |

@@ -48,6 +48,7 @@ export default function NewEventScreen() {
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
+  const [repeat, setRepeat] = useState('1');
 
   const place = placeChoice ?? facilities.data?.[0]?.id ?? 'other';
   const startsAt = at(fromIsoDate(date), time, me.club.timezone);
@@ -73,6 +74,7 @@ export default function NewEventScreen() {
           opponentName: type === 'match' ? opponent.trim() : null,
           isHome: type === 'match' ? home === 'home' : null,
           allowConflict,
+          repeatWeeks: type === 'match' ? 1 : Number(repeat),
         },
       }),
     onSuccess: (event) => {
@@ -154,6 +156,20 @@ export default function NewEventScreen() {
           selected={[minutes]}
           onToggle={setMinutes}
         />
+        {type !== 'match' ? (
+          <ChoiceChips
+            label="Wiederholen"
+            options={[
+              { value: '1', label: 'Einmalig' },
+              { value: '4', label: '4 Wochen' },
+              { value: '8', label: '8 Wochen' },
+              { value: '12', label: '12 Wochen' },
+              { value: '26', label: '26 Wochen' },
+            ]}
+            selected={[repeat]}
+            onToggle={setRepeat}
+          />
+        ) : null}
         <ChoiceChips
           label="Treffpunkt vorher"
           options={[
