@@ -35,18 +35,18 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       if (!user || !user.passwordHash || !ok) throw invalidLogin();
 
       const now = app.now();
+      // Zuerst prüfen, ob das Konto noch zu einem aktiven Mitglied gehört – erst dann Sitzung anlegen
+      const actor = await loadActor(
+        app.db,
+        { sessionId: '', id: user.id, email: user.email, displayName: user.displayName },
+        now,
+      );
       const session = await createSession(app.db, user.id, {
         now,
         ttlDays: app.config.sessionTtlDays,
         userAgent: request.headers['user-agent'],
       });
       await app.db.update(s.users).set({ lastLoginAt: now }).where(eq(s.users.id, user.id));
-
-      const actor = await loadActor(
-        app.db,
-        { sessionId: '', id: user.id, email: user.email, displayName: user.displayName },
-        now,
-      );
       return {
         token: session.token,
         expiresAt: session.expiresAt.toISOString(),

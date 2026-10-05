@@ -56,6 +56,8 @@ export type MeResponse = {
   roles: { key: string; name: string; scopeType: ScopeType; scopeId: string | null }[];
   /** Ob der Nutzer den Verwaltungsmodus betreten darf */
   canAdminister: boolean;
+  /** Rechte im Verwaltungsbereich (Mitglieder, Rollen, Audit-Log) */
+  admin: AdminPermissions;
   /** Auf Vereinsebene aktivierte Module (bestimmen die Kacheln im Vereinsbereich) */
   clubModules: string[];
 };
@@ -615,4 +617,113 @@ export type CreateFacilityBlockInput = {
   reason: string;
   /** Betroffene Termine absagen und Beteiligte benachrichtigen */
   cancelEvents?: boolean;
+};
+
+// ── Verwaltung ────────────────────────────────────────────────────────────
+
+export type MembershipStatus = 'active' | 'inactive' | 'left';
+
+/** Was der angemeldete Nutzer in der Verwaltung darf (Anzeige; geprüft wird serverseitig). */
+export type AdminPermissions = {
+  readMembers: boolean;
+  /** Stammdaten, Ein-/Austritte, Mannschaftszuordnung (nur Vereinsebene) */
+  manageMembers: boolean;
+  manageRoles: boolean;
+  readAudit: boolean;
+};
+
+export type AuditEntry = {
+  id: string;
+  at: string;
+  actor: string | null;
+  /** Verständliche Beschreibung, z. B. „Rolle vergeben: Kassenwart (B1)“ */
+  label: string;
+};
+
+export type AdminOverview = {
+  can: AdminPermissions;
+  members: { active: number; inactive: number; left: number; withoutTeam: number };
+  teams: number;
+  accounts: number;
+  recentActivity: AuditEntry[];
+};
+
+export type MemberListItem = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  memberNumber: string | null;
+  status: MembershipStatus;
+  teams: { badge: string; function: TeamFunction }[];
+  roles: string[];
+  hasAccount: boolean;
+};
+
+export type MemberRoleAssignment = {
+  id: string;
+  roleKey: string;
+  roleName: string;
+  scopeType: ScopeType;
+  scopeId: string | null;
+  /** „Verein“, „Jugend“ oder „B1 · B-Jugend“ */
+  scopeLabel: string;
+};
+
+export type MemberDetail = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  birthDate: string | null;
+  email: string | null;
+  phone: string | null;
+  memberNumber: string | null;
+  memberSince: string | null;
+  status: MembershipStatus;
+  hasAccount: boolean;
+  guardians: { id: string; name: string }[];
+  children: { id: string; name: string }[];
+  memberships: {
+    id: string;
+    team: { id: string; name: string; badge: string };
+    function: TeamFunction;
+    jerseyNumber: number | null;
+    isPrimary: boolean;
+    validFrom: string;
+  }[];
+  roles: MemberRoleAssignment[];
+  can: AdminPermissions;
+};
+
+export type CreateMemberInput = {
+  firstName: string;
+  lastName: string;
+  birthDate?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  memberNumber?: string | null;
+  memberSince?: string | null;
+};
+
+export type UpdateMemberInput = Partial<CreateMemberInput> & { status?: MembershipStatus };
+
+export type AddMembershipInput = {
+  teamId: string;
+  function: TeamFunction;
+  jerseyNumber?: number | null;
+  isPrimary?: boolean;
+};
+
+export type AssignRoleInput = { roleKey: string; scopeType: ScopeType; scopeId?: string | null };
+
+export type RoleCatalog = {
+  roles: {
+    key: string;
+    name: string;
+    description: string | null;
+    defaultScope: ScopeType;
+    permissions: string[];
+    holders: { personId: string; name: string; scopeLabel: string }[];
+  }[];
+  scopes: { type: ScopeType; id: string | null; label: string }[];
+  teams: { id: string; name: string; badge: string }[];
 };

@@ -5,6 +5,11 @@
  */
 import type {
   Absence,
+  AdminOverview,
+  AuditEntry,
+  MemberDetail,
+  MemberListItem,
+  RoleCatalog,
   DemandDetail,
   FacilityOccupancy,
   ExchangeOverview,
@@ -27,7 +32,8 @@ import type {
   PollDetail,
   PollSummary,
 } from '@clubroof/core';
-import { createDb } from '@clubroof/db';
+import { createDb, schema as s } from '@clubroof/db';
+import { eq } from 'drizzle-orm';
 import { runMigrations } from '@clubroof/db/migrate';
 import { seed } from '@clubroof/db/seed';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -1195,6 +1201,257 @@ describe.skipIf(!url)('API', () => {
       const closed = await send('PATCH', `/events/${target.id}`, coach.token, { title: 'Neu' });
       expect(closed.status).toBe(409);
       void b1;
+    });
+  });
+  describe('Verwaltung', () => {
+    const auth = (token: string) => ({ authorization: `Bearer ${token}` });
+
+    it('ist nur für Berechtigte offen, der Vorstand liest nur', async () => {
+      for (const who of ['spieler', 'trainer']) {
+        const token = (await login(who)).token;
+        for (const url of ['/admin/overview', '/admin/members', '/admin/audit']) {
+          const res = await app.inject({ method: 'GET', url, headers: auth(token) });
+          expect(res.statusCode, `${who} ${url}`).toBe(403);
+        }
+      }
+      const board = await login('vorstand');
+      expect(board.me.admin).toEqual({
+        readMembers: true,
+        manageMembers: false,
+        manageRoles: false,
+        readAudit: true,
+      });
+      const overview = await get<AdminOverview>('/admin/overview', board.token);
+      expect(overview.members.active).toBeGreaterThan(100);
+      const members = await get<MemberListItem[]>('/admin/members?q=becker', board.token);
+      expect(members.some((m) => m.firstName === 'Max' && m.lastName === 'Becker')).toBe(true);
+
+      const target = members[0]!;
+      const edit = await send('PATCH', `/admin/members/${target.id}`, board.token, { phone: '1' });
+      expect(edit.status).toBe(403);
+      const role = await send('POST', `/admin/members/${target.id}/roles`, board.token, {
+        roleKey: 'treasurer',
+        scopeType: 'club',
+      });
+      expect(role.status).toBe(403);
+    });
+
+    it('vergibt Kassenwart als Zusatzaufgabe für eine Mannschaft', async () => {
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const b1 = player.me.teams.find((t) => t.badge === 'B1')!;
+      const before = await get<TeamOverview>(`/teams/${b1.id}`, player.token);
+      expect(before.permissions.manageCash).toBe(false);
+
+      const assigned = await send<MemberDetail>(
+        'POST',
+        `/admin/members/${player.me.person.id}/roles`,
+        admin.token,
+        { roleKey: 'treasurer', scopeType: 'team', scopeId: b1.id },
+      );
+      expect(assigned.status).toBe(200);
+      const role = assigned.body.roles.find((r) => r.roleKey === 'treasurer')!;
+      expect(role.scopeLabel).toContain('B1');
+      const dup = await send('POST', `/admin/members/${player.me.person.id}/roles`, admin.token, {
+        roleKey: 'treasurer',
+        scopeType: 'team',
+        scopeId: b1.id,
+      });
+      expect(dup.status).toBe(409);
+
+      const after = await get<TeamOverview>(`/teams/${b1.id}`, player.token);
+      expect(after.permissions.manageCash).toBe(true);
+      // Gilt nur für B1, nicht für andere Mannschaften
+      const c1 = (await login('trainer')).me.teams.find((t) => t.badge === 'C1')!;
+      const foreignCash = await send('POST', `/teams/${c1.id}/cash/bookings`, player.token, {
+        kind: 'income',
+        amountCents: 100,
+        description: 'Test',
+      });
+      expect([403, 404]).toContain(foreignCash.status);
+
+      const revoked = await send<MemberDetail>(
+        'DELETE',
+        `/admin/members/${player.me.person.id}/roles/${role.id}`,
+        admin.token,
+      );
+      expect(revoked.body.roles.some((r) => r.roleKey === 'treasurer')).toBe(false);
+      expect(
+        (await get<TeamOverview>(`/teams/${b1.id}`, player.token)).permissions.manageCash,
+      ).toBe(false);
+
+      const audit = await get<AuditEntry[]>('/admin/audit', (await login('vorstand')).token);
+      expect(audit.some((a) => a.label.startsWith('Rolle vergeben: Kassenwart'))).toBe(true);
+      expect(audit.some((a) => a.label.startsWith('Rolle entzogen: Kassenwart'))).toBe(true);
+    });
+
+    it('Jugendleitung sieht nur Mitglieder ihres Bereichs', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const catalog = await get<RoleCatalog>('/admin/roles', admin.token);
+      const youth = catalog.scopes.find((sc) => sc.type === 'org_unit' && /Jugend/.test(sc.label))!;
+      const assigned = await send<MemberDetail>(
+        'POST',
+        `/admin/members/${coach.me.person.id}/roles`,
+        admin.token,
+        { roleKey: 'youth_director', scopeType: 'org_unit', scopeId: youth.id },
+      );
+      expect(assigned.status).toBe(200);
+
+      const all = await get<MemberListItem[]>('/admin/members', admin.token);
+      const scoped = await get<MemberListItem[]>('/admin/members', coach.token);
+      expect(scoped.length).toBeGreaterThan(20);
+      expect(scoped.length).toBeLessThan(all.length);
+      const firstTeamOnly = all.find(
+        (m) => m.teams.length > 0 && m.teams.every((t) => t.badge === '1.'),
+      )!;
+      expect(scoped.some((m) => m.id === firstTeamOnly.id)).toBe(false);
+      const hidden = await app.inject({
+        method: 'GET',
+        url: `/admin/members/${firstTeamOnly.id}`,
+        headers: auth(coach.token),
+      });
+      expect(hidden.statusCode).toBe(404);
+      // Lesen ja, ändern nein
+      const edit = await send('PATCH', `/admin/members/${scoped[0]!.id}`, coach.token, {
+        phone: '1',
+      });
+      expect(edit.status).toBe(403);
+
+      const role = assigned.body.roles.find((r) => r.roleKey === 'youth_director')!;
+      await send('DELETE', `/admin/members/${coach.me.person.id}/roles/${role.id}`, admin.token);
+    });
+
+    it('verhindert Rechteausweitung und das Aussperren', async () => {
+      const admin = await login('admin');
+      const board = await login('vorstand');
+      // Vorstand erhält testweise nur das Recht, Rollen zu vergeben
+      const [custom] = await db
+        .insert(s.roles)
+        .values({
+          clubId: admin.me.club.id,
+          key: 'role_manager_test',
+          name: 'Rollenvergabe (Test)',
+          permissions: ['club.roles.manage'],
+        })
+        .returning();
+      await db.insert(s.roleAssignments).values({
+        clubId: admin.me.club.id,
+        personId: board.me.person.id,
+        roleId: custom!.id,
+        scopeType: 'club',
+      });
+      const player = await login('spieler');
+      for (const roleKey of ['fulladmin', 'treasurer']) {
+        const res = await send('POST', `/admin/members/${player.me.person.id}/roles`, board.token, {
+          roleKey,
+          scopeType: 'club',
+        });
+        expect(res.status, roleKey).toBe(403);
+      }
+      await db.delete(s.roles).where(eq(s.roles.id, custom!.id));
+
+      // Der einzige Fulladmin kann sich nicht selbst entfernen
+      const self = await get<MemberDetail>(`/admin/members/${admin.me.person.id}`, admin.token);
+      const fulladmin = self.roles.find((r) => r.roleKey === 'fulladmin')!;
+      const res = await send(
+        'DELETE',
+        `/admin/members/${admin.me.person.id}/roles/${fulladmin.id}`,
+        admin.token,
+      );
+      expect(res.status).toBe(409);
+      const scope = await send('POST', `/admin/members/${player.me.person.id}/roles`, admin.token, {
+        roleKey: 'fulladmin',
+        scopeType: 'team',
+        scopeId: player.me.teams[0]!.id,
+      });
+      expect(scope.status).toBe(400);
+    });
+
+    it('legt Mitglieder an, ordnet sie Mannschaften zu und beendet die Zuordnung', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const created = await send<MemberDetail>('POST', '/admin/members', admin.token, {
+        firstName: 'Neu',
+        lastName: 'Zugang',
+        birthDate: '2010-03-01',
+        email: 'NEU@example.org',
+      });
+      expect(created.status).toBe(201);
+      expect(created.body.email).toBe('neu@example.org');
+      const id = created.body.id;
+
+      const added = await send<MemberDetail>(
+        'POST',
+        `/admin/members/${id}/memberships`,
+        admin.token,
+        {
+          teamId: b1.id,
+          function: 'player',
+          jerseyNumber: 33,
+        },
+      );
+      expect(added.status).toBe(200);
+      expect(added.body.memberships[0]).toMatchObject({ function: 'player', jerseyNumber: 33 });
+      const again = await send('POST', `/admin/members/${id}/memberships`, admin.token, {
+        teamId: b1.id,
+        function: 'player',
+      });
+      expect(again.status).toBe(409);
+
+      const roster = await get<RosterEntry[]>(`/teams/${b1.id}/roster`, coach.token);
+      expect(roster.some((r) => r.personId === id)).toBe(true);
+      const next = (await get<TeamOverview>(`/teams/${b1.id}`, coach.token)).nextEvent!;
+      const detail = await get<EventDetail>(`/events/${next.id}`, coach.token);
+      expect(detail.participants.some((p) => p.personId === id)).toBe(true);
+
+      const ended = await send<MemberDetail>(
+        'DELETE',
+        `/admin/members/${id}/memberships/${added.body.memberships[0]!.id}`,
+        admin.token,
+      );
+      expect(ended.body.memberships).toHaveLength(0);
+      const afterDetail = await get<EventDetail>(`/events/${next.id}`, coach.token);
+      expect(afterDetail.participants.some((p) => p.personId === id)).toBe(false);
+      const withoutTeam = await get<MemberListItem[]>(
+        '/admin/members?withoutTeam=true',
+        admin.token,
+      );
+      expect(withoutTeam.some((m) => m.id === id)).toBe(true);
+    });
+
+    it('Austritt beendet Mannschaften, Aufgaben und Anmeldung', async () => {
+      const admin = await login('admin');
+      const treasurer = await login('kasse');
+      const id = treasurer.me.person.id;
+      const selfExit = await send('PATCH', `/admin/members/${admin.me.person.id}`, admin.token, {
+        status: 'left',
+      });
+      expect(selfExit.status).toBe(409);
+
+      const left = await send<MemberDetail>('PATCH', `/admin/members/${id}`, admin.token, {
+        status: 'left',
+      });
+      expect(left.status).toBe(200);
+      expect(left.body.roles).toHaveLength(0);
+      expect(left.body.memberships).toHaveLength(0);
+      const me = await app.inject({ method: 'GET', url: '/me', headers: auth(treasurer.token) });
+      expect(me.statusCode).toBe(401);
+      const relogin = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: { email: email('kasse'), password: PASSWORD },
+      });
+      expect(relogin.statusCode).toBe(403);
+      const [account] = await db.select().from(s.persons).where(eq(s.persons.id, id));
+      const sessions = await db
+        .select()
+        .from(s.sessions)
+        .where(eq(s.sessions.userId, account!.userId!));
+      expect(sessions).toHaveLength(0);
+      const audit = await get<AuditEntry[]>('/admin/audit', admin.token);
+      expect(audit.some((a) => a.label.includes('ist jetzt ausgetreten'))).toBe(true);
     });
   });
 });

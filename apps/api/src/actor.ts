@@ -44,6 +44,7 @@ export type Actor = {
 export async function loadActor(db: Db, user: SessionUser, now: Date): Promise<Actor> {
   const [person] = await db.select().from(s.persons).where(eq(s.persons.userId, user.id)).limit(1);
   if (!person) throw forbidden('Dein Konto ist keinem Verein zugeordnet.');
+  if (person.membershipStatus === 'left') throw forbidden('Deine Mitgliedschaft ist beendet.');
 
   const [club] = await db.select().from(s.clubs).where(eq(s.clubs.id, person.clubId));
   if (!club) throw forbidden('Dein Konto ist keinem Verein zugeordnet.');
