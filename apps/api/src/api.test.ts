@@ -5,6 +5,8 @@
  */
 import type {
   Absence,
+  DemandDetail,
+  ExchangeOverview,
   PersonProfile,
   ClubTeamGroup,
   ContactGroup,
@@ -335,7 +337,7 @@ describe.skipIf(!url)('API', () => {
         endsOn: day,
         note: 'Familienfeier',
       });
-      expect(created.status).toBe(201);
+      expect(created.status, JSON.stringify(created.body)).toBe(201);
       expect(created.body.affectedEvents).toBeGreaterThanOrEqual(1);
 
       const during = await get<EventDetail>(`/events/${match.id}`, token);
@@ -570,7 +572,7 @@ describe.skipIf(!url)('API', () => {
         startsAt,
         meetingPoint: 'Kabine 2',
       });
-      expect(created.status).toBe(201);
+      expect(created.status, JSON.stringify(created.body)).toBe(201);
       const event = created.body;
       expect(event.title).toBe('Training');
       expect(event.counts.pending).toBeGreaterThan(10);
@@ -836,6 +838,166 @@ describe.skipIf(!url)('API', () => {
         position: 'Zauberer',
       });
       expect(invalid.status).toBe(400);
+    });
+  });
+  describe('Gastspielerbörse', () => {
+    const name = (o: ExchangeOverview, badge: string) =>
+      o.demands.find((d) => d.team.badge === badge)!;
+
+    it('ist nur für Trainerteams und sportliche Leitung offen', async () => {
+      for (const who of ['spieler', 'vorstand']) {
+        const res = await app.inject({
+          method: 'GET',
+          url: '/exchange',
+          headers: { authorization: `Bearer ${(await login(who)).token}` },
+        });
+        expect(res.statusCode).toBe(403);
+      }
+      const coach = await login('trainer');
+      const overview = await get<ExchangeOverview>('/exchange', coach.token);
+      expect(overview.myTeams.map((t) => t.badge).sort()).toEqual(['B1', 'C1']);
+      expect(name(overview, 'B1')).toMatchObject({ mine: true, canNominate: false });
+      expect(name(overview, 'A1')).toMatchObject({
+        mine: false,
+        canNominate: true,
+        status: 'open',
+      });
+      expect(overview.offers.some((o) => o.mine && o.team.badge === 'C1')).toBe(true);
+    });
+
+    it('zeigt Verfügbarkeit anderer Mannschaften nur aggregiert, ohne Gründe', async () => {
+      const coach = await login('trainer');
+      const overview = await get<ExchangeOverview>('/exchange', coach.token);
+      const detail = await get<DemandDetail>(
+        `/exchange/demands/${name(overview, 'A1').id}`,
+        coach.token,
+      );
+      expect(detail.candidates.map((c) => c.team.badge).sort()).toEqual(['B1', 'C1']);
+      for (const a of detail.availability) {
+        expect(Object.keys(a).sort()).toEqual(['available', 'players', 'team']);
+      }
+      expect(JSON.stringify(detail.availability)).not.toMatch(/Urlaub|Krank|Verletzt/);
+    });
+
+    it('nominiert Spieler, achtet auf Kapazität und lässt sie zurückziehen', async () => {
+      const coach = await login('trainer');
+      const overview = await get<ExchangeOverview>('/exchange', coach.token);
+      const demand = name(overview, 'A1');
+      const detail = await get<DemandDetail>(`/exchange/demands/${demand.id}`, coach.token);
+      const b1 = detail.candidates.find((c) => c.team.badge === 'B1')!;
+      const free = b1.players.filter((p) => p.state === 'available');
+      expect(free.length).toBeGreaterThanOrEqual(3);
+
+      const first = await send<DemandDetail>(
+        'POST',
+        `/exchange/demands/${demand.id}/nominate`,
+        coach.token,
+        {
+          personId: free[0]!.personId,
+          fromTeamId: b1.team.id,
+        },
+      );
+      expect(first.status).toBe(200);
+      expect(first.body.filled).toBe(1);
+      expect(first.body.guests.map((g) => g.personId)).toContain(free[0]!.personId);
+
+      const dup = await send('POST', `/exchange/demands/${demand.id}/nominate`, coach.token, {
+        personId: free[0]!.personId,
+        fromTeamId: b1.team.id,
+      });
+      expect(dup.status).toBe(409);
+
+      const second = await send<DemandDetail>(
+        'POST',
+        `/exchange/demands/${demand.id}/nominate`,
+        coach.token,
+        {
+          personId: free[1]!.personId,
+          fromTeamId: b1.team.id,
+        },
+      );
+      expect(second.body.status).toBe('fulfilled');
+      const third = await send('POST', `/exchange/demands/${demand.id}/nominate`, coach.token, {
+        personId: free[2]!.personId,
+        fromTeamId: b1.team.id,
+      });
+      expect(third.status).toBe(409);
+
+      const back = await send<DemandDetail>(
+        'DELETE',
+        `/exchange/demands/${demand.id}/nominations/${free[1]!.personId}`,
+        coach.token,
+      );
+      expect(back.status).toBe(200);
+      expect(back.body.filled).toBe(1);
+    });
+
+    it('verbietet Spieler fremder Mannschaften und eigene Mannschaft als Quelle', async () => {
+      const coach = await login('trainer');
+      const overview = await get<ExchangeOverview>('/exchange', coach.token);
+      const a1 = name(overview, 'A1');
+      const res = await send('POST', `/exchange/demands/${a1.id}/nominate`, coach.token, {
+        personId: coach.me.person.id,
+        fromTeamId: a1.team.id,
+      });
+      expect(res.status).toBe(403);
+    });
+
+    it('meldet Bedarf nur für eigene Termine, einmal je Termin', async () => {
+      const coach = await login('trainer');
+      const overview = await get<ExchangeOverview>('/exchange', coach.token);
+      const b1 = overview.myTeams.find((t) => t.badge === 'B1')!;
+      const week = (await get<TeamOverview>(`/teams/${b1.id}`, coach.token)).trainingWeek.filter(
+        (e) => e.status === 'scheduled' && new Date(e.startsAt) > NOW,
+      );
+      const training = week[0]!;
+      const created = await send<DemandDetail>('POST', '/exchange/demands', coach.token, {
+        teamId: b1.id,
+        eventId: training.id,
+        count: 1,
+        positions: ['Torwart'],
+      });
+      expect(created.status, JSON.stringify(created.body)).toBe(201);
+      const again = await send('POST', '/exchange/demands', coach.token, {
+        teamId: b1.id,
+        eventId: training.id,
+        count: 1,
+      });
+      expect(again.status).toBe(409);
+      const other = name(overview, 'A1');
+      const foreign = await send('POST', '/exchange/demands', coach.token, {
+        teamId: other.team.id,
+        eventId: other.event.id,
+        count: 1,
+      });
+      expect(foreign.status).toBe(403);
+      const cancelled = await send('DELETE', `/exchange/demands/${created.body.id}`, coach.token);
+      expect(cancelled.status).toBe(204);
+    });
+
+    it('legt Angebote an und löscht sie', async () => {
+      const coach = await login('trainer');
+      const overview = await get<ExchangeOverview>('/exchange', coach.token);
+      const c1 = overview.myTeams.find((t) => t.badge === 'C1')!;
+      const made = await send<ExchangeOverview>('POST', '/exchange/offers', coach.token, {
+        teamId: c1.id,
+        day: '2026-10-12',
+        count: 2,
+      });
+      expect(made.status).toBe(201);
+      const mine = made.body.offers.find((o) => o.mine && o.day === '2026-10-12')!;
+      const past = await send('POST', '/exchange/offers', coach.token, {
+        teamId: c1.id,
+        day: '2026-10-01',
+        count: 1,
+      });
+      expect(past.status).toBe(400);
+      const del = await send<ExchangeOverview>(
+        'DELETE',
+        `/exchange/offers/${mine.id}`,
+        coach.token,
+      );
+      expect(del.body.offers.some((o) => o.id === mine.id)).toBe(false);
     });
   });
 });

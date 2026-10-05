@@ -13,6 +13,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { clubs, facilities, orgUnits } from './club';
 import { persons } from './people';
+import { playerDemands } from './exchange';
 import { teams } from './teams';
 import {
   absenceKindEnum,
@@ -96,6 +97,8 @@ export const eventParticipants = pgTable(
     guestFromTeamId: uuid().references(() => teams.id, { onDelete: 'set null' }),
     /** Abwesenheit, die diese Absage automatisch ausgelöst hat (wird beim Löschen zurückgenommen). */
     absenceId: uuid().references((): AnyPgColumn => absences.id, { onDelete: 'set null' }),
+    /** Gastspieler: Bedarf, auf den hin der Spieler nominiert wurde */
+    demandId: uuid().references((): AnyPgColumn => playerDemands.id, { onDelete: 'set null' }),
     respondedAt: timestamp({ withTimezone: true }),
     /** Person, die geantwortet hat (Spieler selbst, Elternteil oder Trainer stellvertretend). */
     respondedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),

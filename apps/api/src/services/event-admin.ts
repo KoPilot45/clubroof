@@ -31,7 +31,7 @@ const timeFmt = (tz: string) =>
   });
 
 /** Nutzerkonten, die über einen Termin informiert werden: Teilnehmer selbst und deren Eltern. */
-async function recipientsFor(
+export async function recipientsFor(
   db: Db,
   personIds: string[],
   excludeUserId: string,
@@ -50,7 +50,7 @@ async function recipientsFor(
   ].filter((id) => id !== excludeUserId);
 }
 
-async function notify(
+export async function notify(
   db: Db,
   actor: Actor,
   userIds: string[],

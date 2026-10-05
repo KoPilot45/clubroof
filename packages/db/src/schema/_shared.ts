@@ -85,3 +85,6 @@ export const documentCategoryEnum = pgEnum('document_category', [
   'training_plans',
   'other',
 ]);
+
+export const demandStatusEnum = pgEnum('demand_status', ['open', 'cancelled']);
+export const offerStatusEnum = pgEnum('offer_status', ['open', 'closed']);

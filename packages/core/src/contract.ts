@@ -258,6 +258,8 @@ export type TeamPermissions = {
   readAttendance: boolean;
   readCash: boolean;
   manageCash: boolean;
+  /** Spielerbedarf melden, Spieler anbieten und abstellen (Gastspielerbörse) */
+  manageDemand: boolean;
 };
 
 export type MatchResult = {
@@ -482,5 +484,75 @@ export type UpdateProfileInput = {
   preferredFoot?: PreferredFoot | null;
   contactVisibility?: ContactVisibility;
 };
+
+export type ExchangeTeamRef = { id: string; name: string; badge: string };
+
+export type PlayerDemand = {
+  id: string;
+  team: ExchangeTeamRef;
+  event: { id: string; title: string; type: EventType; startsAt: string; location: string | null };
+  count: number;
+  /** Nominierte Gastspieler, die nicht abgesagt haben */
+  filled: number;
+  positions: string[];
+  note: string | null;
+  status: 'open' | 'fulfilled';
+  createdAt: string;
+  /** Der Bedarf gehört zu einer Mannschaft, für die ich Bedarf verwalten darf */
+  mine: boolean;
+  /** Ich kann aus einer meiner Mannschaften Spieler abstellen */
+  canNominate: boolean;
+};
+
+export type PlayerOffer = {
+  id: string;
+  team: ExchangeTeamRef;
+  day: string;
+  count: number;
+  note: string | null;
+  mine: boolean;
+};
+
+export type ExchangeOverview = {
+  /** Mannschaften, für die ich Bedarf melden bzw. aus denen ich Spieler abstellen darf */
+  myTeams: ExchangeTeamRef[];
+  demands: PlayerDemand[];
+  offers: PlayerOffer[];
+  summary: { openDemands: number; offeringTeams: number; forYou: number };
+};
+
+export type DemandCandidate = {
+  personId: string;
+  name: string;
+  position: string | null;
+  jerseyNumber: number | null;
+  state: 'available' | 'absent' | 'busy' | 'nominated';
+  /** Hinweis für den abgebenden Trainer, z. B. „Spielt selbst: B1 Training“ */
+  hint: string | null;
+};
+
+export type DemandDetail = PlayerDemand & {
+  guests: {
+    personId: string;
+    name: string;
+    fromTeam: string;
+    status: AttendanceStatus;
+    canWithdraw: boolean;
+  }[];
+  /** Verfügbarkeit anderer Mannschaften – nur Zahlen, keine Gründe */
+  availability: { team: ExchangeTeamRef; players: number; available: number }[];
+  /** Spieler meiner Mannschaften, die ich nominieren kann */
+  candidates: { team: ExchangeTeamRef; players: DemandCandidate[] }[];
+};
+
+export type CreateDemandInput = {
+  teamId: string;
+  eventId: string;
+  count: number;
+  positions?: string[];
+  note?: string | null;
+};
+
+export type CreateOfferInput = { teamId: string; day: string; count: number; note?: string | null };
 
 export type ApiError = { error: string; message: string };

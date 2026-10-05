@@ -990,10 +990,46 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       }
     }
 
-    // Gastspieler: C-Jugend hilft in der B-Jugend aus, 2. Mannschaft in der 1. Mannschaft
-    const guests: { event: EventRow | undefined; from: TeamKey; person: PersonRow }[] = [
-      { event: nextB1Match, from: 'c1', person: pick('c1', 4) },
-      { event: nextH1Match, from: 'h2', person: pick('h2', 7) },
+    // Gastspielerbörse: Bedarf der Mannschaften, teils schon mit Gastspielern gedeckt
+    const nextA1Match = nextEventOf('a1', 'match');
+    const nextH2Match = nextEventOf('h2', 'match');
+    const demandRows: Insert<typeof s.playerDemands>[] = [];
+    const demand = (
+      team: TeamKey,
+      event: EventRow | undefined,
+      count: number,
+      positions: string[],
+      note: string,
+    ) => {
+      if (!event) return undefined;
+      const id = randomUUID();
+      demandRows.push({
+        id,
+        clubId,
+        teamId: teamIds[team],
+        eventId: event.id,
+        count,
+        positions,
+        note,
+        createdByPersonId: teamMembers[team].find((m) => m.fn === 'coach')?.person.id ?? null,
+        createdAt: addMinutes(now, -26 * 60),
+      });
+      return id;
+    };
+    const demandB1 = demand(
+      'b1',
+      nextB1Match,
+      1,
+      ['Sturm'],
+      'Uns fehlt ein Stürmer, zwei sind krank.',
+    );
+    const demandH1 = demand('h1', nextH1Match, 1, [], 'Wir haben nur 13 Feldspieler.');
+    demand('a1', nextA1Match, 2, ['Außenbahn', 'Sturm'], 'Zwei Ausfälle durch Abiturprüfungen.');
+    demand('h2', nextH2Match, 2, ['Innenverteidigung'], 'Kader für Sonntag noch unvollständig.');
+
+    const guests = [
+      { event: nextB1Match, from: 'c1' as TeamKey, person: pick('c1', 4), demandId: demandB1 },
+      { event: nextH1Match, from: 'h2' as TeamKey, person: pick('h2', 7), demandId: demandH1 },
     ];
     for (const g of guests) {
       if (!g.event) continue;
@@ -1004,10 +1040,38 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         role: 'guest_player',
         status: 'yes',
         guestFromTeamId: teamIds[g.from],
+        demandId: g.demandId ?? null,
         respondedAt: addMinutes(now, -180),
         respondedByPersonId: g.person.id,
       });
     }
+    if (demandRows.length) await tx.insert(s.playerDemands).values(demandRows);
+
+    const offerRow = (team: TeamKey, event: EventRow | undefined, count: number, note: string) =>
+      event
+        ? [
+            {
+              clubId,
+              teamId: teamIds[team],
+              day: toIsoDate(calendarDayOf(event.startsAt, DEFAULT_TZ)),
+              count,
+              note,
+              createdByPersonId: teamMembers[team].find((m) => m.fn === 'coach')?.person.id ?? null,
+              createdAt: addMinutes(now, -30 * 60),
+            },
+          ]
+        : [];
+    const offerRows = [
+      ...offerRow('ah', nextH2Match, 2, 'Zwei Alte Herren würden gern aushelfen.'),
+      ...offerRow(
+        'c1',
+        nextEventOf('c1', 'training'),
+        1,
+        'Ein Spieler hat Zeit und Lust auf höhere Spielstufe.',
+      ),
+    ];
+    if (offerRows.length) await tx.insert(s.playerOffers).values(offerRows);
+
     // Freiwillige Teilnahme an Vereinsveranstaltungen („Ich nehme teil“)
     const attendeePool = faker.helpers.shuffle(
       persons.filter((p) => Number(p.birthDate!.slice(0, 4)) <= 2008 && p.id !== persona.parent.id),
