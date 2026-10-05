@@ -11,6 +11,7 @@ Dokumente und Verwaltung.
 - [Analyse & Entwicklungsplan](docs/PLAN.md)
 - [Farbkonzept](docs/FARBKONZEPT.md)
 - [Demodaten](docs/DEMODATEN.md)
+- [Funktionsliste mit Umsetzungsstand](docs/FUNKTIONEN.md)
 
 ## Projektstruktur
 
