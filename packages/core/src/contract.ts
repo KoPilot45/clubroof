@@ -4,6 +4,8 @@
  */
 import type {
   AbsenceKind,
+  ContactVisibility,
+  PreferredFoot,
   AnnouncementPriority,
   AttendanceStatus,
   EventType,
@@ -429,5 +431,56 @@ export type Contact = {
 };
 
 export type ContactGroup = { title: string; contacts: Contact[] };
+
+export type PersonStatsByTeam = {
+  teamId: string;
+  badge: string;
+  trainings: number;
+  trainingsAttended: number;
+  matches: number;
+};
+
+export type PersonStats = {
+  /** Anteil Zusagen an vergangenen Trainings der Saison (0–100) */
+  trainingRate: number | null;
+  trainings: number;
+  trainingsAttended: number;
+  matches: number;
+  byTeam: PersonStatsByTeam[];
+};
+
+export type PersonProfile = {
+  personId: string;
+  firstName: string;
+  lastName: string;
+  relation: 'self' | 'child' | 'other';
+  position: string | null;
+  preferredFoot: PreferredFoot | null;
+  teams: {
+    id: string;
+    name: string;
+    badge: string;
+    function: TeamFunction;
+    jerseyNumber: number | null;
+    isPrimary: boolean;
+  }[];
+  /** Heute verfügbar? Grund nur für die Person selbst, Eltern und das Trainerteam */
+  availability: { available: boolean; reason: string | null; until: string | null };
+  /** Saisonwerte – nur für die Person selbst, Eltern und das Trainerteam */
+  stats: PersonStats | null;
+  /** Kontaktdaten gemäß Sichtbarkeitseinstellung */
+  contact: { email: string | null; phone: string | null } | null;
+  /** Nur für die Person selbst bzw. Eltern */
+  contactVisibility: ContactVisibility | null;
+  canEdit: boolean;
+};
+
+export type UpdateProfileInput = {
+  phone?: string | null;
+  email?: string | null;
+  position?: string | null;
+  preferredFoot?: PreferredFoot | null;
+  contactVisibility?: ContactVisibility;
+};
 
 export type ApiError = { error: string; message: string };

@@ -260,7 +260,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       firstName: 'Mia',
       lastName: 'Neumann',
       birthDate: '2018-03-05',
-      position: 'Mittelfeld',
+      position: 'Zentrales Mittelfeld',
       preferredFoot: 'left',
     });
 

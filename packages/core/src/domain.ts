@@ -40,3 +40,21 @@ export type NotificationLevel = (typeof NOTIFICATION_LEVELS)[number];
 
 export const ANNOUNCEMENT_PRIORITIES = ['info', 'important', 'urgent'] as const;
 export type AnnouncementPriority = (typeof ANNOUNCEMENT_PRIORITIES)[number];
+
+export const PLAYER_POSITIONS = [
+  'Torwart',
+  'Innenverteidigung',
+  'Außenverteidigung',
+  'Defensives Mittelfeld',
+  'Zentrales Mittelfeld',
+  'Offensives Mittelfeld',
+  'Außenbahn',
+  'Sturm',
+] as const;
+export type PlayerPosition = (typeof PLAYER_POSITIONS)[number];
+
+export const CONTACT_VISIBILITIES = ['club', 'team_and_coaches', 'coaches_only'] as const;
+export type ContactVisibility = (typeof CONTACT_VISIBILITIES)[number];
+
+export const PREFERRED_FEET = ['left', 'right', 'both'] as const;
+export type PreferredFoot = (typeof PREFERRED_FEET)[number];
