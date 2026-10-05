@@ -23,7 +23,7 @@ import {
   type AttendanceStatus,
   type ModuleKey,
 } from '@clubroof/core';
-import { eq, like } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, like } from 'drizzle-orm';
 import type { PgTable } from 'drizzle-orm/pg-core';
 import { createDb, type Db } from '../client';
 import * as s from '../schema';
@@ -88,8 +88,28 @@ export type SeedSummary = Record<string, number>;
 
 /** Entfernt den Demoverein und die Demo-Logins. */
 export async function removeDemoData(db: Db | Tx): Promise<void> {
+  // Konten, die im Demoverein entstanden sind (Einladungen, Beitrittsanfragen), mit entfernen
+  const [club] = await db
+    .select({ id: s.clubs.id })
+    .from(s.clubs)
+    .where(eq(s.clubs.slug, DEMO_CLUB.slug));
+  const userIds = club
+    ? [
+        ...(await db
+          .select({ id: s.persons.userId })
+          .from(s.persons)
+          .where(and(eq(s.persons.clubId, club.id), isNotNull(s.persons.userId)))),
+        ...(await db
+          .select({ id: s.joinRequests.userId })
+          .from(s.joinRequests)
+          .where(eq(s.joinRequests.clubId, club.id))),
+      ]
+        .map((r) => r.id)
+        .filter((id): id is string => !!id)
+    : [];
   await db.delete(s.clubs).where(eq(s.clubs.slug, DEMO_CLUB.slug));
   await db.delete(s.users).where(like(s.users.email, `%@${DEMO_EMAIL_DOMAIN}`));
+  if (userIds.length) await db.delete(s.users).where(inArray(s.users.id, userIds));
 }
 
 export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSummary> {

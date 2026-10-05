@@ -14,6 +14,7 @@ import { HttpError, unauthorized } from './errors';
 import { authRoutes } from './routes/auth';
 import { clubRoutes, fileRoutes } from './routes/club';
 import { createMailer, type Mailer } from './security/mailer';
+import { twoFactorMissing } from './services/two-factor';
 import { diskStorage, linkSigner, type FileStorage } from './storage/files';
 import { communityRoutes } from './routes/community';
 import { eventRoutes } from './routes/events';
@@ -78,6 +79,18 @@ export async function buildApp({
     if (!user) throw unauthorized();
     request.sessionUser = user;
     request.actor = await loadActor(db, user, now(), links);
+    // Vereinsvorgabe: Verwaltung nur mit eingerichteter 2-Faktor-Anmeldung
+    const path = request.url.split('?')[0]!;
+    if (
+      twoFactorMissing(request.actor) &&
+      ['/admin', '/invitations', '/join-requests', '/editorial'].some((p) => path.startsWith(p))
+    ) {
+      throw new HttpError(
+        403,
+        'two_factor_required',
+        'Der Verein verlangt für die Verwaltung die 2-Faktor-Anmeldung. Bitte unter „Konto & Sicherheit“ einrichten.',
+      );
+    }
   });
 
   await app.register(cors, {

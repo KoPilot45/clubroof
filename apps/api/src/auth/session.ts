@@ -27,7 +27,13 @@ export async function createSession(
   return { token, expiresAt };
 }
 
-export type SessionUser = { sessionId: string; id: string; email: string; displayName: string };
+export type SessionUser = {
+  sessionId: string;
+  id: string;
+  email: string;
+  displayName: string;
+  twoFactorEnabled?: boolean;
+};
 
 /** Liefert den Nutzer zu einem gültigen Token oder `null`. */
 export async function findSessionUser(
@@ -42,6 +48,7 @@ export async function findSessionUser(
       id: s.users.id,
       email: s.users.email,
       displayName: s.users.displayName,
+      totpSecret: s.users.totpSecret,
     })
     .from(s.sessions)
     .innerJoin(s.users, eq(s.users.id, s.sessions.userId))
@@ -53,7 +60,13 @@ export async function findSessionUser(
   if (!row.lastUsedAt || now.getTime() - row.lastUsedAt.getTime() > 5 * 60 * 1000) {
     await db.update(s.sessions).set({ lastUsedAt: now }).where(eq(s.sessions.id, row.sessionId));
   }
-  return { sessionId: row.sessionId, id: row.id, email: row.email, displayName: row.displayName };
+  return {
+    sessionId: row.sessionId,
+    id: row.id,
+    email: row.email,
+    displayName: row.displayName,
+    twoFactorEnabled: row.totpSecret !== null,
+  };
 }
 
 export async function deleteSession(db: Db, sessionId: string): Promise<void> {

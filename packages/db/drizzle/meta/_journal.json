@@ -85,6 +85,13 @@
       "when": 1791237734784,
       "tag": "0011_auth_invitations",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791238621894,
+      "tag": "0012_totp_step",
+      "breakpoints": true
     }
   ]
 }

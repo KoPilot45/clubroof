@@ -11,6 +11,9 @@ import type {
   MemberListItem,
   RoleCatalog,
   DemandDetail,
+  TwoFactorChallenge,
+  TwoFactorSetup,
+  TwoFactorStatus,
   InviteLink,
   InviteOverview,
   JoinInfo,
@@ -56,6 +59,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from './app';
 import { loadConfig } from './config';
 import { memoryMailer } from './security/mailer';
+import { stepOf, totp } from './security/totp';
 
 const url = process.env.DATABASE_URL;
 const NOW = new Date('2026-10-05T08:00:00Z'); // Montag, 10:00 Uhr in Berlin
@@ -107,7 +111,7 @@ describe.skipIf(!url)('API', () => {
   }
 
   async function send<T>(
-    method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     path: string,
     token: string,
     payload?: unknown,
@@ -2462,6 +2466,98 @@ describe.skipIf(!url)('API', () => {
       // Link zurückziehen
       await send('DELETE', `/teams/${b1.id}/invite-link`, coach.token);
       expect((await pub('GET', `/join/${token}`)).statusCode).toBe(410);
+    });
+  });
+
+  describe('2-Faktor-Anmeldung', () => {
+    it('Einrichten, Vereinsvorgabe, Anmeldung mit Code und Wiederherstellungscode', async () => {
+      const board = await login('vorstand');
+      const clubId = board.me.club.id;
+      expect(await get<TwoFactorStatus>('/auth/2fa', board.token)).toEqual({
+        enabled: false,
+        required: false,
+        recoveryCodesLeft: 0,
+      });
+
+      // Verein verlangt 2-Faktor → Verwaltung gesperrt, App wird informiert
+      await db.update(s.clubs).set({ requireTwoFactor: true }).where(eq(s.clubs.id, clubId));
+      const blocked = await send<{ error: string }>('GET', '/admin/overview', board.token);
+      expect(blocked.status).toBe(403);
+      expect(blocked.body.error).toBe('two_factor_required');
+      expect((await get<LoginResponse['me']>('/me', board.token)).security.twoFactorRequired).toBe(
+        true,
+      );
+
+      const setup = await send<TwoFactorSetup>('POST', '/auth/2fa/setup', board.token);
+      expect(setup.body.otpauthUrl).toMatch(/^otpauth:\/\/totp\//);
+      expect(setup.body.qrSvg).toContain('<svg');
+      const secret = setup.body.secret.replace(/ /g, '');
+      expect((await send('POST', '/auth/2fa/enable', board.token, { code: '000000' })).status).toBe(
+        400,
+      );
+      const step = stepOf(NOW);
+      const enabled = await send<{ recoveryCodes: string[] }>(
+        'POST',
+        '/auth/2fa/enable',
+        board.token,
+        {
+          code: totp(secret, step),
+        },
+      );
+      expect(enabled.body.recoveryCodes).toHaveLength(10);
+      expect((await send('GET', '/admin/overview', board.token)).status).toBe(200);
+
+      // Anmeldung braucht jetzt den zweiten Schritt
+      const first = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: { email: email('vorstand'), password: PASSWORD },
+      });
+      const challenge = first.json<TwoFactorChallenge>();
+      expect(challenge.twoFactorRequired).toBe(true);
+      expect(first.json()).not.toHaveProperty('token');
+      // Bereits verwendeter Code wird nicht noch einmal angenommen
+      const replay = await app.inject({
+        method: 'POST',
+        url: '/auth/2fa/verify',
+        payload: { challenge: challenge.challenge, code: totp(secret, step) },
+      });
+      expect(replay.statusCode).toBe(401);
+      const recovery = enabled.body.recoveryCodes[0]!;
+      const ok = await app.inject({
+        method: 'POST',
+        url: '/auth/2fa/verify',
+        payload: { challenge: challenge.challenge, code: recovery },
+      });
+      expect(ok.statusCode).toBe(200);
+      expect(ok.json<LoginResponse>().me.security.twoFactorEnabled).toBe(true);
+      // Challenge und Wiederherstellungscode sind verbraucht
+      const again = await app.inject({
+        method: 'POST',
+        url: '/auth/2fa/verify',
+        payload: { challenge: challenge.challenge, code: recovery },
+      });
+      expect(again.statusCode).toBe(401);
+      expect((await get<TwoFactorStatus>('/auth/2fa', board.token)).recoveryCodesLeft).toBe(9);
+
+      // Ausschalten nur ohne Vereinsvorgabe und mit Passwort + Code
+      const forbidden = await send('POST', '/auth/2fa/disable', board.token, {
+        password: PASSWORD,
+        code: totp(secret, step + 1),
+      });
+      expect(forbidden.status).toBe(409);
+      await db.update(s.clubs).set({ requireTwoFactor: false }).where(eq(s.clubs.id, clubId));
+      const wrongPw = await send('POST', '/auth/2fa/disable', board.token, {
+        password: 'falsch',
+        code: totp(secret, step + 1),
+      });
+      expect(wrongPw.status).toBe(400);
+      const off = await send('POST', '/auth/2fa/disable', board.token, {
+        password: PASSWORD,
+        code: totp(secret, step + 1),
+      });
+      expect(off.status).toBe(204);
+      expect((await login('vorstand')).me.security.twoFactorEnabled).toBe(false);
     });
   });
 

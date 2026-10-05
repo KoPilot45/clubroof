@@ -69,6 +69,7 @@ export type MeResponse = {
   canManageClub: boolean;
   /** Personen einladen und Beitrittsanfragen freigeben (eigene Mannschaften bzw. Verein) */
   canInvite: boolean;
+  security: { twoFactorEnabled: boolean; twoFactorRequired: boolean };
   /** News schreiben bzw. ohne Freigabe veröffentlichen (irgendwo im Verein) */
   news: { write: boolean; publish: boolean };
   /** Auf Vereinsebene aktivierte Module (bestimmen die Kacheln im Vereinsbereich) */
@@ -76,6 +77,18 @@ export type MeResponse = {
 };
 
 export type LoginResponse = { token: string; expiresAt: string; me: MeResponse };
+
+/** Zweiter Anmeldeschritt nötig: Code aus der Authenticator-App eingeben */
+export type TwoFactorChallenge = { twoFactorRequired: true; challenge: string };
+
+export type TwoFactorStatus = {
+  enabled: boolean;
+  /** Der Verein verlangt 2-Faktor für Personen mit Verwaltungsrechten */
+  required: boolean;
+  recoveryCodesLeft: number;
+};
+
+export type TwoFactorSetup = { secret: string; otpauthUrl: string; qrSvg: string };
 
 export type AttendanceCounts = Record<AttendanceStatus, number>;
 

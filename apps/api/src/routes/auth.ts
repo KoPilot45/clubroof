@@ -3,13 +3,26 @@ import { schema as s } from '@clubroof/db';
 import { eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import type { LoginResponse } from '@clubroof/core';
+import type {
+  LoginResponse,
+  TwoFactorChallenge,
+  TwoFactorSetup,
+  TwoFactorStatus,
+} from '@clubroof/core';
 import { loadActor } from '../actor';
 import { createSession, deleteSession } from '../auth/session';
 import { HttpError } from '../errors';
 import { changePassword, requestPasswordReset, resetPassword } from '../services/account';
 import { pendingRequestState } from '../services/invitations';
 import { buildMe } from '../services/me';
+import {
+  completeChallenge,
+  createChallenge,
+  disableTwoFactor,
+  enableTwoFactor,
+  getTwoFactorStatus,
+  startSetup,
+} from '../services/two-factor';
 
 const invalidLogin = () =>
   new HttpError(401, 'invalid_credentials', 'E-Mail-Adresse oder Passwort ist nicht korrekt.');
@@ -30,7 +43,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         }),
       },
     },
-    async (request): Promise<LoginResponse> => {
+    async (request): Promise<LoginResponse | TwoFactorChallenge> => {
       const { email, password } = request.body;
       const [user] = await app.db.select().from(s.users).where(eq(s.users.email, email)).limit(1);
       const ok = await verify(user?.passwordHash ?? DUMMY_HASH, password).catch(() => false);
@@ -60,10 +73,20 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       // Zuerst prüfen, ob das Konto noch zu einem aktiven Mitglied gehört – erst dann Sitzung anlegen
       const actor = await loadActor(
         app.db,
-        { sessionId: '', id: user.id, email: user.email, displayName: user.displayName },
+        {
+          sessionId: '',
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
+          twoFactorEnabled: user.totpSecret !== null,
+        },
         now,
         app.links,
       );
+      // Mit 2-Faktor: noch keine Sitzung, erst den Code abfragen
+      if (user.totpSecret) {
+        return { twoFactorRequired: true, challenge: await createChallenge(app.db, user.id, now) };
+      }
       const session = await createSession(app.db, user.id, {
         now,
         ttlDays: app.config.sessionTtlDays,
@@ -124,6 +147,93 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         request.body.newPassword,
         app.now(),
       );
+      return reply.status(204).send();
+    },
+  );
+
+  // ── 2-Faktor-Anmeldung ──────────────────────────────────────────────────
+  app.post(
+    '/auth/2fa/verify',
+    {
+      config: { rateLimit: { max: app.config.loginRateLimit, timeWindow: '1 minute' } },
+      schema: {
+        body: z.object({
+          challenge: z.string().min(20).max(200),
+          code: z.string().trim().min(6).max(20),
+        }),
+      },
+    },
+    async (request): Promise<LoginResponse> => {
+      const now = app.now();
+      const userId = await completeChallenge(
+        app.db,
+        app.config,
+        request.body.challenge,
+        request.body.code,
+        now,
+      );
+      const [user] = await app.db.select().from(s.users).where(eq(s.users.id, userId));
+      const actor = await loadActor(
+        app.db,
+        {
+          sessionId: '',
+          id: user!.id,
+          email: user!.email,
+          displayName: user!.displayName,
+          twoFactorEnabled: true,
+        },
+        now,
+        app.links,
+      );
+      const session = await createSession(app.db, user!.id, {
+        now,
+        ttlDays: app.config.sessionTtlDays,
+        userAgent: request.headers['user-agent'],
+      });
+      await app.db.update(s.users).set({ lastLoginAt: now }).where(eq(s.users.id, user!.id));
+      return {
+        token: session.token,
+        expiresAt: session.expiresAt.toISOString(),
+        me: await buildMe(app.db, actor),
+      };
+    },
+  );
+
+  app.get(
+    '/auth/2fa',
+    { preHandler: app.authenticate },
+    async (request): Promise<TwoFactorStatus> => getTwoFactorStatus(app.db, request.actor!),
+  );
+
+  app.post(
+    '/auth/2fa/setup',
+    { preHandler: app.authenticate },
+    async (request): Promise<TwoFactorSetup> => startSetup(app.db, request.actor!, app.config),
+  );
+
+  app.post(
+    '/auth/2fa/enable',
+    {
+      preHandler: app.authenticate,
+      schema: { body: z.object({ code: z.string().trim().min(6).max(10) }) },
+    },
+    async (request) =>
+      enableTwoFactor(app.db, request.actor!, app.config, request.body.code, app.now()),
+  );
+
+  app.post(
+    '/auth/2fa/disable',
+    {
+      preHandler: app.authenticate,
+      schema: {
+        body: z.object({
+          password: z.string().min(1).max(200),
+          code: z.string().trim().min(6).max(20),
+        }),
+      },
+    },
+    async (request, reply) => {
+      await disableTwoFactor(app.db, request.actor!, app.config, request.body, app.now());
       return reply.status(204).send();
     },
   );

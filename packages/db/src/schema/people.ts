@@ -1,5 +1,6 @@
 import {
   date,
+  integer,
   index,
   pgTable,
   primaryKey,
@@ -32,6 +33,8 @@ export const users = pgTable('users', {
   totpPendingSecret: text(),
   /** Gehashte Wiederherstellungscodes, je Code einmal verwendbar */
   recoveryCodes: text().array(),
+  /** Zuletzt angenommener TOTP-Zeitschritt (verhindert die Wiederverwendung eines Codes) */
+  totpLastStep: integer(),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });

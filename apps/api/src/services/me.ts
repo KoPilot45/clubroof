@@ -6,6 +6,7 @@ import { loadScopeContext, targetsWith } from './scopes';
 import { adminPermissions } from './admin';
 import { newsPermissions } from './editorial';
 import { canInvite } from './invitations';
+import { twoFactorMissing } from './two-factor';
 
 /** Rollen, die den Verwaltungsmodus öffnen (Trainer verwalten ihre Teams in der App selbst). */
 const ADMIN_ROLES = new Set([
@@ -75,6 +76,10 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
     },
     canManageClub: actorCan(actor, 'club.settings.manage'),
     canInvite: canInvite(actor),
+    security: {
+      twoFactorEnabled: actor.user.twoFactorEnabled === true,
+      twoFactorRequired: twoFactorMissing(actor),
+    },
     clubModules: MODULES.filter((mod) => moduleEnabled(actor, mod.key)).map((mod) => mod.key),
   };
 }
