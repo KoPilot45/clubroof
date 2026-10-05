@@ -3,6 +3,7 @@
  * damit beide Seiten immer dieselbe Struktur erwarten. Zeitpunkte sind ISO-8601-Strings (UTC).
  */
 import type {
+  AbsenceKind,
   AnnouncementPriority,
   AttendanceStatus,
   EventType,
@@ -40,6 +41,8 @@ export type MyTeam = {
   /** Person (ich selbst oder mein Kind), über die ich zu dieser Mannschaft gehöre */
   personId: string;
   functions: TeamFunction[];
+  /** Für diese Mannschaft aktivierte Module (bestimmen die Kacheln im Team-Bereich) */
+  modules: string[];
 };
 
 export type MeResponse = {
@@ -51,6 +54,8 @@ export type MeResponse = {
   roles: { key: string; name: string; scopeType: ScopeType; scopeId: string | null }[];
   /** Ob der Nutzer den Verwaltungsmodus betreten darf */
   canAdminister: boolean;
+  /** Auf Vereinsebene aktivierte Module (bestimmen die Kacheln im Vereinsbereich) */
+  clubModules: string[];
 };
 
 export type LoginResponse = { token: string; expiresAt: string; me: MeResponse };
@@ -122,6 +127,7 @@ export type NewsItem = {
   publishedAt: string;
   viewCount: number;
   likeCount: number;
+  likedByMe: boolean;
 };
 
 export type ActionItem = {
@@ -172,6 +178,49 @@ export type NotificationItem = {
   createdAt: string;
   readAt: string | null;
   doneAt: string | null;
+};
+
+export type Absence = {
+  id: string;
+  personId: string;
+  personName: string;
+  kind: AbsenceKind;
+  startsOn: string;
+  endsOn: string;
+  /** Leer = gilt für alle Mannschaften der Person */
+  teams: { id: string; badge: string }[];
+  note: string | null;
+  /** Anzahl der Termine, für die dadurch automatisch abgesagt wurde */
+  affectedEvents: number;
+};
+
+export type CreateAbsenceInput = {
+  personId: string;
+  kind: AbsenceKind;
+  startsOn: string;
+  endsOn: string;
+  teamIds?: string[] | null;
+  note?: string | null;
+};
+
+export type PollSummary = {
+  id: string;
+  question: string;
+  source: { type: ScopeType; label: string };
+  closesAt: string | null;
+  isOpen: boolean;
+  votes: number;
+  /** Gewählte Option, falls bereits abgestimmt */
+  myOptionId: string | null;
+};
+
+export type PollDetail = PollSummary & {
+  description: string | null;
+  createdBy: string | null;
+  resultVisibility: 'always' | 'after_vote' | 'after_close';
+  /** Ob Ergebnisse für den Nutzer sichtbar sind */
+  resultsVisible: boolean;
+  options: { id: string; label: string; votes: number | null }[];
 };
 
 export type ApiError = { error: string; message: string };

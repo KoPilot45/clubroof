@@ -118,3 +118,33 @@ export const notifications = pgTable(
   },
   (t) => [index().on(t.userId, t.createdAt)],
 );
+
+/** Gelesen-Markierung je Nutzer (Grundlage für Aufrufe und optionale Lesebestätigung). */
+export const announcementReads = pgTable(
+  'announcement_reads',
+  {
+    announcementId: uuid()
+      .notNull()
+      .references(() => announcements.id, { onDelete: 'cascade' }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    readAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.announcementId, t.userId] })],
+);
+
+/** „Gefällt mir“ je Nutzer. */
+export const announcementLikes = pgTable(
+  'announcement_likes',
+  {
+    announcementId: uuid()
+      .notNull()
+      .references(() => announcements.id, { onDelete: 'cascade' }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.announcementId, t.userId] })],
+);

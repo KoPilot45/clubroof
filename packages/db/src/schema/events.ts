@@ -1,4 +1,5 @@
 import {
+  type AnyPgColumn,
   boolean,
   date,
   index,
@@ -90,6 +91,8 @@ export const eventParticipants = pgTable(
     reason: text(),
     /** Bei Gastspielern: Stammteam, aus dem der Spieler abgestellt wurde. */
     guestFromTeamId: uuid().references(() => teams.id, { onDelete: 'set null' }),
+    /** Abwesenheit, die diese Absage automatisch ausgelöst hat (wird beim Löschen zurückgenommen). */
+    absenceId: uuid().references((): AnyPgColumn => absences.id, { onDelete: 'set null' }),
     respondedAt: timestamp({ withTimezone: true }),
     /** Person, die geantwortet hat (Spieler selbst, Elternteil oder Trainer stellvertretend). */
     respondedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),

@@ -773,7 +773,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     // ── Abwesenheiten ─────────────────────────────────────────────────────────────────────
     const pick = (team: TeamKey, index: number) =>
       teamMembers[team].filter((m) => m.fn === 'player')[index]!.person;
-    const absences: (Insert<typeof s.absences> & { personId: string })[] = [
+    const absences: (Insert<typeof s.absences> & { id?: string; personId: string })[] = [
       {
         clubId,
         personId: pick('h1', 6).id,
@@ -842,7 +842,10 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         endsOn: toIsoDate(addDays(today, 9)),
       },
     ];
-    for (const a of absences) a.createdByPersonId = a.personId;
+    for (const a of absences) {
+      a.id = randomUUID();
+      a.createdByPersonId = a.personId;
+    }
     await tx.insert(s.absences).values(absences);
 
     function absenceOn(personId: string, day: string) {
@@ -957,6 +960,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
           reason,
           respondedAt,
           respondedByPersonId: respondedAt ? (guardianOf.get(personId) ?? personId) : null,
+          absenceId: absence?.id ?? null,
         });
       }
     }
