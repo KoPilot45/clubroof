@@ -8,6 +8,7 @@ import { loadActor } from '../actor';
 import { createSession, deleteSession } from '../auth/session';
 import { HttpError } from '../errors';
 import { changePassword, requestPasswordReset, resetPassword } from '../services/account';
+import { pendingRequestState } from '../services/invitations';
 import { buildMe } from '../services/me';
 
 const invalidLogin = () =>
@@ -36,6 +37,26 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       if (!user || !user.passwordHash || !ok) throw invalidLogin();
 
       const now = app.now();
+      // Konto ohne Vereinszuordnung: Beitrittsanfrage noch offen oder abgelehnt?
+      const [linked] = await app.db
+        .select({ id: s.persons.id })
+        .from(s.persons)
+        .where(eq(s.persons.userId, user.id));
+      if (!linked) {
+        const state = await pendingRequestState(app.db, user.id);
+        if (state === 'pending')
+          throw new HttpError(
+            403,
+            'request_pending',
+            'Deine Beitrittsanfrage wartet noch auf Freigabe durch den Verein.',
+          );
+        if (state === 'rejected')
+          throw new HttpError(
+            403,
+            'request_rejected',
+            'Deine Beitrittsanfrage wurde nicht freigegeben.',
+          );
+      }
       // Zuerst prüfen, ob das Konto noch zu einem aktiven Mitglied gehört – erst dann Sitzung anlegen
       const actor = await loadActor(
         app.db,

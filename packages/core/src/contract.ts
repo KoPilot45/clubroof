@@ -67,6 +67,8 @@ export type MeResponse = {
   create: { polls: UploadTarget[]; documents: UploadTarget[] };
   /** Vereinslogo und Stammdaten ändern */
   canManageClub: boolean;
+  /** Personen einladen und Beitrittsanfragen freigeben (eigene Mannschaften bzw. Verein) */
+  canInvite: boolean;
   /** News schreiben bzw. ohne Freigabe veröffentlichen (irgendwo im Verein) */
   news: { write: boolean; publish: boolean };
   /** Auf Vereinsebene aktivierte Module (bestimmen die Kacheln im Vereinsbereich) */
@@ -1059,4 +1061,80 @@ export type CreateTransferInput = {
   externalClub?: string | null;
   note?: string | null;
   jerseyNumber?: number | null;
+};
+
+// ── Einladungen und Beitrittsanfragen ────────────────────────────────────
+
+export type InviteLink = {
+  url: string;
+  /** QR-Code als SVG-Text */
+  qrSvg: string;
+  expiresAt: string;
+};
+
+export type InviteTeam = {
+  id: string;
+  badge: string;
+  name: string;
+  /** Aktiver Mannschafts-Link (für Aushang/QR-Code) */
+  link: (InviteLink & { uses: number }) | null;
+};
+
+export type InvitePerson = {
+  personId: string;
+  name: string;
+  /** z. B. „Spieler B1“ oder „Elternteil von Leon (E1)“ */
+  context: string;
+  email: string | null;
+  invitedAt: string | null;
+};
+
+export type JoinRequestItem = {
+  id: string;
+  team: { id: string; badge: string; name: string };
+  relation: 'player' | 'parent';
+  name: string;
+  email: string;
+  birthDate: string | null;
+  child: { name: string; birthDate: string | null } | null;
+  message: string | null;
+  createdAt: string;
+  /** Mögliche bereits angelegte Personen (gleicher Name) ohne App-Zugang */
+  matches: { personId: string; name: string; birthDate: string | null }[];
+  childMatches: { personId: string; name: string; birthDate: string | null }[];
+};
+
+export type InviteOverview = {
+  teams: InviteTeam[];
+  people: InvitePerson[];
+  requests: JoinRequestItem[];
+};
+
+/** Öffentliche Ansicht eines Einladungslinks (ohne Anmeldung) */
+export type JoinInfo = {
+  kind: 'person' | 'team';
+  club: { name: string; shortName: string; colorTheme: ClubInfo['colorTheme']; logoUrl: string | null };
+  team: { badge: string; name: string } | null;
+  person: { firstName: string; email: string | null } | null;
+};
+
+export type AcceptInviteInput = { email: string; password: string };
+
+export type JoinRequestInput = {
+  email: string;
+  password: string;
+  relation: 'player' | 'parent';
+  firstName: string;
+  lastName: string;
+  birthDate?: string | null;
+  childFirstName?: string | null;
+  childLastName?: string | null;
+  childBirthDate?: string | null;
+  message?: string | null;
+};
+
+export type ApproveJoinInput = {
+  /** Bestehende Person verknüpfen statt neu anzulegen */
+  personId?: string | null;
+  childPersonId?: string | null;
 };

@@ -11,6 +11,9 @@ import type {
   MemberListItem,
   RoleCatalog,
   DemandDetail,
+  InviteLink,
+  InviteOverview,
+  JoinInfo,
   JerseySettings,
   MatchSheet,
   TransferOverview,
@@ -2296,6 +2299,169 @@ describe.skipIf(!url)('API', () => {
       expect(changed.status).toBe(204);
       expect((await get<LoginResponse['me']>('/me', tokenNew)).user.email).toBe(email('eltern'));
       await login('eltern');
+    });
+  });
+
+  describe('Einladungen und Beitrittsanfragen', () => {
+    const tokenOf = (url: string) => url.split('/join/')[1]!;
+    const PW = 'Flutlicht-Abend-2026';
+    const pub = (method: 'GET' | 'POST', url: string, payload?: object) =>
+      app.inject({ method, url, ...(payload ? { payload } : {}) });
+
+    it('persönliche Einladung: Link per E-Mail, Konto anlegen, sofort angemeldet', async () => {
+      const coach = await login('trainer');
+      const denied = await app.inject({
+        method: 'GET',
+        url: '/invitations',
+        headers: { authorization: `Bearer ${(await login('spieler')).token}` },
+      });
+      expect(denied.statusCode).toBe(403);
+      expect(coach.me.canInvite).toBe(true);
+
+      const overview = await get<InviteOverview>('/invitations', coach.token);
+      expect(overview.teams.map((t) => t.badge).sort()).toEqual(['B1', 'C1']);
+      const parent = overview.people.find((p) => p.context.startsWith('Elternteil'))!;
+      expect(parent).toBeDefined();
+
+      const created = await send<InviteLink>('POST', '/invitations/person', coach.token, {
+        personId: parent.personId,
+        email: 'eltern.neu@example.org',
+        send: true,
+      });
+      expect(created.status).toBe(201);
+      expect(mailer.outbox.at(-1)!.text).toContain(created.body.url);
+      const token = tokenOf(created.body.url);
+
+      const info = await pub('GET', `/join/${token}`);
+      expect(info.json<JoinInfo>()).toMatchObject({
+        kind: 'person',
+        person: { email: 'eltern.neu@example.org' },
+      });
+      expect(
+        (
+          await pub('POST', `/join/${token}/accept`, {
+            email: 'eltern.neu@example.org',
+            password: 'kurz',
+          })
+        ).statusCode,
+      ).toBe(400);
+      expect(
+        (await pub('POST', `/join/${token}/accept`, { email: email('trainer'), password: PW }))
+          .statusCode,
+      ).toBe(409);
+      const accepted = await pub('POST', `/join/${token}/accept`, {
+        email: 'eltern.neu@example.org',
+        password: PW,
+      });
+      expect(accepted.statusCode).toBe(200);
+      expect(accepted.json<LoginResponse>().me.person.id).toBe(parent.personId);
+      expect(accepted.json<LoginResponse>().me.managedPersons.length).toBeGreaterThan(1);
+      expect((await pub('GET', `/join/${token}`)).statusCode).toBe(410);
+      expect(
+        (await pub('POST', `/join/${token}/accept`, { email: 'x@example.org', password: PW }))
+          .statusCode,
+      ).toBe(410);
+
+      // Personen außerhalb der eigenen Mannschaften nicht einladbar
+      const admin = await login('admin');
+      const outsider = (await get<MemberListItem[]>('/admin/members', admin.token)).find(
+        (m) => !m.hasAccount && m.teams.length > 0 && m.teams.every((t) => t.badge === '1.'),
+      )!;
+      const foreign = await send('POST', '/invitations/person', coach.token, {
+        personId: outsider.id,
+        send: false,
+      });
+      expect(foreign.status).toBe(404);
+    });
+
+    it('Mannschafts-Link mit QR-Code: Anfrage, Freigabe, Ablehnung', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const created = await send<InviteLink>('POST', `/teams/${b1.id}/invite-link`, coach.token);
+      expect(created.body.qrSvg).toContain('<svg');
+      const overview = await get<InviteOverview>('/invitations', coach.token);
+      expect(overview.teams.find((t) => t.id === b1.id)!.link!.url).toBe(created.body.url);
+      const token = tokenOf(created.body.url);
+      expect((await pub('GET', `/join/${token}`)).json<JoinInfo>()).toMatchObject({
+        kind: 'team',
+        team: { badge: 'B1' },
+      });
+
+      // Neuer Spieler fragt an → wartet auf Freigabe
+      const asked = await pub('POST', `/join/${token}/request`, {
+        email: 'neu.spieler@example.org',
+        password: PW,
+        relation: 'player',
+        firstName: 'Noah',
+        lastName: 'Neuling',
+        birthDate: '2010-05-01',
+      });
+      expect(asked.statusCode).toBe(202);
+      const early = await pub('POST', '/auth/login', {
+        email: 'neu.spieler@example.org',
+        password: PW,
+      });
+      expect(early.statusCode).toBe(403);
+      expect(early.json().error).toBe('request_pending');
+      const notes = await get<NotificationItem[]>('/notifications', coach.token);
+      expect(notes.some((n) => n.title === 'Beitrittsanfrage B1')).toBe(true);
+
+      // Elternteil meldet ein Kind an
+      await pub('POST', `/join/${token}/request`, {
+        email: 'mama.neu@example.org',
+        password: PW,
+        relation: 'parent',
+        firstName: 'Nina',
+        lastName: 'Neumann',
+        childFirstName: 'Nils',
+        childLastName: 'Neumann',
+        childBirthDate: '2010-09-09',
+      });
+      // Und eine Anfrage, die abgelehnt wird
+      await pub('POST', `/join/${token}/request`, {
+        email: 'fremd@example.org',
+        password: PW,
+        relation: 'player',
+        firstName: 'Fritz',
+        lastName: 'Fremd',
+      });
+
+      const pending = (await get<InviteOverview>('/invitations', coach.token)).requests;
+      expect(pending).toHaveLength(3);
+      const player = pending.find((r) => r.name === 'Noah Neuling')!;
+      const parentReq = pending.find((r) => r.relation === 'parent')!;
+      const other = pending.find((r) => r.name === 'Fritz Fremd')!;
+
+      await send('POST', `/join-requests/${player.id}/approve`, coach.token, {});
+      const noah = await pub('POST', '/auth/login', {
+        email: 'neu.spieler@example.org',
+        password: PW,
+      });
+      expect(noah.statusCode).toBe(200);
+      expect(noah.json<LoginResponse>().me.teams.map((t) => t.badge)).toEqual(['B1']);
+
+      await send('POST', `/join-requests/${parentReq.id}/approve`, coach.token, {});
+      const mama = (
+        await pub('POST', '/auth/login', { email: 'mama.neu@example.org', password: PW })
+      ).json<LoginResponse>();
+      expect(mama.me.managedPersons.map((p) => p.firstName)).toContain('Nils');
+      expect(mama.me.teams.some((t) => t.badge === 'B1')).toBe(true);
+
+      await send('POST', `/join-requests/${other.id}/reject`, coach.token, {
+        note: 'Bitte zuerst zum Probetraining kommen.',
+      });
+      const rejected = await pub('POST', '/auth/login', {
+        email: 'fremd@example.org',
+        password: PW,
+      });
+      expect(rejected.json().error).toBe('request_rejected');
+      expect(
+        (await send('POST', `/join-requests/${other.id}/approve`, coach.token, {})).status,
+      ).toBe(409);
+
+      // Link zurückziehen
+      await send('DELETE', `/teams/${b1.id}/invite-link`, coach.token);
+      expect((await pub('GET', `/join/${token}`)).statusCode).toBe(410);
     });
   });
 
