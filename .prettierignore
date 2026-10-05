@@ -4,3 +4,4 @@ pnpm-lock.yaml
 docs/**
 apps/mobile/dist
 apps/mobile/.expo
+apps/mobile/expo-env.d.ts
