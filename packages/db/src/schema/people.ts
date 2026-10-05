@@ -1,0 +1,78 @@
+import {
+  date,
+  index,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from 'drizzle-orm/pg-core';
+import { clubs } from './club';
+import {
+  contactVisibilityEnum,
+  createdAt,
+  id,
+  membershipStatusEnum,
+  preferredFootEnum,
+  updatedAt,
+} from './_shared';
+
+/** Login-Konto. Bewusst vereinsübergreifend, damit die Plattform später mehrere Vereine bedienen kann. */
+export const users = pgTable('users', {
+  id: id(),
+  email: text().notNull().unique(),
+  displayName: text().notNull(),
+  passwordHash: text(),
+  lastLoginAt: timestamp({ withTimezone: true }),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+/**
+ * Reale Person im Verein. Bleibt über Mannschaftswechsel und Saisons hinweg bestehen.
+ * Kinder haben in der Regel kein eigenes Login (`userId` leer) und werden über Eltern verwaltet.
+ */
+export const persons = pgTable(
+  'persons',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    userId: uuid().references(() => users.id, { onDelete: 'set null' }),
+    firstName: text().notNull(),
+    lastName: text().notNull(),
+    birthDate: date(),
+    email: text(),
+    phone: text(),
+    avatarUrl: text(),
+    memberNumber: text(),
+    memberSince: date(),
+    membershipStatus: membershipStatusEnum().notNull().default('active'),
+    contactVisibility: contactVisibilityEnum().notNull().default('team_and_coaches'),
+    preferredFoot: preferredFootEnum(),
+    position: text(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index().on(t.clubId), index().on(t.userId), unique().on(t.clubId, t.userId)],
+);
+
+/** Eltern-Kind-Verknüpfung (Elternzugang). */
+export const guardianships = pgTable(
+  'guardianships',
+  {
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    guardianPersonId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    childPersonId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.guardianPersonId, t.childPersonId] }), index().on(t.clubId)],
+);
