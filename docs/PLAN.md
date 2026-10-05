@@ -1,302 +1,278 @@
 # Clubroof – Analyse & Entwicklungsplan
 
 > „Dein Verein unter einem Dach.“
-> Stand: 05.10.2026 · Grundlage: *Clubroof Verkaufsmappe* (18 Seiten)
+> Stand: 05.10.2026 · Grundlagen:
+> 1. *Clubroof Verkaufsmappe* (18 Seiten, Mockups & Positionierung)
+> 2. *VereinsApp – Konzept & Systemarchitektur*, überarbeitet, Stand August 2026 (21 Seiten) – **maßgeblich bei Widersprüchen**
 
 ---
 
-## 1. Analyse der Verkaufsmappe
+## 1. Produktverständnis
 
-### 1.1 Produktvision
+### 1.1 Kernidee
 
-Clubroof ist eine **Vereins-App für den ganzen Verein** (nicht nur eine Mannschaft), die Excel-Listen,
-Kassenbücher, Zettel und WhatsApp-Gruppen ersetzt. Zielgruppe sind Amateur-Sportvereine – die Mockups
-zeigen klar **Fußball** (Kreisliga, Jugend U11–U17, Bambini, Alte Herren).
+Eine **modulare, vereinsweite Fußball-App**: eine zentrale digitale Vereinsstruktur, innerhalb der jede Mannschaft
+ihre eigene, individuell konfigurierte Team-App besitzt. Abgrenzung: nicht „mehr Features als SpielerPlus“, sondern
+eine echte Vereinsebene mit zentralem Datenmodell, rollenbasierten Verwaltungsabläufen, teamübergreifender Planung.
 
-Die sechs Leitprinzipien aus der Mappe sind gleichzeitig **Architektur-Anforderungen**:
+### 1.2 Ein Verein – später mehrere (aber getrennt)
 
-| Prinzip (Mappe)                    | Technische Konsequenz                                                         |
-| ---------------------------------- | ----------------------------------------------------------------------------- |
-| Ein Dach, alle Perspektiven        | Rollen- & Kontext-basiertes UI (Home sieht je Rolle anders aus)               |
-| Verwaltung, die mitdenkt           | Automatisierung: Absagefristen, Auto-Zusage, Erinnerungen (Server-Jobs)       |
-| Transparenz statt Rückfragen       | Feingranulare Leserechte (Kasse, Platz, Gastspieler „für die richtigen Augen“) |
-| Vom Bambini bis zur Ersten         | Hierarchie Verein → Bereich → Mannschaft, skalierbar auf 20+ Teams / 500+ Mitglieder |
-| Kommunikation mit Relevanz         | Zielgruppen-genaue Benachrichtigungen, Kategorien, Ruhezeiten                 |
-| Wachstum mit Ansage                | **Feature-Module pro Verein**, standardmäßig deaktiviert, vom Admin freischaltbar |
+- **Start: ein Verein.** Die App ist *die* App dieses Vereins; Nutzer gehören genau diesem Verein an.
+- **Kein Vereins-Umschalter in der App.** (Der Pfeil ▾ neben dem Vereinsnamen in den Mockups ist kein bestätigtes
+  Feature und wird nicht umgesetzt, solange nicht ausdrücklich gewünscht.)
+- **Später (Phase 5 „Multi-Club“):** dieselbe Plattform wird an weitere Vereine verkauft (Abo je Verein,
+  59,99–99,99 €/Monat laut Finanzmodell). Jeder Verein ist ein eigener, sauber getrennter Mandant.
+- **Konsequenz für die Architektur:** Jeder zentrale Datensatz trägt von Anfang an eine `club_id`. Die Ausrollung
+  auf weitere Vereine wird damit eine Skalierungs- statt einer Umbaufrage – ohne dass Nutzer im MVP etwas davon merken.
 
-### 1.2 Navigation & Design
+### 1.3 Produktprinzipien (Konzept §1) und ihre technische Folge
 
-- **Bottom-Tab-Navigation** mit 4 Tabs: `Home` · `Team` · `Verein` · `Mehr`
-- Header: Vereinswappen, „Hallo, {Name}“, **Vereins-Umschalter** (▾ → ein Nutzer kann in mehreren Vereinen sein), Glocke, Avatar
-- „Mehr“ enthält Profil, Einstellungen und den **geschützten Admin-Bereich** („Verwaltung“, Admin-Modus-Badge)
-- Visuelle Sprache: Weiß, Grün als Primärfarbe (Beispiel-Verein `#11882E`, Marke Clubroof hellgrün), Karten mit
-  „Alle anzeigen ›“, Status-Chips (Spiel / Training / Event / Wichtig), Countdown-Elemente, Fortschrittsbalken
-- **Vereinsfarbe ist konfigurierbar** (Ersteinrichtung „Primärfarbe“) → Theming zur Laufzeit nötig
-- Schrift vermutlich *Poppins* (Marketing) – für die App prüfen
+| Prinzip | Technische Konsequenz |
+| --- | --- |
+| Personen gehören dem Verein; Teamzuordnungen sind zeitlich und rollenbezogen | `Person` ≠ `User`; `TeamMembership` mit Zeitraum, Saison-Historie; Profil überlebt Mannschaftswechsel |
+| Komplexität verbergen; Admins wechseln bewusst in einen Arbeitsmodus | Getrennte Navigation „Verwaltungsmodus“ mit „Zur App zurück“ |
+| Module konfigurierbar (1. Mannschaft ≠ Bambini) | Modul-/Einstellungssystem mit Vererbung Verein → Bereich → Mannschaft → Nutzer |
+| Push auf das notwendige Minimum | Prioritätsebenen, Opt-in für zusätzliche Kategorien, Sammelhinweise für Trainer |
+| Kommunikation zweckgebunden – kein Messenger | Kein Gruppenchat; nur News, Umfragen, Anfragen/Freigaben, Mini-Forum |
+| Neue Funktionen nur bewusst aktivieren | Update-Center, neue Module standardmäßig aus, versionierte Konfigurationen |
 
-### 1.3 Rollen
+### 1.4 Navigation
 
-| Rolle                   | Sieht/Tut (laut Mappe)                                                         |
-| ----------------------- | ------------------------------------------------------------------------------- |
-| Vorstand / Admin        | Vereinsüberblick, Freigaben, Verwaltung, Rollen & Rechte, Module                 |
-| Abteilungs-/Jugendleitung | Bereich (Senioren/Jugend/Bambini), erstellt Umfragen/News                     |
-| Trainer / Co-Trainer    | Mehrere Teams, Kader, Trainingsplanung, Gastspielerbedarf, Teamkasse             |
-| Kassenwart              | Vereins-/Teamkasse, Buchungen, Berichte                                          |
-| Spieler                 | Eigene Termine, Zu-/Absage, Abwesenheit, Statistik, Profil                       |
-| Elternteil              | Nur was das **eigene Kind** betrifft (Elternzugänge pro Team aktivierbar)        |
-| Mitglied / Helfer       | Vereinsbereich, Events, Helfereinsätze                                           |
+Vier Lebensbereiche + separater Verwaltungsmodus:
 
-Eine Person kann **mehrere Rollen in mehreren Teams** haben (z. B. „Spieler“ in Herren II + „Trainer“ in E1).
+| Tab | Frage | Inhalte |
+| --- | --- | --- |
+| **Home** (personenbezogen) | Was ist für mich jetzt relevant? | Widgets: News, nächste Termine, offene Aktionen, persönliche Kasse, Umfragen, persönliche Statistik – zusammengesetzt aus Modulen, Rolle, Alter; sortiert nach Priorität + Betroffenheit + Aktualität |
+| **Team** (mannschaftsbezogen) | Alles zu meiner Mannschaft | Navigation entsteht aus aktivierten Modulen: Übersicht, Termine, Spiele, Training, Kader, Team, Statistik, Kasse, Dokumente/Aufgaben |
+| **Verein** (organisationsbezogen) | Alles über den Gesamtverein | Vereinsübersicht, Mannschaften, Vereinskalender, Ansprechpartner, Dokumente, Helfer & Aufgaben, Mini-Forum |
+| **Mehr** | Persönlicher Einstieg | Profil, Einstellungen, Statistik, Benachrichtigungen, **Verwaltungsmodus** |
 
-### 1.4 Funktionsinventar (aus den Screens)
+**Verwaltungsmodus** („App in der App“): eigene Navigation, dichtere Darstellung, Arbeitsbereiche
+*Organisation* (News, Umfragen, Veranstaltungen, Mitglieder, Rollen, Dokumente, Freigaben),
+*Sport* (Mannschaften, Spieler, Trainer, Saisonplanung, Spielerbewegungen, Gastspielerbedarf),
+*Betrieb* (Plätze, Kabinen, Material, Schlüssel, Aufgaben, Sperrungen),
+*Kontrolle* (Audit-Log, offene Vorgänge, Import-/Sync-Status, Update-Center).
 
-| # | Bereich                  | Funktionen                                                                                                    |
-| - | ------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| 1 | **Home**                 | Nächstes Spiel mit Countdown, „Neuigkeiten für dich“, nächste Termine, offene Aktionen, Teamkasse-Kachel, Vorstand: Vereinskennzahlen |
-| 2 | **Team**                 | „Meine Teams“ (Zusagequote, offene Aufgaben), Team-Cockpit mit Tabs Übersicht/Termine/Kader/Statistik, Kaderstatus, letzte Ergebnisse, Trainingswoche, Highlights (Tabellenplatz, Tore, Trainingsquote) |
-| 3 | **Spielbetrieb**         | Spieldetails (Anstoß, Treffpunkt, Spielort, Trainer-Info), Zu-/Absage, **Absagefrist mit Countdown**, Teilnehmerübersicht, Kalender-Export |
-| 4 | **Abwesenheit**          | Urlaub / Verletzt / Gesperrt / Sonstiges, Zeitraum, für alle oder ausgewählte Teams, Notiz                    |
-| 5 | **Verein**               | Nächstes Vereinsevent, Vereinsnews, „Heute auf der Anlage“, Helfer gesucht, Austausch (Forum)                 |
-| 6 | **News**                 | Artikel mit Bild, Kategorie, Aufrufe, Likes, Freigabe-Workflow (Entwürfe → „Vereinsnews freigeben“)           |
-| 7 | **Umfragen**             | Einfach-Auswahl, Abstimmfrist, Ergebnisse ggf. bis Fristende verborgen, Teilnehmerzahl                        |
-| 8 | **Events & Ehrenamt**    | Eventseite mit Programm, Ort, Ansprechpartner, Teilnahme; Helfer-Schichten mit Kapazität (4/6 Helfer)          |
-| 9 | **Platzbelegung**        | Ressourcen (Plätze, Kunstrasen, Halle) × Tag/Woche/Monat, Typen Spiel/Training/Kurs/Event/Gesperrt, **Konfliktwarnung** |
-| 10 | **Finanzen**            | Mannschaftskasse: Kassenstand, Einnahmen/Ausgaben, Buchungen mit Kategorie, Bericht-Export                    |
-| 11 | **Dokumente**           | Kategorien (Ordnungen, Formulare, Trainingspläne, Sonstiges), Filter Verein/Mannschaft/Training, Suche, Upload |
-| 12 | **Profile**             | Mein Profil, Spielerprofil (Verfügbarkeit, Saisonstatistik, Rückennummer, starker Fuß, Position, Sichtbarkeit Kontaktdaten, Haupt-/Zusatzteam) |
-| 13 | **Benachrichtigungen**  | Inbox gruppiert (Dringend / Heute / Früher), Filter, Einstellungen je Kategorie & je Team, Erinnerungszeitpunkt, Ruhezeiten |
-| 14 | **Verwaltung (Admin)**  | Kennzahlen, News & Umfragen, Spielerbewegungen (Zu-/Abgänge, Leihe), Gastspielerbörse, Veranstaltungen, Rollen & Rechte, Updates & Features |
-| 15 | **Gastspielerbörse**    | Teams melden Bedarf / bieten Spieler an, Anfragen prüfen, Entscheidung beim verantwortlichen Trainer           |
-| 16 | **Einrichtung**         | Vereins-Wizard (5 Schritte: Verein, Bereiche, Admins, Einstellungen, Übersicht), Team-Wizard (Teaminfo, Einstellungen, Kader, Training, Übersicht) mit Auto-Zusage, Absagefristen, Teamkasse, Gastspieler, feste Rückennummern, Elternzugänge |
-| 17 | **Feature-Module**      | Trainingsplanung, Vereinsforum, Helfermodul, Kalenderexport, Erweiterte Spielerentwicklung – je aktiv/deaktiviert/einrichten |
+**Design-Regeln:** Farben tragen Bedeutung (rot = dringend, orange = Aktion, blau = Organisation, grün = erledigt,
+grau = archiviert); Mannschafts-Badges (B1, C2, 1., AH); feste Tags für Quelle (Verein, Jugend, Senioren, Team) und
+Typ (Info, Wichtig, Spiel, Training, Veranstaltung, Umfrage, Aufgabe); einheitliche Icons. Vereinsdesign wählbar
+(Primär-/Akzentfarbe, hell/dunkel/automatisch) **mit automatischer Lesbarkeitsprüfung**.
 
-### 1.5 Was die Mappe *nicht* beantwortet (offene Punkte)
+### 1.5 Rollen (Konzept §7)
 
-1. **Sportarten:** Nur Fußball oder von Beginn an sportartneutral (Handball, Tennis …)?
-2. **Geschäftsmodell:** Preis pro Verein / Mitgliederstaffel / Freemium? (relevant für App-Store-Regeln, s. §6)
-3. **Web-Oberfläche** für Vorstand/Kassenwart (große Tabellen, Export) – gewünscht?
-4. **Integrationen:** fussball.de / DFBnet (Spielpläne, Ergebnisse, Tabellen), Kalender, Mitgliederverwaltung-Import (CSV)?
-5. **Mitgliedsbeiträge / Zahlungen** (SEPA, Stripe) – oder nur Kassenbuch?
-6. **Chat:** Die Mappe positioniert sich bewusst *gegen* Chat-Rauschen → Annahme: **kein 1:1-/Gruppenchat im MVP**, nur News, Umfragen, Forum.
-7. **Team & Budget:** Wer entwickelt (solo, Agentur, Team)? Zeitrahmen bis zum Pilotverein?
-8. **Markenassets:** Logo als SVG, Farbwerte, Schriftlizenzen.
+Rollen sind **Sammlungen von Berechtigungen für definierte Bereiche**, keine starren Menüpakete; ein Nutzer kann
+mehrere Rollen gleichzeitig haben.
+
+| Rolle | Typische Verwaltungsfunktionen |
+| --- | --- |
+| Fulladmin | gesamter Verein, Rollen, Module, Kommunikation, Systemeinstellungen, Updates |
+| Vorstand/Vereinsleitung | Vereinsmonitor, Kommunikation, Mitglieder, Veranstaltungen, Dokumente |
+| Sportliche Leitung | Kadergrößen, Spielerbewegungen, Trainer, Saisonplanung, Gastspielerlogik |
+| Jugendleitung | Jugendteams, Trainerbedarf, Jahrgangsplanung, Saisonwechsel, Jugendkommunikation |
+| Trainer | eigene Mannschaft, Termine, Kader, Training, Team, Bedarf/Angebote, Statistik |
+| Kassenwart | Mannschaftskasse, Buchungen, Strafen/Getränke, Abrechnung |
+| Platz-/Materialwart | Belegung, Sperrungen, Material, Schlüssel, Schäden, Aufgaben |
+| Mitgliederverwaltung | Stammdaten, Ein-/Austritte, Profilprüfung, Mannschaftszuordnung |
+| Schiedsrichterobmann | Schiedsrichter, Verfügbarkeit, Zuweisungen, Lehrgänge |
+
+Dazu die Nutzerrollen **Spieler**, **Elternteil** (Eltern-Kind-Verknüpfung), **Mitglied/Helfer**.
+**Datensparsamkeit:** fremde Trainer sehen bei der Gastspielerplanung nur *aggregierte* Verfügbarkeit, nicht den Grund.
+
+### 1.6 Fachlogik, die das Konzept präzisiert
+
+**Teilnahme-Modelle (je Mannschaft):**
+- *Automatische Zusage* – alle gelten als dabei, Countdown bis Absagefrist (z. B. Senioren)
+- *Aktive Zu-/Absage* – jeder muss reagieren (z. B. Jugend/Eltern)
+- *Nur Abwesenheiten* – keine Terminreaktion, globale Abwesenheiten steuern Verfügbarkeit
+
+**Absagefristen** je Mannschaft *und* Terminart (Training 2 h vorher, Spiel Freitag 18:00, Turnier 3 Tage);
+nach Ablauf ist reguläre Absage gesperrt, Trainer können korrigieren.
+
+**Abwesenheiten** (Urlaub, Verletzung, Krankheit, Schule/Beruf) pflegt der Spieler selbst, sie gelten für alle
+relevanten Teams; Trainer dürfen stellvertretend korrigieren; getrennt von terminbezogenen Absagen.
+
+**Gastspieler/Spielerbedarf:** Team meldet Bedarf („2–3 Spieler, bevorzugt Abwehr“), andere Trainer bieten
+Kapazität an („bis zu 2 Spieler“); **der Trainer des abgebenden Teams wählt die Spieler aus**, fremde Trainer fragen
+keine Einzelspieler direkt an. Der Gastspieler bleibt Mitglied seines Stammteams, wird als Event-Teilnehmer
+hinzugefügt; Termin erscheint automatisch in seiner persönlichen Ansicht.
+
+**Benachrichtigungen (Konzept §10):**
+
+| Ebene | Beispiele | Standard |
+| --- | --- | --- |
+| Dringend | kurzfristige Absage, wesentliche Verschiebung | sofortiger Push + Notification |
+| Persönlich wichtig | Gastspielnominierung, Kaderentscheidung, Freigabe | Push je nach Typ / Opt-in |
+| Aktion | Umfrage, Aufgabe, Dokument, Fristerinnerung | Notification; Push optional |
+| Info | News, Ergebnis, Statistik | Notification/Feed, kein Push |
+
+Filter (Alle, Aktionen, Termine, Team, Verein, Verwaltung, Ungelesen), Deep Links, Aktionen verschwinden nach
+Erledigung, Änderungen zeigen alt/neu, **Sammelhinweise für Trainer/Admins** statt Einzelmeldungen.
+
+**Kommunikation (§11):** News (optional Reaktion/Lesebestätigung), Umfragen, Anfragen/Freigaben mit
+zielgerichteten Kommentaren, Mini-Forum (wenige, moderierte Themen; Sichtbarkeit und Schreibrecht getrennt;
+Ablaufdatum). Kein Gruppenchat.
+
+**Einrichtung (§8):** Setup-Assistenten erzeugen Module, Navigation, Rechte und Defaults.
+Konfigurationsprinzipien: *Vererbung* (Verein → Bereich → Mannschaft → Nutzer), *Zustände* (aktiviert / verfügbar
+aber deaktiviert / übergeordnet gesperrt), *Komplexitätsstufen* (Aus / Basis / Erweitert / Individuell),
+*Einladungslogik* (Admin lädt Trainer, Trainer laden Spieler/Eltern), *sichere Aktivierung* (QR/Link, Zuordnung
+wird verifiziert/freigegeben). Mannschafts-Vorlagen: leistungsorientiert, klassisch, Jugend, Freizeit.
+Deaktivieren löscht keine historischen Daten.
+
+**Updates (§13):** Systemupdate automatisch; Funktionsverbesserung behält Verhalten, neue Optionen aus; neues Modul
+standardmäßig deaktiviert. Aktionen „Einrichten / Später / Nicht verwenden“; nur zuständige Rollen sehen relevante Updates.
+
+**Optionaler Modul-Pool (§12):** Trainingsbibliothek, Spielerentwicklung, Belastung · Platz-/Kabinenplanung, Material,
+Trikots, Schlüssel, Schäden, Wiki · Helferdienste, Turniere, Schiedsrichter · Eltern-Kind-Accounts, Fahrdienste,
+Probetraining · Fundbüro, Marktplatz, Forum · Mannschaftskassen, später Mitgliedsbeiträge.
 
 ---
 
-## 2. Technische Empfehlung
+## 2. Technische Architektur
 
-### 2.1 Stack
+### 2.1 Was das Konzept vorgibt
 
-| Schicht          | Empfehlung                                                    | Begründung                                                                                   |
-| ---------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Mobile-App       | **React Native + Expo (SDK aktuell), TypeScript strict**      | Eine Codebasis für iOS & Android, EAS Build/Submit für die Stores, OTA-Updates, großer Talentpool |
-| Navigation       | Expo Router (dateibasiert)                                    | Deep Links (Push → Spieldetail) ohne Zusatzaufwand                                            |
-| UI               | Eigenes Design-System (`packages/ui`) auf Basis von Design-Tokens, z. B. mit Tamagui oder Unistyles | Laufzeit-Theming für Vereinsfarbe, Dark Mode, Konsistenz                                      |
-| State/Data       | TanStack Query + Zod-Schemas                                  | Caching, Offline-Toleranz, Typsicherheit an der API-Grenze                                    |
-| Formulare        | React Hook Form + Zod                                         | Wizards (Vereins-/Team-Einrichtung)                                                          |
-| Backend          | **Supabase (Region EU/Frankfurt)**: Postgres, Auth, Storage, Realtime, Edge Functions | Schneller Start, aber Standard-Postgres → kein Lock-in; **Row Level Security** löst Mandanten- und Rollenrechte direkt in der DB |
-| Jobs/Automatik   | Postgres `pg_cron` + Edge Functions                           | Absagefristen, Erinnerungen, Auto-Zusage, Umfrage-Ende                                       |
-| Push             | Expo Push Service (→ APNs/FCM)                                | Einheitlich für beide Plattformen                                                           |
-| Monitoring       | Sentry (Crashes, Performance)                                 | Pflicht vor erstem externen Nutzer                                                          |
-| Analytics        | PostHog (EU-Hosting) – opt-in                                 | DSGVO-konform, Feature-Flags optional                                                       |
-| i18n             | i18next, Deutsch zuerst                                       | Alle Strings von Tag 1 externalisiert                                                       |
-| Web-Admin (später) | Next.js im selben Monorepo                                  | Wiederverwendung von `core` (Typen, Validierung, API-Client)                                 |
+Modularer Monolith · PostgreSQL · S3-kompatibler Object Storage · Docker/Docker Compose · Caddy/Nginx (nur HTTPS) ·
+selbst verwalteter VPS (z. B. IONOS, ca. 4 vCPU/4 GB) · Backups (Provider + DB-Dump + separater Storage) ·
+Frontend als **Next.js-PWA**, native Apps erst in Phase 5.
 
-**Alternative Flutter:** ebenfalls professionell, aber getrennte Sprache (Dart) zu einem späteren Web-Admin.
-**Alternative eigenes Backend (NestJS + Postgres):** mehr Kontrolle, aber deutlich mehr Aufwand für Auth,
-Storage, Realtime. Empfehlung: mit Supabase starten; Geschäftslogik in SQL-Funktionen/Edge Functions halten, damit ein
-späterer Umzug möglich bleibt.
+Backend-Seite übernehme ich vollständig. **Offen ist die Frontend-Frage**, weil sie mit dem Ziel
+„später im Apple App Store und Google Play“ zusammenhängt:
 
-### 2.2 Repository-Struktur (Monorepo, pnpm + Turborepo)
+### 2.2 Entscheidung: Frontend (PWA vs. App-Store-fähig von Anfang an)
+
+| | A) Next.js-PWA (wie Konzept) | B) Expo / React Native (iOS + Android + Web aus einer Codebasis) |
+| --- | --- | --- |
+| Start | am schnellsten, keine Store-Konten nötig | etwas mehr Setup, Testversionen über TestFlight/Play Testing |
+| Push auf iPhone | nur wenn die PWA zum Home-Bildschirm hinzugefügt wurde (iOS ≥ 16.4), Zustellung weniger zuverlässig | native Push (APNs/FCM), zuverlässig |
+| Weg in die Stores | späterer **Neubau der Oberfläche** nötig; reine „Web-Hüllen“ lehnt Apple häufig ab | bereits erledigt – nur noch veröffentlichen |
+| Web-Version | ja | ja (Expo Web), Verwaltungsmodus auch am PC nutzbar |
+| Aufwand bis Store | doppelt (PWA + später native App) | einmal |
+
+**Empfehlung: B.** Push ist laut Konzept ein Kernbaustein („dringend = sofortiger Push“), und das Store-Ziel steht
+fest. Mit Expo entsteht *eine* Codebasis für iPhone, Android und Browser; der Verein kann trotzdem früh im Browser
+testen. Das Backend bleibt exakt wie im Konzept (eigene API, Postgres, Docker, EU-Hosting).
+
+### 2.3 Stack (bei Entscheidung B)
+
+| Schicht | Wahl |
+| --- | --- |
+| App (iOS/Android/Web) | Expo + Expo Router, TypeScript strict, TanStack Query, React Hook Form + Zod, i18next (de) |
+| Design-System | eigenes `packages/ui` mit Design-Tokens, Laufzeit-Theming (Vereinsfarbe, hell/dunkel), Kontrastprüfung |
+| Backend / API | Node.js + TypeScript, modularer Monolith (z. B. NestJS oder Fastify), REST/OpenAPI mit generiertem, typisiertem Client |
+| Datenbank | PostgreSQL + Prisma oder Drizzle (Migrationen versioniert); Row Level Security als zweite Schutzlinie |
+| Auth | eigene Auth mit sicheren Passwort-Hashes (Argon2) + Magic Link, **2FA für privilegierte Rollen** |
+| Jobs | Queue (z. B. pg-boss auf Postgres) für Fristen, Erinnerungen, Sammelhinweise, Push-Versand |
+| Push | Expo Push (APNs/FCM) + Web Push für Browser |
+| Dateien | S3-kompatibler Storage (z. B. MinIO selbst gehostet oder IONOS S3) |
+| Betrieb | Docker Compose, Caddy, VPS in Deutschland, Backups 3-fach getrennt, Sentry/GlitchTip, Uptime-Monitoring |
+
+### 2.4 Repository-Struktur
 
 ```
 clubroof/
 ├─ apps/
-│  ├─ mobile/            # Expo-App (iOS/Android)
-│  └─ admin-web/         # (Phase 4) Next.js Web-Verwaltung
+│  ├─ mobile/      # Expo-App: iOS, Android, Web
+│  └─ api/         # Backend (modularer Monolith)
 ├─ packages/
-│  ├─ core/              # Domänentypen, Zod-Schemas, Rechte-Logik, Datumslogik
-│  ├─ api/               # Typisierter Supabase-Client, Queries/Mutations
-│  ├─ ui/                # Design-System (Tokens, Komponenten)
-│  └─ config/            # ESLint, TSConfig, Prettier
-├─ supabase/
-│  ├─ migrations/        # SQL-Migrationen (versioniert)
-│  ├─ functions/         # Edge Functions (Push, Einladungen, Jobs)
-│  ├─ tests/             # pgTAP-Tests für RLS-Policies
-│  └─ seed.sql           # Demo-Verein „SV Grün-Weiß“
-├─ docs/                 # Plan, ADRs, Datenschutz-Doku
-└─ .github/workflows/    # CI
+│  ├─ core/        # Domänentypen, Zod-Schemas, Rechte- und Fristenlogik (von App und API geteilt)
+│  ├─ ui/          # Design-System
+│  ├─ api-client/  # generierter, typisierter API-Client
+│  └─ config/      # ESLint, TSConfig, Prettier
+├─ infra/          # Docker Compose, Caddy, Backup-Skripte
+├─ docs/           # Plan, Architekturentscheidungen (ADRs)
+└─ .github/workflows/
 ```
 
-### 2.3 Domänenmodell (Kern)
+Backend-Module (je eigener Ordner mit klaren Schnittstellen): `identity`, `club`, `teams`, `permissions`,
+`modules` (Konfiguration & Vererbung), `events` (Termine/Teilnahme/Abwesenheit), `squad` (Kader/Gastspieler),
+`communication` (News/Umfragen/Forum), `notifications`, `finance`, `documents`, `facilities`, `audit`, `integrations`.
 
-```
-Organisation
-  Club ─┬─ Department (Senioren, Jugend, Bambini …)
-        │     └─ Team (Saison, Liga, Altersklasse, TeamSettings)
-        ├─ ClubSettings (Farbe, Logo, Module)
-        ├─ Facility (Platz 1, Kunstrasen, Halle) ── FacilityBooking
-        └─ ModuleActivation (feature_key, enabled, config)
+### 2.5 Datenmodell (nach Konzept §14, ergänzt)
 
-Personen & Rechte
-  User (Login) ── Person (Profil im Verein) ── Membership(club)
-  RoleAssignment(person, role, scope: club | department | team)
-  GuardianLink(parent_person → child_person)          # Elternzugang
-  Invitation(code/link, Zielrolle, Scope, Ablauf)
+| Objekt | Bedeutung |
+| --- | --- |
+| Club / OrgUnit | Verein; Bereiche Senioren/Jugend/Frauen/AH (Baum) |
+| User | Login, Auth, persönliche Einstellungen |
+| Person | reale Person; bleibt über Mannschaftswechsel bestehen; ein User kann Personen verwalten (Eltern → Kind) |
+| Season | Saisonbezug und Historisierung |
+| Team / TeamMembership | Mannschaft; zeitlich definierte Zuordnung mit Funktion (Spieler, Trainer, Betreuer) |
+| Role / Permission / RoleAssignment | Rolle = Berechtigungsbündel, zugewiesen mit Scope (Verein / Bereich / Team) |
+| ModuleConfig | Modul + Zustand + Komplexitätsstufe + Optionen je Ebene, versioniert |
+| Event / EventParticipant | Training, Spiel, Veranstaltung; Teilnahme inkl. Gastspiel |
+| Absence | globale Abwesenheit einer Person |
+| Match / Squad / Lineup | Spieldaten, Kader, Aufstellung, Ergebnis, Tore/Assists/Karten |
+| PlayerDemand / PlayerOffer | Spielerbedarf und Kapazitätsangebote |
+| Announcement / Poll / Task / ForumTopic | Kommunikation und Aktionen |
+| Notification | Ebene, Status, Zustellung, Erledigung |
+| CashAccount / Transaction | Mannschaftskasse, persönliche Konten, Strafen/Getränke |
+| Document, Facility/Booking, AuditLog, ImportJob | Dokumente, Platzbelegung, Audit, Importe |
 
-Spielbetrieb
-  Event(type: match | training | club_event | meeting, team?, facility?, start, Treffpunkt, Gegner …)
-  Attendance(event, person, status: yes | no | maybe | open, Begründung, Zeitstempel)
-  Absence(person, reason, from, to, teams[])
-  MatchResult, PlayerStats(Tore, Assists, Einsätze)
-  GuestPlayerRequest / GuestPlayerOffer
-  PlayerTransfer(Zugang, Abgang, Leihe)
+Alle fachlichen Tabellen tragen `club_id`. Berechtigungen werden **immer serverseitig** im Kontext Verein,
+Bereich, Mannschaft und Rolle geprüft; die App blendet nur aus.
 
-Kommunikation
-  NewsPost(Status: draft → pending → published, Zielgruppe, Bild)
-  Poll + PollOption + PollVote (Frist, Ergebnis-Sichtbarkeit)
-  ForumThread + ForumPost
-  Notification + NotificationPreference(Kategorie, Team, Ruhezeiten, Erinnerung)
-
-Ehrenamt & Organisation
-  HelperShift(event, Aufgabe, Zeit, Kapazität) + HelperSignup
-  Document(Kategorie, Scope, Datei in Storage)
-  Task / „Offene Aktionen“ (abgeleitet aus Fristen, Freigaben, Umfragen)
-
-Finanzen
-  CashBook(scope: club | team) + Transaction(Betrag, Kategorie, Beleg, Datum)
-```
-
-**Mandantentrennung:** Jede fachliche Tabelle trägt `club_id`; RLS-Policies prüfen Mitgliedschaft und Rolle
-im passenden Scope. Rechte werden zentral als Funktionen modelliert (z. B. `can(person, 'cashbook.read', team_id)`),
-nicht in der App verstreut.
-
-### 2.4 Querschnittsthemen (von Tag 1)
-
-- **Rechtekonzept** als eigenes Modul inkl. Tests – das ist das Herzstück („Ein Dach, alle Perspektiven“).
-- **Feature-Module:** Jede Funktion ab Phase 2 steckt hinter einem `feature_key`; UI und RLS respektieren die Aktivierung.
-- **Zeitzonen & Fristen:** alle Zeiten in UTC speichern, Vereinszeitzone (Europe/Berlin) für Fristenberechnung.
-- **Offline-Toleranz:** gecachte Lesedaten (Termine, Kader) – keine vollständige Offline-Synchronisation im MVP.
-- **Barrierefreiheit:** Kontraste (auch bei frei gewählter Vereinsfarbe prüfen!), Screenreader-Labels, Schriftgrößen.
-- **Umgebungen:** `dev` (lokal, Supabase CLI) · `staging` (Testflight / interne Tests) · `production`.
+**Integrationen:** generischer Provider-Layer (manuell, CSV/SFTP; später FUSSBALL.DE/DFBnet, FuPa, SpielerPlus-Export
+nur über offizielle Wege). Die interne Datenquelle bleibt immer eindeutig führend.
 
 ---
 
-## 3. Datenschutz & Recht (kritisch – Vereine verarbeiten Daten von Kindern)
+## 3. Datenschutz & Sicherheit
 
-- **DSGVO:** Hosting in der EU, Auftragsverarbeitungsvertrag (AVV) Clubroof ↔ Verein (Verein = Verantwortlicher),
-  Verzeichnis der Verarbeitungstätigkeiten, TOMs.
-- **Minderjährige:** Konten unter 16 nur über Elternzugang/Einwilligung; Elternteil sieht nur verknüpfte Kinder;
-  Fotos/Kontaktdaten Minderjähriger standardmäßig eingeschränkt sichtbar.
-- **Datensparsamkeit & Sichtbarkeit:** „Kontaktdaten sichtbar für: Team & Trainer“ (siehe Spielerprofil) als Standard.
-- **Betroffenenrechte:** Datenexport, **Konto-Löschung in der App** (Apple- und Google-Pflicht), Austritt aus Verein.
-- **Gesundheitsdaten:** „Verletzt“ ist potenziell ein Gesundheitsdatum (Art. 9 DSGVO) → nur Status ohne Details,
-  Sichtbarkeit auf Trainer begrenzen.
-- Impressum, Datenschutzerklärung, Nutzungsbedingungen (in App & Store-Eintrag verlinkt).
-- **Empfehlung:** frühzeitig Datenschutz-Fachanwalt/-beratung einbinden (vor dem ersten Pilotverein).
+- Hosting in Deutschland/EU, AVV mit dem Verein, Verzeichnis der Verarbeitungstätigkeiten, TOMs
+- Minderjährige: Eltern-Kind-Verknüpfung, eingeschränkte Sichtbarkeit von Kontaktdaten/Fotos
+- Verletzung/Krankheit sind Gesundheitsdaten → nur für zuständigen Trainer sichtbar, andere sehen aggregiert „nicht verfügbar“
+- Audit-Log für Rollen, Spielerbewegungen, wichtige Mitteilungen, Konfiguration
+- 2FA für privilegierte Rollen, HTTPS überall, getrennte Backups (App, DB, Dateien) mit Kopie außerhalb des Servers
+- Datenexport und Konto-Löschung in der App (für die App Stores Pflicht)
+- Frühzeitig Datenschutzberatung einbinden
 
 ---
 
-## 4. Phasenplan
+## 4. Phasenplan (Konzept §17, technisch präzisiert)
 
-Aufwände grob für **1–2 erfahrene Entwickler:innen**; bei Solo-Entwicklung entsprechend länger.
+| Phase | Schwerpunkt | Ergebnis |
+| --- | --- | --- |
+| **0 – Projektbasis** | Monorepo, CI, Design-System-Grundlagen, Docker-Setup, Auth, Rechte- und Modul-Kern, Wireframes der Hauptflows (Spieler, Trainer, Fulladmin) | lauffähiges Gerüst, Architekturentscheidungen dokumentiert |
+| **1 – Fundament** | Verein, Bereiche, Nutzer/Personen, Rollen, Einladungen (QR/Link), Teams + Setup-Assistent, Termine, drei Teilnahme-Modelle, Absagefristen, Abwesenheiten, News, Notification-Center + Push, Home-Dashboard, Verwaltungsmodus-Grundgerüst | **ein Verein produktiv nutzbar** |
+| **2 – Teamorganisation** | Kader, Gastspieler, Statistik (Aus/Basis/Erweitert), Kasse (Strafen/Getränke), Umfragen, Dokumente | SpielerPlus-nahe Kernfunktionen mit Vereinslogik |
+| **3 – Verwaltungsportal** | Saisonplanung, Spielerbedarf-Börse, Ressourcen/Plätze, Aufgaben/Helfer, Rollenmodule, Audit, Update-Center, Mini-Forum | Vereinsprozesse über Mannschaftsgrenzen hinweg |
+| **4 – Erweiterungen** | Integrationen, Trainingsplanung, Material, Turniere, Community-Module | nur nach echtem Bedarf |
+| **5 – Multi-Club & Stores** | weitere Vereine als Mandanten, Abo-Abrechnung, größere Infrastruktur, Veröffentlichung in App Store / Google Play | Skalierung auf Basis derselben Architektur |
 
-### Phase 0 – Fundament (≈ 2–3 Wochen)
-- Monorepo, TypeScript strict, Linting, Formatierung, Commit-Konventionen (Conventional Commits)
-- CI (GitHub Actions): Lint, Typecheck, Unit-Tests, RLS-Tests; EAS Build für interne Builds
-- Expo-App-Grundgerüst mit Tab-Navigation, Theming (Tokens + Vereinsfarbe), i18n, Sentry
-- Supabase-Projekt (EU), Migrations-Workflow, Seed „SV Grün-Weiß“
-- Auth: E-Mail (Magic Link / OTP) + Apple + Google Sign-In
-- Design-System-Basis: Karten, Listenzeilen, Chips, Buttons, Header mit Vereins-Umschalter
-- Architekturentscheidungen als ADRs in `docs/adr/`
-
-### Phase 1 – MVP „Spielbetrieb“ (≈ 8–10 Wochen) → erster Pilotverein
-Ziel: Ein Verein kann WhatsApp-Gruppen für Termine & Zusagen ersetzen.
-- Vereins-Ersteinrichtung (Wizard), Bereiche, Teams, Team-Wizard inkl. Team-Einstellungen
-- Einladungen per Link/QR, Rollen & Rechte (Admin, Trainer, Spieler, Elternteil), Elternverknüpfung
-- Termine (Spiel, Training inkl. Serien), Zu-/Absage, **Absagefristen**, Auto-Zusage, Teilnehmerübersicht
-- Abwesenheiten (Urlaub/Verletzt/Gesperrt/Sonstiges) wirken automatisch auf Termine
-- Team-Cockpit (Übersicht, Termine, Kader), „Meine Teams“
-- Rollenabhängige Home-Seite (Spieler/Trainer/Vorstand)
-- Vereinsnews (einfach) + Benachrichtigungen (Push + Inbox + Einstellungen inkl. Ruhezeiten)
-- Profil, Konto-Löschung, Datenexport
-- Kalender-Export (ICS)
-
-### Phase 2 – „Vereinsleben“ (≈ 6–8 Wochen)
-- Verein-Tab: Vereinsevents, „Heute auf der Anlage“
-- Events mit Programm & **Helfer-Schichten**
-- Umfragen (Fristen, verborgene Ergebnisse)
-- News-Freigabe-Workflow, Likes, Aufrufe
-- **Dokumentenbibliothek** (Storage, Kategorien, Suche, Rechte)
-- **Platzbelegung** mit Konflikterkennung
-- Feature-Modul-Verwaltung („Updates & Features“)
-
-### Phase 3 – „Verwaltung“ (≈ 6–8 Wochen)
-- Mannschafts-/Vereinskasse (Buchungen, Belege, PDF/CSV-Export)
-- **Gastspielerbörse** (Bedarf/Angebot/Anfrage-Workflow)
-- Spielerbewegungen (Zu-/Abgänge, Leihe)
-- Statistiken (Trainingsquote, Tore, Assists, Einsätze), Ergebnisse
-- Vereinsforum / Austausch
-- Admin-Kennzahlen, offene Anfragen
-
-### Phase 4 – Store-Launch & Skalierung
-- Öffentliche Store-Veröffentlichung (siehe §5), Landingpage, Support-Prozess
-- Web-Verwaltung für Vorstand/Kassenwart
-- Abrechnung/Lizenzen für Vereine
-- Integrationen (fussball.de-Daten, CSV-Mitgliederimport)
-- Weitere Sportarten
-
-**Meilensteine:** interne Demo nach Phase 0 → TestFlight/Play Internal Testing mit Pilotverein ab Mitte Phase 1 →
-Store-Release frühestens nach Phase 1 + Pilotfeedback (empfohlen: nach Phase 2).
+Bei Entscheidung B kann die Store-Veröffentlichung auch früher erfolgen (z. B. nach Phase 1/2) – technisch ist sie dann kein Umbau mehr.
 
 ---
 
-## 5. Weg in die App Stores – Checkliste
+## 5. App-Store-Checkliste (für später, aber früh vorbereiten)
 
-| Schritt | Apple App Store | Google Play |
-| ------- | --------------- | ----------- |
-| Konto | Apple Developer Program (99 $/Jahr), als **Organisation** mit D-U-N-S-Nummer (Firmenname statt Privatname im Store) | Play Console (25 $ einmalig), Organisationskonto |
-| App-ID | Bundle ID, z. B. `de.clubroof.app` – **früh festlegen, später nicht änderbar** | Package Name identisch |
-| Tests | TestFlight (intern/extern) | Internal → Closed Testing (neue Privatkonten: 12 Tester über 14 Tage Pflicht) |
-| Datenschutz | App Privacy „Nutrition Labels“ | Data-Safety-Formular |
-| Pflichten | In-App-Kontolöschung, Sign in with Apple (wenn Google-Login angeboten), Demo-Zugang für Review | In-App-Kontolöschung + Lösch-URL, Zielgruppe & Inhalte deklarieren |
-| Assets | Icon, Screenshots (6,7"/6,5"/iPad falls unterstützt), Beschreibung | Icon, Feature-Grafik, Screenshots |
-| Build/Release | EAS Build + EAS Submit, automatisiert aus CI | dito |
-
-**Achtung Geschäftsmodell:** Werden digitale Funktionen *in der App* verkauft, verlangen Apple/Google ihre
-In-App-Kauf-Systeme. Ein B2B-Modell (Verein schließt Lizenz über Web ab, App ist für Mitglieder kostenlos) ist üblich
-und mit den Richtlinien vereinbar – sollte aber vor dem Launch geprüft werden.
+- Apple Developer Program als **Organisation** (D-U-N-S-Nummer nötig, Vorlauf mehrere Wochen), Google Play Console als Organisation
+- Bundle-/Package-ID früh festlegen (z. B. `de.clubroof.app`)
+- Datenschutzangaben (Apple Privacy Labels, Google Data Safety), Impressum, Datenschutzerklärung
+- Konto-Löschung in der App, Demo-Zugang für die Prüfung, ggf. „Sign in with Apple“ bei Social Logins
+- Abo-Modell: Verein bucht und zahlt außerhalb der App (B2B) → für Mitglieder ist die App kostenlos; das ist mit den Store-Richtlinien in der Regel vereinbar, vor dem Launch prüfen
 
 ---
 
-## 6. Qualitätssicherung & Arbeitsweise
+## 6. Qualität & Arbeitsweise
 
-- **Tests:** Unit (Jest) für `core` (Rechte, Fristen), Komponenten (React Native Testing Library),
-  **RLS-Tests (pgTAP)** – jede Policy hat einen Test, E2E-Flows mit Maestro (Einladen → Zusagen → Absagen)
-- **Code-Review** über Pull Requests, geschützter `main`-Branch, CI muss grün sein
-- **Versionierung:** SemVer, Changelog, OTA-Updates nur für JS-Änderungen, Store-Release für native Änderungen
-- **Sicherheit:** Secrets nur in EAS/Supabase/GitHub Secrets, Dependabot, keine Service-Keys in der App
-- **Design:** Mockups aus der Mappe in Figma als verbindliche Quelle pflegen, Design-Tokens daraus ableiten
-
----
-
-## 7. Risiken
-
-| Risiko | Gegenmaßnahme |
-| ------ | ------------- |
-| Rechtekonzept wird zu komplex | Früh modellieren, zentral testen, wenige Standardrollen + Scopes |
-| Feature-Umfang (17 Bereiche) sprengt MVP | Strikte Phasen, Feature-Module, Pilotverein entscheidet Prioritäten |
-| Akzeptanz bei Ehrenamtlichen | Einfache Onboarding-Wizards, Einladung per Link ohne Passwort, Pilotverein eng begleiten |
-| DSGVO / Kinderdaten | Privacy by Design, Rechtsberatung, AVV-Vorlage |
-| Push-Zustellung/Spam-Gefühl | Kategorien, Ruhezeiten, Bündelung, keine Werbe-Pushes |
-| Konkurrenz (Spielerplus, Teamy, easyVerein, Vereinsflieger …) | Fokus auf Alleinstellung: ganzer Verein + Ehrenamt + Gastspielerbörse |
+- TypeScript strict, ESLint/Prettier, Conventional Commits, geschützter `main`, Pull Requests mit Review
+- Tests: Unit-Tests für Rechte-, Fristen- und Vererbungslogik (`core`), API-Integrationstests gegen echte Postgres-Instanz,
+  E2E-Tests der Hauptflows (Einladen → Zusagen → Frist → Absage gesperrt)
+- CI: Lint, Typecheck, Tests, Docker-Build; Deployment auf Staging automatisch, Produktion per Freigabe
+- Umgebungen: lokal (Docker Compose) · Staging · Produktion
 
 ---
 
-## 8. Nächste Schritte
+## 7. Offene Entscheidungen
 
-1. Offene Fragen aus §1.5 klären (vor allem Sportart, Geschäftsmodell, Team/Zeitrahmen).
-2. Stack-Entscheidung bestätigen (Empfehlung: Expo + Supabase EU).
-3. Bundle-ID/Domain sichern, Developer-Konten (Apple mit D-U-N-S, Google) beantragen – dauert teils Wochen.
-4. Phase 0 starten: Monorepo, CI, App-Gerüst, Datenbankschema für Verein/Team/Rollen.
-5. Pilotverein gewinnen und Termine für Feedback-Runden festlegen.
+1. **Frontend: A (PWA) oder B (Expo, iOS/Android/Web)?** → Empfehlung B (§2.2)
+2. Welche Teamfunktionen gehören in Phase 1, welche bleiben Module? (Konzept §18)
+3. Rollen- und Berechtigungsgrenzen im Detail; was dürfen Eltern sehen und stellvertretend bearbeiten?
+4. Welche Statistiken für Jugend, Senioren, Trainer?
+5. Umfang der Vereinsgestaltung (Farben, Logo, Startseitenmodule)
+6. Welche Automationen/Reminder sind Standard, ohne den ruhigen Push-Ansatz zu verletzen?
+7. Welche Funktionen brauchen Freigabeprozesse?
+8. Welche externen Datenquellen haben eine offiziell nutzbare Schnittstelle?
+
+**Nächster Schritt laut Konzept:** Wireframes der wichtigsten User-Flows für Spieler, Trainer und Fulladmin –
+die Mockups der Verkaufsmappe sind dafür eine sehr gute Basis.
