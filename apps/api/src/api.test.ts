@@ -5,6 +5,11 @@
  */
 import type {
   Absence,
+  NotificationItem,
+  RosterEntry,
+  TeamCash,
+  TeamOverview,
+  TeamStats,
   EventDetail,
   EventSummary,
   HomeResponse,
@@ -441,6 +446,158 @@ describe.skipIf(!url)('API', () => {
       const unliked = await send<NewsItem>('DELETE', `/news/${id}/like`, token);
       expect(unliked.body.likedByMe).toBe(false);
       expect(unliked.body.likeCount).toBe(first.likeCount);
+    });
+  });
+  describe('Team-Cockpit', () => {
+    const teamId = async (badge: string) => {
+      const [row] = await sql`select id from teams where badge = ${badge}`;
+      return row!.id as string;
+    };
+
+    it('Übersicht mit Kaderstatus, Ergebnissen und Rechten je Rolle', async () => {
+      const b1 = await teamId('B1');
+      const coach = await get<TeamOverview>(`/teams/${b1}`, (await login('trainer')).token);
+      expect(coach.permissions).toMatchObject({
+        manageEvents: true,
+        readCash: true,
+        manageCash: false,
+      });
+      expect(coach.squad!.players).toBeGreaterThanOrEqual(18);
+      expect(coach.lastResults.length).toBeGreaterThan(0);
+      expect(coach.highlights.played).toBeGreaterThan(0);
+      expect(coach.highlights.trainingRate).not.toBeNull();
+
+      const player = await get<TeamOverview>(`/teams/${b1}`, (await login('spieler')).token);
+      expect(player.permissions.manageEvents).toBe(false);
+    });
+
+    it('fremde Mannschaften sind nicht sichtbar', async () => {
+      const h1 = await teamId('1.');
+      const res = await app.inject({
+        method: 'GET',
+        url: `/teams/${h1}`,
+        headers: { authorization: `Bearer ${(await login('spieler')).token}` },
+      });
+      expect(res.statusCode).toBe(404);
+    });
+
+    it('Kader: Abwesenheitsgrund nur für das Trainerteam', async () => {
+      const b1 = await teamId('B1');
+      const coach = await get<RosterEntry[]>(`/teams/${b1}/roster`, (await login('trainer')).token);
+      const player = await get<RosterEntry[]>(
+        `/teams/${b1}/roster`,
+        (await login('spieler')).token,
+      );
+      const absentForCoach = coach.filter((r) => r.unavailable);
+      expect(absentForCoach.length).toBeGreaterThan(0);
+      expect(absentForCoach.every((r) => r.unavailableReason !== null)).toBe(true);
+      const absentForPlayer = player.filter(
+        (r) => r.unavailable && !r.name.startsWith('Max Becker'),
+      );
+      expect(absentForPlayer.every((r) => r.unavailableReason === null)).toBe(true);
+      expect(coach.find((r) => r.name === 'Max Becker')!.jerseyNumber).toBe(14);
+    });
+
+    it('Statistik: Quoten anderer nur für Verantwortliche; Modul muss aktiv sein', async () => {
+      const b1 = await teamId('B1');
+      const coach = await get<TeamStats>(`/teams/${b1}/stats`, (await login('trainer')).token);
+      const player = await login('spieler');
+      const own = await get<TeamStats>(`/teams/${b1}/stats`, player.token);
+      expect(coach.players.length).toBeGreaterThan(10);
+      expect(own.players.map((p) => p.personId)).toEqual([player.me.person.id]);
+
+      const e1 = await teamId('E1');
+      const res = await app.inject({
+        method: 'GET',
+        url: `/teams/${e1}/stats`,
+        headers: { authorization: `Bearer ${(await login('eltern')).token}` },
+      });
+      expect(res.statusCode).toBe(403);
+    });
+
+    it('Kasse: Buchungen nur mit Kassenrechten, persönliches Konto für alle', async () => {
+      const h1 = await teamId('1.');
+      const treasurer = await login('kasse');
+      const before = await get<TeamCash>(`/teams/${h1}/cash`, treasurer.token);
+      const someone = before.members![0]!;
+      const booked = await send<TeamCash>('POST', `/teams/${h1}/cash/bookings`, treasurer.token, {
+        kind: 'fine',
+        amountCents: 500,
+        description: 'Zu spät zum Training',
+        personId: someone.personId,
+      });
+      expect(booked.status).toBe(201);
+      const after = booked.body.members!.find((m) => m.personId === someone.personId)!;
+      expect(after.balanceCents).toBe(someone.balanceCents - 500);
+      // Strafen bewegen kein Geld
+      expect(booked.body.balanceCents).toBe(before.balanceCents);
+
+      const b1 = await teamId('B1');
+      const player = await login('spieler');
+      const own = await get<TeamCash>(`/teams/${b1}/cash`, player.token);
+      expect(own.balanceCents).toBeNull();
+      expect(own.entries).toBeNull();
+      expect(own.personal).toHaveLength(1);
+      const denied = await send('POST', `/teams/${b1}/cash/bookings`, player.token, {
+        kind: 'income',
+        amountCents: 100,
+        description: 'Test',
+      });
+      expect(denied.status).toBe(403);
+      const finesOff = await send('POST', `/teams/${b1}/cash/bookings`, treasurer.token, {
+        kind: 'fine',
+        amountCents: 100,
+        description: 'Test',
+        personId: player.me.person.id,
+      });
+      expect(finesOff.status).toBe(400);
+    });
+
+    it('Trainer legt einen Termin an und sagt ihn ab; die Mannschaft wird benachrichtigt', async () => {
+      const b1 = await teamId('B1');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const startsAt = new Date(NOW.getTime() + 26 * 60 * 60 * 1000).toISOString();
+
+      const created = await send<EventDetail>('POST', `/teams/${b1}/events`, coach.token, {
+        type: 'training',
+        startsAt,
+        meetingPoint: 'Kabine 2',
+      });
+      expect(created.status).toBe(201);
+      const event = created.body;
+      expect(event.title).toBe('Training');
+      expect(event.counts.pending).toBeGreaterThan(10);
+      // Die am Folgetag kranke Spielerin bzw. der Spieler ist automatisch abgesagt
+      expect(
+        event.participants.some((p) => p.status === 'no' && p.reason === 'Abwesend: Krankheit'),
+      ).toBe(true);
+
+      const denied = await send('POST', `/events/${event.id}/cancel`, player.token, {
+        reason: 'Keine Lust',
+      });
+      expect(denied.status).toBe(403);
+
+      const cancelled = await send<EventDetail>('POST', `/events/${event.id}/cancel`, coach.token, {
+        reason: 'Platz gesperrt',
+      });
+      expect(cancelled.status).toBe(200);
+      expect(cancelled.body.status).toBe('cancelled');
+
+      const inbox = await get<NotificationItem[]>('/notifications', player.token);
+      expect(inbox.some((n) => n.title === 'Neuer Termin: Training')).toBe(true);
+      expect(inbox.some((n) => n.level === 'urgent' && n.title === 'Abgesagt: Training')).toBe(
+        true,
+      );
+    });
+
+    it('Spieler dürfen keine Termine anlegen', async () => {
+      const b1 = await teamId('B1');
+      const res = await send('POST', `/teams/${b1}/events`, (await login('spieler')).token, {
+        type: 'training',
+        startsAt: new Date(NOW.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      expect(res.status).toBe(403);
     });
   });
 });

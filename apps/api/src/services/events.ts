@@ -50,7 +50,7 @@ function isTeamMember(actor: Actor, teamId: string | null): boolean {
   return teamId !== null && actor.teamIds.includes(teamId);
 }
 
-function canOverride(actor: Actor, row: EventRow): boolean {
+export function canOverride(actor: Actor, row: EventRow): boolean {
   return row.team !== null && actorCan(actor, 'attendance.override', row.team);
 }
 
@@ -255,6 +255,7 @@ export async function getEventDetail(
     contactPerson,
     participants,
     canManage: row.team !== null && actorCan(actor, 'events.manage', row.team),
+    canOverride: canOverride(actor, row),
   };
 }
 

@@ -16,6 +16,7 @@ import { communityRoutes } from './routes/community';
 import { eventRoutes } from './routes/events';
 import { meRoutes } from './routes/me';
 import { notificationRoutes } from './routes/notifications';
+import { teamRoutes } from './routes/teams';
 
 export type AppOptions = {
   db: Db;
@@ -82,6 +83,7 @@ export async function buildApp({ db, config, now = () => new Date(), logger = fa
   await app.register(eventRoutes);
   await app.register(notificationRoutes);
   await app.register(communityRoutes);
+  await app.register(teamRoutes);
 
   return app;
 }
