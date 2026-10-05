@@ -32,7 +32,7 @@ Erzeugt wird er mit `pnpm db:reset` (lokale Datenbank zurücksetzen, Migrationen
 
 ## Demo-Logins
 
-Die Logins sind angelegt. Passwörter bzw. Anmeldelinks folgen mit dem Login-Modul.
+Alle Demo-Logins haben das Passwort `clubroof-demo`.
 
 | E-Mail | Person | Perspektive |
 | --- | --- | --- |

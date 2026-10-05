@@ -15,7 +15,10 @@ Dokumente und Verwaltung.
 ## Projektstruktur
 
 ```
-apps/                 # (folgt) mobile – Expo-App, admin – Web-Verwaltung, api – Backend
+apps/
+  api/                # Backend (Fastify, PostgreSQL): Login, Home, Termine, Zu-/Absagen
+  mobile/             # App für iOS, Android und Web (Expo SDK 57, Expo Router)
+  admin/              # (folgt) Web-Verwaltung
 packages/
   core/               # Fachliche Grundlagen: Rollen, Berechtigungen, Module, Aufzählungen
   design-tokens/      # Farbkonzept (5 Vereinsfarben × hell/dunkel), Abstände, Typografie
@@ -33,6 +36,17 @@ cp .env.example .env          # optional: eigene Datenbank-URL
 pnpm db:up                    # PostgreSQL, MinIO und Mailpit starten
 pnpm db:reset                 # Schema anlegen und Demoverein einspielen
 ```
+
+Backend und App starten (zwei Terminals):
+
+```bash
+pnpm --filter @clubroof/api dev       # API auf http://localhost:3000
+pnpm --filter @clubroof/mobile start  # Expo: App in Expo Go, im Simulator oder mit „w“ im Browser
+```
+
+Anmelden mit einem Demo-Login aus [docs/DEMODATEN.md](docs/DEMODATEN.md), Passwort `clubroof-demo`.
+Auf einem echten Handy in `apps/mobile/.env` die Adresse des Rechners eintragen
+(`EXPO_PUBLIC_API_URL=http://192.168.x.x:3000`).
 
 Weitere Befehle:
 
