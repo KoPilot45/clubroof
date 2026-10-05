@@ -1113,7 +1113,12 @@ export type InviteOverview = {
 /** Öffentliche Ansicht eines Einladungslinks (ohne Anmeldung) */
 export type JoinInfo = {
   kind: 'person' | 'team';
-  club: { name: string; shortName: string; colorTheme: ClubInfo['colorTheme']; logoUrl: string | null };
+  club: {
+    name: string;
+    shortName: string;
+    colorTheme: ClubInfo['colorTheme'];
+    logoUrl: string | null;
+  };
   team: { badge: string; name: string } | null;
   person: { firstName: string; email: string | null } | null;
 };

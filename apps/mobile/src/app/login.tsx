@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -92,6 +93,15 @@ export default function LoginScreen() {
             </View>
             {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
             <Button label="Anmelden" onPress={submit} loading={busy} />
+            <Pressable
+              accessibilityRole="link"
+              onPress={() => router.push('/forgot')}
+              style={{ alignSelf: 'center', padding: 4 }}
+            >
+              <T variant="label" color={colors.primaryText}>
+                Passwort vergessen?
+              </T>
+            </Pressable>
           </Card>
 
           {__DEV__ ? (

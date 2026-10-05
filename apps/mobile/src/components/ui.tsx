@@ -648,6 +648,8 @@ export function TextField({
   placeholder,
   maxLength,
   multiline,
+  kind = 'text',
+  onSubmit,
 }: {
   label: string;
   value: string;
@@ -655,13 +657,19 @@ export function TextField({
   placeholder?: string;
   maxLength?: number;
   multiline?: boolean;
+  /** Steuert Tastatur, Autovervollständigung und verdeckte Eingabe */
+  kind?: 'text' | 'email' | 'password' | 'newPassword' | 'code';
+  onSubmit?: () => void;
 }) {
   const { colors, radii } = useTheme();
+  const secret = kind === 'password' || kind === 'newPassword';
   return (
     <View style={{ gap: 6 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <T variant="label">{label}</T>
-        {maxLength ? <T variant="caption">{`${value.length} / ${maxLength}`}</T> : null}
+        {maxLength && maxLength > 10 && !secret ? (
+          <T variant="caption">{`${value.length} / ${maxLength}`}</T>
+        ) : null}
       </View>
       <TextInput
         accessibilityLabel={label}
@@ -671,6 +679,24 @@ export function TextField({
         placeholderTextColor={colors.onSurfaceMuted}
         maxLength={maxLength}
         multiline={multiline}
+        secureTextEntry={secret}
+        autoCapitalize={kind === 'text' ? 'sentences' : 'none'}
+        autoCorrect={kind === 'text'}
+        keyboardType={
+          kind === 'email' ? 'email-address' : kind === 'code' ? 'number-pad' : 'default'
+        }
+        autoComplete={
+          kind === 'email'
+            ? 'email'
+            : kind === 'password'
+              ? 'current-password'
+              : kind === 'newPassword'
+                ? 'new-password'
+                : kind === 'code'
+                  ? 'one-time-code'
+                  : undefined
+        }
+        onSubmitEditing={onSubmit}
         style={{
           minHeight: multiline ? 72 : 46,
           borderWidth: 1,

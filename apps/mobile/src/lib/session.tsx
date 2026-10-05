@@ -22,6 +22,8 @@ type SessionContextValue = SessionState & {
   signOut: () => Promise<void>;
   /** Nutzerdaten (`/me`) neu laden, z. B. nach Änderung von Logo oder Rechten */
   refresh: () => Promise<void>;
+  /** Sitzung aus einer Antwort übernehmen (Einladung angenommen, 2-Faktor bestätigt) */
+  adopt: (result: LoginResponse) => Promise<void>;
   /** Für API-Aufrufe mit dem Token der Sitzung */
   api: <T>(
     path: string,
@@ -86,6 +88,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [state.token],
   );
 
+  const adopt = useCallback(async (result: LoginResponse) => {
+    await writeToken(result.token);
+    setState({ status: 'signedIn', token: result.token, me: result.me });
+  }, []);
+
   const refresh = useCallback(async () => {
     if (!state.token) return;
     const me = await request<MeResponse>('/me', { token: state.token });
@@ -93,8 +100,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [state.token]);
 
   const value = useMemo(
-    () => ({ ...state, signIn, signOut, api, refresh }),
-    [state, signIn, signOut, api, refresh],
+    () => ({ ...state, signIn, signOut, api, refresh, adopt }),
+    [state, signIn, signOut, api, refresh, adopt],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

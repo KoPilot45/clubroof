@@ -53,7 +53,22 @@ export default function MoreScreen() {
       icon: 'bar-chart',
       onPress: () => router.push('/stats'),
     },
-    { key: 'settings', label: 'Einstellungen', icon: 'settings', soon: true },
+    {
+      key: 'settings',
+      label: 'Konto & Sicherheit',
+      icon: 'settings',
+      onPress: () => router.push('/account'),
+    },
+    ...(me.canInvite
+      ? [
+          {
+            key: 'invites',
+            label: 'Einladen',
+            icon: 'person-add' as const,
+            onPress: () => router.push('/admin/invites'),
+          },
+        ]
+      : []),
     ...(Object.values(me.admin).some(Boolean)
       ? [
           {

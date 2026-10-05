@@ -160,10 +160,22 @@ function Navigator() {
             name="admin/transfer-new"
             options={{ headerShown: true, title: 'Bewegung erfassen' }}
           />
+          <Stack.Screen
+            name="admin/invites"
+            options={{ headerShown: true, title: 'Einladungen' }}
+          />
+          <Stack.Screen
+            name="account"
+            options={{ headerShown: true, title: 'Konto & Sicherheit' }}
+          />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />
+          <Stack.Screen name="forgot" />
         </Stack.Protected>
+        {/* Öffentliche Links aus E-Mails – mit und ohne Anmeldung erreichbar */}
+        <Stack.Screen name="join/[token]" />
+        <Stack.Screen name="reset/[token]" />
       </Stack>
     </>
   );
