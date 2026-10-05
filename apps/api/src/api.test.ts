@@ -69,6 +69,20 @@ describe.skipIf(!url)('API', () => {
       expect(res.json().error).toBe('validation');
     });
 
+    it('erlaubt Browsern Änderungen per PUT (CORS)', async () => {
+      const res = await app.inject({
+        method: 'OPTIONS',
+        url: '/events/x/responses/y',
+        headers: {
+          origin: 'http://localhost:8081',
+          'access-control-request-method': 'PUT',
+          'access-control-request-headers': 'authorization,content-type',
+        },
+      });
+      expect(res.statusCode).toBe(204);
+      expect(res.headers['access-control-allow-methods']).toContain('PUT');
+    });
+
     it('verlangt für geschützte Bereiche eine Anmeldung', async () => {
       expect((await app.inject({ method: 'GET', url: '/home' })).statusCode).toBe(401);
       const res = await app.inject({

@@ -46,7 +46,11 @@ export async function buildApp({ db, config, now = () => new Date(), logger = fa
     request.actor = await loadActor(db, user, now());
   });
 
-  await app.register(cors, { origin: config.corsOrigins });
+  await app.register(cors, {
+    origin: config.corsOrigins,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['authorization', 'content-type'],
+  });
   await app.register(rateLimit, { global: false });
 
   app.setErrorHandler((error, request, reply) => {
