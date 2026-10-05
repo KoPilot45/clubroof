@@ -1156,3 +1156,34 @@ export type ApproveJoinInput = {
   personId?: string | null;
   childPersonId?: string | null;
 };
+
+// ── Vereinseinstellungen und Ersteinrichtung ─────────────────────────────
+
+export type ClubColorKey = 'green' | 'red' | 'blue' | 'yellow' | 'black';
+export type OrgUnitKind = 'seniors' | 'youth' | 'women' | 'veterans' | 'other';
+
+export type ClubSettings = {
+  name: string;
+  shortName: string;
+  colorTheme: ClubColorKey;
+  colorMode: 'light' | 'dark' | 'system';
+  requireTwoFactor: boolean;
+  /** Vorgabe nur einschaltbar, wenn man selbst 2-Faktor nutzt (Schutz vor Aussperren) */
+  canRequireTwoFactor: boolean;
+  orgUnits: { id: string; name: string; kind: OrgUnitKind; teams: number }[];
+};
+
+export type UpdateClubInput = Partial<{
+  name: string;
+  shortName: string;
+  colorTheme: ClubColorKey;
+  colorMode: 'light' | 'dark' | 'system';
+  requireTwoFactor: boolean;
+}>;
+
+export type SetupInput = {
+  setupToken: string;
+  club: { name: string; shortName: string; colorTheme: ClubColorKey };
+  orgUnits: { name: string; kind: OrgUnitKind }[];
+  admin: { firstName: string; lastName: string; email: string; password: string };
+};

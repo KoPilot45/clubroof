@@ -14,6 +14,7 @@ import type {
   TwoFactorChallenge,
   TwoFactorSetup,
   TwoFactorStatus,
+  ClubSettings,
   InviteLink,
   InviteOverview,
   JoinInfo,
@@ -2558,6 +2559,71 @@ describe.skipIf(!url)('API', () => {
       });
       expect(off.status).toBe(204);
       expect((await login('vorstand')).me.security.twoFactorEnabled).toBe(false);
+    });
+  });
+
+  describe('Vereinseinstellungen', () => {
+    it('ändert Name und Design, verwaltet Bereiche und schützt die 2-Faktor-Vorgabe', async () => {
+      const admin = await login('admin');
+      const board = await login('vorstand');
+      expect((await send('GET', '/admin/club', board.token)).status).toBe(403);
+
+      const before = await get<ClubSettings>('/admin/club', admin.token);
+      expect(before.orgUnits.length).toBeGreaterThan(0);
+      expect(before.canRequireTwoFactor).toBe(false);
+
+      const changed = await send<ClubSettings>('PATCH', '/admin/club', admin.token, {
+        shortName: 'SV GW Test',
+        colorTheme: 'blue',
+        colorMode: 'dark',
+      });
+      expect(changed.status).toBe(200);
+      expect(changed.body).toMatchObject({ shortName: 'SV GW Test', colorTheme: 'blue' });
+      expect((await get<LoginResponse['me']>('/me', admin.token)).club.colorTheme).toBe('blue');
+      expect((await send('PATCH', '/admin/club', admin.token, { colorTheme: 'lila' })).status).toBe(
+        400,
+      );
+
+      // Ohne eigene 2-Faktor-Anmeldung keine Vereinsvorgabe (sonst sperrt man sich aus)
+      const twoFa = await send<{ error: string }>('PATCH', '/admin/club', admin.token, {
+        requireTwoFactor: true,
+      });
+      expect(twoFa.status).toBe(409);
+      expect(twoFa.body.error).toBe('own_two_factor');
+
+      // Bereiche: anlegen, umbenennen, löschen; belegte Bereiche bleiben
+      const added = await send<ClubSettings>('POST', '/admin/org-units', admin.token, {
+        name: 'Walking Football',
+        kind: 'veterans',
+      });
+      expect(added.status).toBe(201);
+      const unit = added.body.orgUnits.find((u) => u.name === 'Walking Football')!;
+      expect(unit.teams).toBe(0);
+      const renamed = await send<ClubSettings>(
+        'PATCH',
+        `/admin/org-units/${unit.id}`,
+        admin.token,
+        { name: 'Walking-Fußball' },
+      );
+      expect(renamed.body.orgUnits.some((u) => u.name === 'Walking-Fußball')).toBe(true);
+      const used = before.orgUnits.find((u) => u.teams > 0)!;
+      expect((await send('DELETE', `/admin/org-units/${used.id}`, admin.token)).status).toBe(409);
+      const removed = await send<ClubSettings>(
+        'DELETE',
+        `/admin/org-units/${unit.id}`,
+        admin.token,
+      );
+      expect(removed.body.orgUnits.some((u) => u.id === unit.id)).toBe(false);
+
+      await send('PATCH', '/admin/club', admin.token, {
+        shortName: before.shortName,
+        colorTheme: before.colorTheme,
+        colorMode: before.colorMode,
+      });
+      // Ersteinrichtung ist auf einem eingerichteten Server gesperrt
+      expect((await get<{ needsSetup: boolean }>('/setup/status', admin.token)).needsSetup).toBe(
+        false,
+      );
     });
   });
 
