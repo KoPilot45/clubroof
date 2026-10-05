@@ -20,6 +20,7 @@ Stand: 05.10.2026
 | Hell / dunkel / automatisch | K 8 | ✅ | |
 | Farben mit Bedeutung (dringend, Aktion, Info, erledigt, archiviert) | K 2 | ✅ | |
 | Mannschafts-Badges (B1, 1., AH) und Tags für Quelle/Typ | K 2 | ✅ | |
+| Gekachelte Untermenüs in Team, Verein und Mehr – Kacheln entstehen aus den aktivierten Modulen | K 4 | ✅ | spätere Funktionen als „Bald verfügbar“ |
 | Verwaltungsmodus als „App in der App“ mit eigener Navigation | M 8, K 6 | ⬜ | |
 
 ## 2. Home – persönliches Dashboard
@@ -30,10 +31,10 @@ Stand: 05.10.2026
 | Nächstes Spiel mit Countdown und Zu-/Absage | M 3 | ✅ | |
 | Neuigkeiten für dich (nach Priorität und Betroffenheit sortiert) | M 3, K 3 | ✅ | |
 | Nächste Termine (eigene, Kinder, Trainerrollen, Gastspiele) | M 3, K 3 | ✅ | |
-| Offene Aktionen (Zusagen, Umfragen, Freigaben, Aufgaben) | M 3–4, K 3 | 🟡 | Anzeige fertig; Umfragen und Freigaben noch nicht bedienbar |
+| Offene Aktionen (Zusagen, Umfragen, Freigaben, Aufgaben) | M 3–4, K 3 | 🟡 | Zusagen und Umfragen bedienbar; Freigaben folgen mit der Verwaltung |
 | Persönliche Kasse / Teamkasse | M 3, K 3 | 🟡 | Saldo sichtbar; Details fehlen |
 | Vorstand: Verein im Überblick (Teams, Mitglieder, Freigaben, Event) | M 4 | ✅ | |
-| Umfragen mit Schnellantwort | K 3 | ⬜ | |
+| Umfragen mit Schnellantwort | K 3 | 🟡 | über „Offene Aktionen“ direkt zur Umfrage; Antwort auf der Startseite selbst fehlt |
 | Persönliche Statistik | K 3 | ⬜ | |
 
 ## 3. Mannschaft (Team)
@@ -66,8 +67,8 @@ Stand: 05.10.2026
 | Teilnehmerübersicht (zugesagt, offen, abgesagt) | M 15 | ✅ | |
 | Gründe nur für Verantwortliche sichtbar (Datensparsamkeit) | K 7 | ✅ | |
 | Trainer korrigiert Zu-/Absagen nach Fristablauf | K 9 | 🟡 | im Backend fertig; Bedienung in der App fehlt |
-| Absagegrund angeben | M 16 | ⬜ | |
-| Abwesenheiten melden (Urlaub, Verletzt, Gesperrt, Sonstiges; alle oder einzelne Teams) | M 16, K 9 | 🟡 | Daten und Wirkung vorhanden; Eingabe fehlt |
+| Absagegrund angeben | M 16 | ✅ | Auswahl und optionaler Hinweis |
+| Abwesenheiten melden (Urlaub, Verletzt, Gesperrt, Sonstiges; alle oder einzelne Teams) | M 16, K 9 | ✅ | auch für Kinder; Löschen nimmt automatische Absagen zurück |
 | Kalenderexport | M 15, 17 | ⬜ | |
 | Termine anlegen, ändern, absagen; Serientermine | K 4, 6 | ⬜ | |
 | Änderungen zeigen alt und neu (z. B. Treffpunkt) | K 10 | ⬜ | |
@@ -88,7 +89,7 @@ Stand: 05.10.2026
 | --- | --- | --- | --- |
 | Vereinsnews | M 5, 13, K 5 | ✅ | |
 | Vereinstermine (Sitzungen, Veranstaltungen, Arbeitseinsätze) | M 5, K 5 | 🟡 | als Liste; kein Kalender |
-| Nächstes Vereinsevent hervorgehoben | M 5 | ⬜ | |
+| Nächstes Vereinsevent hervorgehoben | M 5 | ✅ | |
 | Veranstaltungsseite mit Programm, Ort, Ansprechperson, „Teilnehmen“ | M 14 | ⬜ | |
 | Helfer gesucht / Helferschichten eintragen | M 5, 14, K 5 | ⬜ | Schichten in Demodaten vorhanden |
 | Heute auf der Anlage | M 5 | ⬜ | |
@@ -103,9 +104,9 @@ Stand: 05.10.2026
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | News lesen | M 13 | ✅ | |
-| News-Detail mit Bild, Aufrufen, „Gefällt mir“ | M 13 | 🟡 | Text aufklappbar; Bild und „Gefällt mir“ fehlen |
-| Lesebestätigung (optional) | K 11 | ⬜ | |
-| Umfragen beantworten, Frist, Ergebnis (ggf. erst nach Fristende) | M 13, K 11 | ⬜ | Umfragen in Demodaten vorhanden |
+| News-Detail mit Bild, Aufrufen, „Gefällt mir“ | M 13 | ✅ | Aufrufe einmal je Person |
+| Lesebestätigung (optional) | K 11 | 🟡 | Lesen wird je Person erfasst; Anzeige für Verfasser folgt |
+| Umfragen beantworten, Frist, Ergebnis (ggf. erst nach Fristende) | M 13, K 11 | ✅ | Stimme änderbar bis Fristende |
 | Anfragen / Freigaben mit zielgerichteten Kommentaren | K 11 | ⬜ | |
 | News und Umfragen erstellen, Freigabe-Workflow | M 8, K 6 | ⬜ | |
 | Kein Gruppenchat (bewusst) | K 1, 11 | ✅ | Grundsatz |
@@ -116,7 +117,7 @@ Stand: 05.10.2026
 | --- | --- | --- | --- |
 | Notification-Center mit Filtern | M 12, K 10 | ✅ | |
 | Dringendes oben, Gruppen Heute / Früher | M 12 | 🟡 | Dringendes oben; Gruppierung fehlt |
-| Antippen führt direkt zum Inhalt | K 10 | 🟡 | für Termine; andere Ziele folgen mit den Funktionen |
+| Antippen führt direkt zum Inhalt | K 10 | 🟡 | Termine, News, Umfragen, Abwesenheiten; weitere folgen |
 | Vier Ebenen (dringend, persönlich wichtig, Aktion, Info) | K 10 | ✅ | |
 | Einstellungen je Kategorie und Team, Erinnerungszeitpunkt, Ruhezeiten | M 12, K 10 | ⬜ | |
 | Sammelhinweise für Trainer statt Einzelmeldungen | K 10 | ⬜ | |
@@ -182,17 +183,17 @@ Stand: 05.10.2026
 
 | Bereich | ✅ | 🟡 | ⬜ |
 | --- | ---: | ---: | ---: |
-| Grundstruktur & Design | 5 | 0 | 1 |
-| Home | 5 | 2 | 2 |
+| Grundstruktur & Design | 6 | 0 | 1 |
+| Home | 5 | 3 | 1 |
 | Mannschaft | 0 | 4 | 10 |
-| Termine & Teilnahme | 6 | 2 | 4 |
+| Termine & Teilnahme | 8 | 1 | 3 |
 | Gastspieler & Spielerbedarf | 1 | 0 | 4 |
-| Verein | 1 | 1 | 9 |
-| Kommunikation | 2 | 1 | 4 |
+| Verein | 2 | 1 | 8 |
+| Kommunikation | 4 | 1 | 2 |
 | Benachrichtigungen | 2 | 2 | 3 |
 | Profile | 2 | 0 | 3 |
 | Platzbelegung & Betrieb | 0 | 1 | 3 |
 | Verwaltung | 0 | 2 | 7 |
 | Einrichtung & Module | 0 | 1 | 4 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **27** | **16** | **57** |
+| **Gesamt** | **33** | **16** | **52** |
