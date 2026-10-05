@@ -11,6 +11,7 @@ import type {
   MemberListItem,
   RoleCatalog,
   DemandDetail,
+  UploadedImage,
   EditorialNews,
   EditorialOverview,
   FacilityOccupancy,
@@ -38,6 +39,9 @@ import { createDb, schema as s } from '@clubroof/db';
 import { eq } from 'drizzle-orm';
 import { runMigrations } from '@clubroof/db/migrate';
 import { seed } from '@clubroof/db/seed';
+import { mkdtemp } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from './app';
 import { loadConfig } from './config';
@@ -54,7 +58,14 @@ describe.skipIf(!url)('API', () => {
   beforeAll(async () => {
     await runMigrations(url);
     await seed(db, { now: NOW });
-    app = await buildApp({ db, config: loadConfig({ LOGIN_RATE_LIMIT: '1000' }), now: () => NOW });
+    app = await buildApp({
+      db,
+      config: loadConfig({
+        LOGIN_RATE_LIMIT: '1000',
+        UPLOADS_DIR: await mkdtemp(join(tmpdir(), 'clubroof-')),
+      }),
+      now: () => NOW,
+    });
   }, 60_000);
 
   afterAll(async () => {
@@ -1601,6 +1612,177 @@ describe.skipIf(!url)('API', () => {
       expect(
         (await send('DELETE', `/editorial/news/${privateDraft.body.id}`, coach.token)).status,
       ).toBe(404);
+    });
+  });
+  describe('Dokumente, Bilder und Umfragen erstellen', () => {
+    const b64 = (s: string | Buffer) => Buffer.from(s).toString('base64');
+    const pdf = b64('%PDF-1.4\n% Beitragsordnung Test\n%%EOF\n');
+    const png = b64(
+      Buffer.concat([
+        Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+        Buffer.alloc(64, 1),
+      ]),
+    );
+
+    it('Vorstand lädt Dokumente hoch und löscht sie; Typ wird am Inhalt geprüft', async () => {
+      const board = await login('vorstand');
+      const player = await login('spieler');
+      const coach = await login('trainer');
+      expect(board.me.create.documents.some((t) => t.type === 'club')).toBe(true);
+      expect(coach.me.create.documents).toHaveLength(0);
+
+      const doc = {
+        title: 'Hallenordnung 2026',
+        category: 'regulations',
+        scopeType: 'club',
+        fileName: '../../etc/Hallenordnung.pdf',
+        dataBase64: pdf,
+      };
+      expect((await send('POST', '/documents', coach.token, doc)).status).toBe(403);
+      const fake = await send<{ error: string }>('POST', '/documents', board.token, {
+        ...doc,
+        dataBase64: b64('<html><script>alert(1)</script></html>'),
+      });
+      expect(fake.status).toBe(415);
+      const svg = await send('POST', '/media', board.token, {
+        purpose: 'news',
+        fileName: 'x.svg',
+        dataBase64: b64('<svg onload="alert(1)"/>'),
+      });
+      expect(svg.status).toBe(415);
+
+      const created = await send<{ id: string }>('POST', '/documents', board.token, doc);
+      expect(created.status).toBe(201);
+      const list = await get<DocumentItem[]>('/documents?q=Hallenordnung', player.token);
+      expect(list[0]).toMatchObject({
+        fileName: 'Hallenordnung.pdf',
+        mimeType: 'application/pdf',
+        canDelete: false,
+      });
+      expect(
+        (await get<DocumentItem[]>('/documents?q=Hallenordnung', board.token))[0]!.canDelete,
+      ).toBe(true);
+
+      const link = await get<{ url: string }>(`/documents/${created.body.id}/link`, player.token);
+      const file = await app.inject({ method: 'GET', url: new URL(link.url).pathname });
+      expect(file.statusCode).toBe(200);
+      expect(file.body).toContain('Beitragsordnung Test');
+
+      expect((await send('DELETE', `/documents/${created.body.id}`, player.token)).status).toBe(
+        404,
+      );
+      expect((await send('DELETE', `/documents/${created.body.id}`, board.token)).status).toBe(204);
+      const gone = await app.inject({ method: 'GET', url: new URL(link.url).pathname });
+      expect(gone.statusCode).toBe(404);
+    });
+
+    it('News mit Bild und Vereinslogo', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const admin = await login('admin');
+      expect(
+        (
+          await send('POST', '/media', player.token, {
+            purpose: 'news',
+            fileName: 'a.png',
+            dataBase64: png,
+          })
+        ).status,
+      ).toBe(403);
+
+      const image = await send<UploadedImage>('POST', '/media', coach.token, {
+        purpose: 'news',
+        fileName: 'Pokal.png',
+        dataBase64: png,
+      });
+      expect(image.status).toBe(201);
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const news = await send<EditorialNews>('POST', '/editorial/news', coach.token, {
+        title: 'Pokalfoto B1',
+        body: 'Das Siegerfoto vom Hallencup.',
+        priority: 'info',
+        scopeType: 'team',
+        scopeId: b1.id,
+        action: 'draft',
+        imageId: image.body.id,
+      });
+      expect(news.status).toBe(201);
+      expect(news.body.imageUrl).toMatch(/^\/files\//);
+      const served = await app.inject({ method: 'GET', url: news.body.imageUrl! });
+      expect(served.statusCode).toBe(200);
+      expect(served.headers['content-type']).toBe('image/png');
+
+      // Logo nur durch die Vereinsadministration, Bilder nur für ihren Zweck
+      expect(
+        (await send('PUT', '/club/logo', coach.token, { imageId: image.body.id })).status,
+      ).toBe(403);
+      const wrongPurpose = await send('PUT', '/club/logo', admin.token, { imageId: image.body.id });
+      expect(wrongPurpose.status).toBe(400);
+      const logo = await send<UploadedImage>('POST', '/media', admin.token, {
+        purpose: 'logo',
+        fileName: 'wappen.png',
+        dataBase64: png,
+      });
+      expect((await send('PUT', '/club/logo', admin.token, { imageId: logo.body.id })).status).toBe(
+        200,
+      );
+      const me = await get<LoginResponse['me']>('/me', player.token);
+      expect(me.club.logoUrl).toMatch(/^\/files\//);
+      await send('PUT', '/club/logo', admin.token, { imageId: null });
+    });
+
+    it('Trainer erstellt eine Umfrage für seine Mannschaft und beendet sie', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const parent = await login('eltern');
+      const b1 = coach.me.create.polls.find((t) => t.label.startsWith('B1'))!;
+      expect(coach.me.create.polls.some((t) => t.type === 'club')).toBe(false);
+
+      const club = await send('POST', '/polls', coach.token, {
+        question: 'Vereinsfest?',
+        options: ['Ja', 'Nein'],
+        resultVisibility: 'always',
+        scopeType: 'club',
+      });
+      expect(club.status).toBe(403);
+      const dup = await send('POST', '/polls', coach.token, {
+        question: 'Trikotfarbe?',
+        options: ['Grün', ' Grün '],
+        resultVisibility: 'always',
+        scopeType: 'team',
+        scopeId: b1.id,
+      });
+      expect(dup.status).toBe(400);
+
+      const created = await send<PollDetail>('POST', '/polls', coach.token, {
+        question: 'Wann soll die Weihnachtsfeier stattfinden?',
+        options: ['Fr, 18.12.', 'Sa, 19.12.', 'So, 20.12.'],
+        closesAt: '2026-11-30T23:00:00Z',
+        resultVisibility: 'after_vote',
+        scopeType: 'team',
+        scopeId: b1.id,
+      });
+      expect(created.status).toBe(201);
+      expect(created.body).toMatchObject({ isOpen: true, canClose: true });
+      const id = created.body.id;
+
+      expect((await get<PollSummary[]>('/polls', player.token)).some((p) => p.id === id)).toBe(
+        true,
+      );
+      const notes = await get<NotificationItem[]>('/notifications', player.token);
+      expect(notes.some((n) => n.link === `/polls/${id}`)).toBe(true);
+      const hidden = await app.inject({
+        method: 'GET',
+        url: `/polls/${id}`,
+        headers: { authorization: `Bearer ${parent.token}` },
+      });
+      expect(hidden.statusCode).toBe(404);
+
+      const forPlayer = await get<PollDetail>(`/polls/${id}`, player.token);
+      expect(forPlayer.canClose).toBe(false);
+      expect((await send('POST', `/polls/${id}/close`, player.token)).status).toBe(403);
+      const closed = await send<PollDetail>('POST', `/polls/${id}/close`, coach.token);
+      expect(closed.body.isOpen).toBe(false);
     });
   });
 });

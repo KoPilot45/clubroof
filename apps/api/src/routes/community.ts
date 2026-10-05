@@ -1,5 +1,6 @@
 import {
   ABSENCE_KINDS,
+  SCOPE_TYPES,
   type Absence,
   type NewsItem,
   type PollDetail,
@@ -9,7 +10,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { createAbsence, deleteAbsence, listAbsences } from '../services/absences';
 import { getNews, setLike } from '../services/news';
-import { getPoll, listPolls, vote } from '../services/polls';
+import { closePoll, createPoll, getPoll, listPolls, vote } from '../services/polls';
 
 const isoDate = z.iso.date();
 
@@ -45,6 +46,34 @@ export const communityRoutes: FastifyPluginAsyncZod = async (app) => {
     { schema: { querystring: z.object({ teamId: z.uuid().optional() }) } },
     async (request): Promise<PollSummary[]> =>
       listPolls(app.db, request.actor!, app.now(), { teamId: request.query.teamId }),
+  );
+
+  app.post(
+    '/polls',
+    {
+      schema: {
+        body: z.object({
+          question: z.string().trim().min(3).max(200),
+          description: z.string().trim().max(1000).nullish(),
+          options: z.array(z.string().trim().min(1).max(100)).min(2).max(10),
+          closesAt: z.iso.datetime({ offset: true }).nullish(),
+          resultVisibility: z.enum(['always', 'after_vote', 'after_close']),
+          scopeType: z.enum(SCOPE_TYPES),
+          scopeId: z.uuid().nullish(),
+        }),
+      },
+    },
+    async (request, reply): Promise<PollDetail> => {
+      reply.code(201);
+      return createPoll(app.db, request.actor!, request.body, app.now());
+    },
+  );
+
+  app.post(
+    '/polls/:id/close',
+    { schema: { params: z.object({ id: z.uuid() }) } },
+    async (request): Promise<PollDetail> =>
+      closePoll(app.db, request.actor!, request.params.id, app.now()),
   );
 
   app.get(

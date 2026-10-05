@@ -139,3 +139,24 @@ export const auditLog = pgTable(
   },
   (t) => [index().on(t.clubId, t.createdAt)],
 );
+
+/**
+ * Hochgeladene Bilder (News-Bilder, Vereinslogo). Ausgeliefert nur über signierte Links;
+ * Inhalte und Typ werden beim Hochladen anhand der Datei selbst geprüft.
+ */
+export const media = pgTable(
+  'media',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    kind: text().notNull(),
+    storageKey: text().notNull(),
+    mimeType: text().notNull(),
+    sizeBytes: bigint({ mode: 'number' }).notNull(),
+    uploadedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId)],
+);

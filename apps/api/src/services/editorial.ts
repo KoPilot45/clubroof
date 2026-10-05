@@ -12,7 +12,6 @@ import {
   calendarDayOf,
   can,
   toIsoDate,
-  type AccessTarget,
   type EditorialNews,
   type EditorialOverview,
   type EditorialScope,
@@ -21,55 +20,20 @@ import {
   type ScopeType,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, desc, eq, gte, inArray, isNull, ne, or } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNull, ne, or } from 'drizzle-orm';
 import type { Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
+import { mediaIdOf, resolveMediaUrl } from '../storage/media-links';
 import { notify, recipientsFor } from './event-admin';
+import { mediaReference } from './uploads';
+import {
+  labelOf,
+  loadScopeContext as loadContext,
+  targetOf,
+  type ScopeContext as Context,
+} from './scopes';
 
 type NewsRow = typeof s.announcements.$inferSelect;
-type TeamRow = typeof s.teams.$inferSelect;
-
-/** „B1 · B-Jugend“, aber „1. Mannschaft“ statt „1. · 1. Mannschaft“ */
-const teamLabel = (t: { badge: string; name: string }) =>
-  t.name.startsWith(t.badge) ? t.name : `${t.badge} · ${t.name}`;
-
-type Context = {
-  units: (typeof s.orgUnits.$inferSelect)[];
-  teams: TeamRow[];
-};
-
-async function loadContext(db: Db, actor: Actor): Promise<Context> {
-  const [units, teams] = await Promise.all([
-    db
-      .select()
-      .from(s.orgUnits)
-      .where(eq(s.orgUnits.clubId, actor.club.id))
-      .orderBy(asc(s.orgUnits.sortOrder)),
-    db
-      .select({ team: s.teams })
-      .from(s.teams)
-      .innerJoin(s.seasons, eq(s.seasons.id, s.teams.seasonId))
-      .where(and(eq(s.teams.clubId, actor.club.id), eq(s.seasons.isCurrent, true)))
-      .orderBy(asc(s.teams.sortOrder))
-      .then((rows) => rows.map((r) => r.team)),
-  ]);
-  return { units, teams };
-}
-
-function targetOf(ctx: Context, type: ScopeType, id: string | null): AccessTarget | null {
-  if (type === 'club') return {};
-  if (type === 'org_unit') return ctx.units.some((u) => u.id === id) ? { orgUnitId: id } : null;
-  const team = ctx.teams.find((t) => t.id === id);
-  return team ? { teamId: team.id, orgUnitId: team.orgUnitId } : null;
-}
-
-function labelOf(ctx: Context, type: ScopeType, id: string | null): string {
-  if (type === 'club') return 'Verein';
-  if (type === 'org_unit') return ctx.units.find((u) => u.id === id)?.name ?? 'Bereich';
-  const team = ctx.teams.find((t) => t.id === id);
-  return team ? teamLabel(team) : 'Mannschaft';
-}
-
 const allowed = (
   actor: Actor,
   permission: Permission,
@@ -125,6 +89,8 @@ function toEditorial(
     author: row.authorPersonId ? (authors.get(row.authorPersonId) ?? null) : null,
     mine,
     reviewNote: row.reviewNote,
+    imageId: mediaIdOf(row.imageUrl),
+    imageUrl: resolveMediaUrl(actor.links, row.imageUrl),
     publishedAt: row.publishedAt?.toISOString() ?? null,
     updatedAt: row.updatedAt.toISOString(),
     can: {
@@ -214,7 +180,7 @@ export async function getEditorialNews(db: Db, actor: Actor, id: string): Promis
 }
 
 /** Nutzerkonten im Geltungsbereich (Mitglieder und deren Eltern). */
-async function usersInScope(
+export async function usersInScope(
   db: Db,
   actor: Actor,
   ctx: Context,
@@ -386,6 +352,7 @@ export async function createNews(
       teaser: input.teaser?.trim() || null,
       body: input.body.trim(),
       priority: input.priority,
+      imageUrl: input.imageId ? await mediaReference(db, actor, input.imageId, 'news') : null,
       status: 'draft',
       authorPersonId: actor.person.id,
       createdAt: now,
@@ -419,6 +386,11 @@ export async function updateNews(
       teaser: input.teaser?.trim() || null,
       body: input.body.trim(),
       priority: input.priority,
+      ...(input.imageId !== undefined
+        ? {
+            imageUrl: input.imageId ? await mediaReference(db, actor, input.imageId, 'news') : null,
+          }
+        : {}),
     })
     .where(eq(s.announcements.id, id))
     .returning();

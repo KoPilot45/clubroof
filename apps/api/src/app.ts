@@ -52,7 +52,8 @@ export async function buildApp({
   app.decorate('config', config);
   app.decorate('now', now);
   app.decorate('storage', storage ?? diskStorage(config.uploadsDir));
-  app.decorate('links', linkSigner(config.fileSigningSecret));
+  const links = linkSigner(config.fileSigningSecret);
+  app.decorate('links', links);
   app.decorateRequest('sessionUser', null);
   app.decorateRequest('actor', null);
 
@@ -63,7 +64,7 @@ export async function buildApp({
     const user = await findSessionUser(db, token, now());
     if (!user) throw unauthorized();
     request.sessionUser = user;
-    request.actor = await loadActor(db, user, now());
+    request.actor = await loadActor(db, user, now(), links);
   });
 
   await app.register(cors, {

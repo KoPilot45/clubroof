@@ -16,6 +16,7 @@ import { schema as s, type Db } from '@clubroof/db';
 import { and, eq, gte, inArray, isNull, or } from 'drizzle-orm';
 import { forbidden } from './errors';
 import type { SessionUser } from './auth/session';
+import type { LinkSigner } from './storage/files';
 
 type TeamRow = typeof s.teams.$inferSelect;
 
@@ -39,9 +40,16 @@ export type Actor = {
   orgUnitIds: string[];
   grants: (Grant & { key: string; name: string })[];
   modules: ModuleSetting[];
+  /** Signiert Datei- und Bildlinks (Schlüssel der laufenden API-Instanz) */
+  links: LinkSigner;
 };
 
-export async function loadActor(db: Db, user: SessionUser, now: Date): Promise<Actor> {
+export async function loadActor(
+  db: Db,
+  user: SessionUser,
+  now: Date,
+  links: LinkSigner,
+): Promise<Actor> {
   const [person] = await db.select().from(s.persons).where(eq(s.persons.userId, user.id)).limit(1);
   if (!person) throw forbidden('Dein Konto ist keinem Verein zugeordnet.');
   if (person.membershipStatus === 'left') throw forbidden('Deine Mitgliedschaft ist beendet.');
@@ -119,6 +127,7 @@ export async function loadActor(db: Db, user: SessionUser, now: Date): Promise<A
     orgUnitIds: [...new Set(memberships.map((m) => m.team.orgUnitId))],
     grants: grantRows,
     modules,
+    links,
   };
 }
 

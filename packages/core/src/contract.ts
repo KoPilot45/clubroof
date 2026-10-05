@@ -58,6 +58,10 @@ export type MeResponse = {
   canAdminister: boolean;
   /** Rechte im Verwaltungsbereich (Mitglieder, Rollen, Audit-Log) */
   admin: AdminPermissions;
+  /** Bereiche, in denen ich Umfragen erstellen bzw. Dokumente hochladen darf */
+  create: { polls: UploadTarget[]; documents: UploadTarget[] };
+  /** Vereinslogo und Stammdaten ändern */
+  canManageClub: boolean;
   /** News schreiben bzw. ohne Freigabe veröffentlichen (irgendwo im Verein) */
   news: { write: boolean; publish: boolean };
   /** Auf Vereinsebene aktivierte Module (bestimmen die Kacheln im Vereinsbereich) */
@@ -258,6 +262,8 @@ export type PollDetail = PollSummary & {
   /** Ob Ergebnisse für den Nutzer sichtbar sind */
   resultsVisible: boolean;
   options: { id: string; label: string; votes: number | null }[];
+  /** Ich darf die Umfrage vorzeitig beenden */
+  canClose: boolean;
 };
 
 export type TeamPermissions = {
@@ -437,6 +443,38 @@ export type DocumentItem = {
   sizeBytes: number;
   createdAt: string;
   source: { type: ScopeType; label: string };
+  /** Ich darf dieses Dokument löschen */
+  canDelete: boolean;
+};
+
+export type UploadTarget = { type: ScopeType; id: string | null; label: string };
+
+export type UploadDocumentInput = {
+  title: string;
+  category: DocumentCategory;
+  scopeType: ScopeType;
+  scopeId?: string | null;
+  fileName: string;
+  /** Dateiinhalt als Base64 */
+  dataBase64: string;
+};
+
+export type UploadImageInput = {
+  purpose: 'news' | 'logo';
+  fileName: string;
+  dataBase64: string;
+};
+
+export type UploadedImage = { id: string; url: string };
+
+export type CreatePollInput = {
+  question: string;
+  description?: string | null;
+  options: string[];
+  closesAt?: string | null;
+  resultVisibility: 'always' | 'after_vote' | 'after_close';
+  scopeType: ScopeType;
+  scopeId?: string | null;
 };
 
 export type ClubTeamGroup = {
@@ -757,6 +795,8 @@ export type EditorialNews = {
   mine: boolean;
   /** Rückmeldung bei Ablehnung */
   reviewNote: string | null;
+  imageId: string | null;
+  imageUrl: string | null;
   publishedAt: string | null;
   updatedAt: string;
   can: { edit: boolean; publish: boolean; remove: boolean };
@@ -777,4 +817,6 @@ export type SaveNewsInput = {
   scopeType: ScopeType;
   scopeId?: string | null;
   action: NewsAction;
+  /** Hochgeladenes Bild (`UploadedImage.id`); `null` entfernt das Bild */
+  imageId?: string | null;
 };

@@ -25,6 +25,7 @@ const body = z.object({
   scopeType: z.enum(SCOPE_TYPES),
   scopeId: z.uuid().nullish(),
   action: z.enum(['draft', 'submit', 'publish']),
+  imageId: z.uuid().nullish(),
 });
 
 /** News-Redaktion mit Freigabe. Rechte prüft `services/editorial.ts`. */

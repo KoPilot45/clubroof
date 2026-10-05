@@ -3,6 +3,7 @@
  * „Heute auf der Anlage“.
  */
 import {
+  can,
   calendarDayOf,
   addDays,
   at,
@@ -54,6 +55,15 @@ export async function listDocuments(
     sizeBytes: d.sizeBytes,
     createdAt: d.createdAt.toISOString(),
     source: { type: d.scopeType, label: labels.label(d.scopeType, d.scopeId) },
+    canDelete: can(
+      actor.grants,
+      'documents.manage',
+      d.scopeType === 'team'
+        ? { teamId: d.scopeId, orgUnitId: labels.teamOrgUnit(d.scopeId) }
+        : d.scopeType === 'org_unit'
+          ? { orgUnitId: d.scopeId }
+          : {},
+    ),
   }));
 }
 

@@ -3,12 +3,13 @@
  * später austauschbar gegen einen S3-kompatiblen Speicher, ohne die Aufrufer zu ändern.
  */
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, normalize, sep } from 'node:path';
 
 export interface FileStorage {
   read(key: string): Promise<Buffer | null>;
   write(key: string, data: Buffer): Promise<void>;
+  remove(key: string): Promise<void>;
 }
 
 export function diskStorage(root: string): FileStorage {
@@ -30,6 +31,9 @@ export function diskStorage(root: string): FileStorage {
       const path = resolve(key);
       await mkdir(dirname(path), { recursive: true });
       await writeFile(path, data);
+    },
+    async remove(key) {
+      await rm(resolve(key), { force: true });
     },
   };
 }

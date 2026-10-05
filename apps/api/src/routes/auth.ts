@@ -40,6 +40,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         app.db,
         { sessionId: '', id: user.id, email: user.email, displayName: user.displayName },
         now,
+        app.links,
       );
       const session = await createSession(app.db, user.id, {
         now,
@@ -50,7 +51,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       return {
         token: session.token,
         expiresAt: session.expiresAt.toISOString(),
-        me: buildMe(actor),
+        me: await buildMe(app.db, actor),
       };
     },
   );

@@ -8,3 +8,7 @@ dist/
 .DS_Store
 coverage/
 apps/api/data/
+
+# Hochgeladene Dateien (lokaler Dateispeicher)
+data/uploads/
+**/data/uploads/

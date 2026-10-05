@@ -30,6 +30,7 @@ import {
 } from 'drizzle-orm';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
+import { resolveMediaUrl } from '../storage/media-links';
 import { fetchEventRows, summarizeEvents } from './events';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -105,7 +106,7 @@ export async function loadNews(
     actor.user.id,
     selected.map((n) => n.id),
   );
-  return selected.map((n) => toNewsItem(n, labels, liked.has(n.id)));
+  return selected.map((n) => toNewsItem(actor, n, labels, liked.has(n.id)));
 }
 
 export async function likedByUser(db: Db, userId: string, ids: string[]): Promise<Set<string>> {
@@ -120,6 +121,7 @@ export async function likedByUser(db: Db, userId: string, ids: string[]): Promis
 }
 
 export function toNewsItem(
+  actor: Actor,
   n: typeof s.announcements.$inferSelect,
   labels: Awaited<ReturnType<typeof scopeLabels>>,
   likedByMe: boolean,
@@ -131,7 +133,7 @@ export function toNewsItem(
     body: n.body,
     priority: n.priority,
     source: { type: n.scopeType, label: labels.label(n.scopeType, n.scopeId) },
-    imageUrl: n.imageUrl,
+    imageUrl: resolveMediaUrl(actor.links, n.imageUrl),
     publishedAt: n.publishedAt!.toISOString(),
     viewCount: n.viewCount,
     likeCount: n.likeCount,

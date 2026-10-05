@@ -43,7 +43,7 @@ export async function getNews(db: Db, actor: Actor, id: string, now: Date): Prom
     scopeLabels(db, actor.club.id),
     likedByUser(db, actor.user.id, [id]),
   ]);
-  return toNewsItem({ ...row, viewCount }, labels, liked.has(id));
+  return toNewsItem(actor, { ...row, viewCount }, labels, liked.has(id));
 }
 
 /** „Gefällt mir“ setzen oder entfernen. Mehrfaches Setzen zählt nur einmal. */
@@ -82,5 +82,5 @@ export async function setLike(
   }
   const row = await loadVisible(db, actor, id, now);
   const labels = await scopeLabels(db, actor.club.id);
-  return toNewsItem(row, labels, like);
+  return toNewsItem(actor, row, labels, like);
 }

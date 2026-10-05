@@ -2,12 +2,15 @@
  * Umfragen (Konzept §11): eine Frage, eine Stimme je Person, Frist und Regeln, wann
  * Ergebnisse sichtbar sind („immer“, „nach eigener Stimme“, „nach Fristende“).
  */
-import type { PollDetail, PollSummary } from '@clubroof/core';
+import { can, type CreatePollInput, type PollDetail, type PollSummary } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, count, desc, eq, gt, inArray, isNull, or } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
-import { HttpError, notFound } from '../errors';
+import { HttpError, forbidden, notFound } from '../errors';
+import { usersInScope } from './editorial';
+import { notify } from './event-admin';
 import { scopeLabels, scopeVisible } from './home';
+import { loadScopeContext, requireScope, targetOf } from './scopes';
 
 type PollRow = typeof s.polls.$inferSelect;
 const DAY = 24 * 60 * 60 * 1000;
@@ -95,7 +98,11 @@ async function loadVisible(db: Db, actor: Actor, id: string): Promise<PollRow> {
     .select()
     .from(s.polls)
     .where(
-      and(eq(s.polls.id, id), eq(s.polls.clubId, actor.club.id), scopeVisible(actor, s.polls)),
+      and(
+        eq(s.polls.id, id),
+        eq(s.polls.clubId, actor.club.id),
+        or(scopeVisible(actor, s.polls), eq(s.polls.createdByPersonId, actor.person.id)),
+      ),
     );
   if (!poll) throw notFound('Die Umfrage');
   return poll;
@@ -137,7 +144,81 @@ export async function getPoll(db: Db, actor: Actor, id: string, now: Date): Prom
       label: o.label,
       votes: visible ? Number(optionCounts.find((c) => c.optionId === o.id)?.n ?? 0) : null,
     })),
+    canClose: isOpen(poll, now) && (await mayManage(db, actor, poll)),
   };
+}
+
+/** Ersteller und wer Umfragen im Bereich verwalten darf. */
+async function mayManage(db: Db, actor: Actor, poll: PollRow): Promise<boolean> {
+  if (poll.createdByPersonId === actor.person.id) return true;
+  const target = targetOf(await loadScopeContext(db, actor), poll.scopeType, poll.scopeId);
+  return target !== null && can(actor.grants, 'polls.manage', target);
+}
+
+export async function createPoll(
+  db: Db,
+  actor: Actor,
+  input: CreatePollInput,
+  now: Date,
+): Promise<PollDetail> {
+  const ctx = await loadScopeContext(db, actor);
+  const { scopeId } = requireScope(
+    actor,
+    ctx,
+    'polls.manage',
+    input.scopeType,
+    input.scopeId,
+    'Für diesen Bereich darfst du keine Umfrage erstellen.',
+  );
+  const options = [...new Set(input.options.map((o) => o.trim()).filter(Boolean))];
+  if (options.length < 2)
+    throw new HttpError(
+      400,
+      'options',
+      'Bitte mindestens zwei unterschiedliche Antworten angeben.',
+    );
+  const closesAt = input.closesAt ? new Date(input.closesAt) : null;
+  if (closesAt && closesAt <= now)
+    throw new HttpError(400, 'in_past', 'Das Ende der Umfrage liegt in der Vergangenheit.');
+
+  const id = await db.transaction(async (tx) => {
+    const [poll] = await tx
+      .insert(s.polls)
+      .values({
+        clubId: actor.club.id,
+        scopeType: input.scopeType,
+        scopeId,
+        question: input.question.trim(),
+        description: input.description?.trim() || null,
+        closesAt,
+        resultVisibility: input.resultVisibility,
+        createdByPersonId: actor.person.id,
+        createdAt: now,
+      })
+      .returning({ id: s.polls.id });
+    await tx
+      .insert(s.pollOptions)
+      .values(options.map((label, i) => ({ pollId: poll!.id, label, sortOrder: i })));
+    return poll!.id;
+  });
+
+  await notify(
+    db,
+    actor,
+    await usersInScope(db, actor, ctx, input.scopeType, scopeId, now),
+    { level: 'action', title: 'Neue Umfrage', body: input.question.trim(), link: `/polls/${id}` },
+    now,
+  );
+  return getPoll(db, actor, id, now);
+}
+
+export async function closePoll(db: Db, actor: Actor, id: string, now: Date): Promise<PollDetail> {
+  const poll = await loadVisible(db, actor, id);
+  if (!(await mayManage(db, actor, poll)))
+    throw forbidden('Diese Umfrage kannst du nicht beenden.');
+  if (!isOpen(poll, now)) throw new HttpError(409, 'closed', 'Die Umfrage ist bereits beendet.');
+  await db.update(s.polls).set({ closesAt: now }).where(eq(s.polls.id, id));
+  return getPoll(db, actor, id, now);
 }
 
 /** Abstimmen oder die eigene Stimme ändern, solange die Umfrage offen ist. */

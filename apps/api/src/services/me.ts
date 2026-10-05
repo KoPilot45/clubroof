@@ -1,5 +1,8 @@
 import { MODULES, type MeResponse, type MyTeam, type TeamFunction } from '@clubroof/core';
-import { moduleEnabled, type Actor } from '../actor';
+import type { Db } from '@clubroof/db';
+import { actorCan, moduleEnabled, type Actor } from '../actor';
+import { resolveMediaUrl } from '../storage/media-links';
+import { loadScopeContext, targetsWith } from './scopes';
 import { adminPermissions } from './admin';
 import { newsPermissions } from './editorial';
 
@@ -15,7 +18,8 @@ const ADMIN_ROLES = new Set([
   'referee_lead',
 ]);
 
-export function buildMe(actor: Actor): MeResponse {
+export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
+  const ctx = await loadScopeContext(db, actor);
   const teams = new Map<string, MyTeam>();
   for (const m of actor.memberships) {
     const key = `${m.teamId}:${m.personId}`;
@@ -48,7 +52,7 @@ export function buildMe(actor: Actor): MeResponse {
       id: actor.club.id,
       name: actor.club.name,
       shortName: actor.club.shortName,
-      logoUrl: actor.club.logoUrl,
+      logoUrl: resolveMediaUrl(actor.links, actor.club.logoUrl),
       colorTheme: actor.club.colorTheme,
       colorMode: actor.club.colorMode,
       timezone: actor.club.timezone,
@@ -64,6 +68,11 @@ export function buildMe(actor: Actor): MeResponse {
     canAdminister: actor.grants.some((g) => ADMIN_ROLES.has(g.key)),
     admin: adminPermissions(actor),
     news: newsPermissions(actor),
+    create: {
+      polls: targetsWith(actor, ctx, 'polls.manage'),
+      documents: targetsWith(actor, ctx, 'documents.manage'),
+    },
+    canManageClub: actorCan(actor, 'club.settings.manage'),
     clubModules: MODULES.filter((mod) => moduleEnabled(actor, mod.key)).map((mod) => mod.key),
   };
 }
