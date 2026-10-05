@@ -129,7 +129,7 @@ export default function MemberScreen() {
               first={i === 0}
               leading={<TeamBadge badge={ms.team.badge} />}
               title={ms.team.name}
-              subtitle={`${TEAM_FUNCTION_LABELS[ms.function]}${ms.jerseyNumber ? ` · Nr. ${ms.jerseyNumber}` : ''} · seit ${toGermanDate(ms.validFrom)}`}
+              subtitle={`${TEAM_FUNCTION_LABELS[ms.function]}${ms.jerseyNumber ? ` · Nr. ${ms.jerseyNumber}` : ''} · ${ms.upcoming ? 'ab' : 'seit'} ${toGermanDate(ms.validFrom)}${ms.upcoming ? ' (nächste Saison)' : ''}`}
               trailing={
                 m.can.manageMembers ? (
                   <Button

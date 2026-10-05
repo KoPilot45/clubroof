@@ -1,6 +1,6 @@
 import type { DocumentCategory } from '@clubroof/core';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Button, Card, ChoiceChips, Chip, Screen, T, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
@@ -20,11 +20,13 @@ const key = (t: { type: string; id: string | null }) => `${t.type}:${t.id ?? ''}
 export default function UploadDocumentScreen() {
   const { api, me } = useSignedIn();
   const queryClient = useQueryClient();
+  const { teamId } = useLocalSearchParams<{ teamId?: string }>();
   const targets = me.create.documents;
+  const preset = targets.find((t) => t.type === 'team' && t.id === teamId) ?? targets[0];
   const [file, setFile] = useState<PickedFile | null>(null);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<DocumentCategory>('forms');
-  const [scope, setScope] = useState(targets[0] ? key(targets[0]) : '');
+  const [scope, setScope] = useState(preset ? key(preset) : '');
   const [error, setError] = useState<string | null>(null);
   const target = targets.find((t) => key(t) === scope);
 

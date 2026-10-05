@@ -53,7 +53,7 @@ Stand: 05.10.2026
 | Statistik (Aus / Basis / Erweitert / Individuell) | K 4 | 🟡 | Basis: Bilanz, Tore, Trainingsbeteiligung; Spielerstatistik (Tore, Assists) folgt mit dem Spielbericht |
 | Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | 🟡 | im Kader sichtbar; Einstellung folgt mit der Mannschafts-Einrichtung |
 | Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | 🟡 | alles außer Bericht-Export; Buchen nur für Kassenverantwortliche |
-| Teambezogene Dokumente und Aufgaben | K 4 | 🟡 | Dokumente der Mannschaft; Aufgaben folgen |
+| Teambezogene Dokumente und Aufgaben | K 4 | 🟡 | Dokumente der Mannschaft, Trainer laden selbst hoch; Aufgaben folgen |
 | Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ⬜ | optionales Modul |
 
 ## 4. Termine & Teilnahme
@@ -148,7 +148,7 @@ Stand: 05.10.2026
 | --- | --- | --- | --- |
 | Verwaltungsübersicht (Teams, Mitglieder, offene Anfragen) | M 8 | ✅ | Kennzahlen, Mitglieder ohne Mannschaft, letzte Änderungen (Mehr → Verwaltung); „offene Anfragen“ kommen mit den Einladungen |
 | Mitglieder: Stammdaten, Ein-/Austritte, Mannschaftszuordnung | K 6–7 | ✅ | Suche/Filter, Anlegen, Bearbeiten, Aktiv/Passiv/Austritt; Zuordnung trägt Person sofort in künftige Termine ein bzw. aus. Jugendleitung sieht nur ihren Bereich |
-| Mannschaften verwalten, Saisonplanung, Saisonwechsel | K 6–7 | ⬜ | |
+| Mannschaften verwalten, Saisonplanung, Saisonwechsel | K 6–7 | ✅ | Anlegen/Bearbeiten/Löschen; nächste Saison vorbereiten (Teams, Module, Fristen, Trainerteams, Zusatzaufgaben, optional Spieler), Kader der neuen Saison planen, Saison starten (Kasse, Dokumente, künftige Termine, Spielerbedarf gehen mit) |
 | Spielerbewegungen (Zu-/Abgänge, Leihe) | M 8, K 6 | ⬜ | |
 | Rollen & Rechte vergeben | M 8, K 7 | ✅ | Beim Mitglied mit Geltungsbereich (z. B. Kassenwart B1); Schutz vor Rechteausweitung und Aussperren |
 | Veranstaltungen planen | M 8 | ⬜ | |
@@ -161,9 +161,9 @@ Stand: 05.10.2026
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | Vereins-Ersteinrichtung als Assistent (Name, Logo, Farbe, Bereiche, Admins) | M 10, K 8 | ⬜ | |
-| Mannschafts-Einrichtung mit Vorlagen (leistungsorientiert, klassisch, Jugend, Freizeit) | M 10, K 8 | ⬜ | |
-| Module je Verein / Bereich / Mannschaft mit Vererbung | K 4, 8 | 🟡 | im Backend fertig; Bedienung fehlt |
-| Update-Center: „Einrichten / Später / Nicht verwenden“ | M 17, K 13 | ⬜ | Module dafür in Demodaten vorbereitet |
+| Mannschafts-Einrichtung mit Vorlagen (leistungsorientiert, klassisch, Jugend, Freizeit) | M 10, K 8 | ✅ | Vorlage setzt die Mannschaftsmodule; danach je Modul änderbar |
+| Module je Verein / Bereich / Mannschaft mit Vererbung | K 4, 8 | 🟡 | Verein und Mannschaft in der App einstellbar; Bereichsebene nur im Backend |
+| Update-Center: „Einrichten / Später / Nicht verwenden“ | M 17, K 13 | ✅ | „Später“ blendet 14 Tage aus; neue Module erscheinen automatisch |
 | Einladungen per Link / QR-Code mit Freigabe | M 10, K 8 | ⬜ | Schritt 3 der Roadmap |
 
 ## 13. Sicherheit, Betrieb, Integrationen
@@ -193,7 +193,7 @@ Stand: 05.10.2026
 | Benachrichtigungen | 2 | 2 | 3 |
 | Profile | 3 | 2 | 0 |
 | Platzbelegung & Betrieb | 3 | 0 | 1 |
-| Verwaltung | 4 | 0 | 5 |
-| Einrichtung & Module | 0 | 1 | 4 |
+| Verwaltung | 5 | 0 | 4 |
+| Einrichtung & Module | 2 | 1 | 2 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **63** | **14** | **24** |
+| **Gesamt** | **66** | **14** | **21** |

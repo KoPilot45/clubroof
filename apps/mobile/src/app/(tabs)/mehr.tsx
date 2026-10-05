@@ -54,7 +54,7 @@ export default function MoreScreen() {
       onPress: () => router.push('/stats'),
     },
     { key: 'settings', label: 'Einstellungen', icon: 'settings', soon: true },
-    ...(me.admin.readMembers || me.admin.manageRoles || me.admin.readAudit
+    ...(Object.values(me.admin).some(Boolean)
       ? [
           {
             key: 'admin',

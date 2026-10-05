@@ -72,7 +72,9 @@ export default function DocumentsScreen() {
           label="Dokument hochladen"
           icon="cloud-upload"
           variant="outline"
-          onPress={() => router.push('/documents-upload')}
+          onPress={() =>
+            router.push(teamId ? `/documents-upload?teamId=${teamId}` : '/documents-upload')
+          }
         />
       ) : null}
       <TextField

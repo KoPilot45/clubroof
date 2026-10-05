@@ -127,6 +127,19 @@ function Navigator() {
             options={{ headerShown: true, title: 'Umfrage erstellen' }}
           />
           <Stack.Screen name="admin/club" options={{ headerShown: true, title: 'Vereinslogo' }} />
+          <Stack.Screen name="admin/modules" options={{ headerShown: true, title: 'Module' }} />
+          <Stack.Screen
+            name="admin/teams"
+            options={{ headerShown: true, title: 'Mannschaften & Saison' }}
+          />
+          <Stack.Screen
+            name="admin/team-new"
+            options={{ headerShown: true, title: 'Mannschaft anlegen' }}
+          />
+          <Stack.Screen
+            name="admin/team/[id]"
+            options={{ headerShown: true, title: 'Mannschaft' }}
+          />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />

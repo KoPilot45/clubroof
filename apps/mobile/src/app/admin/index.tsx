@@ -100,7 +100,26 @@ export default function AdminScreen() {
               },
             ]
           : []),
-        { key: 'modules', label: 'Module', icon: 'apps' as const, soon: true },
+        ...(o.can.manageTeams || o.can.planSeason
+          ? [
+              {
+                key: 'teams',
+                label: 'Mannschaften & Saison',
+                icon: 'shirt' as const,
+                onPress: () => router.push('/admin/teams'),
+              },
+            ]
+          : []),
+        ...(o.can.manageModules
+          ? [
+              {
+                key: 'modules',
+                label: 'Module',
+                icon: 'apps' as const,
+                onPress: () => router.push('/admin/modules'),
+              },
+            ]
+          : []),
       ]
     : [];
 

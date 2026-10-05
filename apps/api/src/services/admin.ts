@@ -248,7 +248,14 @@ async function auditEntries(db: Db, actor: Actor, limit: number): Promise<AuditE
 
 export async function getAdminOverview(db: Db, actor: Actor, now: Date): Promise<AdminOverview> {
   const can = adminPermissions(actor);
-  if (!can.readMembers && !can.manageRoles && !can.readAudit) {
+  if (
+    !can.readMembers &&
+    !can.manageRoles &&
+    !can.readAudit &&
+    !can.manageModules &&
+    !can.manageTeams &&
+    !can.planSeason
+  ) {
     throw forbidden('Die Verwaltung ist für Vorstand, Leitung und Administration.');
   }
   const visible = can.readMembers ? await visiblePersonIds(db, actor, now) : new Set<string>();
