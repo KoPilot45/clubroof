@@ -43,6 +43,15 @@ Alle Demo-Logins haben das Passwort `clubroof-demo`.
 | `eltern@sv-gruen-weiss.example` | Julia Neumann | Mutter von Leon (E-Jugend) und Mia (F-Jugend), Co-Trainerin E-Jugend |
 | `kasse@sv-gruen-weiss.example` | Petra Schulz | Kassenwartin |
 
+## Ausprobieren ohne Demodaten
+
+- **Einladungen, Passwort vergessen:** Die Mails landen lokal im Test-Postfach <http://localhost:8025>.
+- **CSV-Import:** Verwaltung → CSV-Import; die Vorlage lässt sich im Browser herunterladen.
+  Eine erneute Übernahme derselben Datei erkennt alle Zeilen als Dublette.
+- **Ersteinrichtung:** Nur auf einer leeren Datenbank. Dafür eine zweite Datenbank anlegen, Migrationen
+  ausführen und die API mit `DATABASE_URL=…/clubroof_leer SETUP_TOKEN=beliebiger-code` starten – die App
+  öffnet dann statt der Anmeldung den Einrichtungsassistenten.
+
 ## Automatische Prüfungen
 
 `packages/db/src/seed/seed.test.ts` prüft unter anderem:

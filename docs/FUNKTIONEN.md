@@ -16,7 +16,7 @@ Stand: 05.10.2026
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | Vier Bereiche: Home, Team, Verein, Mehr | M 1, K 2 | ✅ | |
-| Vereinsfarbe (5 Farben) und Wappen in der ganzen App | M 10, K 8 | ✅ | Logo-Upload in der Verwaltung; ohne Logo erscheint ein Wappen mit Kürzel |
+| Vereinsfarbe (5 Farben) und Wappen in der ganzen App | M 10, K 8 | ✅ | Verwaltung → Verein & Design: Logo, Name, Farbe, Darstellung; ohne Logo erscheint ein Wappen mit Kürzel |
 | Hell / dunkel / automatisch | K 8 | ✅ | |
 | Farben mit Bedeutung (dringend, Aktion, Info, erledigt, archiviert) | K 2 | ✅ | |
 | Mannschafts-Badges (B1, 1., AH) und Tags für Quelle/Typ | K 2 | ✅ | |
@@ -146,25 +146,25 @@ Stand: 05.10.2026
 
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
-| Verwaltungsübersicht (Teams, Mitglieder, offene Anfragen) | M 8 | ✅ | Kennzahlen, Mitglieder ohne Mannschaft, letzte Änderungen (Mehr → Verwaltung); „offene Anfragen“ kommen mit den Einladungen |
+| Verwaltungsübersicht (Teams, Mitglieder, offene Anfragen) | M 8 | ✅ | Kennzahlen, Mitglieder ohne Mannschaft, offene Beitrittsanfragen, letzte Änderungen (Mehr → Verwaltung) |
 | Mitglieder: Stammdaten, Ein-/Austritte, Mannschaftszuordnung | K 6–7 | ✅ | Suche/Filter, Anlegen, Bearbeiten, Aktiv/Passiv/Austritt; Zuordnung trägt Person sofort in künftige Termine ein bzw. aus. Jugendleitung sieht nur ihren Bereich |
 | Mannschaften verwalten, Saisonplanung, Saisonwechsel | K 6–7 | ✅ | Anlegen/Bearbeiten/Löschen; nächste Saison vorbereiten (Teams, Module, Fristen, Trainerteams, Zusatzaufgaben, optional Spieler), Kader der neuen Saison planen, Saison starten (Kasse, Dokumente, künftige Termine, Spielerbedarf gehen mit) |
 | Spielerbewegungen (Zu-/Abgänge, Leihe) | M 8, K 6 | ✅ | Wechsel im Verein, befristete Leihe (Stammteam bleibt), Zugang, Abgang; Termine werden angepasst, Historie bleibt |
 | Rollen & Rechte vergeben | M 8, K 7 | ✅ | Beim Mitglied mit Geltungsbereich (z. B. Kassenwart B1); Schutz vor Rechteausweitung und Aussperren |
 | Veranstaltungen planen | M 8 | ⬜ | |
 | Audit-Log | K 6, 16 | ✅ | „Änderungsprotokoll“ für Vorstand und Fulladmin |
-| Import / Sync-Status | K 6, 14 | ⬜ | |
+| Import / Sync-Status | K 6, 14 | 🟡 | CSV-Import der Mitglieder mit Vorschau und Dublettenprüfung; Sync-Status kommt mit FUSSBALL.DE/DFBnet |
 | Schiedsrichterverwaltung | K 7, 12 | ⬜ | optionales Modul |
 
 ## 12. Einrichtung & Module
 
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
-| Vereins-Ersteinrichtung als Assistent (Name, Logo, Farbe, Bereiche, Admins) | M 10, K 8 | ⬜ | |
+| Vereins-Ersteinrichtung als Assistent (Name, Logo, Farbe, Bereiche, Admins) | M 10, K 8 | ✅ | Auf leerem Server mit Einrichtungscode (`SETUP_TOKEN`): Verein, Farbe, Bereiche, erstes Admin-Konto; Bereiche später unter Verein & Design |
 | Mannschafts-Einrichtung mit Vorlagen (leistungsorientiert, klassisch, Jugend, Freizeit) | M 10, K 8 | ✅ | Vorlage setzt die Mannschaftsmodule; danach je Modul änderbar |
 | Module je Verein / Bereich / Mannschaft mit Vererbung | K 4, 8 | 🟡 | Verein und Mannschaft in der App einstellbar; Bereichsebene nur im Backend |
 | Update-Center: „Einrichten / Später / Nicht verwenden“ | M 17, K 13 | ✅ | „Später“ blendet 14 Tage aus; neue Module erscheinen automatisch |
-| Einladungen per Link / QR-Code mit Freigabe | M 10, K 8 | ⬜ | Schritt 3 der Roadmap |
+| Einladungen per Link / QR-Code mit Freigabe | M 10, K 8 | ✅ | Persönliche Einladung per E-Mail oder Mannschafts-Link/QR-Code; Selbstregistrierung (auch Eltern mit Kind) mit Freigabe durch Trainer bzw. Verwaltung |
 
 ## 13. Sicherheit, Betrieb, Integrationen
 
@@ -173,9 +173,11 @@ Stand: 05.10.2026
 | Anmeldung, sichere Passwörter, widerrufbare Sitzungen | K 16 | ✅ | |
 | Rechteprüfung immer serverseitig | K 16 | ✅ | |
 | Mandantenfähigkeit (`club_id`) | K 14 | ✅ | |
-| 2-Faktor-Anmeldung für privilegierte Rollen | K 16 | ⬜ | |
+| Passwort vergessen / ändern | K 16 | ✅ | Link per E-Mail (30 Minuten gültig); beim Ändern werden andere Sitzungen abgemeldet |
+| 2-Faktor-Anmeldung für privilegierte Rollen | K 16 | ✅ | Authenticator-App (TOTP) mit Wiederherstellungscodes; Verein kann sie für alle mit Verwaltungsrechten verpflichtend machen |
 | Server, HTTPS, getrennte Backups | K 15–16 | ⬜ | mit dem IONOS-VPS |
-| Import (CSV) und Anbindung FUSSBALL.DE / DFBnet | K 14 | ⬜ | Phase 4 |
+| Import (CSV) | K 14 | ✅ | Mitglieder samt Mannschaft; UTF-8 und Excel (Windows-1252), Semikolon oder Komma |
+| Anbindung FUSSBALL.DE / DFBnet | K 14 | ⬜ | braucht Zugangsdaten des Verbands, nach dem Testserver |
 
 ---
 
@@ -193,7 +195,7 @@ Stand: 05.10.2026
 | Benachrichtigungen | 2 | 2 | 3 |
 | Profile | 4 | 1 | 0 |
 | Platzbelegung & Betrieb | 3 | 0 | 1 |
-| Verwaltung | 6 | 0 | 3 |
-| Einrichtung & Module | 2 | 1 | 2 |
-| Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **71** | **12** | **18** |
+| Verwaltung | 6 | 1 | 2 |
+| Einrichtung & Module | 4 | 1 | 0 |
+| Sicherheit, Betrieb, Integrationen | 6 | 0 | 2 |
+| **Gesamt** | **76** | **13** | **14** |
