@@ -12,6 +12,7 @@ Dokumente und Verwaltung.
 - [Farbkonzept](docs/FARBKONZEPT.md)
 - [Demodaten](docs/DEMODATEN.md)
 - [Funktionsliste mit Umsetzungsstand](docs/FUNKTIONEN.md)
+- [Festlegungen](docs/ENTSCHEIDUNGEN.md)
 
 ## Projektstruktur
 

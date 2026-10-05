@@ -97,7 +97,8 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
   {
     key: 'treasurer',
     name: 'Kassenwart',
-    description: 'Mannschaftskasse, Buchungen, Strafen/Getränke, Abrechnung',
+    // Zusatzaufgabe: wird z. B. einem Spieler für seine Mannschaft vergeben (docs/ENTSCHEIDUNGEN.md)
+    description: 'Zusatzaufgabe: Mannschaftskasse, Buchungen, Strafen/Getränke, Abrechnung',
     defaultScope: 'team',
     permissions: ['cash.read', 'cash.manage'],
   },
