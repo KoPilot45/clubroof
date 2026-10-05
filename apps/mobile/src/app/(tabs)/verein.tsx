@@ -109,8 +109,17 @@ export default function ClubScreen() {
       icon: 'call',
       onPress: () => router.push('/contacts'),
     },
-    ...(has('facility_booking')
-      ? [{ key: 'pitch', label: 'Platzbelegung', icon: 'grid' as const, soon: true }]
+    ...(has('facility_booking') &&
+    (me.canAdminister ||
+      me.teams.some((t) => t.functions.some((f) => f === 'coach' || f === 'assistant_coach')))
+      ? [
+          {
+            key: 'pitch',
+            label: 'Platzbelegung',
+            icon: 'grid' as const,
+            onPress: () => router.push('/facilities'),
+          },
+        ]
       : []),
     ...(has('forum')
       ? [{ key: 'forum', label: 'Austausch', icon: 'chatbubbles' as const, soon: true }]

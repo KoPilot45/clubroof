@@ -47,6 +47,7 @@ export default function NewEventScreen() {
   const [meetingPoint, setMeetingPoint] = useState('Kabine Vereinsheim');
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [conflict, setConflict] = useState(false);
 
   const place = placeChoice ?? facilities.data?.[0]?.id ?? 'other';
   const startsAt = at(fromIsoDate(date), time, me.club.timezone);
@@ -56,7 +57,7 @@ export default function NewEventScreen() {
   const isAway = type === 'match' && home === 'away';
 
   const save = useMutation({
-    mutationFn: () =>
+    mutationFn: (allowConflict: boolean) =>
       api<EventDetail>(`/teams/${id}/events`, {
         method: 'POST',
         body: {
@@ -71,6 +72,7 @@ export default function NewEventScreen() {
           description: description.trim() || null,
           opponentName: type === 'match' ? opponent.trim() : null,
           isHome: type === 'match' ? home === 'home' : null,
+          allowConflict,
         },
       }),
     onSuccess: (event) => {
@@ -78,8 +80,10 @@ export default function NewEventScreen() {
         void queryClient.invalidateQueries({ queryKey: [key] });
       router.replace(`/events/${event.id}`);
     },
-    onError: (e) =>
-      setError(e instanceof RequestError ? e.message : 'Der Termin konnte nicht angelegt werden.'),
+    onError: (e) => {
+      setConflict(e instanceof RequestError && e.code === 'facility_conflict');
+      setError(e instanceof RequestError ? e.message : 'Der Termin konnte nicht angelegt werden.');
+    },
   });
 
   const validation =
@@ -207,13 +211,22 @@ export default function NewEventScreen() {
       </Card>
 
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+      {conflict ? (
+        <Button
+          label="Trotzdem anlegen"
+          variant="outline"
+          icon="warning"
+          loading={save.isPending}
+          onPress={() => save.mutate(true)}
+        />
+      ) : null}
       {validation ? <Chip tone="action" label={validation} /> : null}
       <Button
         label="Termin anlegen"
         icon="checkmark"
         disabled={!!validation}
         loading={save.isPending}
-        onPress={() => save.mutate()}
+        onPress={() => save.mutate(false)}
       />
     </Screen>
   );

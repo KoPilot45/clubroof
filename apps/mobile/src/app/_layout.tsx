@@ -83,6 +83,14 @@ function Navigator() {
             name="exchange/new-offer"
             options={{ headerShown: true, title: 'Spieler anbieten' }}
           />
+          <Stack.Screen
+            name="facilities/index"
+            options={{ headerShown: true, title: 'Platzbelegung' }}
+          />
+          <Stack.Screen
+            name="facilities/block-new"
+            options={{ headerShown: true, title: 'Sperrung anlegen' }}
+          />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />

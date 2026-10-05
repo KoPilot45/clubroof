@@ -23,7 +23,7 @@ Erzeugt wird er mit `pnpm db:reset` (lokale Datenbank zurücksetzen, Migrationen
 | Personen | rund 310: Spielerinnen und Spieler, Trainer, Eltern, Funktionäre, fördernde Mitglieder |
 | Teilnahme-Modelle | automatische Zusage (Senioren), aktive Zu-/Absage (Frauen, Jugend), nur Abwesenheiten (Alte Herren) |
 | Termine | Trainings, Spiele, Spielfeste, Vorstandssitzung, Jahreshauptversammlung, Arbeitseinsatz, Hallenturnier, Weihnachtsfeier |
-| Besonderheiten | Kunstrasen am kommenden Donnerstag gesperrt (Trainings abgesagt), Gastspieler aus C-Jugend und 2. Mannschaft, Spielerbörse mit offenem Bedarf (A-Jugend, 2. Mannschaft) und Angeboten (C-Jugend, Alte Herren), Verletzungen, Urlaub, Rotsperre |
+| Besonderheiten | Kunstrasen am kommenden Donnerstag gesperrt (Sperrung im Platzplan, Trainings abgesagt), Gastspieler aus C-Jugend und 2. Mannschaft, Spielerbörse mit offenem Bedarf (A-Jugend, 2. Mannschaft) und Angeboten (C-Jugend, Alte Herren), Verletzungen, Urlaub, Rotsperre |
 | Kommunikation | 9 News (eine wartet auf Freigabe), 3 Umfragen mit Stimmen, Benachrichtigungen je Demo-Login |
 | Ehrenamt | Helferschichten für Hallenturnier, Arbeitseinsatz und Jahreshauptversammlung; Programme und erste Teilnehmer bei den Vereinsveranstaltungen |
 | Finanzen | Mannschaftskassen 1., 2. und B-Jugend mit Strafen, Getränken und Einzahlungen |

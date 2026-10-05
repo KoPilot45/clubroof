@@ -137,9 +137,9 @@ Stand: 05.10.2026
 
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
-| Platzbelegung Tag / Woche / Monat je Platz | M 15, K 5–6 | ⬜ | Plätze und Termine vorhanden |
-| Konfliktwarnung bei Überschneidungen | M 15 | ⬜ | wird in Demodaten bereits geprüft |
-| Sperrungen | M 15, K 6 | 🟡 | als abgesagte Termine abgebildet |
+| Platzbelegung Tag / Woche / Monat je Platz | M 15, K 5–6 | ✅ | Tag und Woche in der App (Verein → Platzbelegung); der Server liefert bis zu 32 Tage |
+| Konfliktwarnung bei Überschneidungen | M 15 | ✅ | Beim Anlegen eines Termins: Warnung mit „Trotzdem anlegen“; Belegungsplan markiert Überschneidungen |
+| Sperrungen | M 15, K 6 | ✅ | Platzverantwortliche sperren Zeiträume, betroffene Termine werden auf Wunsch abgesagt und Beteiligte informiert; beim Anlegen von Terminen nicht übergehbar |
 | Kabinen, Material, Schlüssel, Schäden | K 6, 12 | ⬜ | optionale Module |
 
 ## 11. Verwaltung
@@ -192,8 +192,8 @@ Stand: 05.10.2026
 | Kommunikation | 4 | 1 | 2 |
 | Benachrichtigungen | 2 | 2 | 3 |
 | Profile | 3 | 2 | 0 |
-| Platzbelegung & Betrieb | 0 | 1 | 3 |
+| Platzbelegung & Betrieb | 3 | 0 | 1 |
 | Verwaltung | 0 | 2 | 7 |
 | Einrichtung & Module | 0 | 1 | 4 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **51** | **20** | **30** |
+| **Gesamt** | **54** | **19** | **28** |
