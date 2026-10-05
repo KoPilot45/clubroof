@@ -114,6 +114,8 @@ export type EventDetail = EventSummary & {
   /** Teilnehmerliste; leer, wenn der Nutzer sie nicht sehen darf */
   participants: Participant[];
   canManage: boolean;
+  /** Trainer dürfen Zu-/Absagen anderer korrigieren */
+  canOverride: boolean;
 };
 
 export type NewsItem = {
@@ -221,6 +223,148 @@ export type PollDetail = PollSummary & {
   /** Ob Ergebnisse für den Nutzer sichtbar sind */
   resultsVisible: boolean;
   options: { id: string; label: string; votes: number | null }[];
+};
+
+export type TeamPermissions = {
+  manageEvents: boolean;
+  overrideAttendance: boolean;
+  readAttendance: boolean;
+  readCash: boolean;
+  manageCash: boolean;
+};
+
+export type MatchResult = {
+  eventId: string;
+  startsAt: string;
+  opponentName: string;
+  isHome: boolean;
+  goalsFor: number;
+  goalsAgainst: number;
+  outcome: 'win' | 'draw' | 'loss';
+};
+
+export type TeamHighlights = {
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  /** Anteil Zusagen an vergangenen Trainings der letzten 4 Wochen (0–100), null ohne Trainings */
+  trainingRate: number | null;
+};
+
+export type SquadStatus = {
+  players: number;
+  available: number;
+  declined: number;
+  absent: number;
+  pending: number;
+};
+
+export type TeamOverview = {
+  team: { id: string; name: string; badge: string; league: string | null; ageGroup: string | null };
+  permissions: TeamPermissions;
+  nextEvent: EventSummary | null;
+  /** Kaderstatus bezogen auf den nächsten Termin */
+  squad: SquadStatus | null;
+  lastResults: MatchResult[];
+  trainingWeek: EventSummary[];
+  highlights: TeamHighlights;
+};
+
+export type RosterEntry = {
+  personId: string;
+  name: string;
+  function: TeamFunction;
+  jerseyNumber: number | null;
+  position: string | null;
+  preferredFoot: 'left' | 'right' | 'both' | null;
+  /** Heute nicht verfügbar (Abwesenheit) */
+  unavailable: boolean;
+  /** Grund nur für Verantwortliche oder die Person selbst */
+  unavailableReason: string | null;
+  unavailableUntil: string | null;
+};
+
+export type PlayerStat = {
+  personId: string;
+  name: string;
+  trainings: number;
+  trainingsAttended: number;
+  /** 0–100 */
+  trainingRate: number | null;
+  matchesAttended: number;
+};
+
+export type TeamStats = {
+  highlights: TeamHighlights;
+  results: MatchResult[];
+  /** Alle Spieler (für Verantwortliche) oder nur die eigenen Werte */
+  players: PlayerStat[];
+  level: 'basic' | 'extended' | 'custom';
+};
+
+export type CashEntry = {
+  id: string;
+  bookedOn: string;
+  direction: 'income' | 'expense';
+  isCharge: boolean;
+  amountCents: number;
+  category: string;
+  description: string;
+  counterparty: string | null;
+  person: { id: string; name: string } | null;
+};
+
+export type PersonalAccount = {
+  personId: string;
+  name: string;
+  /** Einzahlungen − Forderungen; negativ = offener Betrag */
+  balanceCents: number;
+  entries: CashEntry[];
+};
+
+export type TeamCash = {
+  team: { id: string; name: string; badge: string };
+  permissions: TeamPermissions;
+  config: { fines: boolean; drinks: boolean };
+  balanceCents: number | null;
+  incomeCents: number | null;
+  expenseCents: number | null;
+  /** Buchungen (nur mit Kassenrechten) */
+  entries: CashEntry[] | null;
+  /** Persönliche Konten aller Mitglieder (nur mit Kassenrechten) */
+  members: { personId: string; name: string; balanceCents: number }[] | null;
+  /** Meine Konten bzw. die meiner Kinder */
+  personal: PersonalAccount[];
+};
+
+export type CashBookingKind = 'income' | 'expense' | 'fine' | 'drinks' | 'payment';
+
+export type CreateCashBookingInput = {
+  kind: CashBookingKind;
+  amountCents: number;
+  description: string;
+  personId?: string | null;
+  counterparty?: string | null;
+  bookedOn?: string | null;
+};
+
+export type Facility = { id: string; name: string; shortName: string | null };
+
+export type CreateEventInput = {
+  type: 'training' | 'match' | 'team_event';
+  title?: string | null;
+  startsAt: string;
+  endsAt?: string | null;
+  meetingAt?: string | null;
+  meetingPoint?: string | null;
+  facilityId?: string | null;
+  locationText?: string | null;
+  description?: string | null;
+  opponentName?: string | null;
+  isHome?: boolean | null;
 };
 
 export type ApiError = { error: string; message: string };
