@@ -1,4 +1,4 @@
-import type { LoginResponse, MeResponse } from '@clubroof/core';
+import type { LoginResponse, MeResponse, TwoFactorChallenge } from '@clubroof/core';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
@@ -18,7 +18,8 @@ type SessionState =
   | { status: 'signedIn'; token: string; me: MeResponse };
 
 type SessionContextValue = SessionState & {
-  signIn: (email: string, password: string) => Promise<void>;
+  /** Liefert eine Challenge, wenn ein zweiter Faktor nötig ist */
+  signIn: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
   /** Nutzerdaten (`/me`) neu laden, z. B. nach Änderung von Logo oder Rechten */
   refresh: () => Promise<void>;
@@ -57,12 +58,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const result = await request<LoginResponse>('/auth/login', {
+    const result = await request<LoginResponse | TwoFactorChallenge>('/auth/login', {
       method: 'POST',
       body: { email, password },
     });
+    if ('twoFactorRequired' in result) return result.challenge;
     await writeToken(result.token);
     setState({ status: 'signedIn', token: result.token, me: result.me });
+    return null;
   }, []);
 
   const signOut = useCallback(async () => {

@@ -96,6 +96,16 @@ export default function MoreScreen() {
         </View>
       </Card>
 
+      {me.security.twoFactorRequired ? (
+        <Card style={{ gap: 8 }}>
+          <Chip tone="urgent" icon="shield-outline" label="2-Faktor-Anmeldung erforderlich" />
+          <T variant="caption">
+            Der Verein verlangt sie für deine Verwaltungsrechte. Bis dahin ist die Verwaltung
+            gesperrt.
+          </T>
+          <Button label="Jetzt einrichten" onPress={() => router.push('/account')} />
+        </Card>
+      ) : null}
       <TileGrid items={tiles} />
 
       <Section title="Meine Mannschaften">

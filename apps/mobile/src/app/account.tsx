@@ -1,4 +1,8 @@
+import type { TwoFactorSetup, TwoFactorStatus } from '@clubroof/core';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { View } from 'react-native';
+import { SvgXml } from 'react-native-svg';
 import { Button, Card, Chip, Screen, Section, T, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
@@ -81,6 +85,7 @@ export default function AccountScreen() {
           />
         </Card>
       </Section>
+      <TwoFactorSection />
       <Button
         label="Abmelden"
         variant="outline"
@@ -88,5 +93,172 @@ export default function AccountScreen() {
         onPress={() => void signOut()}
       />
     </Screen>
+  );
+}
+
+function TwoFactorSection() {
+  const { api, refresh } = useSignedIn();
+  const queryClient = useQueryClient();
+  const status = useQuery({ queryKey: ['2fa'], queryFn: () => api<TwoFactorStatus>('/auth/2fa') });
+  const [setup, setSetup] = useState<TwoFactorSetup | null>(null);
+  const [codes, setCodes] = useState<string[] | null>(null);
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [disabling, setDisabling] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await fn();
+    } catch (e) {
+      setError(e instanceof RequestError ? e.message : 'Das hat nicht geklappt.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const done = async () => {
+    setCode('');
+    setPassword('');
+    await queryClient.invalidateQueries({ queryKey: ['2fa'] });
+    await refresh();
+  };
+
+  const s = status.data;
+  return (
+    <Section title="2-Faktor-Anmeldung">
+      <Card style={{ gap: 12 }}>
+        {s?.required && !s.enabled ? (
+          <Chip
+            tone="urgent"
+            icon="shield-outline"
+            label="Der Verein verlangt sie für deine Verwaltungsrechte."
+          />
+        ) : null}
+        {codes ? (
+          <>
+            <Chip tone="success" icon="shield-checkmark" label="Eingerichtet" />
+            <T variant="label">Deine Wiederherstellungscodes</T>
+            <T variant="caption">
+              Bewahre sie sicher auf (z. B. ausdrucken). Jeder Code funktioniert einmal, falls dein
+              Handy nicht zur Hand ist. Sie werden nur jetzt angezeigt.
+            </T>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {codes.map((c) => (
+                <View key={c} style={{ width: '46%' }}>
+                  <T variant="body" style={{ fontFamily: 'monospace' }}>
+                    {c}
+                  </T>
+                </View>
+              ))}
+            </View>
+            <Button label="Ich habe die Codes gesichert" onPress={() => setCodes(null)} />
+          </>
+        ) : s?.enabled ? (
+          <>
+            <Chip tone="success" icon="shield-checkmark" label="Aktiv" />
+            <T variant="caption">Noch {s.recoveryCodesLeft} Wiederherstellungscodes übrig.</T>
+            {disabling ? (
+              <>
+                <TextField
+                  label="Passwort"
+                  kind="password"
+                  value={password}
+                  onChangeText={setPassword}
+                  maxLength={200}
+                />
+                <TextField
+                  label="Code aus der App"
+                  kind="code"
+                  value={code}
+                  onChangeText={setCode}
+                  maxLength={20}
+                />
+                <Button
+                  label="Ausschalten"
+                  variant="danger"
+                  loading={busy}
+                  disabled={!password || code.trim().length < 6}
+                  onPress={() =>
+                    void run(async () => {
+                      await api('/auth/2fa/disable', {
+                        method: 'POST',
+                        body: { password, code: code.trim() },
+                      });
+                      setDisabling(false);
+                      await done();
+                    })
+                  }
+                />
+              </>
+            ) : !s.required ? (
+              <Button label="Ausschalten" variant="outline" onPress={() => setDisabling(true)} />
+            ) : null}
+          </>
+        ) : setup ? (
+          <>
+            <T>
+              1. Öffne eine Authenticator-App (z. B. Google oder Microsoft Authenticator) und scanne
+              den Code. 2. Gib den angezeigten 6-stelligen Code ein.
+            </T>
+            <View style={{ alignItems: 'center' }}>
+              <View
+                style={{ backgroundColor: '#FFFFFF', padding: 10, borderRadius: 12 }}
+                accessibilityLabel="QR-Code für die Authenticator-App"
+              >
+                <SvgXml xml={setup.qrSvg} width={190} height={190} />
+              </View>
+            </View>
+            <T variant="caption" style={{ textAlign: 'center' }}>
+              Oder manuell eingeben: {setup.secret}
+            </T>
+            <TextField
+              label="Code aus der App"
+              kind="code"
+              value={code}
+              onChangeText={setCode}
+              maxLength={6}
+            />
+            <Button
+              label="Bestätigen"
+              icon="checkmark"
+              loading={busy}
+              disabled={code.trim().length !== 6}
+              onPress={() =>
+                void run(async () => {
+                  const r = await api<{ recoveryCodes: string[] }>('/auth/2fa/enable', {
+                    method: 'POST',
+                    body: { code: code.trim() },
+                  });
+                  setSetup(null);
+                  setCodes(r.recoveryCodes);
+                  await done();
+                })
+              }
+            />
+          </>
+        ) : (
+          <>
+            <T variant="caption">
+              Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code aus deiner
+              Authenticator-App ab.
+            </T>
+            <Button
+              label="Einrichten"
+              icon="shield-checkmark-outline"
+              loading={busy}
+              onPress={() =>
+                void run(async () =>
+                  setSetup(await api<TwoFactorSetup>('/auth/2fa/setup', { method: 'POST' })),
+                )
+              }
+            />
+          </>
+        )}
+        {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+      </Card>
+    </Section>
   );
 }
