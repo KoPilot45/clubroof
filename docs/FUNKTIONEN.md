@@ -78,10 +78,10 @@ Stand: 05.10.2026
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | Gastspieler im Termin (bleibt Mitglied seines Stammteams) | K 9 | ✅ | Anzeige; Termin erscheint beim Gastspieler |
-| Spielerbedarf melden („2–3 Spieler, Abwehr“) | M 17, K 6 | ⬜ | |
-| Kapazität anbieten („bis zu 2 Spieler verfügbar“) | M 17, K 6 | ⬜ | |
-| Abgebender Trainer wählt Spieler aus; Termin erscheint automatisch | K 6, 9 | ⬜ | |
-| Aggregierte Verfügbarkeit anderer Teams (ohne Gründe) | K 6, 7 | ⬜ | |
+| Spielerbedarf melden („2–3 Spieler, Abwehr“) | M 17, K 6 | ✅ | Pro Termin ein offener Bedarf; Trainer der anderen Teams werden mit passendem Angebot benachrichtigt |
+| Kapazität anbieten („bis zu 2 Spieler verfügbar“) | M 17, K 6 | ✅ | Angebot je Tag und Mannschaft |
+| Abgebender Trainer wählt Spieler aus; Termin erscheint automatisch | K 6, 9 | ✅ | Sperre bei Abwesenheit, Parallelterminen, Doppelnominierung und gedecktem Bedarf; Benachrichtigung an Spieler, Eltern, anfragendes Trainerteam. Aufstellung/Spielbericht folgen (E2) |
+| Aggregierte Verfügbarkeit anderer Teams (ohne Gründe) | K 6, 7 | ✅ | Nur Zahlen |
 
 ## 6. Verein
 
@@ -187,7 +187,7 @@ Stand: 05.10.2026
 | Home | 7 | 2 | 0 |
 | Mannschaft | 5 | 6 | 3 |
 | Termine & Teilnahme | 9 | 1 | 2 |
-| Gastspieler & Spielerbedarf | 1 | 0 | 4 |
+| Gastspieler & Spielerbedarf | 5 | 0 | 0 |
 | Verein | 7 | 2 | 2 |
 | Kommunikation | 4 | 1 | 2 |
 | Benachrichtigungen | 2 | 2 | 3 |
@@ -196,4 +196,4 @@ Stand: 05.10.2026
 | Verwaltung | 0 | 2 | 7 |
 | Einrichtung & Module | 0 | 1 | 4 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **47** | **20** | **34** |
+| **Gesamt** | **51** | **20** | **30** |

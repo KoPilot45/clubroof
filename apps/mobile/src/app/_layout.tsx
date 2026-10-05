@@ -67,6 +67,22 @@ function Navigator() {
             name="club-events"
             options={{ headerShown: true, title: 'Termine & Veranstaltungen' }}
           />
+          <Stack.Screen
+            name="exchange/index"
+            options={{ headerShown: true, title: 'Gastspieler' }}
+          />
+          <Stack.Screen
+            name="exchange/[id]"
+            options={{ headerShown: true, title: 'Spielerbedarf' }}
+          />
+          <Stack.Screen
+            name="exchange/new-demand"
+            options={{ headerShown: true, title: 'Bedarf melden' }}
+          />
+          <Stack.Screen
+            name="exchange/new-offer"
+            options={{ headerShown: true, title: 'Spieler anbieten' }}
+          />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />

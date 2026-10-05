@@ -122,6 +122,16 @@ export default function TeamScreen() {
               },
             ]
           : []),
+        ...(o?.permissions.manageDemand && has('guest_players')
+          ? [
+              {
+                key: 'exchange',
+                label: 'Gastspieler',
+                icon: 'swap-horizontal' as const,
+                onPress: () => router.push('/exchange'),
+              },
+            ]
+          : []),
         ...(has('training_planning')
           ? [{ key: 'training', label: 'Trainingsplanung', icon: 'clipboard' as const, soon: true }]
           : []),
