@@ -161,6 +161,11 @@ async function audit(
 // ── Übersicht ───────────────────────────────────────────────────────────────
 
 const ACTION_LABELS: Record<string, string> = {
+  'announcement.published': 'News veröffentlicht',
+  'club.created': 'Verein angelegt',
+  'module.enabled': 'Modul aktiviert',
+  'role.assigned': 'Rolle vergeben',
+  'role.revoked': 'Rolle entzogen',
   'attendance.overridden': 'Rückmeldung stellvertretend geändert',
   'cash.booked': 'Kassenbuchung erfasst',
   'event.cancelled': 'Termin abgesagt',
@@ -214,6 +219,14 @@ export async function getAdminOverview(db: Db, actor: Actor, now: Date): Promise
         .where(eq(s.guardianships.clubId, actor.club.id))
     ).map((g) => g.id),
   );
+  const roleHolders = new Set(
+    (
+      await db
+        .select({ id: s.roleAssignments.personId })
+        .from(s.roleAssignments)
+        .where(eq(s.roleAssignments.clubId, actor.club.id))
+    ).map((r) => r.id),
+  );
   const teams = await currentTeams(db, actor);
 
   return {
@@ -223,7 +236,11 @@ export async function getAdminOverview(db: Db, actor: Actor, now: Date): Promise
       inactive: persons.filter((p) => p.status === 'inactive').length,
       left: persons.filter((p) => p.status === 'left').length,
       withoutTeam: persons.filter(
-        (p) => p.status === 'active' && !inTeam.has(p.id) && !guardianIds.has(p.id),
+        (p) =>
+          p.status === 'active' &&
+          !inTeam.has(p.id) &&
+          !guardianIds.has(p.id) &&
+          !roleHolders.has(p.id),
       ).length,
     },
     teams:
@@ -265,6 +282,16 @@ export async function listMembers(
     .innerJoin(s.roles, eq(s.roles.id, s.roleAssignments.roleId))
     .where(eq(s.roleAssignments.clubId, actor.club.id));
 
+  const guardianIds = filter.withoutTeam
+    ? new Set(
+        (
+          await db
+            .select({ id: s.guardianships.guardianPersonId })
+            .from(s.guardianships)
+            .where(eq(s.guardianships.clubId, actor.club.id))
+        ).map((g) => g.id),
+      )
+    : new Set<string>();
   const q = filter.q?.trim().toLowerCase();
   return persons
     .map((p) => {
@@ -285,14 +312,16 @@ export async function listMembers(
       };
     })
     .filter(
-      ({ person, teamIds }) =>
+      ({ person, teamIds, item }) =>
         (!q ||
           `${person.firstName} ${person.lastName}`.toLowerCase().includes(q) ||
           `${person.lastName} ${person.firstName}`.toLowerCase().includes(q) ||
           (person.memberNumber ?? '').toLowerCase().includes(q)) &&
         (!filter.status || person.membershipStatus === filter.status) &&
         (!filter.teamId || teamIds.includes(filter.teamId)) &&
-        (!filter.withoutTeam || teamIds.length === 0),
+        // „Ohne Mannschaft“: weder Mannschaft noch Aufgabe noch Elternteil eines Mitglieds
+        (!filter.withoutTeam ||
+          (teamIds.length === 0 && item.roles.length === 0 && !guardianIds.has(person.id))),
     )
     .map((x) => x.item);
 }

@@ -146,13 +146,13 @@ Stand: 05.10.2026
 
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
-| Verwaltungsübersicht (Teams, Mitglieder, offene Anfragen) | M 8 | ⬜ | |
-| Mitglieder: Stammdaten, Ein-/Austritte, Mannschaftszuordnung | K 6–7 | ⬜ | |
+| Verwaltungsübersicht (Teams, Mitglieder, offene Anfragen) | M 8 | ✅ | Kennzahlen, Mitglieder ohne Mannschaft, letzte Änderungen (Mehr → Verwaltung); „offene Anfragen“ kommen mit den Einladungen |
+| Mitglieder: Stammdaten, Ein-/Austritte, Mannschaftszuordnung | K 6–7 | ✅ | Suche/Filter, Anlegen, Bearbeiten, Aktiv/Passiv/Austritt; Zuordnung trägt Person sofort in künftige Termine ein bzw. aus. Jugendleitung sieht nur ihren Bereich |
 | Mannschaften verwalten, Saisonplanung, Saisonwechsel | K 6–7 | ⬜ | |
 | Spielerbewegungen (Zu-/Abgänge, Leihe) | M 8, K 6 | ⬜ | |
-| Rollen & Rechte vergeben | M 8, K 7 | 🟡 | 9 Rollen und Prüfung im Backend fertig; Bedienung fehlt |
+| Rollen & Rechte vergeben | M 8, K 7 | ✅ | Beim Mitglied mit Geltungsbereich (z. B. Kassenwart B1); Schutz vor Rechteausweitung und Aussperren |
 | Veranstaltungen planen | M 8 | ⬜ | |
-| Audit-Log | K 6, 16 | 🟡 | wird geschrieben; Anzeige fehlt |
+| Audit-Log | K 6, 16 | ✅ | „Änderungsprotokoll“ für Vorstand und Fulladmin |
 | Import / Sync-Status | K 6, 14 | ⬜ | |
 | Schiedsrichterverwaltung | K 7, 12 | ⬜ | optionales Modul |
 
@@ -193,7 +193,7 @@ Stand: 05.10.2026
 | Benachrichtigungen | 2 | 2 | 3 |
 | Profile | 3 | 2 | 0 |
 | Platzbelegung & Betrieb | 3 | 0 | 1 |
-| Verwaltung | 0 | 2 | 7 |
+| Verwaltung | 4 | 0 | 5 |
 | Einrichtung & Module | 0 | 1 | 4 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **56** | **18** | **27** |
+| **Gesamt** | **60** | **16** | **25** |

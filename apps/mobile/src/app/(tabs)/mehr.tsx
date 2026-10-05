@@ -54,8 +54,15 @@ export default function MoreScreen() {
       onPress: () => router.push('/stats'),
     },
     { key: 'settings', label: 'Einstellungen', icon: 'settings', soon: true },
-    ...(me.canAdminister
-      ? [{ key: 'admin', label: 'Verwaltung', icon: 'shield-checkmark' as const, soon: true }]
+    ...(me.admin.readMembers || me.admin.manageRoles || me.admin.readAudit
+      ? [
+          {
+            key: 'admin',
+            label: 'Verwaltung',
+            icon: 'shield-checkmark' as const,
+            onPress: () => router.push('/admin'),
+          },
+        ]
       : []),
   ];
 

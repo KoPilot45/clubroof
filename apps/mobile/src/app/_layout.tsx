@@ -91,6 +91,24 @@ function Navigator() {
             name="facilities/block-new"
             options={{ headerShown: true, title: 'Sperrung anlegen' }}
           />
+          <Stack.Screen name="admin/index" options={{ headerShown: true, title: 'Verwaltung' }} />
+          <Stack.Screen name="admin/members" options={{ headerShown: true, title: 'Mitglieder' }} />
+          <Stack.Screen
+            name="admin/member/[id]"
+            options={{ headerShown: true, title: 'Mitglied' }}
+          />
+          <Stack.Screen
+            name="admin/member-new"
+            options={{ headerShown: true, title: 'Mitglied anlegen' }}
+          />
+          <Stack.Screen
+            name="admin/roles"
+            options={{ headerShown: true, title: 'Rollen & Aufgaben' }}
+          />
+          <Stack.Screen
+            name="admin/audit"
+            options={{ headerShown: true, title: 'Änderungsprotokoll' }}
+          />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />

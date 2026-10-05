@@ -249,7 +249,8 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     }
 
     // Fördermitglieder (passiv, ohne Mannschaft) und ehemalige Mitglieder für die Verwaltung
-    for (let i = 0; i < 6; i++) randomAdult(i % 2 ? 'female' : 'male').membershipStatus = 'inactive';
+    for (let i = 0; i < 6; i++)
+      randomAdult(i % 2 ? 'female' : 'male').membershipStatus = 'inactive';
     for (let i = 0; i < 3; i++) randomAdult('male').membershipStatus = 'left';
 
     // Kinder der Eltern-Persona
