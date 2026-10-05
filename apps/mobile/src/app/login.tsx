@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { LoginResponse } from '@clubroof/core';
@@ -24,6 +24,15 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Leerer Server → direkt zum Einrichtungsassistenten
+  useEffect(() => {
+    request<{ needsSetup: boolean }>('/setup/status')
+      .then((s) => {
+        if (s.needsSetup) router.replace('/setup');
+      })
+      .catch(() => {});
+  }, []);
 
   const submit = async () => {
     setError(null);

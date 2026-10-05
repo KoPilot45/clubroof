@@ -126,7 +126,10 @@ function Navigator() {
             name="polls/new"
             options={{ headerShown: true, title: 'Umfrage erstellen' }}
           />
-          <Stack.Screen name="admin/club" options={{ headerShown: true, title: 'Vereinslogo' }} />
+          <Stack.Screen
+            name="admin/club"
+            options={{ headerShown: true, title: 'Verein & Design' }}
+          />
           <Stack.Screen name="admin/modules" options={{ headerShown: true, title: 'Module' }} />
           <Stack.Screen
             name="admin/teams"
@@ -172,6 +175,7 @@ function Navigator() {
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />
           <Stack.Screen name="forgot" />
+          <Stack.Screen name="setup" />
         </Stack.Protected>
         {/* Öffentliche Links aus E-Mails – mit und ohne Anmeldung erreichbar */}
         <Stack.Screen name="join/[token]" />

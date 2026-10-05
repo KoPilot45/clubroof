@@ -94,7 +94,7 @@ export default function AdminScreen() {
           ? [
               {
                 key: 'club',
-                label: 'Vereinslogo',
+                label: 'Verein & Design',
                 icon: 'shield' as const,
                 onPress: () => router.push('/admin/club'),
               },
