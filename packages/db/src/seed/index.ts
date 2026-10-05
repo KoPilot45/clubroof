@@ -705,6 +705,11 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     const workAssignment = clubEvent({
       type: 'work_assignment',
       title: 'Arbeitseinsatz Platzpflege',
+      program: [
+        { time: '09:00', title: 'Treffen am Vereinsheim, Aufgabenverteilung' },
+        { time: '11:00', title: 'Weißwurstfrühstück' },
+        { time: '13:00', title: 'Ende' },
+      ],
       description:
         'Gemeinsam machen wir die Anlage winterfest: Laub entfernen, Tornetze tauschen, Vereinsheim streichen. Für Verpflegung ist gesorgt!',
       startsAt: at(workDay, '09:00'),
@@ -726,6 +731,13 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     const agm = clubEvent({
       type: 'meeting',
       title: 'Jahreshauptversammlung',
+      program: [
+        { time: '19:00', title: 'Begrüßung und Feststellung der Beschlussfähigkeit' },
+        { time: '19:15', title: 'Berichte des Vorstands und der Abteilungen' },
+        { time: '20:00', title: 'Kassenbericht und Entlastung' },
+        { time: '20:30', title: 'Neuwahlen' },
+        { time: '21:15', title: 'Anträge und Verschiedenes' },
+      ],
       description:
         'Tagesordnung: Berichte des Vorstands, Kassenbericht, Entlastung, Neuwahlen, Anträge. Alle Mitglieder ab 16 Jahren sind stimmberechtigt.',
       startsAt: at(agmDay, '19:00'),
@@ -738,6 +750,13 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       type: 'club_event',
       orgUnitId: orgUnitIds.youth,
       title: 'Jugend-Hallenturnier',
+      program: [
+        { time: '09:00', title: 'Begrüßung und Vorrunde E-Jugend' },
+        { time: '11:30', title: 'Vorrunde F-Jugend und Bambini' },
+        { time: '14:00', title: 'Halbfinale' },
+        { time: '16:30', title: 'Finalspiele' },
+        { time: '17:30', title: 'Siegerehrung' },
+      ],
       description:
         'Unser traditionelles Hallenturnier für E-, F-Jugend und Bambini mit 24 Mannschaften. Wir brauchen viele helfende Hände!',
       startsAt: at(tournamentDay, '09:00'),
@@ -749,6 +768,12 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     const xmasParty = clubEvent({
       type: 'club_event',
       title: 'Weihnachtsfeier',
+      program: [
+        { time: '18:00', title: 'Glühwein und Begrüßung' },
+        { time: '19:00', title: 'Essen' },
+        { time: '20:30', title: 'Ehrungen und Jahresrückblick' },
+        { time: '21:30', title: 'Gemütlicher Ausklang' },
+      ],
       description: 'Gemütlicher Jahresausklang für die ganze Grün-Weiß-Familie.',
       startsAt: at(nextWeekday(addDays(xmasDay, 7), 6), '18:00'),
       endsAt: at(nextWeekday(addDays(xmasDay, 7), 6), '23:00'),
@@ -983,6 +1008,30 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         respondedByPersonId: g.person.id,
       });
     }
+    // Freiwillige Teilnahme an Vereinsveranstaltungen („Ich nehme teil“)
+    const attendeePool = faker.helpers.shuffle(
+      persons.filter((p) => Number(p.birthDate!.slice(0, 4)) <= 2008 && p.id !== persona.parent.id),
+    );
+    (
+      [
+        [hallTournament, 26],
+        [xmasParty, 41],
+        [agm, 23],
+        [workAssignment, 12],
+      ] as const
+    ).forEach(([event, n], i) => {
+      for (const person of attendeePool.slice(i * 15, i * 15 + n)) {
+        participants.push({
+          clubId,
+          eventId: event.id,
+          personId: person.id,
+          role: 'attendee',
+          status: 'yes',
+          respondedAt: addMinutes(now, -faker.number.int({ min: 60, max: 10 * 24 * 60 })),
+          respondedByPersonId: person.id,
+        });
+      }
+    });
     await insertChunked(tx, s.eventParticipants, participants);
 
     // ── News ──────────────────────────────────────────────────────────────────────────────

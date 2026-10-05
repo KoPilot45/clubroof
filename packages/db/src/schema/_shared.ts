@@ -59,7 +59,13 @@ export const facilityKindEnum = pgEnum('facility_kind', [
   'other',
 ]);
 export const eventStatusEnum = pgEnum('event_status', ['scheduled', 'cancelled']);
-export const participantRoleEnum = pgEnum('participant_role', ['player', 'coach', 'guest_player']);
+/** `attendee`: freiwillige Teilnahme an Vereinsveranstaltungen („Ich nehme teil“). */
+export const participantRoleEnum = pgEnum('participant_role', [
+  'player',
+  'coach',
+  'guest_player',
+  'attendee',
+]);
 export const deadlineKindEnum = pgEnum('deadline_kind', ['relative', 'weekday_time']);
 export const publicationStatusEnum = pgEnum('publication_status', [
   'draft',

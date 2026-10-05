@@ -101,7 +101,7 @@ export type EventSummary = {
 export type Participant = {
   personId: string;
   name: string;
-  role: 'player' | 'coach' | 'guest_player';
+  role: 'player' | 'coach' | 'guest_player' | 'attendee';
   status: AttendanceStatus;
   /** Nur für Berechtigte sichtbar (Datensparsamkeit) */
   reason: string | null;
@@ -116,6 +116,31 @@ export type EventDetail = EventSummary & {
   canManage: boolean;
   /** Trainer dürfen Zu-/Absagen anderer korrigieren */
   canOverride: boolean;
+  /** Ablaufplan (Vereinsveranstaltungen) */
+  program: { time: string; title: string }[];
+  /** Freiwillige Teilnahme an Vereinsveranstaltungen; null bei Mannschaftsterminen */
+  attendance: { attending: boolean; count: number } | null;
+  /** Helferschichten der Veranstaltung */
+  shifts: HelperShift[];
+};
+
+export type HelperShift = {
+  id: string;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  capacity: number;
+  filled: number;
+  /** Ich bin eingetragen */
+  mine: boolean;
+  /** Namen der Helfer – nur für Organisatoren sichtbar */
+  helpers: string[] | null;
+};
+
+export type HelperEvent = {
+  event: { id: string; title: string; startsAt: string; location: string | null };
+  shifts: HelperShift[];
+  openSpots: number;
 };
 
 export type NewsItem = {
@@ -366,5 +391,43 @@ export type CreateEventInput = {
   opponentName?: string | null;
   isHome?: boolean | null;
 };
+
+export type DocumentCategory = 'regulations' | 'forms' | 'training_plans' | 'other';
+
+export type DocumentItem = {
+  id: string;
+  title: string;
+  fileName: string;
+  category: DocumentCategory;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: string;
+  source: { type: ScopeType; label: string };
+};
+
+export type ClubTeamGroup = {
+  orgUnit: { id: string; name: string };
+  teams: {
+    id: string;
+    name: string;
+    badge: string;
+    ageGroup: string | null;
+    league: string | null;
+    players: number;
+    coaches: string[];
+    isMine: boolean;
+  }[];
+};
+
+export type Contact = {
+  personId: string;
+  name: string;
+  /** z. B. „1. Vorsitzende“, „Jugendleitung“, „Trainer B1“ */
+  functions: string[];
+  email: string | null;
+  phone: string | null;
+};
+
+export type ContactGroup = { title: string; contacts: Contact[] };
 
 export type ApiError = { error: string; message: string };
