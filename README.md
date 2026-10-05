@@ -33,7 +33,7 @@ Voraussetzungen: Node.js 22, pnpm 10, Docker.
 ```bash
 pnpm install
 cp .env.example .env          # optional: eigene Datenbank-URL
-pnpm db:up                    # PostgreSQL, MinIO und Mailpit starten
+pnpm db:up                    # Datenbank (PostgreSQL) in Docker starten
 pnpm db:reset                 # Schema anlegen und Demoverein einspielen
 ```
 
