@@ -43,6 +43,13 @@
       "when": 1791220840547,
       "tag": "0005_facility_blocks",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791222947135,
+      "tag": "0006_news_review",
+      "breakpoints": true
     }
   ]
 }

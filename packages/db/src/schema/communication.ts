@@ -38,6 +38,9 @@ export const announcements = pgTable(
     priority: announcementPriorityEnum().notNull().default('info'),
     status: publicationStatusEnum().notNull().default('draft'),
     authorPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    /** Rückmeldung der Freigabe bei Ablehnung („Bitte Uhrzeit ergänzen“) */
+    reviewNote: text(),
+    reviewedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     publishedAt: timestamp({ withTimezone: true }),
     viewCount: integer().notNull().default(0),
     likeCount: integer().notNull().default(0),

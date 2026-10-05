@@ -1,6 +1,7 @@
 import { MODULES, type MeResponse, type MyTeam, type TeamFunction } from '@clubroof/core';
 import { moduleEnabled, type Actor } from '../actor';
 import { adminPermissions } from './admin';
+import { newsPermissions } from './editorial';
 
 /** Rollen, die den Verwaltungsmodus öffnen (Trainer verwalten ihre Teams in der App selbst). */
 const ADMIN_ROLES = new Set([
@@ -62,6 +63,7 @@ export function buildMe(actor: Actor): MeResponse {
     })),
     canAdminister: actor.grants.some((g) => ADMIN_ROLES.has(g.key)),
     admin: adminPermissions(actor),
+    news: newsPermissions(actor),
     clubModules: MODULES.filter((mod) => moduleEnabled(actor, mod.key)).map((mod) => mod.key),
   };
 }

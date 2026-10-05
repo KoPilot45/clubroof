@@ -1221,6 +1221,26 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         priority: 'info',
         authorPersonId: official.youthDirector.id,
       }),
+      // Trainer darf schreiben, aber nicht selbst veröffentlichen → wartet auf Jugendleitung/Vorstand
+      news({
+        scopeType: 'team',
+        scopeId: teamIds.b1,
+        status: 'pending_approval',
+        title: 'B1: Trikotsponsor gefunden',
+        teaser: 'Autohaus Sonnenberg unterstützt uns ab sofort.',
+        body: 'Ab dem nächsten Heimspiel laufen wir mit neuen Trikots auf. Danke an das Autohaus Sonnenberg für die Unterstützung!',
+        priority: 'info',
+        authorPersonId: persona.coach.id,
+      }),
+      news({
+        scopeType: 'team',
+        scopeId: teamIds.c1,
+        status: 'draft',
+        title: 'C1: Abschlussfahrt – erste Infos',
+        body: 'Entwurf: Ziel und Termin stehen noch nicht fest.',
+        priority: 'info',
+        authorPersonId: persona.coach.id,
+      }),
     ];
     await tx.insert(s.announcements).values(announcementRows);
 

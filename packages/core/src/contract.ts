@@ -58,6 +58,8 @@ export type MeResponse = {
   canAdminister: boolean;
   /** Rechte im Verwaltungsbereich (Mitglieder, Rollen, Audit-Log) */
   admin: AdminPermissions;
+  /** News schreiben bzw. ohne Freigabe veröffentlichen (irgendwo im Verein) */
+  news: { write: boolean; publish: boolean };
   /** Auf Vereinsebene aktivierte Module (bestimmen die Kacheln im Vereinsbereich) */
   clubModules: string[];
 };
@@ -726,4 +728,53 @@ export type RoleCatalog = {
   }[];
   scopes: { type: ScopeType; id: string | null; label: string }[];
   teams: { id: string; name: string; badge: string }[];
+};
+
+// ── News-Redaktion ───────────────────────────────────────────────────────
+
+export type NewsStatus = 'draft' | 'pending_approval' | 'published' | 'archived';
+
+/** draft = speichern, submit = zur Freigabe einreichen, publish = sofort veröffentlichen */
+export type NewsAction = 'draft' | 'submit' | 'publish';
+
+export type EditorialScope = {
+  type: ScopeType;
+  id: string | null;
+  label: string;
+  /** Hier darf ich ohne Freigabe veröffentlichen */
+  canPublish: boolean;
+};
+
+export type EditorialNews = {
+  id: string;
+  title: string;
+  teaser: string | null;
+  body: string;
+  priority: AnnouncementPriority;
+  status: NewsStatus;
+  scope: { type: ScopeType; id: string | null; label: string };
+  author: string | null;
+  mine: boolean;
+  /** Rückmeldung bei Ablehnung */
+  reviewNote: string | null;
+  publishedAt: string | null;
+  updatedAt: string;
+  can: { edit: boolean; publish: boolean; remove: boolean };
+};
+
+export type EditorialOverview = {
+  scopes: EditorialScope[];
+  mine: EditorialNews[];
+  toApprove: EditorialNews[];
+  published: EditorialNews[];
+};
+
+export type SaveNewsInput = {
+  title: string;
+  teaser?: string | null;
+  body: string;
+  priority: AnnouncementPriority;
+  scopeType: ScopeType;
+  scopeId?: string | null;
+  action: NewsAction;
 };

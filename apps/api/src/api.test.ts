@@ -11,6 +11,8 @@ import type {
   MemberListItem,
   RoleCatalog,
   DemandDetail,
+  EditorialNews,
+  EditorialOverview,
   FacilityOccupancy,
   ExchangeOverview,
   PersonProfile,
@@ -188,7 +190,7 @@ describe.skipIf(!url)('API', () => {
       const { token, me } = await login('vorstand');
       expect(me.canAdminister).toBe(true);
       const home = await get<HomeResponse>('/home', token);
-      expect(home.clubOverview).toMatchObject({ teams: 11, pendingApprovals: 1 });
+      expect(home.clubOverview).toMatchObject({ teams: 11, pendingApprovals: 2 });
       expect(home.clubOverview!.members).toBeGreaterThan(300);
       expect(home.actions.some((a) => a.kind === 'approval')).toBe(true);
     });
@@ -1452,6 +1454,153 @@ describe.skipIf(!url)('API', () => {
       expect(sessions).toHaveLength(0);
       const audit = await get<AuditEntry[]>('/admin/audit', admin.token);
       expect(audit.some((a) => a.label.includes('ist jetzt ausgetreten'))).toBe(true);
+    });
+  });
+  describe('News-Redaktion', () => {
+    const draft = (teamId: string, action: string, title = 'B1 gewinnt Hallenturnier') => ({
+      title,
+      teaser: 'Starker Auftritt in Sonnenberg.',
+      body: 'Unsere B-Jugend hat das Hallenturnier ohne Gegentor gewonnen.',
+      priority: 'info',
+      scopeType: 'team',
+      scopeId: teamId,
+      action,
+    });
+
+    it('Trainer schreiben für ihre Mannschaft und reichen zur Freigabe ein', async () => {
+      const spieler = await login('spieler');
+      const denied = await app.inject({
+        method: 'GET',
+        url: '/editorial/news',
+        headers: { authorization: `Bearer ${spieler.token}` },
+      });
+      expect(denied.statusCode).toBe(403);
+
+      const coach = await login('trainer');
+      expect(coach.me.news).toEqual({ write: true, publish: false });
+      const overview = await get<EditorialOverview>('/editorial/news', coach.token);
+      expect(overview.scopes.map((sc) => sc.label).sort()).toEqual([
+        'B1 · B-Jugend',
+        'C1 · C-Jugend',
+      ]);
+      expect(overview.scopes.every((sc) => !sc.canPublish)).toBe(true);
+      expect(overview.mine.map((n) => n.status).sort()).toEqual(['draft', 'pending_approval']);
+      expect(overview.toApprove).toHaveLength(0);
+
+      const b1 = overview.scopes.find((sc) => sc.label.startsWith('B1'))!;
+      const direct = await send('POST', '/editorial/news', coach.token, draft(b1.id!, 'publish'));
+      expect(direct.status).toBe(403);
+      const club = await send('POST', '/editorial/news', coach.token, {
+        ...draft(b1.id!, 'submit'),
+        scopeType: 'club',
+        scopeId: null,
+      });
+      expect(club.status).toBe(403);
+    });
+
+    it('Freigabe mit Rückgabe, Überarbeitung und Veröffentlichung', async () => {
+      const coach = await login('trainer');
+      const board = await login('vorstand');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+
+      const submitted = await send<EditorialNews>(
+        'POST',
+        '/editorial/news',
+        coach.token,
+        draft(b1.id, 'submit'),
+      );
+      expect(submitted.status).toBe(201);
+      expect(submitted.body.status).toBe('pending_approval');
+      const id = submitted.body.id;
+
+      // Vorstand wird benachrichtigt und sieht die Einreichung
+      const boardNotes = await get<NotificationItem[]>('/notifications', board.token);
+      expect(boardNotes.some((n) => n.link === `/admin/news/${id}`)).toBe(true);
+      const queue = await get<EditorialOverview>('/editorial/news', board.token);
+      expect(queue.toApprove.some((n) => n.id === id)).toBe(true);
+      // Trainer kann nicht selbst freigeben
+      expect((await send('POST', `/editorial/news/${id}/approve`, coach.token)).status).toBe(403);
+
+      const rejected = await send<EditorialNews>(
+        'POST',
+        `/editorial/news/${id}/reject`,
+        board.token,
+        {
+          note: 'Bitte das Ergebnis des Finales ergänzen.',
+        },
+      );
+      expect(rejected.body).toMatchObject({
+        status: 'draft',
+        reviewNote: 'Bitte das Ergebnis des Finales ergänzen.',
+      });
+      const coachNotes = await get<NotificationItem[]>('/notifications', coach.token);
+      expect(coachNotes.some((n) => n.title === 'News zurückgegeben')).toBe(true);
+
+      const resubmitted = await send<EditorialNews>('PUT', `/editorial/news/${id}`, coach.token, {
+        ...draft(b1.id, 'submit'),
+        body: 'Unsere B-Jugend hat das Hallenturnier gewonnen – Finale 3:0.',
+      });
+      expect(resubmitted.body.status).toBe('pending_approval');
+      expect(resubmitted.body.reviewNote).toBeNull();
+
+      const approved = await send<EditorialNews>(
+        'POST',
+        `/editorial/news/${id}/approve`,
+        board.token,
+      );
+      expect(approved.body.status).toBe('published');
+
+      // Sichtbar für die B-Jugend, nicht für andere Mannschaften
+      const playerNews = await get<NewsItem[]>('/news', (await login('spieler')).token);
+      expect(playerNews.some((n) => n.id === id)).toBe(true);
+      const parentNews = await get<NewsItem[]>('/news', (await login('eltern')).token);
+      expect(parentNews.some((n) => n.id === id)).toBe(false);
+
+      // Nach der Veröffentlichung darf der Trainer nicht mehr ändern, der Vorstand zieht zurück
+      const late = await send('PUT', `/editorial/news/${id}`, coach.token, draft(b1.id, 'draft'));
+      expect(late.status).toBe(403);
+      expect((await send('DELETE', `/editorial/news/${id}`, board.token)).status).toBe(204);
+      const after = await get<NewsItem[]>('/news', (await login('spieler')).token);
+      expect(after.some((n) => n.id === id)).toBe(false);
+    });
+
+    it('dringende Vereinsnews benachrichtigt alle, fremde Entwürfe bleiben privat', async () => {
+      const board = await login('vorstand');
+      const coach = await login('trainer');
+      const urgent = await send<EditorialNews>('POST', '/editorial/news', board.token, {
+        title: 'Heimspiel verlegt',
+        teaser: 'Wegen Unwetter auf Sonntag.',
+        body: 'Das Heimspiel der 1. Mannschaft findet am Sonntag um 15 Uhr statt.',
+        priority: 'urgent',
+        scopeType: 'club',
+        scopeId: null,
+        action: 'publish',
+      });
+      expect(urgent.body.status).toBe('published');
+      const parentNotes = await get<NotificationItem[]>(
+        '/notifications',
+        (await login('eltern')).token,
+      );
+      expect(parentNotes.some((n) => n.title === 'Heimspiel verlegt' && n.level === 'urgent')).toBe(
+        true,
+      );
+
+      const privateDraft = await send<EditorialNews>('POST', '/editorial/news', board.token, {
+        title: 'Entwurf Jahreshauptversammlung',
+        body: 'Noch nicht fertig.',
+        priority: 'info',
+        scopeType: 'club',
+        action: 'draft',
+      });
+      const peek = await app.inject({
+        method: 'GET',
+        url: `/editorial/news/${privateDraft.body.id}`,
+        headers: { authorization: `Bearer ${coach.token}` },
+      });
+      expect(peek.statusCode).toBe(404);
+      expect(
+        (await send('DELETE', `/editorial/news/${privateDraft.body.id}`, coach.token)).status,
+      ).toBe(404);
     });
   });
 });
