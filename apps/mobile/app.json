@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Clubroof",
+    "slug": "clubroof",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "clubroof",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "de.clubroof.app",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "de.clubroof.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E3F4E7",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": ["expo-router", "expo-secure-store", "expo-font"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

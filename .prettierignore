@@ -2,3 +2,5 @@ pnpm-lock.yaml
 **/drizzle/**
 **/dist/**
 docs/**
+apps/mobile/dist
+apps/mobile/.expo

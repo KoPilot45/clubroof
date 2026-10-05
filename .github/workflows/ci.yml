@@ -42,3 +42,5 @@ jobs:
       - run: pnpm test
       - name: Datenbank zurücksetzen und Demodaten einspielen
         run: pnpm db:reset
+      - name: App für das Web bauen (prüft das Bundling)
+        run: pnpm --filter @clubroof/mobile export:web
