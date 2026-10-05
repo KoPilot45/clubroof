@@ -210,6 +210,11 @@ export default function ProfileScreen() {
                       />
                       <Stat value={p.stats.matches} label="Spiele dabei" />
                     </View>
+                    <View style={{ flexDirection: 'row' }}>
+                      <Stat value={p.stats.appearances} label="Einsätze" />
+                      <Stat value={p.stats.goals} label="Tore" />
+                      <Stat value={p.stats.assists} label="Vorlagen" />
+                    </View>
                     {p.stats.byTeam.length > 1
                       ? p.stats.byTeam.map((t) => (
                           <T key={t.teamId} variant="caption">

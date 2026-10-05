@@ -23,6 +23,7 @@ import {
 } from '@/components/ui';
 import { formatLongDate, formatRemaining, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
+import { MatchSection } from '@/components/match';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -373,6 +374,8 @@ export default function EventScreen() {
           {e.canManage && e.status === 'scheduled' && new Date(e.startsAt) > new Date() ? (
             <CoachActions event={e} />
           ) : null}
+
+          {e.type === 'match' && e.team ? <MatchSection event={e} /> : null}
 
           {e.team ? (
             <Section title={`Teilnehmer (${e.counts.yes} zugesagt)`}>

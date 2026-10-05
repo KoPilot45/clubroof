@@ -1,8 +1,18 @@
-import type { RosterEntry } from '@clubroof/core';
+import type { JerseySettings, RosterEntry } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text, View } from 'react-native';
-import { Card, Chip, ErrorNotice, ListRow, Loading, Screen, Section, T } from '@/components/ui';
+import {
+  Button,
+  Card,
+  Chip,
+  ErrorNotice,
+  ListRow,
+  Loading,
+  Screen,
+  Section,
+  T,
+} from '@/components/ui';
 import { formatShortDate } from '@/lib/format';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
@@ -66,6 +76,10 @@ export default function RosterScreen() {
     queryKey: ['roster', id],
     queryFn: () => api<RosterEntry[]>(`/teams/${id}/roster`),
   });
+  const jerseys = useQuery({
+    queryKey: ['jerseys', id],
+    queryFn: () => api<JerseySettings>(`/teams/${id}/jerseys`),
+  });
   const staff = (roster.data ?? []).filter((r) => r.function !== 'player');
   const players = (roster.data ?? []).filter((r) => r.function === 'player');
   const available = players.filter((p) => !p.unavailable).length;
@@ -81,6 +95,14 @@ export default function RosterScreen() {
           <T variant="caption">
             {players.length} Spieler, davon heute {available} verfügbar.
           </T>
+          {jerseys.data?.canEdit ? (
+            <Button
+              label="Rückennummern verwalten"
+              variant="outline"
+              icon="shirt-outline"
+              onPress={() => router.push(`/teams/${id}/jerseys`)}
+            />
+          ) : null}
           <Section title="Trainerteam">
             <Card>
               {staff.map((r, i) => (

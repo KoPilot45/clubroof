@@ -258,7 +258,8 @@ export async function getAdminOverview(db: Db, actor: Actor, now: Date): Promise
     !can.readAudit &&
     !can.manageModules &&
     !can.manageTeams &&
-    !can.planSeason
+    !can.planSeason &&
+    !can.manageTransfers
   ) {
     throw forbidden('Die Verwaltung ist für Vorstand, Leitung und Administration.');
   }

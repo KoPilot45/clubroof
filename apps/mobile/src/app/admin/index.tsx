@@ -110,6 +110,16 @@ export default function AdminScreen() {
               },
             ]
           : []),
+        ...(o.can.manageTransfers
+          ? [
+              {
+                key: 'transfers',
+                label: 'Spielerbewegungen',
+                icon: 'swap-horizontal' as const,
+                onPress: () => router.push('/admin/transfers'),
+              },
+            ]
+          : []),
         ...(o.can.manageModules
           ? [
               {

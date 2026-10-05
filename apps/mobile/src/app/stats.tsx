@@ -53,6 +53,11 @@ export default function MyStatsScreen() {
                     />
                     <Stat value={p.stats.matches} label="Spiele dabei" />
                   </View>
+                  <View style={{ flexDirection: 'row' }}>
+                    <Stat value={p.stats.appearances} label="Einsätze" />
+                    <Stat value={p.stats.goals} label="Tore" />
+                    <Stat value={p.stats.assists} label="Vorlagen" />
+                  </View>
                   {p.stats.byTeam.map((t) => (
                     <View key={t.teamId} style={{ gap: 4 }}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>

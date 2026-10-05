@@ -2,6 +2,7 @@ import type { TeamStats } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
+import { SquadTable } from '@/components/squad-table';
 import { HighlightsCard, ResultRow } from '@/components/team';
 import { Card, Empty, ErrorNotice, Loading, Screen, Section, T } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
@@ -47,6 +48,20 @@ export default function StatsScreen() {
       {d ? (
         <>
           <HighlightsCard h={d.highlights} />
+          <Section title="Kader-Statistik">
+            <Card>
+              {d.squad.length === 0 ? (
+                <Empty icon="people-outline" text="Noch keine Spieler im Kader." />
+              ) : (
+                <SquadTable rows={d.squad} showRates={d.showsTrainingRates} />
+              )}
+              <T variant="caption" style={{ marginTop: 8 }}>
+                Sp = Einsätze, S11 = Startelf. Seitlich wischen für Karten und Training, Spalte
+                antippen zum Sortieren.
+                {d.showsTrainingRates ? '' : ' Trainingsquoten anderer sieht nur das Trainerteam.'}
+              </T>
+            </Card>
+          </Section>
           <Section title={onlyMine ? 'Meine Beteiligung' : 'Trainingsbeteiligung'}>
             <Card style={{ gap: 12 }}>
               {d.players.length === 0 ? (

@@ -140,6 +140,26 @@ function Navigator() {
             name="admin/team/[id]"
             options={{ headerShown: true, title: 'Mannschaft' }}
           />
+          <Stack.Screen
+            name="match/[id]/lineup"
+            options={{ headerShown: true, title: 'Aufstellung' }}
+          />
+          <Stack.Screen
+            name="match/[id]/report"
+            options={{ headerShown: true, title: 'Spielbericht' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/jerseys"
+            options={{ headerShown: true, title: 'Rückennummern' }}
+          />
+          <Stack.Screen
+            name="admin/transfers"
+            options={{ headerShown: true, title: 'Spielerbewegungen' }}
+          />
+          <Stack.Screen
+            name="admin/transfer-new"
+            options={{ headerShown: true, title: 'Bewegung erfassen' }}
+          />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />

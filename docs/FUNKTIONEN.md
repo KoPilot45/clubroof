@@ -48,10 +48,10 @@ Stand: 05.10.2026
 | Trainingswoche mit Zusagen | M 7 | ✅ | |
 | Team-Highlights (Tabellenplatz, Tore, Trainingsquote) | M 7 | 🟡 | Bilanz, Tore, Trainingsquote; Tabellenplatz braucht FUSSBALL.DE-Anbindung |
 | Teamliste: Spieler, Trainer, Betreuer, Rückennummern, Positionen | K 4 | ✅ | mit heutiger Verfügbarkeit |
-| Kader / Aufstellung / Nominierung für ein Spiel | M 4, K 4 | ⬜ | |
-| Spielbericht: Ergebnis, Tore, Assists, Karten | K 4 | ⬜ | |
-| Statistik (Aus / Basis / Erweitert / Individuell) | K 4 | 🟡 | Basis: Bilanz, Tore, Trainingsbeteiligung; Spielerstatistik (Tore, Assists) folgt mit dem Spielbericht |
-| Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | 🟡 | im Kader sichtbar; Einstellung folgt mit der Mannschafts-Einrichtung |
+| Kader / Aufstellung / Nominierung für ein Spiel | M 4, K 4 | ✅ | Startelf und Bank inkl. Gastspieler, Entwurf nur fürs Trainerteam, Veröffentlichen benachrichtigt die Nominierten; Abgesagte nicht wählbar |
+| Spielbericht: Ergebnis, Tore, Assists, Karten | K 4 | ✅ | Tore (auch Elfmeter, Eigentor des Gegners) mit Vorlage und Minute, Gelb/Gelb-Rot/Rot; Tore müssen zum Ergebnis passen |
+| Statistik (Aus / Basis / Erweitert / Individuell) | K 4 | 🟡 | Bilanz, Trainingsbeteiligung und sortierbare Kader-Statistik (Einsätze, Startelf, Tore, Vorlagen, Karten; Trainingsquoten nur fürs Trainerteam). Stufen „Erweitert/Individuell“ noch ohne eigene Inhalte |
+| Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | ✅ | Trainerteam wählt den Modus und vergibt Nummern (keine Doppelten); je Spiel in der Aufstellung änderbar |
 | Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | 🟡 | alles außer Bericht-Export; Buchen nur für Kassenverantwortliche |
 | Teambezogene Dokumente und Aufgaben | K 4 | 🟡 | Dokumente der Mannschaft, Trainer laden selbst hoch; Aufgaben folgen |
 | Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ⬜ | optionales Modul |
@@ -129,7 +129,7 @@ Stand: 05.10.2026
 | --- | --- | --- | --- |
 | Mein Profil: Rollen, Teams, Kontakt | M 11 | ✅ | |
 | Meine Kinder | K 7 | ✅ | |
-| Spielerprofil: Verfügbarkeit, Saisonstatistik, Rückennummer, starker Fuß, Position | M 11 | 🟡 | Saisonwerte aus Trainings und Spielen; Tore/Assists folgen mit dem Spielbericht |
+| Spielerprofil: Verfügbarkeit, Saisonstatistik, Rückennummer, starker Fuß, Position | M 11 | ✅ | Saisonwerte inkl. Einsätzen, Toren und Vorlagen |
 | Sichtbarkeit der Kontaktdaten festlegen | M 11 | ✅ | Verein / Mannschaft und Trainer / nur Trainer |
 | Profil bearbeiten | M 11 | 🟡 | Position, Fuß, Telefon, E-Mail, Sichtbarkeit (auch für Kinder); Profilfoto folgt mit dem Datei-Upload |
 
@@ -149,7 +149,7 @@ Stand: 05.10.2026
 | Verwaltungsübersicht (Teams, Mitglieder, offene Anfragen) | M 8 | ✅ | Kennzahlen, Mitglieder ohne Mannschaft, letzte Änderungen (Mehr → Verwaltung); „offene Anfragen“ kommen mit den Einladungen |
 | Mitglieder: Stammdaten, Ein-/Austritte, Mannschaftszuordnung | K 6–7 | ✅ | Suche/Filter, Anlegen, Bearbeiten, Aktiv/Passiv/Austritt; Zuordnung trägt Person sofort in künftige Termine ein bzw. aus. Jugendleitung sieht nur ihren Bereich |
 | Mannschaften verwalten, Saisonplanung, Saisonwechsel | K 6–7 | ✅ | Anlegen/Bearbeiten/Löschen; nächste Saison vorbereiten (Teams, Module, Fristen, Trainerteams, Zusatzaufgaben, optional Spieler), Kader der neuen Saison planen, Saison starten (Kasse, Dokumente, künftige Termine, Spielerbedarf gehen mit) |
-| Spielerbewegungen (Zu-/Abgänge, Leihe) | M 8, K 6 | ⬜ | |
+| Spielerbewegungen (Zu-/Abgänge, Leihe) | M 8, K 6 | ✅ | Wechsel im Verein, befristete Leihe (Stammteam bleibt), Zugang, Abgang; Termine werden angepasst, Historie bleibt |
 | Rollen & Rechte vergeben | M 8, K 7 | ✅ | Beim Mitglied mit Geltungsbereich (z. B. Kassenwart B1); Schutz vor Rechteausweitung und Aussperren |
 | Veranstaltungen planen | M 8 | ⬜ | |
 | Audit-Log | K 6, 16 | ✅ | „Änderungsprotokoll“ für Vorstand und Fulladmin |
@@ -185,15 +185,15 @@ Stand: 05.10.2026
 | --- | ---: | ---: | ---: |
 | Grundstruktur & Design | 6 | 0 | 1 |
 | Home | 8 | 1 | 0 |
-| Mannschaft | 5 | 6 | 3 |
+| Mannschaft | 8 | 5 | 1 |
 | Termine & Teilnahme | 11 | 0 | 1 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
 | Verein | 8 | 1 | 2 |
 | Kommunikation | 5 | 1 | 1 |
 | Benachrichtigungen | 2 | 2 | 3 |
-| Profile | 3 | 2 | 0 |
+| Profile | 4 | 1 | 0 |
 | Platzbelegung & Betrieb | 3 | 0 | 1 |
-| Verwaltung | 5 | 0 | 4 |
+| Verwaltung | 6 | 0 | 3 |
 | Einrichtung & Module | 2 | 1 | 2 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **66** | **14** | **21** |
+| **Gesamt** | **71** | **12** | **18** |
