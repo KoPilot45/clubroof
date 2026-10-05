@@ -1,14 +1,53 @@
+import type { Absence, HomeResponse } from '@clubroof/core';
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
-import { Avatar, Button, Card, Chip, IconTile, ListRow, Screen, Section, T } from '@/components/ui';
+import {
+  Avatar,
+  Button,
+  Card,
+  Chip,
+  IconTile,
+  ListRow,
+  Screen,
+  Section,
+  T,
+  TileGrid,
+  type TileItem,
+} from '@/components/ui';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 
 export default function MoreScreen() {
-  const { me, signOut } = useSignedIn();
+  const { me, api, signOut } = useSignedIn();
   const name = `${me.person.firstName} ${me.person.lastName}`;
   const children = me.managedPersons.filter((p) => p.relation === 'child');
+  const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
+  const absences = useQuery({ queryKey: ['absences'], queryFn: () => api<Absence[]>('/absences') });
+
+  const tiles: TileItem[] = [
+    { key: 'profile', label: 'Mein Profil', icon: 'person', soon: true },
+    {
+      key: 'absences',
+      label: 'Abwesenheiten',
+      icon: 'airplane',
+      badge: absences.data?.length,
+      onPress: () => router.push('/absences'),
+    },
+    {
+      key: 'notifications',
+      label: 'Benachrichtigungen',
+      icon: 'notifications',
+      badge: home.data?.unreadNotifications,
+      onPress: () => router.push('/notifications'),
+    },
+    { key: 'stats', label: 'Meine Statistik', icon: 'bar-chart', soon: true },
+    { key: 'settings', label: 'Einstellungen', icon: 'settings', soon: true },
+    ...(me.canAdminister
+      ? [{ key: 'admin', label: 'Verwaltung', icon: 'shield-checkmark' as const, soon: true }]
+      : []),
+  ];
 
   return (
     <Screen header={<AppHeader title="Mehr" />}>
@@ -24,6 +63,8 @@ export default function MoreScreen() {
           </View>
         </View>
       </Card>
+
+      <TileGrid items={tiles} />
 
       <Section title="Meine Mannschaften">
         <Card>
@@ -54,28 +95,12 @@ export default function MoreScreen() {
                 first={i === 0}
                 leading={<Avatar name={`${c.firstName} ${c.lastName}`} />}
                 title={`${c.firstName} ${c.lastName}`}
-                subtitle="Du verwaltest Termine und Zusagen"
+                subtitle="Du verwaltest Termine, Zusagen und Abwesenheiten"
               />
             ))}
           </Card>
         </Section>
       ) : null}
-
-      <Card>
-        <ListRow
-          first
-          leading={<IconTile name="notifications-outline" />}
-          title="Benachrichtigungen"
-          onPress={() => router.push('/notifications')}
-        />
-        {me.canAdminister ? (
-          <ListRow
-            leading={<IconTile name="shield-checkmark-outline" />}
-            title="Verwaltungsmodus"
-            subtitle="Folgt im nächsten Schritt"
-          />
-        ) : null}
-      </Card>
 
       <Button
         label="Abmelden"

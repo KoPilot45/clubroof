@@ -1,6 +1,5 @@
 import type { NotificationItem } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { router, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView } from 'react-native';
 import {
@@ -15,6 +14,7 @@ import {
   type IconName,
 } from '@/components/ui';
 import { formatAgo } from '@/lib/format';
+import { openLink } from '@/lib/links';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -120,7 +120,7 @@ export default function NotificationsScreen() {
                 trailing={<Chip tone="neutral" label={formatAgo(n.createdAt)} />}
                 onPress={() => {
                   if (!n.readAt) markRead.mutate(n.id);
-                  if (n.link?.startsWith('/events/')) router.push(n.link as Href);
+                  if (n.link) openLink(n.link);
                 }}
               />
             );

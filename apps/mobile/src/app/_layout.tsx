@@ -41,6 +41,26 @@ function Navigator() {
             name="notifications"
             options={{ headerShown: true, title: 'Benachrichtigungen' }}
           />
+          <Stack.Screen name="news/index" options={{ headerShown: true, title: 'Vereinsnews' }} />
+          <Stack.Screen name="news/[id]" options={{ headerShown: true, title: 'News' }} />
+          <Stack.Screen name="polls/index" options={{ headerShown: true, title: 'Umfragen' }} />
+          <Stack.Screen name="polls/[id]" options={{ headerShown: true, title: 'Umfrage' }} />
+          <Stack.Screen
+            name="absences/index"
+            options={{ headerShown: true, title: 'Abwesenheiten' }}
+          />
+          <Stack.Screen
+            name="absences/new"
+            options={{ headerShown: true, title: 'Abwesenheit eintragen' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/events"
+            options={{ headerShown: true, title: 'Termine' }}
+          />
+          <Stack.Screen
+            name="club-events"
+            options={{ headerShown: true, title: 'Termine & Veranstaltungen' }}
+          />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />

@@ -61,3 +61,18 @@ export function clubInitials(name: string): string {
     .slice(0, 3)
     .toUpperCase();
 }
+
+/** Heutiges Datum (JJJJ-MM-TT) in der Zeitzone des Vereins. */
+export function todayIso(now = new Date()): string {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: TZ,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+      .formatToParts(now)
+      .map((p) => [p.type, p.value]),
+  );
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}

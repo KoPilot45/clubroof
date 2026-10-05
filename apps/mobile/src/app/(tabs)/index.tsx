@@ -1,6 +1,6 @@
 import type { ActionItem, HomeResponse, NewsItem } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
-import { router, type Href } from 'expo-router';
+import { router } from 'expo-router';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow, NextMatchCard } from '@/components/events';
@@ -19,6 +19,7 @@ import {
   type IconName,
 } from '@/components/ui';
 import { formatAgo, formatEuro, formatRemaining } from '@/lib/format';
+import { openLink } from '@/lib/links';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -34,12 +35,6 @@ const ACTION_ICON: Record<ActionItem['kind'], IconName> = {
   approval: 'checkmark-done',
   task: 'clipboard',
 };
-
-/** Interne Links aus der API, die es in der App noch nicht gibt, führen vorerst zur Glocke. */
-function openLink(link: string) {
-  if (link.startsWith('/events/')) router.push(link as Href);
-  else router.push('/notifications');
-}
 
 export default function HomeScreen() {
   const { api, me } = useSignedIn();
@@ -97,6 +92,7 @@ export default function HomeScreen() {
               <ListRow
                 key={n.id}
                 first={i === 0}
+                onPress={() => router.push(`/news/${n.id}`)}
                 leading={<IconTile name={NEWS_ICON[n.priority]} tone={NEWS_TONE[n.priority]} />}
                 title={n.title}
                 subtitle={

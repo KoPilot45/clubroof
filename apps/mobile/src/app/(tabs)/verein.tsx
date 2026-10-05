@@ -1,67 +1,72 @@
-import type { EventSummary, NewsItem } from '@clubroof/core';
+import type { EventSummary, NewsItem, PollSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { router } from 'expo-router';
+import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
-import { EventRow } from '@/components/events';
+import { NewsCard } from '@/components/news';
 import {
+  Button,
   Card,
-  Chip,
-  Empty,
-  ErrorNotice,
+  IconTile,
   Loading,
   Screen,
   Section,
   T,
-  TeamBadge,
+  TileGrid,
+  type TileItem,
 } from '@/components/ui';
-import { formatAgo } from '@/lib/format';
+import { formatLongDate, formatTime } from '@/lib/format';
+import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
-import { useTheme } from '@/lib/theme';
-
-const TONE = { urgent: 'urgent', important: 'action', info: 'info' } as const;
-
-function NewsCard({ item }: { item: NewsItem }) {
-  const [open, setOpen] = useState(false);
-  const { colors } = useTheme();
-  return (
-    <Pressable
-      onPress={() => setOpen((v) => !v)}
-      accessibilityRole="button"
-      accessibilityState={{ expanded: open }}
-    >
-      <Card style={{ gap: 8 }}>
-        <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-          {item.source.type === 'team' ? (
-            <TeamBadge badge={item.source.label} />
-          ) : (
-            <Chip tone="info" label={item.source.label} />
-          )}
-          {item.priority !== 'info' ? (
-            <Chip
-              tone={TONE[item.priority]}
-              label={item.priority === 'urgent' ? 'Dringend' : 'Wichtig'}
-            />
-          ) : null}
-          <T variant="caption">{formatAgo(item.publishedAt)}</T>
-        </View>
-        <T variant="heading">{item.title}</T>
-        <T color={colors.onSurfaceMuted} numberOfLines={open ? undefined : 2}>
-          {open ? item.body : (item.teaser ?? item.body)}
-        </T>
-        <T variant="caption">
-          {item.viewCount} Aufrufe{item.likeCount ? ` · ${item.likeCount} gefällt das` : ''}
-        </T>
-      </Card>
-    </Pressable>
-  );
-}
 
 export default function ClubScreen() {
-  const { api } = useSignedIn();
+  const { api, me } = useSignedIn();
+  const has = (module: string) => me.clubModules.includes(module);
   const news = useQuery({ queryKey: ['news'], queryFn: () => api<NewsItem[]>('/news') });
   const events = useQuery({ queryKey: ['events'], queryFn: () => api<EventSummary[]>('/events') });
-  const clubEvents = (events.data ?? []).filter((e) => e.team === null);
+  const polls = useQuery({
+    queryKey: ['polls', 'all'],
+    queryFn: () => api<PollSummary[]>('/polls'),
+  });
+
+  const clubEvents = (events.data ?? []).filter((e) => e.team === null && e.status === 'scheduled');
+  const highlight = clubEvents.find((e) => e.type === 'club_event') ?? clubEvents[0];
+  const openPolls = (polls.data ?? []).filter((p) => p.isOpen && !p.myOptionId).length;
+
+  const tiles: TileItem[] = [
+    { key: 'news', label: 'News', icon: 'newspaper', onPress: () => router.push('/news') },
+    {
+      key: 'events',
+      label: 'Termine & Veranstaltungen',
+      icon: 'calendar',
+      onPress: () => router.push('/club-events'),
+    },
+    ...(has('polls')
+      ? [
+          {
+            key: 'polls',
+            label: 'Umfragen',
+            icon: 'stats-chart' as const,
+            badge: openPolls,
+            onPress: () => router.push('/polls'),
+          },
+        ]
+      : []),
+    ...(has('helpers')
+      ? [{ key: 'helpers', label: 'Helfer gesucht', icon: 'hand-left' as const, soon: true }]
+      : []),
+    ...(has('documents')
+      ? [{ key: 'docs', label: 'Dokumente', icon: 'folder-open' as const, soon: true }]
+      : []),
+    { key: 'teams', label: 'Mannschaften', icon: 'shirt', soon: true },
+    { key: 'contacts', label: 'Ansprechpartner', icon: 'call', soon: true },
+    ...(has('facility_booking')
+      ? [{ key: 'pitch', label: 'Platzbelegung', icon: 'grid' as const, soon: true }]
+      : []),
+    ...(has('forum')
+      ? [{ key: 'forum', label: 'Austausch', icon: 'chatbubbles' as const, soon: true }]
+      : []),
+  ];
 
   return (
     <Screen
@@ -70,26 +75,36 @@ export default function ClubScreen() {
       onRefresh={() => {
         void news.refetch();
         void events.refetch();
+        void polls.refetch();
       }}
     >
-      <Section title="Veranstaltungen & Termine">
-        <Card>
-          {events.isPending ? <Loading /> : null}
-          {events.data && clubEvents.length === 0 ? (
-            <Empty icon="calendar-outline" text="Keine Vereinstermine in den nächsten Wochen." />
-          ) : null}
-          {clubEvents.map((e, i) => (
-            <EventRow key={e.id} event={e} first={i === 0} />
-          ))}
+      {highlight ? (
+        <Card style={{ gap: 10 }}>
+          <T variant="overline">Nächster Vereinstermin</T>
+          <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+            <IconTile name="calendar" filled />
+            <View style={{ flex: 1, gap: 2 }}>
+              <T variant="title">{highlight.title}</T>
+              <T variant="caption">
+                {EVENT_TYPE_LABELS[highlight.type]} · {formatLongDate(highlight.startsAt)},{' '}
+                {formatTime(highlight.startsAt)} Uhr
+                {highlight.location ? ` · ${highlight.location}` : ''}
+              </T>
+            </View>
+          </View>
+          <Button
+            label="Mehr erfahren"
+            variant="outline"
+            onPress={() => router.push(`/events/${highlight.id}`)}
+          />
         </Card>
-      </Section>
+      ) : null}
 
-      <Section title="Vereinsnews">
+      <TileGrid items={tiles} />
+
+      <Section title="Vereinsnews" action="Alle anzeigen" onAction={() => router.push('/news')}>
         {news.isPending ? <Loading /> : null}
-        {news.error ? (
-          <ErrorNotice message={news.error.message} onRetry={() => news.refetch()} />
-        ) : null}
-        {news.data?.map((n) => (
+        {news.data?.slice(0, 3).map((n) => (
           <NewsCard key={n.id} item={n} />
         ))}
       </Section>

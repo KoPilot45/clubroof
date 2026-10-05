@@ -13,10 +13,21 @@ import {
   formatRemaining,
   formatTime,
 } from '@/lib/format';
-import { ATTENDANCE_LABELS, EVENT_TYPE_LABELS } from '@/lib/labels';
+import { ATTENDANCE_LABELS, DECLINE_REASONS, EVENT_TYPE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
-import { Button, Card, Chip, Crest, ListRow, T, TeamBadge, type IconName } from './ui';
+import {
+  Button,
+  Card,
+  ChoiceChips,
+  Chip,
+  Crest,
+  ListRow,
+  T,
+  TeamBadge,
+  TextField,
+  type IconName,
+} from './ui';
 
 const STATUS_TONE: Record<AttendanceStatus, 'success' | 'urgent' | 'action' | 'archived'> = {
   yes: 'success',
@@ -106,17 +117,26 @@ export function useRespond(eventId: string) {
   });
 }
 
-/** Zu-/Absage für jede Person (ich selbst und ggf. meine Kinder). */
+/** Zu-/Absage für jede Person (ich selbst und ggf. meine Kinder). Absagen fragen nach dem Grund. */
 export function ResponseControls({ event }: { event: EventSummary }) {
   const respond = useRespond(event.id);
   const [error, setError] = useState<string | null>(null);
+  /** Person, für die gerade ein Absagegrund gewählt wird */
+  const [declining, setDeclining] = useState<string | null>(null);
+  const [reason, setReason] = useState<string | null>(null);
+  const [note, setNote] = useState('');
   if (event.myResponses.length === 0) return null;
 
-  const send = (r: MyResponse, status: 'yes' | 'no' | 'maybe') => {
+  const send = (r: MyResponse, status: 'yes' | 'no', declineReason?: string) => {
     setError(null);
     respond.mutate(
-      { personId: r.personId, status },
+      { personId: r.personId, status, reason: declineReason },
       {
+        onSuccess: () => {
+          setDeclining(null);
+          setReason(null);
+          setNote('');
+        },
         onError: (e) =>
           setError(
             e instanceof RequestError
@@ -126,6 +146,11 @@ export function ResponseControls({ event }: { event: EventSummary }) {
       },
     );
   };
+
+  const busy = (r: MyResponse, status: 'yes' | 'no') =>
+    respond.isPending &&
+    respond.variables?.personId === r.personId &&
+    respond.variables.status === status;
 
   return (
     <View style={{ gap: 12 }}>
@@ -143,20 +168,54 @@ export function ResponseControls({ event }: { event: EventSummary }) {
               <AttendanceChip status={r.status} />
             </View>
           ) : null}
-          {r.canRespond ? (
+          {r.status === 'no' && r.reason ? <T variant="caption">Grund: {r.reason}</T> : null}
+
+          {!r.canRespond ? (
+            <T variant="caption">
+              {event.status === 'cancelled'
+                ? 'Der Termin wurde abgesagt.'
+                : 'Rückmeldung nicht mehr möglich. Bei Änderungen wende dich an dein Trainerteam.'}
+            </T>
+          ) : declining === r.personId ? (
+            <View style={{ gap: 10 }}>
+              <ChoiceChips
+                label="Warum kannst du nicht?"
+                options={DECLINE_REASONS.map((d) => ({ value: d, label: d }))}
+                selected={reason ? [reason] : []}
+                onToggle={(v) => setReason(v === reason ? null : v)}
+              />
+              <TextField
+                label="Hinweis für das Trainerteam (optional)"
+                value={note}
+                onChangeText={setNote}
+                maxLength={120}
+              />
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Button
+                  style={{ flex: 1 }}
+                  label="Abbrechen"
+                  variant="outline"
+                  onPress={() => setDeclining(null)}
+                />
+                <Button
+                  style={{ flex: 1 }}
+                  label="Absage senden"
+                  variant="danger"
+                  loading={busy(r, 'no')}
+                  onPress={() =>
+                    send(r, 'no', [reason, note.trim()].filter(Boolean).join(' – ') || undefined)
+                  }
+                />
+              </View>
+            </View>
+          ) : (
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Button
                 style={{ flex: 1 }}
                 label={r.status === 'yes' ? 'Zugesagt' : 'Zusagen'}
                 icon={r.status === 'yes' ? 'checkmark-circle' : undefined}
-                variant={
-                  r.status === 'yes' ? 'primary' : r.status === 'pending' ? 'primary' : 'outline'
-                }
-                loading={
-                  respond.isPending &&
-                  respond.variables?.personId === r.personId &&
-                  respond.variables.status === 'yes'
-                }
+                variant={r.status === 'yes' || r.status === 'pending' ? 'primary' : 'outline'}
+                loading={busy(r, 'yes')}
                 onPress={() => send(r, 'yes')}
               />
               <Button
@@ -164,20 +223,13 @@ export function ResponseControls({ event }: { event: EventSummary }) {
                 label={r.status === 'no' ? 'Abgesagt' : 'Absagen'}
                 icon={r.status === 'no' ? 'close-circle' : undefined}
                 variant={r.status === 'no' ? 'danger' : 'outline'}
-                loading={
-                  respond.isPending &&
-                  respond.variables?.personId === r.personId &&
-                  respond.variables.status === 'no'
-                }
-                onPress={() => send(r, 'no')}
+                onPress={() => {
+                  setReason(null);
+                  setNote('');
+                  setDeclining(r.personId);
+                }}
               />
             </View>
-          ) : (
-            <T variant="caption">
-              {event.status === 'cancelled'
-                ? 'Der Termin wurde abgesagt.'
-                : 'Rückmeldung nicht mehr möglich. Bei Änderungen wende dich an dein Trainerteam.'}
-            </T>
           )}
         </View>
       ))}

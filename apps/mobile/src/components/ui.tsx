@@ -9,6 +9,7 @@ import type { ComponentProps, ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  TextInput,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -467,6 +468,296 @@ export function Empty({ icon, text }: { icon: IconName; text: string }) {
       <T variant="caption" style={{ textAlign: 'center' }}>
         {text}
       </T>
+    </View>
+  );
+}
+
+// ── Kacheln (Untermenüs in Team, Verein, Mehr) ─────────────────────────────────
+
+export type TileItem = {
+  key: string;
+  label: string;
+  icon: IconName;
+  onPress?: () => void;
+  /** Zahl oder kurzer Hinweis oben rechts, z. B. offene Umfragen */
+  badge?: string | number;
+  /** Funktion folgt in einem späteren Paket */
+  soon?: boolean;
+};
+
+export function TileGrid({ items }: { items: TileItem[] }) {
+  const { colors, radii, spacing } = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+      {items.map((item) => {
+        const disabled = item.soon || !item.onPress;
+        return (
+          <Pressable
+            key={item.key}
+            accessibilityRole="button"
+            accessibilityState={{ disabled }}
+            accessibilityLabel={item.soon ? `${item.label}, bald verfügbar` : item.label}
+            disabled={disabled}
+            onPress={item.onPress}
+            style={({ pressed }) => ({
+              flexBasis: '47%',
+              flexGrow: 1,
+              minHeight: 64,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              paddingHorizontal: spacing.md,
+              paddingVertical: spacing.sm,
+              borderRadius: radii.lg,
+              borderWidth: StyleSheet.hairlineWidth * 2,
+              borderColor: colors.border,
+              backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
+              opacity: item.soon ? 0.55 : 1,
+            })}
+          >
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: colors.primaryContainer,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Ionicons name={item.icon} size={19} color={colors.onPrimaryContainer} />
+            </View>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text
+                style={{ fontSize: 14, fontWeight: '700', color: colors.onSurface }}
+                numberOfLines={2}
+              >
+                {item.label}
+              </Text>
+              {item.soon ? (
+                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.onSurfaceMuted }}>
+                  Bald verfügbar
+                </Text>
+              ) : null}
+            </View>
+            {!item.soon && item.badge !== undefined && item.badge !== 0 ? (
+              <View
+                style={{
+                  minWidth: 22,
+                  height: 22,
+                  paddingHorizontal: 6,
+                  borderRadius: 11,
+                  backgroundColor: colors.status.action.container,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: '800',
+                    color: colors.status.action.onContainer,
+                  }}
+                >
+                  {item.badge}
+                </Text>
+              </View>
+            ) : null}
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+// ── Formulare ─────────────────────────────────────────────────────────────────
+
+/** Auswahl aus wenigen Optionen als Chips (einfach oder mehrfach). */
+export function ChoiceChips<T extends string>({
+  options,
+  selected,
+  onToggle,
+  label,
+}: {
+  options: { value: T; label: string; icon?: IconName }[];
+  selected: T[];
+  onToggle: (value: T) => void;
+  label?: string;
+}) {
+  const { colors, radii } = useTheme();
+  return (
+    <View style={{ gap: 8 }}>
+      {label ? <T variant="label">{label}</T> : null}
+      <View
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
+        accessibilityRole="radiogroup"
+      >
+        {options.map((o) => {
+          const active = selected.includes(o.value);
+          return (
+            <Pressable
+              key={o.value}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: active }}
+              onPress={() => onToggle(o.value)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: radii.pill,
+                borderWidth: 1,
+                borderColor: active ? colors.primary : colors.border,
+                backgroundColor: active ? colors.primary : colors.surface,
+              }}
+            >
+              {o.icon ? (
+                <Ionicons
+                  name={o.icon}
+                  size={15}
+                  color={active ? colors.onPrimary : colors.onSurface}
+                />
+              ) : null}
+              <Text
+                style={{
+                  fontSize: 13.5,
+                  fontWeight: '700',
+                  color: active ? colors.onPrimary : colors.onSurface,
+                }}
+              >
+                {o.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+export function TextField({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  maxLength,
+  multiline,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  placeholder?: string;
+  maxLength?: number;
+  multiline?: boolean;
+}) {
+  const { colors, radii } = useTheme();
+  return (
+    <View style={{ gap: 6 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <T variant="label">{label}</T>
+        {maxLength ? <T variant="caption">{`${value.length} / ${maxLength}`}</T> : null}
+      </View>
+      <TextInput
+        accessibilityLabel={label}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.onSurfaceMuted}
+        maxLength={maxLength}
+        multiline={multiline}
+        style={{
+          minHeight: multiline ? 72 : 46,
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: radii.md,
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          fontSize: 15,
+          color: colors.onSurface,
+          backgroundColor: colors.surface,
+          textAlignVertical: multiline ? 'top' : 'center',
+        }}
+      />
+    </View>
+  );
+}
+
+const dayLabel = new Intl.DateTimeFormat('de-DE', {
+  weekday: 'short',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+/** Einfache Datumsauswahl mit Vor/Zurück – ohne zusätzliche native Bibliothek. */
+export function DateStepper({
+  label,
+  value,
+  onChange,
+  min,
+}: {
+  label: string;
+  /** ISO-Datum JJJJ-MM-TT */
+  value: string;
+  onChange: (iso: string) => void;
+  min?: string;
+}) {
+  const { colors, radii } = useTheme();
+  const shift = (days: number) => {
+    const d = new Date(`${value}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + days);
+    const next = d.toISOString().slice(0, 10);
+    if (!min || next >= min) onChange(next);
+  };
+  const button = (icon: IconName, days: number, a11y: string) => (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={a11y}
+      onPress={() => shift(days)}
+      hitSlop={6}
+      style={({ pressed }) => ({
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
+      })}
+    >
+      <Ionicons name={icon} size={18} color={colors.onSurface} />
+    </Pressable>
+  );
+  return (
+    <View style={{ gap: 6 }}>
+      <T variant="label">{label}</T>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          padding: 6,
+          borderRadius: radii.md,
+          backgroundColor: colors.surfaceVariant,
+        }}
+      >
+        {button('chevron-back', -1, `${label}: einen Tag früher`)}
+        <Text
+          style={{
+            flex: 1,
+            textAlign: 'center',
+            fontSize: 15,
+            fontWeight: '700',
+            color: colors.onSurface,
+          }}
+        >
+          {dayLabel.format(new Date(`${value}T00:00:00Z`))}
+        </Text>
+        {button('chevron-forward', 1, `${label}: einen Tag später`)}
+      </View>
     </View>
   );
 }
