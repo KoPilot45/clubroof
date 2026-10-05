@@ -16,7 +16,7 @@ Stand: 05.10.2026
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | Vier Bereiche: Home, Team, Verein, Mehr | M 1, K 2 | ✅ | |
-| Vereinsfarbe (5 Farben) und Wappen in der ganzen App | M 10, K 8 | ✅ | Wappen vorerst als Kürzel; Logo-Upload offen |
+| Vereinsfarbe (5 Farben) und Wappen in der ganzen App | M 10, K 8 | ✅ | Logo-Upload in der Verwaltung; ohne Logo erscheint ein Wappen mit Kürzel |
 | Hell / dunkel / automatisch | K 8 | ✅ | |
 | Farben mit Bedeutung (dringend, Aktion, Info, erledigt, archiviert) | K 2 | ✅ | |
 | Mannschafts-Badges (B1, 1., AH) und Tags für Quelle/Typ | K 2 | ✅ | |
@@ -31,7 +31,7 @@ Stand: 05.10.2026
 | Nächstes Spiel mit Countdown und Zu-/Absage | M 3 | ✅ | |
 | Neuigkeiten für dich (nach Priorität und Betroffenheit sortiert) | M 3, K 3 | ✅ | |
 | Nächste Termine (eigene, Kinder, Trainerrollen, Gastspiele) | M 3, K 3 | ✅ | |
-| Offene Aktionen (Zusagen, Umfragen, Freigaben, Aufgaben) | M 3–4, K 3 | 🟡 | Zusagen und Umfragen bedienbar; Freigaben folgen mit der Verwaltung |
+| Offene Aktionen (Zusagen, Umfragen, Freigaben, Aufgaben) | M 3–4, K 3 | ✅ | Zusagen, Umfragen und News-Freigaben führen direkt zum Inhalt |
 | Persönliche Kasse / Teamkasse | M 3, K 3 | ✅ | Karte führt zur Mannschaftskasse |
 | Vorstand: Verein im Überblick (Teams, Mitglieder, Freigaben, Event) | M 4 | ✅ | |
 | Umfragen mit Schnellantwort | K 3 | 🟡 | über „Offene Aktionen“ direkt zur Umfrage; Antwort auf der Startseite selbst fehlt |
@@ -95,7 +95,7 @@ Stand: 05.10.2026
 | Heute auf der Anlage | M 5 | ✅ | |
 | Mannschaften des Vereins (Senioren, Jugend, Frauen, AH) | K 5 | ✅ | mit Liga, Spielerzahl, Trainern |
 | Ansprechpartner (Vorstand, Jugendleitung, Trainer) | K 5 | ✅ | Kontaktdaten nach Sichtbarkeitseinstellung |
-| Dokumente: Kategorien, Filter, Suche, Upload | M 9, K 5 | 🟡 | Öffnen über signierte Links; Upload folgt mit der Verwaltung |
+| Dokumente: Kategorien, Filter, Suche, Upload | M 9, K 5 | ✅ | Upload (PDF, Word, Excel, JPG, PNG bis 10 MB; Typ wird am Inhalt geprüft) und Löschen je Bereich mit `documents.manage`; Öffnen über signierte Links |
 | Austausch / Mini-Forum (wenige, moderierte Themen, Ablaufdatum) | M 5, K 11 | ⬜ | optionales Modul |
 | Fundbüro, Marktplatz, Vereinswissen/Wiki | K 5, 12 | ⬜ | optionale Module |
 
@@ -108,7 +108,7 @@ Stand: 05.10.2026
 | Lesebestätigung (optional) | K 11 | 🟡 | Lesen wird je Person erfasst; Anzeige für Verfasser folgt |
 | Umfragen beantworten, Frist, Ergebnis (ggf. erst nach Fristende) | M 13, K 11 | ✅ | Stimme änderbar bis Fristende |
 | Anfragen / Freigaben mit zielgerichteten Kommentaren | K 11 | ⬜ | |
-| News und Umfragen erstellen, Freigabe-Workflow | M 8, K 6 | 🟡 | News: Schreiben je Bereich, Einreichen, Freigeben oder mit Rückmeldung zurückgeben, Korrigieren, Zurückziehen; wichtige/dringende News benachrichtigen den Bereich. Bilder und Umfragen erstellen folgen |
+| News und Umfragen erstellen, Freigabe-Workflow | M 8, K 6 | ✅ | News mit Bild: Schreiben je Bereich, Einreichen, Freigeben oder mit Rückmeldung zurückgeben, Korrigieren, Zurückziehen. Umfragen: Erstellen je Bereich (2–10 Antworten, Frist, Sichtbarkeit), vorzeitig beenden; Beteiligte werden benachrichtigt |
 | Kein Gruppenchat (bewusst) | K 1, 11 | ✅ | Grundsatz |
 
 ## 8. Benachrichtigungen
@@ -184,16 +184,16 @@ Stand: 05.10.2026
 | Bereich | ✅ | 🟡 | ⬜ |
 | --- | ---: | ---: | ---: |
 | Grundstruktur & Design | 6 | 0 | 1 |
-| Home | 7 | 2 | 0 |
+| Home | 8 | 1 | 0 |
 | Mannschaft | 5 | 6 | 3 |
 | Termine & Teilnahme | 11 | 0 | 1 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
-| Verein | 7 | 2 | 2 |
-| Kommunikation | 4 | 2 | 1 |
+| Verein | 8 | 1 | 2 |
+| Kommunikation | 5 | 1 | 1 |
 | Benachrichtigungen | 2 | 2 | 3 |
 | Profile | 3 | 2 | 0 |
 | Platzbelegung & Betrieb | 3 | 0 | 1 |
 | Verwaltung | 4 | 0 | 5 |
 | Einrichtung & Module | 0 | 1 | 4 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **60** | **17** | **24** |
+| **Gesamt** | **63** | **14** | **24** |

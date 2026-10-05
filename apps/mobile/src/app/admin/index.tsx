@@ -90,6 +90,16 @@ export default function AdminScreen() {
               },
             ]
           : []),
+        ...(me.canManageClub
+          ? [
+              {
+                key: 'club',
+                label: 'Vereinslogo',
+                icon: 'shield' as const,
+                onPress: () => router.push('/admin/club'),
+              },
+            ]
+          : []),
         { key: 'modules', label: 'Module', icon: 'apps' as const, soon: true },
       ]
     : [];

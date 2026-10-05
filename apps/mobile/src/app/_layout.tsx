@@ -118,6 +118,15 @@ function Navigator() {
             options={{ headerShown: true, title: 'News schreiben' }}
           />
           <Stack.Screen name="admin/news/[id]" options={{ headerShown: true, title: 'News' }} />
+          <Stack.Screen
+            name="documents-upload"
+            options={{ headerShown: true, title: 'Dokument hochladen' }}
+          />
+          <Stack.Screen
+            name="polls/new"
+            options={{ headerShown: true, title: 'Umfrage erstellen' }}
+          />
+          <Stack.Screen name="admin/club" options={{ headerShown: true, title: 'Vereinslogo' }} />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />

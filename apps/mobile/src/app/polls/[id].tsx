@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { Card, Chip, ErrorNotice, Loading, Screen, T, TeamBadge } from '@/components/ui';
+import { Button, Card, Chip, ErrorNotice, Loading, Screen, T, TeamBadge } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatLongDate, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
@@ -37,6 +37,15 @@ export default function PollScreen() {
       setError(
         e instanceof RequestError ? e.message : 'Die Stimme konnte nicht gespeichert werden.',
       ),
+  });
+  const close = useMutation({
+    mutationFn: () => api<PollDetail>(`/polls/${id}/close`, { method: 'POST' }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['poll', id], data);
+      void queryClient.invalidateQueries({ queryKey: ['polls'] });
+    },
+    onError: (e) =>
+      setError(e instanceof RequestError ? e.message : 'Die Umfrage konnte nicht beendet werden.'),
   });
   const p = poll.data;
   const total = p?.options.reduce((sum, o) => sum + (o.votes ?? 0), 0) ?? 0;
@@ -142,6 +151,15 @@ export default function PollScreen() {
               {p.isOpen ? ' Du kannst deine Stimme bis zum Ende ändern.' : ''}
             </T>
           </Card>
+          {p.canClose ? (
+            <Button
+              label="Umfrage jetzt beenden"
+              variant="outline"
+              icon="stop-circle-outline"
+              loading={close.isPending}
+              onPress={() => close.mutate()}
+            />
+          ) : null}
         </>
       ) : null}
     </Screen>

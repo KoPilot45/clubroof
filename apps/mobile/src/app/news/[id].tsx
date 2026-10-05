@@ -7,6 +7,7 @@ import { NewsSource } from '@/components/news';
 import { Button, Card, ErrorNotice, Loading, Screen, T } from '@/components/ui';
 import { formatLongDate, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { mediaUri } from '@/lib/upload';
 import { useTheme } from '@/lib/theme';
 
 const HEADER_ICON = { urgent: 'warning', important: 'megaphone', info: 'newspaper' } as const;
@@ -38,7 +39,7 @@ export default function NewsDetailScreen() {
         <>
           {n.imageUrl ? (
             <Image
-              source={{ uri: n.imageUrl }}
+              source={{ uri: mediaUri(n.imageUrl)! }}
               accessibilityIgnoresInvertColors
               style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: radii.lg }}
             />

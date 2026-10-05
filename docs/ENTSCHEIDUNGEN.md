@@ -5,6 +5,7 @@ Neue Entscheidungen werden oben ergänzt.
 
 | Datum | Festlegung | Folge für die Umsetzung |
 | --- | --- | --- |
+| 05.10.2026 | **Uploads nur geprüft und nur über signierte Links.** Der Dateityp wird am Inhalt erkannt (PDF, Word, Excel, JPG, PNG, WebP), nie am Namen; SVG/HTML werden abgelehnt. Dokumente bis 10 MB, Bilder bis 5 MB. | Dokumentlinks gelten 10 Minuten, Bildlinks 12–24 Stunden (damit Listen Bilder zwischenspeichern können). Dateien liegen getrennt je Verein (`clubs/<id>/…`); später austauschbar gegen S3-Speicher. |
 | 05.10.2026 | **Rechtevergabe mit Schutzregeln.** Rollen vergibt nur, wer `club.roles.manage` hat – und nur Rollen, deren Rechte er selbst vereinsweit besitzt. Der letzte Fulladmin kann weder entfernt werden noch austreten; niemand entzieht sich selbst die Rollenvergabe. | Verhindert Rechteausweitung und das Aussperren des Vereins. Jede Vergabe und jeder Entzug steht im Änderungsprotokoll. |
 | 05.10.2026 | **Austritt** beendet Mannschaftszugehörigkeiten (rückwirkend bis gestern), entzieht alle Rollen und sperrt den App-Zugang (Sitzungen gelöscht, Login abgelehnt). Die Stammdaten bleiben für die Vereinsunterlagen erhalten. | Wiederaufnahme jederzeit über den Status „Aktiv“. Löschung personenbezogener Daten (DSGVO) folgt als eigene Funktion. |
 | 05.10.2026 | **Verwaltung zuerst als Bereich der App** (Mehr → Verwaltung). Sie läuft dank Web-Build auch im Browser am PC. | Eine eigene Web-Oberfläche (Next.js) folgt erst, wenn breite Tabellen, Import oder Massenbearbeitung gebraucht werden – das Backend ist dafür bereits fertig. |

@@ -5,9 +5,14 @@ import type {
   NewsAction,
   SaveNewsInput,
 } from '@clubroof/core';
+import type { UploadedImage } from '@clubroof/core';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
 import { Button, Card, ChoiceChips, Chip, T, TextField } from '@/components/ui';
+import { RequestError } from '@/lib/api';
+import { useSignedIn } from '@/lib/session';
+import { useTheme } from '@/lib/theme';
+import { mediaUri, pickFile } from '@/lib/upload';
 
 const PRIORITIES: { value: AnnouncementPriority; label: string }[] = [
   { value: 'info', label: 'Info' },
@@ -33,6 +38,33 @@ export function NewsEditor({
   const [teaser, setTeaser] = useState(initial?.teaser ?? '');
   const [body, setBody] = useState(initial?.body ?? '');
   const [priority, setPriority] = useState<AnnouncementPriority>(initial?.priority ?? 'info');
+  const { api } = useSignedIn();
+  const { radii } = useTheme();
+  const [image, setImage] = useState<{ id: string; url: string | null } | null>(
+    initial?.imageId ? { id: initial.imageId, url: initial.imageUrl } : null,
+  );
+  const [uploading, setUploading] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+
+  const chooseImage = async () => {
+    setImageError(null);
+    try {
+      const file = await pickFile('image');
+      if (!file) return;
+      setUploading(true);
+      const uploaded = await api<UploadedImage>('/media', {
+        method: 'POST',
+        body: { purpose: 'news', fileName: file.name, dataBase64: file.dataBase64 },
+      });
+      setImage({ id: uploaded.id, url: uploaded.url });
+    } catch (e) {
+      setImageError(
+        e instanceof RequestError ? e.message : 'Das Bild konnte nicht hochgeladen werden.',
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
   // Bereich der bestehenden News bleibt wählbar, auch wenn er nicht in meinen Schreibbereichen liegt
   const options: EditorialScope[] =
     initial && !scopes.some((sc) => key(sc) === key(initial.scope))
@@ -54,6 +86,7 @@ export function NewsEditor({
       scopeType: scope!.type,
       scopeId: scope!.id,
       action,
+      imageId: image?.id ?? null,
     });
 
   return (
@@ -68,6 +101,36 @@ export function NewsEditor({
           maxLength={200}
         />
         <TextField label="Text" value={body} onChangeText={setBody} maxLength={5000} multiline />
+      </Card>
+      <Card style={{ gap: 10 }}>
+        <T variant="label">Bild (optional)</T>
+        {image?.url ? (
+          <Image
+            source={{ uri: mediaUri(image.url)! }}
+            accessibilityLabel="Vorschau des News-Bilds"
+            style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: radii.md }}
+          />
+        ) : null}
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Button
+            style={{ flex: 1 }}
+            label={image ? 'Anderes Bild' : 'Bild auswählen'}
+            variant="outline"
+            icon="image-outline"
+            loading={uploading}
+            onPress={() => void chooseImage()}
+          />
+          {image ? (
+            <Button
+              style={{ flex: 1 }}
+              label="Entfernen"
+              variant="outline"
+              onPress={() => setImage(null)}
+            />
+          ) : null}
+        </View>
+        <T variant="caption">JPG, PNG oder WebP, höchstens 5 MB.</T>
+        {imageError ? <Chip tone="urgent" icon="alert-circle" label={imageError} /> : null}
       </Card>
       <Card style={{ gap: 12 }}>
         <ChoiceChips

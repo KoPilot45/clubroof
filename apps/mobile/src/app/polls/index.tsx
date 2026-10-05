@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import {
+  Button,
   Card,
   Chip,
   Empty,
@@ -18,13 +19,21 @@ import { useSignedIn } from '@/lib/session';
 
 export default function PollListScreen() {
   const { teamId } = useLocalSearchParams<{ teamId?: string }>();
-  const { api } = useSignedIn();
+  const { api, me } = useSignedIn();
   const polls = useQuery({
     queryKey: ['polls', teamId ?? 'all'],
     queryFn: () => api<PollSummary[]>(teamId ? `/polls?teamId=${teamId}` : '/polls'),
   });
   return (
     <Screen edges={[]} refreshing={polls.isRefetching} onRefresh={() => polls.refetch()}>
+      {me.create.polls.length ? (
+        <Button
+          label="Umfrage erstellen"
+          icon="add-circle"
+          variant="outline"
+          onPress={() => router.push(teamId ? `/polls/new?teamId=${teamId}` : '/polls/new')}
+        />
+      ) : null}
       {polls.isPending ? <Loading /> : null}
       {polls.error ? (
         <ErrorNotice message={polls.error.message} onRetry={() => polls.refetch()} />

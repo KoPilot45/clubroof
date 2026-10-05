@@ -2,10 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import type { HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { clubInitials } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { mediaUri } from '@/lib/upload';
 import { Avatar, Crest, T } from './ui';
 
 /** Kopfzeile aller Tabs: Wappen, Begrüßung, Glocke, Avatar (Mappe S. 3). */
@@ -28,7 +29,16 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
         borderBottomColor: colors.border,
       }}
     >
-      <Crest initials={clubInitials(me.club.shortName)} size={38} />
+      {me.club.logoUrl ? (
+        <Image
+          source={{ uri: mediaUri(me.club.logoUrl)! }}
+          accessibilityLabel="Vereinslogo"
+          style={{ width: 38, height: 42 }}
+          resizeMode="contain"
+        />
+      ) : (
+        <Crest initials={clubInitials(me.club.shortName)} size={38} />
+      )}
       <View style={{ flex: 1 }}>
         <T variant="title" numberOfLines={1}>
           {title ?? `Hallo, ${me.person.firstName}`}

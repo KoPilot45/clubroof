@@ -1,9 +1,10 @@
 import type { DocumentCategory, DocumentItem } from '@clubroof/core';
-import { useQuery } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import {
+  Button,
   Card,
   ChoiceChips,
   Chip,
@@ -39,7 +40,8 @@ function fileIcon(mime: string): IconName {
 
 export default function DocumentsScreen() {
   const { teamId } = useLocalSearchParams<{ teamId?: string }>();
-  const { api } = useSignedIn();
+  const { api, me } = useSignedIn();
+  const queryClient = useQueryClient();
   const [category, setCategory] = useState<DocumentCategory | 'all'>('all');
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +54,12 @@ export default function DocumentsScreen() {
     queryFn: () => api<DocumentItem[]>(`/documents?${params.toString()}`),
   });
 
+  const remove = useMutation({
+    mutationFn: (id: string) => api<void>(`/documents/${id}`, { method: 'DELETE' }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['documents'] }),
+    onError: () => setError('Das Dokument konnte nicht gelöscht werden.'),
+  });
+
   const open = (doc: DocumentItem) => {
     setError(null);
     openDocument(api, doc.id).catch(() => setError('Das Dokument konnte nicht geöffnet werden.'));
@@ -59,6 +67,14 @@ export default function DocumentsScreen() {
 
   return (
     <Screen edges={[]} refreshing={docs.isRefetching} onRefresh={() => docs.refetch()}>
+      {me.create.documents.length ? (
+        <Button
+          label="Dokument hochladen"
+          icon="cloud-upload"
+          variant="outline"
+          onPress={() => router.push('/documents-upload')}
+        />
+      ) : null}
       <TextField
         label="Suchen"
         value={q}
@@ -83,6 +99,16 @@ export default function DocumentsScreen() {
               onPress={() => open(d)}
               leading={<IconTile name={fileIcon(d.mimeType)} />}
               title={d.title}
+              trailing={
+                d.canDelete ? (
+                  <Button
+                    label="Löschen"
+                    variant="outline"
+                    loading={remove.isPending && remove.variables === d.id}
+                    onPress={() => remove.mutate(d.id)}
+                  />
+                ) : undefined
+              }
               subtitle={
                 <View
                   style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}
