@@ -102,6 +102,10 @@ function Navigator() {
             options={{ headerShown: true, title: 'Mitglied anlegen' }}
           />
           <Stack.Screen
+            name="admin/import"
+            options={{ headerShown: true, title: 'Mitglieder importieren' }}
+          />
+          <Stack.Screen
             name="admin/roles"
             options={{ headerShown: true, title: 'Rollen & Aufgaben' }}
           />

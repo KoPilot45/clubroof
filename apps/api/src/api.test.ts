@@ -15,6 +15,7 @@ import type {
   TwoFactorSetup,
   TwoFactorStatus,
   ClubSettings,
+  MemberImportResult,
   InviteLink,
   InviteOverview,
   JoinInfo,
@@ -2624,6 +2625,72 @@ describe.skipIf(!url)('API', () => {
       expect((await get<{ needsSetup: boolean }>('/setup/status', admin.token)).needsSetup).toBe(
         false,
       );
+    });
+  });
+
+  describe('Mitglieder-Import', () => {
+    it('prüft die Datei in der Vorschau und übernimmt nur neue Mitglieder', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const csv = [
+        'Vorname;Nachname;Geburtsdatum;E-Mail;Mannschaft;Funktion;Rückennummer;Lieblingsessen',
+        'Lena;Import;03.04.2010;lena.import@example.org;B1;Spielerin;23;Pizza',
+        'Jonas;Import;2011-01-15;;;;;',
+        'Daniel;Schäfer;14.03.1986;;;;;',
+        'Lena;Import;03.04.2010;;;;;',
+        'Kai;Fehler;31.02.2010;kein-mail;Z9;Torwart;100;',
+        ';;;;;;;',
+      ].join('\n');
+      expect(
+        (await send('POST', '/admin/import/members', coach.token, { csv, commit: false })).status,
+      ).toBe(403);
+
+      const preview = await send<MemberImportResult>('POST', '/admin/import/members', admin.token, {
+        csv,
+        commit: false,
+      });
+      expect(preview.status).toBe(200);
+      expect(preview.body.summary).toEqual({ new: 2, duplicate: 2, error: 1 });
+      expect(preview.body.ignoredColumns).toEqual(['Lieblingsessen']);
+      const [lena, , daniel, , kai] = preview.body.rows;
+      expect(lena).toMatchObject({
+        line: 2,
+        birthDate: '2010-04-03',
+        function: 'player',
+        jerseyNumber: 23,
+        team: { badge: 'B1' },
+      });
+      expect(daniel!.status).toBe('duplicate');
+      expect(kai!.messages).toHaveLength(5);
+      // Vorschau legt nichts an
+      const before = await get<MemberListItem[]>('/admin/members?q=Import', admin.token);
+      expect(before).toHaveLength(0);
+
+      const done = await send<MemberImportResult>('POST', '/admin/import/members', admin.token, {
+        csv,
+        commit: true,
+      });
+      expect(done.body.imported).toBe(2);
+      const after = await get<MemberListItem[]>('/admin/members?q=Import', admin.token);
+      expect(after.map((m) => `${m.firstName} ${m.lastName}`).sort()).toEqual([
+        'Jonas Import',
+        'Lena Import',
+      ]);
+      // Zweiter Import erkennt alles als Dublette
+      const again = await send<{ error: string }>('POST', '/admin/import/members', admin.token, {
+        csv: csv.split('\n').slice(0, 3).join('\n'),
+        commit: true,
+      });
+      expect(again.status).toBe(400);
+      expect(again.body.error).toBe('import_nothing');
+      expect(
+        (
+          await send('POST', '/admin/import/members', admin.token, {
+            csv: 'a;b\n1;2',
+            commit: false,
+          })
+        ).status,
+      ).toBe(400);
     });
   });
 

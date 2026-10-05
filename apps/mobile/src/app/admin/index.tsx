@@ -58,6 +58,12 @@ export default function AdminScreen() {
                 icon: 'person-add' as const,
                 onPress: () => router.push('/admin/member-new'),
               },
+              {
+                key: 'import',
+                label: 'CSV-Import',
+                icon: 'document-text' as const,
+                onPress: () => router.push('/admin/import'),
+              },
             ]
           : []),
         ...(o.can.manageRoles || o.can.readMembers

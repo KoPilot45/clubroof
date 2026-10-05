@@ -1187,3 +1187,38 @@ export type SetupInput = {
   orgUnits: { name: string; kind: OrgUnitKind }[];
   admin: { firstName: string; lastName: string; email: string; password: string };
 };
+
+// ── Mitglieder-Import (CSV) ──────────────────────────────────────────────
+
+export type MemberImportRow = {
+  /** Zeilennummer in der Datei (Kopfzeile = 1) */
+  line: number;
+  firstName: string;
+  lastName: string;
+  birthDate: string | null;
+  email: string | null;
+  phone: string | null;
+  memberNumber: string | null;
+  memberSince: string | null;
+  team: { id: string; badge: string } | null;
+  function: 'player' | 'coach' | 'assistant_coach' | 'team_manager' | null;
+  jerseyNumber: number | null;
+  /** new = wird angelegt, duplicate = gibt es schon, error = fehlerhaft */
+  status: 'new' | 'duplicate' | 'error';
+  messages: string[];
+};
+
+export type MemberImportResult = {
+  rows: MemberImportRow[];
+  /** Erkannte Spalten (Kopfzeile) und nicht zugeordnete Spalten */
+  columns: string[];
+  ignoredColumns: string[];
+  summary: { new: number; duplicate: number; error: number };
+  /** Nur nach der Übernahme gesetzt */
+  imported: number | null;
+};
+
+/** Spalten der Importvorlage (Trennzeichen Semikolon, wie Excel in Deutschland). */
+export const MEMBER_IMPORT_TEMPLATE =
+  'Vorname;Nachname;Geburtsdatum;E-Mail;Telefon;Mitgliedsnummer;Eintrittsdatum;Mannschaft;Funktion;Rückennummer\n' +
+  'Max;Mustermann;14.05.2011;eltern.mustermann@example.org;0170 1234567;1234;01.08.2026;C1;Spieler;7\n';

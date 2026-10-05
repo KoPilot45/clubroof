@@ -19,6 +19,7 @@ const TYPES = {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   ],
   image: ['image/png', 'image/jpeg', 'image/webp'],
+  csv: ['text/csv', 'text/comma-separated-values', 'application/vnd.ms-excel', 'text/plain'],
 };
 
 /** Datei auswählen und als Base64 lesen. `null`, wenn abgebrochen. Prüfung erfolgt auf dem Server. */

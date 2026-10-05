@@ -4,6 +4,7 @@ import {
   type AdminOverview,
   type AuditEntry,
   type MemberDetail,
+  type MemberImportResult,
   type MemberListItem,
   type RoleCatalog,
 } from '@clubroof/core';
@@ -22,6 +23,8 @@ import {
   revokeRole,
   updateMember,
 } from '../services/admin';
+import { decodeText } from '../services/csv';
+import { importMembers } from '../services/member-import';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const memberParams = z.object({ personId: z.uuid() });
@@ -43,6 +46,31 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.get('/admin/overview', async (request): Promise<AdminOverview> =>
     getAdminOverview(app.db, request.actor!, app.now()),
+  );
+
+  app.post(
+    '/admin/import/members',
+    {
+      bodyLimit: 3 * 1024 * 1024,
+      schema: {
+        body: z
+          .object({
+            csv: z.string().min(1).max(2_000_000).optional(),
+            /** Datei wie hochgeladen – UTF-8 oder Windows-1252 (Excel) */
+            dataBase64: z.string().min(1).max(2_800_000).optional(),
+            commit: z.boolean(),
+          })
+          .refine((b) => !!b.csv !== !!b.dataBase64, 'Entweder csv oder dataBase64 angeben.'),
+      },
+    },
+    async (request): Promise<MemberImportResult> =>
+      importMembers(
+        app.db,
+        request.actor!,
+        request.body.csv ?? decodeText(Buffer.from(request.body.dataBase64!, 'base64')),
+        request.body.commit,
+        app.now(),
+      ),
   );
 
   app.get('/admin/audit', async (request): Promise<AuditEntry[]> =>

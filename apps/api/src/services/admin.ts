@@ -78,7 +78,7 @@ const today = (actor: Actor, now: Date) => calendarDayOf(now, actor.club.timezon
 const todayIso = (actor: Actor, now: Date) => toIsoDate(today(actor, now));
 const name = (p: Pick<PersonRow, 'firstName' | 'lastName'>) => `${p.firstName} ${p.lastName}`;
 
-async function currentTeams(db: Db | Tx, actor: Actor): Promise<TeamRow[]> {
+export async function currentTeams(db: Db | Tx, actor: Actor): Promise<TeamRow[]> {
   const rows = await db
     .select({ team: s.teams })
     .from(s.teams)
@@ -182,7 +182,7 @@ async function visiblePersonIds(db: Db, actor: Actor, now: Date): Promise<Set<st
   return ids;
 }
 
-function requireManageMembers(actor: Actor) {
+export function requireManageMembers(actor: Actor) {
   if (!actorCan(actor, 'members.manage'))
     throw forbidden('Stammdaten pflegt nur die Mitgliederverwaltung.');
 }
@@ -530,7 +530,7 @@ async function fulladminAssignments(db: Db | Tx, actor: Actor) {
 }
 
 /** Zukünftige Termine einer Mannschaft für ein neues Mitglied öffnen bzw. beim Verlassen räumen. */
-async function syncFutureParticipation(
+export async function syncFutureParticipation(
   tx: Tx,
   actor: Actor,
   team: TeamRow,
