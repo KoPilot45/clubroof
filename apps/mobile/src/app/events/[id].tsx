@@ -1,10 +1,14 @@
 import type { EventDetail, Participant } from '@clubroof/core';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
-import { AttendanceChip, ResponseControls } from '@/components/events';
+import { AttendanceChip, ResponseControls, useRespond } from '@/components/events';
+import { RequestError } from '@/lib/api';
 import {
+  Button,
   Card,
+  ChoiceChips,
   Chip,
   ErrorNotice,
   IconTile,
@@ -14,6 +18,7 @@ import {
   Section,
   T,
   TeamBadge,
+  TextField,
 } from '@/components/ui';
 import { formatLongDate, formatRemaining, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
@@ -21,6 +26,147 @@ import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
 const ORDER: Participant['status'][] = ['yes', 'maybe', 'pending', 'no'];
+
+const CANCEL_REASONS = ['Platz gesperrt', 'Wetter', 'Zu wenige Zusagen', 'Trainer verhindert'];
+
+/** Trainer korrigiert die Rückmeldung eines Spielers (z. B. nach Fristablauf). */
+function ParticipantRow({
+  participant: p,
+  eventId,
+  first,
+  canOverride,
+}: {
+  participant: Participant;
+  eventId: string;
+  first: boolean;
+  canOverride: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const respond = useRespond(eventId);
+  const subtitle =
+    [
+      p.role === 'coach'
+        ? 'Trainer'
+        : p.role === 'guest_player'
+          ? `Gastspieler aus ${p.guestFromTeam}`
+          : null,
+      p.reason,
+    ]
+      .filter(Boolean)
+      .join(' · ') || undefined;
+  const set = (status: 'yes' | 'no' | 'maybe') =>
+    respond.mutate(
+      {
+        personId: p.personId,
+        status,
+        reason: status === 'no' ? 'Vom Trainerteam eingetragen' : undefined,
+      },
+      { onSuccess: () => setOpen(false) },
+    );
+  return (
+    <View>
+      <ListRow
+        first={first}
+        title={p.name}
+        subtitle={subtitle}
+        trailing={<AttendanceChip status={p.status} />}
+        onPress={canOverride ? () => setOpen((v) => !v) : undefined}
+      />
+      {open ? (
+        <View style={{ flexDirection: 'row', gap: 6, paddingBottom: 10 }}>
+          <Button
+            style={{ flex: 1 }}
+            label="Zusage"
+            variant="outline"
+            onPress={() => set('yes')}
+            loading={respond.isPending && respond.variables?.status === 'yes'}
+          />
+          <Button
+            style={{ flex: 1 }}
+            label="Unsicher"
+            variant="outline"
+            onPress={() => set('maybe')}
+            loading={respond.isPending && respond.variables?.status === 'maybe'}
+          />
+          <Button
+            style={{ flex: 1 }}
+            label="Absage"
+            variant="danger"
+            onPress={() => set('no')}
+            loading={respond.isPending && respond.variables?.status === 'no'}
+          />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+/** Termin absagen – die Mannschaft wird sofort benachrichtigt. */
+function CoachActions({ event }: { event: EventDetail }) {
+  const { api } = useSignedIn();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const cancel = useMutation({
+    mutationFn: () =>
+      api<EventDetail>(`/events/${event.id}/cancel`, { method: 'POST', body: { reason } }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['event', event.id], data);
+      for (const key of ['events', 'home', 'team'])
+        void queryClient.invalidateQueries({ queryKey: [key] });
+      setOpen(false);
+    },
+    onError: (e) =>
+      setError(e instanceof RequestError ? e.message : 'Der Termin konnte nicht abgesagt werden.'),
+  });
+  return (
+    <Card style={{ gap: 10 }}>
+      <T variant="heading">Termin verwalten</T>
+      <T variant="caption">Tippe auf einen Spieler, um seine Rückmeldung zu korrigieren.</T>
+      {open ? (
+        <>
+          <ChoiceChips
+            label="Grund der Absage"
+            options={CANCEL_REASONS.map((r) => ({ value: r, label: r }))}
+            selected={CANCEL_REASONS.includes(reason) ? [reason] : []}
+            onToggle={setReason}
+          />
+          <TextField
+            label="Oder eigener Grund"
+            value={reason}
+            onChangeText={setReason}
+            maxLength={200}
+          />
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Button
+              style={{ flex: 1 }}
+              label="Zurück"
+              variant="outline"
+              onPress={() => setOpen(false)}
+            />
+            <Button
+              style={{ flex: 1 }}
+              label="Absagen und informieren"
+              variant="danger"
+              disabled={reason.trim().length < 3}
+              loading={cancel.isPending}
+              onPress={() => cancel.mutate()}
+            />
+          </View>
+        </>
+      ) : (
+        <Button
+          label="Termin absagen"
+          variant="danger"
+          icon="close-circle-outline"
+          onPress={() => setOpen(true)}
+        />
+      )}
+    </Card>
+  );
+}
 
 export default function EventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -114,6 +260,10 @@ export default function EventScreen() {
             </Card>
           ) : null}
 
+          {e.canManage && e.status === 'scheduled' && new Date(e.startsAt) > new Date() ? (
+            <CoachActions event={e} />
+          ) : null}
+
           <Section title={`Teilnehmer (${e.counts.yes} zugesagt)`}>
             <Card style={{ gap: 10 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
@@ -136,23 +286,12 @@ export default function EventScreen() {
               {[...e.participants]
                 .sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status))
                 .map((p, i) => (
-                  <ListRow
+                  <ParticipantRow
                     key={p.personId}
+                    participant={p}
+                    eventId={e.id}
                     first={i === 0}
-                    title={p.name}
-                    subtitle={
-                      [
-                        p.role === 'coach'
-                          ? 'Trainer'
-                          : p.role === 'guest_player'
-                            ? `Gastspieler aus ${p.guestFromTeam}`
-                            : null,
-                        p.reason,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ') || undefined
-                    }
-                    trailing={<AttendanceChip status={p.status} />}
+                    canOverride={e.canOverride && p.role !== 'coach' && e.status === 'scheduled'}
                   />
                 ))}
             </Card>

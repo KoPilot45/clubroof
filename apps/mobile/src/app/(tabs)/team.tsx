@@ -1,14 +1,16 @@
-import type { EventSummary, PollSummary } from '@clubroof/core';
+import type { PollSummary, TeamOverview } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow } from '@/components/events';
+import { HighlightsCard, ResultRow, SquadStatusCard } from '@/components/team';
 import {
   Card,
   Chip,
   Empty,
+  ErrorNotice,
   Loading,
   Screen,
   Section,
@@ -34,13 +36,17 @@ export default function TeamScreen() {
   const team = teams.find((t) => t.id === selected) ?? teams[0];
   const has = (module: string) => team?.modules.includes(module) ?? false;
 
-  const events = useQuery({ queryKey: ['events'], queryFn: () => api<EventSummary[]>('/events') });
+  const overview = useQuery({
+    queryKey: ['team', team?.id],
+    queryFn: () => api<TeamOverview>(`/teams/${team!.id}`),
+    enabled: !!team,
+  });
   const polls = useQuery({
     queryKey: ['polls', team?.id ?? 'none'],
     queryFn: () => api<PollSummary[]>(`/polls?teamId=${team!.id}`),
     enabled: !!team && has('polls'),
   });
-  const teamEvents = (events.data ?? []).filter((e) => e.team?.id === team?.id);
+  const o = overview.data;
   const roles = me.teams.filter((t) => t.id === team?.id);
   const openPolls = (polls.data ?? []).filter((p) => p.isOpen && !p.myOptionId).length;
 
@@ -52,12 +58,49 @@ export default function TeamScreen() {
           icon: 'calendar',
           onPress: () => router.push(`/teams/${team.id}/events`),
         },
+        ...(o?.permissions.manageEvents
+          ? [
+              {
+                key: 'new',
+                label: 'Termin anlegen',
+                icon: 'add-circle' as const,
+                onPress: () => router.push(`/teams/${team.id}/event-new`),
+              },
+            ]
+          : [
+              {
+                key: 'absence',
+                label: 'Abwesenheit melden',
+                icon: 'airplane' as const,
+                onPress: () => router.push('/absences/new'),
+              },
+            ]),
         {
-          key: 'absence',
-          label: 'Abwesenheit melden',
-          icon: 'airplane',
-          onPress: () => router.push('/absences/new'),
+          key: 'roster',
+          label: 'Kader',
+          icon: 'people',
+          onPress: () => router.push(`/teams/${team.id}/roster`),
         },
+        ...(has('statistics')
+          ? [
+              {
+                key: 'stats',
+                label: 'Statistik',
+                icon: 'bar-chart' as const,
+                onPress: () => router.push(`/teams/${team.id}/stats`),
+              },
+            ]
+          : []),
+        ...(has('team_cash')
+          ? [
+              {
+                key: 'cash',
+                label: 'Kasse',
+                icon: 'wallet' as const,
+                onPress: () => router.push(`/teams/${team.id}/cash`),
+              },
+            ]
+          : []),
         ...(has('polls')
           ? [
               {
@@ -68,15 +111,6 @@ export default function TeamScreen() {
                 onPress: () => router.push(`/polls?teamId=${team.id}`),
               },
             ]
-          : []),
-        ...(has('squad')
-          ? [{ key: 'squad', label: 'Kader', icon: 'people' as const, soon: true }]
-          : []),
-        ...(has('statistics')
-          ? [{ key: 'stats', label: 'Statistik', icon: 'bar-chart' as const, soon: true }]
-          : []),
-        ...(has('team_cash')
-          ? [{ key: 'cash', label: 'Kasse', icon: 'wallet' as const, soon: true }]
           : []),
         ...(has('documents')
           ? [{ key: 'docs', label: 'Dokumente', icon: 'document-text' as const, soon: true }]
@@ -92,9 +126,9 @@ export default function TeamScreen() {
       header={
         <AppHeader title={team ? team.name : 'Team'} subtitle={team?.league ?? me.club.shortName} />
       }
-      refreshing={events.isRefetching}
+      refreshing={overview.isRefetching}
       onRefresh={() => {
-        void events.refetch();
+        void overview.refetch();
         void polls.refetch();
       }}
     >
@@ -152,23 +186,78 @@ export default function TeamScreen() {
 
           <TileGrid items={tiles} />
 
-          <Section
-            title="Nächste Termine"
-            action="Alle anzeigen"
-            onAction={() => router.push(`/teams/${team.id}/events`)}
-          >
-            {events.isPending ? <Loading /> : null}
-            {events.data ? (
-              <Card>
-                {teamEvents.length === 0 ? (
-                  <Empty icon="calendar-outline" text="Keine Termine." />
+          {overview.isPending ? <Loading /> : null}
+          {overview.error ? (
+            <ErrorNotice message={overview.error.message} onRetry={() => overview.refetch()} />
+          ) : null}
+
+          {o?.nextEvent ? (
+            <Section title="Nächster Termin">
+              <Card style={{ gap: 12 }}>
+                <EventRow event={o.nextEvent} first />
+                {o.squad ? (
+                  <>
+                    <T variant="overline">Kaderstatus</T>
+                    <SquadStatusCard squad={o.squad} />
+                  </>
                 ) : null}
-                {teamEvents.slice(0, 4).map((e, i) => (
-                  <EventRow key={e.id} event={e} first={i === 0} />
+              </Card>
+            </Section>
+          ) : null}
+
+          {o && o.lastResults.length > 0 ? (
+            <Section
+              title="Letzte Ergebnisse"
+              action="Statistik"
+              onAction={
+                has('statistics') ? () => router.push(`/teams/${team.id}/stats`) : undefined
+              }
+            >
+              <Card>
+                {o.lastResults.map((r, i) => (
+                  <ResultRow
+                    key={r.eventId}
+                    result={r}
+                    clubShortName={me.club.shortName}
+                    badge={team.badge}
+                    first={i === 0}
+                  />
                 ))}
               </Card>
-            ) : null}
-          </Section>
+            </Section>
+          ) : null}
+
+          {o ? (
+            <Section
+              title="Trainingswoche"
+              action="Alle Termine"
+              onAction={() => router.push(`/teams/${team.id}/events`)}
+            >
+              <Card>
+                {o.trainingWeek.length === 0 ? (
+                  <Empty icon="fitness-outline" text="Keine Trainings in den nächsten 7 Tagen." />
+                ) : null}
+                {o.trainingWeek.map((e, i) => (
+                  <View key={e.id}>
+                    <EventRow event={e} first={i === 0} />
+                    {e.status === 'scheduled' ? (
+                      <T
+                        variant="caption"
+                        style={{ marginTop: -6, marginBottom: 6, marginLeft: 64 }}
+                      >
+                        {e.counts.yes} von{' '}
+                        {e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending} zugesagt
+                      </T>
+                    ) : null}
+                  </View>
+                ))}
+              </Card>
+            </Section>
+          ) : null}
+
+          {o && (o.highlights.played > 0 || o.highlights.trainingRate !== null) ? (
+            <HighlightsCard h={o.highlights} />
+          ) : null}
         </>
       ) : null}
     </Screen>

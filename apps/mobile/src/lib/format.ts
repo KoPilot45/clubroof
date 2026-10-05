@@ -76,3 +76,21 @@ export function todayIso(now = new Date()): string {
   );
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
+
+const shortDate = new Intl.DateTimeFormat('de-DE', {
+  day: '2-digit',
+  month: '2-digit',
+  timeZone: 'UTC',
+});
+
+/** „05.10.“ für ein ISO-Datum (JJJJ-MM-TT) */
+export const formatShortDate = (isoDate: string) =>
+  shortDate.format(new Date(`${isoDate}T00:00:00Z`));
+
+/** Euro-Eingabe („12,50“, „12.5“, „12“) in Cent; null bei ungültiger Eingabe */
+export function parseEuro(input: string): number | null {
+  const normalized = input.trim().replace(/\s|€/g, '').replace(',', '.');
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
+  const cents = Math.round(Number(normalized) * 100);
+  return cents > 0 ? cents : null;
+}

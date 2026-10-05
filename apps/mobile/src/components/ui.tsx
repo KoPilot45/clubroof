@@ -419,7 +419,7 @@ export function ListRow({
           {title}
         </T>
         {typeof subtitle === 'string' ? (
-          <T variant="caption" numberOfLines={1}>
+          <T variant="caption" numberOfLines={2}>
             {subtitle}
           </T>
         ) : (
@@ -758,6 +758,108 @@ export function DateStepper({
         </Text>
         {button('chevron-forward', 1, `${label}: einen Tag später`)}
       </View>
+    </View>
+  );
+}
+
+/** Uhrzeit in 15-Minuten-Schritten (HH:MM). */
+export function TimeStepper({
+  label,
+  value,
+  onChange,
+  step = 15,
+}: {
+  label: string;
+  value: string;
+  onChange: (hhmm: string) => void;
+  step?: number;
+}) {
+  const { colors, radii } = useTheme();
+  const shift = (delta: number) => {
+    const [h, m] = value.split(':').map(Number) as [number, number];
+    const total = (((h * 60 + m + delta) % 1440) + 1440) % 1440;
+    onChange(
+      `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`,
+    );
+  };
+  const button = (icon: IconName, delta: number, a11y: string) => (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={a11y}
+      onPress={() => shift(delta)}
+      hitSlop={6}
+      style={({ pressed }) => ({
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
+      })}
+    >
+      <Ionicons name={icon} size={18} color={colors.onSurface} />
+    </Pressable>
+  );
+  return (
+    <View style={{ gap: 6 }}>
+      <T variant="label">{label}</T>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          padding: 6,
+          borderRadius: radii.md,
+          backgroundColor: colors.surfaceVariant,
+        }}
+      >
+        {button('remove', -step, `${label}: ${step} Minuten früher`)}
+        <Text
+          style={{
+            flex: 1,
+            textAlign: 'center',
+            fontSize: 17,
+            fontWeight: '800',
+            color: colors.onSurface,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {value} Uhr
+        </Text>
+        {button('add', step, `${label}: ${step} Minuten später`)}
+      </View>
+    </View>
+  );
+}
+
+/** Kennzahl mit Beschriftung, z. B. im Kaderstatus. */
+export function Stat({
+  value,
+  label,
+  color,
+}: {
+  value: string | number;
+  label: string;
+  color?: string;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ alignItems: 'center', flex: 1 }}>
+      <Text
+        style={{
+          fontSize: 22,
+          fontWeight: '800',
+          color: color ?? colors.primaryText,
+          fontVariant: ['tabular-nums'],
+        }}
+      >
+        {value}
+      </Text>
+      <T variant="caption" style={{ textAlign: 'center' }}>
+        {label}
+      </T>
     </View>
   );
 }

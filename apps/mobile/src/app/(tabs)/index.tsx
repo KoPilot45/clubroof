@@ -1,7 +1,7 @@
 import type { ActionItem, HomeResponse, NewsItem } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow, NextMatchCard } from '@/components/events';
 import {
@@ -153,50 +153,62 @@ export default function HomeScreen() {
       ) : null}
 
       {data?.cash.map((c) => (
-        <Card key={c.teamId} style={{ gap: 8 }}>
-          <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-              <IconTile name="wallet-outline" />
-              <T variant="heading">Teamkasse {c.badge}</T>
+        <Pressable
+          key={c.teamId}
+          accessibilityRole="button"
+          onPress={() => router.push(`/teams/${c.teamId}/cash`)}
+        >
+          <Card style={{ gap: 8 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                <IconTile name="wallet-outline" />
+                <T variant="heading">Teamkasse {c.badge}</T>
+              </View>
             </View>
-          </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'flex-end',
-            }}
-          >
-            {c.balanceCents !== null ? (
-              <View>
-                <T variant="caption">Aktueller Stand</T>
-                <T variant="display" color={colors.primaryText}>
-                  {formatEuro(c.balanceCents)}
-                </T>
-              </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+              }}
+            >
+              {c.balanceCents !== null ? (
+                <View>
+                  <T variant="caption">Aktueller Stand</T>
+                  <T variant="display" color={colors.primaryText}>
+                    {formatEuro(c.balanceCents)}
+                  </T>
+                </View>
+              ) : null}
+              {c.personalBalanceCents !== null ? (
+                <View style={{ alignItems: c.balanceCents !== null ? 'flex-end' : 'flex-start' }}>
+                  <T variant="caption">Mein Konto</T>
+                  <T
+                    variant="heading"
+                    color={
+                      c.personalBalanceCents < 0
+                        ? colors.status.urgent.onContainer
+                        : colors.onSurface
+                    }
+                  >
+                    {formatEuro(c.personalBalanceCents)}
+                  </T>
+                </View>
+              ) : null}
+            </View>
+            {c.incomeCents !== null && c.expenseCents !== null ? (
+              <T variant="caption">
+                Einnahmen {formatEuro(c.incomeCents)} · Ausgaben {formatEuro(c.expenseCents)}
+              </T>
             ) : null}
-            {c.personalBalanceCents !== null ? (
-              <View style={{ alignItems: c.balanceCents !== null ? 'flex-end' : 'flex-start' }}>
-                <T variant="caption">Mein Konto</T>
-                <T
-                  variant="heading"
-                  color={
-                    c.personalBalanceCents < 0 ? colors.status.urgent.onContainer : colors.onSurface
-                  }
-                >
-                  {formatEuro(c.personalBalanceCents)}
-                </T>
-              </View>
-            ) : null}
-          </View>
-          {c.incomeCents !== null && c.expenseCents !== null ? (
-            <T variant="caption">
-              Einnahmen {formatEuro(c.incomeCents)} · Ausgaben {formatEuro(c.expenseCents)}
-            </T>
-          ) : null}
-        </Card>
+          </Card>
+        </Pressable>
       ))}
     </Screen>
   );
