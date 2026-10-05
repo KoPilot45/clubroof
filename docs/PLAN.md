@@ -130,53 +130,54 @@ Probetraining · Fundbüro, Marktplatz, Forum · Mannschaftskassen, später Mitg
 
 ## 2. Technische Architektur
 
-### 2.1 Was das Konzept vorgibt
+### 2.1 Entscheidungen (Stand 05.10.2026)
 
-Modularer Monolith · PostgreSQL · S3-kompatibler Object Storage · Docker/Docker Compose · Caddy/Nginx (nur HTTPS) ·
-selbst verwalteter VPS (z. B. IONOS, ca. 4 vCPU/4 GB) · Backups (Provider + DB-Dump + separater Storage) ·
-Frontend als **Next.js-PWA**, native Apps erst in Phase 5.
+1. **Native App von Anfang an** – iOS und Android, Veröffentlichung in den Stores ist das Ziel (abweichend vom
+   PWA-Ansatz des Konzepts §15).
+2. **Gleichzeitig eine Web-Verwaltung** – für Vorstand, Kassenwart, Mitgliederverwaltung usw. am PC.
+3. **Backend wie im Konzept:** modularer Monolith, PostgreSQL, S3-kompatibler Storage, Docker Compose,
+   Caddy (nur HTTPS), VPS in Deutschland (z. B. IONOS), getrennte Backups.
 
-Backend-Seite übernehme ich vollständig. **Offen ist die Frontend-Frage**, weil sie mit dem Ziel
-„später im Apple App Store und Google Play“ zusammenhängt:
+### 2.2 Aufteilung App ↔ Web-Verwaltung
 
-### 2.2 Entscheidung: Frontend (PWA vs. App-Store-fähig von Anfang an)
-
-| | A) Next.js-PWA (wie Konzept) | B) Expo / React Native (iOS + Android + Web aus einer Codebasis) |
+| | Mobile App (Expo) | Web-Verwaltung (Next.js) |
 | --- | --- | --- |
-| Start | am schnellsten, keine Store-Konten nötig | etwas mehr Setup, Testversionen über TestFlight/Play Testing |
-| Push auf iPhone | nur wenn die PWA zum Home-Bildschirm hinzugefügt wurde (iOS ≥ 16.4), Zustellung weniger zuverlässig | native Push (APNs/FCM), zuverlässig |
-| Weg in die Stores | späterer **Neubau der Oberfläche** nötig; reine „Web-Hüllen“ lehnt Apple häufig ab | bereits erledigt – nur noch veröffentlichen |
-| Web-Version | ja | ja (Expo Web), Verwaltungsmodus auch am PC nutzbar |
-| Aufwand bis Store | doppelt (PWA + später native App) | einmal |
+| Zielgruppe | alle Mitglieder, Spieler, Eltern, Trainer | Rollen mit Verwaltungsrechten |
+| Inhalte | Home, Team, Verein, Mehr + **schlanker Verwaltungsmodus** für unterwegs (Freigaben, News, Absagen, Gastspieler-Anfragen) | vollständige Verwaltung: Organisation, Sport, Betrieb, Kontrolle (Konzept §6), Setup-Assistenten, Massenbearbeitung, Tabellen, Exporte, Importe, Audit-Log, Update-Center |
+| Stärke | Push, schnelle Reaktion, Kamera/QR | große Bildschirme, Tabellen, Tastatur, Dateien |
 
-**Empfehlung: B.** Push ist laut Konzept ein Kernbaustein („dringend = sofortiger Push“), und das Store-Ziel steht
-fest. Mit Expo entsteht *eine* Codebasis für iPhone, Android und Browser; der Verein kann trotzdem früh im Browser
-testen. Das Backend bleibt exakt wie im Konzept (eigene API, Postgres, Docker, EU-Hosting).
+Beide nutzen **dieselbe API, dieselbe Rechteprüfung und dieselben Fachregeln** (`packages/core`). Eine Funktion
+wird einmal im Backend gebaut und erscheint dort, wo sie sinnvoll ist. Warum keine Web-Verwaltung aus der Expo-App
+heraus (Expo Web)? Dichte Tabellen, Filter, Mehrfachauswahl und Exporte lassen sich mit Web-Technik deutlich
+besser und schneller bauen; die App bleibt dafür schlank.
 
-### 2.3 Stack (bei Entscheidung B)
+### 2.3 Stack
 
 | Schicht | Wahl |
 | --- | --- |
-| App (iOS/Android/Web) | Expo + Expo Router, TypeScript strict, TanStack Query, React Hook Form + Zod, i18next (de) |
-| Design-System | eigenes `packages/ui` mit Design-Tokens, Laufzeit-Theming (Vereinsfarbe, hell/dunkel), Kontrastprüfung |
-| Backend / API | Node.js + TypeScript, modularer Monolith (z. B. NestJS oder Fastify), REST/OpenAPI mit generiertem, typisiertem Client |
-| Datenbank | PostgreSQL + Prisma oder Drizzle (Migrationen versioniert); Row Level Security als zweite Schutzlinie |
-| Auth | eigene Auth mit sicheren Passwort-Hashes (Argon2) + Magic Link, **2FA für privilegierte Rollen** |
-| Jobs | Queue (z. B. pg-boss auf Postgres) für Fristen, Erinnerungen, Sammelhinweise, Push-Versand |
-| Push | Expo Push (APNs/FCM) + Web Push für Browser |
-| Dateien | S3-kompatibler Storage (z. B. MinIO selbst gehostet oder IONOS S3) |
-| Betrieb | Docker Compose, Caddy, VPS in Deutschland, Backups 3-fach getrennt, Sentry/GlitchTip, Uptime-Monitoring |
+| Mobile App | Expo (React Native) + Expo Router, TypeScript strict, TanStack Query, React Hook Form + Zod, i18next (de) |
+| Web-Verwaltung | Next.js (App Router), TypeScript, TanStack Query/Table, React Hook Form + Zod, Tailwind + Komponentenbibliothek (z. B. shadcn/ui) |
+| Gemeinsam | `packages/core` (Typen, Zod-Schemas, Rechte-, Fristen-, Vererbungslogik), `packages/api-client` (aus OpenAPI generiert), `packages/design-tokens` (Farben, Abstände, Schrift – gleiche Optik in App und Web) |
+| Backend / API | Node.js + TypeScript, NestJS als modularer Monolith, REST + OpenAPI |
+| Datenbank | PostgreSQL + Drizzle ORM (versionierte SQL-Migrationen) |
+| Auth | eigene Auth: E-Mail + Passwort (Argon2) und Magic Link, Tokens für App, sichere Cookies für Web, **2FA für privilegierte Rollen** |
+| Jobs | pg-boss (Queue auf Postgres) für Fristen, Erinnerungen, Sammelhinweise, Push-Versand |
+| Push | Expo Push Service (APNs/FCM); E-Mail über SMTP-Anbieter in der EU |
+| Dateien | S3-kompatibel (MinIO lokal/selbst gehostet oder IONOS S3) |
+| App-Builds | EAS Build/Submit, interne Tests über TestFlight und Google Play Internal Testing |
+| Betrieb | Docker Compose, Caddy, Sentry (oder selbst gehostetes GlitchTip), Uptime-Monitoring, nächtliche Backups |
 
 ### 2.4 Repository-Struktur
 
 ```
 clubroof/
 ├─ apps/
-│  ├─ mobile/      # Expo-App: iOS, Android, Web
-│  └─ api/         # Backend (modularer Monolith)
+│  ├─ mobile/      # Expo-App: iOS, Android
+│  ├─ admin/       # Next.js Web-Verwaltung
+│  └─ api/         # Backend (modularer Monolith, NestJS)
 ├─ packages/
 │  ├─ core/        # Domänentypen, Zod-Schemas, Rechte- und Fristenlogik (von App und API geteilt)
-│  ├─ ui/          # Design-System
+│  ├─ design-tokens/ # Farben, Abstände, Typografie für App und Web
 │  ├─ api-client/  # generierter, typisierter API-Client
 │  └─ config/      # ESLint, TSConfig, Prettier
 ├─ infra/          # Docker Compose, Caddy, Backup-Skripte
@@ -228,20 +229,18 @@ nur über offizielle Wege). Die interne Datenquelle bleibt immer eindeutig führ
 
 ---
 
-## 4. Phasenplan (Konzept §17, technisch präzisiert)
+## 4. Phasenplan (Konzept §17, angepasst an App + Web-Verwaltung)
 
 | Phase | Schwerpunkt | Ergebnis |
 | --- | --- | --- |
-| **0 – Projektbasis** | Monorepo, CI, Design-System-Grundlagen, Docker-Setup, Auth, Rechte- und Modul-Kern, Wireframes der Hauptflows (Spieler, Trainer, Fulladmin) | lauffähiges Gerüst, Architekturentscheidungen dokumentiert |
-| **1 – Fundament** | Verein, Bereiche, Nutzer/Personen, Rollen, Einladungen (QR/Link), Teams + Setup-Assistent, Termine, drei Teilnahme-Modelle, Absagefristen, Abwesenheiten, News, Notification-Center + Push, Home-Dashboard, Verwaltungsmodus-Grundgerüst | **ein Verein produktiv nutzbar** |
+| **0 – Projektbasis** | Monorepo, CI, Docker-Entwicklungsumgebung, API-Gerüst, App-Gerüst, Web-Gerüst, Auth, Rechte- und Modul-Kern, Design-Tokens; parallel: Wireframes Spieler/Trainer/Fulladmin, Store-Konten beantragen | alles läuft lokal, erster TestFlight-/Play-Testbuild |
+| **1 – Fundament** | **Web:** Vereins-Setup, Bereiche, Mannschaften + Setup-Assistent, Mitglieder, Rollen, Einladungen. **App:** Einladung annehmen (QR/Link), Home, Team, Termine, drei Teilnahme-Modelle, Absagefristen, Abwesenheiten, News, Notification-Center + Push | **ein Verein produktiv nutzbar** (Pilot) |
 | **2 – Teamorganisation** | Kader, Gastspieler, Statistik (Aus/Basis/Erweitert), Kasse (Strafen/Getränke), Umfragen, Dokumente | SpielerPlus-nahe Kernfunktionen mit Vereinslogik |
-| **3 – Verwaltungsportal** | Saisonplanung, Spielerbedarf-Börse, Ressourcen/Plätze, Aufgaben/Helfer, Rollenmodule, Audit, Update-Center, Mini-Forum | Vereinsprozesse über Mannschaftsgrenzen hinweg |
-| **4 – Erweiterungen** | Integrationen, Trainingsplanung, Material, Turniere, Community-Module | nur nach echtem Bedarf |
-| **5 – Multi-Club & Stores** | weitere Vereine als Mandanten, Abo-Abrechnung, größere Infrastruktur, Veröffentlichung in App Store / Google Play | Skalierung auf Basis derselben Architektur |
+| **3 – Verwaltungsportal** | Saisonplanung, Spielerbedarf-Börse, Plätze/Ressourcen, Helfer & Aufgaben, Audit-Log, Update-Center, Mini-Forum | Vereinsprozesse über Mannschaftsgrenzen hinweg |
+| **4 – Erweiterungen** | Integrationen (CSV, FUSSBALL.DE …), Trainingsplanung, Material, Turniere, Community-Module | nur nach echtem Bedarf |
+| **5 – Multi-Club** | weitere Vereine als Mandanten, Abo-Abrechnung, größere Infrastruktur | Skalierung auf Basis derselben Architektur |
 
-Bei Entscheidung B kann die Store-Veröffentlichung auch früher erfolgen (z. B. nach Phase 1/2) – technisch ist sie dann kein Umbau mehr.
-
----
+Öffentliche Store-Veröffentlichung: sobald der Pilotverein Phase 1 stabil nutzt (Testbuilds laufen ab Phase 0).
 
 ## 5. App-Store-Checkliste (für später, aber früh vorbereiten)
 
@@ -265,7 +264,7 @@ Bei Entscheidung B kann die Store-Veröffentlichung auch früher erfolgen (z. B.
 
 ## 7. Offene Entscheidungen
 
-1. **Frontend: A (PWA) oder B (Expo, iOS/Android/Web)?** → Empfehlung B (§2.2)
+1. ~~Frontend~~ → entschieden: native App (Expo) + Web-Verwaltung (Next.js), siehe §2.1
 2. Welche Teamfunktionen gehören in Phase 1, welche bleiben Module? (Konzept §18)
 3. Rollen- und Berechtigungsgrenzen im Detail; was dürfen Eltern sehen und stellvertretend bearbeiten?
 4. Welche Statistiken für Jugend, Senioren, Trainer?
