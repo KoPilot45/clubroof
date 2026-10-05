@@ -25,9 +25,9 @@ Erzeugt wird er mit `pnpm db:reset` (lokale Datenbank zurücksetzen, Migrationen
 | Termine | Trainings, Spiele, Spielfeste, Vorstandssitzung, Jahreshauptversammlung, Arbeitseinsatz, Hallenturnier, Weihnachtsfeier |
 | Besonderheiten | Kunstrasen am kommenden Donnerstag gesperrt (Trainings abgesagt), Gastspieler aus C-Jugend und 2. Mannschaft, Verletzungen, Urlaub, Rotsperre |
 | Kommunikation | 9 News (eine wartet auf Freigabe), 3 Umfragen mit Stimmen, Benachrichtigungen je Demo-Login |
-| Ehrenamt | Helferschichten für Hallenturnier, Arbeitseinsatz und Jahreshauptversammlung |
+| Ehrenamt | Helferschichten für Hallenturnier, Arbeitseinsatz und Jahreshauptversammlung; Programme und erste Teilnehmer bei den Vereinsveranstaltungen |
 | Finanzen | Mannschaftskassen 1., 2. und B-Jugend mit Strafen, Getränken und Einzahlungen |
-| Dokumente | Satzung, Ordnungen, Formulare, Trainingspläne (nur Metadaten, noch keine Dateien) |
+| Dokumente | Satzung, Ordnungen, Formulare, Trainingspläne – beim Öffnen liefert der Server eine Platzhalter-PDF |
 | Module | Forum, Trainingsplanung und Fundbüro sind „verfügbar, aber nicht aktiviert“ (für das Update-Center) |
 
 ## Demo-Logins

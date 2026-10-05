@@ -53,7 +53,7 @@ Stand: 05.10.2026
 | Statistik (Aus / Basis / Erweitert / Individuell) | K 4 | 🟡 | Basis: Bilanz, Tore, Trainingsbeteiligung; Spielerstatistik (Tore, Assists) folgt mit dem Spielbericht |
 | Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | 🟡 | im Kader sichtbar; Einstellung folgt mit der Mannschafts-Einrichtung |
 | Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | 🟡 | alles außer Bericht-Export; Buchen nur für Kassenverantwortliche |
-| Teambezogene Dokumente und Aufgaben | K 4 | ⬜ | |
+| Teambezogene Dokumente und Aufgaben | K 4 | 🟡 | Dokumente der Mannschaft; Aufgaben folgen |
 | Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ⬜ | optionales Modul |
 
 ## 4. Termine & Teilnahme
@@ -88,14 +88,14 @@ Stand: 05.10.2026
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | Vereinsnews | M 5, 13, K 5 | ✅ | |
-| Vereinstermine (Sitzungen, Veranstaltungen, Arbeitseinsätze) | M 5, K 5 | 🟡 | als Liste; kein Kalender |
+| Vereinstermine (Sitzungen, Veranstaltungen, Arbeitseinsätze) | M 5, K 5 | 🟡 | Liste für gut drei Monate; Kalenderansicht folgt |
 | Nächstes Vereinsevent hervorgehoben | M 5 | ✅ | |
-| Veranstaltungsseite mit Programm, Ort, Ansprechperson, „Teilnehmen“ | M 14 | ⬜ | |
-| Helfer gesucht / Helferschichten eintragen | M 5, 14, K 5 | ⬜ | Schichten in Demodaten vorhanden |
-| Heute auf der Anlage | M 5 | ⬜ | |
-| Mannschaften des Vereins (Senioren, Jugend, Frauen, AH) | K 5 | ⬜ | |
-| Ansprechpartner (Vorstand, Jugendleitung, Trainer) | K 5 | ⬜ | |
-| Dokumente: Kategorien, Filter, Suche, Upload | M 9, K 5 | ⬜ | Metadaten in Demodaten vorhanden |
+| Veranstaltungsseite mit Programm, Ort, Ansprechperson, „Teilnehmen“ | M 14 | ✅ | |
+| Helfer gesucht / Helferschichten eintragen | M 5, 14, K 5 | ✅ | mit Kapazität; Namen nur für Organisatoren |
+| Heute auf der Anlage | M 5 | ✅ | |
+| Mannschaften des Vereins (Senioren, Jugend, Frauen, AH) | K 5 | ✅ | mit Liga, Spielerzahl, Trainern |
+| Ansprechpartner (Vorstand, Jugendleitung, Trainer) | K 5 | ✅ | Kontaktdaten nach Sichtbarkeitseinstellung |
+| Dokumente: Kategorien, Filter, Suche, Upload | M 9, K 5 | 🟡 | Öffnen über signierte Links; Upload folgt mit der Verwaltung |
 | Austausch / Mini-Forum (wenige, moderierte Themen, Ablaufdatum) | M 5, K 11 | ⬜ | optionales Modul |
 | Fundbüro, Marktplatz, Vereinswissen/Wiki | K 5, 12 | ⬜ | optionale Module |
 
@@ -185,10 +185,10 @@ Stand: 05.10.2026
 | --- | ---: | ---: | ---: |
 | Grundstruktur & Design | 6 | 0 | 1 |
 | Home | 6 | 2 | 1 |
-| Mannschaft | 5 | 5 | 4 |
+| Mannschaft | 5 | 6 | 3 |
 | Termine & Teilnahme | 9 | 1 | 2 |
 | Gastspieler & Spielerbedarf | 1 | 0 | 4 |
-| Verein | 2 | 1 | 8 |
+| Verein | 7 | 2 | 2 |
 | Kommunikation | 4 | 1 | 2 |
 | Benachrichtigungen | 2 | 2 | 3 |
 | Profile | 2 | 0 | 3 |
@@ -196,4 +196,4 @@ Stand: 05.10.2026
 | Verwaltung | 0 | 2 | 7 |
 | Einrichtung & Module | 0 | 1 | 4 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **40** | **16** | **45** |
+| **Gesamt** | **45** | **18** | **38** |
