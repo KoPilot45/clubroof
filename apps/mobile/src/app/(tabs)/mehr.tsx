@@ -27,7 +27,12 @@ export default function MoreScreen() {
   const absences = useQuery({ queryKey: ['absences'], queryFn: () => api<Absence[]>('/absences') });
 
   const tiles: TileItem[] = [
-    { key: 'profile', label: 'Mein Profil', icon: 'person', soon: true },
+    {
+      key: 'profile',
+      label: 'Mein Profil',
+      icon: 'person',
+      onPress: () => router.push(`/profile/${me.person.id}`),
+    },
     {
       key: 'absences',
       label: 'Abwesenheiten',
@@ -42,7 +47,12 @@ export default function MoreScreen() {
       badge: home.data?.unreadNotifications,
       onPress: () => router.push('/notifications'),
     },
-    { key: 'stats', label: 'Meine Statistik', icon: 'bar-chart', soon: true },
+    {
+      key: 'stats',
+      label: 'Meine Statistik',
+      icon: 'bar-chart',
+      onPress: () => router.push('/stats'),
+    },
     { key: 'settings', label: 'Einstellungen', icon: 'settings', soon: true },
     ...(me.canAdminister
       ? [{ key: 'admin', label: 'Verwaltung', icon: 'shield-checkmark' as const, soon: true }]
@@ -96,6 +106,7 @@ export default function MoreScreen() {
                 leading={<Avatar name={`${c.firstName} ${c.lastName}`} />}
                 title={`${c.firstName} ${c.lastName}`}
                 subtitle="Du verwaltest Termine, Zusagen und Abwesenheiten"
+                onPress={() => router.push(`/profile/${c.id}`)}
               />
             ))}
           </Card>

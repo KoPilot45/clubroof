@@ -101,3 +101,6 @@ export function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} MB`;
 }
+
+/** „1 Spiel“ / „3 Spiele“ */
+export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;

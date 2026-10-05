@@ -23,7 +23,7 @@ type SessionContextValue = SessionState & {
   /** Für API-Aufrufe mit dem Token der Sitzung */
   api: <T>(
     path: string,
-    options?: { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; body?: unknown },
+    options?: { method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'; body?: unknown },
   ) => Promise<T>;
 };
 

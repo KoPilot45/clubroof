@@ -1,6 +1,6 @@
 import type { RosterEntry } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Text, View } from 'react-native';
 import { Card, Chip, ErrorNotice, ListRow, Loading, Screen, Section, T } from '@/components/ui';
 import { formatShortDate } from '@/lib/format';
@@ -37,6 +37,7 @@ function Row({ entry, first }: { entry: RosterEntry; first: boolean }) {
   return (
     <ListRow
       first={first}
+      onPress={() => router.push(`/profile/${entry.personId}`)}
       leading={<JerseyNumber value={entry.function === 'player' ? entry.jerseyNumber : null} />}
       title={entry.name}
       subtitle={

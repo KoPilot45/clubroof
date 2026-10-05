@@ -53,3 +53,11 @@ export const ABSENCE_ICONS: Record<AbsenceKind, IconName> = {
   suspended: 'card-outline',
   other: 'ellipsis-horizontal',
 };
+
+export const CONTACT_VISIBILITY_LABELS = {
+  club: 'Alle im Verein',
+  team_and_coaches: 'Mannschaft und Trainer',
+  coaches_only: 'Nur Trainer',
+} as const;
+
+export const FOOT_LABELS = { left: 'Links', right: 'Rechts', both: 'Beidfüßig' } as const;

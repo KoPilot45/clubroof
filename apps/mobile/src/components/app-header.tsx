@@ -77,7 +77,7 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Mein Profil"
-        onPress={() => router.push('/mehr')}
+        onPress={() => router.push(`/profile/${me.person.id}`)}
       >
         <Avatar name={`${me.person.firstName} ${me.person.lastName}`} />
       </Pressable>
