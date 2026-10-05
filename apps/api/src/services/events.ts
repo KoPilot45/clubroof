@@ -12,9 +12,10 @@ import {
   type EventSummary,
   type MyResponse,
   type Participant,
+  type EventChange,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, count, eq, inArray, ne, type SQL } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, inArray, ne, type SQL } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { OPEN_EVENT_TYPES, attendanceFor, shiftsFor } from './helpers';
@@ -263,7 +264,53 @@ export async function getEventDetail(
         ? await attendanceFor(db, actor, row.event.id)
         : null,
     shifts: (await shiftsFor(db, actor, [row.event.id])).get(row.event.id) ?? [],
+    lastChange: await lastChangeOf(db, actor, eventId, now),
+    edit:
+      row.team !== null && actorCan(actor, 'events.manage', row.team)
+        ? {
+            facilityId: row.event.facilityId,
+            locationText: row.event.locationText,
+            seriesFollowing: row.event.seriesId
+              ? await db
+                  .select({ n: count() })
+                  .from(s.events)
+                  .where(
+                    and(
+                      eq(s.events.seriesId, row.event.seriesId),
+                      eq(s.events.status, 'scheduled'),
+                      gt(s.events.startsAt, row.event.startsAt),
+                    ),
+                  )
+                  .then((r) => Number(r[0]?.n ?? 0))
+              : 0,
+          }
+        : null,
   };
+}
+
+const CHANGE_RELEVANT_MS = 14 * 24 * 60 * 60 * 1000;
+
+async function lastChangeOf(
+  db: Db,
+  actor: Actor,
+  eventId: string,
+  now: Date,
+): Promise<EventDetail['lastChange']> {
+  const [entry] = await db
+    .select()
+    .from(s.auditLog)
+    .where(
+      and(
+        eq(s.auditLog.clubId, actor.club.id),
+        eq(s.auditLog.entityId, eventId),
+        eq(s.auditLog.action, 'event.updated'),
+        gt(s.auditLog.createdAt, new Date(now.getTime() - CHANGE_RELEVANT_MS)),
+      ),
+    )
+    .orderBy(desc(s.auditLog.createdAt))
+    .limit(1);
+  const items = (entry?.data?.changes ?? []) as EventChange[];
+  return entry && items.length ? { at: entry.createdAt.toISOString(), items } : null;
 }
 
 /** Zu-/Absage für sich selbst, ein Kind oder (mit Trainerrechten) stellvertretend. */

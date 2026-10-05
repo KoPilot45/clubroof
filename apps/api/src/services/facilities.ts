@@ -161,6 +161,7 @@ export async function assertFacilityFree(
   startsAt: Date,
   endsAt: Date,
   allowConflict: boolean,
+  excludeEventId?: string,
 ): Promise<void> {
   if (!moduleEnabled(actor, 'facility_booking')) return;
   const [blocks, events] = await Promise.all([
@@ -187,7 +188,7 @@ export async function assertFacilityFree(
         ),
       ),
   ]);
-  const clash = events.filter((r) => eventEnd(r.event) > startsAt);
+  const clash = events.filter((r) => r.event.id !== excludeEventId && eventEnd(r.event) > startsAt);
   if (blocks.length > 0 && !(allowConflict && actorCan(actor, 'facilities.manage'))) {
     throw new HttpError(
       409,

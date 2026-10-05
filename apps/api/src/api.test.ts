@@ -1106,4 +1106,95 @@ describe.skipIf(!url)('API', () => {
       expect(removed.status).toBe(204);
     });
   });
+  describe('Termine ändern und Serien', () => {
+    const range = `from=${encodeURIComponent('2026-10-06T00:00:00Z')}&to=${encodeURIComponent('2027-02-01T00:00:00Z')}`;
+
+    it('legt Serientermine an, ändert einen oder alle folgenden und zeigt alt/neu', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+
+      const created = await send<EventDetail>('POST', `/teams/${b1.id}/events`, coach.token, {
+        type: 'team_event',
+        title: 'Serien-Test',
+        startsAt: '2026-10-14T18:30:00Z',
+        meetingPoint: 'Parkplatz',
+        locationText: 'Stadtpark',
+        repeatWeeks: 4,
+      });
+      expect(created.status).toBe(201);
+      expect(created.body.edit?.seriesFollowing).toBe(3);
+
+      const list = (await get<EventSummary[]>(`/events?${range}`, coach.token))
+        .filter((e) => e.title === 'Serien-Test')
+        .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+      expect(list).toHaveLength(4);
+
+      // nur dieser Termin: Treffpunkt
+      const single = await send<EventDetail>('PATCH', `/events/${list[0]!.id}`, coach.token, {
+        meetingPoint: 'Haupteingang',
+      });
+      expect(single.status).toBe(200);
+      expect(single.body.lastChange?.items).toEqual([
+        { label: 'Treffpunkt', from: 'Parkplatz', to: 'Haupteingang' },
+      ]);
+      const second = await get<EventDetail>(`/events/${list[1]!.id}`, coach.token);
+      expect(second.meetingPoint).toBe('Parkplatz');
+
+      // alle folgenden: eine Stunde später (gleiche Ortszeit, auch nach der Zeitumstellung)
+      const following = await send<EventDetail>('PATCH', `/events/${list[1]!.id}`, coach.token, {
+        startsAt: '2026-10-21T19:30:00Z',
+        scope: 'following',
+      });
+      expect(following.status).toBe(200);
+      const after = (await get<EventSummary[]>(`/events?${range}`, coach.token))
+        .filter((e) => e.title === 'Serien-Test')
+        .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+      expect(after[0]!.startsAt).toBe('2026-10-14T18:30:00.000Z');
+      expect(after[1]!.startsAt).toBe('2026-10-21T19:30:00.000Z');
+      expect(after[2]!.startsAt).toBe('2026-10-28T20:30:00.000Z');
+      expect(after[3]!.startsAt).toBe('2026-11-04T20:30:00.000Z');
+
+      // Spieler wurde benachrichtigt, mit alt → neu
+      const notes = await get<NotificationItem[]>('/notifications', player.token);
+      const hint = notes.find((n) => n.title === 'Geändert: Serien-Test');
+      expect(hint?.body).toContain('→');
+    });
+
+    it('prüft Rechte, abgesagte Termine und Platzkonflikte', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const events = (await get<EventSummary[]>(`/events?${range}`, coach.token)).filter(
+        (e) => e.title === 'Serien-Test',
+      );
+      const target = events[0]!;
+      const denied = await send('PATCH', `/events/${target.id}`, player.token, { title: 'X' });
+      expect(denied.status).toBe(403);
+
+      const occ = await get<FacilityOccupancy>(
+        '/facilities/occupancy?from=2026-10-06&to=2026-10-06',
+        coach.token,
+      );
+      const taken = occ.facilities
+        .flatMap((f) => f.bookings.map((b) => ({ f, b })))
+        .find(({ b }) => b.kind === 'event' && !b.cancelled)!;
+      const clash = await send<{ error: string }>('PATCH', `/events/${target.id}`, coach.token, {
+        startsAt: taken.b.startsAt,
+        facilityId: taken.f.facility.id,
+      });
+      expect(clash.status).toBe(409);
+      expect(clash.body.error).toBe('facility_conflict');
+
+      const noop = await send<EventDetail>('PATCH', `/events/${target.id}`, coach.token, {
+        title: 'Serien-Test',
+      });
+      expect(noop.status).toBe(200);
+
+      await send('POST', `/events/${target.id}/cancel`, coach.token, { reason: 'Test' });
+      const closed = await send('PATCH', `/events/${target.id}`, coach.token, { title: 'Neu' });
+      expect(closed.status).toBe(409);
+      void b1;
+    });
+  });
 });

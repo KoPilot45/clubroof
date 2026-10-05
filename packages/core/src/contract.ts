@@ -124,6 +124,10 @@ export type EventDetail = EventSummary & {
   attendance: { attending: boolean; count: number } | null;
   /** Helferschichten der Veranstaltung */
   shifts: HelperShift[];
+  /** Letzte Änderung (alt → neu), solange sie noch relevant ist */
+  lastChange: { at: string; items: EventChange[] } | null;
+  /** Für das Bearbeiten (nur mit Recht gefüllt) */
+  edit: { facilityId: string | null; locationText: string | null; seriesFollowing: number } | null;
 };
 
 export type HelperShift = {
@@ -396,7 +400,27 @@ export type CreateEventInput = {
   isHome?: boolean | null;
   /** Konfliktwarnung bewusst übergehen (Sperrungen nur mit Platzrecht) */
   allowConflict?: boolean;
+  /** Serientermin: so viele wöchentliche Termine anlegen (2–26) */
+  repeatWeeks?: number;
 };
+
+export type UpdateEventInput = {
+  title?: string;
+  startsAt?: string;
+  endsAt?: string | null;
+  meetingAt?: string | null;
+  meetingPoint?: string | null;
+  facilityId?: string | null;
+  locationText?: string | null;
+  description?: string | null;
+  opponentName?: string;
+  isHome?: boolean;
+  /** Bei Serienterminen: nur diesen oder auch alle folgenden Termine ändern */
+  scope?: 'single' | 'following';
+  allowConflict?: boolean;
+};
+
+export type EventChange = { label: string; from: string | null; to: string | null };
 
 export type DocumentCategory = 'regulations' | 'forms' | 'training_plans' | 'other';
 

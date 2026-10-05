@@ -11,7 +11,7 @@ import { asc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { createBooking, getTeamCash } from '../services/cash';
-import { cancelEvent, createTeamEvent } from '../services/event-admin';
+import { cancelEvent, createTeamEvent, updateEvent } from '../services/event-admin';
 import { getRoster, getTeamOverview, getTeamStats } from '../services/teams';
 
 const teamParams = z.object({ teamId: z.uuid() });
@@ -94,6 +94,7 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
           opponentName: z.string().trim().max(80).nullish(),
           isHome: z.boolean().nullish(),
           allowConflict: z.boolean().optional(),
+          repeatWeeks: z.number().int().min(1).max(26).optional(),
         }),
       },
     },
@@ -119,6 +120,31 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request): Promise<EventDetail> =>
       cancelEvent(app.db, request.actor!, request.params.eventId, request.body.reason, app.now()),
+  );
+
+  app.patch(
+    '/events/:eventId',
+    {
+      schema: {
+        params: z.object({ eventId: z.uuid() }),
+        body: z.object({
+          title: z.string().trim().max(120).optional(),
+          startsAt: isoDateTime.optional(),
+          endsAt: isoDateTime.nullish(),
+          meetingAt: isoDateTime.nullish(),
+          meetingPoint: z.string().trim().max(120).nullish(),
+          facilityId: z.uuid().nullish(),
+          locationText: z.string().trim().max(160).nullish(),
+          description: z.string().trim().max(1000).nullish(),
+          opponentName: z.string().trim().max(80).optional(),
+          isHome: z.boolean().optional(),
+          scope: z.enum(['single', 'following']).optional(),
+          allowConflict: z.boolean().optional(),
+        }),
+      },
+    },
+    async (request): Promise<EventDetail> =>
+      updateEvent(app.db, request.actor!, request.params.eventId, request.body, app.now()),
   );
 
   app.get('/facilities', async (request): Promise<Facility[]> =>
