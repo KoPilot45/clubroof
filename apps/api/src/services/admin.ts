@@ -38,6 +38,10 @@ import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 
 type TeamRow = typeof s.teams.$inferSelect;
+
+/** „B1 · B-Jugend“, aber „1. Mannschaft“ statt „1. · 1. Mannschaft“ */
+const teamLabel = (t: { badge: string; name: string }) =>
+  t.name.startsWith(t.badge) ? t.name : `${t.badge} · ${t.name}`;
 type PersonRow = typeof s.persons.$inferSelect;
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 
@@ -335,7 +339,7 @@ async function scopeLabels(db: Db | Tx, actor: Actor) {
     if (scopeType === 'club') return 'Verein';
     if (scopeType === 'org_unit') return units.find((u) => u.id === scopeId)?.name ?? 'Bereich';
     const team = teams.find((t) => t.id === scopeId);
-    return team ? `${team.badge} · ${team.name}` : 'Mannschaft (Vorsaison)';
+    return team ? teamLabel(team) : 'Mannschaft (Vorsaison)';
   };
 }
 
@@ -770,7 +774,7 @@ export async function getRoleCatalog(db: Db, actor: Actor): Promise<RoleCatalog>
     scopes: [
       { type: 'club', id: null, label: 'Verein' },
       ...units.map((u) => ({ type: 'org_unit' as const, id: u.id, label: u.name })),
-      ...teams.map((t) => ({ type: 'team' as const, id: t.id, label: `${t.badge} · ${t.name}` })),
+      ...teams.map((t) => ({ type: 'team' as const, id: t.id, label: teamLabel(t) })),
     ],
     teams: teams.map((t) => ({ id: t.id, name: t.name, badge: t.badge })),
   };

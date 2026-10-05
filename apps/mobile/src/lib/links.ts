@@ -1,6 +1,6 @@
 import { router, type Href } from 'expo-router';
 
-const KNOWN = ['/events/', '/news/', '/polls/', '/absences', '/exchange/'];
+const KNOWN = ['/events/', '/news/', '/polls/', '/absences', '/exchange/', '/admin/news/'];
 
 /** Öffnet einen internen Link aus der API (Aktionen, Benachrichtigungen). */
 export function openLink(link: string | null | undefined) {

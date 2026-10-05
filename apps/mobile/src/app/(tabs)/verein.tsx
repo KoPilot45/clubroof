@@ -59,6 +59,16 @@ export default function ClubScreen() {
 
   const tiles: TileItem[] = [
     { key: 'news', label: 'News', icon: 'newspaper', onPress: () => router.push('/news') },
+    ...(me.news.write || me.news.publish
+      ? [
+          {
+            key: 'editorial',
+            label: 'News schreiben',
+            icon: 'create' as const,
+            onPress: () => router.push('/admin/news'),
+          },
+        ]
+      : []),
     {
       key: 'events',
       label: 'Termine & Veranstaltungen',

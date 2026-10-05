@@ -108,7 +108,7 @@ Stand: 05.10.2026
 | Lesebestätigung (optional) | K 11 | 🟡 | Lesen wird je Person erfasst; Anzeige für Verfasser folgt |
 | Umfragen beantworten, Frist, Ergebnis (ggf. erst nach Fristende) | M 13, K 11 | ✅ | Stimme änderbar bis Fristende |
 | Anfragen / Freigaben mit zielgerichteten Kommentaren | K 11 | ⬜ | |
-| News und Umfragen erstellen, Freigabe-Workflow | M 8, K 6 | ⬜ | |
+| News und Umfragen erstellen, Freigabe-Workflow | M 8, K 6 | 🟡 | News: Schreiben je Bereich, Einreichen, Freigeben oder mit Rückmeldung zurückgeben, Korrigieren, Zurückziehen; wichtige/dringende News benachrichtigen den Bereich. Bilder und Umfragen erstellen folgen |
 | Kein Gruppenchat (bewusst) | K 1, 11 | ✅ | Grundsatz |
 
 ## 8. Benachrichtigungen
@@ -189,11 +189,11 @@ Stand: 05.10.2026
 | Termine & Teilnahme | 11 | 0 | 1 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
 | Verein | 7 | 2 | 2 |
-| Kommunikation | 4 | 1 | 2 |
+| Kommunikation | 4 | 2 | 1 |
 | Benachrichtigungen | 2 | 2 | 3 |
 | Profile | 3 | 2 | 0 |
 | Platzbelegung & Betrieb | 3 | 0 | 1 |
 | Verwaltung | 4 | 0 | 5 |
 | Einrichtung & Module | 0 | 1 | 4 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **60** | **16** | **25** |
+| **Gesamt** | **60** | **17** | **24** |

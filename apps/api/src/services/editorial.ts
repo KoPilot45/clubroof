@@ -29,6 +29,10 @@ import { notify, recipientsFor } from './event-admin';
 type NewsRow = typeof s.announcements.$inferSelect;
 type TeamRow = typeof s.teams.$inferSelect;
 
+/** „B1 · B-Jugend“, aber „1. Mannschaft“ statt „1. · 1. Mannschaft“ */
+const teamLabel = (t: { badge: string; name: string }) =>
+  t.name.startsWith(t.badge) ? t.name : `${t.badge} · ${t.name}`;
+
 type Context = {
   units: (typeof s.orgUnits.$inferSelect)[];
   teams: TeamRow[];
@@ -63,7 +67,7 @@ function labelOf(ctx: Context, type: ScopeType, id: string | null): string {
   if (type === 'club') return 'Verein';
   if (type === 'org_unit') return ctx.units.find((u) => u.id === id)?.name ?? 'Bereich';
   const team = ctx.teams.find((t) => t.id === id);
-  return team ? `${team.badge} · ${team.name}` : 'Mannschaft';
+  return team ? teamLabel(team) : 'Mannschaft';
 }
 
 const allowed = (

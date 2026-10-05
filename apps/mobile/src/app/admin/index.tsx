@@ -32,7 +32,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 }
 
 export default function AdminScreen() {
-  const { api } = useSignedIn();
+  const { api, me } = useSignedIn();
   const overview = useQuery({
     queryKey: ['admin', 'overview'],
     queryFn: () => api<AdminOverview>('/admin/overview'),
@@ -77,6 +77,16 @@ export default function AdminScreen() {
                 label: 'Änderungsprotokoll',
                 icon: 'list' as const,
                 onPress: () => router.push('/admin/audit'),
+              },
+            ]
+          : []),
+        ...(me.news.write || me.news.publish
+          ? [
+              {
+                key: 'news',
+                label: 'News-Redaktion',
+                icon: 'newspaper' as const,
+                onPress: () => router.push('/admin/news'),
               },
             ]
           : []),

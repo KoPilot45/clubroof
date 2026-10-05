@@ -109,6 +109,15 @@ function Navigator() {
             name="admin/audit"
             options={{ headerShown: true, title: 'Änderungsprotokoll' }}
           />
+          <Stack.Screen
+            name="admin/news/index"
+            options={{ headerShown: true, title: 'News-Redaktion' }}
+          />
+          <Stack.Screen
+            name="admin/news/new"
+            options={{ headerShown: true, title: 'News schreiben' }}
+          />
+          <Stack.Screen name="admin/news/[id]" options={{ headerShown: true, title: 'News' }} />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="login" />
