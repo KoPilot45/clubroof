@@ -11,6 +11,9 @@ import {
   SCOPE_TYPES,
   TEAM_FUNCTIONS,
   TEAM_TEMPLATES,
+  LINEUP_ROLES,
+  MATCH_INCIDENT_KINDS,
+  TRANSFER_KINDS,
 } from '@clubroof/core';
 import { CLUB_COLOR_KEYS } from '@clubroof/design-tokens';
 import { pgEnum } from 'drizzle-orm/pg-core';
@@ -88,3 +91,6 @@ export const documentCategoryEnum = pgEnum('document_category', [
 
 export const demandStatusEnum = pgEnum('demand_status', ['open', 'cancelled']);
 export const offerStatusEnum = pgEnum('offer_status', ['open', 'closed']);
+export const lineupRoleEnum = pgEnum('lineup_role', LINEUP_ROLES);
+export const matchIncidentKindEnum = pgEnum('match_incident_kind', MATCH_INCIDENT_KINDS);
+export const transferKindEnum = pgEnum('transfer_kind', TRANSFER_KINDS);

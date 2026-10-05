@@ -21,6 +21,7 @@ import {
   participationModeEnum,
   teamFunctionEnum,
   teamTemplateEnum,
+  transferKindEnum,
   updatedAt,
 } from './_shared';
 
@@ -109,4 +110,34 @@ export const teamDeadlineRules = pgTable(
     timeOfDay: time(),
   },
   (t) => [index().on(t.clubId), unique().on(t.teamId, t.eventType)],
+);
+
+/**
+ * Spielerbewegung (Konzept §6): Wechsel im Verein, Leihe in eine andere Mannschaft (befristet,
+ * Stammteam bleibt), Zugang von außen, Abgang. Die Mannschaftszuordnungen werden dabei angepasst;
+ * dieser Eintrag ist die nachvollziehbare Historie.
+ */
+export const playerTransfers = pgTable(
+  'player_transfers',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    kind: transferKindEnum().notNull(),
+    fromTeamId: uuid().references(() => teams.id, { onDelete: 'set null' }),
+    toTeamId: uuid().references(() => teams.id, { onDelete: 'set null' }),
+    startsOn: date().notNull(),
+    /** Ende einer Leihe */
+    endsOn: date(),
+    /** Anderer Verein bei Zugang/Abgang */
+    externalClub: text(),
+    note: text(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.startsOn), index().on(t.personId)],
 );

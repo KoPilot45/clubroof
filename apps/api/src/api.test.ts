@@ -11,6 +11,9 @@ import type {
   MemberListItem,
   RoleCatalog,
   DemandDetail,
+  JerseySettings,
+  MatchSheet,
+  TransferOverview,
   ModuleOverview,
   TeamAdminOverview,
   TeamDetailAdmin,
@@ -1240,6 +1243,7 @@ describe.skipIf(!url)('API', () => {
         manageModules: false,
         manageTeams: false,
         planSeason: false,
+        manageTransfers: false,
       });
       const overview = await get<AdminOverview>('/admin/overview', board.token);
       expect(overview.members.active).toBeGreaterThan(100);
@@ -1959,6 +1963,274 @@ describe.skipIf(!url)('API', () => {
       expect((await send('DELETE', `/admin/teams/${created.body.id}`, admin.token)).status).toBe(
         204,
       );
+    });
+  });
+
+  describe('Spielbetrieb', () => {
+    it('Kader-Statistik für alle, Trainingsquoten nur fürs Trainerteam', async () => {
+      const player = await login('spieler');
+      const coach = await login('trainer');
+      const b1 = player.me.teams.find((t) => t.badge === 'B1')!;
+      const forPlayer = await get<TeamStats>(`/teams/${b1.id}/stats`, player.token);
+      expect(forPlayer.showsTrainingRates).toBe(false);
+      expect(forPlayer.squad.length).toBeGreaterThan(15);
+      const goals = forPlayer.squad.reduce((a, r) => a + r.goals, 0);
+      expect(goals).toBeGreaterThan(0);
+      expect(goals).toBeLessThanOrEqual(forPlayer.highlights.goalsFor);
+      expect(forPlayer.squad.some((r) => r.appearances > 0)).toBe(true);
+      // Fremde Trainingsquoten bleiben verborgen, die eigene ist sichtbar
+      const others = forPlayer.squad.filter((r) => r.personId !== player.me.person.id);
+      expect(others.every((r) => r.trainingRate === null)).toBe(true);
+      expect(
+        forPlayer.squad.find((r) => r.personId === player.me.person.id)!.trainingRate,
+      ).not.toBeNull();
+
+      const forCoach = await get<TeamStats>(`/teams/${b1.id}/stats`, coach.token);
+      expect(forCoach.showsTrainingRates).toBe(true);
+      expect(forCoach.squad.filter((r) => r.trainingRate !== null).length).toBeGreaterThan(10);
+
+      const profile = await get<PersonProfile>(`/persons/${player.me.person.id}`, player.token);
+      expect(profile.stats!.appearances).toBeGreaterThanOrEqual(0);
+      expect(profile.stats!.goals).toBe(
+        forPlayer.squad.find((r) => r.personId === player.me.person.id)!.goals,
+      );
+    });
+
+    it('Aufstellung: Entwurf nur fürs Trainerteam, Veröffentlichen benachrichtigt', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const next = (await get<EventSummary[]>('/events', coach.token)).find(
+        (e) =>
+          e.team?.id === b1.id &&
+          e.type === 'match' &&
+          e.status === 'scheduled' &&
+          new Date(e.startsAt) > NOW,
+      )!;
+
+      const sheet = await get<MatchSheet>(`/events/${next.id}/match`, coach.token);
+      expect(sheet.can.editLineup).toBe(true);
+      const ok = sheet.candidates!.filter((c) => c.status !== 'no');
+      const declined = sheet.candidates!.find((c) => c.status === 'no');
+      const me = ok.find((c) => c.personId === player.me.person.id)!;
+      expect(me).toBeDefined();
+      const starters = [me, ...ok.filter((c) => c !== me).slice(0, 10)];
+      const bench = ok.filter((c) => !starters.includes(c)).slice(0, 3);
+      const entries = [
+        ...starters.map((c) => ({ personId: c.personId, role: 'starter' })),
+        ...bench.map((c) => ({ personId: c.personId, role: 'substitute' })),
+      ];
+
+      expect(
+        (await send('PUT', `/events/${next.id}/lineup`, player.token, { entries, publish: true }))
+          .status,
+      ).toBe(403);
+      if (declined) {
+        const bad = await send('PUT', `/events/${next.id}/lineup`, coach.token, {
+          entries: [...entries, { personId: declined.personId, role: 'substitute' }],
+          publish: false,
+        });
+        expect(bad.status).toBe(409);
+      }
+      const twelve = await send('PUT', `/events/${next.id}/lineup`, coach.token, {
+        entries: ok.slice(0, 12).map((c) => ({ personId: c.personId, role: 'starter' })),
+        publish: false,
+      });
+      expect(twelve.status).toBe(400);
+
+      const draft = await send<MatchSheet>('PUT', `/events/${next.id}/lineup`, coach.token, {
+        entries,
+        publish: false,
+      });
+      expect(draft.body.lineup).toMatchObject({ published: false });
+      expect((await get<MatchSheet>(`/events/${next.id}/match`, player.token)).lineup).toBeNull();
+
+      const published = await send<MatchSheet>('PUT', `/events/${next.id}/lineup`, coach.token, {
+        entries,
+        publish: true,
+      });
+      expect(published.body.lineup!.entries.filter((e) => e.role === 'starter')).toHaveLength(11);
+      const forPlayer = await get<MatchSheet>(`/events/${next.id}/match`, player.token);
+      expect(forPlayer.lineup!.published).toBe(true);
+      expect(forPlayer.candidates).toBeNull();
+      const notes = await get<NotificationItem[]>('/notifications', player.token);
+      expect(
+        notes.some(
+          (n) => n.title.startsWith('Nominiert:') && n.body === 'Du stehst in der Startelf.',
+        ),
+      ).toBe(true);
+      // Bericht vor Anpfiff nicht möglich
+      const early = await send('PUT', `/events/${next.id}/report`, coach.token, {
+        goalsFor: 0,
+        goalsAgainst: 0,
+        incidents: [],
+        complete: false,
+      });
+      expect(early.status).toBe(409);
+    });
+
+    it('Spielbericht: Tore passen zum Ergebnis, nur Kaderspieler', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const last = (await get<TeamStats>(`/teams/${b1.id}/stats`, coach.token)).results[0]!;
+      const sheet = await get<MatchSheet>(`/events/${last.eventId}/match`, coach.token);
+      expect(sheet.report!.completed).toBe(true);
+      const [a, b] = sheet.lineup!.entries;
+      const outsider = sheet.candidates!.find(
+        (c) => !sheet.lineup!.entries.some((e) => e.personId === c.personId),
+      );
+
+      const mismatch = await send<{ error: string }>(
+        'PUT',
+        `/events/${last.eventId}/report`,
+        coach.token,
+        {
+          goalsFor: 2,
+          goalsAgainst: 1,
+          incidents: [{ kind: 'goal', personId: a!.personId, minute: 12 }],
+          complete: true,
+        },
+      );
+      expect(mismatch.body.error).toBe('goals_mismatch');
+      const self = await send('PUT', `/events/${last.eventId}/report`, coach.token, {
+        goalsFor: 1,
+        goalsAgainst: 1,
+        incidents: [{ kind: 'goal', personId: a!.personId, assistPersonId: a!.personId }],
+        complete: true,
+      });
+      expect(self.status).toBe(400);
+      if (outsider) {
+        const notInSquad = await send('PUT', `/events/${last.eventId}/report`, coach.token, {
+          goalsFor: 1,
+          goalsAgainst: 0,
+          incidents: [{ kind: 'goal', personId: outsider.personId }],
+          complete: true,
+        });
+        expect(notInSquad.status).toBe(400);
+      }
+      const saved = await send<MatchSheet>('PUT', `/events/${last.eventId}/report`, coach.token, {
+        goalsFor: 2,
+        goalsAgainst: 1,
+        incidents: [
+          { kind: 'goal', personId: a!.personId, assistPersonId: b!.personId, minute: 12 },
+          { kind: 'own_goal', minute: 80 },
+          { kind: 'yellow', personId: b!.personId, minute: 55 },
+        ],
+        complete: true,
+      });
+      expect(saved.status).toBe(200);
+      expect(saved.body).toMatchObject({ goalsFor: 2, goalsAgainst: 1 });
+      expect(saved.body.report!.incidents.map((i) => i.kind)).toEqual([
+        'goal',
+        'yellow',
+        'own_goal',
+      ]);
+      expect(saved.body.report!.incidents[0]!.assist!.id).toBe(b!.personId);
+    });
+
+    it('Rückennummern: Modus und Nummern nur durchs Trainerteam, keine Doppelten', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const settings = await get<JerseySettings>(`/teams/${b1.id}/jerseys`, coach.token);
+      expect(settings.canEdit).toBe(true);
+      const [x, y] = settings.numbers;
+      expect(
+        (await send('PUT', `/teams/${b1.id}/jerseys`, player.token, { mode: 'off' })).status,
+      ).toBe(403);
+      const dup = await send('PUT', `/teams/${b1.id}/jerseys`, coach.token, {
+        mode: 'season',
+        numbers: [
+          { personId: x!.personId, jerseyNumber: 7 },
+          { personId: y!.personId, jerseyNumber: 7 },
+        ],
+      });
+      expect(dup.status).toBe(400);
+      const saved = await send<JerseySettings>('PUT', `/teams/${b1.id}/jerseys`, coach.token, {
+        mode: 'match',
+        numbers: [{ personId: x!.personId, jerseyNumber: 98 }],
+      });
+      expect(saved.status, JSON.stringify(saved.body)).toBe(200);
+      expect(saved.body.mode).toBe('match');
+      expect(saved.body.numbers.find((n) => n.personId === x!.personId)!.jerseyNumber).toBe(98);
+      const roster = await get<RosterEntry[]>(`/teams/${b1.id}/roster`, coach.token);
+      expect(roster.find((r) => r.personId === x!.personId)!.jerseyNumber).toBe(98);
+      await send('PUT', `/teams/${b1.id}/jerseys`, coach.token, { mode: 'season' });
+    });
+
+    it('Spielerbewegungen: Wechsel, Leihe, Abgang', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const denied = await app.inject({
+        method: 'GET',
+        url: '/admin/transfers',
+        headers: { authorization: `Bearer ${coach.token}` },
+      });
+      expect(denied.statusCode).toBe(403);
+      const overview = await get<TransferOverview>('/admin/transfers', admin.token);
+      expect(overview.items.length).toBeGreaterThanOrEqual(3);
+      const team = (badge: string) => overview.teams.find((t) => t.badge === badge)!;
+      const players = async (badge: string) =>
+        (await get<RosterEntry[]>(`/teams/${team(badge).id}/roster`, admin.token)).filter(
+          (r) => r.function === 'player',
+        );
+
+      // Wechsel C1 → B1
+      const mover = (await players('C1'))[0]!;
+      const moved = await send<TransferOverview>('POST', '/admin/transfers', admin.token, {
+        personId: mover.personId,
+        kind: 'internal',
+        fromTeamId: team('C1').id,
+        toTeamId: team('B1').id,
+        note: 'Leistungsstark, früher hochgezogen',
+      });
+      expect(moved.status).toBe(201);
+      expect((await players('C1')).some((r) => r.personId === mover.personId)).toBe(false);
+      expect((await players('B1')).some((r) => r.personId === mover.personId)).toBe(true);
+      const again = await send('POST', '/admin/transfers', admin.token, {
+        personId: mover.personId,
+        kind: 'internal',
+        fromTeamId: team('C1').id,
+        toTeamId: team('B1').id,
+      });
+      expect(again.status).toBe(409);
+
+      // Leihe 2. → 1. Mannschaft, Stammteam bleibt
+      const loaned = (await players('2.'))[0]!;
+      expect(
+        (
+          await send('POST', '/admin/transfers', admin.token, {
+            personId: loaned.personId,
+            kind: 'loan',
+            toTeamId: team('1.').id,
+          })
+        ).status,
+      ).toBe(400);
+      const loan = await send<TransferOverview>('POST', '/admin/transfers', admin.token, {
+        personId: loaned.personId,
+        kind: 'loan',
+        toTeamId: team('1.').id,
+        endsOn: '2026-12-31',
+      });
+      expect(
+        loan.body.items.find((i) => i.person.id === loaned.personId && i.kind === 'loan'),
+      ).toMatchObject({
+        kind: 'loan',
+        endsOn: '2026-12-31',
+        fromTeam: { badge: '2.' },
+      });
+      expect((await players('1.')).some((r) => r.personId === loaned.personId)).toBe(true);
+      expect((await players('2.')).some((r) => r.personId === loaned.personId)).toBe(true);
+
+      // Abgang aus den Alten Herren
+      const leaver = (await players('AH')).at(-1)!;
+      await send('POST', '/admin/transfers', admin.token, {
+        personId: leaver.personId,
+        kind: 'leave',
+        fromTeamId: team('AH').id,
+        externalClub: 'SG Reinstetten',
+      });
+      expect((await players('AH')).some((r) => r.personId === leaver.personId)).toBe(false);
     });
   });
 

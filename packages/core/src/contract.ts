@@ -11,8 +11,12 @@ import type {
   EventType,
   NotificationLevel,
   ParticipationMode,
+  JerseyMode,
+  LineupRole,
+  MatchIncidentKind,
   TeamFunction,
   TeamTemplate,
+  TransferKind,
 } from './domain';
 import type { ScopeType } from './scopes';
 
@@ -346,7 +350,28 @@ export type TeamStats = {
   results: MatchResult[];
   /** Alle Spieler (für Verantwortliche) oder nur die eigenen Werte */
   players: PlayerStat[];
+  /** Kader-Statistik: alle Spieler der Mannschaft mit Einsätzen, Toren, Vorlagen und Karten */
+  squad: SquadStatRow[];
+  /** Trainingsquoten in der Kader-Statistik sichtbar (Trainerteam); sonst nur die eigene */
+  showsTrainingRates: boolean;
   level: 'basic' | 'extended' | 'custom';
+};
+
+export type SquadStatRow = {
+  personId: string;
+  name: string;
+  jerseyNumber: number | null;
+  position: string | null;
+  /** Einsätze (Startelf + eingewechselt bzw. Bank) in vergangenen Spielen */
+  appearances: number;
+  starts: number;
+  goals: number;
+  assists: number;
+  yellow: number;
+  yellowRed: number;
+  red: number;
+  /** 0–100; null, wenn nicht sichtbar oder keine Trainings */
+  trainingRate: number | null;
 };
 
 export type CashEntry = {
@@ -509,6 +534,10 @@ export type PersonStatsByTeam = {
   trainings: number;
   trainingsAttended: number;
   matches: number;
+  /** Einsätze laut Aufstellung, Tore und Vorlagen aus abgeschlossenen Spielberichten */
+  appearances: number;
+  goals: number;
+  assists: number;
 };
 
 export type PersonStats = {
@@ -517,6 +546,9 @@ export type PersonStats = {
   trainings: number;
   trainingsAttended: number;
   matches: number;
+  appearances: number;
+  goals: number;
+  assists: number;
   byTeam: PersonStatsByTeam[];
 };
 
@@ -673,6 +705,8 @@ export type AdminPermissions = {
   readAudit: boolean;
   /** Module für den Verein ein- und ausschalten, Update-Center */
   manageModules: boolean;
+  /** Spielerbewegungen erfassen (Wechsel, Leihe, Zu-/Abgang) */
+  manageTransfers: boolean;
   /** Mannschaften anlegen und bearbeiten (Verein oder eigener Bereich) */
   manageTeams: boolean;
   /** Neue Saison vorbereiten und starten (nur Vereinsebene) */
@@ -917,4 +951,112 @@ export type TeamDetailAdmin = AdminTeam & { modules: TeamModule[] };
 export type PrepareSeasonInput = {
   /** Spielerinnen und Spieler in die neuen Mannschaften übernehmen (Trainerteams immer) */
   copyPlayers: boolean;
+};
+
+// ── Spielbetrieb: Aufstellung und Spielbericht ───────────────────────────
+
+export type PersonRef = { id: string; name: string };
+
+export type LineupEntry = {
+  personId: string;
+  name: string;
+  role: LineupRole;
+  position: string | null;
+  jerseyNumber: number | null;
+  /** Gastspieler aus einer anderen Mannschaft (Badge) */
+  guestFrom: string | null;
+};
+
+export type LineupCandidate = {
+  personId: string;
+  name: string;
+  status: AttendanceStatus;
+  position: string | null;
+  jerseyNumber: number | null;
+  guestFrom: string | null;
+};
+
+export type MatchIncident = {
+  id: string;
+  kind: MatchIncidentKind;
+  minute: number | null;
+  person: PersonRef | null;
+  assist: PersonRef | null;
+};
+
+export type MatchSheet = {
+  eventId: string;
+  title: string;
+  startsAt: string;
+  opponentName: string;
+  isHome: boolean;
+  goalsFor: number | null;
+  goalsAgainst: number | null;
+  jerseyMode: JerseyMode | null;
+  /** null: noch nicht veröffentlicht (für Spieler unsichtbar) */
+  lineup: { published: boolean; entries: LineupEntry[] } | null;
+  /** Nur für das Trainerteam: alle möglichen Spieler mit Zu-/Absage */
+  candidates: LineupCandidate[] | null;
+  report: { completed: boolean; incidents: MatchIncident[] } | null;
+  can: { editLineup: boolean; editReport: boolean };
+};
+
+export type SaveLineupInput = {
+  entries: {
+    personId: string;
+    role: LineupRole;
+    position?: string | null;
+    jerseyNumber?: number | null;
+  }[];
+  publish: boolean;
+};
+
+export type SaveReportInput = {
+  goalsFor: number;
+  goalsAgainst: number;
+  incidents: {
+    kind: MatchIncidentKind;
+    personId?: string | null;
+    assistPersonId?: string | null;
+    minute?: number | null;
+  }[];
+  complete: boolean;
+};
+
+export type JerseySettings = {
+  mode: JerseyMode | null;
+  numbers: { personId: string; name: string; jerseyNumber: number | null }[];
+  canEdit: boolean;
+};
+
+// ── Spielerbewegungen ────────────────────────────────────────────────────
+
+export type TransferItem = {
+  id: string;
+  kind: TransferKind;
+  person: PersonRef;
+  fromTeam: { id: string; badge: string; name: string } | null;
+  toTeam: { id: string; badge: string; name: string } | null;
+  startsOn: string;
+  endsOn: string | null;
+  externalClub: string | null;
+  note: string | null;
+};
+
+export type TransferOverview = {
+  items: TransferItem[];
+  /** Mannschaften, für die ich Bewegungen erfassen darf */
+  teams: { id: string; badge: string; name: string }[];
+};
+
+export type CreateTransferInput = {
+  personId: string;
+  kind: TransferKind;
+  fromTeamId?: string | null;
+  toTeamId?: string | null;
+  /** Ende einer Leihe (Bewegungen gelten ab heute) */
+  endsOn?: string | null;
+  externalClub?: string | null;
+  note?: string | null;
+  jerseyNumber?: number | null;
 };

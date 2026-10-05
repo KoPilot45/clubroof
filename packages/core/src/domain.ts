@@ -58,3 +58,26 @@ export type ContactVisibility = (typeof CONTACT_VISIBILITIES)[number];
 
 export const PREFERRED_FEET = ['left', 'right', 'both'] as const;
 export type PreferredFoot = (typeof PREFERRED_FEET)[number];
+
+/** Aufstellung: Startelf oder Auswechselbank. */
+export const LINEUP_ROLES = ['starter', 'substitute'] as const;
+export type LineupRole = (typeof LINEUP_ROLES)[number];
+
+/** Ereignisse im Spielbericht. Gegentore werden nur als Ergebnis erfasst. */
+export const MATCH_INCIDENT_KINDS = [
+  'goal',
+  'penalty_goal',
+  'own_goal',
+  'yellow',
+  'yellow_red',
+  'red',
+] as const;
+export type MatchIncidentKind = (typeof MATCH_INCIDENT_KINDS)[number];
+
+/** Spielerbewegungen (Konzept §6): Wechsel im Verein, Leihe, Zugang und Abgang. */
+export const TRANSFER_KINDS = ['internal', 'loan', 'join', 'leave'] as const;
+export type TransferKind = (typeof TRANSFER_KINDS)[number];
+
+/** Rückennummern: fest für die Saison, je Spiel oder gar nicht. */
+export const JERSEY_MODES = ['season', 'match'] as const;
+export type JerseyMode = (typeof JERSEY_MODES)[number];

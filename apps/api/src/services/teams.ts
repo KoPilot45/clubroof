@@ -9,6 +9,7 @@ import {
   type MatchResult,
   type PlayerStat,
   type RosterEntry,
+  type SquadStatRow,
   type SquadStatus,
   type TeamHighlights,
   type TeamOverview,
@@ -332,10 +333,101 @@ export async function getTeamStats(
       (a, b) => (b.trainingRate ?? -1) - (a.trainingRate ?? -1) || a.name.localeCompare(b.name),
     );
 
+  const squad = await squadTable(db, actor, team, now, byPerson, permissions.readAttendance);
+
   return {
     highlights: summarizeResults(results, rate),
     results,
     players,
+    squad,
+    showsTrainingRates: permissions.readAttendance,
     level: level === 'off' ? 'basic' : level,
   };
+}
+
+/**
+ * Kader-Statistik: alle Spieler der Mannschaft mit Einsätzen (veröffentlichte Aufstellungen
+ * vergangener Spiele) sowie Toren, Vorlagen und Karten aus abgeschlossenen Spielberichten.
+ * Sportliche Werte sieht die ganze Mannschaft; Trainingsquoten nur das Trainerteam (bzw. die eigene).
+ */
+async function squadTable(
+  db: Db,
+  actor: Actor,
+  team: TeamRow,
+  now: Date,
+  training: Map<string, PlayerStat>,
+  showAllRates: boolean,
+): Promise<SquadStatRow[]> {
+  const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
+  const members = await db
+    .select({ membership: s.teamMemberships, person: s.persons })
+    .from(s.teamMemberships)
+    .innerJoin(s.persons, eq(s.persons.id, s.teamMemberships.personId))
+    .where(
+      and(
+        eq(s.teamMemberships.teamId, team.id),
+        eq(s.teamMemberships.function, 'player'),
+        or(isNull(s.teamMemberships.validTo), gte(s.teamMemberships.validTo, today)),
+      ),
+    );
+  const matchIds = (
+    await db
+      .select({ id: s.events.id })
+      .from(s.events)
+      .innerJoin(s.matchDetails, eq(s.matchDetails.eventId, s.events.id))
+      .where(
+        and(
+          eq(s.events.teamId, team.id),
+          eq(s.events.status, 'scheduled'),
+          lt(s.events.startsAt, now),
+          isNotNull(s.matchDetails.lineupPublishedAt),
+        ),
+      )
+  ).map((r) => r.id);
+  const [lineups, incidents] = matchIds.length
+    ? await Promise.all([
+        db
+          .select({ personId: s.matchLineups.personId, role: s.matchLineups.role })
+          .from(s.matchLineups)
+          .where(inArray(s.matchLineups.eventId, matchIds)),
+        db
+          .select({ incident: s.matchIncidents })
+          .from(s.matchIncidents)
+          .innerJoin(s.matchDetails, eq(s.matchDetails.eventId, s.matchIncidents.eventId))
+          .where(
+            and(
+              inArray(s.matchIncidents.eventId, matchIds),
+              isNotNull(s.matchDetails.reportCompletedAt),
+            ),
+          )
+          .then((rows) => rows.map((r) => r.incident)),
+      ])
+    : [[], []];
+
+  return members
+    .map(({ membership, person }) => {
+      const own = lineups.filter((l) => l.personId === person.id);
+      const mine = (kinds: string[]) =>
+        incidents.filter((i) => i.personId === person.id && kinds.includes(i.kind)).length;
+      const rate = training.get(person.id);
+      const visible = showAllRates || actor.managedIds.includes(person.id);
+      return {
+        personId: person.id,
+        name: `${person.firstName} ${person.lastName}`,
+        jerseyNumber: membership.jerseyNumber,
+        position: person.position,
+        appearances: own.length,
+        starts: own.filter((l) => l.role === 'starter').length,
+        goals: mine(['goal', 'penalty_goal']),
+        assists: incidents.filter((i) => i.assistPersonId === person.id).length,
+        yellow: mine(['yellow']),
+        yellowRed: mine(['yellow_red']),
+        red: mine(['red']),
+        trainingRate:
+          visible && rate?.trainings
+            ? Math.round((rate.trainingsAttended / rate.trainings) * 100)
+            : null,
+      };
+    })
+    .sort((a, b) => b.goals - a.goals || b.assists - a.assists || a.name.localeCompare(b.name));
 }

@@ -12,7 +12,7 @@ import {
   type UpdateProfileInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, eq, gte, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { notFound } from '../errors';
 
@@ -54,9 +54,49 @@ async function statsFor(db: Db, personId: string, teams: Team[], now: Date): Pro
         .groupBy(s.events.teamId, s.events.type, s.eventParticipants.status)
     : [];
 
+  const teamIds = teams.map((t) => t.id);
+  const [lineups, incidents] = teamIds.length
+    ? await Promise.all([
+        db
+          .select({ teamId: s.events.teamId })
+          .from(s.matchLineups)
+          .innerJoin(s.events, eq(s.events.id, s.matchLineups.eventId))
+          .innerJoin(s.matchDetails, eq(s.matchDetails.eventId, s.events.id))
+          .where(
+            and(
+              eq(s.matchLineups.personId, personId),
+              inArray(s.events.teamId, teamIds),
+              lt(s.events.startsAt, now),
+              isNotNull(s.matchDetails.lineupPublishedAt),
+            ),
+          ),
+        db
+          .select({
+            teamId: s.events.teamId,
+            kind: s.matchIncidents.kind,
+            personId: s.matchIncidents.personId,
+            assistPersonId: s.matchIncidents.assistPersonId,
+          })
+          .from(s.matchIncidents)
+          .innerJoin(s.events, eq(s.events.id, s.matchIncidents.eventId))
+          .innerJoin(s.matchDetails, eq(s.matchDetails.eventId, s.events.id))
+          .where(
+            and(
+              inArray(s.events.teamId, teamIds),
+              isNotNull(s.matchDetails.reportCompletedAt),
+              or(
+                eq(s.matchIncidents.personId, personId),
+                eq(s.matchIncidents.assistPersonId, personId),
+              ),
+            ),
+          ),
+      ])
+    : [[], []];
+
   const byTeam = teams.map((t) => {
     const own = rows.filter((r) => r.teamId === t.id);
     const trainings = own.filter((r) => r.type === 'training');
+    const teamIncidents = incidents.filter((i) => i.teamId === t.id);
     return {
       teamId: t.id,
       badge: t.badge,
@@ -65,6 +105,11 @@ async function statsFor(db: Db, personId: string, teams: Team[], now: Date): Pro
       matches: own
         .filter((r) => r.type !== 'training' && r.status === 'yes')
         .reduce((a, r) => a + r.n, 0),
+      appearances: lineups.filter((l) => l.teamId === t.id).length,
+      goals: teamIncidents.filter(
+        (i) => i.personId === personId && (i.kind === 'goal' || i.kind === 'penalty_goal'),
+      ).length,
+      assists: teamIncidents.filter((i) => i.assistPersonId === personId).length,
     };
   });
   const trainings = byTeam.reduce((a, t) => a + t.trainings, 0);
@@ -74,6 +119,9 @@ async function statsFor(db: Db, personId: string, teams: Team[], now: Date): Pro
     trainingsAttended: attended,
     trainingRate: trainings ? Math.round((attended / trainings) * 100) : null,
     matches: byTeam.reduce((a, t) => a + t.matches, 0),
+    appearances: byTeam.reduce((a, t) => a + t.appearances, 0),
+    goals: byTeam.reduce((a, t) => a + t.goals, 0),
+    assists: byTeam.reduce((a, t) => a + t.assists, 0),
     byTeam,
   };
 }

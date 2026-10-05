@@ -22,6 +22,8 @@ import {
   eventStatusEnum,
   eventTypeEnum,
   id,
+  lineupRoleEnum,
+  matchIncidentKindEnum,
   participantRoleEnum,
   updatedAt,
 } from './_shared';
@@ -74,7 +76,55 @@ export const matchDetails = pgTable('match_details', {
   competition: text(),
   goalsFor: smallint(),
   goalsAgainst: smallint(),
+  /** Aufstellung für die Mannschaft sichtbar und Nominierte benachrichtigt */
+  lineupPublishedAt: timestamp({ withTimezone: true }),
+  /** Spielbericht abgeschlossen – erst dann zählen Tore, Vorlagen und Karten in der Statistik */
+  reportCompletedAt: timestamp({ withTimezone: true }),
 });
+
+/** Aufstellung bzw. Nominierung für ein Spiel (Startelf und Bank). */
+export const matchLineups = pgTable(
+  'match_lineups',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    eventId: uuid()
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    role: lineupRoleEnum().notNull(),
+    position: text(),
+    /** Rückennummer für dieses Spiel (bei „je Spiel“ oder abweichend von der festen Nummer) */
+    jerseyNumber: smallint(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId), unique().on(t.eventId, t.personId)],
+);
+
+/** Ereignisse im Spielbericht: Tore (mit Vorlage), Karten. */
+export const matchIncidents = pgTable(
+  'match_incidents',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    eventId: uuid()
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    kind: matchIncidentKindEnum().notNull(),
+    /** Torschütze bzw. Spieler mit Karte; leer bei Eigentor des Gegners */
+    personId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    assistPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    minute: smallint(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.eventId), index().on(t.personId)],
+);
 
 /** Teilnahme einer Person an einem Termin, inkl. Gastspieler aus anderen Mannschaften. */
 export const eventParticipants = pgTable(

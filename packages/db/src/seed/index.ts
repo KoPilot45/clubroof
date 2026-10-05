@@ -315,7 +315,10 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         );
       }
 
-      const numbers = faker.helpers.shuffle(Array.from({ length: 98 }, (_, i) => i + 2));
+      // 1 und 12 für Torhüter, 14 für die Spieler-Persona – nie doppelt vergeben
+      const numbers = faker.helpers.shuffle(
+        Array.from({ length: 98 }, (_, i) => i + 2).filter((n) => n !== 12 && n !== 14),
+      );
       players.forEach((person, i) => {
         const jersey = person.position === 'Torwart' ? (i === 0 ? 1 : 12) : numbers.pop()!;
         members.push({ person, fn: 'player', jersey: person === persona.player ? 14 : jersey });
@@ -404,6 +407,38 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       }
     }
     await insertChunked(tx, s.teamMemberships, memberships);
+
+    // Spielerbewegungen zum Saisonstart (Historie)
+    const playersOf = (k: TeamKey) =>
+      teamMembers[k].filter((m) => m.fn === 'player' && m.person !== persona.player);
+    const transfers: Insert<typeof s.playerTransfers>[] = [
+      {
+        clubId,
+        personId: playersOf('b1')[0]!.person.id,
+        kind: 'join',
+        toTeamId: teamIds.b1,
+        startsOn: toIsoDate(seasonStart),
+        externalClub: 'TSV Blauen',
+      },
+      {
+        clubId,
+        personId: playersOf('a1')[0]!.person.id,
+        kind: 'internal',
+        fromTeamId: teamIds.b1,
+        toTeamId: teamIds.a1,
+        startsOn: toIsoDate(seasonStart),
+        note: 'Jahrgangswechsel',
+      },
+      {
+        clubId,
+        personId: playersOf('h1')[1]!.person.id,
+        kind: 'join',
+        toTeamId: teamIds.h1,
+        startsOn: toIsoDate(addDays(seasonStart, 14)),
+        externalClub: 'SpVgg Birkenbach',
+      },
+    ];
+    await tx.insert(s.playerTransfers).values(transfers);
 
     const deadlineRules: Insert<typeof s.teamDeadlineRules>[] = [];
     for (const team of TEAMS) {
@@ -695,6 +730,8 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
                   [4, 1],
                 ])
               : null,
+            lineupPublishedAt: played ? addMinutes(startsAt, -24 * 60) : null,
+            reportCompletedAt: played ? addMinutes(endsAt, 120) : null,
           });
         }
       }
@@ -1109,6 +1146,68 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       }
     });
     await insertChunked(tx, s.eventParticipants, participants);
+
+    // ── Aufstellungen und Spielberichte vergangener Spiele ────────────────────────────────
+    const lineups: Insert<typeof s.matchLineups>[] = [];
+    const incidents: Insert<typeof s.matchIncidents>[] = [];
+    const jerseyOf = new Map<string, number | null>();
+    for (const team of TEAMS) {
+      for (const m of teamMembers[team.key])
+        jerseyOf.set(`${team.key}:${m.person.id}`, m.jersey ?? null);
+    }
+    for (const md of matchDetails) {
+      if (md.goalsFor === null || md.goalsFor === undefined) continue;
+      const team = teamOfEvent.get(md.eventId)!;
+      const available = faker.helpers.shuffle(
+        participants
+          .filter((p) => p.eventId === md.eventId && p.role === 'player' && p.status === 'yes')
+          .map((p) => p.personId),
+      );
+      const squad = available.slice(0, 16);
+      squad.forEach((personId, i) =>
+        lineups.push({
+          clubId,
+          eventId: md.eventId,
+          personId,
+          role: i < 11 ? 'starter' : 'substitute',
+          jerseyNumber: jerseyOf.get(`${team.key}:${personId}`) ?? null,
+        }),
+      );
+      if (squad.length === 0) continue;
+      for (let g = 0; g < md.goalsFor; g++) {
+        const ownGoal = faker.number.int({ min: 1, max: 20 }) === 1;
+        const scorer = faker.helpers.arrayElement(squad);
+        const assist = faker.helpers.maybe(
+          () => faker.helpers.arrayElement(squad.filter((x) => x !== scorer)),
+          {
+            probability: 0.65,
+          },
+        );
+        incidents.push({
+          clubId,
+          eventId: md.eventId,
+          kind: ownGoal
+            ? 'own_goal'
+            : faker.number.int({ min: 1, max: 12 }) === 1
+              ? 'penalty_goal'
+              : 'goal',
+          personId: ownGoal ? null : scorer,
+          assistPersonId: ownGoal ? null : (assist ?? null),
+          minute: faker.number.int({ min: 2, max: 90 }),
+        });
+      }
+      for (let c = faker.number.int({ min: 0, max: 2 }); c > 0; c--) {
+        incidents.push({
+          clubId,
+          eventId: md.eventId,
+          kind: faker.number.int({ min: 1, max: 15 }) === 1 ? 'yellow_red' : 'yellow',
+          personId: faker.helpers.arrayElement(squad),
+          minute: faker.number.int({ min: 10, max: 90 }),
+        });
+      }
+    }
+    await insertChunked(tx, s.matchLineups, lineups);
+    await insertChunked(tx, s.matchIncidents, incidents);
 
     // ── News ──────────────────────────────────────────────────────────────────────────────
     const hoursAgo = (h: number) => addMinutes(now, -h * 60);

@@ -29,6 +29,28 @@ describe.skipIf(!url)('Demodaten', () => {
     expect(row!.n).toBe(1);
   }, 60_000);
 
+  it('vergibt Rückennummern je Mannschaft nur einmal', async () => {
+    const dup = await sql`
+      select team_id, jersey_number from team_memberships
+      where function = 'player' and jersey_number is not null and valid_to is null
+      group by 1, 2 having count(*) > 1`;
+    expect(dup).toHaveLength(0);
+  });
+
+  it('Spielberichte passen zum Ergebnis, Torschützen stehen im Kader', async () => {
+    const mismatch = await sql`
+      select d.event_id from match_details d
+      where d.report_completed_at is not null and d.goals_for <> (
+        select count(*) from match_incidents i
+        where i.event_id = d.event_id and i.kind in ('goal', 'penalty_goal', 'own_goal'))`;
+    expect(mismatch).toHaveLength(0);
+    const outside = await sql`
+      select i.id from match_incidents i
+      where i.person_id is not null and not exists (
+        select 1 from match_lineups l where l.event_id = i.event_id and l.person_id = i.person_id)`;
+    expect(outside).toHaveLength(0);
+  });
+
   it('verwendet in allen Tabellen dieselbe club_id', async () => {
     const tables = await sql<{ table_name: string }[]>`
       select table_name from information_schema.columns

@@ -21,6 +21,7 @@ import { notificationRoutes } from './routes/notifications';
 import { adminRoutes } from './routes/admin';
 import { editorialRoutes } from './routes/editorial';
 import { teamAdminRoutes } from './routes/team-admin';
+import { matchRoutes } from './routes/match';
 import { exchangeRoutes } from './routes/exchange';
 import { facilityRoutes } from './routes/facilities';
 import { profileRoutes } from './routes/profiles';
@@ -110,6 +111,7 @@ export async function buildApp({
   await app.register(adminRoutes);
   await app.register(editorialRoutes);
   await app.register(teamAdminRoutes);
+  await app.register(matchRoutes);
   await app.register(facilityRoutes);
   await app.register(fileRoutes);
 
