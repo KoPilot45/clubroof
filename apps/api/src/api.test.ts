@@ -3,12 +3,7 @@
  * Die Uhr ist fest eingestellt, damit Fristen reproduzierbar geprüft werden können.
  * Werden übersprungen, wenn `DATABASE_URL` nicht gesetzt ist.
  */
-import type {
-  EventDetail,
-  EventSummary,
-  HomeResponse,
-  LoginResponse,
-} from '@clubroof/core';
+import type { EventDetail, EventSummary, HomeResponse, LoginResponse } from '@clubroof/core';
 import { createDb } from '@clubroof/db';
 import { runMigrations } from '@clubroof/db/migrate';
 import { seed } from '@clubroof/db/seed';
