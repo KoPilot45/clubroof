@@ -1,12 +1,14 @@
-import type { EventSummary, NewsItem, PollSummary } from '@clubroof/core';
+import type { EventSummary, HelperEvent, NewsItem, PollSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
+import { EventRow } from '@/components/events';
 import { NewsCard } from '@/components/news';
 import {
   Button,
   Card,
+  Empty,
   IconTile,
   Loading,
   Screen,
@@ -29,9 +31,31 @@ export default function ClubScreen() {
     queryFn: () => api<PollSummary[]>('/polls'),
   });
 
-  const clubEvents = (events.data ?? []).filter((e) => e.team === null && e.status === 'scheduled');
+  // Für den Hinweis auf den nächsten Vereinstermin weiter vorausschauen (wie „Termine & Veranstaltungen“)
+  const upcomingClub = useQuery({
+    queryKey: ['events', 'club'],
+    queryFn: () => {
+      const from = new Date();
+      const to = new Date(from.getTime() + 100 * 24 * 60 * 60 * 1000);
+      return api<EventSummary[]>(
+        `/events?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
+      );
+    },
+  });
+  const clubEvents = (upcomingClub.data ?? []).filter(
+    (e) => e.team === null && e.status === 'scheduled',
+  );
   const highlight = clubEvents.find((e) => e.type === 'club_event') ?? clubEvents[0];
   const openPolls = (polls.data ?? []).filter((p) => p.isOpen && !p.myOptionId).length;
+  const helpers = useQuery({
+    queryKey: ['helpers'],
+    queryFn: () => api<HelperEvent[]>('/helpers'),
+  });
+  const openSpots = (helpers.data ?? []).reduce((sum, h) => sum + h.openSpots, 0);
+  const today = useQuery({
+    queryKey: ['club-today'],
+    queryFn: () => api<EventSummary[]>('/club/today'),
+  });
 
   const tiles: TileItem[] = [
     { key: 'news', label: 'News', icon: 'newspaper', onPress: () => router.push('/news') },
@@ -53,13 +77,38 @@ export default function ClubScreen() {
         ]
       : []),
     ...(has('helpers')
-      ? [{ key: 'helpers', label: 'Helfer gesucht', icon: 'hand-left' as const, soon: true }]
+      ? [
+          {
+            key: 'helpers',
+            label: 'Helfer gesucht',
+            icon: 'hand-left' as const,
+            badge: openSpots || undefined,
+            onPress: () => router.push('/helpers'),
+          },
+        ]
       : []),
     ...(has('documents')
-      ? [{ key: 'docs', label: 'Dokumente', icon: 'folder-open' as const, soon: true }]
+      ? [
+          {
+            key: 'docs',
+            label: 'Dokumente',
+            icon: 'folder-open' as const,
+            onPress: () => router.push('/documents'),
+          },
+        ]
       : []),
-    { key: 'teams', label: 'Mannschaften', icon: 'shirt', soon: true },
-    { key: 'contacts', label: 'Ansprechpartner', icon: 'call', soon: true },
+    {
+      key: 'teams',
+      label: 'Mannschaften',
+      icon: 'shirt',
+      onPress: () => router.push('/club-teams'),
+    },
+    {
+      key: 'contacts',
+      label: 'Ansprechpartner',
+      icon: 'call',
+      onPress: () => router.push('/contacts'),
+    },
     ...(has('facility_booking')
       ? [{ key: 'pitch', label: 'Platzbelegung', icon: 'grid' as const, soon: true }]
       : []),
@@ -76,6 +125,8 @@ export default function ClubScreen() {
         void news.refetch();
         void events.refetch();
         void polls.refetch();
+        void helpers.refetch();
+        void today.refetch();
       }}
     >
       {highlight ? (
@@ -101,6 +152,18 @@ export default function ClubScreen() {
       ) : null}
 
       <TileGrid items={tiles} />
+
+      <Section title="Heute auf der Anlage">
+        <Card>
+          {today.isPending ? <Loading /> : null}
+          {today.data?.length === 0 ? (
+            <Empty icon="sunny-outline" text="Heute ist auf der Anlage nichts geplant." />
+          ) : null}
+          {today.data?.map((e, i) => (
+            <EventRow key={e.id} event={e} first={i === 0} />
+          ))}
+        </Card>
+      </Section>
 
       <Section title="Vereinsnews" action="Alle anzeigen" onAction={() => router.push('/news')}>
         {news.isPending ? <Loading /> : null}

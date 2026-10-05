@@ -113,7 +113,14 @@ export default function TeamScreen() {
             ]
           : []),
         ...(has('documents')
-          ? [{ key: 'docs', label: 'Dokumente', icon: 'document-text' as const, soon: true }]
+          ? [
+              {
+                key: 'docs',
+                label: 'Dokumente',
+                icon: 'document-text' as const,
+                onPress: () => router.push(`/documents?teamId=${team.id}`),
+              },
+            ]
           : []),
         ...(has('training_planning')
           ? [{ key: 'training', label: 'Trainingsplanung', icon: 'clipboard' as const, soon: true }]

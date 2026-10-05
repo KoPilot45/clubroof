@@ -6,7 +6,17 @@ import { useSignedIn } from '@/lib/session';
 
 export default function ClubEventsScreen() {
   const { api } = useSignedIn();
-  const events = useQuery({ queryKey: ['events'], queryFn: () => api<EventSummary[]>('/events') });
+  // Vereinstermine weiter im Voraus zeigen als Mannschaftstermine (z. B. Weihnachtsfeier)
+  const events = useQuery({
+    queryKey: ['events', 'club'],
+    queryFn: () => {
+      const from = new Date();
+      const to = new Date(from.getTime() + 100 * 24 * 60 * 60 * 1000);
+      return api<EventSummary[]>(
+        `/events?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
+      );
+    },
+  });
   const list = (events.data ?? []).filter((e) => e.team === null);
   return (
     <Screen edges={[]} refreshing={events.isRefetching} onRefresh={() => events.refetch()}>

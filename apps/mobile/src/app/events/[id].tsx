@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import { AttendanceChip, ResponseControls, useRespond } from '@/components/events';
+import { ShiftRow } from '@/components/helpers';
 import { RequestError } from '@/lib/api';
 import {
   Button,
@@ -98,6 +99,49 @@ function ParticipantRow({
         </View>
       ) : null}
     </View>
+  );
+}
+
+/** „Ich nehme teil“ für Vereinsveranstaltungen. */
+function AttendanceCard({
+  eventId,
+  attendance,
+  open,
+}: {
+  eventId: string;
+  attendance: { attending: boolean; count: number };
+  open: boolean;
+}) {
+  const { api } = useSignedIn();
+  const queryClient = useQueryClient();
+  const toggle = useMutation({
+    mutationFn: () =>
+      api(`/events/${eventId}/attendance`, { method: attendance.attending ? 'DELETE' : 'PUT' }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['event', eventId] }),
+  });
+  return (
+    <Card style={{ gap: 10 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <T variant="heading">Teilnahme</T>
+        <Chip
+          tone="info"
+          icon="people"
+          label={`${attendance.count} ${attendance.count === 1 ? 'Person' : 'Personen'} dabei`}
+        />
+      </View>
+      {open ? (
+        <Button
+          label={attendance.attending ? 'Ich bin dabei' : 'Ich nehme teil'}
+          icon={attendance.attending ? 'checkmark-circle' : 'add-circle-outline'}
+          variant={attendance.attending ? 'primary' : 'outline'}
+          loading={toggle.isPending}
+          onPress={() => toggle.mutate()}
+        />
+      ) : null}
+      {open && attendance.attending ? (
+        <T variant="caption">Nochmal tippen, um die Teilnahme zurückzunehmen.</T>
+      ) : null}
+    </Card>
   );
 }
 
@@ -238,6 +282,52 @@ export default function EventScreen() {
             ) : null}
           </Card>
 
+          {e.program.length > 0 ? (
+            <Section title="Programm">
+              <Card>
+                {e.program.map((item, i) => (
+                  <View
+                    key={item.time + item.title}
+                    style={{
+                      flexDirection: 'row',
+                      gap: 14,
+                      paddingVertical: 8,
+                      borderTopWidth: i === 0 ? 0 : 1,
+                      borderTopColor: colors.border,
+                    }}
+                  >
+                    <T
+                      variant="label"
+                      color={colors.primaryText}
+                      style={{ width: 48, fontWeight: '800' }}
+                    >
+                      {item.time}
+                    </T>
+                    <T style={{ flex: 1 }}>{item.title}</T>
+                  </View>
+                ))}
+              </Card>
+            </Section>
+          ) : null}
+
+          {e.attendance ? (
+            <AttendanceCard
+              eventId={e.id}
+              attendance={e.attendance}
+              open={e.status === 'scheduled' && new Date(e.startsAt) > new Date()}
+            />
+          ) : null}
+
+          {e.shifts.length > 0 ? (
+            <Section title="Helfer gesucht">
+              <Card>
+                {e.shifts.map((shift, i) => (
+                  <ShiftRow key={shift.id} shift={shift} first={i === 0} />
+                ))}
+              </Card>
+            </Section>
+          ) : null}
+
           {e.myResponses.length > 0 ? (
             <Card style={{ gap: 10 }}>
               <View
@@ -264,38 +354,40 @@ export default function EventScreen() {
             <CoachActions event={e} />
           ) : null}
 
-          <Section title={`Teilnehmer (${e.counts.yes} zugesagt)`}>
-            <Card style={{ gap: 10 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-                {(
-                  [
-                    ['Zugesagt', e.counts.yes],
-                    ['Unsicher', e.counts.maybe],
-                    ['Offen', e.counts.pending],
-                    ['Abgesagt', e.counts.no],
-                  ] as const
-                ).map(([label, n]) => (
-                  <View key={label} style={{ alignItems: 'center' }}>
-                    <T variant="title" color={colors.primaryText}>
-                      {n}
-                    </T>
-                    <T variant="caption">{label}</T>
-                  </View>
-                ))}
-              </View>
-              {[...e.participants]
-                .sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status))
-                .map((p, i) => (
-                  <ParticipantRow
-                    key={p.personId}
-                    participant={p}
-                    eventId={e.id}
-                    first={i === 0}
-                    canOverride={e.canOverride && p.role !== 'coach' && e.status === 'scheduled'}
-                  />
-                ))}
-            </Card>
-          </Section>
+          {e.team ? (
+            <Section title={`Teilnehmer (${e.counts.yes} zugesagt)`}>
+              <Card style={{ gap: 10 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                  {(
+                    [
+                      ['Zugesagt', e.counts.yes],
+                      ['Unsicher', e.counts.maybe],
+                      ['Offen', e.counts.pending],
+                      ['Abgesagt', e.counts.no],
+                    ] as const
+                  ).map(([label, n]) => (
+                    <View key={label} style={{ alignItems: 'center' }}>
+                      <T variant="title" color={colors.primaryText}>
+                        {n}
+                      </T>
+                      <T variant="caption">{label}</T>
+                    </View>
+                  ))}
+                </View>
+                {[...e.participants]
+                  .sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status))
+                  .map((p, i) => (
+                    <ParticipantRow
+                      key={p.personId}
+                      participant={p}
+                      eventId={e.id}
+                      first={i === 0}
+                      canOverride={e.canOverride && p.role !== 'coach' && e.status === 'scheduled'}
+                    />
+                  ))}
+              </Card>
+            </Section>
+          ) : null}
         </>
       ) : null}
     </Screen>

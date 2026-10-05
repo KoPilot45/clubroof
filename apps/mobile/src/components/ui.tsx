@@ -502,12 +502,9 @@ export function TileGrid({ items }: { items: TileItem[] }) {
             style={({ pressed }) => ({
               flexBasis: '47%',
               flexGrow: 1,
-              minHeight: 64,
-              flexDirection: 'row',
-              alignItems: 'center',
+              minHeight: 96,
               gap: 10,
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing.sm,
+              padding: spacing.md,
               borderRadius: radii.lg,
               borderWidth: StyleSheet.hairlineWidth * 2,
               borderColor: colors.border,
@@ -517,17 +514,48 @@ export function TileGrid({ items }: { items: TileItem[] }) {
           >
             <View
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                backgroundColor: colors.primaryContainer,
-                alignItems: 'center',
-                justifyContent: 'center',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
               }}
             >
-              <Ionicons name={item.icon} size={19} color={colors.onPrimaryContainer} />
+              <View
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  backgroundColor: colors.primaryContainer,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name={item.icon} size={19} color={colors.onPrimaryContainer} />
+              </View>
+              {!item.soon && item.badge !== undefined && item.badge !== 0 ? (
+                <View
+                  style={{
+                    minWidth: 22,
+                    height: 22,
+                    paddingHorizontal: 6,
+                    borderRadius: 11,
+                    backgroundColor: colors.status.action.container,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: '800',
+                      color: colors.status.action.onContainer,
+                    }}
+                  >
+                    {item.badge}
+                  </Text>
+                </View>
+              ) : null}
             </View>
-            <View style={{ flex: 1, gap: 2 }}>
+            <View style={{ gap: 2 }}>
               <Text
                 style={{ fontSize: 14, fontWeight: '700', color: colors.onSurface }}
                 numberOfLines={2}
@@ -540,29 +568,6 @@ export function TileGrid({ items }: { items: TileItem[] }) {
                 </Text>
               ) : null}
             </View>
-            {!item.soon && item.badge !== undefined && item.badge !== 0 ? (
-              <View
-                style={{
-                  minWidth: 22,
-                  height: 22,
-                  paddingHorizontal: 6,
-                  borderRadius: 11,
-                  backgroundColor: colors.status.action.container,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 12,
-                    fontWeight: '800',
-                    color: colors.status.action.onContainer,
-                  }}
-                >
-                  {item.badge}
-                </Text>
-              </View>
-            ) : null}
           </Pressable>
         );
       })}

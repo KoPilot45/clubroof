@@ -57,6 +57,10 @@ function Navigator() {
             name="teams/[id]/events"
             options={{ headerShown: true, title: 'Termine' }}
           />
+          <Stack.Screen name="helpers" options={{ headerShown: true, title: 'Helfer gesucht' }} />
+          <Stack.Screen name="documents" options={{ headerShown: true, title: 'Dokumente' }} />
+          <Stack.Screen name="club-teams" options={{ headerShown: true, title: 'Mannschaften' }} />
+          <Stack.Screen name="contacts" options={{ headerShown: true, title: 'Ansprechpartner' }} />
           <Stack.Screen
             name="club-events"
             options={{ headerShown: true, title: 'Termine & Veranstaltungen' }}
