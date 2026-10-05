@@ -79,7 +79,8 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
   {
     key: 'coach',
     name: 'Trainer',
-    description: 'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik',
+    description:
+      'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik, Dokumente, News',
     defaultScope: 'team',
     permissions: [
       'members.invite',
@@ -91,6 +92,7 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
       'absences.read',
       'news.create',
       'polls.manage',
+      'documents.manage',
       'cash.read',
     ],
   },

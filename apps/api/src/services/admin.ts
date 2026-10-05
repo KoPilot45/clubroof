@@ -61,6 +61,12 @@ export function adminPermissions(actor: Actor): AdminPermissions {
     manageMembers: actorCan(actor, 'members.manage'),
     manageRoles: actorCan(actor, 'club.roles.manage'),
     readAudit: actorCan(actor, 'club.audit.read'),
+    manageModules: actorCan(actor, 'club.modules.manage'),
+    manageTeams: (() => {
+      const t = scopesWith(actor.grants, 'teams.manage');
+      return t.all || t.orgUnitIds.length > 0 || t.teamIds.length > 0;
+    })(),
+    planSeason: actorCan(actor, 'teams.season.plan'),
   };
 }
 
@@ -91,6 +97,47 @@ async function activeMemberships(db: Db | Tx, actor: Actor, now: Date, personIds
         eq(s.seasons.isCurrent, true),
         or(isNull(s.teamMemberships.validTo), gte(s.teamMemberships.validTo, todayIso(actor, now))),
         personIds ? inArray(s.teamMemberships.personId, personIds) : undefined,
+      ),
+    )
+    .orderBy(asc(s.teams.sortOrder));
+}
+
+/** Vorbereitete Folgesaison (falls vorhanden) mit ihren Mannschaften. */
+async function upcomingSeason(db: Db | Tx, actor: Actor) {
+  const rows = await db
+    .select()
+    .from(s.seasons)
+    .where(eq(s.seasons.clubId, actor.club.id))
+    .orderBy(asc(s.seasons.startsOn));
+  const current = rows.find((r) => r.isCurrent);
+  const next = current
+    ? rows.find((r) => !r.isCurrent && r.startsOn > current.startsOn)
+    : undefined;
+  if (!next) return null;
+  const teams = await db
+    .select()
+    .from(s.teams)
+    .where(eq(s.teams.seasonId, next.id))
+    .orderBy(asc(s.teams.sortOrder));
+  return { season: next, teams };
+}
+
+/** Zuordnungen in der vorbereiteten Folgesaison. */
+async function upcomingMemberships(db: Db | Tx, actor: Actor, personIds: string[]) {
+  const next = await upcomingSeason(db, actor);
+  if (!next || next.teams.length === 0) return [];
+  return db
+    .select({ membership: s.teamMemberships, team: s.teams })
+    .from(s.teamMemberships)
+    .innerJoin(s.teams, eq(s.teams.id, s.teamMemberships.teamId))
+    .where(
+      and(
+        inArray(
+          s.teamMemberships.teamId,
+          next.teams.map((t) => t.id),
+        ),
+        isNull(s.teamMemberships.validTo),
+        inArray(s.teamMemberships.personId, personIds),
       ),
     )
     .orderBy(asc(s.teams.sortOrder));
@@ -362,8 +409,9 @@ export async function getMember(
   if (visible !== null && !visible.has(personId)) throw notFound('Das Mitglied');
   const person = await loadPerson(db, actor, personId);
 
-  const [memberships, roleRows, guardians, children, label] = await Promise.all([
+  const [memberships, upcoming, roleRows, guardians, children, label] = await Promise.all([
     activeMemberships(db, actor, now, [personId]),
+    upcomingMemberships(db, actor, [personId]),
     db
       .select({ assignment: s.roleAssignments, role: s.roles })
       .from(s.roleAssignments)
@@ -404,7 +452,11 @@ export async function getMember(
     hasAccount: person.userId !== null,
     guardians: guardians.map((g) => ({ id: g.id, name: name(g) })),
     children: children.map((c) => ({ id: c.id, name: name(c) })),
-    memberships: memberships.map(({ membership, team }) => ({
+    memberships: [
+      ...memberships.map((m) => ({ ...m, upcoming: false })),
+      ...upcoming.map((m) => ({ ...m, upcoming: true })),
+    ].map(({ membership, team, upcoming: isUpcoming }) => ({
+      upcoming: isUpcoming,
       id: membership.id,
       team: { id: team.id, name: team.name, badge: team.badge },
       function: membership.function,
@@ -622,16 +674,20 @@ export async function addMembership(
       'left',
       'Ausgetretene Mitglieder können keiner Mannschaft zugeordnet werden.',
     );
-  const team = (await currentTeams(db, actor)).find((t) => t.id === input.teamId);
+  const next = await upcomingSeason(db, actor);
+  const currentTeam = (await currentTeams(db, actor)).find((t) => t.id === input.teamId);
+  const nextTeam = next?.teams.find((t) => t.id === input.teamId);
+  const team = currentTeam ?? nextTeam;
   if (!team)
     throw new HttpError(
       400,
       'invalid_team',
-      'Die Mannschaft gibt es in der laufenden Saison nicht.',
+      'Die Mannschaft gibt es weder in der laufenden noch in der nächsten Saison.',
     );
-  const existing = (await activeMemberships(db, actor, now, [personId])).find(
-    (m) => m.team.id === team.id && m.membership.function === input.function,
-  );
+  const existing = [
+    ...(await activeMemberships(db, actor, now, [personId])),
+    ...(await upcomingMemberships(db, actor, [personId])),
+  ].find((m) => m.team.id === team.id && m.membership.function === input.function);
   if (existing)
     throw new HttpError(
       409,
@@ -639,7 +695,11 @@ export async function addMembership(
       'Die Person ist dort bereits mit dieser Funktion eingetragen.',
     );
 
-  const from = todayIso(actor, now);
+  // In der nächsten Saison gilt die Zuordnung ab Saisonbeginn
+  const from =
+    nextTeam && next && next.season.startsOn > todayIso(actor, now)
+      ? next.season.startsOn
+      : todayIso(actor, now);
   await db.transaction(async (tx) => {
     // Am selben Tag beendet und wieder hinzugefügt → bestehende Zeile reaktivieren
     const [sameDay] = await tx
@@ -669,14 +729,14 @@ export async function addMembership(
         validFrom: from,
       });
     }
-    await syncFutureParticipation(tx, actor, team, personId, input.function, now);
+    if (currentTeam) await syncFutureParticipation(tx, actor, team, personId, input.function, now);
     await audit(
       tx,
       actor,
       'membership.added',
       'person',
       personId,
-      `${name(person)} → ${team.badge} (${FUNCTION_LABELS[input.function]})`,
+      `${name(person)} → ${team.badge}${nextTeam ? ` (Saison ${next!.season.name})` : ''} (${FUNCTION_LABELS[input.function]})`,
       now,
     );
   });
@@ -692,9 +752,14 @@ export async function endMembership(
 ): Promise<MemberDetail> {
   requireManageMembers(actor);
   const person = await loadPerson(db, actor, personId);
-  const row = (await activeMemberships(db, actor, now, [personId])).find(
+  const current = (await activeMemberships(db, actor, now, [personId])).find(
     (m) => m.membership.id === membershipId,
   );
+  const row =
+    current ??
+    (await upcomingMemberships(db, actor, [personId])).find(
+      (m) => m.membership.id === membershipId,
+    );
   if (!row) throw notFound('Die Mannschaftszuordnung');
   await db.transaction(async (tx) => {
     if (row.membership.validFrom >= todayIso(actor, now)) {
@@ -706,17 +771,19 @@ export async function endMembership(
         .where(eq(s.teamMemberships.id, membershipId));
     }
     // Weitere Funktion in derselben Mannschaft (z. B. Spielertrainer)? Dann Termine behalten.
-    const stillIn = (await activeMemberships(tx, actor, now, [personId])).find(
-      (m) => m.team.id === row.team.id,
-    );
-    await syncFutureParticipation(
-      tx,
-      actor,
-      row.team,
-      personId,
-      stillIn?.membership.function ?? null,
-      now,
-    );
+    if (current) {
+      const stillIn = (await activeMemberships(tx, actor, now, [personId])).find(
+        (m) => m.team.id === row.team.id,
+      );
+      await syncFutureParticipation(
+        tx,
+        actor,
+        row.team,
+        personId,
+        stillIn?.membership.function ?? null,
+        now,
+      );
+    }
     await audit(
       tx,
       actor,
@@ -756,6 +823,7 @@ export async function getRoleCatalog(db: Db, actor: Actor): Promise<RoleCatalog>
     currentTeams(db, actor),
     scopeLabels(db, actor),
   ]);
+  const next = await upcomingSeason(db, actor);
   return {
     roles: roles.map((r) => ({
       key: r.key,
@@ -776,7 +844,15 @@ export async function getRoleCatalog(db: Db, actor: Actor): Promise<RoleCatalog>
       ...units.map((u) => ({ type: 'org_unit' as const, id: u.id, label: u.name })),
       ...teams.map((t) => ({ type: 'team' as const, id: t.id, label: teamLabel(t) })),
     ],
-    teams: teams.map((t) => ({ id: t.id, name: t.name, badge: t.badge })),
+    teams: [
+      ...teams.map((t) => ({ id: t.id, name: t.name, badge: t.badge })),
+      // Für die Kaderplanung: Mannschaften der vorbereiteten Folgesaison
+      ...(next?.teams ?? []).map((t) => ({
+        id: t.id,
+        name: `${t.name} (Saison ${next!.season.name})`,
+        badge: t.badge,
+      })),
+    ],
   };
 }
 

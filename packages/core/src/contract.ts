@@ -12,6 +12,7 @@ import type {
   NotificationLevel,
   ParticipationMode,
   TeamFunction,
+  TeamTemplate,
 } from './domain';
 import type { ScopeType } from './scopes';
 
@@ -670,6 +671,12 @@ export type AdminPermissions = {
   manageMembers: boolean;
   manageRoles: boolean;
   readAudit: boolean;
+  /** Module für den Verein ein- und ausschalten, Update-Center */
+  manageModules: boolean;
+  /** Mannschaften anlegen und bearbeiten (Verein oder eigener Bereich) */
+  manageTeams: boolean;
+  /** Neue Saison vorbereiten und starten (nur Vereinsebene) */
+  planSeason: boolean;
 };
 
 export type AuditEntry = {
@@ -724,6 +731,8 @@ export type MemberDetail = {
   children: { id: string; name: string }[];
   memberships: {
     id: string;
+    /** Gilt erst in der vorbereiteten nächsten Saison */
+    upcoming: boolean;
     team: { id: string; name: string; badge: string };
     function: TeamFunction;
     jerseyNumber: number | null;
@@ -819,4 +828,93 @@ export type SaveNewsInput = {
   action: NewsAction;
   /** Hochgeladenes Bild (`UploadedImage.id`); `null` entfernt das Bild */
   imageId?: string | null;
+};
+
+// ── Module & Update-Center ───────────────────────────────────────────────
+
+export type ModuleEntry = {
+  key: string;
+  name: string;
+  description: string;
+  core: boolean;
+  /** Ebenen, auf denen das Modul eingestellt werden kann */
+  scopes: ScopeType[];
+  /** Zustand auf Vereinsebene; `new` = noch nie eingerichtet */
+  state: 'enabled' | 'available' | 'locked' | 'new';
+  declined: boolean;
+  snoozedUntil: string | null;
+  /** Bei Mannschaftsmodulen: in wie vielen Mannschaften aktiv */
+  enabledTeams: number | null;
+};
+
+export type ModuleOverview = {
+  /** Neue oder noch nicht eingerichtete Module („Einrichten / Später / Nicht verwenden“) */
+  updates: ModuleEntry[];
+  modules: ModuleEntry[];
+};
+
+export type ModuleDecision = 'enable' | 'disable' | 'later' | 'decline';
+
+export type TeamModule = {
+  key: string;
+  name: string;
+  description: string;
+  /** Auf Vereinsebene eingeschaltet – sonst in der Mannschaft nicht nutzbar */
+  clubEnabled: boolean;
+  enabled: boolean;
+  /** Keine eigene Einstellung der Mannschaft, Wert kommt von Verein/Bereich */
+  inherited: boolean;
+};
+
+// ── Mannschaften & Saison ────────────────────────────────────────────────
+
+export type SeasonInfo = {
+  id: string;
+  name: string;
+  startsOn: string;
+  endsOn: string;
+  isCurrent: boolean;
+};
+
+export type AdminTeam = {
+  id: string;
+  name: string;
+  badge: string;
+  ageGroup: string | null;
+  league: string | null;
+  template: TeamTemplate;
+  participationMode: ParticipationMode;
+  orgUnit: { id: string; name: string };
+  seasonId: string;
+  players: number;
+  staff: number;
+  canManage: boolean;
+};
+
+export type TeamAdminOverview = {
+  current: SeasonInfo;
+  /** Vorbereitete Folgesaison, falls vorhanden */
+  next: SeasonInfo | null;
+  teams: AdminTeam[];
+  nextTeams: AdminTeam[];
+  orgUnits: { id: string; name: string; canManage: boolean }[];
+};
+
+export type TeamInput = {
+  name: string;
+  badge: string;
+  ageGroup?: string | null;
+  league?: string | null;
+  orgUnitId: string;
+  template: TeamTemplate;
+  participationMode: ParticipationMode;
+  /** Ohne Angabe: laufende Saison */
+  seasonId?: string | null;
+};
+
+export type TeamDetailAdmin = AdminTeam & { modules: TeamModule[] };
+
+export type PrepareSeasonInput = {
+  /** Spielerinnen und Spieler in die neuen Mannschaften übernehmen (Trainerteams immer) */
+  copyPlayers: boolean;
 };

@@ -1,4 +1,5 @@
 import {
+  foreignKey,
   boolean,
   date,
   index,
@@ -44,10 +45,16 @@ export const teams = pgTable(
     template: teamTemplateEnum().notNull(),
     participationMode: participationModeEnum().notNull(),
     sortOrder: integer().notNull().default(0),
+    /** Mannschaft der Vorsaison (Saisonwechsel: Kasse, Dokumente und Verlauf gehen mit) */
+    previousTeamId: uuid(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index().on(t.clubId), index().on(t.seasonId)],
+  (t) => [
+    index().on(t.clubId),
+    index().on(t.seasonId),
+    foreignKey({ columns: [t.previousTeamId], foreignColumns: [t.id] }).onDelete('set null'),
+  ],
 );
 
 /** Zeitlich definierte Zuordnung einer Person zu einer Mannschaft. */

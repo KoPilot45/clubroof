@@ -11,6 +11,10 @@ import type {
   MemberListItem,
   RoleCatalog,
   DemandDetail,
+  ModuleOverview,
+  TeamAdminOverview,
+  TeamDetailAdmin,
+  TeamModule,
   UploadedImage,
   EditorialNews,
   EditorialOverview,
@@ -1233,6 +1237,9 @@ describe.skipIf(!url)('API', () => {
         manageMembers: false,
         manageRoles: false,
         readAudit: true,
+        manageModules: false,
+        manageTeams: false,
+        planSeason: false,
       });
       const overview = await get<AdminOverview>('/admin/overview', board.token);
       expect(overview.members.active).toBeGreaterThan(100);
@@ -1629,7 +1636,11 @@ describe.skipIf(!url)('API', () => {
       const player = await login('spieler');
       const coach = await login('trainer');
       expect(board.me.create.documents.some((t) => t.type === 'club')).toBe(true);
-      expect(coach.me.create.documents).toHaveLength(0);
+      // Trainer laden Dokumente nur für ihre Mannschaften hoch
+      expect(coach.me.create.documents.map((d) => d.label).sort()).toEqual([
+        'B1 · B-Jugend',
+        'C1 · C-Jugend',
+      ]);
 
       const doc = {
         title: 'Hallenordnung 2026',
@@ -1639,6 +1650,18 @@ describe.skipIf(!url)('API', () => {
         dataBase64: pdf,
       };
       expect((await send('POST', '/documents', coach.token, doc)).status).toBe(403);
+      const b1 = coach.me.create.documents.find((d) => d.label.startsWith('B1'))!;
+      const plan = await send<{ id: string }>('POST', '/documents', coach.token, {
+        ...doc,
+        title: 'Trainingsplan Hallenrunde',
+        category: 'training_plans',
+        scopeType: 'team',
+        scopeId: b1.id,
+      });
+      expect(plan.status).toBe(201);
+      const teamDocs = await get<DocumentItem[]>(`/documents?teamId=${b1.id}`, player.token);
+      expect(teamDocs.some((d) => d.id === plan.body.id && !d.canDelete)).toBe(true);
+      expect((await send('DELETE', `/documents/${plan.body.id}`, coach.token)).status).toBe(204);
       const fake = await send<{ error: string }>('POST', '/documents', board.token, {
         ...doc,
         dataBase64: b64('<html><script>alert(1)</script></html>'),
@@ -1783,6 +1806,231 @@ describe.skipIf(!url)('API', () => {
       expect((await send('POST', `/polls/${id}/close`, player.token)).status).toBe(403);
       const closed = await send<PollDetail>('POST', `/polls/${id}/close`, coach.token);
       expect(closed.body.isOpen).toBe(false);
+    });
+  });
+  describe('Module und Mannschaften verwalten', () => {
+    it('Update-Center: einrichten, später, nicht verwenden; Kernmodule bleiben an', async () => {
+      const admin = await login('admin');
+      expect(admin.me.admin.manageModules).toBe(true);
+      const denied = await app.inject({
+        method: 'GET',
+        url: '/admin/modules',
+        headers: { authorization: `Bearer ${(await login('vorstand')).token}` },
+      });
+      expect(denied.statusCode).toBe(403);
+
+      const overview = await get<ModuleOverview>('/admin/modules', admin.token);
+      expect(overview.updates.map((m) => m.key).sort()).toEqual([
+        'forum',
+        'lost_and_found',
+        'training_planning',
+      ]);
+      expect(overview.modules.find((m) => m.key === 'team_cash')!.enabledTeams).toBeGreaterThan(0);
+
+      expect(
+        (await send('POST', '/admin/modules/events', admin.token, { decision: 'disable' })).status,
+      ).toBe(409);
+      const later = await send<ModuleOverview>('POST', '/admin/modules/forum', admin.token, {
+        decision: 'later',
+      });
+      expect(later.body.updates.some((m) => m.key === 'forum')).toBe(false);
+      expect(later.body.modules.find((m) => m.key === 'forum')!.snoozedUntil).not.toBeNull();
+      const declined = await send<ModuleOverview>(
+        'POST',
+        '/admin/modules/lost_and_found',
+        admin.token,
+        {
+          decision: 'decline',
+        },
+      );
+      expect(declined.body.updates.map((m) => m.key)).toEqual(['training_planning']);
+      const enabled = await send<ModuleOverview>(
+        'POST',
+        '/admin/modules/training_planning',
+        admin.token,
+        {
+          decision: 'enable',
+        },
+      );
+      expect(enabled.body.updates).toHaveLength(0);
+      expect(enabled.body.modules.find((m) => m.key === 'training_planning')!.state).toBe(
+        'enabled',
+      );
+      const me = await get<LoginResponse['me']>('/me', admin.token);
+      expect(me.clubModules).toContain('training_planning');
+    });
+
+    it('Mannschaftsmodule: Verein schaltet ab, Mannschaft folgt; Einstellung je Mannschaft', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+
+      // Statistik nur für B1 ausschalten
+      const off = await send<TeamModule[]>(
+        'PUT',
+        `/admin/teams/${b1.id}/modules/statistics`,
+        admin.token,
+        {
+          enabled: false,
+        },
+      );
+      expect(off.body.find((m) => m.key === 'statistics')).toMatchObject({
+        enabled: false,
+        inherited: false,
+      });
+      const stats = await app.inject({
+        method: 'GET',
+        url: `/teams/${b1.id}/stats`,
+        headers: { authorization: `Bearer ${coach.token}` },
+      });
+      expect([403, 404]).toContain(stats.statusCode);
+      // Trainer selbst dürfen Module nicht umstellen
+      expect(
+        (
+          await send('PUT', `/admin/teams/${b1.id}/modules/statistics`, coach.token, {
+            enabled: true,
+          })
+        ).status,
+      ).toBe(403);
+      await send('PUT', `/admin/teams/${b1.id}/modules/statistics`, admin.token, { enabled: true });
+      expect((await get<TeamStats>(`/teams/${b1.id}/stats`, coach.token)).level).toBeDefined();
+
+      // Kasse vereinsweit aus → in keiner Mannschaft nutzbar, auch nicht einzeln einschaltbar
+      await send('POST', '/admin/modules/team_cash', admin.token, { decision: 'disable' });
+      const cash = await app.inject({
+        method: 'GET',
+        url: `/teams/${b1.id}/cash`,
+        headers: { authorization: `Bearer ${coach.token}` },
+      });
+      expect([403, 404]).toContain(cash.statusCode);
+      const blocked = await send('PUT', `/admin/teams/${b1.id}/modules/team_cash`, admin.token, {
+        enabled: true,
+      });
+      expect(blocked.status).toBe(409);
+      await send('POST', '/admin/modules/team_cash', admin.token, { decision: 'enable' });
+      expect((await get<TeamCash>(`/teams/${b1.id}/cash`, coach.token)).team.badge).toBe('B1');
+    });
+
+    it('Mannschaften anlegen, bearbeiten und löschen', async () => {
+      const admin = await login('admin');
+      const coachRes = await app.inject({
+        method: 'GET',
+        url: '/admin/teams',
+        headers: { authorization: `Bearer ${(await login('trainer')).token}` },
+      });
+      expect(coachRes.statusCode).toBe(403);
+
+      const overview = await get<TeamAdminOverview>('/admin/teams', admin.token);
+      expect(overview.teams).toHaveLength(11);
+      expect(overview.next).toBeNull();
+      const b1 = overview.teams.find((t) => t.badge === 'B1')!;
+      expect(b1.players).toBeGreaterThan(10);
+      const unit = overview.orgUnits.find((u) => u.id === b1.orgUnit.id)!;
+
+      const dup = await send('POST', '/admin/teams', admin.token, {
+        name: 'B-Jugend II',
+        badge: 'b1',
+        orgUnitId: unit.id,
+        template: 'youth',
+        participationMode: 'auto_accept',
+      });
+      expect(dup.status).toBe(409);
+      const created = await send<TeamDetailAdmin>('POST', '/admin/teams', admin.token, {
+        name: 'B-Jugend II',
+        badge: 'B2',
+        ageGroup: 'U17',
+        orgUnitId: unit.id,
+        template: 'youth',
+        participationMode: 'auto_accept',
+      });
+      expect(created.status).toBe(201);
+      expect(created.body.modules.find((m) => m.key === 'parent_access')!.enabled).toBe(true);
+      const renamed = await send<TeamDetailAdmin>(
+        'PATCH',
+        `/admin/teams/${created.body.id}`,
+        admin.token,
+        {
+          league: 'Kreisliga',
+        },
+      );
+      expect(renamed.body.league).toBe('Kreisliga');
+
+      expect((await send('DELETE', `/admin/teams/${b1.id}`, admin.token)).status).toBe(409);
+      expect((await send('DELETE', `/admin/teams/${created.body.id}`, admin.token)).status).toBe(
+        204,
+      );
+    });
+  });
+
+  // Muss als Letztes laufen: der Saisonwechsel verändert Mannschaften und Zuordnungen
+  describe('Saisonwechsel', () => {
+    it('bereitet die nächste Saison vor, plant den Kader und startet sie', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const before = await get<TeamAdminOverview>('/admin/teams', admin.token);
+      const oldB1 = before.teams.find((t) => t.badge === 'B1')!;
+      const oldCash = await get<TeamCash>(`/teams/${oldB1.id}/cash`, coach.token);
+
+      const prepared = await send<TeamAdminOverview>('POST', '/admin/seasons/next', admin.token, {
+        copyPlayers: false,
+      });
+      expect(prepared.status).toBe(201);
+      expect(prepared.body.next!.name).toBe('2027/28');
+      expect(prepared.body.nextTeams).toHaveLength(before.teams.length);
+      const nextB1 = prepared.body.nextTeams.find((t) => t.badge === 'B1')!;
+      expect(nextB1).toMatchObject({ players: 0 });
+      expect(nextB1.staff).toBeGreaterThan(0);
+      expect(
+        (await send('POST', '/admin/seasons/next', admin.token, { copyPlayers: true })).status,
+      ).toBe(409);
+      // Laufende Saison bleibt unverändert
+      expect((await get<TeamAdminOverview>('/admin/teams', admin.token)).teams[0]!.id).toBe(
+        before.teams[0]!.id,
+      );
+
+      // Kaderplanung: der B-Jugend-Spieler rückt in die A-Jugend auf
+      const nextA1 = prepared.body.nextTeams.find((t) => t.badge === 'A1')!;
+      const planned = await send<MemberDetail>(
+        'POST',
+        `/admin/members/${player.me.person.id}/memberships`,
+        admin.token,
+        { teamId: nextA1.id, function: 'player', jerseyNumber: 9 },
+      );
+      expect(planned.status).toBe(200);
+      expect(planned.body.memberships.find((m) => m.upcoming)).toMatchObject({
+        team: { badge: 'A1' },
+      });
+
+      expect(
+        (await send('POST', `/admin/seasons/${prepared.body.next!.id}/start`, coach.token)).status,
+      ).toBe(403);
+      const started = await send<TeamAdminOverview>(
+        'POST',
+        `/admin/seasons/${prepared.body.next!.id}/start`,
+        admin.token,
+      );
+      expect(started.status).toBe(200);
+      expect(started.body.current.name).toBe('2027/28');
+      expect(started.body.next).toBeNull();
+
+      // Trainer behält seine Mannschaften samt Rechten, Kasse geht mit
+      const coachMe = await get<LoginResponse['me']>('/me', coach.token);
+      const newB1 = coachMe.teams.find((t) => t.badge === 'B1')!;
+      expect(newB1.id).toBe(nextB1.id);
+      const overviewB1 = await get<TeamOverview>(`/teams/${newB1.id}`, coach.token);
+      expect(overviewB1.permissions.manageEvents).toBe(true);
+      // Künftige Termine sind mitgewandert; der aufgerückte Spieler steht nicht mehr auf der B1-Liste
+      expect(overviewB1.nextEvent).not.toBeNull();
+      const nextEvent = await get<EventDetail>(`/events/${overviewB1.nextEvent!.id}`, coach.token);
+      expect(nextEvent.participants.some((p) => p.personId === player.me.person.id)).toBe(false);
+      expect(nextEvent.participants.some((p) => p.personId === coach.me.person.id)).toBe(true);
+      const newCash = await get<TeamCash>(`/teams/${newB1.id}/cash`, coach.token);
+      expect(newCash.balanceCents).toBe(oldCash.balanceCents);
+
+      // Spieler ist jetzt in der A-Jugend, nicht mehr in der B-Jugend
+      const playerMe = await get<LoginResponse['me']>('/me', player.token);
+      expect(playerMe.teams.map((t) => t.badge)).toEqual(['A1']);
     });
   });
 });
