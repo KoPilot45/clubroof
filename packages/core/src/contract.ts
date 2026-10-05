@@ -394,6 +394,8 @@ export type CreateEventInput = {
   description?: string | null;
   opponentName?: string | null;
   isHome?: boolean | null;
+  /** Konfliktwarnung bewusst übergehen (Sperrungen nur mit Platzrecht) */
+  allowConflict?: boolean;
 };
 
 export type DocumentCategory = 'regulations' | 'forms' | 'training_plans' | 'other';
@@ -556,3 +558,37 @@ export type CreateDemandInput = {
 export type CreateOfferInput = { teamId: string; day: string; count: number; note?: string | null };
 
 export type ApiError = { error: string; message: string };
+
+// ── Platzbelegung ─────────────────────────────────────────────────────────
+
+export type FacilityBooking = {
+  id: string;
+  kind: 'event' | 'block';
+  title: string;
+  /** Mannschaft des Termins, z. B. „B1“ */
+  teamBadge: string | null;
+  eventType: EventType | null;
+  startsAt: string;
+  endsAt: string;
+  cancelled: boolean;
+  /** Überschneidet sich mit einer anderen Belegung oder Sperrung */
+  conflict: boolean;
+};
+
+export type FacilityOccupancy = {
+  /** Erster und letzter Tag (Vereinszeitzone, YYYY-MM-DD) */
+  from: string;
+  to: string;
+  facilities: { facility: Facility & { kind: string }; bookings: FacilityBooking[] }[];
+  conflicts: number;
+  canManage: boolean;
+};
+
+export type CreateFacilityBlockInput = {
+  facilityId: string;
+  startsAt: string;
+  endsAt: string;
+  reason: string;
+  /** Betroffene Termine absagen und Beteiligte benachrichtigen */
+  cancelEvents?: boolean;
+};

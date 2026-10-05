@@ -15,6 +15,7 @@ import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { absenceReason } from './absences';
 import { getEventDetail } from './events';
+import { assertFacilityFree } from './facilities';
 import { loadTeamForActor } from './team-access';
 
 const DEFAULT_MINUTES = { training: 90, match: 105, team_event: 120 } as const;
@@ -104,6 +105,7 @@ export async function createTeamEvent(
       .from(s.facilities)
       .where(and(eq(s.facilities.id, input.facilityId), eq(s.facilities.clubId, actor.club.id)));
     if (!facility) throw new HttpError(400, 'invalid_facility', 'Unbekannter Platz.');
+    await assertFacilityFree(db, actor, input.facilityId, startsAt, endsAt, !!input.allowConflict);
   }
 
   const ourName = `${actor.club.shortName} ${team.badge}`;

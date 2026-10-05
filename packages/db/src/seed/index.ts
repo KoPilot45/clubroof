@@ -793,6 +793,13 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     if (xmasParty.startsAt < now) xmasParty.status = 'cancelled';
 
     await insertChunked(tx, s.events, events);
+    await tx.insert(s.facilityBlocks).values({
+      clubId,
+      facilityId: facilityIds.kunstrasen,
+      startsAt: at(closedDay, '00:00'),
+      endsAt: at(addDays(closedDay, 1), '00:00'),
+      reason: 'Platzpflege (Tiefenreinigung, Granulat)',
+    });
     await insertChunked(tx, s.matchDetails, matchDetails);
 
     // ── Abwesenheiten ─────────────────────────────────────────────────────────────────────

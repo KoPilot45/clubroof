@@ -6,6 +6,7 @@
 import type {
   Absence,
   DemandDetail,
+  FacilityOccupancy,
   ExchangeOverview,
   PersonProfile,
   ClubTeamGroup,
@@ -998,6 +999,111 @@ describe.skipIf(!url)('API', () => {
         coach.token,
       );
       expect(del.body.offers.some((o) => o.id === mine.id)).toBe(false);
+    });
+  });
+  describe('Platzbelegung', () => {
+    const week = '/facilities/occupancy?from=2026-10-05&to=2026-10-11';
+
+    it('ist nur für Trainerteams und Platzverantwortliche sichtbar', async () => {
+      const denied = await app.inject({
+        method: 'GET',
+        url: week,
+        headers: { authorization: `Bearer ${(await login('spieler')).token}` },
+      });
+      expect(denied.statusCode).toBe(403);
+      const coach = await get<FacilityOccupancy>(week, (await login('trainer')).token);
+      expect(coach.canManage).toBe(false);
+      const admin = await get<FacilityOccupancy>(week, (await login('admin')).token);
+      expect(admin.canManage).toBe(true);
+    });
+
+    it('zeigt Belegung und Sperrung ohne Konflikte im Demobestand', async () => {
+      const occ = await get<FacilityOccupancy>(week, (await login('trainer')).token);
+      expect(occ.conflicts).toBe(0);
+      const kunstrasen = occ.facilities.find((f) => f.facility.name.includes('Kunstrasen'))!;
+      expect(kunstrasen.bookings.some((b) => b.kind === 'block')).toBe(true);
+      expect(kunstrasen.bookings.some((b) => b.kind === 'event' && b.cancelled)).toBe(true);
+      const tooLong = await app.inject({
+        method: 'GET',
+        url: '/facilities/occupancy?from=2026-10-01&to=2026-12-31',
+        headers: { authorization: `Bearer ${(await login('trainer')).token}` },
+      });
+      expect(tooLong.statusCode).toBe(400);
+    });
+
+    it('warnt beim Anlegen vor Sperrung und Doppelbelegung', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const occ = await get<FacilityOccupancy>(week, coach.token);
+      const kunstrasen = occ.facilities.find((f) => f.facility.name.includes('Kunstrasen'))!;
+      const block = kunstrasen.bookings.find((b) => b.kind === 'block')!;
+      const blocked = await send<{ error: string }>('POST', `/teams/${b1.id}/events`, coach.token, {
+        type: 'training',
+        startsAt: new Date(new Date(block.startsAt).getTime() + 10 * 3_600_000).toISOString(),
+        facilityId: kunstrasen.facility.id,
+        allowConflict: true,
+      });
+      expect(blocked.status).toBe(409);
+      expect(blocked.body.error).toBe('facility_blocked');
+
+      const rasen = occ.facilities.find(
+        (f) => f.facility.name.includes('Rasen') && !f.facility.name.includes('Kunst'),
+      )!;
+      const taken = rasen.bookings.find((b) => b.kind === 'event' && !b.cancelled)!;
+      const payload = {
+        type: 'team_event',
+        title: 'Zusatzspiel',
+        startsAt: taken.startsAt,
+        facilityId: rasen.facility.id,
+      };
+      const clash = await send<{ error: string }>(
+        'POST',
+        `/teams/${b1.id}/events`,
+        coach.token,
+        payload,
+      );
+      expect(clash.status).toBe(409);
+      expect(clash.body.error).toBe('facility_conflict');
+      const forced = await send('POST', `/teams/${b1.id}/events`, coach.token, {
+        ...payload,
+        allowConflict: true,
+      });
+      expect(forced.status).toBe(201);
+      const after = await get<FacilityOccupancy>(week, coach.token);
+      expect(after.conflicts).toBeGreaterThanOrEqual(2);
+    });
+
+    it('Platzverantwortliche sperren und heben auf, auf Wunsch mit Absage der Termine', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const occ = await get<FacilityOccupancy>(week, admin.token);
+      const facility = occ.facilities.find((f) =>
+        f.bookings.some((b) => b.kind === 'event' && !b.cancelled),
+      )!;
+      const event = facility.bookings.find((b) => b.kind === 'event' && !b.cancelled)!;
+
+      const forbiddenRes = await send('POST', '/facilities/blocks', coach.token, {
+        facilityId: facility.facility.id,
+        startsAt: event.startsAt,
+        endsAt: event.endsAt,
+        reason: 'Test',
+      });
+      expect(forbiddenRes.status).toBe(403);
+
+      const created = await send<FacilityOccupancy>('POST', '/facilities/blocks', admin.token, {
+        facilityId: facility.facility.id,
+        startsAt: event.startsAt,
+        endsAt: event.endsAt,
+        reason: 'Wasserschaden',
+        cancelEvents: true,
+      });
+      expect(created.status).toBe(201);
+      const f = created.body.facilities.find((x) => x.facility.id === facility.facility.id)!;
+      expect(f.bookings.find((b) => b.id === event.id)?.cancelled).toBe(true);
+      const block = f.bookings.find((b) => b.kind === 'block' && b.title === 'Wasserschaden')!;
+
+      const removed = await send('DELETE', `/facilities/blocks/${block.id}`, admin.token);
+      expect(removed.status).toBe(204);
     });
   });
 });

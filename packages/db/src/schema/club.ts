@@ -6,6 +6,7 @@ import {
   integer,
   pgTable,
   text,
+  timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
 import {
@@ -89,4 +90,23 @@ export const facilities = pgTable(
     sortOrder: integer().notNull().default(0),
   },
   (t) => [index().on(t.clubId)],
+);
+
+/** Sperrung eines Platzes (Platzpflege, Wetter, Veranstaltung) – gilt für den Zeitraum, nicht für einen Termin. */
+export const facilityBlocks = pgTable(
+  'facility_blocks',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    facilityId: uuid()
+      .notNull()
+      .references(() => facilities.id, { onDelete: 'cascade' }),
+    startsAt: timestamp({ withTimezone: true }).notNull(),
+    endsAt: timestamp({ withTimezone: true }).notNull(),
+    reason: text().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.startsAt), index().on(t.facilityId)],
 );

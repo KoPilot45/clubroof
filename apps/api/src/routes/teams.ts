@@ -93,6 +93,7 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
           description: z.string().trim().max(1000).nullish(),
           opponentName: z.string().trim().max(80).nullish(),
           isHome: z.boolean().nullish(),
+          allowConflict: z.boolean().optional(),
         }),
       },
     },
