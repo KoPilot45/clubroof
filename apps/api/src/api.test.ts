@@ -3,7 +3,16 @@
  * Die Uhr ist fest eingestellt, damit Fristen reproduzierbar geprüft werden können.
  * Werden übersprungen, wenn `DATABASE_URL` nicht gesetzt ist.
  */
-import type { EventDetail, EventSummary, HomeResponse, LoginResponse } from '@clubroof/core';
+import type {
+  Absence,
+  EventDetail,
+  EventSummary,
+  HomeResponse,
+  LoginResponse,
+  NewsItem,
+  PollDetail,
+  PollSummary,
+} from '@clubroof/core';
 import { createDb } from '@clubroof/db';
 import { runMigrations } from '@clubroof/db/migrate';
 import { seed } from '@clubroof/db/seed';
@@ -49,6 +58,21 @@ describe.skipIf(!url)('API', () => {
     });
     expect(res.statusCode, `${path}: ${res.body}`).toBe(200);
     return res.json();
+  }
+
+  async function send<T>(
+    method: 'POST' | 'PUT' | 'DELETE',
+    path: string,
+    token: string,
+    payload?: unknown,
+  ): Promise<{ status: number; body: T }> {
+    const res = await app.inject({
+      method,
+      url: path,
+      headers: { authorization: `Bearer ${token}` },
+      ...(payload !== undefined ? { payload: payload as object } : {}),
+    });
+    return { status: res.statusCode, body: res.body ? (res.json() as T) : (undefined as T) };
   }
 
   describe('Anmeldung', () => {
@@ -271,6 +295,152 @@ describe.skipIf(!url)('API', () => {
       expect(
         asCoach.participants.some((p) => p.role === 'guest_player' && p.guestFromTeam === 'C1'),
       ).toBe(true);
+    });
+  });
+  describe('Module und Kacheln', () => {
+    it('liefert aktivierte Module je Mannschaft und Verein', async () => {
+      const { me } = await login('trainer');
+      const b1 = me.teams.find((t) => t.badge === 'B1')!;
+      expect(b1.modules).toEqual(
+        expect.arrayContaining(['events', 'statistics', 'team_cash', 'polls']),
+      );
+      expect(me.clubModules).toContain('polls');
+      expect(me.clubModules).not.toContain('forum');
+    });
+  });
+
+  describe('Abwesenheiten', () => {
+    it('sagt Termine im Zeitraum automatisch ab und nimmt das beim Löschen zurück', async () => {
+      const { token, me } = await login('spieler');
+      const events = await get<EventSummary[]>('/events', token);
+      const match = events.find((e) => e.team?.badge === 'B1' && e.type === 'match')!;
+      expect(match.myResponses[0]!.status).toBe('yes');
+      const day = match.startsAt.slice(0, 10);
+
+      const created = await send<Absence>('POST', '/absences', token, {
+        personId: me.person.id,
+        kind: 'vacation',
+        startsOn: day,
+        endsOn: day,
+        note: 'Familienfeier',
+      });
+      expect(created.status).toBe(201);
+      expect(created.body.affectedEvents).toBeGreaterThanOrEqual(1);
+
+      const during = await get<EventDetail>(`/events/${match.id}`, token);
+      expect(during.myResponses[0]).toMatchObject({ status: 'no', reason: 'Abwesend: Urlaub' });
+      const list = await get<Absence[]>('/absences', token);
+      expect(list.some((a) => a.id === created.body.id)).toBe(true);
+
+      const removed = await send('DELETE', `/absences/${created.body.id}`, token);
+      expect(removed.status).toBe(204);
+      const after = await get<EventDetail>(`/events/${match.id}`, token);
+      // B-Jugend antwortet aktiv: nach dem Löschen ist die Rückmeldung wieder offen
+      expect(after.myResponses[0]).toMatchObject({ status: 'pending', reason: null });
+    });
+
+    it('Eltern tragen Abwesenheiten für ihr Kind ein, aber nicht für Fremde', async () => {
+      const parent = await login('eltern');
+      const leon = parent.me.managedPersons.find((p) => p.firstName === 'Leon')!;
+      const day = '2026-10-20';
+      const ok = await send<Absence>('POST', '/absences', parent.token, {
+        personId: leon.id,
+        kind: 'illness',
+        startsOn: day,
+        endsOn: day,
+      });
+      expect(ok.status).toBe(201);
+      expect(ok.body.personName).toBe('Leon Neumann');
+
+      const player = await login('spieler');
+      const denied = await send('POST', '/absences', parent.token, {
+        personId: player.me.person.id,
+        kind: 'illness',
+        startsOn: day,
+        endsOn: day,
+      });
+      expect(denied.status).toBe(403);
+    });
+
+    it('prüft den Zeitraum', async () => {
+      const { token, me } = await login('spieler');
+      const res = await send<{ error: string }>('POST', '/absences', token, {
+        personId: me.person.id,
+        kind: 'other',
+        startsOn: '2026-10-20',
+        endsOn: '2026-10-18',
+      });
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe('Umfragen', () => {
+    it('Ergebnisse erst nach eigener Stimme sichtbar (Regel „nach Abstimmung“)', async () => {
+      const { token } = await login('spieler');
+      const polls = await get<PollSummary[]>('/polls', token);
+      const dj = polls.find((p) => p.question.includes('DJ'))!;
+      const before = await get<PollDetail>(`/polls/${dj.id}`, token);
+      expect(before.resultsVisible).toBe(false);
+      expect(before.options.every((o) => o.votes === null)).toBe(true);
+
+      const voted = await send<PollDetail>('PUT', `/polls/${dj.id}/vote`, token, {
+        optionId: before.options[0]!.id,
+      });
+      expect(voted.status).toBe(200);
+      expect(voted.body.myOptionId).toBe(before.options[0]!.id);
+      expect(voted.body.resultsVisible).toBe(true);
+      expect(voted.body.votes).toBe(before.votes + 1);
+
+      // Stimme ändern zählt nicht doppelt
+      const changed = await send<PollDetail>('PUT', `/polls/${dj.id}/vote`, token, {
+        optionId: before.options[1]!.id,
+      });
+      expect(changed.body.votes).toBe(before.votes + 1);
+      expect(changed.body.myOptionId).toBe(before.options[1]!.id);
+    });
+
+    it('Ergebnisse bleiben bis Fristende verborgen (Regel „nach Fristende“)', async () => {
+      const { token } = await login('spieler');
+      const polls = await get<PollSummary[]>('/polls', token);
+      const jersey = polls.find((p) => p.question.includes('Trikot'))!;
+      const detail = await get<PollDetail>(`/polls/${jersey.id}`, token);
+      const voted = await send<PollDetail>('PUT', `/polls/${jersey.id}/vote`, token, {
+        optionId: detail.options[0]!.id,
+      });
+      expect(voted.body.resultsVisible).toBe(false);
+    });
+
+    it('Umfragen anderer Mannschaften sind nicht sichtbar', async () => {
+      const [foreign] = await sql`select id from polls where question like '%Mannschaftsabend%'`;
+      const player = await login('spieler');
+      const mine = await get<PollSummary[]>('/polls', player.token);
+      expect(mine.some((p) => p.id === foreign!.id)).toBe(false);
+      const res = await app.inject({
+        method: 'GET',
+        url: `/polls/${foreign!.id}`,
+        headers: { authorization: `Bearer ${player.token}` },
+      });
+      expect(res.statusCode).toBe(404);
+    });
+  });
+
+  describe('News', () => {
+    it('zählt Aufrufe einmal je Nutzer und verwaltet „Gefällt mir“', async () => {
+      const { token } = await login('eltern');
+      const home = await get<HomeResponse>('/home', token);
+      const id = home.news[0]!.id;
+      const first = await get<NewsItem>(`/news/${id}`, token);
+      const second = await get<NewsItem>(`/news/${id}`, token);
+      expect(second.viewCount).toBe(first.viewCount);
+
+      const liked = await send<NewsItem>('PUT', `/news/${id}/like`, token);
+      const again = await send<NewsItem>('PUT', `/news/${id}/like`, token);
+      expect(liked.body.likedByMe).toBe(true);
+      expect(again.body.likeCount).toBe(first.likeCount + 1);
+
+      const unliked = await send<NewsItem>('DELETE', `/news/${id}/like`, token);
+      expect(unliked.body.likedByMe).toBe(false);
+      expect(unliked.body.likeCount).toBe(first.likeCount);
     });
   });
 });

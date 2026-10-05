@@ -313,6 +313,8 @@ export async function respondToEvent(
       reason: input.status === 'yes' ? null : input.reason?.trim() || null,
       respondedAt: now,
       respondedByPersonId: actor.person.id,
+      // Eine bewusste Antwort löst die Verknüpfung zur Abwesenheit
+      absenceId: null,
     })
     .where(eq(s.eventParticipants.id, participant.id));
 

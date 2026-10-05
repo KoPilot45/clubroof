@@ -35,7 +35,7 @@ import { fetchEventRows, summarizeEvents } from './events';
 const DAY = 24 * 60 * 60 * 1000;
 
 /** Bedingung „für mich sichtbar“ für Inhalte mit Geltungsbereich (News, Umfragen). */
-function scopeVisible(actor: Actor, columns: { scopeType: PgColumn; scopeId: PgColumn }) {
+export function scopeVisible(actor: Actor, columns: { scopeType: PgColumn; scopeId: PgColumn }) {
   const conditions = [eq(columns.scopeType, 'club')];
   if (actor.orgUnitIds.length) {
     conditions.push(
@@ -99,7 +99,32 @@ export async function loadNews(
   };
   rows.sort((a, b) => weight(b) - weight(a) || b.publishedAt!.getTime() - a.publishedAt!.getTime());
 
-  return rows.slice(0, limit).map((n) => ({
+  const selected = rows.slice(0, limit);
+  const liked = await likedByUser(
+    db,
+    actor.user.id,
+    selected.map((n) => n.id),
+  );
+  return selected.map((n) => toNewsItem(n, labels, liked.has(n.id)));
+}
+
+export async function likedByUser(db: Db, userId: string, ids: string[]): Promise<Set<string>> {
+  if (ids.length === 0) return new Set();
+  const rows = await db
+    .select({ id: s.announcementLikes.announcementId })
+    .from(s.announcementLikes)
+    .where(
+      and(eq(s.announcementLikes.userId, userId), inArray(s.announcementLikes.announcementId, ids)),
+    );
+  return new Set(rows.map((r) => r.id));
+}
+
+export function toNewsItem(
+  n: typeof s.announcements.$inferSelect,
+  labels: Awaited<ReturnType<typeof scopeLabels>>,
+  likedByMe: boolean,
+): NewsItem {
+  return {
     id: n.id,
     title: n.title,
     teaser: n.teaser,
@@ -110,7 +135,8 @@ export async function loadNews(
     publishedAt: n.publishedAt!.toISOString(),
     viewCount: n.viewCount,
     likeCount: n.likeCount,
-  }));
+    likedByMe,
+  };
 }
 
 async function loadActions(db: Db, actor: Actor, now: Date): Promise<ActionItem[]> {

@@ -1,5 +1,5 @@
-import type { MeResponse, MyTeam, TeamFunction } from '@clubroof/core';
-import type { Actor } from '../actor';
+import { MODULES, type MeResponse, type MyTeam, type TeamFunction } from '@clubroof/core';
+import { moduleEnabled, type Actor } from '../actor';
 
 /** Rollen, die den Verwaltungsmodus öffnen (Trainer verwalten ihre Teams in der App selbst). */
 const ADMIN_ROLES = new Set([
@@ -31,6 +31,7 @@ export function buildMe(actor: Actor): MeResponse {
       participationMode: m.team.participationMode,
       personId: m.personId,
       functions: [m.function as TeamFunction],
+      modules: MODULES.filter((mod) => moduleEnabled(actor, mod.key, m.team)).map((mod) => mod.key),
     });
   }
 
@@ -59,5 +60,6 @@ export function buildMe(actor: Actor): MeResponse {
       scopeId: g.scopeId,
     })),
     canAdminister: actor.grants.some((g) => ADMIN_ROLES.has(g.key)),
+    clubModules: MODULES.filter((mod) => moduleEnabled(actor, mod.key)).map((mod) => mod.key),
   };
 }

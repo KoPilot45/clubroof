@@ -12,6 +12,7 @@ import { findSessionUser } from './auth/session';
 import type { Config } from './config';
 import { HttpError, unauthorized } from './errors';
 import { authRoutes } from './routes/auth';
+import { communityRoutes } from './routes/community';
 import { eventRoutes } from './routes/events';
 import { meRoutes } from './routes/me';
 import { notificationRoutes } from './routes/notifications';
@@ -80,6 +81,7 @@ export async function buildApp({ db, config, now = () => new Date(), logger = fa
   await app.register(meRoutes);
   await app.register(eventRoutes);
   await app.register(notificationRoutes);
+  await app.register(communityRoutes);
 
   return app;
 }
