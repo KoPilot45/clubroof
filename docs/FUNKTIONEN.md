@@ -35,7 +35,7 @@ Stand: 05.10.2026
 | Persönliche Kasse / Teamkasse | M 3, K 3 | ✅ | Karte führt zur Mannschaftskasse |
 | Vorstand: Verein im Überblick (Teams, Mitglieder, Freigaben, Event) | M 4 | ✅ | |
 | Umfragen mit Schnellantwort | K 3 | 🟡 | über „Offene Aktionen“ direkt zur Umfrage; Antwort auf der Startseite selbst fehlt |
-| Persönliche Statistik | K 3 | ⬜ | |
+| Persönliche Statistik | K 3 | ✅ | über „Mehr → Meine Statistik“ |
 
 ## 3. Mannschaft (Team)
 
@@ -129,9 +129,9 @@ Stand: 05.10.2026
 | --- | --- | --- | --- |
 | Mein Profil: Rollen, Teams, Kontakt | M 11 | ✅ | |
 | Meine Kinder | K 7 | ✅ | |
-| Spielerprofil: Verfügbarkeit, Saisonstatistik, Rückennummer, starker Fuß, Position | M 11 | ⬜ | Daten vorhanden |
-| Sichtbarkeit der Kontaktdaten festlegen | M 11 | ⬜ | Daten vorhanden |
-| Profil bearbeiten | M 11 | ⬜ | |
+| Spielerprofil: Verfügbarkeit, Saisonstatistik, Rückennummer, starker Fuß, Position | M 11 | 🟡 | Saisonwerte aus Trainings und Spielen; Tore/Assists folgen mit dem Spielbericht |
+| Sichtbarkeit der Kontaktdaten festlegen | M 11 | ✅ | Verein / Mannschaft und Trainer / nur Trainer |
+| Profil bearbeiten | M 11 | 🟡 | Position, Fuß, Telefon, E-Mail, Sichtbarkeit (auch für Kinder); Profilfoto folgt mit dem Datei-Upload |
 
 ## 10. Platzbelegung & Betrieb
 
@@ -184,16 +184,16 @@ Stand: 05.10.2026
 | Bereich | ✅ | 🟡 | ⬜ |
 | --- | ---: | ---: | ---: |
 | Grundstruktur & Design | 6 | 0 | 1 |
-| Home | 6 | 2 | 1 |
+| Home | 7 | 2 | 0 |
 | Mannschaft | 5 | 6 | 3 |
 | Termine & Teilnahme | 9 | 1 | 2 |
 | Gastspieler & Spielerbedarf | 1 | 0 | 4 |
 | Verein | 7 | 2 | 2 |
 | Kommunikation | 4 | 1 | 2 |
 | Benachrichtigungen | 2 | 2 | 3 |
-| Profile | 2 | 0 | 3 |
+| Profile | 3 | 2 | 0 |
 | Platzbelegung & Betrieb | 0 | 1 | 3 |
 | Verwaltung | 0 | 2 | 7 |
 | Einrichtung & Module | 0 | 1 | 4 |
 | Sicherheit, Betrieb, Integrationen | 3 | 0 | 3 |
-| **Gesamt** | **45** | **18** | **38** |
+| **Gesamt** | **47** | **20** | **34** |
