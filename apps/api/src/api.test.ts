@@ -5,6 +5,11 @@
  */
 import type {
   Absence,
+  ClubTeamGroup,
+  ContactGroup,
+  DocumentItem,
+  HelperEvent,
+  HelperShift,
   NotificationItem,
   RosterEntry,
   TeamCash,
@@ -598,6 +603,125 @@ describe.skipIf(!url)('API', () => {
         startsAt: new Date(NOW.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
       });
       expect(res.status).toBe(403);
+    });
+  });
+  describe('Vereinsleben', () => {
+    it('Helferschicht eintragen, Kapazität beachten, wieder austragen', async () => {
+      const parent = await login('eltern');
+      const events = await get<HelperEvent[]>('/helpers', parent.token);
+      const tournament = events.find((e) => e.event.title === 'Jugend-Hallenturnier')!;
+      expect(tournament.openSpots).toBeGreaterThan(0);
+      const shift = tournament.shifts.find((x) => x.filled < x.capacity)!;
+      expect(shift.helpers).toBeNull(); // Namen nur für Organisatoren
+
+      const joined = await send<HelperShift>('PUT', `/shifts/${shift.id}/signup`, parent.token);
+      expect(joined.body).toMatchObject({ mine: true, filled: shift.filled + 1 });
+      const again = await send<HelperShift>('PUT', `/shifts/${shift.id}/signup`, parent.token);
+      expect(again.body.filled).toBe(shift.filled + 1);
+
+      const left = await send<HelperShift>('DELETE', `/shifts/${shift.id}/signup`, parent.token);
+      expect(left.body).toMatchObject({ mine: false, filled: shift.filled });
+
+      const board = await login('vorstand');
+      const forBoard = await get<HelperEvent[]>('/helpers', board.token);
+      expect(forBoard[0]!.shifts[0]!.helpers).not.toBeNull();
+    });
+
+    it('volle Schichten nehmen niemanden mehr auf', async () => {
+      const [shift] = await sql`select id, capacity from helper_shifts where title = 'Bewirtung'`;
+      const people =
+        await sql`select id from persons where user_id is null limit ${shift!.capacity}`;
+      await sql`delete from helper_signups where shift_id = ${shift!.id}`;
+      for (const p of people) {
+        await sql`insert into helper_signups (shift_id, person_id) values (${shift!.id}, ${p.id})`;
+      }
+      const res = await send<{ error: string }>(
+        'PUT',
+        `/shifts/${shift!.id}/signup`,
+        (await login('spieler')).token,
+      );
+      expect(res.status).toBe(409);
+      expect(res.body.error).toBe('shift_full');
+    });
+
+    it('„Ich nehme teil“ für Vereinsveranstaltungen', async () => {
+      const { token } = await login('spieler');
+      const [event] = await sql`select id from events where title = 'Jahreshauptversammlung'`;
+      const before = await get<EventDetail>(`/events/${event!.id}`, token);
+      expect(before.attendance).toMatchObject({ attending: false });
+      expect(before.program.length).toBeGreaterThan(0);
+      const yes = await send<{ attending: boolean; count: number }>(
+        'PUT',
+        `/events/${event!.id}/attendance`,
+        token,
+      );
+      expect(yes.body).toEqual({ attending: true, count: before.attendance!.count + 1 });
+      const no = await send<{ attending: boolean; count: number }>(
+        'DELETE',
+        `/events/${event!.id}/attendance`,
+        token,
+      );
+      expect(no.body).toEqual({ attending: false, count: before.attendance!.count });
+
+      const [training] =
+        await sql`select id from events where team_id is not null and starts_at > ${NOW.toISOString()} limit 1`;
+      const wrong = await send('PUT', `/events/${training!.id}/attendance`, token);
+      expect(wrong.status).toBe(400);
+    });
+
+    it('Dokumente: nur sichtbare, mit Suche, Öffnen über signierten Link', async () => {
+      const player = await login('spieler');
+      const docs = await get<DocumentItem[]>('/documents', player.token);
+      expect(docs.some((d) => d.title === 'Trainingsplan U17 – Herbst')).toBe(true);
+      expect(docs.some((d) => d.title === 'Trainingsplan U15 – Herbst')).toBe(false);
+      const coachDocs = await get<DocumentItem[]>('/documents', (await login('trainer')).token);
+      expect(coachDocs.some((d) => d.title === 'Trainingsplan U15 – Herbst')).toBe(true);
+
+      const found = await get<DocumentItem[]>('/documents?q=satzung', player.token);
+      expect(found.map((d) => d.title)).toEqual(['Vereinssatzung']);
+      const forms = await get<DocumentItem[]>('/documents?category=forms', player.token);
+      expect(forms.every((d) => d.category === 'forms')).toBe(true);
+
+      const link = await get<{ url: string }>(`/documents/${found[0]!.id}/link`, player.token);
+      const path = new URL(link.url).pathname;
+      const file = await app.inject({ method: 'GET', url: path });
+      expect(file.statusCode).toBe(200);
+      expect(file.headers['content-type']).toBe('application/pdf');
+      expect(file.rawPayload.subarray(0, 5).toString()).toBe('%PDF-');
+
+      const tampered = await app.inject({ method: 'GET', url: path.slice(0, -2) + 'xx' });
+      expect(tampered.statusCode).toBe(404);
+    });
+
+    it('Mannschaften, Ansprechpartner und „Heute auf der Anlage“', async () => {
+      const { token } = await login('spieler');
+      const groups = await get<ClubTeamGroup[]>('/club/teams', token);
+      expect(groups.map((g) => g.orgUnit.name)).toEqual([
+        'Senioren',
+        'Alte Herren',
+        'Frauen & Mädchen',
+        'Jugend',
+      ]);
+      const b1 = groups.flatMap((g) => g.teams).find((t) => t.badge === 'B1')!;
+      expect(b1).toMatchObject({ isMine: true, players: 20 });
+      expect(b1.coaches).toContain('Max Mustermann');
+
+      const contacts = await get<ContactGroup[]>('/club/contacts', token);
+      const board = contacts.find((g) => g.title.startsWith('Vorstand'))!;
+      expect(
+        board.contacts.some(
+          (c) => c.name === 'Sandra Hoffmann' && c.functions.includes('Vorstand'),
+        ),
+      ).toBe(true);
+      const coaches = contacts.find((g) => g.title.startsWith('Trainer'))!;
+      const own = coaches.contacts.find((c) => c.name === 'Max Mustermann')!;
+      expect(own.email).not.toBeNull(); // eigener Trainer
+      const foreign = coaches.contacts.find((c) => c.functions.some((f) => f.endsWith(' 1.')))!;
+      expect(foreign.email).toBeNull(); // fremder Trainer ohne vereinsweite Freigabe
+
+      const today = await get<EventSummary[]>('/club/today', token);
+      expect(today.length).toBeGreaterThan(0);
+      expect(today.every((e) => e.location !== null)).toBe(true);
     });
   });
 });

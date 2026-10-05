@@ -17,6 +17,7 @@ import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, eq, inArray, ne, type SQL } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
+import { OPEN_EVENT_TYPES, attendanceFor, shiftsFor } from './helpers';
 
 /** Wie lange Trainer Rückmeldungen nach Terminbeginn noch korrigieren dürfen. */
 const OVERRIDE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
@@ -109,14 +110,14 @@ export async function summarizeEvents(
       now.getTime() < event.startsAt.getTime() + OVERRIDE_WINDOW_MS;
 
     const myResponses: MyResponse[] = mine
-      .filter((p) => p.eventId === event.id)
+      .filter((p) => p.eventId === event.id && p.role !== 'attendee')
       .map((p) => {
         const person = actor.managed.find((m) => m.id === p.personId)!;
         return {
           personId: p.personId,
           firstName: person.firstName,
           relation: person.relation,
-          role: p.role,
+          role: p.role as MyResponse['role'],
           status: p.status,
           reason: p.reason,
           canRespond: regularOpen || overrideOpen,
@@ -256,6 +257,12 @@ export async function getEventDetail(
     participants,
     canManage: row.team !== null && actorCan(actor, 'events.manage', row.team),
     canOverride: canOverride(actor, row),
+    program: row.event.program ?? [],
+    attendance:
+      row.team === null && (OPEN_EVENT_TYPES as readonly string[]).includes(row.event.type)
+        ? await attendanceFor(db, actor, row.event.id)
+        : null,
+    shifts: (await shiftsFor(db, actor, [row.event.id])).get(row.event.id) ?? [],
   };
 }
 

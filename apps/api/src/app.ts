@@ -12,6 +12,8 @@ import { findSessionUser } from './auth/session';
 import type { Config } from './config';
 import { HttpError, unauthorized } from './errors';
 import { authRoutes } from './routes/auth';
+import { clubRoutes, fileRoutes } from './routes/club';
+import { diskStorage, linkSigner, type FileStorage } from './storage/files';
 import { communityRoutes } from './routes/community';
 import { eventRoutes } from './routes/events';
 import { meRoutes } from './routes/me';
@@ -21,12 +23,21 @@ import { teamRoutes } from './routes/teams';
 export type AppOptions = {
   db: Db;
   config: Config;
+  storage?: FileStorage;
   now?: () => Date;
   logger?: boolean;
 };
 
-export async function buildApp({ db, config, now = () => new Date(), logger = false }: AppOptions) {
+export async function buildApp({
+  db,
+  config,
+  storage,
+  now = () => new Date(),
+  logger = false,
+}: AppOptions) {
   const app = Fastify({
+    // Signierte Download-Links sind länger als die Standardgrenze von 100 Zeichen
+    maxParamLength: 500,
     logger: logger ? { redact: ['req.headers.authorization', 'req.body.password'] } : false,
   });
   app.setValidatorCompiler(validatorCompiler);
@@ -35,6 +46,8 @@ export async function buildApp({ db, config, now = () => new Date(), logger = fa
   app.decorate('db', db);
   app.decorate('config', config);
   app.decorate('now', now);
+  app.decorate('storage', storage ?? diskStorage(config.uploadsDir));
+  app.decorate('links', linkSigner(config.fileSigningSecret));
   app.decorateRequest('sessionUser', null);
   app.decorateRequest('actor', null);
 
@@ -84,6 +97,8 @@ export async function buildApp({ db, config, now = () => new Date(), logger = fa
   await app.register(notificationRoutes);
   await app.register(communityRoutes);
   await app.register(teamRoutes);
+  await app.register(clubRoutes);
+  await app.register(fileRoutes);
 
   return app;
 }
