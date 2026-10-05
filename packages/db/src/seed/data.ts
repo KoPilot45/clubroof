@@ -335,8 +335,11 @@ export const ABSENCE_REASONS_NO = [
   'Termin',
 ];
 
+/** Gemeinsames Passwort aller Demo-Logins. Nur für Entwicklung und Vorführungen. */
+export const DEMO_PASSWORD = 'clubroof-demo';
+
 /**
- * Feste Demo-Personen mit Login. Passwörter werden mit dem Login-Modul ergänzt.
+ * Feste Demo-Personen mit Login.
  * `key` wird im Seed zur Verknüpfung verwendet.
  */
 export const PERSONAS = {

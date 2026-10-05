@@ -76,3 +76,23 @@ export const guardianships = pgTable(
   },
   (t) => [primaryKey({ columns: [t.guardianPersonId, t.childPersonId] }), index().on(t.clubId)],
 );
+
+/**
+ * Login-Sitzung. Das Token selbst wird nie gespeichert, nur sein SHA-256-Hash.
+ * Sitzungen sind serverseitig widerrufbar (Abmelden, Konto sperren).
+ */
+export const sessions = pgTable(
+  'sessions',
+  {
+    id: id(),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: text().notNull().unique(),
+    userAgent: text(),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    lastUsedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.userId)],
+);

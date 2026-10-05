@@ -8,7 +8,21 @@
  */
 import { randomUUID } from 'node:crypto';
 import { fakerDE as faker } from '@faker-js/faker';
-import { MODULES, SYSTEM_ROLES, type AttendanceStatus, type ModuleKey } from '@clubroof/core';
+import { hash } from '@node-rs/argon2';
+import {
+  MODULES,
+  SYSTEM_ROLES,
+  addDays,
+  addMinutes,
+  at,
+  nextWeekday,
+  startOfIsoWeek,
+  toIsoDate,
+  calendarDayOf,
+  todayIn,
+  type AttendanceStatus,
+  type ModuleKey,
+} from '@clubroof/core';
 import { eq, like } from 'drizzle-orm';
 import type { PgTable } from 'drizzle-orm/pg-core';
 import { createDb, type Db } from '../client';
@@ -17,6 +31,7 @@ import {
   ABSENCE_REASONS_NO,
   DEMO_CLUB,
   DEMO_EMAIL_DOMAIN,
+  DEMO_PASSWORD,
   DOCUMENTS,
   FACILITIES,
   OFFICIALS,
@@ -31,15 +46,8 @@ import {
   type TeamDef,
   type TeamKey,
 } from './data';
-import {
-  addDays,
-  addMinutes,
-  at,
-  nextWeekday,
-  startOfIsoWeek,
-  toIsoDate,
-  todayInClubTz,
-} from './time';
+
+const DEFAULT_TZ = 'Europe/Berlin';
 
 type Insert<T extends PgTable> = T['$inferInsert'];
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
@@ -91,7 +99,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
   return db.transaction(async (tx) => {
     await removeDemoData(tx);
 
-    const today = todayInClubTz(now);
+    const today = todayIn(DEFAULT_TZ, now);
     const seasonStartYear =
       today.getUTCMonth() >= 6 ? today.getUTCFullYear() : today.getUTCFullYear() - 1;
     const seasonStart = new Date(Date.UTC(seasonStartYear, 6, 1));
@@ -145,11 +153,17 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
 
     // ── Logins der Demo-Personas ──────────────────────────────────────────────────────────
     const userIds = {} as Record<PersonaKey, string>;
+    const passwordHash = await hash(DEMO_PASSWORD);
     await tx.insert(s.users).values(
       (Object.keys(PERSONAS) as PersonaKey[]).map((key) => {
         userIds[key] = randomUUID();
         const p = PERSONAS[key];
-        return { id: userIds[key], email: p.email, displayName: `${p.firstName} ${p.lastName}` };
+        return {
+          id: userIds[key],
+          email: p.email,
+          displayName: `${p.firstName} ${p.lastName}`,
+          passwordHash,
+        };
       }),
     );
 
@@ -859,7 +873,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       if (!team) continue;
       const isPast = event.startsAt < now;
       const daysAhead = (event.startsAt.getTime() - now.getTime()) / 86_400_000;
-      const eventDay = toIsoDate(todayInClubTz(event.startsAt));
+      const eventDay = toIsoDate(calendarDayOf(event.startsAt));
 
       // Spielertrainer (z. B. Alte Herren) nur einmal – als Spieler – berücksichtigen
       const seen = new Set<string>();
@@ -1185,7 +1199,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       filled: number,
     ) {
       const id = randomUUID();
-      const day = todayInClubTz(event.startsAt);
+      const day = calendarDayOf(event.startsAt);
       shiftRows.push({
         id,
         clubId,

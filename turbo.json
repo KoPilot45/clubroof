@@ -13,6 +13,10 @@
     "test": {
       "dependsOn": ["^build"],
       "env": ["DATABASE_URL"]
+    },
+    "@clubroof/api#test": {
+      "dependsOn": ["^build", "@clubroof/db#test"],
+      "env": ["DATABASE_URL"]
     }
   }
 }
