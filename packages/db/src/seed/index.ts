@@ -564,7 +564,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     await tx.insert(s.roleAssignments).values(roleAssignments);
 
     // ── Module ────────────────────────────────────────────────────────────────────────────
-    const notYetEnabled: ModuleKey[] = ['forum', 'training_planning', 'lost_and_found'];
+    const notYetEnabled: ModuleKey[] = ['forum', 'lost_and_found'];
     const moduleRows: Insert<typeof s.moduleSettings>[] = MODULES.map((m) => ({
       clubId,
       scopeType: 'club',
@@ -1663,6 +1663,102 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       createdAt: hoursAgo(hours),
       readAt: read ? hoursAgo(hours - 0.5) : null,
     });
+
+    // ── Trainingsplanung: Übungsbibliothek und Plan fürs nächste B1-Training ───────────────
+    const exerciseRows = [
+      [
+        'Rondo 5 gegen 2',
+        'warmup',
+        12,
+        '7',
+        'Hütchen, Bälle',
+        'Kreis 12 m, zwei Kontakte, nach 10 Pässen Wechsel.',
+      ],
+      [
+        'Koordinationsleiter',
+        'warmup',
+        10,
+        'alle',
+        'Koordinationsleiter',
+        'Fußarbeit, danach kurzer Antritt 5 m.',
+      ],
+      [
+        'Passdreieck mit Aufdrehen',
+        'technique',
+        15,
+        '6–9',
+        'Hütchen, Bälle',
+        'Offene Ballannahme, Aufdrehen, Pass in den Lauf.',
+      ],
+      [
+        'Pressing auf Zuruf',
+        'tactics',
+        20,
+        '12–16',
+        'Leibchen, Bälle, Minitore',
+        'Ballverlust → sofort 5 Sekunden Gegenpressing.',
+      ],
+      [
+        'Torschuss nach Doppelpass',
+        'finishing',
+        15,
+        '8–12',
+        'Bälle, Hütchen, Tor',
+        'Doppelpass an der Strafraumgrenze, Abschluss mit links und rechts.',
+      ],
+      [
+        'Spiel 7 gegen 7 auf zwei Tore',
+        'game',
+        25,
+        '14',
+        'Leibchen, Bälle, Tore',
+        'Freies Spiel, Tore nach Balleroberung zählen doppelt.',
+      ],
+      ['Intervallläufe', 'fitness', 12, 'alle', 'Hütchen', '6 × 30 Sekunden, 30 Sekunden Pause.'],
+      [
+        'Auslaufen und Dehnen',
+        'cooldown',
+        8,
+        'alle',
+        null,
+        'Lockeres Traben, anschließend Dehnen.',
+      ],
+    ];
+    const exerciseIds: string[] = [];
+    for (const [title, category, minutes, players, material, description] of exerciseRows) {
+      const [row] = await tx
+        .insert(s.exercises)
+        .values({
+          clubId,
+          title: title as string,
+          category: category as string,
+          durationMinutes: minutes as number,
+          players: players as string,
+          material: (material as string | null) ?? null,
+          description: description as string,
+          createdByPersonId: persona.coach.id,
+          createdAt: hoursAgo(24 * 40),
+        })
+        .returning({ id: s.exercises.id });
+      exerciseIds.push(row!.id);
+    }
+    if (nextB1Training) {
+      const pick = [0, 2, 3, 5, 7];
+      await tx.insert(s.trainingPlans).values({
+        eventId: nextB1Training.id,
+        clubId,
+        focus: 'Gegenpressing nach Ballverlust',
+        notes: 'Leon ist angeschlagen – nur Technikteil.',
+        items: pick.map((i) => ({
+          exerciseId: exerciseIds[i]!,
+          title: exerciseRows[i]![0] as string,
+          minutes: exerciseRows[i]![2] as number,
+          note: null,
+        })),
+        updatedByPersonId: persona.coach.id,
+        updatedAt: hoursAgo(20),
+      });
+    }
 
     // ── Mannschaftsaufgaben (B-Jugend) ──────────────────────────────────────────────────────
     await tx.insert(s.teamTasks).values([

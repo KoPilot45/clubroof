@@ -22,6 +22,8 @@ import type {
   CommentItem,
   EventPlanning,
   CalendarFeed,
+  Exercise,
+  TrainingPlan,
   MemberImportResult,
   InviteLink,
   InviteOverview,
@@ -3255,6 +3257,74 @@ describe.skipIf(!url)('API', () => {
       expect(
         (await app.inject({ method: 'GET', url: new URL(renewed.body.url!).pathname })).statusCode,
       ).toBe(404);
+    });
+  });
+
+  describe('Trainingsplanung', () => {
+    it('Übungsbibliothek, Plan fürs Trainerteam, Schwerpunkt und Material für Spieler', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const library = await get<Exercise[]>('/exercises', coach.token);
+      expect(library.length).toBeGreaterThanOrEqual(8);
+      expect((await send('GET', '/exercises', player.token)).status).toBe(403);
+      const added = await send<Exercise[]>('POST', '/exercises', coach.token, {
+        title: 'Kopfballpendel',
+        category: 'technique',
+        durationMinutes: 10,
+        material: 'Kopfballpendel, Bälle',
+      });
+      expect(added.status).toBe(201);
+      const pendel = added.body.find((e) => e.title === 'Kopfballpendel')!;
+      expect(pendel.canDelete).toBe(true);
+
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const week = (await get<TeamOverview>(`/teams/${b1.id}`, coach.token)).trainingWeek;
+      const plans = await Promise.all(
+        week.map((e) => get<TrainingPlan>(`/events/${e.id}/training-plan`, coach.token)),
+      );
+      const seeded = plans.find((p) => p.focus === 'Gegenpressing nach Ballverlust')!;
+      expect(seeded.items).toHaveLength(5);
+      expect(seeded.material).toContain('Hütchen');
+      expect(seeded.canEdit).toBe(true);
+
+      const forPlayer = await get<TrainingPlan>(
+        `/events/${seeded.eventId}/training-plan`,
+        player.token,
+      );
+      expect(forPlayer).toMatchObject({
+        focus: 'Gegenpressing nach Ballverlust',
+        items: null,
+        notes: null,
+        canEdit: false,
+      });
+      expect(
+        (await send('PUT', `/events/${seeded.eventId}/training-plan`, player.token, { items: [] }))
+          .status,
+      ).toBe(403);
+
+      const other = plans.find((p) => p.eventId !== seeded.eventId && !p.focus)!;
+      const saved = await send<TrainingPlan>(
+        'PUT',
+        `/events/${other.eventId}/training-plan`,
+        coach.token,
+        {
+          focus: 'Kopfball',
+          items: [
+            { exerciseId: pendel.id, title: pendel.title, minutes: 10 },
+            { title: 'Abschlussspiel', minutes: 30 },
+          ],
+        },
+      );
+      expect(saved.body).toMatchObject({ focus: 'Kopfball', totalMinutes: 40 });
+      expect(saved.body.material).toEqual(['Kopfballpendel', 'Bälle']);
+      expect(saved.body.previous).not.toBeNull();
+
+      const match = (await get<TeamOverview>(`/teams/${b1.id}`, coach.token)).nextEvent!;
+      if (match.type !== 'training')
+        expect((await send('GET', `/events/${match.id}/training-plan`, coach.token)).status).toBe(
+          400,
+        );
+      expect((await send('DELETE', `/exercises/${pendel.id}`, coach.token)).status).toBe(200);
     });
   });
 

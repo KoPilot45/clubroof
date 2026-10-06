@@ -110,6 +110,16 @@ export default function TeamScreen() {
               },
             ]
           : []),
+        ...(has('training_planning') && o?.permissions.manageEvents
+          ? [
+              {
+                key: 'exercises',
+                label: 'Übungen',
+                icon: 'library' as const,
+                onPress: () => router.push('/exercises'),
+              },
+            ]
+          : []),
         ...(has('team_tasks')
           ? [
               {

@@ -187,3 +187,42 @@ export const teamTasks = pgTable(
   },
   (t) => [index().on(t.teamId, t.doneAt), index().on(t.assigneePersonId)],
 );
+
+/** Übungsbibliothek des Vereins (Trainingsplanung). */
+export const exercises = pgTable(
+  'exercises',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    title: text().notNull(),
+    /** warmup | technique | tactics | fitness | finishing | game | cooldown */
+    category: text().notNull(),
+    durationMinutes: integer().notNull(),
+    players: text(),
+    material: text(),
+    description: text(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.category)],
+);
+
+/** Plan für ein Training: Schwerpunkt und Ablauf aus Übungen. */
+export const trainingPlans = pgTable('training_plans', {
+  eventId: uuid()
+    .primaryKey()
+    .references(() => events.id, { onDelete: 'cascade' }),
+  clubId: uuid()
+    .notNull()
+    .references(() => clubs.id, { onDelete: 'cascade' }),
+  focus: text(),
+  notes: text(),
+  items: jsonb()
+    .$type<{ exerciseId: string | null; title: string; minutes: number; note: string | null }[]>()
+    .notNull()
+    .default([]),
+  updatedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+  updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});

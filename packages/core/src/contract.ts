@@ -1376,3 +1376,70 @@ export type CalendarFeed = {
   /** Zuletzt von einem Kalender abgerufen */
   lastAccessAt: string | null;
 };
+
+// ── Trainingsplanung ─────────────────────────────────────────────────────
+
+export const EXERCISE_CATEGORIES = [
+  'warmup',
+  'technique',
+  'tactics',
+  'fitness',
+  'finishing',
+  'game',
+  'cooldown',
+] as const;
+export type ExerciseCategory = (typeof EXERCISE_CATEGORIES)[number];
+
+export type Exercise = {
+  id: string;
+  title: string;
+  category: ExerciseCategory;
+  durationMinutes: number;
+  players: string | null;
+  material: string | null;
+  description: string | null;
+  createdBy: string | null;
+  canDelete: boolean;
+};
+
+export type CreateExerciseInput = {
+  title: string;
+  category: ExerciseCategory;
+  durationMinutes: number;
+  players?: string | null;
+  material?: string | null;
+  description?: string | null;
+};
+
+export type TrainingPlanItem = {
+  exerciseId: string | null;
+  title: string;
+  minutes: number;
+  note: string | null;
+  /** Aus der Übung (nur für das Trainerteam) */
+  category: ExerciseCategory | null;
+  material: string | null;
+  description: string | null;
+};
+
+export type TrainingPlan = {
+  eventId: string;
+  focus: string | null;
+  /** Material aus allen Übungen – auch für Spieler („bitte mitbringen“ bleibt Sache des Trainers) */
+  material: string[];
+  /** Ablauf und Notizen nur für das Trainerteam */
+  items: TrainingPlanItem[] | null;
+  notes: string | null;
+  totalMinutes: number;
+  eventMinutes: number;
+  canEdit: boolean;
+  updatedAt: string | null;
+  /** Letzter Plan der Mannschaft als Vorlage (nur für das Trainerteam) */
+  previous: { eventId: string; startsAt: string; focus: string | null } | null;
+};
+
+export type SaveTrainingPlanInput = {
+  focus?: string | null;
+  notes?: string | null;
+  items: { exerciseId?: string | null; title: string; minutes: number; note?: string | null }[];
+};

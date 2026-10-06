@@ -24,6 +24,7 @@ import {
 import { formatLongDate, formatRemaining, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { MatchSection } from '@/components/match';
+import { TrainingPlanSection } from '@/components/training-plan';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -376,6 +377,7 @@ export default function EventScreen() {
           ) : null}
 
           {e.type === 'match' && e.team ? <MatchSection event={e} /> : null}
+          <TrainingPlanSection event={e} />
 
           {e.team ? (
             <Section title={`Teilnehmer (${e.counts.yes} zugesagt)`}>
