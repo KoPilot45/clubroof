@@ -21,7 +21,7 @@ Stand: 05.10.2026
 | Farben mit Bedeutung (dringend, Aktion, Info, erledigt, archiviert) | K 2 | ✅ | |
 | Mannschafts-Badges (B1, 1., AH) und Tags für Quelle/Typ | K 2 | ✅ | |
 | Gekachelte Untermenüs in Team, Verein und Mehr – Kacheln entstehen aus den aktivierten Modulen | K 4 | ✅ | spätere Funktionen als „Bald verfügbar“ |
-| Verwaltungsmodus als „App in der App“ mit eigener Navigation | M 8, K 6 | ⬜ | |
+| Verwaltungsmodus als „App in der App“ mit eigener Navigation | M 8, K 6 | ✅ | Abgesetzte Kopfzeile mit „Beenden“, eigene untere Navigation (Übersicht, Mitglieder, Teams, Feste, News – je nach Rechten) |
 
 ## 2. Home – persönliches Dashboard
 
@@ -34,14 +34,14 @@ Stand: 05.10.2026
 | Offene Aktionen (Zusagen, Umfragen, Freigaben, Aufgaben) | M 3–4, K 3 | ✅ | Zusagen, Umfragen und News-Freigaben führen direkt zum Inhalt |
 | Persönliche Kasse / Teamkasse | M 3, K 3 | ✅ | Karte führt zur Mannschaftskasse |
 | Vorstand: Verein im Überblick (Teams, Mitglieder, Freigaben, Event) | M 4 | ✅ | |
-| Umfragen mit Schnellantwort | K 3 | 🟡 | über „Offene Aktionen“ direkt zur Umfrage; Antwort auf der Startseite selbst fehlt |
+| Umfragen mit Schnellantwort | K 3 | ✅ | Antwortmöglichkeiten direkt unter „Offene Aktionen“ auf der Startseite |
 | Persönliche Statistik | K 3 | ✅ | über „Mehr → Meine Statistik“ |
 
 ## 3. Mannschaft (Team)
 
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
-| „Meine Teams“ für Trainer mehrerer Mannschaften | M 6 | 🟡 | Umschalten zwischen Teams fertig; Kacheln mit Zusagequote und offenen Aufgaben fehlen |
+| „Meine Teams“ für Trainer mehrerer Mannschaften | M 6 | ✅ | Kacheln je betreuter Mannschaft: nächster Termin mit Zusagequote, ohne Rückmeldung, Abwesende, offene Aufgaben |
 | Team-Cockpit mit Übersicht / Termine / Kader / Statistik | M 7, K 4 | ✅ | als Übersicht mit Kacheln |
 | Kaderstatus (Spieler, verfügbar, abgesagt, Urlaub) | M 7 | ✅ | für den nächsten Termin |
 | Letzte Ergebnisse | M 7 | ✅ | |
@@ -52,8 +52,8 @@ Stand: 05.10.2026
 | Spielbericht: Ergebnis, Tore, Assists, Karten | K 4 | ✅ | Tore (auch Elfmeter, Eigentor des Gegners) mit Vorlage und Minute, Gelb/Gelb-Rot/Rot; Tore müssen zum Ergebnis passen |
 | Statistik (Aus / Basis / Erweitert / Individuell) | K 4 | 🟡 | Bilanz, Trainingsbeteiligung und sortierbare Kader-Statistik (Einsätze, Startelf, Tore, Vorlagen, Karten; Trainingsquoten nur fürs Trainerteam). Stufen „Erweitert/Individuell“ noch ohne eigene Inhalte |
 | Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | ✅ | Trainerteam wählt den Modus und vergibt Nummern (keine Doppelten); je Spiel in der Aufstellung änderbar |
-| Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | 🟡 | alles außer Bericht-Export; Buchen nur für Kassenverantwortliche |
-| Teambezogene Dokumente und Aufgaben | K 4 | 🟡 | Dokumente der Mannschaft, Trainer laden selbst hoch; Aufgaben folgen |
+| Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | ✅ | Buchen nur für Kassenverantwortliche; Kassenbericht als CSV für Excel (Anfangsbestand, Buchungen, laufender Stand, offene persönliche Konten) |
+| Teambezogene Dokumente und Aufgaben | K 4 | ✅ | Dokumente der Mannschaft; Mannschaftsaufgaben (Fahrdienst, Trikotwäsche …) mit Zuteilung, „Ich übernehme“ und Abhaken |
 | Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ⬜ | optionales Modul |
 
 ## 4. Termine & Teilnahme
@@ -88,7 +88,7 @@ Stand: 05.10.2026
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | Vereinsnews | M 5, 13, K 5 | ✅ | |
-| Vereinstermine (Sitzungen, Veranstaltungen, Arbeitseinsätze) | M 5, K 5 | 🟡 | Liste für gut drei Monate; Kalenderansicht folgt |
+| Vereinstermine (Sitzungen, Veranstaltungen, Arbeitseinsätze) | M 5, K 5 | ✅ | Liste für gut drei Monate und Monatskalender, optional mit eigenen Mannschaftsterminen |
 | Nächstes Vereinsevent hervorgehoben | M 5 | ✅ | |
 | Veranstaltungsseite mit Programm, Ort, Ansprechperson, „Teilnehmen“ | M 14 | ✅ | |
 | Helfer gesucht / Helferschichten eintragen | M 5, 14, K 5 | ✅ | mit Kapazität; Namen nur für Organisatoren |
@@ -105,9 +105,9 @@ Stand: 05.10.2026
 | --- | --- | --- | --- |
 | News lesen | M 13 | ✅ | |
 | News-Detail mit Bild, Aufrufen, „Gefällt mir“ | M 13 | ✅ | Aufrufe einmal je Person |
-| Lesebestätigung (optional) | K 11 | 🟡 | Lesen wird je Person erfasst; Anzeige für Verfasser folgt |
+| Lesebestätigung (optional) | K 11 | ✅ | Verfasser und Freigebende sehen „gelesen von x von y“, bei Team-News auch, wer noch nicht gelesen hat |
 | Umfragen beantworten, Frist, Ergebnis (ggf. erst nach Fristende) | M 13, K 11 | ✅ | Stimme änderbar bis Fristende |
-| Anfragen / Freigaben mit zielgerichteten Kommentaren | K 11 | ⬜ | |
+| Anfragen / Freigaben mit zielgerichteten Kommentaren | K 11 | ✅ | Kommentare bei News in der Freigabe und beim Spielerbedarf, nur für Beteiligte, mit Benachrichtigung |
 | News und Umfragen erstellen, Freigabe-Workflow | M 8, K 6 | ✅ | News mit Bild: Schreiben je Bereich, Einreichen, Freigeben oder mit Rückmeldung zurückgeben, Korrigieren, Zurückziehen; Trainer veröffentlichen Team-News direkt. Umfragen: Erstellen je Bereich (2–10 Antworten, Frist, Sichtbarkeit), vorzeitig beenden; Beteiligte werden benachrichtigt |
 | Kein Gruppenchat (bewusst) | K 1, 11 | ✅ | Grundsatz |
 
@@ -131,7 +131,7 @@ Stand: 05.10.2026
 | Meine Kinder | K 7 | ✅ | |
 | Spielerprofil: Verfügbarkeit, Saisonstatistik, Rückennummer, starker Fuß, Position | M 11 | ✅ | Saisonwerte inkl. Einsätzen, Toren und Vorlagen |
 | Sichtbarkeit der Kontaktdaten festlegen | M 11 | ✅ | Verein / Mannschaft und Trainer / nur Trainer |
-| Profil bearbeiten | M 11 | 🟡 | Position, Fuß, Telefon, E-Mail, Sichtbarkeit (auch für Kinder); Profilfoto folgt mit dem Datei-Upload |
+| Profil bearbeiten | M 11 | ✅ | Position, Fuß, Telefon, E-Mail, Sichtbarkeit und Profilfoto (auch für Kinder) |
 
 ## 10. Platzbelegung & Betrieb
 
@@ -151,7 +151,7 @@ Stand: 05.10.2026
 | Mannschaften verwalten, Saisonplanung, Saisonwechsel | K 6–7 | ✅ | Anlegen/Bearbeiten/Löschen; nächste Saison vorbereiten (Teams, Module, Fristen, Trainerteams, Zusatzaufgaben, optional Spieler), Kader der neuen Saison planen, Saison starten (Kasse, Dokumente, künftige Termine, Spielerbedarf gehen mit) |
 | Spielerbewegungen (Zu-/Abgänge, Leihe) | M 8, K 6 | ✅ | Wechsel im Verein, befristete Leihe (Stammteam bleibt), Zugang, Abgang; Termine werden angepasst, Historie bleibt |
 | Rollen & Rechte vergeben | M 8, K 7 | ✅ | Beim Mitglied mit Geltungsbereich (z. B. Kassenwart B1); Schutz vor Rechteausweitung und Aussperren |
-| Veranstaltungen planen | M 8 | ⬜ | |
+| Veranstaltungen planen | M 8 | ✅ | Vorstand bzw. Bereichsleitung: Feste, Versammlungen, Arbeitseinsätze mit Ablaufplan, Ort und Helferschichten; Übersicht mit fehlenden Helfern |
 | Audit-Log | K 6, 16 | ✅ | „Änderungsprotokoll“ für Vorstand und Fulladmin |
 | Import / Sync-Status | K 6, 14 | 🟡 | CSV-Import der Mitglieder mit Vorschau und Dublettenprüfung; Sync-Status kommt mit FUSSBALL.DE/DFBnet |
 | Schiedsrichterverwaltung | K 7, 12 | ⬜ | optionales Modul |
@@ -162,7 +162,7 @@ Stand: 05.10.2026
 | --- | --- | --- | --- |
 | Vereins-Ersteinrichtung als Assistent (Name, Logo, Farbe, Bereiche, Admins) | M 10, K 8 | ✅ | Auf leerem Server mit Einrichtungscode (`SETUP_TOKEN`): Verein, Farbe, Bereiche, erstes Admin-Konto; Bereiche später unter Verein & Design |
 | Mannschafts-Einrichtung mit Vorlagen (leistungsorientiert, klassisch, Jugend, Freizeit) | M 10, K 8 | ✅ | Vorlage setzt die Mannschaftsmodule; danach je Modul änderbar |
-| Module je Verein / Bereich / Mannschaft mit Vererbung | K 4, 8 | 🟡 | Verein und Mannschaft in der App einstellbar; Bereichsebene nur im Backend |
+| Module je Verein / Bereich / Mannschaft mit Vererbung | K 4, 8 | ✅ | Alle drei Ebenen in der App; Bereich: an, aus oder wie Verein |
 | Update-Center: „Einrichten / Später / Nicht verwenden“ | M 17, K 13 | ✅ | „Später“ blendet 14 Tage aus; neue Module erscheinen automatisch |
 | Einladungen per Link / QR-Code mit Freigabe | M 10, K 8 | ✅ | Persönliche Einladung per E-Mail oder Mannschafts-Link/QR-Code; Selbstregistrierung (auch Eltern mit Kind) mit Freigabe durch Trainer bzw. Verwaltung |
 
@@ -185,17 +185,17 @@ Stand: 05.10.2026
 
 | Bereich | ✅ | 🟡 | ⬜ |
 | --- | ---: | ---: | ---: |
-| Grundstruktur & Design | 6 | 0 | 1 |
-| Home | 8 | 1 | 0 |
-| Mannschaft | 8 | 5 | 1 |
+| Grundstruktur & Design | 7 | 0 | 0 |
+| Home | 9 | 0 | 0 |
+| Mannschaft | 11 | 2 | 1 |
 | Termine & Teilnahme | 11 | 0 | 1 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
-| Verein | 8 | 1 | 2 |
-| Kommunikation | 5 | 1 | 1 |
+| Verein | 9 | 0 | 2 |
+| Kommunikation | 7 | 0 | 0 |
 | Benachrichtigungen | 6 | 1 | 0 |
-| Profile | 4 | 1 | 0 |
+| Profile | 5 | 0 | 0 |
 | Platzbelegung & Betrieb | 3 | 0 | 1 |
-| Verwaltung | 6 | 1 | 2 |
-| Einrichtung & Module | 4 | 1 | 0 |
+| Verwaltung | 7 | 1 | 1 |
+| Einrichtung & Module | 5 | 0 | 0 |
 | Sicherheit, Betrieb, Integrationen | 6 | 0 | 2 |
-| **Gesamt** | **80** | **12** | **11** |
+| **Gesamt** | **91** | **4** | **8** |

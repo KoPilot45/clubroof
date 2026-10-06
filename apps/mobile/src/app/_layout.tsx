@@ -41,6 +41,8 @@ function Navigator() {
             name="notifications"
             options={{ headerShown: true, title: 'Benachrichtigungen' }}
           />
+          {/* Verwaltungsmodus mit eigener Navigation (app/admin/_layout.tsx) */}
+          <Stack.Screen name="admin" />
           <Stack.Screen
             name="notification-settings"
             options={{ headerShown: true, title: 'Benachrichtigungen einstellen' }}
@@ -95,45 +97,6 @@ function Navigator() {
             name="facilities/block-new"
             options={{ headerShown: true, title: 'Sperrung anlegen' }}
           />
-          <Stack.Screen name="admin/index" options={{ headerShown: true, title: 'Verwaltung' }} />
-          <Stack.Screen name="admin/members" options={{ headerShown: true, title: 'Mitglieder' }} />
-          <Stack.Screen
-            name="admin/member/[id]"
-            options={{ headerShown: true, title: 'Mitglied' }}
-          />
-          <Stack.Screen
-            name="admin/member-new"
-            options={{ headerShown: true, title: 'Mitglied anlegen' }}
-          />
-          <Stack.Screen
-            name="admin/club-events"
-            options={{ headerShown: true, title: 'Veranstaltungen' }}
-          />
-          <Stack.Screen
-            name="admin/club-event-new"
-            options={{ headerShown: true, title: 'Veranstaltung planen' }}
-          />
-          <Stack.Screen
-            name="admin/import"
-            options={{ headerShown: true, title: 'Mitglieder importieren' }}
-          />
-          <Stack.Screen
-            name="admin/roles"
-            options={{ headerShown: true, title: 'Rollen & Aufgaben' }}
-          />
-          <Stack.Screen
-            name="admin/audit"
-            options={{ headerShown: true, title: 'Änderungsprotokoll' }}
-          />
-          <Stack.Screen
-            name="admin/news/index"
-            options={{ headerShown: true, title: 'News-Redaktion' }}
-          />
-          <Stack.Screen
-            name="admin/news/new"
-            options={{ headerShown: true, title: 'News schreiben' }}
-          />
-          <Stack.Screen name="admin/news/[id]" options={{ headerShown: true, title: 'News' }} />
           <Stack.Screen
             name="documents-upload"
             options={{ headerShown: true, title: 'Dokument hochladen' }}
@@ -141,27 +104,6 @@ function Navigator() {
           <Stack.Screen
             name="polls/new"
             options={{ headerShown: true, title: 'Umfrage erstellen' }}
-          />
-          <Stack.Screen
-            name="admin/club"
-            options={{ headerShown: true, title: 'Verein & Design' }}
-          />
-          <Stack.Screen name="admin/modules" options={{ headerShown: true, title: 'Module' }} />
-          <Stack.Screen
-            name="admin/teams"
-            options={{ headerShown: true, title: 'Mannschaften & Saison' }}
-          />
-          <Stack.Screen
-            name="admin/team-new"
-            options={{ headerShown: true, title: 'Mannschaft anlegen' }}
-          />
-          <Stack.Screen
-            name="admin/unit/[id]"
-            options={{ headerShown: true, title: 'Module im Bereich' }}
-          />
-          <Stack.Screen
-            name="admin/team/[id]"
-            options={{ headerShown: true, title: 'Mannschaft' }}
           />
           <Stack.Screen
             name="match/[id]/lineup"
@@ -178,18 +120,6 @@ function Navigator() {
           <Stack.Screen
             name="teams/[id]/jerseys"
             options={{ headerShown: true, title: 'Rückennummern' }}
-          />
-          <Stack.Screen
-            name="admin/transfers"
-            options={{ headerShown: true, title: 'Spielerbewegungen' }}
-          />
-          <Stack.Screen
-            name="admin/transfer-new"
-            options={{ headerShown: true, title: 'Bewegung erfassen' }}
-          />
-          <Stack.Screen
-            name="admin/invites"
-            options={{ headerShown: true, title: 'Einladungen' }}
           />
           <Stack.Screen
             name="account"
