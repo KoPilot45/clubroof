@@ -29,9 +29,7 @@ export default function StatsDetail() {
   const team = me.teams.find((t) => t.id === id);
   const { stats, filter } = useTeamStats(id);
   const d = stats.data;
-  const onlyMine = d
-    ? d.players.every((p) => me.managedPersons.some((m) => m.id === p.personId))
-    : false;
+  const onlyMine = d ? !d.showsTrainingRates : false;
 
   return (
     <Screen edges={[]} refreshing={stats.isRefetching} onRefresh={() => stats.refetch()}>
@@ -53,7 +51,6 @@ export default function StatsDetail() {
               <T variant="caption" style={{ marginTop: 8 }}>
                 Sp = Einsätze, S11 = Startelf. Seitlich wischen für Karten und Training, Spalte
                 antippen zum Sortieren.
-                {d.showsTrainingRates ? '' : ' Trainingsquoten anderer sieht nur das Trainerteam.'}
               </T>
             </Card>
           ) : null}
@@ -79,7 +76,7 @@ export default function StatsDetail() {
                 </View>
               ))}
               {onlyMine ? (
-                <T variant="caption">Die Werte anderer Spieler sieht nur das Trainerteam.</T>
+                <T variant="caption">Die Werte anderer Spieler sieht nur die Mannschaft.</T>
               ) : null}
             </Card>
           ) : null}

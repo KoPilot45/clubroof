@@ -2198,20 +2198,21 @@ describe.skipIf(!url)('API', () => {
   });
 
   describe('Spielbetrieb', () => {
-    it('Kader-Statistik für alle, Trainingsquoten nur fürs Trainerteam', async () => {
+    it('Kader-Statistik und Trainingsquoten für die ganze Mannschaft', async () => {
       const player = await login('spieler');
       const coach = await login('trainer');
       const b1 = player.me.teams.find((t) => t.badge === 'B1')!;
       const forPlayer = await get<TeamStats>(`/teams/${b1.id}/stats`, player.token);
-      expect(forPlayer.showsTrainingRates).toBe(false);
+      expect(forPlayer.showsTrainingRates).toBe(true);
       expect(forPlayer.squad.length).toBeGreaterThan(15);
       const goals = forPlayer.squad.reduce((a, r) => a + r.goals, 0);
       expect(goals).toBeGreaterThan(0);
       expect(goals).toBeLessThanOrEqual(forPlayer.highlights.goalsFor);
       expect(forPlayer.squad.some((r) => r.appearances > 0)).toBe(true);
-      // Fremde Trainingsquoten bleiben verborgen, die eigene ist sichtbar
+      // Trainingsbeteiligung ist innerhalb der Mannschaft für alle sichtbar
       const others = forPlayer.squad.filter((r) => r.personId !== player.me.person.id);
-      expect(others.every((r) => r.trainingRate === null)).toBe(true);
+      expect(others.filter((r) => r.trainingRate !== null).length).toBeGreaterThan(10);
+      expect(forPlayer.players.length).toBeGreaterThan(10);
       expect(
         forPlayer.squad.find((r) => r.personId === player.me.person.id)!.trainingRate,
       ).not.toBeNull();

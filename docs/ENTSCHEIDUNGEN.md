@@ -5,6 +5,7 @@ Neue Entscheidungen werden oben ergänzt.
 
 | Datum | Festlegung | Folge für die Umsetzung |
 | --- | --- | --- |
+| 07.10.2026 | **Trainingsbeteiligung ist mannschaftsöffentlich:** Alle Personen der Mannschaft (Spieler, Eltern, Trainerteam) sehen die Trainingsquoten aller Spieler. | Außenstehende sehen sie nur mit dem Recht „Anwesenheit einsehen“ (z. B. Bereichsleitung). Absagegründe bleiben weiterhin den Berechtigten vorbehalten. |
 | 07.10.2026 | **Statistik in Kacheln:** Oben bleibt die Saison-Bilanz, darunter je eine Kachel für Kader, Training, Torschützen, Scorer, Karten und Ergebnisse. Jede Auswertung hat ihren eigenen Zeitraumfilter. | Der Filter startet in jeder Kachel bei „Gesamte Saison“. |
 | 07.10.2026 | **App standardmäßig hell; Dunkelmodus persönlich** unter Mehr → Konto & Einstellungen → Darstellung (Hell, Dunkel, Wie Gerät). | Die Einstellung hängt am Benutzerkonto und gilt auf allen Geräten; die Vereinseinstellung zur Darstellung entfällt. |
 | 07.10.2026 | **Statistik ohne Stufen „Erweitert/Individuell“**, stattdessen Zeitraumfilter (gesamte Saison als Standard, letzter Monat, frei wählbar) sowie Torschützen-, Scorer- und Kartenliste. | Die Stufenwahl des Moduls bleibt technisch erhalten, zeigt aber dieselben Inhalte. |

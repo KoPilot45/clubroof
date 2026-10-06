@@ -313,8 +313,10 @@ export async function getTeamStats(
   now: Date,
   query: { period?: StatsPeriodKind; from?: string; to?: string } = {},
 ): Promise<TeamStats> {
-  const { team, permissions } = await loadTeamForActor(db, actor, teamId);
+  const { team, permissions, isMember } = await loadTeamForActor(db, actor, teamId);
   requireModule(actor, 'statistics', team);
+  // Trainingsbeteiligung ist mannschaftsöffentlich: alle der Mannschaft und das Trainerteam
+  const showRates = isMember || permissions.readAttendance;
   const { range, period } = await statsRange(db, actor, team, query, now);
   const level = resolveModule(actor.modules, 'statistics', {
     teamId: team.id,
@@ -382,20 +384,19 @@ export async function getTeamStats(
       ...p,
       trainingRate: p.trainings ? Math.round((p.trainingsAttended / p.trainings) * 100) : null,
     }))
-    // Datensparsamkeit: Quoten anderer nur für Verantwortliche
-    .filter((p) => permissions.readAttendance || actor.managedIds.includes(p.personId))
+    .filter((p) => showRates || actor.managedIds.includes(p.personId))
     .sort(
       (a, b) => (b.trainingRate ?? -1) - (a.trainingRate ?? -1) || a.name.localeCompare(b.name),
     );
 
-  const squad = await squadTable(db, actor, team, now, byPerson, permissions.readAttendance, range);
+  const squad = await squadTable(db, actor, team, now, byPerson, showRates, range);
 
   return {
     highlights: summarizeResults(results, rate),
     results,
     players,
     squad,
-    showsTrainingRates: permissions.readAttendance,
+    showsTrainingRates: showRates,
     level: level === 'off' ? 'basic' : level,
     period,
   };
@@ -404,7 +405,8 @@ export async function getTeamStats(
 /**
  * Kader-Statistik: alle Spieler der Mannschaft mit Einsätzen (veröffentlichte Aufstellungen
  * vergangener Spiele) sowie Toren, Vorlagen und Karten aus abgeschlossenen Spielberichten.
- * Sportliche Werte sieht die ganze Mannschaft; Trainingsquoten nur das Trainerteam (bzw. die eigene).
+ * Sportliche Werte und Trainingsquoten sieht die ganze Mannschaft; Außenstehende mit Leserecht
+ * (z. B. Bereichsleitung) nur mit `attendance.read`, sonst nur die eigenen.
  */
 async function squadTable(
   db: Db,
