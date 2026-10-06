@@ -1,4 +1,9 @@
-import type { EditorialNews, EditorialOverview, SaveNewsInput } from '@clubroof/core';
+import type {
+  EditorialNews,
+  EditorialOverview,
+  NewsReadReceipt,
+  SaveNewsInput,
+} from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -137,6 +142,8 @@ export default function EditNewsScreen() {
         </T>
       </Card>
 
+      {n.status === 'published' && (n.mine || n.can.publish) ? <ReadReceipt id={n.id} /> : null}
+
       {n.reviewNote && n.status === 'draft' ? (
         <Card style={{ gap: 4 }}>
           <Chip tone="urgent" icon="chatbox-ellipses" label="Rückmeldung der Freigabe" />
@@ -214,5 +221,42 @@ export default function EditNewsScreen() {
         />
       ) : null}
     </Screen>
+  );
+}
+
+/** Lesebestätigung: wie viele haben die News geöffnet – bei Team-News auch, wer noch nicht. */
+function ReadReceipt({ id }: { id: string }) {
+  const { api } = useSignedIn();
+  const [open, setOpen] = useState(false);
+  const reads = useQuery({
+    queryKey: ['editorial', id, 'reads'],
+    queryFn: () => api<NewsReadReceipt>(`/editorial/news/${id}/reads`),
+  });
+  if (!reads.data) return null;
+  const r = reads.data;
+  const percent = r.audience ? Math.round((r.read / r.audience) * 100) : 0;
+  return (
+    <Card style={{ gap: 8 }}>
+      <T variant="label" style={{ fontWeight: '700' }}>
+        Gelesen
+      </T>
+      <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Chip
+          tone={percent >= 75 ? 'success' : 'info'}
+          icon="eye-outline"
+          label={`${r.read} von ${r.audience} (${percent} %)`}
+        />
+      </View>
+      {r.unread && r.unread.length ? (
+        <>
+          <Button
+            label={open ? 'Ausblenden' : `Noch nicht gelesen (${r.unread.length})`}
+            variant="outline"
+            onPress={() => setOpen(!open)}
+          />
+          {open ? <T variant="caption">{r.unread.join(', ')}</T> : null}
+        </>
+      ) : null}
+    </Card>
   );
 }

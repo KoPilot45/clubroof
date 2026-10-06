@@ -15,6 +15,7 @@ import {
   type EditorialNews,
   type EditorialOverview,
   type EditorialScope,
+  type NewsReadReceipt,
   type Permission,
   type SaveNewsInput,
   type ScopeType,
@@ -177,6 +178,49 @@ async function loadForEditor(db: Db, actor: Actor, ctx: Context, id: string) {
 export async function getEditorialNews(db: Db, actor: Actor, id: string): Promise<EditorialNews> {
   const ctx = await loadContext(db, actor);
   return (await loadForEditor(db, actor, ctx, id)).item;
+}
+
+/** Wie viele aus dem Geltungsbereich die News gelesen haben (Konzept §11, optional). */
+export async function getReadReceipt(
+  db: Db,
+  actor: Actor,
+  id: string,
+  now: Date,
+): Promise<NewsReadReceipt> {
+  const ctx = await loadContext(db, actor);
+  const { row, item } = await loadForEditor(db, actor, ctx, id);
+  if (!item.mine && !item.can.publish)
+    throw forbidden('Die Lesebestätigung sehen Verfasser und Freigebende.');
+  if (row.status !== 'published')
+    throw new HttpError(409, 'not_published', 'Die News ist noch nicht veröffentlicht.');
+  const audience = await usersInScope(db, actor, ctx, row.scopeType, row.scopeId, now);
+  const reads = audience.length
+    ? await db
+        .select({ userId: s.announcementReads.userId })
+        .from(s.announcementReads)
+        .where(
+          and(
+            eq(s.announcementReads.announcementId, id),
+            inArray(s.announcementReads.userId, audience),
+          ),
+        )
+    : [];
+  const readers = new Set(reads.map((r) => r.userId));
+  let unread: string[] | null = null;
+  if (row.scopeType === 'team') {
+    const missing = audience.filter((u) => !readers.has(u));
+    unread = missing.length
+      ? (
+          await db
+            .select({ name: s.users.displayName })
+            .from(s.users)
+            .where(inArray(s.users.id, missing))
+        )
+          .map((u) => u.name)
+          .sort((a, b) => a.localeCompare(b, 'de'))
+      : [];
+  }
+  return { read: readers.size, audience: audience.length, unread };
 }
 
 /** Nutzerkonten im Geltungsbereich (Mitglieder und deren Eltern). */

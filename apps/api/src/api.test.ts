@@ -16,6 +16,7 @@ import type {
   TwoFactorStatus,
   ClubSettings,
   NotificationSettings,
+  NewsReadReceipt,
   MemberImportResult,
   InviteLink,
   InviteOverview,
@@ -1537,6 +1538,21 @@ describe.skipIf(!url)('API', () => {
       );
       expect(direct.status).toBe(201);
       expect(direct.body.status).toBe('published');
+      // Lesebestätigung: zunächst niemand, nach dem Öffnen der Spieler
+      const before = await get<NewsReadReceipt>(
+        `/editorial/news/${direct.body.id}/reads`,
+        coach.token,
+      );
+      expect(before.read).toBe(0);
+      expect(before.unread).toContain('Max Becker');
+      await get(`/news/${direct.body.id}`, spieler.token);
+      const after = await get<NewsReadReceipt>(
+        `/editorial/news/${direct.body.id}/reads`,
+        coach.token,
+      );
+      expect(after.read).toBe(1);
+      expect(after.unread).not.toContain('Max Becker');
+      expect(after.audience).toBe(before.audience);
       // Sichtbar für die B-Jugend, nicht für andere Mannschaften
       expect(
         (await get<NewsItem[]>('/news', spieler.token)).some((n) => n.id === direct.body.id),

@@ -3,6 +3,7 @@ import {
   SCOPE_TYPES,
   type EditorialNews,
   type EditorialOverview,
+  type NewsReadReceipt,
 } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
@@ -11,6 +12,7 @@ import {
   createNews,
   getEditorialNews,
   getEditorialOverview,
+  getReadReceipt,
   rejectNews,
   removeNews,
   updateNews,
@@ -38,6 +40,13 @@ export const editorialRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.get('/editorial/news/:id', { schema: { params } }, async (request): Promise<EditorialNews> =>
     getEditorialNews(app.db, request.actor!, request.params.id),
+  );
+
+  app.get(
+    '/editorial/news/:id/reads',
+    { schema: { params } },
+    async (request): Promise<NewsReadReceipt> =>
+      getReadReceipt(app.db, request.actor!, request.params.id, app.now()),
   );
 
   app.post(

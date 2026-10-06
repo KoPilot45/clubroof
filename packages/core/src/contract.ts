@@ -863,6 +863,14 @@ export type EditorialNews = {
   can: { edit: boolean; publish: boolean; remove: boolean };
 };
 
+/** Lesebestätigung für Verfasser und Freigebende */
+export type NewsReadReceipt = {
+  read: number;
+  audience: number;
+  /** Nur bei Mannschafts-News: wer noch nicht gelesen hat (Konto-Namen) */
+  unread: string[] | null;
+};
+
 export type EditorialOverview = {
   scopes: EditorialScope[];
   mine: EditorialNews[];
