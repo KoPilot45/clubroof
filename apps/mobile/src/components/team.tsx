@@ -67,7 +67,7 @@ export function ResultRow({
           {formatDay(result.startsAt)} · {result.isHome ? 'Heimspiel' : 'Auswärtsspiel'}
         </T>
       </View>
-      <T variant="heading" color={colors.primaryText}>
+      <T variant="figure" color={colors.primaryText} style={{ fontSize: 22 }}>
         {gh}:{ga}
       </T>
     </Pressable>

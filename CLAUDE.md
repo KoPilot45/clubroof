@@ -38,6 +38,8 @@ pnpm browser-check --reset     # vorher Demodaten neu laden
 
 - `pnpm check` startet PostgreSQL selbst und setzt `DATABASE_URL`. **Übersprungene Tests sind ein Fehler**
   (ohne Datenbank laufen die API-Tests nicht). Vollständige Logs liegen in `.check/`.
+- Die Tests laden Demodaten mit festem Datum in die Entwicklungsdatenbank; `pnpm check` setzt sie danach
+  automatisch mit `db:reset` zurück (sonst wirken Kader und Termine in der App leer oder verschoben).
 - Beim Entwickeln nur den betroffenen Test (`--grep`); die komplette Prüfung **einmal vor dem Commit**.
 - `scripts/lib/e2e.mjs` bietet `launch()`, `session('trainer')` (angemeldet), `loginAs`, `api`, `text`, `button`
   und `shot()`. Nach Änderungen an der Oberfläche eine Browserprüfung als Skript schreiben statt von Hand klicken.
@@ -64,6 +66,7 @@ pnpm browser-check --reset     # vorher Demodaten neu laden
 - Jede Tabelle mit fachlichen Daten trägt `club_id`. Zeiten in UTC speichern, Fristen in Vereinszeitzone.
 - Neue Funktion = Backend-Service + Route + Test in `api.test.ts` + App-Bildschirm + Eintrag in `docs/FUNKTIONEN.md`.
 - Zwischenüberschriften: `<Section title=…>` bzw. `<T variant="section">` (Oswald, Großbuchstaben, Akzentlinie in Vereinsfarbe) – keine eigenen Überschriftenstile.
+- Große Zahlen: `<T variant="figure">`; Titel in Kopfzeilen: `variant="headline"` (Oswald). Fließtext, Listen und Chips bleiben in der Systemschrift.
 - Farben nur aus dem Theme (`useTheme`): `primary` als Fläche, `primaryText` für Text/Icons, Statusfarben mit Beschriftung.
 - Schemaänderung → Migration erzeugen **und** Seed anpassen; `pnpm db:reset` muss laufen.
 - Kleine, thematisch getrennte Commits; Push auf den Entwicklungsbranch.

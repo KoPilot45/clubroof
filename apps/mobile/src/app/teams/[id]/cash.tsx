@@ -103,7 +103,7 @@ export default function CashScreen() {
               <T variant="overline" color={colors.onPrimary}>
                 Aktueller Kassenstand
               </T>
-              <T variant="display" color={colors.onPrimary} style={{ fontSize: 34 }}>
+              <T variant="figure" color={colors.onPrimary} style={{ fontSize: 44 }}>
                 {formatEuro(c.balanceCents)}
               </T>
               <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap' }}>

@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { RequestError } from '@/lib/api';
 import {
   clubInitials,
@@ -299,16 +299,9 @@ function CountdownBox({ value, unit }: { value: number; unit: string }) {
         backgroundColor: colors.surfaceVariant,
       }}
     >
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: '800',
-          color: colors.primaryText,
-          fontVariant: ['tabular-nums'],
-        }}
-      >
+      <T variant="figure" color={colors.primaryText} style={{ fontSize: 24 }}>
         {String(value).padStart(2, '0')}
-      </Text>
+      </T>
       <T variant="caption">{unit}</T>
     </View>
   );
@@ -345,7 +338,7 @@ export function NextMatchCard({
           >
             <View style={{ alignItems: 'center', gap: 6, flex: 1 }}>
               <Crest initials={clubInitials(clubShortName)} size={42} />
-              <T variant="label" style={{ textAlign: 'center', fontWeight: '700' }}>
+              <T variant="section" style={{ textAlign: 'center', fontSize: 16 }}>
                 {ourName}
               </T>
             </View>
@@ -367,13 +360,13 @@ export function NextMatchCard({
               >
                 <Ionicons name="shield-outline" size={20} color={colors.onSurfaceMuted} />
               </View>
-              <T variant="label" style={{ textAlign: 'center', fontWeight: '700' }}>
+              <T variant="section" style={{ textAlign: 'center', fontSize: 16 }}>
                 {opponent}
               </T>
             </View>
           </View>
         ) : (
-          <T variant="title" style={{ textAlign: 'center' }}>
+          <T variant="section" style={{ textAlign: 'center', fontSize: 20 }}>
             {event.title}
           </T>
         )}

@@ -90,13 +90,15 @@ export default function LoginScreen() {
         <View style={{ width: '100%', maxWidth: 420, alignSelf: 'center', gap: spacing.xl }}>
           <View style={{ alignItems: 'center', gap: spacing.sm }}>
             <Crest initials="CR" size={56} />
-            <T variant="display">Clubroof</T>
+            <T variant="section" style={{ fontSize: 36, letterSpacing: 3 }}>
+              Clubroof
+            </T>
             <T variant="caption">Dein Verein unter einem Dach.</T>
           </View>
 
           {challenge ? (
             <Card style={{ gap: spacing.md, padding: spacing.lg }}>
-              <T variant="heading">Bestätigungscode</T>
+              <T variant="section">Bestätigungscode</T>
               <T variant="caption">
                 Gib den 6-stelligen Code aus deiner Authenticator-App ein – oder einen deiner
                 Wiederherstellungscodes.

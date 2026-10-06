@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, usePathname, type Href } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { IconName } from '@/components/ui';
+import { HEADING_FONT, type IconName } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -19,7 +19,12 @@ export default function AdminLayout() {
           headerShown: true,
           headerStyle: { backgroundColor: colors.primaryContainer },
           headerTintColor: colors.onPrimaryContainer,
-          headerTitleStyle: { color: colors.onPrimaryContainer, fontWeight: '700' },
+          headerTitleStyle: {
+            color: colors.onPrimaryContainer,
+            fontFamily: HEADING_FONT,
+            fontWeight: '400',
+            fontSize: 20,
+          },
           headerShadowVisible: false,
           headerBackTitle: 'Zurück',
           contentStyle: { backgroundColor: colors.background },

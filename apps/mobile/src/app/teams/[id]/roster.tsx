@@ -13,6 +13,7 @@ import {
   Screen,
   Section,
   T,
+  HEADING_FONT,
 } from '@/components/ui';
 import { formatShortDate } from '@/lib/format';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
@@ -34,7 +35,14 @@ function JerseyNumber({ value }: { value: number | null }) {
         justifyContent: 'center',
       }}
     >
-      <Text style={{ color: colors.onPrimary, fontWeight: '800', fontSize: 14 }}>
+      <Text
+        style={{
+          color: colors.onPrimary,
+          fontFamily: HEADING_FONT,
+          fontWeight: '400',
+          fontSize: 16,
+        }}
+      >
         {value ?? '–'}
       </Text>
     </View>

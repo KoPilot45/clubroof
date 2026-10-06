@@ -33,7 +33,9 @@ const sh = (cmd, cmdArgs, cwd = root, extra = {}) =>
   spawnSync(cmd, cmdArgs, { cwd, env: { ...env, ...extra }, encoding: 'utf8' });
 
 // Datenbank bereitstellen (Cloud-Container); lokal läuft sie über Docker
-if (spawnSync('pg_isready', ['-h', 'localhost'], { encoding: 'utf8' }).status === 1) {
+// pg_isready: 0 = bereit, 1 = fährt hoch/abgelehnt, 2 = keine Antwort (Dienst aus)
+const pg = spawnSync('pg_isready', ['-h', 'localhost'], { encoding: 'utf8' });
+if (!pg.error && pg.status !== 0) {
   sh('service', ['postgresql', 'start']);
   sh('sleep', ['2']);
 }

@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
-import { Loading } from '@/components/ui';
+import { HEADING_FONT, Loading } from '@/components/ui';
 import { Pressable, View } from 'react-native';
 
 function HomeBackButton() {
@@ -50,7 +50,12 @@ function Navigator() {
           headerShown: false,
           headerTintColor: colors.primaryText,
           headerStyle: { backgroundColor: colors.surface },
-          headerTitleStyle: { color: colors.onSurface, fontWeight: '700' },
+          headerTitleStyle: {
+            color: colors.onSurface,
+            fontFamily: HEADING_FONT,
+            fontWeight: '400',
+            fontSize: 20,
+          },
           contentStyle: { backgroundColor: colors.background },
           headerBackTitle: 'Zurück',
         })}

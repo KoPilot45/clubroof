@@ -40,7 +40,7 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
         <Crest initials={clubInitials(me.club.shortName)} size={38} />
       )}
       <View style={{ flex: 1 }}>
-        <T variant="title" numberOfLines={1}>
+        <T variant="headline" numberOfLines={1}>
           {title ?? `Hallo, ${me.person.firstName}`}
         </T>
         <T variant="label" color={colors.primaryText} numberOfLines={1}>

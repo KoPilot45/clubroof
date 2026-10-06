@@ -33,7 +33,16 @@ export type IconName = ComponentProps<typeof Ionicons>['name'];
 // ── Typografie ────────────────────────────────────────────────────────────────
 
 type TextVariant =
-  'display' | 'title' | 'heading' | 'section' | 'body' | 'label' | 'caption' | 'overline';
+  | 'display'
+  | 'title'
+  | 'heading'
+  | 'section'
+  | 'headline'
+  | 'figure'
+  | 'body'
+  | 'label'
+  | 'caption'
+  | 'overline';
 
 /** Schrift der Zwischenüberschriften (wird im Wurzel-Layout geladen). */
 export const HEADING_FONT = 'Oswald_600SemiBold';
@@ -71,6 +80,10 @@ export function T({
       letterSpacing: 0.6,
       textTransform: 'uppercase',
     },
+    // Kopfzeilen-Titel: Oswald in normaler Schreibweise
+    headline: { fontFamily: HEADING_FONT, fontSize: 22, fontWeight: '400', letterSpacing: 0.3 },
+    // Große Zahlen (Kassenstand, Ergebnisse, Countdown): Oswald wie eine Anzeigetafel
+    figure: { fontFamily: HEADING_FONT, fontSize: 26, fontWeight: '400', letterSpacing: 0.3 },
     overline: {
       fontSize: 11,
       fontWeight: '800',
@@ -680,8 +693,9 @@ export function TileGrid({ items }: { items: TileItem[] }) {
                 >
                   <Text
                     style={{
-                      fontSize: 12,
-                      fontWeight: '800',
+                      fontFamily: HEADING_FONT,
+                      fontSize: 14,
+                      fontWeight: '400',
                       color: colors.status.action.onContainer,
                     }}
                   >
@@ -692,7 +706,14 @@ export function TileGrid({ items }: { items: TileItem[] }) {
             </View>
             <View style={{ gap: 2 }}>
               <Text
-                style={{ fontSize: 14, fontWeight: '700', color: colors.onSurface }}
+                style={{
+                  fontFamily: HEADING_FONT,
+                  fontSize: 17,
+                  fontWeight: '400',
+                  letterSpacing: 0.3,
+                  lineHeight: 21,
+                  color: colors.onSurface,
+                }}
                 numberOfLines={2}
               >
                 {item.label}
@@ -1018,16 +1039,9 @@ export function Stat({
   const { colors } = useTheme();
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      <Text
-        style={{
-          fontSize: 22,
-          fontWeight: '800',
-          color: color ?? colors.primaryText,
-          fontVariant: ['tabular-nums'],
-        }}
-      >
+      <T variant="figure" color={color ?? colors.primaryText}>
         {value}
-      </Text>
+      </T>
       <T variant="caption" style={{ textAlign: 'center' }}>
         {label}
       </T>

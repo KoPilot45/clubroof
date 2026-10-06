@@ -125,6 +125,17 @@ if (only.includes('test')) {
     : await run('test', 'pnpm', ['test', '--force']); // nie aus dem Cache, Tests hängen an der Datenbank
   const s = summary(r.out);
   report(r, ` – ${s.total} Tests bestanden${s.failed ? `, ${s.failed} fehlgeschlagen` : ''}`);
+  // Die API-Tests laden die Demodaten mit festem Datum in die Entwicklungsdatenbank:
+  // danach wieder auf „heute“ zurücksetzen, sonst stimmen Kader und Termine in der App nicht
+  if (r.code === 0) {
+    const reset = await run('db-reset', 'pnpm', ['db:reset']);
+    console.log(
+      reset.code === 0
+        ? '✓ Demodaten zurückgesetzt'
+        : '✗ db:reset fehlgeschlagen (siehe .check/db-reset.log)',
+    );
+    if (reset.code !== 0) failed = true;
+  }
   // Übersprungene API-Tests sind meist ein Zeichen für eine fehlende Datenbank
   if (!grep && s.skipped > 0) {
     console.log(
