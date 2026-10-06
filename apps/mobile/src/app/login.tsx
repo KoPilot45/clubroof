@@ -8,6 +8,7 @@ import { request, RequestError } from '@/lib/api';
 import { inputFont } from '@/lib/fonts';
 import { useSession } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 const DEMO_ACCOUNTS = [
   { label: 'Admin', email: 'admin@sv-gruen-weiss.example' },
@@ -135,14 +136,14 @@ export default function LoginScreen() {
               <View style={{ gap: 6 }}>
                 <T variant="label">E-Mail-Adresse</T>
                 <TextInput
-                  accessibilityLabel="E-Mail-Adresse"
+                  accessibilityLabel={t('E-Mail-Adresse')}
                   value={email}
                   onChangeText={setEmail}
                   autoCapitalize="none"
                   autoComplete="email"
                   keyboardType="email-address"
                   textContentType="username"
-                  placeholder="name@verein.de"
+                  placeholder={t('name@verein.de')}
                   placeholderTextColor={colors.onSurfaceMuted}
                   style={input}
                 />
@@ -150,7 +151,7 @@ export default function LoginScreen() {
               <View style={{ gap: 6 }}>
                 <T variant="label">Passwort</T>
                 <TextInput
-                  accessibilityLabel="Passwort"
+                  accessibilityLabel={t('Passwort')}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry

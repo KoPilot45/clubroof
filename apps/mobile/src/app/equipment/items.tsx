@@ -18,6 +18,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 export default function EquipmentItemsScreen() {
   const { api } = useSignedIn();
@@ -157,7 +158,7 @@ function HandOver({
         label={`„${item.name}“ ausgeben an`}
         value={q}
         onChangeText={setQ}
-        placeholder="Name eingeben"
+        placeholder={t('Name eingeben')}
       />
       {(people.data ?? []).map((p, i) => (
         <ListRow

@@ -22,6 +22,7 @@ import {
   TextField,
 } from '@/components/ui';
 import { formatEuro, parseEuro } from '@/lib/format';
+import { t } from '@/lib/i18n';
 
 /** Bezahlen: Bezahlinfos der Mannschaftskasse und „Ich habe bezahlt“ melden. */
 export default function CashPayScreen() {
@@ -85,7 +86,12 @@ export default function CashPayScreen() {
             Die Kasse bestätigt den Eingang – erst dann ist dein Konto ausgeglichen.
           </T>
           <PaymentMethodChips value={method} onChange={setMethod} />
-          <TextField label="Betrag in €" value={value} onChangeText={setValue} placeholder="0,00" />
+          <TextField
+            label="Betrag in €"
+            value={value}
+            onChangeText={setValue}
+            placeholder={t('0,00')}
+          />
           <TextField
             label="Hinweis (optional)"
             value={note}

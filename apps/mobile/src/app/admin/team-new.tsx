@@ -12,6 +12,7 @@ import { Button, Card, ChoiceChips, Chip, Loading, Screen, T, TextField } from '
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { PARTICIPATION_OPTIONS } from '@/lib/team-labels';
+import { t } from '@/lib/i18n';
 
 export default function NewTeamScreen() {
   const { api } = useSignedIn();
@@ -68,21 +69,21 @@ export default function NewTeamScreen() {
           label="Name"
           value={name}
           onChangeText={setName}
-          placeholder="z. B. B-Jugend II"
+          placeholder={t('z. B. B-Jugend II')}
           maxLength={60}
         />
         <TextField
           label="Kürzel"
           value={badge}
           onChangeText={setBadge}
-          placeholder="z. B. B2"
+          placeholder={t('z. B. B2')}
           maxLength={6}
         />
         <TextField
           label="Altersklasse (optional)"
           value={ageGroup}
           onChangeText={setAgeGroup}
-          placeholder="z. B. U17"
+          placeholder={t('z. B. U17')}
           maxLength={30}
         />
         <TextField label="Liga (optional)" value={league} onChangeText={setLeague} maxLength={80} />

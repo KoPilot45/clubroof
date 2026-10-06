@@ -6,6 +6,7 @@ import { Button, Card, Empty, Screen, Section, T, TextField } from '@/components
 import { HELP_SECTIONS, type HelpAudience } from '@/lib/help-content';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 /** Hilfe & Anleitung: Fragen und Antworten, passend zur Rolle; mit Suche. */
 export default function HelpScreen() {
@@ -51,7 +52,7 @@ export default function HelpScreen() {
         label="Suchen"
         value={query}
         onChangeText={setQuery}
-        placeholder="z. B. Abwesenheit, Kasse, Push …"
+        placeholder={t('z. B. Abwesenheit, Kasse, Push …')}
       />
       {sections.length === 0 ? (
         <Card>

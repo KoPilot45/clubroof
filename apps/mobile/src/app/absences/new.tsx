@@ -8,6 +8,7 @@ import { todayIso } from '@/lib/format';
 import { ABSENCE_ICONS, ABSENCE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
+import { t } from '@/lib/i18n';
 
 export default function NewAbsenceScreen() {
   const { api, me } = useSignedIn();
@@ -134,7 +135,7 @@ export default function NewAbsenceScreen() {
           label="Notiz (optional)"
           value={note}
           onChangeText={setNote}
-          placeholder="z. B. weitere Infos für das Trainerteam"
+          placeholder={t('z. B. weitere Infos für das Trainerteam')}
           maxLength={200}
           multiline
         />

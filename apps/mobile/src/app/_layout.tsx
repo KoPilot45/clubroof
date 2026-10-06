@@ -16,6 +16,8 @@ import { SessionProvider, useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { Loading } from '@/components/ui';
 import { fontState, HEADING_FONT } from '@/lib/fonts';
+import { headerTitle } from '@/components/header-title';
+import { t, useLocale } from '@/lib/i18n';
 import { Pressable, View } from 'react-native';
 
 function HomeBackButton() {
@@ -23,7 +25,7 @@ function HomeBackButton() {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Zurück zur Startseite"
+      accessibilityLabel={t('Zurück zur Startseite')}
       onPress={() => router.replace('/')}
       hitSlop={12}
       style={{ paddingRight: 12 }}
@@ -35,6 +37,7 @@ function HomeBackButton() {
 
 function Navigator() {
   const session = useSession();
+  useLocale();
   const { colors, scheme } = useTheme();
   // Überschriftenschrift laden; bei einem Fehler bleibt die Systemschrift
   const [fontsLoaded, fontError] = useFonts({
@@ -72,7 +75,8 @@ function Navigator() {
             fontSize: 20,
           },
           contentStyle: { backgroundColor: colors.background },
-          headerBackTitle: 'Zurück',
+          headerBackTitle: t('Zurück'),
+          headerTitle: headerTitle(colors.onSurface),
         })}
       >
         <Stack.Protected guard={signedIn}>

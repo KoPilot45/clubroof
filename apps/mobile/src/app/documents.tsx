@@ -21,6 +21,7 @@ import {
 import { openDocument } from '@/lib/documents';
 import { formatBytes, formatShortDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 const CATEGORIES: { value: DocumentCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'Alle' },
@@ -81,7 +82,7 @@ export default function DocumentsScreen() {
         label="Suchen"
         value={q}
         onChangeText={setQ}
-        placeholder="z. B. Satzung, Aufnahmeantrag"
+        placeholder={t('z. B. Satzung, Aufnahmeantrag')}
       />
       <ChoiceChips options={CATEGORIES} selected={[category]} onToggle={setCategory} />
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}

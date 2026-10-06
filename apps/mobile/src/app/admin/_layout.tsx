@@ -7,6 +7,8 @@ import type { IconName } from '@/components/ui';
 import { HEADING_FONT } from '@/lib/fonts';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { headerTitle } from '@/components/header-title';
+import { t, useLocale } from '@/lib/i18n';
 
 /**
  * Verwaltungsmodus als „App in der App“ (Mappe S. 8, Konzept §6): abgesetzte Kopfzeile mit
@@ -14,6 +16,7 @@ import { useTheme } from '@/lib/theme';
  */
 export default function AdminLayout() {
   const { colors } = useTheme();
+  useLocale();
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack
@@ -28,7 +31,8 @@ export default function AdminLayout() {
             fontSize: 20,
           },
           headerShadowVisible: false,
-          headerBackTitle: 'Zurück',
+          headerBackTitle: t('Zurück'),
+          headerTitle: headerTitle(colors.onPrimaryContainer),
           contentStyle: { backgroundColor: colors.background },
           headerRight: () => <ExitButton />,
         }}
@@ -66,7 +70,7 @@ function ExitButton() {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Verwaltungsmodus beenden"
+      accessibilityLabel={t('Verwaltungsmodus beenden')}
       onPress={() => router.dismissTo('/mehr')}
       hitSlop={8}
       style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6 }}

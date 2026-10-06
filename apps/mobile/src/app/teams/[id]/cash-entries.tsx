@@ -16,6 +16,7 @@ import {
 } from '@/components/ui';
 import { cashCategory } from '@/lib/cash';
 import { formatEuro } from '@/lib/format';
+import { t } from '@/lib/i18n';
 
 type Period = 'all' | '30' | '90' | 'season';
 
@@ -65,7 +66,7 @@ export default function CashEntriesScreen() {
           label="Suchen"
           value={query}
           onChangeText={setQuery}
-          placeholder="Name, Beschreibung …"
+          placeholder={t('Name, Beschreibung …')}
         />
         <ChoiceChips
           options={[
@@ -117,7 +118,7 @@ export default function CashEntriesScreen() {
                   label="Grund für das Storno (optional)"
                   value={reason}
                   onChangeText={setReason}
-                  placeholder="z. B. doppelt erfasst"
+                  placeholder={t('z. B. doppelt erfasst')}
                   maxLength={200}
                 />
                 <View style={{ flexDirection: 'row', gap: 8 }}>

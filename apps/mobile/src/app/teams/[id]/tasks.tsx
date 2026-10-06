@@ -20,9 +20,10 @@ import {
 import { RequestError } from '@/lib/api';
 import { formatShortDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { dateFormat } from '@/lib/i18n';
 
 const eventLabel = (e: { title: string; startsAt: string }) =>
-  `${new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }).format(new Date(e.startsAt))} · ${e.title}`;
+  `${dateFormat({ weekday: 'short', day: '2-digit', month: '2-digit' }).format(new Date(e.startsAt))} · ${e.title}`;
 
 export default function TasksScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

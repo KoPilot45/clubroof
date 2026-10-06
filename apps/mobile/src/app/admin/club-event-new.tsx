@@ -19,6 +19,7 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 const TYPES: { value: ClubEventType; label: string }[] = [
   { value: 'club_event', label: 'Veranstaltung' },
@@ -100,7 +101,7 @@ export default function NewClubEventScreen() {
           value={title}
           onChangeText={setTitle}
           maxLength={100}
-          placeholder="z. B. Sommerfest"
+          placeholder={t('z. B. Sommerfest')}
         />
         <TextField
           label="Beschreibung (optional)"
@@ -149,7 +150,7 @@ export default function NewClubEventScreen() {
             value={locationText}
             onChangeText={setLocationText}
             maxLength={120}
-            placeholder="z. B. Vereinsheim"
+            placeholder={t('z. B. Vereinsheim')}
           />
         ) : null}
       </Card>
@@ -199,7 +200,7 @@ export default function NewClubEventScreen() {
                   value={x.title}
                   maxLength={60}
                   onChangeText={(t) => set({ title: t })}
-                  placeholder="z. B. Grill"
+                  placeholder={t('z. B. Grill')}
                 />
                 <View style={{ flexDirection: 'row', gap: 12 }}>
                   <View style={{ flex: 1 }}>

@@ -8,6 +8,7 @@ import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { mediaUri } from '@/lib/upload';
 import { Avatar, Crest, T } from './ui';
+import { t } from '@/lib/i18n';
 
 /** Kopfzeile aller Tabs: Wappen, Begrüßung, Glocke, Avatar (Mappe S. 3). */
 export function AppHeader({ title, subtitle }: { title?: string; subtitle?: string }) {
@@ -32,7 +33,7 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
       {me.club.logoUrl ? (
         <Image
           source={{ uri: mediaUri(me.club.logoUrl)! }}
-          accessibilityLabel="Vereinslogo"
+          accessibilityLabel={t('Vereinslogo')}
           style={{ width: 38, height: 42 }}
           resizeMode="contain"
         />
@@ -50,7 +51,7 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
       {me.canAdminister ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Verwaltung öffnen"
+          accessibilityLabel={t('Verwaltung öffnen')}
           onPress={() => router.push('/admin')}
           hitSlop={8}
           style={{ padding: 4 }}
@@ -97,7 +98,7 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
       </Pressable>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Mein Profil"
+        accessibilityLabel={t('Mein Profil')}
         onPress={() => router.push(`/profile/${me.person.id}`)}
       >
         <Avatar name={`${me.person.firstName} ${me.person.lastName}`} uri={me.person.avatarUrl} />

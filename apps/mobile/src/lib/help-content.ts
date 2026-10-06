@@ -48,6 +48,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Darstellung ändern', href: '/account' },
       },
       {
+        id: 'language',
+        question: 'Kann ich die Sprache der App ändern?',
+        answer:
+          'Ja. Unter „Mehr → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.',
+        link: { label: 'Sprache ändern', href: '/account' },
+      },
+      {
         id: 'colors',
         question: 'Was bedeuten die Farben und Abzeichen?',
         answer:

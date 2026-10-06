@@ -6,6 +6,7 @@ import { Button, Card, ChoiceChips, Chip, Loading, Screen, TextField } from '@/c
 import { RequestError } from '@/lib/api';
 import { formatDay, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 const POSITIONS = ['Torwart', 'Abwehr', 'Innenverteidigung', 'Außenbahn', 'Mittelfeld', 'Sturm'];
 
@@ -84,7 +85,7 @@ export default function NewDemandScreen() {
           label="Hinweis (optional)"
           value={note}
           onChangeText={setNote}
-          placeholder="z. B. Zwei Ausfälle durch Krankheit"
+          placeholder={t('z. B. Zwei Ausfälle durch Krankheit')}
           maxLength={300}
         />
       </Card>

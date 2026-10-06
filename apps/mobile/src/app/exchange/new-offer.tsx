@@ -6,6 +6,7 @@ import { Button, Card, ChoiceChips, Chip, Loading, Screen, TextField } from '@/c
 import { RequestError } from '@/lib/api';
 import { formatShortDate, todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 function nextDays(n: number): string[] {
   const start = new Date(`${todayIso()}T12:00:00Z`);
@@ -76,7 +77,7 @@ export default function NewOfferScreen() {
           label="Hinweis (optional)"
           value={note}
           onChangeText={setNote}
-          placeholder="z. B. Ein Stürmer hat Zeit"
+          placeholder={t('z. B. Ein Stürmer hat Zeit')}
           maxLength={300}
         />
       </Card>

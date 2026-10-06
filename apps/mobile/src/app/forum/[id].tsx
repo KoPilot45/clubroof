@@ -18,6 +18,7 @@ import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { dateFormat } from '@/lib/i18n';
 
 export default function ForumTopicScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -48,7 +49,7 @@ export default function ForumTopicScreen() {
           {t.open ? (
             <Chip
               tone="success"
-              label={`offen bis ${new Date(t.closesAt).toLocaleDateString('de-DE')}`}
+              label={`offen bis ${dateFormat({ dateStyle: 'short' }).format(new Date(t.closesAt))}`}
             />
           ) : (
             <Chip tone="archived" icon="lock-closed" label="Geschlossen" />

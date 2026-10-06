@@ -13,6 +13,7 @@ import {
 } from '@/components/cash';
 import { Button, Card, Chip, Loading, Screen, T, TextField } from '@/components/ui';
 import { formatEuro, parseEuro } from '@/lib/format';
+import { t } from '@/lib/i18n';
 
 /** Einzahlungen buchen – eine oder mehrere Personen, Betrag je Person (vorbelegt: offener Betrag). */
 export default function CashPaymentsScreen() {
@@ -68,7 +69,7 @@ export default function CashPaymentsScreen() {
                   label=""
                   value={amounts[pid] ?? ''}
                   onChangeText={(v) => setAmounts({ ...amounts, [pid]: v })}
-                  placeholder="0,00"
+                  placeholder={t('0,00')}
                 />
               </View>
             ) : openOf(pid) > 0 ? (

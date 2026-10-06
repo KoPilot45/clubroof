@@ -1,21 +1,22 @@
-/** Datums- und Zahlenformatierung auf Deutsch in der Zeitzone des Vereins. */
+import { dateFormat, getLocale, numberFormat, t } from '@/lib/i18n';
+/** Datums- und Zahlenformatierung in der Sprache der App und der Zeitzone des Vereins. */
 
 const TZ = 'Europe/Berlin';
 
-const weekdayDate = new Intl.DateTimeFormat('de-DE', {
+const weekdayDate = dateFormat({
   weekday: 'short',
   day: '2-digit',
   month: '2-digit',
   timeZone: TZ,
 });
-const time = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: TZ });
-const longDate = new Intl.DateTimeFormat('de-DE', {
+const time = dateFormat({ hour: '2-digit', minute: '2-digit', timeZone: TZ });
+const longDate = dateFormat({
   weekday: 'long',
   day: 'numeric',
   month: 'long',
   timeZone: TZ,
 });
-const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+const euro = numberFormat({ style: 'currency', currency: 'EUR' });
 
 export const formatDay = (iso: string) => weekdayDate.format(new Date(iso));
 export const formatTime = (iso: string) => time.format(new Date(iso));
@@ -29,7 +30,7 @@ export function formatAgo(iso: string, now = new Date()): string {
   const hours = Math.round(minutes / 60);
   if (hours < 24) return `vor ${hours} Std.`;
   const days = Math.round(hours / 24);
-  return days === 1 ? 'gestern' : `vor ${days} Tagen`;
+  return days === 1 ? 'gestern' : `vor ${days} Tagen`; // wird bei der Anzeige übersetzt
 }
 
 /** Restzeit bis zu einem Zeitpunkt, aufgeteilt für den Countdown */
@@ -77,7 +78,7 @@ export function todayIso(now = new Date()): string {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
-const shortDate = new Intl.DateTimeFormat('de-DE', {
+const shortDate = dateFormat({
   day: '2-digit',
   month: '2-digit',
   timeZone: 'UTC',
@@ -99,8 +100,9 @@ export function parseEuro(input: string): number | null {
 export function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} MB`;
+  const mb = (bytes / (1024 * 1024)).toFixed(1);
+  return `${getLocale() === 'de' ? mb.replace('.', ',') : mb} MB`;
 }
 
 /** „1 Spiel“ / „3 Spiele“ */
-export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+export const plural = (n: number, one: string, many: string) => `${n} ${t(n === 1 ? one : many)}`;

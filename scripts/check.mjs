@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const opt = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
-const only = (opt('only') ?? 'lint,typecheck,test').split(',');
+const only = (opt('only') ?? 'lint,typecheck,i18n,test').split(',');
 const grep = opt('grep');
 
 const DATABASE_URL =
@@ -110,6 +110,7 @@ if (args.includes('--routes')) {
 
 if (only.includes('lint')) report(await run('lint', 'pnpm', ['lint']));
 if (only.includes('typecheck')) report(await run('typecheck', 'pnpm', ['typecheck']));
+if (only.includes('i18n')) report(await run('i18n', 'node', ['scripts/i18n.mjs', 'check']));
 if (only.includes('test')) {
   ensureDatabase();
   const r = grep

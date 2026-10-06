@@ -21,6 +21,7 @@ import { RequestError } from '@/lib/api';
 import { enablePush, pushState, type PushState } from '@/lib/push';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 type Mode = NotificationSettings['topics'][number]['mode'];
 const MODES: {
@@ -170,7 +171,7 @@ export default function NotificationSettingsScreen() {
                       key={m.value}
                       accessibilityRole="radio"
                       accessibilityState={{ selected: active }}
-                      accessibilityLabel={`${topic.label}: ${m.label}`}
+                      accessibilityLabel={t(`${topic.label}: ${m.label}`)}
                       onPress={() => save.mutate({ topics: { [topic.key]: m.value } })}
                       style={{
                         width: 38,
@@ -209,7 +210,7 @@ export default function NotificationSettingsScreen() {
                 subtitle={team.muted ? 'Stumm' : 'Alle Meldungen'}
                 trailing={
                   <Switch
-                    accessibilityLabel={`${team.name} benachrichtigen`}
+                    accessibilityLabel={t(`${team.name} benachrichtigen`)}
                     value={!team.muted}
                     {...switchColors}
                     onValueChange={(on) =>
@@ -250,7 +251,7 @@ export default function NotificationSettingsScreen() {
               <T variant="caption">Meldungen kommen danach gesammelt an.</T>
             </View>
             <Switch
-              accessibilityLabel="Ruhezeit"
+              accessibilityLabel={t('Ruhezeit')}
               value={s.quietHours.enabled}
               {...switchColors}
               onValueChange={(enabled) => save.mutate({ quietHours: { ...s.quietHours, enabled } })}

@@ -25,10 +25,11 @@ import {
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { CATEGORY_LABELS } from '@/lib/training';
+import { dateFormat, t } from '@/lib/i18n';
 
 const categories = EXERCISE_CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }));
 
-const when = new Intl.DateTimeFormat('de-DE', {
+const when = dateFormat({
   weekday: 'short',
   day: '2-digit',
   month: '2-digit',
@@ -243,14 +244,14 @@ function NewExercise({
         value={players}
         onChangeText={setPlayers}
         maxLength={40}
-        placeholder="z. B. 8–12"
+        placeholder={t('z. B. 8–12')}
       />
       <TextField
         label="Material (mit Komma trennen)"
         value={material}
         onChangeText={setMaterial}
         maxLength={200}
-        placeholder="Hütchen, Bälle"
+        placeholder={t('Hütchen, Bälle')}
       />
       <TextField
         label="Ablauf"

@@ -9,8 +9,9 @@ import { Pressable, View } from 'react-native';
 import { formatEuro } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
 import { T } from './ui';
+import { dateFormat, t } from '@/lib/i18n';
 
-const MONTH = new Intl.DateTimeFormat('de-DE', { month: 'short', timeZone: 'UTC' });
+const MONTH = dateFormat({ month: 'short', timeZone: 'UTC' });
 const monthLabel = (m: string) => MONTH.format(new Date(`${m}-01T00:00:00Z`)).replace('.', '');
 
 function Legend({ items }: { items: { label: string; color: string }[] }) {
@@ -44,7 +45,7 @@ export function BalanceBars({ months }: { months: { month: string; balanceCents:
           <Pressable
             key={m.month}
             accessibilityRole="button"
-            accessibilityLabel={`${monthLabel(m.month)}: ${formatEuro(m.balanceCents)}`}
+            accessibilityLabel={t(`${monthLabel(m.month)}: ${formatEuro(m.balanceCents)}`)}
             onPress={() => setSelected(i)}
             style={{ flex: 1, height: '100%', justifyContent: 'flex-end' }}
           >
@@ -101,7 +102,9 @@ export function IncomeExpenseBars({
           <Pressable
             key={m.month}
             accessibilityRole="button"
-            accessibilityLabel={`${monthLabel(m.month)}: Einnahmen ${formatEuro(m.incomeCents)}, Ausgaben ${formatEuro(m.expenseCents)}`}
+            accessibilityLabel={t(
+              `${monthLabel(m.month)}: Einnahmen ${formatEuro(m.incomeCents)}, Ausgaben ${formatEuro(m.expenseCents)}`,
+            )}
             onPress={() => setSelected(i)}
             style={{ flex: 1, opacity: i === selected ? 1 : 0.55 }}
           >

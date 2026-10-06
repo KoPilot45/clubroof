@@ -17,6 +17,7 @@ import {
   TextField,
 } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 type Filter = 'active' | 'inactive' | 'left' | 'withoutTeam' | 'all';
 
@@ -50,7 +51,7 @@ export default function MembersScreen() {
           label="Suche"
           value={q}
           onChangeText={setQ}
-          placeholder="Name oder Mitgliedsnummer"
+          placeholder={t('Name oder Mitgliedsnummer')}
         />
         <ChoiceChips
           options={[

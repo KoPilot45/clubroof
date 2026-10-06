@@ -17,8 +17,9 @@ import {
 } from '@/components/ui';
 import { ABSENCE_ICONS, ABSENCE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
+import { dateFormat } from '@/lib/i18n';
 
-const dateFmt = new Intl.DateTimeFormat('de-DE', {
+const dateFmt = dateFormat({
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',

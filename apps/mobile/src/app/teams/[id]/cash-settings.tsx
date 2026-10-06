@@ -13,6 +13,7 @@ import {
   Toggle,
 } from '@/components/ui';
 import { parseEuro } from '@/lib/format';
+import { t } from '@/lib/i18n';
 
 /** Bezahlinfos (IBAN, PayPal), Getränkepreis, Sichtbarkeit und automatische Erinnerung. */
 export default function CashSettingsScreen() {
@@ -48,7 +49,7 @@ function Form({
             label="IBAN"
             value={iban}
             onChangeText={setIban}
-            placeholder="DE.."
+            placeholder={t('DE..')}
             maxLength={42}
           />
           <TextField label="Kontoinhaber" value={holder} onChangeText={setHolder} maxLength={80} />
@@ -56,7 +57,7 @@ function Form({
             label="PayPal-Link (optional)"
             value={paypal}
             onChangeText={setPaypal}
-            placeholder="https://paypal.me/…"
+            placeholder={t('https://paypal.me/…')}
             maxLength={200}
           />
           <T variant="caption">
@@ -71,7 +72,7 @@ function Form({
               label="Preis je Getränk in €"
               value={price}
               onChangeText={setPrice}
-              placeholder="1,50"
+              placeholder={t('1,50')}
             />
           </Card>
         </Section>

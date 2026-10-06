@@ -3,9 +3,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 import { T } from '@/components/ui';
 import { useTheme } from '@/lib/theme';
+import { dateFormat, t } from '@/lib/i18n';
 
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const monthLabel = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' });
+const monthLabel = dateFormat({ month: 'long', year: 'numeric' });
 
 /** Lokaler Kalendertag „JJJJ-MM-TT“ */
 export const dayKey = (d: Date) =>
@@ -53,7 +54,7 @@ export function MonthCalendar({
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Vorheriger Monat"
+          accessibilityLabel={t('Vorheriger Monat')}
           onPress={() => onMonth(-1)}
           hitSlop={10}
           style={{ padding: 6 }}
@@ -63,7 +64,7 @@ export function MonthCalendar({
         <T variant="heading">{monthLabel.format(month)}</T>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Nächster Monat"
+          accessibilityLabel={t('Nächster Monat')}
           onPress={() => onMonth(1)}
           hitSlop={10}
           style={{ padding: 6 }}

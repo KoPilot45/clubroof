@@ -59,6 +59,7 @@ export async function launch() {
       const ctx = await browser.newContext({
         viewport: { width, height },
         timezoneId: 'Europe/Berlin',
+        locale: 'de-DE',
       });
       await ctx.addInitScript((t) => localStorage.setItem('clubroof.session', t), login.token);
       const page = await ctx.newPage();

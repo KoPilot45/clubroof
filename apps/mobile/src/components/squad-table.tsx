@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { T } from '@/components/ui';
 import { useTheme } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 type Col = {
   key: keyof SquadStatRow | 'cards';
@@ -89,7 +90,7 @@ export function SquadTable({ rows, showRates }: { rows: SquadStatRow[]; showRate
                 <Pressable
                   key={c.key}
                   accessibilityRole="button"
-                  accessibilityLabel={`Nach ${c.a11y} sortieren`}
+                  accessibilityLabel={t(`Nach ${c.a11y} sortieren`)}
                   accessibilityState={{ selected: active }}
                   onPress={() => setSort(c.key)}
                   style={{ width: c.width, alignItems: 'center' }}

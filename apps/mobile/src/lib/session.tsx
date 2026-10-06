@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from 'react';
 import { request, RequestError } from './api';
+import { deviceLocale, setLocale } from './i18n';
 import { disablePush, enablePush, listenForPushTaps } from './push';
 import { readToken, writeToken } from './token-storage';
 
@@ -68,6 +69,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setState({ status: 'signedIn', token: result.token, me: result.me });
     return null;
   }, []);
+
+  // Sprache: gewählte Sprache des Kontos, sonst die des Geräts
+  const chosenLanguage = state.status === 'signedIn' ? state.me.user.language : null;
+  useEffect(() => {
+    setLocale(chosenLanguage ?? deviceLocale());
+  }, [chosenLanguage]);
 
   // Angemeldet: Gerät erneut für Push anmelden (nur wenn schon erlaubt) und Tipps auswerten
   useEffect(() => {

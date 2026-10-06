@@ -20,6 +20,7 @@ import { RequestError } from '@/lib/api';
 import { CATEGORY_LABELS } from '@/lib/training';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { dateFormat, t } from '@/lib/i18n';
 
 type Item = SaveTrainingPlanInput['items'][number];
 
@@ -99,11 +100,11 @@ export default function TrainingPlanEditor() {
           value={focus}
           onChangeText={setFocus}
           maxLength={120}
-          placeholder="z. B. Gegenpressing"
+          placeholder={t('z. B. Gegenpressing')}
         />
         {p.previous && items.length === 0 ? (
           <Button
-            label={`Plan vom ${new Date(p.previous.startsAt).toLocaleDateString('de-DE')} übernehmen`}
+            label={`Plan vom ${dateFormat({ dateStyle: 'short' }).format(new Date(p.previous.startsAt))} übernehmen`}
             icon="copy-outline"
             variant="outline"
             onPress={() => void copyPrevious()}

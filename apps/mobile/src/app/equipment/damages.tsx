@@ -18,6 +18,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 const STATUS: Record<DamageStatus, { label: string; tone: 'urgent' | 'action' | 'success' }> = {
   open: { label: 'Offen', tone: 'urgent' },
@@ -53,7 +54,7 @@ export default function DamagesScreen() {
           value={title}
           onChangeText={setTitle}
           maxLength={100}
-          placeholder="z. B. Tornetz gerissen"
+          placeholder={t('z. B. Tornetz gerissen')}
         />
         <ChoiceChips
           label="Wo?"

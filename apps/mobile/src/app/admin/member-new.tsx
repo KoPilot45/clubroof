@@ -6,6 +6,7 @@ import { Button, Card, Chip, Screen, T, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { parseGermanDate } from '@/lib/dates';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 export default function NewMemberScreen() {
   const { api } = useSignedIn();
@@ -56,7 +57,7 @@ export default function NewMemberScreen() {
           label="Geburtsdatum (TT.MM.JJJJ)"
           value={birth}
           onChangeText={setBirth}
-          placeholder="z. B. 14.03.2011"
+          placeholder={t('z. B. 14.03.2011')}
           maxLength={10}
         />
         <TextField

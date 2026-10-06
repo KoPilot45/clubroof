@@ -6,6 +6,7 @@ import { ActionError, centsToInput, useCash, useCashAction, usePlayers } from '@
 import { Button, Card, Loading, Screen, T, TextField } from '@/components/ui';
 import { formatEuro, parseEuro } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 /** Getränke-Strichliste: je Person Striche zählen, Preis aus den Einstellungen. */
 export default function CashDrinksScreen() {
@@ -56,7 +57,7 @@ export default function CashDrinksScreen() {
           label="Preis je Getränk in €"
           value={priceText}
           onChangeText={setPrice}
-          placeholder="1,50"
+          placeholder={t('1,50')}
         />
       </Card>
       <Card>

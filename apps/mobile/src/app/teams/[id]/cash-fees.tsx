@@ -18,6 +18,7 @@ import {
 } from '@/components/ui';
 import { toGermanDate } from '@/lib/dates';
 import { formatEuro, parseEuro } from '@/lib/format';
+import { t } from '@/lib/i18n';
 
 const INTERVALS: { value: CashFee['interval']; label: string }[] = [
   { value: 'monthly', label: 'Monatlich' },
@@ -75,7 +76,7 @@ export default function CashFeesScreen() {
             label="Betrag je Spieler in €"
             value={amount}
             onChangeText={setAmount}
-            placeholder="5,00"
+            placeholder={t('5,00')}
           />
           <ChoiceChips
             label="Rhythmus"

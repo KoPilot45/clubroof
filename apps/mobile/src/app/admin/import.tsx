@@ -100,10 +100,12 @@ export default function ImportScreen() {
           Bestätigung.
         </T>
         <T variant="label">Erkannte Spalten</T>
-        <T variant="caption">
+        <T variant="caption" verbatim>
           {COLUMNS.join(' · ')}
-          {'\n'}Pflicht sind nur Vorname und Nachname. Datum als TT.MM.JJJJ, Mannschaft als Kürzel
-          (z. B. C1). Ohne Funktion wird „Spieler“ angenommen.
+        </T>
+        <T variant="caption">
+          Pflicht sind nur Vorname und Nachname. Datum als TT.MM.JJJJ, Mannschaft als Kürzel (z. B.
+          C1). Ohne Funktion wird „Spieler“ angenommen.
         </T>
         {Platform.OS === 'web' ? (
           <Button

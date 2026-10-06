@@ -13,6 +13,7 @@ import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { mediaUri, pickFile } from '@/lib/upload';
+import { t } from '@/lib/i18n';
 
 const PRIORITIES: { value: AnnouncementPriority; label: string }[] = [
   { value: 'info', label: 'Info' },
@@ -97,7 +98,7 @@ export function NewsEditor({
           label="Kurztext (optional)"
           value={teaser}
           onChangeText={setTeaser}
-          placeholder="Erscheint in der Übersicht"
+          placeholder={t('Erscheint in der Übersicht')}
           maxLength={200}
         />
         <TextField label="Text" value={body} onChangeText={setBody} maxLength={5000} multiline />
@@ -107,7 +108,7 @@ export function NewsEditor({
         {image?.url ? (
           <Image
             source={{ uri: mediaUri(image.url)! }}
-            accessibilityLabel="Vorschau des News-Bilds"
+            accessibilityLabel={t('Vorschau des News-Bilds')}
             style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: radii.md }}
           />
         ) : null}

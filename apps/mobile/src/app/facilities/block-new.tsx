@@ -16,6 +16,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 export default function NewBlockScreen() {
   const { api, me } = useSignedIn();
@@ -100,7 +101,7 @@ export default function NewBlockScreen() {
           label="Grund"
           value={reason}
           onChangeText={setReason}
-          placeholder="z. B. Platzpflege"
+          placeholder={t('z. B. Platzpflege')}
           maxLength={160}
         />
         <ChoiceChips

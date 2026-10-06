@@ -7,6 +7,7 @@ import { Button, Card, ChoiceChips, Chip, T, TextField } from '@/components/ui';
 import { request, RequestError } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import { ThemeProvider } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 const STEPS = ['Einrichtungscode', 'Verein', 'Bereiche', 'Dein Konto'] as const;
 
@@ -112,14 +113,14 @@ function Wizard({ color, setColor }: { color: ClubColorKey; setColor: (c: ClubCo
               value={name}
               onChangeText={setName}
               maxLength={100}
-              placeholder="z. B. SV Grün-Weiß 1921 e. V."
+              placeholder={t('z. B. SV Grün-Weiß 1921 e. V.')}
             />
             <TextField
               label="Kurzname"
               value={shortName}
               onChangeText={setShortName}
               maxLength={40}
-              placeholder="z. B. SV Grün-Weiß"
+              placeholder={t('z. B. SV Grün-Weiß')}
             />
             <ClubColorPicker value={color} onChange={setColor} />
             <T variant="caption">
@@ -152,7 +153,7 @@ function Wizard({ color, setColor }: { color: ClubColorKey; setColor: (c: ClubCo
                   value={custom}
                   onChangeText={setCustom}
                   maxLength={50}
-                  placeholder="z. B. Walking Football"
+                  placeholder={t('z. B. Walking Football')}
                 />
               </View>
               <Button

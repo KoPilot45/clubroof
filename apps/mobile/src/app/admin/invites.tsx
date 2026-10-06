@@ -22,6 +22,7 @@ import { toGermanDate } from '@/lib/dates';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
+import { t } from '@/lib/i18n';
 
 type Tab = 'requests' | 'links' | 'people';
 
@@ -40,7 +41,7 @@ function LinkCard({ link, title }: { link: InviteLink; title: string }) {
     <View style={{ gap: 10, alignItems: 'center' }}>
       <View
         style={{ backgroundColor: '#FFFFFF', padding: 10, borderRadius: 12 }}
-        accessibilityLabel={`QR-Code: ${title}`}
+        accessibilityLabel={t(`QR-Code: ${title}`)}
       >
         <SvgXml xml={link.qrSvg} width={200} height={200} />
       </View>

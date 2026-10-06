@@ -15,6 +15,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 type Type = 'training' | 'match' | 'team_event';
 
@@ -122,7 +123,7 @@ export default function NewEventScreen() {
             label="Gegner"
             value={opponent}
             onChangeText={setOpponent}
-            placeholder="z. B. TSV Blauen"
+            placeholder={t('z. B. TSV Blauen')}
             maxLength={80}
           />
           <ChoiceChips
@@ -141,7 +142,7 @@ export default function NewEventScreen() {
             label="Titel"
             value={title}
             onChangeText={setTitle}
-            placeholder="z. B. Mannschaftsabend"
+            placeholder={t('z. B. Mannschaftsabend')}
             maxLength={120}
           />
         </Card>
@@ -220,7 +221,7 @@ export default function NewEventScreen() {
           label="Info für die Mannschaft (optional)"
           value={description}
           onChangeText={setDescription}
-          placeholder="z. B. Bitte schwarze Stutzen mitbringen"
+          placeholder={t('z. B. Bitte schwarze Stutzen mitbringen')}
           maxLength={1000}
           multiline
         />

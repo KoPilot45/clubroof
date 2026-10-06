@@ -6,6 +6,7 @@ import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { Button, Card, ChoiceChips, Chip, Section, T, TextField } from './ui';
+import { t } from '@/lib/i18n';
 
 type Call = { path: string; method: 'PUT' | 'DELETE'; body?: unknown };
 
@@ -152,7 +153,7 @@ export function CarpoolSection({ event }: { event: EventDetail }) {
             />
             <TextField
               label="Hinweis (optional)"
-              placeholder="z. B. Abfahrt 13:15 am Vereinsheim"
+              placeholder={t('z. B. Abfahrt 13:15 am Vereinsheim')}
               value={note}
               onChangeText={setNote}
               maxLength={120}

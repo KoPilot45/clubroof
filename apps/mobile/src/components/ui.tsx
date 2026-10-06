@@ -28,6 +28,7 @@ import { useTheme } from '@/lib/theme';
 import { Text } from './app-text';
 import { RequestError } from '@/lib/api';
 import { mediaUri } from '@/lib/upload';
+import { dateFormat, t } from '@/lib/i18n';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -55,8 +56,11 @@ export function T({
   numberOfLines,
   selectable,
   accessibilityRole,
+  verbatim,
 }: {
   accessibilityRole?: 'header';
+  /** Nicht übersetzen (feste Bezeichnungen wie CSV-Spalten) */
+  verbatim?: boolean;
   variant?: TextVariant;
   color?: string;
   style?: StyleProp<TextStyle>;
@@ -97,6 +101,7 @@ export function T({
       numberOfLines={numberOfLines}
       selectable={selectable}
       accessibilityRole={accessibilityRole}
+      verbatim={verbatim}
       style={[
         variants[variant],
         { color: color ?? (muted ? colors.onSurfaceMuted : colors.onSurface) },
@@ -201,7 +206,7 @@ export function Section({
         {action && onAction ? (
           <Pressable onPress={onAction} hitSlop={8} accessibilityRole="link">
             <T variant="label" color={colors.primaryText}>
-              {action} ›
+              {`${t(action)} ›`}
             </T>
           </Pressable>
         ) : null}
@@ -396,7 +401,12 @@ export function Toggle({
 export function Crest({ initials, size = 40 }: { initials: string; size?: number }) {
   const { colors } = useTheme();
   return (
-    <Svg width={size} height={size * 1.1} viewBox="0 0 40 44" accessibilityLabel="Vereinswappen">
+    <Svg
+      width={size}
+      height={size * 1.1}
+      viewBox="0 0 40 44"
+      accessibilityLabel={t('Vereinswappen')}
+    >
       <Path d="M20 1 L38 6 V20 C38 32 30 39 20 43 C10 39 2 32 2 20 V6 Z" fill={colors.primary} />
       <Path
         d="M20 5 L34.5 9 V20 C34.5 30 28 35.6 20 39 C12 35.6 5.5 30 5.5 20 V9 Z"
@@ -433,7 +443,7 @@ export function Avatar({
     return (
       <Image
         source={{ uri: mediaUri(uri)! }}
-        accessibilityLabel={`Profilfoto ${name}`}
+        accessibilityLabel={t(`Profilfoto ${name}`)}
         style={{
           width: size,
           height: size,
@@ -836,7 +846,7 @@ export function TextField({
         accessibilityLabel={label}
         value={value}
         onChangeText={onChangeText}
-        placeholder={placeholder}
+        placeholder={placeholder ? t(placeholder) : placeholder}
         placeholderTextColor={colors.onSurfaceMuted}
         maxLength={maxLength}
         multiline={multiline}
@@ -876,7 +886,7 @@ export function TextField({
   );
 }
 
-const dayLabel = new Intl.DateTimeFormat('de-DE', {
+const dayLabel = dateFormat({
   weekday: 'short',
   day: '2-digit',
   month: '2-digit',

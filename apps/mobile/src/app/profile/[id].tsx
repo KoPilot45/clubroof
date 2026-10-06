@@ -36,6 +36,7 @@ import { RateBar } from '@/components/stats';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { pickFile } from '@/lib/upload';
+import { t } from '@/lib/i18n';
 
 function EditForm({ profile, onDone }: { profile: PersonProfile; onDone: () => void }) {
   const { api } = useSignedIn();
@@ -100,14 +101,14 @@ function EditForm({ profile, onDone }: { profile: PersonProfile; onDone: () => v
           label="Telefon"
           value={phone}
           onChangeText={setPhone}
-          placeholder="z. B. 0151 1234567"
+          placeholder={t('z. B. 0151 1234567')}
           maxLength={30}
         />
         <TextField
           label="E-Mail"
           value={email}
           onChangeText={setEmail}
-          placeholder="name@beispiel.de"
+          placeholder={t('name@beispiel.de')}
           maxLength={120}
         />
         <ChoiceChips

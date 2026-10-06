@@ -17,6 +17,7 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
+import { dateFormat } from '@/lib/i18n';
 
 const STATUS = {
   requested: { label: 'Angefragt', tone: 'action' },
@@ -26,7 +27,7 @@ const STATUS = {
 
 export default function RefereesScreen() {
   const { api, me } = useSignedIn();
-  const when = new Intl.DateTimeFormat('de-DE', {
+  const when = dateFormat({
     weekday: 'short',
     day: '2-digit',
     month: '2-digit',

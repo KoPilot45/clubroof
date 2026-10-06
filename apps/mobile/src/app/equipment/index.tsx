@@ -48,7 +48,12 @@ export default function EquipmentHome() {
                 key={i.id}
                 first={n === 0}
                 title={i.name}
-                subtitle={`${i.kind === 'key' ? 'Schlüssel' : 'Material'}${i.handedOutAt ? ` · seit ${formatAgo(i.handedOutAt).replace(/^vor /, '')}` : ''}`}
+                subtitle={[
+                  i.kind === 'key' ? 'Schlüssel' : 'Material',
+                  i.handedOutAt ? `ausgegeben ${formatAgo(i.handedOutAt)}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
                 trailing={
                   i.holder && i.holder.personId !== me.person.id ? (
                     <Chip tone="neutral" label={i.holder.name} />

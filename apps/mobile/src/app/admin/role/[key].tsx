@@ -19,6 +19,7 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 const key = (sc: { type: ScopeType; id: string | null }) => `${sc.type}:${sc.id ?? ''}`;
 
@@ -101,7 +102,7 @@ export default function RoleScreen() {
             label="Suchen"
             value={filter}
             onChangeText={setFilter}
-            placeholder="Name oder Bereich …"
+            placeholder={t('Name oder Bereich …')}
           />
         ) : null}
         <Card>
@@ -210,7 +211,7 @@ function AddHolder({
             label="Person suchen"
             value={q}
             onChangeText={setQ}
-            placeholder="Name oder Mitgliedsnummer (mind. 2 Zeichen)"
+            placeholder={t('Name oder Mitgliedsnummer (mind. 2 Zeichen)')}
           />
           {found.isFetching ? <Loading /> : null}
           {found.data?.length === 0 ? <T variant="caption">Niemand gefunden.</T> : null}

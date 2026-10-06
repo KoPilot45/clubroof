@@ -1,4 +1,5 @@
-import type { ApiError } from '@clubroof/core';
+import { translate, type ApiError } from '@clubroof/core';
+import { getLocale } from './i18n';
 
 /** Adresse des Backends, z. B. aus `.env` (EXPO_PUBLIC_API_URL). */
 export const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000').replace(
@@ -12,7 +13,8 @@ export class RequestError extends Error {
     readonly code: string,
     message: string,
   ) {
-    super(message);
+    // Fehlertexte kommen deutsch vom Server und werden in der gewählten Sprache angezeigt
+    super(translate(message, getLocale()));
   }
 }
 

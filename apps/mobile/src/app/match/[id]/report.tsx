@@ -19,6 +19,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 type Draft = SaveReportInput['incidents'][number];
 const GOALS: MatchIncidentKind[] = ['goal', 'penalty_goal', 'own_goal'];
@@ -36,7 +37,7 @@ function Counter({
   const btn = (delta: number, text: string) => (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${label} ${delta > 0 ? 'erhöhen' : 'verringern'}`}
+      accessibilityLabel={t(`${label} ${delta > 0 ? 'erhöhen' : 'verringern'}`)}
       onPress={() => onChange(Math.max(0, value + delta))}
       style={{
         width: 40,

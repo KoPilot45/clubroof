@@ -16,6 +16,7 @@ import { RequestError } from '@/lib/api';
 import { todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
+import { t } from '@/lib/i18n';
 
 const KINDS: { value: TransferKind; label: string; hint: string }[] = [
   {
@@ -115,7 +116,7 @@ export default function NewTransferScreen() {
               label="Spieler suchen"
               value={q}
               onChangeText={setQ}
-              placeholder="Name eingeben"
+              placeholder={t('Name eingeben')}
             />
             {(search.data ?? []).slice(0, 8).map((m) => (
               <Button

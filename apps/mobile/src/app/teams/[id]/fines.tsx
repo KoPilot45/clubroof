@@ -18,6 +18,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { formatEuro, parseEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { t } from '@/lib/i18n';
 
 type Call = { path: string; method: 'POST' | 'PUT' | 'DELETE'; body?: unknown };
 
@@ -155,10 +156,15 @@ function FineForm({
         label="Strafe"
         value={name}
         onChangeText={setName}
-        placeholder="z. B. Zu spät zum Training"
+        placeholder={t('z. B. Zu spät zum Training')}
         maxLength={60}
       />
-      <TextField label="Betrag in €" value={amount} onChangeText={setAmount} placeholder="0,50" />
+      <TextField
+        label="Betrag in €"
+        value={amount}
+        onChangeText={setAmount}
+        placeholder={t('0,50')}
+      />
       <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
         <Button label="Abbrechen" variant="outline" size="sm" onPress={onCancel} />
         <Button

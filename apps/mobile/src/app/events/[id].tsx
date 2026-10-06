@@ -29,6 +29,7 @@ import { MatchSection } from '@/components/match';
 import { TrainingPlanSection } from '@/components/training-plan';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 const ORDER: Participant['status'][] = ['yes', 'maybe', 'pending', 'no'];
 const GROUP_LABELS: Record<Participant['status'], string> = {
@@ -67,7 +68,7 @@ function ParticipantGroups({
               key={g.status}
               accessibilityRole="button"
               accessibilityState={{ expanded: active }}
-              accessibilityLabel={`${GROUP_LABELS[g.status]}: ${g.people.length}`}
+              accessibilityLabel={t(`${GROUP_LABELS[g.status]}: ${g.people.length}`)}
               onPress={() => setOpen({ ...open, [g.status]: !active })}
               style={{
                 flex: 1,

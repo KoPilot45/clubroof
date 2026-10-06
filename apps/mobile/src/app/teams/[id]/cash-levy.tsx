@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ActionError, PersonChecklist, useCashAction, usePlayers } from '@/components/cash';
 import { Button, Card, ChoiceChips, Loading, Screen, T, TextField } from '@/components/ui';
 import { formatEuro, parseEuro } from '@/lib/format';
+import { t } from '@/lib/i18n';
 
 /** Umlage: Kosten auf ausgewählte Personen verteilen oder je Person einen festen Betrag fordern. */
 export default function CashLevyScreen() {
@@ -26,7 +27,7 @@ export default function CashLevyScreen() {
           label="Wofür?"
           value={description}
           onChangeText={setDescription}
-          placeholder="z. B. Mannschaftsabend, Turnierfahrt"
+          placeholder={t('z. B. Mannschaftsabend, Turnierfahrt')}
           maxLength={100}
         />
         <ChoiceChips
@@ -42,7 +43,7 @@ export default function CashLevyScreen() {
           label={mode === 'split' ? 'Gesamtbetrag in €' : 'Betrag je Person in €'}
           value={amount}
           onChangeText={setAmount}
-          placeholder="0,00"
+          placeholder={t('0,00')}
         />
         {each ? (
           <T variant="caption">

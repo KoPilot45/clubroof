@@ -11,21 +11,21 @@ Quelle im Code: [`packages/design-tokens/src/colors.ts`](../packages/design-toke
 
 Ein Farbthema besteht aus drei Schichten:
 
-| Schicht | Inhalt | Abhängig von |
-| --- | --- | --- |
-| **Vereinsfarbe** | `primary`, `onPrimary`, `primaryPressed`, `primaryContainer`, `onPrimaryContainer`, `primaryText` | gewählter Vereinsfarbe + Modus |
-| **Neutrale Farben** | Hintergrund, Karten, Text, Rahmen | nur Modus |
-| **Statusfarben** | Dringend, Aktion, Info, Erledigt, Archiviert | nur Modus – für alle Vereine gleich |
+| Schicht             | Inhalt                                                                                            | Abhängig von                        |
+| ------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| **Vereinsfarbe**    | `primary`, `onPrimary`, `primaryPressed`, `primaryContainer`, `onPrimaryContainer`, `primaryText` | gewählter Vereinsfarbe + Modus      |
+| **Neutrale Farben** | Hintergrund, Karten, Text, Rahmen                                                                 | nur Modus                           |
+| **Statusfarben**    | Dringend, Aktion, Info, Erledigt, Archiviert                                                      | nur Modus – für alle Vereine gleich |
 
 ## Vereinsfarben
 
 | Vereinsfarbe | Hell: `primary` / Text darauf | Hell: `primaryText` | Dunkel: `primary` / Text darauf |
-| --- | --- | --- | --- |
-| Grün | `#11882E` / weiß | `#0F7A29` | `#4CC46B` / dunkel |
-| Rot | `#C8102E` / weiß | `#B30E29` | `#FF6B7D` / dunkel |
-| Blau | `#0B4EA2` / weiß | `#0B4EA2` | `#6EA8FF` / dunkel |
-| Gelb | `#F5C400` / **dunkel** | `#7A5E00` | `#FFD43B` / dunkel |
-| Schwarz | `#1C1C1E` / weiß | `#1C1C1E` | `#F2F2F2` / dunkel |
+| ------------ | ----------------------------- | ------------------- | ------------------------------- |
+| Grün         | `#11882E` / weiß              | `#0F7A29`           | `#4CC46B` / dunkel              |
+| Rot          | `#C8102E` / weiß              | `#B30E29`           | `#FF6B7D` / dunkel              |
+| Blau         | `#0B4EA2` / weiß              | `#0B4EA2`           | `#6EA8FF` / dunkel              |
+| Gelb         | `#F5C400` / **dunkel**        | `#7A5E00`           | `#FFD43B` / dunkel              |
+| Schwarz      | `#1C1C1E` / weiß              | `#1C1C1E`           | `#F2F2F2` / dunkel              |
 
 Besonderheiten:
 

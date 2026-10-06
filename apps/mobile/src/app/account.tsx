@@ -1,4 +1,10 @@
-import type { ColorMode, TwoFactorSetup, TwoFactorStatus } from '@clubroof/core';
+import {
+  LOCALES,
+  type ColorMode,
+  type Locale,
+  type TwoFactorSetup,
+  type TwoFactorStatus,
+} from '@clubroof/core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +26,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 export default function AccountScreen() {
   const { api, me, signOut } = useSignedIn();
@@ -60,6 +67,7 @@ export default function AccountScreen() {
         <T variant="caption">Angemeldet als {me.user.email}</T>
       </Card>
       <AppearanceSection />
+      <LanguageSection />
       <Section title="Benachrichtigungen & Kalender">
         <Card>
           <ListRow
@@ -268,7 +276,7 @@ function TwoFactorSection() {
             <View style={{ alignItems: 'center' }}>
               <View
                 style={{ backgroundColor: '#FFFFFF', padding: 10, borderRadius: 12 }}
-                accessibilityLabel="QR-Code für die Authenticator-App"
+                accessibilityLabel={t('QR-Code für die Authenticator-App')}
               >
                 <SvgXml xml={setup.qrSvg} width={190} height={190} />
               </View>
@@ -351,6 +359,42 @@ function AppearanceSection() {
           onToggle={(m) => void choose(m)}
         />
         <T variant="caption">Hell ist voreingestellt. Die Wahl gilt auf allen deinen Geräten.</T>
+      </Card>
+    </Section>
+  );
+}
+
+/** Persönliche Sprache – gilt auf allen Geräten dieses Kontos; „Automatisch“ folgt dem Gerät. */
+function LanguageSection() {
+  const { api, me, refresh } = useSignedIn();
+  const [saving, setSaving] = useState<Locale | 'auto' | null>(null);
+  const choose = async (value: Locale | 'auto') => {
+    setSaving(value);
+    try {
+      await api('/me/preferences', {
+        method: 'PUT',
+        body: { language: value === 'auto' ? null : value },
+      });
+      await refresh();
+    } finally {
+      setSaving(null);
+    }
+  };
+  return (
+    <Section title="Sprache">
+      <Card style={{ gap: 8 }}>
+        <ChoiceChips
+          options={[
+            { value: 'auto' as const, label: 'Automatisch', icon: 'phone-portrait-outline' },
+            ...LOCALES.map((l) => ({ value: l.code as Locale | 'auto', label: l.name })),
+          ]}
+          selected={[saving ?? me.user.language ?? 'auto']}
+          onToggle={(v) => void choose(v)}
+        />
+        <T variant="caption">
+          Automatisch richtet sich nach der Sprache deines Geräts. Die Wahl gilt auf allen deinen
+          Geräten.
+        </T>
       </Card>
     </Section>
   );

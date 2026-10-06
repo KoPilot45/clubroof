@@ -6,6 +6,7 @@ import { EventRow } from '@/components/events';
 import { Card, ChoiceChips, Empty, ErrorNotice, Loading, Screen, Section } from '@/components/ui';
 import { EVENT_KIND_LABELS, kindOf, type EventKind } from '@/lib/event-types';
 import { useSignedIn } from '@/lib/session';
+import { dateFormat } from '@/lib/i18n';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -42,7 +43,7 @@ export default function AllEventsScreen() {
     return monday.toISOString();
   };
   const weeks = [...new Set(list.map((e) => weekOf(e.startsAt)))];
-  const label = new Intl.DateTimeFormat('de-DE', {
+  const label = dateFormat({
     day: '2-digit',
     month: '2-digit',
     timeZone: me.club.timezone,

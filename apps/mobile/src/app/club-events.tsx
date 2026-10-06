@@ -14,8 +14,9 @@ import {
   T,
 } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
+import { dateFormat } from '@/lib/i18n';
 
-const dayTitle = new Intl.DateTimeFormat('de-DE', {
+const dayTitle = dateFormat({
   weekday: 'long',
   day: 'numeric',
   month: 'long',

@@ -16,6 +16,7 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
+import { dateFormat } from '@/lib/i18n';
 
 const localDay = () => {
   const d = new Date();
@@ -24,7 +25,7 @@ const localDay = () => {
 
 export default function ChangingRoomsScreen() {
   const { api, me } = useSignedIn();
-  const time = new Intl.DateTimeFormat('de-DE', {
+  const time = dateFormat({
     hour: '2-digit',
     minute: '2-digit',
     timeZone: me.club.timezone,

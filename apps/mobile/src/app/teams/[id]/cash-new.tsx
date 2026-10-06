@@ -30,6 +30,7 @@ import { RequestError } from '@/lib/api';
 import { formatEuro, parseEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 const KINDS: { value: CashBookingKind; label: string; needsPerson: boolean; hint: string }[] = [
   { value: 'fine', label: 'Strafe', needsPerson: true, hint: 'z. B. Zu spät zum Training' },
@@ -216,7 +217,7 @@ export default function NewBookingScreen() {
                 label="Betrag in €"
                 value={amount}
                 onChangeText={setAmount}
-                placeholder="0,00"
+                placeholder={t('0,00')}
               />
               <TextField
                 label="Beschreibung"
@@ -234,7 +235,7 @@ export default function NewBookingScreen() {
             label="Betrag in €"
             value={amount}
             onChangeText={setAmount}
-            placeholder="0,00"
+            placeholder={t('0,00')}
           />
           <TextField
             label="Beschreibung"
@@ -248,7 +249,7 @@ export default function NewBookingScreen() {
               label="Von / an (optional)"
               value={counterparty}
               onChangeText={setCounterparty}
-              placeholder="z. B. Sportshop Musterstadt"
+              placeholder={t('z. B. Sportshop Musterstadt')}
               maxLength={120}
             />
           ) : null}

@@ -17,6 +17,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { t } from '@/lib/i18n';
 
 type Pick = { role: LineupRole; jersey: string };
 const STATUS = {
@@ -125,7 +126,7 @@ function Editor({ sheet }: { sheet: MatchSheet }) {
               >
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel={`${c.name}: ${label(p?.role)}`}
+                  accessibilityLabel={t(`${c.name}: ${label(p?.role)}`)}
                   accessibilityState={{ disabled }}
                   disabled={disabled}
                   onPress={() => cycle(c)}

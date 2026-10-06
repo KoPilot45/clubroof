@@ -25,6 +25,7 @@ import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { mediaUri, pickFile } from '@/lib/upload';
+import { t } from '@/lib/i18n';
 
 const KIND: Record<
   BoardKind,
@@ -209,7 +210,7 @@ function NewItem({
         value={title}
         onChangeText={setTitle}
         maxLength={80}
-        placeholder="z. B. Fußballschuhe Größe 38"
+        placeholder={t('z. B. Fußballschuhe Größe 38')}
       />
       <TextField label={KIND[kind].detail} value={detail} onChangeText={setDetail} maxLength={80} />
       <TextField

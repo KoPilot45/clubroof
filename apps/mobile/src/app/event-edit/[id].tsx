@@ -22,6 +22,7 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
+import { dateFormat } from '@/lib/i18n';
 
 const isoDayIn = (d: Date, tz: string) =>
   new Intl.DateTimeFormat('en-CA', {
@@ -31,7 +32,7 @@ const isoDayIn = (d: Date, tz: string) =>
     day: '2-digit',
   }).format(d);
 const hmIn = (d: Date, tz: string) =>
-  new Intl.DateTimeFormat('de-DE', {
+  dateFormat({
     timeZone: tz,
     hour: '2-digit',
     minute: '2-digit',

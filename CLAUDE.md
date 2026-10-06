@@ -61,6 +61,12 @@ pnpm browser-check --reset     # vorher Demodaten neu laden
 
 ## Regeln
 
+- **Texte sind Deutsch und zugleich der Übersetzungsschlüssel** (Englisch: `packages/core/src/locales/en.ts`). Neue Oberflächen-/Servertexte einfach deutsch schreiben;
+  danach `node scripts/i18n.mjs todo` (fehlende Texte als JSON), übersetzen, `node scripts/i18n.mjs merge datei.json`. `pnpm check` schlägt bei fehlenden
+  Übersetzungen fehl. Feste Bezeichnungen, die nicht übersetzt werden sollen: `<T verbatim>`. Keine Zeichenketten aus Fragmenten zusammenbauen,
+  die einzeln übersetzt werden müssten (besser eine Vorlage-Zeichenkette mit `${name}`; Aufzählungen mit `' · '` verbinden). Datum/Zahl über `lib/format.ts`
+  bzw. `dateFormat` aus `lib/i18n.ts`, nie `Intl…('de-DE')` direkt.
+
 - Rechte nur **serverseitig** prüfen (`actorCan`, Scopes Verein → Bereich → Mannschaft). Rollen sind Rechtepakete,
   keine Personenarten (Kassenwart ist Zusatzaufgabe). Datensparsamkeit: Gründe/Quoten/Kontaktdaten nur für Berechtigte.
 - Jede Tabelle mit fachlichen Daten trägt `club_id`. Zeiten in UTC speichern, Fristen in Vereinszeitzone.

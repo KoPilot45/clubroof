@@ -116,7 +116,12 @@ export default function ForumScreen() {
             subtitle={
               <View style={{ gap: 4 }}>
                 <T variant="caption">
-                  {`${t.postCount} ${t.postCount === 1 ? 'Antwort' : 'Antworten'}${t.lastPostAt ? ` · zuletzt ${formatAgo(t.lastPostAt)}` : ''}`}
+                  {[
+                    `${t.postCount} ${t.postCount === 1 ? 'Antwort' : 'Antworten'}`,
+                    t.lastPostAt ? `zuletzt ${formatAgo(t.lastPostAt)}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </T>
                 {t.open ? (
                   <Chip

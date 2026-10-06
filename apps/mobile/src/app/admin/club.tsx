@@ -30,6 +30,7 @@ import { clubInitials } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { mediaUri, pickFile } from '@/lib/upload';
+import { t } from '@/lib/i18n';
 
 export default function ClubSettingsScreen() {
   const { api, me, refresh } = useSignedIn();
@@ -68,7 +69,7 @@ export default function ClubSettingsScreen() {
           {me.club.logoUrl ? (
             <Image
               source={{ uri: mediaUri(me.club.logoUrl)! }}
-              accessibilityLabel="Aktuelles Vereinslogo"
+              accessibilityLabel={t('Aktuelles Vereinslogo')}
               style={{ width: 120, height: 132 }}
               resizeMode="contain"
             />
@@ -286,7 +287,7 @@ function ClubForm() {
             value={unitName}
             onChangeText={setUnitName}
             maxLength={50}
-            placeholder="z. B. Walking Football"
+            placeholder={t('z. B. Walking Football')}
           />
           <ChoiceChips
             options={(Object.keys(ORG_UNIT_KIND_LABELS) as OrgUnitKind[]).map((k) => ({

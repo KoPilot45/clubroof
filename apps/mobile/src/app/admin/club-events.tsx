@@ -15,13 +15,14 @@ import {
   T,
 } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
+import { dateFormat } from '@/lib/i18n';
 
 const TYPE = {
   club_event: 'Veranstaltung',
   meeting: 'Versammlung',
   work_assignment: 'Arbeitseinsatz',
 };
-const when = new Intl.DateTimeFormat('de-DE', {
+const when = dateFormat({
   weekday: 'short',
   day: '2-digit',
   month: '2-digit',

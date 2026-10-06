@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
 import { useTheme } from '@/lib/theme';
+import { t, useLocale } from '@/lib/i18n';
 import type { IconName } from '@/components/ui';
 import { bodyFontFor, fontState } from '@/lib/fonts';
 
@@ -13,6 +14,7 @@ const icon =
 
 export default function TabLayout() {
   const { colors } = useTheme();
+  useLocale();
   return (
     <Tabs
       screenOptions={{
@@ -30,23 +32,26 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Home', tabBarIcon: icon('home-outline', 'home') }}
+        options={{ title: t('Home'), tabBarIcon: icon('home-outline', 'home') }}
       />
       <Tabs.Screen
         name="team"
-        options={{ title: 'Team', tabBarIcon: icon('people-outline', 'people') }}
+        options={{ title: t('Team'), tabBarIcon: icon('people-outline', 'people') }}
       />
       <Tabs.Screen
         name="termine"
-        options={{ title: 'Termine', tabBarIcon: icon('calendar-outline', 'calendar') }}
+        options={{ title: t('Termine'), tabBarIcon: icon('calendar-outline', 'calendar') }}
       />
       <Tabs.Screen
         name="verein"
-        options={{ title: 'Verein', tabBarIcon: icon('shield-outline', 'shield') }}
+        options={{ title: t('Verein'), tabBarIcon: icon('shield-outline', 'shield') }}
       />
       <Tabs.Screen
         name="mehr"
-        options={{ title: 'Mehr', tabBarIcon: icon('ellipsis-horizontal', 'ellipsis-horizontal') }}
+        options={{
+          title: t('Mehr'),
+          tabBarIcon: icon('ellipsis-horizontal', 'ellipsis-horizontal'),
+        }}
       />
     </Tabs>
   );

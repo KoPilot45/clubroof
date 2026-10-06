@@ -10,6 +10,7 @@ import { KindLegend } from '@/components/kind-legend';
 import { kindColor, kindOf } from '@/lib/event-types';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { dateFormat } from '@/lib/i18n';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -43,7 +44,7 @@ export default function EventsTab() {
   const all = monthEvents.data ?? [];
   const ofDay = all.filter((e) => day && dayKey(new Date(e.startsAt)) === day);
   const kinds = [...new Set(all.map(kindOf))];
-  const dayTitle = new Intl.DateTimeFormat('de-DE', {
+  const dayTitle = dateFormat({
     weekday: 'long',
     day: 'numeric',
     month: 'long',

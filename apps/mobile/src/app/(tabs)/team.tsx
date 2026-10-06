@@ -24,6 +24,7 @@ import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { dateFormat } from '@/lib/i18n';
 
 const PARTICIPATION_LABELS = {
   auto_accept: 'Automatische Zusage – nur Absagen nötig',
@@ -352,7 +353,7 @@ export default function TeamScreen() {
   );
 }
 
-const shortWhen = new Intl.DateTimeFormat('de-DE', {
+const shortWhen = dateFormat({
   weekday: 'short',
   hour: '2-digit',
   minute: '2-digit',
