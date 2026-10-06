@@ -70,6 +70,12 @@ export const MODULES = [
     scopes: ['team'],
   },
   {
+    key: 'team_tasks',
+    name: 'Mannschaftsaufgaben',
+    description: 'Fahrdienst, Trikotwäsche, Kuchen – wer übernimmt was',
+    scopes: ['club', 'team'],
+  },
+  {
     key: 'jersey_numbers',
     name: 'Feste Rückennummern',
     description: 'Saisonweit oder spielbezogen',

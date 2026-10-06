@@ -160,3 +160,30 @@ export const media = pgTable(
   },
   (t) => [index().on(t.clubId)],
 );
+
+/**
+ * Mannschaftsaufgaben (Konzept §4): Fahrdienst, Trikotwäsche, Kuchen … Ohne Zuständige ist die
+ * Aufgabe offen für Freiwillige aus der Mannschaft (auch Eltern für ihr Kind).
+ */
+export const teamTasks = pgTable(
+  'team_tasks',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    teamId: uuid()
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
+    eventId: uuid().references(() => events.id, { onDelete: 'set null' }),
+    title: text().notNull(),
+    note: text(),
+    dueOn: date(),
+    assigneePersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    doneAt: timestamp({ withTimezone: true }),
+    doneByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.teamId, t.doneAt), index().on(t.assigneePersonId)],
+);

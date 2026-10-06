@@ -8,6 +8,7 @@ const KNOWN = [
   '/exchange/',
   '/admin/news/',
   '/admin/invites',
+  '/teams/',
 ];
 
 /** Öffnet einen internen Link aus der API (Aktionen, Benachrichtigungen). */

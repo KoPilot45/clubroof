@@ -3,7 +3,9 @@
  * Auszug. Zusammengesetzt aus Rolle, Mannschaften, aktivierten Modulen und Kindern.
  */
 import {
+  at,
   can,
+  fromIsoDate,
   scopesWith,
   type ActionItem,
   type CashTeaser,
@@ -32,6 +34,7 @@ import type { PgColumn } from 'drizzle-orm/pg-core';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { resolveMediaUrl } from '../storage/media-links';
 import { fetchEventRows, summarizeEvents } from './events';
+import { openTasksFor } from './tasks';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -257,7 +260,23 @@ async function loadActions(db: Db, actor: Actor, now: Date): Promise<ActionItem[
     }
   }
 
-  // 4. Weitere Aufgaben aus dem Notification-Center, die nicht schon oben enthalten sind
+  // 4. Mannschaftsaufgaben, die ich (oder mein Kind) übernommen habe
+  for (const { task, team } of await openTasksFor(db, actor)) {
+    const forChild = task.assigneePersonId !== actor.person.id;
+    const child = actor.managed.find((m) => m.id === task.assigneePersonId);
+    actions.push({
+      kind: 'task',
+      id: task.id,
+      title: `Aufgabe: ${task.title}`,
+      subtitle: `${team.badge}${forChild && child ? ` · für ${child.firstName}` : ''}`,
+      dueAt: task.dueOn
+        ? at(fromIsoDate(task.dueOn), '23:59', actor.club.timezone).toISOString()
+        : null,
+      link: `/teams/${team.id}/tasks`,
+    });
+  }
+
+  // 5. Weitere Aufgaben aus dem Notification-Center, die nicht schon oben enthalten sind
   const tasks = await db
     .select()
     .from(s.notifications)

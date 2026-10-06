@@ -41,6 +41,13 @@ export const NOTIFICATION_TOPICS = [
     defaultMode: 'push',
   },
   {
+    key: 'tasks',
+    label: 'Aufgaben',
+    description: 'Dir zugeteilte Mannschaftsaufgaben',
+    category: 'team',
+    defaultMode: 'push',
+  },
+  {
     key: 'team',
     label: 'Mannschaft',
     description: 'Wechsel, Leihe und neue Mannschaft',

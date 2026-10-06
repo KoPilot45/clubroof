@@ -1664,6 +1664,40 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       readAt: read ? hoursAgo(hours - 0.5) : null,
     });
 
+    // ── Mannschaftsaufgaben (B-Jugend) ──────────────────────────────────────────────────────
+    await tx.insert(s.teamTasks).values([
+      {
+        clubId,
+        teamId: teamIds.b1,
+        eventId: nextB1Match?.id ?? null,
+        title: 'Fahrdienst zum Auswärtsspiel',
+        note: 'Wir brauchen zwei Autos mit je vier Plätzen.',
+        dueOn: nextB1Match ? toIsoDate(calendarDayOf(nextB1Match.startsAt)) : null,
+        createdByPersonId: persona.coach.id,
+        createdAt: hoursAgo(30),
+      },
+      {
+        clubId,
+        teamId: teamIds.b1,
+        title: 'Trikots waschen',
+        note: 'Trikotsatz nach dem Spiel mitnehmen, bis Dienstag zurück.',
+        dueOn: toIsoDate(addDays(today, 3)),
+        assigneePersonId: persona.player.id,
+        createdByPersonId: persona.coach.id,
+        createdAt: hoursAgo(26),
+      },
+      {
+        clubId,
+        teamId: teamIds.b1,
+        title: 'Kuchen fürs Heimspiel',
+        doneAt: hoursAgo(72),
+        assigneePersonId: persona.player.id,
+        doneByPersonId: persona.player.id,
+        createdByPersonId: persona.coach.id,
+        createdAt: hoursAgo(120),
+      },
+    ]);
+
     const b1Responses = nextB1Training
       ? participants.filter((p) => p.eventId === nextB1Training.id && p.role === 'player')
       : [];

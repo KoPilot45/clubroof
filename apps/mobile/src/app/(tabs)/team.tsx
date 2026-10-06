@@ -101,6 +101,16 @@ export default function TeamScreen() {
               },
             ]
           : []),
+        ...(has('team_tasks')
+          ? [
+              {
+                key: 'tasks',
+                label: 'Aufgaben',
+                icon: 'checkbox' as const,
+                onPress: () => router.push(`/teams/${team.id}/tasks`),
+              },
+            ]
+          : []),
         ...(has('polls')
           ? [
               {

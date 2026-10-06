@@ -160,6 +160,10 @@ function Navigator() {
             options={{ headerShown: true, title: 'Spielbericht' }}
           />
           <Stack.Screen
+            name="teams/[id]/tasks"
+            options={{ headerShown: true, title: 'Aufgaben' }}
+          />
+          <Stack.Screen
             name="teams/[id]/jerseys"
             options={{ headerShown: true, title: 'Rückennummern' }}
           />

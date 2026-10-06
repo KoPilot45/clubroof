@@ -17,6 +17,7 @@ import type {
   ClubSettings,
   NotificationSettings,
   NewsReadReceipt,
+  TeamTaskList,
   MemberImportResult,
   InviteLink,
   InviteOverview,
@@ -2973,6 +2974,71 @@ describe.skipIf(!url)('API', () => {
         title: 'Kurzfristige Absage: Max Becker',
       });
       expect(notice!.body).toContain('Krank');
+    });
+  });
+
+  describe('Mannschaftsaufgaben', () => {
+    it('Trainer legt an und teilt zu, Mitglieder übernehmen und haken ab', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const parent = await login('eltern');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+
+      const seeded = await get<TeamTaskList>(`/teams/${b1.id}/tasks`, player.token);
+      expect(seeded.canManage).toBe(false);
+      expect(seeded.members).toHaveLength(0);
+      const wash = seeded.open.find((t) => t.title === 'Trikots waschen')!;
+      expect(wash.can).toMatchObject({ take: false, complete: true });
+      // Startseite zeigt die eigene Aufgabe
+      const home = await get<HomeResponse>('/home', player.token);
+      expect(
+        home.actions.some((a) => a.kind === 'task' && a.title === 'Aufgabe: Trikots waschen'),
+      ).toBe(true);
+      // Fremde Mannschaft: nicht sichtbar
+      expect((await send('GET', `/teams/${b1.id}/tasks`, parent.token)).status).toBe(404);
+      expect(
+        (await send('POST', `/teams/${b1.id}/tasks`, player.token, { title: 'Test' })).status,
+      ).toBe(403);
+
+      const created = await send<TeamTaskList>('POST', `/teams/${b1.id}/tasks`, coach.token, {
+        title: 'Bälle aufpumpen',
+        dueOn: '2026-10-07',
+      });
+      expect(created.status).toBe(201);
+      const balls = created.body.open.find((t) => t.title === 'Bälle aufpumpen')!;
+      expect(balls.assignee).toBeNull();
+
+      const taken = await send<TeamTaskList>('POST', `/tasks/${balls.id}/take`, player.token, {
+        personId: player.me.person.id,
+      });
+      expect(taken.body.open.find((t) => t.id === balls.id)!.assignee!.name).toBe('Max Becker');
+      // Schon vergeben
+      const again = await send<{ error: string }>('POST', `/tasks/${balls.id}/take`, coach.token, {
+        personId: coach.me.person.id,
+      });
+      expect(again.status).toBe(409);
+      const done = await send<TeamTaskList>('POST', `/tasks/${balls.id}/done`, player.token);
+      expect(done.body.done.some((t) => t.id === balls.id)).toBe(true);
+
+      // Zuteilen benachrichtigt die Person
+      const assigned = await send<TeamTaskList>('POST', `/teams/${b1.id}/tasks`, coach.token, {
+        title: 'Getränke mitbringen',
+        assigneePersonId: player.me.person.id,
+      });
+      const drinks = assigned.body.open.find((t) => t.title === 'Getränke mitbringen')!;
+      const notes = await get<NotificationItem[]>('/notifications', player.token);
+      expect(notes.some((n) => n.title === 'Aufgabe: Getränke mitbringen')).toBe(true);
+      expect(
+        (
+          await send('POST', `/teams/${b1.id}/tasks`, coach.token, {
+            title: 'Falsch',
+            assigneePersonId: parent.me.person.id,
+          })
+        ).status,
+      ).toBe(400);
+      expect((await send('DELETE', `/tasks/${drinks.id}`, player.token)).status).toBe(403);
+      const removed = await send<TeamTaskList>('DELETE', `/tasks/${drinks.id}`, coach.token);
+      expect(removed.body.open.some((t) => t.id === drinks.id)).toBe(false);
     });
   });
 

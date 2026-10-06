@@ -1262,3 +1262,41 @@ export type UpdateNotificationSettingsInput = Partial<{
   reminderHours: number;
   quietHours: { enabled: boolean; start: string; end: string };
 }>;
+
+// ── Mannschaftsaufgaben ──────────────────────────────────────────────────
+
+export type TeamTask = {
+  id: string;
+  title: string;
+  note: string | null;
+  dueOn: string | null;
+  event: { id: string; title: string; startsAt: string } | null;
+  assignee: { personId: string; name: string } | null;
+  doneAt: string | null;
+  createdBy: string | null;
+  can: {
+    /** Für sich selbst oder ein eigenes Kind übernehmen (nur offene Aufgaben ohne Zuständige) */
+    take: boolean;
+    complete: boolean;
+    manage: boolean;
+  };
+};
+
+export type TeamTaskList = {
+  open: TeamTask[];
+  /** Zuletzt erledigte (höchstens 20) */
+  done: TeamTask[];
+  canManage: boolean;
+  /** Für die Zuteilung (nur Verantwortliche) */
+  members: { personId: string; name: string }[];
+  /** Termine der nächsten Wochen zum Verknüpfen (nur Verantwortliche) */
+  events: { id: string; title: string; startsAt: string }[];
+};
+
+export type CreateTeamTaskInput = {
+  title: string;
+  note?: string | null;
+  dueOn?: string | null;
+  eventId?: string | null;
+  assigneePersonId?: string | null;
+};
