@@ -1,4 +1,10 @@
-import { MODULES, type MeResponse, type MyTeam, type TeamFunction } from '@clubroof/core';
+import {
+  MODULES,
+  type ColorMode,
+  type MeResponse,
+  type MyTeam,
+  type TeamFunction,
+} from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, eq, inArray } from 'drizzle-orm';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
@@ -23,6 +29,12 @@ const ADMIN_ROLES = new Set([
 
 export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
   const ctx = await loadScopeContext(db, actor);
+  const [userRow] = await db
+    .select({ colorMode: s.users.colorMode })
+    .from(s.users)
+    .where(eq(s.users.id, actor.user.id));
+  const colorMode: ColorMode =
+    userRow?.colorMode === 'dark' || userRow?.colorMode === 'system' ? userRow.colorMode : 'light';
   const refereeModule = moduleEnabled(actor, 'referees');
   const isReferee =
     refereeModule &&
@@ -55,7 +67,12 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
   }
 
   return {
-    user: { id: actor.user.id, email: actor.user.email, displayName: actor.user.displayName },
+    user: {
+      id: actor.user.id,
+      email: actor.user.email,
+      displayName: actor.user.displayName,
+      colorMode,
+    },
     person: {
       id: actor.person.id,
       firstName: actor.person.firstName,
@@ -99,4 +116,14 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
     equipment: { manage: actorCan(actor, 'facilities.manage') },
     clubModules: MODULES.filter((mod) => moduleEnabled(actor, mod.key)).map((mod) => mod.key),
   };
+}
+
+/** Persönliche Darstellung (hell, dunkel oder wie das Gerät). */
+export async function setColorMode(
+  db: Db,
+  actor: Actor,
+  colorMode: ColorMode,
+): Promise<MeResponse> {
+  await db.update(s.users).set({ colorMode }).where(eq(s.users.id, actor.user.id));
+  return buildMe(db, actor);
 }

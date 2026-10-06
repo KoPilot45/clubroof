@@ -55,7 +55,7 @@ export default function MoreScreen() {
     },
     {
       key: 'settings',
-      label: 'Konto & Sicherheit',
+      label: 'Konto & Einstellungen',
       icon: 'settings',
       onPress: () => router.push('/account'),
     },

@@ -103,12 +103,6 @@ export default function ClubSettingsScreen() {
   );
 }
 
-const MODES = [
-  { value: 'system', label: 'Wie Gerät', icon: 'phone-portrait-outline' },
-  { value: 'light', label: 'Hell', icon: 'sunny-outline' },
-  { value: 'dark', label: 'Dunkel', icon: 'moon-outline' },
-] as const;
-
 /** Name, Design, Bereiche und Sicherheitsvorgabe des Vereins. */
 function ClubForm() {
   const { api, refresh } = useSignedIn();
@@ -120,7 +114,6 @@ function ClubForm() {
   const [name, setName] = useState('');
   const [shortName, setShortName] = useState('');
   const [color, setColor] = useState<ClubColorKey>('green');
-  const [mode, setMode] = useState<ClubSettings['colorMode']>('system');
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [unitName, setUnitName] = useState('');
@@ -132,7 +125,6 @@ function ClubForm() {
     setName(settings.data.name);
     setShortName(settings.data.shortName);
     setColor(settings.data.colorTheme);
-    setMode(settings.data.colorMode);
   }, [settings.data]);
 
   const onDone = (data: ClubSettings) => {
@@ -173,10 +165,7 @@ function ClubForm() {
     return <ErrorNotice message={settings.error.message} onRetry={() => settings.refetch()} />;
   const s = settings.data;
   const dirty =
-    name.trim() !== s.name ||
-    shortName.trim() !== s.shortName ||
-    color !== s.colorTheme ||
-    mode !== s.colorMode;
+    name.trim() !== s.name || shortName.trim() !== s.shortName || color !== s.colorTheme;
 
   return (
     <>
@@ -208,15 +197,6 @@ function ClubForm() {
               setSaved(false);
             }}
           />
-          <ChoiceChips
-            label="Darstellung"
-            options={MODES.map((m) => ({ ...m }))}
-            selected={[mode]}
-            onToggle={(m) => {
-              setMode(m);
-              setSaved(false);
-            }}
-          />
           <Button
             label="Speichern"
             icon="checkmark"
@@ -227,7 +207,6 @@ function ClubForm() {
                 name: name.trim(),
                 shortName: shortName.trim(),
                 colorTheme: color,
-                colorMode: mode,
               })
             }
           />
@@ -357,7 +336,7 @@ function ClubForm() {
                 Richte zuerst selbst die 2-Faktor-Anmeldung ein – so sperrst du dich nicht aus.
               </T>
               <Button
-                label="Zu Konto & Sicherheit"
+                label="Zu Konto & Einstellungen"
                 variant="outline"
                 icon="key-outline"
                 onPress={() => router.push('/account')}

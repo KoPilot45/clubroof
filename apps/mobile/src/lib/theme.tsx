@@ -26,11 +26,11 @@ const ThemeContext = createContext<Theme | null>(null);
 
 /**
  * Stellt das Farbthema bereit. Vor der Anmeldung gilt Grün (Clubroof), danach die
- * Vereinsfarbe. Der Modus folgt der Vereinseinstellung bzw. dem Gerät.
+ * Vereinsfarbe. Hell ist Standard; jede Person kann dunkel oder „wie Gerät“ wählen.
  */
 export function ThemeProvider({
   clubColor,
-  mode = 'system',
+  mode = 'light',
   children,
 }: {
   clubColor?: string | null;

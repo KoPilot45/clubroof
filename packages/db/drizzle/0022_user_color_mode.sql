@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "color_mode" text DEFAULT 'light' NOT NULL;

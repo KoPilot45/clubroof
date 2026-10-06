@@ -25,6 +25,8 @@ export const users = pgTable('users', {
   email: text().notNull().unique(),
   displayName: text().notNull(),
   passwordHash: text(),
+  /** Persönliche Darstellung: light (Standard) | dark | system */
+  colorMode: text().notNull().default('light'),
   lastLoginAt: timestamp({ withTimezone: true }),
   passwordChangedAt: timestamp({ withTimezone: true }),
   /** TOTP-Geheimnis (verschlüsselt). Gesetzt = 2-Faktor-Anmeldung aktiv */

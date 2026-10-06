@@ -1,9 +1,9 @@
-import type { TwoFactorSetup, TwoFactorStatus } from '@clubroof/core';
+import type { ColorMode, TwoFactorSetup, TwoFactorStatus } from '@clubroof/core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
-import { Button, Card, Chip, Screen, Section, T, TextField } from '@/components/ui';
+import { Button, Card, ChoiceChips, Chip, Screen, Section, T, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 
@@ -43,6 +43,7 @@ export default function AccountScreen() {
         <T variant="heading">{me.user.displayName}</T>
         <T variant="caption">Angemeldet als {me.user.email}</T>
       </Card>
+      <AppearanceSection />
       <Section title="Passwort ändern">
         <Card style={{ gap: 12 }}>
           <TextField
@@ -258,6 +259,37 @@ function TwoFactorSection() {
           </>
         )}
         {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+      </Card>
+    </Section>
+  );
+}
+
+/** Persönliche Darstellung – gilt auf allen Geräten dieses Kontos. */
+function AppearanceSection() {
+  const { api, me, refresh } = useSignedIn();
+  const [saving, setSaving] = useState<ColorMode | null>(null);
+  const choose = async (colorMode: ColorMode) => {
+    setSaving(colorMode);
+    try {
+      await api('/me/preferences', { method: 'PUT', body: { colorMode } });
+      await refresh();
+    } finally {
+      setSaving(null);
+    }
+  };
+  return (
+    <Section title="Darstellung">
+      <Card style={{ gap: 8 }}>
+        <ChoiceChips
+          options={[
+            { value: 'light' as const, label: 'Hell', icon: 'sunny-outline' },
+            { value: 'dark' as const, label: 'Dunkel', icon: 'moon-outline' },
+            { value: 'system' as const, label: 'Wie Gerät', icon: 'phone-portrait-outline' },
+          ]}
+          selected={[saving ?? me.user.colorMode]}
+          onToggle={(m) => void choose(m)}
+        />
+        <T variant="caption">Hell ist voreingestellt. Die Wahl gilt auf allen deinen Geräten.</T>
       </Card>
     </Section>
   );

@@ -183,7 +183,7 @@ function Navigator() {
           />
           <Stack.Screen
             name="account"
-            options={{ headerShown: true, title: 'Konto & Sicherheit' }}
+            options={{ headerShown: true, title: 'Konto & Einstellungen' }}
           />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
@@ -199,12 +199,15 @@ function Navigator() {
   );
 }
 
-/** Vereinsfarbe und Modus kommen nach der Anmeldung aus dem Verein. */
+/** Vereinsfarbe kommt aus dem Verein, hell/dunkel ist persönlich (Standard: hell). */
 function ClubTheme({ children }: { children: React.ReactNode }) {
   const session = useSession();
   const club = session.status === 'signedIn' ? session.me.club : null;
   return (
-    <ThemeProvider clubColor={club?.colorTheme} mode={club?.colorMode ?? 'system'}>
+    <ThemeProvider
+      clubColor={club?.colorTheme}
+      mode={session.status === 'signedIn' ? session.me.user.colorMode : 'light'}
+    >
       {children}
     </ThemeProvider>
   );

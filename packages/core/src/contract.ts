@@ -52,8 +52,11 @@ export type MyTeam = {
   modules: string[];
 };
 
+export type ColorMode = 'light' | 'dark' | 'system';
+
 export type MeResponse = {
-  user: { id: string; email: string; displayName: string };
+  /** colorMode: persönliche Darstellung (Standard hell) */
+  user: { id: string; email: string; displayName: string; colorMode: ColorMode };
   person: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
   club: ClubInfo;
   managedPersons: ManagedPerson[];

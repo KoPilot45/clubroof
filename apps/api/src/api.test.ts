@@ -3688,6 +3688,24 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Darstellung', () => {
+    it('hell ist Standard, dunkel wählt jede Person selbst', async () => {
+      const player = await login('spieler');
+      expect(player.me.user.colorMode).toBe('light');
+      const dark = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        colorMode: 'dark',
+      });
+      expect(dark.body.user.colorMode).toBe('dark');
+      // Gilt für das Konto, nicht für andere
+      expect((await login('trainer')).me.user.colorMode).toBe('light');
+      expect((await login('spieler')).me.user.colorMode).toBe('dark');
+      expect(
+        (await send('PUT', '/me/preferences', player.token, { colorMode: 'lila' })).status,
+      ).toBe(400);
+      await send('PUT', '/me/preferences', player.token, { colorMode: 'light' });
+    });
+  });
+
   // Muss als Letztes laufen: der Saisonwechsel verändert Mannschaften und Zuordnungen
   describe('Saisonwechsel', () => {
     it('bereitet die nächste Saison vor, plant den Kader und startet sie', async () => {
