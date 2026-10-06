@@ -21,7 +21,7 @@ import {
   listToday,
   loadVisibleDocument,
 } from '../services/club';
-import { cashReportCsv } from '../services/cash';
+import { cashReportCsv, cashReportPdf } from '../services/cash';
 import { getClubTeamPage } from '../services/teams';
 import { listHelperEvents, setAttendance, signUp, withdraw } from '../services/helpers';
 import { placeholderPdf } from '../storage/files';
@@ -111,7 +111,7 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
       bodyLimit: 8 * 1024 * 1024,
       schema: {
         body: z.object({
-          purpose: z.enum(['news', 'logo', 'avatar', 'board']),
+          purpose: z.enum(['news', 'logo', 'avatar', 'board', 'receipt']),
           fileName: z.string().trim().min(1).max(200),
           dataBase64: z.string().min(1),
         }),
@@ -169,6 +169,19 @@ export const fileRoutes: FastifyPluginAsyncZod = async (app) => {
       const documentId = app.links.verify(request.params.token, app.now());
       if (!documentId)
         throw new HttpError(404, 'link_invalid', 'Der Link ist abgelaufen oder ungültig.');
+      if (documentId.startsWith('cp:')) {
+        const report = await cashReportPdf(app.db, documentId.slice(3), app.now());
+        if (!report) throw notFound('Der Kassenbericht');
+        return reply
+          .header('content-type', 'application/pdf')
+          .header(
+            'content-disposition',
+            `attachment; filename*=UTF-8''${encodeURIComponent(report.fileName)}`,
+          )
+          .header('cache-control', 'no-store')
+          .header('x-content-type-options', 'nosniff')
+          .send(report.pdf);
+      }
       if (documentId.startsWith('c:')) {
         const report = await cashReportCsv(app.db, documentId.slice(2), app.now());
         if (!report) throw notFound('Der Kassenbericht');

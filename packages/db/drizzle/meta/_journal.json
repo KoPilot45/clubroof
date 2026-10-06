@@ -183,6 +183,13 @@
       "when": 1791293404964,
       "tag": "0025_fine_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1791303506230,
+      "tag": "0026_cash_admin",
+      "breakpoints": true
     }
   ]
 }

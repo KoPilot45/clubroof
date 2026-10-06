@@ -8,6 +8,7 @@ import type {
   TeamCash,
   TeamOverview,
   TeamStats,
+  TreasurerCandidates,
 } from '@clubroof/core';
 import { schema as s } from '@clubroof/db';
 import { and, asc, eq, ne } from 'drizzle-orm';
@@ -23,11 +24,28 @@ import {
   getTeamCash,
   updateFineType,
 } from '../services/cash';
+import {
+  cancelTransaction,
+  createClosing,
+  createFee,
+  createLevy,
+  createPaymentNotice,
+  decidePaymentNotice,
+  endFee,
+  getTreasurers,
+  recordDrinks,
+  recordPayments,
+  sendCashReminders,
+  setTreasurer,
+  updateCashSettings,
+} from '../services/cash-admin';
 import { cancelEvent, createTeamEvent, updateEvent } from '../services/event-admin';
 import { setTeamModule, teamModulesForCoach } from '../services/modules';
 import { getMyTeams, getRoster, getTeamOverview, getTeamStats } from '../services/teams';
 
 const teamParams = z.object({ teamId: z.uuid() });
+const paymentMethod = z.enum(['bar', 'ueberweisung', 'paypal']);
+const cents = z.number().int().min(1).max(1_000_000);
 const isoDateTime = z.iso.datetime({ offset: true });
 
 /** Team-Cockpit, Kasse und Trainer-Funktionen. */
@@ -48,6 +66,7 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
             .string()
             .regex(/^\d{4}-\d{2}-\d{2}$/)
             .optional(),
+          format: z.enum(['csv', 'pdf']).optional(),
         }),
       },
     },
@@ -134,7 +153,7 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
     '/teams/:teamId/cash',
     { schema: { params: teamParams } },
     async (request): Promise<TeamCash> =>
-      getTeamCash(app.db, request.actor!, request.params.teamId),
+      getTeamCash(app.db, request.actor!, request.params.teamId, app.now()),
   );
 
   app.post(
@@ -149,6 +168,9 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
           personId: z.uuid().nullish(),
           counterparty: z.string().trim().max(120).nullish(),
           bookedOn: z.iso.date().nullish(),
+          category: z.string().max(40).nullish(),
+          paymentMethod: paymentMethod.nullish(),
+          receiptImageId: z.uuid().nullish(),
         }),
       },
     },
@@ -215,6 +237,271 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
       );
       return reply.status(201).send(cash);
     },
+  );
+
+  // ── Kassenverwaltung ────────────────────────────────────────────────────
+  app.put(
+    '/teams/:teamId/cash/settings',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({
+          iban: z
+            .string()
+            .trim()
+            .max(42)
+            .regex(/^[A-Za-z]{2}\d{2}[A-Za-z0-9 ]{10,38}$|^$/, 'Bitte gib eine gültige IBAN an.')
+            .nullish(),
+          accountHolder: z.string().trim().max(80).nullish(),
+          paypalLink: z.string().trim().max(200).nullish(),
+          drinkPriceCents: z.number().int().min(1).max(10_000).nullish(),
+          showMemberBalances: z.boolean().optional(),
+          autoReminder: z.boolean().optional(),
+        }),
+      },
+    },
+    async (request): Promise<TeamCash> =>
+      updateCashSettings(app.db, request.actor!, request.params.teamId, request.body, app.now()),
+  );
+
+  app.post(
+    '/teams/:teamId/cash/payments',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({
+          items: z
+            .array(z.object({ personId: z.uuid(), amountCents: cents }))
+            .min(1)
+            .max(60),
+          paymentMethod,
+          bookedOn: z.iso.date().nullish(),
+        }),
+      },
+    },
+    async (request, reply) =>
+      reply
+        .status(201)
+        .send(
+          await recordPayments(
+            app.db,
+            request.actor!,
+            request.params.teamId,
+            request.body,
+            app.now(),
+          ),
+        ),
+  );
+
+  app.post(
+    '/teams/:teamId/cash/drinks',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({
+          items: z
+            .array(z.object({ personId: z.uuid(), count: z.number().int().min(0).max(50) }))
+            .min(1)
+            .max(60),
+          priceCents: z.number().int().min(1).max(10_000).nullish(),
+          bookedOn: z.iso.date().nullish(),
+        }),
+      },
+    },
+    async (request, reply) =>
+      reply
+        .status(201)
+        .send(
+          await recordDrinks(
+            app.db,
+            request.actor!,
+            request.params.teamId,
+            request.body,
+            app.now(),
+          ),
+        ),
+  );
+
+  app.post(
+    '/teams/:teamId/cash/levies',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({
+          description: z.string().trim().min(2).max(100),
+          mode: z.enum(['split', 'each']),
+          amountCents: cents,
+          personIds: z.array(z.uuid()).min(1).max(60),
+          bookedOn: z.iso.date().nullish(),
+        }),
+      },
+    },
+    async (request, reply) =>
+      reply
+        .status(201)
+        .send(
+          await createLevy(app.db, request.actor!, request.params.teamId, request.body, app.now()),
+        ),
+  );
+
+  app.post(
+    '/teams/:teamId/cash/fees',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({
+          name: z.string().trim().min(2).max(60),
+          amountCents: cents,
+          interval: z.enum(['monthly', 'season', 'once']),
+          startsOn: z.iso.date().nullish(),
+        }),
+      },
+    },
+    async (request, reply) =>
+      reply
+        .status(201)
+        .send(
+          await createFee(app.db, request.actor!, request.params.teamId, request.body, app.now()),
+        ),
+  );
+
+  app.delete(
+    '/cash/fees/:feeId',
+    { schema: { params: z.object({ feeId: z.uuid() }) } },
+    async (request): Promise<TeamCash> =>
+      endFee(app.db, request.actor!, request.params.feeId, app.now()),
+  );
+
+  app.post(
+    '/cash/transactions/:transactionId/cancel',
+    {
+      schema: {
+        params: z.object({ transactionId: z.uuid() }),
+        body: z.object({ reason: z.string().trim().max(200).nullish() }),
+      },
+    },
+    async (request): Promise<TeamCash> =>
+      cancelTransaction(
+        app.db,
+        request.actor!,
+        request.params.transactionId,
+        request.body.reason ?? null,
+        app.now(),
+      ),
+  );
+
+  app.post(
+    '/teams/:teamId/cash/reminders',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({ personIds: z.array(z.uuid()).max(60).nullish() }),
+      },
+    },
+    async (request): Promise<{ sent: number }> =>
+      sendCashReminders(
+        app.db,
+        request.actor!,
+        request.params.teamId,
+        request.body.personIds ?? null,
+        app.now(),
+      ),
+  );
+
+  app.post(
+    '/teams/:teamId/cash/payment-notices',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({
+          personId: z.uuid(),
+          amountCents: cents,
+          paymentMethod,
+          note: z.string().trim().max(200).nullish(),
+        }),
+      },
+    },
+    async (request, reply) =>
+      reply
+        .status(201)
+        .send(
+          await createPaymentNotice(
+            app.db,
+            request.actor!,
+            request.params.teamId,
+            request.body,
+            app.now(),
+          ),
+        ),
+  );
+
+  app.post(
+    '/cash/payment-notices/:noticeId/:decision',
+    {
+      schema: {
+        params: z.object({ noticeId: z.uuid(), decision: z.enum(['confirm', 'reject']) }),
+      },
+    },
+    async (request): Promise<TeamCash> =>
+      decidePaymentNotice(
+        app.db,
+        request.actor!,
+        request.params.noticeId,
+        request.params.decision === 'confirm',
+        app.now(),
+      ),
+  );
+
+  app.get(
+    '/teams/:teamId/cash/treasurers',
+    { schema: { params: teamParams } },
+    async (request): Promise<TreasurerCandidates> =>
+      getTreasurers(app.db, request.actor!, request.params.teamId, app.now()),
+  );
+
+  app.put(
+    '/teams/:teamId/cash/treasurers/:personId',
+    {
+      schema: {
+        params: teamParams.extend({ personId: z.uuid() }),
+        body: z.object({ enabled: z.boolean() }),
+      },
+    },
+    async (request): Promise<TreasurerCandidates> =>
+      setTreasurer(
+        app.db,
+        request.actor!,
+        request.params.teamId,
+        request.params.personId,
+        request.body.enabled,
+        app.now(),
+      ),
+  );
+
+  app.post(
+    '/teams/:teamId/cash/closings',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({
+          auditor: z.string().trim().max(80).nullish(),
+          note: z.string().trim().max(300).nullish(),
+          closedOn: z.iso.date().nullish(),
+        }),
+      },
+    },
+    async (request, reply) =>
+      reply
+        .status(201)
+        .send(
+          await createClosing(
+            app.db,
+            request.actor!,
+            request.params.teamId,
+            request.body,
+            app.now(),
+          ),
+        ),
   );
 
   app.get(

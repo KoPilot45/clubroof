@@ -48,6 +48,13 @@ export const NOTIFICATION_TOPICS = [
     defaultMode: 'push',
   },
   {
+    key: 'cash',
+    label: 'Kasse',
+    description: 'Strafen, Beiträge, Umlagen und Zahlungserinnerungen',
+    category: 'team',
+    defaultMode: 'push',
+  },
+  {
     key: 'team',
     label: 'Mannschaft',
     description: 'Wechsel, Leihe und neue Mannschaft',

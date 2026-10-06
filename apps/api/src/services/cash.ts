@@ -8,7 +8,11 @@ import {
   resolveModule,
   toIsoDate,
   type AssignFineInput,
+  CASH_EXPENSE_CATEGORIES,
+  CASH_INCOME_CATEGORIES,
   type CashEntry,
+  type CashSettings,
+  type PaymentMethod,
   type CashStats,
   type CreateCashBookingInput,
   type FineType,
@@ -19,16 +23,31 @@ import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, desc, eq, inArray, isNull, lte } from 'drizzle-orm';
 import type { Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
+import { resolveMediaUrl } from '../storage/media-links';
+import { SimplePdf } from '../storage/pdf';
+import { cashAdminView, notifyCharges } from './cash-admin';
+import { mediaReference } from './uploads';
 import { loadTeamForActor, requireModule, type TeamRow } from './team-access';
 
 type TxRow = typeof s.cashTransactions.$inferSelect;
+type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
+type AccountSettings = (typeof s.cashAccounts.$inferSelect)['settings'];
 
-function personalDelta(t: TxRow): number {
+export async function personNames(db: Db | Tx, ids: string[]) {
+  if (ids.length === 0) return [];
+  const rows = await db
+    .select({ id: s.persons.id, firstName: s.persons.firstName, lastName: s.persons.lastName })
+    .from(s.persons)
+    .where(inArray(s.persons.id, [...new Set(ids)]));
+  return rows.map((r) => ({ id: r.id, name: `${r.firstName} ${r.lastName}` }));
+}
+
+export function personalDelta(t: TxRow): number {
   if (t.isCharge) return -t.amountCents;
   return t.category === 'einzahlung' ? t.amountCents : 0;
 }
 
-function cashConfig(actor: Actor, team: TeamRow) {
+export function cashConfig(actor: Actor, team: TeamRow) {
   const { config } = resolveModule(actor.modules, 'team_cash', {
     teamId: team.id,
     orgUnitId: team.orgUnitId,
@@ -36,7 +55,7 @@ function cashConfig(actor: Actor, team: TeamRow) {
   return { fines: config.fines === true, drinks: config.drinks === true };
 }
 
-async function accountFor(db: Db, actor: Actor, team: TeamRow, create = false) {
+export async function accountFor(db: Db, actor: Actor, team: TeamRow, create = false) {
   const [account] = await db
     .select()
     .from(s.cashAccounts)
@@ -50,17 +69,60 @@ async function accountFor(db: Db, actor: Actor, team: TeamRow, create = false) {
 }
 
 /** Kassenstand, Buchungen und Statistik: ganze Mannschaft und Kassenverantwortliche. */
-async function loadCashTeam(db: Db, actor: Actor, teamId: string) {
+export async function loadCashTeam(db: Db, actor: Actor, teamId: string) {
   const loaded = await loadTeamForActor(db, actor, teamId);
   requireModule(actor, 'team_cash', loaded.team);
   return { ...loaded, seesAll: loaded.isMember || loaded.permissions.readCash };
+}
+
+export function cashSettings(account: { settings: AccountSettings } | null): CashSettings {
+  const v = account?.settings ?? {};
+  return {
+    iban: v.iban ?? null,
+    accountHolder: v.accountHolder ?? null,
+    paypalLink: v.paypalLink ?? null,
+    drinkPriceCents: v.drinkPriceCents ?? null,
+    showMemberBalances: v.showMemberBalances !== false,
+    autoReminder: v.autoReminder === true,
+  };
+}
+
+/** Persönliche Salden aller Personen (ohne Stornos). */
+export async function personalBalances(db: Db | Tx, accountId: string) {
+  const rows = await db
+    .select({
+      tx: s.cashTransactions,
+      firstName: s.persons.firstName,
+      lastName: s.persons.lastName,
+    })
+    .from(s.cashTransactions)
+    .innerJoin(s.persons, eq(s.persons.id, s.cashTransactions.personId))
+    .where(
+      and(eq(s.cashTransactions.accountId, accountId), isNull(s.cashTransactions.cancelledAt)),
+    );
+  const balances = new Map<string, { name: string; balanceCents: number }>();
+  for (const r of rows) {
+    const b = balances.get(r.tx.personId!) ?? {
+      name: `${r.firstName} ${r.lastName}`,
+      balanceCents: 0,
+    };
+    b.balanceCents += personalDelta(r.tx);
+    balances.set(r.tx.personId!, b);
+  }
+  return balances;
 }
 
 async function fineCatalog(db: Db, team: TeamRow): Promise<FineType[]> {
   const rows = await db
     .select({ type: s.cashFineTypes, given: count(s.cashTransactions.id) })
     .from(s.cashFineTypes)
-    .leftJoin(s.cashTransactions, eq(s.cashTransactions.fineTypeId, s.cashFineTypes.id))
+    .leftJoin(
+      s.cashTransactions,
+      and(
+        eq(s.cashTransactions.fineTypeId, s.cashFineTypes.id),
+        isNull(s.cashTransactions.cancelledAt),
+      ),
+    )
     .where(and(eq(s.cashFineTypes.teamId, team.id), isNull(s.cashFineTypes.archivedAt)))
     .groupBy(s.cashFineTypes.id)
     .orderBy(asc(s.cashFineTypes.amountCents), asc(s.cashFineTypes.name));
@@ -72,10 +134,18 @@ async function fineCatalog(db: Db, team: TeamRow): Promise<FineType[]> {
   }));
 }
 
-export async function getTeamCash(db: Db, actor: Actor, teamId: string): Promise<TeamCash> {
+export async function getTeamCash(
+  db: Db,
+  actor: Actor,
+  teamId: string,
+  now: Date = new Date(),
+): Promise<TeamCash> {
   const { team, permissions, seesAll } = await loadCashTeam(db, actor, teamId);
   const account = await accountFor(db, actor, team);
   const config = cashConfig(actor, team);
+  const settings = cashSettings(account);
+  // Offene Beträge anderer: ganze Mannschaft, außer die Kasse hat das abgeschaltet
+  const seesOthers = seesAll && (settings.showMemberBalances || permissions.manageCash);
 
   const rows = account
     ? await db
@@ -90,6 +160,14 @@ export async function getTeamCash(db: Db, actor: Actor, teamId: string): Promise
         .orderBy(desc(s.cashTransactions.bookedOn), desc(s.cashTransactions.createdAt))
     : [];
 
+  const cancellers = new Map(
+    (
+      await personNames(
+        db,
+        rows.map((r) => r.tx.cancelledByPersonId).filter((id): id is string => !!id),
+      )
+    ).map((p) => [p.id, p.name]),
+  );
   const toEntry = (r: (typeof rows)[number]): CashEntry => ({
     id: r.tx.id,
     bookedOn: r.tx.bookedOn,
@@ -100,9 +178,19 @@ export async function getTeamCash(db: Db, actor: Actor, teamId: string): Promise
     description: r.tx.description,
     counterparty: r.tx.counterparty,
     person: r.tx.personId ? { id: r.tx.personId, name: `${r.firstName} ${r.lastName}` } : null,
+    paymentMethod: (r.tx.paymentMethod as PaymentMethod | null) ?? null,
+    receiptUrl: resolveMediaUrl(actor.links, r.tx.receiptRef, now),
+    cancelled: r.tx.cancelledAt
+      ? {
+          at: r.tx.cancelledAt.toISOString(),
+          by: r.tx.cancelledByPersonId ? (cancellers.get(r.tx.cancelledByPersonId) ?? null) : null,
+          reason: r.tx.cancelReason,
+        }
+      : null,
   });
 
-  const money = rows.filter((r) => !r.tx.isCharge);
+  const active = rows.filter((r) => !r.tx.cancelledAt);
+  const money = active.filter((r) => !r.tx.isCharge);
   const income = money
     .filter((r) => r.tx.direction === 'income')
     .reduce((a, r) => a + r.tx.amountCents, 0);
@@ -111,7 +199,7 @@ export async function getTeamCash(db: Db, actor: Actor, teamId: string): Promise
     .reduce((a, r) => a + r.tx.amountCents, 0);
 
   const balances = new Map<string, { name: string; balanceCents: number }>();
-  for (const r of rows) {
+  for (const r of active) {
     if (!r.tx.personId) continue;
     const current = balances.get(r.tx.personId) ?? {
       name: `${r.firstName} ${r.lastName}`,
@@ -140,14 +228,20 @@ export async function getTeamCash(db: Db, actor: Actor, teamId: string): Promise
     balanceCents: seesAll ? income - expense : null,
     incomeCents: seesAll ? income : null,
     expenseCents: seesAll ? expense : null,
-    entries: seesAll ? rows.map(toEntry) : null,
-    members: seesAll
+    entries: seesAll
+      ? rows
+          .filter((r) => seesOthers || !r.tx.personId || actor.managedIds.includes(r.tx.personId))
+          .map(toEntry)
+      : null,
+    members: seesOthers
       ? [...balances.entries()]
           .map(([personId, v]) => ({ personId, ...v }))
           .sort((a, b) => a.balanceCents - b.balanceCents)
       : null,
     personal,
     fineCatalog: config.fines ? await fineCatalog(db, team) : [],
+    settings: seesAll || personal.length ? settings : { ...settings, iban: null, paypalLink: null },
+    ...(await cashAdminView(db, actor, team, account, permissions.manageCash)),
   };
 }
 
@@ -296,7 +390,15 @@ export async function assignFine(
       createdAt: now,
     });
   });
-  return getTeamCash(db, actor, teamId);
+  await notifyCharges(
+    db,
+    actor.club,
+    team,
+    personIds.map((personId) => ({ personId, amountCents, description: `Strafe: ${description}` })),
+    actor.user.id,
+    now,
+  );
+  return getTeamCash(db, actor, teamId, now);
 }
 
 // ── Kassenstatistik ─────────────────────────────────────────────────────────
@@ -308,7 +410,7 @@ export async function getCashStats(
   teamId: string,
   now: Date,
 ): Promise<CashStats> {
-  const { team, seesAll } = await loadCashTeam(db, actor, teamId);
+  const { team, seesAll, permissions } = await loadCashTeam(db, actor, teamId);
   if (!seesAll) throw forbidden('Die Kassenstatistik sieht die Mannschaft.');
   const account = await accountFor(db, actor, team);
   const [season] = await db.select().from(s.seasons).where(eq(s.seasons.id, team.seasonId));
@@ -326,6 +428,7 @@ export async function getCashStats(
           and(
             eq(s.cashTransactions.accountId, account.id),
             lte(s.cashTransactions.bookedOn, today),
+            isNull(s.cashTransactions.cancelledAt),
           ),
         )
         .orderBy(asc(s.cashTransactions.bookedOn))
@@ -402,6 +505,12 @@ export async function getCashStats(
       .sort((a, b) => b.count - a.count || b.amountCents - a.amountCents),
     finesByPerson: [...personal.entries()]
       .filter(([, p]) => p.count > 0)
+      .filter(
+        ([personId]) =>
+          cashSettings(account).showMemberBalances ||
+          permissions.manageCash ||
+          actor.managedIds.includes(personId),
+      )
       .map(([personId, p]) => ({
         personId,
         name: p.name,
@@ -464,6 +573,19 @@ export async function createBooking(
       throw new HttpError(400, 'invalid_person', 'Die Person gehört nicht zur Mannschaft.');
   }
 
+  // Einnahmen und Ausgaben mit Kategorie (für Statistik und Bericht)
+  let category: string = kind.category;
+  if (input.category && (input.kind === 'income' || input.kind === 'expense')) {
+    const allowed: readonly string[] =
+      input.kind === 'income' ? CASH_INCOME_CATEGORIES : CASH_EXPENSE_CATEGORIES;
+    if (!allowed.includes(input.category))
+      throw new HttpError(400, 'invalid_category', 'Unbekannte Kategorie.');
+    category = input.category;
+  }
+  const receiptRef = input.receiptImageId
+    ? await mediaReference(db, actor, input.receiptImageId, 'receipt')
+    : null;
+
   const account = (await accountFor(db, actor, team, true))!;
   const [tx] = await db
     .insert(s.cashTransactions)
@@ -472,7 +594,9 @@ export async function createBooking(
       accountId: account.id,
       direction: kind.direction,
       isCharge: kind.isCharge,
-      category: kind.category,
+      category,
+      paymentMethod: kind.isCharge ? null : (input.paymentMethod ?? null),
+      receiptRef,
       amountCents: input.amountCents,
       description: input.description.trim(),
       counterparty: input.counterparty?.trim() || null,
@@ -493,7 +617,7 @@ export async function createBooking(
     createdAt: now,
   });
 
-  return getTeamCash(db, actor, teamId);
+  return getTeamCash(db, actor, teamId, now);
 }
 
 // ── Kassenbericht (Export) ──────────────────────────────────────────────────
@@ -505,7 +629,7 @@ export async function cashReportLink(
   db: Db,
   actor: Actor,
   teamId: string,
-  range: { from?: string; to?: string },
+  range: { from?: string; to?: string; format?: 'csv' | 'pdf' },
   now: Date,
 ): Promise<{ token: string; expiresAt: string }> {
   const { team, seesAll } = await loadCashTeam(db, actor, teamId);
@@ -513,7 +637,8 @@ export async function cashReportLink(
   if (range.from && range.to && range.from > range.to)
     throw new HttpError(400, 'invalid_range', 'Der Zeitraum ist ungültig.');
   const expiresAt = new Date(now.getTime() + REPORT_LINK_MS);
-  const id = `c:${team.id}|${range.from ?? ''}|${range.to ?? ''}`;
+  const prefix = range.format === 'pdf' ? 'cp:' : 'c:';
+  const id = `${prefix}${team.id}|${range.from ?? ''}|${range.to ?? ''}`;
   return { token: actor.links.create(id, expiresAt), expiresAt: expiresAt.toISOString() };
 }
 
@@ -532,14 +657,46 @@ const CATEGORY_LABELS: Record<string, string> = {
   strafe: 'Strafe',
   getraenke: 'Getränke',
   einzahlung: 'Einzahlung',
+  sponsoring: 'Sponsoring',
+  einnahmen_spieltag: 'Spieltag',
+  veranstaltung: 'Veranstaltung',
+  spende: 'Spende',
+  zuschuss: 'Zuschuss',
+  material: 'Material',
+  fahrtkosten: 'Fahrtkosten',
+  startgeld: 'Startgeld',
+  schiedsrichter: 'Schiedsrichter',
+  uebertrag: 'Übertrag',
+  umlage: 'Umlage',
+  beitrag: 'Beitrag',
 };
 
-/** Kassenbericht als CSV (Semikolon, UTF-8 mit BOM – öffnet direkt in Excel). */
-export async function cashReportCsv(
-  db: Db,
-  payload: string,
-  now: Date,
-): Promise<{ fileName: string; csv: string } | null> {
+type CashReport = {
+  fileBase: string;
+  accountName: string;
+  clubName: string;
+  from: string;
+  to: string;
+  created: string;
+  opening: number;
+  rows: {
+    date: string;
+    kind: string;
+    description: string;
+    person: string;
+    income: number | null;
+    expense: number | null;
+    balance: number;
+  }[];
+  income: number;
+  expense: number;
+  closing: number;
+  open: { name: string; cents: number }[];
+  closings: { closedOn: string; balanceCents: number; auditor: string | null }[];
+};
+
+/** Daten des Kassenberichts (ohne Stornos) – Grundlage für CSV und PDF. */
+async function buildCashReport(db: Db, payload: string, now: Date): Promise<CashReport | null> {
   const [teamId, fromArg, toArg] = payload.split('|');
   const [row] = await db
     .select({ team: s.teams, club: s.clubs, season: s.seasons })
@@ -565,7 +722,11 @@ export async function cashReportCsv(
         .from(s.cashTransactions)
         .leftJoin(s.persons, eq(s.persons.id, s.cashTransactions.personId))
         .where(
-          and(eq(s.cashTransactions.accountId, account.id), lte(s.cashTransactions.bookedOn, to)),
+          and(
+            eq(s.cashTransactions.accountId, account.id),
+            lte(s.cashTransactions.bookedOn, to),
+            isNull(s.cashTransactions.cancelledAt),
+          ),
         )
         .orderBy(asc(s.cashTransactions.bookedOn), asc(s.cashTransactions.createdAt))
     : [];
@@ -575,41 +736,25 @@ export async function cashReportCsv(
     r.tx.direction === 'income' ? r.tx.amountCents : -r.tx.amountCents;
   let balance = money.filter((r) => r.tx.bookedOn < from).reduce((a, r) => a + signed(r), 0);
   const opening = balance;
-  const lines: string[] = [
-    `Kassenbericht;${cell(account?.name ?? `Mannschaftskasse ${row.team.name}`)}`,
-    `Verein;${cell(row.club.name)}`,
-    `Zeitraum;${germanDate(from)} – ${germanDate(to)}`,
-    `Erstellt;${new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short', timeZone: tz }).format(now)}`,
-    '',
-    'Datum;Art;Beschreibung;Person;Einnahme;Ausgabe;Kassenstand',
-    `${germanDate(from)};Anfangsbestand;;;;;${euro(opening)}`,
-  ];
   let income = 0;
   let expense = 0;
+  const lines: CashReport['rows'] = [];
   for (const r of money.filter((x) => x.tx.bookedOn >= from)) {
     balance += signed(r);
     if (r.tx.direction === 'income') income += r.tx.amountCents;
     else expense += r.tx.amountCents;
-    lines.push(
-      [
-        germanDate(r.tx.bookedOn),
-        cell(CATEGORY_LABELS[r.tx.category] ?? r.tx.category),
-        cell(r.tx.description),
-        cell(r.tx.personId ? `${r.firstName} ${r.lastName}` : (r.tx.counterparty ?? '')),
-        r.tx.direction === 'income' ? euro(r.tx.amountCents) : '',
-        r.tx.direction === 'expense' ? euro(r.tx.amountCents) : '',
-        euro(balance),
-      ].join(';'),
-    );
+    lines.push({
+      date: germanDate(r.tx.bookedOn),
+      kind: CATEGORY_LABELS[r.tx.category] ?? r.tx.category,
+      description: r.tx.description,
+      person: r.tx.personId ? `${r.firstName} ${r.lastName}` : (r.tx.counterparty ?? ''),
+      income: r.tx.direction === 'income' ? r.tx.amountCents : null,
+      expense: r.tx.direction === 'expense' ? r.tx.amountCents : null,
+      balance,
+    });
   }
-  lines.push(
-    '',
-    `Summe Einnahmen;;;;${euro(income)};;`,
-    `Summe Ausgaben;;;;;${euro(expense)};`,
-    `Kassenstand am ${germanDate(to)};;;;;;${euro(balance)}`,
-  );
 
-  // Offene Beträge (Strafen/Getränke abzüglich Einzahlungen) je Person bis zum Stichtag
+  // Offene Beträge (Forderungen abzüglich Einzahlungen) je Person bis zum Stichtag
   const persons = new Map<string, { name: string; cents: number }>();
   for (const r of rows) {
     if (!r.tx.personId) continue;
@@ -617,13 +762,135 @@ export async function cashReportCsv(
     p.cents += personalDelta(r.tx);
     persons.set(r.tx.personId, p);
   }
-  const open = [...persons.values()].filter((p) => p.cents !== 0).sort((a, b) => a.cents - b.cents);
-  if (open.length) {
-    lines.push('', 'Persönliche Konten;;;;;;', 'Name;Saldo (negativ = offen);;;;;');
-    for (const p of open) lines.push(`${cell(p.name)};${euro(p.cents)};;;;;`);
-  }
+  const closings = await db
+    .select()
+    .from(s.cashClosings)
+    .where(and(eq(s.cashClosings.teamId, row.team.id), lte(s.cashClosings.closedOn, to)))
+    .orderBy(asc(s.cashClosings.closedOn));
   return {
-    fileName: `Kassenbericht ${row.team.badge} ${germanDate(from)}-${germanDate(to)}.csv`,
-    csv: '﻿' + lines.join('\r\n') + '\r\n',
+    fileBase: `Kassenbericht ${row.team.badge} ${germanDate(from)}-${germanDate(to)}`,
+    accountName: account?.name ?? `Mannschaftskasse ${row.team.name}`,
+    clubName: row.club.name,
+    from,
+    to,
+    created: new Intl.DateTimeFormat('de-DE', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: tz,
+    }).format(now),
+    opening,
+    rows: lines,
+    income,
+    expense,
+    closing: balance,
+    open: [...persons.values()].filter((p) => p.cents !== 0).sort((a, b) => a.cents - b.cents),
+    closings: closings.map((c) => ({
+      closedOn: c.closedOn,
+      balanceCents: c.balanceCents,
+      auditor: c.auditor,
+    })),
   };
+}
+
+/** Kassenbericht als CSV (Semikolon, UTF-8 mit BOM – öffnet direkt in Excel). */
+export async function cashReportCsv(
+  db: Db,
+  payload: string,
+  now: Date,
+): Promise<{ fileName: string; csv: string } | null> {
+  const r = await buildCashReport(db, payload, now);
+  if (!r) return null;
+  const lines: string[] = [
+    `Kassenbericht;${cell(r.accountName)}`,
+    `Verein;${cell(r.clubName)}`,
+    `Zeitraum;${germanDate(r.from)} – ${germanDate(r.to)}`,
+    `Erstellt;${r.created}`,
+    '',
+    'Datum;Art;Beschreibung;Person;Einnahme;Ausgabe;Kassenstand',
+    `${germanDate(r.from)};Anfangsbestand;;;;;${euro(r.opening)}`,
+    ...r.rows.map((l) =>
+      [
+        l.date,
+        cell(l.kind),
+        cell(l.description),
+        cell(l.person),
+        l.income !== null ? euro(l.income) : '',
+        l.expense !== null ? euro(l.expense) : '',
+        euro(l.balance),
+      ].join(';'),
+    ),
+    '',
+    `Summe Einnahmen;;;;${euro(r.income)};;`,
+    `Summe Ausgaben;;;;;${euro(r.expense)};`,
+    `Kassenstand am ${germanDate(r.to)};;;;;;${euro(r.closing)}`,
+  ];
+  if (r.open.length) {
+    lines.push('', 'Persönliche Konten;;;;;;', 'Name;Saldo (negativ = offen);;;;;');
+    for (const p of r.open) lines.push(`${cell(p.name)};${euro(p.cents)};;;;;`);
+  }
+  if (r.closings.length) {
+    lines.push('', 'Kassenprüfungen;;;;;;', 'Datum;Kassenstand;Geprüft von;;;;');
+    for (const c of r.closings)
+      lines.push(`${germanDate(c.closedOn)};${euro(c.balanceCents)};${cell(c.auditor)};;;;`);
+  }
+  return { fileName: `${r.fileBase}.csv`, csv: '﻿' + lines.join('\r\n') + '\r\n' };
+}
+
+/** Kassenbericht als PDF (A4, zum Ausdrucken für Versammlungen). */
+export async function cashReportPdf(
+  db: Db,
+  payload: string,
+  now: Date,
+): Promise<{ fileName: string; pdf: Buffer } | null> {
+  const r = await buildCashReport(db, payload, now);
+  if (!r) return null;
+  const doc = new SimplePdf();
+  doc.text(r.accountName, { size: 18, bold: true });
+  doc.text(`${r.clubName} · Zeitraum ${germanDate(r.from)} – ${germanDate(r.to)}`, { size: 10 });
+  doc.text(`Erstellt am ${r.created}`, { size: 9 });
+  doc.gap(10);
+  const cols = [56, 106, 186, 340, 430, 480, 539];
+  doc.row(['Datum', 'Art', 'Beschreibung', 'Person', 'Einnahme', 'Ausgabe', 'Stand'], cols, {
+    bold: true,
+    alignRight: [4, 5, 6],
+  });
+  doc.row([germanDate(r.from), 'Anfangsbestand', '', '', '', '', euro(r.opening)], cols, {
+    alignRight: [4, 5, 6],
+  });
+  for (const l of r.rows) {
+    doc.row(
+      [
+        l.date,
+        l.kind,
+        l.description,
+        l.person,
+        l.income !== null ? euro(l.income) : '',
+        l.expense !== null ? euro(l.expense) : '',
+        euro(l.balance),
+      ],
+      cols,
+      { alignRight: [4, 5, 6] },
+    );
+  }
+  doc.gap(8);
+  doc.text(`Summe Einnahmen: ${euro(r.income)} €   Summe Ausgaben: ${euro(r.expense)} €`, {
+    size: 10,
+  });
+  doc.text(`Kassenstand am ${germanDate(r.to)}: ${euro(r.closing)} €`, { size: 12, bold: true });
+  if (r.open.length) {
+    doc.gap(12);
+    doc.text('Offene Beträge der persönlichen Konten', { size: 12, bold: true });
+    for (const p of r.open.filter((x) => x.cents < 0))
+      doc.row([p.name, `${euro(-p.cents)} €`], [56, 300], { alignRight: [1] });
+  }
+  if (r.closings.length) {
+    doc.gap(12);
+    doc.text('Kassenprüfungen', { size: 12, bold: true });
+    for (const c of r.closings)
+      doc.text(
+        `${germanDate(c.closedOn)}: Kassenstand ${euro(c.balanceCents)} €${c.auditor ? ` – geprüft von ${c.auditor}` : ''}`,
+        { size: 10 },
+      );
+  }
+  return { fileName: `${r.fileBase}.pdf`, pdf: doc.build() };
 }

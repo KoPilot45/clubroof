@@ -9,11 +9,13 @@ import type { PushSender } from '../notify/push';
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 import { dispatchPush } from './push';
 import { sendCoachDigests, sendReminders } from './responses';
+import { autoCashReminders, chargeDueFees } from '../services/cash-admin';
 
 const LOCK_RESPONSES = 4_172_026;
 const LOCK_PUSH = 4_172_027;
+const LOCK_CASH = 4_172_028;
 
-export type JobResult = { reminders: number; digests: number; pushes: number };
+export type JobResult = { reminders: number; digests: number; pushes: number; fees: number };
 
 /**
  * Jede Aufgabe läuft in einer eigenen Transaktion mit Transaktions-Lock (wird mit der
@@ -43,8 +45,17 @@ export async function runJobs(db: Db, sender: PushSender, now: Date): Promise<Jo
       return { reminders, digests };
     },
   );
+  // Mannschaftsbeiträge buchen und monatlich an offene Beträge erinnern
+  const fees = await locked(db, LOCK_CASH, 0, async (tx) => {
+    let charged = 0;
+    for (const club of await tx.select().from(s.clubs)) {
+      charged += await chargeDueFees(tx, club, now);
+      await autoCashReminders(tx, club, now);
+    }
+    return charged;
+  });
   const pushes = await locked(db, LOCK_PUSH, 0, (tx) => dispatchPush(tx, sender, now));
-  return { reminders, digests, pushes };
+  return { reminders, digests, pushes, fees };
 }
 
 /** Startet die Aufgaben im Minutentakt; liefert eine Stopp-Funktion. */

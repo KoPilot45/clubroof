@@ -61,6 +61,7 @@ import type {
   TeamCash,
   TeamOverview,
   TeamStats,
+  TreasurerCandidates,
   Carpool,
   CashStats,
   EventDetail,
@@ -688,7 +689,7 @@ describe.skipIf(!url)('API', () => {
       expect(coach.permissions).toMatchObject({
         manageEvents: true,
         readCash: true,
-        manageCash: false,
+        manageCash: true,
       });
       expect(coach.squad!.players).toBeGreaterThanOrEqual(18);
       expect(coach.lastResults.length).toBeGreaterThan(0);
@@ -822,7 +823,8 @@ describe.skipIf(!url)('API', () => {
       const player = await login('spieler');
       const before = await get<TeamCash>(`/teams/${b1}/cash`, coach.token);
       expect(before.permissions.manageFines).toBe(true);
-      expect(before.permissions.manageCash).toBe(false);
+      // Trainer führen die Kasse mit (Kassenverwaltung)
+      expect(before.permissions.manageCash).toBe(true);
       expect(before.fineCatalog.map((f) => f.name)).toContain('Handy in der Kabine');
 
       // Spieler sehen den Katalog, dürfen ihn aber nicht ändern
@@ -871,13 +873,13 @@ describe.skipIf(!url)('API', () => {
       expect(assigned.body.balanceCents).toBe(before.balanceCents);
       expect(assigned.body.fineCatalog.find((f) => f.id === ball.id)!.timesGiven).toBe(2);
 
-      // Freie Strafen ohne Katalog nur mit vollen Kassenrechten; Spieler gar nicht
+      // Freie Strafen ohne Katalog mit Kassenrechten (Trainer, Kassenwart); Spieler gar nicht
       const free = await send('POST', `/teams/${b1}/cash/fines`, coach.token, {
         amountCents: 300,
         description: 'Sonderstrafe',
         personIds: [two[0]],
       });
-      expect(free.status).toBe(403);
+      expect(free.status).toBe(201);
       const treasurer = await login('kasse');
       const freeOk = await send('POST', `/teams/${b1}/cash/fines`, treasurer.token, {
         amountCents: 300,
@@ -908,12 +910,227 @@ describe.skipIf(!url)('API', () => {
       ).toHaveLength(2);
     });
 
+    it('Kassenverwaltung: Trainer bucht, Einzahlungen, Umlage, Beitrag, Storno, Meldungen', async () => {
+      const b1 = await teamId('B1');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const me = player.me.person.id;
+      const start = await get<TeamCash>(`/teams/${b1}/cash`, coach.token);
+      expect(start.permissions.manageCash).toBe(true);
+      expect(start.settings.iban).toContain('DE89');
+      expect(start.paymentNotices.some((n) => n.personId === me && n.status === 'pending')).toBe(
+        true,
+      );
+      const balanceOf = (c: TeamCash, id: string) =>
+        c.members!.find((m) => m.personId === id)?.balanceCents ?? 0;
+
+      // Einnahme mit Kategorie und Zahlungsart; falsche Kategorie wird abgelehnt
+      const income = await send<TeamCash>('POST', `/teams/${b1}/cash/bookings`, coach.token, {
+        kind: 'income',
+        amountCents: 5000,
+        description: 'Spende Bäckerei',
+        category: 'spende',
+        paymentMethod: 'bar',
+      });
+      expect(income.status).toBe(201);
+      const donation = income.body.entries!.find((e) => e.description === 'Spende Bäckerei')!;
+      expect(donation).toMatchObject({ category: 'spende', paymentMethod: 'bar', cancelled: null });
+      expect(income.body.balanceCents).toBe(start.balanceCents! + 5000);
+      const wrong = await send('POST', `/teams/${b1}/cash/bookings`, coach.token, {
+        kind: 'income',
+        amountCents: 100,
+        description: 'Test',
+        category: 'material',
+      });
+      expect(wrong.status).toBe(400);
+
+      // Storno: zählt nicht mehr, bleibt sichtbar; doppelt geht nicht; Spieler dürfen nicht
+      expect(
+        (await send('POST', `/cash/transactions/${donation.id}/cancel`, player.token, {})).status,
+      ).toBe(403);
+      const cancelled = await send<TeamCash>(
+        'POST',
+        `/cash/transactions/${donation.id}/cancel`,
+        coach.token,
+        { reason: 'Doppelt erfasst' },
+      );
+      expect(cancelled.body.balanceCents).toBe(start.balanceCents);
+      expect(cancelled.body.entries!.find((e) => e.id === donation.id)!.cancelled).toMatchObject({
+        reason: 'Doppelt erfasst',
+        by: 'Max Mustermann',
+      });
+      expect(
+        (await send('POST', `/cash/transactions/${donation.id}/cancel`, coach.token, {})).status,
+      ).toBe(409);
+
+      // Umlage 10 € auf drei Personen: 3,34 / 3,33 / 3,33
+      const roster = (await get<RosterEntry[]>(`/teams/${b1}/roster`, coach.token)).filter(
+        (r) => r.function === 'player',
+      );
+      const three = [
+        me,
+        ...roster
+          .filter((r) => r.personId !== me)
+          .slice(0, 2)
+          .map((r) => r.personId),
+      ];
+      const levy = await send<TeamCash>('POST', `/teams/${b1}/cash/levies`, coach.token, {
+        description: 'Mannschaftsabend',
+        mode: 'split',
+        amountCents: 1000,
+        personIds: three,
+      });
+      expect(levy.status).toBe(201);
+      const levies = levy.body.entries!.filter((e) => e.description === 'Umlage: Mannschaftsabend');
+      expect(levies.map((e) => e.amountCents).sort()).toEqual([333, 333, 334]);
+      const inbox = await get<NotificationItem[]>('/notifications', player.token);
+      expect(inbox.some((n) => n.title.startsWith('Mannschaftskasse B1'))).toBe(true);
+
+      // Sammel-Einzahlung
+      const paid = await send<TeamCash>('POST', `/teams/${b1}/cash/payments`, coach.token, {
+        items: three.map((personId) => ({ personId, amountCents: 200 })),
+        paymentMethod: 'bar',
+      });
+      expect(balanceOf(paid.body, three[1]!)).toBe(balanceOf(levy.body, three[1]!) + 200);
+
+      // Monatsbeitrag rückwirkend ab September: zwei Fälligkeiten je Spieler, nächste im November
+      const fee = await send<TeamCash>('POST', `/teams/${b1}/cash/fees`, coach.token, {
+        name: 'Trainingsbeitrag',
+        amountCents: 300,
+        interval: 'monthly',
+        startsOn: '2026-09-01',
+      });
+      expect(fee.body.fees[0]).toMatchObject({ name: 'Trainingsbeitrag', nextDueOn: '2026-11-01' });
+      const feeRows = fee.body.entries!.filter((e) => e.description.startsWith('Trainingsbeitrag'));
+      expect(feeRows.length).toBe(roster.length * 2);
+      expect(feeRows.some((e) => e.description === 'Trainingsbeitrag Oktober 2026')).toBe(true);
+      const ended = await send<TeamCash>(
+        'DELETE',
+        `/cash/fees/${fee.body.fees[0]!.id}`,
+        coach.token,
+      );
+      expect(ended.body.fees).toHaveLength(0);
+
+      // Getränke-Strichliste: B-Jugend ohne Getränke, 1. Mannschaft mit Preis aus den Einstellungen
+      expect(
+        (
+          await send('POST', `/teams/${b1}/cash/drinks`, coach.token, {
+            items: [{ personId: me, count: 1 }],
+          })
+        ).status,
+      ).toBe(400);
+      const h1 = await teamId('1.');
+      const treasurer = await login('kasse');
+      const h1Cash = await get<TeamCash>(`/teams/${h1}/cash`, treasurer.token);
+      const drinker = h1Cash.members![0]!.personId;
+      const drinks = await send<TeamCash>('POST', `/teams/${h1}/cash/drinks`, treasurer.token, {
+        items: [{ personId: drinker, count: 3 }],
+      });
+      expect(balanceOf(drinks.body, drinker)).toBe(balanceOf(h1Cash, drinker) - 450);
+
+      // „Ich habe überwiesen“: Spieler meldet, Trainer bestätigt
+      const notice = await send<TeamCash>(
+        'POST',
+        `/teams/${b1}/cash/payment-notices`,
+        player.token,
+        {
+          personId: me,
+          amountCents: 500,
+          paymentMethod: 'paypal',
+        },
+      );
+      expect(notice.status).toBe(201);
+      const pending = (await get<TeamCash>(`/teams/${b1}/cash`, coach.token)).paymentNotices.find(
+        (n) => n.amountCents === 500 && n.personId === me,
+      )!;
+      const before = await get<TeamCash>(`/teams/${b1}/cash`, coach.token);
+      const confirmed = await send<TeamCash>(
+        'POST',
+        `/cash/payment-notices/${pending.id}/confirm`,
+        coach.token,
+      );
+      expect(balanceOf(confirmed.body, me)).toBe(balanceOf(before, me) + 500);
+      expect(confirmed.body.paymentNotices.some((n) => n.id === pending.id)).toBe(false);
+      expect(
+        (await send('POST', `/cash/payment-notices/${pending.id}/reject`, coach.token)).status,
+      ).toBe(409);
+      expect(
+        (await get<NotificationItem[]>('/notifications', player.token)).some(
+          (n) => n.title === 'Zahlung bestätigt',
+        ),
+      ).toBe(true);
+
+      // Erinnerung an offene Beträge
+      const reminded = await send<{ sent: number }>(
+        'POST',
+        `/teams/${b1}/cash/reminders`,
+        coach.token,
+        {},
+      );
+      expect(reminded.body.sent).toBeGreaterThan(0);
+
+      // Sichtbarkeit: offene Beträge anderer abschalten
+      await send('PUT', `/teams/${b1}/cash/settings`, coach.token, { showMemberBalances: false });
+      const hidden = await get<TeamCash>(`/teams/${b1}/cash`, player.token);
+      expect(hidden.members).toBeNull();
+      expect(hidden.entries!.every((e) => !e.person || e.person.id === me)).toBe(true);
+      await send('PUT', `/teams/${b1}/cash/settings`, coach.token, { showMemberBalances: true });
+      expect(
+        (
+          await send('PUT', `/teams/${b1}/cash/settings`, coach.token, {
+            paypalLink: 'https://evil.example/x',
+          })
+        ).status,
+      ).toBe(400);
+
+      // Kassenwart bestimmen: der Spieler darf danach buchen
+      const options = await get<TreasurerCandidates>(`/teams/${b1}/cash/treasurers`, coach.token);
+      expect(options.candidates.some((c) => c.personId === me)).toBe(true);
+      await send('PUT', `/teams/${b1}/cash/treasurers/${me}`, coach.token, { enabled: true });
+      const promoted = await login('spieler');
+      expect(
+        (await get<TeamCash>(`/teams/${b1}/cash`, promoted.token)).permissions.manageCash,
+      ).toBe(true);
+      const removed = await send<TreasurerCandidates>(
+        'PUT',
+        `/teams/${b1}/cash/treasurers/${me}`,
+        coach.token,
+        { enabled: false },
+      );
+      expect(removed.body.treasurers.some((t) => t.personId === me)).toBe(false);
+      expect(
+        (
+          await send(
+            'PUT',
+            `/teams/${b1}/cash/treasurers/${(await login('eltern')).me.person.id}`,
+            coach.token,
+            { enabled: true },
+          )
+        ).status,
+      ).toBe(400);
+
+      // Kassenprüfung und Bericht als PDF
+      const closing = await send<TeamCash>('POST', `/teams/${b1}/cash/closings`, coach.token, {
+        auditor: 'Andrea Wolf',
+      });
+      expect(closing.body.closings[0]).toMatchObject({ auditor: 'Andrea Wolf' });
+      const link = await get<{ url: string }>(
+        `/teams/${b1}/cash/report-link?format=pdf`,
+        player.token,
+      );
+      const pdf = await app.inject({ method: 'GET', url: new URL(link.url).pathname });
+      expect(pdf.headers['content-type']).toBe('application/pdf');
+      expect(pdf.rawPayload.subarray(0, 5).toString()).toBe('%PDF-');
+      expect(pdf.rawPayload.toString('latin1')).toContain('Kassenpr');
+    });
+
     it('Kassenstatistik für die ganze Mannschaft', async () => {
       const b1 = await teamId('B1');
       const player = await login('spieler');
       const stats = await get<CashStats>(`/teams/${b1}/cash/stats`, player.token);
+      const cash = await get<TeamCash>(`/teams/${b1}/cash`, player.token);
       expect(stats.months.length).toBeGreaterThan(1);
-      expect(stats.months.at(-1)!.balanceCents).toBe(51235);
+      expect(stats.months.at(-1)!.balanceCents).toBe(cash.balanceCents);
       expect(
         stats.categories.some((c) => c.category === 'sponsoring' && c.incomeCents === 25000),
       ).toBe(true);

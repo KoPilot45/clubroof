@@ -1569,6 +1569,18 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         clubId,
         teamId: teamIds[k],
         name: `Mannschaftskasse ${TEAMS.find((t) => t.key === k)!.name}`,
+        // Bezahlinfos (Beispiel-IBAN aus der Bankdokumentation) und Getränkepreis
+        settings:
+          k === 'h1'
+            ? {
+                iban: 'DE89 3704 0044 0532 0130 00',
+                accountHolder: 'SV Grün-Weiß – 1. Mannschaft',
+                paypalLink: 'https://paypal.me/svgw-erste',
+                drinkPriceCents: 150,
+              }
+            : k === 'b1'
+              ? { iban: 'DE89 3704 0044 0532 0130 00', accountHolder: 'SV Grün-Weiß – B-Jugend' }
+              : { drinkPriceCents: 150 },
       };
     });
     await tx.insert(s.cashAccounts).values(accounts);
@@ -1728,6 +1740,39 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       );
     }
     await insertChunked(tx, s.cashTransactions, txRows);
+
+    // Kassenverwaltung: Monatsbeitrag der 1. Mannschaft (ab nächstem Monat), Kassenprüfung zum
+    // Saisonstart und eine offene Zahlungsmeldung in der B-Jugend
+    const nextMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1));
+    await tx.insert(s.cashFees).values({
+      clubId,
+      teamId: teamIds.h1,
+      name: 'Mannschaftsbeitrag',
+      amountCents: euro(5),
+      interval: 'monthly',
+      nextDueOn: toIsoDate(nextMonth),
+      createdByPersonId: persona.treasurer.id,
+    });
+    await tx.insert(s.cashClosings).values({
+      clubId,
+      teamId: teamIds.h1,
+      closedOn: toIsoDate(seasonStart),
+      balanceCents: euro(845),
+      openCents: 0,
+      auditor: 'Andrea Wolf',
+      note: 'Übergabe aus der Vorsaison geprüft',
+      createdByPersonId: persona.treasurer.id,
+    });
+    await tx.insert(s.cashPaymentNotices).values({
+      clubId,
+      teamId: teamIds.b1,
+      personId: persona.player.id,
+      amountCents: euro(1.5),
+      paymentMethod: 'ueberweisung',
+      note: 'Strafen September',
+      createdByPersonId: persona.player.id,
+      createdAt: addMinutes(now, -180),
+    });
 
     // ── Dokumente ─────────────────────────────────────────────────────────────────────────
     await tx.insert(s.documents).values(

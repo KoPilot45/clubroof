@@ -62,6 +62,18 @@ export const cashAccounts = pgTable(
       .references(() => clubs.id, { onDelete: 'cascade' }),
     teamId: uuid().references(() => teams.id, { onDelete: 'cascade' }),
     name: text().notNull(),
+    /** Bezahlinfos, Getränkepreis, Sichtbarkeit, Erinnerungen (Kassenverwaltung) */
+    settings: jsonb()
+      .$type<{
+        iban?: string | null;
+        accountHolder?: string | null;
+        paypalLink?: string | null;
+        drinkPriceCents?: number | null;
+        showMemberBalances?: boolean;
+        autoReminder?: boolean;
+      }>()
+      .notNull()
+      .default({}),
     createdAt: createdAt(),
   },
   (t) => [index().on(t.clubId)],
@@ -96,8 +108,18 @@ export const cashTransactions = pgTable(
     personId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     /** Strafe aus dem Strafenkatalog (für die Statistik je Strafenart) */
     fineTypeId: uuid().references((): AnyPgColumn => cashFineTypes.id, { onDelete: 'set null' }),
+    /** Mannschaftsbeitrag, aus dem die Forderung stammt */
+    feeId: uuid().references((): AnyPgColumn => cashFees.id, { onDelete: 'set null' }),
+    /** bar | ueberweisung | paypal */
+    paymentMethod: text(),
+    /** Beleg (Bild) als Medienverweis */
+    receiptRef: text(),
     bookedOn: date().notNull(),
     createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    /** Storniert: zählt nirgends mehr, bleibt aber sichtbar und im Protokoll */
+    cancelledAt: timestamp({ withTimezone: true }),
+    cancelledByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    cancelReason: text(),
     createdAt: createdAt(),
   },
   (t) => [index().on(t.accountId, t.bookedOn), index().on(t.personId)],
@@ -118,6 +140,79 @@ export const cashFineTypes = pgTable(
     amountCents: integer().notNull(),
     /** Entfernte Strafen bleiben für alte Buchungen erhalten */
     archivedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.teamId)],
+);
+
+/** Mannschaftsbeitrag: wird allen Spielern regelmäßig (oder einmalig) als Forderung gebucht. */
+export const cashFees = pgTable(
+  'cash_fees',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    teamId: uuid()
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    amountCents: integer().notNull(),
+    /** monthly | season | once */
+    interval: text().notNull(),
+    /** Nächste Fälligkeit; leer = beendet */
+    nextDueOn: date(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.teamId)],
+);
+
+/** „Ich habe überwiesen“: Meldung eines Mitglieds, die der Kassenwart bestätigt. */
+export const cashPaymentNotices = pgTable(
+  'cash_payment_notices',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    teamId: uuid()
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    amountCents: integer().notNull(),
+    paymentMethod: text().notNull(),
+    note: text(),
+    /** pending | confirmed | rejected */
+    status: text().notNull().default('pending'),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    decidedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    decidedAt: timestamp({ withTimezone: true }),
+    transactionId: uuid().references(() => cashTransactions.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.teamId)],
+);
+
+/** Kassenprüfung bzw. Saisonabschluss: Stand zum Stichtag, geprüft von … */
+export const cashClosings = pgTable(
+  'cash_closings',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    teamId: uuid()
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
+    closedOn: date().notNull(),
+    balanceCents: integer().notNull(),
+    openCents: integer().notNull(),
+    auditor: text(),
+    note: text(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
   },
   (t) => [index().on(t.teamId)],

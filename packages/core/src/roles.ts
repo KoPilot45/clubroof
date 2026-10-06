@@ -98,8 +98,9 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
       'polls.manage',
       'documents.manage',
       'cash.read',
-      // Strafenkatalog pflegen und Strafen vergeben (Festlegung 07.10.2026)
+      // Strafenkatalog und Kassenverwaltung gemeinsam mit dem Kassenwart (Festlegung 07.10.2026)
       'cash.fines',
+      'cash.manage',
     ],
   },
   {

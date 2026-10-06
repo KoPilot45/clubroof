@@ -8,6 +8,7 @@
 import { randomUUID } from 'node:crypto';
 import {
   can,
+  scopesWith,
   type UploadDocumentInput,
   type UploadImageInput,
   type UploadedImage,
@@ -27,6 +28,7 @@ const MEDIA_KIND = {
   logo: 'club_logo',
   avatar: 'avatar',
   board: 'board_image',
+  receipt: 'cash_receipt',
 } as const;
 
 async function audit(
@@ -60,6 +62,11 @@ export async function uploadImage(
     throw forbidden('Bilder für News laden nur Verfasserinnen und Verfasser hoch.');
   if (input.purpose === 'logo' && !actorCan(actor, 'club.settings.manage'))
     throw forbidden('Das Vereinslogo ändert nur die Vereinsadministration.');
+  if (input.purpose === 'receipt') {
+    const cash = scopesWith(actor.grants, 'cash.manage');
+    if (!cash.all && !cash.orgUnitIds.length && !cash.teamIds.length)
+      throw forbidden('Belege laden Kassenwart und Trainerteam hoch.');
+  }
   const file = checkUpload('image', input.dataBase64, input.fileName);
   const id = randomUUID();
   const storageKey = `clubs/${actor.club.id}/media/${id}.${file.ext}`;

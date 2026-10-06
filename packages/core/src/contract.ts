@@ -451,6 +451,8 @@ export type SquadStatRow = {
   trainingRate: number | null;
 };
 
+export type PaymentMethod = 'bar' | 'ueberweisung' | 'paypal';
+
 export type CashEntry = {
   id: string;
   bookedOn: string;
@@ -461,6 +463,11 @@ export type CashEntry = {
   description: string;
   counterparty: string | null;
   person: { id: string; name: string } | null;
+  paymentMethod: PaymentMethod | null;
+  /** Beleg (signierter Bildlink) */
+  receiptUrl: string | null;
+  /** Storniert – zählt nicht mehr */
+  cancelled: { at: string; by: string | null; reason: string | null } | null;
 };
 
 export type PersonalAccount = {
@@ -486,6 +493,60 @@ export type TeamCash = {
   personal: PersonalAccount[];
   /** Strafenkatalog der Mannschaft (wenn Strafen aktiviert sind) */
   fineCatalog: FineType[];
+  /** Bezahlinfos (für alle), übrige Einstellungen für die Kassenverwaltung */
+  settings: CashSettings;
+  /** Kassenwarte der Mannschaft */
+  treasurers: { personId: string; name: string }[];
+  /** Meldungen „Ich habe überwiesen“: Kassenverwaltung alle offenen, sonst die eigenen */
+  paymentNotices: PaymentNotice[];
+  fees: CashFee[];
+  closings: CashClosing[];
+};
+
+export type CashSettings = {
+  iban: string | null;
+  accountHolder: string | null;
+  paypalLink: string | null;
+  drinkPriceCents: number | null;
+  /** Mannschaft sieht offene Beträge der anderen (sonst nur die eigenen) */
+  showMemberBalances: boolean;
+  /** Am Monatsanfang automatisch an offene Beträge erinnern */
+  autoReminder: boolean;
+};
+
+export type PaymentNotice = {
+  id: string;
+  personId: string;
+  name: string;
+  amountCents: number;
+  paymentMethod: PaymentMethod;
+  note: string | null;
+  createdAt: string;
+  status: 'pending' | 'confirmed' | 'rejected';
+};
+
+export type CashFee = {
+  id: string;
+  name: string;
+  amountCents: number;
+  interval: 'monthly' | 'season' | 'once';
+  nextDueOn: string | null;
+};
+
+export type CashClosing = {
+  id: string;
+  closedOn: string;
+  balanceCents: number;
+  openCents: number;
+  auditor: string | null;
+  note: string | null;
+  createdBy: string | null;
+};
+
+export type TreasurerCandidates = {
+  treasurers: { personId: string; name: string }[];
+  /** Erwachsene mit Login aus der Mannschaft und Eltern der Spieler */
+  candidates: { personId: string; name: string; relation: string }[];
 };
 
 export type FineType = {
@@ -537,7 +598,30 @@ export type CreateCashBookingInput = {
   personId?: string | null;
   counterparty?: string | null;
   bookedOn?: string | null;
+  /** Einnahmen/Ausgaben: Kategorie aus CASH_INCOME_CATEGORIES bzw. CASH_EXPENSE_CATEGORIES */
+  category?: string | null;
+  paymentMethod?: PaymentMethod | null;
+  /** Hochgeladenes Belegbild (Zweck „receipt“) */
+  receiptImageId?: string | null;
 };
+
+export const CASH_INCOME_CATEGORIES = [
+  'sponsoring',
+  'einnahmen_spieltag',
+  'veranstaltung',
+  'spende',
+  'zuschuss',
+  'einnahme',
+] as const;
+export const CASH_EXPENSE_CATEGORIES = [
+  'material',
+  'getraenke',
+  'veranstaltung',
+  'fahrtkosten',
+  'startgeld',
+  'schiedsrichter',
+  'ausgabe',
+] as const;
 
 export type Facility = { id: string; name: string; shortName: string | null };
 
@@ -605,7 +689,7 @@ export type UploadDocumentInput = {
 };
 
 export type UploadImageInput = {
-  purpose: 'news' | 'logo' | 'avatar' | 'board';
+  purpose: 'news' | 'logo' | 'avatar' | 'board' | 'receipt';
   fileName: string;
   dataBase64: string;
 };
