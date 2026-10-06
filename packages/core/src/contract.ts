@@ -233,6 +233,7 @@ export type NotificationItem = {
   id: string;
   level: NotificationLevel;
   category: string;
+  topic: string;
   title: string;
   body: string | null;
   link: string | null;
@@ -1222,3 +1223,28 @@ export type MemberImportResult = {
 export const MEMBER_IMPORT_TEMPLATE =
   'Vorname;Nachname;Geburtsdatum;E-Mail;Telefon;Mitgliedsnummer;Eintrittsdatum;Mannschaft;Funktion;Rückennummer\n' +
   'Max;Mustermann;14.05.2011;eltern.mustermann@example.org;0170 1234567;1234;01.08.2026;C1;Spieler;7\n';
+
+// ── Benachrichtigungseinstellungen ───────────────────────────────────────
+
+export type NotificationSettings = {
+  topics: {
+    key: string;
+    label: string;
+    description: string;
+    mode: 'push' | 'app' | 'off';
+    defaultMode: 'push' | 'app' | 'off';
+  }[];
+  /** Mannschaften des Nutzers und seiner Kinder – einzeln stummschaltbar */
+  teams: { id: string; badge: string; name: string; muted: boolean }[];
+  reminderHours: number;
+  quietHours: { enabled: boolean; start: string; end: string };
+  /** Registrierte Geräte für Push */
+  devices: number;
+};
+
+export type UpdateNotificationSettingsInput = Partial<{
+  topics: Record<string, 'push' | 'app' | 'off'>;
+  mutedTeamIds: string[];
+  reminderHours: number;
+  quietHours: { enabled: boolean; start: string; end: string };
+}>;

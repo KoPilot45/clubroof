@@ -23,6 +23,11 @@ export type Config = {
   dataEncryptionKey: string;
   /** Einmal-Code für die Ersteinrichtung eines Vereins auf einem leeren Server */
   setupToken: string | undefined;
+  /** expo = Push über den Expo Push Service, log = nur protokollieren */
+  pushProvider: 'expo' | 'log';
+  expoAccessToken: string | undefined;
+  /** Hintergrundaufgaben (Erinnerungen, Sammelhinweise, Push) im API-Prozess */
+  jobsEnabled: boolean;
 };
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -42,6 +47,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     mailFrom: env.MAIL_FROM ?? 'Clubroof <no-reply@clubroof.local>',
     dataEncryptionKey: encryptionKey(env),
     setupToken: env.SETUP_TOKEN,
+    pushProvider:
+      env.PUSH_PROVIDER === 'expo' || (!env.PUSH_PROVIDER && env.NODE_ENV === 'production')
+        ? 'expo'
+        : 'log',
+    expoAccessToken: env.EXPO_ACCESS_TOKEN,
+    jobsEnabled: env.JOBS_ENABLED !== 'false',
   };
 }
 

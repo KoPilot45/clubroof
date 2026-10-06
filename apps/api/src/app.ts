@@ -14,6 +14,7 @@ import { HttpError, unauthorized } from './errors';
 import { authRoutes } from './routes/auth';
 import { clubRoutes, fileRoutes } from './routes/club';
 import { createMailer, type Mailer } from './security/mailer';
+import { createPushSender, type PushSender } from './notify/push';
 import { twoFactorMissing } from './services/two-factor';
 import { diskStorage, linkSigner, type FileStorage } from './storage/files';
 import { communityRoutes } from './routes/community';
@@ -36,6 +37,7 @@ export type AppOptions = {
   config: Config;
   storage?: FileStorage;
   mailer?: Mailer;
+  push?: PushSender;
   now?: () => Date;
   logger?: boolean;
 };
@@ -45,6 +47,7 @@ export async function buildApp({
   config,
   storage,
   mailer,
+  push,
   now = () => new Date(),
   logger = false,
 }: AppOptions) {
@@ -68,6 +71,14 @@ export async function buildApp({
     'mailer',
     mailer ??
       createMailer({ smtpUrl: config.smtpUrl, from: config.mailFrom }, (m) => app.log.info(m)),
+  );
+  app.decorate(
+    'push',
+    push ??
+      createPushSender(
+        { provider: config.pushProvider, accessToken: config.expoAccessToken },
+        (m) => app.log.info(m),
+      ),
   );
   app.decorateRequest('sessionUser', null);
   app.decorateRequest('actor', null);

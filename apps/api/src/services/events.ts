@@ -3,7 +3,9 @@
  * die Teilnehmerliste einsehen und für wen zu- oder absagen darf.
  */
 import {
+  calendarDayOf,
   isResponseOpen,
+  toIsoDate,
   responseDeadline,
   type AttendanceCounts,
   type AttendanceStatus,
@@ -18,6 +20,8 @@ import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, desc, eq, gt, inArray, ne, type SQL } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
+import { coachUsers, digestAt } from '../notify/coaches';
+import { deliver } from '../notify/deliver';
 import { OPEN_EVENT_TYPES, attendanceFor, shiftsFor } from './helpers';
 
 /** Wie lange Trainer Rückmeldungen nach Terminbeginn noch korrigieren dürfen. */
@@ -154,7 +158,7 @@ export async function summarizeEvents(
   });
 }
 
-function toDeadlineRule(
+export function toDeadlineRule(
   rule: typeof s.teamDeadlineRules.$inferSelect | undefined,
 ): DeadlineRule | null {
   if (!rule) return null;
@@ -382,6 +386,37 @@ export async function respondToEvent(
       entityId: participant.id,
       data: { eventId: input.eventId, personId: input.personId, status: input.status },
     });
+  }
+
+  // Nach dem Sammelhinweis erfährt das Trainerteam kurzfristige Absagen einzeln
+  if (
+    input.status === 'no' &&
+    participant.status !== 'no' &&
+    participant.role === 'player' &&
+    isOwn &&
+    row.team &&
+    now >= digestAt(row.event.startsAt, deadline)
+  ) {
+    const person = actor.managed.find((m) => m.id === input.personId)!;
+    const coaches = await coachUsers(
+      db,
+      row.team.id,
+      toIsoDate(calendarDayOf(now, actor.club.timezone)),
+    );
+    await deliver(
+      db,
+      actor.club,
+      coaches.filter((id) => id !== actor.user.id),
+      {
+        level: 'important',
+        topic: 'responses',
+        teamId: row.team.id,
+        title: `Kurzfristige Absage: ${person.firstName} ${person.lastName}`,
+        body: `${row.event.title}${input.reason?.trim() ? ` – ${input.reason.trim()}` : ''}`,
+        link: `/events/${row.event.id}`,
+      },
+      now,
+    );
   }
 
   const [updated] = await summarizeEvents(db, actor, [row], now);

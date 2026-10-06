@@ -15,6 +15,7 @@ import type {
   TwoFactorSetup,
   TwoFactorStatus,
   ClubSettings,
+  NotificationSettings,
   MemberImportResult,
   InviteLink,
   InviteOverview,
@@ -61,6 +62,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from './app';
 import { loadConfig } from './config';
 import { memoryMailer } from './security/mailer';
+import { memoryPushSender } from './notify/push';
+import { runJobs } from './jobs';
 import { stepOf, totp } from './security/totp';
 
 const url = process.env.DATABASE_URL;
@@ -72,6 +75,7 @@ describe.skipIf(!url)('API', () => {
   const { db, sql } = createDb(url);
   let app: Awaited<ReturnType<typeof buildApp>>;
   const mailer = memoryMailer();
+  const push = memoryPushSender();
 
   beforeAll(async () => {
     await runMigrations(url);
@@ -84,6 +88,7 @@ describe.skipIf(!url)('API', () => {
       }),
       now: () => NOW,
       mailer,
+      push,
     });
   }, 60_000);
 
@@ -2721,6 +2726,176 @@ describe.skipIf(!url)('API', () => {
           })
         ).status,
       ).toBe(400);
+    });
+  });
+
+  describe('Benachrichtigungen', () => {
+    const HOUR = 3_600_000;
+    const later = (hours: number) => new Date(NOW.getTime() + hours * HOUR).toISOString();
+    const b1Of = async () => (await login('trainer')).me.teams.find((t) => t.badge === 'B1')!;
+    const newEvent = async (token: string, teamId: string, hours: number, type = 'training') => {
+      const res = await send<EventDetail>('POST', `/teams/${teamId}/events`, token, {
+        type,
+        startsAt: later(hours),
+        ...(type === 'training' ? {} : { title: 'Teamabend' }),
+      });
+      expect(res.status, JSON.stringify(res.body)).toBe(201);
+      return res.body;
+    };
+    const inboxFor = async (token: string, link: string) =>
+      (await get<NotificationItem[]>('/notifications', token)).filter((n) => n.link === link);
+
+    it('Einstellungen: Themen, stumme Mannschaft – Dringendes kommt immer an', async () => {
+      const player = await login('spieler');
+      const coach = await login('trainer');
+      const b1 = await b1Of();
+      const mine = await get<NotificationSettings>('/me/notification-settings', player.token);
+      const keys = mine.topics.map((t) => t.key);
+      expect(keys).toContain('events');
+      expect(keys).not.toContain('responses');
+      expect(keys).not.toContain('admin');
+      expect(mine).toMatchObject({ reminderHours: 24, quietHours: { enabled: true } });
+      expect(mine.teams.map((t) => t.badge)).toContain('B1');
+      const coachSettings = await get<NotificationSettings>(
+        '/me/notification-settings',
+        coach.token,
+      );
+      expect(coachSettings.topics.map((t) => t.key)).toContain('responses');
+
+      const foreign = coachSettings.teams.find((t) => !mine.teams.some((m) => m.id === t.id))!;
+      expect(
+        (
+          await send('PUT', '/me/notification-settings', player.token, {
+            mutedTeamIds: [foreign.id],
+          })
+        ).status,
+      ).toBe(400);
+      const muted = await send<NotificationSettings>(
+        'PUT',
+        '/me/notification-settings',
+        player.token,
+        { mutedTeamIds: [b1.id] },
+      );
+      expect(muted.body.teams.find((t) => t.id === b1.id)!.muted).toBe(true);
+
+      const event = await newEvent(coach.token, b1.id, 30);
+      expect(await inboxFor(player.token, `/events/${event.id}`)).toHaveLength(0);
+      await send('POST', `/events/${event.id}/cancel`, coach.token, { reason: 'Platz gesperrt' });
+      const urgent = await inboxFor(player.token, `/events/${event.id}`);
+      expect(urgent.map((n) => n.level)).toEqual(['urgent']);
+
+      // Thema aus: keine Terminmeldungen mehr
+      await send('PUT', '/me/notification-settings', player.token, {
+        mutedTeamIds: [],
+        topics: { events: 'off' },
+      });
+      const silent = await newEvent(coach.token, b1.id, 31);
+      expect(await inboxFor(player.token, `/events/${silent.id}`)).toHaveLength(0);
+      await send('PUT', '/me/notification-settings', player.token, { topics: { events: 'push' } });
+      await send('POST', `/events/${silent.id}/cancel`, coach.token, { reason: 'Test' });
+
+      const read = await send('POST', '/notifications/read-all', player.token);
+      expect(read.status).toBe(204);
+      const all = await get<NotificationItem[]>('/notifications', player.token);
+      expect(all.every((n) => n.readAt)).toBe(true);
+    });
+
+    it('Push: Gerät anmelden, Ruhezeit verschiebt, Dringendes sofort', async () => {
+      const player = await login('spieler');
+      const coach = await login('trainer');
+      const b1 = await b1Of();
+      const token = 'ExponentPushToken[spieler-test-1]';
+      expect(
+        (await send('POST', '/me/devices', player.token, { token: 'falsch', platform: 'ios' }))
+          .status,
+      ).toBe(400);
+      expect(
+        (await send('POST', '/me/devices', player.token, { token, platform: 'ios' })).status,
+      ).toBe(204);
+      // 09:00–12:00 Uhr Ruhezeit; jetzt ist es 10:00 Uhr in Berlin
+      await send('PUT', '/me/notification-settings', player.token, {
+        quietHours: { enabled: true, start: '09:00', end: '12:00' },
+      });
+
+      const event = await newEvent(coach.token, b1.id, 32);
+      await runJobs(db, push, NOW);
+      const toPlayer = () => push.sent.filter((m) => m.to === token);
+      expect(toPlayer()).toHaveLength(0);
+      await runJobs(db, push, new Date(NOW.getTime() + 2 * HOUR + 60_000));
+      expect(toPlayer().map((m) => m.title)).toEqual(['Neuer Termin: Training']);
+      expect(toPlayer()[0]!.data.link).toBe(`/events/${event.id}`);
+
+      // Dringendes ignoriert die Ruhezeit
+      await send('POST', `/events/${event.id}/cancel`, coach.token, { reason: 'Gewitter' });
+      await runJobs(db, push, NOW);
+      expect(toPlayer().at(-1)).toMatchObject({ title: 'Abgesagt: Training', priority: 'high' });
+
+      // Abgemeldetes Gerät wird entfernt
+      push.gone.add(token);
+      const second = await newEvent(coach.token, b1.id, 33);
+      await send('POST', `/events/${second.id}/cancel`, coach.token, { reason: 'Test' });
+      await runJobs(db, push, NOW);
+      expect(
+        (await get<NotificationSettings>('/me/notification-settings', player.token)).devices,
+      ).toBe(0);
+      await send('PUT', '/me/notification-settings', player.token, {
+        quietHours: { enabled: true, start: '22:00', end: '07:00' },
+      });
+    });
+
+    it('Erinnerung an fehlende Zusage, Sammelhinweis und kurzfristige Absage', async () => {
+      const player = await login('spieler');
+      const coach = await login('trainer');
+      const b1 = await b1Of();
+
+      // Frist 3 Stunden vor Beginn → in 17 Stunden; Erinnerung 24 Stunden vorher ist fällig
+      const soon = await newEvent(coach.token, b1.id, 20);
+      await runJobs(db, push, NOW);
+      await runJobs(db, push, NOW);
+      const reminders = (await inboxFor(player.token, `/events/${soon.id}`)).filter((n) =>
+        n.title.startsWith('Zusage offen'),
+      );
+      expect(reminders).toHaveLength(1);
+      expect(reminders[0]!.level).toBe('action');
+
+      // Ohne Erinnerung
+      await send('PUT', '/me/notification-settings', player.token, { reminderHours: 0 });
+      const quiet = await newEvent(coach.token, b1.id, 21);
+      await runJobs(db, push, NOW);
+      expect(
+        (await inboxFor(player.token, `/events/${quiet.id}`)).some((n) =>
+          n.title.startsWith('Zusage offen'),
+        ),
+      ).toBe(false);
+      await send('PUT', '/me/notification-settings', player.token, { reminderHours: 24 });
+
+      // Frist ist gerade abgelaufen → ein Sammelhinweis fürs Trainerteam
+      const due = await newEvent(coach.token, b1.id, 2);
+      await runJobs(db, push, NOW);
+      await runJobs(db, push, NOW);
+      const digest = await inboxFor(coach.token, `/events/${due.id}`);
+      expect(digest.filter((n) => n.title === 'Rückmeldungen B1: Training')).toHaveLength(1);
+      expect(digest.find((n) => n.title.startsWith('Rückmeldungen'))!.body).toMatch(
+        /\d+ Zusagen · \d+ Absagen/,
+      );
+
+      // Termin ohne Frist: nach dem Sammelhinweis kommen Absagen einzeln
+      const evening = await newEvent(coach.token, b1.id, 2, 'team_event');
+      const late = await send(
+        'PUT',
+        `/events/${evening.id}/responses/${player.me.person.id}`,
+        player.token,
+        { status: 'no', reason: 'Krank' },
+      );
+      expect(late.status, JSON.stringify(late.body)).toBe(200);
+      const notice = (await inboxFor(coach.token, `/events/${evening.id}`)).find((n) =>
+        n.title.startsWith('Kurzfristige Absage'),
+      );
+      expect(notice).toMatchObject({
+        level: 'important',
+        title: 'Kurzfristige Absage: Max Becker',
+      });
+      expect(notice!.body).toContain('Krank');
     });
   });
 

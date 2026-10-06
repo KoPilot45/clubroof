@@ -1,4 +1,5 @@
 import type { Mailer } from './security/mailer';
+import type { PushSender } from './notify/push';
 import type { Db } from '@clubroof/db';
 import type { Actor } from './actor';
 import type { SessionUser } from './auth/session';
@@ -15,6 +16,7 @@ declare module 'fastify' {
     storage: FileStorage;
     links: LinkSigner;
     mailer: Mailer;
+    push: PushSender;
   }
   interface FastifyRequest {
     sessionUser: SessionUser | null;
