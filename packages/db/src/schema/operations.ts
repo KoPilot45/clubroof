@@ -1,4 +1,5 @@
 import {
+  type AnyPgColumn,
   bigint,
   boolean,
   date,
@@ -93,11 +94,33 @@ export const cashTransactions = pgTable(
     counterparty: text(),
     isCharge: boolean().notNull().default(false),
     personId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    /** Strafe aus dem Strafenkatalog (für die Statistik je Strafenart) */
+    fineTypeId: uuid().references((): AnyPgColumn => cashFineTypes.id, { onDelete: 'set null' }),
     bookedOn: date().notNull(),
     createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
   },
   (t) => [index().on(t.accountId, t.bookedOn), index().on(t.personId)],
+);
+
+/** Strafenkatalog einer Mannschaft: Trainerteam bzw. Kassenwart legen Strafen und Beträge fest. */
+export const cashFineTypes = pgTable(
+  'cash_fine_types',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    teamId: uuid()
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    amountCents: integer().notNull(),
+    /** Entfernte Strafen bleiben für alte Buchungen erhalten */
+    archivedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.teamId)],
 );
 
 /** Dokument-Metadaten. Die Datei selbst liegt im S3-kompatiblen Storage unter `storageKey`. */

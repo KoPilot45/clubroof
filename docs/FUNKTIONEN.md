@@ -32,7 +32,7 @@ Stand: 07.10.2026
 | Neuigkeiten für dich (nach Priorität und Betroffenheit sortiert) | M 3, K 3 | ✅ | |
 | Nächste Termine (eigene, Kinder, Trainerrollen, Gastspiele) | M 3, K 3 | ✅ | |
 | Offene Aktionen (Zusagen, Umfragen, Freigaben, Aufgaben) | M 3–4, K 3 | ✅ | Zusagen, Umfragen und News-Freigaben führen direkt zum Inhalt; Trainerteam: „Anwesenheit erfassen“ für Trainings der letzten Woche |
-| Persönliche Kasse / Teamkasse | M 3, K 3 | ✅ | Karte führt zur Mannschaftskasse |
+| Persönliche Kasse / Teamkasse | M 3, K 3 | ✅ | bewusst nicht auf der Startseite, sondern im Team-Bereich (Festlegung 07.10.2026) |
 | Vorstand: Verein im Überblick (Teams, Mitglieder, Freigaben, Event) | M 4 | ✅ | |
 | Umfragen mit Schnellantwort | K 3 | ✅ | Antwortmöglichkeiten direkt unter „Offene Aktionen“ auf der Startseite |
 | Persönliche Statistik | K 3 | ✅ | im Profil („Mehr → Profil & Statistik“), je Mannschaft mit Trainingsquote; Eltern über das Profil des Kindes |
@@ -54,6 +54,8 @@ Stand: 07.10.2026
 | Statistik | K 4 | ✅ | Saison-Bilanz oben, darunter Kacheln (Kader, Training, Torschützen, Scorer, Karten, Ergebnisse) mit eigenem Zeitraumfilter. Zeitraum: gesamte Saison (Standard), letzter Monat oder frei wählbar; Bilanz, Torschützen-, Scorer- und Kartenliste, sortierbare Kader-Statistik, Trainingsbeteiligung (für alle der Mannschaft sichtbar), Ergebnisse. Weitere Stufen bewusst nicht vorgesehen (Festlegung 07.10.2026) |
 | Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | ✅ | Trainerteam wählt den Modus und vergibt Nummern (keine Doppelten); je Spiel in der Aufstellung änderbar |
 | Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | ✅ | Buchen nur für Kassenverantwortliche; Kassenbericht als CSV für Excel (Anfangsbestand, Buchungen, laufender Stand, offene persönliche Konten) |
+| Strafenkatalog | M 16 | ✅ | Eigene Strafen mit Beträgen je Mannschaft; pflegen und vergeben dürfen Trainerteam und Kassenwart; Vergabe an mehrere Personen gleichzeitig, die Strafe landet auf ihrem Konto |
+| Kassenstatistik | – | ✅ | Kassenstand je Monat, Einnahmen/Ausgaben, Kategorien, Strafen nach Art und je Person, offene Beträge – für die ganze Mannschaft |
 | Teambezogene Dokumente und Aufgaben | K 4 | ✅ | Dokumente der Mannschaft; Mannschaftsaufgaben (Fahrdienst, Trikotwäsche …) mit Zuteilung, „Ich übernehme“ und Abhaken |
 | Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ✅ | Optionales Modul: Übungsbibliothek des Vereins, Plan je Training (Schwerpunkt, Ablauf, Notizen), Vorlage aus dem letzten Plan; Übungen aus der Bibliothek mit „Zum Training“ direkt in einen der nächsten Pläne; Spieler sehen Schwerpunkt und Material |
 
@@ -190,7 +192,7 @@ Stand: 07.10.2026
 | --- | ---: | ---: | ---: |
 | Grundstruktur & Design | 7 | 0 | 0 |
 | Home | 10 | 0 | 0 |
-| Mannschaft | 13 | 1 | 0 |
+| Mannschaft | 15 | 1 | 0 |
 | Termine & Teilnahme | 14 | 0 | 0 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
 | Verein | 11 | 0 | 0 |
@@ -201,4 +203,4 @@ Stand: 07.10.2026
 | Verwaltung | 8 | 1 | 0 |
 | Einrichtung & Module | 5 | 0 | 0 |
 | Sicherheit, Betrieb, Integrationen | 6 | 0 | 2 |
-| **Gesamt** | **101** | **3** | **2** |
+| **Gesamt** | **103** | **3** | **2** |

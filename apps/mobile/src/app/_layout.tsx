@@ -118,6 +118,14 @@ function Navigator() {
           />
           <Stack.Screen name="profile/[id]" options={{ headerShown: true, title: 'Profil' }} />
           <Stack.Screen
+            name="teams/[id]/fines"
+            options={{ headerShown: true, title: 'Strafenkatalog' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-stats"
+            options={{ headerShown: true, title: 'Kassenstatistik' }}
+          />
+          <Stack.Screen
             name="club-team/[id]"
             options={{ headerShown: true, title: 'Mannschaft' }}
           />

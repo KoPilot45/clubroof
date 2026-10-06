@@ -117,6 +117,16 @@ export default function TeamScreen() {
               },
             ]
           : []),
+        ...(o?.fines
+          ? [
+              {
+                key: 'fines',
+                label: 'Strafenkatalog',
+                icon: 'list' as const,
+                onPress: () => router.push(`/teams/${team.id}/fines`),
+              },
+            ]
+          : []),
         ...(has('training_planning') && o?.permissions.manageEvents
           ? [
               {

@@ -98,6 +98,8 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
       'polls.manage',
       'documents.manage',
       'cash.read',
+      // Strafenkatalog pflegen und Strafen vergeben (Festlegung 07.10.2026)
+      'cash.fines',
     ],
   },
   {
@@ -106,7 +108,7 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
     // Zusatzaufgabe: wird z. B. einem Spieler für seine Mannschaft vergeben (docs/ENTSCHEIDUNGEN.md)
     description: 'Zusatzaufgabe: Mannschaftskasse, Buchungen, Strafen/Getränke, Abrechnung',
     defaultScope: 'team',
-    permissions: ['cash.read', 'cash.manage'],
+    permissions: ['cash.read', 'cash.manage', 'cash.fines'],
   },
   {
     key: 'facility_manager',

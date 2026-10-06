@@ -1,19 +1,24 @@
 /**
- * Mannschaftskasse (Mappe S. 16, Konzept §4). Kassenstand und Buchungen nur mit Kassenrechten;
- * jedes Mitglied sieht sein persönliches Konto (Strafen, Getränke, Einzahlungen).
+ * Mannschaftskasse (Mappe S. 16, Konzept §4). Kassenstand, Buchungen und Statistik sieht die ganze
+ * Mannschaft (Festlegung 07.10.2026); buchen nur Kassenverantwortliche. Den Strafenkatalog pflegen
+ * Trainerteam und Kassenwart – sie vergeben auch die Strafen.
  */
 import {
   calendarDayOf,
   resolveModule,
   toIsoDate,
+  type AssignFineInput,
   type CashEntry,
+  type CashStats,
   type CreateCashBookingInput,
+  type FineType,
+  type SaveFineTypeInput,
   type TeamCash,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, desc, eq, lte } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull, lte } from 'drizzle-orm';
 import type { Actor } from '../actor';
-import { HttpError, forbidden } from '../errors';
+import { HttpError, forbidden, notFound } from '../errors';
 import { loadTeamForActor, requireModule, type TeamRow } from './team-access';
 
 type TxRow = typeof s.cashTransactions.$inferSelect;
@@ -44,10 +49,33 @@ async function accountFor(db: Db, actor: Actor, team: TeamRow, create = false) {
   return created!;
 }
 
+/** Kassenstand, Buchungen und Statistik: ganze Mannschaft und Kassenverantwortliche. */
+async function loadCashTeam(db: Db, actor: Actor, teamId: string) {
+  const loaded = await loadTeamForActor(db, actor, teamId);
+  requireModule(actor, 'team_cash', loaded.team);
+  return { ...loaded, seesAll: loaded.isMember || loaded.permissions.readCash };
+}
+
+async function fineCatalog(db: Db, team: TeamRow): Promise<FineType[]> {
+  const rows = await db
+    .select({ type: s.cashFineTypes, given: count(s.cashTransactions.id) })
+    .from(s.cashFineTypes)
+    .leftJoin(s.cashTransactions, eq(s.cashTransactions.fineTypeId, s.cashFineTypes.id))
+    .where(and(eq(s.cashFineTypes.teamId, team.id), isNull(s.cashFineTypes.archivedAt)))
+    .groupBy(s.cashFineTypes.id)
+    .orderBy(asc(s.cashFineTypes.amountCents), asc(s.cashFineTypes.name));
+  return rows.map(({ type, given }) => ({
+    id: type.id,
+    name: type.name,
+    amountCents: type.amountCents,
+    timesGiven: Number(given),
+  }));
+}
+
 export async function getTeamCash(db: Db, actor: Actor, teamId: string): Promise<TeamCash> {
-  const { team, permissions } = await loadTeamForActor(db, actor, teamId);
-  requireModule(actor, 'team_cash', team);
+  const { team, permissions, seesAll } = await loadCashTeam(db, actor, teamId);
   const account = await accountFor(db, actor, team);
+  const config = cashConfig(actor, team);
 
   const rows = account
     ? await db
@@ -108,17 +136,282 @@ export async function getTeamCash(db: Db, actor: Actor, teamId: string): Promise
   return {
     team: { id: team.id, name: team.name, badge: team.badge },
     permissions,
-    config: cashConfig(actor, team),
-    balanceCents: permissions.readCash ? income - expense : null,
-    incomeCents: permissions.readCash ? income : null,
-    expenseCents: permissions.readCash ? expense : null,
-    entries: permissions.readCash ? rows.map(toEntry) : null,
-    members: permissions.readCash
+    config,
+    balanceCents: seesAll ? income - expense : null,
+    incomeCents: seesAll ? income : null,
+    expenseCents: seesAll ? expense : null,
+    entries: seesAll ? rows.map(toEntry) : null,
+    members: seesAll
       ? [...balances.entries()]
           .map(([personId, v]) => ({ personId, ...v }))
           .sort((a, b) => a.balanceCents - b.balanceCents)
       : null,
     personal,
+    fineCatalog: config.fines ? await fineCatalog(db, team) : [],
+  };
+}
+
+// ── Strafenkatalog ──────────────────────────────────────────────────────────
+
+async function loadFineTeam(db: Db, actor: Actor, teamId: string) {
+  const loaded = await loadCashTeam(db, actor, teamId);
+  if (!cashConfig(actor, loaded.team).fines) {
+    throw new HttpError(
+      400,
+      'fines_disabled',
+      'Strafen sind für diese Mannschaft nicht aktiviert.',
+    );
+  }
+  return loaded;
+}
+
+function requireFines(permissions: { manageFines: boolean }) {
+  if (!permissions.manageFines) {
+    throw forbidden('Den Strafenkatalog pflegen Trainerteam und Kassenwart.');
+  }
+}
+
+export async function createFineType(
+  db: Db,
+  actor: Actor,
+  teamId: string,
+  input: SaveFineTypeInput,
+): Promise<TeamCash> {
+  const { team, permissions } = await loadFineTeam(db, actor, teamId);
+  requireFines(permissions);
+  await db.insert(s.cashFineTypes).values({
+    clubId: actor.club.id,
+    teamId: team.id,
+    name: input.name.trim(),
+    amountCents: input.amountCents,
+  });
+  return getTeamCash(db, actor, teamId);
+}
+
+async function loadFineType(db: Db, actor: Actor, fineTypeId: string) {
+  const [type] = await db
+    .select()
+    .from(s.cashFineTypes)
+    .where(
+      and(
+        eq(s.cashFineTypes.id, fineTypeId),
+        eq(s.cashFineTypes.clubId, actor.club.id),
+        isNull(s.cashFineTypes.archivedAt),
+      ),
+    );
+  if (!type) throw notFound('Die Strafe');
+  return type;
+}
+
+export async function updateFineType(
+  db: Db,
+  actor: Actor,
+  fineTypeId: string,
+  input: SaveFineTypeInput,
+): Promise<TeamCash> {
+  const type = await loadFineType(db, actor, fineTypeId);
+  const { permissions } = await loadFineTeam(db, actor, type.teamId);
+  requireFines(permissions);
+  // Bereits vergebene Strafen behalten ihren Betrag – der neue gilt ab jetzt
+  await db
+    .update(s.cashFineTypes)
+    .set({ name: input.name.trim(), amountCents: input.amountCents })
+    .where(eq(s.cashFineTypes.id, type.id));
+  return getTeamCash(db, actor, type.teamId);
+}
+
+export async function archiveFineType(
+  db: Db,
+  actor: Actor,
+  fineTypeId: string,
+  now: Date,
+): Promise<TeamCash> {
+  const type = await loadFineType(db, actor, fineTypeId);
+  const { permissions } = await loadFineTeam(db, actor, type.teamId);
+  requireFines(permissions);
+  await db.update(s.cashFineTypes).set({ archivedAt: now }).where(eq(s.cashFineTypes.id, type.id));
+  return getTeamCash(db, actor, type.teamId);
+}
+
+/** Strafe an eine oder mehrere Personen vergeben – je Person eine Forderung auf ihrem Konto. */
+export async function assignFine(
+  db: Db,
+  actor: Actor,
+  teamId: string,
+  input: AssignFineInput,
+  now: Date,
+): Promise<TeamCash> {
+  const { team, permissions } = await loadFineTeam(db, actor, teamId);
+  requireFines(permissions);
+  const type = input.fineTypeId ? await loadFineType(db, actor, input.fineTypeId) : null;
+  if (type && type.teamId !== team.id) throw notFound('Die Strafe');
+  if (!type && !permissions.manageCash) {
+    throw forbidden('Bitte wähle eine Strafe aus dem Strafenkatalog.');
+  }
+  const amountCents = type?.amountCents ?? input.amountCents;
+  const description = type?.name ?? input.description?.trim();
+  if (!amountCents || !description) {
+    throw new HttpError(400, 'validation', 'Bitte gib Betrag und Beschreibung an.');
+  }
+  const personIds = [...new Set(input.personIds)];
+  const members = await db
+    .select({ personId: s.teamMemberships.personId })
+    .from(s.teamMemberships)
+    .where(
+      and(eq(s.teamMemberships.teamId, team.id), inArray(s.teamMemberships.personId, personIds)),
+    );
+  if (new Set(members.map((m) => m.personId)).size !== personIds.length) {
+    throw new HttpError(400, 'invalid_person', 'Nicht alle Personen gehören zur Mannschaft.');
+  }
+
+  const account = (await accountFor(db, actor, team, true))!;
+  const bookedOn = input.bookedOn ?? toIsoDate(calendarDayOf(now, actor.club.timezone));
+  await db.transaction(async (tx) => {
+    const rows = await tx
+      .insert(s.cashTransactions)
+      .values(
+        personIds.map((personId) => ({
+          clubId: actor.club.id,
+          accountId: account.id,
+          direction: 'income' as const,
+          isCharge: true,
+          category: 'strafe',
+          amountCents,
+          description,
+          personId,
+          fineTypeId: type?.id ?? null,
+          bookedOn,
+          createdByPersonId: actor.person.id,
+          createdAt: now,
+        })),
+      )
+      .returning({ id: s.cashTransactions.id });
+    await tx.insert(s.auditLog).values({
+      clubId: actor.club.id,
+      actorUserId: actor.user.id,
+      action: 'cash.fine_assigned',
+      entityType: 'cash_transaction',
+      entityId: rows[0]!.id,
+      data: { teamId: team.id, persons: personIds.length, amountCents, description },
+      createdAt: now,
+    });
+  });
+  return getTeamCash(db, actor, teamId);
+}
+
+// ── Kassenstatistik ─────────────────────────────────────────────────────────
+
+/** Verlauf und Auswertung der Saison: ganze Mannschaft und Kassenverantwortliche. */
+export async function getCashStats(
+  db: Db,
+  actor: Actor,
+  teamId: string,
+  now: Date,
+): Promise<CashStats> {
+  const { team, seesAll } = await loadCashTeam(db, actor, teamId);
+  if (!seesAll) throw forbidden('Die Kassenstatistik sieht die Mannschaft.');
+  const account = await accountFor(db, actor, team);
+  const [season] = await db.select().from(s.seasons).where(eq(s.seasons.id, team.seasonId));
+  const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
+  const rows = account
+    ? await db
+        .select({
+          tx: s.cashTransactions,
+          firstName: s.persons.firstName,
+          lastName: s.persons.lastName,
+        })
+        .from(s.cashTransactions)
+        .leftJoin(s.persons, eq(s.persons.id, s.cashTransactions.personId))
+        .where(
+          and(
+            eq(s.cashTransactions.accountId, account.id),
+            lte(s.cashTransactions.bookedOn, today),
+          ),
+        )
+        .orderBy(asc(s.cashTransactions.bookedOn))
+    : [];
+  const signed = (t: TxRow) => (t.direction === 'income' ? t.amountCents : -t.amountCents);
+  const start = season!.startsOn;
+  const money = rows.filter((r) => !r.tx.isCharge);
+
+  // Monate von Saisonbeginn bis heute; Stand vor Saisonbeginn als Startwert
+  let balance = money.filter((r) => r.tx.bookedOn < start).reduce((a, r) => a + signed(r.tx), 0);
+  const months: CashStats['months'] = [];
+  for (let m = start.slice(0, 7); m <= today.slice(0, 7);) {
+    const inMonth = money.filter((r) => r.tx.bookedOn.startsWith(m) && r.tx.bookedOn >= start);
+    const incomeCents = inMonth
+      .filter((r) => r.tx.direction === 'income')
+      .reduce((a, r) => a + r.tx.amountCents, 0);
+    const expenseCents = inMonth
+      .filter((r) => r.tx.direction === 'expense')
+      .reduce((a, r) => a + r.tx.amountCents, 0);
+    balance += incomeCents - expenseCents;
+    months.push({ month: m, incomeCents, expenseCents, balanceCents: balance });
+    const [y, mo] = m.split('-').map(Number);
+    m = mo === 12 ? `${y! + 1}-01` : `${y}-${String(mo! + 1).padStart(2, '0')}`;
+  }
+
+  const seasonRows = rows.filter((r) => r.tx.bookedOn >= start);
+  const categories = new Map<string, { incomeCents: number; expenseCents: number }>();
+  for (const { tx } of seasonRows.filter((r) => !r.tx.isCharge)) {
+    const c = categories.get(tx.category) ?? { incomeCents: 0, expenseCents: 0 };
+    if (tx.direction === 'income') c.incomeCents += tx.amountCents;
+    else c.expenseCents += tx.amountCents;
+    categories.set(tx.category, c);
+  }
+
+  const fineRows = seasonRows.filter((r) => r.tx.isCharge && r.tx.category === 'strafe');
+  const fines = new Map<string, { count: number; amountCents: number }>();
+  for (const { tx } of fineRows) {
+    const f = fines.get(tx.description) ?? { count: 0, amountCents: 0 };
+    f.count += 1;
+    f.amountCents += tx.amountCents;
+    fines.set(tx.description, f);
+  }
+
+  // Persönliche Konten über alle Zeit (offene Beträge verfallen nicht mit der Saison)
+  const personal = new Map<
+    string,
+    { name: string; count: number; amountCents: number; balance: number }
+  >();
+  for (const r of rows) {
+    if (!r.tx.personId) continue;
+    const p = personal.get(r.tx.personId) ?? {
+      name: `${r.firstName} ${r.lastName}`,
+      count: 0,
+      amountCents: 0,
+      balance: 0,
+    };
+    p.balance += personalDelta(r.tx);
+    if (r.tx.isCharge && r.tx.category === 'strafe' && r.tx.bookedOn >= start) {
+      p.count += 1;
+      p.amountCents += r.tx.amountCents;
+    }
+    personal.set(r.tx.personId, p);
+  }
+  const charged = rows.filter((r) => r.tx.isCharge).reduce((a, r) => a + r.tx.amountCents, 0);
+  const openCents = [...personal.values()].reduce((a, p) => a + Math.max(0, -p.balance), 0);
+
+  return {
+    months,
+    categories: [...categories.entries()]
+      .map(([category, v]) => ({ category, ...v }))
+      .sort((a, b) => b.incomeCents + b.expenseCents - (a.incomeCents + a.expenseCents)),
+    fines: [...fines.entries()]
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.count - a.count || b.amountCents - a.amountCents),
+    finesByPerson: [...personal.entries()]
+      .filter(([, p]) => p.count > 0)
+      .map(([personId, p]) => ({
+        personId,
+        name: p.name,
+        count: p.count,
+        amountCents: p.amountCents,
+        openCents: Math.max(0, -p.balance),
+      }))
+      .sort((a, b) => b.amountCents - a.amountCents || a.name.localeCompare(b.name)),
+    openCents,
+    paidRate: charged ? Math.round(((charged - openCents) / charged) * 100) : null,
   };
 }
 
@@ -215,9 +508,8 @@ export async function cashReportLink(
   range: { from?: string; to?: string },
   now: Date,
 ): Promise<{ token: string; expiresAt: string }> {
-  const { team, permissions } = await loadTeamForActor(db, actor, teamId);
-  requireModule(actor, 'team_cash', team);
-  if (!permissions.readCash) throw forbidden('Den Kassenbericht sehen Kassenverantwortliche.');
+  const { team, seesAll } = await loadCashTeam(db, actor, teamId);
+  if (!seesAll) throw forbidden('Den Kassenbericht sieht die Mannschaft.');
   if (range.from && range.to && range.from > range.to)
     throw new HttpError(400, 'invalid_range', 'Der Zeitraum ist ungültig.');
   const expiresAt = new Date(now.getTime() + REPORT_LINK_MS);

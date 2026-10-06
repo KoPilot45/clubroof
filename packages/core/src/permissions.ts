@@ -39,6 +39,7 @@ export const PERMISSIONS = {
   // Finanzen
   'cash.read': 'Kasse einsehen',
   'cash.manage': 'Buchungen, Strafen und Getränke erfassen',
+  'cash.fines': 'Strafenkatalog pflegen und Strafen vergeben',
 
   // Betrieb
   'facilities.manage': 'Platzbelegung, Sperrungen, Material und Schlüssel verwalten',

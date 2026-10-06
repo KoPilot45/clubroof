@@ -1,4 +1,5 @@
 import type {
+  CashStats,
   EventDetail,
   Facility,
   MyTeamCard,
@@ -12,7 +13,16 @@ import { schema as s } from '@clubroof/db';
 import { and, asc, eq, ne } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { cashReportLink, createBooking, getTeamCash } from '../services/cash';
+import {
+  archiveFineType,
+  assignFine,
+  cashReportLink,
+  createBooking,
+  createFineType,
+  getCashStats,
+  getTeamCash,
+  updateFineType,
+} from '../services/cash';
 import { cancelEvent, createTeamEvent, updateEvent } from '../services/event-admin';
 import { setTeamModule, teamModulesForCoach } from '../services/modules';
 import { getMyTeams, getRoster, getTeamOverview, getTeamStats } from '../services/teams';
@@ -152,6 +162,66 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
       );
       return reply.status(201).send(cash);
     },
+  );
+
+  // ── Strafenkatalog und Kassenstatistik ──────────────────────────────────
+  const fineType = z.object({
+    name: z.string().trim().min(2).max(60),
+    amountCents: z.number().int().min(1).max(100_000),
+  });
+
+  app.post(
+    '/teams/:teamId/cash/fine-types',
+    { schema: { params: teamParams, body: fineType } },
+    async (request): Promise<TeamCash> =>
+      createFineType(app.db, request.actor!, request.params.teamId, request.body),
+  );
+
+  app.put(
+    '/cash/fine-types/:fineTypeId',
+    { schema: { params: z.object({ fineTypeId: z.uuid() }), body: fineType } },
+    async (request): Promise<TeamCash> =>
+      updateFineType(app.db, request.actor!, request.params.fineTypeId, request.body),
+  );
+
+  app.delete(
+    '/cash/fine-types/:fineTypeId',
+    { schema: { params: z.object({ fineTypeId: z.uuid() }) } },
+    async (request): Promise<TeamCash> =>
+      archiveFineType(app.db, request.actor!, request.params.fineTypeId, app.now()),
+  );
+
+  app.post(
+    '/teams/:teamId/cash/fines',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({
+          fineTypeId: z.uuid().nullish(),
+          amountCents: z.number().int().min(1).max(100_000).optional(),
+          description: z.string().trim().min(2).max(120).optional(),
+          personIds: z.array(z.uuid()).min(1).max(60),
+          bookedOn: z.iso.date().nullish(),
+        }),
+      },
+    },
+    async (request, reply) => {
+      const cash = await assignFine(
+        app.db,
+        request.actor!,
+        request.params.teamId,
+        request.body,
+        app.now(),
+      );
+      return reply.status(201).send(cash);
+    },
+  );
+
+  app.get(
+    '/teams/:teamId/cash/stats',
+    { schema: { params: teamParams } },
+    async (request): Promise<CashStats> =>
+      getCashStats(app.db, request.actor!, request.params.teamId, app.now()),
   );
 
   app.post(

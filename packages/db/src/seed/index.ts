@@ -386,7 +386,9 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     }
 
     // Damit die Startseite Geburtstage zeigt: ein Mitspieler der B-Jugend hat in zwei Tagen Geburtstag
-    const birthdayKid = teamMembers.b1.find((m) => m.fn === 'player' && m.person !== persona.player);
+    const birthdayKid = teamMembers.b1.find(
+      (m) => m.fn === 'player' && m.person !== persona.player,
+    );
     if (birthdayKid && !toIsoDate(addDays(calendarDayOf(now), 2)).endsWith('02-29')) {
       const soon = toIsoDate(addDays(calendarDayOf(now), 2));
       birthdayKid.person.birthDate = `${birthdayKid.person.birthDate!.slice(0, 4)}${soon.slice(4)}`;
@@ -626,8 +628,9 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
             youngKids ? 'available' : 'enabled',
             youngKids ? 'off' : 'basic',
           );
+          // B-Jugend mit kleinem Strafenkatalog (Demo für Trainer und Kassenwart)
           teamModule(k, 'team_cash', k === 'a1' || k === 'b1' ? 'enabled' : 'available', 'basic', {
-            fines: false,
+            fines: k === 'b1',
             drinks: false,
           });
           teamModule(k, 'jersey_numbers', youngKids ? 'available' : 'enabled', 'basic', {
@@ -1605,21 +1608,51 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       counterparty: 'Gasthaus Zur Linde',
     });
 
-    const fines: [string, number][] = [
+    // Strafenkataloge (gepflegt von Trainerteam bzw. Kassenwart)
+    const catalog = (team: TeamKey, items: [string, number][]) =>
+      items.map(([name, amount]) => ({
+        id: randomUUID(),
+        clubId,
+        teamId: teamIds[team],
+        name,
+        amountCents: euro(amount),
+      }));
+    const h1Fines = catalog('h1', [
       ['Zu spät zum Training', 5],
       ['Gelbe Karte wegen Meckerns', 10],
       ['Trikot vergessen', 5],
       ['Handy in der Kabine', 3],
-    ];
+      ['Unentschuldigt gefehlt', 15],
+    ]);
+    const b1Fines = catalog('b1', [
+      ['Zu spät zum Training', 0.5],
+      ['Handy in der Kabine', 1],
+      ['Schienbeinschoner vergessen', 1],
+      ['Kabine nicht aufgeräumt', 0.5],
+    ]);
+    const h2Fines = catalog('h2', [
+      ['Zu spät', 2],
+      ['Kistenstrafe (Geburtstag)', 15],
+    ]);
+    await tx.insert(s.cashFineTypes).values([...h1Fines, ...b1Fines, ...h2Fines]);
+    const fine = (
+      team: TeamKey,
+      type: (typeof h1Fines)[number],
+      personId: string,
+      daysAgo: number,
+    ) =>
+      booking(team, 'income', type.amountCents / 100, 'strafe', type.name, daysAgo, {
+        personId,
+        isCharge: true,
+        fineTypeId: type.id,
+      });
+
     for (const m of teamMembers.h1.filter((x) => x.fn === 'player')) {
       let owed = 0;
       for (let i = 0; i < faker.number.int({ min: 0, max: 3 }); i++) {
-        const [label, amount] = faker.helpers.arrayElement(fines);
-        owed += amount;
-        booking('h1', 'income', amount, 'strafe', label, faker.number.int({ min: 2, max: 50 }), {
-          personId: m.person.id,
-          isCharge: true,
-        });
+        const type = faker.helpers.arrayElement(h1Fines.slice(0, 4));
+        owed += type.amountCents / 100;
+        fine('h1', type, m.person.id, faker.number.int({ min: 2, max: 50 }));
       }
       const drinks = faker.number.int({ min: 0, max: 8 });
       if (drinks > 0) {
@@ -1681,6 +1714,19 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     booking('b1', 'expense', 150, 'material', 'Trainingsmaterial', 15, {
       counterparty: 'Sportshop Musterstadt',
     });
+    // Ein paar Strafen in der B-Jugend (noch nicht bezahlt) – auch für die Spieler-Persona
+    const b1Players = teamMembers.b1.filter((x) => x.fn === 'player');
+    fine('b1', b1Fines[0]!, persona.player.id, 6);
+    fine('b1', b1Fines[1]!, persona.player.id, 20);
+    for (const m of b1Players.slice(0, 9)) {
+      if (m.person === persona.player) continue;
+      fine(
+        'b1',
+        faker.helpers.arrayElement(b1Fines),
+        m.person.id,
+        faker.number.int({ min: 1, max: 40 }),
+      );
+    }
     await insertChunked(tx, s.cashTransactions, txRows);
 
     // ── Dokumente ─────────────────────────────────────────────────────────────────────────

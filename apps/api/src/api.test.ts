@@ -62,6 +62,7 @@ import type {
   TeamOverview,
   TeamStats,
   Carpool,
+  CashStats,
   EventDetail,
   EventSummary,
   HomeResponse,
@@ -249,14 +250,20 @@ describe.skipIf(!url)('API', () => {
       expect(home.actions.some((a) => a.kind === 'approval')).toBe(true);
     });
 
-    it('Kasse: Kassenstände sieht nur, wer dafür berechtigt ist', async () => {
-      const treasurer = await get<HomeResponse>('/home', (await login('kasse')).token);
-      expect(treasurer.cash.map((c) => c.badge)).toEqual(['1.', '2.', 'B1']);
-      expect(treasurer.cash.find((c) => c.badge === 'B1')!.balanceCents).toBe(51235);
-
-      const player = await get<HomeResponse>('/home', (await login('spieler')).token);
-      const b1 = player.cash.find((c) => c.badge === 'B1')!;
-      expect(b1.balanceCents).toBeNull();
+    it('Kasse: Kassenstand sieht die ganze Mannschaft, Außenstehende nicht', async () => {
+      const player = await login('spieler');
+      const b1 = player.me.teams.find((t) => t.badge === 'B1')!.id;
+      const own = await get<TeamCash>(`/teams/${b1}/cash`, player.token);
+      expect(own.balanceCents).toBe(51235);
+      expect(own.entries!.length).toBeGreaterThan(3);
+      expect(own.members!.length).toBeGreaterThan(3);
+      // Die Startseite zeigt keine Kasse mehr
+      const home = await get<HomeResponse>('/home', player.token);
+      expect('cash' in home).toBe(false);
+      // Eltern aus der E-Jugend gehören nicht zur B-Jugend
+      expect((await send('GET', `/teams/${b1}/cash`, (await login('eltern')).token)).status).toBe(
+        404,
+      );
     });
 
     it('Dringende News stehen oben', async () => {
@@ -750,7 +757,11 @@ describe.skipIf(!url)('API', () => {
       const b1 = await teamId('B1');
       const treasurer = await login('kasse');
       const player = await login('spieler');
-      expect((await send('GET', `/teams/${b1}/cash/report-link`, player.token)).status).toBe(403);
+      // Den Bericht darf die ganze Mannschaft laden, Außenstehende nicht
+      expect((await send('GET', `/teams/${b1}/cash/report-link`, player.token)).status).toBe(200);
+      expect(
+        (await send('GET', `/teams/${b1}/cash/report-link`, (await login('eltern')).token)).status,
+      ).toBe(404);
       const cash = await get<TeamCash>(`/teams/${b1}/cash`, treasurer.token);
       const link = await get<{ url: string }>(`/teams/${b1}/cash/report-link`, treasurer.token);
       const res = await app.inject({ method: 'GET', url: new URL(link.url).pathname });
@@ -787,22 +798,131 @@ describe.skipIf(!url)('API', () => {
       const b1 = await teamId('B1');
       const player = await login('spieler');
       const own = await get<TeamCash>(`/teams/${b1}/cash`, player.token);
-      expect(own.balanceCents).toBeNull();
-      expect(own.entries).toBeNull();
       expect(own.personal).toHaveLength(1);
+      expect(own.permissions.manageCash).toBe(false);
       const denied = await send('POST', `/teams/${b1}/cash/bookings`, player.token, {
         kind: 'income',
         amountCents: 100,
         description: 'Test',
       });
       expect(denied.status).toBe(403);
-      const finesOff = await send('POST', `/teams/${b1}/cash/bookings`, treasurer.token, {
-        kind: 'fine',
+      // A-Jugend hat keine Strafen
+      const a1 = await teamId('A1');
+      const admin = await login('admin');
+      const finesOff = await send('POST', `/teams/${a1}/cash/fine-types`, admin.token, {
+        name: 'Test',
         amountCents: 100,
-        description: 'Test',
-        personId: player.me.person.id,
       });
       expect(finesOff.status).toBe(400);
+    });
+
+    it('Strafenkatalog: Trainer pflegt ihn und vergibt Strafen an mehrere Spieler', async () => {
+      const b1 = await teamId('B1');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const before = await get<TeamCash>(`/teams/${b1}/cash`, coach.token);
+      expect(before.permissions.manageFines).toBe(true);
+      expect(before.permissions.manageCash).toBe(false);
+      expect(before.fineCatalog.map((f) => f.name)).toContain('Handy in der Kabine');
+
+      // Spieler sehen den Katalog, dürfen ihn aber nicht ändern
+      const seen = await get<TeamCash>(`/teams/${b1}/cash`, player.token);
+      expect(seen.fineCatalog.length).toBe(before.fineCatalog.length);
+      expect(
+        (
+          await send('POST', `/teams/${b1}/cash/fine-types`, player.token, {
+            name: 'Neue Strafe',
+            amountCents: 100,
+          })
+        ).status,
+      ).toBe(403);
+
+      const created = await send<TeamCash>('POST', `/teams/${b1}/cash/fine-types`, coach.token, {
+        name: 'Ball über den Zaun',
+        amountCents: 200,
+      });
+      const ball = created.body.fineCatalog.find((f) => f.name === 'Ball über den Zaun')!;
+      expect(ball).toMatchObject({ amountCents: 200, timesGiven: 0 });
+
+      const updated = await send<TeamCash>('PUT', `/cash/fine-types/${ball.id}`, coach.token, {
+        name: 'Ball über den Zaun',
+        amountCents: 150,
+      });
+      expect(updated.body.fineCatalog.find((f) => f.id === ball.id)!.amountCents).toBe(150);
+
+      // Vergeben an zwei Spieler: je eine Forderung, Kassenstand bleibt gleich
+      const players = (await get<RosterEntry[]>(`/teams/${b1}/roster`, coach.token)).filter(
+        (r) => r.function === 'player',
+      );
+      const two = [
+        player.me.person.id,
+        players.find((p) => p.personId !== player.me.person.id)!.personId,
+      ];
+      const balanceOf = (c: TeamCash, id: string) =>
+        c.members!.find((m) => m.personId === id)?.balanceCents ?? 0;
+      const assigned = await send<TeamCash>('POST', `/teams/${b1}/cash/fines`, coach.token, {
+        fineTypeId: ball.id,
+        personIds: two,
+      });
+      expect(assigned.status).toBe(201);
+      for (const id of two) {
+        expect(balanceOf(assigned.body, id)).toBe(balanceOf(before, id) - 150);
+      }
+      expect(assigned.body.balanceCents).toBe(before.balanceCents);
+      expect(assigned.body.fineCatalog.find((f) => f.id === ball.id)!.timesGiven).toBe(2);
+
+      // Freie Strafen ohne Katalog nur mit vollen Kassenrechten; Spieler gar nicht
+      const free = await send('POST', `/teams/${b1}/cash/fines`, coach.token, {
+        amountCents: 300,
+        description: 'Sonderstrafe',
+        personIds: [two[0]],
+      });
+      expect(free.status).toBe(403);
+      const treasurer = await login('kasse');
+      const freeOk = await send('POST', `/teams/${b1}/cash/fines`, treasurer.token, {
+        amountCents: 300,
+        description: 'Sonderstrafe',
+        personIds: [two[0]],
+      });
+      expect(freeOk.status).toBe(201);
+      expect(
+        (
+          await send('POST', `/teams/${b1}/cash/fines`, player.token, {
+            fineTypeId: ball.id,
+            personIds: [two[1]],
+          })
+        ).status,
+      ).toBe(403);
+      // Fremde Personen lassen sich nicht bestrafen
+      const stranger = await send('POST', `/teams/${b1}/cash/fines`, coach.token, {
+        fineTypeId: ball.id,
+        personIds: [(await login('eltern')).me.person.id],
+      });
+      expect(stranger.status).toBe(400);
+
+      // Entfernen: verschwindet aus dem Katalog, Buchungen bleiben
+      const removed = await send<TeamCash>('DELETE', `/cash/fine-types/${ball.id}`, coach.token);
+      expect(removed.body.fineCatalog.some((f) => f.id === ball.id)).toBe(false);
+      expect(
+        removed.body.entries!.filter((e) => e.description === 'Ball über den Zaun'),
+      ).toHaveLength(2);
+    });
+
+    it('Kassenstatistik für die ganze Mannschaft', async () => {
+      const b1 = await teamId('B1');
+      const player = await login('spieler');
+      const stats = await get<CashStats>(`/teams/${b1}/cash/stats`, player.token);
+      expect(stats.months.length).toBeGreaterThan(1);
+      expect(stats.months.at(-1)!.balanceCents).toBe(51235);
+      expect(
+        stats.categories.some((c) => c.category === 'sponsoring' && c.incomeCents === 25000),
+      ).toBe(true);
+      expect(stats.fines.length).toBeGreaterThan(0);
+      expect(stats.finesByPerson.some((p) => p.personId === player.me.person.id)).toBe(true);
+      expect(stats.openCents).toBeGreaterThan(0);
+      expect(
+        (await send('GET', `/teams/${b1}/cash/stats`, (await login('eltern')).token)).status,
+      ).toBe(404);
     });
 
     it('Trainer legt einen Termin an und sagt ihn ab; die Mannschaft wird benachrichtigt', async () => {
@@ -3526,8 +3646,9 @@ describe.skipIf(!url)('API', () => {
       ).toBe(403);
 
       // Ein späteres Training ohne Plan: der eben gezeigte Plan dient als Vorlage
-      const after = plans.slice(plans.indexOf(seeded) + 1);
-      const other = after.find((p) => !p.focus)!;
+      // (andere Tests legen zusätzliche Trainings an – nur echt spätere zählen)
+      const seededAt = week[plans.indexOf(seeded)]!.startsAt;
+      const other = plans.find((p, i) => !p.focus && week[i]!.startsAt > seededAt)!;
       const saved = await send<TrainingPlan>(
         'PUT',
         `/events/${other.eventId}/training-plan`,

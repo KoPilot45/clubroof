@@ -13,6 +13,7 @@ export function teamPermissions(actor: Actor, team: TeamRow): TeamPermissions {
     readAttendance: actorCan(actor, 'attendance.read', team),
     readCash: actorCan(actor, 'cash.read', team),
     manageCash: actorCan(actor, 'cash.manage', team),
+    manageFines: actorCan(actor, 'cash.fines', team),
     manageDemand: actorCan(actor, 'squad.demand.manage', team),
     manageModules:
       actorCan(actor, 'teams.modules.manage', team) ||

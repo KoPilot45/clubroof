@@ -1,7 +1,7 @@
 import type { ActionItem, HomeResponse, NewsItem } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow, NextMatchCard } from '@/components/events';
 import {
@@ -19,7 +19,7 @@ import {
   TeamBadge,
   type IconName,
 } from '@/components/ui';
-import { formatAgo, formatEuro, formatRemaining } from '@/lib/format';
+import { formatAgo, formatRemaining } from '@/lib/format';
 import { openLink } from '@/lib/links';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -189,65 +189,6 @@ export default function HomeScreen() {
           </Card>
         </Section>
       ) : null}
-
-      {data?.cash.map((c) => (
-        <Pressable
-          key={c.teamId}
-          accessibilityRole="button"
-          onPress={() => router.push(`/teams/${c.teamId}/cash`)}
-        >
-          <Card style={{ gap: 8 }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-                <IconTile name="wallet-outline" />
-                <T variant="heading">Teamkasse {c.badge}</T>
-              </View>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-              }}
-            >
-              {c.balanceCents !== null ? (
-                <View>
-                  <T variant="caption">Aktueller Stand</T>
-                  <T variant="display" color={colors.primaryText}>
-                    {formatEuro(c.balanceCents)}
-                  </T>
-                </View>
-              ) : null}
-              {c.personalBalanceCents !== null ? (
-                <View style={{ alignItems: c.balanceCents !== null ? 'flex-end' : 'flex-start' }}>
-                  <T variant="caption">Mein Konto</T>
-                  <T
-                    variant="heading"
-                    color={
-                      c.personalBalanceCents < 0
-                        ? colors.status.urgent.onContainer
-                        : colors.onSurface
-                    }
-                  >
-                    {formatEuro(c.personalBalanceCents)}
-                  </T>
-                </View>
-              ) : null}
-            </View>
-            {c.incomeCents !== null && c.expenseCents !== null ? (
-              <T variant="caption">
-                Einnahmen {formatEuro(c.incomeCents)} · Ausgaben {formatEuro(c.expenseCents)}
-              </T>
-            ) : null}
-          </Card>
-        </Pressable>
-      ))}
     </Screen>
   );
 }

@@ -11,7 +11,6 @@ import {
   type Birthday,
   scopesWith,
   type ActionItem,
-  type CashTeaser,
   type ClubOverview,
   type HomeResponse,
   type NewsItem,
@@ -34,7 +33,7 @@ import {
   sql,
 } from 'drizzle-orm';
 import type { PgColumn } from 'drizzle-orm/pg-core';
-import { actorCan, moduleEnabled, type Actor } from '../actor';
+import { actorCan, type Actor } from '../actor';
 import { resolveMediaUrl } from '../storage/media-links';
 import { fetchEventRows, summarizeEvents } from './events';
 import { openTasksFor } from './tasks';
@@ -356,80 +355,6 @@ async function loadActions(db: Db, actor: Actor, now: Date): Promise<ActionItem[
   return actions;
 }
 
-async function loadCash(db: Db, actor: Actor): Promise<CashTeaser[]> {
-  const cashScopes = scopesWith(actor.grants, 'cash.read');
-  const accounts = await db
-    .select({ account: s.cashAccounts, team: s.teams })
-    .from(s.cashAccounts)
-    .innerJoin(s.teams, eq(s.teams.id, s.cashAccounts.teamId))
-    .where(eq(s.cashAccounts.clubId, actor.club.id))
-    .orderBy(asc(s.teams.sortOrder));
-
-  const relevant = accounts.filter(({ team }) => {
-    if (!moduleEnabled(actor, 'team_cash', team)) return false;
-    return (
-      actor.teamIds.includes(team.id) ||
-      cashScopes.all ||
-      cashScopes.teamIds.includes(team.id) ||
-      cashScopes.orgUnitIds.includes(team.orgUnitId)
-    );
-  });
-  if (relevant.length === 0) return [];
-
-  const sums = await db
-    .select({
-      accountId: s.cashTransactions.accountId,
-      personId: s.cashTransactions.personId,
-      isCharge: s.cashTransactions.isCharge,
-      direction: s.cashTransactions.direction,
-      category: s.cashTransactions.category,
-      total: sql<number>`sum(${s.cashTransactions.amountCents})::int`,
-    })
-    .from(s.cashTransactions)
-    .where(
-      inArray(
-        s.cashTransactions.accountId,
-        relevant.map((r) => r.account.id),
-      ),
-    )
-    .groupBy(
-      s.cashTransactions.accountId,
-      s.cashTransactions.personId,
-      s.cashTransactions.isCharge,
-      s.cashTransactions.direction,
-      s.cashTransactions.category,
-    );
-
-  return relevant.map(({ account, team }) => {
-    const rows = sums.filter((r) => r.accountId === account.id);
-    const income = rows
-      .filter((r) => !r.isCharge && r.direction === 'income')
-      .reduce((a, r) => a + r.total, 0);
-    const expense = rows
-      .filter((r) => !r.isCharge && r.direction === 'expense')
-      .reduce((a, r) => a + r.total, 0);
-    const mayReadBalance = actorCan(actor, 'cash.read', team);
-
-    const own = rows.filter((r) => r.personId !== null && actor.managedIds.includes(r.personId));
-    const personal = own.length
-      ? own.reduce(
-          (a, r) => a + (r.isCharge ? -r.total : r.category === 'einzahlung' ? r.total : 0),
-          0,
-        )
-      : null;
-
-    return {
-      teamId: team.id,
-      teamName: team.name,
-      badge: team.badge,
-      balanceCents: mayReadBalance ? income - expense : null,
-      incomeCents: mayReadBalance ? income : null,
-      expenseCents: mayReadBalance ? expense : null,
-      personalBalanceCents: personal,
-    };
-  });
-}
-
 async function loadClubOverview(db: Db, actor: Actor, now: Date): Promise<ClubOverview | null> {
   if (!actorCan(actor, 'club.overview.read')) return null;
   const clubId = actor.club.id;
@@ -511,10 +436,9 @@ export async function loadHome(db: Db, actor: Actor, now: Date): Promise<HomeRes
   );
   const [nextMatch] = matchRow ? await summarizeEvents(db, actor, [matchRow], now) : [];
 
-  const [news, actions, cash, clubOverview, [unread], birthdays] = await Promise.all([
+  const [news, actions, clubOverview, [unread], birthdays] = await Promise.all([
     loadNews(db, actor, now, 3),
     loadActions(db, actor, now),
-    loadCash(db, actor),
     loadClubOverview(db, actor, now),
     db
       .select({ n: count() })
@@ -528,7 +452,6 @@ export async function loadHome(db: Db, actor: Actor, now: Date): Promise<HomeRes
     upcoming,
     news,
     actions: actions.slice(0, 5),
-    cash,
     clubOverview,
     unreadNotifications: unread?.n ?? 0,
     birthdays,

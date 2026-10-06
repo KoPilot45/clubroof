@@ -40,7 +40,7 @@ import {
   sql,
 } from 'drizzle-orm';
 import { resolveMediaUrl } from '../storage/media-links';
-import { actorCan, type Actor } from '../actor';
+import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, notFound } from '../errors';
 import { presentSql } from './attendance';
 import { fetchEventRows, summarizeEvents } from './events';
@@ -205,6 +205,10 @@ export async function getTeamOverview(
       ageGroup: team.ageGroup,
     },
     permissions,
+    fines:
+      moduleEnabled(actor, 'team_cash', team) &&
+      resolveModule(actor.modules, 'team_cash', { teamId: team.id, orgUnitId: team.orgUnitId })
+        .config.fines === true,
     nextEvent: nextEvent ?? null,
     squad: nextEvent ? await squadStatus(db, nextEvent.id) : null,
     lastResults,

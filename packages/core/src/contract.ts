@@ -241,18 +241,6 @@ export type ActionItem = {
   options?: { id: string; label: string }[];
 };
 
-export type CashTeaser = {
-  teamId: string;
-  teamName: string;
-  badge: string;
-  /** Kassenstand der Mannschaft; null, wenn der Nutzer ihn nicht sehen darf */
-  balanceCents: number | null;
-  incomeCents: number | null;
-  expenseCents: number | null;
-  /** Persönlicher Saldo (Einzahlungen − Forderungen); null, wenn kein persönliches Konto */
-  personalBalanceCents: number | null;
-};
-
 export type ClubOverview = {
   teams: number;
   members: number;
@@ -265,7 +253,6 @@ export type HomeResponse = {
   upcoming: EventSummary[];
   news: NewsItem[];
   actions: ActionItem[];
-  cash: CashTeaser[];
   clubOverview: ClubOverview | null;
   unreadNotifications: number;
   /** Geburtstage in meinen Mannschaften in den nächsten 7 Tagen */
@@ -348,6 +335,8 @@ export type TeamPermissions = {
   readAttendance: boolean;
   readCash: boolean;
   manageCash: boolean;
+  /** Strafenkatalog pflegen und Strafen vergeben (Trainerteam, Kassenwart) */
+  manageFines: boolean;
   /** Spielerbedarf melden, Spieler anbieten und abstellen (Gastspielerbörse) */
   manageDemand: boolean;
   /** Module der Mannschaft ein- und ausschalten */
@@ -386,6 +375,8 @@ export type SquadStatus = {
 export type TeamOverview = {
   team: { id: string; name: string; badge: string; league: string | null; ageGroup: string | null };
   permissions: TeamPermissions;
+  /** Mannschaftskasse mit Strafenkatalog aktiv */
+  fines: boolean;
   nextEvent: EventSummary | null;
   /** Kaderstatus bezogen auf den nächsten Termin */
   squad: SquadStatus | null;
@@ -487,12 +478,54 @@ export type TeamCash = {
   balanceCents: number | null;
   incomeCents: number | null;
   expenseCents: number | null;
-  /** Buchungen (nur mit Kassenrechten) */
+  /** Buchungen (ganze Mannschaft und Kassenverantwortliche) */
   entries: CashEntry[] | null;
-  /** Persönliche Konten aller Mitglieder (nur mit Kassenrechten) */
+  /** Persönliche Konten aller Mitglieder (ganze Mannschaft und Kassenverantwortliche) */
   members: { personId: string; name: string; balanceCents: number }[] | null;
   /** Meine Konten bzw. die meiner Kinder */
   personal: PersonalAccount[];
+  /** Strafenkatalog der Mannschaft (wenn Strafen aktiviert sind) */
+  fineCatalog: FineType[];
+};
+
+export type FineType = {
+  id: string;
+  name: string;
+  amountCents: number;
+  /** So oft in dieser Saison vergeben */
+  timesGiven: number;
+};
+
+export type SaveFineTypeInput = { name: string; amountCents: number };
+
+export type AssignFineInput = {
+  /** Aus dem Katalog; leer = freie Strafe (nur mit vollen Kassenrechten) */
+  fineTypeId?: string | null;
+  amountCents?: number;
+  description?: string;
+  personIds: string[];
+  bookedOn?: string | null;
+};
+
+export type CashStats = {
+  /** Monatsweise ab Saisonbeginn: echte Geldbewegungen und Kassenstand am Monatsende */
+  months: { month: string; incomeCents: number; expenseCents: number; balanceCents: number }[];
+  /** Einnahmen und Ausgaben nach Kategorie (ohne Forderungen) */
+  categories: { category: string; incomeCents: number; expenseCents: number }[];
+  /** Vergebene Strafen nach Art */
+  fines: { name: string; count: number; amountCents: number }[];
+  /** Strafen je Person (Summe vergeben, noch offen) */
+  finesByPerson: {
+    personId: string;
+    name: string;
+    count: number;
+    amountCents: number;
+    openCents: number;
+  }[];
+  /** Summe aller offenen Beträge der persönlichen Konten */
+  openCents: number;
+  /** Anteil der vergebenen Forderungen, der schon bezahlt ist (0–100) */
+  paidRate: number | null;
 };
 
 export type CashBookingKind = 'income' | 'expense' | 'fine' | 'drinks' | 'payment';

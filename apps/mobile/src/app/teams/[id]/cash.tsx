@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Linking, View } from 'react-native';
 import {
-  Button,
   Card,
   Chip,
   Empty,
@@ -14,24 +13,12 @@ import {
   Screen,
   Section,
   T,
-  type IconName,
+  TileGrid,
 } from '@/components/ui';
+import { cashCategory } from '@/lib/cash';
 import { formatEuro, formatShortDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
-
-const CATEGORY: Record<string, { label: string; icon: IconName }> = {
-  strafe: { label: 'Strafe', icon: 'alert-circle-outline' },
-  getraenke: { label: 'Getränke', icon: 'beer-outline' },
-  einzahlung: { label: 'Einzahlung', icon: 'cash-outline' },
-  sponsoring: { label: 'Sponsoring', icon: 'ribbon-outline' },
-  material: { label: 'Material', icon: 'football-outline' },
-  uebertrag: { label: 'Übertrag', icon: 'swap-horizontal-outline' },
-  veranstaltung: { label: 'Veranstaltung', icon: 'beer-outline' },
-  einnahmen_spieltag: { label: 'Spieltag', icon: 'storefront-outline' },
-  einnahme: { label: 'Einnahme', icon: 'arrow-down-circle-outline' },
-  ausgabe: { label: 'Ausgabe', icon: 'arrow-up-circle-outline' },
-};
 
 function EntryRow({
   entry,
@@ -43,10 +30,7 @@ function EntryRow({
   showPerson: boolean;
 }) {
   const { colors } = useTheme();
-  const cat = CATEGORY[entry.category] ?? {
-    label: entry.category,
-    icon: 'receipt-outline' as const,
-  };
+  const cat = cashCategory(entry.category);
   const negative = entry.isCharge || entry.direction === 'expense';
   const subtitle = [
     formatShortDate(entry.bookedOn),
@@ -110,26 +94,64 @@ export default function CashScreen() {
             </Card>
           ) : null}
 
-          {c.permissions.readCash ? (
-            <Button
-              label="Kassenbericht exportieren (Excel)"
-              icon="download-outline"
-              variant="outline"
-              onPress={() =>
-                void api<{ url: string }>(`/teams/${id}/cash/report-link`).then(({ url }) =>
-                  Linking.openURL(url),
-                )
-              }
-            />
-          ) : null}
-
-          {c.permissions.manageCash ? (
-            <Button
-              label="Buchung erfassen"
-              icon="add-circle-outline"
-              onPress={() => router.push(`/teams/${id}/cash-new`)}
-            />
-          ) : null}
+          <TileGrid
+            items={[
+              ...(c.permissions.manageFines && c.config.fines
+                ? [
+                    {
+                      key: 'fine',
+                      label: 'Strafe vergeben',
+                      icon: 'hand-left' as const,
+                      onPress: () => router.push(`/teams/${id}/cash-new?kind=fine`),
+                    },
+                  ]
+                : []),
+              ...(c.permissions.manageCash
+                ? [
+                    {
+                      key: 'booking',
+                      label: 'Buchung erfassen',
+                      icon: 'add-circle' as const,
+                      onPress: () => router.push(`/teams/${id}/cash-new`),
+                    },
+                  ]
+                : []),
+              ...(c.balanceCents !== null
+                ? [
+                    {
+                      key: 'stats',
+                      label: 'Statistik',
+                      icon: 'bar-chart' as const,
+                      onPress: () => router.push(`/teams/${id}/cash-stats`),
+                    },
+                  ]
+                : []),
+              ...(c.config.fines
+                ? [
+                    {
+                      key: 'catalog',
+                      label: 'Strafenkatalog',
+                      icon: 'list' as const,
+                      hint: `${c.fineCatalog.length} Strafen`,
+                      onPress: () => router.push(`/teams/${id}/fines`),
+                    },
+                  ]
+                : []),
+              ...(c.balanceCents !== null
+                ? [
+                    {
+                      key: 'export',
+                      label: 'Kassenbericht (Excel)',
+                      icon: 'download' as const,
+                      onPress: () =>
+                        void api<{ url: string }>(`/teams/${id}/cash/report-link`).then(({ url }) =>
+                          Linking.openURL(url),
+                        ),
+                    },
+                  ]
+                : []),
+            ]}
+          />
 
           {c.personal.map((p) => (
             <Section
@@ -162,7 +184,7 @@ export default function CashScreen() {
           ))}
 
           {c.members ? (
-            <Section title="Offene Beträge">
+            <Section title="Offene Beträge in der Mannschaft">
               <Card>
                 {open.length === 0 ? (
                   <Empty icon="checkmark-circle-outline" text="Alle Konten sind ausgeglichen." />
@@ -198,7 +220,7 @@ export default function CashScreen() {
                 first
                 leading={<IconTile name="lock-closed-outline" tone="archived" />}
                 title="Kassenstand nicht sichtbar"
-                subtitle="Den sehen nur Kassenverantwortliche und das Trainerteam."
+                subtitle="Den sieht nur die Mannschaft selbst."
               />
             </Card>
           ) : null}

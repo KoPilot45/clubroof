@@ -2,10 +2,13 @@ import type { CashBookingKind, RosterEntry, TeamCash } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Button, Card, ChoiceChips, Chip, Loading, Screen, TextField } from '@/components/ui';
+import { Pressable, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Button, Card, ChoiceChips, Chip, Loading, Screen, T, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
-import { parseEuro } from '@/lib/format';
+import { formatEuro, parseEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { useTheme } from '@/lib/theme';
 
 const KINDS: { value: CashBookingKind; label: string; needsPerson: boolean; hint: string }[] = [
   { value: 'fine', label: 'Strafe', needsPerson: true, hint: 'z. B. Zu spät zum Training' },
@@ -20,9 +23,13 @@ const KINDS: { value: CashBookingKind; label: string; needsPerson: boolean; hint
   { value: 'expense', label: 'Ausgabe', needsPerson: false, hint: 'z. B. Trainingsbälle' },
 ];
 
+/** Freie Strafe ohne Katalog (nur mit vollen Kassenrechten) */
+const FREE = 'free';
+
 export default function NewBookingScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, kind: initialKind } = useLocalSearchParams<{ id: string; kind?: string }>();
   const { api } = useSignedIn();
+  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const cash = useQuery({
     queryKey: ['cash', id],
@@ -32,101 +39,230 @@ export default function NewBookingScreen() {
     queryKey: ['roster', id],
     queryFn: () => api<RosterEntry[]>(`/teams/${id}/roster`),
   });
-  const [kind, setKind] = useState<CashBookingKind>('fine');
+  // Aufruf mit ?kind=fine (Strafenkatalog, Kasse) startet bei „Strafe“
+  const [kind, setKind] = useState<CashBookingKind>(initialKind === 'fine' ? 'fine' : 'income');
+  const [fineType, setFineType] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [personId, setPersonId] = useState<string | null>(null);
+  const [persons, setPersons] = useState<string[]>([]);
   const [counterparty, setCounterparty] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const config = cash.data?.config;
-  const kinds = KINDS.filter(
-    (k) => (k.value !== 'fine' || config?.fines) && (k.value !== 'drinks' || config?.drinks),
+  const c = cash.data;
+  const config = c?.config;
+  const perms = c?.permissions;
+  // Wer nur Strafen vergeben darf (Trainerteam), sieht nur „Strafe“
+  const kinds = KINDS.filter((k) =>
+    k.value === 'fine'
+      ? config?.fines && (perms?.manageFines || perms?.manageCash)
+      : perms?.manageCash && (k.value !== 'drinks' || config?.drinks),
   );
-  const current = KINDS.find((k) => k.value === kind)!;
-  const cents = parseEuro(amount);
+  const current = kinds.find((k) => k.value === kind) ?? kinds[0];
+  const isFine = current?.value === 'fine';
+  const catalog = c?.fineCatalog ?? [];
+  const chosen = catalog.find((f) => f.id === fineType);
+  const cents = isFine && chosen ? chosen.amountCents : parseEuro(amount);
+  const multi = isFine;
 
+  const done = (data: TeamCash) => {
+    queryClient.setQueryData(['cash', id], data);
+    void queryClient.invalidateQueries({ queryKey: ['cash-stats', id] });
+    router.back();
+  };
+  const onError = (e: Error) =>
+    setError(
+      e instanceof RequestError ? e.message : 'Die Buchung konnte nicht gespeichert werden.',
+    );
   const save = useMutation({
     mutationFn: () =>
-      api<TeamCash>(`/teams/${id}/cash/bookings`, {
-        method: 'POST',
-        body: {
-          kind,
-          amountCents: cents,
-          description: description.trim(),
-          personId: current.needsPerson ? personId : null,
-          counterparty: current.needsPerson ? null : counterparty.trim() || null,
-        },
-      }),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['cash', id], data);
-      void queryClient.invalidateQueries({ queryKey: ['home'] });
-      router.back();
-    },
-    onError: (e) =>
-      setError(
-        e instanceof RequestError ? e.message : 'Die Buchung konnte nicht gespeichert werden.',
-      ),
+      isFine
+        ? api<TeamCash>(`/teams/${id}/cash/fines`, {
+            method: 'POST',
+            body: chosen
+              ? { fineTypeId: chosen.id, personIds: persons }
+              : { amountCents: cents, description: description.trim(), personIds: persons },
+          })
+        : api<TeamCash>(`/teams/${id}/cash/bookings`, {
+            method: 'POST',
+            body: {
+              kind: current!.value,
+              amountCents: cents,
+              description: description.trim(),
+              personId: current!.needsPerson ? persons[0] : null,
+              counterparty: current!.needsPerson ? null : counterparty.trim() || null,
+            },
+          }),
+    onSuccess: done,
+    onError,
   });
 
+  if (cash.isPending || roster.isPending) return <Loading />;
+  if (!current) {
+    return (
+      <Screen edges={[]}>
+        <Card>
+          <T>Du kannst in dieser Kasse nichts buchen.</T>
+        </Card>
+      </Screen>
+    );
+  }
+
+  const freeFine = isFine && fineType === FREE;
   const validationError = !cents
-    ? 'Bitte gib einen gültigen Betrag ein, z. B. 12,50.'
-    : description.trim().length < 2
+    ? isFine && !fineType
+      ? 'Bitte wähle eine Strafe aus.'
+      : 'Bitte gib einen gültigen Betrag ein, z. B. 12,50.'
+    : (!isFine || freeFine) && description.trim().length < 2
       ? 'Bitte gib eine Beschreibung ein.'
-      : current.needsPerson && !personId
-        ? 'Bitte wähle eine Person aus.'
+      : current.needsPerson && persons.length === 0
+        ? 'Bitte wähle mindestens eine Person aus.'
         : null;
 
-  if (cash.isPending || roster.isPending) return <Loading />;
+  const players = (roster.data ?? []).filter((r) => r.function === 'player');
+  const toggle = (personId: string) =>
+    setPersons(
+      multi
+        ? persons.includes(personId)
+          ? persons.filter((p) => p !== personId)
+          : [...persons, personId]
+        : [personId],
+    );
 
   return (
     <Screen edges={[]}>
-      <Card>
-        <ChoiceChips
-          label="Art der Buchung"
-          options={kinds.map((k) => ({ value: k.value, label: k.label }))}
-          selected={[kind]}
-          onToggle={(v) => {
-            setKind(v);
-            setError(null);
-          }}
-        />
-      </Card>
-      <Card style={{ gap: 12 }}>
-        <TextField label="Betrag in €" value={amount} onChangeText={setAmount} placeholder="0,00" />
-        <TextField
-          label="Beschreibung"
-          value={description}
-          onChangeText={setDescription}
-          placeholder={current.hint}
-          maxLength={120}
-        />
-        {!current.needsPerson ? (
-          <TextField
-            label="Von / an (optional)"
-            value={counterparty}
-            onChangeText={setCounterparty}
-            placeholder="z. B. Sportshop Musterstadt"
-            maxLength={120}
-          />
-        ) : null}
-      </Card>
-      {current.needsPerson ? (
+      {kinds.length > 1 ? (
         <Card>
           <ChoiceChips
-            label="Person"
-            options={(roster.data ?? [])
-              .filter((r) => r.function === 'player')
-              .map((r) => ({ value: r.personId, label: r.name }))}
-            selected={personId ? [personId] : []}
-            onToggle={setPersonId}
+            label="Art der Buchung"
+            options={kinds.map((k) => ({ value: k.value, label: k.label }))}
+            selected={[current.value]}
+            onToggle={(v) => {
+              setKind(v);
+              setPersons([]);
+              setError(null);
+            }}
           />
         </Card>
       ) : null}
+
+      {isFine ? (
+        <Card style={{ gap: 12 }}>
+          <ChoiceChips
+            label="Strafe aus dem Katalog"
+            options={[
+              ...catalog.map((f) => ({
+                value: f.id,
+                label: `${f.name} · ${formatEuro(f.amountCents)}`,
+              })),
+              ...(perms?.manageCash ? [{ value: FREE, label: 'Andere Strafe' }] : []),
+            ]}
+            selected={fineType ? [fineType] : []}
+            onToggle={setFineType}
+          />
+          {catalog.length === 0 ? <T variant="caption">Der Strafenkatalog ist noch leer.</T> : null}
+          {freeFine ? (
+            <>
+              <TextField
+                label="Betrag in €"
+                value={amount}
+                onChangeText={setAmount}
+                placeholder="0,00"
+              />
+              <TextField
+                label="Beschreibung"
+                value={description}
+                onChangeText={setDescription}
+                placeholder={current.hint}
+                maxLength={120}
+              />
+            </>
+          ) : null}
+        </Card>
+      ) : (
+        <Card style={{ gap: 12 }}>
+          <TextField
+            label="Betrag in €"
+            value={amount}
+            onChangeText={setAmount}
+            placeholder="0,00"
+          />
+          <TextField
+            label="Beschreibung"
+            value={description}
+            onChangeText={setDescription}
+            placeholder={current.hint}
+            maxLength={120}
+          />
+          {!current.needsPerson ? (
+            <TextField
+              label="Von / an (optional)"
+              value={counterparty}
+              onChangeText={setCounterparty}
+              placeholder="z. B. Sportshop Musterstadt"
+              maxLength={120}
+            />
+          ) : null}
+        </Card>
+      )}
+
+      {current.needsPerson ? (
+        <Card style={{ gap: 4 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <T variant="overline">{multi ? 'Personen' : 'Person'}</T>
+            {multi && persons.length ? <T variant="caption">{persons.length} ausgewählt</T> : null}
+          </View>
+          {players.map((r) => {
+            const on = persons.includes(r.personId);
+            return (
+              <Pressable
+                key={r.personId}
+                accessibilityRole={multi ? 'checkbox' : 'radio'}
+                accessibilityState={multi ? { checked: on } : { selected: on }}
+                onPress={() => toggle(r.personId)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  paddingVertical: 8,
+                  borderTopWidth: 1,
+                  borderTopColor: colors.border,
+                }}
+              >
+                <Ionicons
+                  name={
+                    multi
+                      ? on
+                        ? 'checkbox'
+                        : 'square-outline'
+                      : on
+                        ? 'radio-button-on'
+                        : 'radio-button-off'
+                  }
+                  size={22}
+                  color={on ? colors.primaryText : colors.onSurfaceMuted}
+                />
+                <T variant="label" style={{ flex: 1 }}>
+                  {r.name}
+                </T>
+                {r.jerseyNumber ? <T variant="caption">#{r.jerseyNumber}</T> : null}
+              </Pressable>
+            );
+          })}
+        </Card>
+      ) : null}
+
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      {validationError && amount ? <Chip tone="action" label={validationError} /> : null}
+      {validationError && (amount || fineType || persons.length) ? (
+        <Chip tone="action" label={validationError} />
+      ) : null}
       <Button
-        label="Buchung speichern"
+        label={
+          isFine && cents && persons.length > 1
+            ? `${persons.length} Strafen vergeben (je ${formatEuro(cents)})`
+            : isFine
+              ? 'Strafe vergeben'
+              : 'Buchung speichern'
+        }
         icon="checkmark"
         disabled={!!validationError}
         loading={save.isPending}

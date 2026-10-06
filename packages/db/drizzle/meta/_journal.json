@@ -176,6 +176,13 @@
       "when": 1791290721215,
       "tag": "0024_carpool",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791293404964,
+      "tag": "0025_fine_catalog",
+      "breakpoints": true
     }
   ]
 }
