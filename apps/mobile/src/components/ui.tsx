@@ -37,12 +37,14 @@ export function T({
   style,
   children,
   numberOfLines,
+  selectable,
 }: {
   variant?: TextVariant;
   color?: string;
   style?: StyleProp<TextStyle>;
   children: ReactNode;
   numberOfLines?: number;
+  selectable?: boolean;
 }) {
   const { colors, fontSizes } = useTheme();
   const variants: Record<TextVariant, TextStyle> = {
@@ -63,6 +65,7 @@ export function T({
   return (
     <Text
       numberOfLines={numberOfLines}
+      selectable={selectable}
       style={[
         variants[variant],
         { color: color ?? (muted ? colors.onSurfaceMuted : colors.onSurface) },

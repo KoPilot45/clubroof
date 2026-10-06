@@ -27,6 +27,7 @@ import { teamAdminRoutes } from './routes/team-admin';
 import { matchRoutes } from './routes/match';
 import { taskRoutes } from './routes/tasks';
 import { commentRoutes } from './routes/comments';
+import { calendarFeedRoutes, calendarRoutes } from './routes/calendar';
 import { invitationRoutes, joinRoutes } from './routes/invitations';
 import { settingsRoutes, setupRoutes } from './routes/settings';
 import { exchangeRoutes } from './routes/exchange';
@@ -152,6 +153,8 @@ export async function buildApp({
   await app.register(matchRoutes);
   await app.register(taskRoutes);
   await app.register(commentRoutes);
+  await app.register(calendarRoutes);
+  await app.register(calendarFeedRoutes);
   await app.register(invitationRoutes);
   await app.register(joinRoutes);
   await app.register(settingsRoutes);

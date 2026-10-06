@@ -250,3 +250,17 @@ export const comments = pgTable(
   },
   (t) => [index().on(t.entityType, t.entityId, t.createdAt)],
 );
+
+/** Persönlicher Kalender-Abo-Link (ICS). Der Token liegt nur gehasht und verschlüsselt vor. */
+export const calendarFeeds = pgTable('calendar_feeds', {
+  userId: uuid()
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  clubId: uuid()
+    .notNull()
+    .references(() => clubs.id, { onDelete: 'cascade' }),
+  tokenHash: text().notNull().unique(),
+  tokenEncrypted: text().notNull(),
+  createdAt: createdAt(),
+  lastAccessAt: timestamp({ withTimezone: true }),
+});

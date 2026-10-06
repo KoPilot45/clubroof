@@ -43,6 +43,7 @@ function Navigator() {
           />
           {/* Verwaltungsmodus mit eigener Navigation (app/admin/_layout.tsx) */}
           <Stack.Screen name="admin" />
+          <Stack.Screen name="calendar" options={{ headerShown: true, title: 'Kalender' }} />
           <Stack.Screen
             name="notification-settings"
             options={{ headerShown: true, title: 'Benachrichtigungen einstellen' }}

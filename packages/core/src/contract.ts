@@ -1367,3 +1367,12 @@ export type CreateClubEventInput = {
   shifts?: { title: string; startsAt: string; endsAt: string; capacity: number }[];
   allowConflict?: boolean;
 };
+
+// ── Kalenderexport ───────────────────────────────────────────────────────
+
+export type CalendarFeed = {
+  /** https-Adresse des Abos; null = kein Abo eingerichtet */
+  url: string | null;
+  /** Zuletzt von einem Kalender abgerufen */
+  lastAccessAt: string | null;
+};

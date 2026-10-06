@@ -21,6 +21,7 @@ import type {
   MyTeamCard,
   CommentItem,
   EventPlanning,
+  CalendarFeed,
   MemberImportResult,
   InviteLink,
   InviteOverview,
@@ -3224,6 +3225,36 @@ describe.skipIf(!url)('API', () => {
         reason: 'Test beendet',
       });
       expect(cancelled.status).toBe(200);
+    });
+  });
+
+  describe('Kalenderexport', () => {
+    it('persönlicher Abo-Link mit eigenen und Vereinsterminen, erneuerbar', async () => {
+      const player = await login('spieler');
+      expect((await get<CalendarFeed>('/me/calendar', player.token)).url).toBeNull();
+      const feed = await send<CalendarFeed>('POST', '/me/calendar', player.token);
+      const path = new URL(feed.body.url!).pathname;
+      expect(path).toMatch(/^\/calendar\/[\w-]+\.ics$/);
+      const res = await app.inject({ method: 'GET', url: path });
+      expect(res.statusCode).toBe(200);
+      expect(res.headers['content-type']).toContain('text/calendar');
+      const ics = res.body;
+      expect(ics.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
+      expect(ics).toContain('SUMMARY:B1 Training');
+      expect(ics).toMatch(/SUMMARY:B1: (SV Grün-Weiß|.+ – SV Grün-Weiß)/);
+      expect(ics).toContain('Jahreshauptversammlung');
+      expect(ics.split('\r\n').every((l) => Buffer.byteLength(l) <= 75)).toBe(true);
+      // Keine Termine anderer Mannschaften
+      expect(ics).not.toContain('SUMMARY:C1 ');
+      expect((await get<CalendarFeed>('/me/calendar', player.token)).url).toBe(feed.body.url);
+
+      const renewed = await send<CalendarFeed>('POST', '/me/calendar', player.token);
+      expect(renewed.body.url).not.toBe(feed.body.url);
+      expect((await app.inject({ method: 'GET', url: path })).statusCode).toBe(404);
+      await send('DELETE', '/me/calendar', player.token);
+      expect(
+        (await app.inject({ method: 'GET', url: new URL(renewed.body.url!).pathname })).statusCode,
+      ).toBe(404);
     });
   });
 

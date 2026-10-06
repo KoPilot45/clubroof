@@ -59,6 +59,16 @@ export default function MoreScreen() {
       icon: 'settings',
       onPress: () => router.push('/account'),
     },
+    ...(me.clubModules.includes('calendar_export')
+      ? [
+          {
+            key: 'calendar',
+            label: 'Kalender-Abo',
+            icon: 'calendar' as const,
+            onPress: () => router.push('/calendar'),
+          },
+        ]
+      : []),
     ...(me.canInvite
       ? [
           {
