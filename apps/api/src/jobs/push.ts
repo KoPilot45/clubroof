@@ -1,4 +1,5 @@
 /** Versendet fällige Push-Nachrichten aus der Warteschlange. */
+import { isLocale, translate, DEFAULT_LOCALE, type Locale } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
@@ -35,6 +36,16 @@ export async function dispatchPush(db: Db | Tx, sender: PushSender, now: Date): 
     .select()
     .from(s.pushDevices)
     .where(inArray(s.pushDevices.userId, [...new Set(toSend.map((d) => d.outbox.userId))]));
+  // Texte werden deutsch gespeichert und in der Sprache der Empfängerin oder des Empfängers versendet
+  const userIds = [...new Set(toSend.map((d) => d.outbox.userId))];
+  const langRows = await db
+    .select({ id: s.users.id, language: s.users.language })
+    .from(s.users)
+    .where(inArray(s.users.id, userIds));
+  const languageOf = (userId: string): Locale => {
+    const l = langRows.find((r) => r.id === userId)?.language;
+    return isLocale(l) ? l : DEFAULT_LOCALE;
+  };
   const messages: { outboxId: string; token: string; message: PushMessage }[] = [];
   for (const d of toSend) {
     for (const device of devices.filter((x) => x.userId === d.outbox.userId)) {
@@ -43,8 +54,8 @@ export async function dispatchPush(db: Db | Tx, sender: PushSender, now: Date): 
         token: device.token,
         message: {
           to: device.token,
-          title: d.notification.title,
-          body: d.notification.body ?? '',
+          title: translate(d.notification.title, languageOf(d.outbox.userId)),
+          body: translate(d.notification.body ?? '', languageOf(d.outbox.userId)),
           data: { link: d.notification.link, notificationId: d.notification.id },
           priority: d.notification.level === 'urgent' ? 'high' : 'normal',
         },

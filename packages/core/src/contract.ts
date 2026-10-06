@@ -1,3 +1,4 @@
+import type { Locale } from './i18n';
 /**
  * Antworttypen der API. Werden von Backend, App und Web-Verwaltung gemeinsam verwendet,
  * damit beide Seiten immer dieselbe Struktur erwarten. Zeitpunkte sind ISO-8601-Strings (UTC).
@@ -56,7 +57,14 @@ export type ColorMode = 'light' | 'dark' | 'system';
 
 export type MeResponse = {
   /** colorMode: persönliche Darstellung (Standard hell) */
-  user: { id: string; email: string; displayName: string; colorMode: ColorMode };
+  user: {
+    id: string;
+    email: string;
+    displayName: string;
+    colorMode: ColorMode;
+    /** Gewählte Sprache; `null` = Sprache des Geräts */
+    language: Locale | null;
+  };
   person: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
   club: ClubInfo;
   managedPersons: ManagedPerson[];

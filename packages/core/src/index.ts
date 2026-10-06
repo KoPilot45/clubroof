@@ -10,3 +10,4 @@ export * from './scopes';
 export * from './team-templates';
 export * from './time';
 export * from './notifications';
+export * from './i18n';

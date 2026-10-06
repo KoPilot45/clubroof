@@ -1,6 +1,8 @@
 import {
   MODULES,
+  isLocale,
   type ColorMode,
+  type Locale,
   type MeResponse,
   type MyTeam,
   type TeamFunction,
@@ -30,11 +32,12 @@ const ADMIN_ROLES = new Set([
 export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
   const ctx = await loadScopeContext(db, actor);
   const [userRow] = await db
-    .select({ colorMode: s.users.colorMode })
+    .select({ colorMode: s.users.colorMode, language: s.users.language })
     .from(s.users)
     .where(eq(s.users.id, actor.user.id));
   const colorMode: ColorMode =
     userRow?.colorMode === 'dark' || userRow?.colorMode === 'system' ? userRow.colorMode : 'light';
+  const language: Locale | null = isLocale(userRow?.language) ? userRow.language : null;
   const refereeModule = moduleEnabled(actor, 'referees');
   const isReferee =
     refereeModule &&
@@ -72,6 +75,7 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       email: actor.user.email,
       displayName: actor.user.displayName,
       colorMode,
+      language,
     },
     person: {
       id: actor.person.id,
@@ -118,12 +122,16 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
   };
 }
 
-/** Persönliche Darstellung (hell, dunkel oder wie das Gerät). */
-export async function setColorMode(
+/** Persönliche Einstellungen: Darstellung (hell, dunkel oder wie das Gerät) und Sprache. */
+export async function setPreferences(
   db: Db,
   actor: Actor,
-  colorMode: ColorMode,
+  input: { colorMode?: ColorMode; language?: Locale | null },
 ): Promise<MeResponse> {
-  await db.update(s.users).set({ colorMode }).where(eq(s.users.id, actor.user.id));
+  const patch: { colorMode?: ColorMode; language?: Locale | null } = {};
+  if (input.colorMode !== undefined) patch.colorMode = input.colorMode;
+  if (input.language !== undefined) patch.language = input.language;
+  if (Object.keys(patch).length)
+    await db.update(s.users).set(patch).where(eq(s.users.id, actor.user.id));
   return buildMe(db, actor);
 }

@@ -3615,6 +3615,29 @@ describe.skipIf(!url)('API', () => {
       });
     });
 
+    it('Push kommt in der Sprache der Empfängerin oder des Empfängers', async () => {
+      const player = await login('spieler');
+      const coach = await login('trainer');
+      const b1 = await b1Of();
+      const token = 'ExponentPushToken[spieler-test-en]';
+      await send('POST', '/me/devices', player.token, { token, platform: 'ios' });
+      await send('PUT', '/me/preferences', player.token, { language: 'en' });
+      const event = await newEvent(coach.token, b1.id, 34);
+      await runJobs(db, push, NOW);
+      const titles = push.sent.filter((m) => m.to === token).map((m) => m.title);
+      expect(titles).toEqual(['New event: Training']);
+      // Aufräumen: Termin absagen, damit er keine offene Rückmeldung auf der Startseite hinterlässt
+      await send('POST', `/events/${event.id}/cancel`, coach.token, { reason: 'Test' });
+      await runJobs(db, push, NOW);
+      expect(push.sent.filter((m) => m.to === token).at(-1)?.title).toBe(
+        'Cancelled: Training',
+      );
+      await send('PUT', '/me/preferences', player.token, { language: null });
+      await send('DELETE', `/me/devices/${encodeURIComponent(token)}`, player.token).catch(
+        () => undefined,
+      );
+    });
+
     it('Erinnerung an fehlende Zusage, Sammelhinweis und kurzfristige Absage', async () => {
       const player = await login('spieler');
       const coach = await login('trainer');
@@ -4384,6 +4407,25 @@ describe.skipIf(!url)('API', () => {
         (await send('PUT', '/me/preferences', player.token, { colorMode: 'lila' })).status,
       ).toBe(400);
       await send('PUT', '/me/preferences', player.token, { colorMode: 'light' });
+    });
+
+    it('Sprache: Standard Gerätesprache, Auswahl gilt für das Konto, Englisch wird akzeptiert', async () => {
+      const player = await login('spieler');
+      expect(player.me.user.language).toBeNull();
+      const en = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        language: 'en',
+      });
+      expect(en.body.user.language).toBe('en');
+      expect(en.body.user.colorMode).toBe('light'); // unverändert
+      expect((await login('trainer')).me.user.language).toBeNull();
+      expect((await login('spieler')).me.user.language).toBe('en');
+      expect(
+        (await send('PUT', '/me/preferences', player.token, { language: 'klingon' })).status,
+      ).toBe(400);
+      const auto = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        language: null,
+      });
+      expect(auto.body.user.language).toBeNull();
     });
   });
 

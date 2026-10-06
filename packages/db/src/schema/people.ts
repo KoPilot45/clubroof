@@ -27,6 +27,8 @@ export const users = pgTable('users', {
   passwordHash: text(),
   /** Persönliche Darstellung: light (Standard) | dark | system */
   colorMode: text().notNull().default('light'),
+  /** Persönliche Sprache (de | en). Leer = Sprache des Geräts */
+  language: text(),
   lastLoginAt: timestamp({ withTimezone: true }),
   passwordChangedAt: timestamp({ withTimezone: true }),
   /** TOTP-Geheimnis (verschlüsselt). Gesetzt = 2-Faktor-Anmeldung aktiv */

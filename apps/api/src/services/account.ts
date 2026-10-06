@@ -4,6 +4,7 @@
  *  - Reset-Links gelten 30 Minuten und nur einmal; danach werden alle Sitzungen beendet.
  */
 import { hash, verify } from '@node-rs/argon2';
+import { isLocale, translate, DEFAULT_LOCALE } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, eq, gt, isNull, ne } from 'drizzle-orm';
 import { generateToken, hashToken } from '../auth/session';
@@ -75,10 +76,16 @@ export async function requestPasswordReset(
   now: Date,
 ): Promise<void> {
   const [user] = await db
-    .select({ id: s.users.id, name: s.users.displayName, hash: s.users.passwordHash })
+    .select({
+      id: s.users.id,
+      name: s.users.displayName,
+      hash: s.users.passwordHash,
+      language: s.users.language,
+    })
     .from(s.users)
     .where(eq(s.users.email, email));
   if (!user || !user.hash) return;
+  const locale = isLocale(user.language) ? user.language : DEFAULT_LOCALE;
   // Ältere, noch offene Links ungültig machen
   await db
     .update(s.authTokens)
@@ -93,7 +100,7 @@ export async function requestPasswordReset(
   const token = await createAuthToken(db, user.id, 'password_reset', RESET_MINUTES, now);
   await mailer.send({
     to: email,
-    subject: 'Passwort zurücksetzen',
+    subject: translate('Passwort zurücksetzen', locale),
     text: [
       `Hallo ${user.name},`,
       '',
@@ -103,7 +110,9 @@ export async function requestPasswordReset(
       `${config.appUrl}/reset/${token}`,
       '',
       'Wenn du das nicht warst, ignoriere diese E-Mail – dein Passwort bleibt unverändert.',
-    ].join('\n'),
+    ]
+      .map((line) => translate(line, locale))
+      .join('\n'),
   });
 }
 
