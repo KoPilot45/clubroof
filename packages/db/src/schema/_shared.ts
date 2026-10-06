@@ -59,6 +59,7 @@ export const facilityKindEnum = pgEnum('facility_kind', [
   'artificial_pitch',
   'hall',
   'clubhouse',
+  'changing_room',
   'other',
 ]);
 export const eventStatusEnum = pgEnum('event_status', ['scheduled', 'cancelled']);

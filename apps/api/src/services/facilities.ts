@@ -13,7 +13,7 @@ import {
   type FacilityOccupancy,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, eq, gt, inArray, lt } from 'drizzle-orm';
+import { and, asc, eq, gt, inArray, lt, ne } from 'drizzle-orm';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { notify, recipientsFor } from './event-admin';
@@ -69,7 +69,8 @@ export async function getOccupancy(
   const facilities = await db
     .select()
     .from(s.facilities)
-    .where(eq(s.facilities.clubId, actor.club.id))
+    // Kabinen haben einen eigenen Plan (Modul „Anlage & Material“)
+    .where(and(eq(s.facilities.clubId, actor.club.id), ne(s.facilities.kind, 'changing_room')))
     .orderBy(asc(s.facilities.sortOrder));
 
   const [events, blocks] = await Promise.all([

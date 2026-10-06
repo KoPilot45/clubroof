@@ -12,7 +12,7 @@ import {
   type PlannedEvent,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, count, eq, gt, inArray, isNull } from 'drizzle-orm';
+import { and, asc, count, eq, gt, inArray, isNull, ne } from 'drizzle-orm';
 import type { Actor } from '../actor';
 import { HttpError, forbidden } from '../errors';
 import { notify } from './event-admin';
@@ -49,7 +49,7 @@ export async function getEventPlanning(db: Db, actor: Actor, now: Date): Promise
     db
       .select({ id: s.facilities.id, name: s.facilities.name })
       .from(s.facilities)
-      .where(eq(s.facilities.clubId, actor.club.id))
+      .where(and(eq(s.facilities.clubId, actor.club.id), ne(s.facilities.kind, 'changing_room')))
       .orderBy(asc(s.facilities.name)),
     db
       .select({ event: s.events, facility: s.facilities.name })

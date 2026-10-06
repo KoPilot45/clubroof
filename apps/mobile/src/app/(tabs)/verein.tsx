@@ -111,6 +111,26 @@ export default function ClubScreen() {
           },
         ]
       : []),
+    ...(has('equipment')
+      ? [
+          {
+            key: 'equipment',
+            label: 'Anlage & Material',
+            icon: 'construct' as const,
+            onPress: () => router.push('/equipment'),
+          },
+        ]
+      : []),
+    ...(me.referees.manage || me.referees.active
+      ? [
+          {
+            key: 'referees',
+            label: 'Schiedsrichter',
+            icon: 'flag' as const,
+            onPress: () => router.push('/referees'),
+          },
+        ]
+      : []),
     ...(has('wiki')
       ? [
           {

@@ -25,7 +25,7 @@ import {
   type ModuleKey,
   type NotificationTopic,
 } from '@clubroof/core';
-import { and, eq, inArray, isNotNull, like } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, isNotNull, like, lt } from 'drizzle-orm';
 import type { PgTable } from 'drizzle-orm/pg-core';
 import { createDb, type Db } from '../client';
 import * as s from '../schema';
@@ -1855,6 +1855,157 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         createdAt: hoursAgo(20),
       },
     ]);
+
+    // ── Anlage & Material: Kabinen, Schlüssel, Material, Schäden ───────────────────────────
+    const rooms = await tx
+      .insert(s.facilities)
+      .values(
+        [1, 2, 3, 4].map((n) => ({
+          clubId,
+          name: `Kabine ${n}`,
+          shortName: `K${n}`,
+          kind: 'changing_room' as const,
+          address: DEMO_CLUB.street,
+          sortOrder: 10 + n,
+        })),
+      )
+      .returning({ id: s.facilities.id });
+    // Heutige und morgige Trainings bekommen Kabinen (eine Doppelbelegung als Beispiel)
+    const soonTrainings = await tx
+      .select({ id: s.events.id })
+      .from(s.events)
+      .where(
+        and(
+          eq(s.events.clubId, clubId),
+          eq(s.events.type, 'training'),
+          gte(s.events.startsAt, now),
+          lt(s.events.startsAt, days(2)),
+        ),
+      )
+      .orderBy(asc(s.events.startsAt))
+      .limit(6);
+    for (const [i, e] of soonTrainings.entries()) {
+      await tx
+        .update(s.events)
+        .set({ changingRoomId: rooms[i % rooms.length]!.id })
+        .where(eq(s.events.id, e.id));
+    }
+    await tx.insert(s.equipmentItems).values([
+      {
+        clubId,
+        kind: 'key',
+        name: 'Schlüssel Vereinsheim',
+        quantity: 1,
+        location: 'Geschäftsstelle',
+        holderPersonId: persona.coach.id,
+        handedOutAt: hoursAgo(24 * 30),
+        createdAt: hoursAgo(24 * 90),
+      },
+      {
+        clubId,
+        kind: 'key',
+        name: 'Schlüssel Materialraum',
+        quantity: 1,
+        location: 'Geschäftsstelle',
+        createdAt: hoursAgo(24 * 90),
+      },
+      {
+        clubId,
+        kind: 'key',
+        name: 'Schlüssel Flutlicht',
+        quantity: 1,
+        location: 'Geschäftsstelle',
+        holderPersonId: official.facilityManager.id,
+        handedOutAt: hoursAgo(24 * 60),
+        createdAt: hoursAgo(24 * 90),
+      },
+      {
+        clubId,
+        kind: 'material',
+        name: 'Minitore',
+        quantity: 4,
+        location: 'Materialraum',
+        createdAt: hoursAgo(24 * 90),
+      },
+      {
+        clubId,
+        kind: 'material',
+        name: 'Ballnetz mit 10 Bällen',
+        quantity: 3,
+        location: 'Materialraum',
+        createdAt: hoursAgo(24 * 90),
+      },
+      {
+        clubId,
+        kind: 'material',
+        name: 'Trikotsatz B-Jugend (Heim)',
+        quantity: 1,
+        location: 'Kabine 2',
+        holderPersonId: persona.player.id,
+        handedOutAt: hoursAgo(26),
+        createdAt: hoursAgo(24 * 90),
+      },
+    ]);
+    await tx.insert(s.damageReports).values([
+      {
+        clubId,
+        title: 'Tornetz Platz 1 gerissen',
+        description: 'Linkes Tor, unten rechts ca. 30 cm.',
+        status: 'open',
+        reportedByPersonId: persona.coach.id,
+        reportedByUserId: userIds.coach,
+        createdAt: hoursAgo(28),
+        updatedAt: hoursAgo(28),
+      },
+      {
+        clubId,
+        title: 'Dusche Kabine 3 tropft',
+        status: 'in_progress',
+        resolution: 'Installateur kommt am Freitag.',
+        reportedByPersonId: persona.parent.id,
+        reportedByUserId: userIds.parent,
+        createdAt: hoursAgo(24 * 4),
+        updatedAt: hoursAgo(24 * 2),
+      },
+    ]);
+
+    // ── Schiedsrichter: drei Vereinsschiedsrichter, ein offener Einsatz ─────────────────────
+    const refPersons = [
+      persona.coach,
+      ...persons.filter((p) => p.birthDate! <= '1995-12-31').slice(3, 5),
+    ];
+    await tx.insert(s.referees).values(
+      refPersons.map((p, i) => ({
+        personId: p.id,
+        clubId,
+        level: i === 0 ? 'Kreisliga' : 'Jugend',
+        createdAt: hoursAgo(24 * 200),
+      })),
+    );
+    const [homeMatch] = await tx
+      .select({ id: s.events.id })
+      .from(s.events)
+      .innerJoin(s.matchDetails, eq(s.matchDetails.eventId, s.events.id))
+      .innerJoin(s.teams, eq(s.teams.id, s.events.teamId))
+      .where(
+        and(
+          eq(s.events.clubId, clubId),
+          eq(s.matchDetails.isHome, true),
+          gte(s.events.startsAt, now),
+          eq(s.teams.orgUnitId, orgUnitIds.youth),
+        ),
+      )
+      .orderBy(asc(s.events.startsAt))
+      .limit(1);
+    if (homeMatch)
+      await tx.insert(s.refereeAssignments).values({
+        clubId,
+        eventId: homeMatch.id,
+        personId: persona.coach.id,
+        role: 'referee',
+        status: 'requested',
+        createdAt: hoursAgo(12),
+      });
 
     // ── Mannschaftsaufgaben (B-Jugend) ──────────────────────────────────────────────────────
     await tx.insert(s.teamTasks).values([

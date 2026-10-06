@@ -11,7 +11,7 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { clubs } from './club';
+import { clubs, facilities } from './club';
 import { events } from './events';
 import { persons, users } from './people';
 import { teams } from './teams';
@@ -226,3 +226,84 @@ export const trainingPlans = pgTable('training_plans', {
   updatedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Material und Schlüssel mit Ausgabe an Personen (Modul „Anlage & Material“). */
+export const equipmentItems = pgTable(
+  'equipment_items',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    /** material | key */
+    kind: text().notNull(),
+    name: text().notNull(),
+    quantity: integer().notNull().default(1),
+    location: text(),
+    note: text(),
+    holderPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    handedOutAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.kind), index().on(t.holderPersonId)],
+);
+
+/** Schadensmeldungen zur Anlage (Konzept §6, §12). */
+export const damageReports = pgTable(
+  'damage_reports',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    facilityId: uuid().references(() => facilities.id, { onDelete: 'set null' }),
+    title: text().notNull(),
+    description: text(),
+    imageUrl: text(),
+    /** open | in_progress | done */
+    status: text().notNull().default('open'),
+    resolution: text(),
+    reportedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    reportedByUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index().on(t.clubId, t.status)],
+);
+
+/** Vereinsschiedsrichter (Modul „Schiedsrichter“). */
+export const referees = pgTable('referees', {
+  personId: uuid()
+    .primaryKey()
+    .references(() => persons.id, { onDelete: 'cascade' }),
+  clubId: uuid()
+    .notNull()
+    .references(() => clubs.id, { onDelete: 'cascade' }),
+  /** z. B. „Jungschiedsrichter“, „Kreisliga“ */
+  level: text(),
+  active: boolean().notNull().default(true),
+  createdAt: createdAt(),
+});
+
+/** Einteilung eines Schiedsrichters zu einem Heimspiel. */
+export const refereeAssignments = pgTable(
+  'referee_assignments',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    eventId: uuid()
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    /** referee | assistant */
+    role: text().notNull().default('referee'),
+    /** requested | confirmed | declined */
+    status: text().notNull().default('requested'),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.eventId), index().on(t.personId)],
+);

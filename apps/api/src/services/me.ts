@@ -1,5 +1,6 @@
 import { MODULES, type MeResponse, type MyTeam, type TeamFunction } from '@clubroof/core';
-import type { Db } from '@clubroof/db';
+import { schema as s, type Db } from '@clubroof/db';
+import { and, eq, inArray } from 'drizzle-orm';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { resolveMediaUrl } from '../storage/media-links';
 import { loadScopeContext, targetsWith } from './scopes';
@@ -22,6 +23,16 @@ const ADMIN_ROLES = new Set([
 
 export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
   const ctx = await loadScopeContext(db, actor);
+  const refereeModule = moduleEnabled(actor, 'referees');
+  const isReferee =
+    refereeModule &&
+    (
+      await db
+        .select({ id: s.referees.personId })
+        .from(s.referees)
+        .where(and(inArray(s.referees.personId, actor.managedIds), eq(s.referees.active, true)))
+        .limit(1)
+    ).length > 0;
   const teams = new Map<string, MyTeam>();
   for (const m of actor.memberships) {
     const key = `${m.teamId}:${m.personId}`;
@@ -81,6 +92,11 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       twoFactorEnabled: actor.user.twoFactorEnabled === true,
       twoFactorRequired: twoFactorMissing(actor),
     },
+    referees: {
+      manage: refereeModule && actorCan(actor, 'referees.manage'),
+      active: isReferee,
+    },
+    equipment: { manage: actorCan(actor, 'facilities.manage') },
     clubModules: MODULES.filter((mod) => moduleEnabled(actor, mod.key)).map((mod) => mod.key),
   };
 }

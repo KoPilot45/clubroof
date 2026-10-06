@@ -56,6 +56,23 @@ function Navigator() {
           />
           <Stack.Screen name="wiki/index" options={{ headerShown: true, title: 'Vereinswissen' }} />
           <Stack.Screen name="wiki/[id]" options={{ headerShown: true, title: 'Artikel' }} />
+          <Stack.Screen
+            name="equipment/index"
+            options={{ headerShown: true, title: 'Anlage & Material' }}
+          />
+          <Stack.Screen
+            name="equipment/rooms"
+            options={{ headerShown: true, title: 'Kabinenplan' }}
+          />
+          <Stack.Screen
+            name="equipment/items"
+            options={{ headerShown: true, title: 'Material & Schlüssel' }}
+          />
+          <Stack.Screen
+            name="equipment/damages"
+            options={{ headerShown: true, title: 'Schäden' }}
+          />
+          <Stack.Screen name="referees" options={{ headerShown: true, title: 'Schiedsrichter' }} />
           <Stack.Screen name="calendar" options={{ headerShown: true, title: 'Kalender' }} />
           <Stack.Screen
             name="notification-settings"

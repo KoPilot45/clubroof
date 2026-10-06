@@ -8,7 +8,7 @@ import type {
   TeamStats,
 } from '@clubroof/core';
 import { schema as s } from '@clubroof/db';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, ne } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { cashReportLink, createBooking, getTeamCash } from '../services/cash';
@@ -186,7 +186,12 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
     app.db
       .select({ id: s.facilities.id, name: s.facilities.name, shortName: s.facilities.shortName })
       .from(s.facilities)
-      .where(eq(s.facilities.clubId, request.actor!.club.id))
+      .where(
+        and(
+          eq(s.facilities.clubId, request.actor!.club.id),
+          ne(s.facilities.kind, 'changing_room'),
+        ),
+      )
       .orderBy(asc(s.facilities.sortOrder)),
   );
 };

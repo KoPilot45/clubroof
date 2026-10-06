@@ -29,6 +29,10 @@ import type {
   BoardOverview,
   WikiOverview,
   WikiPage,
+  ChangingRoomPlan,
+  EquipmentOverview,
+  DamageOverview,
+  RefereeOverview,
   MemberImportResult,
   InviteLink,
   InviteOverview,
@@ -3424,6 +3428,182 @@ describe.skipIf(!url)('API', () => {
       });
       expect(edited.body.updatedBy).toBe('Daniel Schäfer');
       expect((await send('DELETE', `/wiki/${created.body.id}`, admin.token)).status).toBe(204);
+    });
+  });
+
+  describe('Anlage & Material und Schiedsrichter', () => {
+    const today = '2026-10-05';
+
+    it('Kabinenplan: Zuteilung, Doppelbelegung erkennen, Rechte', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const plan = await get<ChangingRoomPlan>(
+        `/equipment/changing-rooms?date=${today}`,
+        admin.token,
+      );
+      expect(plan.rooms.map((r) => r.name)).toEqual([
+        'Kabine 1',
+        'Kabine 2',
+        'Kabine 3',
+        'Kabine 4',
+      ]);
+      expect(plan.canAssign).toBe(true);
+      // Kabinen tauchen nicht in der Platzbelegung auf
+      const facilities = await get<{ name: string }[]>('/facilities', coach.token);
+      expect(facilities.some((f) => f.name.startsWith('Kabine'))).toBe(false);
+
+      const [a, b] = plan.events;
+      expect(a && b).toBeTruthy();
+      const room = plan.rooms[0]!.id;
+      const one = await send<ChangingRoomPlan>(
+        'PUT',
+        `/events/${a!.id}/changing-room`,
+        admin.token,
+        { roomId: room, date: today },
+      );
+      expect(one.body.events.find((e) => e.id === a!.id)!.changingRoomId).toBe(room);
+      expect(
+        (
+          await send('PUT', `/events/${a!.id}/changing-room`, player.token, {
+            roomId: null,
+            date: today,
+          })
+        ).status,
+      ).toBe(403);
+      // Zwei zeitgleiche Termine in derselben Kabine werden markiert
+      const same = one.body.events.find(
+        (e) => e.id !== a!.id && e.startsAt < a!.endsAt && a!.startsAt < e.endsAt,
+      );
+      if (same) {
+        const both = await send<ChangingRoomPlan>(
+          'PUT',
+          `/events/${same.id}/changing-room`,
+          admin.token,
+          { roomId: room, date: today },
+        );
+        expect(both.body.events.find((e) => e.id === same.id)!.conflict).toBe(true);
+      }
+    });
+
+    it('Schlüssel und Material: Ausgabe, eigene Gegenstände, Rücknahme', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const mine = await get<EquipmentOverview>('/equipment', coach.token);
+      expect(mine.canManage).toBe(false);
+      expect(mine.items).toHaveLength(0);
+      expect(mine.mine.map((i) => i.name)).toEqual(['Schlüssel Vereinsheim']);
+
+      const all = await get<EquipmentOverview>('/equipment', admin.token);
+      const key = all.items.find((i) => i.name === 'Schlüssel Materialraum')!;
+      expect(key.holder).toBeNull();
+      const people = await get<{ personId: string; name: string }[]>(
+        '/equipment/people?q=Muster',
+        admin.token,
+      );
+      const max = people.find((p) => p.name === 'Max Mustermann')!;
+      const handed = await send<EquipmentOverview>(
+        'PUT',
+        `/equipment/${key.id}/holder`,
+        admin.token,
+        { personId: max.personId },
+      );
+      expect(handed.body.items.find((i) => i.id === key.id)!.holder!.name).toBe('Max Mustermann');
+      expect((await get<EquipmentOverview>('/equipment', coach.token)).mine).toHaveLength(2);
+      expect(
+        (await send('PUT', `/equipment/${key.id}/holder`, coach.token, { personId: null })).status,
+      ).toBe(403);
+      await send('PUT', `/equipment/${key.id}/holder`, admin.token, { personId: null });
+      const added = await send<EquipmentOverview>('POST', '/equipment', admin.token, {
+        kind: 'material',
+        name: 'Stangen',
+        quantity: 12,
+        location: 'Materialraum',
+      });
+      expect(added.status).toBe(201);
+    });
+
+    it('Schadensmeldung: jeder meldet, Platzverantwortliche bearbeiten, Meldende erfahren es', async () => {
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const reported = await send<DamageOverview>('POST', '/damages', player.token, {
+        title: 'Flutlicht Platz 2 flackert',
+        description: 'Mast hinten links.',
+      });
+      expect(reported.status).toBe(201);
+      const mine = reported.body.reports.find((r) => r.title === 'Flutlicht Platz 2 flackert')!;
+      expect(mine).toMatchObject({ mine: true, status: 'open', reportedBy: null });
+      expect(
+        (await get<NotificationItem[]>('/notifications', admin.token)).some(
+          (n) => n.title === 'Schaden gemeldet: Flutlicht Platz 2 flackert',
+        ),
+      ).toBe(true);
+      expect(
+        (await send('PATCH', `/damages/${mine.id}`, player.token, { status: 'done' })).status,
+      ).toBe(403);
+      const done = await send<DamageOverview>('PATCH', `/damages/${mine.id}`, admin.token, {
+        status: 'done',
+        resolution: 'Leuchtmittel getauscht.',
+      });
+      expect(done.body.reports.find((r) => r.id === mine.id)).toMatchObject({
+        status: 'done',
+        reportedBy: 'Max Becker',
+      });
+      expect(
+        (await get<NotificationItem[]>('/notifications', player.token)).some(
+          (n) => n.title === 'Deine Schadensmeldung ist erledigt',
+        ),
+      ).toBe(true);
+    });
+
+    it('Schiedsrichter: einteilen, bestätigen, absagen meldet dem Obmann', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      expect((await send('GET', '/referees', player.token)).status).toBe(403);
+      const own = await get<RefereeOverview>('/referees', coach.token);
+      expect(own.canManage).toBe(false);
+      expect(own.mine).toHaveLength(1);
+      expect(own.mine[0]!.status).toBe('requested');
+      const confirmed = await send<RefereeOverview>(
+        'POST',
+        `/referees/assignments/${own.mine[0]!.assignmentId}/respond`,
+        coach.token,
+        { status: 'confirmed' },
+      );
+      expect(confirmed.body.mine[0]!.status).toBe('confirmed');
+
+      const lead = await get<RefereeOverview>('/referees', admin.token);
+      expect(lead.referees.length).toBe(3);
+      const open = lead.matches.find((m) => m.assignments.length === 0)!;
+      const ref = lead.referees.find((r) => r.name !== 'Max Mustermann')!;
+      const assigned = await send<RefereeOverview>('POST', '/referees/assignments', admin.token, {
+        eventId: open.eventId,
+        personId: ref.personId,
+      });
+      expect(
+        assigned.body.matches.find((m) => m.eventId === open.eventId)!.assignments,
+      ).toHaveLength(1);
+      expect(
+        (
+          await send('POST', '/referees/assignments', admin.token, {
+            eventId: open.eventId,
+            personId: player.me.person.id,
+          })
+        ).status,
+      ).toBe(400);
+      const declined = await send<RefereeOverview>(
+        'POST',
+        `/referees/assignments/${own.mine[0]!.assignmentId}/respond`,
+        coach.token,
+        { status: 'declined' },
+      );
+      expect(declined.status).toBe(200);
+      expect(
+        (await get<NotificationItem[]>('/notifications', admin.token)).some(
+          (n) => n.title === 'Schiedsrichter hat abgesagt',
+        ),
+      ).toBe(true);
     });
   });
 

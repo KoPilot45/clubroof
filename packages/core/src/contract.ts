@@ -74,6 +74,10 @@ export type MeResponse = {
   news: { write: boolean; publish: boolean };
   /** Auf Vereinsebene aktivierte Module (bestimmen die Kacheln im Vereinsbereich) */
   clubModules: string[];
+  /** Schiedsrichter: einteilen bzw. selbst als Schiedsrichter aktiv */
+  referees: { manage: boolean; active: boolean };
+  /** Kabinen, Material und Schäden bearbeiten (Platzverantwortliche) */
+  equipment: { manage: boolean };
 };
 
 export type LoginResponse = { token: string; expiresAt: string; me: MeResponse };
@@ -1535,3 +1539,96 @@ export type WikiPage = WikiPageSummary & { body: string; updatedBy: string | nul
 export type WikiOverview = { pages: WikiPageSummary[]; categories: string[]; canEdit: boolean };
 
 export type SaveWikiPageInput = { title: string; category: string; body: string };
+
+// ── Anlage & Material ────────────────────────────────────────────────────
+
+export type ChangingRoomPlan = {
+  date: string;
+  rooms: { id: string; name: string }[];
+  events: {
+    id: string;
+    title: string;
+    badge: string | null;
+    startsAt: string;
+    endsAt: string;
+    location: string | null;
+    changingRoomId: string | null;
+    /** Gleiche Kabine zeitgleich mit einem anderen Termin */
+    conflict: boolean;
+  }[];
+  canAssign: boolean;
+};
+
+export type EquipmentItem = {
+  id: string;
+  kind: 'material' | 'key';
+  name: string;
+  quantity: number;
+  location: string | null;
+  note: string | null;
+  holder: { personId: string; name: string } | null;
+  handedOutAt: string | null;
+};
+
+export type EquipmentOverview = {
+  items: EquipmentItem[];
+  /** Was ich (oder mein Kind) gerade ausgeliehen habe */
+  mine: EquipmentItem[];
+  canManage: boolean;
+};
+
+export type DamageStatus = 'open' | 'in_progress' | 'done';
+
+export type DamageReport = {
+  id: string;
+  title: string;
+  description: string | null;
+  facility: string | null;
+  imageUrl: string | null;
+  status: DamageStatus;
+  resolution: string | null;
+  reportedBy: string | null;
+  mine: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type DamageOverview = {
+  reports: DamageReport[];
+  facilities: { id: string; name: string }[];
+  canManage: boolean;
+};
+
+// ── Schiedsrichter ───────────────────────────────────────────────────────
+
+export type RefereeAssignment = {
+  id: string;
+  personId: string;
+  name: string;
+  role: 'referee' | 'assistant';
+  status: 'requested' | 'confirmed' | 'declined';
+};
+
+export type RefereeMatch = {
+  eventId: string;
+  title: string;
+  badge: string;
+  startsAt: string;
+  location: string | null;
+  assignments: RefereeAssignment[];
+};
+
+export type RefereeOverview = {
+  referees: {
+    personId: string;
+    name: string;
+    level: string | null;
+    active: boolean;
+    upcoming: number;
+  }[];
+  /** Heimspiele der nächsten 6 Wochen */
+  matches: RefereeMatch[];
+  canManage: boolean;
+  /** Meine eigenen Einsätze als Schiedsrichter */
+  mine: (RefereeMatch & { assignmentId: string; status: RefereeAssignment['status'] })[];
+};

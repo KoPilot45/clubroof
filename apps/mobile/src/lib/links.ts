@@ -12,6 +12,8 @@ const KNOWN = [
   '/forum',
   '/board',
   '/wiki',
+  '/equipment',
+  '/referees',
 ];
 
 /** Öffnet einen internen Link aus der API (Aktionen, Benachrichtigungen). */

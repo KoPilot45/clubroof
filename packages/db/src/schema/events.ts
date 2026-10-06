@@ -48,6 +48,8 @@ export const events = pgTable(
     meetingAt: timestamp({ withTimezone: true }),
     meetingPoint: text(),
     facilityId: uuid().references(() => facilities.id, { onDelete: 'set null' }),
+    /** Zugeteilte Kabine (Modul „Anlage & Material“) */
+    changingRoomId: uuid().references(() => facilities.id, { onDelete: 'set null' }),
     locationText: text(),
     /** Gruppiert Serientermine (z. B. wöchentliches Training). */
     seriesId: uuid(),

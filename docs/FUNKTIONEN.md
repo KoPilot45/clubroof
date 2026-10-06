@@ -54,7 +54,7 @@ Stand: 05.10.2026
 | Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | ✅ | Trainerteam wählt den Modus und vergibt Nummern (keine Doppelten); je Spiel in der Aufstellung änderbar |
 | Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | ✅ | Buchen nur für Kassenverantwortliche; Kassenbericht als CSV für Excel (Anfangsbestand, Buchungen, laufender Stand, offene persönliche Konten) |
 | Teambezogene Dokumente und Aufgaben | K 4 | ✅ | Dokumente der Mannschaft; Mannschaftsaufgaben (Fahrdienst, Trikotwäsche …) mit Zuteilung, „Ich übernehme“ und Abhaken |
-| Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ⬜ | optionales Modul |
+| Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ✅ | Optionales Modul: Übungsbibliothek des Vereins, Plan je Training (Schwerpunkt, Ablauf, Notizen), Vorlage aus dem letzten Plan; Spieler sehen Schwerpunkt und Material |
 
 ## 4. Termine & Teilnahme
 
@@ -69,7 +69,7 @@ Stand: 05.10.2026
 | Trainer korrigiert Zu-/Absagen nach Fristablauf | K 9 | ✅ | |
 | Absagegrund angeben | M 16 | ✅ | Auswahl und optionaler Hinweis |
 | Abwesenheiten melden (Urlaub, Verletzt, Gesperrt, Sonstiges; alle oder einzelne Teams) | M 16, K 9 | ✅ | auch für Kinder; Löschen nimmt automatische Absagen zurück |
-| Kalenderexport | M 15, 17 | ⬜ | |
+| Kalenderexport | M 15, 17 | ✅ | Persönlicher Abo-Link (iCalendar) für Google, Apple, Outlook – eigene, Kinder- und Vereinstermine, ohne Teilnehmerdaten, jederzeit erneuerbar |
 | Termine anlegen, ändern, absagen; Serientermine | K 4, 6 | ✅ | Wöchentliche Serien (bis 26 Wochen, Ortszeit bleibt bei Zeitumstellung); Ändern einzeln oder „diesen und folgende“; Platzkonflikt-Prüfung |
 | Änderungen zeigen alt und neu (z. B. Treffpunkt) | K 10 | ✅ | Karte „Zuletzt geändert“ im Termin (14 Tage) und Benachrichtigung mit alt → neu |
 
@@ -96,8 +96,8 @@ Stand: 05.10.2026
 | Mannschaften des Vereins (Senioren, Jugend, Frauen, AH) | K 5 | ✅ | mit Liga, Spielerzahl, Trainern |
 | Ansprechpartner (Vorstand, Jugendleitung, Trainer) | K 5 | ✅ | Kontaktdaten nach Sichtbarkeitseinstellung |
 | Dokumente: Kategorien, Filter, Suche, Upload | M 9, K 5 | ✅ | Upload (PDF, Word, Excel, JPG, PNG bis 10 MB; Typ wird am Inhalt geprüft) und Löschen je Bereich mit `documents.manage`; Öffnen über signierte Links |
-| Austausch / Mini-Forum (wenige, moderierte Themen, Ablaufdatum) | M 5, K 11 | ⬜ | optionales Modul |
-| Fundbüro, Marktplatz, Vereinswissen/Wiki | K 5, 12 | ⬜ | optionale Module |
+| Austausch / Mini-Forum (wenige, moderierte Themen, Ablaufdatum) | M 5, K 11 | ✅ | Optionales Modul: Themen mit Laufzeit, Antworten, Melden, Ausblenden, Schließen, Anheften |
+| Fundbüro, Marktplatz, Vereinswissen/Wiki | K 5, 12 | ✅ | Aushänge mit Foto, Ablaufdatum und Rückfragen per Kommentar; Vereinswissen als Artikel mit Kategorien und Suche |
 
 ## 7. Kommunikation
 
@@ -140,7 +140,7 @@ Stand: 05.10.2026
 | Platzbelegung Tag / Woche / Monat je Platz | M 15, K 5–6 | ✅ | Tag und Woche in der App (Verein → Platzbelegung); der Server liefert bis zu 32 Tage |
 | Konfliktwarnung bei Überschneidungen | M 15 | ✅ | Beim Anlegen eines Termins: Warnung mit „Trotzdem anlegen“; Belegungsplan markiert Überschneidungen |
 | Sperrungen | M 15, K 6 | ✅ | Platzverantwortliche sperren Zeiträume, betroffene Termine werden auf Wunsch abgesagt und Beteiligte informiert; beim Anlegen von Terminen nicht übergehbar |
-| Kabinen, Material, Schlüssel, Schäden | K 6, 12 | ⬜ | optionale Module |
+| Kabinen, Material, Schlüssel, Schäden | K 6, 12 | ✅ | Modul „Anlage & Material“: Kabinenplan mit Doppelbelegungs-Hinweis, Material/Schlüssel mit Ausgabe an Personen, Schadensmeldungen mit Status |
 
 ## 11. Verwaltung
 
@@ -154,7 +154,7 @@ Stand: 05.10.2026
 | Veranstaltungen planen | M 8 | ✅ | Vorstand bzw. Bereichsleitung: Feste, Versammlungen, Arbeitseinsätze mit Ablaufplan, Ort und Helferschichten; Übersicht mit fehlenden Helfern |
 | Audit-Log | K 6, 16 | ✅ | „Änderungsprotokoll“ für Vorstand und Fulladmin |
 | Import / Sync-Status | K 6, 14 | 🟡 | CSV-Import der Mitglieder mit Vorschau und Dublettenprüfung; Sync-Status kommt mit FUSSBALL.DE/DFBnet |
-| Schiedsrichterverwaltung | K 7, 12 | ⬜ | optionales Modul |
+| Schiedsrichterverwaltung | K 7, 12 | ✅ | Vereinsschiedsrichter, Einteilung zu Heimspielen, Bestätigen/Absagen, Hinweis an den Obmann |
 
 ## 12. Einrichtung & Module
 
@@ -187,15 +187,15 @@ Stand: 05.10.2026
 | --- | ---: | ---: | ---: |
 | Grundstruktur & Design | 7 | 0 | 0 |
 | Home | 9 | 0 | 0 |
-| Mannschaft | 11 | 2 | 1 |
-| Termine & Teilnahme | 11 | 0 | 1 |
+| Mannschaft | 12 | 2 | 0 |
+| Termine & Teilnahme | 12 | 0 | 0 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
-| Verein | 9 | 0 | 2 |
+| Verein | 11 | 0 | 0 |
 | Kommunikation | 7 | 0 | 0 |
 | Benachrichtigungen | 6 | 1 | 0 |
 | Profile | 5 | 0 | 0 |
-| Platzbelegung & Betrieb | 3 | 0 | 1 |
-| Verwaltung | 7 | 1 | 1 |
+| Platzbelegung & Betrieb | 4 | 0 | 0 |
+| Verwaltung | 8 | 1 | 0 |
 | Einrichtung & Module | 5 | 0 | 0 |
 | Sicherheit, Betrieb, Integrationen | 6 | 0 | 2 |
-| **Gesamt** | **91** | **4** | **8** |
+| **Gesamt** | **97** | **4** | **2** |

@@ -149,6 +149,18 @@ export const MODULES = [
     scopes: ['club'],
   },
   {
+    key: 'equipment',
+    name: 'Anlage & Material',
+    description: 'Kabinen, Material, Schlüssel und Schadensmeldungen',
+    scopes: ['club'],
+  },
+  {
+    key: 'referees',
+    name: 'Schiedsrichter',
+    description: 'Vereinsschiedsrichter für Heimspiele einteilen',
+    scopes: ['club'],
+  },
+  {
     key: 'marketplace',
     name: 'Marktplatz',
     description: 'Biete/Suche unter Mitgliedern, z. B. Schuhe und Trikots',

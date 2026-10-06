@@ -1,25 +1,37 @@
 /**
  * Integrationstests gegen eine echte PostgreSQL-Datenbank. Werden übersprungen, wenn
- * `DATABASE_URL` nicht gesetzt ist. Die Tests verändern nur den Demoverein.
+ * `DATABASE_URL` nicht gesetzt ist. Sie laufen in einer eigenen, frisch angelegten Datenbank,
+ * damit sie parallel zu den API-Tests (die ebenfalls den Demoverein einspielen) laufen können.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb } from '../client';
 import { runMigrations } from '../migrate';
 import { seed, type SeedSummary } from './index';
 
-const url = process.env.DATABASE_URL;
+const baseUrl = process.env.DATABASE_URL;
+const DB_NAME = 'clubroof_seed_test';
+const url = baseUrl?.replace(/\/[^/?]+(\?|$)/, `/${DB_NAME}$1`);
 
-describe.skipIf(!url)('Demodaten', () => {
-  const { db, sql } = createDb(url);
+describe.skipIf(!baseUrl)('Demodaten', () => {
+  const admin = createDb(baseUrl);
+  let conn: ReturnType<typeof createDb>;
+  let db: ReturnType<typeof createDb>['db'];
+  let sql: ReturnType<typeof createDb>['sql'];
   let summary: SeedSummary;
 
   beforeAll(async () => {
+    await admin.sql.unsafe(`DROP DATABASE IF EXISTS ${DB_NAME} WITH (FORCE)`);
+    await admin.sql.unsafe(`CREATE DATABASE ${DB_NAME}`);
     await runMigrations(url);
+    conn = createDb(url);
+    ({ db, sql } = conn);
     summary = await seed(db);
   }, 60_000);
 
   afterAll(async () => {
-    await sql.end();
+    await conn?.sql.end();
+    await admin.sql.unsafe(`DROP DATABASE IF EXISTS ${DB_NAME} WITH (FORCE)`);
+    await admin.sql.end();
   });
 
   it('legt genau einen Demoverein an und ist wiederholbar', async () => {
