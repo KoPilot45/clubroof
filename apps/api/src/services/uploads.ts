@@ -2,6 +2,7 @@
  * Hochladen von Dokumenten und Bildern.
  *  - Dokumente: `documents.manage` für den gewählten Bereich (Verein, Bereich, Mannschaft).
  *  - News-Bilder: wer News schreiben darf. Vereinslogo: `club.settings.manage`.
+ *  - Profilfotos: jedes Mitglied (gesetzt wird es nur für sich selbst oder eigene Kinder).
  * Dateien landen unter `clubs/<club_id>/…` im Dateispeicher; der Typ wird am Inhalt geprüft.
  */
 import { randomUUID } from 'node:crypto';
@@ -21,7 +22,7 @@ import { checkUpload } from '../storage/uploads';
 import { newsPermissions } from './editorial';
 import { loadScopeContext, requireScope, targetOf } from './scopes';
 
-const MEDIA_KIND = { news: 'news_image', logo: 'club_logo' } as const;
+const MEDIA_KIND = { news: 'news_image', logo: 'club_logo', avatar: 'avatar' } as const;
 
 async function audit(
   db: Db,

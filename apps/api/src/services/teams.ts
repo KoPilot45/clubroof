@@ -32,6 +32,7 @@ import {
   or,
   sql,
 } from 'drizzle-orm';
+import { resolveMediaUrl } from '../storage/media-links';
 import { actorCan, type Actor } from '../actor';
 import { fetchEventRows, summarizeEvents } from './events';
 import { loadTeamForActor, requireModule, type TeamRow } from './team-access';
@@ -250,6 +251,7 @@ export async function getRoster(
       unavailable: !!absence,
       unavailableReason: absence && ownOrAllowed ? ABSENCE_LABELS[absence.kind] : null,
       unavailableUntil: absence && ownOrAllowed ? absence.endsOn : null,
+      avatarUrl: resolveMediaUrl(actor.links, person.avatarUrl, now),
     };
   });
 }

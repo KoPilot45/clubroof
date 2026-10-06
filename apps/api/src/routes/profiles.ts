@@ -34,6 +34,7 @@ export const profileRoutes: FastifyPluginAsyncZod = async (app) => {
           position: z.enum(PLAYER_POSITIONS).nullable().optional(),
           preferredFoot: z.enum(PREFERRED_FEET).nullable().optional(),
           contactVisibility: z.enum(CONTACT_VISIBILITIES).optional(),
+          avatarImageId: z.uuid().nullable().optional(),
         }),
       },
     },

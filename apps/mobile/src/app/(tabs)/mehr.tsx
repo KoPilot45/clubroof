@@ -84,7 +84,7 @@ export default function MoreScreen() {
   return (
     <Screen header={<AppHeader title="Mehr" />}>
       <Card style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-        <Avatar name={name} size={56} />
+        <Avatar name={name} size={56} uri={me.person.avatarUrl} />
         <View style={{ flex: 1, gap: 4 }}>
           <T variant="heading">{name}</T>
           <T variant="caption">{me.user.email}</T>

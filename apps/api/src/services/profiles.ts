@@ -15,6 +15,8 @@ import { schema as s, type Db } from '@clubroof/db';
 import { and, eq, gte, inArray, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { notFound } from '../errors';
+import { resolveMediaUrl } from '../storage/media-links';
+import { mediaReference } from './uploads';
 
 const ABSENCE_LABELS = {
   vacation: 'Urlaub',
@@ -196,6 +198,7 @@ export async function getProfile(
     firstName: person.firstName,
     lastName: person.lastName,
     relation,
+    avatarUrl: resolveMediaUrl(actor.links, person.avatarUrl, now),
     position: person.position,
     preferredFoot: person.preferredFoot,
     teams: memberships.map(({ membership, team }) => ({
@@ -233,6 +236,10 @@ export async function updateProfile(
   if (input.position !== undefined) patch.position = input.position;
   if (input.preferredFoot !== undefined) patch.preferredFoot = input.preferredFoot;
   if (input.contactVisibility !== undefined) patch.contactVisibility = input.contactVisibility;
+  if (input.avatarImageId !== undefined)
+    patch.avatarUrl = input.avatarImageId
+      ? await mediaReference(db, actor, input.avatarImageId, 'avatar')
+      : null;
   if (Object.keys(patch).length > 0) {
     await db.update(s.persons).set(patch).where(eq(s.persons.id, personId));
   }

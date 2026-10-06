@@ -1701,6 +1701,64 @@ describe.skipIf(!url)('API', () => {
       ]),
     );
 
+    it('Profilfoto: nur für sich selbst oder eigene Kinder, sichtbar im Kader', async () => {
+      const player = await login('spieler');
+      const coach = await login('trainer');
+      const image = await send<UploadedImage>('POST', '/media', player.token, {
+        purpose: 'avatar',
+        fileName: 'ich.png',
+        dataBase64: png,
+      });
+      expect(image.status).toBe(201);
+      const set = await send<PersonProfile>(
+        'PATCH',
+        `/persons/${player.me.person.id}`,
+        player.token,
+        {
+          avatarImageId: image.body.id,
+        },
+      );
+      expect(set.status).toBe(200);
+      expect(set.body.avatarUrl).toMatch(/^\/files\//);
+      expect((await get<LoginResponse['me']>('/me', player.token)).person.avatarUrl).toMatch(
+        /^\/files\//,
+      );
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const roster = await get<RosterEntry[]>(`/teams/${b1.id}/roster`, coach.token);
+      expect(roster.find((r) => r.personId === player.me.person.id)!.avatarUrl).toMatch(
+        /^\/files\//,
+      );
+      // Fremdes Profil und falscher Bildzweck
+      expect(
+        (
+          await send('PATCH', `/persons/${coach.me.person.id}`, player.token, {
+            avatarImageId: image.body.id,
+          })
+        ).status,
+      ).toBe(404);
+      const news = await send<UploadedImage>('POST', '/media', coach.token, {
+        purpose: 'news',
+        fileName: 'n.png',
+        dataBase64: png,
+      });
+      expect(
+        (
+          await send('PATCH', `/persons/${coach.me.person.id}`, coach.token, {
+            avatarImageId: news.body.id,
+          })
+        ).status,
+      ).toBe(400);
+      const removed = await send<PersonProfile>(
+        'PATCH',
+        `/persons/${player.me.person.id}`,
+        player.token,
+        {
+          avatarImageId: null,
+        },
+      );
+      expect(removed.body.avatarUrl).toBeNull();
+    });
+
     it('Vorstand lädt Dokumente hoch und löscht sie; Typ wird am Inhalt geprüft', async () => {
       const board = await login('vorstand');
       const player = await login('spieler');

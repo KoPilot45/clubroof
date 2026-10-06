@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text, View } from 'react-native';
 import {
+  Avatar,
   Button,
   Card,
   Chip,
@@ -48,7 +49,12 @@ function Row({ entry, first }: { entry: RosterEntry; first: boolean }) {
     <ListRow
       first={first}
       onPress={() => router.push(`/profile/${entry.personId}`)}
-      leading={<JerseyNumber value={entry.function === 'player' ? entry.jerseyNumber : null} />}
+      leading={
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <JerseyNumber value={entry.function === 'player' ? entry.jerseyNumber : null} />
+          {entry.avatarUrl ? <Avatar name={entry.name} uri={entry.avatarUrl} size={32} /> : null}
+        </View>
+      }
       title={entry.name}
       subtitle={
         entry.function === 'player' ? details || undefined : TEAM_FUNCTION_LABELS[entry.function]

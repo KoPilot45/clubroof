@@ -5,6 +5,7 @@ import {
   type ContactVisibility,
   type PersonProfile,
   type PreferredFoot,
+  type UploadedImage,
 } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
@@ -32,6 +33,7 @@ import { formatShortDate, plural } from '@/lib/format';
 import { CONTACT_VISIBILITY_LABELS, FOOT_LABELS, TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { pickFile } from '@/lib/upload';
 
 function EditForm({ profile, onDone }: { profile: PersonProfile; onDone: () => void }) {
   const { api } = useSignedIn();
@@ -155,7 +157,10 @@ export default function ProfileScreen() {
       {p ? (
         <>
           <Card style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-            <Avatar name={`${p.firstName} ${p.lastName}`} size={64} />
+            <View style={{ alignItems: 'center', gap: 6 }}>
+              <Avatar name={`${p.firstName} ${p.lastName}`} size={64} uri={p.avatarUrl} />
+              {p.canEdit ? <PhotoButton profile={p} /> : null}
+            </View>
             <View style={{ flex: 1, gap: 6 }}>
               <T variant="title">
                 {p.firstName} {p.lastName}
@@ -316,5 +321,67 @@ export default function ProfileScreen() {
         </>
       ) : null}
     </Screen>
+  );
+}
+
+/** Profilfoto hochladen oder entfernen (eigenes Profil oder Kind). */
+function PhotoButton({ profile }: { profile: PersonProfile }) {
+  const { api, refresh } = useSignedIn();
+  const { colors } = useTheme();
+  const queryClient = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const save = async (remove: boolean) => {
+    setError(null);
+    try {
+      let avatarImageId: string | null = null;
+      if (!remove) {
+        const file = await pickFile('image');
+        if (!file) return;
+        setBusy(true);
+        avatarImageId = (
+          await api<UploadedImage>('/media', {
+            method: 'POST',
+            body: { purpose: 'avatar', fileName: file.name, dataBase64: file.dataBase64 },
+          })
+        ).id;
+      }
+      setBusy(true);
+      const updated = await api<PersonProfile>(`/persons/${profile.personId}`, {
+        method: 'PATCH',
+        body: { avatarImageId },
+      });
+      queryClient.setQueryData(['profile', profile.personId], updated);
+      if (profile.relation === 'self') await refresh();
+      void queryClient.invalidateQueries({ queryKey: ['roster'] });
+    } catch (e) {
+      setError(e instanceof RequestError ? e.message : 'Das Foto wurde nicht gespeichert.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <>
+      <Pressable
+        accessibilityRole="button"
+        disabled={busy}
+        onPress={() => void save(false)}
+        hitSlop={6}
+      >
+        <T variant="caption" color={colors.primaryText} style={{ fontWeight: '700' }}>
+          {busy ? 'Speichert …' : profile.avatarUrl ? 'Foto ändern' : 'Foto hinzufügen'}
+        </T>
+      </Pressable>
+      {profile.avatarUrl && !busy ? (
+        <Pressable accessibilityRole="button" onPress={() => void save(true)} hitSlop={6}>
+          <T variant="caption">Entfernen</T>
+        </Pressable>
+      ) : null}
+      {error ? (
+        <T variant="caption" color={colors.status.urgent.onContainer}>
+          {error}
+        </T>
+      ) : null}
+    </>
   );
 }

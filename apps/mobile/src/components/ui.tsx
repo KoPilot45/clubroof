@@ -8,6 +8,7 @@ import type { StatusKey } from '@clubroof/design-tokens';
 import type { ComponentProps, ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   TextInput,
   RefreshControl,
@@ -22,6 +23,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { useTheme } from '@/lib/theme';
+import { mediaUri } from '@/lib/upload';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -325,8 +327,30 @@ export function Crest({ initials, size = 40 }: { initials: string; size?: number
   );
 }
 
-export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
+/** Profilfoto oder – ohne Foto – Initialen in Vereinsfarbe. */
+export function Avatar({
+  name,
+  size = 36,
+  uri,
+}: {
+  name: string;
+  size?: number;
+  uri?: string | null;
+}) {
   const { colors } = useTheme();
+  if (uri)
+    return (
+      <Image
+        source={{ uri: mediaUri(uri)! }}
+        accessibilityLabel={`Profilfoto ${name}`}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: colors.primaryContainer,
+        }}
+      />
+    );
   const initials = name
     .split(' ')
     .map((p) => p[0])

@@ -89,7 +89,7 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
         accessibilityLabel="Mein Profil"
         onPress={() => router.push(`/profile/${me.person.id}`)}
       >
-        <Avatar name={`${me.person.firstName} ${me.person.lastName}`} />
+        <Avatar name={`${me.person.firstName} ${me.person.lastName}`} uri={me.person.avatarUrl} />
       </Pressable>
     </View>
   );

@@ -49,6 +49,7 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       id: actor.person.id,
       firstName: actor.person.firstName,
       lastName: actor.person.lastName,
+      avatarUrl: resolveMediaUrl(actor.links, actor.person.avatarUrl),
     },
     club: {
       id: actor.club.id,

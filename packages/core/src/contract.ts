@@ -54,7 +54,7 @@ export type MyTeam = {
 
 export type MeResponse = {
   user: { id: string; email: string; displayName: string };
-  person: { id: string; firstName: string; lastName: string };
+  person: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
   club: ClubInfo;
   managedPersons: ManagedPerson[];
   teams: MyTeam[];
@@ -351,6 +351,7 @@ export type RosterEntry = {
   /** Grund nur für Verantwortliche oder die Person selbst */
   unavailableReason: string | null;
   unavailableUntil: string | null;
+  avatarUrl: string | null;
 };
 
 export type PlayerStat = {
@@ -504,7 +505,7 @@ export type UploadDocumentInput = {
 };
 
 export type UploadImageInput = {
-  purpose: 'news' | 'logo';
+  purpose: 'news' | 'logo' | 'avatar';
   fileName: string;
   dataBase64: string;
 };
@@ -575,6 +576,7 @@ export type PersonProfile = {
   firstName: string;
   lastName: string;
   relation: 'self' | 'child' | 'other';
+  avatarUrl: string | null;
   position: string | null;
   preferredFoot: PreferredFoot | null;
   teams: {
@@ -602,6 +604,8 @@ export type UpdateProfileInput = {
   position?: string | null;
   preferredFoot?: PreferredFoot | null;
   contactVisibility?: ContactVisibility;
+  /** Hochgeladenes Profilfoto (Zweck „avatar“); null entfernt das Foto */
+  avatarImageId?: string | null;
 };
 
 export type ExchangeTeamRef = { id: string; name: string; badge: string };
