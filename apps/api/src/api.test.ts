@@ -20,6 +20,7 @@ import type {
   TeamTaskList,
   MyTeamCard,
   CommentItem,
+  EventPlanning,
   MemberImportResult,
   InviteLink,
   InviteOverview,
@@ -1291,6 +1292,7 @@ describe.skipIf(!url)('API', () => {
         manageTeams: false,
         planSeason: false,
         manageTransfers: false,
+        planEvents: true,
       });
       const overview = await get<AdminOverview>('/admin/overview', board.token);
       expect(overview.members.active).toBeGreaterThan(100);
@@ -3117,6 +3119,62 @@ describe.skipIf(!url)('API', () => {
       expect(
         (await send('POST', `/comments/news/${pending.id}`, board.token, { body: '' })).status,
       ).toBe(400);
+    });
+  });
+
+  describe('Veranstaltungen planen', () => {
+    it('Vorstand plant ein Fest mit Ablauf und Helferschichten, alle werden informiert', async () => {
+      const board = await login('vorstand');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      expect((await send('GET', '/admin/club-events', coach.token)).status).toBe(403);
+      const planning = await get<EventPlanning>('/admin/club-events', board.token);
+      expect(planning.scopes[0]).toEqual({ orgUnitId: null, label: 'Ganzer Verein' });
+      const day = '2026-11-14';
+      const at = (time: string) => new Date(`${day}T${time}:00+01:00`).toISOString();
+      const created = await send<EventPlanning>('POST', '/admin/club-events', board.token, {
+        type: 'club_event',
+        title: 'Herbstfest',
+        description: 'Mit Tombola und Kinderbetreuung.',
+        startsAt: at('14:00'),
+        endsAt: at('20:00'),
+        locationText: 'Vereinsheim',
+        program: [
+          { time: '14:00', title: 'Eröffnung' },
+          { time: '16:00', title: 'Tombola' },
+        ],
+        shifts: [
+          { title: 'Grill', startsAt: at('14:00'), endsAt: at('17:00'), capacity: 3 },
+          { title: 'Kuchenstand', startsAt: at('14:00'), endsAt: at('18:00'), capacity: 2 },
+        ],
+      });
+      expect(created.status, JSON.stringify(created.body)).toBe(201);
+      const fest = created.body.upcoming.find((e) => e.title === 'Herbstfest')!;
+      expect(fest.shifts.map((x) => `${x.title} ${x.filled}/${x.capacity}`)).toEqual([
+        'Grill 0/3',
+        'Kuchenstand 0/2',
+      ]);
+      const notes = await get<NotificationItem[]>('/notifications', player.token);
+      expect(
+        notes.some(
+          (n) => n.title === 'Veranstaltung: Herbstfest' && n.link === `/events/${fest.id}`,
+        ),
+      ).toBe(true);
+      const helpers = await get<HelperEvent[]>('/helpers', player.token);
+      expect(helpers.some((h) => h.event.id === fest.id && h.openSpots === 5)).toBe(true);
+
+      const badShift = await send('POST', '/admin/club-events', board.token, {
+        type: 'work_assignment',
+        title: 'Platzpflege',
+        startsAt: at('09:00'),
+        endsAt: at('12:00'),
+        shifts: [{ title: 'Laub', startsAt: at('12:00'), endsAt: at('10:00'), capacity: 4 }],
+      });
+      expect(badShift.status).toBe(400);
+      const cancelled = await send('POST', `/events/${fest.id}/cancel`, board.token, {
+        reason: 'Test beendet',
+      });
+      expect(cancelled.status).toBe(200);
     });
   });
 

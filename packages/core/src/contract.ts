@@ -733,6 +733,8 @@ export type AdminPermissions = {
   manageTeams: boolean;
   /** Neue Saison vorbereiten und starten (nur Vereinsebene) */
   planSeason: boolean;
+  /** Vereins- bzw. Bereichsveranstaltungen planen */
+  planEvents: boolean;
 };
 
 export type AuditEntry = {
@@ -1327,4 +1329,41 @@ export type CommentItem = {
   mine: boolean;
   body: string;
   createdAt: string;
+};
+
+// ── Veranstaltungen planen ───────────────────────────────────────────────
+
+export type ClubEventType = 'club_event' | 'meeting' | 'work_assignment';
+
+export type PlannedEvent = {
+  id: string;
+  type: ClubEventType;
+  title: string;
+  startsAt: string;
+  endsAt: string | null;
+  status: 'scheduled' | 'cancelled';
+  location: string | null;
+  scopeLabel: string;
+  shifts: { title: string; filled: number; capacity: number }[];
+};
+
+export type EventPlanning = {
+  /** Wo ich planen darf: Verein (id null) und/oder eigene Bereiche */
+  scopes: { orgUnitId: string | null; label: string }[];
+  facilities: { id: string; name: string }[];
+  upcoming: PlannedEvent[];
+};
+
+export type CreateClubEventInput = {
+  type: ClubEventType;
+  title: string;
+  description?: string | null;
+  startsAt: string;
+  endsAt: string;
+  orgUnitId?: string | null;
+  facilityId?: string | null;
+  locationText?: string | null;
+  program?: { time: string; title: string }[];
+  shifts?: { title: string; startsAt: string; endsAt: string; capacity: number }[];
+  allowConflict?: boolean;
 };

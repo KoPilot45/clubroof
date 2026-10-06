@@ -3,6 +3,7 @@
  * Teilnehmer nach dem Teilnahme-Modell der Mannschaft und berücksichtigen Abwesenheiten.
  */
 import {
+  can,
   addDays,
   at,
   calendarDayOf,
@@ -292,7 +293,11 @@ export async function cancelEvent(
   if (!row) throw notFound('Der Termin');
   const allowed = row.team
     ? actorCan(actor, 'events.manage', row.team)
-    : actorCan(actor, 'events.manage');
+    : can(
+        actor.grants,
+        'events.manage',
+        row.event.orgUnitId ? { orgUnitId: row.event.orgUnitId } : {},
+      );
   if (!allowed) throw forbidden('Diesen Termin darfst du nicht absagen.');
   if (row.event.status === 'cancelled') {
     throw new HttpError(409, 'already_cancelled', 'Der Termin ist bereits abgesagt.');

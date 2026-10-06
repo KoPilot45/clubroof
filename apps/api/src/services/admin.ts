@@ -67,6 +67,10 @@ export function adminPermissions(actor: Actor): AdminPermissions {
       return t.all || t.orgUnitIds.length > 0 || t.teamIds.length > 0;
     })(),
     planSeason: actorCan(actor, 'teams.season.plan'),
+    planEvents: (() => {
+      const t = scopesWith(actor.grants, 'events.manage');
+      return t.all || t.orgUnitIds.length > 0;
+    })(),
     manageTransfers: (() => {
       const t = scopesWith(actor.grants, 'teams.transfers.manage');
       return t.all || t.orgUnitIds.length > 0 || t.teamIds.length > 0;

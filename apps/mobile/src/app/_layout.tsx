@@ -106,6 +106,14 @@ function Navigator() {
             options={{ headerShown: true, title: 'Mitglied anlegen' }}
           />
           <Stack.Screen
+            name="admin/club-events"
+            options={{ headerShown: true, title: 'Veranstaltungen' }}
+          />
+          <Stack.Screen
+            name="admin/club-event-new"
+            options={{ headerShown: true, title: 'Veranstaltung planen' }}
+          />
+          <Stack.Screen
             name="admin/import"
             options={{ headerShown: true, title: 'Mitglieder importieren' }}
           />

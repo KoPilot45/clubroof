@@ -106,6 +106,16 @@ export default function AdminScreen() {
               },
             ]
           : []),
+        ...(o.can.planEvents
+          ? [
+              {
+                key: 'club-events',
+                label: 'Veranstaltungen',
+                icon: 'balloon' as const,
+                onPress: () => router.push('/admin/club-events'),
+              },
+            ]
+          : []),
         ...(o.can.manageTeams || o.can.planSeason
           ? [
               {
