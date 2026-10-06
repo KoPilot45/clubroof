@@ -1,6 +1,7 @@
 import type {
   EventDetail,
   Facility,
+  MyTeamCard,
   RosterEntry,
   TeamCash,
   TeamOverview,
@@ -12,7 +13,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { createBooking, getTeamCash } from '../services/cash';
 import { cancelEvent, createTeamEvent, updateEvent } from '../services/event-admin';
-import { getRoster, getTeamOverview, getTeamStats } from '../services/teams';
+import { getMyTeams, getRoster, getTeamOverview, getTeamStats } from '../services/teams';
 
 const teamParams = z.object({ teamId: z.uuid() });
 const isoDateTime = z.iso.datetime({ offset: true });
@@ -20,6 +21,10 @@ const isoDateTime = z.iso.datetime({ offset: true });
 /** Team-Cockpit, Kasse und Trainer-Funktionen. */
 export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.authenticate);
+
+  app.get('/my-teams', async (request): Promise<MyTeamCard[]> =>
+    getMyTeams(app.db, request.actor!, app.now()),
+  );
 
   app.get(
     '/teams/:teamId',

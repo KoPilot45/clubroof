@@ -233,7 +233,7 @@ function QuickVote({ action }: { action: ActionItem }) {
     },
   });
   return (
-    <View style={{ gap: 6, paddingBottom: 10, paddingLeft: 52 }}>
+    <View style={{ gap: 6, paddingBottom: 10, paddingLeft: 52, paddingRight: 4 }}>
       <ChoiceChips
         options={action.options!.map((o) => ({ value: o.id, label: o.label }))}
         selected={vote.variables ? [vote.variables] : []}

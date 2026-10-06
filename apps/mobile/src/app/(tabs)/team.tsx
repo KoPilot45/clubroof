@@ -1,4 +1,4 @@
-import type { PollSummary, TeamOverview } from '@clubroof/core';
+import type { MyTeamCard, PollSummary, TeamOverview } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -15,6 +15,7 @@ import {
   Screen,
   Section,
   T,
+  TeamBadge,
   TileGrid,
   type TileItem,
 } from '@/components/ui';
@@ -32,7 +33,10 @@ export default function TeamScreen() {
   const { me, api } = useSignedIn();
   const { colors, radii } = useTheme();
   const teams = useMemo(() => [...new Map(me.teams.map((t) => [t.id, t])).values()], [me.teams]);
-  const [selected, setSelected] = useState(teams[0]?.id ?? null);
+  // Trainer starten in einer Mannschaft, die sie betreuen (nicht dort, wo sie selbst spielen)
+  const [selected, setSelected] = useState(
+    (me.teams.find((t) => t.functions.some((f) => f !== 'player')) ?? teams[0])?.id ?? null,
+  );
   const team = teams.find((t) => t.id === selected) ?? teams[0];
   const has = (module: string) => team?.modules.includes(module) ?? false;
 
@@ -45,6 +49,11 @@ export default function TeamScreen() {
     queryKey: ['polls', team?.id ?? 'none'],
     queryFn: () => api<PollSummary[]>(`/polls?teamId=${team!.id}`),
     enabled: !!team && has('polls'),
+  });
+  const myTeams = useQuery({
+    queryKey: ['my-teams'],
+    queryFn: () => api<MyTeamCard[]>('/my-teams'),
+    enabled: teams.length > 1,
   });
   const o = overview.data;
   const roles = me.teams.filter((t) => t.id === team?.id);
@@ -163,10 +172,20 @@ export default function TeamScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8 }}
+          contentContainerStyle={{ gap: 8, alignItems: 'stretch' }}
         >
           {teams.map((t) => {
             const active = t.id === team?.id;
+            const card = (myTeams.data ?? []).find((c) => c.team.id === t.id);
+            if (card && (myTeams.data?.length ?? 0) > 1)
+              return (
+                <MyTeamTile
+                  key={t.id}
+                  card={card}
+                  active={active}
+                  onPress={() => setSelected(t.id)}
+                />
+              );
             return (
               <Pressable
                 key={t.id}
@@ -176,6 +195,7 @@ export default function TeamScreen() {
                 style={{
                   paddingHorizontal: 14,
                   paddingVertical: 8,
+                  alignSelf: 'center',
                   borderRadius: radii.pill,
                   borderWidth: 1,
                   borderColor: active ? colors.primary : colors.border,
@@ -288,5 +308,73 @@ export default function TeamScreen() {
         </>
       ) : null}
     </Screen>
+  );
+}
+
+const shortWhen = new Intl.DateTimeFormat('de-DE', {
+  weekday: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+/** Kachel „Meine Teams“: nächster Termin mit Zusagen, Abwesende und offene Aufgaben. */
+function MyTeamTile({
+  card,
+  active,
+  onPress,
+}: {
+  card: MyTeamCard;
+  active: boolean;
+  onPress: () => void;
+}) {
+  const { colors, radii } = useTheme();
+  const e = card.nextEvent;
+  const total = e ? e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending : 0;
+  return (
+    <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={{
+        width: 200,
+        padding: 12,
+        gap: 6,
+        borderRadius: radii.lg,
+        borderWidth: 2,
+        borderColor: active ? colors.primary : colors.border,
+        backgroundColor: colors.surface,
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <TeamBadge badge={card.team.badge} />
+        <T variant="label" style={{ fontWeight: '700', flex: 1 }} numberOfLines={1}>
+          {card.team.name}
+        </T>
+      </View>
+      {e ? (
+        <>
+          <T variant="caption" numberOfLines={1}>
+            {`${shortWhen.format(new Date(e.startsAt))} · ${e.title}`}
+          </T>
+          <T variant="label" color={colors.primaryText}>
+            {`${e.counts.yes} von ${total} zugesagt`}
+          </T>
+          {e.counts.pending ? (
+            <T variant="caption">{`${e.counts.pending} ohne Rückmeldung`}</T>
+          ) : null}
+        </>
+      ) : (
+        <T variant="caption">Kein Termin geplant</T>
+      )}
+      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+        {card.absentToday ? <Chip tone="info" label={`${card.absentToday} abwesend`} /> : null}
+        {card.openTasks ? (
+          <Chip
+            tone="action"
+            label={`${card.openTasks} ${card.openTasks === 1 ? 'Aufgabe' : 'Aufgaben'}`}
+          />
+        ) : null}
+      </View>
+    </Pressable>
   );
 }

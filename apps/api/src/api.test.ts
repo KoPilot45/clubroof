@@ -18,6 +18,7 @@ import type {
   NotificationSettings,
   NewsReadReceipt,
   TeamTaskList,
+  MyTeamCard,
   MemberImportResult,
   InviteLink,
   InviteOverview,
@@ -2978,6 +2979,16 @@ describe.skipIf(!url)('API', () => {
   });
 
   describe('Mannschaftsaufgaben', () => {
+    it('Meine Teams: Kennzahlen je verantworteter Mannschaft', async () => {
+      const coach = await login('trainer');
+      const cards = await get<MyTeamCard[]>('/my-teams', coach.token);
+      expect(cards.map((c) => c.team.badge)).toEqual(['B1', 'C1']);
+      const b1 = cards.find((c) => c.team.badge === 'B1')!;
+      expect(b1.openTasks).toBeGreaterThanOrEqual(2);
+      expect(b1.nextEvent!.counts.yes + b1.nextEvent!.counts.pending).toBeGreaterThan(0);
+      expect(await get<MyTeamCard[]>('/my-teams', (await login('spieler')).token)).toEqual([]);
+    });
+
     it('Trainer legt an und teilt zu, Mitglieder übernehmen und haken ab', async () => {
       const coach = await login('trainer');
       const player = await login('spieler');

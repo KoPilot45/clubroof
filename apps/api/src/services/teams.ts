@@ -7,6 +7,7 @@ import {
   resolveModule,
   toIsoDate,
   type MatchResult,
+  type MyTeamCard,
   type PlayerStat,
   type RosterEntry,
   type SquadStatRow,
@@ -432,4 +433,85 @@ async function squadTable(
       };
     })
     .sort((a, b) => b.goals - a.goals || b.assists - a.assists || a.name.localeCompare(b.name));
+}
+
+/** Kennzahlen je Mannschaft, die ich verantworte (Verkaufsmappe S. 6 „Meine Teams“). */
+export async function getMyTeams(db: Db, actor: Actor, now: Date): Promise<MyTeamCard[]> {
+  const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
+  const teams = (
+    await db
+      .select({ team: s.teams })
+      .from(s.teams)
+      .innerJoin(s.seasons, eq(s.seasons.id, s.teams.seasonId))
+      .where(and(eq(s.teams.clubId, actor.club.id), eq(s.seasons.isCurrent, true)))
+      .orderBy(asc(s.teams.sortOrder))
+  )
+    .map((r) => r.team)
+    .filter((t) => actor.teamIds.includes(t.id) && actorCan(actor, 'events.manage', t));
+  if (teams.length === 0) return [];
+  const teamIds = teams.map((t) => t.id);
+
+  const [members, absences, tasks] = await Promise.all([
+    db
+      .select({ teamId: s.teamMemberships.teamId, personId: s.teamMemberships.personId })
+      .from(s.teamMemberships)
+      .where(
+        and(
+          inArray(s.teamMemberships.teamId, teamIds),
+          eq(s.teamMemberships.function, 'player'),
+          lte(s.teamMemberships.validFrom, today),
+          or(isNull(s.teamMemberships.validTo), gte(s.teamMemberships.validTo, today)),
+        ),
+      ),
+    db
+      .select({ personId: s.absences.personId, teamIds: s.absences.teamIds })
+      .from(s.absences)
+      .where(
+        and(
+          eq(s.absences.clubId, actor.club.id),
+          lte(s.absences.startsOn, today),
+          gte(s.absences.endsOn, today),
+        ),
+      ),
+    db
+      .select({ teamId: s.teamTasks.teamId, n: count() })
+      .from(s.teamTasks)
+      .where(and(inArray(s.teamTasks.teamId, teamIds), isNull(s.teamTasks.doneAt)))
+      .groupBy(s.teamTasks.teamId),
+  ]);
+
+  return Promise.all(
+    teams.map(async (team) => {
+      const rows = await fetchEventRows(
+        db,
+        and(
+          eq(s.events.teamId, team.id),
+          eq(s.events.status, 'scheduled'),
+          gt(s.events.startsAt, now),
+        ),
+        1,
+      );
+      const [next] = await summarizeEvents(db, actor, rows, now);
+      const players = new Set(members.filter((m) => m.teamId === team.id).map((m) => m.personId));
+      const absent = new Set(
+        absences
+          .filter((a) => players.has(a.personId) && (!a.teamIds || a.teamIds.includes(team.id)))
+          .map((a) => a.personId),
+      );
+      return {
+        team: { id: team.id, badge: team.badge, name: team.name },
+        nextEvent: next
+          ? {
+              id: next.id,
+              title: next.title,
+              type: next.type,
+              startsAt: next.startsAt,
+              counts: next.counts,
+            }
+          : null,
+        absentToday: absent.size,
+        openTasks: Number(tasks.find((t) => t.teamId === team.id)?.n ?? 0),
+      };
+    }),
+  );
 }

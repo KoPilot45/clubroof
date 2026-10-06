@@ -635,6 +635,7 @@ export function ChoiceChips<T extends string>({
                 gap: 6,
                 paddingHorizontal: 12,
                 paddingVertical: 8,
+                maxWidth: '100%',
                 borderRadius: radii.pill,
                 borderWidth: 1,
                 borderColor: active ? colors.primary : colors.border,
@@ -650,6 +651,7 @@ export function ChoiceChips<T extends string>({
               ) : null}
               <Text
                 style={{
+                  flexShrink: 1,
                   fontSize: 13.5,
                   fontWeight: '700',
                   color: active ? colors.onPrimary : colors.onSurface,

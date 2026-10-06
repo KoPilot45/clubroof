@@ -1300,3 +1300,19 @@ export type CreateTeamTaskInput = {
   eventId?: string | null;
   assigneePersonId?: string | null;
 };
+
+// ── Meine Teams (Trainer mehrerer Mannschaften) ──────────────────────────
+
+export type MyTeamCard = {
+  team: { id: string; badge: string; name: string };
+  nextEvent: {
+    id: string;
+    title: string;
+    type: string;
+    startsAt: string;
+    counts: AttendanceCounts;
+  } | null;
+  /** Abwesend heute (Urlaub, Verletzung …) */
+  absentToday: number;
+  openTasks: number;
+};
