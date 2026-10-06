@@ -7,7 +7,7 @@ Diese Liste wird bei jedem Entwicklungsschritt aktualisiert.
 
 **Stand:** ✅ umgesetzt · 🟡 teilweise (z. B. Daten und Backend vorhanden, Bedienung fehlt) · ⬜ offen
 
-Stand: 05.10.2026
+Stand: 07.10.2026
 
 ---
 
@@ -31,11 +31,12 @@ Stand: 05.10.2026
 | Nächstes Spiel mit Countdown und Zu-/Absage | M 3 | ✅ | |
 | Neuigkeiten für dich (nach Priorität und Betroffenheit sortiert) | M 3, K 3 | ✅ | |
 | Nächste Termine (eigene, Kinder, Trainerrollen, Gastspiele) | M 3, K 3 | ✅ | |
-| Offene Aktionen (Zusagen, Umfragen, Freigaben, Aufgaben) | M 3–4, K 3 | ✅ | Zusagen, Umfragen und News-Freigaben führen direkt zum Inhalt |
+| Offene Aktionen (Zusagen, Umfragen, Freigaben, Aufgaben) | M 3–4, K 3 | ✅ | Zusagen, Umfragen und News-Freigaben führen direkt zum Inhalt; Trainerteam: „Anwesenheit erfassen“ für Trainings der letzten Woche |
 | Persönliche Kasse / Teamkasse | M 3, K 3 | ✅ | Karte führt zur Mannschaftskasse |
 | Vorstand: Verein im Überblick (Teams, Mitglieder, Freigaben, Event) | M 4 | ✅ | |
 | Umfragen mit Schnellantwort | K 3 | ✅ | Antwortmöglichkeiten direkt unter „Offene Aktionen“ auf der Startseite |
-| Persönliche Statistik | K 3 | ✅ | über „Mehr → Meine Statistik“ |
+| Persönliche Statistik | K 3 | ✅ | im Profil („Mehr → Profil & Statistik“), je Mannschaft mit Trainingsquote; Eltern über das Profil des Kindes |
+| Geburtstage der eigenen Mannschaften | – | ✅ | nächste 7 Tage, nur Tag und Monat (kein Alter) |
 
 ## 3. Mannschaft (Team)
 
@@ -54,17 +55,19 @@ Stand: 05.10.2026
 | Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | ✅ | Trainerteam wählt den Modus und vergibt Nummern (keine Doppelten); je Spiel in der Aufstellung änderbar |
 | Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | ✅ | Buchen nur für Kassenverantwortliche; Kassenbericht als CSV für Excel (Anfangsbestand, Buchungen, laufender Stand, offene persönliche Konten) |
 | Teambezogene Dokumente und Aufgaben | K 4 | ✅ | Dokumente der Mannschaft; Mannschaftsaufgaben (Fahrdienst, Trikotwäsche …) mit Zuteilung, „Ich übernehme“ und Abhaken |
-| Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ✅ | Optionales Modul: Übungsbibliothek des Vereins, Plan je Training (Schwerpunkt, Ablauf, Notizen), Vorlage aus dem letzten Plan; Spieler sehen Schwerpunkt und Material |
+| Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ✅ | Optionales Modul: Übungsbibliothek des Vereins, Plan je Training (Schwerpunkt, Ablauf, Notizen), Vorlage aus dem letzten Plan; Übungen aus der Bibliothek mit „Zum Training“ direkt in einen der nächsten Pläne; Spieler sehen Schwerpunkt und Material |
 
 ## 4. Termine & Teilnahme
 
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | Termindetails: Anstoß, Treffpunkt, Spielort, Ansprechperson | M 15 | ✅ | |
-| Zu- und Absagen (auch für Kinder) | M 15, K 9 | ✅ | |
+| Zu- und Absagen (auch für Kinder) | M 15, K 9 | ✅ | Zusagen, Unsicher, Absagen; Eltern sehen in Listen den Status je Kind |
 | Absagefrist je Mannschaft und Terminart mit Countdown | M 10, 15, K 9 | ✅ | |
 | Drei Teilnahme-Modelle (automatische Zusage, aktive Antwort, nur Abwesenheiten) | M 10, K 9 | ✅ | |
-| Teilnehmerübersicht (zugesagt, offen, abgesagt) | M 15 | ✅ | |
+| Teilnehmerübersicht (zugesagt, offen, abgesagt) | M 15 | ✅ | nach Rückmeldung gruppiert und einklappbar |
+| Anwesenheit nach dem Termin | – | ✅ | Trainerteam hakt ab, wer wirklich da war; danach zählt für Trainingsquote und Statistik die Anwesenheit statt der Zusage |
+| Fahrgemeinschaften | – | ✅ | Bei Auswärtsspielen und Turnieren: Fahrt anbieten (Plätze, Hinweis), mitfahren (auch für Kinder), Mitfahrt suchen; Fahrer und Suchende werden benachrichtigt |
 | Gründe nur für Verantwortliche sichtbar (Datensparsamkeit) | K 7 | ✅ | |
 | Trainer korrigiert Zu-/Absagen nach Fristablauf | K 9 | ✅ | |
 | Absagegrund angeben | M 16 | ✅ | Auswahl und optionaler Hinweis |
@@ -93,7 +96,7 @@ Stand: 05.10.2026
 | Veranstaltungsseite mit Programm, Ort, Ansprechperson, „Teilnehmen“ | M 14 | ✅ | |
 | Helfer gesucht / Helferschichten eintragen | M 5, 14, K 5 | ✅ | mit Kapazität; Namen nur für Organisatoren |
 | Heute auf der Anlage | M 5 | ✅ | |
-| Mannschaften des Vereins (Senioren, Jugend, Frauen, AH) | K 5 | ✅ | mit Liga, Spielerzahl, Trainern |
+| Mannschaften des Vereins (Senioren, Jugend, Frauen, AH) | K 5 | ✅ | mit Liga, Spielerzahl, Trainern; antippbar: Mannschaftsseite mit Trainerteam, Kader, nächstem Spiel, Bilanz und Ergebnissen (Namen von Jugendspielern nur für die eigene Mannschaft) |
 | Ansprechpartner (Vorstand, Jugendleitung, Trainer) | K 5 | ✅ | Kontaktdaten nach Sichtbarkeitseinstellung |
 | Dokumente: Kategorien, Filter, Suche, Upload | M 9, K 5 | ✅ | Upload (PDF, Word, Excel, JPG, PNG bis 10 MB; Typ wird am Inhalt geprüft) und Löschen je Bereich mit `documents.manage`; Öffnen über signierte Links |
 | Austausch / Mini-Forum (wenige, moderierte Themen, Ablaufdatum) | M 5, K 11 | ✅ | Optionales Modul: Themen mit Laufzeit, Antworten, Melden, Ausblenden, Schließen, Anheften |
@@ -186,9 +189,9 @@ Stand: 05.10.2026
 | Bereich | ✅ | 🟡 | ⬜ |
 | --- | ---: | ---: | ---: |
 | Grundstruktur & Design | 7 | 0 | 0 |
-| Home | 9 | 0 | 0 |
+| Home | 10 | 0 | 0 |
 | Mannschaft | 13 | 1 | 0 |
-| Termine & Teilnahme | 12 | 0 | 0 |
+| Termine & Teilnahme | 14 | 0 | 0 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
 | Verein | 11 | 0 | 0 |
 | Kommunikation | 7 | 0 | 0 |
@@ -198,4 +201,4 @@ Stand: 05.10.2026
 | Verwaltung | 8 | 1 | 0 |
 | Einrichtung & Module | 5 | 0 | 0 |
 | Sicherheit, Betrieb, Integrationen | 6 | 0 | 2 |
-| **Gesamt** | **98** | **3** | **2** |
+| **Gesamt** | **101** | **3** | **2** |

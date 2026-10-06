@@ -76,7 +76,7 @@ export default function ClubTeamScreen() {
           ) : null}
 
           {p.highlights.played > 0 ? (
-            <HighlightsCard h={p.highlights} title="Saison-Bilanz" />
+            <HighlightsCard h={p.highlights} title="Saison-Bilanz" rateLabel={null} />
           ) : null}
 
           <Section title="Trainerteam">

@@ -600,7 +600,7 @@ export default function EventScreen() {
           ) : null}
 
           {e.team ? (
-            <Section title={`Teilnehmer (${e.counts.yes} zugesagt)`}>
+            <Section title="Teilnehmer">
               <Card style={{ gap: 10 }}>
                 <ParticipantGroups
                   participants={e.participants}

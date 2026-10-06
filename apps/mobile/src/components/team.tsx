@@ -81,7 +81,8 @@ export function HighlightsCard({
 }: {
   h: TeamHighlights;
   title?: string;
-  rateLabel?: string;
+  /** null blendet die Trainingsquote aus (z. B. Mannschaftsseite für Außenstehende) */
+  rateLabel?: string | null;
 }) {
   return (
     <Card style={{ gap: 12 }}>
@@ -89,7 +90,9 @@ export function HighlightsCard({
       <View style={{ flexDirection: 'row' }}>
         <Stat value={`${h.won}-${h.drawn}-${h.lost}`} label="Bilanz S-U-N" />
         <Stat value={`${h.goalsFor}:${h.goalsAgainst}`} label="Tore" />
-        <Stat value={h.trainingRate === null ? '–' : `${h.trainingRate} %`} label={rateLabel} />
+        {rateLabel ? (
+          <Stat value={h.trainingRate === null ? '–' : `${h.trainingRate} %`} label={rateLabel} />
+        ) : null}
       </View>
     </Card>
   );
