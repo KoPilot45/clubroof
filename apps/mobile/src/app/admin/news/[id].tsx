@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
+import { CommentThread } from '@/components/comments';
 import { NewsEditor } from '@/components/news-editor';
 import {
   Button,
@@ -143,6 +144,7 @@ export default function EditNewsScreen() {
       </Card>
 
       {n.status === 'published' && (n.mine || n.can.publish) ? <ReadReceipt id={n.id} /> : null}
+      {n.status !== 'published' ? <CommentThread type="news" id={n.id} /> : null}
 
       {n.reviewNote && n.status === 'draft' ? (
         <Card style={{ gap: 4 }}>

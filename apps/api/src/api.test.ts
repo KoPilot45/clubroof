@@ -19,6 +19,7 @@ import type {
   NewsReadReceipt,
   TeamTaskList,
   MyTeamCard,
+  CommentItem,
   MemberImportResult,
   InviteLink,
   InviteOverview,
@@ -3073,6 +3074,49 @@ describe.skipIf(!url)('API', () => {
       expect((await send('DELETE', `/tasks/${drinks.id}`, player.token)).status).toBe(403);
       const removed = await send<TeamTaskList>('DELETE', `/tasks/${drinks.id}`, coach.token);
       expect(removed.body.open.some((t) => t.id === drinks.id)).toBe(false);
+    });
+  });
+
+  describe('Kommentare zu Freigaben und Anfragen', () => {
+    it('News in der Freigabe und Spielerbedarf: nur Beteiligte, mit Benachrichtigung', async () => {
+      const board = await login('vorstand');
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const queue = await get<EditorialOverview>('/editorial/news', board.token);
+      const pending = queue.toApprove[0]!;
+      const posted = await send<CommentItem[]>(
+        'POST',
+        `/comments/news/${pending.id}`,
+        board.token,
+        {
+          body: 'Bitte noch ein Foto ergänzen.',
+        },
+      );
+      expect(posted.status).toBe(201);
+      expect(posted.body.at(-1)).toMatchObject({ mine: true, author: 'Sandra Hoffmann' });
+      const adminNotes = await get<NotificationItem[]>('/notifications', admin.token);
+      expect(adminNotes.some((n) => n.title === `Kommentar: ${pending.title}`)).toBe(true);
+      expect((await get<CommentItem[]>(`/comments/news/${pending.id}`, admin.token))[0]!.mine).toBe(
+        false,
+      );
+      // Nicht beteiligt: unsichtbar
+      expect((await send('GET', `/comments/news/${pending.id}`, coach.token)).status).toBe(404);
+
+      const demand = (await get<ExchangeOverview>('/exchange', coach.token)).demands[0]!;
+      const reply = await send<CommentItem[]>(
+        'POST',
+        `/comments/demand/${demand.id}`,
+        coach.token,
+        {
+          body: 'Wir könnten zwei Spieler abstellen, Abfahrt wann?',
+        },
+      );
+      expect(reply.status).toBe(201);
+      const player = await login('spieler');
+      expect((await send('GET', `/comments/demand/${demand.id}`, player.token)).status).toBe(403);
+      expect(
+        (await send('POST', `/comments/news/${pending.id}`, board.token, { body: '' })).status,
+      ).toBe(400);
     });
   });
 

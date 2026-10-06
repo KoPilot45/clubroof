@@ -231,3 +231,22 @@ export const announcementLikes = pgTable(
   },
   (t) => [primaryKey({ columns: [t.announcementId, t.userId] })],
 );
+
+/** Zielgerichtete Kommentare zu Freigaben und Anfragen (Konzept §11), z. B. News oder Spielerbedarf. */
+export const comments = pgTable(
+  'comments',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    /** news | demand */
+    entityType: text().notNull(),
+    entityId: uuid().notNull(),
+    authorPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    authorUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
+    body: text().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.entityType, t.entityId, t.createdAt)],
+);

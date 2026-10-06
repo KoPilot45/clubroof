@@ -14,6 +14,7 @@ import {
   T,
   TeamBadge,
 } from '@/components/ui';
+import { CommentThread } from '@/components/comments';
 import { RequestError } from '@/lib/api';
 import { formatDay, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
@@ -198,6 +199,7 @@ export default function DemandScreen() {
           onPress={() => cancel.mutate()}
         />
       ) : null}
+      <CommentThread type="demand" id={d.id} />
     </Screen>
   );
 }

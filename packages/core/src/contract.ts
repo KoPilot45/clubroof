@@ -1316,3 +1316,15 @@ export type MyTeamCard = {
   absentToday: number;
   openTasks: number;
 };
+
+// ── Kommentare zu Freigaben und Anfragen ─────────────────────────────────
+
+export type CommentEntity = 'news' | 'demand';
+
+export type CommentItem = {
+  id: string;
+  author: string;
+  mine: boolean;
+  body: string;
+  createdAt: string;
+};

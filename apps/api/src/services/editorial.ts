@@ -535,3 +535,19 @@ export async function removeNews(db: Db, actor: Actor, id: string, now: Date): P
     await db.delete(s.announcements).where(eq(s.announcements.id, id));
   }
 }
+
+/** Beteiligte einer News-Freigabe (für Kommentare): Verfasser und Freigebende. */
+export async function newsDiscussion(db: Db, actor: Actor, id: string) {
+  const ctx = await loadContext(db, actor);
+  const { row } = await loadForEditor(db, actor, ctx, id);
+  return {
+    title: row.title,
+    link: `/admin/news/${id}`,
+    participants: [
+      ...new Set([
+        ...(await authorUser(db, actor, row)),
+        ...(await publishersFor(db, actor, ctx, row)),
+      ]),
+    ],
+  };
+}

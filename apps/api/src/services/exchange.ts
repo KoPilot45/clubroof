@@ -706,3 +706,25 @@ export async function deleteOffer(
   await db.delete(s.playerOffers).where(eq(s.playerOffers.id, id));
   return getOverview(db, actor, now);
 }
+
+/** Beteiligte eines Spielerbedarfs (für Kommentare): Trainerteam der suchenden Mannschaft. */
+export async function demandDiscussion(db: Db, actor: Actor, id: string, now: Date) {
+  const demand = await getDemand(db, actor, id, now);
+  const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
+  const staff = await db
+    .select({ userId: s.persons.userId })
+    .from(s.teamMemberships)
+    .innerJoin(s.persons, eq(s.persons.id, s.teamMemberships.personId))
+    .where(
+      and(
+        eq(s.teamMemberships.teamId, demand.team.id),
+        inArray(s.teamMemberships.function, ['coach', 'assistant_coach', 'team_manager']),
+        or(isNull(s.teamMemberships.validTo), gte(s.teamMemberships.validTo, today)),
+      ),
+    );
+  return {
+    title: `Spielerbedarf ${demand.team.badge}`,
+    link: `/exchange/${id}`,
+    participants: [...new Set(staff.map((r) => r.userId).filter((u): u is string => !!u))],
+  };
+}
