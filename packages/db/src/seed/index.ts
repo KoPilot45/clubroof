@@ -385,6 +385,13 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       randomAdult(faker.helpers.arrayElement(['male', 'female']));
     }
 
+    // Damit die Startseite Geburtstage zeigt: ein Mitspieler der B-Jugend hat in zwei Tagen Geburtstag
+    const birthdayKid = teamMembers.b1.find((m) => m.fn === 'player' && m.person !== persona.player);
+    if (birthdayKid && !toIsoDate(addDays(calendarDayOf(now), 2)).endsWith('02-29')) {
+      const soon = toIsoDate(addDays(calendarDayOf(now), 2));
+      birthdayKid.person.birthDate = `${birthdayKid.person.birthDate!.slice(0, 4)}${soon.slice(4)}`;
+    }
+
     await insertChunked(tx, s.persons, persons);
     await insertChunked(tx, s.guardianships, guardianships);
 

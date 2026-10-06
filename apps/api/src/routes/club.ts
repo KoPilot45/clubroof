@@ -1,4 +1,5 @@
 import {
+  type ClubTeamPage,
   SCOPE_TYPES,
   type UploadedImage,
   type ClubTeamGroup,
@@ -21,6 +22,7 @@ import {
   loadVisibleDocument,
 } from '../services/club';
 import { cashReportCsv } from '../services/cash';
+import { getClubTeamPage } from '../services/teams';
 import { listHelperEvents, setAttendance, signUp, withdraw } from '../services/helpers';
 import { placeholderPdf } from '../storage/files';
 import { deleteDocument, setClubLogo, uploadDocument, uploadImage } from '../services/uploads';
@@ -143,6 +145,12 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.get('/club/teams', async (request): Promise<ClubTeamGroup[]> =>
     listClubTeams(app.db, request.actor!, app.now()),
+  );
+  app.get(
+    '/club/teams/:teamId',
+    { schema: { params: z.object({ teamId: z.uuid() }) } },
+    async (request): Promise<ClubTeamPage> =>
+      getClubTeamPage(app.db, request.actor!, request.params.teamId, app.now()),
   );
   app.get('/club/contacts', async (request): Promise<ContactGroup[]> =>
     listContacts(app.db, request.actor!, app.now()),

@@ -29,11 +29,14 @@ export function ResultRow({
   clubShortName,
   badge,
   first,
+  linked = true,
 }: {
   result: MatchResult;
   clubShortName: string;
   badge: string;
   first?: boolean;
+  /** Fremde Mannschaften: Spiel nicht antippbar (Termin ist dort nicht sichtbar) */
+  linked?: boolean;
 }) {
   const { colors } = useTheme();
   const us = `${clubShortName} ${badge}`;
@@ -43,8 +46,9 @@ export function ResultRow({
     : [result.goalsAgainst, result.goalsFor];
   return (
     <Pressable
-      onPress={() => router.push(`/events/${result.eventId}`)}
-      accessibilityRole="button"
+      onPress={linked ? () => router.push(`/events/${result.eventId}`) : undefined}
+      disabled={!linked}
+      accessibilityRole={linked ? 'button' : undefined}
       style={{
         flexDirection: 'row',
         alignItems: 'center',

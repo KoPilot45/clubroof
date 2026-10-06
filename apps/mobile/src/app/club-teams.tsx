@@ -1,5 +1,6 @@
 import type { ClubTeamGroup } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import { View } from 'react-native';
 import {
   Card,
@@ -44,6 +45,7 @@ export default function ClubTeamsScreen() {
                   </View>
                 }
                 trailing={t.isMine ? <Chip label="Meine" /> : null}
+                onPress={() => router.push(`/club-team/${t.id}`)}
               />
             ))}
           </Card>

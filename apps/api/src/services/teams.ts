@@ -11,6 +11,7 @@ import {
   toIsoDate,
   type StatsPeriod,
   type StatsPeriodKind,
+  type ClubTeamPage,
   type MatchResult,
   type MyTeamCard,
   type PlayerStat,
@@ -40,7 +41,7 @@ import {
 } from 'drizzle-orm';
 import { resolveMediaUrl } from '../storage/media-links';
 import { actorCan, type Actor } from '../actor';
-import { HttpError } from '../errors';
+import { HttpError, notFound } from '../errors';
 import { presentSql } from './attendance';
 import { fetchEventRows, summarizeEvents } from './events';
 import { loadTeamForActor, requireModule, type TeamRow } from './team-access';
@@ -209,6 +210,94 @@ export async function getTeamOverview(
     lastResults,
     trainingWeek,
     highlights: summarizeResults(allResults, rate),
+  };
+}
+
+/**
+ * Mannschaftsseite für alle im Verein: Trainerteam, Kader, nächstes Spiel und Ergebnisse.
+ * Namen von Jugendspielern sehen nur die Mannschaft selbst und Verantwortliche.
+ */
+export async function getClubTeamPage(
+  db: Db,
+  actor: Actor,
+  teamId: string,
+  now: Date,
+): Promise<ClubTeamPage> {
+  const [row] = await db
+    .select({ team: s.teams, unitName: s.orgUnits.name })
+    .from(s.teams)
+    .innerJoin(s.orgUnits, eq(s.orgUnits.id, s.teams.orgUnitId))
+    .where(and(eq(s.teams.id, teamId), eq(s.teams.clubId, actor.club.id)));
+  if (!row) throw notFound('Die Mannschaft');
+  const team = row.team;
+  const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
+  const isMine = actor.teamIds.includes(team.id);
+  const isYouth = /^U\d/i.test(team.ageGroup ?? '');
+  const seesNames = !isYouth || isMine || actorCan(actor, 'attendance.read', team);
+
+  const [members, results, [next]] = await Promise.all([
+    db
+      .select({ membership: s.teamMemberships, person: s.persons })
+      .from(s.teamMemberships)
+      .innerJoin(s.persons, eq(s.persons.id, s.teamMemberships.personId))
+      .where(
+        and(
+          eq(s.teamMemberships.teamId, team.id),
+          or(isNull(s.teamMemberships.validTo), gte(s.teamMemberships.validTo, today)),
+        ),
+      )
+      .orderBy(asc(s.teamMemberships.jerseyNumber), asc(s.persons.lastName)),
+    loadResults(db, team, now),
+    fetchEventRows(
+      db,
+      and(
+        eq(s.events.teamId, team.id),
+        inArray(s.events.type, ['match', 'tournament']),
+        eq(s.events.status, 'scheduled'),
+        gte(s.events.startsAt, now),
+      ),
+      1,
+    ),
+  ]);
+  const players = members.filter((m) => m.membership.function === 'player');
+  return {
+    team: {
+      id: team.id,
+      name: team.name,
+      badge: team.badge,
+      ageGroup: team.ageGroup,
+      league: team.league,
+      orgUnitName: row.unitName,
+    },
+    coaches: members
+      .filter((m) => m.membership.function !== 'player')
+      .map(({ membership, person }) => ({
+        personId: person.id,
+        name: `${person.firstName} ${person.lastName}`,
+        function: membership.function,
+        avatarUrl: resolveMediaUrl(actor.links, person.avatarUrl, now),
+      })),
+    playerCount: players.length,
+    players: seesNames
+      ? players.map(({ membership, person }) => ({
+          personId: person.id,
+          name: `${person.firstName} ${person.lastName}`,
+          jerseyNumber: membership.jerseyNumber,
+          position: person.position,
+        }))
+      : null,
+    nextMatch: next
+      ? {
+          id: next.event.id,
+          title: next.event.title,
+          startsAt: next.event.startsAt.toISOString(),
+          isHome: next.match?.isHome ?? null,
+          location: next.facilityName ?? next.event.locationText,
+        }
+      : null,
+    lastResults: results.slice(0, 5),
+    highlights: summarizeResults(results, null),
+    isMine,
   };
 }
 

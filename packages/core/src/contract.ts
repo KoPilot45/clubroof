@@ -268,6 +268,20 @@ export type HomeResponse = {
   cash: CashTeaser[];
   clubOverview: ClubOverview | null;
   unreadNotifications: number;
+  /** Geburtstage in meinen Mannschaften in den nächsten 7 Tagen */
+  birthdays: Birthday[];
+};
+
+export type Birthday = {
+  personId: string;
+  name: string;
+  teamBadge: string;
+  /** „14.10.“ – ohne Jahr und Alter */
+  day: string;
+  /** 0 = heute */
+  inDays: number;
+  /** Ich selbst bzw. mein Kind */
+  mine: boolean;
 };
 
 export type NotificationItem = {
@@ -587,6 +601,34 @@ export type ClubTeamGroup = {
     coaches: string[];
     isMine: boolean;
   }[];
+};
+
+/** Mannschaftsseite für alle im Verein (ohne Kontaktdaten). */
+export type ClubTeamPage = {
+  team: {
+    id: string;
+    name: string;
+    badge: string;
+    ageGroup: string | null;
+    league: string | null;
+    orgUnitName: string;
+  };
+  coaches: { personId: string; name: string; function: TeamFunction; avatarUrl: string | null }[];
+  playerCount: number;
+  /** Kader mit Namen – bei Jugendmannschaften nur für die Mannschaft selbst und Verantwortliche */
+  players:
+    | { personId: string; name: string; jerseyNumber: number | null; position: string | null }[]
+    | null;
+  nextMatch: {
+    id: string;
+    title: string;
+    startsAt: string;
+    isHome: boolean | null;
+    location: string | null;
+  } | null;
+  lastResults: MatchResult[];
+  highlights: TeamHighlights;
+  isMine: boolean;
 };
 
 export type Contact = {

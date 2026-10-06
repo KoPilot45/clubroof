@@ -81,7 +81,7 @@ export default function HomeScreen() {
         <Section
           title="Neuigkeiten für dich"
           action="Alle anzeigen"
-          onAction={() => router.push('/verein')}
+          onAction={() => router.push('/news')}
         >
           <Card>
             {data.news.length === 0 ? (
@@ -150,6 +150,41 @@ export default function HomeScreen() {
             ) : null}
             {data.upcoming.map((e, i) => (
               <EventRow key={e.id} event={e} first={i === 0} />
+            ))}
+          </Card>
+        </Section>
+      ) : null}
+
+      {data && data.birthdays.length > 0 ? (
+        <Section title="Geburtstage">
+          <Card>
+            {data.birthdays.map((b, i) => (
+              <ListRow
+                key={b.personId}
+                first={i === 0}
+                leading={
+                  <IconTile name="gift-outline" tone={b.inDays === 0 ? 'success' : undefined} />
+                }
+                title={b.name}
+                subtitle={
+                  <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+                    <TeamBadge badge={b.teamBadge} />
+                    <T variant="caption">{b.day}</T>
+                  </View>
+                }
+                trailing={
+                  <Chip
+                    tone={b.inDays === 0 ? 'success' : 'neutral'}
+                    label={
+                      b.inDays === 0
+                        ? 'Heute 🎉'
+                        : b.inDays === 1
+                          ? 'Morgen'
+                          : `in ${b.inDays} Tagen`
+                    }
+                  />
+                }
+              />
             ))}
           </Card>
         </Section>

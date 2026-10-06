@@ -51,6 +51,7 @@ import type {
   ExchangeOverview,
   PersonProfile,
   ClubTeamGroup,
+  ClubTeamPage,
   ContactGroup,
   DocumentItem,
   HelperEvent,
@@ -927,6 +928,44 @@ describe.skipIf(!url)('API', () => {
 
       const tampered = await app.inject({ method: 'GET', url: path.slice(0, -2) + 'xx' });
       expect(tampered.statusCode).toBe(404);
+    });
+
+    it('Mannschaftsseite im Verein: Jugendkader nur für die eigene Mannschaft', async () => {
+      const player = await login('spieler');
+      const groups = await get<ClubTeamGroup[]>('/club/teams', player.token);
+      const all = groups.flatMap((g) => g.teams);
+      const b1 = all.find((t) => t.badge === 'B1')!;
+      const c1 = all.find((t) => t.badge === 'C1')!;
+      const first = all.find((t) => t.badge === '1.')!;
+
+      const own = await get<ClubTeamPage>(`/club/teams/${b1.id}`, player.token);
+      expect(own.isMine).toBe(true);
+      expect(own.players!.length).toBe(own.playerCount);
+      expect(own.coaches.some((c) => c.name === 'Max Mustermann')).toBe(true);
+      expect(own.highlights.played).toBeGreaterThan(0);
+      expect(own.lastResults.length).toBeLessThanOrEqual(5);
+
+      // Fremde Jugendmannschaft: nur Anzahl, keine Namen; Senioren mit Namen
+      const youth = await get<ClubTeamPage>(`/club/teams/${c1.id}`, player.token);
+      expect(youth.players).toBeNull();
+      expect(youth.playerCount).toBeGreaterThan(10);
+      const seniors = await get<ClubTeamPage>(`/club/teams/${first.id}`, player.token);
+      expect(seniors.players!.length).toBeGreaterThan(10);
+      expect(JSON.stringify(seniors)).not.toMatch(/@|phone/);
+    });
+
+    it('Startseite: Geburtstage der Mannschaft und Anwesenheit als offene Aktion', async () => {
+      const player = await login('spieler');
+      const home = await get<HomeResponse>('/home', player.token);
+      const soon = home.birthdays.find((b) => b.teamBadge === 'B1' && b.inDays === 2);
+      expect(soon).toBeDefined();
+      expect(soon!.day).toMatch(/^\d{2}\.\d{2}\.$/);
+      expect(home.birthdays.every((b) => b.inDays >= 0 && b.inDays <= 7)).toBe(true);
+
+      const coach = await login('trainer');
+      const coachHome = await get<HomeResponse>('/home', coach.token);
+      expect(coachHome.actions.some((a) => a.title === 'Anwesenheit erfassen')).toBe(true);
+      expect(home.actions.some((a) => a.title === 'Anwesenheit erfassen')).toBe(false);
     });
 
     it('Mannschaften, Ansprechpartner und „Heute auf der Anlage“', async () => {

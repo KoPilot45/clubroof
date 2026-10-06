@@ -4,8 +4,11 @@
  */
 import {
   at,
+  calendarDayOf,
   can,
   fromIsoDate,
+  toIsoDate,
+  type Birthday,
   scopesWith,
   type ActionItem,
   type CashTeaser,
@@ -260,6 +263,50 @@ async function loadActions(db: Db, actor: Actor, now: Date): Promise<ActionItem[
     }
   }
 
+  // 3b. Trainerteam: Anwesenheit der Trainings der letzten 7 Tage noch nicht erfasst
+  const myTeams = actor.teamIds.length
+    ? await db
+        .select({ id: s.teams.id, orgUnitId: s.teams.orgUnitId })
+        .from(s.teams)
+        .where(inArray(s.teams.id, actor.teamIds))
+    : [];
+  const coachTeams = myTeams
+    .filter((t) => actorCan(actor, 'attendance.override', t))
+    .map((t) => t.id);
+  if (coachTeams.length) {
+    const unrecorded = await db
+      .select({ id: s.events.id, startsAt: s.events.startsAt, badge: s.teams.badge })
+      .from(s.events)
+      .innerJoin(s.teams, eq(s.teams.id, s.events.teamId))
+      .where(
+        and(
+          inArray(s.events.teamId, coachTeams),
+          eq(s.events.type, 'training'),
+          eq(s.events.status, 'scheduled'),
+          isNull(s.events.attendanceRecordedAt),
+          lte(s.events.startsAt, now),
+          gte(s.events.startsAt, new Date(now.getTime() - 7 * DAY)),
+        ),
+      )
+      .orderBy(desc(s.events.startsAt))
+      .limit(2);
+    for (const e of unrecorded) {
+      actions.push({
+        kind: 'task',
+        id: `attendance-${e.id}`,
+        title: 'Anwesenheit erfassen',
+        subtitle: `${e.badge} · Training vom ${new Intl.DateTimeFormat('de-DE', {
+          weekday: 'short',
+          day: '2-digit',
+          month: '2-digit',
+          timeZone: actor.club.timezone,
+        }).format(e.startsAt)}`,
+        dueAt: null,
+        link: `/events/${e.id}`,
+      });
+    }
+  }
+
   // 4. Mannschaftsaufgaben, die ich (oder mein Kind) übernommen habe
   for (const { task, team } of await openTasksFor(db, actor)) {
     const forChild = task.assigneePersonId !== actor.person.id;
@@ -464,7 +511,7 @@ export async function loadHome(db: Db, actor: Actor, now: Date): Promise<HomeRes
   );
   const [nextMatch] = matchRow ? await summarizeEvents(db, actor, [matchRow], now) : [];
 
-  const [news, actions, cash, clubOverview, [unread]] = await Promise.all([
+  const [news, actions, cash, clubOverview, [unread], birthdays] = await Promise.all([
     loadNews(db, actor, now, 3),
     loadActions(db, actor, now),
     loadCash(db, actor),
@@ -473,6 +520,7 @@ export async function loadHome(db: Db, actor: Actor, now: Date): Promise<HomeRes
       .select({ n: count() })
       .from(s.notifications)
       .where(and(eq(s.notifications.userId, actor.user.id), isNull(s.notifications.readAt))),
+    loadBirthdays(db, actor, now),
   ]);
 
   return {
@@ -483,5 +531,60 @@ export async function loadHome(db: Db, actor: Actor, now: Date): Promise<HomeRes
     cash,
     clubOverview,
     unreadNotifications: unread?.n ?? 0,
+    birthdays,
   };
+}
+
+/**
+ * Geburtstage in meinen Mannschaften in den nächsten 7 Tagen (nur Tag und Monat, kein Alter).
+ */
+async function loadBirthdays(db: Db, actor: Actor, now: Date): Promise<Birthday[]> {
+  if (actor.teamIds.length === 0) return [];
+  const tz = actor.club.timezone;
+  const todayIso = toIsoDate(calendarDayOf(now, tz));
+  const rows = await db
+    .select({
+      personId: s.persons.id,
+      firstName: s.persons.firstName,
+      lastName: s.persons.lastName,
+      birthDate: s.persons.birthDate,
+      badge: s.teams.badge,
+    })
+    .from(s.teamMemberships)
+    .innerJoin(s.persons, eq(s.persons.id, s.teamMemberships.personId))
+    .innerJoin(s.teams, eq(s.teams.id, s.teamMemberships.teamId))
+    .where(
+      and(
+        inArray(s.teamMemberships.teamId, actor.teamIds),
+        or(isNull(s.teamMemberships.validTo), gte(s.teamMemberships.validTo, todayIso)),
+        sql`${s.persons.birthDate} is not null`,
+      ),
+    );
+  const today = fromIsoDate(todayIso);
+  const seen = new Set<string>();
+  const result: Birthday[] = [];
+  for (const r of rows) {
+    if (seen.has(r.personId) || !r.birthDate) continue;
+    const [, month, day] = r.birthDate.split('-').map(Number);
+    // Nächster Geburtstag ab heute (29.02. in Nicht-Schaltjahren am 28.02.)
+    const year = today.getUTCFullYear();
+    const next = (y: number) => {
+      const d = new Date(Date.UTC(y, month! - 1, day!));
+      return d.getUTCMonth() === month! - 1 ? d : new Date(Date.UTC(y, month! - 1, 28));
+    };
+    let date = next(year);
+    if (date < today) date = next(year + 1);
+    const inDays = Math.round((date.getTime() - today.getTime()) / DAY);
+    if (inDays > 7) continue;
+    seen.add(r.personId);
+    result.push({
+      personId: r.personId,
+      name: `${r.firstName} ${r.lastName}`,
+      teamBadge: r.badge,
+      day: `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.`,
+      inDays,
+      mine: actor.managedIds.includes(r.personId),
+    });
+  }
+  return result.sort((a, b) => a.inDays - b.inDays || a.name.localeCompare(b.name)).slice(0, 8);
 }
