@@ -118,6 +118,46 @@ function Navigator() {
           />
           <Stack.Screen name="profile/[id]" options={{ headerShown: true, title: 'Profil' }} />
           <Stack.Screen
+            name="teams/[id]/cash-admin"
+            options={{ headerShown: true, title: 'Kassenverwaltung' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-payments"
+            options={{ headerShown: true, title: 'Einzahlungen' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-pay"
+            options={{ headerShown: true, title: 'Bezahlen' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-drinks"
+            options={{ headerShown: true, title: 'Getränke-Strichliste' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-levy"
+            options={{ headerShown: true, title: 'Umlage' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-fees"
+            options={{ headerShown: true, title: 'Beiträge' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-entries"
+            options={{ headerShown: true, title: 'Buchungen' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-treasurers"
+            options={{ headerShown: true, title: 'Kassenwart' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-settings"
+            options={{ headerShown: true, title: 'Bezahlinfos & Einstellungen' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-closings"
+            options={{ headerShown: true, title: 'Kassenprüfung' }}
+          />
+          <Stack.Screen
             name="teams/[id]/fines"
             options={{ headerShown: true, title: 'Strafenkatalog' }}
           />

@@ -209,11 +209,14 @@ export async function getTeamCash(
     balances.set(r.tx.personId, current);
   }
 
+  // Persönliches Konto: Spieler (bzw. Kinder) und alle, auf deren Namen schon gebucht wurde
   const memberIds = new Set(
-    actor.memberships.filter((m) => m.teamId === team.id).map((m) => m.personId),
+    actor.memberships
+      .filter((m) => m.teamId === team.id && m.function === 'player')
+      .map((m) => m.personId),
   );
   const personal = actor.managed
-    .filter((p) => memberIds.has(p.id))
+    .filter((p) => memberIds.has(p.id) || balances.has(p.id))
     .map((p) => ({
       personId: p.id,
       name: `${p.firstName} ${p.lastName}`,

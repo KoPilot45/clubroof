@@ -56,6 +56,7 @@ Stand: 07.10.2026
 | Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | ✅ | Buchen nur für Kassenverantwortliche; Kassenbericht als CSV für Excel (Anfangsbestand, Buchungen, laufender Stand, offene persönliche Konten) |
 | Strafenkatalog | M 16 | ✅ | Eigene Strafen mit Beträgen je Mannschaft; pflegen und vergeben dürfen Trainerteam und Kassenwart; Vergabe an mehrere Personen gleichzeitig, die Strafe landet auf ihrem Konto |
 | Kassenstatistik | – | ✅ | Kassenstand je Monat, Einnahmen/Ausgaben, Kategorien, Strafen nach Art und je Person, offene Beträge – für die ganze Mannschaft |
+| Kassenverwaltung | M 16 | ✅ | Eigener Bereich für Kassenwart und Trainerteam: Einnahmen/Ausgaben mit Kategorie, Zahlungsart, Datum und Belegfoto; Einzahlungen (auch mehrere auf einmal, direkt aus „Offene Beträge“); Getränke-Strichliste; Umlagen; Mannschaftsbeiträge (monatlich, je Saison, einmalig); Storno mit Grund; Erinnerungen (Knopf oder monatlich automatisch); Zahlungsmeldungen „Ich habe bezahlt“ bestätigen; Kassenwart bestimmen; Bezahlinfos (IBAN, PayPal); Sichtbarkeit offener Beträge; Kassenprüfung; Bericht als Excel und PDF; Buchungen mit Suche und Filtern |
 | Teambezogene Dokumente und Aufgaben | K 4 | ✅ | Dokumente der Mannschaft; Mannschaftsaufgaben (Fahrdienst, Trikotwäsche …) mit Zuteilung, „Ich übernehme“ und Abhaken |
 | Trainingsplanung (Übungen, Schwerpunkte, Material) | M 17, K 4 | ✅ | Optionales Modul: Übungsbibliothek des Vereins, Plan je Training (Schwerpunkt, Ablauf, Notizen), Vorlage aus dem letzten Plan; Übungen aus der Bibliothek mit „Zum Training“ direkt in einen der nächsten Pläne; Spieler sehen Schwerpunkt und Material |
 
@@ -192,7 +193,7 @@ Stand: 07.10.2026
 | --- | ---: | ---: | ---: |
 | Grundstruktur & Design | 7 | 0 | 0 |
 | Home | 10 | 0 | 0 |
-| Mannschaft | 15 | 1 | 0 |
+| Mannschaft | 16 | 1 | 0 |
 | Termine & Teilnahme | 14 | 0 | 0 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
 | Verein | 11 | 0 | 0 |
@@ -203,4 +204,4 @@ Stand: 07.10.2026
 | Verwaltung | 8 | 1 | 0 |
 | Einrichtung & Module | 5 | 0 | 0 |
 | Sicherheit, Betrieb, Integrationen | 6 | 0 | 2 |
-| **Gesamt** | **103** | **3** | **2** |
+| **Gesamt** | **104** | **3** | **2** |

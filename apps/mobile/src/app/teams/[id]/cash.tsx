@@ -1,8 +1,8 @@
-import type { CashEntry, TeamCash } from '@clubroof/core';
-import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Linking, View } from 'react-native';
+import { EntryRow, paymentLabel, useCash } from '@/components/cash';
 import {
+  Button,
   Card,
   Chip,
   Empty,
@@ -14,60 +14,83 @@ import {
   Section,
   T,
   TileGrid,
+  type TileItem,
 } from '@/components/ui';
-import { cashCategory } from '@/lib/cash';
-import { formatEuro, formatShortDate } from '@/lib/format';
+import { formatEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
-
-function EntryRow({
-  entry,
-  first,
-  showPerson,
-}: {
-  entry: CashEntry;
-  first: boolean;
-  showPerson: boolean;
-}) {
-  const { colors } = useTheme();
-  const cat = cashCategory(entry.category);
-  const negative = entry.isCharge || entry.direction === 'expense';
-  const subtitle = [
-    formatShortDate(entry.bookedOn),
-    cat.label,
-    showPerson ? entry.person?.name : entry.counterparty,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-  return (
-    <ListRow
-      first={first}
-      leading={<IconTile name={cat.icon} tone={entry.isCharge ? 'action' : 'primary'} />}
-      title={entry.description}
-      subtitle={subtitle}
-      trailing={
-        <T
-          variant="label"
-          color={negative ? colors.status.urgent.onContainer : colors.status.success.onContainer}
-        >
-          {negative ? '−' : '+'}
-          {formatEuro(entry.amountCents)}
-        </T>
-      }
-    />
-  );
-}
 
 export default function CashScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
   const { colors } = useTheme();
-  const cash = useQuery({
-    queryKey: ['cash', id],
-    queryFn: () => api<TeamCash>(`/teams/${id}/cash`),
-  });
+  const cash = useCash(id);
   const c = cash.data;
   const open = (c?.members ?? []).filter((m) => m.balanceCents < 0);
+  const manage = !!c && (c.permissions.manageCash || c.permissions.manageFines);
+  const report = (format: 'csv' | 'pdf') =>
+    void api<{ url: string }>(`/teams/${id}/cash/report-link?format=${format}`).then(({ url }) =>
+      Linking.openURL(url),
+    );
+
+  const tiles: TileItem[] = c
+    ? [
+        ...(manage
+          ? [
+              {
+                key: 'admin',
+                label: 'Kassenverwaltung',
+                icon: 'briefcase' as const,
+                badge: c.paymentNotices.filter((n) => n.status === 'pending').length || undefined,
+                onPress: () => router.push(`/teams/${id}/cash-admin`),
+              },
+            ]
+          : []),
+        ...(c.balanceCents !== null
+          ? [
+              {
+                key: 'stats',
+                label: 'Statistik',
+                icon: 'bar-chart' as const,
+                onPress: () => router.push(`/teams/${id}/cash-stats`),
+              },
+              {
+                key: 'entries',
+                label: 'Alle Buchungen',
+                icon: 'receipt' as const,
+                onPress: () => router.push(`/teams/${id}/cash-entries`),
+              },
+            ]
+          : []),
+        ...(c.config.fines
+          ? [
+              {
+                key: 'catalog',
+                label: 'Strafenkatalog',
+                icon: 'list' as const,
+                hint: `${c.fineCatalog.length} Strafen`,
+                onPress: () => router.push(`/teams/${id}/fines`),
+              },
+            ]
+          : []),
+        ...(c.balanceCents !== null
+          ? [
+              {
+                key: 'excel',
+                label: 'Bericht (Excel)',
+                icon: 'grid' as const,
+                onPress: () => report('csv'),
+              },
+              {
+                key: 'pdf',
+                label: 'Bericht (PDF)',
+                icon: 'document' as const,
+                onPress: () => report('pdf'),
+              },
+            ]
+          : []),
+      ]
+    : [];
 
   return (
     <Screen edges={[]} refreshing={cash.isRefetching} onRefresh={() => cash.refetch()}>
@@ -83,7 +106,7 @@ export default function CashScreen() {
               <T variant="display" color={colors.onPrimary} style={{ fontSize: 34 }}>
                 {formatEuro(c.balanceCents)}
               </T>
-              <View style={{ flexDirection: 'row', gap: 16 }}>
+              <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap' }}>
                 <T variant="label" color={colors.onPrimary}>
                   Einnahmen {formatEuro(c.incomeCents ?? 0)}
                 </T>
@@ -91,97 +114,72 @@ export default function CashScreen() {
                   Ausgaben {formatEuro(c.expenseCents ?? 0)}
                 </T>
               </View>
+              {c.treasurers.length ? (
+                <T variant="caption" color={colors.onPrimary}>
+                  Kassenwart: {c.treasurers.map((t) => t.name).join(', ')}
+                </T>
+              ) : null}
             </Card>
           ) : null}
 
-          <TileGrid
-            items={[
-              ...(c.permissions.manageFines && c.config.fines
-                ? [
-                    {
-                      key: 'fine',
-                      label: 'Strafe vergeben',
-                      icon: 'hand-left' as const,
-                      onPress: () => router.push(`/teams/${id}/cash-new?kind=fine`),
-                    },
-                  ]
-                : []),
-              ...(c.permissions.manageCash
-                ? [
-                    {
-                      key: 'booking',
-                      label: 'Buchung erfassen',
-                      icon: 'add-circle' as const,
-                      onPress: () => router.push(`/teams/${id}/cash-new`),
-                    },
-                  ]
-                : []),
-              ...(c.balanceCents !== null
-                ? [
-                    {
-                      key: 'stats',
-                      label: 'Statistik',
-                      icon: 'bar-chart' as const,
-                      onPress: () => router.push(`/teams/${id}/cash-stats`),
-                    },
-                  ]
-                : []),
-              ...(c.config.fines
-                ? [
-                    {
-                      key: 'catalog',
-                      label: 'Strafenkatalog',
-                      icon: 'list' as const,
-                      hint: `${c.fineCatalog.length} Strafen`,
-                      onPress: () => router.push(`/teams/${id}/fines`),
-                    },
-                  ]
-                : []),
-              ...(c.balanceCents !== null
-                ? [
-                    {
-                      key: 'export',
-                      label: 'Kassenbericht (Excel)',
-                      icon: 'download' as const,
-                      onPress: () =>
-                        void api<{ url: string }>(`/teams/${id}/cash/report-link`).then(({ url }) =>
-                          Linking.openURL(url),
-                        ),
-                    },
-                  ]
-                : []),
-            ]}
-          />
+          <TileGrid items={tiles} />
 
-          {c.personal.map((p) => (
-            <Section
-              key={p.personId}
-              title={c.personal.length > 1 ? `Konto ${p.name}` : 'Mein Konto'}
-            >
-              <Card style={{ gap: 10 }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <T variant="label">Saldo</T>
+          {c.personal.map((p) => {
+            const notices = c.paymentNotices.filter(
+              (n) => n.personId === p.personId && n.status === 'pending',
+            );
+            return (
+              <Section
+                key={p.personId}
+                title={c.personal.length > 1 ? `Konto ${p.name}` : 'Mein Konto'}
+              >
+                <Card style={{ gap: 10 }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <T variant="label">Saldo</T>
+                    {p.balanceCents < 0 ? (
+                      <Chip tone="action" label={`Offen: ${formatEuro(-p.balanceCents)}`} />
+                    ) : (
+                      <Chip tone="success" icon="checkmark" label="Ausgeglichen" />
+                    )}
+                  </View>
+                  {notices.map((n) => (
+                    <Chip
+                      key={n.id}
+                      tone="info"
+                      icon="time-outline"
+                      label={`Gemeldet: ${formatEuro(n.amountCents)} (${paymentLabel(n.paymentMethod)}) – wartet auf Bestätigung`}
+                    />
+                  ))}
                   {p.balanceCents < 0 ? (
-                    <Chip tone="action" label={`Offen: ${formatEuro(-p.balanceCents)}`} />
-                  ) : (
-                    <Chip tone="success" icon="checkmark" label="Ausgeglichen" />
-                  )}
-                </View>
-                {p.entries.length === 0 ? (
-                  <Empty icon="receipt-outline" text="Keine Buchungen." />
-                ) : null}
-                {p.entries.map((e, i) => (
-                  <EntryRow key={e.id} entry={e} first={i === 0} showPerson={false} />
-                ))}
-              </Card>
-            </Section>
-          ))}
+                    <Button
+                      label="Bezahlen / Zahlung melden"
+                      icon="card-outline"
+                      variant="tonal"
+                      size="sm"
+                      style={{ alignSelf: 'flex-start' }}
+                      onPress={() =>
+                        router.push(
+                          `/teams/${id}/cash-pay?personId=${p.personId}&amount=${-p.balanceCents}`,
+                        )
+                      }
+                    />
+                  ) : null}
+                  {p.entries.length === 0 ? (
+                    <Empty icon="receipt-outline" text="Keine Buchungen." />
+                  ) : null}
+                  {p.entries.slice(0, 10).map((e, i) => (
+                    <EntryRow key={e.id} entry={e} first={i === 0} showPerson={false} />
+                  ))}
+                </Card>
+              </Section>
+            );
+          })}
 
           {c.members ? (
             <Section title="Offene Beträge in der Mannschaft">
@@ -194,6 +192,15 @@ export default function CashScreen() {
                     key={m.personId}
                     first={i === 0}
                     title={m.name}
+                    subtitle={c.permissions.manageCash ? 'Antippen: als bezahlt buchen' : undefined}
+                    onPress={
+                      c.permissions.manageCash
+                        ? () =>
+                            router.push(
+                              `/teams/${id}/cash-payments?personId=${m.personId}&amount=${-m.balanceCents}`,
+                            )
+                        : undefined
+                    }
                     trailing={<Chip tone="action" label={formatEuro(-m.balanceCents)} />}
                   />
                 ))}
@@ -202,12 +209,16 @@ export default function CashScreen() {
           ) : null}
 
           {c.entries ? (
-            <Section title="Letzte Buchungen">
+            <Section
+              title="Letzte Buchungen"
+              action="Alle anzeigen"
+              onAction={() => router.push(`/teams/${id}/cash-entries`)}
+            >
               <Card>
                 {c.entries.length === 0 ? (
                   <Empty icon="receipt-outline" text="Noch keine Buchungen." />
                 ) : null}
-                {c.entries.slice(0, 30).map((e, i) => (
+                {c.entries.slice(0, 8).map((e, i) => (
                   <EntryRow key={e.id} entry={e} first={i === 0} showPerson />
                 ))}
               </Card>

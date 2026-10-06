@@ -1,10 +1,31 @@
-import type { CashBookingKind, RosterEntry, TeamCash } from '@clubroof/core';
+import {
+  CASH_EXPENSE_CATEGORIES,
+  CASH_INCOME_CATEGORIES,
+  type CashBookingKind,
+  type PaymentMethod,
+  type RosterEntry,
+  type TeamCash,
+  type UploadedImage,
+} from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Button, Card, ChoiceChips, Chip, Loading, Screen, T, TextField } from '@/components/ui';
+import { PaymentMethodChips } from '@/components/cash';
+import {
+  Button,
+  Card,
+  ChoiceChips,
+  Chip,
+  DateStepper,
+  Loading,
+  Screen,
+  T,
+  TextField,
+} from '@/components/ui';
+import { cashCategory } from '@/lib/cash';
+import { pickFile } from '@/lib/upload';
 import { RequestError } from '@/lib/api';
 import { formatEuro, parseEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
@@ -46,6 +67,29 @@ export default function NewBookingScreen() {
   const [description, setDescription] = useState('');
   const [persons, setPersons] = useState<string[]>([]);
   const [counterparty, setCounterparty] = useState('');
+  const [category, setCategory] = useState<string | null>(null);
+  const [method, setMethod] = useState<PaymentMethod>('bar');
+  const [bookedOn, setBookedOn] = useState(() => new Date().toISOString().slice(0, 10));
+  const [receipt, setReceipt] = useState<{ id: string; name: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const attachReceipt = async () => {
+    try {
+      const file = await pickFile('image');
+      if (!file) return;
+      setUploading(true);
+      const image = await api<UploadedImage>('/media', {
+        method: 'POST',
+        body: { purpose: 'receipt', fileName: file.name, dataBase64: file.dataBase64 },
+      });
+      setReceipt({ id: image.id, name: file.name });
+    } catch (e) {
+      setError(
+        e instanceof RequestError ? e.message : 'Der Beleg konnte nicht hochgeladen werden.',
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
   const [error, setError] = useState<string | null>(null);
 
   const c = cash.data;
@@ -63,6 +107,7 @@ export default function NewBookingScreen() {
   const chosen = catalog.find((f) => f.id === fineType);
   const cents = isFine && chosen ? chosen.amountCents : parseEuro(amount);
   const multi = isFine;
+  const money = current?.value === 'income' || current?.value === 'expense';
 
   const done = (data: TeamCash) => {
     queryClient.setQueryData(['cash', id], data);
@@ -90,6 +135,10 @@ export default function NewBookingScreen() {
               description: description.trim(),
               personId: current!.needsPerson ? persons[0] : null,
               counterparty: current!.needsPerson ? null : counterparty.trim() || null,
+              category: money ? category : null,
+              paymentMethod: current!.value === 'drinks' ? null : method,
+              bookedOn,
+              receiptImageId: money ? (receipt?.id ?? null) : null,
             },
           }),
     onSuccess: done,
@@ -138,6 +187,7 @@ export default function NewBookingScreen() {
             selected={[current.value]}
             onToggle={(v) => {
               setKind(v);
+              setCategory(null);
               setPersons([]);
               setError(null);
             }}
@@ -201,6 +251,36 @@ export default function NewBookingScreen() {
               placeholder="z. B. Sportshop Musterstadt"
               maxLength={120}
             />
+          ) : null}
+          {money ? (
+            <ChoiceChips
+              label="Kategorie"
+              options={(current.value === 'income'
+                ? CASH_INCOME_CATEGORIES
+                : CASH_EXPENSE_CATEGORIES
+              ).map((k) => ({ value: k as string, label: cashCategory(k).label }))}
+              selected={[category ?? (current.value === 'income' ? 'einnahme' : 'ausgabe')]}
+              onToggle={setCategory}
+            />
+          ) : null}
+          {current.value !== 'drinks' ? (
+            <PaymentMethodChips value={method} onChange={setMethod} />
+          ) : null}
+          <DateStepper label="Buchungsdatum" value={bookedOn} onChange={setBookedOn} />
+          {money ? (
+            receipt ? (
+              <Chip tone="success" icon="document-attach" label={`Beleg: ${receipt.name}`} />
+            ) : (
+              <Button
+                label="Beleg fotografieren / anhängen"
+                icon="camera-outline"
+                size="sm"
+                variant="outline"
+                style={{ alignSelf: 'flex-start' }}
+                loading={uploading}
+                onPress={() => void attachReceipt()}
+              />
+            )
           ) : null}
         </Card>
       )}
