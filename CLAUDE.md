@@ -23,6 +23,40 @@ pnpm --filter @clubroof/db generate                # Migration nach Schemaänder
 Datenbanktests brauchen `DATABASE_URL=postgres://clubroof:clubroof@localhost:5432/clubroof`.
 Demo-Logins: siehe `docs/DEMODATEN.md`, Passwort `clubroof-demo`.
 
+## Prüfen und Browsercheck (spart Zeit und Nutzungsbudget)
+
+Nicht jedes Mal neu zusammensetzen – diese Skripte nutzen:
+
+```
+pnpm check                     # Lint + Typprüfung + alle Tests (vor jedem Commit), knappe Ausgabe
+pnpm check --grep="Kasse"      # nur passende API-Tests – schnell beim Entwickeln
+pnpm check --routes            # nach neuen Bildschirmen: typisierte Routen neu erzeugen, dann prüfen
+pnpm browser-check             # Web-Export bauen, API + Web starten, Start/Anmeldung prüfen
+pnpm browser-check scripts/e2e/beispiel.mjs --no-build   # eigene Browserprüfung (Vorlage: beispiel.mjs)
+pnpm browser-check --reset     # vorher Demodaten neu laden
+```
+
+- `pnpm check` startet PostgreSQL selbst und setzt `DATABASE_URL`. **Übersprungene Tests sind ein Fehler**
+  (ohne Datenbank laufen die API-Tests nicht). Vollständige Logs liegen in `.check/`.
+- Beim Entwickeln nur den betroffenen Test (`--grep`); die komplette Prüfung **einmal vor dem Commit**.
+- `scripts/lib/e2e.mjs` bietet `launch()`, `session('trainer')` (angemeldet), `loginAs`, `api`, `text`, `button`
+  und `shot()`. Nach Änderungen an der Oberfläche eine Browserprüfung als Skript schreiben statt von Hand klicken.
+- Der Web-Export ändert sich nur bei App-Änderungen – bei reinen API-Änderungen `--no-build`.
+- Demo-Logins: `admin`, `vorstand`, `trainer`, `spieler`, `eltern`, `kasse`, `mitglied` (`@sv-gruen-weiss.example`).
+
+## Arbeitsweise (Nutzungsbudget)
+
+- **Screenshots nur, wenn sie nötig sind:** neue oder stark geänderte Oberfläche, optische Fragen, Fehler, die nur
+  im Bild sichtbar sind. Bei Backend, Rechten, Logik und kleinen Änderungen genügen Tests und Textprüfungen.
+  Wenn Bilder nötig sind: wenige, zu einer Übersicht zusammengefasst; nicht jedes Bild einzeln ansehen.
+- **Artefakte, wenn sie sinnvoll sind:** wenn Vorstand oder Team etwas ansehen oder entscheiden soll (Entwurfs-
+  oder Schriftvergleiche, Rollen-/Rechteübersicht, Funktionsstand, Klick-Entwürfe) – nicht als Ersatz für Code
+  und nicht zum Sparen. Ein Artefakt kostet so viel wie jede andere Seite.
+- Pro Funktionspaket eine frische Sitzung (`CLAUDE.md` und `docs/` tragen den Stand); Wünsche bündeln;
+  bei Kleinigkeiten ohne Rückfrage nach Vorgabe entscheiden und die Entscheidung benennen.
+- Große Dateien nur ausschnittsweise lesen; mechanische Suche/Auswertung an Hilfsagenten mit kleinerem Modell geben.
+- Das stärkste Modell nur für Sicherheitsprüfung und große Umbauten, sonst Sonnet.
+
 ## Regeln
 
 - Rechte nur **serverseitig** prüfen (`actorCan`, Scopes Verein → Bereich → Mannschaft). Rollen sind Rechtepakete,
@@ -36,5 +70,5 @@ Demo-Logins: siehe `docs/DEMODATEN.md`, Passwort `clubroof-demo`.
 ## Ablauf pro Funktionspaket
 
 1. Paket in `docs/FUNKTIONEN.md` wählen. 2. Verträge in `contract.ts`. 3. Service, Route, Tests.
-2. App-Bildschirme; Web-Build (`pnpm --filter @clubroof/mobile export:web`) und im Browser durchklicken.
-3. Prüfungen (lint, typecheck, test), Doku aktualisieren, committen, pushen.
+2. App-Bildschirme; Browserprüfung als Skript (`pnpm browser-check …`, siehe oben) statt von Hand durchklicken.
+3. `pnpm check`, Doku aktualisieren, committen, pushen.

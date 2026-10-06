@@ -18,7 +18,9 @@
     "db:generate": "pnpm --filter @clubroof/db generate",
     "db:migrate": "pnpm --filter @clubroof/db migrate",
     "db:seed": "pnpm --filter @clubroof/db seed",
-    "db:reset": "pnpm --filter @clubroof/db reset"
+    "db:reset": "pnpm --filter @clubroof/db reset",
+    "check": "node scripts/check.mjs",
+    "browser-check": "node scripts/browser-check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

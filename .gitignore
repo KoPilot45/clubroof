@@ -12,3 +12,4 @@ apps/api/data/
 # Hochgeladene Dateien (lokaler Dateispeicher)
 data/uploads/
 **/data/uploads/
+.check/
