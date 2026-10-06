@@ -148,6 +148,13 @@
       "when": 1791270803590,
       "tag": "0020_equipment_referees",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791285929977,
+      "tag": "0021_coach_team_modules",
+      "breakpoints": true
     }
   ]
 }

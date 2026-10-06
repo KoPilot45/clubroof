@@ -32,7 +32,7 @@ Erzeugt wird er mit `pnpm db:reset` (lokale Datenbank zurücksetzen, Migrationen
 
 ## Demo-Logins
 
-Alle Demo-Logins haben das Passwort `clubroof-demo`.
+Alle Demo-Logins haben das Passwort `clubroof-demo`. Auf der Anmeldeseite (Entwicklungsmodus) füllen die Buttons Admin, Trainer, Spieler, Eltern und Vorstand die Daten aus.
 
 | E-Mail | Person | Perspektive |
 | --- | --- | --- |

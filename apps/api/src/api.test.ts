@@ -1977,6 +1977,46 @@ describe.skipIf(!url)('API', () => {
     });
   });
   describe('Module und Mannschaften verwalten', () => {
+    it('Trainer stellen die Funktionen ihrer Mannschaft selbst ein', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const second = coach.me.teams.find((t) => t.badge === '2.')!;
+      expect(
+        (await get<TeamOverview>(`/teams/${b1.id}`, coach.token)).permissions.manageModules,
+      ).toBe(true);
+      expect(
+        (await get<TeamOverview>(`/teams/${b1.id}`, player.token)).permissions.manageModules,
+      ).toBe(false);
+      const list = await get<TeamModule[]>(`/teams/${b1.id}/modules`, coach.token);
+      expect(list.find((m) => m.key === 'team_tasks')).toMatchObject({
+        enabled: true,
+        lockedBy: null,
+      });
+      expect((await send('GET', `/teams/${b1.id}/modules`, player.token)).status).toBe(403);
+      // In der 2. Mannschaft spielt der Trainer nur – dort darf er nichts einstellen
+      expect(
+        (
+          await send('PUT', `/teams/${second.id}/modules/team_tasks`, coach.token, {
+            enabled: false,
+          })
+        ).status,
+      ).toBe(403);
+      const off = await send<TeamModule[]>(
+        'PUT',
+        `/teams/${b1.id}/modules/team_tasks`,
+        coach.token,
+        {
+          enabled: false,
+        },
+      );
+      expect(off.body.find((m) => m.key === 'team_tasks')!.enabled).toBe(false);
+      expect((await login('trainer')).me.teams.find((t) => t.id === b1.id)!.modules).not.toContain(
+        'team_tasks',
+      );
+      await send('PUT', `/teams/${b1.id}/modules/team_tasks`, coach.token, { enabled: true });
+    });
+
     it('Module je Bereich: Vorgabe für alle Mannschaften, zurück auf Vereinswert', async () => {
       const admin = await login('admin');
       const coach = await login('trainer');
@@ -2083,15 +2123,11 @@ describe.skipIf(!url)('API', () => {
         headers: { authorization: `Bearer ${coach.token}` },
       });
       expect([403, 404]).toContain(stats.statusCode);
-      // Trainer selbst dürfen Module nicht umstellen
+      // Das Trainerteam darf die Module der eigenen Mannschaft wieder einschalten
       expect(
-        (
-          await send('PUT', `/admin/teams/${b1.id}/modules/statistics`, coach.token, {
-            enabled: true,
-          })
-        ).status,
-      ).toBe(403);
-      await send('PUT', `/admin/teams/${b1.id}/modules/statistics`, admin.token, { enabled: true });
+        (await send('PUT', `/teams/${b1.id}/modules/statistics`, coach.token, { enabled: true }))
+          .status,
+      ).toBe(200);
       expect((await get<TeamStats>(`/teams/${b1.id}/stats`, coach.token)).level).toBeDefined();
 
       // Kasse vereinsweit aus → in keiner Mannschaft nutzbar, auch nicht einzeln einschaltbar

@@ -93,6 +93,8 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
       'news.create',
       // Team-News veröffentlichen Trainer ohne Freigabe (Festlegung 06.10.2026)
       'news.publish',
+      // Module der eigenen Mannschaft selbst einstellen (Festlegung 07.10.2026)
+      'teams.modules.manage',
       'polls.manage',
       'documents.manage',
       'cash.read',

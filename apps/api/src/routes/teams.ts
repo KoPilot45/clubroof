@@ -2,6 +2,7 @@ import type {
   EventDetail,
   Facility,
   MyTeamCard,
+  TeamModule,
   RosterEntry,
   TeamCash,
   TeamOverview,
@@ -13,6 +14,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { cashReportLink, createBooking, getTeamCash } from '../services/cash';
 import { cancelEvent, createTeamEvent, updateEvent } from '../services/event-admin';
+import { setTeamModule, teamModulesForCoach } from '../services/modules';
 import { getMyTeams, getRoster, getTeamOverview, getTeamStats } from '../services/teams';
 
 const teamParams = z.object({ teamId: z.uuid() });
@@ -50,6 +52,32 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
       const base = app.config.publicUrl ?? `${request.protocol}://${request.headers.host}`;
       return { url: `${base}/files/${token}`, expiresAt };
     },
+  );
+
+  app.get(
+    '/teams/:teamId/modules',
+    { schema: { params: teamParams } },
+    async (request): Promise<TeamModule[]> =>
+      teamModulesForCoach(app.db, request.actor!, request.params.teamId),
+  );
+
+  app.put(
+    '/teams/:teamId/modules/:key',
+    {
+      schema: {
+        params: teamParams.extend({ key: z.string().max(40) }),
+        body: z.object({ enabled: z.boolean() }),
+      },
+    },
+    async (request): Promise<TeamModule[]> =>
+      setTeamModule(
+        app.db,
+        request.actor!,
+        request.params.teamId,
+        request.params.key,
+        request.body.enabled,
+        app.now(),
+      ),
   );
 
   app.get('/my-teams', async (request): Promise<MyTeamCard[]> =>

@@ -18,6 +18,7 @@ export const PERMISSIONS = {
 
   // Mannschaften & Sport
   'teams.manage': 'Mannschaften anlegen und konfigurieren',
+  'teams.modules.manage': 'Module der eigenen Mannschaft ein- und ausschalten',
   'teams.season.plan': 'Saisonplanung und Kadergrößen',
   'teams.transfers.manage': 'Spielerbewegungen verwalten',
   'squad.manage': 'Kader, Aufstellung und Nominierungen verwalten',

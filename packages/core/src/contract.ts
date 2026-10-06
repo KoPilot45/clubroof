@@ -301,6 +301,8 @@ export type TeamPermissions = {
   manageCash: boolean;
   /** Spielerbedarf melden, Spieler anbieten und abstellen (Gastspielerbörse) */
   manageDemand: boolean;
+  /** Module der Mannschaft ein- und ausschalten */
+  manageModules: boolean;
 };
 
 export type MatchResult = {
@@ -931,6 +933,8 @@ export type TeamModule = {
   description: string;
   /** Auf Vereinsebene eingeschaltet – sonst in der Mannschaft nicht nutzbar */
   clubEnabled: boolean;
+  /** Im Verein bzw. Bereich ausgeschaltet – dann in der Mannschaft nicht einschaltbar */
+  lockedBy: 'club' | 'unit' | null;
   enabled: boolean;
   /** Keine eigene Einstellung der Mannschaft, Wert kommt von Verein/Bereich */
   inherited: boolean;

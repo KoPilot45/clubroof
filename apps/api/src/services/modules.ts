@@ -193,6 +193,7 @@ async function loadTeam(db: Db, actor: Actor, teamId: string) {
 
 export const mayConfigureTeam = (actor: Actor, team: { id: string; orgUnitId: string }) =>
   can(actor.grants, 'teams.manage', { teamId: team.id, orgUnitId: team.orgUnitId }) ||
+  can(actor.grants, 'teams.modules.manage', { teamId: team.id, orgUnitId: team.orgUnitId }) ||
   actorCan(actor, 'club.modules.manage');
 
 export async function teamModules(db: Db, actor: Actor, teamId: string): Promise<TeamModule[]> {
@@ -208,6 +209,11 @@ export async function teamModules(db: Db, actor: Actor, teamId: string): Promise
       name: m.name,
       description: m.description,
       clubEnabled: resolveModule(settings, m.key).enabled,
+      lockedBy: !resolveModule(settings, m.key).enabled
+        ? ('club' as const)
+        : !resolveModule(settings, m.key, { orgUnitId: team.orgUnitId }).enabled
+          ? ('unit' as const)
+          : null,
       enabled: resolveModule(settings, m.key, { teamId: team.id, orgUnitId: team.orgUnitId })
         .enabled,
       inherited: !own,
@@ -299,6 +305,7 @@ export async function unitModules(db: Db, actor: Actor, unitId: string): Promise
     name: m.name,
     description: m.description,
     clubEnabled: resolveModule(settings, m.key).enabled,
+    lockedBy: resolveModule(settings, m.key).enabled ? null : ('club' as const),
     enabled: resolveModule(settings, m.key, { orgUnitId: unit.id }).enabled,
     inherited: !rows.some(
       (r) => r.moduleKey === m.key && r.scopeType === 'org_unit' && r.scopeId === unit.id,
@@ -358,4 +365,16 @@ export async function setUnitModule(
     { module: key, orgUnitId: unit.id },
   );
   return unitModules(db, actor, unit.id);
+}
+
+/** Module einer Mannschaft für Trainerteam bzw. Verwaltung (Recht wie beim Einstellen). */
+export async function teamModulesForCoach(
+  db: Db,
+  actor: Actor,
+  teamId: string,
+): Promise<TeamModule[]> {
+  const team = await loadTeam(db, actor, teamId);
+  if (!mayConfigureTeam(actor, team))
+    throw forbidden('Die Module der Mannschaft stellt das Trainerteam ein.');
+  return teamModules(db, actor, teamId);
 }

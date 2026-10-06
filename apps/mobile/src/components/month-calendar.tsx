@@ -18,6 +18,7 @@ export function MonthCalendar({
   selected,
   onSelect,
   onMonth,
+  colorOf,
 }: {
   /** Erster Tag des Monats (lokal) */
   month: Date;
@@ -25,6 +26,8 @@ export function MonthCalendar({
   selected: string | null;
   onSelect: (day: string) => void;
   onMonth: (delta: number) => void;
+  /** Farbe je Termin (z. B. nach Terminart); ohne Angabe: Vereinstermine in Vereinsfarbe */
+  colorOf?: (event: EventSummary) => string;
 }) {
   const { colors, radii } = useTheme();
   const first = new Date(month.getFullYear(), month.getMonth(), 1);
@@ -82,7 +85,6 @@ export function MonthCalendar({
             const k = dayKey(d);
             const list = byDay.get(k) ?? [];
             const active = k === selected;
-            const club = list.some((e) => e.team === null);
             return (
               <Pressable
                 key={k}
@@ -110,30 +112,31 @@ export function MonthCalendar({
                   {d.getDate()}
                 </T>
                 <View style={{ flexDirection: 'row', gap: 2, height: 6 }}>
-                  {list.length ? (
-                    <View
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: 3,
-                        backgroundColor: active
-                          ? colors.onPrimary
-                          : club
+                  {[
+                    ...new Set(
+                      list.map((e) =>
+                        colorOf
+                          ? colorOf(e)
+                          : e.team === null
                             ? colors.primaryText
                             : colors.onSurfaceMuted,
-                      }}
-                    />
-                  ) : null}
-                  {list.length > 1 ? (
-                    <View
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: 3,
-                        backgroundColor: active ? colors.onPrimary : colors.onSurfaceMuted,
-                      }}
-                    />
-                  ) : null}
+                      ),
+                    ),
+                  ]
+                    .slice(0, 3)
+                    .map((c) => (
+                      <View
+                        key={c}
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: 3,
+                          backgroundColor: c,
+                          borderWidth: active ? 1 : 0,
+                          borderColor: colors.onPrimary,
+                        }}
+                      />
+                    ))}
                 </View>
               </Pressable>
             );

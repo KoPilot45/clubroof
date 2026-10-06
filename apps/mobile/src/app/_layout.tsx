@@ -36,6 +36,10 @@ function Navigator() {
       >
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="events/index"
+            options={{ headerShown: true, title: 'Alle Termine' }}
+          />
           <Stack.Screen name="events/[id]" options={{ headerShown: true, title: 'Termin' }} />
           <Stack.Screen
             name="notifications"
@@ -143,6 +147,10 @@ function Navigator() {
           <Stack.Screen
             name="match/[id]/report"
             options={{ headerShown: true, title: 'Spielbericht' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/modules"
+            options={{ headerShown: true, title: 'Funktionen der Mannschaft' }}
           />
           <Stack.Screen
             name="teams/[id]/tasks"

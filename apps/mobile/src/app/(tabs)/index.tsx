@@ -144,7 +144,7 @@ export default function HomeScreen() {
         <Section
           title="Nächste Termine"
           action="Alle anzeigen"
-          onAction={() => router.push('/team')}
+          onAction={() => router.push('/termine')}
         >
           <Card>
             {data.upcoming.length === 0 ? (

@@ -186,9 +186,6 @@ export default function ClubScreen() {
           },
         ]
       : []),
-    ...(has('forum')
-      ? [{ key: 'forum', label: 'Austausch', icon: 'chatbubbles' as const, soon: true }]
-      : []),
   ];
 
   return (

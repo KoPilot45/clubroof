@@ -14,6 +14,10 @@ export function teamPermissions(actor: Actor, team: TeamRow): TeamPermissions {
     readCash: actorCan(actor, 'cash.read', team),
     manageCash: actorCan(actor, 'cash.manage', team),
     manageDemand: actorCan(actor, 'squad.demand.manage', team),
+    manageModules:
+      actorCan(actor, 'teams.modules.manage', team) ||
+      actorCan(actor, 'teams.manage', team) ||
+      actorCan(actor, 'club.modules.manage'),
   };
 }
 

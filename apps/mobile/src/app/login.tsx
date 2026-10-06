@@ -9,6 +9,7 @@ import { useSession } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
 const DEMO_ACCOUNTS = [
+  { label: 'Admin', email: 'admin@sv-gruen-weiss.example' },
   { label: 'Trainer', email: 'trainer@sv-gruen-weiss.example' },
   { label: 'Spieler', email: 'spieler@sv-gruen-weiss.example' },
   { label: 'Eltern', email: 'eltern@sv-gruen-weiss.example' },

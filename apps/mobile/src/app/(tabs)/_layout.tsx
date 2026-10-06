@@ -31,6 +31,10 @@ export default function TabLayout() {
         options={{ title: 'Team', tabBarIcon: icon('people-outline', 'people') }}
       />
       <Tabs.Screen
+        name="termine"
+        options={{ title: 'Termine', tabBarIcon: icon('calendar-outline', 'calendar') }}
+      />
+      <Tabs.Screen
         name="verein"
         options={{ title: 'Verein', tabBarIcon: icon('shield-outline', 'shield') }}
       />

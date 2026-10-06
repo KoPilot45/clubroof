@@ -120,6 +120,16 @@ export default function TeamScreen() {
               },
             ]
           : []),
+        ...(o?.permissions.manageModules
+          ? [
+              {
+                key: 'modules',
+                label: 'Funktionen',
+                icon: 'options' as const,
+                onPress: () => router.push(`/teams/${team.id}/modules`),
+              },
+            ]
+          : []),
         ...(has('team_tasks')
           ? [
               {
@@ -160,9 +170,6 @@ export default function TeamScreen() {
                 onPress: () => router.push('/exchange'),
               },
             ]
-          : []),
-        ...(has('training_planning')
-          ? [{ key: 'training', label: 'Trainingsplanung', icon: 'clipboard' as const, soon: true }]
           : []),
       ]
     : [];

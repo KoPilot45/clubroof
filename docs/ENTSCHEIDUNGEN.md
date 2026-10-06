@@ -5,6 +5,8 @@ Neue Entscheidungen werden oben ergänzt.
 
 | Datum | Festlegung | Folge für die Umsetzung |
 | --- | --- | --- |
+| 07.10.2026 | **Trainer stellen die Funktionen ihrer Mannschaft selbst ein** (neues Recht „Module der eigenen Mannschaft“ für die Rolle Trainer). Was Verein oder Bereich ausgeschaltet haben, bleibt aus. | Team → Kachel „Funktionen“. Migration `0021_coach_team_modules` ergänzt das Recht bei bestehenden Vereinen (Trainer und Fulladmin). |
+| 07.10.2026 | **Fünfter Hauptpunkt „Termine“:** die nächsten drei eigenen Termine, „Alle anzeigen“ (nach Wochen, filterbar) und ein Monatskalender, in dem die Terminarten farbig mit Legende unterschieden werden. | Reihenfolge der Hauptnavigation: Home · Team · Termine · Verein · Mehr. |
 | 06.10.2026 | **Optionale Module ohne Dauer-Chat:** Forum nur mit wenigen Themen, die nach einer Laufzeit schließen; Rückfragen bei Fundbüro/Marktplatz und Freigaben laufen als Kommentar am Vorgang. Telefonnummern werden dabei nie angezeigt. | Moderation durch alle mit vereinsweitem „News freigeben“. Neue Module „Marktplatz“, „Vereinswissen“, „Anlage & Material“, „Schiedsrichter“ erscheinen bei bestehenden Vereinen im Update-Center. |
 | 06.10.2026 | **Kalenderexport als geheimer Abo-Link** statt Export-Datei. | Kalender holen Änderungen selbst ab; der Link enthält keine Teilnehmerdaten und lässt sich jederzeit erneuern. |
 | 06.10.2026 | **Verwaltung als „App in der App“:** eigene Kopfzeile mit „Beenden“ und eigene untere Navigation, die Einträge richten sich nach den Rechten. | Alle Verwaltungsbildschirme liegen unter `app/admin` mit eigenem Layout; Trainer erreichen News-Redaktion und Einladungen weiter direkt aus „Mehr“. |

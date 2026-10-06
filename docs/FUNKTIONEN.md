@@ -15,7 +15,7 @@ Stand: 05.10.2026
 
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
-| Vier Bereiche: Home, Team, Verein, Mehr | M 1, K 2 | ✅ | |
+| Hauptbereiche: Home, Team, Termine, Verein, Mehr | M 1, K 2 | ✅ | „Termine“ als fünfter Punkt (Festlegung 07.10.2026) |
 | Vereinsfarbe (5 Farben) und Wappen in der ganzen App | M 10, K 8 | ✅ | Verwaltung → Verein & Design: Logo, Name, Farbe, Darstellung; ohne Logo erscheint ein Wappen mit Kürzel |
 | Hell / dunkel / automatisch | K 8 | ✅ | |
 | Farben mit Bedeutung (dringend, Aktion, Info, erledigt, archiviert) | K 2 | ✅ | |
@@ -162,7 +162,7 @@ Stand: 05.10.2026
 | --- | --- | --- | --- |
 | Vereins-Ersteinrichtung als Assistent (Name, Logo, Farbe, Bereiche, Admins) | M 10, K 8 | ✅ | Auf leerem Server mit Einrichtungscode (`SETUP_TOKEN`): Verein, Farbe, Bereiche, erstes Admin-Konto; Bereiche später unter Verein & Design |
 | Mannschafts-Einrichtung mit Vorlagen (leistungsorientiert, klassisch, Jugend, Freizeit) | M 10, K 8 | ✅ | Vorlage setzt die Mannschaftsmodule; danach je Modul änderbar |
-| Module je Verein / Bereich / Mannschaft mit Vererbung | K 4, 8 | ✅ | Alle drei Ebenen in der App; Bereich: an, aus oder wie Verein |
+| Module je Verein / Bereich / Mannschaft mit Vererbung | K 4, 8 | ✅ | Alle drei Ebenen in der App; Bereich: an, aus oder wie Verein; Trainer stellen ihre Mannschaft selbst ein (Team → Funktionen) |
 | Update-Center: „Einrichten / Später / Nicht verwenden“ | M 17, K 13 | ✅ | „Später“ blendet 14 Tage aus; neue Module erscheinen automatisch |
 | Einladungen per Link / QR-Code mit Freigabe | M 10, K 8 | ✅ | Persönliche Einladung per E-Mail oder Mannschafts-Link/QR-Code; Selbstregistrierung (auch Eltern mit Kind) mit Freigabe durch Trainer bzw. Verwaltung |
 
