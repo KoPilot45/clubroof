@@ -91,6 +91,8 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
       'attendance.override',
       'absences.read',
       'news.create',
+      // Team-News veröffentlichen Trainer ohne Freigabe (Festlegung 06.10.2026)
+      'news.publish',
       'polls.manage',
       'documents.manage',
       'cash.read',

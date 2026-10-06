@@ -220,7 +220,7 @@ describe.skipIf(!url)('API', () => {
       const { token, me } = await login('vorstand');
       expect(me.canAdminister).toBe(true);
       const home = await get<HomeResponse>('/home', token);
-      expect(home.clubOverview).toMatchObject({ teams: 11, pendingApprovals: 2 });
+      expect(home.clubOverview).toMatchObject({ teams: 11, pendingApprovals: 1 });
       expect(home.clubOverview!.members).toBeGreaterThan(300);
       expect(home.actions.some((a) => a.kind === 'approval')).toBe(true);
     });
@@ -1501,7 +1501,7 @@ describe.skipIf(!url)('API', () => {
       action,
     });
 
-    it('Trainer schreiben für ihre Mannschaft und reichen zur Freigabe ein', async () => {
+    it('Trainer veröffentlichen News für ihre Mannschaft ohne Freigabe', async () => {
       const spieler = await login('spieler');
       const denied = await app.inject({
         method: 'GET',
@@ -1511,19 +1511,35 @@ describe.skipIf(!url)('API', () => {
       expect(denied.statusCode).toBe(403);
 
       const coach = await login('trainer');
-      expect(coach.me.news).toEqual({ write: true, publish: false });
+      expect(coach.me.news).toEqual({ write: true, publish: true });
       const overview = await get<EditorialOverview>('/editorial/news', coach.token);
       expect(overview.scopes.map((sc) => sc.label).sort()).toEqual([
         'B1 · B-Jugend',
         'C1 · C-Jugend',
       ]);
-      expect(overview.scopes.every((sc) => !sc.canPublish)).toBe(true);
-      expect(overview.mine.map((n) => n.status).sort()).toEqual(['draft', 'pending_approval']);
-      expect(overview.toApprove).toHaveLength(0);
+      expect(overview.scopes.every((sc) => sc.canPublish)).toBe(true);
+      expect(overview.mine.map((n) => n.status)).toEqual(['draft']);
 
       const b1 = overview.scopes.find((sc) => sc.label.startsWith('B1'))!;
-      const direct = await send('POST', '/editorial/news', coach.token, draft(b1.id!, 'publish'));
-      expect(direct.status).toBe(403);
+      const direct = await send<EditorialNews>(
+        'POST',
+        '/editorial/news',
+        coach.token,
+        draft(b1.id!, 'publish'),
+      );
+      expect(direct.status).toBe(201);
+      expect(direct.body.status).toBe('published');
+      // Sichtbar für die B-Jugend, nicht für andere Mannschaften
+      expect(
+        (await get<NewsItem[]>('/news', spieler.token)).some((n) => n.id === direct.body.id),
+      ).toBe(true);
+      const parentNews = await get<NewsItem[]>('/news', (await login('eltern')).token);
+      expect(parentNews.some((n) => n.id === direct.body.id)).toBe(false);
+      expect((await send('DELETE', `/editorial/news/${direct.body.id}`, coach.token)).status).toBe(
+        204,
+      );
+
+      // Vereinsnews bleiben dem Vorstand vorbehalten
       const club = await send('POST', '/editorial/news', coach.token, {
         ...draft(b1.id!, 'submit'),
         scopeType: 'club',
@@ -1533,15 +1549,32 @@ describe.skipIf(!url)('API', () => {
     });
 
     it('Freigabe mit Rückgabe, Überarbeitung und Veröffentlichung', async () => {
-      const coach = await login('trainer');
+      // Platzverantwortliche schreiben Vereinsnews, brauchen aber eine Freigabe
+      const admin = await login('admin');
       const board = await login('vorstand');
-      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const writer = await login('spieler');
+      const assigned = await send<MemberDetail>(
+        'POST',
+        `/admin/members/${writer.me.person.id}/roles`,
+        admin.token,
+        { roleKey: 'facility_manager', scopeType: 'club' },
+      );
+      const role = assigned.body.roles.find((r) => r.roleKey === 'facility_manager')!;
+      const clubDraft = (action: string) => ({
+        ...draft('', action),
+        title: 'Platzsperre Kunstrasen',
+        scopeType: 'club',
+        scopeId: null,
+      });
+      expect(
+        (await send('POST', '/editorial/news', writer.token, clubDraft('publish'))).status,
+      ).toBe(403);
 
       const submitted = await send<EditorialNews>(
         'POST',
         '/editorial/news',
-        coach.token,
-        draft(b1.id, 'submit'),
+        writer.token,
+        clubDraft('submit'),
       );
       expect(submitted.status).toBe(201);
       expect(submitted.body.status).toBe('pending_approval');
@@ -1552,27 +1585,29 @@ describe.skipIf(!url)('API', () => {
       expect(boardNotes.some((n) => n.link === `/admin/news/${id}`)).toBe(true);
       const queue = await get<EditorialOverview>('/editorial/news', board.token);
       expect(queue.toApprove.some((n) => n.id === id)).toBe(true);
-      // Trainer kann nicht selbst freigeben
-      expect((await send('POST', `/editorial/news/${id}/approve`, coach.token)).status).toBe(403);
+      // Autor kann nicht selbst freigeben, Trainer auch nicht (nur Team-News)
+      expect((await send('POST', `/editorial/news/${id}/approve`, writer.token)).status).toBe(403);
+      expect(
+        (await send('POST', `/editorial/news/${id}/approve`, (await login('trainer')).token))
+          .status,
+      ).not.toBe(200);
 
       const rejected = await send<EditorialNews>(
         'POST',
         `/editorial/news/${id}/reject`,
         board.token,
-        {
-          note: 'Bitte das Ergebnis des Finales ergänzen.',
-        },
+        { note: 'Bitte den Zeitraum ergänzen.' },
       );
       expect(rejected.body).toMatchObject({
         status: 'draft',
-        reviewNote: 'Bitte das Ergebnis des Finales ergänzen.',
+        reviewNote: 'Bitte den Zeitraum ergänzen.',
       });
-      const coachNotes = await get<NotificationItem[]>('/notifications', coach.token);
-      expect(coachNotes.some((n) => n.title === 'News zurückgegeben')).toBe(true);
+      const writerNotes = await get<NotificationItem[]>('/notifications', writer.token);
+      expect(writerNotes.some((n) => n.title === 'News zurückgegeben')).toBe(true);
 
-      const resubmitted = await send<EditorialNews>('PUT', `/editorial/news/${id}`, coach.token, {
-        ...draft(b1.id, 'submit'),
-        body: 'Unsere B-Jugend hat das Hallenturnier gewonnen – Finale 3:0.',
+      const resubmitted = await send<EditorialNews>('PUT', `/editorial/news/${id}`, writer.token, {
+        ...clubDraft('submit'),
+        body: 'Der Kunstrasen ist vom 12. bis 14.10. gesperrt.',
       });
       expect(resubmitted.body.status).toBe('pending_approval');
       expect(resubmitted.body.reviewNote).toBeNull();
@@ -1583,19 +1618,14 @@ describe.skipIf(!url)('API', () => {
         board.token,
       );
       expect(approved.body.status).toBe('published');
-
-      // Sichtbar für die B-Jugend, nicht für andere Mannschaften
-      const playerNews = await get<NewsItem[]>('/news', (await login('spieler')).token);
-      expect(playerNews.some((n) => n.id === id)).toBe(true);
       const parentNews = await get<NewsItem[]>('/news', (await login('eltern')).token);
-      expect(parentNews.some((n) => n.id === id)).toBe(false);
+      expect(parentNews.some((n) => n.id === id)).toBe(true);
 
-      // Nach der Veröffentlichung darf der Trainer nicht mehr ändern, der Vorstand zieht zurück
-      const late = await send('PUT', `/editorial/news/${id}`, coach.token, draft(b1.id, 'draft'));
+      // Nach der Veröffentlichung darf der Autor nicht mehr ändern, der Vorstand zieht zurück
+      const late = await send('PUT', `/editorial/news/${id}`, writer.token, clubDraft('draft'));
       expect(late.status).toBe(403);
       expect((await send('DELETE', `/editorial/news/${id}`, board.token)).status).toBe(204);
-      const after = await get<NewsItem[]>('/news', (await login('spieler')).token);
-      expect(after.some((n) => n.id === id)).toBe(false);
+      await send('DELETE', `/admin/members/${writer.me.person.id}/roles/${role.id}`, admin.token);
     });
 
     it('dringende Vereinsnews benachrichtigt alle, fremde Entwürfe bleiben privat', async () => {

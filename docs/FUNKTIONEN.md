@@ -108,7 +108,7 @@ Stand: 05.10.2026
 | Lesebestätigung (optional) | K 11 | 🟡 | Lesen wird je Person erfasst; Anzeige für Verfasser folgt |
 | Umfragen beantworten, Frist, Ergebnis (ggf. erst nach Fristende) | M 13, K 11 | ✅ | Stimme änderbar bis Fristende |
 | Anfragen / Freigaben mit zielgerichteten Kommentaren | K 11 | ⬜ | |
-| News und Umfragen erstellen, Freigabe-Workflow | M 8, K 6 | ✅ | News mit Bild: Schreiben je Bereich, Einreichen, Freigeben oder mit Rückmeldung zurückgeben, Korrigieren, Zurückziehen. Umfragen: Erstellen je Bereich (2–10 Antworten, Frist, Sichtbarkeit), vorzeitig beenden; Beteiligte werden benachrichtigt |
+| News und Umfragen erstellen, Freigabe-Workflow | M 8, K 6 | ✅ | News mit Bild: Schreiben je Bereich, Einreichen, Freigeben oder mit Rückmeldung zurückgeben, Korrigieren, Zurückziehen; Trainer veröffentlichen Team-News direkt. Umfragen: Erstellen je Bereich (2–10 Antworten, Frist, Sichtbarkeit), vorzeitig beenden; Beteiligte werden benachrichtigt |
 | Kein Gruppenchat (bewusst) | K 1, 11 | ✅ | Grundsatz |
 
 ## 8. Benachrichtigungen

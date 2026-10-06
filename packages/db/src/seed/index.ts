@@ -1340,11 +1340,11 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         priority: 'info',
         authorPersonId: official.youthDirector.id,
       }),
-      // Trainer darf schreiben, aber nicht selbst veröffentlichen → wartet auf Jugendleitung/Vorstand
+      // Trainer veröffentlichen News für ihre Mannschaft selbst (Festlegung 06.10.2026)
       news({
         scopeType: 'team',
         scopeId: teamIds.b1,
-        status: 'pending_approval',
+        publishedAt: hoursAgo(20),
         title: 'B1: Trikotsponsor gefunden',
         teaser: 'Autohaus Sonnenberg unterstützt uns ab sofort.',
         body: 'Ab dem nächsten Heimspiel laufen wir mit neuen Trikots auf. Danke an das Autohaus Sonnenberg für die Unterstützung!',
