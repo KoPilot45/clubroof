@@ -162,6 +162,8 @@ export type EventDetail = EventSummary & {
    * die erfasste Anwesenheit statt der Zusage für die Trainingsquote. null bei Vereinsterminen.
    */
   attendanceCheck: { recordedAt: string | null; canRecord: boolean } | null;
+  /** Fahrgemeinschaften bei Auswärtsspielen und Turnieren; sonst null */
+  carpool: Carpool | null;
   /** Freiwillige Teilnahme an Vereinsveranstaltungen; null bei Mannschaftsterminen */
   attendance: { attending: boolean; count: number } | null;
   /** Helferschichten der Veranstaltung */
@@ -170,6 +172,29 @@ export type EventDetail = EventSummary & {
   lastChange: { at: string; items: EventChange[] } | null;
   /** Für das Bearbeiten (nur mit Recht gefüllt) */
   edit: { facilityId: string | null; locationText: string | null; seriesFollowing: number } | null;
+};
+
+export type CarpoolOffer = {
+  id: string;
+  driverName: string;
+  seats: number;
+  free: number;
+  note: string | null;
+  passengers: { personId: string; name: string; mine: boolean }[];
+  /** Ich fahre selbst */
+  mine: boolean;
+  /** Ich darf das Angebot zurückziehen (Fahrer oder Trainerteam) */
+  canWithdraw: boolean;
+};
+
+export type Carpool = {
+  offers: CarpoolOffer[];
+  /** „Mitfahrt gesucht“ */
+  requests: { personId: string; name: string; note: string | null; mine: boolean }[];
+  /** Ich (bzw. mein Kind), die mitfahren könnten – Teilnehmer des Termins */
+  riders: { personId: string; firstName: string }[];
+  /** Vor Beginn: Fahrten anbieten und buchen */
+  open: boolean;
 };
 
 export type HelperShift = {

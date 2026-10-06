@@ -24,6 +24,7 @@ import {
 } from '@/components/ui';
 import { formatLongDate, formatRemaining, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
+import { CarpoolSection } from '@/components/carpool';
 import { MatchSection } from '@/components/match';
 import { TrainingPlanSection } from '@/components/training-plan';
 import { useSignedIn } from '@/lib/session';
@@ -591,6 +592,8 @@ export default function EventScreen() {
 
           {e.type === 'match' && e.team ? <MatchSection event={e} /> : null}
           <TrainingPlanSection event={e} />
+
+          {e.carpool ? <CarpoolSection event={e} /> : null}
 
           {e.attendanceCheck && (e.attendanceCheck.canRecord || e.attendanceCheck.recordedAt) ? (
             <AttendanceCheckCard event={e} />

@@ -22,12 +22,13 @@ import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { coachUsers, digestAt } from '../notify/coaches';
 import { deliver } from '../notify/deliver';
+import { carpoolFor } from './carpool';
 import { OPEN_EVENT_TYPES, attendanceFor, shiftsFor } from './helpers';
 
 /** Wie lange Trainer Rückmeldungen nach Terminbeginn noch korrigieren dürfen. */
 const OVERRIDE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
-type EventRow = Awaited<ReturnType<typeof fetchEventRows>>[number];
+export type EventRow = Awaited<ReturnType<typeof fetchEventRows>>[number];
 
 export async function fetchEventRows(db: Db, where: SQL | undefined, limit?: number) {
   const query = db
@@ -171,7 +172,7 @@ export function toDeadlineRule(
   return null;
 }
 
-async function loadVisibleEvent(db: Db, actor: Actor, eventId: string): Promise<EventRow> {
+export async function loadVisibleEvent(db: Db, actor: Actor, eventId: string): Promise<EventRow> {
   const [row] = await fetchEventRows(
     db,
     and(eq(s.events.id, eventId), eq(s.events.clubId, actor.club.id)),
@@ -265,6 +266,7 @@ export async function getEventDetail(
     canManage: row.team !== null && actorCan(actor, 'events.manage', row.team),
     canOverride: canOverride(actor, row),
     program: row.event.program ?? [],
+    carpool: await carpoolFor(db, actor, row, now),
     attendanceCheck:
       row.team !== null && row.event.status === 'scheduled'
         ? {

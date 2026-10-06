@@ -1186,6 +1186,42 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     });
     await insertChunked(tx, s.eventParticipants, participants);
 
+    // ── Fahrgemeinschaft zum nächsten Auswärtsspiel der B-Jugend ──────────────────────────
+    if (nextB1Match) {
+      const riders = participants.filter(
+        (p) =>
+          p.eventId === nextB1Match.id &&
+          p.role === 'player' &&
+          p.status === 'yes' &&
+          p.personId !== persona.player.id,
+      );
+      const offerId = randomUUID();
+      await tx.insert(s.carpoolOffers).values({
+        id: offerId,
+        clubId,
+        eventId: nextB1Match.id,
+        driverPersonId: persona.coach.id,
+        seats: 3,
+        note: 'Abfahrt 13:15 am Vereinsheim',
+      });
+      if (riders[0]) {
+        await tx.insert(s.carpoolPassengers).values({
+          clubId,
+          offerId,
+          eventId: nextB1Match.id,
+          personId: riders[0].personId,
+        });
+      }
+      if (riders[1]) {
+        await tx.insert(s.carpoolRequests).values({
+          clubId,
+          eventId: nextB1Match.id,
+          personId: riders[1].personId,
+          note: 'Wohnt in Kleefeld',
+        });
+      }
+    }
+
     // ── Aufstellungen und Spielberichte vergangener Spiele ────────────────────────────────
     const lineups: Insert<typeof s.matchLineups>[] = [];
     const incidents: Insert<typeof s.matchIncidents>[] = [];

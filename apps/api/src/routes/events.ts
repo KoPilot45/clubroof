@@ -1,6 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import type { EventDetail, EventSummary } from '@clubroof/core';
+import type { Carpool, EventDetail, EventSummary } from '@clubroof/core';
 import { HttpError } from '../errors';
 import {
   fetchEventRows,
@@ -9,6 +9,7 @@ import {
   recordAttendance,
   summarizeEvents,
 } from '../services/events';
+import { joinRide, leaveRide, offerRide, setRideRequest, withdrawOffer } from '../services/carpool';
 import { myEventsCondition } from '../services/home';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -81,6 +82,64 @@ export const eventRoutes: FastifyPluginAsyncZod = async (app) => {
         request.actor!,
         request.params.eventId,
         request.body.present,
+        app.now(),
+      ),
+  );
+
+  // ── Fahrgemeinschaften ─────────────────────────────────────────────────
+  const offerParams = z.object({ offerId: z.uuid() });
+
+  app.put(
+    '/events/:eventId/carpool/offer',
+    {
+      schema: {
+        params: z.object({ eventId: z.uuid() }),
+        body: z.object({
+          seats: z.number().int().min(1).max(8),
+          note: z.string().trim().max(120).nullish(),
+        }),
+      },
+    },
+    async (request): Promise<Carpool> =>
+      offerRide(app.db, request.actor!, request.params.eventId, request.body, app.now()),
+  );
+
+  app.delete(
+    '/carpool/offers/:offerId',
+    { schema: { params: offerParams } },
+    async (request): Promise<Carpool> =>
+      withdrawOffer(app.db, request.actor!, request.params.offerId, app.now()),
+  );
+
+  app.put(
+    '/carpool/offers/:offerId/passengers/:personId',
+    { schema: { params: offerParams.extend({ personId: z.uuid() }) } },
+    async (request): Promise<Carpool> =>
+      joinRide(app.db, request.actor!, request.params.offerId, request.params.personId, app.now()),
+  );
+
+  app.delete(
+    '/carpool/offers/:offerId/passengers/:personId',
+    { schema: { params: offerParams.extend({ personId: z.uuid() }) } },
+    async (request): Promise<Carpool> =>
+      leaveRide(app.db, request.actor!, request.params.offerId, request.params.personId, app.now()),
+  );
+
+  app.put(
+    '/events/:eventId/carpool/requests/:personId',
+    {
+      schema: {
+        params: z.object({ eventId: z.uuid(), personId: z.uuid() }),
+        body: z.object({ looking: z.boolean(), note: z.string().trim().max(120).nullish() }),
+      },
+    },
+    async (request): Promise<Carpool> =>
+      setRideRequest(
+        app.db,
+        request.actor!,
+        request.params.eventId,
+        request.params.personId,
+        request.body,
         app.now(),
       ),
   );

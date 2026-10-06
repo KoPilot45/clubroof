@@ -186,3 +186,68 @@ export const absences = pgTable(
   },
   (t) => [index().on(t.clubId), index().on(t.personId, t.startsOn)],
 );
+
+/** Fahrgemeinschaft: Jemand fährt zu einem Auswärtstermin und bietet Plätze an. */
+export const carpoolOffers = pgTable(
+  'carpool_offers',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    eventId: uuid()
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    driverPersonId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    seats: smallint().notNull(),
+    /** z. B. „Abfahrt 12:30 am Vereinsheim“ */
+    note: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId), unique().on(t.eventId, t.driverPersonId)],
+);
+
+/** Mitfahrer in einer Fahrgemeinschaft (Spieler, auch Kinder über ihre Eltern). */
+export const carpoolPassengers = pgTable(
+  'carpool_passengers',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    offerId: uuid()
+      .notNull()
+      .references(() => carpoolOffers.id, { onDelete: 'cascade' }),
+    eventId: uuid()
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    createdAt: createdAt(),
+  },
+  // Je Termin fährt eine Person nur in einem Auto mit
+  (t) => [index().on(t.offerId), unique().on(t.eventId, t.personId)],
+);
+
+/** „Mitfahrt gesucht“ für einen Termin. */
+export const carpoolRequests = pgTable(
+  'carpool_requests',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    eventId: uuid()
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    note: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId), unique().on(t.eventId, t.personId)],
+);

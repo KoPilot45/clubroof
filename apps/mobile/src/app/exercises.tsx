@@ -2,8 +2,11 @@ import {
   EXERCISE_CATEGORIES,
   type CreateExerciseInput,
   type Exercise,
+  type EventSummary,
   type ExerciseCategory,
+  type TrainingPlan,
 } from '@clubroof/core';
+import { router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -25,12 +28,101 @@ import { CATEGORY_LABELS } from '@/lib/training';
 
 const categories = EXERCISE_CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }));
 
+const when = new Intl.DateTimeFormat('de-DE', {
+  weekday: 'short',
+  day: '2-digit',
+  month: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+/** Übung ans Ende des Ablaufs eines der nächsten Trainings meiner Mannschaften hängen. */
+function AddToTraining({ exercise, onDone }: { exercise: Exercise; onDone: () => void }) {
+  const { api, me } = useSignedIn();
+  const queryClient = useQueryClient();
+  const coached = new Set(
+    me.teams
+      .filter((t) => t.personId === me.person.id && t.functions.some((f) => f !== 'player'))
+      .map((t) => t.id),
+  );
+  const events = useQuery({ queryKey: ['events'], queryFn: () => api<EventSummary[]>('/events') });
+  const trainings = (events.data ?? [])
+    .filter((ev) => ev.type === 'training' && ev.status === 'scheduled')
+    .filter((ev) => ev.team && coached.has(ev.team.id))
+    .slice(0, 5);
+  const add = useMutation({
+    mutationFn: async (eventId: string) => {
+      const plan = await api<TrainingPlan>(`/events/${eventId}/training-plan`);
+      const items = (plan.items ?? []).map((i) => ({
+        exerciseId: i.exerciseId,
+        title: i.title,
+        minutes: i.minutes,
+        note: i.note,
+      }));
+      items.push({
+        exerciseId: exercise.id,
+        title: exercise.title,
+        minutes: exercise.durationMinutes,
+        note: null,
+      });
+      return api<TrainingPlan>(`/events/${eventId}/training-plan`, {
+        method: 'PUT',
+        body: { focus: plan.focus, notes: plan.notes, items },
+      });
+    },
+    onSuccess: (plan) => {
+      queryClient.setQueryData(['training-plan', plan.eventId], plan);
+    },
+  });
+  return (
+    <View style={{ gap: 8, paddingTop: 4 }}>
+      {add.isSuccess ? (
+        <View style={{ gap: 8 }}>
+          <Chip tone="success" icon="checkmark" label="Zum Trainingsplan hinzugefügt" />
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Button
+              label="Plan öffnen"
+              size="sm"
+              variant="tonal"
+              onPress={() => router.push(`/training-plan/${add.data.eventId}`)}
+            />
+            <Button label="Fertig" size="sm" variant="outline" onPress={onDone} />
+          </View>
+        </View>
+      ) : (
+        <>
+          <T variant="overline">Zu welchem Training?</T>
+          {events.isPending ? <Loading /> : null}
+          {events.data && trainings.length === 0 ? (
+            <T variant="caption">Keine Trainings deiner Mannschaften in den nächsten Wochen.</T>
+          ) : null}
+          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+            {trainings.map((ev) => (
+              <Button
+                key={ev.id}
+                label={`${ev.team!.badge} · ${when.format(new Date(ev.startsAt))}`}
+                size="sm"
+                variant="outline"
+                loading={add.isPending && add.variables === ev.id}
+                onPress={() => add.mutate(ev.id)}
+              />
+            ))}
+          </View>
+          {add.error ? <Chip tone="urgent" icon="alert-circle" label={add.error.message} /> : null}
+        </>
+      )}
+    </View>
+  );
+}
+
 /** Übungsbibliothek des Vereins (Trainingsplanung). */
 export default function ExercisesScreen() {
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<ExerciseCategory | 'all'>('all');
   const [creating, setCreating] = useState(false);
+  /** Übung, die gerade einem Training hinzugefügt wird */
+  const [adding, setAdding] = useState<string | null>(null);
   const list = useQuery({ queryKey: ['exercises'], queryFn: () => api<Exercise[]>('/exercises') });
   const change = useMutation({
     mutationFn: (v: { method: 'POST' | 'DELETE'; id?: string; body?: CreateExerciseInput }) =>
@@ -94,16 +186,26 @@ export default function ExercisesScreen() {
             style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <T variant="caption">{e.createdBy ? `von ${e.createdBy}` : ''}</T>
-            {e.canDelete ? (
+            <View style={{ flexDirection: 'row', gap: 6 }}>
               <Button
-                label="Löschen"
-                icon="trash-outline"
-                variant="danger"
+                label="Zum Training"
+                icon="add"
+                variant="tonal"
                 size="sm"
-                onPress={() => change.mutate({ method: 'DELETE', id: e.id })}
+                onPress={() => setAdding(adding === e.id ? null : e.id)}
               />
-            ) : null}
+              {e.canDelete ? (
+                <Button
+                  label="Löschen"
+                  icon="trash-outline"
+                  variant="danger"
+                  size="sm"
+                  onPress={() => change.mutate({ method: 'DELETE', id: e.id })}
+                />
+              ) : null}
+            </View>
           </View>
+          {adding === e.id ? <AddToTraining exercise={e} onDone={() => setAdding(null)} /> : null}
         </Card>
       ))}
     </Screen>

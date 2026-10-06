@@ -60,6 +60,7 @@ import type {
   TeamCash,
   TeamOverview,
   TeamStats,
+  Carpool,
   EventDetail,
   EventSummary,
   HomeResponse,
@@ -370,9 +371,14 @@ describe.skipIf(!url)('API', () => {
       expect(early.body.error).toBe('not_started');
 
       const present = said.slice(1).map((p) => p.personId);
-      const res = await send<EventDetail>('PUT', `/events/${past!.id}/attendance-check`, coach.token, {
-        present,
-      });
+      const res = await send<EventDetail>(
+        'PUT',
+        `/events/${past!.id}/attendance-check`,
+        coach.token,
+        {
+          present,
+        },
+      );
       expect(res.status).toBe(200);
       expect(res.body.attendanceCheck!.recordedAt).not.toBeNull();
       const byId = new Map(res.body.participants.map((p) => [p.personId, p.attended]));
@@ -384,6 +390,98 @@ describe.skipIf(!url)('API', () => {
       const now = statsAfter.players.find((p) => p.personId === missing.personId)!;
       expect(now.trainingsAttended).toBe(was.trainingsAttended - 1);
       expect(now.trainings).toBe(was.trainings);
+    });
+
+    it('Fahrgemeinschaften zum Auswärtsspiel', async () => {
+      const player = await login('spieler');
+      const coach = await login('trainer');
+      const events = await get<EventSummary[]>('/events', player.token);
+      const away = events.find(
+        (e) => e.team?.badge === 'B1' && e.type === 'match' && !e.match!.isHome,
+      )!;
+      const detail = await get<EventDetail>(`/events/${away.id}`, player.token);
+      const carpool = detail.carpool!;
+      expect(carpool.open).toBe(true);
+      expect(carpool.offers).toHaveLength(1);
+      const offer = carpool.offers[0]!;
+      expect(offer).toMatchObject({
+        driverName: 'Max Mustermann',
+        seats: 3,
+        mine: false,
+        canWithdraw: false,
+      });
+      expect(carpool.riders.map((r) => r.personId)).toEqual([player.me.person.id]);
+      expect(carpool.requests.length).toBe(1);
+
+      // Mitfahren: ein Platz weniger, Fahrer wird benachrichtigt
+      const joined = await send<Carpool>(
+        'PUT',
+        `/carpool/offers/${offer.id}/passengers/${player.me.person.id}`,
+        player.token,
+      );
+      expect(joined.status).toBe(200);
+      expect(joined.body.offers[0]!.free).toBe(offer.free - 1);
+      expect(joined.body.offers[0]!.passengers.some((p) => p.mine)).toBe(true);
+      const [note] = await sql`
+        select n.title from notifications n join persons p on p.user_id = n.user_id
+        where p.id = ${coach.me.person.id} and n.title = 'Neuer Mitfahrer'`;
+      expect(note).toBeDefined();
+
+      // Fremde Personen lassen sich nicht eintragen, fremde Angebote nicht zurückziehen
+      const other = detail.participants.find(
+        (p) => p.role === 'player' && p.personId !== player.me.person.id,
+      )!;
+      expect(
+        (
+          await send(
+            'PUT',
+            `/carpool/offers/${offer.id}/passengers/${other.personId}`,
+            player.token,
+          )
+        ).status,
+      ).toBe(403);
+      expect((await send('DELETE', `/carpool/offers/${offer.id}`, player.token)).status).toBe(403);
+
+      // Eigenes Angebot (Spieler fährt selbst) und wieder zurückziehen
+      const own = await send<Carpool>('PUT', `/events/${away.id}/carpool/offer`, player.token, {
+        seats: 2,
+        note: 'Ab Kleefeld',
+      });
+      expect(own.body.offers).toHaveLength(2);
+      const mine = own.body.offers.find((o) => o.mine)!;
+      const left = await send<Carpool>(
+        'DELETE',
+        `/carpool/offers/${offer.id}/passengers/${player.me.person.id}`,
+        player.token,
+      );
+      expect(left.body.offers.find((o) => o.id === offer.id)!.free).toBe(offer.free);
+      const gone = await send<Carpool>('DELETE', `/carpool/offers/${mine.id}`, player.token);
+      expect(gone.body.offers).toHaveLength(1);
+
+      // Mitfahrt suchen und zurücknehmen
+      const looking = await send<Carpool>(
+        'PUT',
+        `/events/${away.id}/carpool/requests/${player.me.person.id}`,
+        player.token,
+        { looking: true },
+      );
+      expect(looking.body.requests.some((r) => r.mine)).toBe(true);
+      const done = await send<Carpool>(
+        'PUT',
+        `/events/${away.id}/carpool/requests/${player.me.person.id}`,
+        player.token,
+        { looking: false },
+      );
+      expect(done.body.requests.some((r) => r.mine)).toBe(false);
+
+      // Heimspiele und Trainings haben keine Fahrgemeinschaft
+      const home = events.find(
+        (e) => e.team?.badge === 'B1' && e.type === 'match' && e.match!.isHome,
+      );
+      if (home)
+        expect((await get<EventDetail>(`/events/${home.id}`, player.token)).carpool).toBeNull();
+      const training = await nextB1Training(player.token);
+      expect((await get<EventDetail>(`/events/${training.id}`, player.token)).carpool).toBeNull();
     });
 
     it('abgesagte Termine nehmen keine Antworten an', async () => {
