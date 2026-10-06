@@ -9,3 +9,4 @@ export * from './roles';
 export * from './scopes';
 export * from './team-templates';
 export * from './time';
+export * from './notifications';

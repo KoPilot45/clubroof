@@ -285,6 +285,8 @@ export async function createBlock(
         await recipientsFor(db, people, actor.user.id),
         {
           level: 'urgent',
+          topic: 'events',
+          teamId: r.event.teamId,
           title: `Abgesagt: ${r.event.title}`,
           body: `${r.badge ? `${r.badge} · ` : ''}${when.format(r.event.startsAt)} Uhr – ${facility.name} gesperrt (${reason})`,
           link: `/events/${r.event.id}`,

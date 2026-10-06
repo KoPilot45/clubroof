@@ -11,12 +11,12 @@ import {
   type EventChange,
   type EventDetail,
   type UpdateEventInput,
-  type NotificationLevel,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { randomUUID } from 'node:crypto';
 import { and, asc, eq, gt, gte, inArray, isNull, lte, or } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
+import { deliver, type NotificationInput } from '../notify/deliver';
 import { HttpError, forbidden, notFound } from '../errors';
 import { absenceReason } from './absences';
 import { getEventDetail } from './events';
@@ -64,26 +64,15 @@ export async function recipientsFor(
   ].filter((id) => id !== excludeUserId);
 }
 
+/** Benachrichtigung im Namen des Handelnden (Zustellung nach persönlichen Einstellungen). */
 export async function notify(
   db: Db,
   actor: Actor,
   userIds: string[],
-  n: { level: NotificationLevel; title: string; body: string; link: string },
+  n: NotificationInput,
   now: Date,
 ) {
-  if (userIds.length === 0) return;
-  await db.insert(s.notifications).values(
-    userIds.map((userId) => ({
-      clubId: actor.club.id,
-      userId,
-      level: n.level,
-      category: 'termine',
-      title: n.title,
-      body: n.body,
-      link: n.link,
-      createdAt: now,
-    })),
-  );
+  await deliver(db, actor.club, userIds, n, now);
 }
 
 export async function createTeamEvent(
@@ -276,6 +265,8 @@ export async function createTeamEvent(
     await recipientsFor(db, memberIds, actor.user.id),
     {
       level: team.participationMode === 'active_response' ? 'action' : 'info',
+      topic: 'events',
+      teamId: team.id,
       title: repeat > 1 ? `Neue Terminserie: ${title}` : `Neuer Termin: ${title}`,
       body: `${team.badge} · ${timeFmt(actor.club.timezone).format(startsAt)} Uhr${repeat > 1 ? ` · wöchentlich, ${repeat} Termine` : ''}`,
       link: `/events/${eventId}`,
@@ -338,6 +329,8 @@ export async function cancelEvent(
     ),
     {
       level: 'urgent',
+      topic: 'events',
+      teamId: row.team?.id ?? null,
       title: `Abgesagt: ${row.event.title}`,
       body: `${row.team ? `${row.team.badge} · ` : ''}${timeFmt(actor.club.timezone).format(row.event.startsAt)} Uhr – ${reason.trim()}`,
       link: `/events/${eventId}`,
@@ -571,6 +564,8 @@ export async function updateEvent(
     await recipientsFor(db, [...new Set(participants.map((p) => p.personId))], actor.user.id),
     {
       level: important ? 'important' : 'info',
+      topic: 'events',
+      teamId: row.team.id,
       title: `Geändert: ${title}`,
       body: `${row.team.badge} · ${changes
         .slice(0, 3)

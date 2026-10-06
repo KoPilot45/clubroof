@@ -256,6 +256,8 @@ export async function saveLineup(
         await recipientsFor(db, people, actor.user.id),
         {
           level: 'important',
+          topic: 'matches',
+          teamId: m.event.teamId,
           title: `Nominiert: ${m.event.title}`,
           body: role === 'starter' ? 'Du stehst in der Startelf.' : 'Du bist im Kader (Bank).',
           link: `/events/${eventId}`,
@@ -358,6 +360,8 @@ export async function saveReport(
       ),
       {
         level: 'info',
+        topic: 'matches',
+        teamId: m.event.teamId,
         title: `Spielbericht: ${m.event.title} ${score}`,
         body: `${goals} Tore erfasst`,
         link: `/events/${eventId}`,

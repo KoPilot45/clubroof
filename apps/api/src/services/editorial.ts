@@ -264,6 +264,8 @@ async function afterPublish(db: Db, actor: Actor, ctx: Context, row: NewsRow, no
       await usersInScope(db, actor, ctx, row.scopeType, row.scopeId, now),
       {
         level: row.priority === 'urgent' ? 'urgent' : 'important',
+        topic: 'news',
+        teamId: row.scopeType === 'team' ? row.scopeId : null,
         title: row.title,
         body: row.teaser ?? row.body.slice(0, 140),
         link: `/news/${row.id}`,
@@ -324,6 +326,7 @@ async function applyAction(
       await publishersFor(db, actor, ctx, row),
       {
         level: 'action',
+        topic: 'admin',
         title: 'News wartet auf Freigabe',
         body: `${row.title} · ${labelOf(ctx, row.scopeType, row.scopeId)}`,
         link: `/admin/news/${row.id}`,
@@ -432,7 +435,13 @@ export async function approveNews(
     db,
     actor,
     await authorUser(db, actor, row),
-    { level: 'info', title: 'Deine News ist veröffentlicht', body: row.title, link: `/news/${id}` },
+    {
+      level: 'info',
+      topic: 'news',
+      title: 'Deine News ist veröffentlicht',
+      body: row.title,
+      link: `/news/${id}`,
+    },
     now,
   );
   return getEditorialNews(db, actor, id);
@@ -461,6 +470,7 @@ export async function rejectNews(
     await authorUser(db, actor, row),
     {
       level: 'important',
+      topic: 'admin',
       title: 'News zurückgegeben',
       body: `${row.title}: ${note.trim()}`,
       link: `/admin/news/${id}`,

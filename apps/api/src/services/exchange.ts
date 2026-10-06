@@ -446,6 +446,7 @@ export async function createDemand(
       recipients,
       {
         level: 'action',
+        topic: 'exchange',
         title: `Spielerbedarf: ${team.badge} sucht ${input.count} ${input.count === 1 ? 'Spieler' : 'Spieler'}`,
         body: `${event.title} – dein Team hat Spieler für diesen Tag angeboten.`,
         link: `/exchange/${created!.id}`,
@@ -484,6 +485,7 @@ export async function cancelDemand(db: Db, actor: Actor, id: string, now: Date):
     recipients,
     {
       level: 'important',
+      topic: 'exchange',
       title: 'Gastspieleinsatz entfällt',
       body: 'Der Spielerbedarf wurde zurückgezogen – du musst nicht aushelfen.',
       link: '/notifications',
@@ -583,6 +585,7 @@ export async function nominate(
     playerRecipients,
     {
       level: 'important',
+      topic: 'exchange',
       title: `Du wurdest als Gastspieler vorgemerkt`,
       body: `${demand.team.badge}: ${row.event.title} – bitte gib Bescheid, ob du kannst.`,
       link: `/events/${row.event.id}`,
@@ -608,6 +611,7 @@ export async function nominate(
     ),
     {
       level: 'info',
+      topic: 'exchange',
       title: `${fromTeam.badge} stellt ${player.person.firstName} ${player.person.lastName} ab`,
       body: `Für ${row.event.title}. Der Spieler muss noch zusagen.`,
       link: `/exchange/${demandId}`,
@@ -650,6 +654,7 @@ export async function withdrawNomination(
     await recipientsFor(db, [personId], actor.user.id),
     {
       level: 'important',
+      topic: 'exchange',
       title: 'Gastspieleinsatz entfällt',
       body: 'Dein Trainerteam hat die Nominierung zurückgenommen.',
       link: '/notifications',

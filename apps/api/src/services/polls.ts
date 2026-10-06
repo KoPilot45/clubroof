@@ -206,7 +206,14 @@ export async function createPoll(
     db,
     actor,
     await usersInScope(db, actor, ctx, input.scopeType, scopeId, now),
-    { level: 'action', title: 'Neue Umfrage', body: input.question.trim(), link: `/polls/${id}` },
+    {
+      level: 'action',
+      topic: 'polls',
+      teamId: input.scopeType === 'team' ? scopeId : null,
+      title: 'Neue Umfrage',
+      body: input.question.trim(),
+      link: `/polls/${id}`,
+    },
     now,
   );
   return getPoll(db, actor, id, now);

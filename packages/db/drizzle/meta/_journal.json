@@ -99,6 +99,13 @@
       "when": 1791265974886,
       "tag": "0013_coach_news_publish",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791266294325,
+      "tag": "0014_notification_settings",
+      "breakpoints": true
     }
   ]
 }

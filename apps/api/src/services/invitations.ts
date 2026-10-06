@@ -30,6 +30,7 @@ import QRCode from 'qrcode';
 import { actorCan, type Actor } from '../actor';
 import { generateToken, hashToken } from '../auth/session';
 import type { Config } from '../config';
+import { deliver } from '../notify/deliver';
 import { HttpError, forbidden, notFound } from '../errors';
 import { decrypt, encrypt } from '../security/crypto';
 import type { Mailer } from '../security/mailer';
@@ -541,17 +542,19 @@ export async function requestJoin(
     ),
   ];
   if (recipients.length) {
-    await db.insert(s.notifications).values(
-      recipients.map((userId) => ({
-        clubId: row.club.id,
-        userId,
-        level: 'action' as const,
-        category: 'verwaltung',
+    await deliver(
+      db,
+      row.club,
+      recipients,
+      {
+        level: 'action',
+        topic: 'admin',
+        teamId: row.team!.id,
         title: `Beitrittsanfrage ${row.team!.badge}`,
         body: `${input.firstName.trim()} ${input.lastName.trim()}${input.relation === 'parent' ? ` (für ${input.childFirstName?.trim()})` : ''}`,
         link: '/admin/invites',
-        createdAt: now,
-      })),
+      },
+      now,
     );
   }
 }

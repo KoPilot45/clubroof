@@ -280,6 +280,8 @@ export async function createTransfer(
       await recipientsFor(db, [person.id], actor.user.id),
       {
         level: 'info',
+        topic: 'team',
+        teamId: to.id,
         title: input.kind === 'loan' ? `Leihe: ${to.name}` : `Neue Mannschaft: ${to.name}`,
         body:
           input.kind === 'loan'

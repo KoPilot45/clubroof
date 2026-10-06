@@ -20,8 +20,10 @@ import {
   toIsoDate,
   calendarDayOf,
   todayIn,
+  topicInfo,
   type AttendanceStatus,
   type ModuleKey,
+  type NotificationTopic,
 } from '@clubroof/core';
 import { and, eq, inArray, isNotNull, like } from 'drizzle-orm';
 import type { PgTable } from 'drizzle-orm/pg-core';
@@ -1643,7 +1645,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     const notification = (
       recipient: PersonaKey,
       level: 'urgent' | 'important' | 'action' | 'info',
-      category: string,
+      topic: NotificationTopic,
       title: string,
       body: string,
       link: string,
@@ -1653,7 +1655,8 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       clubId,
       userId: userIds[recipient],
       level,
-      category,
+      category: topicInfo(topic).category,
+      topic,
       title,
       body,
       link,
@@ -1670,7 +1673,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'coach',
         'urgent',
-        'verein',
+        'news',
         urgentNews!.title,
         urgentNews!.teaser!,
         `/news/${urgentNews!.id}`,
@@ -1679,7 +1682,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'coach',
         'action',
-        'team',
+        'matches',
         'Kader für Samstag festlegen',
         'Wähle die Spieler für das Spiel der B-Jugend aus.',
         `/events/${nextB1Match?.id}`,
@@ -1688,7 +1691,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'coach',
         'info',
-        'team',
+        'responses',
         'Rückmeldungen B-Jugend',
         `${b1Yes} von ${b1Responses.length} Spielern haben für das nächste Training zugesagt.`,
         `/events/${nextB1Training?.id}`,
@@ -1697,7 +1700,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'coach',
         'action',
-        'verein',
+        'polls',
         'Umfrage beantworten',
         'Soll das Jugend-Hallenturnier wieder mit DJ stattfinden?',
         `/polls/${djPollId}`,
@@ -1707,7 +1710,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'coach',
         'info',
-        'verein',
+        'news',
         'Neue Vereinsnews',
         lightNews!.title,
         `/news/${lightNews!.id}`,
@@ -1718,7 +1721,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'player',
         'urgent',
-        'team',
+        'news',
         b1News!.title,
         b1News!.teaser!,
         `/news/${b1News!.id}`,
@@ -1727,7 +1730,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'player',
         'action',
-        'termine',
+        'reminders',
         'Zusage offen: Training',
         'Bitte gib Bescheid, ob du beim nächsten Training dabei bist.',
         `/events/${nextB1Training?.id}`,
@@ -1736,7 +1739,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'player',
         'action',
-        'team',
+        'polls',
         'Umfrage endet morgen',
         'Neues Trikot-Design: Welche Variante gefällt euch?',
         `/polls/${jerseyPollId}`,
@@ -1745,7 +1748,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'player',
         'important',
-        'team',
+        'matches',
         'Du bist im Kader',
         'Du stehst im Kader für das Spiel am Samstag.',
         `/events/${nextB1Match?.id}`,
@@ -1756,7 +1759,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'parent',
         'action',
-        'termine',
+        'reminders',
         'Zusage offen für Leon',
         'E-Jugend: Bitte gib Bescheid, ob Leon am Samstag dabei ist.',
         `/events/${nextE1Match?.id}`,
@@ -1765,7 +1768,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'parent',
         'action',
-        'termine',
+        'reminders',
         'Zusage offen für Mia',
         'F-Jugend: Bitte gib Bescheid, ob Mia beim Spielfest dabei ist.',
         `/events/${nextFjTournament?.id}`,
@@ -1774,7 +1777,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'parent',
         'info',
-        'verein',
+        'news',
         tournamentNews!.title,
         tournamentNews!.teaser!,
         `/news/${tournamentNews!.id}`,
@@ -1785,7 +1788,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'board',
         'action',
-        'verwaltung',
+        'admin',
         'News freigeben',
         `„${pendingNews!.title}“ wartet auf Freigabe.`,
         `/admin/news/${pendingNews!.id}`,
@@ -1794,7 +1797,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'board',
         'action',
-        'verwaltung',
+        'admin',
         'Helfer prüfen',
         'Jugend-Hallenturnier: 15 von 27 Helferplätzen sind besetzt.',
         `/events/${hallTournament.id}`,
@@ -1803,7 +1806,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'board',
         'info',
-        'verein',
+        'events',
         'Termin: Jahreshauptversammlung',
         'Die Einladung wurde an alle Mitglieder verschickt.',
         `/events/${agm.id}`,
@@ -1814,7 +1817,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'admin',
         'action',
-        'verwaltung',
+        'admin',
         'Neues Modul verfügbar: Trainingsplanung',
         'Einrichten, später oder nicht verwenden – du entscheidest.',
         '/admin/updates',
@@ -1823,7 +1826,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'admin',
         'info',
-        'verwaltung',
+        'admin',
         'Systemupdate eingespielt',
         'Sicherheits- und Leistungsverbesserungen wurden automatisch installiert.',
         '/admin/updates',
@@ -1834,7 +1837,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       notification(
         'treasurer',
         'action',
-        'verwaltung',
+        'admin',
         'Offene Beträge 1. Mannschaft',
         'Mehrere Spieler haben noch offene Strafen oder Getränke.',
         `/teams/${teamIds.h1}/cash`,

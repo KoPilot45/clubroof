@@ -1,11 +1,15 @@
+import { sql } from 'drizzle-orm';
 import {
+  boolean,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   smallint,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { clubs } from './club';
@@ -107,8 +111,14 @@ export const notifications = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     level: notificationLevelEnum().notNull(),
-    /** Filterkategorie: termine, team, verein, verwaltung, aktion */
+    /** Filterbereich im Notification-Center: team, verein, verwaltung */
     category: text().notNull(),
+    /** Thema für die persönlichen Einstellungen (`NOTIFICATION_TOPICS`) */
+    topic: text().notNull().default('events'),
+    /** Mannschaft, auf die sich die Meldung bezieht (zum Stummschalten je Mannschaft) */
+    teamId: uuid(),
+    /** Verhindert doppelte Erinnerungen und Sammelhinweise */
+    dedupeKey: text(),
     title: text().notNull(),
     body: text(),
     /** Deep Link in die App, z. B. `/events/<id>` */
@@ -119,7 +129,77 @@ export const notifications = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index().on(t.userId, t.createdAt)],
+  (t) => [
+    index().on(t.userId, t.createdAt),
+    uniqueIndex()
+      .on(t.userId, t.dedupeKey)
+      .where(sql`${t.dedupeKey} is not null`),
+  ],
+);
+
+/** Persönliche Benachrichtigungseinstellungen (ohne Zeile gelten die Voreinstellungen). */
+export const notificationPreferences = pgTable('notification_preferences', {
+  userId: uuid()
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  clubId: uuid()
+    .notNull()
+    .references(() => clubs.id, { onDelete: 'cascade' }),
+  /** Abweichungen von der Voreinstellung je Thema: push | app | off */
+  topics: jsonb().$type<Record<string, string>>().notNull().default({}),
+  mutedTeamIds: uuid()
+    .array()
+    .notNull()
+    .default(sql`'{}'::uuid[]`),
+  reminderHours: smallint().notNull().default(24),
+  quietHoursEnabled: boolean().notNull().default(true),
+  quietStart: text().notNull().default('22:00'),
+  quietEnd: text().notNull().default('07:00'),
+  updatedAt: updatedAt(),
+});
+
+/** Geräte für Push (Expo Push Token). */
+export const pushDevices = pgTable(
+  'push_devices',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    token: text().notNull().unique(),
+    platform: text().notNull(),
+    createdAt: createdAt(),
+    lastSeenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index().on(t.userId)],
+);
+
+/** Warteschlange für Push-Nachrichten (Ruhezeiten verschieben `sendAfter`). */
+export const pushOutbox = pgTable(
+  'push_outbox',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    notificationId: uuid()
+      .notNull()
+      .references(() => notifications.id, { onDelete: 'cascade' }),
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    sendAfter: timestamp({ withTimezone: true }).notNull(),
+    /** pending | sent | failed | dropped (gelesen, bevor gesendet wurde) */
+    status: text().notNull().default('pending'),
+    attempts: smallint().notNull().default(0),
+    error: text(),
+    sentAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.status, t.sendAfter)],
 );
 
 /** Gelesen-Markierung je Nutzer (Grundlage für Aufrufe und optionale Lesebestätigung). */
