@@ -440,7 +440,9 @@ describe.skipIf(!url)('API', () => {
       const polls = await get<PollSummary[]>('/polls', token);
       const dj = polls.find((p) => p.question.includes('DJ'))!;
       // Schnellantwort: die Startseite liefert die Antwortmöglichkeiten mit
-      const action = (await get<HomeResponse>('/home', token)).actions.find((a) => a.id === dj.id)!;
+      const action = (await get<HomeResponse>('/home', token)).actions.find(
+        (a) => a.kind === 'poll',
+      )!;
       expect(action.options!.length).toBeGreaterThan(1);
       const before = await get<PollDetail>(`/polls/${dj.id}`, token);
       expect(before.resultsVisible).toBe(false);
