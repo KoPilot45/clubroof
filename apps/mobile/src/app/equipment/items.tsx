@@ -38,8 +38,7 @@ export default function EquipmentItemsScreen() {
     },
   });
   if (list.isPending) return <Loading />;
-  if (list.error)
-    return <ErrorNotice message={list.error.message} onRetry={() => list.refetch()} />;
+  if (list.error) return <ErrorNotice error={list.error} onRetry={() => list.refetch()} />;
   const groups = [
     { title: 'Schlüssel', items: list.data.items.filter((i) => i.kind === 'key') },
     { title: 'Material', items: list.data.items.filter((i) => i.kind === 'material') },

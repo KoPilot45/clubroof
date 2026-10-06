@@ -81,8 +81,7 @@ export default function TrainingPlanEditor() {
   };
 
   if (plan.isPending) return <Loading />;
-  if (plan.error)
-    return <ErrorNotice message={plan.error.message} onRetry={() => plan.refetch()} />;
+  if (plan.error) return <ErrorNotice error={plan.error} onRetry={() => plan.refetch()} />;
   const p = plan.data;
   const total = items.reduce((a, i) => a + i.minutes, 0);
   const move = (i: number, d: number) => {

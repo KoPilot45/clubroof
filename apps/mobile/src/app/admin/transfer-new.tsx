@@ -15,6 +15,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { teamTitle } from '@/lib/team-labels';
 
 const KINDS: { value: TransferKind; label: string; hint: string }[] = [
   {
@@ -64,7 +65,7 @@ export default function NewTransferScreen() {
   const teams = overview.data?.teams ?? [];
   const needsFrom = kind === 'internal' || kind === 'leave';
   const needsTo = kind !== 'leave';
-  const teamOptions = teams.map((t) => ({ value: t.id, label: `${t.badge} · ${t.name}` }));
+  const teamOptions = teams.map((t) => ({ value: t.id, label: teamTitle(t) }));
 
   const save = useMutation({
     mutationFn: () =>

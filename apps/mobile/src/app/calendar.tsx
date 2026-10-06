@@ -27,8 +27,7 @@ export default function CalendarScreen() {
   });
 
   if (feed.isPending) return <Loading />;
-  if (feed.error)
-    return <ErrorNotice message={feed.error.message} onRetry={() => feed.refetch()} />;
+  if (feed.error) return <ErrorNotice error={feed.error} onRetry={() => feed.refetch()} />;
   const url = feed.data.url;
 
   return (

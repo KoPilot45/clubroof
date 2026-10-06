@@ -75,8 +75,7 @@ export default function ReportScreen() {
     queryFn: () => api<MatchSheet>(`/events/${id}/match`),
   });
   if (sheet.isPending) return <Loading />;
-  if (sheet.error)
-    return <ErrorNotice message={sheet.error.message} onRetry={() => sheet.refetch()} />;
+  if (sheet.error) return <ErrorNotice error={sheet.error} onRetry={() => sheet.refetch()} />;
   return <Editor sheet={sheet.data} />;
 }
 

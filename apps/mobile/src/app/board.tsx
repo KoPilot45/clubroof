@@ -53,8 +53,7 @@ export default function BoardScreen() {
     },
   });
   if (board.isPending) return <Loading />;
-  if (board.error)
-    return <ErrorNotice message={board.error.message} onRetry={() => board.refetch()} />;
+  if (board.error) return <ErrorNotice error={board.error} onRetry={() => board.refetch()} />;
   const b = board.data;
   const both = b.kinds.includes('found') && b.kinds.includes('offer');
   const items = b.items.filter((i) =>

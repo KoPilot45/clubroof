@@ -1,12 +1,13 @@
 import type { MyTeamCard, PollSummary, TeamOverview } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow } from '@/components/events';
 import { HighlightsCard, ResultRow, SquadStatusCard } from '@/components/team';
 import {
+  Button,
   Card,
   Chip,
   Empty,
@@ -20,6 +21,7 @@ import {
   type TileItem,
 } from '@/components/ui';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
+import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -37,6 +39,11 @@ export default function TeamScreen() {
   const [selected, setSelected] = useState(
     (me.teams.find((t) => t.functions.some((f) => f !== 'player')) ?? teams[0])?.id ?? null,
   );
+  // Aufruf mit ?teamId=… (z. B. aus „Mehr → Meine Mannschaften“) wählt die Mannschaft aus
+  const { teamId } = useLocalSearchParams<{ teamId?: string }>();
+  useEffect(() => {
+    if (teamId) setSelected(teamId);
+  }, [teamId]);
   const team = teams.find((t) => t.id === selected) ?? teams[0];
   const has = (module: string) => team?.modules.includes(module) ?? false;
 
@@ -65,7 +72,7 @@ export default function TeamScreen() {
           key: 'events',
           label: 'Termine',
           icon: 'calendar',
-          onPress: () => router.push(`/teams/${team.id}/events`),
+          onPress: () => router.push(`/events?teamId=${team.id}`),
         },
         ...(o?.permissions.manageEvents
           ? [
@@ -220,7 +227,7 @@ export default function TeamScreen() {
                 }}
               >
                 <T variant="label" color={active ? colors.onPrimary : colors.onSurface}>
-                  {t.badge} · {t.name}
+                  {teamTitle(t)}
                 </T>
               </Pressable>
             );
@@ -229,36 +236,43 @@ export default function TeamScreen() {
       ) : null}
 
       {!team ? (
-        <Empty icon="people-outline" text="Du bist noch keiner Mannschaft zugeordnet." />
+        <Card style={{ gap: 12 }}>
+          <Empty icon="people-outline" text="Du bist noch keiner Mannschaft zugeordnet." />
+          <Button
+            label="Alle Mannschaften des Vereins"
+            variant="outline"
+            icon="shirt-outline"
+            onPress={() => router.push('/club-teams')}
+          />
+        </Card>
       ) : null}
 
       {team ? (
         <>
-          <Card style={{ gap: 8 }}>
-            <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-              {roles.flatMap((r) =>
-                r.functions.map((fn) => {
-                  const person = me.managedPersons.find((p) => p.id === r.personId);
-                  const who = person?.relation === 'child' ? ` (${person.firstName})` : '';
-                  return <Chip key={r.personId + fn} label={TEAM_FUNCTION_LABELS[fn] + who} />;
-                }),
-              )}
-              {team.ageGroup ? <Chip tone="neutral" label={team.ageGroup} /> : null}
-            </View>
-            <T variant="caption">{PARTICIPATION_LABELS[team.participationMode]}</T>
-          </Card>
+          {/* Meine Funktion in der Mannschaft – schlicht als Zeile statt eigener Karte */}
+          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+            {roles.flatMap((r) =>
+              r.functions.map((fn) => {
+                const person = me.managedPersons.find((p) => p.id === r.personId);
+                const who = person?.relation === 'child' ? ` (${person.firstName})` : '';
+                return <Chip key={r.personId + fn} label={TEAM_FUNCTION_LABELS[fn] + who} />;
+              }),
+            )}
+            {team.ageGroup ? <Chip tone="neutral" label={team.ageGroup} /> : null}
+          </View>
 
           <TileGrid items={tiles} />
 
           {overview.isPending ? <Loading /> : null}
           {overview.error ? (
-            <ErrorNotice message={overview.error.message} onRetry={() => overview.refetch()} />
+            <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />
           ) : null}
 
           {o?.nextEvent ? (
             <Section title="Nächster Termin">
               <Card style={{ gap: 12 }}>
                 <EventRow event={o.nextEvent} first />
+                <T variant="caption">{PARTICIPATION_LABELS[team.participationMode]}</T>
                 {o.squad ? (
                   <>
                     <T variant="overline">Kaderstatus</T>
@@ -295,7 +309,7 @@ export default function TeamScreen() {
             <Section
               title="Trainingswoche"
               action="Alle Termine"
-              onAction={() => router.push(`/teams/${team.id}/events`)}
+              onAction={() => router.push(`/events?teamId=${team.id}`)}
             >
               <Card>
                 {o.trainingWeek.length === 0 ? (

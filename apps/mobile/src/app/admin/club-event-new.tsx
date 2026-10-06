@@ -87,7 +87,7 @@ export default function NewClubEventScreen() {
 
   if (planning.isPending) return <Loading />;
   if (planning.error)
-    return <ErrorNotice message={planning.error.message} onRetry={() => planning.refetch()} />;
+    return <ErrorNotice error={planning.error} onRetry={() => planning.refetch()} />;
   const p = planning.data;
   const error = save.error instanceof RequestError && !conflict ? save.error.message : null;
 

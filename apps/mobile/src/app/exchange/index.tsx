@@ -73,7 +73,7 @@ export default function ExchangeScreen() {
       </T>
       {overview.isPending ? <Loading /> : null}
       {overview.error ? (
-        <ErrorNotice message={overview.error.message} onRetry={() => overview.refetch()} />
+        <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />
       ) : null}
       {o ? (
         <>

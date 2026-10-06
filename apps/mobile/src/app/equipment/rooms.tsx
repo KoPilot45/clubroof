@@ -52,9 +52,7 @@ export default function ChangingRoomsScreen() {
     <Screen edges={[]} refreshing={plan.isRefetching} onRefresh={() => plan.refetch()}>
       <DateStepper label="Tag" value={date} onChange={setDate} />
       {plan.isPending ? <Loading /> : null}
-      {plan.error ? (
-        <ErrorNotice message={plan.error.message} onRetry={() => plan.refetch()} />
-      ) : null}
+      {plan.error ? <ErrorNotice error={plan.error} onRetry={() => plan.refetch()} /> : null}
       {assign.error ? (
         <Chip
           tone="urgent"

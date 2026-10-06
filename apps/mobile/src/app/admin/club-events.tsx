@@ -38,7 +38,7 @@ export default function ClubEventsPlanningScreen() {
   });
   if (planning.isPending) return <Loading />;
   if (planning.error)
-    return <ErrorNotice message={planning.error.message} onRetry={() => planning.refetch()} />;
+    return <ErrorNotice error={planning.error} onRetry={() => planning.refetch()} />;
   const p = planning.data;
   return (
     <Screen edges={[]} refreshing={planning.isRefetching} onRefresh={() => planning.refetch()}>

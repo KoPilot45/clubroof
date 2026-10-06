@@ -28,6 +28,7 @@ import { RequestError } from '@/lib/api';
 import { parseGermanDate, toGermanDate } from '@/lib/dates';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
+import { teamTitle } from '@/lib/team-labels';
 
 const STATUS: Record<MembershipStatus, { label: string; tone: 'success' | 'neutral' | 'urgent' }> =
   {
@@ -69,8 +70,7 @@ export default function MemberScreen() {
   });
 
   if (member.isPending) return <Loading />;
-  if (member.error)
-    return <ErrorNotice message={member.error.message} onRetry={() => member.refetch()} />;
+  if (member.error) return <ErrorNotice error={member.error} onRetry={() => member.refetch()} />;
   const m = member.data;
   const run = (r: Request) => change.mutate(r);
 
@@ -307,7 +307,7 @@ function AddMembership({
     <Card style={{ gap: 12 }}>
       <ChoiceChips
         label="Mannschaft"
-        options={catalog.teams.map((t) => ({ value: t.id, label: `${t.badge} · ${t.name}` }))}
+        options={catalog.teams.map((t) => ({ value: t.id, label: teamTitle(t) }))}
         selected={teamId ? [teamId] : []}
         onToggle={setTeamId}
       />

@@ -19,7 +19,10 @@ export default function StatsOverview() {
     if (!d) return undefined;
     const def = RANKINGS[kind];
     const best = [...d.squad].sort((a, b) => def.value(b) - def.value(a))[0];
-    return best && def.value(best) > 0 ? best.name.split(' ')[0] : undefined;
+    if (!best || def.value(best) <= 0) return undefined;
+    const [first, ...rest] = best.name.split(' ');
+    const short = rest.length ? `${first} ${rest[rest.length - 1]![0]}.` : first;
+    return `${short} (${def.value(best)})`;
   };
   const open = (kind: string) => router.push(`/teams/${id}/stats/${kind}`);
   const tiles: TileItem[] = [
@@ -30,19 +33,17 @@ export default function StatsOverview() {
     { key: 'cards', label: 'Karten', icon: 'card', onPress: () => open('cards') },
     { key: 'results', label: 'Ergebnisse', icon: 'list', onPress: () => open('results') },
   ];
-  // Kurzinfo unter den Kacheln: wer führt die Liste an
+  // Kurzinfo in den Kacheln: wer führt die Liste an
   for (const t of tiles) {
     if (t.key === 'scorers' || t.key === 'points') {
       const name = leader(t.key);
-      if (name) t.label = `${t.label} · ${name}`;
+      if (name) t.hint = name;
     }
   }
   return (
     <Screen edges={[]} refreshing={season.isRefetching} onRefresh={() => season.refetch()}>
       {season.isPending ? <Loading /> : null}
-      {season.error ? (
-        <ErrorNotice message={season.error.message} onRetry={() => season.refetch()} />
-      ) : null}
+      {season.error ? <ErrorNotice error={season.error} onRetry={() => season.refetch()} /> : null}
       {d ? (
         <HighlightsCard h={d.highlights} title="Saison-Bilanz" rateLabel="Trainingsquote" />
       ) : null}

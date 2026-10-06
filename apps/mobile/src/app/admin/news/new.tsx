@@ -28,7 +28,7 @@ export default function NewNewsScreen() {
   });
   if (overview.isPending) return <Loading />;
   if (overview.error)
-    return <ErrorNotice message={overview.error.message} onRetry={() => overview.refetch()} />;
+    return <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />;
   return (
     <Screen edges={[]}>
       <NewsEditor

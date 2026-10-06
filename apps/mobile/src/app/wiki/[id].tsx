@@ -63,8 +63,7 @@ export default function WikiPageScreen() {
   });
 
   if (!isNew && page.isPending) return <Loading />;
-  if (page.error)
-    return <ErrorNotice message={page.error.message} onRetry={() => page.refetch()} />;
+  if (page.error) return <ErrorNotice error={page.error} onRetry={() => page.refetch()} />;
   const canEdit = overview.data?.canEdit ?? false;
 
   if (editing)

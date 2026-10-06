@@ -36,9 +36,7 @@ export default function StatsDetail() {
       <Stack.Screen options={{ title: TITLES[kind] ?? 'Statistik' }} />
       <PeriodFilter filter={filter} data={d} />
       {stats.isPending ? <Loading /> : null}
-      {stats.error ? (
-        <ErrorNotice message={stats.error.message} onRetry={() => stats.refetch()} />
-      ) : null}
+      {stats.error ? <ErrorNotice error={stats.error} onRetry={() => stats.refetch()} /> : null}
       {d ? (
         <View style={{ gap: 16, opacity: stats.isPlaceholderData ? 0.5 : 1 }}>
           {kind === 'squad' ? (

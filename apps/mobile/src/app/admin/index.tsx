@@ -153,7 +153,7 @@ export default function AdminScreen() {
     <Screen edges={[]} refreshing={overview.isRefetching} onRefresh={() => overview.refetch()}>
       {overview.isPending ? <Loading /> : null}
       {overview.error ? (
-        <ErrorNotice message={overview.error.message} onRetry={() => overview.refetch()} />
+        <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />
       ) : null}
       {o ? (
         <>

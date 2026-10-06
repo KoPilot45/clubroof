@@ -51,8 +51,14 @@ function Row({ entry, first }: { entry: RosterEntry; first: boolean }) {
       onPress={() => router.push(`/profile/${entry.personId}`)}
       leading={
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <JerseyNumber value={entry.function === 'player' ? entry.jerseyNumber : null} />
-          {entry.avatarUrl ? <Avatar name={entry.name} uri={entry.avatarUrl} size={32} /> : null}
+          {entry.function === 'player' ? (
+            <JerseyNumber value={entry.jerseyNumber} />
+          ) : (
+            <Avatar name={entry.name} uri={entry.avatarUrl} size={36} />
+          )}
+          {entry.function === 'player' && entry.avatarUrl ? (
+            <Avatar name={entry.name} uri={entry.avatarUrl} size={32} />
+          ) : null}
         </View>
       }
       title={entry.name}
@@ -93,9 +99,7 @@ export default function RosterScreen() {
   return (
     <Screen edges={[]} refreshing={roster.isRefetching} onRefresh={() => roster.refetch()}>
       {roster.isPending ? <Loading /> : null}
-      {roster.error ? (
-        <ErrorNotice message={roster.error.message} onRetry={() => roster.refetch()} />
-      ) : null}
+      {roster.error ? <ErrorNotice error={roster.error} onRetry={() => roster.refetch()} /> : null}
       {roster.data ? (
         <>
           <T variant="caption">

@@ -18,6 +18,7 @@ import {
 } from '@/components/ui';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
+import { teamTitle } from '@/lib/team-labels';
 
 export default function MoreScreen() {
   const { me, api, signOut } = useSignedIn();
@@ -26,10 +27,47 @@ export default function MoreScreen() {
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const absences = useQuery({ queryKey: ['absences'], queryFn: () => api<Absence[]>('/absences') });
 
+  // Eine Zeile je Mannschaft – auch wenn ich dort z. B. Co-Trainer bin und mein Kind spielt
+  const myTeams = [...new Set(me.teams.map((t) => t.id))].map((id) => {
+    const entries = me.teams.filter((t) => t.id === id);
+    const subtitle = entries
+      .map((t) => {
+        const person = me.managedPersons.find((p) => p.id === t.personId);
+        const fns = t.functions.map((f) => TEAM_FUNCTION_LABELS[f]).join(', ');
+        return person?.relation === 'child' ? `${fns} (${person.firstName})` : fns;
+      })
+      .join(' · ');
+    return { ...entries[0]!, subtitle };
+  });
+  // Mannschaftsaufgaben zeigen die Funktion samt Mannschaft („Co-Trainer E1“), Vereinsrollen ihren Namen
+  const ownTeamFunctions = me.teams.filter((t) => t.personId === me.person.id);
+  const roleLabels = [
+    ...new Set([
+      ...me.roles.filter((r) => r.scopeType !== 'team').map((r) => r.name),
+      ...ownTeamFunctions.flatMap((t) =>
+        t.functions
+          .filter((f) => f !== 'player')
+          .map((f) => `${TEAM_FUNCTION_LABELS[f]} ${t.badge}`),
+      ),
+      ...me.roles
+        .filter(
+          (r) =>
+            r.scopeType === 'team' &&
+            !ownTeamFunctions.some(
+              (t) => t.id === r.scopeId && t.functions.some((f) => f !== 'player'),
+            ),
+        )
+        .map((r) => {
+          const team = me.teams.find((t) => t.id === r.scopeId);
+          return team ? `${r.name} ${team.badge}` : r.name;
+        }),
+    ]),
+  ];
+
   const tiles: TileItem[] = [
     {
       key: 'profile',
-      label: 'Mein Profil',
+      label: 'Profil & Statistik',
       icon: 'person',
       onPress: () => router.push(`/profile/${me.person.id}`),
     },
@@ -46,12 +84,6 @@ export default function MoreScreen() {
       icon: 'notifications',
       badge: home.data?.unreadNotifications,
       onPress: () => router.push('/notifications'),
-    },
-    {
-      key: 'stats',
-      label: 'Meine Statistik',
-      icon: 'bar-chart',
-      onPress: () => router.push('/stats'),
     },
     {
       key: 'settings',
@@ -99,8 +131,8 @@ export default function MoreScreen() {
           <T variant="heading">{name}</T>
           <T variant="caption">{me.user.email}</T>
           <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-            {me.roles.map((r) => (
-              <Chip key={r.key + (r.scopeId ?? '')} label={r.name} />
+            {roleLabels.map((label) => (
+              <Chip key={label} label={label} />
             ))}
           </View>
         </View>
@@ -120,21 +152,25 @@ export default function MoreScreen() {
 
       <Section title="Meine Mannschaften">
         <Card>
-          {me.teams.map((t, i) => {
-            const person = me.managedPersons.find((p) => p.id === t.personId);
-            return (
-              <ListRow
-                key={t.id + t.personId}
-                first={i === 0}
-                leading={<IconTile name="shirt-outline" />}
-                title={`${t.badge} · ${t.name}`}
-                subtitle={
-                  t.functions.map((f) => TEAM_FUNCTION_LABELS[f]).join(', ') +
-                  (person?.relation === 'child' ? ` (${person.firstName})` : '')
-                }
-              />
-            );
-          })}
+          {myTeams.length === 0 ? (
+            <ListRow
+              first
+              leading={<IconTile name="shirt-outline" />}
+              title="Noch keiner Mannschaft zugeordnet"
+              subtitle="Alle Mannschaften des Vereins ansehen"
+              onPress={() => router.push('/club-teams')}
+            />
+          ) : null}
+          {myTeams.map((t, i) => (
+            <ListRow
+              key={t.id}
+              first={i === 0}
+              leading={<IconTile name="shirt-outline" />}
+              title={teamTitle(t)}
+              subtitle={t.subtitle}
+              onPress={() => router.push(`/team?teamId=${t.id}`)}
+            />
+          ))}
         </Card>
       </Section>
 

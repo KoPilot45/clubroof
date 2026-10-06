@@ -1,18 +1,34 @@
 import type { ColorMode, TwoFactorSetup, TwoFactorStatus } from '@clubroof/core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { Pressable, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
-import { Button, Card, ChoiceChips, Chip, Screen, Section, T, TextField } from '@/components/ui';
+import {
+  Button,
+  Card,
+  ChoiceChips,
+  Chip,
+  IconTile,
+  ListRow,
+  Screen,
+  Section,
+  T,
+  TextField,
+} from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
+import { useTheme } from '@/lib/theme';
 
 export default function AccountScreen() {
   const { api, me, signOut } = useSignedIn();
+  const { colors } = useTheme();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [next2, setNext2] = useState('');
   const [busy, setBusy] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const change = async () => {
@@ -44,46 +60,91 @@ export default function AccountScreen() {
         <T variant="caption">Angemeldet als {me.user.email}</T>
       </Card>
       <AppearanceSection />
-      <Section title="Passwort ändern">
-        <Card style={{ gap: 12 }}>
-          <TextField
-            label="Aktuelles Passwort"
-            kind="password"
-            value={current}
-            onChangeText={setCurrent}
-            maxLength={200}
+      <Section title="Benachrichtigungen & Kalender">
+        <Card>
+          <ListRow
+            first
+            leading={<IconTile name="notifications-outline" />}
+            title="Benachrichtigungen einstellen"
+            subtitle="Push, Ruhezeit und Themen"
+            onPress={() => router.push('/notification-settings')}
           />
-          <TextField
-            label="Neues Passwort (mind. 10 Zeichen)"
-            kind="newPassword"
-            value={next}
-            onChangeText={setNext}
-            maxLength={200}
-          />
-          <TextField
-            label="Neues Passwort wiederholen"
-            kind="newPassword"
-            value={next2}
-            onChangeText={setNext2}
-            maxLength={200}
-          />
-          {next2 && next !== next2 ? (
-            <Chip tone="action" label="Die Passwörter stimmen nicht überein." />
+          {me.clubModules.includes('calendar_export') ? (
+            <ListRow
+              leading={<IconTile name="calendar-outline" />}
+              title="Kalender-Abo"
+              subtitle="Termine im Handy-Kalender"
+              onPress={() => router.push('/calendar')}
+            />
           ) : null}
-          {msg ? (
+        </Card>
+      </Section>
+      <Section title="Sicherheit">
+        <Card style={{ gap: 12 }}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: pwOpen }}
+            onPress={() => setPwOpen(!pwOpen)}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
+          >
+            <IconTile name="key-outline" />
+            <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
+              Passwort ändern
+            </T>
+            <Ionicons
+              name={pwOpen ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={colors.onSurfaceMuted}
+            />
+          </Pressable>
+          {pwOpen ? (
+            <>
+              <TextField
+                label="Aktuelles Passwort"
+                kind="password"
+                value={current}
+                onChangeText={setCurrent}
+                maxLength={200}
+              />
+              <TextField
+                label="Neues Passwort (mind. 10 Zeichen)"
+                kind="newPassword"
+                value={next}
+                onChangeText={setNext}
+                maxLength={200}
+              />
+              <TextField
+                label="Neues Passwort wiederholen"
+                kind="newPassword"
+                value={next2}
+                onChangeText={setNext2}
+                maxLength={200}
+              />
+              {next2 && next !== next2 ? (
+                <Chip tone="action" label="Die Passwörter stimmen nicht überein." />
+              ) : null}
+              {msg ? (
+                <Chip
+                  tone={msg.ok ? 'success' : 'urgent'}
+                  icon={msg.ok ? 'checkmark-circle' : 'alert-circle'}
+                  label={msg.text}
+                />
+              ) : null}
+              <Button
+                label="Passwort speichern"
+                icon="key"
+                loading={busy}
+                disabled={!current || next.length < 10 || next !== next2}
+                onPress={() => void change()}
+              />
+            </>
+          ) : msg ? (
             <Chip
               tone={msg.ok ? 'success' : 'urgent'}
               icon={msg.ok ? 'checkmark-circle' : 'alert-circle'}
               label={msg.text}
             />
           ) : null}
-          <Button
-            label="Passwort speichern"
-            icon="key"
-            loading={busy}
-            disabled={!current || next.length < 10 || next !== next2}
-            onPress={() => void change()}
-          />
         </Card>
       </Section>
       <TwoFactorSection />

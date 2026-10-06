@@ -36,8 +36,7 @@ export default function TeamModulesScreen() {
     onError: (e) => setError(e instanceof RequestError ? e.message : 'Das hat nicht geklappt.'),
   });
   if (modules.isPending) return <Loading />;
-  if (modules.error)
-    return <ErrorNotice message={modules.error.message} onRetry={() => modules.refetch()} />;
+  if (modules.error) return <ErrorNotice error={modules.error} onRetry={() => modules.refetch()} />;
   return (
     <Screen edges={[]}>
       <Card>

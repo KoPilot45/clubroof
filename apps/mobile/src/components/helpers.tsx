@@ -70,6 +70,7 @@ export function ShiftRow({ shift, first }: { shift: HelperShift; first?: boolean
           <Button
             label="Austragen"
             variant="outline"
+            size="sm"
             loading={toggle.isPending}
             onPress={() => toggle.mutate()}
           />
@@ -78,8 +79,11 @@ export function ShiftRow({ shift, first }: { shift: HelperShift; first?: boolean
         <Chip tone="archived" label="Voll besetzt" />
       ) : (
         <Button
-          label="Als Helfer eintragen"
+          label="Eintragen"
           icon="hand-left-outline"
+          variant="tonal"
+          size="sm"
+          style={{ alignSelf: 'flex-start' }}
           loading={toggle.isPending}
           onPress={() => toggle.mutate()}
         />

@@ -34,8 +34,7 @@ export default function TeamAdminScreen() {
     queryFn: () => api<TeamDetailAdmin>(`/admin/teams/${id}`),
   });
   if (team.isPending) return <Loading />;
-  if (team.error)
-    return <ErrorNotice message={team.error.message} onRetry={() => team.refetch()} />;
+  if (team.error) return <ErrorNotice error={team.error} onRetry={() => team.refetch()} />;
   return <Editor team={team.data} />;
 }
 

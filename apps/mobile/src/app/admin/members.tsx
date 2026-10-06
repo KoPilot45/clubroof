@@ -66,7 +66,7 @@ export default function MembersScreen() {
       </Card>
       {members.isPending ? <Loading /> : null}
       {members.error ? (
-        <ErrorNotice message={members.error.message} onRetry={() => members.refetch()} />
+        <ErrorNotice error={members.error} onRetry={() => members.refetch()} />
       ) : null}
       {members.data ? (
         <T variant="caption">

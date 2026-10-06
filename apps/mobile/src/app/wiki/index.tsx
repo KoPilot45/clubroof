@@ -20,8 +20,7 @@ export default function WikiScreen() {
   const [q, setQ] = useState('');
   const wiki = useQuery({ queryKey: ['wiki'], queryFn: () => api<WikiOverview>('/wiki') });
   if (wiki.isPending) return <Loading />;
-  if (wiki.error)
-    return <ErrorNotice message={wiki.error.message} onRetry={() => wiki.refetch()} />;
+  if (wiki.error) return <ErrorNotice error={wiki.error} onRetry={() => wiki.refetch()} />;
   const w = wiki.data;
   const needle = q.trim().toLowerCase();
   const pages = w.pages.filter(

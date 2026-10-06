@@ -10,9 +10,7 @@ export default function NewsListScreen() {
   return (
     <Screen edges={[]} refreshing={news.isRefetching} onRefresh={() => news.refetch()}>
       {news.isPending ? <Loading /> : null}
-      {news.error ? (
-        <ErrorNotice message={news.error.message} onRetry={() => news.refetch()} />
-      ) : null}
+      {news.error ? <ErrorNotice error={news.error} onRetry={() => news.refetch()} /> : null}
       {news.data?.length === 0 ? <Empty icon="newspaper-outline" text="Noch keine News." /> : null}
       {news.data?.map((n) => (
         <NewsCard key={n.id} item={n} />

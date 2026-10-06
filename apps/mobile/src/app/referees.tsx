@@ -49,8 +49,7 @@ export default function RefereesScreen() {
     },
   });
   if (data.isPending) return <Loading />;
-  if (data.error)
-    return <ErrorNotice message={data.error.message} onRetry={() => data.refetch()} />;
+  if (data.error) return <ErrorNotice error={data.error} onRetry={() => data.refetch()} />;
   const r = data.data;
   return (
     <Screen edges={[]} refreshing={data.isRefetching} onRefresh={() => data.refetch()}>

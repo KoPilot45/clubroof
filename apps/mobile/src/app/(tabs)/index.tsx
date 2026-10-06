@@ -46,9 +46,7 @@ export default function HomeScreen() {
   return (
     <Screen header={<AppHeader />} refreshing={home.isRefetching} onRefresh={() => home.refetch()}>
       {home.isPending ? <Loading /> : null}
-      {home.error ? (
-        <ErrorNotice message={home.error.message} onRetry={() => home.refetch()} />
-      ) : null}
+      {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}
 
       {data?.clubOverview ? (
         <Card style={{ gap: 12 }}>

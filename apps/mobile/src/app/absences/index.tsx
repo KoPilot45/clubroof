@@ -123,7 +123,7 @@ export default function AbsencesScreen() {
       />
       {absences.isPending ? <Loading /> : null}
       {absences.error ? (
-        <ErrorNotice message={absences.error.message} onRetry={() => absences.refetch()} />
+        <ErrorNotice error={absences.error} onRetry={() => absences.refetch()} />
       ) : null}
       {absences.data?.length === 0 ? (
         <Empty icon="calendar-clear-outline" text="Keine aktuellen oder geplanten Abwesenheiten." />

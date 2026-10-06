@@ -53,9 +53,7 @@ export default function PollScreen() {
   return (
     <Screen edges={[]} refreshing={poll.isRefetching} onRefresh={() => poll.refetch()}>
       {poll.isPending ? <Loading /> : null}
-      {poll.error ? (
-        <ErrorNotice message={poll.error.message} onRetry={() => poll.refetch()} />
-      ) : null}
+      {poll.error ? <ErrorNotice error={poll.error} onRetry={() => poll.refetch()} /> : null}
       {p ? (
         <>
           <View style={{ gap: 8 }}>

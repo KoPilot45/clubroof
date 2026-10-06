@@ -111,7 +111,7 @@ export default function TeamsAdminScreen() {
 
   if (overview.isPending) return <Loading />;
   if (overview.error)
-    return <ErrorNotice message={overview.error.message} onRetry={() => overview.refetch()} />;
+    return <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />;
   const o = overview.data;
 
   return (

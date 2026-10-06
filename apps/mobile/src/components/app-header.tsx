@@ -47,6 +47,17 @@ export function AppHeader({ title, subtitle }: { title?: string; subtitle?: stri
           {subtitle ?? me.club.shortName}
         </T>
       </View>
+      {me.canAdminister ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Verwaltung öffnen"
+          onPress={() => router.push('/admin')}
+          hitSlop={8}
+          style={{ padding: 4 }}
+        >
+          <Ionicons name="shield-checkmark-outline" size={23} color={colors.onSurface} />
+        </Pressable>
+      ) : null}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={

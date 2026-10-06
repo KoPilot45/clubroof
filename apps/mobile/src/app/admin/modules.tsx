@@ -2,7 +2,17 @@ import type { ModuleDecision, ModuleEntry, ModuleOverview } from '@clubroof/core
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Button, Card, Chip, ErrorNotice, Loading, Screen, Section, T } from '@/components/ui';
+import {
+  Button,
+  Card,
+  Chip,
+  ErrorNotice,
+  Loading,
+  Screen,
+  Section,
+  T,
+  Toggle,
+} from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 
@@ -48,7 +58,7 @@ export default function ModulesScreen() {
 
   if (overview.isPending) return <Loading />;
   if (overview.error)
-    return <ErrorNotice message={overview.error.message} onRetry={() => overview.refetch()} />;
+    return <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />;
   const o = overview.data;
   const busy = (key: string) => decide.isPending && decide.variables?.key === key;
 
@@ -107,15 +117,12 @@ export default function ModulesScreen() {
                   <T variant="caption">{m.description}</T>
                 </View>
                 {!m.core ? (
-                  <Button
-                    label={m.state === 'enabled' ? 'Ausschalten' : 'Einschalten'}
-                    variant="outline"
-                    loading={busy(m.key)}
-                    onPress={() =>
-                      decide.mutate({
-                        key: m.key,
-                        decision: m.state === 'enabled' ? 'disable' : 'enable',
-                      })
+                  <Toggle
+                    label={m.name}
+                    value={m.state === 'enabled'}
+                    disabled={busy(m.key)}
+                    onChange={(on) =>
+                      decide.mutate({ key: m.key, decision: on ? 'enable' : 'disable' })
                     }
                   />
                 ) : null}

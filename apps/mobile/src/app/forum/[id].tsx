@@ -36,8 +36,7 @@ export default function ForumTopicScreen() {
     },
   });
   if (topic.isPending) return <Loading />;
-  if (topic.error)
-    return <ErrorNotice message={topic.error.message} onRetry={() => topic.refetch()} />;
+  if (topic.error) return <ErrorNotice error={topic.error} onRetry={() => topic.refetch()} />;
   const t = topic.data;
   return (
     <Screen edges={[]} refreshing={topic.isRefetching} onRefresh={() => topic.refetch()}>

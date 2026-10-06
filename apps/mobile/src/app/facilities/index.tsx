@@ -9,7 +9,6 @@ import {
   ChoiceChips,
   Chip,
   DateStepper,
-  Empty,
   ErrorNotice,
   Loading,
   Screen,
@@ -130,39 +129,52 @@ export default function FacilitiesScreen() {
       ) : null}
       {occupancy.isPending ? <Loading /> : null}
       {occupancy.error ? (
-        <ErrorNotice message={occupancy.error.message} onRetry={() => occupancy.refetch()} />
+        <ErrorNotice error={occupancy.error} onRetry={() => occupancy.refetch()} />
       ) : null}
       {o && o.conflicts > 0 ? (
         <Chip tone="action" icon="warning" label={`${o.conflicts} Belegungen überschneiden sich`} />
       ) : null}
-      {o?.facilities.map(({ facility, bookings }) => {
-        const days = [...new Set(bookings.map((b) => formatDay(b.startsAt)))];
-        return (
-          <Card key={facility.id} style={{ gap: 10 }}>
-            <T variant="heading">{facility.name}</T>
-            {bookings.length === 0 ? <Empty icon="checkmark-circle-outline" text="Frei." /> : null}
-            {days.map((d) => (
-              <View key={d}>
-                {mode === 'week' ? (
-                  <T variant="label" style={{ marginBottom: 6 }}>
-                    {d}
-                  </T>
-                ) : null}
-                {bookings
-                  .filter((b) => formatDay(b.startsAt) === d)
-                  .map((b, i) => (
-                    <BookingRow
-                      key={b.id}
-                      booking={b}
-                      first={i === 0}
-                      onRemove={o.canManage ? () => remove.mutate(b.id) : undefined}
-                    />
-                  ))}
-              </View>
-            ))}
-          </Card>
-        );
-      })}
+      {o?.facilities
+        .filter((f) => f.bookings.length > 0)
+        .map(({ facility, bookings }) => {
+          const days = [...new Set(bookings.map((b) => formatDay(b.startsAt)))];
+          return (
+            <Card key={facility.id} style={{ gap: 10 }}>
+              <T variant="heading">{facility.name}</T>
+              {days.map((d) => (
+                <View key={d}>
+                  {mode === 'week' ? (
+                    <T variant="label" style={{ marginBottom: 6 }}>
+                      {d}
+                    </T>
+                  ) : null}
+                  {bookings
+                    .filter((b) => formatDay(b.startsAt) === d)
+                    .map((b, i) => (
+                      <BookingRow
+                        key={b.id}
+                        booking={b}
+                        first={i === 0}
+                        onRemove={o.canManage ? () => remove.mutate(b.id) : undefined}
+                      />
+                    ))}
+                </View>
+              ))}
+            </Card>
+          );
+        })}
+      {o && o.facilities.some((f) => f.bookings.length === 0) ? (
+        <Card style={{ gap: 8 }}>
+          <T variant="overline">{mode === 'week' ? 'Die ganze Woche frei' : 'Frei'}</T>
+          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+            {o.facilities
+              .filter((f) => f.bookings.length === 0)
+              .map(({ facility }) => (
+                <Chip key={facility.id} tone="success" icon="checkmark" label={facility.name} />
+              ))}
+          </View>
+        </Card>
+      ) : null}
     </Screen>
   );
 }

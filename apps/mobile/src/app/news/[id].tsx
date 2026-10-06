@@ -1,5 +1,4 @@
 import type { NewsItem } from '@clubroof/core';
-import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { Image, View } from 'react-native';
@@ -10,12 +9,10 @@ import { useSignedIn } from '@/lib/session';
 import { mediaUri } from '@/lib/upload';
 import { useTheme } from '@/lib/theme';
 
-const HEADER_ICON = { urgent: 'warning', important: 'megaphone', info: 'newspaper' } as const;
-
 export default function NewsDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
-  const { colors, radii } = useTheme();
+  const { radii } = useTheme();
   const queryClient = useQueryClient();
   const news = useQuery({ queryKey: ['news', id], queryFn: () => api<NewsItem>(`/news/${id}`) });
   const like = useMutation({
@@ -32,9 +29,7 @@ export default function NewsDetailScreen() {
   return (
     <Screen edges={[]} refreshing={news.isRefetching} onRefresh={() => news.refetch()}>
       {news.isPending ? <Loading /> : null}
-      {news.error ? (
-        <ErrorNotice message={news.error.message} onRetry={() => news.refetch()} />
-      ) : null}
+      {news.error ? <ErrorNotice error={news.error} onRetry={() => news.refetch()} /> : null}
       {n ? (
         <>
           {n.imageUrl ? (
@@ -43,23 +38,7 @@ export default function NewsDetailScreen() {
               accessibilityIgnoresInvertColors
               style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: radii.lg }}
             />
-          ) : (
-            <View
-              style={{
-                height: 120,
-                borderRadius: radii.lg,
-                backgroundColor: colors.primaryContainer,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Ionicons
-                name={HEADER_ICON[n.priority]}
-                size={40}
-                color={colors.onPrimaryContainer}
-              />
-            </View>
-          )}
+          ) : null}
           <View style={{ gap: 10 }}>
             <NewsSource item={n} />
             <T variant="display">{n.title}</T>

@@ -67,8 +67,7 @@ export default function DemandScreen() {
   });
 
   if (demand.isPending) return <Loading />;
-  if (demand.error)
-    return <ErrorNotice message={demand.error.message} onRetry={() => demand.refetch()} />;
+  if (demand.error) return <ErrorNotice error={demand.error} onRetry={() => demand.refetch()} />;
   const d = demand.data;
   const open = d.count - d.filled;
 

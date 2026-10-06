@@ -23,9 +23,7 @@ export default function ClubTeamsScreen() {
   return (
     <Screen edges={[]} refreshing={groups.isRefetching} onRefresh={() => groups.refetch()}>
       {groups.isPending ? <Loading /> : null}
-      {groups.error ? (
-        <ErrorNotice message={groups.error.message} onRetry={() => groups.refetch()} />
-      ) : null}
+      {groups.error ? <ErrorNotice error={groups.error} onRetry={() => groups.refetch()} /> : null}
       {groups.data?.map((g) => (
         <Section key={g.orgUnit.id} title={g.orgUnit.name}>
           <Card>

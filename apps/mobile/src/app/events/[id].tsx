@@ -2,7 +2,8 @@ import type { EventDetail, Participant } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable, View } from 'react-native';
 import { AttendanceChip, ResponseControls, useRespond } from '@/components/events';
 import { ShiftRow } from '@/components/helpers';
 import { RequestError } from '@/lib/api';
@@ -29,6 +30,90 @@ import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
 const ORDER: Participant['status'][] = ['yes', 'maybe', 'pending', 'no'];
+const GROUP_LABELS: Record<Participant['status'], string> = {
+  yes: 'Zugesagt',
+  maybe: 'Unsicher',
+  pending: 'Offen',
+  no: 'Abgesagt',
+};
+
+/**
+ * Teilnehmer nach Rückmeldung gruppiert. Oben die Zahlen als Schalter; lange Zusagelisten
+ * starten eingeklappt, damit Offene und Absagen sofort sichtbar sind.
+ */
+function ParticipantGroups({
+  participants,
+  render,
+}: {
+  participants: Participant[];
+  render: (p: Participant, index: number) => React.ReactNode;
+}) {
+  const { colors, radii } = useTheme();
+  const groups = ORDER.map((status) => ({
+    status,
+    people: participants.filter((p) => p.status === status),
+  }));
+  const [open, setOpen] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(groups.map((g) => [g.status, g.status !== 'yes' || g.people.length <= 8])),
+  );
+  return (
+    <View style={{ gap: 10 }}>
+      <View style={{ flexDirection: 'row', gap: 6 }}>
+        {groups.map((g) => {
+          const active = open[g.status];
+          return (
+            <Pressable
+              key={g.status}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: active }}
+              accessibilityLabel={`${GROUP_LABELS[g.status]}: ${g.people.length}`}
+              onPress={() => setOpen({ ...open, [g.status]: !active })}
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                paddingVertical: 6,
+                borderRadius: radii.md,
+                backgroundColor: active ? colors.primaryContainer : 'transparent',
+              }}
+            >
+              <T variant="title" color={colors.primaryText}>
+                {g.people.length}
+              </T>
+              <T variant="caption">{GROUP_LABELS[g.status]}</T>
+            </Pressable>
+          );
+        })}
+      </View>
+      {groups
+        .filter((g) => g.people.length > 0)
+        .map((g) => (
+          <View key={g.status}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ expanded: open[g.status] }}
+              onPress={() => setOpen({ ...open, [g.status]: !open[g.status] })}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingVertical: 8,
+                borderTopWidth: 1,
+                borderTopColor: colors.border,
+              }}
+            >
+              <T variant="overline">{`${GROUP_LABELS[g.status]} (${g.people.length})`}</T>
+              <Ionicons
+                name={open[g.status] ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color={colors.onSurfaceMuted}
+              />
+            </Pressable>
+            {open[g.status] ? g.people.map((p, i) => render(p, i)) : null}
+          </View>
+        ))}
+    </View>
+  );
+}
 
 const CANCEL_REASONS = ['Platz gesperrt', 'Wetter', 'Zu wenige Zusagen', 'Trainer verhindert'];
 
@@ -235,9 +320,7 @@ export default function EventScreen() {
   return (
     <Screen edges={[]} refreshing={query.isRefetching} onRefresh={() => query.refetch()}>
       {query.isPending ? <Loading /> : null}
-      {query.error ? (
-        <ErrorNotice message={query.error.message} onRetry={() => query.refetch()} />
-      ) : null}
+      {query.error ? <ErrorNotice error={query.error} onRetry={() => query.refetch()} /> : null}
       {e ? (
         <>
           <Card style={{ gap: 10 }}>
@@ -382,26 +465,9 @@ export default function EventScreen() {
           {e.team ? (
             <Section title={`Teilnehmer (${e.counts.yes} zugesagt)`}>
               <Card style={{ gap: 10 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-                  {(
-                    [
-                      ['Zugesagt', e.counts.yes],
-                      ['Unsicher', e.counts.maybe],
-                      ['Offen', e.counts.pending],
-                      ['Abgesagt', e.counts.no],
-                    ] as const
-                  ).map(([label, n]) => (
-                    <View key={label} style={{ alignItems: 'center' }}>
-                      <T variant="title" color={colors.primaryText}>
-                        {n}
-                      </T>
-                      <T variant="caption">{label}</T>
-                    </View>
-                  ))}
-                </View>
-                {[...e.participants]
-                  .sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status))
-                  .map((p, i) => (
+                <ParticipantGroups
+                  participants={e.participants}
+                  render={(p, i) => (
                     <ParticipantRow
                       key={p.personId}
                       participant={p}
@@ -409,7 +475,8 @@ export default function EventScreen() {
                       first={i === 0}
                       canOverride={e.canOverride && p.role !== 'coach' && e.status === 'scheduled'}
                     />
-                  ))}
+                  )}
+                />
               </Card>
             </Section>
           ) : null}

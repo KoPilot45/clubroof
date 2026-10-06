@@ -21,6 +21,7 @@ import { RequestError } from '@/lib/api';
 import { toGermanDate } from '@/lib/dates';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { teamTitle } from '@/lib/team-labels';
 
 type Tab = 'requests' | 'links' | 'people';
 
@@ -261,7 +262,7 @@ export default function InvitesScreen() {
 
   if (overview.isPending) return <Loading />;
   if (overview.error)
-    return <ErrorNotice message={overview.error.message} onRetry={() => overview.refetch()} />;
+    return <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />;
   const o = overview.data;
 
   return (
@@ -293,7 +294,7 @@ export default function InvitesScreen() {
             ungültig.
           </T>
           {o.teams.map((t) => (
-            <Section key={t.id} title={`${t.badge} · ${t.name}`}>
+            <Section key={t.id} title={teamTitle(t)}>
               <Card style={{ gap: 10 }}>
                 {t.link ? (
                   <>

@@ -1,12 +1,28 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { Loading } from '@/components/ui';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
+
+function HomeBackButton() {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Zurück zur Startseite"
+      onPress={() => router.replace('/')}
+      hitSlop={12}
+      style={{ paddingRight: 12 }}
+    >
+      <Ionicons name="arrow-back" size={24} color={colors.primaryText} />
+    </Pressable>
+  );
+}
 
 function Navigator() {
   const session = useSession();
@@ -25,14 +41,16 @@ function Navigator() {
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <Stack
-        screenOptions={{
+        screenOptions={({ navigation }) => ({
+          // Direkt geöffnete Seiten (Link, Push) haben keinen Verlauf: Pfeil führt zur Startseite
+          ...(navigation.canGoBack() ? {} : { headerLeft: () => <HomeBackButton /> }),
           headerShown: false,
           headerTintColor: colors.primaryText,
           headerStyle: { backgroundColor: colors.surface },
           headerTitleStyle: { color: colors.onSurface, fontWeight: '700' },
           contentStyle: { backgroundColor: colors.background },
           headerBackTitle: 'Zurück',
-        }}
+        })}
       >
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="(tabs)" />
@@ -99,14 +117,13 @@ function Navigator() {
             options={{ headerShown: true, title: 'Termine' }}
           />
           <Stack.Screen name="profile/[id]" options={{ headerShown: true, title: 'Profil' }} />
-          <Stack.Screen name="stats" options={{ headerShown: true, title: 'Meine Statistik' }} />
           <Stack.Screen name="helpers" options={{ headerShown: true, title: 'Helfer gesucht' }} />
           <Stack.Screen name="documents" options={{ headerShown: true, title: 'Dokumente' }} />
           <Stack.Screen name="club-teams" options={{ headerShown: true, title: 'Mannschaften' }} />
           <Stack.Screen name="contacts" options={{ headerShown: true, title: 'Ansprechpartner' }} />
           <Stack.Screen
             name="club-events"
-            options={{ headerShown: true, title: 'Termine & Veranstaltungen' }}
+            options={{ headerShown: true, title: 'Veranstaltungen' }}
           />
           <Stack.Screen
             name="exchange/index"

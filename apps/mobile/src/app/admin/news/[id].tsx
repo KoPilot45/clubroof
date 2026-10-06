@@ -100,8 +100,7 @@ export default function EditNewsScreen() {
   });
 
   if (news.isPending) return <Loading />;
-  if (news.error)
-    return <ErrorNotice message={news.error.message} onRetry={() => news.refetch()} />;
+  if (news.error) return <ErrorNotice error={news.error} onRetry={() => news.refetch()} />;
   const n = news.data;
 
   if (editing) {

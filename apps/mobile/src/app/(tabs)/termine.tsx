@@ -63,7 +63,7 @@ export default function EventsTab() {
         <Card>
           {upcoming.isPending ? <Loading /> : null}
           {upcoming.error ? (
-            <ErrorNotice message={upcoming.error.message} onRetry={() => upcoming.refetch()} />
+            <ErrorNotice error={upcoming.error} onRetry={() => upcoming.refetch()} />
           ) : null}
           {upcoming.data && next.length === 0 ? (
             <Empty icon="calendar-outline" text="Keine anstehenden Termine." />

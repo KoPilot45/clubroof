@@ -162,7 +162,7 @@ function ClubForm() {
 
   if (settings.isPending) return <Loading />;
   if (settings.error)
-    return <ErrorNotice message={settings.error.message} onRetry={() => settings.refetch()} />;
+    return <ErrorNotice error={settings.error} onRetry={() => settings.refetch()} />;
   const s = settings.data;
   const dirty =
     name.trim() !== s.name || shortName.trim() !== s.shortName || color !== s.colorTheme;

@@ -1,7 +1,8 @@
 import type { NotificationSettings, UpdateNotificationSettingsInput } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Switch, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable, Switch, View } from 'react-native';
 import {
   Button,
   Card,
@@ -41,7 +42,7 @@ const REMINDERS = [
 
 export default function NotificationSettingsScreen() {
   const { api } = useSignedIn();
-  const { colors } = useTheme();
+  const { colors, radii } = useTheme();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [push, setPush] = useState<PushState | null>(null);
@@ -70,7 +71,7 @@ export default function NotificationSettingsScreen() {
 
   if (settings.isPending) return <Loading />;
   if (settings.error)
-    return <ErrorNotice message={settings.error.message} onRetry={() => settings.refetch()} />;
+    return <ErrorNotice error={settings.error} onRetry={() => settings.refetch()} />;
   const s = settings.data;
   const quietDirty =
     quiet && (quiet.start !== s.quietHours.start || quiet.end !== s.quietHours.end);
@@ -124,21 +125,73 @@ export default function NotificationSettingsScreen() {
       </Section>
 
       <Section title="Themen">
-        {s.topics.map((topic) => (
-          <Card key={topic.key} style={{ gap: 8 }}>
-            <View>
-              <T variant="label" style={{ fontWeight: '700' }}>
-                {topic.label}
-              </T>
-              <T variant="caption">{topic.description}</T>
+        <Card>
+          <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap', paddingBottom: 8 }}>
+            {MODES.map((m) => (
+              <View key={m.value} style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
+                <Ionicons name={m.icon} size={14} color={colors.onSurfaceMuted} />
+                <T variant="caption">{m.label}</T>
+              </View>
+            ))}
+          </View>
+          {s.topics.map((topic) => (
+            <View
+              key={topic.key}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                paddingVertical: 10,
+                borderTopWidth: 1,
+                borderTopColor: colors.border,
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <T variant="label" style={{ fontWeight: '700' }}>
+                  {topic.label}
+                </T>
+                <T variant="caption" numberOfLines={2}>
+                  {topic.description}
+                </T>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  borderRadius: radii.pill,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  overflow: 'hidden',
+                }}
+              >
+                {MODES.map((m) => {
+                  const active = topic.mode === m.value;
+                  return (
+                    <Pressable
+                      key={m.value}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: active }}
+                      accessibilityLabel={`${topic.label}: ${m.label}`}
+                      onPress={() => save.mutate({ topics: { [topic.key]: m.value } })}
+                      style={{
+                        width: 38,
+                        height: 34,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: active ? colors.primary : colors.surface,
+                      }}
+                    >
+                      <Ionicons
+                        name={m.icon}
+                        size={16}
+                        color={active ? colors.onPrimary : colors.onSurfaceMuted}
+                      />
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
-            <ChoiceChips
-              options={MODES}
-              selected={[topic.mode]}
-              onToggle={(mode) => save.mutate({ topics: { [topic.key]: mode } })}
-            />
-          </Card>
-        ))}
+          ))}
+        </Card>
       </Section>
 
       {s.teams.length > 1 ? (

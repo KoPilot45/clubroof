@@ -14,9 +14,7 @@ export default function AuditScreen() {
     <Screen edges={[]} refreshing={audit.isRefetching} onRefresh={() => audit.refetch()}>
       <T variant="caption">Wer hat wann was geändert – die letzten 200 Einträge.</T>
       {audit.isPending ? <Loading /> : null}
-      {audit.error ? (
-        <ErrorNotice message={audit.error.message} onRetry={() => audit.refetch()} />
-      ) : null}
+      {audit.error ? <ErrorNotice error={audit.error} onRetry={() => audit.refetch()} /> : null}
       {audit.data?.length === 0 ? (
         <Empty icon="list-outline" text="Noch keine Änderungen." />
       ) : null}

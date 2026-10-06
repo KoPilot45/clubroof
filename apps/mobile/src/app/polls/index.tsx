@@ -35,9 +35,7 @@ export default function PollListScreen() {
         />
       ) : null}
       {polls.isPending ? <Loading /> : null}
-      {polls.error ? (
-        <ErrorNotice message={polls.error.message} onRetry={() => polls.refetch()} />
-      ) : null}
+      {polls.error ? <ErrorNotice error={polls.error} onRetry={() => polls.refetch()} /> : null}
       {polls.data ? (
         <Card>
           {polls.data.length === 0 ? (

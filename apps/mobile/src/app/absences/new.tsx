@@ -7,6 +7,7 @@ import { RequestError } from '@/lib/api';
 import { todayIso } from '@/lib/format';
 import { ABSENCE_ICONS, ABSENCE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
+import { teamTitle } from '@/lib/team-labels';
 
 export default function NewAbsenceScreen() {
   const { api, me } = useSignedIn();
@@ -116,7 +117,7 @@ export default function NewAbsenceScreen() {
           />
           {scope === 'selected' ? (
             <ChoiceChips
-              options={personTeams.map((t) => ({ value: t.id, label: `${t.badge} · ${t.name}` }))}
+              options={personTeams.map((t) => ({ value: t.id, label: teamTitle(t) }))}
               selected={teamIds}
               onToggle={(id) =>
                 setTeamIds((current) =>

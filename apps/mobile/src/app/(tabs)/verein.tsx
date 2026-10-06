@@ -31,7 +31,7 @@ export default function ClubScreen() {
     queryFn: () => api<PollSummary[]>('/polls'),
   });
 
-  // Für den Hinweis auf den nächsten Vereinstermin weiter vorausschauen (wie „Termine & Veranstaltungen“)
+  // Für den Hinweis auf den nächsten Vereinstermin weiter vorausschauen (wie „Veranstaltungen“)
   const upcomingClub = useQuery({
     queryKey: ['events', 'club'],
     queryFn: () => {
@@ -71,7 +71,7 @@ export default function ClubScreen() {
       : []),
     {
       key: 'events',
-      label: 'Termine & Veranstaltungen',
+      label: 'Veranstaltungen',
       icon: 'calendar',
       onPress: () => router.push('/club-events'),
     },

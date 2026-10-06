@@ -49,8 +49,7 @@ export default function TasksScreen() {
   );
 
   if (list.isPending) return <Loading />;
-  if (list.error)
-    return <ErrorNotice message={list.error.message} onRetry={() => list.refetch()} />;
+  if (list.error) return <ErrorNotice error={list.error} onRetry={() => list.refetch()} />;
   const l = list.data;
 
   return (
@@ -88,7 +87,8 @@ export default function TasksScreen() {
                     key={p.id}
                     label={p.relation === 'child' ? `Übernimmt ${p.firstName}` : 'Ich übernehme'}
                     icon="hand-left-outline"
-                    style={{ flexGrow: 1 }}
+                    variant="tonal"
+                    size="sm"
                     onPress={() =>
                       run.mutate({
                         path: `/tasks/${task.id}/take`,
@@ -103,8 +103,8 @@ export default function TasksScreen() {
               <Button
                 label="Erledigt"
                 icon="checkmark"
-                variant={task.can.take ? 'outline' : 'primary'}
-                style={{ flexGrow: 1 }}
+                variant={task.can.take ? 'outline' : 'tonal'}
+                size="sm"
                 onPress={() => run.mutate({ path: `/tasks/${task.id}/done`, method: 'POST' })}
               />
             ) : null}
@@ -112,7 +112,7 @@ export default function TasksScreen() {
               <Button
                 label="Freigeben"
                 variant="outline"
-                style={{ flexGrow: 1 }}
+                size="sm"
                 onPress={() =>
                   run.mutate({
                     path: `/tasks/${task.id}`,
@@ -125,8 +125,9 @@ export default function TasksScreen() {
             {task.can.manage ? (
               <Button
                 label="Löschen"
+                icon="trash-outline"
                 variant="danger"
-                style={{ flexGrow: 1 }}
+                size="sm"
                 onPress={() => run.mutate({ path: `/tasks/${task.id}`, method: 'DELETE' })}
               />
             ) : null}
@@ -142,6 +143,7 @@ export default function TasksScreen() {
                 <Button
                   label="Wieder öffnen"
                   variant="outline"
+                  size="sm"
                   onPress={() =>
                     run.mutate({
                       path: `/tasks/${task.id}`,

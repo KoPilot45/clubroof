@@ -28,7 +28,7 @@ export default function JerseysScreen() {
   });
   if (settings.isPending) return <Loading />;
   if (settings.error)
-    return <ErrorNotice message={settings.error.message} onRetry={() => settings.refetch()} />;
+    return <ErrorNotice error={settings.error} onRetry={() => settings.refetch()} />;
   return <Editor teamId={id} settings={settings.data} />;
 }
 

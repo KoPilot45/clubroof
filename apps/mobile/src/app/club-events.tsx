@@ -24,7 +24,6 @@ const dayTitle = new Intl.DateTimeFormat('de-DE', {
 export default function ClubEventsScreen() {
   const { api } = useSignedIn();
   const [view, setView] = useState<'list' | 'month'>('list');
-  const [withTeams, setWithTeams] = useState(false);
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -47,7 +46,7 @@ export default function ClubEventsScreen() {
     },
   });
   const all = events.data ?? [];
-  const list = all.filter((e) => withTeams || e.team === null);
+  const list = all.filter((e) => e.team === null);
   const ofDay = list.filter((e) => day && dayKey(new Date(e.startsAt)) === day);
 
   return (
@@ -60,15 +59,12 @@ export default function ClubEventsScreen() {
         selected={[view]}
         onToggle={setView}
       />
-      <ChoiceChips
-        options={[{ value: 'teams', label: 'Auch meine Mannschaftstermine', icon: 'people' }]}
-        selected={withTeams ? ['teams'] : []}
-        onToggle={() => setWithTeams(!withTeams)}
-      />
+      <T variant="caption">
+        Veranstaltungen und Sitzungen des Vereins. Deine Trainings und Spiele findest du unter
+        „Termine“.
+      </T>
       {events.isPending ? <Loading /> : null}
-      {events.error ? (
-        <ErrorNotice message={events.error.message} onRetry={() => events.refetch()} />
-      ) : null}
+      {events.error ? <ErrorNotice error={events.error} onRetry={() => events.refetch()} /> : null}
       {events.data && view === 'list' ? (
         <Card>
           {list.length === 0 ? (

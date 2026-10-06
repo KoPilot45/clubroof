@@ -91,7 +91,20 @@ export function EventRow({ event, first }: { event: EventSummary; first?: boolea
       }
       trailing={
         cancelled ? null : mine ? (
-          <AttendanceChip status={mine.status} />
+          event.myResponses.length > 1 || mine.relation === 'child' ? (
+            // Eltern: je Person ein Status mit Vornamen („Mia: Unsicher“)
+            <View style={{ gap: 4, alignItems: 'flex-end' }}>
+              {event.myResponses.map((r) => (
+                <Chip
+                  key={r.personId}
+                  tone={STATUS_TONE[r.status]}
+                  label={`${r.relation === 'self' ? 'Ich' : r.firstName}: ${ATTENDANCE_LABELS[r.status]}`}
+                />
+              ))}
+            </View>
+          ) : (
+            <AttendanceChip status={mine.status} />
+          )
         ) : (
           <Ionicons name={eventIcon(event)} size={18} color={colors.onSurfaceMuted} />
         )
@@ -127,7 +140,7 @@ export function ResponseControls({ event }: { event: EventSummary }) {
   const [note, setNote] = useState('');
   if (event.myResponses.length === 0) return null;
 
-  const send = (r: MyResponse, status: 'yes' | 'no', declineReason?: string) => {
+  const send = (r: MyResponse, status: 'yes' | 'no' | 'maybe', declineReason?: string) => {
     setError(null);
     respond.mutate(
       { personId: r.personId, status, reason: declineReason },
@@ -147,7 +160,7 @@ export function ResponseControls({ event }: { event: EventSummary }) {
     );
   };
 
-  const busy = (r: MyResponse, status: 'yes' | 'no') =>
+  const busy = (r: MyResponse, status: 'yes' | 'no' | 'maybe') =>
     respond.isPending &&
     respond.variables?.personId === r.personId &&
     respond.variables.status === status;
@@ -217,6 +230,14 @@ export function ResponseControls({ event }: { event: EventSummary }) {
                 variant={r.status === 'yes' || r.status === 'pending' ? 'primary' : 'outline'}
                 loading={busy(r, 'yes')}
                 onPress={() => send(r, 'yes')}
+              />
+              <Button
+                style={{ flex: 0.8 }}
+                label="Unsicher"
+                icon={r.status === 'maybe' ? 'help-circle' : undefined}
+                variant={r.status === 'maybe' ? 'action' : 'outline'}
+                loading={busy(r, 'maybe')}
+                onPress={() => send(r, 'maybe')}
               />
               <Button
                 style={{ flex: 1 }}

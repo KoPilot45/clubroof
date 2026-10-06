@@ -86,9 +86,7 @@ export default function DocumentsScreen() {
       <ChoiceChips options={CATEGORIES} selected={[category]} onToggle={setCategory} />
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       {docs.isPending ? <Loading /> : null}
-      {docs.error ? (
-        <ErrorNotice message={docs.error.message} onRetry={() => docs.refetch()} />
-      ) : null}
+      {docs.error ? <ErrorNotice error={docs.error} onRetry={() => docs.refetch()} /> : null}
       {docs.data ? (
         <Card>
           {docs.data.length === 0 ? (

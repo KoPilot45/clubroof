@@ -13,8 +13,7 @@ export default function RolesScreen() {
     queryFn: () => api<RoleCatalog>('/admin/roles'),
   });
   if (catalog.isPending) return <Loading />;
-  if (catalog.error)
-    return <ErrorNotice message={catalog.error.message} onRetry={() => catalog.refetch()} />;
+  if (catalog.error) return <ErrorNotice error={catalog.error} onRetry={() => catalog.refetch()} />;
   return (
     <Screen edges={[]} refreshing={catalog.isRefetching} onRefresh={() => catalog.refetch()}>
       <T variant="caption">

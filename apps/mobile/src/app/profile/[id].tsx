@@ -10,7 +10,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Linking, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import {
   Avatar,
   Button,
@@ -31,6 +31,8 @@ import {
 import { RequestError } from '@/lib/api';
 import { formatShortDate, plural } from '@/lib/format';
 import { CONTACT_VISIBILITY_LABELS, FOOT_LABELS, TEAM_FUNCTION_LABELS } from '@/lib/labels';
+import { ContactActions } from '@/components/contact';
+import { RateBar } from '@/components/stats';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { pickFile } from '@/lib/upload';
@@ -151,9 +153,7 @@ export default function ProfileScreen() {
   return (
     <Screen edges={[]} refreshing={query.isRefetching} onRefresh={() => query.refetch()}>
       {query.isPending ? <Loading /> : null}
-      {query.error ? (
-        <ErrorNotice message={query.error.message} onRetry={() => query.refetch()} />
-      ) : null}
+      {query.error ? <ErrorNotice error={query.error} onRetry={() => query.refetch()} /> : null}
       {p ? (
         <>
           <Card style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
@@ -202,7 +202,7 @@ export default function ProfileScreen() {
               </Card>
 
               {p.stats ? (
-                <Section title="Saison">
+                <Section title="Saison-Statistik">
                   <Card style={{ gap: 12 }}>
                     <View style={{ flexDirection: 'row' }}>
                       <Stat
@@ -220,14 +220,24 @@ export default function ProfileScreen() {
                       <Stat value={p.stats.goals} label="Tore" />
                       <Stat value={p.stats.assists} label="Vorlagen" />
                     </View>
-                    {p.stats.byTeam.length > 1
-                      ? p.stats.byTeam.map((t) => (
-                          <T key={t.teamId} variant="caption">
-                            {t.badge}: {t.trainingsAttended} von {t.trainings} Trainings ·{' '}
+                    {p.stats.byTeam.map((t) => {
+                      const rate = t.trainings
+                        ? Math.round((t.trainingsAttended / t.trainings) * 100)
+                        : null;
+                      return (
+                        <View key={t.teamId} style={{ gap: 4 }}>
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <T variant="label">{t.badge}</T>
+                            <T variant="label">{rate === null ? '–' : `${rate} %`}</T>
+                          </View>
+                          <RateBar value={rate} />
+                          <T variant="caption">
+                            {t.trainingsAttended} von {t.trainings} Trainings ·{' '}
                             {plural(t.matches, 'Spiel', 'Spiele')}
                           </T>
-                        ))
-                      : null}
+                        </View>
+                      );
+                    })}
                   </Card>
                 </Section>
               ) : null}
@@ -282,29 +292,14 @@ export default function ProfileScreen() {
 
               {p.contact && (p.contact.email || p.contact.phone) ? (
                 <Section title="Kontakt">
-                  <Card style={{ gap: 8 }}>
-                    {p.contact.phone ? (
-                      <Pressable
-                        accessibilityRole="link"
-                        onPress={() =>
-                          void Linking.openURL(`tel:${p.contact!.phone!.replace(/\s/g, '')}`)
-                        }
-                      >
-                        <T color={colors.primaryText} style={{ fontWeight: '700' }}>
-                          {p.contact.phone}
-                        </T>
-                      </Pressable>
-                    ) : null}
-                    {p.contact.email ? (
-                      <Pressable
-                        accessibilityRole="link"
-                        onPress={() => void Linking.openURL(`mailto:${p.contact!.email!}`)}
-                      >
-                        <T color={colors.primaryText} style={{ fontWeight: '700' }}>
-                          {p.contact.email}
-                        </T>
-                      </Pressable>
-                    ) : null}
+                  <Card style={{ gap: 10 }}>
+                    {p.contact.phone ? <T variant="label">{p.contact.phone}</T> : null}
+                    {p.contact.email ? <T variant="label">{p.contact.email}</T> : null}
+                    <ContactActions
+                      name={p.firstName}
+                      phone={p.contact.phone}
+                      email={p.contact.email}
+                    />
                   </Card>
                 </Section>
               ) : null}

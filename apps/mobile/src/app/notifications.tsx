@@ -125,9 +125,7 @@ export default function NotificationsScreen() {
         })}
       </ScrollView>
       {list.isPending ? <Loading /> : null}
-      {list.error ? (
-        <ErrorNotice message={list.error.message} onRetry={() => list.refetch()} />
-      ) : null}
+      {list.error ? <ErrorNotice error={list.error} onRetry={() => list.refetch()} /> : null}
       {list.data && items.length === 0 ? (
         <Card>
           <Empty icon="notifications-off-outline" text="Keine Benachrichtigungen." />

@@ -1,5 +1,6 @@
 import type { EventSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { EventRow } from '@/components/events';
 import { Card, ChoiceChips, Empty, ErrorNotice, Loading, Screen, Section } from '@/components/ui';
@@ -8,10 +9,17 @@ import { useSignedIn } from '@/lib/session';
 
 const DAY = 24 * 60 * 60 * 1000;
 
-/** Alle eigenen Termine der nächsten Wochen, nach Woche gruppiert und nach Art filterbar. */
+/**
+ * Alle eigenen Termine der nächsten Wochen, nach Woche gruppiert und nach Art bzw. Mannschaft
+ * filterbar. Die Team-Kachel „Termine“ öffnet diese Liste mit `?teamId=…`.
+ */
 export default function AllEventsScreen() {
   const { api, me } = useSignedIn();
+  const params = useLocalSearchParams<{ teamId?: string }>();
   const [filter, setFilter] = useState<EventKind | 'all'>('all');
+  const [teamId, setTeamId] = useState<string>(params.teamId ?? 'all');
+  const teams = [...new Map(me.teams.map((t) => [t.id, t])).values()];
+  const team = teams.find((t) => t.id === teamId);
   const events = useQuery({
     queryKey: ['events', 'mine', 'all'],
     queryFn: () => {
@@ -23,10 +31,10 @@ export default function AllEventsScreen() {
     },
   });
   if (events.isPending) return <Loading />;
-  if (events.error)
-    return <ErrorNotice message={events.error.message} onRetry={() => events.refetch()} />;
-  const list = events.data.filter((e) => filter === 'all' || kindOf(e) === filter);
-  const kinds = [...new Set(events.data.map(kindOf))];
+  if (events.error) return <ErrorNotice error={events.error} onRetry={() => events.refetch()} />;
+  const ofTeam = events.data.filter((e) => teamId === 'all' || e.team?.id === teamId);
+  const list = ofTeam.filter((e) => filter === 'all' || kindOf(e) === filter);
+  const kinds = [...new Set(ofTeam.map(kindOf))];
   // Nach Kalenderwoche (Montag) gruppieren
   const weekOf = (iso: string) => {
     const d = new Date(iso);
@@ -41,6 +49,20 @@ export default function AllEventsScreen() {
   });
   return (
     <Screen edges={[]} refreshing={events.isRefetching} onRefresh={() => events.refetch()}>
+      <Stack.Screen options={{ title: team ? `Termine ${team.badge}` : 'Alle Termine' }} />
+      {teams.length > 1 ? (
+        <ChoiceChips
+          options={[
+            { value: 'all', label: 'Alle Mannschaften' },
+            ...teams.map((t) => ({ value: t.id, label: t.badge })),
+          ]}
+          selected={[teamId]}
+          onToggle={(v) => {
+            setTeamId(v);
+            setFilter('all');
+          }}
+        />
+      ) : null}
       <ChoiceChips
         options={[
           { value: 'all' as const, label: 'Alle' },

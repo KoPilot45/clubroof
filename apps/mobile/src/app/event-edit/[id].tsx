@@ -50,8 +50,7 @@ export default function EditEventScreen() {
     queryFn: () => api<Facility[]>('/facilities'),
   });
   if (event.isPending || facilities.isPending) return <Loading />;
-  if (event.error)
-    return <ErrorNotice message={event.error.message} onRetry={() => event.refetch()} />;
+  if (event.error) return <ErrorNotice error={event.error} onRetry={() => event.refetch()} />;
   return <Form event={event.data} facilities={facilities.data ?? []} />;
 }
 

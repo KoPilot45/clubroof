@@ -4,10 +4,12 @@
  * Statusfarben immer mit Beschriftung.
  */
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import type { StatusKey } from '@clubroof/design-tokens';
 import type { ComponentProps, ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Switch,
   Image,
   Pressable,
   TextInput,
@@ -23,6 +25,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { useTheme } from '@/lib/theme';
+import { RequestError } from '@/lib/api';
 import { mediaUri } from '@/lib/upload';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -237,10 +240,14 @@ export function Button({
   disabled,
   loading,
   style,
+  size = 'md',
 }: {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'outline' | 'danger';
+  /** tonal = dezente Vereinsfarbe für Nebenaktionen in Listen, action = gewählter Zwischenstatus */
+  variant?: 'primary' | 'outline' | 'danger' | 'tonal' | 'action';
+  /** sm für Aktionen innerhalb von Listen und Karten */
+  size?: 'md' | 'sm';
   icon?: IconName;
   disabled?: boolean;
   loading?: boolean;
@@ -266,7 +273,20 @@ export function Button({
       fg: colors.status.urgent.onContainer,
       border: colors.border,
     },
+    tonal: {
+      bg: colors.primaryContainer,
+      pressed: colors.surfaceVariant,
+      fg: colors.onPrimaryContainer,
+      border: colors.primaryContainer,
+    },
+    action: {
+      bg: colors.status.action.container,
+      pressed: colors.surfaceVariant,
+      fg: colors.status.action.onContainer,
+      border: colors.status.action.container,
+    },
   }[variant];
+  const small = size === 'sm';
   return (
     <Pressable
       accessibilityRole="button"
@@ -279,8 +299,8 @@ export function Button({
           gap: 6,
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: 46,
-          paddingHorizontal: 16,
+          minHeight: small ? 36 : 46,
+          paddingHorizontal: small ? 12 : 16,
           borderRadius: radii.md,
           borderWidth: 1,
           borderColor: palette.border,
@@ -294,11 +314,39 @@ export function Button({
         <ActivityIndicator color={palette.fg} />
       ) : (
         <>
-          {icon ? <Ionicons name={icon} size={18} color={palette.fg} /> : null}
-          <Text style={{ color: palette.fg, fontSize: 15, fontWeight: '800' }}>{label}</Text>
+          {icon ? <Ionicons name={icon} size={small ? 16 : 18} color={palette.fg} /> : null}
+          <Text style={{ color: palette.fg, fontSize: small ? 13 : 15, fontWeight: '800' }}>
+            {label}
+          </Text>
         </>
       )}
     </Pressable>
+  );
+}
+
+/** Ein/Aus-Schalter in Vereinsfarbe. */
+export function Toggle({
+  label,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  value: boolean;
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
+}) {
+  const { colors } = useTheme();
+  return (
+    <Switch
+      accessibilityLabel={label}
+      value={value}
+      disabled={disabled}
+      trackColor={{ true: colors.primary, false: colors.border }}
+      thumbColor={colors.surface}
+      {...({ activeThumbColor: colors.surface } as object)}
+      onValueChange={onChange}
+    />
   );
 }
 
@@ -477,11 +525,42 @@ export function Loading() {
   );
 }
 
-export function ErrorNotice({ message, onRetry }: { message: string; onRetry?: () => void }) {
+/**
+ * Fehlerhinweis. Fehlende Rechte (403) und nicht Gefundenes (404) erscheinen als ruhiger
+ * Hinweis ohne „Erneut versuchen“ – ein Neuladen ändert daran nichts.
+ */
+export function ErrorNotice({
+  error,
+  message,
+  onRetry,
+}: {
+  error?: Error | null;
+  message?: string;
+  onRetry?: () => void;
+}) {
+  const status = error instanceof RequestError ? error.status : null;
+  const text = message ?? error?.message ?? 'Es ist ein unerwarteter Fehler aufgetreten.';
+  if (status === 403 || status === 404) {
+    return (
+      <Card style={{ gap: 12, alignItems: 'flex-start' }}>
+        <Chip
+          tone="info"
+          icon={status === 403 ? 'lock-closed' : 'search'}
+          label={status === 403 ? 'Kein Zugriff' : 'Nicht gefunden'}
+        />
+        <T>{text}</T>
+        {router.canGoBack() ? (
+          <Button label="Zurück" variant="outline" onPress={() => router.back()} />
+        ) : (
+          <Button label="Zur Startseite" variant="outline" onPress={() => router.replace('/')} />
+        )}
+      </Card>
+    );
+  }
   return (
     <Card style={{ gap: 12, alignItems: 'flex-start' }}>
       <Chip tone="urgent" icon="alert-circle" label="Fehler" />
-      <T>{message}</T>
+      <T>{text}</T>
       {onRetry ? <Button label="Erneut versuchen" variant="outline" onPress={onRetry} /> : null}
     </Card>
   );
@@ -510,6 +589,8 @@ export type TileItem = {
   badge?: string | number;
   /** Funktion folgt in einem späteren Paket */
   soon?: boolean;
+  /** Kurze zweite Zeile, z. B. wer eine Liste anführt */
+  hint?: string;
 };
 
 export function TileGrid({ items }: { items: TileItem[] }) {
@@ -589,9 +670,12 @@ export function TileGrid({ items }: { items: TileItem[] }) {
               >
                 {item.label}
               </Text>
-              {item.soon ? (
-                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.onSurfaceMuted }}>
-                  Bald verfügbar
+              {item.soon || item.hint ? (
+                <Text
+                  style={{ fontSize: 12, fontWeight: '600', color: colors.onSurfaceMuted }}
+                  numberOfLines={1}
+                >
+                  {item.soon ? 'Bald verfügbar' : item.hint}
                 </Text>
               ) : null}
             </View>

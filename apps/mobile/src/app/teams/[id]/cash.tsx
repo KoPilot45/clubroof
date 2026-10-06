@@ -88,9 +88,7 @@ export default function CashScreen() {
   return (
     <Screen edges={[]} refreshing={cash.isRefetching} onRefresh={() => cash.refetch()}>
       {cash.isPending ? <Loading /> : null}
-      {cash.error ? (
-        <ErrorNotice message={cash.error.message} onRetry={() => cash.refetch()} />
-      ) : null}
+      {cash.error ? <ErrorNotice error={cash.error} onRetry={() => cash.refetch()} /> : null}
       {c ? (
         <>
           {c.balanceCents !== null ? (

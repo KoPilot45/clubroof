@@ -42,8 +42,7 @@ export default function DamagesScreen() {
     },
   });
   if (list.isPending) return <Loading />;
-  if (list.error)
-    return <ErrorNotice message={list.error.message} onRetry={() => list.refetch()} />;
+  if (list.error) return <ErrorNotice error={list.error} onRetry={() => list.refetch()} />;
   const d = list.data;
   return (
     <Screen edges={[]} refreshing={list.isRefetching} onRefresh={() => list.refetch()}>

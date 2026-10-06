@@ -44,8 +44,7 @@ export default function ExercisesScreen() {
     },
   });
   if (list.isPending) return <Loading />;
-  if (list.error)
-    return <ErrorNotice message={list.error.message} onRetry={() => list.refetch()} />;
+  if (list.error) return <ErrorNotice error={list.error} onRetry={() => list.refetch()} />;
   const shown = list.data.filter((e) => filter === 'all' || e.category === filter);
   return (
     <Screen edges={[]} refreshing={list.isRefetching} onRefresh={() => list.refetch()}>
@@ -98,7 +97,9 @@ export default function ExercisesScreen() {
             {e.canDelete ? (
               <Button
                 label="Löschen"
-                variant="outline"
+                icon="trash-outline"
+                variant="danger"
+                size="sm"
                 onPress={() => change.mutate({ method: 'DELETE', id: e.id })}
               />
             ) : null}

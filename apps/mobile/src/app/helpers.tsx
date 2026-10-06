@@ -21,7 +21,7 @@ export default function HelpersScreen() {
       </T>
       {helpers.isPending ? <Loading /> : null}
       {helpers.error ? (
-        <ErrorNotice message={helpers.error.message} onRetry={() => helpers.refetch()} />
+        <ErrorNotice error={helpers.error} onRetry={() => helpers.refetch()} />
       ) : null}
       {helpers.data?.length === 0 ? (
         <Empty icon="hand-left-outline" text="Aktuell werden keine Helfer gesucht." />
