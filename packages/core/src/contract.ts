@@ -198,6 +198,8 @@ export type ActionItem = {
   subtitle: string;
   dueAt: string | null;
   link: string;
+  /** Umfragen: Antwortmöglichkeiten für die Schnellantwort auf der Startseite */
+  options?: { id: string; label: string }[];
 };
 
 export type CashTeaser = {

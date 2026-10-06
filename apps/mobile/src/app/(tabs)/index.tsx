@@ -1,11 +1,12 @@
 import type { ActionItem, HomeResponse, NewsItem } from '@clubroof/core';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow, NextMatchCard } from '@/components/events';
 import {
   Card,
+  ChoiceChips,
   Chip,
   Empty,
   ErrorNotice,
@@ -121,15 +122,19 @@ export default function HomeScreen() {
         <Section title="Offene Aktionen">
           <Card>
             {data.actions.map((a, i) => (
-              <ListRow
-                key={a.id}
-                first={i === 0}
-                onPress={() => openLink(a.link)}
-                leading={<IconTile name={ACTION_ICON[a.kind]} filled />}
-                title={a.title}
-                subtitle={a.subtitle}
-                trailing={a.dueAt ? <Chip tone="action" label={formatRemaining(a.dueAt)} /> : null}
-              />
+              <View key={a.id}>
+                <ListRow
+                  first={i === 0}
+                  onPress={() => openLink(a.link)}
+                  leading={<IconTile name={ACTION_ICON[a.kind]} filled />}
+                  title={a.title}
+                  subtitle={a.subtitle}
+                  trailing={
+                    a.dueAt ? <Chip tone="action" label={formatRemaining(a.dueAt)} /> : null
+                  }
+                />
+                {a.options?.length ? <QuickVote action={a} /> : null}
+              </View>
             ))}
           </Card>
         </Section>
@@ -211,5 +216,30 @@ export default function HomeScreen() {
         </Pressable>
       ))}
     </Screen>
+  );
+}
+
+/** Umfrage direkt auf der Startseite beantworten (Konzept §3). */
+function QuickVote({ action }: { action: ActionItem }) {
+  const { api } = useSignedIn();
+  const queryClient = useQueryClient();
+  const vote = useMutation({
+    mutationFn: (optionId: string) =>
+      api(`/polls/${action.id}/vote`, { method: 'PUT', body: { optionId } }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['home'] });
+      void queryClient.invalidateQueries({ queryKey: ['polls'] });
+      router.push(`/polls/${action.id}`);
+    },
+  });
+  return (
+    <View style={{ gap: 6, paddingBottom: 10, paddingLeft: 52 }}>
+      <ChoiceChips
+        options={action.options!.map((o) => ({ value: o.id, label: o.label }))}
+        selected={vote.variables ? [vote.variables] : []}
+        onToggle={(id) => !vote.isPending && vote.mutate(id)}
+      />
+      {vote.error ? <Chip tone="urgent" icon="alert-circle" label={vote.error.message} /> : null}
+    </View>
   );
 }

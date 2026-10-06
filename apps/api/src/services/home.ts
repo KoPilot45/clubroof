@@ -201,6 +201,18 @@ async function loadActions(db: Db, actor: Actor, now: Date): Promise<ActionItem[
         ),
       ),
     );
+  const options = polls.length
+    ? await db
+        .select({ id: s.pollOptions.id, pollId: s.pollOptions.pollId, label: s.pollOptions.label })
+        .from(s.pollOptions)
+        .where(
+          inArray(
+            s.pollOptions.pollId,
+            polls.map((p) => p.id),
+          ),
+        )
+        .orderBy(asc(s.pollOptions.sortOrder))
+    : [];
   for (const p of polls) {
     actions.push({
       kind: 'poll',
@@ -209,6 +221,7 @@ async function loadActions(db: Db, actor: Actor, now: Date): Promise<ActionItem[
       subtitle: p.question,
       dueAt: p.closesAt?.toISOString() ?? null,
       link: `/polls/${p.id}`,
+      options: options.filter((o) => o.pollId === p.id).map(({ id, label }) => ({ id, label })),
     });
   }
 
