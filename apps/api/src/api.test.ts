@@ -2033,11 +2033,8 @@ describe.skipIf(!url)('API', () => {
       expect(denied.statusCode).toBe(403);
 
       const overview = await get<ModuleOverview>('/admin/modules', admin.token);
-      expect(overview.updates.map((m) => m.key).sort()).toEqual([
-        'forum',
-        'lost_and_found',
-        'training_planning',
-      ]);
+      // Im Demoverein wartet nur das Forum auf die Einrichtung
+      expect(overview.updates.map((m) => m.key)).toEqual(['forum']);
       expect(overview.modules.find((m) => m.key === 'team_cash')!.enabledTeams).toBeGreaterThan(0);
 
       expect(
@@ -2046,30 +2043,15 @@ describe.skipIf(!url)('API', () => {
       const later = await send<ModuleOverview>('POST', '/admin/modules/forum', admin.token, {
         decision: 'later',
       });
-      expect(later.body.updates.some((m) => m.key === 'forum')).toBe(false);
+      expect(later.body.updates).toHaveLength(0);
       expect(later.body.modules.find((m) => m.key === 'forum')!.snoozedUntil).not.toBeNull();
-      const declined = await send<ModuleOverview>(
-        'POST',
-        '/admin/modules/lost_and_found',
-        admin.token,
-        {
-          decision: 'decline',
-        },
-      );
-      expect(declined.body.updates.map((m) => m.key)).toEqual(['training_planning']);
-      const enabled = await send<ModuleOverview>(
-        'POST',
-        '/admin/modules/training_planning',
-        admin.token,
-        {
-          decision: 'enable',
-        },
-      );
-      expect(enabled.body.updates).toHaveLength(0);
-      expect(enabled.body.modules.find((m) => m.key === 'training_planning')!.state).toBe(
-        'enabled',
-      );
+      const declined = await send<ModuleOverview>('POST', '/admin/modules/forum', admin.token, {
+        decision: 'decline',
+      });
+      expect(declined.body.modules.find((m) => m.key === 'forum')!.declined).toBe(true);
+      // Eingeschaltet wird das Forum im Test „Mini-Forum“ über das Update-Center
       const me = await get<LoginResponse['me']>('/me', admin.token);
+      expect(me.clubModules).not.toContain('forum');
       expect(me.clubModules).toContain('training_planning');
     });
 
@@ -3307,7 +3289,9 @@ describe.skipIf(!url)('API', () => {
           .status,
       ).toBe(403);
 
-      const other = plans.find((p) => p.eventId !== seeded.eventId && !p.focus)!;
+      // Ein späteres Training ohne Plan: der eben gezeigte Plan dient als Vorlage
+      const after = plans.slice(plans.indexOf(seeded) + 1);
+      const other = after.find((p) => !p.focus)!;
       const saved = await send<TrainingPlan>(
         'PUT',
         `/events/${other.eventId}/training-plan`,
