@@ -190,6 +190,13 @@
       "when": 1791303506230,
       "tag": "0026_cash_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1791318160468,
+      "tag": "0027_club_member_role",
+      "breakpoints": true
     }
   ]
 }

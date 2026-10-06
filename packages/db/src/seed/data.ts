@@ -378,6 +378,14 @@ export const PERSONAS = {
     birthDate: '1984-11-08',
     description: 'Mutter von Leon (E-Jugend) und Mia (F-Jugend)',
   },
+  member: {
+    firstName: 'Heike',
+    lastName: 'Brandt',
+    email: `mitglied@${DEMO_EMAIL_DOMAIN}`,
+    birthDate: '1968-04-12',
+    description:
+      'Vereinsmitglied ohne Amt und Mannschaft, engagiert bei Festen und Arbeitseinsätzen',
+  },
   treasurer: {
     firstName: 'Petra',
     lastName: 'Schulz',

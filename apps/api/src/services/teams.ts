@@ -598,7 +598,8 @@ export async function getMyTeams(db: Db, actor: Actor, now: Date): Promise<MyTea
       .orderBy(asc(s.teams.sortOrder))
   )
     .map((r) => r.team)
-    .filter((t) => actor.teamIds.includes(t.id) && actorCan(actor, 'events.manage', t));
+    // Alle eigenen Mannschaften (als Trainer, Spieler oder Elternteil) – einheitliche Kacheln
+    .filter((t) => actor.teamIds.includes(t.id));
   if (teams.length === 0) return [];
   const teamIds = teams.map((t) => t.id);
 

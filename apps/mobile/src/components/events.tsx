@@ -13,7 +13,7 @@ import {
   formatRemaining,
   formatTime,
 } from '@/lib/format';
-import { ATTENDANCE_LABELS, DECLINE_REASONS, EVENT_TYPE_LABELS } from '@/lib/labels';
+import { ATTENDANCE_LABELS, DECLINE_REASONS, EVENT_TYPE_LABELS, MAYBE_REASONS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import {
@@ -58,14 +58,23 @@ export function AttendanceChip({ status }: { status: AttendanceStatus }) {
 }
 
 /** Zeile in einer Terminliste. */
-export function EventRow({ event, first }: { event: EventSummary; first?: boolean }) {
+export function EventRow({
+  event,
+  first,
+  openable = true,
+}: {
+  event: EventSummary;
+  first?: boolean;
+  /** Fremde Mannschaftstermine im Vereinskalender lassen sich nur ansehen, nicht öffnen */
+  openable?: boolean;
+}) {
   const { colors } = useTheme();
   const mine = event.myResponses[0];
   const cancelled = event.status === 'cancelled';
   return (
     <ListRow
       first={first}
-      onPress={() => router.push(`/events/${event.id}`)}
+      onPress={openable ? () => router.push(`/events/${event.id}`) : undefined}
       leading={
         <View style={{ width: 52 }}>
           <T variant="caption">{formatDay(event.startsAt)}</T>
@@ -130,12 +139,15 @@ export function useRespond(eventId: string) {
   });
 }
 
-/** Zu-/Absage für jede Person (ich selbst und ggf. meine Kinder). Absagen fragen nach dem Grund. */
+/**
+ * Zu-/Absage für jede Person (ich selbst und ggf. meine Kinder). Absagen und „Unsicher“ fragen
+ * nach dem Grund – er ist freiwillig und für das Trainerteam bestimmt.
+ */
 export function ResponseControls({ event }: { event: EventSummary }) {
   const respond = useRespond(event.id);
   const [error, setError] = useState<string | null>(null);
-  /** Person, für die gerade ein Absagegrund gewählt wird */
-  const [declining, setDeclining] = useState<string | null>(null);
+  /** Person und Antwort, für die gerade ein Grund gewählt wird */
+  const [pending, setPending] = useState<{ personId: string; status: 'no' | 'maybe' } | null>(null);
   const [reason, setReason] = useState<string | null>(null);
   const [note, setNote] = useState('');
   if (event.myResponses.length === 0) return null;
@@ -146,7 +158,7 @@ export function ResponseControls({ event }: { event: EventSummary }) {
       { personId: r.personId, status, reason: declineReason },
       {
         onSuccess: () => {
-          setDeclining(null);
+          setPending(null);
           setReason(null);
           setNote('');
         },
@@ -181,7 +193,9 @@ export function ResponseControls({ event }: { event: EventSummary }) {
               <AttendanceChip status={r.status} />
             </View>
           ) : null}
-          {r.status === 'no' && r.reason ? <T variant="caption">Grund: {r.reason}</T> : null}
+          {(r.status === 'no' || r.status === 'maybe') && r.reason ? (
+            <T variant="caption">Grund: {r.reason}</T>
+          ) : null}
 
           {!r.canRespond ? (
             <T variant="caption">
@@ -189,11 +203,18 @@ export function ResponseControls({ event }: { event: EventSummary }) {
                 ? 'Der Termin wurde abgesagt.'
                 : 'Rückmeldung nicht mehr möglich. Bei Änderungen wende dich an dein Trainerteam.'}
             </T>
-          ) : declining === r.personId ? (
+          ) : pending?.personId === r.personId ? (
             <View style={{ gap: 10 }}>
               <ChoiceChips
-                label="Warum kannst du nicht?"
-                options={DECLINE_REASONS.map((d) => ({ value: d, label: d }))}
+                label={
+                  pending.status === 'maybe' ? 'Warum bist du unsicher?' : 'Warum kannst du nicht?'
+                }
+                options={(pending.status === 'maybe' ? MAYBE_REASONS : DECLINE_REASONS).map(
+                  (d) => ({
+                    value: d,
+                    label: d,
+                  }),
+                )}
                 selected={reason ? [reason] : []}
                 onToggle={(v) => setReason(v === reason ? null : v)}
               />
@@ -208,15 +229,19 @@ export function ResponseControls({ event }: { event: EventSummary }) {
                   style={{ flex: 1 }}
                   label="Abbrechen"
                   variant="outline"
-                  onPress={() => setDeclining(null)}
+                  onPress={() => setPending(null)}
                 />
                 <Button
                   style={{ flex: 1 }}
-                  label="Absage senden"
-                  variant="danger"
-                  loading={busy(r, 'no')}
+                  label={pending.status === 'maybe' ? 'Unsicher senden' : 'Absage senden'}
+                  variant={pending.status === 'maybe' ? 'action' : 'danger'}
+                  loading={busy(r, pending.status)}
                   onPress={() =>
-                    send(r, 'no', [reason, note.trim()].filter(Boolean).join(' – ') || undefined)
+                    send(
+                      r,
+                      pending.status,
+                      [reason, note.trim()].filter(Boolean).join(' – ') || undefined,
+                    )
                   }
                 />
               </View>
@@ -236,8 +261,11 @@ export function ResponseControls({ event }: { event: EventSummary }) {
                 label="Unsicher"
                 icon={r.status === 'maybe' ? 'help-circle' : undefined}
                 variant={r.status === 'maybe' ? 'action' : 'outline'}
-                loading={busy(r, 'maybe')}
-                onPress={() => send(r, 'maybe')}
+                onPress={() => {
+                  setReason(null);
+                  setNote('');
+                  setPending({ personId: r.personId, status: 'maybe' });
+                }}
               />
               <Button
                 style={{ flex: 1 }}
@@ -247,7 +275,7 @@ export function ResponseControls({ event }: { event: EventSummary }) {
                 onPress={() => {
                   setReason(null);
                   setNote('');
-                  setDeclining(r.personId);
+                  setPending({ personId: r.personId, status: 'no' });
                 }}
               />
             </View>

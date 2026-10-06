@@ -14,6 +14,7 @@ const DEMO_ACCOUNTS = [
   { label: 'Spieler', email: 'spieler@sv-gruen-weiss.example' },
   { label: 'Eltern', email: 'eltern@sv-gruen-weiss.example' },
   { label: 'Vorstand', email: 'vorstand@sv-gruen-weiss.example' },
+  { label: 'Mitglied', email: 'mitglied@sv-gruen-weiss.example' },
 ];
 
 export default function LoginScreen() {

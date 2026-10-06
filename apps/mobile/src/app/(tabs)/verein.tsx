@@ -224,7 +224,11 @@ export default function ClubScreen() {
 
       <TileGrid items={tiles} />
 
-      <Section title="Heute auf der Anlage">
+      <Section
+        title="Heute auf der Anlage"
+        action="Kalender anzeigen"
+        onAction={() => router.push('/club-calendar')}
+      >
         <Card>
           {today.isPending ? <Loading /> : null}
           {today.data?.length === 0 ? (

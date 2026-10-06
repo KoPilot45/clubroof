@@ -40,6 +40,15 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
     ],
   },
   {
+    key: 'club_member',
+    name: 'Vereinsmitglied',
+    // Hauptrolle für Engagierte ohne Amt oder Mannschaft (Festlegung 07.10.2026)
+    description:
+      'Engagiert im Verein ohne Amt oder Mannschaft: Vereinsüberblick, Veranstaltungen, News verfassen (zur Freigabe), keine Verwaltungsrechte',
+    defaultScope: 'club',
+    permissions: ['club.overview.read', 'news.create'],
+  },
+  {
     key: 'sports_director',
     name: 'Sportliche Leitung',
     description: 'Kadergrößen, Spielerbewegungen, Trainer, Saisonplanung, Gastspielerlogik',

@@ -174,6 +174,10 @@ function Navigator() {
           <Stack.Screen name="club-teams" options={{ headerShown: true, title: 'Mannschaften' }} />
           <Stack.Screen name="contacts" options={{ headerShown: true, title: 'Ansprechpartner' }} />
           <Stack.Screen
+            name="club-calendar"
+            options={{ headerShown: true, title: 'Vereinskalender' }}
+          />
+          <Stack.Screen
             name="club-events"
             options={{ headerShown: true, title: 'Veranstaltungen' }}
           />

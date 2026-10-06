@@ -64,6 +64,8 @@ import type {
   TreasurerCandidates,
   Carpool,
   CashStats,
+  ClubCalendarEvent,
+  EventAttendance,
   EventDetail,
   EventSummary,
   HomeResponse,
@@ -346,6 +348,38 @@ describe.skipIf(!url)('API', () => {
       } finally {
         await lateApp.close();
       }
+    });
+
+    it('Unsicher mit Grund: Trainerteam und die Person selbst sehen ihn', async () => {
+      const player = await login('spieler');
+      const coach = await login('trainer');
+      const training = await nextB1Training(player.token);
+      const res = await send<EventSummary>(
+        'PUT',
+        `/events/${training.id}/responses/${player.me.person.id}`,
+        player.token,
+        { status: 'maybe', reason: 'Wetter – Knie noch angeschlagen' },
+      );
+      expect(res.status).toBe(200);
+      expect(res.body.myResponses[0]).toMatchObject({ status: 'maybe' });
+      const asCoach = await get<EventDetail>(`/events/${training.id}`, coach.token);
+      const row = asCoach.participants.find((p) => p.personId === player.me.person.id)!;
+      expect(row).toMatchObject({ status: 'maybe', reason: 'Wetter – Knie noch angeschlagen' });
+      // Die Person selbst sieht ihren Grund ebenfalls
+      const own = await get<EventDetail>(`/events/${training.id}`, player.token);
+      expect(own.participants.find((p) => p.personId === player.me.person.id)!.reason).toBe(
+        'Wetter – Knie noch angeschlagen',
+      );
+      // Zusage löscht den Grund wieder
+      const yes = await send<EventSummary>(
+        'PUT',
+        `/events/${training.id}/responses/${player.me.person.id}`,
+        player.token,
+        { status: 'yes' },
+      );
+      expect(yes.status).toBe(200);
+      const after = await get<EventDetail>(`/events/${training.id}`, coach.token);
+      expect(after.participants.find((p) => p.personId === player.me.person.id)!.reason).toBeNull();
     });
 
     it('Trainerteam erfasst die Anwesenheit, sie zählt für die Trainingsquote', async () => {
@@ -1228,24 +1262,39 @@ describe.skipIf(!url)('API', () => {
       expect(res.body.error).toBe('shift_full');
     });
 
-    it('„Ich nehme teil“ für Vereinsveranstaltungen', async () => {
+    it('Vereinsveranstaltungen: Zusage, Absage und Unsicher ohne Begründung', async () => {
       const { token } = await login('spieler');
       const [event] = await sql`select id from events where title = 'Jahreshauptversammlung'`;
       const before = await get<EventDetail>(`/events/${event!.id}`, token);
-      expect(before.attendance).toMatchObject({ attending: false });
+      expect(before.attendance).toMatchObject({ status: null, attending: false });
       expect(before.program.length).toBeGreaterThan(0);
-      const yes = await send<{ attending: boolean; count: number }>(
-        'PUT',
-        `/events/${event!.id}/attendance`,
-        token,
-      );
-      expect(yes.body).toEqual({ attending: true, count: before.attendance!.count + 1 });
-      const no = await send<{ attending: boolean; count: number }>(
-        'DELETE',
-        `/events/${event!.id}/attendance`,
-        token,
-      );
-      expect(no.body).toEqual({ attending: false, count: before.attendance!.count });
+      const url = `/events/${event!.id}/attendance`;
+      const base = before.attendance!;
+      // ohne Angabe: Zusage
+      const yes = await send<EventAttendance>('PUT', url, token);
+      expect(yes.body).toEqual({
+        status: 'yes',
+        attending: true,
+        count: base.count + 1,
+        maybe: base.maybe,
+        declined: base.declined,
+      });
+      const maybe = await send<EventAttendance>('PUT', url, token, { status: 'maybe' });
+      expect(maybe.body).toMatchObject({
+        status: 'maybe',
+        attending: false,
+        count: base.count,
+        maybe: base.maybe + 1,
+      });
+      const no = await send<EventAttendance>('PUT', url, token, { status: 'no' });
+      expect(no.body).toMatchObject({
+        status: 'no',
+        maybe: base.maybe,
+        declined: base.declined + 1,
+      });
+      expect((await send('PUT', url, token, { status: 'vielleicht' })).status).toBe(400);
+      const reset = await send<EventAttendance>('DELETE', url, token);
+      expect(reset.body).toEqual({ ...base, status: null, attending: false });
 
       const [training] =
         await sql`select id from events where team_id is not null and starts_at > ${NOW.toISOString()} limit 1`;
@@ -3616,15 +3665,107 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Vereinsmitglied und Vereinskalender', () => {
+    it('Hauptrolle Vereinsmitglied: Überblick und News, aber keine Verwaltung', async () => {
+      const member = await login('mitglied');
+      expect(member.me.roles.map((r) => r.name)).toEqual(['Vereinsmitglied']);
+      expect(member.me.canAdminister).toBe(false);
+      expect(member.me.teams).toHaveLength(0);
+      expect(member.me.news).toEqual({ write: true, publish: false });
+      const home = await get<HomeResponse>('/home', member.token);
+      expect(home.clubOverview).toMatchObject({ teams: 11 });
+      expect(home.clubOverview!.pendingApprovals).toBeNull();
+      expect(home.upcoming.some((e) => e.team === null)).toBe(true);
+      // keine Verwaltung, keine Mitgliederliste
+      expect((await send('GET', '/admin/members', member.token)).status).toBe(403);
+      // Vorstand sieht Freigaben weiterhin
+      const board = await get<HomeResponse>('/home', (await login('vorstand')).token);
+      expect(board.clubOverview!.pendingApprovals).toBe(1);
+      // Veranstaltung: zu- oder absagen geht
+      const [event] = await sql`select id from events where title = 'Jahreshauptversammlung'`;
+      const yes = await send<EventAttendance>(
+        'PUT',
+        `/events/${event!.id}/attendance`,
+        member.token,
+        {
+          status: 'maybe',
+        },
+      );
+      expect(yes.body.status).toBe('maybe');
+      // News verfassen läuft über die Freigabe
+      const draft = await send<{ status: string }>('POST', '/editorial/news', member.token, {
+        title: 'Helfer für das Weihnachtsfest gesucht',
+        body: 'Wer hat Lust, beim Aufbau zu helfen?',
+        scopeType: 'club',
+        priority: 'info',
+        action: 'submit',
+      });
+      expect(draft.status).toBe(201);
+      expect(draft.body.status).toBe('pending_approval');
+      // Veröffentlichen ohne Freigabe geht nicht
+      const direct = await send('POST', '/editorial/news', member.token, {
+        title: 'Direkt veröffentlicht',
+        body: 'Test',
+        scopeType: 'club',
+        priority: 'info',
+        action: 'publish',
+      });
+      expect(direct.status).toBe(403);
+    });
+
+    it('Vereinskalender: alle Termine, fremde Mannschaftstermine nur zur Ansicht', async () => {
+      const player = await login('spieler');
+      const from = new Date(NOW.getTime() - 24 * 3600_000).toISOString();
+      const to = new Date(NOW.getTime() + 21 * 24 * 3600_000).toISOString();
+      const calendar = await get<ClubCalendarEvent[]>(
+        `/club/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+        player.token,
+      );
+      const teams = new Set(calendar.map((c) => c.event.team?.badge).filter(Boolean));
+      expect(teams.size).toBeGreaterThan(5);
+      expect(calendar.some((c) => c.event.type === 'match')).toBe(true);
+      expect(calendar.some((c) => c.event.team === null && c.canOpen)).toBe(true);
+      const own = calendar.find((c) => c.event.team?.badge === 'B1')!;
+      expect(own.canOpen).toBe(true);
+      const foreign = calendar.find((c) => c.event.team && c.event.team.badge !== 'B1')!;
+      expect(foreign.canOpen).toBe(false);
+      // Datensparsamkeit: keine Zu-/Absage-Zahlen fremder Mannschaften
+      expect(foreign.event.counts).toEqual({ yes: 0, no: 0, maybe: 0, pending: 0 });
+      expect(foreign.event.myResponses).toEqual([]);
+      // Vereinsmitglied sieht dieselben Termine, aber kein Mannschaftstermin ist offen
+      const member = await get<ClubCalendarEvent[]>(
+        `/club/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+        (await login('mitglied')).token,
+      );
+      expect(member.length).toBe(calendar.length);
+      expect(member.filter((c) => c.event.team && c.canOpen)).toHaveLength(0);
+      // zu langer Zeitraum
+      const far = new Date(NOW.getTime() + 400 * 24 * 3600_000).toISOString();
+      expect(
+        (
+          await send(
+            'GET',
+            `/club/calendar?from=${encodeURIComponent(from)}&to=${encodeURIComponent(far)}`,
+            player.token,
+          )
+        ).status,
+      ).toBe(400);
+    });
+  });
+
   describe('Mannschaftsaufgaben', () => {
-    it('Meine Teams: Kennzahlen je verantworteter Mannschaft', async () => {
+    it('Meine Teams: eine Karte je eigener Mannschaft (Trainer und Spieler)', async () => {
       const coach = await login('trainer');
       const cards = await get<MyTeamCard[]>('/my-teams', coach.token);
-      expect(cards.map((c) => c.team.badge)).toEqual(['B1', 'C1']);
+      // Der Trainer spielt außerdem in der 2. Mannschaft – auch sie bekommt eine Karte
+      expect(cards.map((c) => c.team.badge)).toEqual(['2.', 'B1', 'C1']);
       const b1 = cards.find((c) => c.team.badge === 'B1')!;
       expect(b1.openTasks).toBeGreaterThanOrEqual(2);
       expect(b1.nextEvent!.counts.yes + b1.nextEvent!.counts.pending).toBeGreaterThan(0);
-      expect(await get<MyTeamCard[]>('/my-teams', (await login('spieler')).token)).toEqual([]);
+      const player = await get<MyTeamCard[]>('/my-teams', (await login('spieler')).token);
+      expect(player.map((c) => c.team.badge)).toEqual(['B1']);
+      // Wer in keiner Mannschaft ist, hat keine Karten
+      expect(await get<MyTeamCard[]>('/my-teams', (await login('mitglied')).token)).toEqual([]);
     });
 
     it('Trainer legt an und teilt zu, Mitglieder übernehmen und haken ab', async () => {

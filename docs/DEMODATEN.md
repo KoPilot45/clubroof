@@ -32,7 +32,7 @@ Erzeugt wird er mit `pnpm db:reset` (lokale Datenbank zurücksetzen, Migrationen
 
 ## Demo-Logins
 
-Alle Demo-Logins haben das Passwort `clubroof-demo`. Auf der Anmeldeseite (Entwicklungsmodus) füllen die Buttons Admin, Trainer, Spieler, Eltern und Vorstand die Daten aus.
+Alle Demo-Logins haben das Passwort `clubroof-demo`. Auf der Anmeldeseite (Entwicklungsmodus) füllen die Buttons Admin, Trainer, Spieler, Eltern, Vorstand und Mitglied die Daten aus.
 
 | E-Mail | Person | Perspektive |
 | --- | --- | --- |
@@ -42,6 +42,7 @@ Alle Demo-Logins haben das Passwort `clubroof-demo`. Auf der Anmeldeseite (Entwi
 | `spieler@sv-gruen-weiss.example` | Max Becker | Spieler B-Jugend (Nr. 14) |
 | `eltern@sv-gruen-weiss.example` | Julia Neumann | Mutter von Leon (E-Jugend) und Mia (F-Jugend), Co-Trainerin E-Jugend |
 | `kasse@sv-gruen-weiss.example` | Petra Schulz | Kassenwartin |
+| `mitglied@sv-gruen-weiss.example` | Heike Brandt | Vereinsmitglied ohne Amt und Mannschaft (Hauptrolle „Vereinsmitglied“) |
 
 ## Optionale Module im Demoverein
 

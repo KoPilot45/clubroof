@@ -45,6 +45,17 @@ export const DECLINE_REASONS = [
   'Sonstiges',
 ];
 
+/** Vorschläge für den Grund bei „Unsicher“ (Freitext bleibt möglich). */
+export const MAYBE_REASONS = [
+  'Arbeit noch unklar',
+  'Schule noch unklar',
+  'Angeschlagen',
+  'Wetter',
+  'Familie',
+  'Fahrt unklar',
+  'Sonstiges',
+];
+
 export const ABSENCE_ICONS: Record<AbsenceKind, IconName> = {
   vacation: 'airplane-outline',
   injury: 'bandage-outline',

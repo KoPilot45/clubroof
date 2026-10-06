@@ -65,7 +65,7 @@ Stand: 07.10.2026
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | Termindetails: Anstoß, Treffpunkt, Spielort, Ansprechperson | M 15 | ✅ | |
-| Zu- und Absagen (auch für Kinder) | M 15, K 9 | ✅ | Zusagen, Unsicher, Absagen; Eltern sehen in Listen den Status je Kind |
+| Zu- und Absagen (auch für Kinder) | M 15, K 9 | ✅ | Zusagen, Unsicher, Absagen; bei Absage und „Unsicher“ optional ein Grund (nur Trainerteam und die Person selbst sehen ihn); Eltern sehen in Listen den Status je Kind. Vereinsveranstaltungen: Zusage, Absage, Unsicher ohne Grund |
 | Absagefrist je Mannschaft und Terminart mit Countdown | M 10, 15, K 9 | ✅ | |
 | Drei Teilnahme-Modelle (automatische Zusage, aktive Antwort, nur Abwesenheiten) | M 10, K 9 | ✅ | |
 | Teilnehmerübersicht (zugesagt, offen, abgesagt) | M 15 | ✅ | nach Rückmeldung gruppiert und einklappbar |
@@ -100,6 +100,7 @@ Stand: 07.10.2026
 | Helfer gesucht / Helferschichten eintragen | M 5, 14, K 5 | ✅ | mit Kapazität; Namen nur für Organisatoren |
 | Heute auf der Anlage | M 5 | ✅ | |
 | Mannschaften des Vereins (Senioren, Jugend, Frauen, AH) | K 5 | ✅ | mit Liga, Spielerzahl, Trainern; antippbar: Mannschaftsseite mit Trainerteam, Kader, nächstem Spiel, Bilanz und Ergebnissen (Namen von Jugendspielern nur für die eigene Mannschaft) |
+| Vereinskalender | – | ✅ | Alle Termine des Vereins (Trainings und Spiele aller Mannschaften, Veranstaltungen, Sitzungen) als Monat oder Liste, filterbar nach Art und Mannschaft; Link „Kalender anzeigen“ bei „Heute auf der Anlage“. Fremde Mannschaftstermine nur zur Ansicht, ohne Zusagen |
 | Ansprechpartner (Vorstand, Jugendleitung, Trainer) | K 5 | ✅ | Kontaktdaten nach Sichtbarkeitseinstellung |
 | Dokumente: Kategorien, Filter, Suche, Upload | M 9, K 5 | ✅ | Upload (PDF, Word, Excel, JPG, PNG bis 10 MB; Typ wird am Inhalt geprüft) und Löschen je Bereich mit `documents.manage`; Öffnen über signierte Links |
 | Austausch / Mini-Forum (wenige, moderierte Themen, Ablaufdatum) | M 5, K 11 | ✅ | Optionales Modul: Themen mit Laufzeit, Antworten, Melden, Ausblenden, Schließen, Anheften |
@@ -196,7 +197,7 @@ Stand: 07.10.2026
 | Mannschaft | 16 | 1 | 0 |
 | Termine & Teilnahme | 14 | 0 | 0 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
-| Verein | 11 | 0 | 0 |
+| Verein | 12 | 0 | 0 |
 | Kommunikation | 7 | 0 | 0 |
 | Benachrichtigungen | 6 | 1 | 0 |
 | Profile | 5 | 0 | 0 |
@@ -204,4 +205,4 @@ Stand: 07.10.2026
 | Verwaltung | 8 | 1 | 0 |
 | Einrichtung & Module | 5 | 0 | 0 |
 | Sicherheit, Betrieb, Integrationen | 6 | 0 | 2 |
-| **Gesamt** | **104** | **3** | **2** |
+| **Gesamt** | **105** | **3** | **2** |

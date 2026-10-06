@@ -158,7 +158,7 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
       left join notifications n on n.user_id = u.id
       where u.email like '%@sv-gruen-weiss.example'
       group by u.email`;
-    expect(rows).toHaveLength(6);
+    expect(rows).toHaveLength(7);
     for (const r of rows) expect(r.notifications, r.email).toBeGreaterThan(0);
   });
 });

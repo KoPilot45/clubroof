@@ -135,6 +135,25 @@ export type EventSummary = {
   myResponses: MyResponse[];
 };
 
+/** Rückmeldung zu einer Vereinsveranstaltung: Zusage, Absage oder Unsicher – ohne Begründung. */
+export type EventAttendance = {
+  /** Meine Rückmeldung; null = noch keine */
+  status: 'yes' | 'no' | 'maybe' | null;
+  /** Kurzform für status === 'yes' */
+  attending: boolean;
+  /** Zusagen */
+  count: number;
+  maybe: number;
+  declined: number;
+};
+
+/** Termin im Vereinskalender (alle Termine des Vereins) */
+export type ClubCalendarEvent = {
+  event: EventSummary;
+  /** Termin darf geöffnet werden (eigene Mannschaft, Kinder, Verantwortliche, Vereinstermine) */
+  canOpen: boolean;
+};
+
 export type Participant = {
   personId: string;
   name: string;
@@ -165,7 +184,7 @@ export type EventDetail = EventSummary & {
   /** Fahrgemeinschaften bei Auswärtsspielen und Turnieren; sonst null */
   carpool: Carpool | null;
   /** Freiwillige Teilnahme an Vereinsveranstaltungen; null bei Mannschaftsterminen */
-  attendance: { attending: boolean; count: number } | null;
+  attendance: EventAttendance | null;
   /** Helferschichten der Veranstaltung */
   shifts: HelperShift[];
   /** Letzte Änderung (alt → neu), solange sie noch relevant ist */
@@ -244,7 +263,8 @@ export type ActionItem = {
 export type ClubOverview = {
   teams: number;
   members: number;
-  pendingApprovals: number;
+  /** Nur für Personen, die News freigeben dürfen; sonst null */
+  pendingApprovals: number | null;
   nextClubEvent: { id: string; title: string; startsAt: string } | null;
 };
 

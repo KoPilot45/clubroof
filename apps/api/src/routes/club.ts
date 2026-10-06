@@ -2,6 +2,7 @@ import {
   type ClubTeamPage,
   SCOPE_TYPES,
   type UploadedImage,
+  type ClubCalendarEvent,
   type ClubTeamGroup,
   type ContactGroup,
   type DocumentItem,
@@ -18,6 +19,7 @@ import {
   listClubTeams,
   listContacts,
   listDocuments,
+  listClubCalendar,
   listToday,
   loadVisibleDocument,
 } from '../services/club';
@@ -52,11 +54,26 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   const eventParams = { params: z.object({ eventId: z.uuid() }) };
-  app.put('/events/:eventId/attendance', { schema: eventParams }, async (request) =>
-    setAttendance(app.db, request.actor!, request.params.eventId, true, app.now()),
+  app.put(
+    '/events/:eventId/attendance',
+    {
+      schema: {
+        ...eventParams,
+        // ohne Angabe: Zusage (bisheriges Verhalten)
+        body: z.object({ status: z.enum(['yes', 'no', 'maybe']) }).nullish(),
+      },
+    },
+    async (request) =>
+      setAttendance(
+        app.db,
+        request.actor!,
+        request.params.eventId,
+        request.body?.status ?? 'yes',
+        app.now(),
+      ),
   );
   app.delete('/events/:eventId/attendance', { schema: eventParams }, async (request) =>
-    setAttendance(app.db, request.actor!, request.params.eventId, false, app.now()),
+    setAttendance(app.db, request.actor!, request.params.eventId, null, app.now()),
   );
 
   app.get(
@@ -154,6 +171,24 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
   );
   app.get('/club/contacts', async (request): Promise<ContactGroup[]> =>
     listContacts(app.db, request.actor!, app.now()),
+  );
+  app.get(
+    '/club/calendar',
+    {
+      schema: {
+        querystring: z.object({
+          from: z.iso.datetime({ offset: true }),
+          to: z.iso.datetime({ offset: true }),
+        }),
+      },
+    },
+    async (request): Promise<ClubCalendarEvent[]> =>
+      listClubCalendar(
+        app.db,
+        request.actor!,
+        { from: new Date(request.query.from), to: new Date(request.query.to) },
+        app.now(),
+      ),
   );
   app.get('/club/today', async (request): Promise<EventSummary[]> =>
     listToday(app.db, request.actor!, app.now()),

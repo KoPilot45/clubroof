@@ -7,6 +7,7 @@ import {
   calendarDayOf,
   addDays,
   at,
+  type ClubCalendarEvent,
   type ClubTeamGroup,
   type ContactGroup,
   type DocumentCategory,
@@ -15,8 +16,8 @@ import {
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, gte, ilike, inArray, isNotNull, isNull, lt, or } from 'drizzle-orm';
-import type { Actor } from '../actor';
-import { notFound } from '../errors';
+import { actorCan, type Actor } from '../actor';
+import { HttpError, notFound } from '../errors';
 import { fetchEventRows, summarizeEvents } from './events';
 import { scopeLabels, scopeVisible } from './home';
 
@@ -259,4 +260,73 @@ export async function listToday(db: Db, actor: Actor, now: Date): Promise<EventS
     ),
   );
   return summarizeEvents(db, actor, rows, now);
+}
+
+const MAX_CALENDAR_DAYS = 100;
+
+/**
+ * Vereinskalender: alle Termine des Vereins im Zeitraum – Trainings aller Mannschaften, Spiele,
+ * Turniere, Veranstaltungen und Sitzungen. Zu- und Absagen fremder Mannschaften bleiben
+ * verborgen; geöffnet werden dürfen nur Termine, die die Person auch sonst sehen darf.
+ */
+export async function listClubCalendar(
+  db: Db,
+  actor: Actor,
+  range: { from: Date; to: Date },
+  now: Date,
+): Promise<ClubCalendarEvent[]> {
+  if (
+    range.to <= range.from ||
+    range.to.getTime() - range.from.getTime() > MAX_CALENDAR_DAYS * 86_400_000
+  ) {
+    throw new HttpError(400, 'invalid_range', 'Der Zeitraum ist ungültig oder zu lang.');
+  }
+  const rows = await fetchEventRows(
+    db,
+    and(
+      eq(s.events.clubId, actor.club.id),
+      gte(s.events.startsAt, range.from),
+      lt(s.events.startsAt, range.to),
+    ),
+  );
+  const own = new Set(
+    rows.length && actor.managedIds.length
+      ? (
+          await db
+            .select({ eventId: s.eventParticipants.eventId })
+            .from(s.eventParticipants)
+            .where(
+              and(
+                inArray(
+                  s.eventParticipants.eventId,
+                  rows.map((r) => r.event.id),
+                ),
+                inArray(s.eventParticipants.personId, actor.managedIds),
+              ),
+            )
+        ).map((r) => r.eventId)
+      : [],
+  );
+  const summaries = await summarizeEvents(db, actor, rows, now);
+  return rows.map((row, i) => {
+    const team = row.team;
+    const canOpen =
+      !team ||
+      actor.teamIds.includes(team.id) ||
+      own.has(row.event.id) ||
+      actorCan(actor, 'events.manage', team) ||
+      actorCan(actor, 'attendance.read', team);
+    const summary = summaries[i]!;
+    return {
+      canOpen,
+      event: canOpen
+        ? summary
+        : {
+            ...summary,
+            counts: { yes: 0, no: 0, maybe: 0, pending: 0 },
+            deadline: null,
+            myResponses: [],
+          },
+    };
+  });
 }

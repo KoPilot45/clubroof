@@ -516,6 +516,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     const roleAssignments: Insert<typeof s.roleAssignments>[] = [
       { clubId, personId: persona.admin.id, roleId: roleIds.fulladmin!, scopeType: 'club' },
       { clubId, personId: persona.board.id, roleId: roleIds.board!, scopeType: 'club' },
+      { clubId, personId: persona.member.id, roleId: roleIds.club_member!, scopeType: 'club' },
       { clubId, personId: persona.treasurer.id, roleId: roleIds.treasurer!, scopeType: 'club' },
       {
         clubId,
@@ -2245,6 +2246,15 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         true,
       ),
 
+      notification(
+        'member',
+        'info',
+        'events',
+        'Einladung zur Jahreshauptversammlung',
+        'Alle Mitglieder sind herzlich eingeladen – Freitag, 30.10., 19:00 Uhr im Vereinsheim.',
+        '/club-events',
+        26,
+      ),
       notification(
         'player',
         'urgent',

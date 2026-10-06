@@ -2,12 +2,12 @@ import type { EventSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow } from '@/components/events';
 import { MonthCalendar, dayKey } from '@/components/month-calendar';
 import { Card, Empty, ErrorNotice, Loading, Screen, Section, T } from '@/components/ui';
-import { EVENT_KIND_LABELS, kindColor, kindOf, type EventKind } from '@/lib/event-types';
+import { KindLegend } from '@/components/kind-legend';
+import { kindColor, kindOf } from '@/lib/event-types';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -87,7 +87,7 @@ export default function EventsTab() {
               setDay(null);
             }}
           />
-          {kinds.length ? <Legend kinds={kinds} /> : null}
+          {kinds.length ? <KindLegend kinds={kinds} /> : null}
         </Card>
       </Section>
 
@@ -102,29 +102,5 @@ export default function EventsTab() {
         </Section>
       ) : null}
     </Screen>
-  );
-}
-
-function Legend({ kinds }: { kinds: EventKind[] }) {
-  const { colors } = useTheme();
-  const order: EventKind[] = ['training', 'match', 'tournament', 'team', 'club'];
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-      {order
-        .filter((k) => kinds.includes(k))
-        .map((k) => (
-          <View key={k} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <View
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: 5,
-                backgroundColor: kindColor(k, colors),
-              }}
-            />
-            <T variant="caption">{EVENT_KIND_LABELS[k]}</T>
-          </View>
-        ))}
-    </View>
   );
 }

@@ -2,7 +2,7 @@
  * Ehrenamt (Mappe S. 14, Konzept §5): Helferschichten mit Kapazität und freiwillige Teilnahme
  * an Vereinsveranstaltungen. Namen der Helfer sehen nur Organisatoren.
  */
-import type { HelperEvent, HelperShift } from '@clubroof/core';
+import type { EventAttendance, HelperEvent, HelperShift } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, eq, gt, inArray, isNull } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
@@ -171,14 +171,17 @@ export async function withdraw(
     .find((x) => x.id === shiftId)!;
 }
 
-/** „Ich nehme teil“ für Vereinsveranstaltungen setzen oder zurücknehmen. */
+/**
+ * Zusage, Absage oder „Unsicher“ für Vereinsveranstaltungen (ohne Begründung); `null` nimmt die
+ * Rückmeldung zurück.
+ */
 export async function setAttendance(
   db: Db,
   actor: Actor,
   eventId: string,
-  attending: boolean,
+  status: 'yes' | 'no' | 'maybe' | null,
   now: Date,
-): Promise<{ attending: boolean; count: number }> {
+): Promise<EventAttendance> {
   const [event] = await db
     .select()
     .from(s.events)
@@ -194,7 +197,7 @@ export async function setAttendance(
   if (event.status !== 'scheduled' || event.startsAt <= now) {
     throw new HttpError(409, 'event_closed', 'Die Anmeldung ist nicht mehr möglich.');
   }
-  if (attending) {
+  if (status) {
     await db
       .insert(s.eventParticipants)
       .values({
@@ -202,11 +205,14 @@ export async function setAttendance(
         eventId,
         personId: actor.person.id,
         role: 'attendee',
-        status: 'yes',
+        status,
         respondedAt: now,
         respondedByPersonId: actor.person.id,
       })
-      .onConflictDoNothing();
+      .onConflictDoUpdate({
+        target: [s.eventParticipants.eventId, s.eventParticipants.personId],
+        set: { status, respondedAt: now, respondedByPersonId: actor.person.id },
+      });
   } else {
     await db
       .delete(s.eventParticipants)
@@ -221,10 +227,21 @@ export async function setAttendance(
   return attendanceFor(db, actor, eventId);
 }
 
-export async function attendanceFor(db: Db, actor: Actor, eventId: string) {
+export async function attendanceFor(
+  db: Db,
+  actor: Actor,
+  eventId: string,
+): Promise<EventAttendance> {
   const rows = await db
-    .select({ personId: s.eventParticipants.personId })
+    .select({ personId: s.eventParticipants.personId, status: s.eventParticipants.status })
     .from(s.eventParticipants)
     .where(and(eq(s.eventParticipants.eventId, eventId), eq(s.eventParticipants.role, 'attendee')));
-  return { attending: rows.some((r) => r.personId === actor.person.id), count: rows.length };
+  const mine = rows.find((r) => r.personId === actor.person.id)?.status;
+  return {
+    status: mine === 'yes' || mine === 'no' || mine === 'maybe' ? mine : null,
+    attending: mine === 'yes',
+    count: rows.filter((r) => r.status === 'yes').length,
+    maybe: rows.filter((r) => r.status === 'maybe').length,
+    declined: rows.filter((r) => r.status === 'no').length,
+  };
 }

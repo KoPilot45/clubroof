@@ -1,4 +1,4 @@
-import type { EventDetail, Participant } from '@clubroof/core';
+import type { EventAttendance, EventDetail, Participant } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -327,16 +327,24 @@ function AttendanceCard({
   open,
 }: {
   eventId: string;
-  attendance: { attending: boolean; count: number };
+  attendance: EventAttendance;
   open: boolean;
 }) {
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
-  const toggle = useMutation({
-    mutationFn: () =>
-      api(`/events/${eventId}/attendance`, { method: attendance.attending ? 'DELETE' : 'PUT' }),
+  const answer = useMutation({
+    mutationFn: (status: 'yes' | 'no' | 'maybe') =>
+      api<EventAttendance>(`/events/${eventId}/attendance`, { method: 'PUT', body: { status } }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['event', eventId] });
+      void queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
+  const reset = useMutation({
+    mutationFn: () => api<EventAttendance>(`/events/${eventId}/attendance`, { method: 'DELETE' }),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['event', eventId] }),
   });
+  const busy = (status: 'yes' | 'no' | 'maybe') => answer.isPending && answer.variables === status;
   return (
     <Card style={{ gap: 10 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -344,20 +352,54 @@ function AttendanceCard({
         <Chip
           tone="info"
           icon="people"
-          label={`${attendance.count} ${attendance.count === 1 ? 'Person' : 'Personen'} dabei`}
+          label={`${attendance.count} ${attendance.count === 1 ? 'Zusage' : 'Zusagen'}`}
         />
       </View>
-      {open ? (
-        <Button
-          label={attendance.attending ? 'Ich bin dabei' : 'Ich nehme teil'}
-          icon={attendance.attending ? 'checkmark-circle' : 'add-circle-outline'}
-          variant={attendance.attending ? 'primary' : 'outline'}
-          loading={toggle.isPending}
-          onPress={() => toggle.mutate()}
-        />
+      {attendance.maybe > 0 ? (
+        <T variant="caption">
+          {attendance.maybe} {attendance.maybe === 1 ? 'Person ist' : 'Personen sind'} noch
+          unsicher.
+        </T>
       ) : null}
-      {open && attendance.attending ? (
-        <T variant="caption">Nochmal tippen, um die Teilnahme zurückzunehmen.</T>
+      {open ? (
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Button
+            style={{ flex: 1 }}
+            label={attendance.status === 'yes' ? 'Zugesagt' : 'Zusagen'}
+            icon={attendance.status === 'yes' ? 'checkmark-circle' : undefined}
+            variant={
+              attendance.status === 'yes' || attendance.status === null ? 'primary' : 'outline'
+            }
+            loading={busy('yes')}
+            onPress={() => answer.mutate('yes')}
+          />
+          <Button
+            style={{ flex: 0.8 }}
+            label="Unsicher"
+            icon={attendance.status === 'maybe' ? 'help-circle' : undefined}
+            variant={attendance.status === 'maybe' ? 'action' : 'outline'}
+            loading={busy('maybe')}
+            onPress={() => answer.mutate('maybe')}
+          />
+          <Button
+            style={{ flex: 1 }}
+            label={attendance.status === 'no' ? 'Abgesagt' : 'Absagen'}
+            icon={attendance.status === 'no' ? 'close-circle' : undefined}
+            variant={attendance.status === 'no' ? 'danger' : 'outline'}
+            loading={busy('no')}
+            onPress={() => answer.mutate('no')}
+          />
+        </View>
+      ) : null}
+      {open && attendance.status ? (
+        <Button
+          label="Rückmeldung zurücknehmen"
+          variant="outline"
+          size="sm"
+          style={{ alignSelf: 'flex-start' }}
+          loading={reset.isPending}
+          onPress={() => reset.mutate()}
+        />
       ) : null}
     </Card>
   );

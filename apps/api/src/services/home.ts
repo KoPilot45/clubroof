@@ -392,7 +392,7 @@ async function loadClubOverview(db: Db, actor: Actor, now: Date): Promise<ClubOv
   return {
     teams: teams?.n ?? 0,
     members: members?.n ?? 0,
-    pendingApprovals: approvals?.n ?? 0,
+    pendingApprovals: actorCan(actor, 'news.publish') ? (approvals?.n ?? 0) : null,
     nextClubEvent: nextEvent
       ? { id: nextEvent.id, title: nextEvent.title, startsAt: nextEvent.startsAt.toISOString() }
       : null,

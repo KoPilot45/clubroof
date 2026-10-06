@@ -54,13 +54,15 @@ export default function HomeScreen() {
             style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <T variant="overline">Verein im Überblick</T>
-            <Chip label="Vorstand" tone="primary" />
+            <Chip label={me.canAdminister ? 'Vorstand' : 'Vereinsmitglied'} tone="primary" />
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
             {[
               ['Mannschaften', data.clubOverview.teams],
               ['Mitglieder', data.clubOverview.members],
-              ['Freigaben', data.clubOverview.pendingApprovals],
+              ...(data.clubOverview.pendingApprovals === null
+                ? []
+                : [['Freigaben', data.clubOverview.pendingApprovals]]),
             ].map(([label, value]) => (
               <View key={label} style={{ alignItems: 'center' }}>
                 <T variant="title" color={colors.primaryText}>
