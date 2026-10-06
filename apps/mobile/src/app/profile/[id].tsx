@@ -80,7 +80,7 @@ function EditForm({ profile, onDone }: { profile: PersonProfile; onDone: () => v
   return (
     <>
       <Card style={{ gap: 14 }}>
-        <T variant="heading">Spielerdaten</T>
+        <T variant="section">Spielerdaten</T>
         <ChoiceChips
           label="Position"
           options={PLAYER_POSITIONS.map((p) => ({ value: p, label: p }))}
@@ -95,7 +95,7 @@ function EditForm({ profile, onDone }: { profile: PersonProfile; onDone: () => v
         />
       </Card>
       <Card style={{ gap: 14 }}>
-        <T variant="heading">Kontakt</T>
+        <T variant="section">Kontakt</T>
         <TextField
           label="Telefon"
           value={phone}
@@ -186,7 +186,7 @@ export default function ProfileScreen() {
                     alignItems: 'center',
                   }}
                 >
-                  <T variant="heading">Verfügbarkeit</T>
+                  <T variant="section">Verfügbarkeit</T>
                   {p.availability.available ? (
                     <Chip tone="success" icon="checkmark" label="Verfügbar" />
                   ) : (

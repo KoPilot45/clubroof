@@ -63,6 +63,7 @@ pnpm browser-check --reset     # vorher Demodaten neu laden
   keine Personenarten (Kassenwart ist Zusatzaufgabe). Datensparsamkeit: Gründe/Quoten/Kontaktdaten nur für Berechtigte.
 - Jede Tabelle mit fachlichen Daten trägt `club_id`. Zeiten in UTC speichern, Fristen in Vereinszeitzone.
 - Neue Funktion = Backend-Service + Route + Test in `api.test.ts` + App-Bildschirm + Eintrag in `docs/FUNKTIONEN.md`.
+- Zwischenüberschriften: `<Section title=…>` bzw. `<T variant="section">` (Oswald, Großbuchstaben, Akzentlinie in Vereinsfarbe) – keine eigenen Überschriftenstile.
 - Farben nur aus dem Theme (`useTheme`): `primary` als Fläche, `primaryText` für Text/Icons, Statusfarben mit Beschriftung.
 - Schemaänderung → Migration erzeugen **und** Seed anpassen; `pnpm db:reset` muss laufen.
 - Kleine, thematisch getrennte Commits; Push auf den Entwicklungsbranch.

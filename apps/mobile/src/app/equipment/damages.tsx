@@ -47,7 +47,7 @@ export default function DamagesScreen() {
   return (
     <Screen edges={[]} refreshing={list.isRefetching} onRefresh={() => list.refetch()}>
       <Card style={{ gap: 10 }}>
-        <T variant="heading">Schaden melden</T>
+        <T variant="section">Schaden melden</T>
         <TextField
           label="Was ist kaputt?"
           value={title}

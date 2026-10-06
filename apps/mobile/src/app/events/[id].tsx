@@ -236,7 +236,7 @@ function AttendanceCheckCard({ event: e }: { event: EventDetail }) {
   return (
     <Card style={{ gap: 10 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <T variant="heading">Anwesenheit</T>
+        <T variant="section">Anwesenheit</T>
         {check.recordedAt ? (
           <Chip tone="success" icon="checkmark" label={`${attended} von ${players.length} da`} />
         ) : (
@@ -348,7 +348,7 @@ function AttendanceCard({
   return (
     <Card style={{ gap: 10 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <T variant="heading">Teilnahme</T>
+        <T variant="section">Teilnahme</T>
         <Chip
           tone="info"
           icon="people"
@@ -426,7 +426,7 @@ function CoachActions({ event }: { event: EventDetail }) {
   });
   return (
     <Card style={{ gap: 10 }}>
-      <T variant="heading">Termin verwalten</T>
+      <T variant="section">Termin verwalten</T>
       <T variant="caption">Tippe auf einen Spieler, um seine Rückmeldung zu korrigieren.</T>
       {open ? (
         <>
@@ -615,7 +615,7 @@ export default function EventScreen() {
                   alignItems: 'center',
                 }}
               >
-                <T variant="heading">Meine Rückmeldung</T>
+                <T variant="section">Meine Rückmeldung</T>
                 {e.deadline && new Date(e.deadline) > new Date() ? (
                   <Chip
                     tone="action"

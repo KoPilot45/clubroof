@@ -229,7 +229,7 @@ function NewExercise({
   const [description, setDescription] = useState('');
   return (
     <Card style={{ gap: 12 }}>
-      <T variant="heading">Neue Übung</T>
+      <T variant="section">Neue Übung</T>
       <TextField label="Name" value={title} onChangeText={setTitle} maxLength={80} />
       <ChoiceChips options={categories} selected={[category]} onToggle={setCategory} />
       <ChoiceChips

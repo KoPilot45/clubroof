@@ -33,7 +33,7 @@ export default function CalendarScreen() {
   return (
     <Screen edges={[]}>
       <Card style={{ gap: 8 }}>
-        <T variant="heading">Kalender abonnieren</T>
+        <T variant="section">Kalender abonnieren</T>
         <T variant="caption">
           Deine Termine (und die deiner Kinder) sowie die Vereinstermine erscheinen automatisch in
           deinem Kalender – Änderungen und Absagen inklusive. Teilnehmerlisten werden nicht

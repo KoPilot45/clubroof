@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Oswald_600SemiBold, useFonts } from '@expo-google-fonts/oswald';
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -27,8 +28,10 @@ function HomeBackButton() {
 function Navigator() {
   const session = useSession();
   const { colors, scheme } = useTheme();
+  // Überschriftenschrift laden; bei einem Fehler bleibt die Systemschrift
+  const [fontsLoaded, fontError] = useFonts({ Oswald_600SemiBold });
 
-  if (session.status === 'loading') {
+  if (session.status === 'loading' || (!fontsLoaded && !fontError)) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', backgroundColor: colors.background }}>
         <Loading />

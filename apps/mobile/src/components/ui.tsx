@@ -32,7 +32,11 @@ export type IconName = ComponentProps<typeof Ionicons>['name'];
 
 // ── Typografie ────────────────────────────────────────────────────────────────
 
-type TextVariant = 'display' | 'title' | 'heading' | 'body' | 'label' | 'caption' | 'overline';
+type TextVariant =
+  'display' | 'title' | 'heading' | 'section' | 'body' | 'label' | 'caption' | 'overline';
+
+/** Schrift der Zwischenüberschriften (wird im Wurzel-Layout geladen). */
+export const HEADING_FONT = 'Oswald_600SemiBold';
 
 export function T({
   variant = 'body',
@@ -41,7 +45,9 @@ export function T({
   children,
   numberOfLines,
   selectable,
+  accessibilityRole,
 }: {
+  accessibilityRole?: 'header';
   variant?: TextVariant;
   color?: string;
   style?: StyleProp<TextStyle>;
@@ -57,6 +63,14 @@ export function T({
     body: { fontSize: fontSizes.body, fontWeight: '400', lineHeight: 21 },
     label: { fontSize: fontSizes.label, fontWeight: '600' },
     caption: { fontSize: fontSizes.caption, fontWeight: '500' },
+    // Zwischenüberschriften: Oswald, Großbuchstaben (Festlegung 07.10.2026)
+    section: {
+      fontFamily: HEADING_FONT,
+      fontSize: 18,
+      fontWeight: '400',
+      letterSpacing: 0.6,
+      textTransform: 'uppercase',
+    },
     overline: {
       fontSize: 11,
       fontWeight: '800',
@@ -69,6 +83,7 @@ export function T({
     <Text
       numberOfLines={numberOfLines}
       selectable={selectable}
+      accessibilityRole={accessibilityRole}
       style={[
         variants[variant],
         { color: color ?? (muted ? colors.onSurfaceMuted : colors.onSurface) },
@@ -157,7 +172,19 @@ export function Section({
   return (
     <View style={{ gap: spacing.sm }}>
       <View style={styles.rowBetween}>
-        <T variant="heading">{title}</T>
+        <View style={styles.sectionTitle}>
+          <View
+            style={{
+              width: 4,
+              alignSelf: 'stretch',
+              borderRadius: 2,
+              backgroundColor: colors.primary,
+            }}
+          />
+          <T variant="section" style={{ flexShrink: 1 }} accessibilityRole="header">
+            {title}
+          </T>
+        </View>
         {action && onAction ? (
           <Pressable onPress={onAction} hitSlop={8} accessibilityRole="link">
             <T variant="label" color={colors.primaryText}>
@@ -1009,5 +1036,6 @@ export function Stat({
 }
 
 const styles = StyleSheet.create({
-  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionTitle: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
 });

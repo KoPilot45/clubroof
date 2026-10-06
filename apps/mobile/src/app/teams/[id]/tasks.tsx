@@ -214,7 +214,7 @@ function NewTask({
   const today = new Date().toISOString().slice(0, 10);
   return (
     <Card style={{ gap: 12 }}>
-      <T variant="heading">Neue Aufgabe</T>
+      <T variant="section">Neue Aufgabe</T>
       <ChoiceChips
         options={SUGGESTIONS.map((s) => ({ value: s, label: s }))}
         selected={[title]}
