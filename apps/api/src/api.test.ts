@@ -719,13 +719,23 @@ describe.skipIf(!url)('API', () => {
       expect(coach.find((r) => r.name === 'Max Becker')!.jerseyNumber).toBe(14);
     });
 
-    it('Statistik: Quoten anderer nur für Verantwortliche; Modul muss aktiv sein', async () => {
+    it('Statistik: Quoten für die ganze Mannschaft, nicht für Außenstehende; Modul muss aktiv sein', async () => {
       const b1 = await teamId('B1');
       const coach = await get<TeamStats>(`/teams/${b1}/stats`, (await login('trainer')).token);
       const player = await login('spieler');
       const own = await get<TeamStats>(`/teams/${b1}/stats`, player.token);
       expect(coach.players.length).toBeGreaterThan(10);
-      expect(own.players.map((p) => p.personId)).toEqual([player.me.person.id]);
+      expect(own.players.length).toBe(coach.players.length);
+      // Kassenwartin hat Zugriff auf die Mannschaft (Kasse), gehört aber nicht dazu
+      const outsider = await send<TeamStats>(
+        'GET',
+        `/teams/${b1}/stats`,
+        (await login('kasse')).token,
+      );
+      if (outsider.status === 200) {
+        expect(outsider.body.showsTrainingRates).toBe(false);
+        expect(outsider.body.players).toEqual([]);
+      }
 
       const e1 = await teamId('E1');
       const res = await app.inject({
