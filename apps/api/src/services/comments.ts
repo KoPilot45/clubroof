@@ -7,12 +7,15 @@ import type { CommentEntity, CommentItem } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, eq } from 'drizzle-orm';
 import type { Actor } from '../actor';
+import { boardDiscussion } from './board';
 import { notify } from './event-admin';
 import { newsDiscussion } from './editorial';
 import { demandDiscussion } from './exchange';
 
 async function discussion(db: Db, actor: Actor, type: CommentEntity, id: string, now: Date) {
-  return type === 'news' ? newsDiscussion(db, actor, id) : demandDiscussion(db, actor, id, now);
+  if (type === 'news') return newsDiscussion(db, actor, id);
+  if (type === 'board') return boardDiscussion(db, actor, id);
+  return demandDiscussion(db, actor, id, now);
 }
 
 async function rows(db: Db, actor: Actor, type: CommentEntity, id: string) {
@@ -73,7 +76,7 @@ export async function addComment(
     [...new Set([...d.participants, ...earlier])].filter((u) => u !== actor.user.id),
     {
       level: 'important',
-      topic: type === 'news' ? 'admin' : 'exchange',
+      topic: type === 'news' ? 'admin' : type === 'board' ? 'news' : 'exchange',
       title: `Kommentar: ${d.title}`,
       body: `${actor.person.firstName}: ${body.trim().slice(0, 140)}`,
       link: d.link,

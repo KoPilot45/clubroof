@@ -22,7 +22,12 @@ import { checkUpload } from '../storage/uploads';
 import { newsPermissions } from './editorial';
 import { loadScopeContext, requireScope, targetOf } from './scopes';
 
-const MEDIA_KIND = { news: 'news_image', logo: 'club_logo', avatar: 'avatar' } as const;
+const MEDIA_KIND = {
+  news: 'news_image',
+  logo: 'club_logo',
+  avatar: 'avatar',
+  board: 'board_image',
+} as const;
 
 async function audit(
   db: Db,

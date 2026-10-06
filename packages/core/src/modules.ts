@@ -148,6 +148,18 @@ export const MODULES = [
     description: 'Gefundene Gegenstände auf der Anlage',
     scopes: ['club'],
   },
+  {
+    key: 'marketplace',
+    name: 'Marktplatz',
+    description: 'Biete/Suche unter Mitgliedern, z. B. Schuhe und Trikots',
+    scopes: ['club'],
+  },
+  {
+    key: 'wiki',
+    name: 'Vereinswissen',
+    description: 'Kurze Artikel zu Abläufen und Regeln im Verein',
+    scopes: ['club'],
+  },
 ] as const satisfies readonly ModuleDefinition[];
 
 export type ModuleKey = (typeof MODULES)[number]['key'];

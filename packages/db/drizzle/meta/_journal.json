@@ -134,6 +134,13 @@
       "when": 1791269833152,
       "tag": "0018_training_planning",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791270212945,
+      "tag": "0019_forum_board_wiki",
+      "breakpoints": true
     }
   ]
 }

@@ -3,7 +3,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { addComment, listComments } from '../services/comments';
 
-const params = z.object({ type: z.enum(['news', 'demand']), id: z.uuid() });
+const params = z.object({ type: z.enum(['news', 'demand', 'board']), id: z.uuid() });
 
 /** Kommentare zu Freigaben und Anfragen. Rechte prüft `services/comments.ts`. */
 export const commentRoutes: FastifyPluginAsyncZod = async (app) => {

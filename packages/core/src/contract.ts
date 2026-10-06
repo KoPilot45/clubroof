@@ -505,7 +505,7 @@ export type UploadDocumentInput = {
 };
 
 export type UploadImageInput = {
-  purpose: 'news' | 'logo' | 'avatar';
+  purpose: 'news' | 'logo' | 'avatar' | 'board';
   fileName: string;
   dataBase64: string;
 };
@@ -1321,7 +1321,7 @@ export type MyTeamCard = {
 
 // ── Kommentare zu Freigaben und Anfragen ─────────────────────────────────
 
-export type CommentEntity = 'news' | 'demand';
+export type CommentEntity = 'news' | 'demand' | 'board';
 
 export type CommentItem = {
   id: string;
@@ -1443,3 +1443,95 @@ export type SaveTrainingPlanInput = {
   notes?: string | null;
   items: { exerciseId?: string | null; title: string; minutes: number; note?: string | null }[];
 };
+
+// ── Mini-Forum ───────────────────────────────────────────────────────────
+
+export type ForumTopicSummary = {
+  id: string;
+  title: string;
+  author: string | null;
+  createdAt: string;
+  closesAt: string;
+  open: boolean;
+  pinned: boolean;
+  postCount: number;
+  lastPostAt: string | null;
+};
+
+export type ForumOverview = {
+  topics: ForumTopicSummary[];
+  canCreate: boolean;
+  canModerate: boolean;
+};
+
+export type ForumPost = {
+  id: string;
+  author: string;
+  mine: boolean;
+  /** null, wenn ausgeblendet (für Mitglieder) */
+  body: string | null;
+  hidden: boolean;
+  /** Gemeldet – nur für das Moderationsteam */
+  reported: boolean;
+  createdAt: string;
+};
+
+export type ForumTopicDetail = ForumTopicSummary & {
+  body: string;
+  posts: ForumPost[];
+  canPost: boolean;
+  canModerate: boolean;
+};
+
+export type CreateForumTopicInput = { title: string; body: string; days: number };
+
+// ── Fundbüro & Marktplatz ────────────────────────────────────────────────
+
+export const BOARD_KINDS = ['found', 'lost', 'offer', 'search'] as const;
+export type BoardKind = (typeof BOARD_KINDS)[number];
+
+export type BoardItem = {
+  id: string;
+  kind: BoardKind;
+  title: string;
+  description: string | null;
+  detail: string | null;
+  imageUrl: string | null;
+  author: string | null;
+  mine: boolean;
+  createdAt: string;
+  expiresAt: string;
+  done: boolean;
+  canClose: boolean;
+};
+
+export type BoardOverview = {
+  /** Nach aktivierten Modulen: Fundbüro (found, lost) und/oder Marktplatz (offer, search) */
+  kinds: BoardKind[];
+  items: BoardItem[];
+};
+
+export type CreateBoardItemInput = {
+  kind: BoardKind;
+  title: string;
+  description?: string | null;
+  detail?: string | null;
+  imageId?: string | null;
+};
+
+// ── Vereinswissen ────────────────────────────────────────────────────────
+
+export type WikiPageSummary = {
+  id: string;
+  title: string;
+  category: string;
+  updatedAt: string;
+  /** Erste Zeilen für die Suche/Liste */
+  excerpt: string;
+};
+
+export type WikiPage = WikiPageSummary & { body: string; updatedBy: string | null };
+
+export type WikiOverview = { pages: WikiPageSummary[]; categories: string[]; canEdit: boolean };
+
+export type SaveWikiPageInput = { title: string; category: string; body: string };

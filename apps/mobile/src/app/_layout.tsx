@@ -48,6 +48,14 @@ function Navigator() {
             options={{ headerShown: true, title: 'Trainingsplan' }}
           />
           <Stack.Screen name="exercises" options={{ headerShown: true, title: 'Übungen' }} />
+          <Stack.Screen name="forum/index" options={{ headerShown: true, title: 'Forum' }} />
+          <Stack.Screen name="forum/[id]" options={{ headerShown: true, title: 'Thema' }} />
+          <Stack.Screen
+            name="board"
+            options={{ headerShown: true, title: 'Fundbüro & Marktplatz' }}
+          />
+          <Stack.Screen name="wiki/index" options={{ headerShown: true, title: 'Vereinswissen' }} />
+          <Stack.Screen name="wiki/[id]" options={{ headerShown: true, title: 'Artikel' }} />
           <Stack.Screen name="calendar" options={{ headerShown: true, title: 'Kalender' }} />
           <Stack.Screen
             name="notification-settings"

@@ -264,3 +264,85 @@ export const calendarFeeds = pgTable('calendar_feeds', {
   createdAt: createdAt(),
   lastAccessAt: timestamp({ withTimezone: true }),
 });
+
+/** Mini-Forum: wenige, moderierte Themen mit Ablaufdatum (Konzept §11). */
+export const forumTopics = pgTable(
+  'forum_topics',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    title: text().notNull(),
+    body: text().notNull(),
+    authorPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    closesAt: timestamp({ withTimezone: true }).notNull(),
+    closedAt: timestamp({ withTimezone: true }),
+    pinned: boolean().notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.createdAt)],
+);
+
+export const forumPosts = pgTable(
+  'forum_posts',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    topicId: uuid()
+      .notNull()
+      .references(() => forumTopics.id, { onDelete: 'cascade' }),
+    authorPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    authorUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
+    body: text().notNull(),
+    hiddenAt: timestamp({ withTimezone: true }),
+    hiddenByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    reportedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.topicId, t.createdAt)],
+);
+
+/** Fundbüro und Marktplatz: Aushänge mit Ablaufdatum. */
+export const boardItems = pgTable(
+  'board_items',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    /** found | lost (Fundbüro) · offer | search (Marktplatz) */
+    kind: text().notNull(),
+    title: text().notNull(),
+    description: text(),
+    /** Fundort bzw. Preis/„zu verschenken“ */
+    detail: text(),
+    imageUrl: text(),
+    authorPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    authorUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    doneAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.kind, t.createdAt)],
+);
+
+/** Vereinswissen: kurze Artikel („Wie buche ich den Bus?“, „Schlüsselregelung“ …). */
+export const wikiPages = pgTable(
+  'wiki_pages',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    title: text().notNull(),
+    category: text().notNull(),
+    body: text().notNull(),
+    updatedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index().on(t.clubId, t.category)],
+);

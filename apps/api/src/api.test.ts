@@ -24,6 +24,11 @@ import type {
   CalendarFeed,
   Exercise,
   TrainingPlan,
+  ForumOverview,
+  ForumTopicDetail,
+  BoardOverview,
+  WikiOverview,
+  WikiPage,
   MemberImportResult,
   InviteLink,
   InviteOverview,
@@ -3325,6 +3330,116 @@ describe.skipIf(!url)('API', () => {
           400,
         );
       expect((await send('DELETE', `/exercises/${pendel.id}`, coach.token)).status).toBe(200);
+    });
+  });
+
+  describe('Forum, Fundbüro/Marktplatz und Vereinswissen', () => {
+    it('Mini-Forum: Einrichten über das Update-Center, antworten, melden, moderieren', async () => {
+      const admin = await login('admin');
+      const board = await login('vorstand');
+      const player = await login('spieler');
+      expect((await send('GET', '/forum', player.token)).status).toBe(403);
+      expect(
+        (await send('POST', '/admin/modules/forum', admin.token, { decision: 'enable' })).status,
+      ).toBe(200);
+      const forum = await get<ForumOverview>('/forum', player.token);
+      expect(forum.canCreate).toBe(false);
+      const topic = forum.topics.find((t) => t.title === 'Ideen für die Weihnachtsfeier')!;
+      expect(topic).toMatchObject({ open: true, pinned: true, postCount: 2 });
+      expect(
+        (await send('POST', '/forum', player.token, { title: 'Neues', body: 'x', days: 7 })).status,
+      ).toBe(403);
+      const replied = await send<ForumTopicDetail>(
+        'POST',
+        `/forum/${topic.id}/posts`,
+        player.token,
+        {
+          body: 'Ein Quiz mit Fragen zur Vereinsgeschichte!',
+        },
+      );
+      expect(replied.status).toBe(201);
+      expect(replied.body.posts.at(-1)).toMatchObject({ mine: true, author: 'Max Becker' });
+
+      const first = replied.body.posts[0]!;
+      await send('POST', `/forum/posts/${first.id}/report`, player.token);
+      const boardNotes = await get<NotificationItem[]>('/notifications', board.token);
+      expect(boardNotes.some((n) => n.title === 'Forum: Beitrag gemeldet')).toBe(true);
+      const modView = await get<ForumTopicDetail>(`/forum/${topic.id}`, board.token);
+      expect(modView.posts[0]!.reported).toBe(true);
+      expect(
+        (await send('POST', `/forum/posts/${first.id}/moderate`, player.token, { hidden: true }))
+          .status,
+      ).toBe(403);
+      await send('POST', `/forum/posts/${first.id}/moderate`, board.token, { hidden: true });
+      const hidden = await get<ForumTopicDetail>(`/forum/${topic.id}`, player.token);
+      expect(hidden.posts[0]).toMatchObject({ hidden: true, body: null });
+
+      await send('PATCH', `/forum/${topic.id}`, board.token, { closed: true });
+      const closed = await send('POST', `/forum/${topic.id}/posts`, player.token, {
+        body: 'Noch was',
+      });
+      expect(closed.status).toBe(409);
+      const created = await send<ForumTopicDetail>('POST', '/forum', board.token, {
+        title: 'Neue Trainingszeiten im Winter',
+        body: 'Passt euch Montag 17:30 Uhr?',
+        days: 14,
+      });
+      expect(created.status).toBe(201);
+      expect(created.body.open).toBe(true);
+    });
+
+    it('Fundbüro und Marktplatz: Aushang, Rückfrage per Kommentar, erledigt', async () => {
+      const player = await login('spieler');
+      const parent = await login('eltern');
+      const overview = await get<BoardOverview>('/board', player.token);
+      expect(overview.kinds).toEqual(['found', 'lost', 'offer', 'search']);
+      const shoes = overview.items.find((i) => i.title.startsWith('Fußballschuhe'))!;
+      expect(shoes).toMatchObject({ kind: 'offer', detail: '15 €', mine: false, canClose: false });
+      await send('POST', `/comments/board/${shoes.id}`, player.token, { body: 'Noch zu haben?' });
+      const notes = await get<NotificationItem[]>('/notifications', parent.token);
+      expect(notes.some((n) => n.title === `Kommentar: Biete: ${shoes.title}`)).toBe(true);
+      expect((await send('POST', `/board/${shoes.id}/done`, player.token)).status).toBe(403);
+      const done = await send<BoardOverview>('POST', `/board/${shoes.id}/done`, parent.token);
+      expect(done.body.items.find((i) => i.id === shoes.id)!.done).toBe(true);
+
+      const lost = await send<BoardOverview>('POST', '/board', player.token, {
+        kind: 'lost',
+        title: 'Blaue Trinkflasche',
+        detail: 'Kunstrasen, Dienstag',
+      });
+      expect(lost.status).toBe(201);
+      expect(lost.body.items[0]).toMatchObject({
+        title: 'Blaue Trinkflasche',
+        mine: true,
+        canClose: true,
+      });
+    });
+
+    it('Vereinswissen: alle lesen, die Verwaltung schreibt', async () => {
+      const player = await login('spieler');
+      const admin = await login('admin');
+      const wiki = await get<WikiOverview>('/wiki', player.token);
+      expect(wiki.canEdit).toBe(false);
+      expect(wiki.categories).toEqual(['Anlage', 'Organisation', 'Sport']);
+      const page = await get<WikiPage>(`/wiki/${wiki.pages[0]!.id}`, player.token);
+      expect(page.body).toContain('Schlüssel');
+      expect(
+        (await send('POST', '/wiki', player.token, { title: 'Test', category: 'Test', body: 'x' }))
+          .status,
+      ).toBe(403);
+      const created = await send<WikiPage>('POST', '/wiki', admin.token, {
+        title: 'Trikotwäsche',
+        category: 'Organisation',
+        body: 'Trikots bei 30 Grad waschen, nicht in den Trockner.',
+      });
+      expect(created.status).toBe(201);
+      const edited = await send<WikiPage>('PUT', `/wiki/${created.body.id}`, admin.token, {
+        title: 'Trikotwäsche',
+        category: 'Organisation',
+        body: 'Trikots bei 30 Grad auf links waschen.',
+      });
+      expect(edited.body.updatedBy).toBe('Daniel Schäfer');
+      expect((await send('DELETE', `/wiki/${created.body.id}`, admin.token)).status).toBe(204);
     });
   });
 

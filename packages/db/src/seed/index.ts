@@ -564,7 +564,8 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     await tx.insert(s.roleAssignments).values(roleAssignments);
 
     // ── Module ────────────────────────────────────────────────────────────────────────────
-    const notYetEnabled: ModuleKey[] = ['forum', 'lost_and_found'];
+    // Das Forum wartet im Update-Center auf die Einrichtung (Demo für „Einrichten / Später“)
+    const notYetEnabled: ModuleKey[] = ['forum'];
     const moduleRows: Insert<typeof s.moduleSettings>[] = MODULES.map((m) => ({
       clubId,
       scopeType: 'club',
@@ -1759,6 +1760,101 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         updatedAt: hoursAgo(20),
       });
     }
+
+    // ── Fundbüro, Marktplatz, Vereinswissen, Forum ─────────────────────────────────────────
+    const days = (d: number) => addMinutes(now, d * 24 * 60);
+    await tx.insert(s.boardItems).values([
+      {
+        clubId,
+        kind: 'found',
+        title: 'Schwarze Trainingsjacke Größe M',
+        description: 'Lag nach dem Training am Donnerstag in Kabine 2.',
+        detail: 'Kabine 2 · liegt im Vereinsheim',
+        authorPersonId: official.facilityManager.id,
+        expiresAt: days(55),
+        createdAt: hoursAgo(50),
+      },
+      {
+        clubId,
+        kind: 'offer',
+        title: 'Fußballschuhe Größe 38 (Nocken)',
+        description: 'Eine Saison getragen, gut erhalten.',
+        detail: '15 €',
+        authorPersonId: persona.parent.id,
+        authorUserId: userIds.parent,
+        expiresAt: days(25),
+        createdAt: hoursAgo(30),
+      },
+      {
+        clubId,
+        kind: 'search',
+        title: 'Torwarthandschuhe Größe 7',
+        description: 'Für die E-Jugend, gern gebraucht.',
+        authorPersonId: persona.coach.id,
+        authorUserId: userIds.coach,
+        expiresAt: days(20),
+        createdAt: hoursAgo(10),
+      },
+    ]);
+    await tx.insert(s.wikiPages).values([
+      {
+        clubId,
+        title: 'Schlüssel fürs Vereinsheim',
+        category: 'Anlage',
+        body: 'Schlüssel gibt es bei Klaus Richter (Platzwart) gegen Unterschrift.\nBitte nach dem letzten Training abschließen und Licht in den Kabinen ausschalten.',
+        updatedByPersonId: persona.board.id,
+        createdAt: hoursAgo(24 * 60),
+        updatedAt: hoursAgo(24 * 12),
+      },
+      {
+        clubId,
+        title: 'Vereinsbus buchen',
+        category: 'Organisation',
+        body: 'Der Bus (9 Sitze) wird über die Geschäftsstelle gebucht – spätestens drei Tage vorher.\nTanken nach der Fahrt, Fahrtenbuch ausfüllen, Schlüssel in den Briefkasten.',
+        updatedByPersonId: persona.board.id,
+        createdAt: hoursAgo(24 * 50),
+        updatedAt: hoursAgo(24 * 50),
+      },
+      {
+        clubId,
+        title: 'Was tun bei einer Verletzung?',
+        category: 'Sport',
+        body: 'Erste Hilfe: Der Sanitätskoffer steht im Schiedsrichterraum, ein Kühlakku im Gefrierfach.\nSportunfälle bitte innerhalb von 7 Tagen der Geschäftsstelle melden (Formular unter Dokumente).',
+        updatedByPersonId: persona.board.id,
+        createdAt: hoursAgo(24 * 40),
+        updatedAt: hoursAgo(24 * 5),
+      },
+    ]);
+    const [topic] = await tx
+      .insert(s.forumTopics)
+      .values({
+        clubId,
+        title: 'Ideen für die Weihnachtsfeier',
+        body: 'Was wünscht ihr euch dieses Jahr? Programm, Essen, Musik – her mit den Ideen!',
+        authorPersonId: persona.board.id,
+        closesAt: days(20),
+        pinned: true,
+        createdAt: hoursAgo(48),
+      })
+      .returning({ id: s.forumTopics.id });
+    await tx.insert(s.forumPosts).values([
+      {
+        clubId,
+        topicId: topic!.id,
+        authorPersonId: persona.coach.id,
+        authorUserId: userIds.coach,
+        body: 'Ein kleines Elfmeterturnier Eltern gegen Kinder wäre klasse.',
+        createdAt: hoursAgo(40),
+      },
+      {
+        clubId,
+        topicId: topic!.id,
+        authorPersonId: persona.parent.id,
+        authorUserId: userIds.parent,
+        body: 'Gern wieder mit Kinderpunsch und Waffeln – wir helfen beim Backen.',
+        createdAt: hoursAgo(20),
+      },
+    ]);
 
     // ── Mannschaftsaufgaben (B-Jugend) ──────────────────────────────────────────────────────
     await tx.insert(s.teamTasks).values([

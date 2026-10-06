@@ -86,6 +86,41 @@ export default function ClubScreen() {
           },
         ]
       : []),
+    ...(has('forum')
+      ? [
+          {
+            key: 'forum',
+            label: 'Forum',
+            icon: 'chatbubbles' as const,
+            onPress: () => router.push('/forum'),
+          },
+        ]
+      : []),
+    ...(has('lost_and_found') || has('marketplace')
+      ? [
+          {
+            key: 'board',
+            label:
+              has('lost_and_found') && has('marketplace')
+                ? 'Fundbüro & Marktplatz'
+                : has('marketplace')
+                  ? 'Marktplatz'
+                  : 'Fundbüro',
+            icon: 'pricetags' as const,
+            onPress: () => router.push('/board'),
+          },
+        ]
+      : []),
+    ...(has('wiki')
+      ? [
+          {
+            key: 'wiki',
+            label: 'Vereinswissen',
+            icon: 'book' as const,
+            onPress: () => router.push('/wiki'),
+          },
+        ]
+      : []),
     ...(has('helpers')
       ? [
           {

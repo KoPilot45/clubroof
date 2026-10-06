@@ -28,6 +28,7 @@ import { matchRoutes } from './routes/match';
 import { taskRoutes } from './routes/tasks';
 import { commentRoutes } from './routes/comments';
 import { trainingRoutes } from './routes/training';
+import { communityModuleRoutes } from './routes/community-modules';
 import { calendarFeedRoutes, calendarRoutes } from './routes/calendar';
 import { invitationRoutes, joinRoutes } from './routes/invitations';
 import { settingsRoutes, setupRoutes } from './routes/settings';
@@ -156,6 +157,7 @@ export async function buildApp({
   await app.register(commentRoutes);
   await app.register(calendarRoutes);
   await app.register(trainingRoutes);
+  await app.register(communityModuleRoutes);
   await app.register(calendarFeedRoutes);
   await app.register(invitationRoutes);
   await app.register(joinRoutes);
