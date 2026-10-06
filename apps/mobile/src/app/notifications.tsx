@@ -1,8 +1,10 @@
 import type { NotificationItem } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Pressable, ScrollView } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, ScrollView, View } from 'react-native';
 import {
+  Button,
   Card,
   Chip,
   Empty,
@@ -11,6 +13,7 @@ import {
   ListRow,
   Loading,
   Screen,
+  Section,
   type IconName,
 } from '@/components/ui';
 import { formatAgo } from '@/lib/format';
@@ -54,6 +57,14 @@ export default function NotificationsScreen() {
     },
   });
 
+  const readAll = useMutation({
+    mutationFn: () => api('/notifications/read-all', { method: 'POST' }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      void queryClient.invalidateQueries({ queryKey: ['home'] });
+    },
+  });
+
   const items = (list.data ?? []).filter((n) =>
     filter === 'all'
       ? true
@@ -63,15 +74,29 @@ export default function NotificationsScreen() {
           ? n.level === 'action'
           : n.category === filter,
   );
-  // Dringendes zuerst, dann nach Zeit (Konzept §10)
-  items.sort(
-    (a, b) =>
-      Number(b.level === 'urgent') - Number(a.level === 'urgent') ||
-      b.createdAt.localeCompare(a.createdAt),
-  );
+  const groups = groupItems(items);
+  const unread = (list.data ?? []).some((n) => !n.readAt);
 
   return (
     <Screen edges={[]} refreshing={list.isRefetching} onRefresh={() => list.refetch()}>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button
+          label="Alle gelesen"
+          icon="checkmark-done"
+          variant="outline"
+          style={{ flex: 1 }}
+          disabled={!unread}
+          loading={readAll.isPending}
+          onPress={() => readAll.mutate()}
+        />
+        <Button
+          label="Einstellungen"
+          icon="settings-outline"
+          variant="outline"
+          style={{ flex: 1 }}
+          onPress={() => router.push('/notification-settings')}
+        />
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -103,30 +128,51 @@ export default function NotificationsScreen() {
       {list.error ? (
         <ErrorNotice message={list.error.message} onRetry={() => list.refetch()} />
       ) : null}
-      {list.data ? (
+      {list.data && items.length === 0 ? (
         <Card>
-          {items.length === 0 ? (
-            <Empty icon="notifications-off-outline" text="Keine Benachrichtigungen." />
-          ) : null}
-          {items.map((n, i) => {
-            const level = LEVEL[n.level];
-            return (
-              <ListRow
-                key={n.id}
-                first={i === 0}
-                leading={<IconTile name={level.icon} tone={level.tone} />}
-                title={(n.readAt ? '' : '● ') + n.title}
-                subtitle={n.body ?? undefined}
-                trailing={<Chip tone="neutral" label={formatAgo(n.createdAt)} />}
-                onPress={() => {
-                  if (!n.readAt) markRead.mutate(n.id);
-                  if (n.link) openLink(n.link);
-                }}
-              />
-            );
-          })}
+          <Empty icon="notifications-off-outline" text="Keine Benachrichtigungen." />
         </Card>
       ) : null}
+      {groups.map((group) => (
+        <Section key={group.title} title={group.title}>
+          <Card>
+            {group.items.map((n, i) => {
+              const level = LEVEL[n.level];
+              return (
+                <ListRow
+                  key={n.id}
+                  first={i === 0}
+                  leading={<IconTile name={level.icon} tone={level.tone} />}
+                  title={(n.readAt ? '' : '● ') + n.title}
+                  subtitle={n.body ?? undefined}
+                  trailing={<Chip tone="neutral" label={formatAgo(n.createdAt)} />}
+                  onPress={() => {
+                    if (!n.readAt) markRead.mutate(n.id);
+                    if (n.link && n.link !== '/notifications') openLink(n.link);
+                  }}
+                />
+              );
+            })}
+          </Card>
+        </Section>
+      ))}
     </Screen>
   );
+}
+
+/** Ungelesenes Dringendes zuerst, dann Heute / Gestern / Früher (Konzept §10). */
+function groupItems(items: NotificationItem[], now = new Date()) {
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const today = startOfDay(now);
+  const yesterday = today - 24 * 60 * 60 * 1000;
+  const sorted = [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const urgent = sorted.filter((n) => n.level === 'urgent' && !n.readAt);
+  const rest = sorted.filter((n) => !urgent.includes(n));
+  const at = (n: NotificationItem) => new Date(n.createdAt).getTime();
+  return [
+    { title: 'Dringend', items: urgent },
+    { title: 'Heute', items: rest.filter((n) => at(n) >= today) },
+    { title: 'Gestern', items: rest.filter((n) => at(n) >= yesterday && at(n) < today) },
+    { title: 'Früher', items: rest.filter((n) => at(n) < yesterday) },
+  ].filter((g) => g.items.length > 0);
 }

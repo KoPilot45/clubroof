@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from 'react';
 import { request, RequestError } from './api';
+import { disablePush, enablePush, listenForPushTaps } from './push';
 import { readToken, writeToken } from './token-storage';
 
 type SessionState =
@@ -68,8 +69,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return null;
   }, []);
 
+  // Angemeldet: Gerät erneut für Push anmelden (nur wenn schon erlaubt) und Tipps auswerten
+  useEffect(() => {
+    if (state.status !== 'signedIn') return;
+    const token = state.token;
+    void enablePush((path, options) => request(path, { ...options, token }), false).catch(
+      () => undefined,
+    );
+    return listenForPushTaps();
+  }, [state.status, state.token]);
+
   const signOut = useCallback(async () => {
     const token = state.token;
+    if (token) await disablePush((path, options) => request(path, { ...options, token }));
     setState({ status: 'signedOut', token: null, me: null });
     await writeToken(null);
     queryClient.clear();

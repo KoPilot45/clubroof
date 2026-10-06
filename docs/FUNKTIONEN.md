@@ -116,12 +116,12 @@ Stand: 05.10.2026
 | Funktion | Quelle | Stand | Anmerkung |
 | --- | --- | --- | --- |
 | Notification-Center mit Filtern | M 12, K 10 | ✅ | |
-| Dringendes oben, Gruppen Heute / Früher | M 12 | 🟡 | Dringendes oben; Gruppierung fehlt |
-| Antippen führt direkt zum Inhalt | K 10 | 🟡 | Termine, News, Umfragen, Abwesenheiten; weitere folgen |
+| Dringendes oben, Gruppen Heute / Früher | M 12 | ✅ | Ungelesenes Dringendes zuerst, dann Heute / Gestern / Früher; „Alle gelesen“ |
+| Antippen führt direkt zum Inhalt | K 10 | ✅ | Termine, News, Umfragen, Abwesenheiten, Gastspieler, Freigaben, Einladungen – auch aus der Push-Nachricht |
 | Vier Ebenen (dringend, persönlich wichtig, Aktion, Info) | K 10 | ✅ | |
-| Einstellungen je Kategorie und Team, Erinnerungszeitpunkt, Ruhezeiten | M 12, K 10 | ⬜ | |
-| Sammelhinweise für Trainer statt Einzelmeldungen | K 10 | ⬜ | |
-| Push aufs Handy | M 12, K 10 | ⬜ | |
+| Einstellungen je Kategorie und Team, Erinnerungszeitpunkt, Ruhezeiten | M 12, K 10 | ✅ | Je Thema Push / nur App / aus, Mannschaften stummschalten, Erinnerung 2 Std. bis 2 Tage vor der Frist, Ruhezeit (Push wird zurückgestellt); Dringendes kommt immer an |
+| Sammelhinweise für Trainer statt Einzelmeldungen | K 10 | ✅ | Ein Hinweis je Termin zur Frist (Zusagen, Absagen, offene Namen); danach kurzfristige Absagen einzeln |
+| Push aufs Handy | M 12, K 10 | 🟡 | Server fertig (Expo Push, Warteschlange, Ruhezeiten, Wiederholung); App meldet Geräte an. Letzter Schritt mit dem Testserver: Expo-Projekt und Entwicklungs-Build |
 
 ## 9. Profile
 
@@ -192,10 +192,10 @@ Stand: 05.10.2026
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
 | Verein | 8 | 1 | 2 |
 | Kommunikation | 5 | 1 | 1 |
-| Benachrichtigungen | 2 | 2 | 3 |
+| Benachrichtigungen | 6 | 1 | 0 |
 | Profile | 4 | 1 | 0 |
 | Platzbelegung & Betrieb | 3 | 0 | 1 |
 | Verwaltung | 6 | 1 | 2 |
 | Einrichtung & Module | 4 | 1 | 0 |
 | Sicherheit, Betrieb, Integrationen | 6 | 0 | 2 |
-| **Gesamt** | **76** | **13** | **14** |
+| **Gesamt** | **80** | **12** | **11** |

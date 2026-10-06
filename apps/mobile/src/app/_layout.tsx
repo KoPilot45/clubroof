@@ -41,6 +41,10 @@ function Navigator() {
             name="notifications"
             options={{ headerShown: true, title: 'Benachrichtigungen' }}
           />
+          <Stack.Screen
+            name="notification-settings"
+            options={{ headerShown: true, title: 'Benachrichtigungen einstellen' }}
+          />
           <Stack.Screen name="news/index" options={{ headerShown: true, title: 'Vereinsnews' }} />
           <Stack.Screen name="news/[id]" options={{ headerShown: true, title: 'News' }} />
           <Stack.Screen name="polls/index" options={{ headerShown: true, title: 'Umfragen' }} />
