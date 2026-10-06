@@ -143,6 +143,8 @@ export type Participant = {
   /** Nur für Berechtigte sichtbar (Datensparsamkeit) */
   reason: string | null;
   guestFromTeam: string | null;
+  /** Tatsächlich anwesend laut Trainerteam; null = (noch) nicht erfasst */
+  attended: boolean | null;
 };
 
 export type EventDetail = EventSummary & {
@@ -155,6 +157,11 @@ export type EventDetail = EventSummary & {
   canOverride: boolean;
   /** Ablaufplan (Vereinsveranstaltungen) */
   program: { time: string; title: string }[];
+  /**
+   * Anwesenheit nach dem Termin: Das Trainerteam hakt ab, wer wirklich da war. Danach zählt
+   * die erfasste Anwesenheit statt der Zusage für die Trainingsquote. null bei Vereinsterminen.
+   */
+  attendanceCheck: { recordedAt: string | null; canRecord: boolean } | null;
   /** Freiwillige Teilnahme an Vereinsveranstaltungen; null bei Mannschaftsterminen */
   attendance: { attending: boolean; count: number } | null;
   /** Helferschichten der Veranstaltung */

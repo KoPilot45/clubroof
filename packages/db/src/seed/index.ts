@@ -25,7 +25,7 @@ import {
   type ModuleKey,
   type NotificationTopic,
 } from '@clubroof/core';
-import { and, asc, eq, gte, inArray, isNotNull, like, lt } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, isNotNull, like, lt, sql } from 'drizzle-orm';
 import type { PgTable } from 'drizzle-orm/pg-core';
 import { createDb, type Db } from '../client';
 import * as s from '../schema';
@@ -968,6 +968,12 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     const nextFjTournament = nextEventOf('fj', 'tournament');
     const nextH1Match = nextEventOf('h1', 'match');
 
+    const recordedTrainings = new Set(
+      events
+        .filter((e) => e.teamId === teamIds.b1 && e.type === 'training' && e.startsAt < now)
+        .filter((e) => e.status !== 'cancelled')
+        .map((e) => e.id as string),
+    );
     for (const event of events) {
       const team = teamOfEvent.get(event.id);
       if (!team) continue;
@@ -1058,8 +1064,18 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
           respondedAt,
           respondedByPersonId: respondedAt ? (guardianOf.get(personId) ?? personId) : null,
           absenceId: absence?.id ?? null,
+          // B1: Anwesenheit vergangener Trainings erfasst – ab und zu fehlt jemand trotz Zusage
+          attended: recordedTrainings.has(event.id)
+            ? status === 'yes' && faker.number.int(100) > 8
+            : null,
         });
       }
+    }
+    if (recordedTrainings.size) {
+      await tx
+        .update(s.events)
+        .set({ attendanceRecordedAt: sql`${s.events.startsAt} + interval '2 hours'` })
+        .where(inArray(s.events.id, [...recordedTrainings]));
     }
 
     // Gastspielerbörse: Bedarf der Mannschaften, teils schon mit Gastspielern gedeckt

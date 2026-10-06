@@ -17,6 +17,7 @@ import { actorCan, type Actor } from '../actor';
 import { notFound } from '../errors';
 import { resolveMediaUrl } from '../storage/media-links';
 import { mediaReference } from './uploads';
+import { presentSql } from './attendance';
 
 const ABSENCE_LABELS = {
   vacation: 'Urlaub',
@@ -35,7 +36,7 @@ async function statsFor(db: Db, personId: string, teams: Team[], now: Date): Pro
         .select({
           teamId: s.events.teamId,
           type: s.events.type,
-          status: s.eventParticipants.status,
+          present: presentSql,
           n: sql<number>`count(*)::int`,
         })
         .from(s.eventParticipants)
@@ -53,7 +54,7 @@ async function statsFor(db: Db, personId: string, teams: Team[], now: Date): Pro
             inArray(s.events.type, ['training', 'match', 'tournament']),
           ),
         )
-        .groupBy(s.events.teamId, s.events.type, s.eventParticipants.status)
+        .groupBy(s.events.teamId, s.events.type, presentSql)
     : [];
 
   const teamIds = teams.map((t) => t.id);
@@ -103,10 +104,8 @@ async function statsFor(db: Db, personId: string, teams: Team[], now: Date): Pro
       teamId: t.id,
       badge: t.badge,
       trainings: trainings.reduce((a, r) => a + r.n, 0),
-      trainingsAttended: trainings.filter((r) => r.status === 'yes').reduce((a, r) => a + r.n, 0),
-      matches: own
-        .filter((r) => r.type !== 'training' && r.status === 'yes')
-        .reduce((a, r) => a + r.n, 0),
+      trainingsAttended: trainings.filter((r) => r.present).reduce((a, r) => a + r.n, 0),
+      matches: own.filter((r) => r.type !== 'training' && r.present).reduce((a, r) => a + r.n, 0),
       appearances: lineups.filter((l) => l.teamId === t.id).length,
       goals: teamIncidents.filter(
         (i) => i.personId === personId && (i.kind === 'goal' || i.kind === 'penalty_goal'),

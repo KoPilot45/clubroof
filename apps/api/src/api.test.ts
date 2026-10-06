@@ -338,6 +338,54 @@ describe.skipIf(!url)('API', () => {
       }
     });
 
+    it('Trainerteam erfasst die Anwesenheit, sie zählt für die Trainingsquote', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const c1 = coach.me.teams.find((t) => t.badge === 'C1')!;
+      const [past] = await sql<{ id: string }[]>`
+        select id from events
+        where team_id = ${c1.id} and type = 'training' and status = 'scheduled'
+          and starts_at < ${NOW.toISOString()} and attendance_recorded_at is null
+        order by starts_at desc limit 1`;
+      const before = await get<EventDetail>(`/events/${past!.id}`, coach.token);
+      expect(before.attendanceCheck).toEqual({ recordedAt: null, canRecord: true });
+      const said = before.participants.filter((p) => p.role === 'player' && p.status === 'yes');
+      expect(said.length).toBeGreaterThan(3);
+      const missing = said[0]!;
+      const statsBefore = await get<TeamStats>(`/teams/${c1.id}/stats`, coach.token);
+
+      // Spieler dürfen nicht erfassen, künftige Termine noch nicht
+      const asPlayer = await send('PUT', `/events/${past!.id}/attendance-check`, player.token, {
+        present: [],
+      });
+      expect([403, 404]).toContain(asPlayer.status);
+      const future = await nextB1Training(coach.token);
+      const early = await send<{ error: string }>(
+        'PUT',
+        `/events/${future.id}/attendance-check`,
+        coach.token,
+        { present: [] },
+      );
+      expect(early.status).toBe(409);
+      expect(early.body.error).toBe('not_started');
+
+      const present = said.slice(1).map((p) => p.personId);
+      const res = await send<EventDetail>('PUT', `/events/${past!.id}/attendance-check`, coach.token, {
+        present,
+      });
+      expect(res.status).toBe(200);
+      expect(res.body.attendanceCheck!.recordedAt).not.toBeNull();
+      const byId = new Map(res.body.participants.map((p) => [p.personId, p.attended]));
+      expect(byId.get(missing.personId)).toBe(false);
+      expect(byId.get(present[0]!)).toBe(true);
+
+      const statsAfter = await get<TeamStats>(`/teams/${c1.id}/stats`, coach.token);
+      const was = statsBefore.players.find((p) => p.personId === missing.personId)!;
+      const now = statsAfter.players.find((p) => p.personId === missing.personId)!;
+      expect(now.trainingsAttended).toBe(was.trainingsAttended - 1);
+      expect(now.trainings).toBe(was.trainings);
+    });
+
     it('abgesagte Termine nehmen keine Antworten an', async () => {
       const { token, me } = await login('spieler');
       const events = await get<EventSummary[]>('/events', token);

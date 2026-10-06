@@ -41,6 +41,7 @@ import {
 import { resolveMediaUrl } from '../storage/media-links';
 import { actorCan, type Actor } from '../actor';
 import { HttpError } from '../errors';
+import { presentSql } from './attendance';
 import { fetchEventRows, summarizeEvents } from './events';
 import { loadTeamForActor, requireModule, type TeamRow } from './team-access';
 
@@ -101,7 +102,7 @@ async function trainingRate(
   range?: Range,
 ): Promise<number | null> {
   const rows = await db
-    .select({ status: s.eventParticipants.status, n: count() })
+    .select({ present: presentSql, n: count() })
     .from(s.eventParticipants)
     .innerJoin(s.events, eq(s.events.id, s.eventParticipants.eventId))
     .where(
@@ -114,10 +115,10 @@ async function trainingRate(
         eq(s.eventParticipants.role, 'player'),
       ),
     )
-    .groupBy(s.eventParticipants.status);
+    .groupBy(presentSql);
   const total = rows.reduce((sum, r) => sum + Number(r.n), 0);
   if (total === 0) return null;
-  const yes = Number(rows.find((r) => r.status === 'yes')?.n ?? 0);
+  const yes = Number(rows.find((r) => r.present)?.n ?? 0);
   return Math.round((yes / total) * 100);
 }
 
@@ -332,7 +333,7 @@ export async function getTeamStats(
         firstName: s.persons.firstName,
         lastName: s.persons.lastName,
         type: s.events.type,
-        status: s.eventParticipants.status,
+        present: presentSql,
         n: count(),
       })
       .from(s.eventParticipants)
@@ -353,7 +354,7 @@ export async function getTeamStats(
         s.persons.firstName,
         s.persons.lastName,
         s.events.type,
-        s.eventParticipants.status,
+        presentSql,
       ),
   ]);
 
@@ -374,8 +375,8 @@ export async function getTeamStats(
     const n = Number(r.n);
     if (r.type === 'training') {
       stat.trainings += n;
-      if (r.status === 'yes') stat.trainingsAttended += n;
-    } else if (r.status === 'yes') {
+      if (r.present) stat.trainingsAttended += n;
+    } else if (r.present) {
       stat.matchesAttended += n;
     }
   }

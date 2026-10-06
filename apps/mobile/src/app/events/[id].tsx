@@ -157,8 +157,16 @@ function ParticipantRow({
         first={first}
         title={p.name}
         subtitle={subtitle}
-        trailing={<AttendanceChip status={p.status} />}
-        onPress={canOverride ? () => setOpen((v) => !v) : undefined}
+        trailing={
+          p.attended === null ? (
+            <AttendanceChip status={p.status} />
+          ) : p.attended ? (
+            <Chip tone="success" icon="checkmark" label="War da" />
+          ) : (
+            <Chip tone="archived" label="Gefehlt" />
+          )
+        }
+        onPress={canOverride && p.attended === null ? () => setOpen((v) => !v) : undefined}
       />
       {open ? (
         <View style={{ flexDirection: 'row', gap: 6, paddingBottom: 10 }}>
@@ -186,6 +194,128 @@ function ParticipantRow({
         </View>
       ) : null}
     </View>
+  );
+}
+
+/**
+ * Anwesenheit nach dem Termin: Das Trainerteam hakt ab, wer wirklich da war (vorausgewählt sind
+ * die Zusagen). Danach zählt die Anwesenheit für die Trainingsquote.
+ */
+function AttendanceCheckCard({ event: e }: { event: EventDetail }) {
+  const { api } = useSignedIn();
+  const { colors } = useTheme();
+  const queryClient = useQueryClient();
+  const check = e.attendanceCheck!;
+  const players = e.participants.filter((p) => p.role !== 'coach');
+  const [editing, setEditing] = useState(false);
+  const [present, setPresent] = useState<Set<string>>(new Set());
+  const save = useMutation({
+    mutationFn: () =>
+      api<EventDetail>(`/events/${e.id}/attendance-check`, {
+        method: 'PUT',
+        body: { present: [...present] },
+      }),
+    onSuccess: (detail) => {
+      queryClient.setQueryData(['event', e.id], detail);
+      void queryClient.invalidateQueries({ queryKey: ['team'] });
+      setEditing(false);
+    },
+  });
+  const start = () => {
+    setPresent(
+      new Set(
+        players
+          .filter((p) => (p.attended === null ? p.status === 'yes' : p.attended))
+          .map((p) => p.personId),
+      ),
+    );
+    setEditing(true);
+  };
+  const attended = players.filter((p) => p.attended).length;
+  return (
+    <Card style={{ gap: 10 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <T variant="heading">Anwesenheit</T>
+        {check.recordedAt ? (
+          <Chip tone="success" icon="checkmark" label={`${attended} von ${players.length} da`} />
+        ) : (
+          <Chip tone="action" label="Noch nicht erfasst" />
+        )}
+      </View>
+      {!editing ? (
+        <>
+          <T variant="caption">
+            {check.recordedAt
+              ? 'Für die Trainingsquote zählt, wer wirklich da war.'
+              : 'Hake nach dem Termin ab, wer wirklich da war. Bis dahin zählen die Zusagen.'}
+          </T>
+          {check.canRecord ? (
+            <Button
+              label={check.recordedAt ? 'Anwesenheit ändern' : 'Anwesenheit erfassen'}
+              icon="checkbox-outline"
+              variant={check.recordedAt ? 'outline' : 'tonal'}
+              size="sm"
+              style={{ alignSelf: 'flex-start' }}
+              onPress={start}
+            />
+          ) : null}
+        </>
+      ) : (
+        <>
+          {players.map((p, i) => {
+            const on = present.has(p.personId);
+            return (
+              <Pressable
+                key={p.personId}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: on }}
+                onPress={() => {
+                  const next = new Set(present);
+                  if (on) next.delete(p.personId);
+                  else next.add(p.personId);
+                  setPresent(next);
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  paddingVertical: 8,
+                  borderTopWidth: i === 0 ? 0 : 1,
+                  borderTopColor: colors.border,
+                }}
+              >
+                <Ionicons
+                  name={on ? 'checkbox' : 'square-outline'}
+                  size={22}
+                  color={on ? colors.primaryText : colors.onSurfaceMuted}
+                />
+                <T variant="label" style={{ flex: 1 }}>
+                  {p.name}
+                </T>
+                <AttendanceChip status={p.status} />
+              </Pressable>
+            );
+          })}
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Button
+              style={{ flex: 1 }}
+              label="Abbrechen"
+              variant="outline"
+              onPress={() => setEditing(false)}
+            />
+            <Button
+              style={{ flex: 1 }}
+              label={`Speichern (${present.size})`}
+              loading={save.isPending}
+              onPress={() => save.mutate()}
+            />
+          </View>
+          {save.error ? (
+            <Chip tone="urgent" icon="alert-circle" label={save.error.message} />
+          ) : null}
+        </>
+      )}
+    </Card>
   );
 }
 
@@ -461,6 +591,10 @@ export default function EventScreen() {
 
           {e.type === 'match' && e.team ? <MatchSection event={e} /> : null}
           <TrainingPlanSection event={e} />
+
+          {e.attendanceCheck && (e.attendanceCheck.canRecord || e.attendanceCheck.recordedAt) ? (
+            <AttendanceCheckCard event={e} />
+          ) : null}
 
           {e.team ? (
             <Section title={`Teilnehmer (${e.counts.yes} zugesagt)`}>

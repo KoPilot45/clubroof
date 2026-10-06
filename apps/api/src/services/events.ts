@@ -228,6 +228,7 @@ export async function getEventDetail(
         status: s.eventParticipants.status,
         reason: s.eventParticipants.reason,
         guestFromTeam: guestTeams.badge,
+        attended: s.eventParticipants.attended,
       })
       .from(s.eventParticipants)
       .innerJoin(s.persons, eq(s.persons.id, s.eventParticipants.personId))
@@ -243,6 +244,7 @@ export async function getEventDetail(
       // Gründe (z. B. Verletzung) sehen nur Verantwortliche und die Person selbst.
       reason: mayReadReasons || actor.managedIds.includes(p.personId) ? p.reason : null,
       guestFromTeam: p.guestFromTeam,
+      attended: row.event.attendanceRecordedAt ? p.attended === true : null,
     }));
   }
 
@@ -263,6 +265,13 @@ export async function getEventDetail(
     canManage: row.team !== null && actorCan(actor, 'events.manage', row.team),
     canOverride: canOverride(actor, row),
     program: row.event.program ?? [],
+    attendanceCheck:
+      row.team !== null && row.event.status === 'scheduled'
+        ? {
+            recordedAt: row.event.attendanceRecordedAt?.toISOString() ?? null,
+            canRecord: canOverride(actor, row) && row.event.startsAt <= now,
+          }
+        : null,
     attendance:
       row.team === null && (OPEN_EVENT_TYPES as readonly string[]).includes(row.event.type)
         ? await attendanceFor(db, actor, row.event.id)
@@ -315,6 +324,56 @@ async function lastChangeOf(
     .limit(1);
   const items = (entry?.data?.changes ?? []) as EventChange[];
   return entry && items.length ? { at: entry.createdAt.toISOString(), items } : null;
+}
+
+/**
+ * Anwesenheit nach dem Termin erfassen: `present` sind die Personen, die wirklich da waren.
+ * Danach zählt für die Trainingsquote die Anwesenheit statt der Zusage.
+ */
+export async function recordAttendance(
+  db: Db,
+  actor: Actor,
+  eventId: string,
+  present: string[],
+  now: Date,
+): Promise<EventDetail> {
+  const row = await loadVisibleEvent(db, actor, eventId);
+  if (!canOverride(actor, row)) {
+    throw forbidden('Die Anwesenheit erfasst das Trainerteam.');
+  }
+  if (row.event.status !== 'scheduled') {
+    throw new HttpError(409, 'event_cancelled', 'Der Termin wurde abgesagt.');
+  }
+  if (row.event.startsAt > now) {
+    throw new HttpError(409, 'not_started', 'Die Anwesenheit lässt sich erst ab Beginn erfassen.');
+  }
+  await db.transaction(async (tx) => {
+    await tx
+      .update(s.eventParticipants)
+      .set({ attended: false })
+      .where(and(eq(s.eventParticipants.eventId, eventId), ne(s.eventParticipants.role, 'coach')));
+    if (present.length) {
+      await tx
+        .update(s.eventParticipants)
+        .set({ attended: true })
+        .where(
+          and(
+            eq(s.eventParticipants.eventId, eventId),
+            inArray(s.eventParticipants.personId, present),
+          ),
+        );
+    }
+    await tx.update(s.events).set({ attendanceRecordedAt: now }).where(eq(s.events.id, eventId));
+    await tx.insert(s.auditLog).values({
+      clubId: actor.club.id,
+      actorUserId: actor.user.id,
+      action: 'attendance.recorded',
+      entityType: 'event',
+      entityId: eventId,
+      data: { present: present.length },
+    });
+  });
+  return getEventDetail(db, actor, eventId, now);
 }
 
 /** Zu-/Absage für sich selbst, ein Kind oder (mit Trainerrechten) stellvertretend. */

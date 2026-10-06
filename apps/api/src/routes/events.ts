@@ -6,6 +6,7 @@ import {
   fetchEventRows,
   getEventDetail,
   respondToEvent,
+  recordAttendance,
   summarizeEvents,
 } from '../services/events';
 import { myEventsCondition } from '../services/home';
@@ -62,6 +63,24 @@ export const eventRoutes: FastifyPluginAsyncZod = async (app) => {
         app.db,
         request.actor!,
         { ...request.params, status: request.body.status, reason: request.body.reason },
+        app.now(),
+      ),
+  );
+
+  app.put(
+    '/events/:eventId/attendance-check',
+    {
+      schema: {
+        params: z.object({ eventId: z.uuid() }),
+        body: z.object({ present: z.array(z.uuid()).max(200) }),
+      },
+    },
+    async (request): Promise<EventDetail> =>
+      recordAttendance(
+        app.db,
+        request.actor!,
+        request.params.eventId,
+        request.body.present,
         app.now(),
       ),
   );

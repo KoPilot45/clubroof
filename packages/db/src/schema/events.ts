@@ -58,6 +58,8 @@ export const events = pgTable(
     program: jsonb().$type<{ time: string; title: string }[]>(),
     contactPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     cancelledReason: text(),
+    /** Trainerteam hat nach dem Termin die tatsächliche Anwesenheit erfasst */
+    attendanceRecordedAt: timestamp({ withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -154,6 +156,8 @@ export const eventParticipants = pgTable(
     respondedAt: timestamp({ withTimezone: true }),
     /** Person, die geantwortet hat (Spieler selbst, Elternteil oder Trainer stellvertretend). */
     respondedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    /** Tatsächlich anwesend (erfasst nach dem Termin); leer = nicht erfasst */
+    attended: boolean(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
