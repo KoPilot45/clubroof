@@ -517,17 +517,8 @@ export function ListRow({
   first?: boolean;
 }) {
   const { colors, spacing } = useTheme();
-  const content = (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.md,
-        paddingVertical: spacing.sm + 2,
-        borderTopWidth: first ? 0 : StyleSheet.hairlineWidth * 2,
-        borderTopColor: colors.border,
-      }}
-    >
+  const main = (
+    <>
       {leading}
       <View style={{ flex: 1, gap: 2 }}>
         <T variant="label" numberOfLines={2} style={{ fontWeight: '700' }}>
@@ -541,16 +532,32 @@ export function ListRow({
           subtitle
         )}
       </View>
+    </>
+  );
+  const inner = { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md } as const;
+  // Zusatz rechts (Buttons, Schalter) steht neben dem antippbaren Bereich, nie darin:
+  // verschachtelte Buttons sind im Web ungültig.
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.md,
+        paddingVertical: spacing.sm + 2,
+        borderTopWidth: first ? 0 : StyleSheet.hairlineWidth * 2,
+        borderTopColor: colors.border,
+      }}
+    >
+      {onPress ? (
+        <Pressable onPress={onPress} accessibilityRole="button" style={inner}>
+          {main}
+        </Pressable>
+      ) : (
+        <View style={inner}>{main}</View>
+      )}
       {trailing}
       {onPress ? <Ionicons name="chevron-forward" size={16} color={colors.onSurfaceMuted} /> : null}
     </View>
-  );
-  return onPress ? (
-    <Pressable onPress={onPress} accessibilityRole="button">
-      {content}
-    </Pressable>
-  ) : (
-    content
   );
 }
 
