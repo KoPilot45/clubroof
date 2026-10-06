@@ -156,6 +156,10 @@ function Navigator() {
             options={{ headerShown: true, title: 'Mannschaft anlegen' }}
           />
           <Stack.Screen
+            name="admin/unit/[id]"
+            options={{ headerShown: true, title: 'Module im Bereich' }}
+          />
+          <Stack.Screen
             name="admin/team/[id]"
             options={{ headerShown: true, title: 'Mannschaft' }}
           />

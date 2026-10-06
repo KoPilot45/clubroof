@@ -8,7 +8,13 @@ import {
 } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { decideModule, getModuleOverview, setTeamModule } from '../services/modules';
+import {
+  decideModule,
+  getModuleOverview,
+  setTeamModule,
+  setUnitModule,
+  unitModules,
+} from '../services/modules';
 import {
   createTeam,
   deleteTeam,
@@ -84,6 +90,32 @@ export const teamAdminRoutes: FastifyPluginAsyncZod = async (app) => {
     await deleteTeam(app.db, request.actor!, request.params.id, app.now());
     return reply.code(204).send();
   });
+
+  app.get(
+    '/admin/org-units/:id/modules',
+    { schema: { params: id } },
+    async (request): Promise<TeamModule[]> =>
+      unitModules(app.db, request.actor!, request.params.id),
+  );
+
+  app.put(
+    '/admin/org-units/:id/modules/:key',
+    {
+      schema: {
+        params: id.extend({ key: z.string().max(40) }),
+        body: z.object({ enabled: z.boolean().nullable() }),
+      },
+    },
+    async (request): Promise<TeamModule[]> =>
+      setUnitModule(
+        app.db,
+        request.actor!,
+        request.params.id,
+        request.params.key,
+        request.body.enabled,
+        app.now(),
+      ),
+  );
 
   app.put(
     '/admin/teams/:id/modules/:key',

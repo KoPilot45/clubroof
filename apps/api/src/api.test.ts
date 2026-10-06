@@ -1965,6 +1965,55 @@ describe.skipIf(!url)('API', () => {
     });
   });
   describe('Module und Mannschaften verwalten', () => {
+    it('Module je Bereich: Vorgabe für alle Mannschaften, zurück auf Vereinswert', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const youth = (await get<ClubSettings>('/admin/club', admin.token)).orgUnits.find(
+        (u) => u.kind === 'youth',
+      )!;
+      expect((await send('GET', `/admin/org-units/${youth.id}/modules`, coach.token)).status).toBe(
+        403,
+      );
+      const before = await get<TeamModule[]>(`/admin/org-units/${youth.id}/modules`, admin.token);
+      expect(before.find((m) => m.key === 'team_tasks')).toMatchObject({
+        enabled: true,
+        inherited: true,
+      });
+
+      const off = await send<TeamModule[]>(
+        'PUT',
+        `/admin/org-units/${youth.id}/modules/team_tasks`,
+        admin.token,
+        { enabled: false },
+      );
+      expect(off.body.find((m) => m.key === 'team_tasks')).toMatchObject({
+        enabled: false,
+        inherited: false,
+      });
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      expect((await login('spieler')).me.teams.find((t) => t.id === b1.id)!.modules).not.toContain(
+        'team_tasks',
+      );
+      const blocked = await send<{ error: string }>(
+        'PUT',
+        `/admin/teams/${b1.id}/modules/team_tasks`,
+        admin.token,
+        { enabled: true },
+      );
+      expect(blocked.body.error).toBe('unit_disabled');
+
+      const reset = await send<TeamModule[]>(
+        'PUT',
+        `/admin/org-units/${youth.id}/modules/team_tasks`,
+        admin.token,
+        { enabled: null },
+      );
+      expect(reset.body.find((m) => m.key === 'team_tasks')).toMatchObject({
+        enabled: true,
+        inherited: true,
+      });
+    });
+
     it('Update-Center: einrichten, später, nicht verwenden; Kernmodule bleiben an', async () => {
       const admin = await login('admin');
       expect(admin.me.admin.manageModules).toBe(true);

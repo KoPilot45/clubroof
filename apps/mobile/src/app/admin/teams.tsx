@@ -19,9 +19,21 @@ import {
 import { RequestError } from '@/lib/api';
 import { toGermanDate } from '@/lib/dates';
 import { useSignedIn } from '@/lib/session';
+import { useTheme } from '@/lib/theme';
+import { Ionicons } from '@expo/vector-icons';
 
-function TeamList({ teams, editable }: { teams: AdminTeam[]; editable: boolean }) {
+function TeamList({
+  teams,
+  editable,
+  moduleUnits = [],
+}: {
+  teams: AdminTeam[];
+  editable: boolean;
+  /** Bereiche, deren Module ich einstellen darf */
+  moduleUnits?: string[];
+}) {
   const units = [...new Map(teams.map((t) => [t.orgUnit.id, t.orgUnit])).values()];
+  const { colors } = useTheme();
   return (
     <>
       {units.map((u) => (
@@ -43,6 +55,17 @@ function TeamList({ teams, editable }: { teams: AdminTeam[]; editable: boolean }
                 }
               />
             ))}
+          {moduleUnits.includes(u.id) ? (
+            <ListRow
+              leading={
+                <Ionicons name="extension-puzzle-outline" size={20} color={colors.primaryText} />
+              }
+              title="Module für diesen Bereich"
+              onPress={() =>
+                router.push({ pathname: '/admin/unit/[id]', params: { id: u.id, name: u.name } })
+              }
+            />
+          ) : null}
         </Card>
       ))}
     </>
@@ -102,7 +125,11 @@ export default function TeamsAdminScreen() {
         />
       ) : null}
       <Section title={`Saison ${o.current.name} (laufend)`}>
-        <TeamList teams={o.teams} editable />
+        <TeamList
+          teams={o.teams}
+          editable
+          moduleUnits={o.orgUnits.filter((u) => u.canManage).map((u) => u.id)}
+        />
       </Section>
 
       {me.admin.planSeason ? (

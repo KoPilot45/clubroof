@@ -2,6 +2,8 @@
  * Module und Update-Center (Konzept §8, §13).
  *  - Vereinsebene: Module ein-/ausschalten, neue Module „Einrichten / Später / Nicht verwenden“.
  *    Recht: `club.modules.manage`. Kernmodule sind immer aktiv.
+ *  - Bereichsebene: Vorgabe für alle Mannschaften eines Bereichs (z. B. Jugend ohne Strafenkatalog);
+ *    Recht `teams.manage` für den Bereich oder `club.modules.manage`.
  *  - Mannschaftsebene: Mannschaftsmodule (Statistik, Kasse …) je Mannschaft; Recht `teams.manage`
  *    für die Mannschaft oder `club.modules.manage`. Ist ein Modul im Verein aus, bleibt es in allen
  *    Mannschaften aus (Vererbung, siehe `resolveModule`).
@@ -230,6 +232,9 @@ export async function setTeamModule(
   if (enabled && !resolveModule(settings, key).enabled) {
     throw new HttpError(409, 'club_disabled', `„${def.name}“ ist im Verein ausgeschaltet.`);
   }
+  if (enabled && !resolveModule(settings, key, { orgUnitId: team.orgUnitId }).enabled) {
+    throw new HttpError(409, 'unit_disabled', `„${def.name}“ ist im Bereich ausgeschaltet.`);
+  }
   const [own] = await db
     .select()
     .from(s.moduleSettings)
@@ -266,4 +271,91 @@ export async function setTeamModule(
     },
   );
   return teamModules(db, actor, teamId);
+}
+
+// ── Bereichsmodule ─────────────────────────────────────────────────────────
+
+async function loadUnit(db: Db, actor: Actor, unitId: string) {
+  const [unit] = await db
+    .select()
+    .from(s.orgUnits)
+    .where(and(eq(s.orgUnits.id, unitId), eq(s.orgUnits.clubId, actor.club.id)));
+  if (!unit) throw notFound('Der Bereich');
+  return unit;
+}
+
+const mayConfigureUnit = (actor: Actor, unitId: string) =>
+  can(actor.grants, 'teams.manage', { orgUnitId: unitId }) ||
+  actorCan(actor, 'club.modules.manage');
+
+export async function unitModules(db: Db, actor: Actor, unitId: string): Promise<TeamModule[]> {
+  const unit = await loadUnit(db, actor, unitId);
+  if (!mayConfigureUnit(actor, unit.id))
+    throw forbidden('Diesen Bereich darfst du nicht einstellen.');
+  const rows = await loadSettings(db, actor);
+  const settings = rows.map(asSetting);
+  return DEFS.filter((m) => !m.core && m.scopes.includes('team')).map((m) => ({
+    key: m.key,
+    name: m.name,
+    description: m.description,
+    clubEnabled: resolveModule(settings, m.key).enabled,
+    enabled: resolveModule(settings, m.key, { orgUnitId: unit.id }).enabled,
+    inherited: !rows.some(
+      (r) => r.moduleKey === m.key && r.scopeType === 'org_unit' && r.scopeId === unit.id,
+    ),
+  }));
+}
+
+/** `enabled: null` übernimmt wieder die Vereinseinstellung. */
+export async function setUnitModule(
+  db: Db,
+  actor: Actor,
+  unitId: string,
+  key: string,
+  enabled: boolean | null,
+  now: Date,
+): Promise<TeamModule[]> {
+  const unit = await loadUnit(db, actor, unitId);
+  if (!mayConfigureUnit(actor, unit.id))
+    throw forbidden('Diesen Bereich darfst du nicht einstellen.');
+  const def = DEFS.find((m) => m.key === key && !m.core && m.scopes.includes('team'));
+  if (!def) throw notFound('Das Modul');
+  const settings = (await loadSettings(db, actor)).map(asSetting);
+  if (enabled && !resolveModule(settings, key).enabled)
+    throw new HttpError(409, 'club_disabled', `„${def.name}“ ist im Verein ausgeschaltet.`);
+  const where = and(
+    eq(s.moduleSettings.moduleKey, key),
+    eq(s.moduleSettings.scopeType, 'org_unit'),
+    eq(s.moduleSettings.scopeId, unit.id),
+  );
+  if (enabled === null) {
+    await db.delete(s.moduleSettings).where(where);
+  } else {
+    const [own] = await db.select().from(s.moduleSettings).where(where);
+    const state = enabled ? ('enabled' as const) : ('available' as const);
+    const level = enabled ? 'basic' : 'off';
+    if (own)
+      await db
+        .update(s.moduleSettings)
+        .set({ state, level })
+        .where(eq(s.moduleSettings.id, own.id));
+    else
+      await db.insert(s.moduleSettings).values({
+        clubId: actor.club.id,
+        scopeType: 'org_unit',
+        scopeId: unit.id,
+        moduleKey: key,
+        state,
+        level,
+        config: {},
+      });
+  }
+  await audit(
+    db,
+    actor,
+    `${def.name} ${enabled === null ? 'wie Verein' : enabled ? 'aktiviert' : 'ausgeschaltet'}: ${unit.name}`,
+    now,
+    { module: key, orgUnitId: unit.id },
+  );
+  return unitModules(db, actor, unit.id);
 }
