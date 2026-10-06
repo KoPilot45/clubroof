@@ -11,7 +11,7 @@ import {
   type TeamCash,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, lte } from 'drizzle-orm';
 import type { Actor } from '../actor';
 import { HttpError, forbidden } from '../errors';
 import { loadTeamForActor, requireModule, type TeamRow } from './team-access';
@@ -201,4 +201,137 @@ export async function createBooking(
   });
 
   return getTeamCash(db, actor, teamId);
+}
+
+// ── Kassenbericht (Export) ──────────────────────────────────────────────────
+
+const REPORT_LINK_MS = 10 * 60 * 1000;
+
+/** Signierter Link (10 Minuten) zum Kassenbericht als CSV – nur mit Leserecht für die Kasse. */
+export async function cashReportLink(
+  db: Db,
+  actor: Actor,
+  teamId: string,
+  range: { from?: string; to?: string },
+  now: Date,
+): Promise<{ token: string; expiresAt: string }> {
+  const { team, permissions } = await loadTeamForActor(db, actor, teamId);
+  requireModule(actor, 'team_cash', team);
+  if (!permissions.readCash) throw forbidden('Den Kassenbericht sehen Kassenverantwortliche.');
+  if (range.from && range.to && range.from > range.to)
+    throw new HttpError(400, 'invalid_range', 'Der Zeitraum ist ungültig.');
+  const expiresAt = new Date(now.getTime() + REPORT_LINK_MS);
+  const id = `c:${team.id}|${range.from ?? ''}|${range.to ?? ''}`;
+  return { token: actor.links.create(id, expiresAt), expiresAt: expiresAt.toISOString() };
+}
+
+const euro = (cents: number) => (cents / 100).toFixed(2).replace('.', ',');
+const germanDate = (iso: string) => iso.split('-').reverse().join('.');
+/** Textfelder für Excel sicher machen (Trennzeichen, Anführungszeichen, Formel-Injektion) */
+function cell(value: string | null | undefined): string {
+  let v = value ?? '';
+  if (/^[=+\-@\t\r]/.test(v)) v = `'${v}`;
+  return /[;"\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  einnahme: 'Einnahme',
+  ausgabe: 'Ausgabe',
+  strafe: 'Strafe',
+  getraenke: 'Getränke',
+  einzahlung: 'Einzahlung',
+};
+
+/** Kassenbericht als CSV (Semikolon, UTF-8 mit BOM – öffnet direkt in Excel). */
+export async function cashReportCsv(
+  db: Db,
+  payload: string,
+  now: Date,
+): Promise<{ fileName: string; csv: string } | null> {
+  const [teamId, fromArg, toArg] = payload.split('|');
+  const [row] = await db
+    .select({ team: s.teams, club: s.clubs, season: s.seasons })
+    .from(s.teams)
+    .innerJoin(s.clubs, eq(s.clubs.id, s.teams.clubId))
+    .innerJoin(s.seasons, eq(s.seasons.id, s.teams.seasonId))
+    .where(eq(s.teams.id, teamId!));
+  if (!row) return null;
+  const tz = row.club.timezone;
+  const from = fromArg || row.season.startsOn;
+  const to = toArg || toIsoDate(calendarDayOf(now, tz));
+  const [account] = await db
+    .select()
+    .from(s.cashAccounts)
+    .where(eq(s.cashAccounts.teamId, row.team.id));
+  const rows = account
+    ? await db
+        .select({
+          tx: s.cashTransactions,
+          firstName: s.persons.firstName,
+          lastName: s.persons.lastName,
+        })
+        .from(s.cashTransactions)
+        .leftJoin(s.persons, eq(s.persons.id, s.cashTransactions.personId))
+        .where(
+          and(eq(s.cashTransactions.accountId, account.id), lte(s.cashTransactions.bookedOn, to)),
+        )
+        .orderBy(asc(s.cashTransactions.bookedOn), asc(s.cashTransactions.createdAt))
+    : [];
+
+  const money = rows.filter((r) => !r.tx.isCharge);
+  const signed = (r: (typeof rows)[number]) =>
+    r.tx.direction === 'income' ? r.tx.amountCents : -r.tx.amountCents;
+  let balance = money.filter((r) => r.tx.bookedOn < from).reduce((a, r) => a + signed(r), 0);
+  const opening = balance;
+  const lines: string[] = [
+    `Kassenbericht;${cell(account?.name ?? `Mannschaftskasse ${row.team.name}`)}`,
+    `Verein;${cell(row.club.name)}`,
+    `Zeitraum;${germanDate(from)} – ${germanDate(to)}`,
+    `Erstellt;${new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short', timeZone: tz }).format(now)}`,
+    '',
+    'Datum;Art;Beschreibung;Person;Einnahme;Ausgabe;Kassenstand',
+    `${germanDate(from)};Anfangsbestand;;;;;${euro(opening)}`,
+  ];
+  let income = 0;
+  let expense = 0;
+  for (const r of money.filter((x) => x.tx.bookedOn >= from)) {
+    balance += signed(r);
+    if (r.tx.direction === 'income') income += r.tx.amountCents;
+    else expense += r.tx.amountCents;
+    lines.push(
+      [
+        germanDate(r.tx.bookedOn),
+        cell(CATEGORY_LABELS[r.tx.category] ?? r.tx.category),
+        cell(r.tx.description),
+        cell(r.tx.personId ? `${r.firstName} ${r.lastName}` : (r.tx.counterparty ?? '')),
+        r.tx.direction === 'income' ? euro(r.tx.amountCents) : '',
+        r.tx.direction === 'expense' ? euro(r.tx.amountCents) : '',
+        euro(balance),
+      ].join(';'),
+    );
+  }
+  lines.push(
+    '',
+    `Summe Einnahmen;;;;${euro(income)};;`,
+    `Summe Ausgaben;;;;;${euro(expense)};`,
+    `Kassenstand am ${germanDate(to)};;;;;;${euro(balance)}`,
+  );
+
+  // Offene Beträge (Strafen/Getränke abzüglich Einzahlungen) je Person bis zum Stichtag
+  const persons = new Map<string, { name: string; cents: number }>();
+  for (const r of rows) {
+    if (!r.tx.personId) continue;
+    const p = persons.get(r.tx.personId) ?? { name: `${r.lastName}, ${r.firstName}`, cents: 0 };
+    p.cents += personalDelta(r.tx);
+    persons.set(r.tx.personId, p);
+  }
+  const open = [...persons.values()].filter((p) => p.cents !== 0).sort((a, b) => a.cents - b.cents);
+  if (open.length) {
+    lines.push('', 'Persönliche Konten;;;;;;', 'Name;Saldo (negativ = offen);;;;;');
+    for (const p of open) lines.push(`${cell(p.name)};${euro(p.cents)};;;;;`);
+  }
+  return {
+    fileName: `Kassenbericht ${row.team.badge} ${germanDate(from)}-${germanDate(to)}.csv`,
+    csv: '﻿' + lines.join('\r\n') + '\r\n',
+  };
 }

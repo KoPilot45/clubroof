@@ -575,6 +575,27 @@ describe.skipIf(!url)('API', () => {
       expect(res.statusCode).toBe(403);
     });
 
+    it('Kassenbericht als CSV über einen kurzlebigen Link', async () => {
+      const b1 = await teamId('B1');
+      const treasurer = await login('kasse');
+      const player = await login('spieler');
+      expect((await send('GET', `/teams/${b1}/cash/report-link`, player.token)).status).toBe(403);
+      const cash = await get<TeamCash>(`/teams/${b1}/cash`, treasurer.token);
+      const link = await get<{ url: string }>(`/teams/${b1}/cash/report-link`, treasurer.token);
+      const res = await app.inject({ method: 'GET', url: new URL(link.url).pathname });
+      expect(res.statusCode).toBe(200);
+      expect(res.headers['content-type']).toContain('text/csv');
+      expect(res.headers['content-disposition']).toContain('Kassenbericht%20B1');
+      const csv = res.body;
+      expect(csv.startsWith('\uFEFFKassenbericht;')).toBe(true);
+      expect(csv).toContain('Datum;Art;Beschreibung;Person;Einnahme;Ausgabe;Kassenstand');
+      const euro = (c: number) => (c / 100).toFixed(2).replace('.', ',');
+      expect(csv).toContain(`;${euro(cash.balanceCents!)}\r\n`);
+      // Manipulierter Link
+      const bad = await app.inject({ method: 'GET', url: `${new URL(link.url).pathname}x` });
+      expect(bad.statusCode).toBe(404);
+    });
+
     it('Kasse: Buchungen nur mit Kassenrechten, persönliches Konto für alle', async () => {
       const h1 = await teamId('1.');
       const treasurer = await login('kasse');

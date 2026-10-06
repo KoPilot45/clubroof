@@ -20,6 +20,7 @@ import {
   listToday,
   loadVisibleDocument,
 } from '../services/club';
+import { cashReportCsv } from '../services/cash';
 import { listHelperEvents, setAttendance, signUp, withdraw } from '../services/helpers';
 import { placeholderPdf } from '../storage/files';
 import { deleteDocument, setClubLogo, uploadDocument, uploadImage } from '../services/uploads';
@@ -160,6 +161,19 @@ export const fileRoutes: FastifyPluginAsyncZod = async (app) => {
       const documentId = app.links.verify(request.params.token, app.now());
       if (!documentId)
         throw new HttpError(404, 'link_invalid', 'Der Link ist abgelaufen oder ungültig.');
+      if (documentId.startsWith('c:')) {
+        const report = await cashReportCsv(app.db, documentId.slice(2), app.now());
+        if (!report) throw notFound('Der Kassenbericht');
+        return reply
+          .header('content-type', 'text/csv; charset=utf-8')
+          .header(
+            'content-disposition',
+            `attachment; filename*=UTF-8''${encodeURIComponent(report.fileName)}`,
+          )
+          .header('cache-control', 'no-store')
+          .header('x-content-type-options', 'nosniff')
+          .send(report.csv);
+      }
       if (documentId.startsWith('m:')) {
         const [media] = await app.db
           .select()

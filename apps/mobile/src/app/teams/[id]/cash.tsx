@@ -1,7 +1,7 @@
 import type { CashEntry, TeamCash } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
-import { View } from 'react-native';
+import { Linking, View } from 'react-native';
 import {
   Button,
   Card,
@@ -110,6 +110,19 @@ export default function CashScreen() {
                 </T>
               </View>
             </Card>
+          ) : null}
+
+          {c.permissions.readCash ? (
+            <Button
+              label="Kassenbericht exportieren (Excel)"
+              icon="download-outline"
+              variant="outline"
+              onPress={() =>
+                void api<{ url: string }>(`/teams/${id}/cash/report-link`).then(({ url }) =>
+                  Linking.openURL(url),
+                )
+              }
+            />
           ) : null}
 
           {c.permissions.manageCash ? (

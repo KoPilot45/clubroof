@@ -11,7 +11,7 @@ import { schema as s } from '@clubroof/db';
 import { asc, eq } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { createBooking, getTeamCash } from '../services/cash';
+import { cashReportLink, createBooking, getTeamCash } from '../services/cash';
 import { cancelEvent, createTeamEvent, updateEvent } from '../services/event-admin';
 import { getMyTeams, getRoster, getTeamOverview, getTeamStats } from '../services/teams';
 
@@ -21,6 +21,36 @@ const isoDateTime = z.iso.datetime({ offset: true });
 /** Team-Cockpit, Kasse und Trainer-Funktionen. */
 export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.authenticate);
+
+  app.get(
+    '/teams/:teamId/cash/report-link',
+    {
+      schema: {
+        params: teamParams,
+        querystring: z.object({
+          from: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/)
+            .optional(),
+          to: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/)
+            .optional(),
+        }),
+      },
+    },
+    async (request): Promise<{ url: string; expiresAt: string }> => {
+      const { token, expiresAt } = await cashReportLink(
+        app.db,
+        request.actor!,
+        request.params.teamId,
+        request.query,
+        app.now(),
+      );
+      const base = app.config.publicUrl ?? `${request.protocol}://${request.headers.host}`;
+      return { url: `${base}/files/${token}`, expiresAt };
+    },
+  );
 
   app.get('/my-teams', async (request): Promise<MyTeamCard[]> =>
     getMyTeams(app.db, request.actor!, app.now()),
