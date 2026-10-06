@@ -5,6 +5,8 @@ Neue Entscheidungen werden oben ergänzt.
 
 | Datum | Festlegung | Folge für die Umsetzung |
 | --- | --- | --- |
+| 07.10.2026 | **Statistik in Kacheln:** Oben bleibt die Saison-Bilanz, darunter je eine Kachel für Kader, Training, Torschützen, Scorer, Karten und Ergebnisse. Jede Auswertung hat ihren eigenen Zeitraumfilter. | Der Filter startet in jeder Kachel bei „Gesamte Saison“. |
+| 07.10.2026 | **App standardmäßig hell; Dunkelmodus persönlich** unter Mehr → Konto & Einstellungen → Darstellung (Hell, Dunkel, Wie Gerät). | Die Einstellung hängt am Benutzerkonto und gilt auf allen Geräten; die Vereinseinstellung zur Darstellung entfällt. |
 | 07.10.2026 | **Statistik ohne Stufen „Erweitert/Individuell“**, stattdessen Zeitraumfilter (gesamte Saison als Standard, letzter Monat, frei wählbar) sowie Torschützen-, Scorer- und Kartenliste. | Die Stufenwahl des Moduls bleibt technisch erhalten, zeigt aber dieselben Inhalte. |
 | 07.10.2026 | **Trainer stellen die Funktionen ihrer Mannschaft selbst ein** (neues Recht „Module der eigenen Mannschaft“ für die Rolle Trainer). Was Verein oder Bereich ausgeschaltet haben, bleibt aus. | Team → Kachel „Funktionen“. Migration `0021_coach_team_modules` ergänzt das Recht bei bestehenden Vereinen (Trainer und Fulladmin). |
 | 07.10.2026 | **Fünfter Hauptpunkt „Termine“:** die nächsten drei eigenen Termine, „Alle anzeigen“ (nach Wochen, filterbar) und ein Monatskalender, in dem die Terminarten farbig mit Legende unterschieden werden. | Reihenfolge der Hauptnavigation: Home · Team · Termine · Verein · Mehr. |

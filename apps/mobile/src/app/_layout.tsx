@@ -150,7 +150,11 @@ function Navigator() {
           />
           <Stack.Screen name="teams/[id]/roster" options={{ headerShown: true, title: 'Kader' }} />
           <Stack.Screen
-            name="teams/[id]/stats"
+            name="teams/[id]/stats/index"
+            options={{ headerShown: true, title: 'Statistik' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/stats/[kind]"
             options={{ headerShown: true, title: 'Statistik' }}
           />
           <Stack.Screen
