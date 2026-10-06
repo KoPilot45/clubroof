@@ -100,9 +100,24 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.get(
     '/teams/:teamId/stats',
-    { schema: { params: teamParams } },
+    {
+      schema: {
+        params: teamParams,
+        querystring: z.object({
+          period: z.enum(['season', 'month', 'custom']).optional(),
+          from: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/)
+            .optional(),
+          to: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/)
+            .optional(),
+        }),
+      },
+    },
     async (request): Promise<TeamStats> =>
-      getTeamStats(app.db, request.actor!, request.params.teamId, app.now()),
+      getTeamStats(app.db, request.actor!, request.params.teamId, app.now(), request.query),
   );
 
   app.get(

@@ -148,6 +148,27 @@ function Navigator() {
             name="match/[id]/report"
             options={{ headerShown: true, title: 'Spielbericht' }}
           />
+          <Stack.Screen name="teams/[id]/roster" options={{ headerShown: true, title: 'Kader' }} />
+          <Stack.Screen
+            name="teams/[id]/stats"
+            options={{ headerShown: true, title: 'Statistik' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash"
+            options={{ headerShown: true, title: 'Mannschaftskasse' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/cash-new"
+            options={{ headerShown: true, title: 'Buchung erfassen' }}
+          />
+          <Stack.Screen
+            name="teams/[id]/event-new"
+            options={{ headerShown: true, title: 'Termin anlegen' }}
+          />
+          <Stack.Screen
+            name="event-edit/[id]"
+            options={{ headerShown: true, title: 'Termin bearbeiten' }}
+          />
           <Stack.Screen
             name="teams/[id]/modules"
             options={{ headerShown: true, title: 'Funktionen der Mannschaft' }}

@@ -3643,6 +3643,51 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Statistik-Zeitraum', () => {
+    it('ganze Saison (Standard), letzter Monat und freier Zeitraum', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const season = await get<TeamStats>(`/teams/${b1.id}/stats`, coach.token);
+      expect(season.period).toMatchObject({ kind: 'season', to: '2026-10-05' });
+      expect(season.period.from).toBe(season.period.seasonStart);
+
+      const month = await get<TeamStats>(`/teams/${b1.id}/stats?period=month`, coach.token);
+      expect(month.period).toMatchObject({ kind: 'month', from: '2026-09-05', to: '2026-10-05' });
+      expect(month.results.every((r) => r.startsAt >= '2026-09-04')).toBe(true);
+      expect(month.highlights.played).toBeLessThanOrEqual(season.highlights.played);
+
+      // Einzelner Spieltag: nur dieses Spiel zählt
+      const last = season.results[0]!;
+      const day = last.startsAt.slice(0, 10);
+      const one = await get<TeamStats>(
+        `/teams/${b1.id}/stats?period=custom&from=${day}&to=${day}`,
+        coach.token,
+      );
+      expect(one.results.map((r) => r.eventId)).toEqual([last.eventId]);
+      const goals = one.squad.reduce((a, r) => a + r.goals, 0);
+      expect(goals).toBeLessThanOrEqual(last.goalsFor);
+
+      // Ende in der Zukunft wird auf heute begrenzt, falsche Reihenfolge abgelehnt
+      const future = await get<TeamStats>(
+        `/teams/${b1.id}/stats?period=custom&from=2026-09-01&to=2026-12-31`,
+        coach.token,
+      );
+      expect(future.period.to).toBe('2026-10-05');
+      expect(
+        (
+          await send(
+            'GET',
+            `/teams/${b1.id}/stats?period=custom&from=2026-10-01&to=2026-09-01`,
+            coach.token,
+          )
+        ).status,
+      ).toBe(400);
+      expect((await send('GET', `/teams/${b1.id}/stats?period=custom`, coach.token)).status).toBe(
+        400,
+      );
+    });
+  });
+
   // Muss als Letztes laufen: der Saisonwechsel verändert Mannschaften und Zuordnungen
   describe('Saisonwechsel', () => {
     it('bereitet die nächste Saison vor, plant den Kader und startet sie', async () => {

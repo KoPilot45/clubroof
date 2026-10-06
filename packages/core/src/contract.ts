@@ -380,6 +380,18 @@ export type TeamStats = {
   /** Trainingsquoten in der Kader-Statistik sichtbar (Trainerteam); sonst nur die eigene */
   showsTrainingRates: boolean;
   level: 'basic' | 'extended' | 'custom';
+  /** Ausgewerteter Zeitraum (Kalendertage, inklusive) */
+  period: StatsPeriod;
+};
+
+export type StatsPeriodKind = 'season' | 'month' | 'custom';
+
+export type StatsPeriod = {
+  kind: StatsPeriodKind;
+  from: string;
+  to: string;
+  /** Saisonbeginn – frühestes sinnvolles Datum für die Auswahl */
+  seasonStart: string;
 };
 
 export type SquadStatRow = {

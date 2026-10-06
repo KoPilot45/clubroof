@@ -50,7 +50,7 @@ Stand: 05.10.2026
 | Teamliste: Spieler, Trainer, Betreuer, Rückennummern, Positionen | K 4 | ✅ | mit heutiger Verfügbarkeit |
 | Kader / Aufstellung / Nominierung für ein Spiel | M 4, K 4 | ✅ | Startelf und Bank inkl. Gastspieler, Entwurf nur fürs Trainerteam, Veröffentlichen benachrichtigt die Nominierten; Abgesagte nicht wählbar |
 | Spielbericht: Ergebnis, Tore, Assists, Karten | K 4 | ✅ | Tore (auch Elfmeter, Eigentor des Gegners) mit Vorlage und Minute, Gelb/Gelb-Rot/Rot; Tore müssen zum Ergebnis passen |
-| Statistik (Aus / Basis / Erweitert / Individuell) | K 4 | 🟡 | Bilanz, Trainingsbeteiligung und sortierbare Kader-Statistik (Einsätze, Startelf, Tore, Vorlagen, Karten; Trainingsquoten nur fürs Trainerteam). Stufen „Erweitert/Individuell“ noch ohne eigene Inhalte |
+| Statistik | K 4 | ✅ | Zeitraum: gesamte Saison (Standard), letzter Monat oder frei wählbar; Bilanz, Torschützen-, Scorer- und Kartenliste, sortierbare Kader-Statistik, Trainingsbeteiligung (Quoten anderer nur fürs Trainerteam), Ergebnisse. Weitere Stufen bewusst nicht vorgesehen (Festlegung 07.10.2026) |
 | Feste Rückennummern (saisonweit, spielbezogen, aus) | M 10, K 4 | ✅ | Trainerteam wählt den Modus und vergibt Nummern (keine Doppelten); je Spiel in der Aufstellung änderbar |
 | Mannschaftskasse: Saldo, Buchungen, Strafen, Getränke, Einzahlungen, Bericht-Export | M 16, K 4 | ✅ | Buchen nur für Kassenverantwortliche; Kassenbericht als CSV für Excel (Anfangsbestand, Buchungen, laufender Stand, offene persönliche Konten) |
 | Teambezogene Dokumente und Aufgaben | K 4 | ✅ | Dokumente der Mannschaft; Mannschaftsaufgaben (Fahrdienst, Trikotwäsche …) mit Zuteilung, „Ich übernehme“ und Abhaken |
@@ -187,7 +187,7 @@ Stand: 05.10.2026
 | --- | ---: | ---: | ---: |
 | Grundstruktur & Design | 7 | 0 | 0 |
 | Home | 9 | 0 | 0 |
-| Mannschaft | 12 | 2 | 0 |
+| Mannschaft | 13 | 1 | 0 |
 | Termine & Teilnahme | 12 | 0 | 0 |
 | Gastspieler & Spielerbedarf | 5 | 0 | 0 |
 | Verein | 11 | 0 | 0 |
@@ -198,4 +198,4 @@ Stand: 05.10.2026
 | Verwaltung | 8 | 1 | 0 |
 | Einrichtung & Module | 5 | 0 | 0 |
 | Sicherheit, Betrieb, Integrationen | 6 | 0 | 2 |
-| **Gesamt** | **97** | **4** | **2** |
+| **Gesamt** | **98** | **3** | **2** |

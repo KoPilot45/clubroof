@@ -3,9 +3,14 @@
  * Personenbezogene Details (Gründe, Quoten anderer) nur für Verantwortliche.
  */
 import {
+  addDays,
+  at,
   calendarDayOf,
+  fromIsoDate,
   resolveModule,
   toIsoDate,
+  type StatsPeriod,
+  type StatsPeriodKind,
   type MatchResult,
   type MyTeamCard,
   type PlayerStat,
@@ -35,6 +40,7 @@ import {
 } from 'drizzle-orm';
 import { resolveMediaUrl } from '../storage/media-links';
 import { actorCan, type Actor } from '../actor';
+import { HttpError } from '../errors';
 import { fetchEventRows, summarizeEvents } from './events';
 import { loadTeamForActor, requireModule, type TeamRow } from './team-access';
 
@@ -48,11 +54,14 @@ const ABSENCE_LABELS = {
   other: 'Sonstiges',
 } as const;
 
+type Range = { from: Date; to: Date };
+
 async function loadResults(
   db: Db,
   team: TeamRow,
   now: Date,
   limit?: number,
+  range?: Range,
 ): Promise<MatchResult[]> {
   const query = db
     .select({ event: s.events, match: s.matchDetails })
@@ -62,7 +71,8 @@ async function loadResults(
       and(
         eq(s.events.teamId, team.id),
         eq(s.events.status, 'scheduled'),
-        lt(s.events.startsAt, now),
+        lt(s.events.startsAt, range ? range.to : now),
+        ...(range ? [gte(s.events.startsAt, range.from)] : []),
         isNotNull(s.matchDetails.goalsFor),
         isNotNull(s.matchDetails.goalsAgainst),
       ),
@@ -84,7 +94,12 @@ async function loadResults(
   });
 }
 
-async function trainingRate(db: Db, team: TeamRow, now: Date): Promise<number | null> {
+async function trainingRate(
+  db: Db,
+  team: TeamRow,
+  now: Date,
+  range?: Range,
+): Promise<number | null> {
   const rows = await db
     .select({ status: s.eventParticipants.status, n: count() })
     .from(s.eventParticipants)
@@ -94,8 +109,8 @@ async function trainingRate(db: Db, team: TeamRow, now: Date): Promise<number | 
         eq(s.events.teamId, team.id),
         eq(s.events.type, 'training'),
         eq(s.events.status, 'scheduled'),
-        lt(s.events.startsAt, now),
-        gte(s.events.startsAt, new Date(now.getTime() - 28 * DAY)),
+        lt(s.events.startsAt, range ? range.to : now),
+        gte(s.events.startsAt, range ? range.from : new Date(now.getTime() - 28 * DAY)),
         eq(s.eventParticipants.role, 'player'),
       ),
     )
@@ -257,22 +272,58 @@ export async function getRoster(
   });
 }
 
+/**
+ * Zeitraum der Statistik: ganze Saison (Standard), letzter Monat (30 Tage) oder frei gewählt.
+ * Ausgewertet werden nur vergangene Termine; Tage zählen in der Vereinszeitzone.
+ */
+async function statsRange(
+  db: Db,
+  actor: Actor,
+  team: TeamRow,
+  query: { period?: StatsPeriodKind; from?: string; to?: string },
+  now: Date,
+): Promise<{ range: Range; period: StatsPeriod }> {
+  const tz = actor.club.timezone;
+  const [season] = await db.select().from(s.seasons).where(eq(s.seasons.id, team.seasonId));
+  const seasonStart = season!.startsOn;
+  const today = toIsoDate(calendarDayOf(now, tz));
+  const kind = query.period ?? 'season';
+  let from = seasonStart;
+  let to = today;
+  if (kind === 'month') from = toIsoDate(addDays(calendarDayOf(now, tz), -30));
+  if (kind === 'custom') {
+    if (!query.from || !query.to)
+      throw new HttpError(400, 'invalid_range', 'Bitte Beginn und Ende des Zeitraums angeben.');
+    if (query.from > query.to)
+      throw new HttpError(400, 'invalid_range', 'Der Beginn liegt nach dem Ende.');
+    from = query.from;
+    to = query.to > today ? today : query.to;
+  }
+  const end = at(addDays(fromIsoDate(to), 1), '00:00', tz);
+  return {
+    range: { from: at(fromIsoDate(from), '00:00', tz), to: end < now ? end : now },
+    period: { kind, from, to, seasonStart },
+  };
+}
+
 export async function getTeamStats(
   db: Db,
   actor: Actor,
   teamId: string,
   now: Date,
+  query: { period?: StatsPeriodKind; from?: string; to?: string } = {},
 ): Promise<TeamStats> {
   const { team, permissions } = await loadTeamForActor(db, actor, teamId);
   requireModule(actor, 'statistics', team);
+  const { range, period } = await statsRange(db, actor, team, query, now);
   const level = resolveModule(actor.modules, 'statistics', {
     teamId: team.id,
     orgUnitId: team.orgUnitId,
   }).level;
 
   const [results, rate, rows] = await Promise.all([
-    loadResults(db, team, now),
-    trainingRate(db, team, now),
+    loadResults(db, team, now, undefined, range),
+    trainingRate(db, team, now, range),
     db
       .select({
         personId: s.eventParticipants.personId,
@@ -289,7 +340,8 @@ export async function getTeamStats(
         and(
           eq(s.events.teamId, team.id),
           eq(s.events.status, 'scheduled'),
-          lt(s.events.startsAt, now),
+          lt(s.events.startsAt, range.to),
+          gte(s.events.startsAt, range.from),
           eq(s.eventParticipants.role, 'player'),
           inArray(s.events.type, ['training', 'match', 'tournament']),
         ),
@@ -336,7 +388,7 @@ export async function getTeamStats(
       (a, b) => (b.trainingRate ?? -1) - (a.trainingRate ?? -1) || a.name.localeCompare(b.name),
     );
 
-  const squad = await squadTable(db, actor, team, now, byPerson, permissions.readAttendance);
+  const squad = await squadTable(db, actor, team, now, byPerson, permissions.readAttendance, range);
 
   return {
     highlights: summarizeResults(results, rate),
@@ -345,6 +397,7 @@ export async function getTeamStats(
     squad,
     showsTrainingRates: permissions.readAttendance,
     level: level === 'off' ? 'basic' : level,
+    period,
   };
 }
 
@@ -360,6 +413,7 @@ async function squadTable(
   now: Date,
   training: Map<string, PlayerStat>,
   showAllRates: boolean,
+  range: Range,
 ): Promise<SquadStatRow[]> {
   const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
   const members = await db
@@ -382,7 +436,8 @@ async function squadTable(
         and(
           eq(s.events.teamId, team.id),
           eq(s.events.status, 'scheduled'),
-          lt(s.events.startsAt, now),
+          lt(s.events.startsAt, range.to),
+          gte(s.events.startsAt, range.from),
           isNotNull(s.matchDetails.lineupPublishedAt),
         ),
       )

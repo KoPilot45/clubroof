@@ -70,17 +70,22 @@ export function ResultRow({
   );
 }
 
-export function HighlightsCard({ h }: { h: TeamHighlights }) {
+export function HighlightsCard({
+  h,
+  title = 'Team-Highlights',
+  rateLabel = 'Trainingsquote (4 Wo.)',
+}: {
+  h: TeamHighlights;
+  title?: string;
+  rateLabel?: string;
+}) {
   return (
     <Card style={{ gap: 12 }}>
-      <T variant="overline">Team-Highlights</T>
+      <T variant="overline">{title}</T>
       <View style={{ flexDirection: 'row' }}>
         <Stat value={`${h.won}-${h.drawn}-${h.lost}`} label="Bilanz S-U-N" />
         <Stat value={`${h.goalsFor}:${h.goalsAgainst}`} label="Tore" />
-        <Stat
-          value={h.trainingRate === null ? '–' : `${h.trainingRate} %`}
-          label="Trainingsquote (4 Wo.)"
-        />
+        <Stat value={h.trainingRate === null ? '–' : `${h.trainingRate} %`} label={rateLabel} />
       </View>
     </Card>
   );
