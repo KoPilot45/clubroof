@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { LoginResponse } from '@clubroof/core';
 import { Button, Card, Chip, Crest, T, TextField } from '@/components/ui';
 import { request, RequestError } from '@/lib/api';
+import { inputFont } from '@/lib/fonts';
 import { useSession } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -77,6 +78,7 @@ export default function LoginScreen() {
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
+    ...inputFont(),
     color: colors.onSurface,
     backgroundColor: colors.surface,
   } as const;

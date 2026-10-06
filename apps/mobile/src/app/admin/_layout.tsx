@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, usePathname, type Href } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/app-text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HEADING_FONT, type IconName } from '@/components/ui';
+import type { IconName } from '@/components/ui';
+import { HEADING_FONT } from '@/lib/fonts';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -39,6 +41,7 @@ export default function AdminLayout() {
         <Stack.Screen name="club-event-new" options={{ title: 'Veranstaltung planen' }} />
         <Stack.Screen name="import" options={{ title: 'Mitglieder importieren' }} />
         <Stack.Screen name="roles" options={{ title: 'Rollen & Aufgaben' }} />
+        <Stack.Screen name="role/[key]" options={{ title: 'Rolle' }} />
         <Stack.Screen name="audit" options={{ title: 'Änderungsprotokoll' }} />
         <Stack.Screen name="news/index" options={{ title: 'News-Redaktion' }} />
         <Stack.Screen name="news/new" options={{ title: 'News schreiben' }} />

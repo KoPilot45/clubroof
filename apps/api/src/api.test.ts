@@ -1956,6 +1956,12 @@ describe.skipIf(!url)('API', () => {
       const coach = await login('trainer');
       const catalog = await get<RoleCatalog>('/admin/roles', admin.token);
       const youth = catalog.scopes.find((sc) => sc.type === 'org_unit' && /Jugend/.test(sc.label))!;
+      // Jede Rolle kann mehrere Personen haben; Zuweisungen haben eine ID (zum Entziehen)
+      const board = catalog.roles.find((r) => r.key === 'board')!;
+      const member = catalog.roles.find((r) => r.key === 'club_member')!;
+      expect(member.holders.map((h) => h.name)).toContain('Heike Brandt');
+      for (const h of [...board.holders, ...member.holders])
+        expect(h.assignmentId).toMatch(/^[0-9a-f-]{36}$/);
       const assigned = await send<MemberDetail>(
         'POST',
         `/admin/members/${coach.me.person.id}/roles`,

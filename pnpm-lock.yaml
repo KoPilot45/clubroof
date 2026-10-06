@@ -90,6 +90,9 @@ importers:
       '@clubroof/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens
+      '@expo-google-fonts/open-sans':
+        specifier: ^0.4.2
+        version: 0.4.2
       '@expo-google-fonts/oswald':
         specifier: ^0.4.2
         version: 0.4.2
@@ -1108,6 +1111,9 @@ packages:
 
   '@expo-google-fonts/material-symbols@0.4.48':
     resolution: {integrity: sha512-aZztj44PyA/sj3TXSwwpLJwqMlTUJ49okbZJYURzEcuERxMQB0KbX7RrLBi8WJnuWz5HFOLlTRxORrJfNnUPNQ==}
+
+  '@expo-google-fonts/open-sans@0.4.2':
+    resolution: {integrity: sha512-gvhPqLXYnltWgll3iBwRGUwf5yN2HCh4mgQmFoQ8oU66LTs23oX4N7T3t0BDsKfP/1Z8F8+4c7wSkA11Nnk4kA==}
 
   '@expo-google-fonts/oswald@0.4.2':
     resolution: {integrity: sha512-ZLB8ou0SmSWThyLDCHQdFnbMrj93hRrpkKMLLoPrIs4QTrPxZyOxHoJ4mFoFCs0efZdV1Yd8mULfaggAblX5Mg==}
@@ -5408,6 +5414,8 @@ snapshots:
       levn: 0.4.1
 
   '@expo-google-fonts/material-symbols@0.4.48': {}
+
+  '@expo-google-fonts/open-sans@0.4.2': {}
 
   '@expo-google-fonts/oswald@0.4.2': {}
 

@@ -22,6 +22,7 @@ Stand: 07.10.2026
 | Mannschafts-Badges (B1, 1., AH) und Tags für Quelle/Typ | K 2 | ✅ | |
 | Gekachelte Untermenüs in Team, Verein und Mehr – Kacheln entstehen aus den aktivierten Modulen | K 4 | ✅ | spätere Funktionen als „Bald verfügbar“ |
 | Verwaltungsmodus als „App in der App“ mit eigener Navigation | M 8, K 6 | ✅ | Abgesetzte Kopfzeile mit „Beenden“, eigene untere Navigation (Übersicht, Mitglieder, Teams, Feste, News – je nach Rechten) |
+| Hilfe & Anleitung (Mehr) | – | ✅ | Fragen und Antworten mit Suche, passend zur Rolle (alle, Eltern, Trainerteams, Kassenverwaltung, Vereinsmitglieder, Verwaltung); Inhalte in `lib/help-content.ts`, mit Sprungmarken zu den Funktionen |
 
 ## 2. Home – persönliches Dashboard
 
@@ -157,7 +158,7 @@ Stand: 07.10.2026
 | Mitglieder: Stammdaten, Ein-/Austritte, Mannschaftszuordnung | K 6–7 | ✅ | Suche/Filter, Anlegen, Bearbeiten, Aktiv/Passiv/Austritt; Zuordnung trägt Person sofort in künftige Termine ein bzw. aus. Jugendleitung sieht nur ihren Bereich |
 | Mannschaften verwalten, Saisonplanung, Saisonwechsel | K 6–7 | ✅ | Anlegen/Bearbeiten/Löschen; nächste Saison vorbereiten (Teams, Module, Fristen, Trainerteams, Zusatzaufgaben, optional Spieler), Kader der neuen Saison planen, Saison starten (Kasse, Dokumente, künftige Termine, Spielerbedarf gehen mit) |
 | Spielerbewegungen (Zu-/Abgänge, Leihe) | M 8, K 6 | ✅ | Wechsel im Verein, befristete Leihe (Stammteam bleibt), Zugang, Abgang; Termine werden angepasst, Historie bleibt |
-| Rollen & Rechte vergeben | M 8, K 7 | ✅ | Beim Mitglied mit Geltungsbereich (z. B. Kassenwart B1); Schutz vor Rechteausweitung und Aussperren |
+| Rollen & Rechte vergeben | M 8, K 7 | ✅ | Beim Mitglied oder je Rolle („Rollen & Aufgaben“: die ersten Personen, „Alle anzeigen“ mit Suche, „<Rolle> hinzufügen“, Entziehen) mit Geltungsbereich (z. B. Kassenwart B1); Hauptrolle Vereinsmitglied; Schutz vor Rechteausweitung und Aussperren |
 | Veranstaltungen planen | M 8 | ✅ | Vorstand bzw. Bereichsleitung: Feste, Versammlungen, Arbeitseinsätze mit Ablaufplan, Ort und Helferschichten; Übersicht mit fehlenden Helfern |
 | Audit-Log | K 6, 16 | ✅ | „Änderungsprotokoll“ für Vorstand und Fulladmin |
 | Import / Sync-Status | K 6, 14 | 🟡 | CSV-Import der Mitglieder mit Vorschau und Dublettenprüfung; Sync-Status kommt mit FUSSBALL.DE/DFBnet |
@@ -192,7 +193,7 @@ Stand: 07.10.2026
 
 | Bereich | ✅ | 🟡 | ⬜ |
 | --- | ---: | ---: | ---: |
-| Grundstruktur & Design | 7 | 0 | 0 |
+| Grundstruktur & Design | 8 | 0 | 0 |
 | Home | 10 | 0 | 0 |
 | Mannschaft | 16 | 1 | 0 |
 | Termine & Teilnahme | 14 | 0 | 0 |
@@ -205,4 +206,4 @@ Stand: 07.10.2026
 | Verwaltung | 8 | 1 | 0 |
 | Einrichtung & Module | 5 | 0 | 0 |
 | Sicherheit, Betrieb, Integrationen | 6 | 0 | 2 |
-| **Gesamt** | **105** | **3** | **2** |
+| **Gesamt** | **106** | **3** | **2** |

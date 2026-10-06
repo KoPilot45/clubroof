@@ -1061,7 +1061,13 @@ export type RoleCatalog = {
     description: string | null;
     defaultScope: ScopeType;
     permissions: string[];
-    holders: { personId: string; name: string; scopeLabel: string }[];
+    holders: {
+      /** Zuweisung (zum Entziehen) */
+      assignmentId: string;
+      personId: string;
+      name: string;
+      scopeLabel: string;
+    }[];
   }[];
   scopes: { type: ScopeType; id: string | null; label: string }[];
   teams: { id: string; name: string; badge: string }[];

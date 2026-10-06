@@ -16,7 +16,6 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   View,
   type StyleProp,
   type TextStyle,
@@ -24,7 +23,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
+import { HEADING_FONT, inputFont } from '@/lib/fonts';
 import { useTheme } from '@/lib/theme';
+import { Text } from './app-text';
 import { RequestError } from '@/lib/api';
 import { mediaUri } from '@/lib/upload';
 
@@ -44,8 +45,7 @@ type TextVariant =
   | 'caption'
   | 'overline';
 
-/** Schrift der Zwischenüberschriften (wird im Wurzel-Layout geladen). */
-export const HEADING_FONT = 'Oswald_600SemiBold';
+export { HEADING_FONT };
 
 export function T({
   variant = 'body',
@@ -706,14 +706,7 @@ export function TileGrid({ items }: { items: TileItem[] }) {
             </View>
             <View style={{ gap: 2 }}>
               <Text
-                style={{
-                  fontFamily: HEADING_FONT,
-                  fontSize: 17,
-                  fontWeight: '400',
-                  letterSpacing: 0.3,
-                  lineHeight: 21,
-                  color: colors.onSurface,
-                }}
+                style={{ fontSize: 14, fontWeight: '700', color: colors.onSurface }}
                 numberOfLines={2}
               >
                 {item.label}
@@ -866,6 +859,7 @@ export function TextField({
           paddingHorizontal: 12,
           paddingVertical: 10,
           fontSize: 15,
+          ...inputFont(),
           color: colors.onSurface,
           backgroundColor: colors.surface,
           textAlignVertical: multiline ? 'top' : 'center',

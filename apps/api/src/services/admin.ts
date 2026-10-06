@@ -850,6 +850,7 @@ export async function getRoleCatalog(db: Db, actor: Actor): Promise<RoleCatalog>
       holders: assignments
         .filter((a) => a.assignment.roleId === r.id)
         .map((a) => ({
+          assignmentId: a.assignment.id,
           personId: a.person.id,
           name: name(a.person),
           scopeLabel: label(a.assignment.scopeType, a.assignment.scopeId),

@@ -64,9 +64,10 @@ pnpm browser-check --reset     # vorher Demodaten neu laden
 - Rechte nur **serverseitig** prüfen (`actorCan`, Scopes Verein → Bereich → Mannschaft). Rollen sind Rechtepakete,
   keine Personenarten (Kassenwart ist Zusatzaufgabe). Datensparsamkeit: Gründe/Quoten/Kontaktdaten nur für Berechtigte.
 - Jede Tabelle mit fachlichen Daten trägt `club_id`. Zeiten in UTC speichern, Fristen in Vereinszeitzone.
-- Neue Funktion = Backend-Service + Route + Test in `api.test.ts` + App-Bildschirm + Eintrag in `docs/FUNKTIONEN.md`.
+- Neue Funktion = Backend-Service + Route + Test in `api.test.ts` + App-Bildschirm + Eintrag in `docs/FUNKTIONEN.md`
+  - Eintrag in der Hilfe (`apps/mobile/src/lib/help-content.ts`).
 - Zwischenüberschriften: `<Section title=…>` bzw. `<T variant="section">` (Oswald, Großbuchstaben, Akzentlinie in Vereinsfarbe) – keine eigenen Überschriftenstile.
-- Große Zahlen: `<T variant="figure">`; Titel in Kopfzeilen: `variant="headline"` (Oswald). Fließtext, Listen und Chips bleiben in der Systemschrift.
+- Große Zahlen: `<T variant="figure">`; Titel in Kopfzeilen: `variant="headline"` (Oswald). Alle anderen Texte laufen in Open Sans (`T` bzw. `Text` aus `components/app-text.tsx`); bei eingebundenen Schriften nie `fontWeight` voraussetzen.
 - Farben nur aus dem Theme (`useTheme`): `primary` als Fläche, `primaryText` für Text/Icons, Statusfarben mit Beschriftung.
 - Schemaänderung → Migration erzeugen **und** Seed anpassen; `pnpm db:reset` muss laufen.
 - Kleine, thematisch getrennte Commits; Push auf den Entwicklungsbranch.

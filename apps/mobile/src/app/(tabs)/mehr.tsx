@@ -91,6 +91,12 @@ export default function MoreScreen() {
       icon: 'settings',
       onPress: () => router.push('/account'),
     },
+    {
+      key: 'help',
+      label: 'Hilfe & Anleitung',
+      icon: 'help-circle',
+      onPress: () => router.push('/help'),
+    },
     ...(me.clubModules.includes('calendar_export')
       ? [
           {

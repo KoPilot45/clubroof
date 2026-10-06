@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
 import { useTheme } from '@/lib/theme';
 import type { IconName } from '@/components/ui';
+import { bodyFontFor, fontState } from '@/lib/fonts';
 
 const icon =
   (name: IconName, active: IconName) =>
@@ -19,7 +20,12 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primaryText,
         tabBarInactiveTintColor: colors.onSurfaceMuted,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-        tabBarLabelStyle: { fontWeight: '700', fontSize: 11 },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          ...(fontState.ready
+            ? { fontFamily: bodyFontFor('700'), fontWeight: '400' }
+            : { fontWeight: '700' }),
+        },
       }}
     >
       <Tabs.Screen

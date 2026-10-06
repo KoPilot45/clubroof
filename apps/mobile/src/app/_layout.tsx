@@ -1,5 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Oswald_600SemiBold, useFonts } from '@expo-google-fonts/oswald';
+import {
+  OpenSans_400Regular,
+  OpenSans_600SemiBold,
+  OpenSans_700Bold,
+  OpenSans_800ExtraBold,
+} from '@expo-google-fonts/open-sans';
+import { Oswald_600SemiBold } from '@expo-google-fonts/oswald';
+import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -7,7 +14,8 @@ import { useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
-import { HEADING_FONT, Loading } from '@/components/ui';
+import { Loading } from '@/components/ui';
+import { fontState, HEADING_FONT } from '@/lib/fonts';
 import { Pressable, View } from 'react-native';
 
 function HomeBackButton() {
@@ -29,7 +37,14 @@ function Navigator() {
   const session = useSession();
   const { colors, scheme } = useTheme();
   // Überschriftenschrift laden; bei einem Fehler bleibt die Systemschrift
-  const [fontsLoaded, fontError] = useFonts({ Oswald_600SemiBold });
+  const [fontsLoaded, fontError] = useFonts({
+    Oswald_600SemiBold,
+    OpenSans_400Regular,
+    OpenSans_600SemiBold,
+    OpenSans_700Bold,
+    OpenSans_800ExtraBold,
+  });
+  fontState.ready = fontsLoaded;
 
   if (session.status === 'loading' || (!fontsLoaded && !fontError)) {
     return (
@@ -181,6 +196,7 @@ function Navigator() {
           <Stack.Screen name="documents" options={{ headerShown: true, title: 'Dokumente' }} />
           <Stack.Screen name="club-teams" options={{ headerShown: true, title: 'Mannschaften' }} />
           <Stack.Screen name="contacts" options={{ headerShown: true, title: 'Ansprechpartner' }} />
+          <Stack.Screen name="help" options={{ headerShown: true, title: 'Hilfe & Anleitung' }} />
           <Stack.Screen
             name="club-calendar"
             options={{ headerShown: true, title: 'Vereinskalender' }}
