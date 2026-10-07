@@ -190,6 +190,19 @@ Stand: 07.10.2026
 
 ---
 
+## 14. Vertrieb: mehrere Vereine, Pläne, Abo (Festlegung 07.10.2026)
+
+| Funktion                                                  | Quelle | Stand | Anmerkung                                                                                                     |
+| --------------------------------------------------------- | ------ | ----- | ------------------------------------------------------------------------------------------------------------- |
+| Mehrere Vereine auf einem Server (Mandantenbetrieb)       | PLAN 5 | ⬜    | Vereinsanlage per Bestellung, Zuordnung per Einladungscode, Betreiber-Konsole; vor der Sicherheitsprüfung     |
+| Einladungscode in der App eingeben (zusätzlich Link/Mail) | –      | ⬜    | Code gilt für einen Verein bzw. eine Mannschaft; Ersatz für Links, wenn die App noch nicht installiert ist    |
+| Demo-Verein in der App ohne Login                         | –      | ⬜    | getrennter Demo-Mandant mit den Demo-Personen, täglich zurückgesetzt, ohne Versand von Push/E-Mail            |
+| Plan-Stufen nach Mitgliederzahl (z. B. 500, 1000)         | –      | ⬜    | Grenze serverseitig bei Anlage, Import und Einladung; Hinweis nur in Verwaltung/Web, nie mit Preis in der App |
+| Abo kaufen und verwalten auf der Webseite                 | –      | ⬜    | Zahlungsanbieter, Rechnung, Kündigung, AVV beim Kauf; in der App weder Preise noch Kauf-Links (Store-Regeln)  |
+| Kontolöschung in der App und per Webseite                 | –      | ⬜    | Pflicht für App Store und Google Play                                                                         |
+
+---
+
 ## Zusammenfassung
 
 | Bereich                            |      ✅ |    🟡 |    ⬜ |
@@ -207,4 +220,5 @@ Stand: 07.10.2026
 | Verwaltung                         |       8 |     1 |     0 |
 | Einrichtung & Module               |       5 |     0 |     0 |
 | Sicherheit, Betrieb, Integrationen |       6 |     0 |     2 |
-| **Gesamt**                         | **106** | **3** | **2** |
+| Vertrieb (mehrere Vereine, Abo)    |       0 |     0 |     6 |
+| **Gesamt**                         | **106** | **3** | **8** |

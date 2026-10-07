@@ -18,6 +18,9 @@ eine echte Vereinsebene mit zentralem Datenmodell, rollenbasierten Verwaltungsab
 
 ### 1.2 Ein Verein – später mehrere (aber getrennt)
 
+> **Stand 07.10.2026:** Vertriebsmodell geändert – eine App für alle Vereine (Demo + Login), Abo je Verein über die Webseite,
+> siehe `docs/ENTSCHEIDUNGEN.md`. Der Text unten beschreibt den ursprünglichen Start mit einem Verein.
+
 - **Start: ein Verein.** Die App ist _die_ App dieses Vereins; Nutzer gehören genau diesem Verein an.
 - **Kein Vereins-Umschalter in der App.** (Der Pfeil ▾ neben dem Vereinsnamen in den Mockups ist kein bestätigtes
   Feature und wird nicht umgesetzt, solange nicht ausdrücklich gewünscht.)
