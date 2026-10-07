@@ -1,6 +1,6 @@
 # Ideen und Planung (noch nicht umgesetzt)
 
-Sammlung für kommende Sitzungen. Verbindliche Entscheidungen stehen in `ENTSCHEIDUNGEN.md`, den Umsetzungsstand in
+Sammlung für kommende Sitzungen. Paketplanung: `PAKETE.md`. Verbindliche Entscheidungen stehen in `ENTSCHEIDUNGEN.md`, den Umsetzungsstand in
 `FUNKTIONEN.md`. Stand: 07.10.2026.
 
 ## 1. Reihenfolge der nächsten Pakete (festgelegt)
