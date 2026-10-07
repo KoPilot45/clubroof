@@ -77,6 +77,9 @@ danach „neu seit dem letzten Besuch“ (braucht den gespeicherten Zeitpunkt); 
 
 ## 3. Bedienung, Optik, Komfort
 
+- **Einrichtungs-Demos (W7):** bei den Demo-Zugängen zwei Vorführungen „Vereinseinrichtung“ und „Mannschaftseinrichtung“ ohne
+  Funktion, am Ende „Einrichtungs-Demo abgeschlossen“ → „Verlassen“. Echte Einrichtungsformulare folgen mit Paket E.
+
 - **Erster Eindruck:** Willkommens-Tour je Rolle, leere Zustände mit Handlung, Platzhalter statt Drehkreis, Zusage mit
   einem Tipp (mit „Rückgängig“), Aktualisieren durch Ziehen, Offline-Hinweis, globale Suche, Favoriten/Schnellzugriff.
 - **Optik:** einheitliche Icon-Familie, Tablet-/Desktop-Layout für die Verwaltung, Dunkelmodus-Durchgang mit
