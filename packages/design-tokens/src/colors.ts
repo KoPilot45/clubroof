@@ -1,7 +1,7 @@
 /**
  * Farbkonzept von Clubroof.
  *
- * Der Verein wählt bei der Einrichtung eine von fünf Vereinsfarben. Jede Vereinsfarbe ist ein
+ * Der Verein wählt bei der Einrichtung eine von zehn Vereinsfarben. Jede Vereinsfarbe ist ein
  * vollständiges, vorab geprüftes Farbthema für hellen und dunklen Modus. Freie Hex-Werte sind
  * bewusst nicht vorgesehen, damit Lesbarkeit und Barrierefreiheit immer gewährleistet sind.
  *
@@ -12,7 +12,18 @@
  *    werden immer zusammen mit Icon und Beschriftung gezeigt, nie als reine Farbfläche.
  */
 
-export const CLUB_COLOR_KEYS = ['green', 'red', 'blue', 'yellow', 'black'] as const;
+export const CLUB_COLOR_KEYS = [
+  'green',
+  'red',
+  'blue',
+  'yellow',
+  'black',
+  'orange',
+  'purple',
+  'burgundy',
+  'skyblue',
+  'teal',
+] as const;
 export type ClubColorKey = (typeof CLUB_COLOR_KEYS)[number];
 
 export const CLUB_COLOR_LABELS: Record<ClubColorKey, string> = {
@@ -21,6 +32,11 @@ export const CLUB_COLOR_LABELS: Record<ClubColorKey, string> = {
   blue: 'Blau',
   yellow: 'Gelb',
   black: 'Schwarz',
+  orange: 'Orange',
+  purple: 'Lila',
+  burgundy: 'Weinrot',
+  skyblue: 'Himmelblau',
+  teal: 'Türkis',
 };
 
 export type ColorScheme = 'light' | 'dark';
@@ -157,6 +173,96 @@ export const clubColors: Record<ClubColorKey, Record<ColorScheme, ClubColorRoles
       primaryContainer: '#2A2A2D',
       onPrimaryContainer: '#EDEDED',
       primaryText: '#F2F2F2',
+    },
+  },
+  orange: {
+    light: {
+      primary: '#FF8A00',
+      onPrimary: '#1A0F00',
+      primaryPressed: '#E67A00',
+      primaryContainer: '#FFEBD2',
+      onPrimaryContainer: '#6B3300',
+      primaryText: '#9A4A00',
+    },
+    dark: {
+      primary: '#FFA033',
+      onPrimary: '#1F0F00',
+      primaryPressed: '#F28F1F',
+      primaryContainer: '#3B2209',
+      onPrimaryContainer: '#FFD3A0',
+      primaryText: '#FFB254',
+    },
+  },
+  purple: {
+    light: {
+      primary: '#6D28D9',
+      onPrimary: '#FFFFFF',
+      primaryPressed: '#5B21B6',
+      primaryContainer: '#EFE7FB',
+      onPrimaryContainer: '#4C1D95',
+      primaryText: '#6D28D9',
+    },
+    dark: {
+      primary: '#B794F6',
+      onPrimary: '#1E0A3C',
+      primaryPressed: '#A07BEF',
+      primaryContainer: '#2A1A47',
+      onPrimaryContainer: '#DCC9FA',
+      primaryText: '#C4A8F8',
+    },
+  },
+  burgundy: {
+    light: {
+      primary: '#7B1E3A',
+      onPrimary: '#FFFFFF',
+      primaryPressed: '#621730',
+      primaryContainer: '#F6E6EB',
+      onPrimaryContainer: '#5A1229',
+      primaryText: '#7B1E3A',
+    },
+    dark: {
+      primary: '#E07A96',
+      onPrimary: '#2B0713',
+      primaryPressed: '#D0667F',
+      primaryContainer: '#3A1522',
+      onPrimaryContainer: '#F3B8C8',
+      primaryText: '#EE93AB',
+    },
+  },
+  skyblue: {
+    light: {
+      primary: '#0EA5E9',
+      onPrimary: '#04202E',
+      primaryPressed: '#0B93D0',
+      primaryContainer: '#E0F4FD',
+      onPrimaryContainer: '#065A86',
+      primaryText: '#0369A1',
+    },
+    dark: {
+      primary: '#7DD3FC',
+      onPrimary: '#04202E',
+      primaryPressed: '#5EC4F5',
+      primaryContainer: '#0F2E40',
+      onPrimaryContainer: '#BAE6FD',
+      primaryText: '#7DD3FC',
+    },
+  },
+  teal: {
+    light: {
+      primary: '#0F766E',
+      onPrimary: '#FFFFFF',
+      primaryPressed: '#0B5F58',
+      primaryContainer: '#DDF4F1',
+      onPrimaryContainer: '#0A4F49',
+      primaryText: '#0F766E',
+    },
+    dark: {
+      primary: '#2DD4BF',
+      onPrimary: '#02201C',
+      primaryPressed: '#20BFAB',
+      primaryContainer: '#0F2E2B',
+      onPrimaryContainer: '#99F0E3',
+      primaryText: '#5EEAD4',
     },
   },
 };

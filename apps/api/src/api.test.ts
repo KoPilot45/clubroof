@@ -4407,6 +4407,20 @@ describe.skipIf(!url)('API', () => {
       await send('PUT', '/me/preferences', player.token, { colorMode: 'light' });
     });
 
+    it('alle zehn Vereinsfarben sind wählbar, unbekannte werden abgelehnt', async () => {
+      const admin = await login('admin');
+      const before = await get<ClubSettings>('/admin/club', admin.token);
+      for (const colorTheme of ['orange', 'purple', 'burgundy', 'skyblue', 'teal']) {
+        const res = await send<ClubSettings>('PATCH', '/admin/club', admin.token, { colorTheme });
+        expect(res.status, JSON.stringify(res.body)).toBe(200);
+        expect(res.body.colorTheme).toBe(colorTheme);
+      }
+      expect(
+        (await send('PATCH', '/admin/club', admin.token, { colorTheme: 'neonpink' })).status,
+      ).toBe(400);
+      await send('PATCH', '/admin/club', admin.token, { colorTheme: before.colorTheme });
+    });
+
     it('Sprache: Standard Gerätesprache, Auswahl gilt für das Konto, Englisch wird akzeptiert', async () => {
       const player = await login('spieler');
       expect(player.me.user.language).toBeNull();

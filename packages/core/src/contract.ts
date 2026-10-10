@@ -1434,7 +1434,18 @@ export type ApproveJoinInput = {
 
 // ── Vereinseinstellungen und Ersteinrichtung ─────────────────────────────
 
-export type ClubColorKey = 'green' | 'red' | 'blue' | 'yellow' | 'black';
+/** Vereinsfarben; Liste und Prüfwerte in `@clubroof/design-tokens` (hier und dort müssen dieselben Schlüssel stehen). */
+export type ClubColorKey =
+  | 'green'
+  | 'red'
+  | 'blue'
+  | 'yellow'
+  | 'black'
+  | 'orange'
+  | 'purple'
+  | 'burgundy'
+  | 'skyblue'
+  | 'teal';
 export type OrgUnitKind = 'seniors' | 'youth' | 'women' | 'veterans' | 'other';
 
 export type ClubSettings = {

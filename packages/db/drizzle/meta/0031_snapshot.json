@@ -1,6 +1,6 @@
 {
-  "id": "059c9bea-9ef5-4d66-84be-a968f8477bf7",
-  "prevId": "b9434ad5-e10f-49d9-837a-99cf14679484",
+  "id": "885966ee-f7ab-4656-b675-3f6416e9f7e2",
+  "prevId": "059c9bea-9ef5-4d66-84be-a968f8477bf7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -7832,7 +7832,18 @@
     "public.club_color": {
       "name": "club_color",
       "schema": "public",
-      "values": ["green", "red", "blue", "yellow", "black"]
+      "values": [
+        "green",
+        "red",
+        "blue",
+        "yellow",
+        "black",
+        "orange",
+        "purple",
+        "burgundy",
+        "skyblue",
+        "teal"
+      ]
     },
     "public.color_mode": {
       "name": "color_mode",

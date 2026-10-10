@@ -51,6 +51,6 @@ describe.each(CLUB_COLOR_KEYS)('Vereinsfarbe %s', (clubColor) => {
 describe('isClubColorKey', () => {
   it('erkennt gültige und ungültige Schlüssel', () => {
     expect(isClubColorKey('green')).toBe(true);
-    expect(isClubColorKey('purple')).toBe(false);
+    expect(isClubColorKey('neonpink')).toBe(false);
   });
 });

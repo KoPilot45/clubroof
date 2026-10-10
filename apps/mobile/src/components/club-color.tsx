@@ -5,7 +5,7 @@ import { Pressable, View } from 'react-native';
 import { T } from '@/components/ui';
 import { useTheme } from '@/lib/theme';
 
-/** Auswahl der Vereinsfarbe aus dem Farbkonzept (5 geprüfte Farben). */
+/** Auswahl der Vereinsfarbe aus dem Farbkonzept (10 geprüfte Farben). */
 export function ClubColorPicker({
   value,
   onChange,

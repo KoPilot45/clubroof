@@ -1,5 +1,6 @@
 import type { ClubSettings, LoginResponse } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import { schema } from '@clubroof/db';
 import { z } from 'zod';
 import { loadActor } from '../actor';
 import { createSession } from '../auth/session';
@@ -13,7 +14,8 @@ import {
 import { buildMe } from '../services/me';
 import { needsSetup, setupClub } from '../services/setup';
 
-const CLUB_COLOR_KEYS = ['green', 'red', 'blue', 'yellow', 'black'] as const;
+// Erlaubte Vereinsfarben: eine Quelle (`@clubroof/design-tokens` → Datenbank-Enum), kein zweites Verzeichnis
+const CLUB_COLOR_KEYS = schema.clubColorEnum.enumValues;
 const KINDS = ['seniors', 'youth', 'women', 'veterans', 'other'] as const;
 const unitName = z.string().trim().min(2).max(50);
 

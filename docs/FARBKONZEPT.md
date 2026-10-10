@@ -1,6 +1,6 @@
 # Farbkonzept
 
-Der Verein wählt bei der Ersteinrichtung **eine von fünf Vereinsfarben** und lädt sein **Logo** hoch.
+Der Verein wählt bei der Ersteinrichtung **eine von zehn Vereinsfarben** und lädt sein **Logo** hoch.
 Jede Vereinsfarbe ist ein vollständiges, vorab geprüftes Farbthema für den **hellen und den dunklen Modus**.
 Freie Hex-Werte sind bewusst nicht vorgesehen: So ist die Lesbarkeit in jeder Kombination garantiert, und die
 App sieht in jedem Verein professionell aus. Weitere Vereinsfarben lassen sich später ergänzen.
@@ -26,9 +26,18 @@ Ein Farbthema besteht aus drei Schichten:
 | Blau         | `#0B4EA2` / weiß              | `#0B4EA2`           | `#6EA8FF` / dunkel              |
 | Gelb         | `#F5C400` / **dunkel**        | `#7A5E00`           | `#FFD43B` / dunkel              |
 | Schwarz      | `#1C1C1E` / weiß              | `#1C1C1E`           | `#F2F2F2` / dunkel              |
+| Orange       | `#FF8A00` / **dunkel**        | `#9A4A00`           | `#FFA033` / dunkel              |
+| Lila         | `#6D28D9` / weiß              | `#6D28D9`           | `#B794F6` / dunkel              |
+| Weinrot      | `#7B1E3A` / weiß              | `#7B1E3A`           | `#E07A96` / dunkel              |
+| Himmelblau   | `#0EA5E9` / **dunkel**        | `#0369A1`           | `#7DD3FC` / dunkel              |
+| Türkis       | `#0F766E` / weiß              | `#0F766E`           | `#2DD4BF` / dunkel              |
 
 Besonderheiten:
 
+- **Orange, Himmelblau**: helle Flächen tragen dunkle Schrift (wie Gelb). Orange ist bewusst heller und gelblicher als
+  die Statusfarbe „Aktion“ (dunkles Brandorange), Himmelblau heller als das Info-Blau; Statusfarben erscheinen ohnehin
+  immer mit Icon und Beschriftung.
+- **Weinrot** ist dunkler und bläulicher als das Rot; „Dringend“ bleibt dadurch unterscheidbar.
 - **Gelb**: Weiße Schrift auf Gelb ist nicht lesbar. Buttons in Gelb tragen deshalb dunkle Schrift.
   Für Text, Icons und Links auf weißem Grund wird ein dunkles Goldgelb (`primaryText`) verwendet.
 - **Schwarz**: Im dunklen Modus wäre Schwarz auf Schwarz unsichtbar. Dort wird die Vereinsfarbe zu einem
