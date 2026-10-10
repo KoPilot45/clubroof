@@ -339,7 +339,7 @@ export function ResponseControls({ event }: { event: EventSummary }) {
                 onPress={() => send(r, 'yes')}
               />
               <Button
-                style={{ flex: 0.8 }}
+                style={{ flex: 1 }}
                 label="Unsicher"
                 icon={r.status === 'maybe' ? 'help-circle' : undefined}
                 variant={r.status === 'maybe' ? 'action' : 'outline'}

@@ -205,7 +205,7 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
         {
           backgroundColor: colors.surfaceRaised,
           borderRadius: radii.xl,
-          padding: spacing.lg,
+          padding: spacing.md + 2,
           ...(isDark
             ? { borderWidth: 1, borderColor: colors.border }
             : shadowStyle(elevation.card)),
@@ -497,7 +497,7 @@ export function Button({
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: small ? sizes.buttonSmall : sizes.button,
-          paddingHorizontal: small ? 16 : 22,
+          paddingHorizontal: small ? 10 : 14,
           borderRadius: radii.pill,
           borderWidth: border,
           borderColor: palette.border,

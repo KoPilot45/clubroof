@@ -101,6 +101,7 @@ function Navigator() {
           />
           {/* Verwaltungsmodus mit eigener Navigation (app/admin/_layout.tsx) */}
           <Stack.Screen name="admin" />
+          <Stack.Screen name="bausteine" />
           <Stack.Screen
             name="training-plan/[id]"
             options={{ headerShown: true, title: 'Trainingsplan' }}

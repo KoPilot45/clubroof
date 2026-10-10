@@ -83,7 +83,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
               key={route.key}
               accessibilityRole="tab"
               accessibilityLabel={label}
-              accessibilityState={{ selected: focused }}
+              aria-selected={focused}
               onPress={onPress}
               onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
               style={{

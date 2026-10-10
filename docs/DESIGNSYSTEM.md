@@ -78,12 +78,40 @@ Farben und ihre Regeln: [`FARBKONZEPT.md`](FARBKONZEPT.md). Die gewählten Entw�
 
 - **Name für „Mehr“:** entschieden (10.10.2026): bleibt „Mehr“. „Profil“ wäre zu eng (Inhalt: Kinder, Mannschaften,
   Benachrichtigungen, Abwesenheiten, Einstellungen, Hilfe); „Mein Bereich“ bleibt eine mögliche spätere Alternative.
-- **Suche im Kopf:** Beim Umbau erst mit eingeschränktem Umfang (Mitglieder, Termine) oder ohne Knopf, bis die globale Suche steht – offen.
+- **Suche im Kopf:** entschieden (10.10.2026, Schritt 1): Der Knopf fehlt, bis die globale Suche steht. `AppHeader` zeigt ihn nur,
+  wenn `onSearch` übergeben wird; die Suche (Mitglieder, Termine, später mehr) ist ein eigener Schritt.
 - **Schrift** für Fließtext (Open Sans bleibt, bis Alternativen verglichen sind).
 
-## Umsetzung in der App (geplant, Paket L)
+## Umsetzung in der App (Paket L)
 
 Reihenfolge: Theme/Bausteine (`components/ui.tsx`, Tab-Leiste, Kopfzeile) → Home → Team → Termine → Verein → Mehr →
 Zustände (Laden, Offline, Leer, Fehler) → Dunkelmodus-Durchgang → Browserprüfung und Bilder-Überblick.
 Dazu gehören: Schnellzugriff je Rolle (gespeicherte Auswahl je Person), globale Suche, Wischkarten für Spiele,
 Geburtstage der eigenen Mannschaften (liegt serverseitig vor), Paket U (Touch-Flächen, Haptik).
+
+### Stand Schritt 1: Bausteine und Navigation (10.10.2026) ✅
+
+Seiteninhalte sind noch unverändert; alle Seiten erhalten den neuen Rahmen automatisch.
+
+| Baustein (Code)                                    | Umsetzung                                                                                                                                        |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Theme` (`lib/theme.tsx`)                          | zusätzlich `sizes`, `elevation`, `motion`, `isDark`                                                                                              |
+| `Card`                                             | Radius 24, `surfaceRaised`; hell Schatten ohne Rahmen, dunkel Rahmen. Innenabstand 14. `shadowStyle()` (boxShadow) für eigene Flächen             |
+| `HeroCard`                                         | Radius 28, Verlauf `hero.from → hero.to` (SVG), zwei Wellen und Kreis in `hero.decor`; optional antippbar; dunkel feiner Rahmen statt Schatten    |
+| `Button`                                           | Pille, `md` 48 / `sm` 44 pt hoch; neu `hero` (helle Fläche) und `heroOutline` für Aktionen auf der Blickfangkarte; Umbruch auf zwei Zeilen      |
+| `Chip`                                             | Pille; `size="sm"` (24, Statusmarke in Listen) und `md` (32); Tönungen auch aus `tints`; `ChoiceChips` 34 mit größerem Tippbereich                |
+| `IconTile`                                         | 40 bzw. `size="lg"` 52, Radius 14/16, Ton `primary`, Status oder Pastell (`blue`, `orange`, `pink`, `green`, `violet`)                            |
+| `ListRow`, `Section`, `TileGrid`, Platzhalter      | Zeilen ≥ 44, Trenner 1 pt; Kacheln wie Karten; Platzhalter pulsieren mit `motion.skeletonPulse` (aus bei „Bewegung reduzieren“)                  |
+| `AppHeader` (`components/app-header.tsx`)          | Vereinslogo im Kreis (48) · Untertitel klein über dem Titel (ohne Angabe das Datum) · Titel/Begrüßung bis zwei Zeilen · optional Suche · Glocke 46 mit Zähler mit Rand in Hintergrundfarbe |
+| `FloatingTabBar` (`components/tab-bar.tsx`)        | schwebend (Radius 34, 68 hoch), fünf Punkte, aktiver Bereich als Pille in Vereinsfarbe mit Beschriftung, übrige nur Icon; „Mehr“ mit Kachel-Icon; weicht der Tastatur aus. `Screen` hält darunter Platz (`BottomTabBarHeightContext`) |
+| Dunkelmodus                                        | Hintergrund → Karte → erhöhte Karte als Flächenstufen, Rahmen statt Schatten, Hero tief eingefärbt, `primaryText` für Text                        |
+
+Entscheidungen in diesem Schritt:
+
+- **Suche:** Knopf fehlt vorerst (siehe oben).
+- **Kopfzeile:** Der Avatar entfällt (Profil steht in „Mehr“). Der Verwaltungs-Knopf bleibt vorerst als runder Knopf neben der Glocke
+  und entfällt mit dem Schnellzugriff (Schritt Home/Mehr).
+- **Ein Aufbau für alle Seiten:** Seitenhintergrund ist jetzt `background` (nicht mehr `surface`); Kopfzeile ohne Trennlinie.
+- **Seite „Bausteine“** (`/bausteine`, nicht verlinkt): alle Bausteine hell und dunkel als Sicht- und Browserprüfung.
+- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-bausteine.mjs` (Tab-Leiste, Tippflächen ≥ 44, Umbruch langer Namen,
+  Überblicksbild `.check/shots/neuer-look-bausteine.png`).
