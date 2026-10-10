@@ -1165,12 +1165,11 @@ export type TileItem = {
 };
 
 /**
- * Kachelraster. `compact`: vier Spalten wie im Entwurf – Kachel 60 hoch mit Pastell-Icon, Beschriftung
+ * Kachelraster: vier Spalten wie im Entwurf – Kachel 60 hoch mit Pastell-Icon, Beschriftung
  * darunter, Zähler oder „neu“ oben rechts, ein kurzer Hinweis unter der Beschriftung.
  */
-export function TileGrid({ items, compact }: { items: TileItem[]; compact?: boolean }) {
-  if (compact) return <CompactTileGrid items={items} />;
-  return <WideTileGrid items={items} />;
+export function TileGrid({ items }: { items: TileItem[] }) {
+  return <CompactTileGrid items={items} />;
 }
 
 /** Lange Kachelnamen trennen an Wortfugen (weiche Trennstriche) statt mitten im Wort. */
@@ -1179,6 +1178,7 @@ const SOFT_BREAKS: [string, string][] = [
   ['Ansprechpartner', 'Ansprech\u00ADpartner'],
   ['Platzbelegung', 'Platz\u00ADbelegung'],
   ['Strafenkatalog', 'Strafen\u00ADkatalog'],
+  ['Kassenverwaltung', 'Kassen\u00ADverwaltung'],
   ['Announcements', 'Announce\u00ADments'],
   ['Contact persons', 'Contact persons'],
 ];
@@ -1297,111 +1297,6 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                 ) : null}
               </>
             )}
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
-
-function WideTileGrid({ items }: { items: TileItem[] }) {
-  const { colors, radii, spacing, isDark, elevation } = useTheme();
-  // Mehr Spalten auf breiten Bildschirmen
-  const { width } = useWindowDimensions();
-  const basis = width >= 900 ? '23%' : width >= 640 ? '31%' : '47%';
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-      {items.map((item) => {
-        const disabled = item.soon || !item.onPress;
-        return (
-          <Pressable
-            key={item.key}
-            accessibilityRole="button"
-            accessibilityState={{ disabled }}
-            accessibilityLabel={item.soon ? `${item.label}, bald verfügbar` : item.label}
-            disabled={disabled}
-            onPress={item.onPress}
-            style={({ pressed }) => ({
-              flexBasis: basis,
-              flexGrow: 1,
-              minHeight: 96,
-              gap: 10,
-              padding: spacing.md + 2,
-              borderRadius: radii.xl,
-              backgroundColor: pressed ? colors.surfaceVariant : colors.surfaceRaised,
-              opacity: item.soon ? 0.55 : 1,
-              ...(isDark
-                ? { borderWidth: 1, borderColor: colors.border }
-                : shadowStyle(elevation.card)),
-            })}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-              }}
-            >
-              <View
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 14,
-                  backgroundColor: colors.primaryContainer,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Ionicons name={item.icon} size={20} color={colors.onPrimaryContainer} />
-              </View>
-              {!item.soon && item.badge !== undefined && item.badge !== 0 ? (
-                <View
-                  style={{
-                    minWidth: 22,
-                    height: 22,
-                    paddingHorizontal: 6,
-                    borderRadius: 11,
-                    backgroundColor: colors.status.action.container,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontFamily: HEADING_FONT,
-                      fontSize: 14,
-                      fontWeight: '400',
-                      color: colors.status.action.onContainer,
-                    }}
-                  >
-                    {item.badge}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-            <View style={{ gap: 2 }}>
-              <Text
-                style={{ fontSize: 14, fontWeight: '700', color: colors.onSurface }}
-                numberOfLines={2}
-              >
-                {item.label}
-              </Text>
-              {item.soon || item.hint ? (
-                <Text
-                  style={{
-                    fontSize: 12,
-                    fontWeight: '600',
-                    color:
-                      item.tone && item.tone !== 'neutral'
-                        ? colors.status[item.tone].onContainer
-                        : colors.onSurfaceMuted,
-                  }}
-                  numberOfLines={2}
-                >
-                  {item.soon ? 'Bald verfügbar' : item.hint}
-                </Text>
-              ) : null}
-            </View>
           </Pressable>
         );
       })}

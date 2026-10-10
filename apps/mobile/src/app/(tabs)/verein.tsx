@@ -230,7 +230,6 @@ export default function ClubScreen() {
 
       <Section title="Vereinsleben">
         <TileGrid
-          compact
           items={[
             ...applyTilePrefs(withTileInfo(tiles, tileInfo), me.user.clubTiles),
             {

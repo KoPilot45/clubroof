@@ -1,9 +1,4 @@
-import {
-  PERMISSIONS,
-  PERMISSION_GROUPS,
-  type MemberDetail,
-  type Permission,
-} from '@clubroof/core';
+import { PERMISSIONS, PERMISSION_GROUPS, type MemberDetail, type Permission } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -53,23 +48,25 @@ export default function MemberPermissionsScreen() {
       router.back();
     },
     onError: (e) =>
-      setError(e instanceof RequestError ? e.message : 'Die Rechte konnten nicht gespeichert werden.'),
+      setError(
+        e instanceof RequestError ? e.message : 'Die Rechte konnten nicht gespeichert werden.',
+      ),
   });
 
   if (member.isPending) return <Loading />;
   if (member.error) return <ErrorNotice error={member.error} onRetry={() => member.refetch()} />;
   const m = member.data;
   const before = new Set(m.individualPermissions);
-  const changed =
-    selected.size !== before.size || [...selected].some((p) => !before.has(p));
+  const changed = selected.size !== before.size || [...selected].some((p) => !before.has(p));
 
   return (
     <Screen edges={[]}>
       <Card style={{ gap: 6 }}>
         <T variant="heading">{`${m.firstName} ${m.lastName}`}</T>
         <T variant="caption">
-          Diese Rechte gelten zusätzlich zu den Rollen und immer für den ganzen Verein. Für ein Recht nur
-          in einer Mannschaft oder einem Bereich lieber eine Rolle mit Geltungsbereich vergeben.
+          Diese Rechte gelten zusätzlich zu den Rollen und immer für den ganzen Verein. Für ein
+          Recht nur in einer Mannschaft oder einem Bereich lieber eine Rolle mit Geltungsbereich
+          vergeben.
         </T>
       </Card>
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}

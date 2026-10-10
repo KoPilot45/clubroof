@@ -4,6 +4,7 @@ import { EntryRow, paymentLabel, useCash } from '@/components/cash';
 import {
   Button,
   Card,
+  HeroCard,
   Chip,
   Empty,
   ErrorNotice,
@@ -32,7 +33,7 @@ function SaldoBlock({ balanceCents }: { balanceCents: number }) {
         flex: 1,
         gap: 2,
         padding: 14,
-        borderRadius: radii.lg,
+        borderRadius: radii.xl,
         backgroundColor: tone?.container ?? colors.surfaceVariant,
       }}
     >
@@ -128,27 +129,27 @@ export default function CashScreen() {
       {c ? (
         <>
           {c.balanceCents !== null ? (
-            <Card style={{ gap: 12, backgroundColor: colors.primary, borderColor: colors.primary }}>
-              <T variant="overline" color={colors.onPrimary}>
+            <HeroCard>
+              <T variant="overline" color={colors.hero.onHero}>
                 Aktueller Kassenstand
               </T>
-              <T variant="figure" color={colors.onPrimary} style={{ fontSize: 44 }}>
+              <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 44 }}>
                 {formatEuro(c.balanceCents)}
               </T>
               <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap' }}>
-                <T variant="label" color={colors.onPrimary}>
+                <T variant="label" color={colors.hero.onHero}>
                   Einnahmen {formatEuro(c.incomeCents ?? 0)}
                 </T>
-                <T variant="label" color={colors.onPrimary}>
+                <T variant="label" color={colors.hero.onHero}>
                   Ausgaben {formatEuro(c.expenseCents ?? 0)}
                 </T>
               </View>
               {c.treasurers.length ? (
-                <T variant="caption" color={colors.onPrimary}>
+                <T variant="caption" color={colors.hero.onHero}>
                   Kassenwart: {c.treasurers.map((t) => t.name).join(', ')}
                 </T>
               ) : null}
-            </Card>
+            </HeroCard>
           ) : null}
 
           <TileGrid items={tiles} />

@@ -306,7 +306,7 @@ export default function TeamScreen() {
             />
           ) : null}
 
-          <TileGrid compact items={withTileInfo(tiles, tileInfo)} />
+          <TileGrid items={withTileInfo(tiles, tileInfo)} />
 
           {overview.isPending ? <Loading /> : null}
           {overview.error ? (

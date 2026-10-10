@@ -480,11 +480,13 @@ export function ResponseControls({
             </View>
           ) : null}
           {(eff(r) === 'no' || eff(r) === 'maybe') && r.reason ? (
-            <T variant="caption">Grund: {r.reason}</T>
+            <T variant="caption" color={tone === 'hero' ? colors.hero.onHero : undefined}>
+              Grund: {r.reason}
+            </T>
           ) : null}
 
           {!r.canRespond ? (
-            <T variant="caption">
+            <T variant="caption" color={tone === 'hero' ? colors.hero.onHero : undefined}>
               {event.status === 'cancelled'
                 ? 'Der Termin wurde abgesagt.'
                 : 'Rückmeldung nicht mehr möglich. Bei Änderungen wende dich an dein Trainerteam.'}

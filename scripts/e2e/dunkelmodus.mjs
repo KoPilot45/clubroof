@@ -1,14 +1,14 @@
 /**
  * Paket L, Schritt 8: Dunkelmodus-Durchgang. Öffnet viele Seiten dunkel (Trainer, Vorstand/Admin),
  * prüft Konsolenfehler und horizontales Scrollen und baut Kontaktbögen (.check/shots/dunkel-*.png).
- * Aufruf: pnpm browser-check scripts/e2e/dunkelmodus.mjs [--hell]
+ * Aufruf: pnpm browser-check scripts/e2e/dunkelmodus.mjs [--hell | HELL=1]
  */
 import { createRequire } from 'node:module';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { api, launch } from '../lib/e2e.mjs';
 
-const mode = process.argv.includes('--hell') ? 'light' : 'dark';
+const mode = (process.argv.includes('--hell') || process.env.HELL) ? 'light' : 'dark';
 const prefix = mode === 'dark' ? 'dunkel' : 'hell';
 const SHOTS = process.env.CLUBROOF_SHOTS ?? join(process.cwd(), '.check', 'shots');
 mkdirSync(SHOTS, { recursive: true });

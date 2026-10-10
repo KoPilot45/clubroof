@@ -237,7 +237,16 @@ Unterseiten; keine Seite mit weißen Flächen, unlesbarem Text oder Überlauf. A
 - Bewusst weiß bleiben: QR-Codes (Kontrast), Gelbe/Rote Karte im Spielbericht.
 - **Seite `/bausteine`** bleibt (nicht verlinkt) als Sichtprüfung für Bausteine, hell und dunkel; `neuer-look-bausteine.mjs` nutzt sie.
 
+### Unterseiten im neuen Aufbau (10.10.2026) ✅
+
+Durchgang über Unterseiten (hell und dunkel, `dunkelmodus.mjs`, `HELL=1` für hell): Fast alle Seiten nutzen die Bausteine (`Card`, `Section`, `ListRow`, `Chip`, `Button`) und
+haben damit den neuen Look automatisch. Zusätzlich umgestellt:
+
+- **Kachelraster** überall das 4-Spalten-Raster (Verwaltung, Kasse, Kassenverwaltung, Statistik, Anlage & Material); das alte breite Raster ist entfernt.
+- **Blickfang** auf Unterseiten als `HeroCard`: Spiel-Anzeigetafel (Termin) und Kassenstand; Saldo-Fläche mit Radius 24.
+- **Willkommens-Tour** als erhöhte Karte (Radius 28); lange Kachelnamen (Kassenverwaltung) trennen an Wortfugen.
+- Schrift auf Blickfangkarten ist immer `onHero` (auch Hinweise wie „Rückmeldung nicht mehr möglich“).
+
 ### Offene Aufgaben (Paket L)
 
-- Unterseiten (Formulare, Detailseiten) schrittweise auf Karten im neuen Look (Radius 24, Pastell-Kacheln) bringen – sie nutzen die Bausteine bereits, behalten aber ihren alten Seitenaufbau.
 

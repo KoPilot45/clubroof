@@ -111,7 +111,9 @@ function Form({ event, facilities }: { event: EventDetail; facilities: Facility[
         scope,
         allowConflict,
         ...(event.type === 'team_event' ? { title: title.trim() } : {}),
-        ...(isMatch ? { opponentName: opponent.trim(), isHome: home === 'home', matchKind: kind } : {}),
+        ...(isMatch
+          ? { opponentName: opponent.trim(), isHome: home === 'home', matchKind: kind }
+          : {}),
       };
       return api<EventDetail>(`/events/${event.id}`, { method: 'PATCH', body });
     },
@@ -175,9 +177,9 @@ function Form({ event, facilities }: { event: EventDetail; facilities: Facility[
           options={[...new Set(['0', '15', '30', '60', '90', before])]
             .sort((a, b) => Number(a) - Number(b))
             .map((m) => ({
-            value: m,
-            label: m === '0' ? 'Keiner' : `${m} Min.`,
-          }))}
+              value: m,
+              label: m === '0' ? 'Keiner' : `${m} Min.`,
+            }))}
           selected={[before]}
           onToggle={setBefore}
         />
