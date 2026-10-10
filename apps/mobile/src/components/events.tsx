@@ -410,6 +410,70 @@ export function useRespond(eventId: string, queueTitle?: string) {
 }
 
 /**
+ * Zu-, Unsicher- und Absage-Knöpfe als Symbole (Haken, Fragezeichen, X): keine Beschriftung, die umbrechen
+ * könnte; Beschriftung für Screenreader. Die gewählte Antwort ist gefüllt, die übrigen umrandet.
+ */
+export function AnswerButtons({
+  status,
+  onYes,
+  onMaybe,
+  onNo,
+  busy = null,
+  tone = 'surface',
+}: {
+  status: 'yes' | 'no' | 'maybe' | 'pending' | null;
+  onYes: () => void;
+  onMaybe: () => void;
+  onNo: () => void;
+  /** Antwort, die gerade gesendet wird (Ladeanzeige) */
+  busy?: 'yes' | 'maybe' | 'no' | null;
+  tone?: 'surface' | 'hero';
+}) {
+  const hero = tone === 'hero';
+  const outline = hero ? ('heroOutline' as const) : ('outline' as const);
+  return (
+    <View style={{ flexDirection: 'row', gap: 8 }}>
+      <Button
+        style={{ flex: 1 }}
+        label={status === 'yes' ? 'Zugesagt' : 'Zusagen'}
+        icon="checkmark"
+        hideLabel
+        size={hero ? 'sm' : 'md'}
+        variant={
+          status === 'yes' || status === 'pending' || status === null
+            ? hero
+              ? 'hero'
+              : 'primary'
+            : outline
+        }
+        loading={busy === 'yes'}
+        onPress={onYes}
+      />
+      <Button
+        style={{ flex: 1 }}
+        label={status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher'}
+        icon="help"
+        hideLabel
+        size={hero ? 'sm' : 'md'}
+        variant={status === 'maybe' ? (hero ? 'hero' : 'action') : outline}
+        loading={busy === 'maybe'}
+        onPress={onMaybe}
+      />
+      <Button
+        style={{ flex: 1 }}
+        label={status === 'no' ? 'Abgesagt' : 'Absagen'}
+        icon="close"
+        hideLabel
+        size={hero ? 'sm' : 'md'}
+        variant={status === 'no' ? (hero ? 'hero' : 'danger') : outline}
+        loading={busy === 'no'}
+        onPress={onNo}
+      />
+    </View>
+  );
+}
+
+/**
  * Zu-/Absage für jede Person (ich selbst und ggf. meine Kinder). Absagen und „Unsicher“ fragen
  * nach dem Grund – er ist freiwillig und für das Trainerteam bestimmt.
  */
@@ -476,7 +540,6 @@ export function ResponseControls({
     respond.variables?.personId === r.personId &&
     respond.variables.status === status;
 
-  const outline = tone === 'hero' ? ('heroOutline' as const) : ('outline' as const);
   const reasonPanel = (r: MyResponse) =>
     pending && (
       <ReasonForm
@@ -518,48 +581,20 @@ export function ResponseControls({
           ) : pending?.personId === r.personId && tone !== 'hero' ? (
             reasonPanel(r)
           ) : (
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Button
-                style={{ flex: 1 }}
-                label={eff(r) === 'yes' ? 'Zugesagt' : 'Zusagen'}
-                icon={
-                  tone === 'hero' ? 'checkmark' : eff(r) === 'yes' ? 'checkmark-circle' : undefined
-                }
-                hideLabel={tone === 'hero'}
-                size={tone === 'hero' ? 'sm' : 'md'}
-                variant={
-                  eff(r) === 'yes' || eff(r) === 'pending'
-                    ? tone === 'hero'
-                      ? 'hero'
-                      : 'primary'
-                    : outline
-                }
-                loading={busy(r, 'yes')}
-                onPress={() => send(r, 'yes')}
-              />
-              <Button
-                style={{ flex: 1 }}
-                label="Unsicher"
-                icon={tone === 'hero' ? 'help' : eff(r) === 'maybe' ? 'help-circle' : undefined}
-                hideLabel={tone === 'hero'}
-                size={tone === 'hero' ? 'sm' : 'md'}
-                variant={eff(r) === 'maybe' ? (tone === 'hero' ? 'hero' : 'action') : outline}
-                onPress={() => {
-                  setPending({ personId: r.personId, status: 'maybe' });
-                }}
-              />
-              <Button
-                style={{ flex: 1 }}
-                label={eff(r) === 'no' ? 'Abgesagt' : 'Absagen'}
-                icon={tone === 'hero' ? 'close' : eff(r) === 'no' ? 'close-circle' : undefined}
-                hideLabel={tone === 'hero'}
-                size={tone === 'hero' ? 'sm' : 'md'}
-                variant={eff(r) === 'no' ? (tone === 'hero' ? 'hero' : 'danger') : outline}
-                onPress={() => {
-                  setPending({ personId: r.personId, status: 'no' });
-                }}
-              />
-            </View>
+            <AnswerButtons
+              tone={tone}
+              status={eff(r)}
+              busy={
+                respond.isPending && respond.variables?.personId === r.personId
+                  ? respond.variables.status === 'pending'
+                    ? null
+                    : respond.variables.status
+                  : null
+              }
+              onYes={() => send(r, 'yes')}
+              onMaybe={() => setPending({ personId: r.personId, status: 'maybe' })}
+              onNo={() => setPending({ personId: r.personId, status: 'no' })}
+            />
           )}
         </View>
       ))}
