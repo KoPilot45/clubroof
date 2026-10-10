@@ -149,10 +149,6 @@ function Navigator() {
             name="absences/new"
             options={{ headerShown: true, title: 'Abwesenheit eintragen' }}
           />
-          <Stack.Screen
-            name="teams/[id]/events"
-            options={{ headerShown: true, title: 'Termine' }}
-          />
           <Stack.Screen name="profile/[id]" options={{ headerShown: true, title: 'Profil' }} />
           <Stack.Screen
             name="teams/[id]/cash-admin"
