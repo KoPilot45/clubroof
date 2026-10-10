@@ -22,10 +22,10 @@ function Stat({ value, label }: { value: number; label: string }) {
   const { colors } = useTheme();
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      <T variant="title" color={colors.primaryText}>
+      <T variant="title" color={colors.onPrimaryContainer}>
         {value}
       </T>
-      <T variant="caption" style={{ textAlign: 'center' }}>
+      <T variant="caption" color={colors.onPrimaryContainer} style={{ textAlign: 'center' }}>
         {label}
       </T>
     </View>
@@ -34,6 +34,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 
 export default function AdminScreen() {
   const { api, me } = useSignedIn();
+  const { colors } = useTheme();
   const tileInfo = useTileInfo('admin');
   const overview = useQuery({
     queryKey: ['admin', 'overview'],
@@ -159,7 +160,13 @@ export default function AdminScreen() {
       ) : null}
       {o ? (
         <>
-          <Card style={{ flexDirection: 'row' }}>
+          <Card
+            style={{
+              flexDirection: 'row',
+              backgroundColor: colors.primaryContainer,
+              borderColor: colors.primaryContainer,
+            }}
+          >
             <Stat value={o.members.active} label="Aktive Mitglieder" />
             <Stat value={o.members.inactive} label="Passiv" />
             <Stat value={o.teams} label="Mannschaften" />

@@ -30,6 +30,7 @@ import { TrainingPlanSection } from '@/components/training-plan';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { t } from '@/lib/i18n';
+import { Scoreboard } from '@/components/scoreboard';
 
 const ORDER: Participant['status'][] = ['yes', 'maybe', 'pending', 'no'];
 const GROUP_LABELS: Record<Participant['status'], string> = {
@@ -483,7 +484,7 @@ function CoachActions({ event }: { event: EventDetail }) {
 
 export default function EventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { api } = useSignedIn();
+  const { api, me } = useSignedIn();
   const { colors } = useTheme();
   const query = useQuery({
     queryKey: ['event', id],
@@ -497,6 +498,7 @@ export default function EventScreen() {
       {query.error ? <ErrorNotice error={query.error} onRetry={() => query.refetch()} /> : null}
       {e ? (
         <>
+          {e.match ? <Scoreboard event={e} clubShortName={me.club.shortName} /> : null}
           <Card style={{ gap: 10 }}>
             <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
               {e.team ? <TeamBadge badge={e.team.badge} /> : <Chip tone="info" label="Verein" />}
@@ -506,13 +508,6 @@ export default function EventScreen() {
               ) : null}
             </View>
             <T variant="title">{e.title}</T>
-            {e.match?.goalsFor != null && e.match.goalsAgainst != null ? (
-              <T variant="display" color={colors.primaryText}>
-                {e.match.isHome
-                  ? `${e.match.goalsFor} : ${e.match.goalsAgainst}`
-                  : `${e.match.goalsAgainst} : ${e.match.goalsFor}`}
-              </T>
-            ) : null}
             {e.cancelledReason ? (
               <T color={colors.status.urgent.onContainer}>{e.cancelledReason}</T>
             ) : null}

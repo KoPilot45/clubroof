@@ -20,9 +20,11 @@ import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
 import { useTileInfo, withTileInfo } from '@/lib/tile-info';
+import { useTheme } from '@/lib/theme';
 
 export default function MoreScreen() {
   const { me, api, signOut } = useSignedIn();
+  const { colors } = useTheme();
   const tileInfo = useTileInfo('more');
   const name = `${me.person.firstName} ${me.person.lastName}`;
   const children = me.managedPersons.filter((p) => p.relation === 'child');
@@ -133,11 +135,23 @@ export default function MoreScreen() {
 
   return (
     <Screen header={<AppHeader title="Mehr" />}>
-      <Card style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+      <Card
+        style={{
+          flexDirection: 'row',
+          gap: 12,
+          alignItems: 'center',
+          backgroundColor: colors.primary,
+          borderColor: colors.primary,
+        }}
+      >
         <Avatar name={name} size={56} uri={me.person.avatarUrl} />
         <View style={{ flex: 1, gap: 4 }}>
-          <T variant="heading">{name}</T>
-          <T variant="caption">{me.user.email}</T>
+          <T variant="heading" color={colors.onPrimary}>
+            {name}
+          </T>
+          <T variant="caption" color={colors.onPrimary}>
+            {me.user.email}
+          </T>
           <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
             {roleLabels.map((label) => (
               <Chip key={label} label={label} />

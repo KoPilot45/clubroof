@@ -17,6 +17,7 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
   type StyleProp,
   type TextStyle,
@@ -139,6 +140,10 @@ export function Screen({
           padding: spacing.lg,
           gap: spacing.lg,
           paddingBottom: spacing.xxxl,
+          // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
+          width: '100%',
+          maxWidth: 960,
+          alignSelf: 'center',
         }}
         refreshControl={
           onRefresh ? (
@@ -714,6 +719,9 @@ export type TileItem = {
 
 export function TileGrid({ items }: { items: TileItem[] }) {
   const { colors, radii, spacing } = useTheme();
+  // Mehr Spalten auf breiten Bildschirmen
+  const { width } = useWindowDimensions();
+  const basis = width >= 900 ? '23%' : width >= 640 ? '31%' : '47%';
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
       {items.map((item) => {
@@ -727,7 +735,7 @@ export function TileGrid({ items }: { items: TileItem[] }) {
             disabled={disabled}
             onPress={item.onPress}
             style={({ pressed }) => ({
-              flexBasis: '47%',
+              flexBasis: basis,
               flexGrow: 1,
               minHeight: 96,
               gap: 10,

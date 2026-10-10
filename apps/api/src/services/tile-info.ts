@@ -122,7 +122,10 @@ export async function getTileInfo(
       const net = cash.personal.reduce((sum, p) => sum + p.balanceCents, 0);
       if (cash.permissions.manageCash && cash.balanceCents !== null) {
         const pending = cash.paymentNotices.filter((n) => n.status === 'pending').length;
-        const parts = [`Kasse ${euro(cash.balanceCents)}`, pending ? `${pending} Meldungen` : null];
+        const parts = [
+          `Kasse ${euro(cash.balanceCents)}`,
+          pending ? `${pending} ${pending === 1 ? 'Meldung' : 'Meldungen'}` : null,
+        ];
         put('cash', {
           hint: parts.filter(Boolean).join(' · '),
           tone: pending ? 'action' : 'neutral',
@@ -132,7 +135,10 @@ export async function getTileInfo(
         else if (net > 0) put('cash', { hint: `Du hast ${euro(net)} Guthaben`, tone: 'success' });
         else put('cash', { hint: 'Ausgeglichen', tone: 'success' });
       }
-      if (cash.fineCatalog.length) put('fines', { hint: `${cash.fineCatalog.length} Strafen` });
+      if (cash.fineCatalog.length)
+        put('fines', {
+          hint: `${cash.fineCatalog.length} ${cash.fineCatalog.length === 1 ? 'Strafe' : 'Strafen'}`,
+        });
     }
     if (tasks) {
       const mine = new Set(actor.managedIds);
@@ -196,7 +202,10 @@ export async function getTileInfo(
         0,
       );
       if (pending.length)
-        put('payments', { hint: `${pending.length} Zahlungsmeldungen`, tone: 'action' });
+        put('payments', {
+          hint: `${pending.length} ${pending.length === 1 ? 'Zahlungsmeldung' : 'Zahlungsmeldungen'}`,
+          tone: 'action',
+        });
       else if (openTotal)
         put('payments', { hint: `Offen gesamt ${euro(openTotal)}`, tone: 'info' });
       if (!cash.settings.iban && !cash.settings.paypalLink && cash.permissions.manageCash)
@@ -212,7 +221,8 @@ export async function getTileInfo(
       newsPermissions(actor).publish ? safe(() => getEditorialOverview(db, actor, now)) : null,
     ]);
     const spots = (helpers ?? []).reduce((sum, e) => sum + e.openSpots, 0);
-    if (spots) put('helpers', { hint: `${spots} Plätze frei`, tone: 'info' });
+    if (spots)
+      put('helpers', { hint: `${spots} ${spots === 1 ? 'Platz' : 'Plätze'} frei`, tone: 'info' });
     if (editorial?.toApprove.length)
       put('editorial', { hint: `${editorial.toApprove.length} zur Freigabe`, tone: 'action' });
     putNew(
@@ -288,9 +298,16 @@ export async function getTileInfo(
     ]);
     const requests = invites?.requests.length ?? 0;
     if (requests)
-      put('invites', { hint: `${requests} Anfragen warten auf Freigabe`, tone: 'action' });
+      put('invites', {
+        hint: `${requests} ${requests === 1 ? 'Anfrage wartet' : 'Anfragen warten'} auf Freigabe`,
+        tone: 'action',
+      });
     const open = requests + (editorial?.toApprove.length ?? 0) + (modules?.updates.length ?? 0);
-    if (open) put('admin', { hint: `${open} offene Aufgaben`, tone: 'action' });
+    if (open)
+      put('admin', {
+        hint: `${open} ${open === 1 ? 'offene Aufgabe' : 'offene Aufgaben'}`,
+        tone: 'action',
+      });
   }
 
   if (hub === 'admin') {
@@ -321,7 +338,10 @@ export async function getTileInfo(
         tone: 'info',
       });
     if (invites?.requests.length)
-      put('invites', { hint: `${invites.requests.length} Beitrittsanfragen`, tone: 'action' });
+      put('invites', {
+        hint: `${invites.requests.length} ${invites.requests.length === 1 ? 'Beitrittsanfrage' : 'Beitrittsanfragen'}`,
+        tone: 'action',
+      });
     if (actorCan(actor, 'club.settings.manage')) {
       if (!actor.club.logoUrl) put('club', { hint: 'Logo fehlt', tone: 'action' });
       else if (!actor.club.requireTwoFactor)

@@ -20,6 +20,35 @@ import { formatEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
+/** Saldo als Fläche: offen = Aktionsfarbe, Guthaben = Erfolgsfarbe, ausgeglichen = neutral. */
+function SaldoBlock({ balanceCents }: { balanceCents: number }) {
+  const { colors, radii } = useTheme();
+  const tone =
+    balanceCents < 0 ? colors.status.action : balanceCents > 0 ? colors.status.success : null;
+  const fg = tone?.onContainer ?? colors.onSurface;
+  return (
+    <View
+      style={{
+        flex: 1,
+        gap: 2,
+        padding: 14,
+        borderRadius: radii.lg,
+        backgroundColor: tone?.container ?? colors.surfaceVariant,
+      }}
+    >
+      <T variant="overline" color={fg}>
+        Saldo
+      </T>
+      <T variant="figure" color={fg} style={{ fontSize: 32 }}>
+        {formatEuro(balanceCents)}
+      </T>
+      <T variant="label" color={fg}>
+        {balanceCents < 0 ? 'Offen' : balanceCents > 0 ? 'Guthaben' : 'Ausgeglichen'}
+      </T>
+    </View>
+  );
+}
+
 export default function CashScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
@@ -141,12 +170,7 @@ export default function CashScreen() {
                       alignItems: 'center',
                     }}
                   >
-                    <T variant="label">Saldo</T>
-                    {p.balanceCents < 0 ? (
-                      <Chip tone="action" label={`Offen: ${formatEuro(-p.balanceCents)}`} />
-                    ) : (
-                      <Chip tone="success" icon="checkmark" label="Ausgeglichen" />
-                    )}
+                    <SaldoBlock balanceCents={p.balanceCents} />
                   </View>
                   {notices.map((n) => (
                     <Chip

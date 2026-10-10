@@ -27,9 +27,12 @@ function JerseyNumber({ value }: { value: number | null }) {
   return (
     <View
       style={{
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        minWidth: 24,
+        height: 24,
+        paddingHorizontal: 4,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: colors.surface,
         backgroundColor: colors.primary,
         alignItems: 'center',
         justifyContent: 'center',
@@ -40,7 +43,7 @@ function JerseyNumber({ value }: { value: number | null }) {
           color: colors.onPrimary,
           fontFamily: HEADING_FONT,
           fontWeight: '400',
-          fontSize: 16,
+          fontSize: 12,
         }}
       >
         {value ?? '–'}
@@ -58,14 +61,12 @@ function Row({ entry, first }: { entry: RosterEntry; first: boolean }) {
       first={first}
       onPress={() => router.push(`/profile/${entry.personId}`)}
       leading={
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          {entry.function === 'player' ? (
-            <JerseyNumber value={entry.jerseyNumber} />
-          ) : (
-            <Avatar name={entry.name} uri={entry.avatarUrl} size={36} />
-          )}
-          {entry.function === 'player' && entry.avatarUrl ? (
-            <Avatar name={entry.name} uri={entry.avatarUrl} size={32} />
+        <View style={{ width: 48, height: 48 }}>
+          <Avatar name={entry.name} uri={entry.avatarUrl} size={44} />
+          {entry.function === 'player' && entry.jerseyNumber != null ? (
+            <View style={{ position: 'absolute', right: -4, bottom: -4 }}>
+              <JerseyNumber value={entry.jerseyNumber} />
+            </View>
           ) : null}
         </View>
       }
