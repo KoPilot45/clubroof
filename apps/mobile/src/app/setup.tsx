@@ -146,10 +146,15 @@ const INITIAL: Draft = {
  * Verwaltung änderbar.
  */
 export default function SetupScreen() {
+  return <SetupWizard />;
+}
+
+/** `demo`: Vorführung ohne Server und ohne Speichern (Demo-Zugänge der Anmeldeseite). */
+export function SetupWizard({ demo }: { demo?: boolean }) {
   // Clubroof-Farben (Blau) während der Einrichtung; die Vereinsfarbe zeigt nur der Farbschritt als Vorschau
   return (
     <ThemeProvider clubColor="blue">
-      <Wizard />
+      <Wizard demo={demo} />
     </ThemeProvider>
   );
 }
@@ -163,12 +168,17 @@ function strength(pw: string): { score: number; label: string } {
   return { score, label: ['zu kurz', 'schwach', 'ok', 'gut', 'stark'][score]! };
 }
 
-function Wizard() {
+function Wizard({ demo }: { demo?: boolean }) {
   const { adopt } = useSession();
   const { colors } = useTheme();
-  const { state: d, patch, loaded, clear } = useWizardDraft<Draft>('setupDraft', INITIAL);
+  const {
+    state: d,
+    patch,
+    loaded,
+    clear,
+  } = useWizardDraft<Draft>(demo ? 'setupDraftDemo' : 'setupDraft', INITIAL);
   // Geheimnisse und Dateien bleiben im Speicher und nie im Entwurf
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(demo ? 'demo' : '');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
   const [code, setCode] = useState('');
@@ -213,6 +223,10 @@ function Wizard() {
 
   const sendCode = () =>
     call(async () => {
+      if (demo) {
+        setCodeSent(true);
+        return;
+      }
       await request('/setup/email-code', {
         method: 'POST',
         body: { setupToken: token.trim(), email: d.email.trim() },
@@ -221,6 +235,10 @@ function Wizard() {
     }, 'Der Code konnte nicht gesendet werden.');
   const verifyCode = () =>
     call(async () => {
+      if (demo) {
+        setProof({ email: d.email.trim().toLowerCase(), value: 'demo' });
+        return;
+      }
       const res = await request<{ proof: string }>('/setup/email-code/verify', {
         method: 'POST',
         body: { email: d.email.trim(), code: code.trim() },
@@ -230,6 +248,13 @@ function Wizard() {
 
   const finish = () =>
     call(async () => {
+      if (demo) {
+        clear();
+        setPassword('');
+        setPassword2('');
+        setDone(true);
+        return;
+      }
       const body: SetupInput = {
         setupToken: token.trim(),
         emailProof: proof!.value,
@@ -293,44 +318,46 @@ function Wizard() {
       <WizardShell
         title="Dein Verein ist eingerichtet"
         explanation="Das Wichtigste steht. Hier sind sinnvolle nächste Schritte – alles lässt sich später in der Verwaltung ändern."
-        nextLabel="Zur App"
-        onNext={() => router.replace('/')}
+        nextLabel={demo ? 'Verlassen' : 'Zur App'}
+        onNext={() => router.replace(demo ? '/login' : '/')}
         header={
           <View style={{ alignItems: 'center' }}>
             <Crest initials={clubInitials(d.shortName)} size={72} />
           </View>
         }
       >
-        <View style={{ gap: 10 }}>
-          <ChoiceCard
-            icon="shirt"
-            title="Erste Mannschaft anlegen"
-            text="Mit Trainerteam, Kader und Antwortfristen"
-            selected={false}
-            onPress={() => router.replace('/admin/team-new')}
-          />
-          <ChoiceCard
-            icon="people"
-            title="Mitglieder importieren"
-            text="Aus einer CSV-Datei"
-            selected={false}
-            onPress={() => router.replace('/admin/import')}
-          />
-          <ChoiceCard
-            icon="calendar"
-            title="Spielplan importieren"
-            text="Aus dem DFBnet"
-            selected={false}
-            onPress={() => router.replace('/schedule-import')}
-          />
-          <ChoiceCard
-            icon="person-add"
-            title="Personen einladen"
-            text="Link oder QR-Code teilen"
-            selected={false}
-            onPress={() => router.replace('/admin/invites')}
-          />
-        </View>
+        {demo ? null : (
+          <View style={{ gap: 10 }}>
+            <ChoiceCard
+              icon="shirt"
+              title="Erste Mannschaft anlegen"
+              text="Mit Trainerteam, Kader und Antwortfristen"
+              selected={false}
+              onPress={() => router.replace('/admin/team-new')}
+            />
+            <ChoiceCard
+              icon="people"
+              title="Mitglieder importieren"
+              text="Aus einer CSV-Datei"
+              selected={false}
+              onPress={() => router.replace('/admin/import')}
+            />
+            <ChoiceCard
+              icon="calendar"
+              title="Spielplan importieren"
+              text="Aus dem DFBnet"
+              selected={false}
+              onPress={() => router.replace('/schedule-import')}
+            />
+            <ChoiceCard
+              icon="person-add"
+              title="Personen einladen"
+              text="Link oder QR-Code teilen"
+              selected={false}
+              onPress={() => router.replace('/admin/invites')}
+            />
+          </View>
+        )}
       </WizardShell>
     );
 

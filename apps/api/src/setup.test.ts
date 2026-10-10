@@ -2,7 +2,7 @@
  * Ersteinrichtung auf einem leeren Server. Läuft gegen eine eigene, frisch angelegte Datenbank,
  * damit der Demoverein der übrigen Tests unberührt bleibt.
  */
-import type { LoginResponse, ModuleOverview } from '@clubroof/core';
+import type { LoginResponse, ModuleOverview, RoleCatalog } from '@clubroof/core';
 import { createDb } from '@clubroof/db';
 import { runMigrations } from '@clubroof/db/migrate';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -175,6 +175,24 @@ describe.skipIf(!url)('Ersteinrichtung', () => {
     expect(state('forum')).toBe('enabled');
     expect(state('wiki')).toBe('available');
     expect(state('events')).toBe('enabled'); // Kernmodul
+
+    // Treffpunkt-Vorschläge: Spielstätte und Kabinen (mit Anlage), keine Plätze
+    const places = await app.inject({
+      url: '/meeting-places',
+      headers: { authorization: `Bearer ${login.token}` },
+    });
+    expect(places.json()).toEqual([
+      { label: 'Sportplatz am Wald' },
+      { label: 'Kabine 1 · Sportplatz am Wald' },
+      { label: 'Kabine 2 · Sportplatz am Wald' },
+    ]);
+
+    // „Jugend und Senioren getrennt“: zwei Bereiche, Leitungsrollen lassen sich je Bereich vergeben
+    const catalog = (
+      await app.inject({ url: '/admin/roles', headers: { authorization: `Bearer ${login.token}` } })
+    ).json<RoleCatalog>();
+    const units = catalog.scopes.filter((sc) => sc.type === 'org_unit').map((sc) => sc.label);
+    expect(units.sort()).toEqual(['Jugend', 'Senioren']);
 
     // Anmeldung mit dem neuen Konto
     const relogin = await app.inject({

@@ -734,4 +734,27 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
       )
       .orderBy(asc(s.facilities.sortOrder)),
   );
+
+  /** Vorschläge für den Treffpunkt: Spielstätten, Kabinen (mit Anlage) und Plätze ohne Anlage. */
+  app.get('/meeting-places', async (request): Promise<{ label: string }[]> => {
+    const clubId = request.actor!.club.id;
+    const venues = await app.db
+      .select({ name: s.venues.name })
+      .from(s.venues)
+      .where(eq(s.venues.clubId, clubId))
+      .orderBy(asc(s.venues.sortOrder));
+    const facilities = await app.db
+      .select({ name: s.facilities.name, kind: s.facilities.kind, venue: s.venues.name })
+      .from(s.facilities)
+      .leftJoin(s.venues, eq(s.venues.id, s.facilities.venueId))
+      .where(eq(s.facilities.clubId, clubId))
+      .orderBy(asc(s.facilities.sortOrder));
+    const labels = [
+      ...venues.map((v) => v.name),
+      ...facilities
+        .filter((f) => f.kind === 'changing_room' || !f.venue)
+        .map((f) => (f.venue ? `${f.name} · ${f.venue}` : f.name)),
+    ];
+    return [...new Set(labels)].slice(0, 12).map((label) => ({ label }));
+  });
 };

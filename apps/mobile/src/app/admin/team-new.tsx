@@ -15,7 +15,16 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { ChoiceCard, NumberStepper, WizardShell, useWizardDraft } from '@/components/wizard';
-import { Button, Card, Chip, Loading, T, TextField, type IconName } from '@/components/ui';
+import {
+  Button,
+  Card,
+  ChoiceChips,
+  Chip,
+  Loading,
+  T,
+  TextField,
+  type IconName,
+} from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { PARTICIPATION_OPTIONS } from '@/lib/team-labels';
@@ -24,7 +33,7 @@ import { t } from '@/lib/i18n';
 const TOTAL = 11;
 
 type Person = { id: string; name: string };
-type Draft = {
+export type Draft = {
   name: string;
   badge: string;
   unitId: string | null;
@@ -79,6 +88,18 @@ const TEMPLATE_ICON: Record<TeamTemplate, IconName> = {
   leisure: 'cafe',
 };
 
+/** Was der Assistent vom Server braucht – echt (angemeldet) oder als Vorführung ohne Speichern. */
+export type TeamWizardBackend = {
+  demo?: boolean;
+  overview: TeamAdminOverview | undefined;
+  places: { label: string }[];
+  search: (term: string) => Promise<MemberListItem[]>;
+  /** legt die Mannschaft an; gibt die ID zurück (wirft nur, wenn die Mannschaft selbst fehlschlug) */
+  create: (d: Draft, unitId: string | null, seasonId: string) => Promise<string>;
+  /** Abschluss: zur Mannschaft bzw. in der Vorführung zurück zur Anmeldung */
+  finish: (teamId: string) => void;
+};
+
 export default function NewTeamScreen() {
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
@@ -86,12 +107,81 @@ export default function NewTeamScreen() {
     queryKey: ['admin', 'teams'],
     queryFn: () => api<TeamAdminOverview>('/admin/teams'),
   });
-  const { state: d, patch, loaded, clear } = useWizardDraft('team-wizard', INITIAL);
+  const places = useQuery({
+    queryKey: ['meeting-places'],
+    queryFn: () => api<{ label: string }[]>('/meeting-places'),
+  });
+  const backend: TeamWizardBackend = {
+    overview: overview.data,
+    places: places.data ?? [],
+    search: (term) =>
+      api<MemberListItem[]>(`/admin/members?status=active&q=${encodeURIComponent(term)}`),
+    create: async (d, unitId, seasonId) => {
+      const team = await api<TeamDetailAdmin>('/admin/teams', {
+        method: 'POST',
+        body: {
+          name: d.name.trim(),
+          badge: d.badge.trim(),
+          ageGroup: d.ageGroup.trim() || null,
+          league: d.league.trim() || null,
+          orgUnitId: unitId,
+          template: d.template,
+          participationMode: d.mode,
+          seasonId,
+        },
+      });
+      try {
+        await api(`/teams/${team.id}/profile`, {
+          method: 'PUT',
+          body: {
+            defaultMeetingPoint: d.meetingPoint.trim() || null,
+            trainingMeetingMinutes: d.trainingMeeting,
+            matchMeetingMinutes: d.matchMeeting,
+            trainingDeadlineHours: d.trainingDeadline,
+            matchDeadlineHours: d.matchDeadline,
+            importAliases: d.aliases
+              .split(/[;\n]/)
+              .map((a) => a.trim())
+              .filter(Boolean)
+              .slice(0, 10),
+          },
+        });
+        for (const [people, fn] of [
+          [d.coaches, 'coach'],
+          [d.players, 'player'],
+        ] as const) {
+          for (const p of people) {
+            await api(`/admin/members/${p.id}/memberships`, {
+              method: 'POST',
+              body: { teamId: team.id, function: fn },
+            });
+          }
+        }
+      } catch {
+        // Mannschaft steht, Rest lässt sich in der Verwaltung ergänzen
+      }
+      void queryClient.invalidateQueries({ queryKey: ['admin'] });
+      void queryClient.invalidateQueries({ queryKey: ['home'] });
+      return team.id;
+    },
+    finish: (id) => router.replace(`/admin/team/${id}`),
+  };
+  return <TeamWizard backend={backend} />;
+}
+
+export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
+  const {
+    state: d,
+    patch,
+    loaded,
+    clear,
+  } = useWizardDraft(backend.demo ? 'team-wizard-demo' : 'team-wizard', INITIAL);
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
+  const [createdId, setCreatedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const o = overview.data;
+  const o = backend.overview;
   if (!o || !loaded) return <Loading />;
   const units = o.orgUnits.filter((u) => u.canManage);
   const unitId =
@@ -108,61 +198,14 @@ export default function NewTeamScreen() {
   const create = async () => {
     setBusy(true);
     setError(null);
-    let teamId: string | null = null;
     try {
-      const team = await api<TeamDetailAdmin>('/admin/teams', {
-        method: 'POST',
-        body: {
-          name: d.name.trim(),
-          badge: d.badge.trim(),
-          ageGroup: d.ageGroup.trim() || null,
-          league: d.league.trim() || null,
-          orgUnitId: unitId,
-          template: d.template,
-          participationMode: d.mode,
-          seasonId,
-        },
-      });
-      teamId = team.id;
-      await api(`/teams/${team.id}/profile`, {
-        method: 'PUT',
-        body: {
-          defaultMeetingPoint: d.meetingPoint.trim() || null,
-          trainingMeetingMinutes: d.trainingMeeting,
-          matchMeetingMinutes: d.matchMeeting,
-          trainingDeadlineHours: d.trainingDeadline,
-          matchDeadlineHours: d.matchDeadline,
-          importAliases: d.aliases
-            .split(/[;\n]/)
-            .map((a) => a.trim())
-            .filter(Boolean)
-            .slice(0, 10),
-        },
-      });
-      for (const [people, fn] of [
-        [d.coaches, 'coach'],
-        [d.players, 'player'],
-      ] as const) {
-        for (const p of people) {
-          await api(`/admin/members/${p.id}/memberships`, {
-            method: 'POST',
-            body: { teamId: team.id, function: fn },
-          });
-        }
-      }
+      const id = await backend.create(d, unitId, seasonId);
       clear();
-      void queryClient.invalidateQueries({ queryKey: ['admin'] });
-      void queryClient.invalidateQueries({ queryKey: ['home'] });
-      router.replace(`/admin/team/${team.id}`);
+      setCreatedId(id);
     } catch (e) {
-      const msg =
-        e instanceof RequestError ? e.message : 'Die Mannschaft konnte nicht angelegt werden.';
-      if (teamId) {
-        // Mannschaft steht, Rest lässt sich in der Verwaltung ergänzen
-        clear();
-        void queryClient.invalidateQueries({ queryKey: ['admin'] });
-        router.replace(`/admin/team/${teamId}`);
-      } else setError(msg);
+      setError(
+        e instanceof RequestError ? e.message : 'Die Mannschaft konnte nicht angelegt werden.',
+      );
     } finally {
       setBusy(false);
     }
@@ -170,6 +213,42 @@ export default function NewTeamScreen() {
 
   const shell = { step, total: TOTAL, onBack: back, onNext: next, error } as const;
   const aliasCount = d.aliases.split(/[;\n]/).filter((a) => a.trim()).length;
+
+  if (createdId)
+    return (
+      <WizardShell
+        title="Mannschaft angelegt"
+        explanation="Das Wichtigste steht. Sinnvolle nächste Schritte – alles lässt sich später in der Verwaltung ändern."
+        nextLabel={backend.demo ? 'Verlassen' : 'Zur Mannschaft'}
+        onNext={() => backend.finish(createdId)}
+      >
+        {backend.demo ? null : (
+          <View style={{ gap: 10 }}>
+            <ChoiceCard
+              icon="calendar"
+              title="Erstes Training anlegen"
+              text="Mit Treffpunkt und Antwortfrist der Mannschaft"
+              selected={false}
+              onPress={() => router.replace(`/teams/${createdId}/event-new`)}
+            />
+            <ChoiceCard
+              icon="cloud-download"
+              title="Spielplan importieren"
+              text="Aus dem DFBnet"
+              selected={false}
+              onPress={() => router.replace('/schedule-import')}
+            />
+            <ChoiceCard
+              icon="mail"
+              title="Eltern und Spieler einladen"
+              text="Einladungslinks für den Zugang"
+              selected={false}
+              onPress={() => router.replace('/admin/invites')}
+            />
+          </View>
+        )}
+      </WizardShell>
+    );
 
   if (step === 1)
     return (
@@ -318,6 +397,8 @@ export default function NewTeamScreen() {
         onSkip={next}
       >
         <PersonPicker
+          search={backend.search}
+          demo={backend.demo}
           selected={d.coaches}
           exclude={d.players}
           onChange={(coaches) => patch({ coaches })}
@@ -334,6 +415,8 @@ export default function NewTeamScreen() {
         onSkip={next}
       >
         <PersonPicker
+          search={backend.search}
+          demo={backend.demo}
           selected={d.players}
           exclude={d.coaches}
           onChange={(players) => patch({ players })}
@@ -381,6 +464,17 @@ export default function NewTeamScreen() {
             placeholder={t('z. B. Eingang Kabinengang')}
             maxLength={120}
           />
+          {backend.places.length > 0 ? (
+            <View style={{ gap: 8 }}>
+              <T variant="caption">Vorschläge aus eurer Vereinseinrichtung</T>
+              <ChoiceChips
+                label="Treffpunkt wählen"
+                options={backend.places.map((p) => ({ value: p.label, label: p.label }))}
+                selected={d.meetingPoint ? [d.meetingPoint] : []}
+                onToggle={(meetingPoint) => patch({ meetingPoint })}
+              />
+            </View>
+          ) : null}
           <Card style={{ gap: 16 }}>
             <MinutesRow
               label="Training: Treffen vor Beginn"
@@ -519,18 +613,20 @@ function PersonPicker({
   selected,
   exclude,
   onChange,
+  search,
+  demo,
 }: {
+  search: (term: string) => Promise<MemberListItem[]>;
+  demo?: boolean;
   selected: Person[];
   exclude: Person[];
   onChange: (p: Person[]) => void;
 }) {
-  const { api } = useSignedIn();
   const [q, setQ] = useState('');
   const term = q.trim();
   const results = useQuery({
-    queryKey: ['admin', 'members', 'wizard', term],
-    queryFn: () =>
-      api<MemberListItem[]>(`/admin/members?status=active&q=${encodeURIComponent(term)}`),
+    queryKey: ['admin', 'members', 'wizard', demo ? 'demo' : 'live', term],
+    queryFn: () => search(term),
     enabled: term.length >= 2,
   });
   const taken = new Set([...selected, ...exclude].map((p) => p.id));
