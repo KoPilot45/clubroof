@@ -134,7 +134,8 @@ Bausteine in `components/home.tsx`, Seite `app/(tabs)/index.tsx`.
 Entscheidungen und Abweichungen:
 
 - **Verwaltung** steht im Schnellzugriff (Voreinstellung für alle mit Verwaltungsrechten); der Knopf in der Kopfzeile entfällt.
-- **Noch offen aus dem Entwurf:** Hinweise an Schnellzugriff-Chips („1“ Kasse, „neu“ Fahrten), Absage direkt über ✕ in „Deine Woche“ (heute öffnet es den Termin),
+- **Hinweise an Schnellzugriff-Chips** (Zähler oder „neu“) kommen aus den Kachel-Infos (`/tile-info` für Verein, Mehr und Mannschaftskasse); neuer Eintrag „Kasse“.
+- **Noch offen aus dem Entwurf:** Absage direkt über ✕ in „Deine Woche“ (heute öffnet es den Termin),
   Spielekarte für abgesagte Spiele (abgesagte Spiele erscheinen nur in „Deine Woche“).
 - Die Willkommens-Tour und der Pull-to-refresh bleiben unverändert.
 - Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-home.mjs` (Eltern und Vorstand, hell und dunkel, Blatt beim Absagen, Schnellzugriff
@@ -241,7 +242,6 @@ Unterseiten; keine Seite mit weißen Flächen, unlesbarem Text oder Überlauf. A
 
 - **„Anpassen“ im Vereinsbereich:** Kachel aus dem Entwurf `VereinNeu` – Kacheln des Vereinslebens ordnen/ausblenden mit gespeicherter Auswahl je Person
   (analog zum Schnellzugriff, `users.quick_links`).
-- Hinweise („1“, „neu“) an den Schnellzugriff-Chips auf Home.
 - Absage direkt über ✕ in „Deine Woche“ (heute öffnet es den Termin).
 - Tabellenplatz und Torschützenkönig im Kader-Blickfang (Team) – braucht Daten in der API.
 - Offline-Warteschlange für Zu-/Absagen („wird gesendet, sobald du wieder online bist“).

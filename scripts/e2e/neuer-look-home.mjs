@@ -69,6 +69,20 @@ const files = {};
   await setMode(login, 'light');
   await goto('/');
   await text(page, 'Schnellzugriff').waitFor({ timeout: 20_000 });
+  // Hinweise an den Schnellzugriff-Chips (aus den Kachel-Infos)
+  const club = await api('/tile-info?hub=club', login.token);
+  const more = await api('/tile-info?hub=more', login.token);
+  const expected = [club.news, more.absences, more.invites].filter(
+    (e) => e && (e.badge || /neu/i.test(e.hint ?? '')),
+  );
+  if (expected.length) {
+    const hints = page.getByRole('button', { name: /^(Vereinsnews|Abwesenheiten|Einladen)/ });
+    const texts = await hints.allTextContents();
+    ok(
+      texts.some((t) => /\d$|neu$/.test(t.trim())),
+      'Schnellzugriff: Chip mit Hinweis (Zähler oder „neu“)',
+    );
+  } else console.log('– Schnellzugriff: Demodaten liefern keine Hinweise');
   // Umfrage in „Offen“: Antwortmöglichkeiten im Blatt von unten
   const pollCard = page
     .getByRole('button', { name: /Umfrage/ })

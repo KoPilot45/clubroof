@@ -2,7 +2,14 @@
  * Bausteine der Startseite im neuen Look: Spiele zum Wischen, Band „Offen“, „Deine Woche“,
  * Schnellzugriff (docs/DESIGNSYSTEM.md › Seiten › Home).
  */
-import type { ActionItem, Birthday, EventSummary, MeResponse } from '@clubroof/core';
+import type {
+  ActionItem,
+  Birthday,
+  EventSummary,
+  MeResponse,
+  TileInfo,
+  TileInfoEntry,
+} from '@clubroof/core';
 import type { TintKey } from '@clubroof/design-tokens';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,7 +43,7 @@ import {
 import { clubInitials, formatDay, formatRemaining, formatTime } from '@/lib/format';
 import { openLink } from '@/lib/links';
 import { MATCH_KIND_LABELS } from '@/lib/labels';
-import { QUICK_LINKS, defaultQuickLinks, quickLinksFor } from '@/lib/quick-links';
+import { QUICK_LINKS, defaultQuickLinks, quickLinksFor, routeOf } from '@/lib/quick-links';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -477,7 +484,24 @@ export function WeekCard({ week, birthdays }: { week: EventSummary[]; birthdays:
 
 // ── Schnellzugriff ────────────────────────────────────────────────────────────
 
-export function QuickAccess({ me, onSaved }: { me: MeResponse; onSaved: () => Promise<void> }) {
+/** Kleiner Hinweis oben rechts am Chip: Zähler, sonst „neu“ – aus den Kachel-Infos der Bereiche. */
+function chipHint(entry: TileInfoEntry | undefined): { text: string; count: boolean } | null {
+  if (!entry) return null;
+  if (entry.badge) return { text: String(entry.badge), count: true };
+  if (entry.hint && /\bneu\b|\bnew\b/i.test(entry.hint)) return { text: 'neu', count: false };
+  return null;
+}
+
+export function QuickAccess({
+  me,
+  info,
+  onSaved,
+}: {
+  me: MeResponse;
+  /** Hinweise je Schlüssel des Schnellzugriffs (Zähler, „neu“) */
+  info: TileInfo;
+  onSaved: () => Promise<void>;
+}) {
   const { colors, isDark, elevation } = useTheme();
   const { api } = useSignedIn();
   const [editing, setEditing] = useState(false);
@@ -494,7 +518,8 @@ export function QuickAccess({ me, onSaved }: { me: MeResponse; onSaved: () => Pr
           <Pressable
             key={l.key}
             accessibilityRole="button"
-            onPress={() => router.push(l.route as never)}
+            onPress={() => router.push(routeOf(l, me) as never)}
+            accessibilityLabel={[l.label, info[l.key]?.hint].filter(Boolean).join(', ')}
             style={{
               height: 46,
               flexDirection: 'row',
@@ -524,6 +549,37 @@ export function QuickAccess({ me, onSaved }: { me: MeResponse; onSaved: () => Pr
             <Text style={{ color: colors.onSurface, fontSize: 14, fontWeight: '700' }}>
               {l.label}
             </Text>
+            {(() => {
+              const hint = chipHint(info[l.key]);
+              return hint ? (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: -6,
+                    right: -2,
+                    minWidth: 22,
+                    height: 22,
+                    paddingHorizontal: 6,
+                    borderRadius: 11,
+                    borderWidth: 2,
+                    borderColor: colors.background,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: colors.status.action.container,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: '800',
+                      color: colors.status.action.onContainer,
+                    }}
+                  >
+                    {hint.text}
+                  </Text>
+                </View>
+              ) : null;
+            })()}
           </Pressable>
         ))}
         <Pressable

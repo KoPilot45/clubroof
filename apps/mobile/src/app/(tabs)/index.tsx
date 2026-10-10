@@ -1,4 +1,4 @@
-import type { HomeResponse } from '@clubroof/core';
+import type { HomeResponse, TileInfo } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -9,7 +9,9 @@ import { Card, ChoiceChips, Chip, ErrorNotice, Loading, Screen, Section, T } fro
 import { NewsList } from '@/components/news';
 import { WelcomeTour } from '@/components/welcome-tour';
 import { readFlag, writeFlag } from '@/lib/flags';
+import { cashTeamId } from '@/lib/quick-links';
 import { useSignedIn } from '@/lib/session';
+import { useTileInfo } from '@/lib/tile-info';
 import { useTheme } from '@/lib/theme';
 import type { TintKey } from '@clubroof/design-tokens';
 
@@ -45,6 +47,17 @@ export default function HomeScreen() {
     )
     .slice(0, 4);
 
+  // Hinweise der Schnellzugriff-Chips aus den Kachel-Infos der Bereiche (Verein, Mehr, Mannschaftskasse)
+  const clubInfo = useTileInfo('club');
+  const moreInfo = useTileInfo('more');
+  const cashTeam = cashTeamId(me);
+  const teamInfo = useTileInfo('team', cashTeam);
+  const quickInfo: TileInfo = {
+    ...clubInfo,
+    ...moreInfo,
+    ...(clubInfo?.docs ? { documents: clubInfo.docs } : {}),
+    ...(cashTeam && teamInfo?.cash ? { cash: teamInfo.cash } : {}),
+  };
   const overview = data?.clubOverview;
   const figures: [string, number, TintKey][] = overview
     ? [
@@ -94,7 +107,7 @@ export default function HomeScreen() {
         </Section>
       ) : null}
 
-      <QuickAccess me={me} onSaved={refresh} />
+      <QuickAccess me={me} info={quickInfo} onSaved={refresh} />
 
       {data?.clubOverview ? (
         <Section title="Verein im Überblick">

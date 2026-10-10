@@ -1642,6 +1642,7 @@ export const en: Record<string, string> = {
   "Name, Beschreibung …": "Name, description …",
   "Nein. In der Ruhezeit (22 bis 7 Uhr) gibt es keine Push-Nachrichten außer bei dringenden Meldungen. Alles andere wartet bis zum Morgen.": "No. During quiet hours (10 pm to 7 am) there are no push notifications except for urgent messages. Everything else waits until morning.",
   "Nein. Trage eine Abwesenheit ein (Urlaub, Verletzt, Krank, Sonstiges). Alle betroffenen Termine werden automatisch abgesagt, das Trainerteam sieht es sofort. Löschst du die Abwesenheit, werden die automatischen Absagen zurückgenommen.": "No. Enter an absence (Holiday, Injured, Ill, Other). All affected events are declined automatically and the coaching staff see it immediately. If you delete the absence, the automatic declines are withdrawn.",
+  "neu": "new",
   "Neu": "New",
   "Neu anlegen": "Create new",
   "Neu zuordnen (Jahrgangswechsel)": "Reassign (age-group change)",

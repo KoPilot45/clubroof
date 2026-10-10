@@ -7,7 +7,8 @@ export type QuickLink = {
   key: string;
   label: string;
   icon: IconName;
-  route: string;
+  /** Ziel; für Mannschaftsseiten aus der Person abgeleitet */
+  route: string | ((me: MeResponse) => string);
   tint: TintKey;
   /** Ob der Eintrag für diese Person überhaupt angeboten wird (Rechte prüft weiterhin der Server) */
   available: (me: MeResponse) => boolean;
@@ -15,6 +16,13 @@ export type QuickLink = {
 
 const has = (me: MeResponse, module: string) => me.clubModules.includes(module);
 const always = () => true;
+
+/** Erste Mannschaft mit Mannschaftskasse (für Kachel „Kasse“ und deren Hinweis) */
+export const cashTeamId = (me: MeResponse): string | null =>
+  me.teams.find((t) => t.modules.includes('team_cash'))?.id ?? null;
+
+export const routeOf = (link: QuickLink, me: MeResponse) =>
+  typeof link.route === 'function' ? link.route(me) : link.route;
 
 /** Alle Ziele, die sich als Schnellzugriff wählen lassen. */
 export const QUICK_LINKS: QuickLink[] = [
@@ -33,6 +41,14 @@ export const QUICK_LINKS: QuickLink[] = [
     route: '/admin/invites',
     tint: 'green',
     available: (me) => me.canInvite,
+  },
+  {
+    key: 'cash',
+    label: 'Kasse',
+    icon: 'wallet-outline',
+    route: (me) => `/teams/${cashTeamId(me)}/cash`,
+    tint: 'orange',
+    available: (me) => cashTeamId(me) !== null,
   },
   {
     key: 'absences',
@@ -142,7 +158,7 @@ export const QUICK_LINKS: QuickLink[] = [
 
 /** Voreinstellung je Rolle, solange die Person nichts gewählt hat. */
 export function defaultQuickLinks(me: MeResponse): string[] {
-  const keys = ['admin', 'invites', 'absences', 'news', 'events', 'contacts'];
+  const keys = ['admin', 'invites', 'cash', 'absences', 'news', 'events', 'contacts'];
   return keys.filter((k) => QUICK_LINKS.find((l) => l.key === k)!.available(me)).slice(0, 5);
 }
 
