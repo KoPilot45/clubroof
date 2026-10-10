@@ -343,8 +343,14 @@ export function ResponseControls({
               <Button
                 style={{ flex: 1 }}
                 label={r.status === 'yes' ? 'Zugesagt' : 'Zusagen'}
-                icon={r.status === 'yes' && tone !== 'hero' ? 'checkmark-circle' : undefined}
-                compact={tone === 'hero'}
+                icon={
+                  tone === 'hero'
+                    ? 'checkmark'
+                    : r.status === 'yes'
+                      ? 'checkmark-circle'
+                      : undefined
+                }
+                hideLabel={tone === 'hero'}
                 size={tone === 'hero' ? 'sm' : 'md'}
                 variant={
                   r.status === 'yes' || r.status === 'pending'
@@ -359,8 +365,8 @@ export function ResponseControls({
               <Button
                 style={{ flex: 1 }}
                 label="Unsicher"
-                icon={r.status === 'maybe' && tone !== 'hero' ? 'help-circle' : undefined}
-                compact={tone === 'hero'}
+                icon={tone === 'hero' ? 'help' : r.status === 'maybe' ? 'help-circle' : undefined}
+                hideLabel={tone === 'hero'}
                 size={tone === 'hero' ? 'sm' : 'md'}
                 variant={r.status === 'maybe' ? (tone === 'hero' ? 'hero' : 'action') : outline}
                 onPress={() => {
@@ -372,8 +378,8 @@ export function ResponseControls({
               <Button
                 style={{ flex: 1 }}
                 label={r.status === 'no' ? 'Abgesagt' : 'Absagen'}
-                icon={r.status === 'no' && tone !== 'hero' ? 'close-circle' : undefined}
-                compact={tone === 'hero'}
+                icon={tone === 'hero' ? 'close' : r.status === 'no' ? 'close-circle' : undefined}
+                hideLabel={tone === 'hero'}
                 size={tone === 'hero' ? 'sm' : 'md'}
                 variant={r.status === 'no' ? (tone === 'hero' ? 'hero' : 'danger') : outline}
                 onPress={() => {

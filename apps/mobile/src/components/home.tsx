@@ -24,6 +24,7 @@ import {
   ChoiceChips,
   Chip,
   Crest,
+  DateTile,
   HeroCard,
   IconTile,
   ListRow,
@@ -437,38 +438,6 @@ export function WeekCard({ week, birthdays }: { week: EventSummary[]; birthdays:
   );
 }
 
-function DateTile({ iso, cancelled }: { iso: string; cancelled: boolean }) {
-  const { colors } = useTheme();
-  const { weekday, day } = formatDateTile(iso);
-  return (
-    <View
-      style={{
-        width: 48,
-        height: 50,
-        borderRadius: 14,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: cancelled ? colors.surfaceVariant : colors.primaryContainer,
-      }}
-    >
-      <T
-        variant="caption"
-        color={cancelled ? colors.onSurfaceMuted : colors.onPrimaryContainer}
-        style={{ fontSize: 11, lineHeight: 13 }}
-      >
-        {weekday}
-      </T>
-      <T
-        variant="figure"
-        color={cancelled ? colors.onSurfaceMuted : colors.onPrimaryContainer}
-        style={{ fontSize: 20, lineHeight: 24 }}
-      >
-        {day}
-      </T>
-    </View>
-  );
-}
-
 /** Terminzeile: Datumskachel, Titel, Untertitel und Status bzw. runde Zusage/Absage. */
 function WeekRow({ event, first }: { event: EventSummary; first: boolean }) {
   const cancelled = event.status === 'cancelled';
@@ -485,7 +454,7 @@ function WeekRow({ event, first }: { event: EventSummary; first: boolean }) {
     <ListRow
       first={first}
       onPress={() => router.push(`/events/${event.id}`)}
-      leading={<DateTile iso={event.startsAt} cancelled={cancelled} />}
+      leading={<DateTile {...formatDateTile(event.startsAt)} muted={cancelled} />}
       title={event.title}
       subtitle={subtitle}
       trailing={

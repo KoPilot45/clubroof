@@ -500,6 +500,7 @@ export function Button({
   style,
   size = 'md',
   compact,
+  hideLabel,
 }: {
   label: string;
   onPress: () => void;
@@ -516,6 +517,8 @@ export function Button({
   style?: StyleProp<ViewStyle>;
   /** schmaler Innenabstand für Dreier-Reihen, in denen Beschriftungen sonst umbrechen */
   compact?: boolean;
+  /** nur das Symbol zeigen (Beschriftung bleibt für Screenreader) */
+  hideLabel?: boolean;
 }) {
   const { colors, radii, sizes } = useTheme();
   const palette = {
@@ -568,6 +571,7 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={hideLabel ? t(label) : undefined}
       accessibilityState={{ disabled: !!disabled, busy: !!loading }}
       disabled={disabled || loading}
       onPress={onPress}
@@ -592,19 +596,23 @@ export function Button({
         <ActivityIndicator color={palette.fg} />
       ) : (
         <>
-          {icon ? <Ionicons name={icon} size={small ? 16 : 18} color={palette.fg} /> : null}
-          <Text
-            numberOfLines={2}
-            style={{
-              flexShrink: 1,
-              textAlign: 'center',
-              color: palette.fg,
-              fontSize: small ? 13 : 15,
-              fontWeight: '800',
-            }}
-          >
-            {label}
-          </Text>
+          {icon ? (
+            <Ionicons name={icon} size={hideLabel ? 24 : small ? 16 : 18} color={palette.fg} />
+          ) : null}
+          {hideLabel ? null : (
+            <Text
+              numberOfLines={2}
+              style={{
+                flexShrink: 1,
+                textAlign: 'center',
+                color: palette.fg,
+                fontSize: small ? 13 : 15,
+                fontWeight: '800',
+              }}
+            >
+              {label}
+            </Text>
+          )}
         </>
       )}
     </Pressable>
@@ -762,6 +770,43 @@ export function IconTile({
       }}
     >
       <Ionicons name={name} size={size === 'lg' ? 26 : 20} color={palette.fg} />
+    </View>
+  );
+}
+
+/** Datumskachel: Wochentag klein, Tag groß (md 48×50, lg 52×56). */
+export function DateTile({
+  weekday,
+  day,
+  muted,
+  size = 'md',
+}: {
+  weekday: string;
+  day: string;
+  /** abgesagt: graue Fläche */
+  muted?: boolean;
+  size?: 'md' | 'lg';
+}) {
+  const { colors } = useTheme();
+  const lg = size === 'lg';
+  const fg = muted ? colors.onSurfaceMuted : colors.onPrimaryContainer;
+  return (
+    <View
+      style={{
+        width: lg ? 52 : 48,
+        height: lg ? 56 : 50,
+        borderRadius: lg ? 16 : 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: muted ? colors.surfaceVariant : colors.primaryContainer,
+      }}
+    >
+      <T variant="caption" color={fg} style={{ fontSize: 11, lineHeight: 13 }}>
+        {weekday}
+      </T>
+      <T variant="figure" color={fg} style={{ fontSize: lg ? 22 : 20, lineHeight: lg ? 26 : 24 }}>
+        {day}
+      </T>
     </View>
   );
 }
@@ -982,9 +1027,138 @@ export type TileItem = {
   hint?: string;
   /** Ton des Hinweises (immer zusammen mit dem Text, nie Farbe allein) */
   tone?: 'neutral' | 'action' | 'success' | 'urgent' | 'info';
+  /** Pastellfarbe der Icon-Kachel im kompakten Raster (sonst reihum) */
+  tint?: TintKey;
 };
 
-export function TileGrid({ items }: { items: TileItem[] }) {
+/**
+ * Kachelraster. `compact`: vier Spalten wie im Entwurf – Kachel 60 hoch mit Pastell-Icon, Beschriftung
+ * darunter, Zähler oder „neu“ oben rechts, ein kurzer Hinweis unter der Beschriftung.
+ */
+export function TileGrid({ items, compact }: { items: TileItem[]; compact?: boolean }) {
+  if (compact) return <CompactTileGrid items={items} />;
+  return <WideTileGrid items={items} />;
+}
+
+const TINT_ORDER: TintKey[] = ['blue', 'orange', 'pink', 'green', 'violet'];
+
+function CompactTileGrid({ items }: { items: TileItem[] }) {
+  const { colors, isDark, elevation } = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 10, rowGap: 14 }}>
+      {items.map((item, index) => {
+        const disabled = item.soon || !item.onPress;
+        const showBadge = !item.soon && item.badge !== undefined && item.badge !== 0;
+        const tone = item.tone && item.tone !== 'neutral' ? item.tone : null;
+        return (
+          <Pressable
+            key={item.key}
+            accessibilityRole="button"
+            accessibilityState={{ disabled }}
+            accessibilityLabel={[
+              item.label,
+              showBadge ? String(item.badge) : null,
+              item.soon ? 'bald verfügbar' : item.hint,
+            ]
+              .filter(Boolean)
+              .join(', ')}
+            disabled={disabled}
+            onPress={item.onPress}
+            style={{
+              width: '22.5%',
+              flexGrow: 0,
+              alignItems: 'center',
+              gap: 6,
+              opacity: item.soon ? 0.55 : 1,
+            }}
+          >
+            {({ pressed }) => (
+              <>
+                <View
+                  style={{
+                    width: '100%',
+                    height: 60,
+                    borderRadius: 20,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: pressed ? colors.surfaceVariant : colors.surfaceRaised,
+                    ...(isDark
+                      ? { borderWidth: 1, borderColor: colors.border }
+                      : shadowStyle(elevation.control)),
+                  }}
+                >
+                  <IconTile
+                    name={item.icon}
+                    tone={item.tint ?? TINT_ORDER[index % TINT_ORDER.length]!}
+                  />
+                  {showBadge ? (
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: -6,
+                        right: -3,
+                        minWidth: 22,
+                        height: 22,
+                        paddingHorizontal: 6,
+                        borderRadius: 11,
+                        borderWidth: 2,
+                        borderColor: colors.background,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: tone
+                          ? colors.status[tone].container
+                          : colors.status.action.container,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: '800',
+                          color: tone
+                            ? colors.status[tone].onContainer
+                            : colors.status.action.onContainer,
+                        }}
+                      >
+                        {item.badge}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+                <Text
+                  numberOfLines={2}
+                  style={{
+                    fontSize: item.label.length > 11 ? 11 : 12,
+                    fontWeight: '600',
+                    color: colors.onSurface,
+                    textAlign: 'center',
+                  }}
+                >
+                  {item.label}
+                </Text>
+                {item.soon || item.hint ? (
+                  <Text
+                    numberOfLines={2}
+                    style={{
+                      marginTop: -4,
+                      fontSize: 11,
+                      fontWeight: '600',
+                      textAlign: 'center',
+                      color: tone ? colors.status[tone].onContainer : colors.onSurfaceMuted,
+                    }}
+                  >
+                    {item.soon ? 'Bald verfügbar' : item.hint}
+                  </Text>
+                ) : null}
+              </>
+            )}
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+function WideTileGrid({ items }: { items: TileItem[] }) {
   const { colors, radii, spacing, isDark, elevation } = useTheme();
   // Mehr Spalten auf breiten Bildschirmen
   const { width } = useWindowDimensions();

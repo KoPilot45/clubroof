@@ -140,3 +140,24 @@ Entscheidungen und Abweichungen:
 - Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-home.mjs` (Eltern und Vorstand, hell und dunkel, Blatt beim Absagen, Schnellzugriff
   anpassen/zurücksetzen; Überblicksbild `.check/shots/neuer-look-home.png`).
 
+### Änderung am Home-Schritt: Symbole statt Beschriftung (10.10.2026)
+
+Auf den Spielkarten (Blickfangkarte) stehen statt „Zusagen / Unsicher / Absagen“ nur noch **Haken, Fragezeichen und X** (`Button hideLabel`, 44 pt hoch;
+die Beschriftung bleibt für Screenreader). Die gewählte Antwort ist gefüllt, die übrigen umrandet. Auf normalen Flächen (Termin-Seite) bleiben die Texte.
+
+### Stand Schritt 3: Team (10.10.2026) ✅
+
+Aufbau wie `TeamNeu`: Team-Kacheln → Funktionschips → Blickfang Kader → Kacheln → Nächster Termin → Letzte Ergebnisse → Trainingswoche.
+
+| Teil                | Umsetzung                                                                                                                                                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Team-Kacheln        | wischbar (228 breit) bei mehreren Mannschaften/Kindern: Badge, Name, „aktiv“, nächster Termin, Zusage-Balken mit „14/18“, Chips (abwesend, ohne Rückmeldung, Aufgaben); gewählte Kachel mit Rahmen in Vereinsfarbe |
+| Blickfang           | `TeamBand` als `HeroCard`: „KADER“, Spielerzahl groß, „Spieler · n verfügbar“; Chips „Bilanz S-U-N“ und „Training n %“. Ohne Kaderstatus steht die Bilanz groß. Tabellenplatz und Torschützenkönig fehlen noch (keine Daten in der API) |
+| Kacheln             | `TileGrid compact`: vier Spalten, Kachel 60 hoch mit Pastell-Icon (`tint`), Beschriftung darunter, Zähler/„neu“ oben rechts, Hinweis (z. B. „Kasse 512,35 €“) unter der Beschriftung. Gilt auch für Verein und Mehr in den nächsten Schritten |
+| Nächster Termin     | Datumskachel (`DateTile` lg), Titel, Zeit · Ort · Art, Hinweis zum Teilnahmemodell, `AttendanceBar` (zugesagt/unsicher/abgesagt/offen, bei Bedarf abwesend) mit Legende                          |
+| Letzte Ergebnisse   | Zeile mit Paarung, Datum, Ergebnis (Oswald) und Chip „Sieg“, „Remis“, „Niederlage“ (auch auf Vereins-Mannschaftsseite und Statistik)                                                              |
+| Trainingswoche      | Datumskachel, Titel, „Zeit · Ort · n von m zugesagt“, abgesagte mit Chip und Grund                                                                                                              |
+
+- Neu in `ui.tsx`: `DateTile` (auch von Home genutzt), `TileGrid compact`, `Button hideLabel`.
+- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-team.mjs` (Symbole auf den Spielkarten, Team als Eltern und Trainer, hell und dunkel; Überblick `.check/shots/neuer-look-team.png`).
+
