@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow } from '@/components/events';
-import { HighlightsCard, ResultRow, SquadStatusCard } from '@/components/team';
+import { ResultRow, SquadStatusCard, TeamBand } from '@/components/team';
 import {
   Button,
   Card,
@@ -274,6 +274,14 @@ export default function TeamScreen() {
             {team.ageGroup ? <Chip tone="neutral" label={team.ageGroup} /> : null}
           </View>
 
+          {o ? (
+            <TeamBand
+              highlights={o.highlights}
+              squad={o.squad}
+              yes={o.nextEvent ? o.nextEvent.counts.yes : null}
+            />
+          ) : null}
+
           <TileGrid items={withTileInfo(tiles, tileInfo)} />
 
           {overview.isPending ? <Loading /> : null}
@@ -344,10 +352,6 @@ export default function TeamScreen() {
                 ))}
               </Card>
             </Section>
-          ) : null}
-
-          {o && (o.highlights.played > 0 || o.highlights.trainingRate !== null) ? (
-            <HighlightsCard h={o.highlights} />
           ) : null}
         </>
       ) : null}

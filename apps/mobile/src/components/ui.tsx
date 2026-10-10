@@ -1125,10 +1125,13 @@ export function Stat({
   value,
   label,
   color,
+  labelColor,
 }: {
   value: string | number;
   label: string;
   color?: string;
+  /** Beschriftungsfarbe, z. B. auf der Vereinsfarbe */
+  labelColor?: string;
 }) {
   const { colors } = useTheme();
   return (
@@ -1136,7 +1139,7 @@ export function Stat({
       <T variant="figure" color={color ?? colors.primaryText}>
         {value}
       </T>
-      <T variant="caption" style={{ textAlign: 'center' }}>
+      <T variant="caption" color={labelColor} style={{ textAlign: 'center' }}>
         {label}
       </T>
     </View>

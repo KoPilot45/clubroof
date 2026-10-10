@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { AppHeader } from '@/components/app-header';
-import { EventRow } from '@/components/events';
+import { EventRow, FeaturedEventCard } from '@/components/events';
 import { MonthCalendar, dayKey } from '@/components/month-calendar';
 import { Card, Empty, ErrorNotice, Loading, Screen, Section, T } from '@/components/ui';
 import { KindLegend } from '@/components/kind-legend';
@@ -61,18 +61,21 @@ export default function EventsTab() {
       }}
     >
       <Section title="Als Nächstes" action="Alle anzeigen" onAction={() => router.push('/events')}>
-        <Card>
-          {upcoming.isPending ? <Loading /> : null}
-          {upcoming.error ? (
-            <ErrorNotice error={upcoming.error} onRetry={() => upcoming.refetch()} />
-          ) : null}
-          {upcoming.data && next.length === 0 ? (
-            <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
-          ) : null}
-          {next.map((e, i) => (
-            <EventRow key={e.id} event={e} first={i === 0} />
-          ))}
-        </Card>
+        {next[0] ? <FeaturedEventCard event={next[0]} /> : null}
+        {upcoming.isPending || upcoming.error || next.length !== 1 ? (
+          <Card>
+            {upcoming.isPending ? <Loading /> : null}
+            {upcoming.error ? (
+              <ErrorNotice error={upcoming.error} onRetry={() => upcoming.refetch()} />
+            ) : null}
+            {upcoming.data && next.length === 0 ? (
+              <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
+            ) : null}
+            {next.length > 1
+              ? next.slice(1).map((e, i) => <EventRow key={e.id} event={e} first={i === 0} />)
+              : null}
+          </Card>
+        ) : null}
       </Section>
 
       <Section title="Kalender">

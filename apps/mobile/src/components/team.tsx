@@ -97,3 +97,47 @@ export function HighlightsCard({
     </Card>
   );
 }
+
+/** Kopfband der Mannschaft auf der Vereinsfarbe: Zusagen zum nächsten Termin, Bilanz, Trainingsquote. */
+export function TeamBand({
+  highlights,
+  squad,
+  yes,
+}: {
+  highlights: TeamHighlights;
+  squad: SquadStatus | null;
+  /** Zusagen zum nächsten Termin (null, wenn es keinen gibt) */
+  yes: number | null;
+}) {
+  const { colors, radii } = useTheme();
+  const items: { value: string; label: string }[] = [];
+  if (yes !== null && squad) items.push({ value: `${yes}/${squad.players}`, label: 'zugesagt' });
+  if (highlights.played > 0)
+    items.push({
+      value: `${highlights.won}-${highlights.drawn}-${highlights.lost}`,
+      label: 'Bilanz S-U-N',
+    });
+  if (highlights.trainingRate !== null)
+    items.push({ value: `${highlights.trainingRate} %`, label: 'Training (4 Wo.)' });
+  if (items.length === 0) return null;
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        padding: 16,
+        borderRadius: radii.lg,
+        backgroundColor: colors.primary,
+      }}
+    >
+      {items.map((i) => (
+        <Stat
+          key={i.label}
+          value={i.value}
+          label={i.label}
+          color={colors.onPrimary}
+          labelColor={colors.onPrimary}
+        />
+      ))}
+    </View>
+  );
+}

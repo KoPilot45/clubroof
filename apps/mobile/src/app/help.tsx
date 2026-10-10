@@ -75,7 +75,13 @@ export default function HelpScreen() {
       ) : null}
       {sections.map((s) => (
         <Section key={s.id} title={s.title}>
-          <Card>
+          <Card
+            style={
+              s.id === 'start'
+                ? { backgroundColor: colors.primaryContainer, borderColor: colors.primaryContainer }
+                : undefined
+            }
+          >
             {s.entries.map((e, i) => {
               const expanded = open.has(e.id) || !!q;
               return (

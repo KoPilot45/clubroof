@@ -61,14 +61,19 @@ Besonderheiten:
 
 ### Primärfarb-Flächen: Stellen
 
-Umgesetzt: Kassenstand (Team › Kasse), Profilkarte (Mehr), Spiel-Anzeigetafel (Termin), Mitglieder-Band (Verwaltung,
-`primaryContainer`), Saldo „Mein Konto“ (Aktions-/Erfolgsfläche), leere Zustände und Willkommens-Tour
-(`primaryContainer`).
+Umgesetzt (Stand 10.10.2026):
 
-Noch offen: Home „Nächstes Spiel“ mit Countdown und Zusage; Termine: erster Termin unter „Als nächstes“; Team:
-Kopfband der Mannschaft („9 von 21 zugesagt“, Bilanz); Kassenverwaltung: Zahlungsmeldungen mit Zähler; Profil und
-Statistik: Kennzahlen (Tore, Vorlagen, Trainingsquote) als Zahlenkacheln; Verein: dringende News als Warnfläche und die
-nächste Veranstaltung; Hilfe: „Erste Schritte“; später in der Verwaltung der Plan-Balken.
+- Home: „Nächstes Spiel“ mit Countdown als Kopfbereich in der Vereinsfarbe, darunter die Zu-/Absage.
+- Termine: der erste Termin unter „Als Nächstes“.
+- Team: Kopfband mit „zugesagt“, Bilanz und Trainingsquote.
+- Team › Kasse: Kassenstand; „Mein Konto“ als Saldo-Fläche (offen = Aktion, Guthaben = erfolgreich).
+- Kassenverwaltung: Zahlungsmeldungen als Aktionsfläche.
+- Mehr: Profilkarte. Profil: Saison-Statistik als Zahlenkacheln (`primaryContainer`).
+- Verein: nächster Vereinstermin; dringende News als Warnfläche (mit Beschriftung „Dringend“).
+- Termin: Spiel-Anzeigetafel. Verwaltung: Mitglieder-Band (`primaryContainer`).
+- Hilfe: „Erste Schritte“; leere Zustände und Willkommens-Tour (`primaryContainer`).
+
+Offen: der Plan-Balken in der Verwaltung (kommt mit dem Paket „Pläne & Abo“).
 
 ## Automatische Prüfung
 

@@ -204,22 +204,52 @@ export default function ProfileScreen() {
 
               {p.stats ? (
                 <Section title="Saison-Statistik">
-                  <Card style={{ gap: 12 }}>
+                  <Card
+                    style={{
+                      gap: 12,
+                      backgroundColor: colors.primaryContainer,
+                      borderColor: colors.primaryContainer,
+                    }}
+                  >
                     <View style={{ flexDirection: 'row' }}>
                       <Stat
+                        color={colors.onPrimaryContainer}
+                        labelColor={colors.onPrimaryContainer}
                         value={p.stats.trainingRate === null ? '–' : `${p.stats.trainingRate} %`}
                         label="Trainingsquote"
                       />
                       <Stat
+                        color={colors.onPrimaryContainer}
+                        labelColor={colors.onPrimaryContainer}
                         value={`${p.stats.trainingsAttended}/${p.stats.trainings}`}
                         label="Trainings"
                       />
-                      <Stat value={p.stats.matches} label="Spiele dabei" />
+                      <Stat
+                        color={colors.onPrimaryContainer}
+                        labelColor={colors.onPrimaryContainer}
+                        value={p.stats.matches}
+                        label="Spiele dabei"
+                      />
                     </View>
                     <View style={{ flexDirection: 'row' }}>
-                      <Stat value={p.stats.appearances} label="Einsätze" />
-                      <Stat value={p.stats.goals} label="Tore" />
-                      <Stat value={p.stats.assists} label="Vorlagen" />
+                      <Stat
+                        color={colors.onPrimaryContainer}
+                        labelColor={colors.onPrimaryContainer}
+                        value={p.stats.appearances}
+                        label="Einsätze"
+                      />
+                      <Stat
+                        color={colors.onPrimaryContainer}
+                        labelColor={colors.onPrimaryContainer}
+                        value={p.stats.goals}
+                        label="Tore"
+                      />
+                      <Stat
+                        color={colors.onPrimaryContainer}
+                        labelColor={colors.onPrimaryContainer}
+                        value={p.stats.assists}
+                        label="Vorlagen"
+                      />
                     </View>
                     {p.stats.byTeam.map((t) => {
                       const rate = t.trainings

@@ -19,11 +19,13 @@ import {
 import { formatAgo, formatEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTileInfo, withTileInfo } from '@/lib/tile-info';
+import { useTheme } from '@/lib/theme';
 
 /** Kassenverwaltung für Kassenwart und Trainerteam: alle Funktionen als Kacheln. */
 export default function CashAdminScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
+  const { colors } = useTheme();
   const cash = useCash(id);
   const decide = useCashAction(id);
   const tileInfo = useTileInfo('cash', id);
@@ -136,7 +138,12 @@ export default function CashAdminScreen() {
 
       {full && pending.length ? (
         <Section title={`Zahlungsmeldungen (${pending.length})`}>
-          <Card>
+          <Card
+            style={{
+              backgroundColor: colors.status.action.container,
+              borderColor: colors.status.action.container,
+            }}
+          >
             {pending.map((n, i) => (
               <View key={n.id} style={{ gap: 8, paddingBottom: 10 }}>
                 <ListRow

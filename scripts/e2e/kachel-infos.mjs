@@ -47,7 +47,7 @@ await admin.goto(`/teams/${teamId}/cash-admin`);
 await admin.page.waitForTimeout(3000);
 const k = await body(admin.page);
 ok(
-  /Zahlungsmeldungen|Offen gesamt|Bezahlinfos fehlen/.test(k),
+  /Zahlungsmeldung|Offen gesamt|Bezahlinfos fehlen/.test(k),
   'Kassenverwaltung zeigt Hinweise an den Kacheln',
 );
 

@@ -9,7 +9,6 @@ import {
   Button,
   Card,
   Empty,
-  IconTile,
   Loading,
   Screen,
   Section,
@@ -21,9 +20,12 @@ import { formatLongDate, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { useTileInfo, withTileInfo } from '@/lib/tile-info';
+import { useTheme } from '@/lib/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ClubScreen() {
   const { api, me } = useSignedIn();
+  const { colors } = useTheme();
   const tileInfo = useTileInfo('club');
   const has = (module: string) => me.clubModules.includes(module);
   const news = useQuery({ queryKey: ['news'], queryFn: () => api<NewsItem[]>('/news') });
@@ -203,13 +205,28 @@ export default function ClubScreen() {
       }}
     >
       {highlight ? (
-        <Card style={{ gap: 10 }}>
-          <T variant="overline">Nächster Vereinstermin</T>
+        <Card style={{ gap: 10, backgroundColor: colors.primary, borderColor: colors.primary }}>
+          <T variant="overline" color={colors.onPrimary}>
+            Nächster Vereinstermin
+          </T>
           <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-            <IconTile name="calendar" filled />
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: colors.surface,
+              }}
+            >
+              <Ionicons name="calendar" size={22} color={colors.primaryText} />
+            </View>
             <View style={{ flex: 1, gap: 2 }}>
-              <T variant="title">{highlight.title}</T>
-              <T variant="caption">
+              <T variant="title" color={colors.onPrimary}>
+                {highlight.title}
+              </T>
+              <T variant="caption" color={colors.onPrimary}>
                 {EVENT_TYPE_LABELS[highlight.type]} · {formatLongDate(highlight.startsAt)},{' '}
                 {formatTime(highlight.startsAt)} Uhr
                 {highlight.location ? ` · ${highlight.location}` : ''}
@@ -218,7 +235,7 @@ export default function ClubScreen() {
           </View>
           <Button
             label="Mehr erfahren"
-            variant="outline"
+            variant="tonal"
             onPress={() => router.push(`/events/${highlight.id}`)}
           />
         </Card>

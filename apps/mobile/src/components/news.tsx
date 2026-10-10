@@ -31,10 +31,26 @@ export function NewsCard({ item }: { item: NewsItem }) {
   const { colors } = useTheme();
   return (
     <Pressable onPress={() => router.push(`/news/${item.id}`)} accessibilityRole="button">
-      <Card style={{ gap: 8 }}>
+      <Card
+        style={{
+          gap: 8,
+          // Dringende News als Warnfläche (immer mit der Beschriftung „Dringend“ in der Kopfzeile)
+          ...(item.priority === 'urgent'
+            ? {
+                backgroundColor: colors.status.urgent.container,
+                borderColor: colors.status.urgent.solid,
+              }
+            : {}),
+        }}
+      >
         <NewsSource item={item} />
         <T variant="heading">{item.title}</T>
-        <T color={colors.onSurfaceMuted} numberOfLines={2}>
+        <T
+          color={
+            item.priority === 'urgent' ? colors.status.urgent.onContainer : colors.onSurfaceMuted
+          }
+          numberOfLines={2}
+        >
           {item.teaser ?? item.body}
         </T>
         <T variant="caption">

@@ -59,6 +59,56 @@ export function AttendanceChip({ status }: { status: AttendanceStatus }) {
   return <Chip tone={STATUS_TONE[status]} label={ATTENDANCE_LABELS[status]} />;
 }
 
+/** Hervorgehobener nächster Termin auf der Vereinsfarbe (Termine › „Als Nächstes“). */
+export function FeaturedEventCard({ event }: { event: EventSummary }) {
+  const { colors, radii } = useTheme();
+  const on = colors.onPrimary;
+  const mine = event.myResponses[0];
+  const cancelled = event.status === 'cancelled';
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => router.push(`/events/${event.id}`)}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 14,
+        padding: 16,
+        borderRadius: radii.lg,
+        backgroundColor: colors.primary,
+      }}
+    >
+      <View style={{ alignItems: 'center', minWidth: 64 }}>
+        <T variant="caption" color={on}>
+          {formatDay(event.startsAt)}
+        </T>
+        <T variant="figure" color={on} style={{ fontSize: 30 }}>
+          {formatTime(event.startsAt)}
+        </T>
+      </View>
+      <View style={{ flex: 1, gap: 4 }}>
+        <T variant="heading" color={on} numberOfLines={2}>
+          {event.title}
+        </T>
+        {event.location ? (
+          <T variant="caption" color={on} numberOfLines={1}>
+            {event.location}
+          </T>
+        ) : null}
+        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          {event.team ? <TeamBadge badge={event.team.badge} /> : null}
+          {cancelled ? (
+            <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+          ) : mine ? (
+            <AttendanceChip status={mine.status} />
+          ) : null}
+        </View>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={on} />
+    </Pressable>
+  );
+}
+
 /** Zeile in einer Terminliste. */
 export function EventRow({
   event,
@@ -344,76 +394,91 @@ export function NextMatchCard({
   const opponent = event.match?.opponentName ?? null;
   const ourName = `${clubShortName}${event.team ? ` ${event.team.badge}` : ''}`;
 
+  const on = colors.onPrimary;
   return (
-    <Card style={{ gap: 12 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <T variant="overline">
-          {event.type === 'tournament' ? 'Nächstes Spielfest' : 'Nächstes Spiel'}
-          {event.team ? ` · ${event.team.badge}` : ''}
-        </T>
-        <Chip tone="primary" label={isHome ? 'Heimspiel' : 'Auswärts'} />
-      </View>
-
-      <Pressable onPress={() => router.push(`/events/${event.id}`)} accessibilityRole="button">
-        {opponent ? (
-          <View
-            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' }}
-          >
-            <View style={{ alignItems: 'center', gap: 6, flex: 1 }}>
-              <Crest initials={clubInitials(clubShortName)} size={42} />
-              <T variant="section" style={{ textAlign: 'center', fontSize: 16 }}>
-                {ourName}
-              </T>
-            </View>
-            <T variant="heading" color={colors.onSurfaceMuted}>
-              vs.
-            </T>
-            <View style={{ alignItems: 'center', gap: 6, flex: 1 }}>
-              <View
-                style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 21,
-                  backgroundColor: colors.surfaceVariant,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Ionicons name="shield-outline" size={20} color={colors.onSurfaceMuted} />
-              </View>
-              <T variant="section" style={{ textAlign: 'center', fontSize: 16 }}>
-                {opponent}
-              </T>
-            </View>
-          </View>
-        ) : (
-          <T variant="section" style={{ textAlign: 'center', fontSize: 20 }}>
-            {event.title}
+    <Card style={{ padding: 0, overflow: 'hidden' }}>
+      {/* Blickfang des Bildschirms: Spiel, Gegner und Countdown auf der Vereinsfarbe */}
+      <View style={{ gap: 12, padding: 16, backgroundColor: colors.primary }}>
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+        >
+          <T variant="overline" color={on}>
+            {event.type === 'tournament' ? 'Nächstes Spielfest' : 'Nächstes Spiel'}
+            {event.team ? ` · ${event.team.badge}` : ''}
           </T>
-        )}
-      </Pressable>
-
-      <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
-        <CountdownBox value={left.days} unit="Tage" />
-        <CountdownBox value={left.hours} unit="Std." />
-        <CountdownBox value={left.minutes} unit="Min." />
-      </View>
-      <T variant="caption" style={{ textAlign: 'center' }}>
-        {formatLongDate(event.startsAt)} · {formatTime(event.startsAt)} Uhr
-        {event.location ? ` · ${event.location}` : ''}
-      </T>
-      {event.deadline && new Date(event.deadline) > new Date() ? (
-        <View style={{ alignItems: 'center' }}>
-          <Chip
-            tone="action"
-            icon="hourglass-outline"
-            label={`Absagefrist: ${formatRemaining(event.deadline)}`}
-          />
+          <Chip tone="neutral" label={isHome ? 'Heimspiel' : 'Auswärts'} />
         </View>
-      ) : null}
-      <ResponseControls event={event} />
+
+        <Pressable onPress={() => router.push(`/events/${event.id}`)} accessibilityRole="button">
+          {opponent ? (
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' }}
+            >
+              <View style={{ alignItems: 'center', gap: 6, flex: 1 }}>
+                <View
+                  style={{
+                    padding: 5,
+                    borderRadius: 24,
+                    backgroundColor: colors.surface,
+                  }}
+                >
+                  <Crest initials={clubInitials(clubShortName)} size={36} />
+                </View>
+                <T variant="section" color={on} style={{ textAlign: 'center', fontSize: 16 }}>
+                  {ourName}
+                </T>
+              </View>
+              <T variant="heading" color={on}>
+                vs.
+              </T>
+              <View style={{ alignItems: 'center', gap: 6, flex: 1 }}>
+                <View
+                  style={{
+                    width: 46,
+                    height: 46,
+                    borderRadius: 23,
+                    backgroundColor: colors.surface,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Ionicons name="shield-outline" size={22} color={colors.onSurfaceMuted} />
+                </View>
+                <T variant="section" color={on} style={{ textAlign: 'center', fontSize: 16 }}>
+                  {opponent}
+                </T>
+              </View>
+            </View>
+          ) : (
+            <T variant="section" color={on} style={{ textAlign: 'center', fontSize: 20 }}>
+              {event.title}
+            </T>
+          )}
+        </Pressable>
+
+        <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
+          <CountdownBox value={left.days} unit="Tage" />
+          <CountdownBox value={left.hours} unit="Std." />
+          <CountdownBox value={left.minutes} unit="Min." />
+        </View>
+        <T variant="caption" color={on} style={{ textAlign: 'center' }}>
+          {formatLongDate(event.startsAt)} · {formatTime(event.startsAt)} Uhr
+          {event.location ? ` · ${event.location}` : ''}
+        </T>
+      </View>
+
+      <View style={{ gap: 12, padding: 16 }}>
+        {event.deadline && new Date(event.deadline) > new Date() ? (
+          <View style={{ alignItems: 'center' }}>
+            <Chip
+              tone="action"
+              icon="hourglass-outline"
+              label={`Absagefrist: ${formatRemaining(event.deadline)}`}
+            />
+          </View>
+        ) : null}
+        <ResponseControls event={event} />
+      </View>
     </Card>
   );
 }
