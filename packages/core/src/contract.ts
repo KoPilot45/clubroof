@@ -128,6 +128,8 @@ export type EventSummary = {
   meetingAt: string | null;
   meetingPoint: string | null;
   location: string | null;
+  /** Link für „Route“ (Karten-App); nur bei Spielorten außerhalb der eigenen Anlage */
+  routeUrl: string | null;
   cancelledReason: string | null;
   team: { id: string; name: string; badge: string } | null;
   match: {
@@ -198,7 +200,12 @@ export type EventDetail = EventSummary & {
   /** Letzte Änderung (alt → neu), solange sie noch relevant ist */
   lastChange: { at: string; items: EventChange[] } | null;
   /** Für das Bearbeiten (nur mit Recht gefüllt) */
-  edit: { facilityId: string | null; locationText: string | null; seriesFollowing: number } | null;
+  edit: {
+    facilityId: string | null;
+    locationText: string | null;
+    locationUrl: string | null;
+    seriesFollowing: number;
+  } | null;
 };
 
 export type CarpoolOffer = {
@@ -662,6 +669,8 @@ export type CreateEventInput = {
   meetingPoint?: string | null;
   facilityId?: string | null;
   locationText?: string | null;
+  /** Maps-Link oder Koordinaten („50.1234, 8.5678“) */
+  locationUrl?: string | null;
   description?: string | null;
   opponentName?: string | null;
   isHome?: boolean | null;
@@ -679,6 +688,7 @@ export type UpdateEventInput = {
   meetingPoint?: string | null;
   facilityId?: string | null;
   locationText?: string | null;
+  locationUrl?: string | null;
   description?: string | null;
   opponentName?: string;
   isHome?: boolean;
@@ -1611,6 +1621,7 @@ export type CreateClubEventInput = {
   orgUnitId?: string | null;
   facilityId?: string | null;
   locationText?: string | null;
+  locationUrl?: string | null;
   program?: { time: string; title: string }[];
   shifts?: { title: string; startsAt: string; endsAt: string; capacity: number }[];
   allowConflict?: boolean;

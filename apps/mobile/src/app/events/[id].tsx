@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 import { AttendanceChip, ResponseControls, useRespond } from '@/components/events';
 import { ShiftRow } from '@/components/helpers';
 import { RequestError } from '@/lib/api';
@@ -550,6 +550,17 @@ export default function EventScreen() {
                 leading={<IconTile name="location-outline" />}
                 title={e.location}
                 subtitle={e.match?.competition ?? undefined}
+                trailing={
+                  e.routeUrl ? (
+                    <Button
+                      label="Route"
+                      icon="navigate-outline"
+                      size="sm"
+                      variant="tonal"
+                      onPress={() => void Linking.openURL(e.routeUrl!)}
+                    />
+                  ) : undefined
+                }
               />
             ) : null}
             {e.contactPerson ? (

@@ -51,6 +51,8 @@ export const events = pgTable(
     /** Zugeteilte Kabine (Modul „Anlage & Material“) */
     changingRoomId: uuid().references(() => facilities.id, { onDelete: 'set null' }),
     locationText: text(),
+    /** Maps-Link oder Koordinaten des Spielorts (für den Button „Route“) */
+    locationUrl: text(),
     /** Gruppiert Serientermine (z. B. wöchentliches Training). */
     seriesId: uuid(),
     imageUrl: text(),

@@ -838,7 +838,7 @@ export function TextField({
   maxLength?: number;
   multiline?: boolean;
   /** Steuert Tastatur, Autovervollständigung und verdeckte Eingabe */
-  kind?: 'text' | 'email' | 'password' | 'newPassword' | 'code';
+  kind?: 'text' | 'email' | 'password' | 'newPassword' | 'code' | 'url';
   onSubmit?: () => void;
 }) {
   const { colors, radii } = useTheme();
@@ -863,7 +863,13 @@ export function TextField({
         autoCapitalize={kind === 'text' ? 'sentences' : 'none'}
         autoCorrect={kind === 'text'}
         keyboardType={
-          kind === 'email' ? 'email-address' : kind === 'code' ? 'number-pad' : 'default'
+          kind === 'email'
+            ? 'email-address'
+            : kind === 'code'
+              ? 'number-pad'
+              : kind === 'url'
+                ? 'url'
+                : 'default'
         }
         autoComplete={
           kind === 'email'

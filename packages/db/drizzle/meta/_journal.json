@@ -204,6 +204,13 @@
       "when": 1791324944601,
       "tag": "0028_user_language",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1791625970314,
+      "tag": "0029_event_location_url",
+      "breakpoints": true
     }
   ]
 }

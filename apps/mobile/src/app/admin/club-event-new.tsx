@@ -20,6 +20,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { t } from '@/lib/i18n';
+import { MapLinkField } from '@/components/map-link-field';
 
 const TYPES: { value: ClubEventType; label: string }[] = [
   { value: 'club_event', label: 'Veranstaltung' },
@@ -46,6 +47,7 @@ export default function NewClubEventScreen() {
   const [scope, setScope] = useState<string>('club');
   const [place, setPlace] = useState<string>('text');
   const [locationText, setLocationText] = useState('');
+  const [locationUrl, setLocationUrl] = useState('');
   const [program, setProgram] = useState<{ time: string; title: string }[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [conflict, setConflict] = useState<string | null>(null);
@@ -62,6 +64,7 @@ export default function NewClubEventScreen() {
         orgUnitId: scope === 'club' ? null : scope,
         facilityId: place === 'text' ? null : place,
         locationText: place === 'text' ? locationText.trim() || null : null,
+        locationUrl: place === 'text' ? locationUrl.trim() || null : null,
         program: program.filter((p) => p.title.trim()),
         shifts: shifts
           .filter((x) => x.title.trim())
@@ -153,6 +156,7 @@ export default function NewClubEventScreen() {
             placeholder={t('z. B. Vereinsheim')}
           />
         ) : null}
+        {place === 'text' ? <MapLinkField value={locationUrl} onChange={setLocationUrl} /> : null}
       </Card>
 
       <Section title="Ablaufplan (optional)">

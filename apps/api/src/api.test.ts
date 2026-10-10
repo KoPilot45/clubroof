@@ -4427,6 +4427,83 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Spielort und Route', () => {
+    it('Link oder Koordinaten ergeben „Route“; ungültige Links werden abgelehnt', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const startsAt = new Date(NOW.getTime() + 60 * 24 * 3600_000).toISOString();
+      const create = (extra: Record<string, unknown>) =>
+        send<EventDetail>('POST', `/teams/${b1.id}/events`, coach.token, {
+          type: 'match',
+          startsAt,
+          opponentName: 'FC Route',
+          isHome: false,
+          ...extra,
+        });
+
+      // Nur Adresse: „Route“ nutzt die Adresse
+      const byAddress = await create({ locationText: 'Sportplatz Blauen, Am Anger 3' });
+      expect(byAddress.status).toBe(201);
+      expect(byAddress.body.routeUrl).toContain('google.com/maps/dir/?api=1&destination=');
+      expect(byAddress.body.routeUrl).toContain(
+        encodeURIComponent('Sportplatz Blauen, Am Anger 3'),
+      );
+
+      // Koordinaten
+      const byCoords = await create({ locationText: 'Feldweg', locationUrl: '50.1234, 8.5678' });
+      expect(byCoords.body.routeUrl).toContain(encodeURIComponent('50.1234,8.5678'));
+
+      // Geteilter Maps-Link wird unverändert übernommen, auch für Mitglieder sichtbar
+      const link = 'https://maps.app.goo.gl/abc123XYZ';
+      const byLink = await create({ locationText: 'Sportplatz', locationUrl: link });
+      expect(byLink.body.routeUrl).toBe(link);
+      expect((await get<EventDetail>(`/events/${byLink.body.id}`, player.token)).routeUrl).toBe(
+        link,
+      );
+      expect(byLink.body.edit?.locationUrl).toBe(link);
+
+      // Ungültig: fremde Seite, http, Skript, Koordinaten außerhalb
+      for (const bad of [
+        'https://evil.example/maps',
+        'http://maps.google.com/x',
+        'javascript:alert(1)',
+        '95.0, 8.0',
+      ]) {
+        const res = await create({ locationText: 'X', locationUrl: bad });
+        expect(res.status, bad).toBe(400);
+        expect(res.body).toMatchObject({ error: 'invalid_location_url' });
+      }
+
+      // Bearbeiten: Link ändern und entfernen
+      const changed = await send<EventDetail>(
+        'PATCH',
+        `/events/${byAddress.body.id}`,
+        coach.token,
+        {
+          locationUrl: 'https://www.google.com/maps/place/Sportplatz',
+        },
+      );
+      expect(changed.body.routeUrl).toBe('https://www.google.com/maps/place/Sportplatz');
+      const cleared = await send<EventDetail>(
+        'PATCH',
+        `/events/${byAddress.body.id}`,
+        coach.token,
+        {
+          locationUrl: null,
+        },
+      );
+      expect(cleared.body.routeUrl).toContain('destination=');
+
+      // Ohne Ort keine Route
+      const none = await create({});
+      expect(none.body.routeUrl).toBeNull();
+
+      for (const e of [byAddress, byCoords, byLink, none])
+        await send('POST', `/events/${e.body.id}/cancel`, coach.token, { reason: 'Test' });
+    });
+  });
+
   describe('Kachel-Infos', () => {
     it('zeigt Hinweise je Rolle und nur, was die Person sehen darf', async () => {
       const coach = await login('trainer');

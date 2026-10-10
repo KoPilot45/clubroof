@@ -16,6 +16,7 @@ import { RequestError } from '@/lib/api';
 import { todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { t } from '@/lib/i18n';
+import { MapLinkField } from '@/components/map-link-field';
 
 type Type = 'training' | 'match' | 'team_event';
 
@@ -42,6 +43,7 @@ export default function NewEventScreen() {
   const [meetingBefore, setMeetingBefore] = useState('15');
   const [placeChoice, setPlace] = useState<string | null>(null);
   const [locationText, setLocationText] = useState('');
+  const [locationUrl, setLocationUrl] = useState('');
   const [opponent, setOpponent] = useState('');
   const [home, setHome] = useState<'home' | 'away'>('home');
   const [title, setTitle] = useState('');
@@ -71,6 +73,7 @@ export default function NewEventScreen() {
           meetingPoint: meetingAt ? meetingPoint.trim() || null : null,
           facilityId: !isAway && place !== 'other' ? place : null,
           locationText: isAway || place === 'other' ? locationText.trim() || null : null,
+          locationUrl: isAway || place === 'other' ? locationUrl.trim() || null : null,
           description: description.trim() || null,
           opponentName: type === 'match' ? opponent.trim() : null,
           isHome: type === 'match' ? home === 'home' : null,
@@ -216,6 +219,9 @@ export default function NewEventScreen() {
             placeholder={isAway ? 'z. B. Sportplatz Blauen' : 'z. B. Stadtpark'}
             maxLength={160}
           />
+        ) : null}
+        {isAway || place === 'other' ? (
+          <MapLinkField value={locationUrl} onChange={setLocationUrl} />
         ) : null}
         <TextField
           label="Info für die Mannschaft (optional)"

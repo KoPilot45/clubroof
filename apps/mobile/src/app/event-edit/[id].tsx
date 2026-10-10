@@ -23,6 +23,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { dateFormat } from '@/lib/i18n';
+import { MapLinkField } from '@/components/map-link-field';
 
 const isoDayIn = (d: Date, tz: string) =>
   new Intl.DateTimeFormat('en-CA', {
@@ -74,6 +75,7 @@ function Form({ event, facilities }: { event: EventDetail; facilities: Facility[
   const [meetingPoint, setMeetingPoint] = useState(event.meetingPoint ?? '');
   const [place, setPlace] = useState(event.edit?.facilityId ?? 'other');
   const [locationText, setLocationText] = useState(event.edit?.locationText ?? '');
+  const [locationUrl, setLocationUrl] = useState(event.edit?.locationUrl ?? '');
   const [description, setDescription] = useState(event.description ?? '');
   const [title, setTitle] = useState(event.title);
   const [opponent, setOpponent] = useState(event.match?.opponentName ?? '');
@@ -102,6 +104,7 @@ function Form({ event, facilities }: { event: EventDetail; facilities: Facility[
         meetingPoint: meetingPoint.trim() || null,
         facilityId: !isAway && place !== 'other' ? place : null,
         locationText: isAway || place === 'other' ? locationText.trim() || null : null,
+        locationUrl: isAway || place === 'other' ? locationUrl.trim() || null : null,
         description: description.trim() || null,
         scope,
         allowConflict,
@@ -192,6 +195,9 @@ function Form({ event, facilities }: { event: EventDetail; facilities: Facility[
             onChangeText={setLocationText}
             maxLength={160}
           />
+        ) : null}
+        {isAway || place === 'other' ? (
+          <MapLinkField value={locationUrl} onChange={setLocationUrl} />
         ) : null}
         <TextField
           label="Info für die Mannschaft"

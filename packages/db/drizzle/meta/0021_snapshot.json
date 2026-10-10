@@ -147,52 +147,36 @@
         "invitations_club_id_clubs_id_fk": {
           "name": "invitations_club_id_clubs_id_fk",
           "tableFrom": "invitations",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "invitations_person_id_persons_id_fk": {
           "name": "invitations_person_id_persons_id_fk",
           "tableFrom": "invitations",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "invitations_team_id_teams_id_fk": {
           "name": "invitations_team_id_teams_id_fk",
           "tableFrom": "invitations",
-          "columnsFrom": [
-            "team_id"
-          ],
+          "columnsFrom": ["team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "invitations_created_by_person_id_persons_id_fk": {
           "name": "invitations_created_by_person_id_persons_id_fk",
           "tableFrom": "invitations",
-          "columnsFrom": [
-            "created_by_person_id"
-          ],
+          "columnsFrom": ["created_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -201,9 +185,7 @@
       "uniqueConstraints": {
         "invitations_tokenHash_unique": {
           "name": "invitations_tokenHash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         }
       },
@@ -348,52 +330,36 @@
         "join_requests_club_id_clubs_id_fk": {
           "name": "join_requests_club_id_clubs_id_fk",
           "tableFrom": "join_requests",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "join_requests_invitation_id_invitations_id_fk": {
           "name": "join_requests_invitation_id_invitations_id_fk",
           "tableFrom": "join_requests",
-          "columnsFrom": [
-            "invitation_id"
-          ],
+          "columnsFrom": ["invitation_id"],
           "tableTo": "invitations",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "join_requests_user_id_users_id_fk": {
           "name": "join_requests_user_id_users_id_fk",
           "tableFrom": "join_requests",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "join_requests_decided_by_person_id_persons_id_fk": {
           "name": "join_requests_decided_by_person_id_persons_id_fk",
           "tableFrom": "join_requests",
-          "columnsFrom": [
-            "decided_by_person_id"
-          ],
+          "columnsFrom": ["decided_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -505,13 +471,9 @@
         "module_settings_club_id_clubs_id_fk": {
           "name": "module_settings_club_id_clubs_id_fk",
           "tableFrom": "module_settings",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -520,12 +482,7 @@
       "uniqueConstraints": {
         "module_settings_clubId_scopeType_scopeId_moduleKey_unique": {
           "name": "module_settings_clubId_scopeType_scopeId_moduleKey_unique",
-          "columns": [
-            "club_id",
-            "scope_type",
-            "scope_id",
-            "module_key"
-          ],
+          "columns": ["club_id", "scope_type", "scope_id", "module_key"],
           "nullsNotDistinct": true
         }
       },
@@ -619,39 +576,27 @@
         "role_assignments_club_id_clubs_id_fk": {
           "name": "role_assignments_club_id_clubs_id_fk",
           "tableFrom": "role_assignments",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "role_assignments_person_id_persons_id_fk": {
           "name": "role_assignments_person_id_persons_id_fk",
           "tableFrom": "role_assignments",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "role_assignments_role_id_roles_id_fk": {
           "name": "role_assignments_role_id_roles_id_fk",
           "tableFrom": "role_assignments",
-          "columnsFrom": [
-            "role_id"
-          ],
+          "columnsFrom": ["role_id"],
           "tableTo": "roles",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -723,13 +668,9 @@
         "roles_club_id_clubs_id_fk": {
           "name": "roles_club_id_clubs_id_fk",
           "tableFrom": "roles",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -738,10 +679,7 @@
       "uniqueConstraints": {
         "roles_clubId_key_unique": {
           "name": "roles_clubId_key_unique",
-          "columns": [
-            "club_id",
-            "key"
-          ],
+          "columns": ["club_id", "key"],
           "nullsNotDistinct": false
         }
       },
@@ -877,9 +815,7 @@
       "uniqueConstraints": {
         "clubs_slug_unique": {
           "name": "clubs_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "nullsNotDistinct": false
         }
       },
@@ -958,13 +894,9 @@
         "facilities_club_id_clubs_id_fk": {
           "name": "facilities_club_id_clubs_id_fk",
           "tableFrom": "facilities",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1066,26 +998,18 @@
         "facility_blocks_club_id_clubs_id_fk": {
           "name": "facility_blocks_club_id_clubs_id_fk",
           "tableFrom": "facility_blocks",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "facility_blocks_facility_id_facilities_id_fk": {
           "name": "facility_blocks_facility_id_facilities_id_fk",
           "tableFrom": "facility_blocks",
-          "columnsFrom": [
-            "facility_id"
-          ],
+          "columnsFrom": ["facility_id"],
           "tableTo": "facilities",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1168,26 +1092,18 @@
         "org_units_club_id_clubs_id_fk": {
           "name": "org_units_club_id_clubs_id_fk",
           "tableFrom": "org_units",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "org_units_parent_id_org_units_id_fk": {
           "name": "org_units_parent_id_org_units_id_fk",
           "tableFrom": "org_units",
-          "columnsFrom": [
-            "parent_id"
-          ],
+          "columnsFrom": ["parent_id"],
           "tableTo": "org_units",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1262,13 +1178,9 @@
         "seasons_club_id_clubs_id_fk": {
           "name": "seasons_club_id_clubs_id_fk",
           "tableFrom": "seasons",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1308,26 +1220,18 @@
         "announcement_likes_announcement_id_announcements_id_fk": {
           "name": "announcement_likes_announcement_id_announcements_id_fk",
           "tableFrom": "announcement_likes",
-          "columnsFrom": [
-            "announcement_id"
-          ],
+          "columnsFrom": ["announcement_id"],
           "tableTo": "announcements",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "announcement_likes_user_id_users_id_fk": {
           "name": "announcement_likes_user_id_users_id_fk",
           "tableFrom": "announcement_likes",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1335,10 +1239,7 @@
       "compositePrimaryKeys": {
         "announcement_likes_announcement_id_user_id_pk": {
           "name": "announcement_likes_announcement_id_user_id_pk",
-          "columns": [
-            "announcement_id",
-            "user_id"
-          ]
+          "columns": ["announcement_id", "user_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1375,26 +1276,18 @@
         "announcement_reads_announcement_id_announcements_id_fk": {
           "name": "announcement_reads_announcement_id_announcements_id_fk",
           "tableFrom": "announcement_reads",
-          "columnsFrom": [
-            "announcement_id"
-          ],
+          "columnsFrom": ["announcement_id"],
           "tableTo": "announcements",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "announcement_reads_user_id_users_id_fk": {
           "name": "announcement_reads_user_id_users_id_fk",
           "tableFrom": "announcement_reads",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1402,10 +1295,7 @@
       "compositePrimaryKeys": {
         "announcement_reads_announcement_id_user_id_pk": {
           "name": "announcement_reads_announcement_id_user_id_pk",
-          "columns": [
-            "announcement_id",
-            "user_id"
-          ]
+          "columns": ["announcement_id", "user_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1563,39 +1453,27 @@
         "announcements_club_id_clubs_id_fk": {
           "name": "announcements_club_id_clubs_id_fk",
           "tableFrom": "announcements",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "announcements_author_person_id_persons_id_fk": {
           "name": "announcements_author_person_id_persons_id_fk",
           "tableFrom": "announcements",
-          "columnsFrom": [
-            "author_person_id"
-          ],
+          "columnsFrom": ["author_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "announcements_reviewed_by_person_id_persons_id_fk": {
           "name": "announcements_reviewed_by_person_id_persons_id_fk",
           "tableFrom": "announcements",
-          "columnsFrom": [
-            "reviewed_by_person_id"
-          ],
+          "columnsFrom": ["reviewed_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -1718,39 +1596,27 @@
         "board_items_club_id_clubs_id_fk": {
           "name": "board_items_club_id_clubs_id_fk",
           "tableFrom": "board_items",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "board_items_author_person_id_persons_id_fk": {
           "name": "board_items_author_person_id_persons_id_fk",
           "tableFrom": "board_items",
-          "columnsFrom": [
-            "author_person_id"
-          ],
+          "columnsFrom": ["author_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "board_items_author_user_id_users_id_fk": {
           "name": "board_items_author_user_id_users_id_fk",
           "tableFrom": "board_items",
-          "columnsFrom": [
-            "author_user_id"
-          ],
+          "columnsFrom": ["author_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -1808,26 +1674,18 @@
         "calendar_feeds_user_id_users_id_fk": {
           "name": "calendar_feeds_user_id_users_id_fk",
           "tableFrom": "calendar_feeds",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "calendar_feeds_club_id_clubs_id_fk": {
           "name": "calendar_feeds_club_id_clubs_id_fk",
           "tableFrom": "calendar_feeds",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -1836,9 +1694,7 @@
       "uniqueConstraints": {
         "calendar_feeds_tokenHash_unique": {
           "name": "calendar_feeds_tokenHash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         }
       },
@@ -1934,39 +1790,27 @@
         "comments_club_id_clubs_id_fk": {
           "name": "comments_club_id_clubs_id_fk",
           "tableFrom": "comments",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "comments_author_person_id_persons_id_fk": {
           "name": "comments_author_person_id_persons_id_fk",
           "tableFrom": "comments",
-          "columnsFrom": [
-            "author_person_id"
-          ],
+          "columnsFrom": ["author_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "comments_author_user_id_users_id_fk": {
           "name": "comments_author_user_id_users_id_fk",
           "tableFrom": "comments",
-          "columnsFrom": [
-            "author_user_id"
-          ],
+          "columnsFrom": ["author_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -2071,65 +1915,45 @@
         "forum_posts_club_id_clubs_id_fk": {
           "name": "forum_posts_club_id_clubs_id_fk",
           "tableFrom": "forum_posts",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "forum_posts_topic_id_forum_topics_id_fk": {
           "name": "forum_posts_topic_id_forum_topics_id_fk",
           "tableFrom": "forum_posts",
-          "columnsFrom": [
-            "topic_id"
-          ],
+          "columnsFrom": ["topic_id"],
           "tableTo": "forum_topics",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "forum_posts_author_person_id_persons_id_fk": {
           "name": "forum_posts_author_person_id_persons_id_fk",
           "tableFrom": "forum_posts",
-          "columnsFrom": [
-            "author_person_id"
-          ],
+          "columnsFrom": ["author_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "forum_posts_author_user_id_users_id_fk": {
           "name": "forum_posts_author_user_id_users_id_fk",
           "tableFrom": "forum_posts",
-          "columnsFrom": [
-            "author_user_id"
-          ],
+          "columnsFrom": ["author_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "forum_posts_hidden_by_person_id_persons_id_fk": {
           "name": "forum_posts_hidden_by_person_id_persons_id_fk",
           "tableFrom": "forum_posts",
-          "columnsFrom": [
-            "hidden_by_person_id"
-          ],
+          "columnsFrom": ["hidden_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -2229,26 +2053,18 @@
         "forum_topics_club_id_clubs_id_fk": {
           "name": "forum_topics_club_id_clubs_id_fk",
           "tableFrom": "forum_topics",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "forum_topics_author_person_id_persons_id_fk": {
           "name": "forum_topics_author_person_id_persons_id_fk",
           "tableFrom": "forum_topics",
-          "columnsFrom": [
-            "author_person_id"
-          ],
+          "columnsFrom": ["author_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -2330,26 +2146,18 @@
         "notification_preferences_user_id_users_id_fk": {
           "name": "notification_preferences_user_id_users_id_fk",
           "tableFrom": "notification_preferences",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "notification_preferences_club_id_clubs_id_fk": {
           "name": "notification_preferences_club_id_clubs_id_fk",
           "tableFrom": "notification_preferences",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -2509,26 +2317,18 @@
         "notifications_club_id_clubs_id_fk": {
           "name": "notifications_club_id_clubs_id_fk",
           "tableFrom": "notifications",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "notifications_user_id_users_id_fk": {
           "name": "notifications_user_id_users_id_fk",
           "tableFrom": "notifications",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -2575,13 +2375,9 @@
         "poll_options_poll_id_polls_id_fk": {
           "name": "poll_options_poll_id_polls_id_fk",
           "tableFrom": "poll_options",
-          "columnsFrom": [
-            "poll_id"
-          ],
+          "columnsFrom": ["poll_id"],
           "tableTo": "polls",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -2627,39 +2423,27 @@
         "poll_votes_poll_id_polls_id_fk": {
           "name": "poll_votes_poll_id_polls_id_fk",
           "tableFrom": "poll_votes",
-          "columnsFrom": [
-            "poll_id"
-          ],
+          "columnsFrom": ["poll_id"],
           "tableTo": "polls",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "poll_votes_option_id_poll_options_id_fk": {
           "name": "poll_votes_option_id_poll_options_id_fk",
           "tableFrom": "poll_votes",
-          "columnsFrom": [
-            "option_id"
-          ],
+          "columnsFrom": ["option_id"],
           "tableTo": "poll_options",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "poll_votes_person_id_persons_id_fk": {
           "name": "poll_votes_person_id_persons_id_fk",
           "tableFrom": "poll_votes",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -2667,10 +2451,7 @@
       "compositePrimaryKeys": {
         "poll_votes_poll_id_person_id_pk": {
           "name": "poll_votes_poll_id_person_id_pk",
-          "columns": [
-            "poll_id",
-            "person_id"
-          ]
+          "columns": ["poll_id", "person_id"]
         }
       },
       "uniqueConstraints": {},
@@ -2769,26 +2550,18 @@
         "polls_club_id_clubs_id_fk": {
           "name": "polls_club_id_clubs_id_fk",
           "tableFrom": "polls",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "polls_created_by_person_id_persons_id_fk": {
           "name": "polls_created_by_person_id_persons_id_fk",
           "tableFrom": "polls",
-          "columnsFrom": [
-            "created_by_person_id"
-          ],
+          "columnsFrom": ["created_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -2870,26 +2643,18 @@
         "push_devices_club_id_clubs_id_fk": {
           "name": "push_devices_club_id_clubs_id_fk",
           "tableFrom": "push_devices",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "push_devices_user_id_users_id_fk": {
           "name": "push_devices_user_id_users_id_fk",
           "tableFrom": "push_devices",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -2898,9 +2663,7 @@
       "uniqueConstraints": {
         "push_devices_token_unique": {
           "name": "push_devices_token_unique",
-          "columns": [
-            "token"
-          ],
+          "columns": ["token"],
           "nullsNotDistinct": false
         }
       },
@@ -3004,39 +2767,27 @@
         "push_outbox_club_id_clubs_id_fk": {
           "name": "push_outbox_club_id_clubs_id_fk",
           "tableFrom": "push_outbox",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "push_outbox_notification_id_notifications_id_fk": {
           "name": "push_outbox_notification_id_notifications_id_fk",
           "tableFrom": "push_outbox",
-          "columnsFrom": [
-            "notification_id"
-          ],
+          "columnsFrom": ["notification_id"],
           "tableTo": "notifications",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "push_outbox_user_id_users_id_fk": {
           "name": "push_outbox_user_id_users_id_fk",
           "tableFrom": "push_outbox",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -3130,26 +2881,18 @@
         "wiki_pages_club_id_clubs_id_fk": {
           "name": "wiki_pages_club_id_clubs_id_fk",
           "tableFrom": "wiki_pages",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "wiki_pages_updated_by_person_id_persons_id_fk": {
           "name": "wiki_pages_updated_by_person_id_persons_id_fk",
           "tableFrom": "wiki_pages",
-          "columnsFrom": [
-            "updated_by_person_id"
-          ],
+          "columnsFrom": ["updated_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -3270,39 +3013,27 @@
         "absences_club_id_clubs_id_fk": {
           "name": "absences_club_id_clubs_id_fk",
           "tableFrom": "absences",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "absences_person_id_persons_id_fk": {
           "name": "absences_person_id_persons_id_fk",
           "tableFrom": "absences",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "absences_created_by_person_id_persons_id_fk": {
           "name": "absences_created_by_person_id_persons_id_fk",
           "tableFrom": "absences",
-          "columnsFrom": [
-            "created_by_person_id"
-          ],
+          "columnsFrom": ["created_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -3443,91 +3174,63 @@
         "event_participants_club_id_clubs_id_fk": {
           "name": "event_participants_club_id_clubs_id_fk",
           "tableFrom": "event_participants",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "event_participants_event_id_events_id_fk": {
           "name": "event_participants_event_id_events_id_fk",
           "tableFrom": "event_participants",
-          "columnsFrom": [
-            "event_id"
-          ],
+          "columnsFrom": ["event_id"],
           "tableTo": "events",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "event_participants_person_id_persons_id_fk": {
           "name": "event_participants_person_id_persons_id_fk",
           "tableFrom": "event_participants",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "event_participants_guest_from_team_id_teams_id_fk": {
           "name": "event_participants_guest_from_team_id_teams_id_fk",
           "tableFrom": "event_participants",
-          "columnsFrom": [
-            "guest_from_team_id"
-          ],
+          "columnsFrom": ["guest_from_team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "event_participants_absence_id_absences_id_fk": {
           "name": "event_participants_absence_id_absences_id_fk",
           "tableFrom": "event_participants",
-          "columnsFrom": [
-            "absence_id"
-          ],
+          "columnsFrom": ["absence_id"],
           "tableTo": "absences",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "event_participants_demand_id_player_demands_id_fk": {
           "name": "event_participants_demand_id_player_demands_id_fk",
           "tableFrom": "event_participants",
-          "columnsFrom": [
-            "demand_id"
-          ],
+          "columnsFrom": ["demand_id"],
           "tableTo": "player_demands",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "event_participants_responded_by_person_id_persons_id_fk": {
           "name": "event_participants_responded_by_person_id_persons_id_fk",
           "tableFrom": "event_participants",
-          "columnsFrom": [
-            "responded_by_person_id"
-          ],
+          "columnsFrom": ["responded_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -3536,10 +3239,7 @@
       "uniqueConstraints": {
         "event_participants_eventId_personId_unique": {
           "name": "event_participants_eventId_personId_unique",
-          "columns": [
-            "event_id",
-            "person_id"
-          ],
+          "columns": ["event_id", "person_id"],
           "nullsNotDistinct": false
         }
       },
@@ -3738,78 +3438,54 @@
         "events_club_id_clubs_id_fk": {
           "name": "events_club_id_clubs_id_fk",
           "tableFrom": "events",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "events_team_id_teams_id_fk": {
           "name": "events_team_id_teams_id_fk",
           "tableFrom": "events",
-          "columnsFrom": [
-            "team_id"
-          ],
+          "columnsFrom": ["team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "events_org_unit_id_org_units_id_fk": {
           "name": "events_org_unit_id_org_units_id_fk",
           "tableFrom": "events",
-          "columnsFrom": [
-            "org_unit_id"
-          ],
+          "columnsFrom": ["org_unit_id"],
           "tableTo": "org_units",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "events_facility_id_facilities_id_fk": {
           "name": "events_facility_id_facilities_id_fk",
           "tableFrom": "events",
-          "columnsFrom": [
-            "facility_id"
-          ],
+          "columnsFrom": ["facility_id"],
           "tableTo": "facilities",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "events_changing_room_id_facilities_id_fk": {
           "name": "events_changing_room_id_facilities_id_fk",
           "tableFrom": "events",
-          "columnsFrom": [
-            "changing_room_id"
-          ],
+          "columnsFrom": ["changing_room_id"],
           "tableTo": "facilities",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "events_contact_person_id_persons_id_fk": {
           "name": "events_contact_person_id_persons_id_fk",
           "tableFrom": "events",
-          "columnsFrom": [
-            "contact_person_id"
-          ],
+          "columnsFrom": ["contact_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -3890,26 +3566,18 @@
         "match_details_event_id_events_id_fk": {
           "name": "match_details_event_id_events_id_fk",
           "tableFrom": "match_details",
-          "columnsFrom": [
-            "event_id"
-          ],
+          "columnsFrom": ["event_id"],
           "tableTo": "events",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "match_details_club_id_clubs_id_fk": {
           "name": "match_details_club_id_clubs_id_fk",
           "tableFrom": "match_details",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -4012,52 +3680,36 @@
         "match_incidents_club_id_clubs_id_fk": {
           "name": "match_incidents_club_id_clubs_id_fk",
           "tableFrom": "match_incidents",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "match_incidents_event_id_events_id_fk": {
           "name": "match_incidents_event_id_events_id_fk",
           "tableFrom": "match_incidents",
-          "columnsFrom": [
-            "event_id"
-          ],
+          "columnsFrom": ["event_id"],
           "tableTo": "events",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "match_incidents_person_id_persons_id_fk": {
           "name": "match_incidents_person_id_persons_id_fk",
           "tableFrom": "match_incidents",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "match_incidents_assist_person_id_persons_id_fk": {
           "name": "match_incidents_assist_person_id_persons_id_fk",
           "tableFrom": "match_incidents",
-          "columnsFrom": [
-            "assist_person_id"
-          ],
+          "columnsFrom": ["assist_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -4145,39 +3797,27 @@
         "match_lineups_club_id_clubs_id_fk": {
           "name": "match_lineups_club_id_clubs_id_fk",
           "tableFrom": "match_lineups",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "match_lineups_event_id_events_id_fk": {
           "name": "match_lineups_event_id_events_id_fk",
           "tableFrom": "match_lineups",
-          "columnsFrom": [
-            "event_id"
-          ],
+          "columnsFrom": ["event_id"],
           "tableTo": "events",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "match_lineups_person_id_persons_id_fk": {
           "name": "match_lineups_person_id_persons_id_fk",
           "tableFrom": "match_lineups",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -4186,10 +3826,7 @@
       "uniqueConstraints": {
         "match_lineups_eventId_personId_unique": {
           "name": "match_lineups_eventId_personId_unique",
-          "columns": [
-            "event_id",
-            "person_id"
-          ],
+          "columns": ["event_id", "person_id"],
           "nullsNotDistinct": false
         }
       },
@@ -4316,52 +3953,36 @@
         "player_demands_club_id_clubs_id_fk": {
           "name": "player_demands_club_id_clubs_id_fk",
           "tableFrom": "player_demands",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "player_demands_team_id_teams_id_fk": {
           "name": "player_demands_team_id_teams_id_fk",
           "tableFrom": "player_demands",
-          "columnsFrom": [
-            "team_id"
-          ],
+          "columnsFrom": ["team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "player_demands_event_id_events_id_fk": {
           "name": "player_demands_event_id_events_id_fk",
           "tableFrom": "player_demands",
-          "columnsFrom": [
-            "event_id"
-          ],
+          "columnsFrom": ["event_id"],
           "tableTo": "events",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "player_demands_created_by_person_id_persons_id_fk": {
           "name": "player_demands_created_by_person_id_persons_id_fk",
           "tableFrom": "player_demands",
-          "columnsFrom": [
-            "created_by_person_id"
-          ],
+          "columnsFrom": ["created_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -4462,39 +4083,27 @@
         "player_offers_club_id_clubs_id_fk": {
           "name": "player_offers_club_id_clubs_id_fk",
           "tableFrom": "player_offers",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "player_offers_team_id_teams_id_fk": {
           "name": "player_offers_team_id_teams_id_fk",
           "tableFrom": "player_offers",
-          "columnsFrom": [
-            "team_id"
-          ],
+          "columnsFrom": ["team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "player_offers_created_by_person_id_persons_id_fk": {
           "name": "player_offers_created_by_person_id_persons_id_fk",
           "tableFrom": "player_offers",
-          "columnsFrom": [
-            "created_by_person_id"
-          ],
+          "columnsFrom": ["created_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -4587,26 +4196,18 @@
         "audit_log_club_id_clubs_id_fk": {
           "name": "audit_log_club_id_clubs_id_fk",
           "tableFrom": "audit_log",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "audit_log_actor_user_id_users_id_fk": {
           "name": "audit_log_actor_user_id_users_id_fk",
           "tableFrom": "audit_log",
-          "columnsFrom": [
-            "actor_user_id"
-          ],
+          "columnsFrom": ["actor_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -4675,26 +4276,18 @@
         "cash_accounts_club_id_clubs_id_fk": {
           "name": "cash_accounts_club_id_clubs_id_fk",
           "tableFrom": "cash_accounts",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "cash_accounts_team_id_teams_id_fk": {
           "name": "cash_accounts_team_id_teams_id_fk",
           "tableFrom": "cash_accounts",
-          "columnsFrom": [
-            "team_id"
-          ],
+          "columnsFrom": ["team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -4834,52 +4427,36 @@
         "cash_transactions_club_id_clubs_id_fk": {
           "name": "cash_transactions_club_id_clubs_id_fk",
           "tableFrom": "cash_transactions",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "cash_transactions_account_id_cash_accounts_id_fk": {
           "name": "cash_transactions_account_id_cash_accounts_id_fk",
           "tableFrom": "cash_transactions",
-          "columnsFrom": [
-            "account_id"
-          ],
+          "columnsFrom": ["account_id"],
           "tableTo": "cash_accounts",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "cash_transactions_person_id_persons_id_fk": {
           "name": "cash_transactions_person_id_persons_id_fk",
           "tableFrom": "cash_transactions",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "cash_transactions_created_by_person_id_persons_id_fk": {
           "name": "cash_transactions_created_by_person_id_persons_id_fk",
           "tableFrom": "cash_transactions",
-          "columnsFrom": [
-            "created_by_person_id"
-          ],
+          "columnsFrom": ["created_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -4998,52 +4575,36 @@
         "damage_reports_club_id_clubs_id_fk": {
           "name": "damage_reports_club_id_clubs_id_fk",
           "tableFrom": "damage_reports",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "damage_reports_facility_id_facilities_id_fk": {
           "name": "damage_reports_facility_id_facilities_id_fk",
           "tableFrom": "damage_reports",
-          "columnsFrom": [
-            "facility_id"
-          ],
+          "columnsFrom": ["facility_id"],
           "tableTo": "facilities",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "damage_reports_reported_by_person_id_persons_id_fk": {
           "name": "damage_reports_reported_by_person_id_persons_id_fk",
           "tableFrom": "damage_reports",
-          "columnsFrom": [
-            "reported_by_person_id"
-          ],
+          "columnsFrom": ["reported_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "damage_reports_reported_by_user_id_users_id_fk": {
           "name": "damage_reports_reported_by_user_id_users_id_fk",
           "tableFrom": "damage_reports",
-          "columnsFrom": [
-            "reported_by_user_id"
-          ],
+          "columnsFrom": ["reported_by_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -5156,26 +4717,18 @@
         "documents_club_id_clubs_id_fk": {
           "name": "documents_club_id_clubs_id_fk",
           "tableFrom": "documents",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "documents_uploaded_by_person_id_persons_id_fk": {
           "name": "documents_uploaded_by_person_id_persons_id_fk",
           "tableFrom": "documents",
-          "columnsFrom": [
-            "uploaded_by_person_id"
-          ],
+          "columnsFrom": ["uploaded_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -5296,26 +4849,18 @@
         "equipment_items_club_id_clubs_id_fk": {
           "name": "equipment_items_club_id_clubs_id_fk",
           "tableFrom": "equipment_items",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "equipment_items_holder_person_id_persons_id_fk": {
           "name": "equipment_items_holder_person_id_persons_id_fk",
           "tableFrom": "equipment_items",
-          "columnsFrom": [
-            "holder_person_id"
-          ],
+          "columnsFrom": ["holder_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -5420,26 +4965,18 @@
         "exercises_club_id_clubs_id_fk": {
           "name": "exercises_club_id_clubs_id_fk",
           "tableFrom": "exercises",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "exercises_created_by_person_id_persons_id_fk": {
           "name": "exercises_created_by_person_id_persons_id_fk",
           "tableFrom": "exercises",
-          "columnsFrom": [
-            "created_by_person_id"
-          ],
+          "columnsFrom": ["created_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -5540,26 +5077,18 @@
         "helper_shifts_club_id_clubs_id_fk": {
           "name": "helper_shifts_club_id_clubs_id_fk",
           "tableFrom": "helper_shifts",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "helper_shifts_event_id_events_id_fk": {
           "name": "helper_shifts_event_id_events_id_fk",
           "tableFrom": "helper_shifts",
-          "columnsFrom": [
-            "event_id"
-          ],
+          "columnsFrom": ["event_id"],
           "tableTo": "events",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -5599,26 +5128,18 @@
         "helper_signups_shift_id_helper_shifts_id_fk": {
           "name": "helper_signups_shift_id_helper_shifts_id_fk",
           "tableFrom": "helper_signups",
-          "columnsFrom": [
-            "shift_id"
-          ],
+          "columnsFrom": ["shift_id"],
           "tableTo": "helper_shifts",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "helper_signups_person_id_persons_id_fk": {
           "name": "helper_signups_person_id_persons_id_fk",
           "tableFrom": "helper_signups",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -5626,10 +5147,7 @@
       "compositePrimaryKeys": {
         "helper_signups_shift_id_person_id_pk": {
           "name": "helper_signups_shift_id_person_id_pk",
-          "columns": [
-            "shift_id",
-            "person_id"
-          ]
+          "columns": ["shift_id", "person_id"]
         }
       },
       "uniqueConstraints": {},
@@ -5713,26 +5231,18 @@
         "media_club_id_clubs_id_fk": {
           "name": "media_club_id_clubs_id_fk",
           "tableFrom": "media",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "media_uploaded_by_person_id_persons_id_fk": {
           "name": "media_uploaded_by_person_id_persons_id_fk",
           "tableFrom": "media",
-          "columnsFrom": [
-            "uploaded_by_person_id"
-          ],
+          "columnsFrom": ["uploaded_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -5830,39 +5340,27 @@
         "referee_assignments_club_id_clubs_id_fk": {
           "name": "referee_assignments_club_id_clubs_id_fk",
           "tableFrom": "referee_assignments",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "referee_assignments_event_id_events_id_fk": {
           "name": "referee_assignments_event_id_events_id_fk",
           "tableFrom": "referee_assignments",
-          "columnsFrom": [
-            "event_id"
-          ],
+          "columnsFrom": ["event_id"],
           "tableTo": "events",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "referee_assignments_person_id_persons_id_fk": {
           "name": "referee_assignments_person_id_persons_id_fk",
           "tableFrom": "referee_assignments",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -5915,26 +5413,18 @@
         "referees_person_id_persons_id_fk": {
           "name": "referees_person_id_persons_id_fk",
           "tableFrom": "referees",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "referees_club_id_clubs_id_fk": {
           "name": "referees_club_id_clubs_id_fk",
           "tableFrom": "referees",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -6066,78 +5556,54 @@
         "team_tasks_club_id_clubs_id_fk": {
           "name": "team_tasks_club_id_clubs_id_fk",
           "tableFrom": "team_tasks",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "team_tasks_team_id_teams_id_fk": {
           "name": "team_tasks_team_id_teams_id_fk",
           "tableFrom": "team_tasks",
-          "columnsFrom": [
-            "team_id"
-          ],
+          "columnsFrom": ["team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "team_tasks_event_id_events_id_fk": {
           "name": "team_tasks_event_id_events_id_fk",
           "tableFrom": "team_tasks",
-          "columnsFrom": [
-            "event_id"
-          ],
+          "columnsFrom": ["event_id"],
           "tableTo": "events",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "team_tasks_assignee_person_id_persons_id_fk": {
           "name": "team_tasks_assignee_person_id_persons_id_fk",
           "tableFrom": "team_tasks",
-          "columnsFrom": [
-            "assignee_person_id"
-          ],
+          "columnsFrom": ["assignee_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "team_tasks_created_by_person_id_persons_id_fk": {
           "name": "team_tasks_created_by_person_id_persons_id_fk",
           "tableFrom": "team_tasks",
-          "columnsFrom": [
-            "created_by_person_id"
-          ],
+          "columnsFrom": ["created_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "team_tasks_done_by_person_id_persons_id_fk": {
           "name": "team_tasks_done_by_person_id_persons_id_fk",
           "tableFrom": "team_tasks",
-          "columnsFrom": [
-            "done_by_person_id"
-          ],
+          "columnsFrom": ["done_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -6202,39 +5668,27 @@
         "training_plans_event_id_events_id_fk": {
           "name": "training_plans_event_id_events_id_fk",
           "tableFrom": "training_plans",
-          "columnsFrom": [
-            "event_id"
-          ],
+          "columnsFrom": ["event_id"],
           "tableTo": "events",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "training_plans_club_id_clubs_id_fk": {
           "name": "training_plans_club_id_clubs_id_fk",
           "tableFrom": "training_plans",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "training_plans_updated_by_person_id_persons_id_fk": {
           "name": "training_plans_updated_by_person_id_persons_id_fk",
           "tableFrom": "training_plans",
-          "columnsFrom": [
-            "updated_by_person_id"
-          ],
+          "columnsFrom": ["updated_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -6321,13 +5775,9 @@
         "auth_tokens_user_id_users_id_fk": {
           "name": "auth_tokens_user_id_users_id_fk",
           "tableFrom": "auth_tokens",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -6336,9 +5786,7 @@
       "uniqueConstraints": {
         "auth_tokens_tokenHash_unique": {
           "name": "auth_tokens_tokenHash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         }
       },
@@ -6397,39 +5845,27 @@
         "guardianships_club_id_clubs_id_fk": {
           "name": "guardianships_club_id_clubs_id_fk",
           "tableFrom": "guardianships",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "guardianships_guardian_person_id_persons_id_fk": {
           "name": "guardianships_guardian_person_id_persons_id_fk",
           "tableFrom": "guardianships",
-          "columnsFrom": [
-            "guardian_person_id"
-          ],
+          "columnsFrom": ["guardian_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "guardianships_child_person_id_persons_id_fk": {
           "name": "guardianships_child_person_id_persons_id_fk",
           "tableFrom": "guardianships",
-          "columnsFrom": [
-            "child_person_id"
-          ],
+          "columnsFrom": ["child_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -6437,10 +5873,7 @@
       "compositePrimaryKeys": {
         "guardianships_guardian_person_id_child_person_id_pk": {
           "name": "guardianships_guardian_person_id_child_person_id_pk",
-          "columns": [
-            "guardian_person_id",
-            "child_person_id"
-          ]
+          "columns": ["guardian_person_id", "child_person_id"]
         }
       },
       "uniqueConstraints": {},
@@ -6599,26 +6032,18 @@
         "persons_club_id_clubs_id_fk": {
           "name": "persons_club_id_clubs_id_fk",
           "tableFrom": "persons",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "persons_user_id_users_id_fk": {
           "name": "persons_user_id_users_id_fk",
           "tableFrom": "persons",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -6627,10 +6052,7 @@
       "uniqueConstraints": {
         "persons_clubId_userId_unique": {
           "name": "persons_clubId_userId_unique",
-          "columns": [
-            "club_id",
-            "user_id"
-          ],
+          "columns": ["club_id", "user_id"],
           "nullsNotDistinct": false
         }
       },
@@ -6708,13 +6130,9 @@
         "sessions_user_id_users_id_fk": {
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -6723,9 +6141,7 @@
       "uniqueConstraints": {
         "sessions_tokenHash_unique": {
           "name": "sessions_tokenHash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         }
       },
@@ -6819,9 +6235,7 @@
       "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "nullsNotDistinct": false
         }
       },
@@ -6951,65 +6365,45 @@
         "player_transfers_club_id_clubs_id_fk": {
           "name": "player_transfers_club_id_clubs_id_fk",
           "tableFrom": "player_transfers",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "player_transfers_person_id_persons_id_fk": {
           "name": "player_transfers_person_id_persons_id_fk",
           "tableFrom": "player_transfers",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "player_transfers_from_team_id_teams_id_fk": {
           "name": "player_transfers_from_team_id_teams_id_fk",
           "tableFrom": "player_transfers",
-          "columnsFrom": [
-            "from_team_id"
-          ],
+          "columnsFrom": ["from_team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "player_transfers_to_team_id_teams_id_fk": {
           "name": "player_transfers_to_team_id_teams_id_fk",
           "tableFrom": "player_transfers",
-          "columnsFrom": [
-            "to_team_id"
-          ],
+          "columnsFrom": ["to_team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         },
         "player_transfers_created_by_person_id_persons_id_fk": {
           "name": "player_transfers_created_by_person_id_persons_id_fk",
           "tableFrom": "player_transfers",
-          "columnsFrom": [
-            "created_by_person_id"
-          ],
+          "columnsFrom": ["created_by_person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -7097,26 +6491,18 @@
         "team_deadline_rules_club_id_clubs_id_fk": {
           "name": "team_deadline_rules_club_id_clubs_id_fk",
           "tableFrom": "team_deadline_rules",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "team_deadline_rules_team_id_teams_id_fk": {
           "name": "team_deadline_rules_team_id_teams_id_fk",
           "tableFrom": "team_deadline_rules",
-          "columnsFrom": [
-            "team_id"
-          ],
+          "columnsFrom": ["team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -7125,10 +6511,7 @@
       "uniqueConstraints": {
         "team_deadline_rules_teamId_eventType_unique": {
           "name": "team_deadline_rules_teamId_eventType_unique",
-          "columns": [
-            "team_id",
-            "event_type"
-          ],
+          "columns": ["team_id", "event_type"],
           "nullsNotDistinct": false
         }
       },
@@ -7256,39 +6639,27 @@
         "team_memberships_club_id_clubs_id_fk": {
           "name": "team_memberships_club_id_clubs_id_fk",
           "tableFrom": "team_memberships",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "team_memberships_team_id_teams_id_fk": {
           "name": "team_memberships_team_id_teams_id_fk",
           "tableFrom": "team_memberships",
-          "columnsFrom": [
-            "team_id"
-          ],
+          "columnsFrom": ["team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "team_memberships_person_id_persons_id_fk": {
           "name": "team_memberships_person_id_persons_id_fk",
           "tableFrom": "team_memberships",
-          "columnsFrom": [
-            "person_id"
-          ],
+          "columnsFrom": ["person_id"],
           "tableTo": "persons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -7297,12 +6668,7 @@
       "uniqueConstraints": {
         "team_memberships_teamId_personId_function_validFrom_unique": {
           "name": "team_memberships_teamId_personId_function_validFrom_unique",
-          "columns": [
-            "team_id",
-            "person_id",
-            "function",
-            "valid_from"
-          ],
+          "columns": ["team_id", "person_id", "function", "valid_from"],
           "nullsNotDistinct": false
         }
       },
@@ -7441,52 +6807,36 @@
         "teams_club_id_clubs_id_fk": {
           "name": "teams_club_id_clubs_id_fk",
           "tableFrom": "teams",
-          "columnsFrom": [
-            "club_id"
-          ],
+          "columnsFrom": ["club_id"],
           "tableTo": "clubs",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         },
         "teams_org_unit_id_org_units_id_fk": {
           "name": "teams_org_unit_id_org_units_id_fk",
           "tableFrom": "teams",
-          "columnsFrom": [
-            "org_unit_id"
-          ],
+          "columnsFrom": ["org_unit_id"],
           "tableTo": "org_units",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "restrict"
         },
         "teams_season_id_seasons_id_fk": {
           "name": "teams_season_id_seasons_id_fk",
           "tableFrom": "teams",
-          "columnsFrom": [
-            "season_id"
-          ],
+          "columnsFrom": ["season_id"],
           "tableTo": "seasons",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "restrict"
         },
         "teams_previous_team_id_teams_id_fk": {
           "name": "teams_previous_team_id_teams_id_fk",
           "tableFrom": "teams",
-          "columnsFrom": [
-            "previous_team_id"
-          ],
+          "columnsFrom": ["previous_team_id"],
           "tableTo": "teams",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
@@ -7502,104 +6852,57 @@
     "public.absence_kind": {
       "name": "absence_kind",
       "schema": "public",
-      "values": [
-        "vacation",
-        "injury",
-        "illness",
-        "school_work",
-        "suspended",
-        "other"
-      ]
+      "values": ["vacation", "injury", "illness", "school_work", "suspended", "other"]
     },
     "public.announcement_priority": {
       "name": "announcement_priority",
       "schema": "public",
-      "values": [
-        "info",
-        "important",
-        "urgent"
-      ]
+      "values": ["info", "important", "urgent"]
     },
     "public.attendance_status": {
       "name": "attendance_status",
       "schema": "public",
-      "values": [
-        "yes",
-        "no",
-        "maybe",
-        "pending"
-      ]
+      "values": ["yes", "no", "maybe", "pending"]
     },
     "public.cash_direction": {
       "name": "cash_direction",
       "schema": "public",
-      "values": [
-        "income",
-        "expense"
-      ]
+      "values": ["income", "expense"]
     },
     "public.club_color": {
       "name": "club_color",
       "schema": "public",
-      "values": [
-        "green",
-        "red",
-        "blue",
-        "yellow",
-        "black"
-      ]
+      "values": ["green", "red", "blue", "yellow", "black"]
     },
     "public.color_mode": {
       "name": "color_mode",
       "schema": "public",
-      "values": [
-        "light",
-        "dark",
-        "system"
-      ]
+      "values": ["light", "dark", "system"]
     },
     "public.contact_visibility": {
       "name": "contact_visibility",
       "schema": "public",
-      "values": [
-        "club",
-        "team_and_coaches",
-        "coaches_only"
-      ]
+      "values": ["club", "team_and_coaches", "coaches_only"]
     },
     "public.deadline_kind": {
       "name": "deadline_kind",
       "schema": "public",
-      "values": [
-        "relative",
-        "weekday_time"
-      ]
+      "values": ["relative", "weekday_time"]
     },
     "public.demand_status": {
       "name": "demand_status",
       "schema": "public",
-      "values": [
-        "open",
-        "cancelled"
-      ]
+      "values": ["open", "cancelled"]
     },
     "public.document_category": {
       "name": "document_category",
       "schema": "public",
-      "values": [
-        "regulations",
-        "forms",
-        "training_plans",
-        "other"
-      ]
+      "values": ["regulations", "forms", "training_plans", "other"]
     },
     "public.event_status": {
       "name": "event_status",
       "schema": "public",
-      "values": [
-        "scheduled",
-        "cancelled"
-      ]
+      "values": ["scheduled", "cancelled"]
     },
     "public.event_type": {
       "name": "event_type",
@@ -7617,177 +6920,92 @@
     "public.facility_kind": {
       "name": "facility_kind",
       "schema": "public",
-      "values": [
-        "grass_pitch",
-        "artificial_pitch",
-        "hall",
-        "clubhouse",
-        "changing_room",
-        "other"
-      ]
+      "values": ["grass_pitch", "artificial_pitch", "hall", "clubhouse", "changing_room", "other"]
     },
     "public.lineup_role": {
       "name": "lineup_role",
       "schema": "public",
-      "values": [
-        "starter",
-        "substitute"
-      ]
+      "values": ["starter", "substitute"]
     },
     "public.match_incident_kind": {
       "name": "match_incident_kind",
       "schema": "public",
-      "values": [
-        "goal",
-        "penalty_goal",
-        "own_goal",
-        "yellow",
-        "yellow_red",
-        "red"
-      ]
+      "values": ["goal", "penalty_goal", "own_goal", "yellow", "yellow_red", "red"]
     },
     "public.membership_status": {
       "name": "membership_status",
       "schema": "public",
-      "values": [
-        "active",
-        "inactive",
-        "left"
-      ]
+      "values": ["active", "inactive", "left"]
     },
     "public.module_level": {
       "name": "module_level",
       "schema": "public",
-      "values": [
-        "off",
-        "basic",
-        "extended",
-        "custom"
-      ]
+      "values": ["off", "basic", "extended", "custom"]
     },
     "public.module_state": {
       "name": "module_state",
       "schema": "public",
-      "values": [
-        "enabled",
-        "available",
-        "locked"
-      ]
+      "values": ["enabled", "available", "locked"]
     },
     "public.notification_level": {
       "name": "notification_level",
       "schema": "public",
-      "values": [
-        "urgent",
-        "important",
-        "action",
-        "info"
-      ]
+      "values": ["urgent", "important", "action", "info"]
     },
     "public.offer_status": {
       "name": "offer_status",
       "schema": "public",
-      "values": [
-        "open",
-        "closed"
-      ]
+      "values": ["open", "closed"]
     },
     "public.org_unit_kind": {
       "name": "org_unit_kind",
       "schema": "public",
-      "values": [
-        "seniors",
-        "youth",
-        "women",
-        "veterans",
-        "other"
-      ]
+      "values": ["seniors", "youth", "women", "veterans", "other"]
     },
     "public.participant_role": {
       "name": "participant_role",
       "schema": "public",
-      "values": [
-        "player",
-        "coach",
-        "guest_player",
-        "attendee"
-      ]
+      "values": ["player", "coach", "guest_player", "attendee"]
     },
     "public.participation_mode": {
       "name": "participation_mode",
       "schema": "public",
-      "values": [
-        "auto_accept",
-        "active_response",
-        "absences_only"
-      ]
+      "values": ["auto_accept", "active_response", "absences_only"]
     },
     "public.poll_result_visibility": {
       "name": "poll_result_visibility",
       "schema": "public",
-      "values": [
-        "always",
-        "after_vote",
-        "after_close"
-      ]
+      "values": ["always", "after_vote", "after_close"]
     },
     "public.preferred_foot": {
       "name": "preferred_foot",
       "schema": "public",
-      "values": [
-        "left",
-        "right",
-        "both"
-      ]
+      "values": ["left", "right", "both"]
     },
     "public.publication_status": {
       "name": "publication_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "pending_approval",
-        "published",
-        "archived"
-      ]
+      "values": ["draft", "pending_approval", "published", "archived"]
     },
     "public.scope_type": {
       "name": "scope_type",
       "schema": "public",
-      "values": [
-        "club",
-        "org_unit",
-        "team"
-      ]
+      "values": ["club", "org_unit", "team"]
     },
     "public.team_function": {
       "name": "team_function",
       "schema": "public",
-      "values": [
-        "player",
-        "coach",
-        "assistant_coach",
-        "team_manager"
-      ]
+      "values": ["player", "coach", "assistant_coach", "team_manager"]
     },
     "public.team_template": {
       "name": "team_template",
       "schema": "public",
-      "values": [
-        "performance",
-        "classic",
-        "youth",
-        "leisure"
-      ]
+      "values": ["performance", "classic", "youth", "leisure"]
     },
     "public.transfer_kind": {
       "name": "transfer_kind",
       "schema": "public",
-      "values": [
-        "internal",
-        "loan",
-        "join",
-        "leave"
-      ]
+      "values": ["internal", "loan", "join", "leave"]
     }
   },
   "schemas": {},

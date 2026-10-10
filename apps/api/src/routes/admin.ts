@@ -92,6 +92,7 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
           orgUnitId: z.uuid().nullish(),
           facilityId: z.uuid().nullish(),
           locationText: z.string().trim().max(120).nullish(),
+          locationUrl: z.string().trim().max(400).nullish(),
           program: z
             .array(
               z.object({

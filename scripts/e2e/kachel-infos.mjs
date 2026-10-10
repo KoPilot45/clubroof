@@ -43,7 +43,10 @@ const teamId = trainerMe.teams[0].id;
 await admin.goto(`/teams/${teamId}/cash-admin`);
 await admin.page.waitForTimeout(3000);
 const k = await body(admin.page);
-ok(/Zahlungsmeldungen|Offen gesamt|Bezahlinfos fehlen/.test(k), 'Kassenverwaltung zeigt Hinweise an den Kacheln');
+ok(
+  /Zahlungsmeldungen|Offen gesamt|Bezahlinfos fehlen/.test(k),
+  'Kassenverwaltung zeigt Hinweise an den Kacheln',
+);
 
 await b.close();
 console.log(b.errors.length ? `Konsolenfehler:\n${b.errors.join('\n')}` : '✓ keine Konsolenfehler');

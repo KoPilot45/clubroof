@@ -15,6 +15,7 @@ import {
   type MyResponse,
   type Participant,
   type EventChange,
+  buildRouteUrl,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, desc, eq, gt, inArray, ne, type SQL } from 'drizzle-orm';
@@ -141,6 +142,7 @@ export async function summarizeEvents(
       meetingAt: event.meetingAt?.toISOString() ?? null,
       meetingPoint: event.meetingPoint,
       location: row.facilityName ?? event.locationText,
+      routeUrl: buildRouteUrl(event.locationUrl, row.facilityName ? null : event.locationText),
       cancelledReason: event.cancelledReason,
       team: row.team ? { id: row.team.id, name: row.team.name, badge: row.team.badge } : null,
       match: row.match
@@ -285,6 +287,7 @@ export async function getEventDetail(
         ? {
             facilityId: row.event.facilityId,
             locationText: row.event.locationText,
+            locationUrl: row.event.locationUrl,
             seriesFollowing: row.event.seriesId
               ? await db
                   .select({ n: count() })

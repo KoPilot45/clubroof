@@ -48,6 +48,12 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Darstellung ändern', href: '/account' },
       },
       {
+        id: 'route',
+        question: 'Wie komme ich zum Spielort?',
+        answer:
+          'Im Termin steht beim Ort der Button „Route“. Er öffnet die Karten-App deines Handys (oder Google Maps im Browser) mit dem Spielort. Trainer können beim Anlegen einen Maps-Link oder Koordinaten hinterlegen, sonst wird die eingetragene Adresse verwendet.',
+      },
+      {
         id: 'tile-hints',
         question: 'Was bedeuten die Hinweise unter den Kacheln?',
         answer:

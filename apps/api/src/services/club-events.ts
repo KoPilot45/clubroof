@@ -15,6 +15,7 @@ import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, eq, gt, inArray, isNull, ne } from 'drizzle-orm';
 import type { Actor } from '../actor';
 import { HttpError, forbidden } from '../errors';
+import { locationUrlFrom } from './location';
 import { notify } from './event-admin';
 import { usersInScope } from './editorial';
 import { assertFacilityFree } from './facilities';
@@ -168,6 +169,7 @@ export async function createClubEvent(
         endsAt,
         facilityId: input.facilityId ?? null,
         locationText: input.facilityId ? null : input.locationText?.trim() || null,
+        locationUrl: input.facilityId ? null : locationUrlFrom(input.locationUrl),
         program: input.program?.length ? input.program : null,
         contactPersonId: actor.person.id,
         createdAt: now,

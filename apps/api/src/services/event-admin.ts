@@ -19,6 +19,7 @@ import { and, asc, eq, gt, gte, inArray, isNull, lte, or } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { deliver, type NotificationInput } from '../notify/deliver';
 import { HttpError, forbidden, notFound } from '../errors';
+import { locationUrlFrom } from './location';
 import { absenceReason } from './absences';
 import { getEventDetail } from './events';
 import { assertFacilityFree } from './facilities';
@@ -168,6 +169,7 @@ export async function createTeamEvent(
           meetingPoint: input.meetingPoint?.trim() || null,
           facilityId: input.facilityId ?? null,
           locationText: input.facilityId ? null : input.locationText?.trim() || null,
+          locationUrl: input.facilityId ? null : locationUrlFrom(input.locationUrl),
           contactPersonId: actor.person.id,
         })
         .returning({ id: s.events.id });
@@ -416,6 +418,12 @@ export async function updateEvent(
       : input.locationText !== undefined
         ? input.locationText?.trim() || null
         : event.locationText;
+  const locationUrl =
+    facilityId !== null
+      ? null
+      : input.locationUrl !== undefined
+        ? locationUrlFrom(input.locationUrl)
+        : event.locationUrl;
   const title = input.title !== undefined ? input.title.trim() || event.title : event.title;
   const meetingPoint =
     input.meetingPoint !== undefined ? input.meetingPoint?.trim() || null : event.meetingPoint;
@@ -504,6 +512,7 @@ export async function updateEvent(
   add('Treffen', fmtDateTime(tz, event.meetingAt), fmtDateTime(tz, meetingAt));
   add('Treffpunkt', event.meetingPoint, meetingPoint);
   add('Ort', place(event.facilityId, event.locationText), place(facilityId, locationText));
+  add('Karten-Link', event.locationUrl, locationUrl);
   add('Titel', event.title, title);
   add('Info', event.description, description);
   if (match && opponent) add('Gegner', match.opponentName, opponent);
@@ -526,6 +535,7 @@ export async function updateEvent(
           meetingPoint,
           facilityId,
           locationText,
+          locationUrl,
           title: p.e.id === event.id || input.title !== undefined ? title : p.e.title,
           description,
         })
