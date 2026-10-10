@@ -611,6 +611,8 @@ export const en: Record<string, string> = {
   'Bisherige Abschlüsse': 'Previous closings',
   'Bisheriger Verein': 'Previous club',
   'Bitte Beginn und Ende des Zeitraums angeben.': 'Please enter the start and end of the period.',
+  'Bitte bestätige zuerst deine E-Mail-Adresse mit dem Code, den wir dir geschickt haben.':
+    'Please confirm your email address first with the code we sent you.',
   'bitte bestätigen': 'please confirm',
   'Bitte Datum/Uhrzeit ergänzen': 'Please add date/time',
   'Bitte den abgebenden Verein angeben.': 'Please enter the releasing club.',
@@ -766,7 +768,10 @@ export const en: Record<string, string> = {
   'Defensives Mittelfeld': 'Defensive midfield',
   'Dein Anmeldecode': 'Your sign-in code',
   'Dein Aushang': 'Your notice',
+  'Dein Bestätigungscode für Clubroof': 'Your confirmation code for Clubroof',
   'dein Code für die Anmeldung: {0}': 'your code for signing in: {0}',
+  'Dein Code zur Einrichtung deines Vereins in Clubroof lautet: {0}\n\nEr ist 15 Minuten gültig. Wenn du die Einrichtung nicht gestartet hast, ignoriere diese E-Mail.':
+    'Your code for setting up your club in Clubroof is: {0}\n\nIt is valid for 15 minutes. If you did not start the setup, ignore this email.',
   'Dein Kind': 'Your child',
   'Dein Konto': 'Your account',
   'Dein Konto ist keinem Verein zugeordnet.': 'Your account is not assigned to a club.',
@@ -832,6 +837,8 @@ export const en: Record<string, string> = {
   'Der Bereich hat Mannschaften und kann nicht gelöscht werden.':
     'The section has teams and cannot be deleted.',
   'Der Betrag ist zu klein für so viele Personen.': 'The amount is too small for so many people.',
+  'Der Code ist abgelaufen. Bitte fordere einen neuen an.':
+    'The code has expired. Please request a new one.',
   'Der Code ist unterwegs.': 'The code is on its way.',
   'Der Code konnte nicht geprüft werden.': 'The code could not be verified.',
   'Der Code konnte nicht gesendet werden.': 'The code could not be sent.',
@@ -2953,6 +2960,8 @@ export const en: Record<string, string> = {
   'Zu den Mitgliedern': 'Go to members',
   'Zu einem Termin (optional)': 'Linked to an event (optional)',
   'Zu Konto & Einstellungen': 'Go to Account & settings',
+  'Zu viele Versuche. Bitte fordere einen neuen Code an.':
+    'Too many attempts. Please request a new code.',
   'Zu viele Versuche. Bitte warte eine Minute.': 'Too many attempts. Please wait a minute.',
   'Zu welchem Training?': 'Which training session?',
   'Zu wenige Zusagen': 'Too few confirmations',

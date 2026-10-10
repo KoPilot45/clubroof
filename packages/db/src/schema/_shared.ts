@@ -57,6 +57,7 @@ export const preferredFootEnum = pgEnum('preferred_foot', ['left', 'right', 'bot
 export const facilityKindEnum = pgEnum('facility_kind', [
   'grass_pitch',
   'artificial_pitch',
+  'hard_pitch',
   'hall',
   'clubhouse',
   'changing_room',

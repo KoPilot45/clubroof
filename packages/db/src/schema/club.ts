@@ -77,6 +77,21 @@ export const seasons = pgTable(
   (t) => [index().on(t.clubId)],
 );
 
+/** Spielstätte (Sportanlage mit Adresse); Plätze und Kabinen gehören über `facilities.venue_id` dazu. */
+export const venues = pgTable(
+  'venues',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    address: text(),
+    sortOrder: integer().notNull().default(0),
+  },
+  (t) => [index().on(t.clubId)],
+);
+
 /** Plätze, Halle, Vereinsheim. */
 export const facilities = pgTable(
   'facilities',
@@ -89,6 +104,8 @@ export const facilities = pgTable(
     shortName: text(),
     kind: facilityKindEnum().notNull(),
     address: text(),
+    /** Zugehörige Spielstätte (Einrichtungsassistent); leer bei älteren Einträgen */
+    venueId: uuid().references(() => venues.id, { onDelete: 'set null' }),
     sortOrder: integer().notNull().default(0),
   },
   (t) => [index().on(t.clubId)],

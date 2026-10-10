@@ -1544,10 +1544,27 @@ export type UpdateClubInput = Partial<{
   requireTwoFactor: boolean;
 }>;
 
+/** Untergrund eines Platzes (Einrichtungsassistent) */
+export const PITCH_SURFACES = ['grass', 'artificial', 'hard'] as const;
+export type PitchSurface = (typeof PITCH_SURFACES)[number];
+
+/** Spielstätte mit Plätzen und Kabinen (Einrichtungsassistent, Schritte „Spielstätte“ bis „Untergrund“) */
+export type SetupVenue = {
+  name: string;
+  address: string | null;
+  pitches: { name: string; surface: PitchSurface }[];
+  changingRooms: string[];
+};
+
 export type SetupInput = {
   setupToken: string;
+  /** Nachweis der bestätigten E-Mail-Adresse des ersten Kontos (`POST /setup/email-code/verify`) */
+  emailProof: string;
   club: { name: string; shortName: string; colorTheme: ClubColorKey };
   orgUnits: { name: string; kind: OrgUnitKind }[];
+  venues?: SetupVenue[];
+  /** Gewählte optionale Module (Schlüssel aus `MODULES`); ohne Angabe die bisherige Voreinstellung */
+  modules?: string[];
   admin: { firstName: string; lastName: string; email: string; password: string };
 };
 
