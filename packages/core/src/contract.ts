@@ -1112,6 +1112,10 @@ export type TeamProfile = {
   importAliases: string[];
   /** Tabellenplatz in der Liga (vom Trainerteam gepflegt) */
   leaguePosition: number | null;
+  /** Antwortfrist für Zu-/Absagen zum Training in Stunden vor Beginn (leer = keine feste Frist oder Wochentagsregel) */
+  trainingDeadlineHours: number | null;
+  /** Antwortfrist für Spiele in Stunden vor Beginn */
+  matchDeadlineHours: number | null;
 };
 
 export type TeamManageMember = {

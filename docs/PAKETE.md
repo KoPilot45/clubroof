@@ -58,7 +58,7 @@ Festlegungen: `ENTSCHEIDUNGEN.md`. Jedes Paket endet mit `pnpm check`, Doku (`FU
 | U   | **iOS-Feinschliff** ✅              | M     | Umgesetzt (10.10.2026): Tippflächen mindestens 44 pt mit Browser-Messung (`scripts/e2e/touchflaechen.mjs`); haptisches Feedback (`lib/haptics.ts`: Zu-/Absage, Abhaken, Chips/Schalter, Tabs, Fehler); Wisch-Aktionen (`SwipeRow`: Benachrichtigung „Gelesen“, Termin „Zusagen“); iPad bleibt unterstützt, aber ohne Multitasking (`requireFullScreen`, Hochformat); Ladebildschirm in Vereinsfarbe; weiche Übergänge zwischen den Tabs; Systemtextgröße wirkt (Textgröße der App kommt dazu) | Sonnet               |
 | M   | **Mandantenbetrieb**               | L     | Vereine manuell anlegen (Betreiber-Konsole), Zuordnung per Einladungscode, Personen in mehreren Vereinen                                                                                                       | Sonnet, Review stark |
 | D   | **Demo-Verein**                    | M     | Demo-Mandant mit Persona-Wechsel, täglich zurückgesetzt, ohne Push/Mail; Startbildschirm „Demo / Login“                                                                                                        | Sonnet               |
-| E   | **Einrichtungsassistenten (echt)** | L     | Echte Formulare für Verein und Mannschaft nach dem Vereinszugang; sie legen Aufbau und Funktionen der App fest (Bereiche, Module, Teilnahmemodelle)                                                            | Sonnet               |
+| E   | **Einrichtungsassistenten (echt)** (✅, Rest offen) | L     | Echte Formulare für Verein und Mannschaft nach dem Vereinszugang; sie legen Aufbau und Funktionen der App fest (Bereiche, Module, Teilnahmemodelle)                                                            | Sonnet               |
 | K1  | **Vereinskasse: Grundlage** | M | Rollen Kassenwart (Verein) und Kassenprüfer, Umbenennung der Mannschaftsrolle in Mannschaftskassenwart, Einstellung „Wer darf die Kasse einsehen?“, Vereinskonten, Kassenbuch mit Belegen, Kategorien nach vier Bereichen, Kostenstellen, Umbuchung, Storno (siehe `VEREINSKASSE.md`) | Sonnet |
 | K2  | **Vereinskasse: Beiträge** | L | Beitragsarten, Sollstellung, Zahlungseingang, Rückstände, Erinnerungen, CSV-Import vom Kontoauszug | Sonnet |
 | K3  | **Vereinskasse: Planung und Abschluss** | M | Haushaltsplan, Soll-Ist, Rücklagen, Einnahmen-Ausgaben-Rechnung, Jahresabschluss (PDF/CSV), Periodensperre | Sonnet |
@@ -72,6 +72,15 @@ Festlegungen: `ENTSCHEIDUNGEN.md`. Jedes Paket endet mit `pnpm check`, Doku (`FU
 | T   | **Testserver (IONOS VPS)**         | M     | Server, HTTPS, Backups, Expo-Projekt und Entwicklungs-Build                                                                                                                                                    | Sonnet               |
 
 ### Paket E im Detail (Stand 10.10.2026, Entwurf freigegeben)
+
+**Umsetzungsstand:** Beide Assistenten laufen (`apps/mobile/src/app/setup.tsx`, `admin/team-new.tsx`, Baukasten
+`components/wizard.tsx`). Vereins-Assistent: 12 Schritte, Spielstätten/Plätze/Kabinen als Daten (Migration 0036),
+Modulauswahl als Hauptschalter, E-Mail-Code (Pflicht), Zwischenstand auf dem Gerät, Logo-Upload nach dem Anlegen.
+Mannschafts-Assistent: 11 Schritte, angelegt wird erst am Ende; Antwortfristen Training/Spiel in freien Stunden
+(`PUT /teams/:id/profile`). **Offen:** Bereichsmodell „Jugend/Senioren getrennt“ legt derzeit zwei Bereiche an, die
+Rechtefeinheit je Bereich ist noch nicht eigens geprüft; Treffpunkt der Mannschaft ist Freitext (Auswahl aus
+Spielstätten/Kabinen folgt); Mannschaft: „Fertig“-Seite mit Vorschlägen (Training anlegen, Spielplan importieren,
+Eltern einladen) fehlt; kein Browserdurchlauf des Vereins-Assistenten (braucht leere Datenbank, API-Test deckt ab).
 
 Designentwurf: Design-Artefakt „Clubroof Designentwürfe“, Reihen „Verein einrichten“ (V1–V14) und
 „Mannschaft anlegen“ (M1–M12). Gemeinsamer Aufbau jedes Schritts: Zurück, Prozentbalken („Schritt X von N · NN %“),

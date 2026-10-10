@@ -182,7 +182,7 @@ export async function setupClub(
         scopeId: null,
         moduleKey: m.key,
         state:
-          m.core || (chosen ? chosen.has(m.key) : !OPTIONAL.has(m.key))
+          (m as { core?: boolean }).core || (chosen ? chosen.has(m.key) : !OPTIONAL.has(m.key))
             ? ('enabled' as const)
             : ('available' as const),
         level: 'basic' as const,

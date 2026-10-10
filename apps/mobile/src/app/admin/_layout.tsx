@@ -20,10 +20,12 @@ export default function AdminLayout() {
   const { colors } = useTheme();
   const { me } = useSignedIn();
   const [navHeight, setNavHeight] = useState(0);
+  // Der Assistent „Mannschaft anlegen“ füllt den Bildschirm: ohne Kopfzeile und Verwaltungsleiste
+  const wizard = usePathname() === '/admin/team-new';
   useLocale();
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <BottomTabBarHeightContext.Provider value={me.canAdminister ? navHeight : 0}>
+      <BottomTabBarHeightContext.Provider value={me.canAdminister && !wizard ? navHeight : 0}>
         <Stack
           screenOptions={{
             headerShown: true,
@@ -59,7 +61,10 @@ export default function AdminLayout() {
           <Stack.Screen name="club" options={{ title: 'Verein & Design' }} />
           <Stack.Screen name="modules" options={{ title: 'Module' }} />
           <Stack.Screen name="teams" options={{ title: 'Mannschaften & Saison' }} />
-          <Stack.Screen name="team-new" options={{ title: 'Mannschaft anlegen' }} />
+          <Stack.Screen
+            name="team-new"
+            options={{ title: 'Mannschaft anlegen', headerShown: false }}
+          />
           <Stack.Screen name="unit/[id]" options={{ title: 'Module im Bereich' }} />
           <Stack.Screen name="team/[id]" options={{ title: 'Mannschaft' }} />
           <Stack.Screen name="transfers" options={{ title: 'Spielerbewegungen' }} />
@@ -67,7 +72,7 @@ export default function AdminLayout() {
           <Stack.Screen name="invites" options={{ title: 'Einladungen' }} />
         </Stack>
       </BottomTabBarHeightContext.Provider>
-      <AdminNavBar onHeight={setNavHeight} />
+      {wizard ? null : <AdminNavBar onHeight={setNavHeight} />}
     </View>
   );
 }
