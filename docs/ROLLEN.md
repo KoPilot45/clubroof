@@ -98,3 +98,7 @@ Zusatz: Admins können in der Mitglieder-Übersicht nach Rollen und Funktionen f
 ## 6. Individuelle Rechte (10.10.2026)
 
 Der Admin kann in „Mitglied bearbeiten“ einzelnen Mitgliedern **individuelle Rechte** geben: eine Liste aller Rechte zum An- und Abwählen (zusätzlich zu den Rollen). Zu beachten: Änderungen im Protokoll festhalten, nur Admins dürfen vergeben, Rechte verständlich beschriften und nach Bereich gruppieren, Bereichsbezug (Verein/Bereich/Mannschaft) mit auswählbar. Wird Teil von Paket R.
+
+## 7. Umsetzungsstand (10.10.2026)
+
+Paket R ist umgesetzt: Vorstand ohne `cash.read` (Migration 0032 entfernt es auch in bestehenden Vereinen), 2-Faktor-Pflicht nur für das Administrationskonto (Fulladmin) plus „Code per E-Mail“, Co-Trainer erhalten für ihre Mannschaft die Rechte der Rolle Trainer (in `loadActor`, ohne zusätzliche Rollenvergabe), individuelle Rechte je Mitglied (Tabelle `person_permissions`, Bildschirm „Individuelle Rechte“), „Mannschaft bearbeiten“ für das Trainerteam. Paket F (Rollenfilter) ist umgesetzt. Offen: Rechte der Betreuer, Abwesenheitsgründe abstufen, Rollenvorlagen angleichen.

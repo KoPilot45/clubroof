@@ -7,7 +7,7 @@ Festlegungen: `ENTSCHEIDUNGEN.md`. Jedes Paket endet mit `pnpm check`, Doku (`FU
 
 ## Wochenende: Optimierung der Bedienung
 
-**Stand 10.10.2026: W1 bis W7 sind umgesetzt** (Kachel-Infos, Neu-Hinweise und Warnungen, Erster Eindruck, Route, Optik, Komfort, Einrichtungs-Demos). Weiter mit den Paketen unter „Danach“.
+**Stand 10.10.2026: W1 bis W7 sowie R, F und I sind umgesetzt** (Kachel-Infos, Neu-Hinweise und Warnungen, Erster Eindruck, Route, Optik, Komfort, Einrichtungs-Demos). Weiter mit den Paketen unter „Danach“.
 
 | Nr. | Paket                                       | Größe | Inhalt                                                                                                                                                            | Abhängigkeit  |
 | --- | ------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
@@ -51,9 +51,9 @@ Festlegungen: `ENTSCHEIDUNGEN.md`. Jedes Paket endet mit `pnpm check`, Doku (`FU
 
 | Nr. | Paket                              | Größe | Inhalt                                                                                                                                                                                                         | Modell               |
 | --- | ---------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| R   | **Rechte schärfen**                | M     | Vorstand ohne Kassenlesen, 2-Faktor nur Admin + Code per E-Mail, Co-Trainer = Trainer, Bearbeiten-Funktion für Trainer (Kader, Kassenwart, Co-Trainer), Abwesenheitsgründe abstufen, Rollenvorlagen angleichen, individuelle Rechte je Mitglied (Liste zum An-/Abwählen) | Sonnet               |
-| F   | **Mitglieder nach Rolle filtern**  | S     | Mitglieder-Übersicht der Verwaltung: Filter nach Rolle, Funktion in der Mannschaft, Mannschaft, App-Zugang; Schnellfilter „Alle Trainer“, „Alle Rollenträger“                                                  | Sonnet               |
-| I   | **Spielplan-Import (DFBnet)**      | L     | Vereins- und Mannschaftsspielplan als Datei importieren, Vorschau, Aliasse, Sammelmeldung, Aktualisieren statt Dubletten (siehe `SPIELPLAN-IMPORT.md`)                                                         | Sonnet               |
+| R   | **Rechte schärfen** ✅              | M     | Vorstand ohne Kassenlesen, 2-Faktor nur Admin + Code per E-Mail, Co-Trainer = Trainer, Bearbeiten-Funktion für Trainer (Kader, Kassenwart, Co-Trainer), Abwesenheitsgründe abstufen, Rollenvorlagen angleichen, individuelle Rechte je Mitglied (Liste zum An-/Abwählen) | Sonnet               |
+| F   | **Mitglieder nach Rolle filtern** ✅ | S     | Mitglieder-Übersicht der Verwaltung: Filter nach Rolle, Funktion in der Mannschaft, Mannschaft, App-Zugang; Schnellfilter „Alle Trainer“, „Alle Rollenträger“                                                  | Sonnet               |
+| I   | **Spielplan-Import (DFBnet)** ✅    | L     | Vereins- und Mannschaftsspielplan als Datei importieren, Vorschau, Aliasse, Sammelmeldung, Aktualisieren statt Dubletten (siehe `SPIELPLAN-IMPORT.md`)                                                         | Sonnet               |
 | M   | **Mandantenbetrieb**               | L     | Vereine manuell anlegen (Betreiber-Konsole), Zuordnung per Einladungscode, Personen in mehreren Vereinen                                                                                                       | Sonnet, Review stark |
 | D   | **Demo-Verein**                    | M     | Demo-Mandant mit Persona-Wechsel, täglich zurückgesetzt, ohne Push/Mail; Startbildschirm „Demo / Login“                                                                                                        | Sonnet               |
 | E   | **Einrichtungsassistenten (echt)** | L     | Echte Formulare für Verein und Mannschaft nach dem Vereinszugang; sie legen Aufbau und Funktionen der App fest (Bereiche, Module, Teilnahmemodelle)                                                            | Sonnet               |

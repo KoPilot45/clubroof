@@ -70,3 +70,12 @@ alle Spiele der Mannschaften automatisch. Trainer können dieselbe Funktion für
 5. **Pokal, Freundschaft, Turniere:** Werden nicht importiert, sondern von Trainer, sportlicher Leitung und Admin manuell angelegt.
 
 Offen: nur noch der genaue Beispiel-Export.
+
+## 5. Umsetzung (Stand 10.10.2026)
+
+Umgesetzt (Paket I): `POST /schedule-import` (Vorschau und Übernahme), `POST /schedule-import/:id/undo`, Bildschirm `schedule-import` (Verwaltung → Spielplan-Import und Mannschaft bearbeiten → Spielplan importieren), Tabelle `schedule_imports`, Felder `events.source_key` / `import_batch_id`, `teams.import_aliases`, `match_details.kind`.
+
+- Spalten werden über Kopfzeilen erkannt (Spiel, Anstoß, Heimmannschaft, Gastmannschaft, Spielklasse, Status; auch getrennte Datums-/Uhrzeitspalten) und lassen sich im Bildschirm anpassen. **Noch nicht gegen einen echten Export geprüft** – der Abgleich folgt mit der Beispieldatei.
+- Rückgängig entfernt die neu angelegten Spiele (24 Stunden, nicht bei vorhandenem Spielbericht); geänderte Spiele werden nicht zurückgesetzt.
+- Anlagen- und Platzkonflikte werden beim Import nicht geprüft (der Spielort steht nicht in der Datei); die Zuordnung zur Anlage erfolgt im Termin.
+- Tore und Status der Datei werden nicht als Termindaten übernommen (abgesetzte Spiele werden übersprungen).
