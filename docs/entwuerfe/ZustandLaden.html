@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Zustand Laden</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;family=Oswald:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Open Sans',system-ui,sans-serif}
+@keyframes sk{0%{opacity:1}50%{opacity:0.55}100%{opacity:1}}
+.sk{background:#E4EAE6;border-radius:10px;animation:sk 1.4s ease-in-out infinite}
+</style>
+</helmet>
+<div style="position:relative;width:390px;height:860px;box-sizing:border-box;background:#F6F8F6;overflow:hidden;font-family:'Open Sans',system-ui,sans-serif">
+  <!-- Kopf (Logo und Datum sind sofort da) -->
+  <div style="display:flex;align-items:center;gap:10px;padding:28px 20px 0 20px">
+    <div style="flex:0 0 48px;width:48px;height:48px;border-radius:24px;background:#FFFFFF;box-shadow:0 4px 14px rgba(20,40,28,0.10);display:flex;align-items:center;justify-content:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Vereinslogo" role="img"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+    <div style="flex:1 1 auto"><div style="font-size:12px;color:#5B6B60">Samstag, 10. Oktober</div><div class="sk" style="width:170px;height:22px;margin-top:4px"></div></div>
+    <div style="flex:0 0 46px;width:46px;height:46px;border-radius:23px;background:#FFFFFF;box-shadow:0 4px 14px rgba(20,40,28,0.08)"></div>
+    <div style="flex:0 0 46px;width:46px;height:46px;border-radius:23px;background:#FFFFFF;box-shadow:0 4px 14px rgba(20,40,28,0.08)"></div>
+  </div>
+  <!-- Platzhalter Spielkarte -->
+  <div style="margin:18px 20px 0 20px;height:262px;border-radius:28px;background:#DCE5DF;padding:16px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px" role="status" aria-label="Spiele werden geladen">
+    <div style="display:flex;justify-content:space-between"><div class="sk" style="width:90px;height:26px;border-radius:13px;background:#C9D6CD"></div><div class="sk" style="width:110px;height:26px;border-radius:13px;background:#C9D6CD"></div></div>
+    <div style="display:flex;justify-content:space-around;margin-top:6px"><div class="sk" style="width:110px;height:76px;background:#C9D6CD"></div><div class="sk" style="width:110px;height:76px;background:#C9D6CD"></div></div>
+    <div class="sk" style="width:200px;height:14px;background:#C9D6CD"></div>
+    <div style="display:flex;gap:8px"><div class="sk" style="flex:1.2;height:44px;border-radius:22px;background:#C9D6CD"></div><div class="sk" style="flex:1;height:44px;border-radius:22px;background:#C9D6CD"></div><div class="sk" style="flex:1;height:44px;border-radius:22px;background:#C9D6CD"></div></div>
+  </div>
+  <!-- Platzhalter Band -->
+  <div style="display:flex;gap:10px;padding:26px 0 0 20px;overflow:hidden">
+    <div class="sk" style="flex:0 0 232px;height:58px;border-radius:20px"></div><div class="sk" style="flex:0 0 232px;height:58px;border-radius:20px"></div>
+  </div>
+  <!-- Platzhalter Liste -->
+  <div class="sk" style="width:180px;height:24px;margin:26px 20px 12px 20px"></div>
+  <div style="display:flex;flex-direction:column;gap:8px;padding:0 20px">
+    <div style="background:#FFFFFF;border-radius:20px;padding:9px 12px;display:flex;align-items:center;gap:12px"><div class="sk" style="flex:0 0 48px;height:50px;border-radius:14px"></div><div style="flex:1"><div class="sk" style="width:60%;height:14px"></div><div class="sk" style="width:80%;height:11px;margin-top:8px"></div></div><div class="sk" style="width:64px;height:24px;border-radius:12px"></div></div>
+    <div style="background:#FFFFFF;border-radius:20px;padding:9px 12px;display:flex;align-items:center;gap:12px"><div class="sk" style="flex:0 0 48px;height:50px;border-radius:14px"></div><div style="flex:1"><div class="sk" style="width:55%;height:14px"></div><div class="sk" style="width:75%;height:11px;margin-top:8px"></div></div><div class="sk" style="width:64px;height:24px;border-radius:12px"></div></div>
+    <div style="background:#FFFFFF;border-radius:20px;padding:9px 12px;display:flex;align-items:center;gap:12px"><div class="sk" style="flex:0 0 48px;height:50px;border-radius:14px"></div><div style="flex:1"><div class="sk" style="width:65%;height:14px"></div><div class="sk" style="width:70%;height:11px;margin-top:8px"></div></div><div class="sk" style="width:64px;height:24px;border-radius:12px"></div></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#1F7A3D","options":["#1F7A3D","#1D4ED8","#C2410C","#7C3AED"]},"$preview":{"width":390,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#1F7A3D' };
+  }
+}
+</script>
+</body>
+</html>

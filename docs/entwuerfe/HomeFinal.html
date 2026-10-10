@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Home – Entwurf</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;family=Oswald:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Open Sans',system-ui,sans-serif}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="position:relative;width:390px;height:1800px;box-sizing:border-box;background:#F6F8F6;color:#17231B;font-family:'Open Sans',system-ui,sans-serif;overflow:hidden">
+
+  <!-- Kopf -->
+  <div style="display:flex;align-items:center;gap:10px;padding:28px 20px 0 20px">
+    <div style="flex:0 0 48px;width:48px;height:48px;border-radius:24px;background:#FFFFFF;box-shadow:0 4px 14px rgba(20,40,28,0.10);display:flex;align-items:center;justify-content:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Vereinslogo SV Grün-Weiß" role="img"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+    <div style="flex:1 1 auto;min-width:0">
+      <div style="font-size:12px;color:#5B6B60">Samstag, 10. Oktober</div>
+      <div style="font-family:Oswald,sans-serif;font-weight:500;font-size:22px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word">Hallo, Maximilian-Alexander</div>
+    </div>
+    <button aria-label="Suche" style="flex:0 0 46px;width:46px;height:46px;border-radius:23px;border:0;background:#FFFFFF;box-shadow:0 4px 14px rgba(20,40,28,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#17231B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+    <button aria-label="Benachrichtigungen, 3 neu" style="position:relative;flex:0 0 46px;width:46px;height:46px;border-radius:23px;border:0;background:#FFFFFF;box-shadow:0 4px 14px rgba(20,40,28,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#17231B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg><span style="position:absolute;top:-2px;right:-2px;min-width:20px;height:20px;border-radius:10px;background:#D93A3A;color:#FFFFFF;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #F6F8F6;box-sizing:border-box">3</span></button>
+  </div>
+
+  <!-- 1. Spiele zum Wischen -->
+  <div style="display:flex;gap:12px;margin-top:18px;padding-left:20px;overflow:hidden">
+    <div style="position:relative;overflow:hidden;flex:0 0 306px;box-sizing:border-box;border-radius:28px;padding:16px;background:linear-gradient(160deg,{{accentDark}} 0%,{{accent}} 62%);color:#FFFFFF;display:flex;flex-direction:column;gap:12px;box-shadow:0 14px 30px rgba(31,122,61,0.26)">
+      <svg width="306" height="270" viewBox="0 0 306 270" aria-hidden="true" style="position:absolute;left:0;top:0">
+        <path d="M0 160 C50 120 100 200 153 160 C206 120 256 180 306 140 L306 270 L0 270Z" fill="rgba(255,255,255,0.08)"/>
+        <path d="M0 200 C60 170 105 235 165 200 C225 170 265 215 306 190 L306 270 L0 270Z" fill="rgba(255,255,255,0.10)"/>
+        <circle cx="270" cy="28" r="64" fill="rgba(255,255,255,0.08)"/>
+      </svg>
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);border-radius:999px;padding:3px 10px 3px 3px"><div style="width:24px;height:24px;border-radius:12px;background:#FFFFFF;color:#14532D;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">M</div><span style="font-size:12px;font-weight:700">Mia · B1</span></div>
+        <div style="font-size:11px;font-weight:700;background:#FFFFFF;color:#14532D;border-radius:999px;padding:5px 10px">Heimspiel · Liga</div>
+      </div>
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-around">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:110px"><div style="width:48px;height:48px;border-radius:24px;background:#FFFFFF;color:#14532D;display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-weight:600;font-size:18px">GW</div><div style="font-size:13px;font-weight:600;text-align:center">SV Grün-Weiß B1</div></div>
+        <div style="font-family:Oswald,sans-serif;font-size:20px;font-weight:500">vs.</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:110px"><div style="width:48px;height:48px;border-radius:24px;background:#E3F4E7;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg></div><div style="font-size:13px;font-weight:600;text-align:center">TSV Blauen</div></div>
+      </div>
+      <div style="position:relative;display:flex;align-items:baseline;justify-content:space-between;gap:8px"><div style="font-size:13px">Sa., 17. Okt. · 11:00 · Sportplatz</div><div style="font-family:Oswald,sans-serif;font-size:18px;font-weight:500;white-space:nowrap">in 7 Tagen</div></div>
+      <div style="position:relative;font-size:12px">Absagefrist: noch 5 Tage</div>
+      <div style="position:relative;display:flex;gap:8px">
+        <button style="flex:1.2;height:44px;border:0;border-radius:22px;background:#FFFFFF;color:#14532D;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Zusagen</button>
+        <button style="flex:1;height:44px;border:2px solid rgba(255,255,255,0.85);border-radius:22px;background:transparent;color:#FFFFFF;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer">Unsicher</button>
+        <button style="flex:1;height:44px;border:2px solid rgba(255,255,255,0.85);border-radius:22px;background:transparent;color:#FFFFFF;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Absagen</button>
+      </div>
+    </div>
+    <div style="position:relative;overflow:hidden;flex:0 0 306px;box-sizing:border-box;border-radius:28px;padding:16px;background:linear-gradient(160deg,#256B3C 0%,#3E9A5C 100%);color:#FFFFFF;display:flex;flex-direction:column;gap:12px;opacity:0.92">
+      <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);border-radius:999px;padding:3px 10px 3px 3px;align-self:flex-start"><div style="width:24px;height:24px;border-radius:12px;background:#FFFFFF;color:#14532D;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">B</div><span style="font-size:12px;font-weight:700">Ben · E1</span></div>
+      <div style="font-family:Oswald,sans-serif;font-weight:500;font-size:26px;line-height:1.1">Spielfest in Nord</div>
+      <div style="font-size:13px">So., 18. Okt. · 09:30</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px">
+    <div style="width:18px;height:6px;border-radius:3px;background:{{accent}}"></div><div style="width:6px;height:6px;border-radius:3px;background:#C5D0C8"></div><div style="width:6px;height:6px;border-radius:3px;background:#C5D0C8"></div>
+    <span style="font-size:12px;color:#5B6B60;margin-left:8px">Nächste Spiele · 1 von 3</span>
+  </div>
+
+  <!-- 2. Offene Aktionen: wischbares Band -->
+  <div style="display:flex;align-items:baseline;justify-content:space-between;padding:18px 20px 8px 20px">
+    <div style="font-family:Oswald,sans-serif;font-weight:500;font-size:18px">Offen <span style="font-family:'Open Sans',sans-serif;font-size:12px;font-weight:700;background:#FDE4E4;color:#8A1C1C;border-radius:999px;padding:2px 9px;margin-left:4px">3</span></div>
+    <a href="#" style="font-size:13px;font-weight:600;color:#1F7A3D;text-decoration:none">Alle ›</a>
+  </div>
+  <div style="display:flex;gap:10px;padding-left:20px;overflow:hidden">
+    <div style="flex:0 0 232px;box-sizing:border-box;background:#FFFFFF;border-radius:20px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 0 0 2px #E8A93A">
+      <div style="flex:0 0 36px;width:36px;height:36px;border-radius:12px;background:#FFF1D6;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A4B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+      <div style="min-width:0;flex:1 1 auto"><div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Zusage: Training B1</div><div style="font-size:11px;color:#7A4B00;font-weight:700">Mia · noch 2 Std.</div></div>
+    </div>
+    <div style="flex:0 0 232px;box-sizing:border-box;background:#FFFFFF;border-radius:20px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 12px rgba(20,40,28,0.06)">
+      <div style="flex:0 0 36px;width:36px;height:36px;border-radius:12px;background:#CFE3FF;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#123B73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-8"/></svg></div>
+      <div style="min-width:0;flex:1 1 auto"><div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Umfrage: Weihnachtsfeier</div><div style="font-size:11px;color:#5B6B60">noch 3 Tage · antworten ›</div></div>
+    </div>
+    <div style="flex:0 0 232px;box-sizing:border-box;background:#FFFFFF;border-radius:20px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 12px rgba(20,40,28,0.06)">
+      <div style="flex:0 0 36px;width:36px;height:36px;border-radius:12px;background:#FFE0B8;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A4B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 11h6M9 15h4"/></svg></div>
+      <div style="min-width:0;flex:1 1 auto"><div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Aufgabe: Trikots waschen</div><div style="font-size:11px;color:#5B6B60">B1 · bis Mi., 14.10.</div></div>
+    </div>
+  </div>
+
+  <!-- 3. Deine Woche -->
+  <div style="display:flex;align-items:baseline;justify-content:space-between;padding:22px 20px 10px 20px">
+    <div style="font-family:Oswald,sans-serif;font-weight:500;font-size:22px">Deine Woche <span style="font-family:'Open Sans',sans-serif;font-size:12px;font-weight:600;color:#5B6B60;margin-left:6px">10.–16. Okt.</span></div>
+    <a href="#" style="font-size:14px;font-weight:600;color:#1F7A3D;text-decoration:none">Kalender ›</a>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;padding:0 20px">
+    <div style="background:#FFFFFF;border-radius:20px;padding:9px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 0 0 2px {{accent}}"><div style="flex:0 0 48px;height:50px;border-radius:14px;background:{{accent}};color:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:9px;font-weight:700;letter-spacing:1px">HEUTE</div><div style="font-family:Oswald,sans-serif;font-size:20px;font-weight:500;line-height:1.1">10</div></div><div style="flex:1 1 auto;min-width:0"><div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Elternabend B-Jugend</div><div style="font-size:12px;color:#5B6B60;margin-top:2px">19:30 · Vereinsheim</div></div><button aria-label="Zusagen" style="flex:0 0 44px;width:44px;height:44px;border-radius:22px;border:0;background:{{accent}};display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></div>
+    <div style="background:#FFFFFF;border-radius:20px;padding:9px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 12px rgba(20,40,28,0.05);opacity:0.85"><div style="flex:0 0 48px;height:50px;border-radius:14px;background:#EEF1EE;color:#5B6B60;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:9px;font-weight:700;letter-spacing:1px">SO</div><div style="font-family:Oswald,sans-serif;font-size:20px;font-weight:500;line-height:1.1">11</div></div><div style="flex:1 1 auto;min-width:0"><div style="font-size:14px;font-weight:700;text-decoration:line-through;color:#5B6B60;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Testspiel gegen SG Nord</div><div style="font-size:12px;color:#8A1C1C;margin-top:2px">Ben · E1 · Platz gesperrt</div></div><div style="flex:0 0 auto;font-size:11px;font-weight:700;background:#FDE4E4;color:#8A1C1C;border-radius:999px;padding:5px 10px">Abgesagt</div></div>
+    <div style="background:#FFFFFF;border-radius:20px;padding:9px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 12px rgba(20,40,28,0.05)"><div style="flex:0 0 48px;height:50px;border-radius:14px;background:#E3F4E7;color:#14532D;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:9px;font-weight:700;letter-spacing:1px">MO</div><div style="font-family:Oswald,sans-serif;font-size:20px;font-weight:500;line-height:1.1">12</div></div><div style="flex:1 1 auto;min-width:0"><div style="font-size:14px;font-weight:700">Training B1</div><div style="font-size:12px;color:#5B6B60;margin-top:2px">Mia · 18:00 · Sportplatz 2</div></div><div style="flex:0 0 auto;font-size:11px;font-weight:700;background:#E3F4E7;color:#14532D;border-radius:999px;padding:5px 10px">Zugesagt</div></div>
+    <div style="background:#FFFFFF;border-radius:20px;padding:9px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 12px rgba(20,40,28,0.05)"><div style="flex:0 0 48px;height:50px;border-radius:14px;background:#E3F4E7;color:#14532D;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:9px;font-weight:700;letter-spacing:1px">MI</div><div style="font-family:Oswald,sans-serif;font-size:20px;font-weight:500;line-height:1.1">14</div></div><div style="flex:1 1 auto;min-width:0"><div style="font-size:14px;font-weight:700">Training E1</div><div style="font-size:12px;color:#5B6B60;margin-top:2px">Ben · 17:00 · Sportplatz 1</div></div><div style="flex:0 0 auto;font-size:11px;font-weight:700;background:#E3F4E7;color:#14532D;border-radius:999px;padding:5px 10px">Zugesagt</div></div>
+    <div style="background:#FFFFFF;border-radius:20px;padding:9px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 12px rgba(20,40,28,0.05)"><div style="flex:0 0 48px;height:50px;border-radius:14px;background:#E3F4E7;color:#14532D;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:9px;font-weight:700;letter-spacing:1px">FR</div><div style="font-family:Oswald,sans-serif;font-size:20px;font-weight:500;line-height:1.1">16</div></div><div style="flex:1 1 auto;min-width:0"><div style="font-size:14px;font-weight:700">Training B1</div><div style="font-size:12px;color:#5B6B60;margin-top:2px">Mia · 18:00 · Sportplatz 2</div></div><div style="flex:0 0 auto;font-size:11px;font-weight:700;background:#FFF1D6;color:#7A4B00;border-radius:999px;padding:5px 10px">Offen</div></div>
+  </div>
+  <div style="margin:10px 20px 0 20px;border-radius:16px;background:#FFF6E3;padding:10px 14px;display:flex;align-items:center;gap:10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7A4B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 14c3 2 6-2 9 0s6 2 9 0M12 9V5"/></svg><div style="font-size:13px;color:#4A3000;min-width:0">Geburtstag in B1: <b>Leon K.</b> am Mi., 14.10.</div></div>
+
+  <!-- 4. Neuigkeiten für dich -->
+  <div style="display:flex;align-items:baseline;justify-content:space-between;padding:22px 20px 10px 20px">
+    <div style="font-family:Oswald,sans-serif;font-weight:500;font-size:22px">Neuigkeiten für dich</div>
+    <a href="#" style="font-size:14px;font-weight:600;color:#1F7A3D;text-decoration:none">Alle anzeigen ›</a>
+  </div>
+  <div style="margin:0 20px;background:#FFFFFF;border-radius:24px;box-shadow:0 6px 18px rgba(20,40,28,0.06)">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 14px"><div style="flex:0 0 52px;width:52px;height:52px;border-radius:16px;background:#FDE4E4;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8A1C1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v5"/></svg></div><div style="flex:1 1 auto;min-width:0"><div style="font-size:14px;font-weight:700;line-height:1.25">Platzsperrung am Wochenende</div><div style="display:flex;gap:6px;margin-top:5px"><span style="font-size:11px;font-weight:700;background:#E8F0FF;color:#123B73;border-radius:999px;padding:3px 9px">Verein</span><span style="font-size:11px;font-weight:700;background:#FDE4E4;color:#8A1C1C;border-radius:999px;padding:3px 9px">Dringend</span></div></div><div style="flex:0 0 auto;font-size:12px;color:#5B6B60">1 Std.</div></div>
+    <div style="height:1px;background:#EEF1EE;margin:0 14px"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 14px"><div style="flex:0 0 52px;width:52px;height:52px;border-radius:16px;background:#FFF1D6;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7A4B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1zM17 9a4 4 0 0 1 0 6"/></svg></div><div style="flex:1 1 auto;min-width:0"><div style="font-size:14px;font-weight:700;line-height:1.25">Jahreshauptversammlung am 14. November</div><div style="display:flex;gap:6px;margin-top:5px"><span style="font-size:11px;font-weight:700;background:#E8F0FF;color:#123B73;border-radius:999px;padding:3px 9px">Verein</span><span style="font-size:11px;font-weight:700;background:#FFF1D6;color:#7A4B00;border-radius:999px;padding:3px 9px">Wichtig</span></div></div><div style="flex:0 0 auto;font-size:12px;color:#5B6B60">2 Std.</div></div>
+    <div style="height:1px;background:#EEF1EE;margin:0 14px"></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 14px"><div style="flex:0 0 52px;width:52px;height:52px;border-radius:16px;background:#E3F4E7;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></div><div style="flex:1 1 auto;min-width:0"><div style="font-size:14px;font-weight:700;line-height:1.25">Spielbericht: 3:1 gegen den SC Ost</div><div style="display:flex;gap:6px;margin-top:5px"><span style="font-size:11px;font-weight:700;background:#EEF1EE;color:#33423A;border-radius:999px;padding:3px 9px">B1</span></div></div><div style="flex:0 0 auto;font-size:12px;color:#5B6B60">gestern</div></div>
+  </div>
+
+  <!-- 5. Schnellzugriff (Chips, rollenabhängig, anpassbar) -->
+  <div style="display:flex;align-items:baseline;justify-content:space-between;padding:22px 20px 10px 20px">
+    <div style="font-family:Oswald,sans-serif;font-weight:500;font-size:22px">Schnellzugriff <span style="font-family:'Open Sans',sans-serif;font-size:12px;font-weight:700;background:#E3F4E7;color:#14532D;border-radius:999px;padding:3px 10px;vertical-align:middle;margin-left:6px">Eltern</span></div>
+    <a href="#" style="font-size:14px;font-weight:600;color:#1F7A3D;text-decoration:none">Anpassen</a>
+  </div>
+  <div style="display:flex;gap:8px;padding-left:20px;overflow:hidden">
+    <div style="flex:0 0 auto;height:46px;border-radius:23px;background:#FFFFFF;box-shadow:0 4px 12px rgba(20,40,28,0.06);display:flex;align-items:center;gap:8px;padding:0 16px 0 8px"><div style="width:32px;height:32px;border-radius:16px;background:#CFE3FF;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#123B73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/></svg></div><span style="font-size:13px;font-weight:700">Mannschaft</span></div>
+    <div style="flex:0 0 auto;height:46px;border-radius:23px;background:#FFFFFF;box-shadow:0 4px 12px rgba(20,40,28,0.06);display:flex;align-items:center;gap:8px;padding:0 12px 0 8px"><div style="width:32px;height:32px;border-radius:16px;background:#FFE0B8;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A4B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/></svg></div><span style="font-size:13px;font-weight:700">Kasse</span><span style="min-width:20px;height:20px;border-radius:10px;background:#E08A00;color:#FFFFFF;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">1</span></div>
+    <div style="flex:0 0 auto;height:46px;border-radius:23px;background:#FFFFFF;box-shadow:0 4px 12px rgba(20,40,28,0.06);display:flex;align-items:center;gap:8px;padding:0 12px 0 8px"><div style="width:32px;height:32px;border-radius:16px;background:#D6EFE0;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15V9a2 2 0 0 1 2-2h9l5 5v3"/></svg></div><span style="font-size:13px;font-weight:700">Fahrten</span><span style="height:20px;border-radius:10px;background:{{accent}};color:#FFFFFF;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 8px">neu</span></div>
+    <div style="flex:0 0 auto;height:46px;border-radius:23px;background:#FFFFFF;box-shadow:0 4px 12px rgba(20,40,28,0.06);display:flex;align-items:center;gap:8px;padding:0 16px 0 8px"><div style="width:32px;height:32px;border-radius:16px;background:#F6D3F0;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B1E62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16"/></svg></div><span style="font-size:13px;font-weight:700">Abwesenheit</span></div>
+    <div style="flex:0 0 auto;height:46px;border-radius:23px;border:2px dashed #BFCBC3;display:flex;align-items:center;padding:0 14px;font-size:13px;font-weight:700;color:#5B6B60">+ Hinzufügen</div>
+  </div>
+
+  <!-- Verein im Überblick (nur Vorstand und Vereinsmitglieder) -->
+  <div style="margin:18px 20px 0 20px;background:#FFFFFF;border-radius:24px;padding:14px;box-shadow:0 6px 18px rgba(20,40,28,0.06)">
+    <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-family:Oswald,sans-serif;font-weight:500;font-size:18px">Verein im Überblick</div><span style="font-size:11px;font-weight:700;background:#E3F4E7;color:#14532D;border-radius:999px;padding:4px 10px">Vorstand</span></div>
+    <div style="display:flex;justify-content:space-around;margin-top:10px">
+      <div style="text-align:center"><div style="font-family:Oswald,sans-serif;font-size:26px;font-weight:500;color:#14532D">11</div><div style="font-size:12px;color:#5B6B60">Mannschaften</div></div>
+      <div style="text-align:center"><div style="font-family:Oswald,sans-serif;font-size:26px;font-weight:500;color:#14532D">312</div><div style="font-size:12px;color:#5B6B60">Mitglieder</div></div>
+      <div style="text-align:center"><div style="font-family:Oswald,sans-serif;font-size:26px;font-weight:500;color:#14532D">2</div><div style="font-size:12px;color:#5B6B60">Freigaben</div></div>
+    </div>
+    <div style="font-size:12px;color:#5B6B60;margin-top:8px;text-align:center">Nächster Vereinstermin: Jahreshauptversammlung · 14.11.</div>
+  </div>
+
+  <!-- Tab-Leiste -->
+  <div style="position:absolute;left:20px;right:20px;bottom:22px;height:68px;border-radius:34px;background:#FFFFFF;box-shadow:0 12px 30px rgba(20,40,28,0.16);display:flex;align-items:center;justify-content:space-between;padding:0 10px">
+    <div style="height:48px;border-radius:24px;background:{{accent}};color:#FFFFFF;display:flex;align-items:center;gap:6px;padding:0 16px;font-size:14px;font-weight:700"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+    <div style="width:46px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5B6B60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Team" role="img"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4.5 1.8 4.5 4.5"/></svg></div>
+    <div style="width:46px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5B6B60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Termine" role="img"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+    <div style="width:46px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5B6B60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Verein" role="img"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg></div>
+    <div style="width:46px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5B6B60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Mehr" role="img"><rect x="4" y="4" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2"/></svg></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#1F7A3D","options":["#1F7A3D","#1D4ED8","#C2410C","#7C3AED"]},"$preview":{"width":390,"height":1800}}'>
+class Component extends DCLogic {
+  shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const f = (c) => Math.max(0, Math.min(255, Math.round(amt < 0 ? c * (1 + amt) : c + (255 - c) * amt)));
+    return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => f(v).toString(16).padStart(2, '0')).join('');
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#1F7A3D';
+    return { accent, accentDark: this.shade(accent, -0.3) };
+  }
+}
+</script>
+</body>
+</html>

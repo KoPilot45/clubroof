@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Mehr – Entwurf</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;family=Oswald:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Open Sans',system-ui,sans-serif}
+button{font-family:inherit}
+.row{display:flex;align-items:center;gap:12px;padding:10px 14px;min-height:44px}
+.row .ic{flex:0 0 40px;width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center}
+.row .tx{flex:1 1 auto;min-width:0}
+.row .tt{font-size:14px;font-weight:700}
+.row .ss{font-size:12px;color:#5B6B60;margin-top:1px}
+.row .ch{flex:0 0 auto;color:#8A978F;font-size:20px}
+.sep{height:1px;background:#EEF1EE;margin:0 14px}
+.card{margin:0 20px;background:#FFFFFF;border-radius:24px;box-shadow:0 6px 18px rgba(20,40,28,0.06)}
+.h2{font-family:Oswald,sans-serif;font-weight:500;font-size:22px;padding:22px 20px 10px 20px}
+</style>
+</helmet>
+<div style="position:relative;width:390px;height:1500px;box-sizing:border-box;background:#F6F8F6;color:#17231B;font-family:'Open Sans',system-ui,sans-serif;overflow:hidden">
+
+  <!-- Kopf -->
+  <div style="display:flex;align-items:center;gap:10px;padding:28px 20px 0 20px">
+    <div style="flex:0 0 48px;width:48px;height:48px;border-radius:24px;background:#FFFFFF;box-shadow:0 4px 14px rgba(20,40,28,0.10);display:flex;align-items:center;justify-content:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Vereinslogo" role="img"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+    <div style="flex:1 1 auto;min-width:0"><div style="font-family:Oswald,sans-serif;font-weight:500;font-size:26px;line-height:1.1">Mehr</div><div style="font-size:12px;color:#5B6B60">Profil, Einstellungen und Hilfe</div></div>
+    <button aria-label="Suche" style="flex:0 0 46px;width:46px;height:46px;border-radius:23px;border:0;background:#FFFFFF;box-shadow:0 4px 14px rgba(20,40,28,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#17231B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+    <button aria-label="Benachrichtigungen, 3 neu" style="position:relative;flex:0 0 46px;width:46px;height:46px;border-radius:23px;border:0;background:#FFFFFF;box-shadow:0 4px 14px rgba(20,40,28,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#17231B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg><span style="position:absolute;top:-2px;right:-2px;min-width:20px;height:20px;border-radius:10px;background:#D93A3A;color:#FFFFFF;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #F6F8F6;box-sizing:border-box">3</span></button>
+  </div>
+
+  <!-- Profil (einzige Primärfläche), mit langem Namen -->
+  <div style="position:relative;overflow:hidden;margin:18px 20px 0 20px;border-radius:28px;padding:18px;box-sizing:border-box;background:linear-gradient(160deg,{{accentDark}} 0%,{{accent}} 62%);color:#FFFFFF;display:flex;gap:14px;align-items:center;box-shadow:0 14px 30px rgba(31,122,61,0.26)">
+    <svg width="350" height="140" viewBox="0 0 350 140" aria-hidden="true" style="position:absolute;left:0;top:0"><path d="M0 95 C60 65 110 120 175 95 C240 65 290 105 350 80 L350 140 L0 140Z" fill="rgba(255,255,255,0.08)"/><circle cx="318" cy="20" r="56" fill="rgba(255,255,255,0.08)"/></svg>
+    <div style="position:relative;flex:0 0 64px;width:64px;height:64px;border-radius:32px;background:#FFFFFF;color:#14532D;display:flex;align-items:center;justify-content:center;font-family:Oswald,sans-serif;font-size:24px;font-weight:600">MM</div>
+    <div style="position:relative;flex:1 1 auto;min-width:0">
+      <div style="font-family:Oswald,sans-serif;font-size:22px;font-weight:500;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word">Maximilian-Alexander Mustermann-Schmidt</div>
+      <div style="font-size:12px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">maximilian.mustermann@example.org</div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span style="font-size:11px;font-weight:700;background:#FFFFFF;color:#14532D;border-radius:999px;padding:4px 10px">Elternteil</span><span style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.25);border-radius:999px;padding:4px 10px">Vereinsmitglied</span></div>
+    </div>
+  </div>
+
+  <!-- Meine Kinder -->
+  <div class="h2">Meine Kinder</div>
+  <div class="card">
+    <div class="row"><div class="ic" style="background:#E3F4E7;color:#14532D;font-weight:700;border-radius:20px;width:40px;font-size:14px">MM</div><div class="tx"><div class="tt">Mia Mustermann</div><div class="ss">B1 · du verwaltest Termine, Zusagen und Abwesenheiten</div></div><div class="ch">›</div></div>
+    <div class="sep"></div>
+    <div class="row"><div class="ic" style="background:#CFE3FF;color:#123B73;font-weight:700;border-radius:20px;font-size:14px">BM</div><div class="tx"><div class="tt">Ben Mustermann</div><div class="ss">E1 · du verwaltest Termine, Zusagen und Abwesenheiten</div></div><div class="ch">›</div></div>
+  </div>
+
+  <!-- Mein Bereich -->
+  <div class="h2">Mein Bereich</div>
+  <div class="card">
+    <div class="row"><div class="ic" style="background:#E5E1FA"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3B2A86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c0-4 3-6.500 7-6.500s7 2.500 7 6.500"/></svg></div><div class="tx"><div class="tt">Profil &amp; Statistik</div><div class="ss">Daten, Foto und Auswertung</div></div><div class="ch">›</div></div>
+    <div class="sep"></div>
+    <div class="row"><div class="ic" style="background:#F6D3F0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B1E62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16"/></svg></div><div class="tx"><div class="tt">Abwesenheiten</div><div class="ss">Urlaub, Verletzung, Prüfung melden</div></div><div class="ch">›</div></div>
+    <div class="sep"></div>
+    <div class="row"><div class="ic" style="background:#FFE0B8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A4B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></div><div class="tx"><div class="tt">Benachrichtigungen</div><div class="ss">3 ungelesen</div></div><span style="flex:0 0 auto;min-width:22px;height:22px;border-radius:11px;background:#D93A3A;color:#FFFFFF;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px">3</span><div class="ch">›</div></div>
+    <div class="sep"></div>
+    <div class="row"><div class="ic" style="background:#CFE3FF"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#123B73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M9 15h6"/></svg></div><div class="tx"><div class="tt">Kalender-Abo</div><div class="ss">Termine im Handykalender</div></div><div class="ch">›</div></div>
+  </div>
+
+  <!-- Meine Mannschaften -->
+  <div class="h2">Meine Mannschaften</div>
+  <div class="card">
+    <div class="row"><div class="ic" style="background:#E3F4E7"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3l-5 4 3 3 2-1v12h8V9l2 1 3-3-5-4a4 4 0 0 1-8 0z"/></svg></div><div class="tx"><div class="tt">B1 · B-Jugend</div><div class="ss">Mia · Kreisliga B</div></div><div class="ch">›</div></div>
+    <div class="sep"></div>
+    <div class="row"><div class="ic" style="background:#E3F4E7"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3l-5 4 3 3 2-1v12h8V9l2 1 3-3-5-4a4 4 0 0 1-8 0z"/></svg></div><div class="tx"><div class="tt">E1 · E-Jugend</div><div class="ss">Ben · Staffel 2</div></div><div class="ch">›</div></div>
+  </div>
+
+  <!-- Einstellungen und Hilfe -->
+  <div class="h2">Einstellungen</div>
+  <div class="card">
+    <div class="row"><div class="ic" style="background:#EEF1EE"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#33423A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.200l2-1.500-2-3.500-2.300 1a7 7 0 0 0-2-1.200L14 3h-4l-.6 2.600a7 7 0 0 0-2 1.200l-2.300-1-2 3.500 2 1.500A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.200l-2 1.500 2 3.500 2.300-1a7 7 0 0 0 2 1.200L10 21h4l.6-2.600a7 7 0 0 0 2-1.200l2.300 1 2-3.500-2-1.500c.1-.4.1-.8.1-1.200z"/></svg></div><div class="tx"><div class="tt">Konto &amp; Einstellungen</div><div class="ss">Passwort, 2-Faktor, Darstellung, Sprache</div></div><div class="ch">›</div></div>
+    <div class="sep"></div>
+    <div class="row"><div class="ic" style="background:#D6EFE0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14532D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.500 9a2.500 2.500 0 1 1 3.500 2.300c-.7.400-1 .9-1 1.700M12 17v.5"/></svg></div><div class="tx"><div class="tt">Hilfe &amp; Anleitung</div><div class="ss">Häufige Fragen und Rundgang</div></div><div class="ch">›</div></div>
+    <div class="sep"></div>
+    <div class="row"><div class="ic" style="background:#FFF1D6"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A4B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6"/></svg></div><div class="tx"><div class="tt">Einladen</div><div class="ss">Link oder QR-Code teilen</div></div><div class="ch">›</div></div>
+  </div>
+
+  <!-- Abmelden -->
+  <div style="margin:22px 20px 0 20px"><button style="width:100%;height:50px;border-radius:25px;border:2px solid #D93A3A;background:#FFFFFF;color:#8A1C1C;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A1C1C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Abmelden</button></div>
+
+  <!-- Tab-Leiste: Mehr aktiv -->
+  <div style="position:absolute;left:20px;right:20px;bottom:22px;height:68px;border-radius:34px;background:#FFFFFF;box-shadow:0 12px 30px rgba(20,40,28,0.16);display:flex;align-items:center;justify-content:space-between;padding:0 10px">
+    <div style="width:46px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5B6B60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Home" role="img"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></div>
+    <div style="width:46px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5B6B60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Team" role="img"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4.5 1.8 4.5 4.5"/></svg></div>
+    <div style="width:46px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5B6B60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Termine" role="img"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+    <div style="width:46px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5B6B60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Verein" role="img"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg></div>
+    <div style="height:48px;border-radius:24px;background:{{accent}};color:#FFFFFF;display:flex;align-items:center;gap:6px;padding:0 16px;font-size:14px;font-weight:700"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2"/></svg>Mehr</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#1F7A3D","options":["#1F7A3D","#1D4ED8","#C2410C","#7C3AED"]},"$preview":{"width":390,"height":1500}}'>
+class Component extends DCLogic {
+  shade(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    const f = (c) => Math.max(0, Math.min(255, Math.round(amt < 0 ? c * (1 + amt) : c + (255 - c) * amt)));
+    return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => f(v).toString(16).padStart(2, '0')).join('');
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#1F7A3D';
+    return { accent, accentDark: this.shade(accent, -0.3) };
+  }
+}
+</script>
+</body>
+</html>

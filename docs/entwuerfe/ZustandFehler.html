@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Zustand Fehler und Hinweise</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;family=Oswald:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Open Sans',system-ui,sans-serif}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="position:relative;width:390px;height:900px;box-sizing:border-box;background:#F6F8F6;color:#17231B;overflow:hidden;font-family:'Open Sans',system-ui,sans-serif">
+
+  <!-- Fehler beim Laden -->
+  <div style="margin:28px 20px 0 20px;border-radius:24px;background:#FFFFFF;box-shadow:0 6px 18px rgba(20,40,28,0.06);padding:20px;display:flex;flex-direction:column;gap:10px" role="alert">
+    <div style="display:flex;align-items:center;gap:12px"><div style="flex:0 0 44px;width:44px;height:44px;border-radius:14px;background:#FDE4E4;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8A1C1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/></svg></div><div style="font-family:Oswald,sans-serif;font-size:20px;font-weight:500">Das hat nicht geklappt</div></div>
+    <div style="font-size:14px;color:#5B6B60;line-height:1.4">Die Daten konnten nicht geladen werden. Bitte prüfe deine Verbindung und versuche es noch einmal.</div>
+    <button style="height:48px;border:0;border-radius:24px;background:{{accent}};color:#FFFFFF;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.300-5.600M20 4v5h-5"/></svg>Erneut versuchen</button>
+  </div>
+
+  <!-- Admin: 2-Faktor erforderlich -->
+  <div style="margin:16px 20px 0 20px;border-radius:24px;background:#FDE4E4;padding:18px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A1C1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M12 9v4M12 16v.5"/></svg><div style="font-size:15px;font-weight:700;color:#5E1212">2-Faktor-Anmeldung erforderlich</div></div>
+    <div style="font-size:13px;color:#5E1212;line-height:1.4">Für das Administrationskonto ist sie Pflicht. Bis dahin ist die Verwaltung gesperrt.</div>
+    <button style="height:46px;border:0;border-radius:23px;background:#8A1C1C;color:#FFFFFF;font-size:14px;font-weight:700;cursor:pointer">Jetzt einrichten</button>
+  </div>
+
+  <!-- Rückmeldung nach einer Aktion -->
+  <div style="margin:16px 20px 0 20px;border-radius:20px;background:#14201A;color:#FFFFFF;padding:12px 14px;display:flex;align-items:center;gap:12px" role="status">
+    <div style="flex:0 0 28px;width:28px;height:28px;border-radius:14px;background:#2E8B57;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg></div>
+    <div style="flex:1 1 auto;min-width:0;font-size:14px;font-weight:600">Zusage für Mia gespeichert</div>
+    <button style="flex:0 0 auto;height:44px;border:0;background:transparent;color:#8FE0AB;font-size:14px;font-weight:700;padding:0 6px;cursor:pointer">Rückgängig</button>
+  </div>
+
+  <!-- Bestätigung bei heiklen Aktionen -->
+  <div style="margin:16px 20px 0 20px;border-radius:28px;background:#FFFFFF;box-shadow:0 14px 34px rgba(20,40,28,0.16);padding:22px 20px;display:flex;flex-direction:column;gap:10px">
+    <div style="width:44px;height:5px;border-radius:3px;background:#D5DDD7;align-self:center"></div>
+    <div style="font-family:Oswald,sans-serif;font-size:22px;font-weight:500;margin-top:6px">Termin absagen?</div>
+    <div style="font-size:14px;color:#5B6B60;line-height:1.4">Die Mannschaft wird sofort benachrichtigt. Bitte nenne einen Grund.</div>
+    <div style="height:48px;border-radius:16px;border:1.5px solid #D5DDD7;display:flex;align-items:center;padding:0 14px;font-size:14px;color:#8A978F">Grund, z. B. Platz gesperrt</div>
+    <div style="display:flex;gap:10px;margin-top:6px"><button style="flex:1;height:48px;border-radius:24px;border:2px solid #D5DDD7;background:#FFFFFF;font-size:14px;font-weight:700;color:#17231B;cursor:pointer">Abbrechen</button><button style="flex:1;height:48px;border:0;border-radius:24px;background:#B42318;color:#FFFFFF;font-size:14px;font-weight:700;cursor:pointer">Absagen</button></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#1F7A3D","options":["#1F7A3D","#1D4ED8","#C2410C","#7C3AED"]},"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#1F7A3D' };
+  }
+}
+</script>
+</body>
+</html>

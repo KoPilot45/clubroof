@@ -5,7 +5,7 @@ Team, Termine, Verein, Mehr, Dunkelmodus, Zustände). Dieses Dokument legt fest,
 [`packages/design-tokens`](../packages/design-tokens/src) und sind per Test abgesichert. Die Umsetzung in der App
 folgt als eigenes Paket (siehe unten und `docs/PAKETE.md`, Paket L).
 
-Farben und ihre Regeln: [`FARBKONZEPT.md`](FARBKONZEPT.md).
+Farben und ihre Regeln: [`FARBKONZEPT.md`](FARBKONZEPT.md). Die gewählten Entwürfe liegen als HTML unter [`entwuerfe/`](entwuerfe/README.md).
 
 ## Leitgedanken
 
@@ -70,14 +70,15 @@ Farben und ihre Regeln: [`FARBKONZEPT.md`](FARBKONZEPT.md).
   Kacheln mit Hinweisen → Nächster Termin mit Kaderstatus → Letzte Ergebnisse → Trainingswoche.
 - **Termine:** Filter (Alle, je Kind, Spiele, Training, Verein) → Als Nächstes (Hero) → Liste → Kalender → Tag.
 - **Verein:** Nächster Vereinstermin (Hero) → Kacheln „Vereinsleben“ (rollenabhängig) → Heute auf der Anlage → Vereinsnews.
-- **Mehr** (Name offen): Profilkarte (Hero) → Meine Kinder → Mein Bereich → Meine Mannschaften → Einstellungen → Abmelden.
+- **Mehr:** Profilkarte (Hero) → Meine Kinder → Mein Bereich → Meine Mannschaften → Einstellungen → Abmelden.
   Verwaltung ist über den Schnellzugriff erreichbar, nicht mehr über einen eigenen Kopf-Button.
 - **Zustände:** Laden, Offline, Leer, Fehler, Warnung (2-Faktor für Admin), Rückmeldung mit Rückgängig, Bestätigung.
 
 ## Offene Entscheidungen
 
-- **Name für „Mehr“:** „Profil“ ist zu eng (Inhalt: Kinder, Mannschaften, Benachrichtigungen, Abwesenheiten, Einstellungen, Hilfe).
-  Kandidaten: „Mein Bereich“, „Konto“, „Menü“, „Mehr“. Bis zur Entscheidung bleibt „Mehr“.
+- **Name für „Mehr“:** entschieden (10.10.2026): bleibt „Mehr“. „Profil“ wäre zu eng (Inhalt: Kinder, Mannschaften,
+  Benachrichtigungen, Abwesenheiten, Einstellungen, Hilfe); „Mein Bereich“ bleibt eine mögliche spätere Alternative.
+- **Suche im Kopf:** Beim Umbau erst mit eingeschränktem Umfang (Mitglieder, Termine) oder ohne Knopf, bis die globale Suche steht – offen.
 - **Schrift** für Fließtext (Open Sans bleibt, bis Alternativen verglichen sind).
 
 ## Umsetzung in der App (geplant, Paket L)
