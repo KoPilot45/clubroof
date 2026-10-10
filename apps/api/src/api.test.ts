@@ -272,6 +272,18 @@ describe.skipIf(!url)('API', () => {
       );
     });
 
+    it('Home: Spiele zum Wischen (chronologisch, über alle Kinder) und Deine Woche', async () => {
+      const home = await get<HomeResponse>('/home', (await login('eltern')).token);
+      expect(home.matches.length).toBeGreaterThan(0);
+      expect(home.matches.length).toBeLessThanOrEqual(3);
+      expect(home.matches.every((m) => m.type === 'match' || m.type === 'tournament')).toBe(true);
+      const starts = home.matches.map((m) => Date.parse(m.startsAt));
+      expect(starts).toEqual([...starts].sort((x, y) => x - y));
+      expect(home.nextMatch?.id).toBe(home.matches[0]!.id);
+      const week = Date.now() + 7 * 24 * 60 * 60 * 1000 + 24 * 60 * 60 * 1000;
+      expect(home.week.every((e) => Date.parse(e.startsAt) < week)).toBe(true);
+    });
+
     it('Dringende News stehen oben', async () => {
       const home = await get<HomeResponse>('/home', (await login('spieler')).token);
       expect(home.news[0]!.priority).toBe('urgent');
@@ -5000,6 +5012,30 @@ describe.skipIf(!url)('API', () => {
         (await send('PUT', '/me/preferences', player.token, { colorMode: 'lila' })).status,
       ).toBe(400);
       await send('PUT', '/me/preferences', player.token, { colorMode: 'light' });
+    });
+
+    it('Schnellzugriff: Auswahl je Person speichern, zurücksetzen, ungültige Schlüssel ablehnen', async () => {
+      const player = await login('spieler');
+      expect(player.me.user.quickLinks).toBeNull();
+      const saved = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        quickLinks: ['termine', 'news'],
+      });
+      expect(saved.body.user.quickLinks).toEqual(['termine', 'news']);
+      expect((await login('trainer')).me.user.quickLinks).toBeNull();
+      expect(
+        (await send('PUT', '/me/preferences', player.token, { quickLinks: ['Ungültig!'] })).status,
+      ).toBe(400);
+      expect(
+        (
+          await send('PUT', '/me/preferences', player.token, {
+            quickLinks: Array.from({ length: 13 }, (_, i) => `link-${i}`),
+          })
+        ).status,
+      ).toBe(400);
+      const reset = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        quickLinks: null,
+      });
+      expect(reset.body.user.quickLinks).toBeNull();
     });
 
     it('alle zehn Vereinsfarben sind wählbar, unbekannte werden abgelehnt', async () => {

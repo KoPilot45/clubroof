@@ -64,6 +64,8 @@ export type MeResponse = {
     colorMode: ColorMode;
     /** Gewählte Sprache; `null` = Sprache des Geräts */
     language: Locale | null;
+    /** Schnellzugriff auf Home (Schlüssel in Reihenfolge); `null` = Standard der Rolle */
+    quickLinks: string[] | null;
   };
   person: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
   club: ClubInfo;
@@ -294,6 +296,10 @@ export type ClubOverview = {
 
 export type HomeResponse = {
   nextMatch: EventSummary | null;
+  /** Die nächsten (bis zu drei) Spiele und Spielfeste über alle meine Personen, chronologisch */
+  matches: EventSummary[];
+  /** Alle meine Termine der nächsten sieben Tage, auch abgesagte */
+  week: EventSummary[];
   upcoming: EventSummary[];
   news: NewsItem[];
   actions: ActionItem[];
