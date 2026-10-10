@@ -31,6 +31,7 @@ Stand: 07.10.2026
 | Optik: farbige Flächen (Profilkarte, Kassenstand, Saldo, Verwaltungs-Band), Spiel-Anzeigetafel, Kaderkarten mit Foto und Nummer, breites Layout | –         | ✅    | Hell und dunkel geprüft (`scripts/e2e/optik.mjs`); auf Bildschirmen ab 640 px 3–4 Kachelspalten, Inhalt höchstens 960 px breit                                                                                       |
 | Kachel-Infos (Hinweis und Zähler in den Menükacheln)                                                                                            | –         | ✅    | Kasse (offen/Guthaben), Termine, Kader, Aufgaben, Freigaben, Mitglieder, Module u. a.; ein Endpunkt je Menü (`/tile-info`), Rechte serverseitig; Liste und Reihenfolge in `IDEEN.md`                                 |
 | Hilfe & Anleitung (Mehr)                                                                                                                        | –         | ✅    | Fragen und Antworten mit Suche, passend zur Rolle (alle, Eltern, Trainerteams, Kassenverwaltung, Vereinsmitglieder, Verwaltung); Inhalte in `lib/help-content.ts`, mit Sprungmarken zu den Funktionen                |
+| Über Clubroof (Mehr): AGB, Datenschutz, Privatsphäre-Einstellungen, Impressum, Changelog, Support, Funktion anfragen | – | ✅ | Beispieltexte bis zur juristischen Prüfung (`lib/about-content.ts`); Support und Funktionswunsch öffnen Platzhalter-Adressen der Webseite; Privatsphäre bündelt Kontakt-Sichtbarkeit, Benachrichtigungen und Konto-Sicherheit |
 
 ## 2. Home – persönliches Dashboard
 

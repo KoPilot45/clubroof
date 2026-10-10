@@ -220,12 +220,18 @@ export const en: Record<string, string> = {
   '{2} Aufrufe': '{2} views',
   '{2} im Trainerteam': '{2} in the coaching staff',
   '{2} Spiele': '{2} matches',
+  '• Erste Fassung mit Terminen, Kader, Mannschaftskasse und Nachrichten':
+    '• First version with fixtures, squad, team cash and messages',
   '• Google Kalender: am PC unter „Weitere Kalender → Per URL“ den Link einfügen.':
     '• Google Calendar: on a computer, paste the link under “Other calendars → From URL”.',
   '• iPhone/Mac: „Im Kalender öffnen“ antippen und das Abo bestätigen.':
     '• iPhone/Mac: tap “Open in calendar” and confirm the subscription.',
+  '• Neuer Look mit Startseite, Team, Termine, Verein und Mehr\n• Wisch-Karten für die nächsten Spiele\n• Offline-Warteschlange für Zu- und Absagen':
+    '• New look with home, team, fixtures, club and more\n• Swipe cards for the next matches\n• Offline queue for accepts and declines',
   '• Outlook: „Kalender hinzufügen → Aus dem Internet abonnieren“.':
     '• Outlook: “Add calendar → Subscribe from web”.',
+  '• Spielplan-Import aus dem DFBnet\n• Spiel-Tags Liga, Pokal und Testspiel\n• Wiederholen von Terminen bis zu einem Datum':
+    '• Fixture import from DFBnet\n• Match tags league, cup and friendly\n• Repeat events until a date',
   '1 Gerät für Push angemeldet.': '1 device registered for push.',
   '1 Mannschaft': '1 team',
   '1 Monat': '1 month',
@@ -233,6 +239,7 @@ export const en: Record<string, string> = {
   '1 Tag': '1 day',
   '1 Termin abgesagt': '1 event cancelled',
   '1 Woche': '1 week',
+  '1. Geltungsbereich': '1. Scope',
   '1. Öffne eine Authenticator-App (z. B. Google oder Microsoft Authenticator) und scanne den Code. 2. Gib den angezeigten 6-stelligen Code ein.':
     '1. Open an authenticator app (e.g. Google or Microsoft Authenticator) and scan the code. 2. Enter the 6-digit code shown.',
   '12 Monate': '12 months',
@@ -252,14 +259,18 @@ export const en: Record<string, string> = {
   '2-Faktor-Pflicht an': 'Two-factor requirement on',
   '2-Faktor-Pflicht aus': 'Two-factor requirement off',
   '2-Faktor-Pflicht ist aus': 'Two-factor requirement is off',
+  '2. Leistungen': '2. Services',
   '24 Std. vorher': '24 hours before',
   '26 Wochen': '26 weeks',
   '3 Std. vorher': '3 hours before',
   '3 Tage': '3 days',
+  '3. Pflichten der Nutzer': '3. Duties of users',
   '30 Min.': '30 min',
   '30 Tage': '30 days',
   '4 Wochen': '4 weeks',
+  '4. Haftung': '4. Liability',
   '48 Std. vorher': '48 hours before',
+  '5. Änderungen': '5. Changes',
   '6 Std.': '6 hrs',
   '60 Min.': '60 min',
   '8 Wochen': '8 weeks',
@@ -353,6 +364,7 @@ export const en: Record<string, string> = {
   'Alles erledigt – nichts offen.': 'All done – nothing open.',
   'Alles gelesen': 'All read',
   'Alles in Kacheln': 'Everything in tiles',
+  'Allgemeine Geschäftsbedingungen': 'General terms and conditions',
   'Als Entwurf speichern': 'Save as draft',
   'Als Nächstes': 'Next up',
   'Alte Herren': 'Veterans',
@@ -367,6 +379,8 @@ export const en: Record<string, string> = {
     'Remind of outstanding amounts on the 1st of the month',
   An: 'On',
   'An wen kann ich mich wenden?': 'Who can I contact?',
+  Anbieter: 'Provider',
+  'Anbieter und Kontakt': 'Provider and contact',
   'Andere Datei wählen': 'Choose another file',
   'Andere Person': 'Another person',
   'Andere Strafe': 'Other fine',
@@ -375,6 +389,8 @@ export const en: Record<string, string> = {
   'Anderes Foto': 'Different photo',
   'Anderes Logo wählen': 'Choose another logo',
   'Änderung speichern und informieren': 'Save change and notify',
+  'Änderungen dieser Bedingungen werden rechtzeitig in der App bekannt gegeben.':
+    'Changes to these terms will be announced in the app in good time.',
   'Änderungen veröffentlichen': 'Publish changes',
   Änderungsprotokoll: 'Change log',
   'Anderweitig im Einsatz': 'Playing elsewhere',
@@ -547,6 +563,11 @@ export const en: Record<string, string> = {
     'Deleting reverses the automatic cancellations. For teams with active yes/no responses, the response is open again afterwards.',
   'Beim Start und nach einer Minute im Hintergrund fragt die App nach Face ID, Fingerabdruck oder dem Gerätecode. Die Einstellung gilt nur auf diesem Gerät.':
     'At start and after a minute in the background the app asks for Face ID, fingerprint or the device code. This setting only applies to this device.',
+  Beispielinhalt: 'Sample content',
+  'Beispieltext – die Angaben werden vor dem Start ersetzt.':
+    'Sample text – the details will be replaced before launch.',
+  'Beispieltext: Die Haftung richtet sich nach den gesetzlichen Vorschriften. Details folgen in der endgültigen Fassung.':
+    'Sample text: Liability is governed by the statutory provisions. Details will follow in the final version.',
   Beitrag: 'Fee',
   'Beitrag anlegen': 'Create fee',
   Beiträge: 'Fees',
@@ -690,8 +711,12 @@ export const en: Record<string, string> = {
     'Entries are never deleted, only reversed: “Entries & reversal”, tap the entry, optionally enter a reason. The entry stays visible with a strikethrough and appears in the change log. To correct it, book again.',
   'Buchungen, Strafen und Getränke erfassen': 'Record entries, fines and drinks',
   Buchungsdatum: 'Booking date',
+  'Clubroof (Beispiel)\nMusterstraße 1\n12345 Musterstadt':
+    'Clubroof (example)\nMusterstraße 1\n12345 Musterstadt',
   'Clubroof entsperren': 'Unlock Clubroof',
   'Clubroof ist gesperrt': 'Clubroof is locked',
+  'Clubroof stellt Funktionen zur Organisation eines Sportvereins bereit, zum Beispiel Termine, Kader, Mitteilungen und Kassen. Der Umfang richtet sich nach den vom Verein aktivierten Modulen.':
+    'Clubroof provides functions for organising a sports club, for example fixtures, squads, messages and cash books. The scope depends on the modules activated by the club.',
   'Co-Trainer': 'Assistant coach',
   'Co-Trainer {0}': 'Assistant coach {0}',
   'Code an meine E-Mail-Adresse senden': 'Send code to my email address',
@@ -787,13 +812,19 @@ export const en: Record<string, string> = {
   'DATA_ENCRYPTION_KEY fehlt – in Produktion zwingend erforderlich.':
     'DATA_ENCRYPTION_KEY is missing – mandatory in production.',
   'Datei auswählen': 'Choose file',
+  'Daten herunterladen und Konto löschen': 'Download data and delete account',
+  'Daten werden gelöscht, wenn sie nicht mehr gebraucht werden oder du es verlangst, sofern keine gesetzliche Aufbewahrungspflicht besteht.':
+    'Data is deleted when it is no longer needed or when you request it, unless a legal retention obligation applies.',
   'Daten, Foto und Auswertung': 'Details, photo and statistics',
+  Datenschutz: 'Privacy',
+  Datenschutzerklärung: 'Privacy policy',
   Datum: 'Date',
   'Datum bitte als TT.MM.JJJJ': 'Please enter the date as DD.MM.YYYY',
   'Datum oder Uhrzeit nicht lesbar.': 'Date or time not readable.',
   Dauer: 'Duration',
   'Dazu habe ich nichts gefunden. Versuche ein anderes Stichwort.':
     'I found nothing on that. Try a different keyword.',
+  'DE 123 456 789 (Beispiel)': 'DE 123 456 789 (example)',
   'Defensives Mittelfeld': 'Defensive midfield',
   'Dein Anmeldecode': 'Your sign-in code',
   'Dein Aushang': 'Your notice',
@@ -806,6 +837,7 @@ export const en: Record<string, string> = {
   'Dein Konto ist keinem Verein zugeordnet.': 'Your account is not assigned to a club.',
   'Dein Konto wird die Vereinsadministration mit allen Rechten.':
     'Your account will become the club administration with all permissions.',
+  'Dein Konto zusätzlich schützen': 'Protect your account even more',
   'Dein Nachname': 'Your last name',
   'Dein Passwort ist geändert. Aus Sicherheitsgründen wurdest du auf allen Geräten abgemeldet.':
     'Your password has been changed. For security reasons you have been signed out on all devices.',
@@ -825,6 +857,7 @@ export const en: Record<string, string> = {
   'Deine Kinder': 'Your children',
   'Deine Mitgliedschaft ist beendet.': 'Your membership has ended.',
   'Deine News ist veröffentlicht': 'Your news is published',
+  'Deine Rechte': 'Your rights',
   'Deine Rückmeldung wird gesendet, sobald du wieder online bist.':
     "Your response will be sent as soon as you're back online.",
   'Deine Schadensmeldung ist {0}': 'Your damage report is {0}',
@@ -1106,11 +1139,15 @@ export const en: Record<string, string> = {
   'Dies ist ein Platzhalter aus dem Demoverein.': 'This is a placeholder from the demo club.',
   'Diese Antwort gehört nicht zur Umfrage.': 'This answer does not belong to the poll.',
   'Diese Aufgabe ist bereits vergeben.': 'This duty is already assigned.',
+  'Diese Bedingungen gelten für die Nutzung der App und der Web-Verwaltung von Clubroof durch Vereine und ihre Mitglieder.':
+    'These terms apply to the use of the app and the web administration of Clubroof by clubs and their members.',
   'Diese Einladung ist abgelaufen oder wurde bereits verwendet.':
     'This invitation has expired or has already been used.',
   'Diese Einladung wurde bereits verwendet.': 'This invitation has already been used.',
   'Diese Funktion ist für die Mannschaft nicht aktiviert.':
     'This feature is not enabled for the team.',
+  'Diese Funktionen folgen. Bis dahin wende dich bitte an deinen Verein oder den Support.':
+    'These functions are coming. Until then, please contact your club or support.',
   'Diese Mannschaft darfst du nicht bearbeiten.': 'You are not allowed to edit this team.',
   'Diese Mannschaft darfst du nicht einstellen.': 'You are not allowed to configure this team.',
   'Diese Mannschaft darfst du nicht löschen.': 'You are not allowed to delete this team.',
@@ -1128,6 +1165,7 @@ export const en: Record<string, string> = {
     'This season has not been prepared as the next season.',
   'Diese Schicht ist leider schon voll besetzt.':
     'Unfortunately, this shift is already fully staffed.',
+  'Diese Seite gibt es nicht.': 'This page does not exist.',
   'Diese Strafen gelten in deiner Mannschaft. Festgelegt werden sie vom Trainerteam und der Kasse.':
     'These fines apply on your team. They are set by the coaching staff and the team fund.',
   'Diese Umfrage kannst du nicht beenden.': 'You cannot close this poll.',
@@ -1139,6 +1177,8 @@ export const en: Record<string, string> = {
   'Dieser Link ist eine Mannschafts-Einladung.': 'This link is a team invitation.',
   'Dieser Link ist eine persönliche Einladung.': 'This link is a personal invitation.',
   'Dieser Termin gehört zu einer Serie': 'This event is part of a series',
+  'Dieser Text ist ein Platzhalter und wird vor dem Start durch die geprüfte Fassung ersetzt.':
+    'This text is a placeholder and will be replaced by the reviewed version before launch.',
   'Dieses Passwort ist zu leicht zu erraten.': 'This password is too easy to guess.',
   'Dir zugeteilte Mannschaftsaufgaben': 'Team tasks assigned to you',
   Do: 'Thu',
@@ -1152,6 +1192,8 @@ export const en: Record<string, string> = {
   Dringend: 'Urgent',
   'Dringendes kommt immer an': 'Urgent messages always get through',
   Du: 'You',
+  'Du bestimmst in deinem Profil, wer deine Kontaktdaten sehen darf. Trainer sehen nur die Daten ihrer Mannschaft.':
+    'You decide in your profile who may see your contact details. Coaches only see the data of their team.',
   'Du bist eingetragen': "You're signed up",
   'Du bist im Kader (Bank).': 'You are in the squad (bench).',
   'Du bist noch keiner Mannschaft zugeordnet.': 'You are not yet assigned to a team.',
@@ -1162,6 +1204,8 @@ export const en: Record<string, string> = {
   'Du hast {0} offen': 'You owe {0}',
   'du hast angefordert, dein Passwort für die Vereins-App zurückzusetzen. Öffne diesen Link':
     'you have requested to reset your password for the club app. Open this link',
+  'Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung und Datenübertragbarkeit. Wende dich dazu an deinen Verein oder an den Support.':
+    'You have the right to access, rectification, erasure, restriction and data portability. Please contact your club or support.',
   'Du kannst Abwesenheiten nur für dich oder deine Kinder eintragen.':
     'You can only enter absences for yourself or your children.',
   'Du kannst deine Stimme bis zum Ende ändern.': 'You can change your vote until the end.',
@@ -1209,6 +1253,8 @@ export const en: Record<string, string> = {
   'E-Mail-Adresse „{0}“ ist ungültig.': 'Email address “{0}” is invalid.',
   'E-Mail-Adresse bestätigt': 'E-mail address confirmed',
   'E-Mail-Adresse oder Passwort ist nicht korrekt.': 'Email address or password is incorrect.',
+  'E-Mail: kontakt@clubroof.example\nTelefon: 01234 567890':
+    'Email: kontakt@clubroof.example\nPhone: 01234 567890',
   'Ehemaliges Mitglied': 'Former member',
   'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik, Dokumente, News':
     'Own team, events, squad, training, needs/offers, statistics, documents, news',
@@ -1399,6 +1445,7 @@ export const en: Record<string, string> = {
   'Fundort / wo abholen?': 'Where found / where to collect?',
   Funktion: 'Function',
   'Funktion „{0}“ ist unbekannt.': 'Function “{0}” is unknown.',
+  'Funktion anfragen': 'Request a feature',
   Funktionen: 'Features',
   'Funktionen aktivierst oder deaktivierst du später unter Verwaltung › Module.':
     'You can enable or disable features later under Administration › Modules.',
@@ -1414,6 +1461,8 @@ export const en: Record<string, string> = {
     'Roles are still assigned for the section (e.g. youth management).',
   'Für den Versand fehlt eine E-Mail-Adresse.': 'An email address is missing for sending.',
   'Für dich: {0} offen': 'For you: {0} open',
+  'Für die Daten deines Vereins ist der Verein verantwortlich, Clubroof verarbeitet sie in seinem Auftrag. Genaue Angaben folgen in der endgültigen Fassung.':
+    "The club is responsible for your club's data; Clubroof processes it on the club's behalf. Exact details will follow in the final version.",
   'Für die Funktion fehlt die Mannschaft.': 'The team is missing for this function.',
   'Für die Trainingsquote zählt, wer wirklich da war.':
     'The training rate counts who actually attended.',
@@ -1566,10 +1615,13 @@ export const en: Record<string, string> = {
   'Heute ist auf der Anlage nichts geplant.': 'Nothing is planned at the facility today.',
   'Heute schon erinnert': 'Already reminded today',
   'Heutiger Stand: {0}': 'Current balance: {0}',
+  'Hier findest du alles, womit du selbst bestimmst, wer was von dir sieht und wie die App dich erreicht.':
+    'Here you can find everything you use to decide who sees what of you and how the app reaches you.',
   'Hier siehst du auf einen Blick, was als Nächstes ansteht: Termine, Neuigkeiten und was noch zu tun ist.':
     'Here you see at a glance what is coming up next: events, news and what still needs doing.',
   Hilfe: 'Help',
   'Hilfe & Anleitung': 'Help & guide',
+  'Hilfe auf der Webseite': 'Help on the website',
   'Hilfe jederzeit': 'Help any time',
   Himmelblau: 'Sky blue',
   'Hintergrundaufgaben fehlgeschlagen': 'Background tasks failed',
@@ -1623,6 +1675,7 @@ export const en: Record<string, string> = {
   'Immer aktiv': 'Always active',
   'Import rückgängig gemacht': 'Import undone',
   'Import rückgängig machen (neu angelegte Spiele)': 'Undo import (newly created matches)',
+  Impressum: 'Legal notice',
   'in {0} Mannschaften': 'in {0} teams',
   'in {0} Tagen': 'in {0} days',
   'in Arbeit': 'in progress',
@@ -1916,6 +1969,8 @@ export const en: Record<string, string> = {
   'Material und Schlüssel verwalten die Platzverantwortlichen.':
     'Groundskeepers manage equipment and keys.',
   'Material zurück: {0}': 'Equipment returned: {0}',
+  'Max Mustermann (Beispiel)': 'Max Mustermann (example)',
+  'Max Mustermann, Anschrift wie oben (Beispiel)': 'Max Mustermann, address as above (example)',
   'Maximal {0} Tage möglich.': 'A maximum of {0} days is possible.',
   Mehr: 'More',
   'Mehr erfahren': 'Learn more',
@@ -2026,6 +2081,8 @@ export const en: Record<string, string> = {
   'Name und Adresse der Sportanlage. Sie erscheinen bei Terminen, mit Link zur Karten-App.':
     'Name and address of the sports venue. They appear on events, with a link to the maps app.',
   'Name, Beschreibung …': 'Name, description …',
+  'Name, Kontaktdaten, Mannschaftszugehörigkeit, Zu- und Absagen sowie – nur für Berechtigte – Kassendaten. Gründe für Abwesenheiten sind nur für Trainer und Verantwortliche sichtbar.':
+    'Name, contact details, team membership, accepts and declines and – only for authorised persons – cash data. Reasons for absences are visible only to coaches and officials.',
   'Nein. In der Ruhezeit (22 bis 7 Uhr) gibt es keine Push-Nachrichten außer bei dringenden Meldungen. Alles andere wartet bis zum Morgen.':
     'No. During quiet hours (10 pm to 7 am) there are no push notifications except for urgent messages. Everything else waits until morning.',
   'Nein. Trage eine Abwesenheit ein (Urlaub, Verletzt, Krank, Sonstiges). Alle betroffenen Termine werden automatisch abgesagt, das Trainerteam sieht es sofort. Löschst du die Abwesenheit, werden die automatischen Absagen zurückgenommen.':
@@ -2064,6 +2121,7 @@ export const en: Record<string, string> = {
   'Neues Passwort (mind. 10 Zeichen)': 'New password (min. 10 characters)',
   'Neues Passwort wiederholen': 'Repeat new password',
   'Neuigkeiten für dich': 'News for you',
+  'Neuigkeiten in Clubroof': "What's new in Clubroof",
   'Neuzugang von einem anderen Verein. Das Mitglied muss angelegt sein.':
     'New arrival from another club. The member must already be created.',
   'News freigeben': 'Approve news',
@@ -2201,6 +2259,7 @@ export const en: Record<string, string> = {
   'Ohne Mannschaft': 'No team',
   'Ohne Zugang ({0})': 'No access ({0})',
   Oktober: 'October',
+  'Oktober 2026': 'October 2026',
   Ordnung: 'Rules',
   Ordnungen: 'Rules',
   Ort: 'Location',
@@ -2218,6 +2277,7 @@ export const en: Record<string, string> = {
   'Passwort vergessen?': 'Forgot password?',
   'Passwort wiederholen': 'Repeat password',
   'Passwort zurücksetzen': 'Reset password',
+  'Passwort, 2-Faktor und App-Sperre': 'Password, two-factor and app lock',
   'Passwort, 2-Faktor, Darstellung, Sprache': 'Password, 2-factor, appearance, language',
   'Pastell und Status': 'Pastel and status',
   'PayPal-Link (optional)': 'PayPal link (optional)',
@@ -2261,6 +2321,7 @@ export const en: Record<string, string> = {
   'Preis (oder „zu verschenken“)': 'Price (or “free to a good home”)',
   'Preis je Getränk in €': 'Price per drink in €',
   Priorität: 'Priority',
+  'Privatsphäre-Einstellungen': 'Privacy settings',
   Profil: 'Profile',
   'Profil & Statistik': 'Profile & statistics',
   'Profil bearbeiten': 'Edit profile',
@@ -2412,6 +2473,7 @@ export const en: Record<string, string> = {
   Senioren: 'Seniors',
   Sicherheit: 'Security',
   'Sichtbar für': 'Visible to',
+  'Sichtbarkeit meiner Kontaktdaten': 'Visibility of my contact details',
   'Sichtbarkeit und Erinnerungen': 'Visibility and reminders',
   Sieg: 'Win',
   'Sieht nur die eigene Mannschaft – beim Bezahlen im persönlichen Konto.':
@@ -2437,6 +2499,7 @@ export const en: Record<string, string> = {
   'Spaltenzuordnung ausblenden': 'Hide column mapping',
   'Spaltenzuordnung prüfen': 'Check column mapping',
   Später: 'Later',
+  'Speicherdauer und Löschung': 'Retention and deletion',
   Speichern: 'Save',
   'Speichern ({0})': 'Save ({0})',
   'Speichert …': 'Saving …',
@@ -2510,6 +2573,10 @@ export const en: Record<string, string> = {
   'Stammdaten, Ein-/Austritte, Profilprüfung, Mannschaftszuordnung':
     'Master data, joinings/leavings, profile review, team assignment',
   Stand: 'Status',
+  'Stand: Beispieltext. Diese Bedingungen regeln die Nutzung von Clubroof.':
+    'As of: sample text. These terms govern the use of Clubroof.',
+  'Stand: Beispieltext. Wir nehmen den Schutz deiner Daten ernst und erklären hier kurz, was wir verarbeiten.':
+    'As of: sample text. We take the protection of your data seriously and briefly explain here what we process.',
   'Standard für dich: {0}': 'Default for you: {0}',
   'Standard-Treffpunkt': 'Default meeting point',
   'Stärke: {0}': 'Strength: {0}',
@@ -2572,6 +2639,8 @@ export const en: Record<string, string> = {
   Teilnehmer: 'Participants',
   Telefon: 'Phone',
   'Telefon (optional)': 'Phone (optional)',
+  'Telefon und E-Mail für Mannschaft, Trainer oder niemanden':
+    'Phone and email for team, coaches or nobody',
   Termin: 'Event',
   'Termin abgesagt': 'Event cancelled',
   'Termin absagen': 'Cancel event',
@@ -2674,6 +2743,7 @@ export const en: Record<string, string> = {
   'Trotzdem speichern': 'Save anyway',
   Türkis: 'Teal',
   Turnier: 'Tournament',
+  'Über Clubroof': 'About Clubroof',
   'Über das Schild-Symbol oben rechts oder „Mehr → Verwaltung“. Mit „Beenden“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.':
     'Via the shield icon at the top right or “More → Administration”. Tap “Exit” to return to the normal app. At the bottom you switch between overview, members, teams, festivals and news.',
   'Über diese Anfrage wurde bereits entschieden.':
@@ -2713,6 +2783,7 @@ export const en: Record<string, string> = {
   'Umlage: {0}': 'Cost split: {0}',
   'Umlage: Gesamtbetrag auf gewählte Personen aufteilen oder festen Betrag je Person fordern. Beiträge: z. B. 5 € monatlich, die App bucht sie allen Spielern zum Fälligkeitstag. Getränke: Preis festlegen und je Person Striche zählen. Alle Betroffenen werden benachrichtigt.':
     'Cost split: divide a total amount among selected people or charge a fixed amount per person. Fees: e.g. €5 monthly, which the app books for all players on the due date. Drinks: set a price and count tally marks per person. Everyone affected is notified.',
+  'Umsatzsteuer-ID': 'VAT ID',
   Unbekannt: 'Unknown',
   'Unbekannte abgebende Mannschaft.': 'Unknown releasing team.',
   'Unbekannte aufnehmende Mannschaft.': 'Unknown receiving team.',
@@ -2752,6 +2823,8 @@ export const en: Record<string, string> = {
     "Under “More → My children” (and on Home and Events) you can see your children's events, confirmations and absences. You confirm or decline for them, enter absences and receive their notifications. The child doesn't need their own login.",
   'Unter „Mehr → Profil & Statistik“. Dort kannst du Foto, Position, Kontaktdaten und die Sichtbarkeit deiner Kontaktdaten ändern. Du bestimmst, wer sie sehen darf.':
     'Under “More → Profile & statistics”. There you can change your photo, position, contact details and the visibility of your contact details. You decide who may see them.',
+  'Unter „Mehr → Über Clubroof“: AGB, Datenschutzerklärung, Privatsphäre-Einstellungen, Impressum, Neuigkeiten (Changelog) sowie Links zu Support und „Funktion anfragen“ auf der Webseite.':
+    'Under "More → About Clubroof": terms, privacy policy, privacy settings, legal notice, news (changelog) and links to support and "Request a feature" on the website.',
   'Unter „Team → Aufgaben“ stehen Dinge wie Trikotwäsche, Fahrdienst oder Kuchen. Offene Aufgaben übernimmst du mit „Ich übernehme“ (Eltern auch für ihr Kind) und hakst sie ab, wenn sie erledigt sind.':
     "Under “Team → Tasks” you'll find things like washing the kit, driving or cake. Take on open tasks with “I'll do it” (parents can do so for their child too) and tick them off when they're done.",
   'Unter „Team → Funktionen“ schaltest du z. B. Statistik, Kasse oder Aufgaben für deine Mannschaft ein und aus. Was der Verein oder Bereich ausgeschaltet hat, bleibt gesperrt.':
@@ -2803,6 +2876,8 @@ export const en: Record<string, string> = {
     'The board or the section management plans events.',
   'Veranstaltungen und Sitzungen des Vereins. Deine Trainings und Spiele findest du unter „Termine“.':
     'Club events and meetings. You will find your training sessions and matches under “Events”.',
+  'Verantwortlich für den Inhalt': 'Responsible for the content',
+  'Verantwortliche Stelle': 'Responsible body',
   Verein: 'Club',
   'Verein & Design': 'Club & design',
   'Verein & System': 'Club & system',
@@ -2855,6 +2930,7 @@ export const en: Record<string, string> = {
   'veröffentlicht {0}': 'published {0}',
   'Veröffentlichte News ändert nur die Freigabe.': 'Only approvers can change published news.',
   Versammlung: 'Meeting',
+  Vertretungsberechtigt: 'Authorised representative',
   Verwaltung: 'Administration',
   'Verwaltung öffnen': 'Open administration',
   'Verwaltungsmodus beenden': 'Exit administration mode',
@@ -2912,6 +2988,8 @@ export const en: Record<string, string> = {
   'Was kann ich als Vereinsmitglied?': 'What can I do as a club member?',
   'Was passiert?': "What's happening?",
   'Was sehe ich in der Kasse?': 'What can I see in the team fund?',
+  'Was sich in den letzten Versionen verbessert hat (Beispieleinträge).':
+    'What has improved in the latest versions (sample entries).',
   'Was sind Fundbüro, Forum und Vereinswissen?': 'What are lost & found, forum and club knowledge?',
   'Was sind Gastspieler?': 'What are guest players?',
   'Was soll der ganze Verein nutzen können? Empfohlenes ist vorausgewählt.':
@@ -2933,6 +3011,8 @@ export const en: Record<string, string> = {
     'Which sections does your club have? Teams are assigned to a section later; section heads (e.g. youth director) only see their own section.',
   'Welche Bereiche hat dein Verein? Mannschaften werden später einem Bereich zugeordnet.':
     'Which divisions does your club have? Teams are assigned to a division later.',
+  'Welche Daten wir verarbeiten': 'What data we process',
+  'Welche Daten wir verarbeiten und warum': 'Which data we process and why',
   'Welche Funktionen soll die App haben? Das lässt sich später jederzeit ändern.':
     'Which features should the app have? You can change this at any time later.',
   'Welche Funktionen soll die Mannschaft nutzen? Das ändern Trainer später selbst.':
@@ -2955,11 +3035,14 @@ export const en: Record<string, string> = {
   'Wenn eine Zu- oder Absage noch fehlt': 'When a confirmation or decline is still missing',
   'Wenn eingeschaltet, brauchen alle mit Verwaltungsrechten (Vorstand, Admins, Jugendleitung …) die 2-Faktor-Anmeldung, bevor sie Mitgliederdaten bearbeiten können.':
     'When turned on, everyone with administration rights (board, admins, youth leadership …) needs two-factor login before they can edit member data.',
+  'Wer deine Daten sieht': 'Who sees your data',
   'Wer hat bezahlt?': 'Who has paid?',
   'Wer hat wann was geändert – die letzten 200 Einträge.':
     'Who changed what and when – the last 200 entries.',
   'Wer ist dabei? ({0})': 'Who is in? ({0})',
   'Wer sieht meine Daten?': 'Who can see my data?',
+  'Wer sieht was von dir': 'Who sees what of you',
+  'Wer sieht was?': 'Who sees what?',
   'Wer spielt in der Mannschaft?': 'Who plays in the team?',
   'Wer trainiert die Mannschaft?': 'Who coaches the team?',
   'Wer tritt bei?': 'Who is joining?',
@@ -3032,6 +3115,8 @@ export const en: Record<string, string> = {
   'Wird nach dem Einreichen von Vorstand bzw. Leitung freigegeben':
     'Will be approved by the board or management after submission',
   'Wirklich aus dem Kader nehmen': 'Really remove from the squad',
+  'Wo finde ich AGB, Datenschutz, Impressum und Support?':
+    'Where do I find terms, privacy policy, legal notice and support?',
   'Wo finde ich die Funktionen?': 'Where do I find the features?',
   'Wo finde ich Satzung, Formulare und Pläne?':
     'Where do I find the constitution, forms and plans?',
@@ -3055,7 +3140,9 @@ export const en: Record<string, string> = {
     'What do I get fined for and where are fines listed?',
   'Wofür nutzt ihr Clubroof – in der Mannschaft?': 'What do you use Clubroof for – in the team?',
   'Wofür?': 'What for?',
+  'Worüber und wie du informiert wirst': 'What you are notified about and how',
   'Worum geht es?': 'What is it about?',
+  'Wünsche und Ideen auf der Webseite': 'Wishes and ideas on the website',
   'z. B. 0151 1234567': 'e.g. 0151 1234567',
   'z. B. 14.03.2011': 'e.g. 14.03.2011',
   'z. B. 4 Getränke nach dem Spiel': 'e.g. 4 drinks after the match',
@@ -3127,6 +3214,8 @@ export const en: Record<string, string> = {
     'Correct confirmations and declines on behalf of others',
   Zugang: 'Signing',
   'Zugang einrichten': 'Set up access',
+  'Zugangsdaten sind geheim zu halten. Inhalte, die gegen Gesetze oder Rechte Dritter verstoßen, dürfen nicht eingestellt werden.':
+    'Access data must be kept secret. Content that violates laws or the rights of third parties must not be posted.',
   zugesagt: 'confirmed',
   Zugesagt: 'Confirmed',
   'zuletzt {0}': 'last {0}',

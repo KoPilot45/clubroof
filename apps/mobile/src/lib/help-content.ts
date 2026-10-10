@@ -318,6 +318,13 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail (6 Stellen, 10 Minuten gültig, nur einmal nutzbar). Du richtest ihn unter „Mehr → Konto & Einstellungen“ ein. Pflicht ist er nur für das Administrationskonto, wenn der Verein es verlangt.',
         link: { label: 'Konto & Einstellungen', href: '/account' },
       },
+      {
+        id: 'about',
+        question: 'Wo finde ich AGB, Datenschutz, Impressum und Support?',
+        answer:
+          'Unter „Mehr → Über Clubroof“: AGB, Datenschutzerklärung, Privatsphäre-Einstellungen, Impressum, Neuigkeiten (Changelog) sowie Links zu Support und „Funktion anfragen“ auf der Webseite.',
+        link: { label: 'Privatsphäre-Einstellungen', href: '/about/privacy' },
+      },
     ],
   },
   {

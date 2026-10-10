@@ -209,6 +209,14 @@ function Navigator() {
           <Stack.Screen name="contacts" options={{ headerShown: true, title: 'Ansprechpartner' }} />
           <Stack.Screen name="help" options={{ headerShown: true, title: 'Hilfe & Anleitung' }} />
           <Stack.Screen
+            name="about/[page]"
+            options={{ headerShown: true, title: 'Über Clubroof' }}
+          />
+          <Stack.Screen
+            name="about/privacy"
+            options={{ headerShown: true, title: 'Privatsphäre-Einstellungen' }}
+          />
+          <Stack.Screen
             name="club-calendar"
             options={{ headerShown: true, title: 'Vereinskalender' }}
           />
