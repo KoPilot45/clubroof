@@ -204,6 +204,35 @@ export default function LoginScreen() {
                   </Pressable>
                 ))}
               </View>
+              <T variant="overline" style={{ textAlign: 'center' }}>
+                Einrichtungs-Demos (ohne Funktion)
+              </T>
+              <View
+                style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}
+              >
+                {[
+                  { label: 'Vereinseinrichtung', href: '/demo/club' as const },
+                  { label: 'Mannschaftseinrichtung', href: '/demo/team' as const },
+                ].map((d) => (
+                  <Pressable
+                    key={d.href}
+                    accessibilityRole="button"
+                    onPress={() => router.push(d.href)}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: radii.pill,
+                      borderWidth: 1,
+                      borderColor: colors.primary,
+                      backgroundColor: colors.primaryContainer,
+                    }}
+                  >
+                    <T variant="label" color={colors.onPrimaryContainer}>
+                      {d.label}
+                    </T>
+                  </Pressable>
+                ))}
+              </View>
             </View>
           ) : null}
         </View>

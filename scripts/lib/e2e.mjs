@@ -78,6 +78,21 @@ export async function launch() {
       });
       return { page, login, goto: (path) => page.goto(`${WEB}${path}`) };
     },
+    /** Seite ohne Anmeldung (Anmeldeseite, Demos, öffentliche Links). */
+    async anonymous({ width = 390, height = 844 } = {}) {
+      const ctx = await browser.newContext({
+        viewport: { width, height },
+        timezoneId: 'Europe/Berlin',
+        locale: 'de-DE',
+      });
+      const page = await ctx.newPage();
+      page.on('pageerror', (e) => errors.push(`anonym: ${e.message}`));
+      page.on('console', (m) => {
+        if (m.type() === 'error' && !/40[34]/.test(m.text()))
+          errors.push(`anonym: ${m.text().slice(0, 200)}`);
+      });
+      return { page, goto: (path) => page.goto(`${WEB}${path}`) };
+    },
     /** Bild nur speichern, wenn wirklich nötig – Pfad wird ausgegeben. */
     async shot(page, name, full = true) {
       mkdirSync(SHOTS, { recursive: true });
