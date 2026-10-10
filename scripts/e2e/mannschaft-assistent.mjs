@@ -38,6 +38,8 @@ await text(page, 'Name im DFBnet').waitFor();
 await button(page, 'Weiter').click();
 await text(page, 'Alles bereit?').waitFor();
 await button(page, 'Mannschaft anlegen').click();
+await text(page, 'Mannschaft angelegt').waitFor({ timeout: 20_000 });
+await button(page, 'Zur Mannschaft').click();
 await page.waitForURL(/admin\/team\//, { timeout: 20_000 });
 console.log('✓ Assistent legt Mannschaft an');
 

@@ -809,6 +809,8 @@ export const en: Record<string, string> = {
     'That was the demonstration. Nothing was saved. With the club account you later go through the real setup forms that define the structure and features of the app.',
   'Das Wichtigste steht. Hier sind sinnvolle nächste Schritte – alles lässt sich später in der Verwaltung ändern.':
     'The essentials are in place. Here are sensible next steps – everything can be changed later in administration.',
+  'Das Wichtigste steht. Sinnvolle nächste Schritte – alles lässt sich später in der Verwaltung ändern.':
+    'The essentials are in place. Sensible next steps – everything can be changed later in administration.',
   'DATA_ENCRYPTION_KEY fehlt – in Produktion zwingend erforderlich.':
     'DATA_ENCRYPTION_KEY is missing – mandatory in production.',
   'Datei auswählen': 'Choose file',
@@ -1290,6 +1292,7 @@ export const en: Record<string, string> = {
   Einladungen: 'Invitations',
   'Einladungen verschickst du unter Verwaltung → Einladungen.':
     'You send invitations under Administration → Invitations.',
+  'Einladungslinks für den Zugang': 'Invitation links for access',
   Einmalig: 'One-off',
   Einnahme: 'Income',
   'Einnahme / Ausgabe': 'Income / expense',
@@ -1325,6 +1328,7 @@ export const en: Record<string, string> = {
   Eltern: 'Parents',
   'Eltern sehen und verwalten Termine ihrer Kinder':
     "Parents see and manage their children's events",
+  'Eltern und Spieler einladen': 'Invite parents and players',
   Elternteil: 'Parent',
   'Elternteil von {0}': 'Parent of {0}',
   'Elternteil von {0} ({1})': 'Parent of {0} ({1})',
@@ -1375,6 +1379,7 @@ export const en: Record<string, string> = {
   'Erste Schritte': 'Getting started',
   'Erstellt am {0}': 'Created on {0}',
   'Erstellt von {0}': 'Created by {0}',
+  'Erstes Training anlegen': 'Create first training',
   'Es erscheint oben in der App bei allen Mitgliedern. Ohne Logo zeigt die App ein Wappen mit dem Kürzel.':
     'It appears at the top of the app for all members. Without a logo, the app shows a crest with the abbreviation.',
   'Es gibt {0} neue Funktionen': 'There are {0} new features',
@@ -1738,6 +1743,7 @@ export const en: Record<string, string> = {
   Juli: 'July',
   Juni: 'June',
   'Kabine {0}': 'Changing room {0}',
+  'Kabine 1': 'Changing room 1',
   'Kabine doppelt belegt': 'Changing room double-booked',
   'Kabine Vereinsheim': 'Clubhouse changing room',
   Kabinen: 'Changing rooms',
@@ -1926,6 +1932,7 @@ export const en: Record<string, string> = {
   'Mannschaft „{0}“ gibt es nicht.': 'Team “{0}” does not exist.',
   'Mannschaft „{0}“ ist noch nicht zugeordnet.': 'Team “{0}” is not assigned yet.',
   'Mannschaft (Vorsaison)': 'Team (previous season)',
+  'Mannschaft angelegt': 'Team created',
   'Mannschaft angelegt: {0}': 'Team created: {0}',
   'Mannschaft anlegen': 'Create team',
   'Mannschaft bearbeiten': 'Edit team',
@@ -2009,6 +2016,8 @@ export const en: Record<string, string> = {
   'Mit PayPal bezahlen': 'Pay with PayPal',
   'Mit Rückmeldung zurückgeben': 'Return with feedback',
   'Mit Trainerteam, Kader und Antwortfristen': 'With coaching staff, squad and response deadlines',
+  'Mit Treffpunkt und Antwortfrist der Mannschaft':
+    "With the team's meeting point and response deadline",
   Mitfahren: 'Join ride',
   'Mitfahrt angeboten': 'Ride offered',
   'Mitfahrt für {0} suchen': 'Look for a ride for {0}',
@@ -2414,6 +2423,7 @@ export const en: Record<string, string> = {
     'Season {0} prepared ({1} teams, with players)',
   'Saison {0} vorbereitet ({1} Mannschaften, Trainerteams)':
     'Season {0} prepared ({1} teams, coaching staff)',
+  'Saison 2026/27': 'Season 2026/27',
   'Saison auf einen Blick': 'Season at a glance',
   'Saison-Bilanz': 'Season record',
   'Saison-Statistik': 'Season statistics',
@@ -2561,6 +2571,7 @@ export const en: Record<string, string> = {
   Spieltag: 'Match day',
   Sponsoring: 'Sponsorship',
   'Sportliche Leitung': 'Sporting management',
+  'Sportplatz am Wald': 'Forest Sports Ground',
   Sprache: 'Language',
   'Sprache ändern': 'Change language',
   Stammdaten: 'Master data',
@@ -2734,6 +2745,7 @@ export const en: Record<string, string> = {
   'Treffpunkt {0} Uhr': 'Meeting point {0}',
   'Treffpunkt und Treffzeit': 'Meeting point and time',
   'Treffpunkt vorher': 'Meeting point beforehand',
+  'Treffpunkt wählen': 'Choose meeting point',
   'Treffpunkt-Regeln und Profil': 'Meeting rules and profile',
   'Treffzeit festlegen': 'Set meeting time',
   'Trikots waschen': 'Wash kits',
@@ -2964,6 +2976,7 @@ export const en: Record<string, string> = {
   'Vorschau des Logos': 'Logo preview',
   'Vorschau des News-Bilds': 'News image preview',
   'Vorschau: {0}': 'Preview: {0}',
+  'Vorschläge aus eurer Vereinseinrichtung': 'Suggestions from your club setup',
   Vorstand: 'Board',
   'Vorstand / Vereinsleitung': 'Board / club management',
   'Vorstand & Vereinsleitung': 'Board & club management',
@@ -3233,6 +3246,7 @@ export const en: Record<string, string> = {
   'Zur Anmeldung': 'To sign-in',
   'Zur App': 'To the app',
   'Zur Freigabe einreichen': 'Submit for approval',
+  'Zur Mannschaft': 'To the team',
   'Zur Pflicht machen': 'Make required',
   'Zur Startseite': 'Go to home',
   'Zur Umfrage': 'Go to poll',
