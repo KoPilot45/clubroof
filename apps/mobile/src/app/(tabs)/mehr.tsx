@@ -1,7 +1,7 @@
 import type { Absence, HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { Linking, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import {
   Avatar,
@@ -24,6 +24,7 @@ import { useTileInfo } from '@/lib/tile-info';
 import { Text } from '@/components/app-text';
 import type { TintKey } from '@clubroof/design-tokens';
 import { useTheme } from '@/lib/theme';
+import { ABOUT_LINKS } from '@/lib/about-content';
 
 export default function MoreScreen() {
   const { me, api, signOut } = useSignedIn();
@@ -166,6 +167,65 @@ export default function MoreScreen() {
       : []),
   ]);
 
+  const about: Row[] = [
+    {
+      key: 'terms',
+      label: 'AGB',
+      subtitle: 'Allgemeine Geschäftsbedingungen',
+      icon: 'document-text',
+      tint: 'blue',
+      onPress: () => router.push('/about/agb'),
+    },
+    {
+      key: 'privacy-policy',
+      label: 'Datenschutz',
+      subtitle: 'Welche Daten wir verarbeiten',
+      icon: 'shield-checkmark',
+      tint: 'green',
+      onPress: () => router.push('/about/datenschutz'),
+    },
+    {
+      key: 'privacy-settings',
+      label: 'Privatsphäre-Einstellungen',
+      subtitle: 'Wer sieht was von dir',
+      icon: 'eye',
+      tint: 'violet',
+      onPress: () => router.push('/about/privacy'),
+    },
+    {
+      key: 'imprint',
+      label: 'Impressum',
+      subtitle: 'Anbieter und Kontakt',
+      icon: 'business',
+      tint: 'orange',
+      onPress: () => router.push('/about/impressum'),
+    },
+    {
+      key: 'changelog',
+      label: 'Changelog',
+      subtitle: 'Neuigkeiten in Clubroof',
+      icon: 'sparkles',
+      tint: 'pink',
+      onPress: () => router.push('/about/changelog'),
+    },
+    {
+      key: 'support',
+      label: 'Support',
+      subtitle: 'Hilfe auf der Webseite',
+      icon: 'chatbubble-ellipses',
+      tint: 'blue',
+      onPress: () => void Linking.openURL(ABOUT_LINKS.support),
+    },
+    {
+      key: 'feature-request',
+      label: 'Funktion anfragen',
+      subtitle: 'Wünsche und Ideen auf der Webseite',
+      icon: 'bulb',
+      tint: 'green',
+      onPress: () => void Linking.openURL(ABOUT_LINKS.featureRequest),
+    },
+  ];
+
   return (
     <Screen header={<AppHeader title="Mehr" subtitle="Profil, Einstellungen und Hilfe" />}>
       <HeroCard style={{ marginTop: 4 }}>
@@ -278,6 +338,10 @@ export default function MoreScreen() {
 
       <Section title="Einstellungen">
         <MenuCard rows={settings} />
+      </Section>
+
+      <Section title="Über Clubroof">
+        <MenuCard rows={about} />
       </Section>
 
       <Button
