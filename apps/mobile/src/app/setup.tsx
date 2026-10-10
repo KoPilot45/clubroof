@@ -50,6 +50,7 @@ const TEAM_MODULES = [
   'guest_players',
 ];
 const CLUB_MODULES = [
+  'club_cash',
   'polls',
   'club_events',
   'helpers',
@@ -77,6 +78,7 @@ const RECOMMENDED = new Set([
   'calendar_export',
 ]);
 const MODULE_ICON: Record<string, IconName> = {
+  club_cash: 'wallet',
   squad: 'people',
   guest_players: 'swap-horizontal',
   statistics: 'bar-chart',

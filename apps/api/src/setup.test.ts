@@ -175,6 +175,9 @@ describe.skipIf(!url)('Ersteinrichtung', () => {
     expect(state('forum')).toBe('enabled');
     expect(state('wiki')).toBe('available');
     expect(state('events')).toBe('enabled'); // Kernmodul
+    expect(state('club_cash')).toBe('available'); // nicht gewählt
+    const cats = await conn.sql`select count(*)::int as n from club_cash_categories`;
+    expect(cats[0]!.n).toBeGreaterThan(10); // Kategorien-Vorlage der Vereinskasse
 
     // Treffpunkt-Vorschläge: Spielstätte und Kabinen (mit Anlage), keine Plätze
     const places = await app.inject({

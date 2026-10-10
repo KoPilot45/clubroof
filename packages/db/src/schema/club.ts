@@ -32,6 +32,8 @@ export const clubs = pgTable('clubs', {
   timezone: text().notNull().default('Europe/Berlin'),
   /** Vorstand, Verwaltung und Admins müssen die 2-Faktor-Anmeldung nutzen */
   requireTwoFactor: boolean().notNull().default(false),
+  /** Wer die Vereinskasse außer Kassenführung einsehen darf: treasury | board_reports | board_all */
+  clubCashVisibility: text().notNull().default('treasury'),
   street: text(),
   postalCode: text(),
   city: text(),

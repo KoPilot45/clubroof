@@ -7,6 +7,9 @@ import type {
   Absence,
   AdminOverview,
   AuditEntry,
+  ClubCash,
+  ClubCashAccount,
+  ClubCashEntry,
   TeamCandidate,
   TeamManage,
   SchedulePreview,
@@ -131,7 +134,7 @@ describe.skipIf(!url)('API', () => {
       url: '/auth/login',
       payload: { email: email(who), password: PASSWORD },
     });
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode, res.body).toBe(200);
     return res.json();
   }
 
@@ -2016,8 +2019,12 @@ describe.skipIf(!url)('API', () => {
       ).toBe(false);
 
       const audit = await get<AuditEntry[]>('/admin/audit', (await login('vorstand')).token);
-      expect(audit.some((a) => a.label.startsWith('Rolle vergeben: Kassenwart'))).toBe(true);
-      expect(audit.some((a) => a.label.startsWith('Rolle entzogen: Kassenwart'))).toBe(true);
+      expect(audit.some((a) => a.label.startsWith('Rolle vergeben: Mannschaftskassenwart'))).toBe(
+        true,
+      );
+      expect(audit.some((a) => a.label.startsWith('Rolle entzogen: Mannschaftskassenwart'))).toBe(
+        true,
+      );
     });
 
     it('Jugendleitung sieht nur Mitglieder ihres Bereichs', async () => {
@@ -4356,7 +4363,7 @@ describe.skipIf(!url)('API', () => {
   describe('Vereinsmitglied und Vereinskalender', () => {
     it('Hauptrolle Vereinsmitglied: Überblick und News, aber keine Verwaltung', async () => {
       const member = await login('mitglied');
-      expect(member.me.roles.map((r) => r.name)).toEqual(['Vereinsmitglied']);
+      expect(member.me.roles.map((r) => r.name)).toEqual(['Vereinsmitglied', 'Kassenprüfer']);
       expect(member.me.canAdminister).toBe(false);
       expect(member.me.teams).toHaveLength(0);
       expect(member.me.news).toEqual({ write: true, publish: false });
@@ -5395,6 +5402,271 @@ describe.skipIf(!url)('API', () => {
       // Spieler ist jetzt in der A-Jugend, nicht mehr in der B-Jugend
       const playerMe = await get<LoginResponse['me']>('/me', player.token);
       expect(playerMe.teams.map((t) => t.badge)).toEqual(['A1']);
+    });
+  });
+  describe('Vereinskasse (K1)', () => {
+    const today = '2026-10-05';
+
+    /** Kassenwart (Verein): im Demoverein Petra Schulz – sie tritt in einem früheren Test aus, daher eine Elternperson per Rolle */
+    async function treasurer() {
+      const admin = await login('admin');
+      const parent = await login('eltern');
+      if (!parent.me.roles.some((r) => r.name === 'Kassenwart (Verein)')) {
+        const given = await send(
+          'POST',
+          `/admin/members/${parent.me.person.id}/roles`,
+          admin.token,
+          {
+            roleKey: 'club_treasurer',
+            scopeType: 'club',
+          },
+        );
+        expect(given.status).toBe(200);
+      }
+      return login('eltern');
+    }
+
+    it('ist nur für Kassenführung offen; Prüfer lesen, buchen aber nicht', async () => {
+      for (const who of ['spieler', 'trainer', 'vorstand']) {
+        const t = (await login(who)).token;
+        expect((await send('GET', '/club-cash', t)).status, who).toBe(403);
+      }
+      const kasse = await treasurer();
+      expect(kasse.me.clubCash).toEqual({ level: 'full', manage: true });
+      const cash = await get<ClubCash>('/club-cash', kasse.token);
+      expect(cash.accounts.map((a) => a.name)).toEqual([
+        'Girokonto Sparkasse',
+        'Barkasse',
+        'Tagesgeld',
+      ]);
+      // 8.250 + 4.200 + 1.500 − 780 − 312,50 + 400 | 300 + 640 − 215,30 − 400 | 5.000
+      expect(cash.accounts.map((a) => a.balanceCents)).toEqual([1325750, 32470, 500000]);
+      expect(cash.totalBalanceCents).toBe(1858220);
+      expect(cash.recent.length).toBeGreaterThan(0);
+      expect(cash.areaTotals.find((a) => a.area === 'ideal')!.incomeCents).toBe(420000);
+
+      const auditor = await login('mitglied');
+      expect(auditor.me.clubCash).toEqual({ level: 'full', manage: false });
+      const entry = await send('POST', '/club-cash/entries', auditor.token, {
+        accountId: cash.accounts[0]!.id,
+        kind: 'expense',
+        amountCents: 1000,
+        bookedOn: today,
+        categoryId: cash.categories.find((c) => c.direction === 'expense')!.id,
+        purpose: 'Prüfer darf nicht buchen',
+      });
+      expect(entry.status).toBe(403);
+    });
+
+    it('bucht Einnahmen und Ausgaben, prüft Kategorie und storniert mit Begründung', async () => {
+      const { token } = await treasurer();
+      const cash = await get<ClubCash>('/club-cash', token);
+      const giro = cash.accounts[0]!;
+      const expense = cash.categories.find((c) => c.direction === 'expense')!;
+      const income = cash.categories.find((c) => c.direction === 'income')!;
+      const base = { accountId: giro.id, bookedOn: today, purpose: 'Test' };
+
+      const wrong = await send('POST', '/club-cash/entries', token, {
+        ...base,
+        kind: 'income',
+        amountCents: 5000,
+        categoryId: expense.id,
+      });
+      expect(wrong.status).toBe(400);
+      expect((wrong.body as { error: string }).error).toBe('category_direction');
+
+      const booked = await send<ClubCashEntry>('POST', '/club-cash/entries', token, {
+        ...base,
+        kind: 'expense',
+        amountCents: 2500,
+        categoryId: expense.id,
+        costCenterId: cash.costCenters[0]!.id,
+        counterparty: 'Sportshop',
+        receiptNo: 'B-2026-099',
+      });
+      expect(booked.status).toBe(201);
+      expect(booked.body).toMatchObject({
+        kind: 'expense',
+        amountCents: 2500,
+        accountName: giro.name,
+        costCenterName: cash.costCenters[0]!.name,
+        receiptNo: 'B-2026-099',
+      });
+      const afterBooking = await get<ClubCash>('/club-cash', token);
+      expect(afterBooking.accounts[0]!.balanceCents).toBe(giro.balanceCents - 2500);
+
+      const found = await get<ClubCashEntry[]>('/club-cash/entries?q=B-2026-099', token);
+      expect(found.map((e) => e.id)).toEqual([booked.body.id]);
+
+      const noReason = await send('POST', `/club-cash/entries/${booked.body.id}/cancel`, token, {
+        reason: ' ',
+      });
+      expect(noReason.status).toBe(400);
+      const cancelled = await send<ClubCash>(
+        'POST',
+        `/club-cash/entries/${booked.body.id}/cancel`,
+        token,
+        { reason: 'Falscher Betrag' },
+      );
+      expect(cancelled.status).toBe(200);
+      expect(cancelled.body.accounts[0]!.balanceCents).toBe(giro.balanceCents);
+      expect((await get<ClubCashEntry[]>('/club-cash/entries?q=B-2026-099', token)).length).toBe(0);
+      const withCancelled = await get<ClubCashEntry[]>(
+        '/club-cash/entries?q=B-2026-099&includeCancelled=true',
+        token,
+      );
+      expect(withCancelled[0]!.cancelled).toMatchObject({ reason: 'Falscher Betrag' });
+      const again = await send('POST', `/club-cash/entries/${booked.body.id}/cancel`, token, {
+        reason: 'Noch einmal',
+      });
+      expect(again.status).toBe(409);
+
+      // Einnahme mit passender Kategorie
+      const inc = await send('POST', '/club-cash/entries', token, {
+        ...base,
+        kind: 'income',
+        amountCents: 700,
+        categoryId: income.id,
+      });
+      expect(inc.status).toBe(201);
+      await send('POST', `/club-cash/entries/${(inc.body as ClubCashEntry).id}/cancel`, token, {
+        reason: 'Testbuchung zurücknehmen',
+      });
+    });
+
+    it('Umbuchung bewegt Geld zwischen Konten und wird nur gemeinsam storniert', async () => {
+      const { token } = await treasurer();
+      const cash = await get<ClubCash>('/club-cash', token);
+      const [giro, bar] = cash.accounts as [ClubCashAccount, ClubCashAccount];
+      const same = await send('POST', '/club-cash/transfers', token, {
+        fromAccountId: giro.id,
+        toAccountId: giro.id,
+        amountCents: 100,
+        bookedOn: today,
+      });
+      expect(same.status).toBe(400);
+      const moved = await send<ClubCashEntry[]>('POST', '/club-cash/transfers', token, {
+        fromAccountId: giro.id,
+        toAccountId: bar.id,
+        amountCents: 10000,
+        bookedOn: today,
+      });
+      expect(moved.status).toBe(201);
+      expect(moved.body.map((e) => e.kind).sort()).toEqual(['transfer_in', 'transfer_out']);
+      const after = await get<ClubCash>('/club-cash', token);
+      expect(after.accounts[0]!.balanceCents).toBe(giro.balanceCents - 10000);
+      expect(after.accounts[1]!.balanceCents).toBe(bar.balanceCents + 10000);
+      expect(after.totalBalanceCents).toBe(cash.totalBalanceCents);
+
+      const back = await send<ClubCash>(
+        'POST',
+        `/club-cash/entries/${moved.body[0]!.id}/cancel`,
+        token,
+        { reason: 'Irrtum bei der Umbuchung' },
+      );
+      expect(back.body.accounts.map((a) => a.balanceCents)).toEqual(
+        cash.accounts.map((a) => a.balanceCents),
+      );
+    });
+
+    it('Konten: Anfangsbestand nur ohne Buchungen, archivierte Konten nehmen nichts an', async () => {
+      const { token } = await treasurer();
+      const created = await send<ClubCash>('POST', '/club-cash/accounts', token, {
+        name: 'PayPal Verein',
+        kind: 'paypal',
+        openingBalanceCents: 12000,
+      });
+      expect(created.status).toBe(201);
+      const paypal = created.body.accounts.find((a) => a.name === 'PayPal Verein')!;
+      expect(paypal.balanceCents).toBe(12000);
+      const fix = await send<ClubCash>('PATCH', `/club-cash/accounts/${paypal.id}`, token, {
+        openingBalanceCents: 15000,
+      });
+      expect(fix.body.accounts.find((a) => a.id === paypal.id)!.balanceCents).toBe(15000);
+
+      const expense = created.body.categories.find((c) => c.direction === 'expense')!;
+      const entry = await send('POST', '/club-cash/entries', token, {
+        accountId: paypal.id,
+        kind: 'expense',
+        amountCents: 500,
+        bookedOn: today,
+        categoryId: expense.id,
+        purpose: 'Gebühr',
+      });
+      expect(entry.status).toBe(201);
+      const locked = await send('PATCH', `/club-cash/accounts/${paypal.id}`, token, {
+        openingBalanceCents: 99,
+      });
+      expect(locked.status).toBe(409);
+
+      await send('PATCH', `/club-cash/accounts/${paypal.id}`, token, { archived: true });
+      const refused = await send('POST', '/club-cash/entries', token, {
+        accountId: paypal.id,
+        kind: 'expense',
+        amountCents: 100,
+        bookedOn: today,
+        categoryId: expense.id,
+        purpose: 'Nach Archivierung',
+      });
+      expect(refused.status).toBe(409);
+    });
+
+    it('Kategorien und Kostenstellen anlegen, archivieren; Vorlage nur einmal', async () => {
+      const { token } = await treasurer();
+      const cat = await send<ClubCash>('POST', '/club-cash/categories', token, {
+        name: 'Trikotwerbung',
+        direction: 'income',
+        area: 'business',
+      });
+      const made = cat.body.categories.find((c) => c.name === 'Trikotwerbung')!;
+      expect(made.area).toBe('business');
+      const moved = await send<ClubCash>('PATCH', `/club-cash/categories/${made.id}`, token, {
+        archived: true,
+      });
+      expect(moved.body.categories.find((c) => c.id === made.id)!.archived).toBe(true);
+      const center = await send<ClubCash>('POST', '/club-cash/cost-centers', token, {
+        name: 'Turnier 2027',
+        kind: 'event',
+      });
+      expect(center.body.costCenters.some((c) => c.name === 'Turnier 2027')).toBe(true);
+      expect((await send('POST', '/club-cash/categories/template', token)).status).toBe(409);
+    });
+
+    it('Der Verein bestimmt, wer die Kasse einsehen darf (Vorstand)', async () => {
+      const admin = await login('admin');
+      const board = await login('vorstand');
+      // Nur die Administration ändert die Einstellung
+      const denied = await send('PUT', '/club-cash/visibility', (await treasurer()).token, {
+        visibility: 'board_all',
+      });
+      expect(denied.status).toBe(403);
+
+      await send('PUT', '/club-cash/visibility', admin.token, { visibility: 'board_reports' });
+      const reports = await get<ClubCash>('/club-cash', board.token);
+      expect(reports).toMatchObject({ level: 'reports', canManage: false, recent: [] });
+      expect(reports.totalBalanceCents).toBeGreaterThan(0);
+      expect((await send('GET', '/club-cash/entries', board.token)).status).toBe(403);
+
+      await send('PUT', '/club-cash/visibility', admin.token, { visibility: 'board_all' });
+      expect((await get<ClubCash>('/club-cash', board.token)).level).toBe('full');
+      expect((await send('GET', '/club-cash/entries', board.token)).status).toBe(200);
+      const book = await send('POST', '/club-cash/transfers', board.token, {
+        fromAccountId: reports.accounts[0]!.id,
+        toAccountId: reports.accounts[1]!.id,
+        amountCents: 100,
+        bookedOn: today,
+      });
+      expect(book.status).toBe(403);
+
+      await send('PUT', '/club-cash/visibility', admin.token, { visibility: 'treasury' });
+      expect((await send('GET', '/club-cash', board.token)).status).toBe(403);
+    });
+
+    it('steht im Änderungsprotokoll', async () => {
+      const admin = await login('admin');
+      const audit = await get<AuditEntry[]>('/admin/audit', admin.token);
+      expect(audit.some((a) => a.label.startsWith('Vereinskasse: Buchung storniert'))).toBe(true);
+      expect(audit.some((a) => a.label.startsWith('Vereinskasse: Konto angelegt'))).toBe(true);
     });
   });
 });

@@ -5,7 +5,12 @@
  * das erste Fulladmin-Konto an.
  */
 import { randomInt, timingSafeEqual } from 'node:crypto';
-import { MODULES, SYSTEM_ROLES, type SetupInput } from '@clubroof/core';
+import {
+  CLUB_CASH_CATEGORY_TEMPLATE,
+  MODULES,
+  SYSTEM_ROLES,
+  type SetupInput,
+} from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { count } from 'drizzle-orm';
 import type { Config } from '../config';
@@ -16,6 +21,7 @@ import { checkPassword, hashPassword } from './account';
 
 /** Optionale Module starten „verfügbar“ und erscheinen im Update-Center. */
 const OPTIONAL = new Set([
+  'club_cash',
   'facility_booking',
   'player_exchange',
   'forum',
@@ -188,6 +194,10 @@ export async function setupClub(
         level: 'basic' as const,
       })),
     );
+    // Kategorien der Vereinskasse aus der Vorlage (der Kassenwart passt sie später an)
+    await tx
+      .insert(s.clubCashCategories)
+      .values(CLUB_CASH_CATEGORY_TEMPLATE.map((c, i) => ({ clubId, ...c, sortOrder: i })));
     // Spielstätten mit Plätzen (Untergrund) und Kabinen
     const SURFACE_KIND = {
       grass: 'grass_pitch',

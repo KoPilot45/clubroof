@@ -260,6 +260,13 @@
       "when": 1791666172333,
       "tag": "0036_venues",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1791669143348,
+      "tag": "0037_club_cash",
+      "breakpoints": true
     }
   ]
 }

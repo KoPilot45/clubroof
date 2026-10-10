@@ -185,6 +185,17 @@ export default function ClubScreen() {
           },
         ]
       : []),
+    ...(me.clubCash
+      ? [
+          {
+            key: 'clubcash',
+            tint: 'orange' as const,
+            label: 'Vereinskasse',
+            icon: 'wallet' as const,
+            onPress: () => router.push('/club-cash'),
+          },
+        ]
+      : []),
     {
       key: 'teams',
       tint: 'green' as const,

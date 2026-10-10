@@ -113,11 +113,26 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
   },
   {
     key: 'treasurer',
-    name: 'Kassenwart',
-    // Zusatzaufgabe: wird z. B. einem Spieler für seine Mannschaft vergeben (docs/ENTSCHEIDUNGEN.md)
+    name: 'Mannschaftskassenwart',
+    // Zusatzaufgabe: wird z. B. einem Spieler für seine Mannschaft vergeben (docs/ENTSCHEIDUNGEN.md);
+    // mit der Vereinskasse hat die Rolle nichts zu tun (docs/VEREINSKASSE.md)
     description: 'Zusatzaufgabe: Mannschaftskasse, Buchungen, Strafen/Getränke, Abrechnung',
     defaultScope: 'team',
     permissions: ['cash.read', 'cash.manage', 'cash.fines'],
+  },
+  {
+    key: 'club_treasurer',
+    name: 'Kassenwart (Verein)',
+    description: 'Vereinskasse: Konten, Kassenbuch mit Belegen, Kategorien, Kostenstellen, Storno',
+    defaultScope: 'club',
+    permissions: ['clubcash.read', 'clubcash.manage'],
+  },
+  {
+    key: 'cash_auditor',
+    name: 'Kassenprüfer',
+    description: 'Vereinskasse lesen und prüfen (Belege, Stichproben, Prüfvermerke)',
+    defaultScope: 'club',
+    permissions: ['clubcash.read', 'clubcash.audit'],
   },
   {
     key: 'facility_manager',

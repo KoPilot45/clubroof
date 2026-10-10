@@ -37,6 +37,7 @@ import { exchangeRoutes } from './routes/exchange';
 import { facilityRoutes } from './routes/facilities';
 import { profileRoutes } from './routes/profiles';
 import { teamRoutes } from './routes/teams';
+import { clubCashRoutes } from './routes/club-cash';
 
 export type AppOptions = {
   db: Db;
@@ -147,6 +148,7 @@ export async function buildApp({
   await app.register(notificationRoutes);
   await app.register(communityRoutes);
   await app.register(teamRoutes);
+  await app.register(clubCashRoutes);
   await app.register(clubRoutes);
   await app.register(profileRoutes);
   await app.register(exchangeRoutes);

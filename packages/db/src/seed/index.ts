@@ -12,6 +12,7 @@ import { hash } from '@node-rs/argon2';
 import {
   MODULES,
   SYSTEM_ROLES,
+  CLUB_CASH_CATEGORY_TEMPLATE,
   addDays,
   addMinutes,
   at,
@@ -519,6 +520,14 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       { clubId, personId: persona.board.id, roleId: roleIds.board!, scopeType: 'club' },
       { clubId, personId: persona.member.id, roleId: roleIds.club_member!, scopeType: 'club' },
       { clubId, personId: persona.treasurer.id, roleId: roleIds.treasurer!, scopeType: 'club' },
+      {
+        clubId,
+        personId: persona.treasurer.id,
+        roleId: roleIds.club_treasurer!,
+        scopeType: 'club',
+      },
+      // Kassenprüfer aus dem Verein (Demo: das Vereinsmitglied)
+      { clubId, personId: persona.member.id, roleId: roleIds.cash_auditor!, scopeType: 'club' },
       {
         clubId,
         personId: official.sportsDirector.id,
@@ -1742,6 +1751,133 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       );
     }
     await insertChunked(tx, s.cashTransactions, txRows);
+
+    // ── Vereinskasse (Paket K1) ───────────────────────────────────────────────────────────
+    const clubAccounts = await tx
+      .insert(s.clubCashAccounts)
+      .values([
+        {
+          clubId,
+          name: 'Girokonto Sparkasse',
+          kind: 'bank',
+          openingBalanceCents: euro(8250),
+          sortOrder: 0,
+        },
+        { clubId, name: 'Barkasse', kind: 'cash', openingBalanceCents: euro(300), sortOrder: 1 },
+        {
+          clubId,
+          name: 'Tagesgeld',
+          kind: 'savings',
+          openingBalanceCents: euro(5000),
+          sortOrder: 2,
+        },
+      ])
+      .returning({ id: s.clubCashAccounts.id, name: s.clubCashAccounts.name });
+    const acc = (prefix: string) => clubAccounts.find((a) => a.name.startsWith(prefix))!.id;
+    const clubCategories = await tx
+      .insert(s.clubCashCategories)
+      .values(CLUB_CASH_CATEGORY_TEMPLATE.map((c, i) => ({ clubId, ...c, sortOrder: i })))
+      .returning({ id: s.clubCashCategories.id, name: s.clubCashCategories.name });
+    const cat = (name: string) => clubCategories.find((c) => c.name === name)!.id;
+    const centers = await tx
+      .insert(s.clubCostCenters)
+      .values([
+        { clubId, name: 'Jugend', kind: 'department' },
+        { clubId, name: 'Senioren', kind: 'department' },
+        { clubId, name: 'Sommerfest', kind: 'event' },
+      ])
+      .returning({ id: s.clubCostCenters.id, name: s.clubCostCenters.name });
+    const center = (name: string) => centers.find((c) => c.name === name)!.id;
+    const clubEntry = (
+      kind: 'income' | 'expense',
+      account: string,
+      amount: number,
+      category: string,
+      purpose: string,
+      daysAgo: number,
+      extra: Partial<Insert<typeof s.clubCashEntries>> = {},
+    ): Insert<typeof s.clubCashEntries> => ({
+      clubId,
+      accountId: acc(account),
+      kind,
+      amountCents: euro(amount),
+      categoryId: cat(category),
+      purpose,
+      bookedOn: toIsoDate(addDays(today, -daysAgo)),
+      createdByPersonId: persona.treasurer.id,
+      ...extra,
+    });
+    const transferId = randomUUID();
+    await tx.insert(s.clubCashEntries).values([
+      clubEntry('income', 'Girokonto', 4200, 'Mitgliedsbeiträge', 'Beiträge Quartal', 60, {
+        receiptNo: 'B-2026-001',
+      }),
+      clubEntry('income', 'Girokonto', 1500, 'Sponsoring', 'Trikotsponsoring Saison', 45, {
+        counterparty: 'Haus & Garten Müller GmbH',
+        receiptNo: 'B-2026-002',
+      }),
+      clubEntry(
+        'expense',
+        'Girokonto',
+        780,
+        'Platzmiete und Hallengebühren',
+        'Hallenmiete Winter',
+        30,
+        {
+          counterparty: 'Stadt Musterstadt',
+          costCenterId: center('Jugend'),
+          receiptNo: 'B-2026-003',
+        },
+      ),
+      clubEntry(
+        'expense',
+        'Girokonto',
+        312.5,
+        'Sportgeräte und Material',
+        'Trainingsmaterial Senioren',
+        21,
+        {
+          counterparty: 'Sportshop Musterstadt',
+          costCenterId: center('Senioren'),
+          receiptNo: 'B-2026-004',
+        },
+      ),
+      clubEntry(
+        'income',
+        'Barkasse',
+        640,
+        'Vereinsfeste und Verkauf',
+        'Einnahmen Sommerfest Grillstand',
+        14,
+        {
+          costCenterId: center('Sommerfest'),
+        },
+      ),
+      clubEntry('expense', 'Barkasse', 215.3, 'Einkauf für Feste', 'Einkauf Sommerfest', 16, {
+        counterparty: 'Getränkemarkt Nord',
+        costCenterId: center('Sommerfest'),
+      }),
+      {
+        clubId,
+        accountId: acc('Barkasse'),
+        kind: 'transfer_out',
+        amountCents: euro(400),
+        bookedOn: toIsoDate(addDays(today, -7)),
+        purpose: 'Bareinzahlung aufs Girokonto',
+        transferId,
+        createdByPersonId: persona.treasurer.id,
+      },
+      {
+        clubId,
+        accountId: acc('Girokonto'),
+        kind: 'transfer_in',
+        amountCents: euro(400),
+        bookedOn: toIsoDate(addDays(today, -7)),
+        purpose: 'Bareinzahlung aufs Girokonto',
+        transferId,
+        createdByPersonId: persona.treasurer.id,
+      },
+    ]);
 
     // Kassenverwaltung: Monatsbeitrag der 1. Mannschaft (ab nächstem Monat), Kassenprüfung zum
     // Saisonstart und eine offene Zahlungsmeldung in der B-Jugend

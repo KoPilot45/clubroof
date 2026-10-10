@@ -427,6 +427,13 @@ export const HELP_SECTIONS: HelpSection[] = [
     audience: 'treasurer',
     entries: [
       {
+        id: 'club-cash',
+        question: 'Wie funktioniert die Vereinskasse?',
+        answer:
+          'Die Vereinskasse ist von den Mannschaftskassen getrennt und liegt unter „Verein → Vereinskasse“ (wenn das Modul aktiv ist). Der Kassenwart (Verein) legt Konten mit Anfangsbestand an, bucht Einnahmen und Ausgaben mit Kategorie, optionaler Kostenstelle, Belegnummer und Belegfoto und bucht um zwischen Konten. Buchungen werden nie gelöscht, sondern mit Begründung storniert. Die Kategorien gehören zu den vier steuerlichen Bereichen (ideell, Vermögensverwaltung, Zweckbetrieb, wirtschaftlicher Geschäftsbetrieb). Kassenprüfer lesen alles, buchen aber nicht. Wer außerdem einsehen darf (z. B. der Vorstand), stellt die Vereinsadministration unter „Einrichtung“ ein.',
+        link: { label: 'Vereinskasse', href: '/club-cash' },
+      },
+      {
         id: 'tr-start',
         question: 'Wo finde ich die Funktionen?',
         answer:

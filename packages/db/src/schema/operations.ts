@@ -425,3 +425,97 @@ export const refereeAssignments = pgTable(
   },
   (t) => [index().on(t.eventId), index().on(t.personId)],
 );
+
+// ── Vereinskasse (Paket K1) ─────────────────────────────────────────────────
+
+/** Konto der Vereinskasse (Girokonto, Barkasse, Sparkonto, PayPal …) mit Anfangsbestand. */
+export const clubCashAccounts = pgTable(
+  'club_cash_accounts',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    /** bank | cash | savings | paypal | other */
+    kind: text().notNull(),
+    openingBalanceCents: integer().notNull().default(0),
+    archivedAt: timestamp({ withTimezone: true }),
+    sortOrder: integer().notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId)],
+);
+
+/** Kategorie (Kontenrahmen) mit Zuordnung zu einem der vier steuerlichen Bereiche. */
+export const clubCashCategories = pgTable(
+  'club_cash_categories',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    /** income | expense */
+    direction: text().notNull(),
+    /** ideal | asset | purpose | business */
+    area: text().notNull(),
+    archivedAt: timestamp({ withTimezone: true }),
+    sortOrder: integer().notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId)],
+);
+
+/** Kostenstelle: Abteilung, Mannschaft oder Veranstaltung, der Buchungen zugeordnet werden. */
+export const clubCostCenters = pgTable(
+  'club_cost_centers',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    /** department | team | event | other */
+    kind: text().notNull(),
+    archivedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId)],
+);
+
+/**
+ * Buchung der Vereinskasse. Beträge in Cent, immer positiv; die Richtung steht in `kind`.
+ * Eine Umbuchung besteht aus zwei Seiten (`transfer_out`/`transfer_in`) mit gleicher `transferId`.
+ * Keine Löschung: Storno mit Begründung, die Buchung bleibt sichtbar und zählt nicht mehr.
+ */
+export const clubCashEntries = pgTable(
+  'club_cash_entries',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    accountId: uuid()
+      .notNull()
+      .references(() => clubCashAccounts.id),
+    /** income | expense | transfer_out | transfer_in */
+    kind: text().notNull(),
+    amountCents: integer().notNull(),
+    bookedOn: date().notNull(),
+    categoryId: uuid().references(() => clubCashCategories.id),
+    costCenterId: uuid().references(() => clubCostCenters.id),
+    counterparty: text(),
+    purpose: text().notNull(),
+    receiptNo: text(),
+    /** Beleg (Foto) als Medienverweis */
+    receiptRef: text(),
+    transferId: uuid(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    cancelledAt: timestamp({ withTimezone: true }),
+    cancelledByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    cancelReason: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.bookedOn), index().on(t.accountId)],
+);

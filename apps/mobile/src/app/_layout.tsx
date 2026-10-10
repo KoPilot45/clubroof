@@ -207,6 +207,22 @@ function Navigator() {
           <Stack.Screen name="search" options={{ headerShown: true, title: 'Suche' }} />
           <Stack.Screen name="club-teams" options={{ headerShown: true, title: 'Mannschaften' }} />
           <Stack.Screen name="contacts" options={{ headerShown: true, title: 'Ansprechpartner' }} />
+          <Stack.Screen
+            name="club-cash/index"
+            options={{ headerShown: true, title: 'Vereinskasse' }}
+          />
+          <Stack.Screen
+            name="club-cash/entries"
+            options={{ headerShown: true, title: 'Kassenbuch' }}
+          />
+          <Stack.Screen
+            name="club-cash/new"
+            options={{ headerShown: true, title: 'Buchung erfassen' }}
+          />
+          <Stack.Screen
+            name="club-cash/manage"
+            options={{ headerShown: true, title: 'Vereinskasse einrichten' }}
+          />
           <Stack.Screen name="help" options={{ headerShown: true, title: 'Hilfe & Anleitung' }} />
           <Stack.Screen
             name="about/[page]"
