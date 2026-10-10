@@ -54,7 +54,7 @@ export const eventRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: {
         params: z.object({ eventId: z.uuid(), personId: z.uuid() }),
         body: z.object({
-          status: z.enum(['yes', 'no', 'maybe']),
+          status: z.enum(['yes', 'no', 'maybe', 'pending']),
           reason: z.string().trim().max(200).nullish(),
         }),
       },

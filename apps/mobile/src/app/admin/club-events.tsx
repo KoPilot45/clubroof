@@ -51,7 +51,14 @@ export default function ClubEventsPlanningScreen() {
       <Section title="Geplant">
         <Card>
           {p.upcoming.length === 0 ? (
-            <Empty icon="calendar-outline" text="Noch keine Veranstaltungen geplant." />
+            <Empty
+              icon="calendar-outline"
+              text="Noch keine Veranstaltungen geplant."
+              action={{
+                label: 'Veranstaltung anlegen',
+                onPress: () => router.push('/admin/club-event-new'),
+              }}
+            />
           ) : null}
           {p.upcoming.map((e, i) => {
             const open = e.shifts.reduce((a, x) => a + Math.max(0, x.capacity - x.filled), 0);

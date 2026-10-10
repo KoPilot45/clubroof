@@ -388,7 +388,8 @@ export async function respondToEvent(
   input: {
     eventId: string;
     personId: string;
-    status: Exclude<AttendanceStatus, 'pending'>;
+    /** „pending“ nimmt die Antwort zurück („Rückgängig“ in der App) */
+    status: AttendanceStatus;
     reason?: string | null;
   },
   now: Date,
@@ -433,8 +434,9 @@ export async function respondToEvent(
     .update(s.eventParticipants)
     .set({
       status: input.status,
-      reason: input.status === 'yes' ? null : input.reason?.trim() || null,
-      respondedAt: now,
+      reason:
+        input.status === 'yes' || input.status === 'pending' ? null : input.reason?.trim() || null,
+      respondedAt: input.status === 'pending' ? null : now,
       respondedByPersonId: actor.person.id,
       // Eine bewusste Antwort löst die Verknüpfung zur Abwesenheit
       absenceId: null,

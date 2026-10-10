@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Button, Card, Empty, Screen, Section, T, TextField } from '@/components/ui';
+import { WelcomeTour } from '@/components/welcome-tour';
 import { HELP_SECTIONS, type HelpAudience } from '@/lib/help-content';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -11,6 +12,7 @@ import { t } from '@/lib/i18n';
 /** Hilfe & Anleitung: Fragen und Antworten, passend zur Rolle; mit Suche. */
 export default function HelpScreen() {
   const { me } = useSignedIn();
+  const [tour, setTour] = useState(false);
   const { colors } = useTheme();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -44,6 +46,15 @@ export default function HelpScreen() {
 
   return (
     <Screen edges={[]}>
+      <WelcomeTour me={me} visible={tour} onClose={() => setTour(false)} />
+      <Button
+        label="Willkommens-Tour ansehen"
+        icon="play-circle-outline"
+        variant="tonal"
+        size="sm"
+        style={{ alignSelf: 'flex-start' }}
+        onPress={() => setTour(true)}
+      />
       <T variant="caption">
         So funktioniert die App. Tippe auf eine Frage, um die Antwort zu lesen – oder suche nach
         einem Stichwort. Fragen zum Verein selbst beantworten dir die Ansprechpartner.

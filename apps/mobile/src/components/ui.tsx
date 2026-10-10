@@ -6,9 +6,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import type { StatusKey } from '@clubroof/design-tokens';
-import type { ComponentProps, ReactNode } from 'react';
+import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   Switch,
   Image,
   Pressable,
@@ -573,11 +574,38 @@ export function ListRow({
 
 // ── Zustände ──────────────────────────────────────────────────────────────────
 
-export function Loading() {
-  const { colors } = useTheme();
+/** Grauer, atmender Platzhalter statt Drehkreis: die Seite wirkt schneller und springt weniger. */
+function SkeletonBlock({ height }: { height: number }) {
+  const { colors, radii } = useTheme();
+  const opacity = useRef(new Animated.Value(0.45)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.45, duration: 700, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [opacity]);
   return (
-    <View style={{ padding: 48, alignItems: 'center' }}>
-      <ActivityIndicator color={colors.primaryText} />
+    <Animated.View
+      style={{ height, borderRadius: radii.lg, backgroundColor: colors.surfaceVariant, opacity }}
+    />
+  );
+}
+
+export function Loading() {
+  return (
+    <View
+      accessibilityRole="progressbar"
+      accessibilityLabel={t('Lädt')}
+      style={{ gap: 12, padding: 16 }}
+    >
+      <SkeletonBlock height={110} />
+      <SkeletonBlock height={64} />
+      <SkeletonBlock height={64} />
+      <SkeletonBlock height={64} />
     </View>
   );
 }
@@ -623,14 +651,46 @@ export function ErrorNotice({
   );
 }
 
-export function Empty({ icon, text }: { icon: IconName; text: string }) {
-  const { colors } = useTheme();
+/** Leerer Zustand: erklärt, warum nichts da ist, und bietet wenn möglich den nächsten Schritt an. */
+export function Empty({
+  icon,
+  text,
+  action,
+}: {
+  icon: IconName;
+  text: string;
+  action?: { label: string; onPress: () => void };
+}) {
+  const { colors, radii } = useTheme();
   return (
-    <View style={{ alignItems: 'center', gap: 8, paddingVertical: 20 }}>
-      <Ionicons name={icon} size={26} color={colors.onSurfaceMuted} />
+    <View
+      style={{
+        alignItems: 'center',
+        gap: 10,
+        paddingVertical: 20,
+        paddingHorizontal: 16,
+        borderRadius: radii.lg,
+        backgroundColor: colors.surfaceVariant,
+      }}
+    >
+      <View
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.primaryContainer,
+        }}
+      >
+        <Ionicons name={icon} size={22} color={colors.onPrimaryContainer} />
+      </View>
       <T variant="caption" style={{ textAlign: 'center' }}>
         {text}
       </T>
+      {action ? (
+        <Button label={action.label} size="sm" variant="tonal" onPress={action.onPress} />
+      ) : null}
     </View>
   );
 }

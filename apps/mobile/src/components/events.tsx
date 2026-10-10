@@ -28,6 +28,8 @@ import {
   TextField,
   type IconName,
 } from './ui';
+import { useToast } from '@/lib/toast';
+import { t } from '@/lib/i18n';
 
 const STATUS_TONE: Record<AttendanceStatus, 'success' | 'urgent' | 'action' | 'archived'> = {
   yes: 'success',
@@ -126,7 +128,11 @@ export function useRespond(eventId: string) {
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { personId: string; status: 'yes' | 'no' | 'maybe'; reason?: string }) =>
+    mutationFn: (input: {
+      personId: string;
+      status: 'yes' | 'no' | 'maybe' | 'pending';
+      reason?: string;
+    }) =>
       api<EventSummary>(`/events/${eventId}/responses/${input.personId}`, {
         method: 'PUT',
         body: { status: input.status, reason: input.reason ?? null },
@@ -152,8 +158,10 @@ export function ResponseControls({ event }: { event: EventSummary }) {
   const [note, setNote] = useState('');
   if (event.myResponses.length === 0) return null;
 
+  const toast = useToast();
   const send = (r: MyResponse, status: 'yes' | 'no' | 'maybe', declineReason?: string) => {
     setError(null);
+    const previous = r.status;
     respond.mutate(
       { personId: r.personId, status, reason: declineReason },
       {
@@ -161,6 +169,21 @@ export function ResponseControls({ event }: { event: EventSummary }) {
           setPending(null);
           setReason(null);
           setNote('');
+          const label = t(
+            status === 'yes' ? 'Zugesagt' : status === 'maybe' ? 'Unsicher' : 'Abgesagt',
+          );
+          toast({
+            message:
+              event.myResponses.length > 1 || r.relation === 'child'
+                ? `${r.firstName}: ${label}`
+                : label,
+            actionLabel: 'Rückgängig',
+            onAction: () =>
+              respond.mutate({
+                personId: r.personId,
+                status: previous === 'pending' ? 'pending' : previous,
+              }),
+          });
         },
         onError: (e) =>
           setError(

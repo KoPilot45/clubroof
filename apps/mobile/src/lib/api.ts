@@ -1,4 +1,5 @@
 import { translate, type ApiError } from '@clubroof/core';
+import { setOffline } from './connection';
 import { getLocale } from './i18n';
 
 /** Adresse des Backends, z. B. aus `.env` (EXPO_PUBLIC_API_URL). */
@@ -39,6 +40,7 @@ export async function request<T>(
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
+    setOffline(true);
     throw new RequestError(
       0,
       'offline',
@@ -46,6 +48,7 @@ export async function request<T>(
     );
   }
 
+  setOffline(false);
   if (response.status === 204) return undefined as T;
   const data = (await response.json().catch(() => null)) as (T & Partial<ApiError>) | null;
   if (!response.ok) {

@@ -54,14 +54,21 @@ export async function launch() {
   const errors = [];
   return {
     errors,
-    async session(who, { width = 390, height = 844 } = {}) {
+    async session(who, { width = 390, height = 844, tour = false } = {}) {
       const login = await loginAs(who);
       const ctx = await browser.newContext({
         viewport: { width, height },
         timezoneId: 'Europe/Berlin',
         locale: 'de-DE',
       });
-      await ctx.addInitScript((t) => localStorage.setItem('clubroof.session', t), login.token);
+      await ctx.addInitScript(
+        ([t, id, skipTour]) => {
+          localStorage.setItem('clubroof.session', t);
+          // Willkommens-Tour überspringen, sonst verdeckt sie Home in den Browserprüfungen
+          if (skipTour) localStorage.setItem(`clubroof.flag.tour.${id}`, '1');
+        },
+        [login.token, login.me.user.id, !tour],
+      );
       const page = await ctx.newPage();
       page.on('pageerror', (e) => errors.push(`${who}: ${e.message}`));
       page.on('console', (m) => {

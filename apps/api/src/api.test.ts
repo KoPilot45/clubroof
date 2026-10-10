@@ -4427,6 +4427,30 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Antwort zurücknehmen', () => {
+    it('„Rückgängig“ setzt die Zusage auf offen zurück', async () => {
+      const player = await login('spieler');
+      const events = await get<EventSummary[]>('/events', player.token);
+      const target = events.find(
+        (e) => e.myResponses[0]?.canRespond && e.myResponses[0].status === 'pending',
+      );
+      expect(target).toBeDefined();
+      const personId = target!.myResponses[0]!.personId;
+      const put = (status: string) =>
+        send<EventSummary>('PUT', `/events/${target!.id}/responses/${personId}`, player.token, {
+          status,
+        });
+      const yes = await put('yes');
+      expect(yes.body.myResponses[0]?.status).toBe('yes');
+      expect(yes.body.counts.yes).toBe(target!.counts.yes + 1);
+      const undone = await put('pending');
+      expect(undone.status).toBe(200);
+      expect(undone.body.myResponses[0]?.status).toBe('pending');
+      expect(undone.body.counts.yes).toBe(target!.counts.yes);
+      expect((await put('kaputt')).status).toBe(400);
+    });
+  });
+
   describe('Spielort und Route', () => {
     it('Link oder Koordinaten ergeben „Route“; ungültige Links werden abgelehnt', async () => {
       const coach = await login('trainer');

@@ -15,6 +15,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { Loading } from '@/components/ui';
+import { OfflineBanner } from '@/components/offline-banner';
+import { ToastProvider } from '@/lib/toast';
 import { fontState, HEADING_FONT } from '@/lib/fonts';
 import { headerTitle } from '@/components/header-title';
 import { t, useLocale } from '@/lib/i18n';
@@ -330,7 +332,10 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
           <ClubTheme>
-            <Navigator />
+            <ToastProvider>
+              <Navigator />
+              <OfflineBanner />
+            </ToastProvider>
           </ClubTheme>
         </SessionProvider>
       </QueryClientProvider>

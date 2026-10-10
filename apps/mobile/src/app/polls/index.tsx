@@ -39,7 +39,19 @@ export default function PollListScreen() {
       {polls.data ? (
         <Card>
           {polls.data.length === 0 ? (
-            <Empty icon="stats-chart-outline" text="Keine Umfragen." />
+            <Empty
+              icon="stats-chart-outline"
+              text="Keine Umfragen."
+              action={
+                me.create.polls.length
+                  ? {
+                      label: 'Umfrage erstellen',
+                      onPress: () =>
+                        router.push(teamId ? `/polls/new?teamId=${teamId}` : '/polls/new'),
+                    }
+                  : undefined
+              }
+            />
           ) : null}
           {polls.data.map((p, i) => (
             <ListRow

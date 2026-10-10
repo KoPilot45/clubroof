@@ -1,6 +1,7 @@
 import type { ActionItem, HomeResponse, NewsItem } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow, NextMatchCard } from '@/components/events';
@@ -19,6 +20,8 @@ import {
   TeamBadge,
   type IconName,
 } from '@/components/ui';
+import { WelcomeTour } from '@/components/welcome-tour';
+import { readFlag, writeFlag } from '@/lib/flags';
 import { formatAgo, formatRemaining } from '@/lib/format';
 import { openLink } from '@/lib/links';
 import { useSignedIn } from '@/lib/session';
@@ -42,9 +45,23 @@ export default function HomeScreen() {
   const { colors } = useTheme();
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const data = home.data;
+  // Willkommens-Tour beim ersten Start auf diesem Gerät
+  const tourKey = `tour.${me.user.id}`;
+  const [tour, setTour] = useState(false);
+  useEffect(() => {
+    void readFlag(tourKey).then((seen) => setTour(!seen));
+  }, [tourKey]);
 
   return (
     <Screen header={<AppHeader />} refreshing={home.isRefetching} onRefresh={() => home.refetch()}>
+      <WelcomeTour
+        me={me}
+        visible={tour}
+        onClose={() => {
+          setTour(false);
+          void writeFlag(tourKey, true);
+        }}
+      />
       {home.isPending ? <Loading /> : null}
       {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}
 
