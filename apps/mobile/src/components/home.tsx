@@ -24,6 +24,7 @@ import {
   ChoiceChips,
   Chip,
   Crest,
+  Empty,
   HeroCard,
   IconTile,
   Section,
@@ -80,11 +81,34 @@ function Swipe({
 
 // ── Spiele zum Wischen ────────────────────────────────────────────────────────
 
-export function MatchCarousel({ matches, club }: { matches: EventSummary[]; club: string }) {
+export function MatchCarousel({
+  matches,
+  club,
+  hasTeam,
+}: {
+  matches: EventSummary[];
+  club: string;
+  /** Person gehört zu mindestens einer Mannschaft */
+  hasTeam: boolean;
+}) {
   const width = useCardWidth(306);
   const [index, setIndex] = useState(0);
   const { colors } = useTheme();
-  if (matches.length === 0) return null;
+  if (matches.length === 0)
+    return hasTeam ? (
+      <Empty
+        icon="football-outline"
+        text="Kein Spiel in Sicht"
+        hint="Neue Spiele erscheinen hier, sobald sie angesetzt sind."
+      />
+    ) : (
+      <Empty
+        icon="people-outline"
+        text="Noch keine Mannschaft"
+        hint="Sobald du einer Mannschaft zugeordnet bist, siehst du hier das nächste Spiel."
+        action={{ label: 'Alle Mannschaften ansehen', onPress: () => router.push('/club-teams') }}
+      />
+    );
   const current = Math.min(index, matches.length - 1);
   return (
     <View style={{ gap: 8 }}>
@@ -300,7 +324,19 @@ export function OpenBand({ actions }: { actions: ActionItem[] }) {
   const width = useCardWidth(232, 70);
   const { colors, radii, isDark, elevation } = useTheme();
   const [poll, setPoll] = useState<ActionItem | null>(null);
-  if (actions.length === 0) return null;
+  if (actions.length === 0)
+    return (
+      <Section title="Offen">
+        <Card>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <IconTile name="checkmark-done" tone="success" />
+            <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
+              Alles erledigt – nichts offen.
+            </T>
+          </View>
+        </Card>
+      </Section>
+    );
   // Die Aktion mit der nächsten Frist ist die dringendste
   const urgent = actions
     .filter((a) => a.dueAt)
@@ -407,7 +443,11 @@ export function WeekCard({ week, birthdays }: { week: EventSummary[]; birthdays:
     <Section title="Deine Woche" action="Alle anzeigen" onAction={() => router.push('/termine')}>
       <Card>
         {week.length === 0 ? (
-          <T variant="caption">In den nächsten sieben Tagen stehen keine Termine an.</T>
+          <Empty
+            icon="calendar-outline"
+            text="Diese Woche stehen keine Termine an."
+            hint="Im Kalender siehst du, was danach kommt."
+          />
         ) : null}
         {week.map((e, i) => (
           <EventRow key={e.id} event={e} first={i === 0} />

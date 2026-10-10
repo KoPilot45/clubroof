@@ -885,7 +885,17 @@ export function ListRow({
 // ── Zustände ──────────────────────────────────────────────────────────────────
 
 /** Grauer, atmender Platzhalter statt Drehkreis: die Seite wirkt schneller und springt weniger. */
-function SkeletonBlock({ height }: { height: number }) {
+function SkeletonBlock({
+  height,
+  width,
+  radius,
+  style,
+}: {
+  height: number;
+  width?: number | `${number}%`;
+  radius?: number;
+  style?: StyleProp<ViewStyle>;
+}) {
   const { colors, radii, motion } = useTheme();
   const opacity = useRef(new Animated.Value(0.45)).current;
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -915,22 +925,138 @@ function SkeletonBlock({ height }: { height: number }) {
   }, [opacity, reduceMotion, motion.skeletonPulse]);
   return (
     <Animated.View
-      style={{ height, borderRadius: radii.xl, backgroundColor: colors.surfaceVariant, opacity }}
+      style={[
+        {
+          height,
+          width,
+          borderRadius: radius ?? radii.md,
+          backgroundColor: colors.border,
+          opacity,
+        },
+        style,
+      ]}
     />
   );
 }
 
-export function Loading() {
+/** Platzhalter einer Listenzeile: Kachel, zwei Textzeilen, Status. */
+function SkeletonRow() {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 }}>
+      <SkeletonBlock height={44} width={44} radius={14} />
+      <View style={{ flex: 1, gap: 6 }}>
+        <SkeletonBlock height={12} width="70%" />
+        <SkeletonBlock height={10} width="45%" />
+      </View>
+      <SkeletonBlock height={22} width={64} radius={11} />
+    </View>
+  );
+}
+
+/**
+ * Ladezustand mit pulsierenden Platzhaltern. `list` (Standard) für Listen in Karten; `page` für den
+ * ersten Aufbau einer Seite: Blickfangkarte, Band, Liste.
+ */
+export function Loading({ variant = 'list' }: { variant?: 'list' | 'page' }) {
+  const { colors, radii, isDark, elevation } = useTheme();
+  const rows = (
+    <>
+      <SkeletonRow />
+      <SkeletonRow />
+      <SkeletonRow />
+    </>
+  );
   return (
     <View
       accessibilityRole="progressbar"
       accessibilityLabel={t('Lädt')}
-      style={{ gap: 12, padding: 16 }}
+      style={{ gap: 14, paddingVertical: variant === 'page' ? 0 : 4 }}
     >
-      <SkeletonBlock height={110} />
-      <SkeletonBlock height={64} />
-      <SkeletonBlock height={64} />
-      <SkeletonBlock height={64} />
+      {variant === 'page' ? (
+        <>
+          <SkeletonBlock height={230} radius={radii.xxl} />
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <SkeletonBlock height={92} radius={radii.xl} style={{ flex: 1 }} />
+            <SkeletonBlock height={92} radius={radii.xl} style={{ flex: 1 }} />
+          </View>
+          <View
+            style={{
+              padding: 14,
+              borderRadius: radii.xl,
+              backgroundColor: colors.surfaceRaised,
+              ...(isDark
+                ? { borderWidth: 1, borderColor: colors.border }
+                : shadowStyle(elevation.card)),
+            }}
+          >
+            {rows}
+          </View>
+        </>
+      ) : (
+        rows
+      )}
+    </View>
+  );
+}
+
+/**
+ * Hinweiskarte mit Symbol, Titel, Text und optionaler Handlung. `urgent` für Fehler, `action` für
+ * Warnungen (z. B. 2-Faktor), `info` für ruhige Hinweise. Immer mit Titel – nie Farbe allein.
+ */
+export function Notice({
+  tone,
+  icon,
+  title,
+  text,
+  action,
+}: {
+  tone: 'urgent' | 'action' | 'info';
+  icon: IconName;
+  title: string;
+  text: string;
+  action?: { label: string; onPress: () => void; icon?: IconName };
+}) {
+  const { colors, radii, spacing } = useTheme();
+  const c = colors.status[tone];
+  return (
+    <View
+      accessibilityRole={tone === 'urgent' ? 'alert' : undefined}
+      style={{
+        gap: spacing.md,
+        padding: spacing.lg,
+        borderRadius: radii.xl,
+        backgroundColor: c.container,
+        borderWidth: 1,
+        borderColor: c.solid,
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: c.solid,
+          }}
+        >
+          <Ionicons name={icon} size={20} color={c.onSolid} />
+        </View>
+        <T variant="heading" color={c.onContainer} style={{ flex: 1 }}>
+          {title}
+        </T>
+      </View>
+      <T color={c.onContainer}>{text}</T>
+      {action ? (
+        <Button
+          label={action.label}
+          icon={action.icon}
+          variant="outline"
+          onPress={action.onPress}
+          style={{ alignSelf: 'flex-start', borderColor: c.solid }}
+        />
+      ) : null}
     </View>
   );
 }
@@ -952,27 +1078,29 @@ export function ErrorNotice({
   const text = message ?? error?.message ?? 'Es ist ein unerwarteter Fehler aufgetreten.';
   if (status === 403 || status === 404) {
     return (
-      <Card style={{ gap: 12, alignItems: 'flex-start' }}>
-        <Chip
-          tone="info"
-          icon={status === 403 ? 'lock-closed' : 'search'}
-          label={status === 403 ? 'Kein Zugriff' : 'Nicht gefunden'}
-        />
-        <T>{text}</T>
-        {router.canGoBack() ? (
-          <Button label="Zurück" variant="outline" onPress={() => router.back()} />
-        ) : (
-          <Button label="Zur Startseite" variant="outline" onPress={() => router.replace('/')} />
-        )}
-      </Card>
+      <Notice
+        tone="info"
+        icon={status === 403 ? 'lock-closed' : 'search'}
+        title={status === 403 ? 'Kein Zugriff' : 'Nicht gefunden'}
+        text={text}
+        action={
+          router.canGoBack()
+            ? { label: 'Zurück', onPress: () => router.back() }
+            : { label: 'Zur Startseite', onPress: () => router.replace('/') }
+        }
+      />
     );
   }
   return (
-    <Card style={{ gap: 12, alignItems: 'flex-start' }}>
-      <Chip tone="urgent" icon="alert-circle" label="Fehler" />
-      <T>{text}</T>
-      {onRetry ? <Button label="Erneut versuchen" variant="outline" onPress={onRetry} /> : null}
-    </Card>
+    <Notice
+      tone="urgent"
+      icon="alert"
+      title="Das hat nicht geklappt"
+      text={text}
+      action={
+        onRetry ? { label: 'Erneut versuchen', onPress: onRetry, icon: 'refresh' } : undefined
+      }
+    />
   );
 }
 
@@ -980,10 +1108,13 @@ export function ErrorNotice({
 export function Empty({
   icon,
   text,
+  hint,
   action,
 }: {
   icon: IconName;
   text: string;
+  /** zweite, leisere Zeile (was als Nächstes passiert) */
+  hint?: string;
   action?: { label: string; onPress: () => void };
 }) {
   const { colors, radii } = useTheme();
@@ -994,25 +1125,19 @@ export function Empty({
         gap: 10,
         paddingVertical: 20,
         paddingHorizontal: 16,
-        borderRadius: radii.lg,
+        borderRadius: radii.xl,
         backgroundColor: colors.surfaceVariant,
       }}
     >
-      <View
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: colors.primaryContainer,
-        }}
-      >
-        <Ionicons name={icon} size={22} color={colors.onPrimaryContainer} />
-      </View>
-      <T variant="caption" style={{ textAlign: 'center' }}>
+      <IconTile name={icon} size="lg" />
+      <T variant="label" style={{ textAlign: 'center', fontWeight: '700' }}>
         {text}
       </T>
+      {hint ? (
+        <T variant="caption" style={{ textAlign: 'center', marginTop: -4 }}>
+          {hint}
+        </T>
+      ) : null}
       {action ? (
         <Button label={action.label} size="sm" variant="tonal" onPress={action.onPress} />
       ) : null}

@@ -72,7 +72,13 @@ const NEWS_ICON: Record<NewsItem['priority'], IconName> = {
 export function NewsList({ items }: { items: NewsItem[] }) {
   return (
     <Card>
-      {items.length === 0 ? <Empty icon="newspaper-outline" text="Keine Neuigkeiten." /> : null}
+      {items.length === 0 ? (
+        <Empty
+          icon="newspaper-outline"
+          text="Keine Neuigkeiten."
+          hint="Neue Meldungen erscheinen hier und als Hinweis."
+        />
+      ) : null}
       {items.map((n, i) => (
         <ListRow
           key={n.id}

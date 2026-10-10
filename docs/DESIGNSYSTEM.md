@@ -206,6 +206,22 @@ Aufbau wie `MehrNeu`: Profilkarte (Blickfang) → 2-Faktor-Hinweis (falls nötig
 
 - Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-mehr.mjs` (Eltern hell/dunkel, Admin; Überblick `.check/shots/neuer-look-mehr.png`).
 
+### Stand Schritt 7: Zustände (10.10.2026) ✅
+
+Nach `ZustandLaden/Offline/Leer/Fehler`:
+
+| Zustand       | Umsetzung                                                                                                                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Laden         | `Loading variant="page"` (Home): Platzhalter für Blickfangkarte, Band und Liste; `Loading` (Standard) für Listen in Karten: drei Zeilen mit Kachel, Text und Status. Pulsieren, bei „Bewegung reduzieren“ ruhig |
+| Offline       | `OfflineBanner`: Karte oben („Du bist offline“, „Angezeigt wird der Stand von HH:MM Uhr. Termine und Kader sind lesbar.“, „Erneut verbinden“); verschwindet von selbst, sobald die Verbindung zurück ist       |
+| Leer          | `Empty`: Pastell-Kachel (groß), Text, leisere Hinweiszeile (`hint`), optional Handlung. Home: „Noch keine Mannschaft“ (mit „Alle Mannschaften ansehen“), „Kein Spiel in Sicht“, „Alles erledigt – nichts offen.“, leere Woche und News mit Hinweis |
+| Fehler        | `Notice` (neu): Symbol, Titel, Text, Handlung – `urgent` für „Das hat nicht geklappt“ + „Erneut versuchen“, `action` für Warnungen (2-Faktor in „Mehr“), `info` für „Kein Zugriff“/„Nicht gefunden“ |
+| Rückmeldung   | Toast als dunkle Karte mit grünem Haken und „Rückgängig“, steht über der schwebenden Tab-Leiste                                                                                                  |
+| Bestätigung   | `Sheet` (Blatt von unten) „Termin absagen?“ mit Hinweis, Grundauswahl und „Abbrechen“ / „Absagen und informieren“ (erst mit Grund); ebenso Grund beim Absagen/Unsicher auf den Spielkarten            |
+
+- **Nicht umgesetzt:** „Deine Zusage wird gesendet, sobald du wieder online bist“ (Offline-Warteschlange für Rückmeldungen) – Zu-/Absagen brauchen weiter eine Verbindung.
+- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-zustaende.mjs` (Laden verzögert, Fehler 500 mit erneutem Versuch, Mitglied ohne Mannschaft, Offline, Bestätigungsblatt; Überblick `.check/shots/neuer-look-zustaende.png`).
+
 ### Offene Aufgaben (Paket L)
 
 - **„Anpassen“ im Vereinsbereich:** Kachel aus dem Entwurf `VereinNeu` – Kacheln des Vereinslebens ordnen/ausblenden mit gespeicherter Auswahl je Person
@@ -214,5 +230,6 @@ Aufbau wie `MehrNeu`: Profilkarte (Blickfang) → 2-Faktor-Hinweis (falls nötig
 - Absage direkt über ✕ in „Deine Woche“ (heute öffnet es den Termin).
 - Tabellenplatz und Torschützenkönig im Kader-Blickfang (Team) – braucht Daten in der API.
 - Globale Suche (Knopf in der Kopfzeile).
-- Noch: Zustände (Laden, Offline, Leer, Fehler), Dunkelmodus-Durchgang, Seite `/bausteine` entscheiden (behalten oder entfernen).
+- Offline-Warteschlange für Zu-/Absagen („wird gesendet, sobald du wieder online bist“).
+- Noch: Dunkelmodus-Durchgang über alle Seiten, Seite `/bausteine` entscheiden (behalten oder entfernen).
 

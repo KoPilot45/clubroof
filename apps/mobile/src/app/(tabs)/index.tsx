@@ -66,10 +66,16 @@ export default function HomeScreen() {
           void writeFlag(tourKey, true);
         }}
       />
-      {home.isPending ? <Loading /> : null}
+      {home.isPending ? <Loading variant="page" /> : null}
       {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}
 
-      {data ? <MatchCarousel matches={data.matches} club={me.club.shortName} /> : null}
+      {data ? (
+        <MatchCarousel
+          matches={data.matches}
+          club={me.club.shortName}
+          hasTeam={me.teams.length > 0}
+        />
+      ) : null}
       {data ? <OpenBand actions={data.actions} /> : null}
       {data ? <WeekCard week={data.week} birthdays={data.birthdays} /> : null}
 

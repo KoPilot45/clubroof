@@ -14,6 +14,7 @@ import {
   Section,
   T,
   HeroCard,
+  Notice,
   type TileItem,
 } from '@/components/ui';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
@@ -218,15 +219,15 @@ export default function MoreScreen() {
       </HeroCard>
 
       {me.security.twoFactorRequired ? (
-        <Card style={{ gap: 8 }}>
-          <Chip tone="urgent" icon="shield-outline" label="2-Faktor-Anmeldung erforderlich" />
-          <T variant="caption">
-            Der Verein verlangt sie für deine Verwaltungsrechte. Bis dahin ist die Verwaltung
-            gesperrt.
-          </T>
-          <Button label="Jetzt einrichten" onPress={() => router.push('/account')} />
-        </Card>
+        <Notice
+          tone="action"
+          icon="shield-outline"
+          title="2-Faktor-Anmeldung erforderlich"
+          text="Der Verein verlangt sie für deine Verwaltungsrechte. Bis dahin ist die Verwaltung gesperrt."
+          action={{ label: 'Jetzt einrichten', onPress: () => router.push('/account') }}
+        />
       ) : null}
+
       {children.length > 0 ? (
         <Section title="Meine Kinder">
           <Card>
