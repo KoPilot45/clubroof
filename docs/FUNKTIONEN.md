@@ -50,6 +50,7 @@ Stand: 07.10.2026
 | Deine Woche (alle Termine der nächsten 7 Tage, auch abgesagte)       | –          | ✅    | Datumskachel, Status bzw. runde Zusage ✓ (Absage öffnet den Termin); Geburtstage dezent darunter     |
 | Schnellzugriff je Rolle, anpassbar                                   | –          | ✅    | Standard je Rolle (z. B. Verwaltung, Einladen); Auswahl je Person gespeichert (`users.quick_links`); Hinweise (Zähler, „neu“) aus den Kachel-Infos |
 | Globale Suche (Lupe in der Kopfzeile)                                | –          | ✅    | `GET /search`: Termine, Mitglieder, News, Mannschaften; Mitglieder nur mit Profil-Sichtbarkeit (eigene, Kinder, gemeinsame/betreute Mannschaft, Vereinsleserecht) |
+| Vereinsbereich anpassen (Kacheln ordnen/ausblenden)                  | –          | ✅    | je Person gespeichert (`users.club_tiles`), Zurücksetzen möglich                                                                                                |
 
 ## 3. Mannschaft (Team)
 

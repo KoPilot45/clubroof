@@ -55,6 +55,42 @@ for (const [who, modes] of [
   }
 }
 
+// „Anpassen“: Kachel ausblenden, nach oben schieben, zurücksetzen
+{
+  const { page, login, goto } = await b.session('vorstand');
+  await setMode(login, 'light');
+  await goto('/verein');
+  await text(page, 'Vereinsleben').waitFor({ timeout: 20_000 });
+  const label = (name) =>
+    page
+      .getByRole('button', { name: new RegExp(`^${name}`) })
+      .filter({ visible: true })
+      .first();
+  ok(await label('Umfragen').isVisible(), 'Anpassen: Kachel „Umfragen“ vorhanden');
+  await label('Anpassen').click();
+  await text(page, 'Kacheln anpassen').waitFor({ timeout: 10_000 });
+  await page.getByRole('checkbox', { name: 'Umfragen' }).click();
+  await page.getByRole('button', { name: 'Nach oben' }).nth(3).click();
+  await button(page, 'Speichern').click();
+  await text(page, 'Kacheln anpassen').waitFor({ state: 'hidden', timeout: 10_000 });
+  const me = await api('/me', login.token);
+  ok(me.user.clubTiles?.hidden.includes('polls'), 'Anpassen: Auswahl gespeichert (API)');
+  await page.waitForTimeout(500);
+  ok(
+    !(await label('Umfragen')
+      .isVisible()
+      .catch(() => false)),
+    'Anpassen: ausgeblendete Kachel verschwindet',
+  );
+  await label('Anpassen').click();
+  await button(page, 'Zurücksetzen').click();
+  await text(page, 'Kacheln anpassen').waitFor({ state: 'hidden', timeout: 10_000 });
+  ok(
+    (await api('/me', login.token)).user.clubTiles === null,
+    'Anpassen: Zurücksetzen stellt alle Kacheln wieder her',
+  );
+}
+
 const img = (p) => `data:image/png;base64,${readFileSync(p).toString('base64')}`;
 const keys = ['vorstand-light', 'vorstand-dark', 'spieler-light'];
 const html = `<body style="margin:0;background:#888;display:flex;gap:12px;padding:12px;align-items:flex-start">${keys

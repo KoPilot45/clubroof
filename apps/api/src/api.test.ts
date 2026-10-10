@@ -5073,6 +5073,27 @@ describe.skipIf(!url)('API', () => {
       expect(reset.body.user.quickLinks).toBeNull();
     });
 
+    it('Vereinsbereich: Kacheln ordnen und ausblenden, je Person gespeichert und zurücksetzbar', async () => {
+      const player = await login('spieler');
+      expect(player.me.user.clubTiles).toBeNull();
+      const saved = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        clubTiles: { order: ['contacts', 'news'], hidden: ['forum'] },
+      });
+      expect(saved.body.user.clubTiles).toEqual({ order: ['contacts', 'news'], hidden: ['forum'] });
+      expect((await login('trainer')).me.user.clubTiles).toBeNull();
+      expect(
+        (
+          await send('PUT', '/me/preferences', player.token, {
+            clubTiles: { order: ['Ungültig!'], hidden: [] },
+          })
+        ).status,
+      ).toBe(400);
+      const reset = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        clubTiles: null,
+      });
+      expect(reset.body.user.clubTiles).toBeNull();
+    });
+
     it('alle zehn Vereinsfarben sind wählbar, unbekannte werden abgelehnt', async () => {
       const admin = await login('admin');
       const before = await get<ClubSettings>('/admin/club', admin.token);

@@ -93,6 +93,12 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Tippe oben rechts auf die Lupe und gib mindestens zwei Buchstaben ein. Du findest Termine, Mitglieder, News und Mannschaften. Personen siehst du nur, wenn du auch sonst ihr Profil sehen darfst (z. B. aus deiner Mannschaft oder deine Kinder).',
       },
       {
+        id: 'club-tiles',
+        question: 'Kann ich die Kacheln unter „Verein“ anpassen?',
+        answer:
+          'Ja. Tippe unter „Verein“ auf die Kachel „Anpassen“: Blende Kacheln aus, die du nicht brauchst, und verschiebe die wichtigen nach oben. „Zurücksetzen“ zeigt wieder alle in der Standardreihenfolge. Die Auswahl gilt auf allen deinen Geräten.',
+      },
+      {
         id: 'quick-access',
         question: 'Wie ändere ich den Schnellzugriff auf Home?',
         answer:

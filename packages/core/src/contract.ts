@@ -66,6 +66,8 @@ export type MeResponse = {
     language: Locale | null;
     /** Schnellzugriff auf Home (Schlüssel in Reihenfolge); `null` = Standard der Rolle */
     quickLinks: string[] | null;
+    /** Vereinsbereich: Reihenfolge und ausgeblendete Kacheln; `null` = alle in Standardreihenfolge */
+    clubTiles: { order: string[]; hidden: string[] } | null;
   };
   person: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
   club: ClubInfo;

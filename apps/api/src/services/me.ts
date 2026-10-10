@@ -36,6 +36,7 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       colorMode: s.users.colorMode,
       language: s.users.language,
       quickLinks: s.users.quickLinks,
+      clubTiles: s.users.clubTiles,
     })
     .from(s.users)
     .where(eq(s.users.id, actor.user.id));
@@ -81,6 +82,7 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       colorMode,
       language,
       quickLinks: userRow?.quickLinks ?? null,
+      clubTiles: userRow?.clubTiles ?? null,
     },
     person: {
       id: actor.person.id,
@@ -131,16 +133,23 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
 export async function setPreferences(
   db: Db,
   actor: Actor,
-  input: { colorMode?: ColorMode; language?: Locale | null; quickLinks?: string[] | null },
+  input: {
+    colorMode?: ColorMode;
+    language?: Locale | null;
+    quickLinks?: string[] | null;
+    clubTiles?: { order: string[]; hidden: string[] } | null;
+  },
 ): Promise<MeResponse> {
   const patch: {
     colorMode?: ColorMode;
     language?: Locale | null;
     quickLinks?: string[] | null;
+    clubTiles?: { order: string[]; hidden: string[] } | null;
   } = {};
   if (input.colorMode !== undefined) patch.colorMode = input.colorMode;
   if (input.language !== undefined) patch.language = input.language;
   if (input.quickLinks !== undefined) patch.quickLinks = input.quickLinks;
+  if (input.clubTiles !== undefined) patch.clubTiles = input.clubTiles;
   if (Object.keys(patch).length)
     await db.update(s.users).set(patch).where(eq(s.users.id, actor.user.id));
   return buildMe(db, actor);

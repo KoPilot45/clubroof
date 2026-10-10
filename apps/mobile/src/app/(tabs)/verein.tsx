@@ -1,9 +1,11 @@
 import type { EventSummary, HelperEvent, NewsItem, PollSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { NewsList } from '@/components/news';
+import { TileCustomizeSheet, applyTilePrefs } from '@/components/tile-customizer';
 import {
   Button,
   Card,
@@ -25,7 +27,8 @@ import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 import { useTheme } from '@/lib/theme';
 
 export default function ClubScreen() {
-  const { api, me } = useSignedIn();
+  const { api, me, refresh } = useSignedIn();
+  const [customizing, setCustomizing] = useState(false);
   const tileInfo = useTileInfo('club');
   const has = (module: string) => me.clubModules.includes(module);
   const news = useQuery({ queryKey: ['news'], queryFn: () => api<NewsItem[]>('/news') });
@@ -226,7 +229,26 @@ export default function ClubScreen() {
       {highlight ? <ClubEventHero event={highlight} /> : null}
 
       <Section title="Vereinsleben">
-        <TileGrid compact items={withTileInfo(tiles, tileInfo)} />
+        <TileGrid
+          compact
+          items={[
+            ...applyTilePrefs(withTileInfo(tiles, tileInfo), me.user.clubTiles),
+            {
+              key: 'customize',
+              label: 'Anpassen',
+              icon: 'options',
+              tint: 'violet',
+              onPress: () => setCustomizing(true),
+            },
+          ]}
+        />
+        <TileCustomizeSheet
+          visible={customizing}
+          onClose={() => setCustomizing(false)}
+          tiles={withTileInfo(tiles, tileInfo)}
+          prefs={me.user.clubTiles}
+          onSaved={refresh}
+        />
       </Section>
 
       <Section

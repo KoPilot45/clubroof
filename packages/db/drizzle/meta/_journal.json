@@ -239,6 +239,13 @@
       "when": 1791649830561,
       "tag": "0033_quick_links",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1791653910065,
+      "tag": "0034_club_tiles",
+      "breakpoints": true
     }
   ]
 }

@@ -188,7 +188,7 @@ Aufbau wie `VereinNeu`: Nächster Vereinstermin (Blickfang) → „Vereinsleben�
 | Heute auf der Anlage | Zeilen mit Uhrzeit (Oswald), Titel, Ort; abgesagte durchgestrichen mit Chip                                                                                        |
 | Vereinsnews          | `NewsList` (gemeinsam mit Home): Icon-Kachel nach Dringlichkeit, Titel, Herkunft, Alter                                                                           |
 
-- Nicht umgesetzt: die Kachel „Anpassen“ aus dem Entwurf (Kacheln ordnen/ausblenden) – es gibt noch keine gespeicherte Auswahl für den Vereinsbereich.
+- **„Anpassen“** (Kachel am Ende): Blatt „Kacheln anpassen“ – Kacheln aus- und einblenden, mit Pfeilen verschieben; Auswahl je Person in `users.club_tiles` (`PUT /me/preferences`, `{ order, hidden }`), neue Funktionen erscheinen am Ende, „Zurücksetzen“ stellt alles her (`components/tile-customizer.tsx`).
 - Dringende News in der News-Liste tragen jetzt auch im hellen Modus ihren roten Rahmen (Warnfläche mit Beschriftung „Dringend“).
 - Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-verein.mjs` (Vorstand hell/dunkel, Spieler, Tippflächen, „Mehr erfahren“; Überblick `.check/shots/neuer-look-verein.png`).
 
@@ -240,8 +240,6 @@ Unterseiten; keine Seite mit weißen Flächen, unlesbarem Text oder Überlauf. A
 
 ### Offene Aufgaben (Paket L)
 
-- **„Anpassen“ im Vereinsbereich:** Kachel aus dem Entwurf `VereinNeu` – Kacheln des Vereinslebens ordnen/ausblenden mit gespeicherter Auswahl je Person
-  (analog zum Schnellzugriff, `users.quick_links`).
 - Absage direkt über ✕ in „Deine Woche“ (heute öffnet es den Termin).
 - Tabellenplatz und Torschützenkönig im Kader-Blickfang (Team) – braucht Daten in der API.
 - Offline-Warteschlange für Zu-/Absagen („wird gesendet, sobald du wieder online bist“).

@@ -26,6 +26,13 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         body: z.object({
           colorMode: z.enum(['light', 'dark', 'system']).optional(),
           language: z.custom<Locale>(isLocale).nullable().optional(),
+          clubTiles: z
+            .object({
+              order: z.array(z.string().regex(/^[a-z][a-z0-9-]{1,30}$/)).max(40),
+              hidden: z.array(z.string().regex(/^[a-z][a-z0-9-]{1,30}$/)).max(40),
+            })
+            .nullable()
+            .optional(),
           quickLinks: z
             .array(z.string().regex(/^[a-z][a-z0-9-]{1,30}$/))
             .max(12)
