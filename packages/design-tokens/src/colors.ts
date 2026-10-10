@@ -12,6 +12,9 @@
  *    werden immer zusammen mit Icon und Beschriftung gezeigt, nie als reine Farbfläche.
  */
 
+import { contrastRatio, MIN_CONTRAST } from './contrast';
+import { prefersDarkText, shade } from './shade';
+
 export const CLUB_COLOR_KEYS = [
   'green',
   'red',
@@ -79,9 +82,27 @@ export type StatusColorRoles = {
   onContainer: string;
 };
 
+/** Pastelflächen für Icon-Kacheln, Termintypen und Kennzahlen – für alle Vereine gleich, immer mit Beschriftung. */
+export const TINT_KEYS = ['blue', 'orange', 'pink', 'green', 'violet'] as const;
+export type TintKey = (typeof TINT_KEYS)[number];
+export type TintColorRoles = { container: string; onContainer: string };
+
+/** Verlauf der Blickfangkarte („Hero“): Start- und Endfarbe, Schrift darauf und feine Dekorflächen. */
+export type HeroColorRoles = {
+  from: string;
+  to: string;
+  onHero: string;
+  /** halbtransparente Wellen und Kreise im Hintergrund */
+  decor: string;
+};
+
 export type ThemeColors = ClubColorRoles &
   NeutralColorRoles & {
+    /** Karten, die sich vom Hintergrund abheben (hell: weiß mit Schatten, dunkel: eine Stufe heller) */
+    surfaceRaised: string;
     status: Record<StatusKey, StatusColorRoles>;
+    tints: Record<TintKey, TintColorRoles>;
+    hero: HeroColorRoles;
   };
 
 export const clubColors: Record<ClubColorKey, Record<ColorScheme, ClubColorRoles>> = {
@@ -313,12 +334,68 @@ export const statusColors: Record<ColorScheme, Record<StatusKey, StatusColorRole
   },
 };
 
+export const tintColors: Record<ColorScheme, Record<TintKey, TintColorRoles>> = {
+  light: {
+    blue: { container: '#CFE3FF', onContainer: '#123B73' },
+    orange: { container: '#FFE0B8', onContainer: '#7A4B00' },
+    pink: { container: '#F6D3F0', onContainer: '#6B1E62' },
+    green: { container: '#D6EFE0', onContainer: '#14532D' },
+    violet: { container: '#E5E1FA', onContainer: '#3B2A86' },
+  },
+  dark: {
+    blue: { container: '#17304F', onContainer: '#9CC4FF' },
+    orange: { container: '#3A2B0A', onContainer: '#F2C46A' },
+    pink: { container: '#3F1B3A', onContainer: '#F0A8E6' },
+    green: { container: '#17391F', onContainer: '#8FE0AB' },
+    violet: { container: '#2A2450', onContainer: '#C4B8FF' },
+  },
+};
+
+/**
+ * Verlauf der Blickfangkarte aus der Vereinsfarbe.
+ *  - Hell: Vereinsfarben mit weißer Schrift laufen von dunkel nach `primary`; helle Vereinsfarben
+ *    (Gelb, Orange, Himmelblau) mit dunkler Schrift von `primary` nach heller.
+ *  - Dunkel: tief eingefärbte Fläche mit weißer Schrift – so bleibt der Dunkelmodus ruhig.
+ * Die Schrift erreicht auf beiden Verlaufsfarben mindestens 4,5 : 1 (siehe Test).
+ */
+export function heroColors(roles: ClubColorRoles, scheme: ColorScheme): HeroColorRoles {
+  const decor = scheme === 'light' ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.08)';
+  if (scheme === 'light') {
+    // Schrift der Vereinsfarbe ist dunkel (onPrimary ist dunkel) → helle Fläche, Verlauf nach heller
+    if (!prefersDarkText(roles.onPrimary)) {
+      return {
+        from: roles.primary,
+        to: shade(roles.primary, 0.25),
+        onHero: roles.onPrimary,
+        decor,
+      };
+    }
+    return { from: shade(roles.primary, -0.3), to: roles.primary, onHero: '#FFFFFF', decor };
+  }
+  let factor = 0.35;
+  while (
+    factor < 0.9 &&
+    contrastRatio('#FFFFFF', shade(roles.primary, -factor)) < MIN_CONTRAST.text
+  )
+    factor += 0.05;
+  return {
+    from: shade(roles.primary, -Math.min(factor + 0.25, 0.9)),
+    to: shade(roles.primary, -factor),
+    onHero: '#FFFFFF',
+    decor,
+  };
+}
+
 /** Liefert das vollständige Farbthema für eine Vereinsfarbe und einen Modus. */
 export function getThemeColors(clubColor: ClubColorKey, scheme: ColorScheme): ThemeColors {
+  const roles = clubColors[clubColor][scheme];
   return {
     ...neutralColors[scheme],
-    ...clubColors[clubColor][scheme],
+    surfaceRaised: scheme === 'light' ? '#FFFFFF' : '#1F242B',
+    ...roles,
     status: statusColors[scheme],
+    tints: tintColors[scheme],
+    hero: heroColors(roles, scheme),
   };
 }
 

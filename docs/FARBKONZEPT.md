@@ -16,6 +16,8 @@ Ein Farbthema besteht aus drei Schichten:
 | **Vereinsfarbe**    | `primary`, `onPrimary`, `primaryPressed`, `primaryContainer`, `onPrimaryContainer`, `primaryText` | gewählter Vereinsfarbe + Modus      |
 | **Neutrale Farben** | Hintergrund, Karten, Text, Rahmen                                                                 | nur Modus                           |
 | **Statusfarben**    | Dringend, Aktion, Info, Erledigt, Archiviert                                                      | nur Modus – für alle Vereine gleich |
+| **Pastellflächen**  | `tints`: blau, orange, rosa, grün, violett (Icon-Kacheln, Termintypen, Kennzahlen) mit `onContainer` | nur Modus – für alle Vereine gleich |
+| **Blickfang**       | `hero`: Verlauf (`from`, `to`), Schrift (`onHero`), Dekor; `surfaceRaised` für erhöhte Karten      | gewählter Vereinsfarbe + Modus      |
 
 ## Vereinsfarben
 
@@ -54,9 +56,11 @@ Besonderheiten:
 5. Statusfarben werden **immer mit Icon und Beschriftung** gezeigt, nie als reine Farbfläche. Das löst
    Überschneidungen, z. B. rote Vereinsfarbe und roter Hinweis „Dringend“, und hilft Menschen mit
    Farbsehschwäche.
-6. **Eine Primärfarb-Fläche pro Bildschirm** (Festlegung 10.10.2026): Sie hebt die wichtigste Zahl oder Aussage hervor,
-   z. B. den Kassenstand. Dringendes steht daneben in Statusflächen mit Beschriftung. Weitere Hervorhebungen nutzen
-   `primaryContainer`. Der Text auf der Fläche ist immer `onPrimary` bzw. `onPrimaryContainer` aus dem Theme.
+6. **Eine Blickfang-Fläche pro Bildschirm** (Festlegung 10.10.2026, präzisiert für den neuen Look): Sie hebt die wichtigste Zahl
+   oder Aussage hervor, z. B. den Kassenstand oder das nächste Spiel. Sie ist ein Verlauf der Vereinsfarbe (`hero.from → hero.to`,
+   Schrift `hero.onHero`), im Dunkelmodus tief eingefärbt mit weißer Schrift. Dringendes steht daneben in Statusflächen mit
+   Beschriftung. Weitere Hervorhebungen nutzen `primaryContainer` oder die **Pastellflächen** (`tints`: blau, orange, rosa, grün,
+   violett – immer mit `onContainer`, nie weiße Schrift). Weitere Vereinsfarb-Flächen gibt es nicht.
 7. Mannschaften werden über **Badges** (B1, 1., AH) erkennbar gemacht, nicht über eigene Farben.
 
 ### Primärfarb-Flächen: Stellen

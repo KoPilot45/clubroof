@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CLUB_COLOR_KEYS,
   STATUS_KEYS,
+  TINT_KEYS,
   getThemeColors,
   isClubColorKey,
   type ColorScheme,
@@ -37,6 +38,28 @@ describe.each(CLUB_COLOR_KEYS)('Vereinsfarbe %s', (clubColor) => {
       ['onSurface auf surfaceVariant', t.onSurface, t.surfaceVariant],
     ])('%s erfüllt WCAG AA für Text', (_label, fg, bg) => {
       expect(contrastRatio(fg, bg)).toBeGreaterThanOrEqual(MIN_CONTRAST.text);
+    });
+
+    it('Blickfangkarte: Schrift auf Start- und Endfarbe des Verlaufs lesbar', () => {
+      expect(contrastRatio(t.hero.onHero, t.hero.from)).toBeGreaterThanOrEqual(MIN_CONTRAST.text);
+      expect(contrastRatio(t.hero.onHero, t.hero.to)).toBeGreaterThanOrEqual(MIN_CONTRAST.text);
+    });
+
+    it.each(TINT_KEYS)('Pastellfläche %s: Schrift darauf lesbar', (key) => {
+      const tint = t.tints[key];
+      expect(contrastRatio(tint.onContainer, tint.container)).toBeGreaterThanOrEqual(
+        MIN_CONTRAST.text,
+      );
+    });
+
+    it('erhöhte Karte: Text und Vereinsfarbe bleiben lesbar', () => {
+      expect(contrastRatio(t.onSurface, t.surfaceRaised)).toBeGreaterThanOrEqual(MIN_CONTRAST.text);
+      expect(contrastRatio(t.onSurfaceMuted, t.surfaceRaised)).toBeGreaterThanOrEqual(
+        MIN_CONTRAST.text,
+      );
+      expect(contrastRatio(t.primaryText, t.surfaceRaised)).toBeGreaterThanOrEqual(
+        MIN_CONTRAST.text,
+      );
     });
 
     it.each(STATUS_KEYS)('Statusfarbe %s ist lesbar', (key) => {
