@@ -191,3 +191,28 @@ Aufbau wie `VereinNeu`: Nächster Vereinstermin (Blickfang) → „Vereinsleben�
 - Dringende News in der News-Liste tragen jetzt auch im hellen Modus ihren roten Rahmen (Warnfläche mit Beschriftung „Dringend“).
 - Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-verein.mjs` (Vorstand hell/dunkel, Spieler, Tippflächen, „Mehr erfahren“; Überblick `.check/shots/neuer-look-verein.png`).
 
+### Stand Schritt 6: Mehr (10.10.2026) ✅
+
+Aufbau wie `MehrNeu`: Profilkarte (Blickfang) → 2-Faktor-Hinweis (falls nötig) → Meine Kinder → Mein Bereich → Meine Mannschaften → Einstellungen → Abmelden.
+
+| Teil                | Umsetzung                                                                                                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Profilkarte         | `HeroCard`: Avatar (64, heller Ring), Name bis zwei Zeilen, E-Mail, Rollen als Pillen (erste hell gefüllt)                                                    |
+| Meine Kinder        | Zeilen mit Avatar, Name, „Mannschaft · Du verwaltest Termine, Zusagen und Abwesenheiten“                                                                     |
+| Mein Bereich        | `MenuCard`: Profil & Statistik, Abwesenheiten (Zähler), Benachrichtigungen (ungelesen als Zähler und Text), Kalender-Abo – Pastell-Kachel, Erklärzeile, Pfeil   |
+| Meine Mannschaften  | Zeilen mit grüner Kachel, Funktion(en) und Kind in der Erklärzeile                                                                                           |
+| Einstellungen       | Konto & Einstellungen, Hilfe & Anleitung, Einladen (mit Recht), **Verwaltung** (mit Verwaltungsrecht – bleibt hier zusätzlich zum Schnellzugriff, damit sie sicher erreichbar ist) |
+| Hinweise            | Hinweise und Zähler aus `tile-info` ersetzen die Erklärzeile bzw. den Zähler                                                                                  |
+
+- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-mehr.mjs` (Eltern hell/dunkel, Admin; Überblick `.check/shots/neuer-look-mehr.png`).
+
+### Offene Aufgaben (Paket L)
+
+- **„Anpassen“ im Vereinsbereich:** Kachel aus dem Entwurf `VereinNeu` – Kacheln des Vereinslebens ordnen/ausblenden mit gespeicherter Auswahl je Person
+  (analog zum Schnellzugriff, `users.quick_links`).
+- Hinweise („1“, „neu“) an den Schnellzugriff-Chips auf Home.
+- Absage direkt über ✕ in „Deine Woche“ (heute öffnet es den Termin).
+- Tabellenplatz und Torschützenkönig im Kader-Blickfang (Team) – braucht Daten in der API.
+- Globale Suche (Knopf in der Kopfzeile).
+- Noch: Zustände (Laden, Offline, Leer, Fehler), Dunkelmodus-Durchgang, Seite `/bausteine` entscheiden (behalten oder entfernen).
+
