@@ -279,7 +279,10 @@ function MatchCard({ event, width, club }: { event: EventSummary; width: number;
           </T>
         ) : null}
       </Pressable>
-      <ResponseControls event={event} tone="hero" />
+      {/* bei ungleich hohen Karten steht die Zu-/Absage immer unten */}
+      <View style={{ marginTop: 'auto' }}>
+        <ResponseControls event={event} tone="hero" />
+      </View>
     </HeroCard>
   );
 }

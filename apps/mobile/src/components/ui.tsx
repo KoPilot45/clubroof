@@ -24,6 +24,7 @@ import {
   Image,
   Modal,
   PanResponder,
+  Platform,
   Pressable,
   TextInput,
   RefreshControl,
@@ -248,7 +249,13 @@ export function HeroCard({
   const body = (
     <View
       onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
-      style={{ borderRadius: radii.xxl, overflow: 'hidden', padding: spacing.lg, gap: 12 }}
+      style={{
+        flexGrow: 1,
+        borderRadius: radii.xxl,
+        overflow: 'hidden',
+        padding: spacing.lg,
+        gap: 12,
+      }}
     >
       <Svg
         style={{ position: 'absolute', top: 0, left: 0 }}
@@ -256,8 +263,7 @@ export function HeroCard({
         height={box?.h ?? 0}
         viewBox="0 0 306 270"
         preserveAspectRatio="xMidYMid slice"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
+        aria-hidden
       >
         <Defs>
           <LinearGradient id={gradientId} x1="0.3" y1="0" x2="0.7" y2="1">
@@ -922,7 +928,11 @@ export function SwipeRow({
   const snap = (to: number) => {
     offset.current = to;
     setOpen(to !== 0);
-    Animated.spring(x, { toValue: to, useNativeDriver: true, bounciness: 0 }).start();
+    Animated.spring(x, {
+      toValue: to,
+      useNativeDriver: Platform.OS !== 'web',
+      bounciness: 0,
+    }).start();
   };
   const pan = useRef(
     PanResponder.create({
@@ -1032,12 +1042,12 @@ function SkeletonBlock({
         Animated.timing(opacity, {
           toValue: 1,
           duration: motion.skeletonPulse / 2,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.timing(opacity, {
           toValue: 0.45,
           duration: motion.skeletonPulse / 2,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ]),
     );

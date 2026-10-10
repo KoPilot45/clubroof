@@ -193,7 +193,7 @@ export function AttendanceBar({ counts, absent }: { counts: AttendanceCounts; ab
   return (
     <View style={{ gap: 8 }}>
       <View
-        accessibilityElementsHidden
+        aria-hidden
         style={{
           flexDirection: 'row',
           height: 10,
