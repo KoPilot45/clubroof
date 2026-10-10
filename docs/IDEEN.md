@@ -95,3 +95,5 @@ danach „neu seit dem letzten Besuch“ (braucht den gespeicherten Zeitpunkt); 
 - **Trainer und Vorstand:** Anwesenheits-Auswertung, Trainingsplan-Vorlagen mit Bild/Video, Vorstands-Dashboard,
   Versammlungen mit Abstimmung, Kinderschutz (Führungszeugnis-Ablauf, Notfallkontakte).
 - **Betrieb:** Bildkomprimierung, Web-Push, Fehlerberichte und anonyme Statistik, Mehrsprachigkeit (weitere Sprachen).
+
+- **Optik (vorgemerkt, 10.10.2026):** Abgleich mit dem iOS-Leitfaden von Justinmind – siehe Paket U in `docs/PAKETE.md` (Touch-Flächen 44 pt, Haptik, Wisch-Aktionen, iPad/Querformat, Splash-Screen, Übergänge, Dynamic Type). Danach: Designüberarbeitung „moderner, frischer Look“ (Planung folgt).
