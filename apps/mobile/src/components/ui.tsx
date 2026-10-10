@@ -249,7 +249,13 @@ export function HeroCard({
   const body = (
     <View
       onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
-      style={{ borderRadius: radii.xxl, overflow: 'hidden', padding: spacing.lg, gap: 12 }}
+      style={{
+        flexGrow: 1,
+        borderRadius: radii.xxl,
+        overflow: 'hidden',
+        padding: spacing.lg,
+        gap: 12,
+      }}
     >
       <Svg
         style={{ position: 'absolute', top: 0, left: 0 }}
