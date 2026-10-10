@@ -10,7 +10,7 @@ import {
 import { z } from 'zod';
 import { loadHome } from '../services/home';
 import { getTileInfo } from '../services/tile-info';
-import { buildMe, setPreferences } from '../services/me';
+import { buildMe, markSeen, setPreferences } from '../services/me';
 
 export const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.authenticate);
@@ -28,6 +28,19 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request): Promise<MeResponse> => setPreferences(app.db, request.actor!, request.body),
+  );
+
+  app.post(
+    '/me/seen',
+    {
+      schema: {
+        body: z.object({ key: z.string().regex(/^[a-z_]{2,30}(:[0-9a-f-]{36})?$/) }),
+      },
+    },
+    async (request, reply) => {
+      await markSeen(app.db, request.actor!, request.body.key, app.now());
+      return reply.code(204).send();
+    },
   );
 
   app.get(

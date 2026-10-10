@@ -15,9 +15,11 @@ import {
 } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
 import { t } from '@/lib/i18n';
+import { useMarkSeen } from '@/lib/tile-info';
 
 export default function WikiScreen() {
   const { api } = useSignedIn();
+  useMarkSeen('wiki');
   const [q, setQ] = useState('');
   const wiki = useQuery({ queryKey: ['wiki'], queryFn: () => api<WikiOverview>('/wiki') });
   if (wiki.isPending) return <Loading />;

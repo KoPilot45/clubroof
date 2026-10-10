@@ -44,6 +44,22 @@ export const users = pgTable('users', {
 });
 
 /**
+ * Zuletzt angesehen (je Person und Bereich, z. B. „forum“ oder „documents:<teamId>“): daraus entsteht „neu seit
+ * dem letzten Besuch“ in den Kachel-Infos. Reiner Darstellungszustand, daher ohne `club_id` (hängt am Konto).
+ */
+export const userSeen = pgTable(
+  'user_seen',
+  {
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    key: text().notNull(),
+    seenAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.key] })],
+);
+
+/**
  * Reale Person im Verein. Bleibt über Mannschaftswechsel und Saisons hinweg bestehen.
  * Kinder haben in der Regel kein eigenes Login (`userId` leer) und werden über Eltern verwaltet.
  */

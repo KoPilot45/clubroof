@@ -19,9 +19,11 @@ import {
 import { RequestError } from '@/lib/api';
 import { formatAgo, formatRemaining } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { useMarkSeen } from '@/lib/tile-info';
 
 export default function ForumScreen() {
   const { api } = useSignedIn();
+  useMarkSeen('forum');
   const queryClient = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState('');

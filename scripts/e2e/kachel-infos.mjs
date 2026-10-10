@@ -26,6 +26,9 @@ ok(
   'Kachel „Termine“ zeigt den nächsten Termin oder fehlende Antwort',
 );
 
+await spieler.goto('/verein');
+await spieler.page.waitForTimeout(2500);
+ok(/\d+ neu/.test(await body(spieler.page)), 'Verein zeigt „n neu“ (News, Forum oder Wiki)');
 const admin = await b.session('admin');
 await admin.goto('/admin');
 await text(admin.page, 'Mitglieder', { exact: true }).waitFor({ timeout: 20_000 });

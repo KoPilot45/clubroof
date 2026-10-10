@@ -22,6 +22,7 @@ import { openDocument } from '@/lib/documents';
 import { formatBytes, formatShortDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { t } from '@/lib/i18n';
+import { useMarkSeen } from '@/lib/tile-info';
 
 const CATEGORIES: { value: DocumentCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'Alle' },
@@ -42,6 +43,7 @@ function fileIcon(mime: string): IconName {
 export default function DocumentsScreen() {
   const { teamId } = useLocalSearchParams<{ teamId?: string }>();
   const { api, me } = useSignedIn();
+  useMarkSeen(teamId ? `documents:${teamId}` : 'documents');
   const queryClient = useQueryClient();
   const [category, setCategory] = useState<DocumentCategory | 'all'>('all');
   const [q, setQ] = useState('');

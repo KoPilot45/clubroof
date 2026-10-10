@@ -135,3 +135,11 @@ export async function setPreferences(
     await db.update(s.users).set(patch).where(eq(s.users.id, actor.user.id));
   return buildMe(db, actor);
 }
+
+/** Bereich als angesehen merken (für „neu seit dem letzten Besuch“). */
+export async function markSeen(db: Db, actor: Actor, key: string, now: Date): Promise<void> {
+  await db
+    .insert(s.userSeen)
+    .values({ userId: actor.user.id, key, seenAt: now })
+    .onConflictDoUpdate({ target: [s.userSeen.userId, s.userSeen.key], set: { seenAt: now } });
+}

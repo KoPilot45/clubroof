@@ -14,12 +14,13 @@ import {
   type TileInfoEntry,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { eq } from 'drizzle-orm';
+import { and, count, eq, gt, ne } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import type { Config } from '../config';
 import type { Mailer } from '../security/mailer';
 import { getTeamCash } from './cash';
 import { getAdminOverview } from './admin';
+import { scopeVisible } from './home';
 import { getEditorialOverview, newsPermissions } from './editorial';
 import { listHelperEvents } from './helpers';
 import { canInvite, getInviteOverview } from './invitations';
@@ -77,7 +78,16 @@ export async function getTileInfo(
     if (hint || entry.badge) info[key] = { ...entry, hint };
   };
   const today = now.toISOString().slice(0, 10);
+  // „Neu seit dem letzten Besuch“: ohne Merker gelten die letzten 7 Tage als neu
+  const seenRows = await db.select().from(s.userSeen).where(eq(s.userSeen.userId, actor.user.id));
+  const seen = new Map(seenRows.map((r) => [r.key, r.seenAt]));
+  const since = (key: string) => seen.get(key) ?? new Date(now.getTime() - 7 * 24 * 3600_000);
+  const putNew = (tile: string, n: number) => {
+    if (n > 0) put(tile, { hint: `${n} neu`, tone: 'info' });
+  };
+  const total = async (query: PromiseLike<{ n: number }[]>) => (await query)[0]?.n ?? 0;
 
+  let canManageTeamEvents = false;
   if (hub === 'team' && teamId) {
     const [overview, cash, tasks] = await Promise.all([
       safe(() => getTeamOverview(db, actor, teamId, now)),
@@ -86,6 +96,7 @@ export async function getTileInfo(
         : Promise.resolve(null),
       safe(() => listTasks(db, actor, teamId, now)),
     ]);
+    canManageTeamEvents = !!overview?.permissions.manageEvents;
     const next = overview?.nextEvent;
     if (next) {
       const missing = next.myResponses.some((r) => r.canRespond && r.status === 'pending');
@@ -141,6 +152,41 @@ export async function getTileInfo(
     }
   }
 
+  if (hub === 'team' && teamId) {
+    if (canManageTeamEvents)
+      putNew(
+        'exercises',
+        await total(
+          db
+            .select({ n: count() })
+            .from(s.exercises)
+            .where(
+              and(
+                eq(s.exercises.clubId, actor.club.id),
+                gt(s.exercises.createdAt, since('exercises')),
+                ne(s.exercises.createdByPersonId, actor.person.id),
+              ),
+            ),
+        ),
+      );
+    putNew(
+      'docs',
+      await total(
+        db
+          .select({ n: count() })
+          .from(s.documents)
+          .where(
+            and(
+              eq(s.documents.clubId, actor.club.id),
+              eq(s.documents.scopeType, 'team'),
+              eq(s.documents.scopeId, teamId),
+              gt(s.documents.createdAt, since(`documents:${teamId}`)),
+            ),
+          ),
+      ),
+    );
+  }
+
   if (hub === 'cash' && teamId) {
     const cash = await safe(() => getTeamCash(db, actor, teamId, now));
     if (cash) {
@@ -169,6 +215,65 @@ export async function getTileInfo(
     if (spots) put('helpers', { hint: `${spots} Plätze frei`, tone: 'info' });
     if (editorial?.toApprove.length)
       put('editorial', { hint: `${editorial.toApprove.length} zur Freigabe`, tone: 'action' });
+    putNew(
+      'news',
+      await total(
+        db
+          .select({ n: count() })
+          .from(s.announcements)
+          .where(
+            and(
+              eq(s.announcements.clubId, actor.club.id),
+              eq(s.announcements.status, 'published'),
+              scopeVisible(actor, s.announcements),
+              gt(s.announcements.publishedAt, since('news')),
+            ),
+          ),
+      ),
+    );
+    const topics = await total(
+      db
+        .select({ n: count() })
+        .from(s.forumTopics)
+        .where(
+          and(eq(s.forumTopics.clubId, actor.club.id), gt(s.forumTopics.createdAt, since('forum'))),
+        ),
+    );
+    const posts = await total(
+      db
+        .select({ n: count() })
+        .from(s.forumPosts)
+        .where(
+          and(eq(s.forumPosts.clubId, actor.club.id), gt(s.forumPosts.createdAt, since('forum'))),
+        ),
+    );
+    putNew('forum', topics + posts);
+    putNew(
+      'wiki',
+      await total(
+        db
+          .select({ n: count() })
+          .from(s.wikiPages)
+          .where(
+            and(eq(s.wikiPages.clubId, actor.club.id), gt(s.wikiPages.updatedAt, since('wiki'))),
+          ),
+      ),
+    );
+    putNew(
+      'docs',
+      await total(
+        db
+          .select({ n: count() })
+          .from(s.documents)
+          .where(
+            and(
+              eq(s.documents.clubId, actor.club.id),
+              scopeVisible(actor, s.documents),
+              gt(s.documents.createdAt, since('documents')),
+            ),
+          ),
+      ),
+    );
     const nextEvent = (helpers ?? [])[0]?.event;
     if (nextEvent) put('events', { hint: `${day(nextEvent.startsAt)}: ${nextEvent.title}` });
   }
@@ -217,6 +322,11 @@ export async function getTileInfo(
       });
     if (invites?.requests.length)
       put('invites', { hint: `${invites.requests.length} Beitrittsanfragen`, tone: 'action' });
+    if (actorCan(actor, 'club.settings.manage')) {
+      if (!actor.club.logoUrl) put('club', { hint: 'Logo fehlt', tone: 'action' });
+      else if (!actor.club.requireTwoFactor)
+        put('club', { hint: '2-Faktor-Pflicht ist aus', tone: 'info' });
+    }
   }
 
   return info;

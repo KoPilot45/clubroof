@@ -1,5 +1,6 @@
 import type { TileHub, TileInfo } from '@clubroof/core';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import type { TileItem } from '@/components/ui';
 import { useSignedIn } from './session';
 
@@ -28,4 +29,17 @@ export function withTileInfo(tiles: TileItem[], info: TileInfo | undefined): Til
       tone: entry.tone ?? tile.tone,
     };
   });
+}
+
+/** Bereich beim Öffnen als angesehen merken; danach verschwindet „n neu“ in den Kacheln. */
+export function useMarkSeen(key: string | null) {
+  const { api } = useSignedIn();
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!key) return;
+    void api('/me/seen', { method: 'POST', body: { key } })
+      .then(() => queryClient.invalidateQueries({ queryKey: ['tile-info'] }))
+      .catch(() => undefined);
+    // nur beim Öffnen des Bereichs
+  }, [key]);
 }

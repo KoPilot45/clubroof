@@ -4556,6 +4556,15 @@ describe.skipIf(!url)('API', () => {
       // Ungültige Eingaben
       expect((await send('GET', '/tile-info?hub=geheim', admin.token)).status).toBe(400);
 
+      // „Neu seit dem letzten Besuch“: erst neu, nach dem Ansehen verschwindet der Hinweis
+      const before = await tiles(player.token, 'hub=club');
+      expect(before.news?.hint).toMatch(/\d+ neu/);
+      expect((await send('POST', '/me/seen', player.token, { key: 'news' })).status).toBe(204);
+      expect((await tiles(player.token, 'hub=club')).news).toBeUndefined();
+      expect((await send('POST', '/me/seen', player.token, { key: 'Böse Zeichen' })).status).toBe(
+        400,
+      );
+
       // Sprache der Person
       await send('PUT', '/me/preferences', admin.token, { language: 'en' });
       expect((await tiles(admin.token, 'hub=admin')).members?.hint).toMatch(/active members/);

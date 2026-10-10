@@ -26,6 +26,7 @@ import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { CATEGORY_LABELS } from '@/lib/training';
 import { dateFormat, t } from '@/lib/i18n';
+import { useMarkSeen } from '@/lib/tile-info';
 
 const categories = EXERCISE_CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }));
 
@@ -40,6 +41,7 @@ const when = dateFormat({
 /** Übung ans Ende des Ablaufs eines der nächsten Trainings meiner Mannschaften hängen. */
 function AddToTraining({ exercise, onDone }: { exercise: Exercise; onDone: () => void }) {
   const { api, me } = useSignedIn();
+  useMarkSeen('exercises');
   const queryClient = useQueryClient();
   const coached = new Set(
     me.teams

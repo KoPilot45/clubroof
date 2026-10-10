@@ -3,9 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { NewsCard } from '@/components/news';
 import { Empty, ErrorNotice, Loading, Screen } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
+import { useMarkSeen } from '@/lib/tile-info';
 
 export default function NewsListScreen() {
   const { api } = useSignedIn();
+  useMarkSeen('news');
   const news = useQuery({ queryKey: ['news'], queryFn: () => api<NewsItem[]>('/news') });
   return (
     <Screen edges={[]} refreshing={news.isRefetching} onRefresh={() => news.refetch()}>
