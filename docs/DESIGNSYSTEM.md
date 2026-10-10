@@ -152,7 +152,7 @@ Aufbau wie `TeamNeu`: Team-Kacheln → Funktionschips → Blickfang Kader → Ka
 | Teil                | Umsetzung                                                                                                                                                                                       |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Team-Kacheln        | wischbar (228 breit) bei mehreren Mannschaften/Kindern: Badge, Name, „aktiv“, nächster Termin, Zusage-Balken mit „14/18“, Chips (abwesend, ohne Rückmeldung, Aufgaben); gewählte Kachel mit Rahmen in Vereinsfarbe |
-| Blickfang           | `TeamBand` als `HeroCard`: „KADER“, Spielerzahl groß, „Spieler · n verfügbar“; Chips „Bilanz S-U-N“ und „Training n %“. Ohne Kaderstatus steht die Bilanz groß. Tabellenplatz und Torschützenkönig fehlen noch (keine Daten in der API) |
+| Blickfang           | `TeamBand` als `HeroCard`: „KADER“, Spielerzahl groß, „Spieler · n verfügbar“; Chips „Bilanz S-U-N“ und „Training n %“. Ohne Kaderstatus steht die Bilanz groß. Tabellenplatz (vom Trainerteam unter „Verwalten › Mannschaftsprofil“ eingetragen, `teams.league_position`) und Top-Torschütze (aus abgeschlossenen Spielberichten, Statistik-Modul) erscheinen als Chips, höchstens drei |
 | Kacheln             | `TileGrid compact`: vier Spalten, Kachel 60 hoch mit Pastell-Icon (`tint`), Beschriftung darunter, Zähler/„neu“ oben rechts, Hinweis (z. B. „Kasse 512,35 €“) unter der Beschriftung. Gilt auch für Verein und Mehr in den nächsten Schritten |
 | Nächster Termin     | Datumskachel (`DateTile` lg), Titel, Zeit · Ort · Art, Hinweis zum Teilnahmemodell, `AttendanceBar` (zugesagt/unsicher/abgesagt/offen, bei Bedarf abwesend) mit Legende                          |
 | Letzte Ergebnisse   | Zeile mit Paarung, Datum, Ergebnis (Oswald) und Chip „Sieg“, „Remis“, „Niederlage“ (auch auf Vereins-Mannschaftsseite und Statistik)                                                              |
@@ -239,7 +239,6 @@ Unterseiten; keine Seite mit weißen Flächen, unlesbarem Text oder Überlauf. A
 
 ### Offene Aufgaben (Paket L)
 
-- Tabellenplatz und Torschützenkönig im Kader-Blickfang (Team) – braucht Daten in der API.
 - Offline-Warteschlange für Zu-/Absagen („wird gesendet, sobald du wieder online bist“).
 - Unterseiten (Formulare, Detailseiten) schrittweise auf Karten im neuen Look (Radius 24, Pastell-Kacheln) bringen – sie nutzen die Bausteine bereits, behalten aber ihren alten Seitenaufbau.
 

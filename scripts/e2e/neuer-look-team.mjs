@@ -75,6 +75,14 @@ const files = {};
     files[`trainer-${mode}`] = await b.shot(page, `nlt-trainer-${mode}`, true);
   }
   await setMode(login, 'light');
+  const b1 = login.me.teams.find((t) => t.badge === 'B1');
+  await goto(`/team?teamId=${b1.id}`);
+  await text(page, /Tabelle: Platz 3/).waitFor({ timeout: 15_000 });
+  ok(true, 'Blickfang: Tabellenplatz sichtbar');
+  const overview = await api(`/teams/${b1.id}`, login.token);
+  if (overview.topScorer) {
+    ok(await text(page, /Top-Torschütze/).isVisible(), 'Blickfang: Top-Torschütze sichtbar');
+  } else console.log('– Blickfang: Demodaten haben keinen Torschützen');
   await button(page, /^Kader/).click();
   await text(page, 'Spieler').first().waitFor({ timeout: 15_000 });
   ok(true, 'Kachel „Kader“ öffnet die Kaderseite');

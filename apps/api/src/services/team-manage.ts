@@ -37,6 +37,7 @@ export function profileOf(team: typeof s.teams.$inferSelect): TeamProfile {
     trainingMeetingMinutes: team.trainingMeetingMinutes,
     defaultMeetingPoint: team.defaultMeetingPoint,
     importAliases: team.importAliases,
+    leaguePosition: team.leaguePosition,
   };
 }
 
@@ -316,6 +317,7 @@ export async function updateTeamProfile(
     patch.trainingMeetingMinutes = input.trainingMeetingMinutes;
   if (input.defaultMeetingPoint !== undefined)
     patch.defaultMeetingPoint = input.defaultMeetingPoint?.trim() || null;
+  if (input.leaguePosition !== undefined) patch.leaguePosition = input.leaguePosition;
   if (input.importAliases !== undefined)
     patch.importAliases = [...new Set(input.importAliases.map((a) => a.trim()).filter(Boolean))];
   if (Object.keys(patch).length === 0) return profileOf(team);

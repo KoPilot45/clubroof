@@ -108,16 +108,22 @@ export function HighlightsCard({
 export function TeamBand({
   highlights,
   squad,
+  leaguePosition,
+  topScorer,
 }: {
   highlights: TeamHighlights;
   squad: SquadStatus | null;
+  leaguePosition?: number | null;
+  topScorer?: { name: string; goals: number } | null;
 }) {
   const { colors } = useTheme();
   const on = colors.hero.onHero;
   const record =
     highlights.played > 0 ? `${highlights.won}-${highlights.drawn}-${highlights.lost}` : null;
-  if (!squad && !record && highlights.trainingRate === null) return null;
+  if (!squad && !record && highlights.trainingRate === null && !leaguePosition) return null;
   const chips = [
+    leaguePosition ? `Tabelle: Platz ${leaguePosition}` : null,
+    topScorer ? `Top-Torschütze: ${topScorer.name} · ${topScorer.goals}` : null,
     squad && record ? `Bilanz ${record}` : null,
     highlights.trainingRate !== null ? `Training ${highlights.trainingRate} %` : null,
   ].filter((c): c is string => !!c);
@@ -145,7 +151,7 @@ export function TeamBand({
           ) : null}
         </View>
         <View style={{ gap: 6, alignItems: 'flex-end', flexShrink: 1 }}>
-          {chips.map((c, i) => (
+          {chips.slice(0, 3).map((c, i) => (
             <View
               key={c}
               style={{
@@ -156,7 +162,9 @@ export function TeamBand({
               }}
             >
               <Text
+                numberOfLines={2}
                 style={{
+                  textAlign: 'right',
                   fontSize: 12,
                   fontWeight: '700',
                   color: i === 0 ? colors.hero.from : on,

@@ -297,7 +297,14 @@ export default function TeamScreen() {
             {team.ageGroup ? <Chip tone="neutral" label={team.ageGroup} /> : null}
           </View>
 
-          {o ? <TeamBand highlights={o.highlights} squad={o.squad} /> : null}
+          {o ? (
+            <TeamBand
+              highlights={o.highlights}
+              squad={o.squad}
+              leaguePosition={o.leaguePosition}
+              topScorer={o.topScorer}
+            />
+          ) : null}
 
           <TileGrid compact items={withTileInfo(tiles, tileInfo)} />
 

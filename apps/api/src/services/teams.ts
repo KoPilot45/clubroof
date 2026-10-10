@@ -196,6 +196,15 @@ export async function getTeamOverview(
   const [nextEvent] = await summarizeEvents(db, actor, nextRows, now);
   const trainingWeek = await summarizeEvents(db, actor, weekRows, now);
 
+  // Torschützenkönig der Saison aus den abgeschlossenen Spielberichten (Statistik-Modul)
+  let topScorer: { name: string; goals: number } | null = null;
+  if (moduleEnabled(actor, 'statistics', team)) {
+    const { range } = await statsRange(db, actor, team, {}, now);
+    const squad = await squadTable(db, actor, team, now, new Map(), false, range);
+    const best = squad[0];
+    if (best && best.goals > 0) topScorer = { name: best.name, goals: best.goals };
+  }
+
   return {
     team: {
       id: team.id,
@@ -214,6 +223,8 @@ export async function getTeamOverview(
     lastResults,
     trainingWeek,
     highlights: summarizeResults(allResults, rate),
+    leaguePosition: team.leaguePosition,
+    topScorer,
   };
 }
 
