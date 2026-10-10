@@ -18,6 +18,7 @@ import {
 } from '@/components/ui';
 import { formatAgo, formatEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 
 /** Kassenverwaltung für Kassenwart und Trainerteam: alle Funktionen als Kacheln. */
 export default function CashAdminScreen() {
@@ -25,6 +26,7 @@ export default function CashAdminScreen() {
   const { api } = useSignedIn();
   const cash = useCash(id);
   const decide = useCashAction(id);
+  const tileInfo = useTileInfo('cash', id);
   const [reminded, setReminded] = useState<number | null>(null);
   const remind = useMutation({
     mutationFn: () =>
@@ -130,7 +132,7 @@ export default function CashAdminScreen() {
 
   return (
     <Screen edges={[]} refreshing={cash.isRefetching} onRefresh={() => cash.refetch()}>
-      <TileGrid items={tiles} />
+      <TileGrid items={withTileInfo(tiles, tileInfo)} />
 
       {full && pending.length ? (
         <Section title={`Zahlungsmeldungen (${pending.length})`}>

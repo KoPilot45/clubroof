@@ -3629,9 +3629,7 @@ describe.skipIf(!url)('API', () => {
       // Aufräumen: Termin absagen, damit er keine offene Rückmeldung auf der Startseite hinterlässt
       await send('POST', `/events/${event.id}/cancel`, coach.token, { reason: 'Test' });
       await runJobs(db, push, NOW);
-      expect(push.sent.filter((m) => m.to === token).at(-1)?.title).toBe(
-        'Cancelled: Training',
-      );
+      expect(push.sent.filter((m) => m.to === token).at(-1)?.title).toBe('Cancelled: Training');
       await send('PUT', '/me/preferences', player.token, { language: null });
       await send('DELETE', `/me/devices/${encodeURIComponent(token)}`, player.token).catch(
         () => undefined,
@@ -4426,6 +4424,41 @@ describe.skipIf(!url)('API', () => {
         language: null,
       });
       expect(auto.body.user.language).toBeNull();
+    });
+  });
+
+  describe('Kachel-Infos', () => {
+    it('zeigt Hinweise je Rolle und nur, was die Person sehen darf', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const admin = await login('admin');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      type Tiles = Record<string, { hint?: string; badge?: number; tone?: string }>;
+      const tiles = (token: string, query: string) => get<Tiles>(`/tile-info?${query}`, token);
+
+      // Trainer: Termine und Kader der Mannschaft
+      const team = await tiles(coach.token, `hub=team&teamId=${b1.id}`);
+      expect(team.roster?.hint).toMatch(/Spieler/);
+      expect(team.events?.hint).toMatch(/zugesagt|Antwort fehlt|Nächster/);
+      // Spieler: eigener Kassenstand als „offen“, „Guthaben“ oder „Ausgeglichen“
+      const mine = await tiles(player.token, `hub=team&teamId=${b1.id}`);
+      expect(mine.cash?.hint).toMatch(/Du hast .* (offen|Guthaben)|Ausgeglichen/);
+      // Verwaltung nur mit Rechten
+      const adminTiles = await tiles(admin.token, 'hub=admin');
+      expect(adminTiles.members?.hint).toMatch(/aktive Mitglieder/);
+      expect(await tiles(player.token, 'hub=admin')).toEqual({});
+      const more = await tiles(player.token, 'hub=more');
+      expect(more.admin).toBeUndefined();
+      // Fremde Mannschaft liefert nichts
+      const parent = await login('eltern');
+      expect(await tiles(parent.token, `hub=cash&teamId=${b1.id}`)).toEqual({});
+      // Ungültige Eingaben
+      expect((await send('GET', '/tile-info?hub=geheim', admin.token)).status).toBe(400);
+
+      // Sprache der Person
+      await send('PUT', '/me/preferences', admin.token, { language: 'en' });
+      expect((await tiles(admin.token, 'hub=admin')).members?.hint).toMatch(/active members/);
+      await send('PUT', '/me/preferences', admin.token, { language: null });
     });
   });
 

@@ -648,6 +648,8 @@ export type TileItem = {
   soon?: boolean;
   /** Kurze zweite Zeile, z. B. wer eine Liste anführt */
   hint?: string;
+  /** Ton des Hinweises (immer zusammen mit dem Text, nie Farbe allein) */
+  tone?: 'neutral' | 'action' | 'success' | 'urgent' | 'info';
 };
 
 export function TileGrid({ items }: { items: TileItem[] }) {
@@ -730,8 +732,15 @@ export function TileGrid({ items }: { items: TileItem[] }) {
               </Text>
               {item.soon || item.hint ? (
                 <Text
-                  style={{ fontSize: 12, fontWeight: '600', color: colors.onSurfaceMuted }}
-                  numberOfLines={1}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: '600',
+                    color:
+                      item.tone && item.tone !== 'neutral'
+                        ? colors.status[item.tone].onContainer
+                        : colors.onSurfaceMuted,
+                  }}
+                  numberOfLines={2}
                 >
                   {item.soon ? 'Bald verfügbar' : item.hint}
                 </Text>

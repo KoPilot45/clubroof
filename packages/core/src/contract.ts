@@ -1876,3 +1876,17 @@ export type RefereeOverview = {
   /** Meine eigenen Einsätze als Schiedsrichter */
   mine: (RefereeMatch & { assignmentId: string; status: RefereeAssignment['status'] })[];
 };
+
+// ── Kachel-Infos ─────────────────────────────────────────────────────────────
+
+/** Ton eines Kachelhinweises; wird immer mit Text angezeigt, nie Farbe allein */
+export type TileTone = 'neutral' | 'action' | 'success' | 'urgent' | 'info';
+
+/** Kurzer Hinweis und/oder Zähler zu einer Kachel (Text ist bereits in der Sprache der Person) */
+export type TileInfoEntry = { hint?: string; badge?: number; tone?: TileTone };
+
+/** Kachel-Infos eines Menüs, Schlüssel = Kachelname */
+export type TileInfo = Record<string, TileInfoEntry>;
+
+export const TILE_HUBS = ['team', 'club', 'more', 'admin', 'cash'] as const;
+export type TileHub = (typeof TILE_HUBS)[number];

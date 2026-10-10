@@ -1,7 +1,15 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import { isLocale, type HomeResponse, type Locale, type MeResponse } from '@clubroof/core';
+import {
+  isLocale,
+  TILE_HUBS,
+  type HomeResponse,
+  type Locale,
+  type MeResponse,
+  type TileInfo,
+} from '@clubroof/core';
 import { z } from 'zod';
 import { loadHome } from '../services/home';
+import { getTileInfo } from '../services/tile-info';
 import { buildMe, setPreferences } from '../services/me';
 
 export const meRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -20,6 +28,24 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request): Promise<MeResponse> => setPreferences(app.db, request.actor!, request.body),
+  );
+
+  app.get(
+    '/tile-info',
+    {
+      schema: {
+        querystring: z.object({ hub: z.enum(TILE_HUBS), teamId: z.uuid().optional() }),
+      },
+    },
+    async (request): Promise<TileInfo> =>
+      getTileInfo(
+        app.db,
+        request.actor!,
+        request.query.hub,
+        request.query.teamId ?? null,
+        app.now(),
+        { config: app.config, mailer: app.mailer },
+      ),
   );
 
   app.get('/home', async (request): Promise<HomeResponse> =>

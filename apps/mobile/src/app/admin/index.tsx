@@ -16,6 +16,7 @@ import {
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 
 function Stat({ value, label }: { value: number; label: string }) {
   const { colors } = useTheme();
@@ -33,6 +34,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 
 export default function AdminScreen() {
   const { api, me } = useSignedIn();
+  const tileInfo = useTileInfo('admin');
   const overview = useQuery({
     queryKey: ['admin', 'overview'],
     queryFn: () => api<AdminOverview>('/admin/overview'),
@@ -173,7 +175,7 @@ export default function AdminScreen() {
               />
             </Card>
           ) : null}
-          <TileGrid items={tiles} />
+          <TileGrid items={withTileInfo(tiles, tileInfo)} />
           {o.recentActivity.length ? (
             <Section
               title="Letzte Änderungen"

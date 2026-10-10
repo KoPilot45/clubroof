@@ -48,6 +48,12 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Darstellung ändern', href: '/account' },
       },
       {
+        id: 'tile-hints',
+        question: 'Was bedeuten die Hinweise unter den Kacheln?',
+        answer:
+          'Die kleine Zeile unter dem Namen einer Kachel zeigt, was für dich gerade wichtig ist, z. B. „Du hast 12,50 € offen“, „Antwort fehlt“ oder „2 zur Freigabe“. Die Farbe verstärkt den Text: Orange heißt, es gibt etwas zu tun. Was du nicht sehen darfst, wird nicht angezeigt.',
+      },
+      {
         id: 'language',
         question: 'Kann ich die Sprache der App ändern?',
         answer:

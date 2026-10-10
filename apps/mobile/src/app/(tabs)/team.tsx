@@ -25,6 +25,7 @@ import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { dateFormat } from '@/lib/i18n';
+import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 
 const PARTICIPATION_LABELS = {
   auto_accept: 'Automatische Zusage – nur Absagen nötig',
@@ -64,6 +65,7 @@ export default function TeamScreen() {
     enabled: teams.length > 1,
   });
   const o = overview.data;
+  const tileInfo = useTileInfo('team', team?.id);
   const roles = me.teams.filter((t) => t.id === team?.id);
   const openPolls = (polls.data ?? []).filter((p) => p.isOpen && !p.myOptionId).length;
 
@@ -272,7 +274,7 @@ export default function TeamScreen() {
             {team.ageGroup ? <Chip tone="neutral" label={team.ageGroup} /> : null}
           </View>
 
-          <TileGrid items={tiles} />
+          <TileGrid items={withTileInfo(tiles, tileInfo)} />
 
           {overview.isPending ? <Loading /> : null}
           {overview.error ? (

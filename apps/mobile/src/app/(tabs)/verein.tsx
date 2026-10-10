@@ -20,9 +20,11 @@ import {
 import { formatLongDate, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
+import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 
 export default function ClubScreen() {
   const { api, me } = useSignedIn();
+  const tileInfo = useTileInfo('club');
   const has = (module: string) => me.clubModules.includes(module);
   const news = useQuery({ queryKey: ['news'], queryFn: () => api<NewsItem[]>('/news') });
   const events = useQuery({ queryKey: ['events'], queryFn: () => api<EventSummary[]>('/events') });
@@ -222,7 +224,7 @@ export default function ClubScreen() {
         </Card>
       ) : null}
 
-      <TileGrid items={tiles} />
+      <TileGrid items={withTileInfo(tiles, tileInfo)} />
 
       <Section
         title="Heute auf der Anlage"

@@ -19,9 +19,11 @@ import {
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
+import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 
 export default function MoreScreen() {
   const { me, api, signOut } = useSignedIn();
+  const tileInfo = useTileInfo('more');
   const name = `${me.person.firstName} ${me.person.lastName}`;
   const children = me.managedPersons.filter((p) => p.relation === 'child');
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
@@ -154,7 +156,7 @@ export default function MoreScreen() {
           <Button label="Jetzt einrichten" onPress={() => router.push('/account')} />
         </Card>
       ) : null}
-      <TileGrid items={tiles} />
+      <TileGrid items={withTileInfo(tiles, tileInfo)} />
 
       <Section title="Meine Mannschaften">
         <Card>
