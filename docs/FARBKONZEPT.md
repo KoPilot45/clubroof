@@ -45,7 +45,21 @@ Besonderheiten:
 5. Statusfarben werden **immer mit Icon und Beschriftung** gezeigt, nie als reine Farbfläche. Das löst
    Überschneidungen, z. B. rote Vereinsfarbe und roter Hinweis „Dringend“, und hilft Menschen mit
    Farbsehschwäche.
-6. Mannschaften werden über **Badges** (B1, 1., AH) erkennbar gemacht, nicht über eigene Farben.
+6. **Eine Primärfarb-Fläche pro Bildschirm** (Festlegung 10.10.2026): Sie hebt die wichtigste Zahl oder Aussage hervor,
+   z. B. den Kassenstand. Dringendes steht daneben in Statusflächen mit Beschriftung. Weitere Hervorhebungen nutzen
+   `primaryContainer`. Der Text auf der Fläche ist immer `onPrimary` bzw. `onPrimaryContainer` aus dem Theme.
+7. Mannschaften werden über **Badges** (B1, 1., AH) erkennbar gemacht, nicht über eigene Farben.
+
+### Primärfarb-Flächen: Stellen
+
+Umgesetzt: Kassenstand (Team › Kasse), Profilkarte (Mehr), Spiel-Anzeigetafel (Termin), Mitglieder-Band (Verwaltung,
+`primaryContainer`), Saldo „Mein Konto“ (Aktions-/Erfolgsfläche), leere Zustände und Willkommens-Tour
+(`primaryContainer`).
+
+Noch offen: Home „Nächstes Spiel“ mit Countdown und Zusage; Termine: erster Termin unter „Als nächstes“; Team:
+Kopfband der Mannschaft („9 von 21 zugesagt“, Bilanz); Kassenverwaltung: Zahlungsmeldungen mit Zähler; Profil und
+Statistik: Kennzahlen (Tore, Vorlagen, Trainingsquote) als Zahlenkacheln; Verein: dringende News als Warnfläche und die
+nächste Veranstaltung; Hilfe: „Erste Schritte“; später in der Verwaltung der Plan-Balken.
 
 ## Automatische Prüfung
 
