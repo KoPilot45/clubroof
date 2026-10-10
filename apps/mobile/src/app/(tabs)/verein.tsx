@@ -3,12 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
-import { EventRow } from '@/components/events';
-import { NewsCard } from '@/components/news';
+import { NewsList } from '@/components/news';
 import {
   Button,
   Card,
+  Chip,
   Empty,
+  HeroCard,
+  ListRow,
   Loading,
   Screen,
   Section,
@@ -16,16 +18,14 @@ import {
   TileGrid,
   type TileItem,
 } from '@/components/ui';
-import { formatLongDate, formatTime } from '@/lib/format';
+import { formatDateTile, formatLongDate, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 import { useTheme } from '@/lib/theme';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function ClubScreen() {
   const { api, me } = useSignedIn();
-  const { colors } = useTheme();
   const tileInfo = useTileInfo('club');
   const has = (module: string) => me.clubModules.includes(module);
   const news = useQuery({ queryKey: ['news'], queryFn: () => api<NewsItem[]>('/news') });
@@ -62,11 +62,18 @@ export default function ClubScreen() {
   });
 
   const tiles: TileItem[] = [
-    { key: 'news', label: 'News', icon: 'newspaper', onPress: () => router.push('/news') },
+    {
+      key: 'news',
+      tint: 'blue' as const,
+      label: 'News',
+      icon: 'newspaper',
+      onPress: () => router.push('/news'),
+    },
     ...(me.news.write || me.news.publish
       ? [
           {
             key: 'editorial',
+            tint: 'violet' as const,
             label: 'News schreiben',
             icon: 'create' as const,
             onPress: () => router.push('/admin/news'),
@@ -75,6 +82,7 @@ export default function ClubScreen() {
       : []),
     {
       key: 'events',
+      tint: 'pink' as const,
       label: 'Veranstaltungen',
       icon: 'calendar',
       onPress: () => router.push('/club-events'),
@@ -83,6 +91,7 @@ export default function ClubScreen() {
       ? [
           {
             key: 'polls',
+            tint: 'blue' as const,
             label: 'Umfragen',
             icon: 'stats-chart' as const,
             badge: openPolls,
@@ -94,6 +103,7 @@ export default function ClubScreen() {
       ? [
           {
             key: 'forum',
+            tint: 'violet' as const,
             label: 'Forum',
             icon: 'chatbubbles' as const,
             onPress: () => router.push('/forum'),
@@ -104,6 +114,7 @@ export default function ClubScreen() {
       ? [
           {
             key: 'board',
+            tint: 'orange' as const,
             label:
               has('lost_and_found') && has('marketplace')
                 ? 'Fundbüro & Marktplatz'
@@ -119,6 +130,7 @@ export default function ClubScreen() {
       ? [
           {
             key: 'equipment',
+            tint: 'orange' as const,
             label: 'Anlage & Material',
             icon: 'construct' as const,
             onPress: () => router.push('/equipment'),
@@ -129,6 +141,7 @@ export default function ClubScreen() {
       ? [
           {
             key: 'referees',
+            tint: 'green' as const,
             label: 'Schiedsrichter',
             icon: 'flag' as const,
             onPress: () => router.push('/referees'),
@@ -139,6 +152,7 @@ export default function ClubScreen() {
       ? [
           {
             key: 'wiki',
+            tint: 'pink' as const,
             label: 'Vereinswissen',
             icon: 'book' as const,
             onPress: () => router.push('/wiki'),
@@ -149,6 +163,7 @@ export default function ClubScreen() {
       ? [
           {
             key: 'helpers',
+            tint: 'green' as const,
             label: 'Helfer gesucht',
             icon: 'hand-left' as const,
             badge: openSpots || undefined,
@@ -160,6 +175,7 @@ export default function ClubScreen() {
       ? [
           {
             key: 'docs',
+            tint: 'pink' as const,
             label: 'Dokumente',
             icon: 'folder-open' as const,
             onPress: () => router.push('/documents'),
@@ -168,12 +184,14 @@ export default function ClubScreen() {
       : []),
     {
       key: 'teams',
+      tint: 'green' as const,
       label: 'Mannschaften',
       icon: 'shirt',
       onPress: () => router.push('/club-teams'),
     },
     {
       key: 'contacts',
+      tint: 'violet' as const,
       label: 'Ansprechpartner',
       icon: 'call',
       onPress: () => router.push('/contacts'),
@@ -184,6 +202,7 @@ export default function ClubScreen() {
       ? [
           {
             key: 'pitch',
+            tint: 'blue' as const,
             label: 'Platzbelegung',
             icon: 'grid' as const,
             onPress: () => router.push('/facilities'),
@@ -204,44 +223,11 @@ export default function ClubScreen() {
         void today.refetch();
       }}
     >
-      {highlight ? (
-        <Card style={{ gap: 10, backgroundColor: colors.primary, borderColor: colors.primary }}>
-          <T variant="overline" color={colors.onPrimary}>
-            Nächster Vereinstermin
-          </T>
-          <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-            <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: colors.surface,
-              }}
-            >
-              <Ionicons name="calendar" size={22} color={colors.primaryText} />
-            </View>
-            <View style={{ flex: 1, gap: 2 }}>
-              <T variant="title" color={colors.onPrimary}>
-                {highlight.title}
-              </T>
-              <T variant="caption" color={colors.onPrimary}>
-                {EVENT_TYPE_LABELS[highlight.type]} · {formatLongDate(highlight.startsAt)},{' '}
-                {formatTime(highlight.startsAt)} Uhr
-                {highlight.location ? ` · ${highlight.location}` : ''}
-              </T>
-            </View>
-          </View>
-          <Button
-            label="Mehr erfahren"
-            variant="tonal"
-            onPress={() => router.push(`/events/${highlight.id}`)}
-          />
-        </Card>
-      ) : null}
+      {highlight ? <ClubEventHero event={highlight} /> : null}
 
-      <TileGrid items={withTileInfo(tiles, tileInfo)} />
+      <Section title="Vereinsleben">
+        <TileGrid compact items={withTileInfo(tiles, tileInfo)} />
+      </Section>
 
       <Section
         title="Heute auf der Anlage"
@@ -254,17 +240,91 @@ export default function ClubScreen() {
             <Empty icon="sunny-outline" text="Heute ist auf der Anlage nichts geplant." />
           ) : null}
           {today.data?.map((e, i) => (
-            <EventRow key={e.id} event={e} first={i === 0} />
+            <ListRow
+              key={e.id}
+              first={i === 0}
+              onPress={() => router.push(`/events/${e.id}`)}
+              leading={
+                <View style={{ width: 56 }}>
+                  <T variant="figure" style={{ fontSize: 20 }}>
+                    {formatTime(e.startsAt)}
+                  </T>
+                </View>
+              }
+              title={e.title}
+              strike={e.status === 'cancelled'}
+              subtitle={e.location ?? EVENT_TYPE_LABELS[e.type]}
+              trailing={
+                e.status === 'cancelled' ? (
+                  <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                ) : null
+              }
+            />
           ))}
         </Card>
       </Section>
 
       <Section title="Vereinsnews" action="Alle anzeigen" onAction={() => router.push('/news')}>
         {news.isPending ? <Loading /> : null}
-        {news.data?.slice(0, 3).map((n) => (
-          <NewsCard key={n.id} item={n} />
-        ))}
+        {news.data ? <NewsList items={news.data.slice(0, 3)} /> : null}
       </Section>
     </Screen>
+  );
+}
+
+/** Blickfang „Nächster Vereinstermin“: Datumskachel, Titel, Zeit und Ort, „Mehr erfahren“. */
+function ClubEventHero({ event }: { event: EventSummary }) {
+  const { colors } = useTheme();
+  const on = colors.hero.onHero;
+  const tile = formatDateTile(event.startsAt);
+  return (
+    <HeroCard>
+      <T variant="overline" color={on}>
+        Nächster Vereinstermin
+      </T>
+      <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
+        <View
+          style={{
+            width: 58,
+            height: 62,
+            borderRadius: 18,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: on,
+          }}
+        >
+          <T variant="caption" color={colors.hero.from} style={{ fontSize: 11, fontWeight: '700' }}>
+            {tile.weekday}
+          </T>
+          <T variant="figure" color={colors.hero.from} style={{ fontSize: 26, lineHeight: 30 }}>
+            {tile.day}
+          </T>
+        </View>
+        <View style={{ flex: 1, gap: 2 }}>
+          <T
+            variant="headline"
+            color={on}
+            numberOfLines={2}
+            style={{ fontSize: 22, lineHeight: 26 }}
+          >
+            {event.title}
+          </T>
+          <T variant="caption" color={on}>
+            {[
+              EVENT_TYPE_LABELS[event.type],
+              `${formatLongDate(event.startsAt)}, ${formatTime(event.startsAt)} Uhr`,
+              event.location,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </T>
+        </View>
+      </View>
+      <Button
+        label="Mehr erfahren"
+        variant="hero"
+        onPress={() => router.push(`/events/${event.id}`)}
+      />
+    </HeroCard>
   );
 }

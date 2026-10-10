@@ -2266,6 +2266,7 @@ export const en: Record<string, string> = {
   "Vereinsfarbe": "Club colour",
   "Vereinsfeste, Turniere, Sitzungen": "Club parties, tournaments, meetings",
   "Vereinskalender": "Club calendar",
+  "Vereinsleben": "Club life",
   "Vereinslogo": "Club logo",
   "Vereinslogo entfernt": "Club logo removed",
   "Vereinslogo geändert": "Club logo changed",

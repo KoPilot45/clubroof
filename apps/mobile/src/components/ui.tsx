@@ -1048,6 +1048,18 @@ export function TileGrid({ items, compact }: { items: TileItem[]; compact?: bool
   return <WideTileGrid items={items} />;
 }
 
+/** Lange Kachelnamen trennen an Wortfugen (weiche Trennstriche) statt mitten im Wort. */
+const SOFT_BREAKS: [string, string][] = [
+  ['Veranstaltungen', 'Veranstal\u00ADtungen'],
+  ['Ansprechpartner', 'Ansprech\u00ADpartner'],
+  ['Platzbelegung', 'Platz\u00ADbelegung'],
+  ['Strafenkatalog', 'Strafen\u00ADkatalog'],
+  ['Announcements', 'Announce\u00ADments'],
+  ['Contact persons', 'Contact persons'],
+];
+const softBreaks = (label: string) =>
+  SOFT_BREAKS.reduce((text, [word, soft]) => text.replace(word, soft), label);
+
 const TINT_ORDER: TintKey[] = ['blue', 'orange', 'pink', 'green', 'violet'];
 
 function CompactTileGrid({ items }: { items: TileItem[] }) {
@@ -1134,6 +1146,7 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                 </View>
                 <Text
                   numberOfLines={2}
+                  verbatim
                   style={{
                     fontSize: item.label.length > 11 ? 11 : 12,
                     fontWeight: '600',
@@ -1141,7 +1154,7 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                     textAlign: 'center',
                   }}
                 >
-                  {item.label}
+                  {softBreaks(t(item.label))}
                 </Text>
                 {item.soon || item.hint ? (
                   <Text

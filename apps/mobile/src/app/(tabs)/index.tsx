@@ -1,38 +1,17 @@
-import type { HomeResponse, NewsItem } from '@clubroof/core';
+import type { HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { MatchCarousel, OpenBand, QuickAccess, WeekCard } from '@/components/home';
-import {
-  Card,
-  ChoiceChips,
-  Chip,
-  Empty,
-  ErrorNotice,
-  IconTile,
-  ListRow,
-  Loading,
-  Screen,
-  Section,
-  T,
-  TeamBadge,
-  type IconName,
-} from '@/components/ui';
+import { Card, ChoiceChips, Chip, ErrorNotice, Loading, Screen, Section, T } from '@/components/ui';
+import { NewsList } from '@/components/news';
 import { WelcomeTour } from '@/components/welcome-tour';
 import { readFlag, writeFlag } from '@/lib/flags';
-import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import type { TintKey } from '@clubroof/design-tokens';
-
-const NEWS_TONE = { urgent: 'urgent', important: 'action', info: 'info' } as const;
-const NEWS_ICON: Record<NewsItem['priority'], IconName> = {
-  urgent: 'warning',
-  important: 'megaphone',
-  info: 'newspaper',
-};
 
 type NewsFilter = 'all' | 'club' | 'team' | 'important';
 const NEWS_FILTERS: { value: NewsFilter; label: string }[] = [
@@ -105,36 +84,7 @@ export default function HomeScreen() {
             selected={[newsFilter]}
             onToggle={(v) => setNewsFilter(v)}
           />
-          <Card>
-            {news.length === 0 ? (
-              <Empty icon="newspaper-outline" text="Keine Neuigkeiten." />
-            ) : null}
-            {news.map((n, i) => (
-              <ListRow
-                key={n.id}
-                first={i === 0}
-                onPress={() => router.push(`/news/${n.id}`)}
-                leading={<IconTile name={NEWS_ICON[n.priority]} tone={NEWS_TONE[n.priority]} />}
-                title={n.title}
-                subtitle={
-                  <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
-                    {n.source.type === 'team' ? (
-                      <TeamBadge badge={n.source.label} />
-                    ) : (
-                      <Chip tone="info" label={n.source.label} />
-                    )}
-                    {n.priority !== 'info' ? (
-                      <Chip
-                        tone={NEWS_TONE[n.priority]}
-                        label={n.priority === 'urgent' ? 'Dringend' : 'Wichtig'}
-                      />
-                    ) : null}
-                  </View>
-                }
-                trailing={<T variant="caption">{formatAgo(n.publishedAt)}</T>}
-              />
-            ))}
-          </Card>
+          <NewsList items={news} />
         </Section>
       ) : null}
 

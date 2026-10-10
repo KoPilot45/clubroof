@@ -176,3 +176,18 @@ Aufbau wie `TermineNeu`: Filter → Als Nächstes (Blickfang) → Liste → Kale
 
 - Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-termine.mjs` (Filter, Kinderfilter, Kalender, Tippflächen; Überblick `.check/shots/neuer-look-termine.png`).
 
+### Stand Schritt 5: Verein (10.10.2026) ✅
+
+Aufbau wie `VereinNeu`: Nächster Vereinstermin (Blickfang) → „Vereinsleben“ (Kacheln) → Heute auf der Anlage → Vereinsnews.
+
+| Teil                 | Umsetzung                                                                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Nächster Vereinstermin | `HeroCard` mit heller Datumskachel (Wochentag/Tag), Titel, Art · Datum · Ort und Button „Mehr erfahren“ (`hero`)                                                  |
+| Vereinsleben         | `TileGrid compact`, rollen- und modulabhängig wie bisher, Pastellfarbe je Kachel (`tint`), Zähler/„neu“/Hinweise aus `tile-info`; lange Namen trennen an Wortfugen (`softBreaks`: Veranstal-tungen, Ansprech-partner …) |
+| Heute auf der Anlage | Zeilen mit Uhrzeit (Oswald), Titel, Ort; abgesagte durchgestrichen mit Chip                                                                                        |
+| Vereinsnews          | `NewsList` (gemeinsam mit Home): Icon-Kachel nach Dringlichkeit, Titel, Herkunft, Alter                                                                           |
+
+- Nicht umgesetzt: die Kachel „Anpassen“ aus dem Entwurf (Kacheln ordnen/ausblenden) – es gibt noch keine gespeicherte Auswahl für den Vereinsbereich.
+- Dringende News in der News-Liste tragen jetzt auch im hellen Modus ihren roten Rahmen (Warnfläche mit Beschriftung „Dringend“).
+- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-verein.mjs` (Vorstand hell/dunkel, Spieler, Tippflächen, „Mehr erfahren“; Überblick `.check/shots/neuer-look-verein.png`).
+
