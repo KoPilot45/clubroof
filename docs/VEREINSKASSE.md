@@ -1,6 +1,8 @@
 # Vereinskasse – ganzheitliche Finanzverwaltung (Planung)
 
-Stand 10.10.2026 · Planung abgestimmt, noch nicht umgesetzt. Pakete K1–K5 siehe `PAKETE.md`.
+Stand 10.10.2026 · **K1 umgesetzt** (Konten, Kassenbuch, Kategorien, Kostenstellen, Umbuchung, Storno, Rollen, Einsichtsstufen); K2–K5 geplant. Pakete siehe `PAKETE.md`.
+
+**Umsetzungshinweis K1:** Die Vereinskasse nutzt eigene Tabellen (`club_cash_accounts`, `club_cash_categories`, `club_cost_centers`, `club_cash_entries`) statt `cash_accounts` ohne `teamId`, damit die Mannschaftskassen unberührt bleiben. Einstieg: Kachel „Vereinskasse“ im Verein-Tab (Modul `club_cash`, im Vereins-Assistenten wählbar), Bildschirme unter `/club-cash`. Demo: `kasse` = Kassenwart (Verein), `mitglied` = Kassenprüfer.
 
 ## Festlegungen
 

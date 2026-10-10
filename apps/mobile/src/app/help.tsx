@@ -22,7 +22,12 @@ export default function HelpScreen() {
   if (me.managedPersons.some((p) => p.relation === 'child')) audiences.add('parent');
   if (me.teams.some((t) => t.personId === own && t.functions.some((f) => f !== 'player')))
     audiences.add('coach');
-  if (me.roles.some((r) => r.key === 'treasurer') || audiences.has('coach'))
+  if (
+    me.roles.some(
+      (r) => r.key === 'treasurer' || r.key === 'club_treasurer' || r.key === 'cash_auditor',
+    ) ||
+    audiences.has('coach')
+  )
     audiences.add('treasurer');
   if (me.roles.some((r) => r.key === 'club_member')) audiences.add('member');
   if (me.canAdminister) audiences.add('admin');

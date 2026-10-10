@@ -12,3 +12,4 @@ export * from './time';
 export * from './notifications';
 export * from './i18n';
 export * from './map-location';
+export * from './club-cash';

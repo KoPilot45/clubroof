@@ -41,6 +41,11 @@ export const PERMISSIONS = {
   'cash.manage': 'Buchungen, Strafen und Getränke erfassen',
   'cash.fines': 'Strafenkatalog pflegen und Strafen vergeben',
 
+  // Vereinsfinanzen (Vereinskasse, getrennt von den Mannschaftskassen)
+  'clubcash.read': 'Vereinskasse einsehen (Kassenbuch, Konten, Auswertungen)',
+  'clubcash.manage': 'Vereinskasse führen: buchen, Konten, Kategorien und Kostenstellen verwalten',
+  'clubcash.audit': 'Vereinskasse prüfen (Stichproben, Prüfvermerke)',
+
   // Betrieb
   'facilities.manage': 'Platzbelegung, Sperrungen, Material und Schlüssel verwalten',
   'documents.manage': 'Dokumente hochladen und verwalten',
@@ -89,6 +94,7 @@ export const PERMISSION_GROUPS: { title: string; keys: Permission[] }[] = [
     keys: ['news.create', 'news.publish', 'polls.manage', 'forum.moderate'],
   },
   { title: 'Finanzen', keys: ['cash.read', 'cash.manage', 'cash.fines'] },
+  { title: 'Vereinsfinanzen', keys: ['clubcash.read', 'clubcash.manage', 'clubcash.audit'] },
   {
     title: 'Betrieb',
     keys: ['facilities.manage', 'documents.manage', 'helpers.manage', 'referees.manage'],

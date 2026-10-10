@@ -64,7 +64,12 @@ export async function uploadImage(
     throw forbidden('Das Vereinslogo ändert nur die Vereinsadministration.');
   if (input.purpose === 'receipt') {
     const cash = scopesWith(actor.grants, 'cash.manage');
-    if (!cash.all && !cash.orgUnitIds.length && !cash.teamIds.length)
+    if (
+      !cash.all &&
+      !cash.orgUnitIds.length &&
+      !cash.teamIds.length &&
+      !actorCan(actor, 'clubcash.manage')
+    )
       throw forbidden('Belege laden Kassenwart und Trainerteam hoch.');
   }
   const file = checkUpload('image', input.dataBase64, input.fileName);

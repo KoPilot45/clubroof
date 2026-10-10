@@ -70,6 +70,12 @@ export const MODULES = [
     scopes: ['team'],
   },
   {
+    key: 'club_cash',
+    name: 'Vereinskasse',
+    description: 'Konten, Kassenbuch mit Belegen, Kategorien, Kostenstellen',
+    scopes: ['club'],
+  },
+  {
     key: 'team_tasks',
     name: 'Mannschaftsaufgaben',
     description: 'Fahrdienst, Trikotwäsche, Kuchen – wer übernimmt was',

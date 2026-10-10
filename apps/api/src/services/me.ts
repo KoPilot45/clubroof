@@ -14,6 +14,7 @@ import { resolveMediaUrl } from '../storage/media-links';
 import { loadScopeContext, targetsWith } from './scopes';
 import { adminPermissions } from './admin';
 import { newsPermissions } from './editorial';
+import { clubCashLevel } from './club-cash';
 import { canInvite } from './invitations';
 import { twoFactorMissing } from './two-factor';
 
@@ -110,6 +111,12 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
     canAdminister: actor.grants.some((g) => ADMIN_ROLES.has(g.key)),
     admin: adminPermissions(actor),
     news: newsPermissions(actor),
+    clubCash: (() => {
+      const level = clubCashLevel(actor);
+      return level !== 'none' && moduleEnabled(actor, 'club_cash')
+        ? { level, manage: actorCan(actor, 'clubcash.manage') }
+        : null;
+    })(),
     create: {
       polls: targetsWith(actor, ctx, 'polls.manage'),
       documents: targetsWith(actor, ctx, 'documents.manage'),

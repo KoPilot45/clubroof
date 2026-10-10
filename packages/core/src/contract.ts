@@ -87,6 +87,8 @@ export type MeResponse = {
   security: { twoFactorEnabled: boolean; twoFactorRequired: boolean };
   /** News schreiben bzw. ohne Freigabe veröffentlichen (irgendwo im Verein) */
   news: { write: boolean; publish: boolean };
+  /** Vereinskasse: Umfang der Einsicht (full = Kassenbuch, reports = nur Auswertungen) oder leer; manage = buchen */
+  clubCash: { level: 'full' | 'reports'; manage: boolean } | null;
   /** Auf Vereinsebene aktivierte Module (bestimmen die Kacheln im Vereinsbereich) */
   clubModules: string[];
   /** Schiedsrichter: einteilen bzw. selbst als Schiedsrichter aktiv */
