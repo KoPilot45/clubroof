@@ -285,7 +285,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: '2fa',
         question: 'Was ist die 2-Faktor-Anmeldung?',
         answer:
-          'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code aus einer Authenticator-App ab. Du richtest ihn unter „Mehr → Konto & Einstellungen“ ein. Wer Verwaltungsrechte hat, muss ihn nutzen, wenn der Verein es verlangt.',
+          'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail (6 Stellen, 10 Minuten gültig, nur einmal nutzbar). Du richtest ihn unter „Mehr → Konto & Einstellungen“ ein. Pflicht ist er nur für das Administrationskonto, wenn der Verein es verlangt.',
         link: { label: 'Konto & Einstellungen', href: '/account' },
       },
     ],
@@ -318,7 +318,20 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'coach-event',
         question: 'Wie lege ich einen Termin an oder sage ihn ab?',
         answer:
-          '„Team → Termin anlegen“: Training, Spiel oder Mannschaftstermin, optional als wöchentliche Serie (bis zu 26 Wochen). Im Termin änderst du mit „Termin bearbeiten“ einzelne Termine oder „diesen und folgende“. Mit „Termin absagen“ wird die Mannschaft sofort benachrichtigt.',
+          '„Team → Termin anlegen“: Training, Spiel oder Mannschaftstermin. Spiele bekommen die Art Liga, Pokal oder Testspiel. Zum Wiederholen wählst du „Wöchentlich bis …“ und das Enddatum (bis zu etwa einem Jahr). Die Treffzeit berechnet die App aus den Regeln deiner Mannschaft; im einzelnen Termin kannst du sie überschreiben. Im Termin änderst du mit „Termin bearbeiten“ einzelne Termine oder „diesen und folgende“. Mit „Termin absagen“ wird die Mannschaft sofort benachrichtigt.',
+      },
+      {
+        id: 'coach-manage',
+        question: 'Wie bearbeite ich Kader, Kassenwart und Treffpunkt-Regeln?',
+        answer:
+          '„Team → Kader → Mannschaft bearbeiten“: Spieler aus der Vereinsliste hinzufügen oder aus dem Kader nehmen, Funktion (Spieler, Co-Trainer, Betreuer) und Rückennummer ändern, den Kassenwart bestimmen. Unten stellst du ein, wie viele Minuten vor Spielen und Trainings ihr euch trefft, den Standard-Treffpunkt und die Schreibweisen eurer Mannschaft im DFBnet. Co-Trainer haben dieselben Rechte wie der Trainer.',
+        link: { label: 'Kader', href: '/team' },
+      },
+      {
+        id: 'coach-import',
+        question: 'Wie importiere ich den Spielplan aus dem DFBnet?',
+        answer:
+          '„Mannschaft bearbeiten → Spielplan importieren“: CSV-Datei aus dem DFBnet wählen, Vorschau prüfen (neu, geändert, unverändert, übersprungen) und übernehmen. Die Mannschaft bekommt eine Sammelmeldung. Ein erneuter Import aktualisiert Verlegungen, statt Spiele doppelt anzulegen. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.',
       },
       {
         id: 'coach-override',
@@ -448,7 +461,19 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'admin-members',
         question: 'Wie lege ich Mitglieder an oder importiere sie?',
         answer:
-          'Einzeln unter „Mitglieder → Mitglied anlegen“ oder per CSV-Import (Vorschau vor der Übernahme, Dubletten werden übersprungen). Austritte beenden Mannschaftszugehörigkeiten und sperren den App-Zugang.',
+          'Einzeln unter „Mitglieder → Mitglied anlegen“ oder per CSV-Import (Vorschau vor der Übernahme, Dubletten werden übersprungen). Austritte beenden Mannschaftszugehörigkeiten und sperren den App-Zugang. In der Mitgliederliste filterst du nach Rolle, Trainerteam, individuellen Rechten oder fehlendem App-Zugang.',
+      },
+      {
+        id: 'admin-permissions',
+        question: 'Wie vergebe ich einzelne Rechte an ein Mitglied?',
+        answer:
+          'Im Mitglied unter „Rollen & Zusatzaufgaben → Individuelle Rechte“: Liste aller Rechte zum An- und Abwählen. Sie gelten zusätzlich zu den Rollen für den ganzen Verein, jede Änderung steht im Änderungsprotokoll. Ein Recht für nur eine Mannschaft vergibst du besser über eine Rolle mit Geltungsbereich.',
+      },
+      {
+        id: 'admin-schedule-import',
+        question: 'Wie importiere ich den Vereinsspielplan aus dem DFBnet?',
+        answer:
+          'Unter „Verwaltung → Spielplan-Import“ die CSV-Datei wählen. Namen aus dem DFBnet ordnest du einmal euren Mannschaften zu (die Schreibweise wird gemerkt), danach legt der Import alle Spiele der Mannschaften an. Spiele zwischen zwei eigenen Mannschaften erscheinen bei beiden. Pokal-, Liga- und Testspiele werden erkannt; Spiele, die nicht in der Datei stehen (z. B. Testspiele und Turniere), legen Trainer, sportliche Leitung oder Verwaltung selbst an.',
       },
       {
         id: 'admin-modules',

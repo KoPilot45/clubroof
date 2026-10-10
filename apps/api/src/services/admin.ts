@@ -23,6 +23,7 @@ import {
   type AdminOverview,
   type AdminPermissions,
   type AssignRoleInput,
+  type SetIndividualPermissionsInput,
   type AuditEntry,
   type CreateMemberInput,
   type MemberDetail,
@@ -330,7 +331,17 @@ export async function listAudit(db: Db, actor: Actor): Promise<AuditEntry[]> {
 export async function listMembers(
   db: Db,
   actor: Actor,
-  filter: { q?: string; status?: string; teamId?: string; withoutTeam?: boolean },
+  filter: {
+    q?: string;
+    status?: string;
+    teamId?: string;
+    withoutTeam?: boolean;
+    /** Rolle (Schlüssel, z. B. `coach`) oder `any` (alle Rollenträger) bzw. `individual` */
+    roleKey?: string;
+    /** Funktion in einer Mannschaft; `coaches` = Trainer und Co-Trainer */
+    teamFunction?: string;
+    account?: 'yes' | 'no';
+  },
   now: Date,
 ): Promise<MemberListItem[]> {
   const visible = await visiblePersonIds(db, actor, now);
@@ -344,10 +355,18 @@ export async function listMembers(
 
   const memberships = await activeMemberships(db, actor, now);
   const roles = await db
-    .select({ personId: s.roleAssignments.personId, name: s.roles.name })
+    .select({ personId: s.roleAssignments.personId, name: s.roles.name, key: s.roles.key })
     .from(s.roleAssignments)
     .innerJoin(s.roles, eq(s.roles.id, s.roleAssignments.roleId))
     .where(eq(s.roleAssignments.clubId, actor.club.id));
+  const individual = new Set(
+    (
+      await db
+        .select({ personId: s.personPermissions.personId })
+        .from(s.personPermissions)
+        .where(eq(s.personPermissions.clubId, actor.club.id))
+    ).map((r) => r.personId),
+  );
 
   const guardianIds = filter.withoutTeam
     ? new Set(
@@ -373,7 +392,12 @@ export async function listMembers(
           memberNumber: p.memberNumber,
           status: p.membershipStatus,
           teams: own.map((m) => ({ badge: m.team.badge, function: m.membership.function })),
-          roles: [...new Set(roles.filter((r) => r.personId === p.id).map((r) => r.name))],
+          roles: [
+            ...new Set([
+              ...roles.filter((r) => r.personId === p.id).map((r) => r.name),
+              ...(individual.has(p.id) ? ['Individuelle Rechte'] : []),
+            ]),
+          ],
           hasAccount: p.userId !== null,
         } satisfies MemberListItem,
       };
@@ -386,6 +410,22 @@ export async function listMembers(
           (person.memberNumber ?? '').toLowerCase().includes(q)) &&
         (!filter.status || person.membershipStatus === filter.status) &&
         (!filter.teamId || teamIds.includes(filter.teamId)) &&
+        (!filter.account || (filter.account === 'yes') === item.hasAccount) &&
+        (!filter.teamFunction ||
+          memberships.some(
+            (m) =>
+              m.membership.personId === person.id &&
+              (!filter.teamId || m.team.id === filter.teamId) &&
+              (filter.teamFunction === 'coaches'
+                ? m.membership.function === 'coach' || m.membership.function === 'assistant_coach'
+                : m.membership.function === filter.teamFunction),
+          )) &&
+        (!filter.roleKey ||
+          (filter.roleKey === 'any'
+            ? item.roles.length > 0
+            : filter.roleKey === 'individual'
+              ? individual.has(person.id)
+              : roles.some((r) => r.personId === person.id && r.key === filter.roleKey))) &&
         // „Ohne Mannschaft“: weder Mannschaft noch Aufgabe noch Elternteil eines Mitglieds
         (!filter.withoutTeam ||
           (teamIds.length === 0 && item.roles.length === 0 && !guardianIds.has(person.id))),
@@ -481,6 +521,13 @@ export async function getMember(
       validFrom: membership.validFrom,
     })),
     roles,
+    individualPermissions:
+      (
+        await db
+          .select({ permissions: s.personPermissions.permissions })
+          .from(s.personPermissions)
+          .where(eq(s.personPermissions.personId, personId))
+      )[0]?.permissions ?? [],
     can: adminPermissions(actor),
   };
 }
@@ -673,14 +720,13 @@ export async function updateMember(
   return getMember(db, actor, personId, now);
 }
 
-export async function addMembership(
+export async function addMembershipCore(
   db: Db,
   actor: Actor,
   personId: string,
   input: AddMembershipInput,
   now: Date,
-): Promise<MemberDetail> {
-  requireManageMembers(actor);
+): Promise<void> {
   if (!TEAM_FUNCTIONS.includes(input.function))
     throw new HttpError(400, 'validation', 'Unbekannte Funktion.');
   const person = await loadPerson(db, actor, personId);
@@ -756,17 +802,27 @@ export async function addMembership(
       now,
     );
   });
+}
+
+export async function addMembership(
+  db: Db,
+  actor: Actor,
+  personId: string,
+  input: AddMembershipInput,
+  now: Date,
+): Promise<MemberDetail> {
+  requireManageMembers(actor);
+  await addMembershipCore(db, actor, personId, input, now);
   return getMember(db, actor, personId, now);
 }
 
-export async function endMembership(
+export async function endMembershipCore(
   db: Db,
   actor: Actor,
   personId: string,
   membershipId: string,
   now: Date,
-): Promise<MemberDetail> {
-  requireManageMembers(actor);
+): Promise<void> {
   const person = await loadPerson(db, actor, personId);
   const current = (await activeMemberships(db, actor, now, [personId])).find(
     (m) => m.membership.id === membershipId,
@@ -810,6 +866,17 @@ export async function endMembership(
       now,
     );
   });
+}
+
+export async function endMembership(
+  db: Db,
+  actor: Actor,
+  personId: string,
+  membershipId: string,
+  now: Date,
+): Promise<MemberDetail> {
+  requireManageMembers(actor);
+  await endMembershipCore(db, actor, personId, membershipId, now);
   return getMember(db, actor, personId, now);
 }
 
@@ -948,6 +1015,61 @@ export async function assignRole(
     `Rolle vergeben: ${role.name} (${label}) an ${name(person)}`,
     now,
     { personId, roleKey: role.key, scopeType: input.scopeType, scopeId },
+  );
+  return getMember(db, actor, personId, now);
+}
+
+export async function setIndividualPermissions(
+  db: Db,
+  actor: Actor,
+  personId: string,
+  input: SetIndividualPermissionsInput,
+  now: Date,
+): Promise<MemberDetail> {
+  requireManageRoles(actor);
+  const person = await loadPerson(db, actor, personId);
+  if (person.membershipStatus === 'left')
+    throw new HttpError(409, 'left', 'Ausgetretene Mitglieder erhalten keine Rechte.');
+  if (personId === actor.person.id)
+    throw forbidden('Die eigenen individuellen Rechte kann nur eine andere Person ändern.');
+  const wanted = [...new Set(input.permissions)];
+  if (wanted.some((p) => !isPermission(p)))
+    throw new HttpError(400, 'invalid_permission', 'Unbekanntes Recht.');
+  const [current] = await db
+    .select({ permissions: s.personPermissions.permissions })
+    .from(s.personPermissions)
+    .where(eq(s.personPermissions.personId, personId));
+  const before = current?.permissions ?? [];
+  const changed = [
+    ...wanted.filter((p) => !before.includes(p)),
+    ...before.filter((p) => !wanted.includes(p)),
+  ];
+  // Keine Rechteausweitung: nur Rechte ändern, die man selbst vereinsweit hat
+  if (changed.some((p) => !isPermission(p) || !actorCan(actor, p)))
+    throw forbidden('Du kannst nur Rechte vergeben oder entziehen, die du selbst hast.');
+  if (changed.length === 0) return getMember(db, actor, personId, now);
+  if (wanted.length === 0) {
+    await db.delete(s.personPermissions).where(eq(s.personPermissions.personId, personId));
+  } else {
+    await db
+      .insert(s.personPermissions)
+      .values({ clubId: actor.club.id, personId, permissions: wanted, updatedAt: now })
+      .onConflictDoUpdate({
+        target: s.personPermissions.personId,
+        set: { permissions: wanted, updatedAt: now },
+      });
+  }
+  await audit(
+    db,
+    actor,
+    'role.individual',
+    'person',
+    personId,
+    `Individuelle Rechte geändert für ${name(person)}: ${changed
+      .map((p) => `${wanted.includes(p) ? '+' : '−'}${p}`)
+      .join(', ')}`,
+    now,
+    { personId, permissions: wanted },
   );
   return getMember(db, actor, personId, now);
 }

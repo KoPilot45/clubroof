@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { LoginResponse } from '@clubroof/core';
+import type { LoginResponse, TwoFactorChallenge } from '@clubroof/core';
 import { Button, Card, Chip, Crest, T, TextField } from '@/components/ui';
 import { request, RequestError } from '@/lib/api';
 import { inputFont } from '@/lib/fonts';
@@ -21,7 +21,9 @@ const DEMO_ACCOUNTS = [
 
 export default function LoginScreen() {
   const { signIn, adopt } = useSession();
-  const [challenge, setChallenge] = useState<string | null>(null);
+  const [pending, setChallenge] = useState<TwoFactorChallenge | null>(null);
+  const challenge = pending?.challenge ?? null;
+  const [mailSent, setMailSent] = useState(false);
   const [code, setCode] = useState('');
   const { colors, radii, spacing } = useTheme();
   const [email, setEmail] = useState('');
@@ -72,6 +74,19 @@ export default function LoginScreen() {
     }
   };
 
+  const sendMailCode = async () => {
+    setError(null);
+    setBusy(true);
+    try {
+      await request('/auth/2fa/email/send', { method: 'POST', body: { challenge } });
+      setMailSent(true);
+    } catch (e) {
+      setError(e instanceof RequestError ? e.message : 'Der Code konnte nicht gesendet werden.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const input = {
     borderWidth: 1,
     borderColor: colors.border,
@@ -103,8 +118,9 @@ export default function LoginScreen() {
             <Card style={{ gap: spacing.md, padding: spacing.lg }}>
               <T variant="section">Bestätigungscode</T>
               <T variant="caption">
-                Gib den 6-stelligen Code aus deiner Authenticator-App ein – oder einen deiner
-                Wiederherstellungscodes.
+                {pending?.methods.includes('app')
+                  ? 'Gib den 6-stelligen Code aus deiner Authenticator-App ein – oder einen deiner Wiederherstellungscodes.'
+                  : 'Wir haben dir einen 6-stelligen Code per E-Mail geschickt. Er ist 10 Minuten gültig.'}
               </T>
               <TextField
                 label="Code"
@@ -121,10 +137,25 @@ export default function LoginScreen() {
                 loading={busy}
                 disabled={code.trim().length < 6}
               />
+              {pending?.methods.includes('email') ? (
+                <Button
+                  label={
+                    mailSent || !pending.methods.includes('app')
+                      ? 'Code erneut per E-Mail senden'
+                      : 'Code per E-Mail senden'
+                  }
+                  icon="mail-outline"
+                  variant="outline"
+                  onPress={() => void sendMailCode()}
+                  disabled={busy}
+                />
+              ) : null}
+              {mailSent ? <Chip tone="success" icon="mail" label="Der Code ist unterwegs." /> : null}
               <Button
                 label="Abbrechen"
                 variant="outline"
                 onPress={() => {
+                  setMailSent(false);
                   setChallenge(null);
                   setCode('');
                   setError(null);

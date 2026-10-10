@@ -1,4 +1,5 @@
 import {
+  boolean,
   date,
   integer,
   index,
@@ -39,6 +40,8 @@ export const users = pgTable('users', {
   recoveryCodes: text().array(),
   /** Zuletzt angenommener TOTP-Zeitschritt (verhindert die Wiederverwendung eines Codes) */
   totpLastStep: integer(),
+  /** 2-Faktor per Code aus einer E-Mail aktiv (Alternative oder Ergänzung zur Authenticator-App) */
+  twoFactorEmail: boolean().notNull().default(false),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });
@@ -142,6 +145,8 @@ export const authTokens = pgTable(
     tokenHash: text().notNull().unique(),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
     usedAt: timestamp({ withTimezone: true }),
+    /** Fehlversuche (E-Mail-Codes werden nach fünf Fehlversuchen ungültig) */
+    attempts: integer().notNull().default(0),
     createdAt: createdAt(),
   },
   (t) => [index().on(t.userId, t.purpose)],

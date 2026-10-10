@@ -55,3 +55,42 @@ export const ALL_PERMISSIONS = Object.keys(PERMISSIONS) as Permission[];
 export function isPermission(value: string): value is Permission {
   return value in PERMISSIONS;
 }
+
+/** Gruppen für die Auswahlliste der individuellen Rechte (Reihenfolge wie in der Verwaltung). */
+export const PERMISSION_GROUPS: { title: string; keys: Permission[] }[] = [
+  {
+    title: 'Verein & System',
+    keys: [
+      'club.settings.manage',
+      'club.modules.manage',
+      'club.roles.manage',
+      'club.audit.read',
+      'club.overview.read',
+    ],
+  },
+  { title: 'Mitglieder', keys: ['members.read', 'members.manage', 'members.invite'] },
+  {
+    title: 'Mannschaften & Sport',
+    keys: [
+      'teams.manage',
+      'teams.modules.manage',
+      'teams.season.plan',
+      'teams.transfers.manage',
+      'squad.manage',
+      'squad.demand.manage',
+    ],
+  },
+  {
+    title: 'Termine',
+    keys: ['events.manage', 'attendance.read', 'attendance.override', 'absences.read'],
+  },
+  {
+    title: 'Kommunikation',
+    keys: ['news.create', 'news.publish', 'polls.manage', 'forum.moderate'],
+  },
+  { title: 'Finanzen', keys: ['cash.read', 'cash.manage', 'cash.fines'] },
+  {
+    title: 'Betrieb',
+    keys: ['facilities.manage', 'documents.manage', 'helpers.manage', 'referees.manage'],
+  },
+];

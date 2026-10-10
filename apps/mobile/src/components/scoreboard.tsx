@@ -1,6 +1,7 @@
 import type { EventDetail } from '@clubroof/core';
 import { View } from 'react-native';
 import { T } from '@/components/ui';
+import { MATCH_KIND_LABELS } from '@/lib/labels';
 import { formatLongDate, formatTime } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
 
@@ -35,7 +36,10 @@ export function Scoreboard({
       }}
     >
       <T variant="overline" color={colors.onPrimary} style={{ textAlign: 'center' }}>
-        {[match.competition, event.type === 'tournament' ? 'Turnier' : 'Spiel']
+        {[
+          match.competition,
+          event.type === 'tournament' ? 'Turnier' : MATCH_KIND_LABELS[match.kind],
+        ]
           .filter(Boolean)
           .join(' · ')}
       </T>

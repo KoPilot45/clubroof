@@ -41,6 +41,7 @@ export default function AdminLayout() {
         <Stack.Screen name="members" options={{ title: 'Mitglieder' }} />
         <Stack.Screen name="member/[id]" options={{ title: 'Mitglied' }} />
         <Stack.Screen name="member-new" options={{ title: 'Mitglied anlegen' }} />
+        <Stack.Screen name="member-permissions" options={{ title: 'Individuelle Rechte' }} />
         <Stack.Screen name="club-events" options={{ title: 'Veranstaltungen' }} />
         <Stack.Screen name="club-event-new" options={{ title: 'Veranstaltung planen' }} />
         <Stack.Screen name="import" options={{ title: 'Mitglieder importieren' }} />

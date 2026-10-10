@@ -1,4 +1,13 @@
-import { at, fromIsoDate, type EventDetail, type Facility } from '@clubroof/core';
+import {
+  addDays,
+  at,
+  fromIsoDate,
+  toIsoDate,
+  type EventDetail,
+  type Facility,
+  type MatchKind,
+  type TeamManage,
+} from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -9,6 +18,7 @@ import {
   Chip,
   DateStepper,
   Screen,
+  T,
   TextField,
   TimeStepper,
 } from '@/components/ui';
@@ -19,6 +29,12 @@ import { t } from '@/lib/i18n';
 import { MapLinkField } from '@/components/map-link-field';
 
 type Type = 'training' | 'match' | 'team_event';
+
+const MATCH_KIND_OPTIONS: { value: MatchKind; label: string }[] = [
+  { value: 'league', label: 'Liga' },
+  { value: 'cup', label: 'Pokal' },
+  { value: 'friendly', label: 'Testspiel' },
+];
 
 const DEFAULTS: Record<Type, { time: string; minutes: string }> = {
   training: { time: '18:00', minutes: '90' },
@@ -36,29 +52,52 @@ export default function NewEventScreen() {
     queryFn: () => api<Facility[]>('/facilities'),
   });
 
+  // Treffpunkt-Regeln der Mannschaft (nur für das Trainerteam abrufbar)
+  const rules = useQuery({
+    queryKey: ['team-manage', id],
+    queryFn: () => api<TeamManage>(`/teams/${id}/manage`),
+    retry: false,
+  });
+
   const [type, setType] = useState<Type>('training');
+  const [kind, setKind] = useState<MatchKind>('league');
   const [date, setDate] = useState(todayIso());
   const [time, setTime] = useState(DEFAULTS.training.time);
   const [minutes, setMinutes] = useState(DEFAULTS.training.minutes);
-  const [meetingBefore, setMeetingBefore] = useState('15');
+  // `rule` = Regel der Mannschaft (Standard), sonst Minuten vorher oder `0` = kein Treffen
+  const [meetingChoice, setMeetingChoice] = useState<string | null>(null);
   const [placeChoice, setPlace] = useState<string | null>(null);
   const [locationText, setLocationText] = useState('');
   const [locationUrl, setLocationUrl] = useState('');
   const [opponent, setOpponent] = useState('');
   const [home, setHome] = useState<'home' | 'away'>('home');
   const [title, setTitle] = useState('');
-  const [meetingPoint, setMeetingPoint] = useState('Kabine Vereinsheim');
+  const [meetingPoint, setMeetingPoint] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
-  const [repeat, setRepeat] = useState('1');
+  const [repeat, setRepeat] = useState<'once' | 'weekly'>('once');
+  const [repeatUntil, setRepeatUntil] = useState<string | null>(null);
 
   const place = placeChoice ?? facilities.data?.[0]?.id ?? 'other';
   const startsAt = at(fromIsoDate(date), time, me.club.timezone);
   const endsAt = new Date(startsAt.getTime() + Number(minutes) * 60_000);
-  const meetingAt =
-    meetingBefore === '0' ? null : new Date(startsAt.getTime() - Number(meetingBefore) * 60_000);
+  const ruleMinutes =
+    type === 'match'
+      ? rules.data?.profile.matchMeetingMinutes
+      : type === 'training'
+        ? rules.data?.profile.trainingMeetingMinutes
+        : null;
+  const meetingBefore = meetingChoice ?? (ruleMinutes != null ? 'rule' : '0');
+  const meetingMinutes = meetingBefore === 'rule' ? (ruleMinutes ?? 0) : Number(meetingBefore);
+  const meetingAt = meetingMinutes > 0 ? new Date(startsAt.getTime() - meetingMinutes * 60_000) : null;
   const isAway = type === 'match' && home === 'away';
+  // Wiederholen: wöchentlich bis zu einem Datum (Standard: 8 Wochen)
+  const until = repeatUntil ?? toIsoDate(addDays(fromIsoDate(date), 56));
+  const untilValid = until >= date;
+  const occurrences = untilValid
+    ? Math.floor((fromIsoDate(until).getTime() - fromIsoDate(date).getTime()) / 86_400_000 / 7) + 1
+    : 0;
 
   const save = useMutation({
     mutationFn: (allowConflict: boolean) =>
@@ -69,8 +108,13 @@ export default function NewEventScreen() {
           title: type === 'team_event' ? title.trim() : null,
           startsAt: startsAt.toISOString(),
           endsAt: endsAt.toISOString(),
-          meetingAt: meetingAt?.toISOString() ?? null,
-          meetingPoint: meetingAt ? meetingPoint.trim() || null : null,
+          // „Regel der Mannschaft“: Treffen und Standard-Treffpunkt berechnet der Server
+          ...(meetingBefore === 'rule'
+            ? { ...(meetingPoint.trim() ? { meetingPoint: meetingPoint.trim() } : {}) }
+            : {
+                meetingAt: meetingAt?.toISOString() ?? null,
+                meetingPoint: meetingAt ? meetingPoint.trim() || null : null,
+              }),
           facilityId: !isAway && place !== 'other' ? place : null,
           locationText: isAway || place === 'other' ? locationText.trim() || null : null,
           locationUrl: isAway || place === 'other' ? locationUrl.trim() || null : null,
@@ -78,7 +122,8 @@ export default function NewEventScreen() {
           opponentName: type === 'match' ? opponent.trim() : null,
           isHome: type === 'match' ? home === 'home' : null,
           allowConflict,
-          repeatWeeks: type === 'match' ? 1 : Number(repeat),
+          matchKind: type === 'match' ? kind : null,
+          ...(type !== 'match' && repeat === 'weekly' ? { repeatUntil: until } : {}),
         },
       }),
     onSuccess: (event) => {
@@ -99,7 +144,11 @@ export default function NewEventScreen() {
         ? 'Bitte gib einen Titel an.'
         : startsAt < new Date()
           ? 'Der Beginn liegt in der Vergangenheit.'
-          : null;
+          : type !== 'match' && repeat === 'weekly' && !untilValid
+            ? 'Das Enddatum liegt vor dem ersten Termin.'
+            : type !== 'match' && repeat === 'weekly' && occurrences > 53
+              ? 'Höchstens 53 Termine (etwa ein Jahr).'
+              : null;
 
   return (
     <Screen edges={[]}>
@@ -137,6 +186,12 @@ export default function NewEventScreen() {
             selected={[home]}
             onToggle={setHome}
           />
+          <ChoiceChips
+            label="Art des Spiels"
+            options={MATCH_KIND_OPTIONS}
+            selected={[kind]}
+            onToggle={setKind}
+          />
         </Card>
       ) : null}
       {type === 'team_event' ? (
@@ -161,22 +216,41 @@ export default function NewEventScreen() {
           onToggle={setMinutes}
         />
         {type !== 'match' ? (
-          <ChoiceChips
-            label="Wiederholen"
-            options={[
-              { value: '1', label: 'Einmalig' },
-              { value: '4', label: '4 Wochen' },
-              { value: '8', label: '8 Wochen' },
-              { value: '12', label: '12 Wochen' },
-              { value: '26', label: '26 Wochen' },
-            ]}
-            selected={[repeat]}
-            onToggle={setRepeat}
-          />
+          <>
+            <ChoiceChips
+              label="Wiederholen"
+              options={[
+                { value: 'once' as const, label: 'Einmalig' },
+                { value: 'weekly' as const, label: 'Wöchentlich bis …' },
+              ]}
+              selected={[repeat]}
+              onToggle={setRepeat}
+            />
+            {repeat === 'weekly' ? (
+              <>
+                <DateStepper
+                  label="Wiederholen bis einschließlich"
+                  value={until}
+                  min={date}
+                  onChange={setRepeatUntil}
+                />
+                <T variant="caption">
+                  {untilValid
+                    ? occurrences === 1
+                      ? 'Es wird nur dieser eine Termin angelegt.'
+                      : `Es werden ${occurrences} wöchentliche Termine angelegt.`
+                    : 'Das Enddatum liegt vor dem ersten Termin.'}
+                </T>
+              </>
+            ) : null}
+          </>
         ) : null}
         <ChoiceChips
           label="Treffpunkt vorher"
           options={[
+            ...(ruleMinutes != null
+              ? [{ value: 'rule', label: `Regel der Mannschaft (${ruleMinutes} Min.)` }]
+              : []),
             { value: '0', label: 'Keiner' },
             { value: '15', label: '15 Min.' },
             { value: '30', label: '30 Min.' },
@@ -184,13 +258,16 @@ export default function NewEventScreen() {
             { value: '90', label: '90 Min.' },
           ]}
           selected={[meetingBefore]}
-          onToggle={setMeetingBefore}
+          onToggle={setMeetingChoice}
         />
         {meetingAt ? (
           <TextField
-            label="Treffpunkt"
+            label={
+              meetingBefore === 'rule' ? 'Treffpunkt (leer = Standard der Mannschaft)' : 'Treffpunkt'
+            }
             value={meetingPoint}
             onChangeText={setMeetingPoint}
+            placeholder={rules.data?.profile.defaultMeetingPoint ?? 'z. B. Kabine Vereinsheim'}
             maxLength={120}
           />
         ) : null}

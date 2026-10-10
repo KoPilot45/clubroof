@@ -13,7 +13,13 @@ import {
   formatRemaining,
   formatTime,
 } from '@/lib/format';
-import { ATTENDANCE_LABELS, DECLINE_REASONS, EVENT_TYPE_LABELS, MAYBE_REASONS } from '@/lib/labels';
+import {
+  ATTENDANCE_LABELS,
+  DECLINE_REASONS,
+  EVENT_TYPE_LABELS,
+  MATCH_KIND_LABELS,
+  MAYBE_REASONS,
+} from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import {
@@ -148,6 +154,9 @@ export function EventRow({
           ) : (
             <T variant="caption">{EVENT_TYPE_LABELS[event.type]}</T>
           )}
+          {!cancelled && event.match ? (
+            <Chip tone="neutral" label={MATCH_KIND_LABELS[event.match.kind]} />
+          ) : null}
         </View>
       }
       trailing={

@@ -15,6 +15,7 @@ import {
   type MyResponse,
   type Participant,
   type EventChange,
+  type MatchKind,
   buildRouteUrl,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
@@ -150,6 +151,7 @@ export async function summarizeEvents(
             opponentName: row.match.opponentName,
             isHome: row.match.isHome,
             competition: row.match.competition,
+            kind: row.match.kind as MatchKind,
             goalsFor: row.match.goalsFor,
             goalsAgainst: row.match.goalsAgainst,
           }

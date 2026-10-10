@@ -181,6 +181,7 @@ function TwoFactorSection() {
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [disabling, setDisabling] = useState(false);
+  const [emailSetup, setEmailSetup] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -210,7 +211,7 @@ function TwoFactorSection() {
           <Chip
             tone="urgent"
             icon="shield-outline"
-            label="Der Verein verlangt sie für deine Verwaltungsrechte."
+            label="Für das Administrationskonto ist sie Pflicht."
           />
         ) : null}
         {codes ? (
@@ -235,7 +236,33 @@ function TwoFactorSection() {
         ) : s?.enabled ? (
           <>
             <Chip tone="success" icon="shield-checkmark" label="Aktiv" />
-            <T variant="caption">Noch {s.recoveryCodesLeft} Wiederherstellungscodes übrig.</T>
+            <T variant="caption">
+              {[
+                s.appEnabled ? t('Authenticator-App') : null,
+                s.emailEnabled ? t('Code per E-Mail') : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </T>
+            {s.appEnabled ? (
+              <T variant="caption">Noch {s.recoveryCodesLeft} Wiederherstellungscodes übrig.</T>
+            ) : null}
+            {emailSetup ? (
+              <EmailSetup
+                onDone={async () => {
+                  setEmailSetup(false);
+                  await done();
+                }}
+                onCancel={() => setEmailSetup(false)}
+              />
+            ) : !s.emailEnabled && !disabling ? (
+              <Button
+                label="Code per E-Mail zusätzlich einrichten"
+                icon="mail-outline"
+                variant="outline"
+                onPress={() => setEmailSetup(true)}
+              />
+            ) : null}
             {disabling ? (
               <>
                 <TextField
@@ -246,12 +273,24 @@ function TwoFactorSection() {
                   maxLength={200}
                 />
                 <TextField
-                  label="Code aus der App"
+                  label={s.appEnabled ? 'Code aus der App' : 'Code aus der E-Mail'}
                   kind="code"
                   value={code}
                   onChangeText={setCode}
                   maxLength={20}
                 />
+                {s.emailEnabled ? (
+                  <Button
+                    label="Code per E-Mail senden"
+                    icon="mail-outline"
+                    variant="outline"
+                    onPress={() =>
+                      void run(async () => {
+                        await api('/auth/2fa/email/start', { method: 'POST' });
+                      })
+                    }
+                  />
+                ) : null}
                 <Button
                   label="Ausschalten"
                   variant="danger"
@@ -317,25 +356,109 @@ function TwoFactorSection() {
           </>
         ) : (
           <>
-            <T variant="caption">
-              Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code aus deiner
-              Authenticator-App ab.
-            </T>
-            <Button
-              label="Einrichten"
-              icon="shield-checkmark-outline"
-              loading={busy}
-              onPress={() =>
-                void run(async () =>
-                  setSetup(await api<TwoFactorSetup>('/auth/2fa/setup', { method: 'POST' })),
-                )
-              }
-            />
+            {emailSetup ? (
+              <EmailSetup
+                onDone={async () => {
+                  setEmailSetup(false);
+                  await done();
+                }}
+                onCancel={() => setEmailSetup(false)}
+              />
+            ) : (
+              <>
+                <T variant="caption">
+                  Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code ab –
+                  aus einer Authenticator-App oder per E-Mail.
+                </T>
+                <Button
+                  label="Authenticator-App einrichten"
+                  icon="shield-checkmark-outline"
+                  loading={busy}
+                  onPress={() =>
+                    void run(async () =>
+                      setSetup(await api<TwoFactorSetup>('/auth/2fa/setup', { method: 'POST' })),
+                    )
+                  }
+                />
+                <Button
+                  label="Code per E-Mail einrichten"
+                  icon="mail-outline"
+                  variant="outline"
+                  onPress={() => setEmailSetup(true)}
+                />
+              </>
+            )}
           </>
         )}
         {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       </Card>
     </Section>
+  );
+}
+
+/** Code per E-Mail einrichten: Code anfordern, bestätigen. */
+function EmailSetup({ onDone, onCancel }: { onDone: () => Promise<void>; onCancel: () => void }) {
+  const { api } = useSignedIn();
+  const [sent, setSent] = useState(false);
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await fn();
+    } catch (e) {
+      setError(e instanceof RequestError ? e.message : 'Das hat nicht geklappt.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <>
+      <T variant="caption">
+        Bei der Anmeldung schicken wir dir einen 6-stelligen Code per E-Mail (10 Minuten gültig,
+        nur einmal nutzbar). Sicherer ist eine Authenticator-App – der E-Mail-Code ist die
+        einfachere Alternative.
+      </T>
+      {sent ? (
+        <>
+          <TextField
+            label="Code aus der E-Mail"
+            kind="code"
+            value={code}
+            onChangeText={setCode}
+            maxLength={6}
+          />
+          <Button
+            label="Bestätigen"
+            icon="checkmark"
+            loading={busy}
+            disabled={code.trim().length !== 6}
+            onPress={() =>
+              void run(async () => {
+                await api('/auth/2fa/email/enable', { method: 'POST', body: { code: code.trim() } });
+                await onDone();
+              })
+            }
+          />
+        </>
+      ) : (
+        <Button
+          label="Code an meine E-Mail-Adresse senden"
+          icon="mail-outline"
+          loading={busy}
+          onPress={() =>
+            void run(async () => {
+              await api('/auth/2fa/email/start', { method: 'POST' });
+              setSent(true);
+            })
+          }
+        />
+      )}
+      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+      <Button label="Abbrechen" variant="outline" onPress={onCancel} />
+    </>
   );
 }
 

@@ -27,7 +27,7 @@ type SessionState =
 
 type SessionContextValue = SessionState & {
   /** Liefert eine Challenge, wenn ein zweiter Faktor nötig ist */
-  signIn: (email: string, password: string) => Promise<string | null>;
+  signIn: (email: string, password: string) => Promise<TwoFactorChallenge | null>;
   signOut: () => Promise<void>;
   /** Nutzerdaten (`/me`) neu laden, z. B. nach Änderung von Logo oder Rechten */
   refresh: () => Promise<void>;
@@ -80,7 +80,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       method: 'POST',
       body: { email, password },
     });
-    if ('twoFactorRequired' in result) return result.challenge;
+    if ('twoFactorRequired' in result) return result;
     await writeToken(result.token);
     setState({ status: 'signedIn', token: result.token, me: result.me });
     return null;

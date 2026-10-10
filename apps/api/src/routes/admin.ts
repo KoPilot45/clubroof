@@ -22,6 +22,7 @@ import {
   listAudit,
   listMembers,
   revokeRole,
+  setIndividualPermissions,
   updateMember,
 } from '../services/admin';
 import { createClubEvent, getEventPlanning } from '../services/club-events';
@@ -136,6 +137,11 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
           status: z.enum(['active', 'inactive', 'left']).optional(),
           teamId: z.uuid().optional(),
           withoutTeam: z.enum(['true', 'false']).optional(),
+          roleKey: z.string().max(40).optional(),
+          teamFunction: z
+            .enum(['player', 'coach', 'assistant_coach', 'team_manager', 'coaches'])
+            .optional(),
+          account: z.enum(['yes', 'no']).optional(),
         }),
       },
     },
@@ -227,6 +233,24 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request): Promise<MemberDetail> =>
       assignRole(app.db, request.actor!, request.params.personId, request.body, app.now()),
+  );
+
+  app.put(
+    '/admin/members/:personId/permissions',
+    {
+      schema: {
+        params: memberParams,
+        body: z.object({ permissions: z.array(z.string().max(60)).max(60) }),
+      },
+    },
+    async (request): Promise<MemberDetail> =>
+      setIndividualPermissions(
+        app.db,
+        request.actor!,
+        request.params.personId,
+        request.body,
+        app.now(),
+      ),
   );
 
   app.delete(

@@ -7,10 +7,12 @@ import {
   addDays,
   at,
   calendarDayOf,
+  fromIsoDate,
   toIsoDate,
   type CreateEventInput,
   type EventChange,
   type EventDetail,
+  type MatchKind,
   type UpdateEventInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
@@ -33,6 +35,12 @@ const localHm = (d: Date, tz: string) =>
     timeZone: tz,
   }).format(d);
 
+const MAX_SERIES = 53;
+const MATCH_KIND_LABELS: Record<MatchKind, string> = {
+  league: 'Liga',
+  cup: 'Pokal',
+  friendly: 'Testspiel',
+};
 const DEFAULT_MINUTES = { training: 90, match: 105, team_event: 120 } as const;
 const TITLES = { training: 'Training', team_event: 'Teamevent' } as const;
 
@@ -83,6 +91,8 @@ export async function createTeamEvent(
   teamId: string,
   input: CreateEventInput,
   now: Date,
+  /** Spielplan-Import: stille Anlage (Sammelmeldung folgt), Herkunft und Wettbewerb */
+  opts: { silent?: boolean; sourceKey?: string; importBatchId?: string; competition?: string } = {},
 ): Promise<EventDetail> {
   const { team, permissions } = await loadTeamForActor(db, actor, teamId);
   if (!permissions.manageEvents)
@@ -122,12 +132,38 @@ export async function createTeamEvent(
         : `${opponent} – ${ourName}`
       : TITLES[input.type]);
 
-  const repeat = input.type === 'match' ? 1 : Math.min(Math.max(input.repeatWeeks ?? 1, 1), 26);
   const firstDay = calendarDayOf(startsAt, actor.club.timezone);
+  // Wiederholen: bis zu einem Datum (Zeitraum) oder – älter – eine Anzahl Wochen
+  let repeat = input.type === 'match' ? 1 : Math.min(Math.max(input.repeatWeeks ?? 1, 1), 26);
+  if (input.type !== 'match' && input.repeatUntil) {
+    const until = fromIsoDate(input.repeatUntil);
+    const days = Math.floor((until.getTime() - firstDay.getTime()) / 86_400_000);
+    if (days < 0)
+      throw new HttpError(400, 'invalid_range', 'Das Enddatum liegt vor dem ersten Termin.');
+    repeat = Math.floor(days / 7) + 1;
+    if (repeat > MAX_SERIES)
+      throw new HttpError(
+        400,
+        'series_too_long',
+        `Eine Serie darf höchstens ${MAX_SERIES} Termine haben (etwa ein Jahr).`,
+      );
+  }
   const hm = localHm(startsAt, actor.club.timezone);
+  // Treffen: ausdrücklich angegeben, sonst nach den Regeln der Mannschaft (Spiel/Training)
+  const ruleMinutes =
+    input.type === 'match'
+      ? team.matchMeetingMinutes
+      : input.type === 'training'
+        ? team.trainingMeetingMinutes
+        : null;
   const meetingOffset = input.meetingAt
     ? startsAt.getTime() - new Date(input.meetingAt).getTime()
-    : null;
+    : input.meetingAt === undefined && ruleMinutes !== null
+      ? ruleMinutes * 60_000
+      : null;
+  const meetingPoint =
+    input.meetingPoint?.trim() ||
+    (input.meetingPoint === undefined && meetingOffset !== null ? team.defaultMeetingPoint : null);
   const occurrences = Array.from({ length: repeat }, (_, i) => {
     const start = i === 0 ? startsAt : at(addDays(firstDay, 7 * i), hm, actor.club.timezone);
     return {
@@ -166,7 +202,9 @@ export async function createTeamEvent(
           endsAt: occ.endsAt,
           meetingAt: occ.meetingAt,
           seriesId,
-          meetingPoint: input.meetingPoint?.trim() || null,
+          sourceKey: opts.sourceKey ?? null,
+          importBatchId: opts.importBatchId ?? null,
+          meetingPoint,
           facilityId: input.facilityId ?? null,
           locationText: input.facilityId ? null : input.locationText?.trim() || null,
           locationUrl: input.facilityId ? null : locationUrlFrom(input.locationUrl),
@@ -180,7 +218,8 @@ export async function createTeamEvent(
           clubId: actor.club.id,
           opponentName: opponent,
           isHome,
-          competition: team.league,
+          competition: opts.competition ?? team.league,
+          kind: input.matchKind ?? 'league',
         });
       }
 
@@ -256,26 +295,29 @@ export async function createTeamEvent(
   });
   const eventId = eventIds[0]!;
 
-  const memberIds = (
-    await db
-      .select({ personId: s.eventParticipants.personId })
-      .from(s.eventParticipants)
-      .where(eq(s.eventParticipants.eventId, eventId))
-  ).map((r) => r.personId);
-  await notify(
-    db,
-    actor,
-    await recipientsFor(db, memberIds, actor.user.id),
-    {
-      level: team.participationMode === 'active_response' ? 'action' : 'info',
-      topic: 'events',
-      teamId: team.id,
-      title: repeat > 1 ? `Neue Terminserie: ${title}` : `Neuer Termin: ${title}`,
-      body: `${team.badge} · ${timeFmt(actor.club.timezone).format(startsAt)} Uhr${repeat > 1 ? ` · wöchentlich, ${repeat} Termine` : ''}`,
-      link: `/events/${eventId}`,
-    },
-    now,
-  );
+  const memberIds = opts.silent
+    ? []
+    : (
+        await db
+          .select({ personId: s.eventParticipants.personId })
+          .from(s.eventParticipants)
+          .where(eq(s.eventParticipants.eventId, eventId))
+      ).map((r) => r.personId);
+  if (!opts.silent)
+    await notify(
+      db,
+      actor,
+      await recipientsFor(db, memberIds, actor.user.id),
+      {
+        level: team.participationMode === 'active_response' ? 'action' : 'info',
+        topic: 'events',
+        teamId: team.id,
+        title: repeat > 1 ? `Neue Terminserie: ${title}` : `Neuer Termin: ${title}`,
+        body: `${team.badge} · ${timeFmt(actor.club.timezone).format(startsAt)} Uhr${repeat > 1 ? ` · wöchentlich, ${repeat} Termine` : ''}`,
+        link: `/events/${eventId}`,
+      },
+      now,
+    );
 
   return getEventDetail(db, actor, eventId, now);
 }
@@ -522,6 +564,13 @@ export async function updateEvent(
       match.isHome ? 'Heimspiel' : 'Auswärtsspiel',
       input.isHome ? 'Heimspiel' : 'Auswärtsspiel',
     );
+  const kindChanged = !!match && !!input.matchKind && input.matchKind !== match.kind;
+  if (kindChanged)
+    add(
+      'Art des Spiels',
+      MATCH_KIND_LABELS[match.kind as MatchKind],
+      MATCH_KIND_LABELS[input.matchKind!],
+    );
   if (changes.length === 0) return getEventDetail(db, actor, eventId, now);
 
   await db.transaction(async (tx) => {
@@ -550,12 +599,13 @@ export async function updateEvent(
         createdAt: now,
       });
     }
-    if (match && (opponent || input.isHome !== undefined)) {
+    if (match && (opponent || input.isHome !== undefined || input.matchKind)) {
       await tx
         .update(s.matchDetails)
         .set({
           ...(opponent ? { opponentName: opponent } : {}),
           ...(input.isHome !== undefined ? { isHome: input.isHome } : {}),
+          ...(input.matchKind ? { kind: input.matchKind } : {}),
         })
         .where(eq(s.matchDetails.eventId, event.id));
     }

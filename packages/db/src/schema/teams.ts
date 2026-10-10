@@ -46,6 +46,13 @@ export const teams = pgTable(
     template: teamTemplateEnum().notNull(),
     participationMode: participationModeEnum().notNull(),
     sortOrder: integer().notNull().default(0),
+    /** Treffen vor Spielbeginn / vor Trainingsbeginn in Minuten (leer = kein automatisches Treffen) */
+    matchMeetingMinutes: integer().default(60),
+    trainingMeetingMinutes: integer().default(15),
+    /** Standard-Treffpunkt der Mannschaft (z. B. „Vereinsheim“) */
+    defaultMeetingPoint: text(),
+    /** Weitere Schreibweisen im DFBnet (für den Spielplan-Import) */
+    importAliases: text().array().notNull().default([]),
     /** Mannschaft der Vorsaison (Saisonwechsel: Kasse, Dokumente und Verlauf gehen mit) */
     previousTeamId: uuid(),
     createdAt: createdAt(),

@@ -292,6 +292,14 @@ function Navigator() {
             options={{ headerShown: true, title: 'Aufgaben' }}
           />
           <Stack.Screen
+            name="teams/[id]/manage"
+            options={{ headerShown: true, title: 'Mannschaft bearbeiten' }}
+          />
+          <Stack.Screen
+            name="schedule-import"
+            options={{ headerShown: true, title: 'Spielplan importieren' }}
+          />
+          <Stack.Screen
             name="teams/[id]/jerseys"
             options={{ headerShown: true, title: 'Rückennummern' }}
           />

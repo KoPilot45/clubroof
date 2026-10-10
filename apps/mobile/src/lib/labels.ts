@@ -1,4 +1,10 @@
-import type { AbsenceKind, AttendanceStatus, EventType, TeamFunction } from '@clubroof/core';
+import type {
+  AbsenceKind,
+  AttendanceStatus,
+  EventType,
+  MatchKind,
+  TeamFunction,
+} from '@clubroof/core';
 import type { IconName } from '@/components/ui';
 
 export const EVENT_TYPE_LABELS: Record<EventType, string> = {
@@ -16,6 +22,12 @@ export const ATTENDANCE_LABELS: Record<AttendanceStatus, string> = {
   no: 'Abgesagt',
   maybe: 'Unsicher',
   pending: 'Offen',
+};
+
+export const MATCH_KIND_LABELS: Record<MatchKind, string> = {
+  league: 'Liga',
+  cup: 'Pokal',
+  friendly: 'Testspiel',
 };
 
 export const TEAM_FUNCTION_LABELS: Record<TeamFunction, string> = {

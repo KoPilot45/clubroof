@@ -92,7 +92,7 @@ export async function loadActor(
     team: r.team,
   }));
 
-  const grantRows = await db
+  const grantRows: Actor['grants'] = await db
     .select({
       key: s.roles.key,
       name: s.roles.name,
@@ -103,6 +103,43 @@ export async function loadActor(
     .from(s.roleAssignments)
     .innerJoin(s.roles, eq(s.roles.id, s.roleAssignments.roleId))
     .where(eq(s.roleAssignments.personId, person.id));
+
+  // Individuelle Rechte (vergibt die Administration je Person, vereinsweit)
+  const [individual] = await db
+    .select({ permissions: s.personPermissions.permissions })
+    .from(s.personPermissions)
+    .where(eq(s.personPermissions.personId, person.id));
+  if (individual?.permissions.length) {
+    grantRows.push({
+      key: 'individual',
+      name: 'Individuelle Rechte',
+      permissions: individual.permissions,
+      scopeType: 'club',
+      scopeId: null,
+    });
+  }
+
+  // Co-Trainer haben für ihre Mannschaft dieselben Rechte wie Trainer (Vertretung)
+  const assistantTeams = memberships.filter(
+    (m) => m.personId === person.id && m.function === 'assistant_coach',
+  );
+  if (assistantTeams.length) {
+    const [coachRole] = await db
+      .select({ permissions: s.roles.permissions, name: s.roles.name })
+      .from(s.roles)
+      .where(and(eq(s.roles.clubId, club.id), eq(s.roles.key, 'coach')));
+    if (coachRole) {
+      for (const m of assistantTeams) {
+        grantRows.push({
+          key: 'coach',
+          name: coachRole.name,
+          permissions: coachRole.permissions,
+          scopeType: 'team',
+          scopeId: m.teamId,
+        });
+      }
+    }
+  }
 
   const modules = (await db
     .select({

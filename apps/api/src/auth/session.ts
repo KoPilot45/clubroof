@@ -49,6 +49,7 @@ export async function findSessionUser(
       email: s.users.email,
       displayName: s.users.displayName,
       totpSecret: s.users.totpSecret,
+      twoFactorEmail: s.users.twoFactorEmail,
     })
     .from(s.sessions)
     .innerJoin(s.users, eq(s.users.id, s.sessions.userId))
@@ -65,7 +66,7 @@ export async function findSessionUser(
     id: row.id,
     email: row.email,
     displayName: row.displayName,
-    twoFactorEnabled: row.totpSecret !== null,
+    twoFactorEnabled: row.totpSecret !== null || row.twoFactorEmail,
   };
 }
 

@@ -17,6 +17,9 @@ import { pendingRequestState } from '../services/invitations';
 import { buildMe } from '../services/me';
 import {
   completeChallenge,
+  enableEmailTwoFactor,
+  sendEmailCode,
+  sendEmailCodeForChallenge,
   createChallenge,
   disableTwoFactor,
   enableTwoFactor,
@@ -78,14 +81,24 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
           id: user.id,
           email: user.email,
           displayName: user.displayName,
-          twoFactorEnabled: user.totpSecret !== null,
+          twoFactorEnabled: user.totpSecret !== null || user.twoFactorEmail,
         },
         now,
         app.links,
       );
       // Mit 2-Faktor: noch keine Sitzung, erst den Code abfragen
-      if (user.totpSecret) {
-        return { twoFactorRequired: true, challenge: await createChallenge(app.db, user.id, now) };
+      if (user.totpSecret || user.twoFactorEmail) {
+        const methods: TwoFactorChallenge['methods'] = [
+          ...(user.totpSecret ? (['app'] as const) : []),
+          ...(user.twoFactorEmail ? (['email'] as const) : []),
+        ];
+        // Nur E-Mail-Verfahren: Code sofort senden
+        if (!user.totpSecret) await sendEmailCode(app.db, app.mailer, user.id, now);
+        return {
+          twoFactorRequired: true,
+          challenge: await createChallenge(app.db, user.id, now),
+          methods,
+        };
       }
       const session = await createSession(app.db, user.id, {
         now,
@@ -196,6 +209,40 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         expiresAt: session.expiresAt.toISOString(),
         me: await buildMe(app.db, actor),
       };
+    },
+  );
+
+  app.post(
+    '/auth/2fa/email/send',
+    {
+      config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+      schema: { body: z.object({ challenge: z.string().min(20).max(200) }) },
+    },
+    async (request, reply) => {
+      await sendEmailCodeForChallenge(app.db, app.mailer, request.body.challenge, app.now());
+      return reply.status(202).send({ ok: true });
+    },
+  );
+
+  app.post(
+    '/auth/2fa/email/start',
+    { preHandler: app.authenticate, config: { rateLimit: { max: 5, timeWindow: '1 minute' } } },
+    async (request, reply) => {
+      await sendEmailCode(app.db, app.mailer, request.actor!.user.id, app.now());
+      return reply.status(202).send({ ok: true });
+    },
+  );
+
+  app.post(
+    '/auth/2fa/email/enable',
+    {
+      preHandler: app.authenticate,
+      config: { rateLimit: { max: app.config.loginRateLimit, timeWindow: '1 minute' } },
+      schema: { body: z.object({ code: z.string().trim().min(6).max(10) }) },
+    },
+    async (request, reply) => {
+      await enableEmailTwoFactor(app.db, request.actor!, request.body.code, app.now());
+      return reply.status(204).send();
     },
   );
 

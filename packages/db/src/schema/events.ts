@@ -3,6 +3,7 @@ import {
   boolean,
   date,
   index,
+  integer,
   jsonb,
   pgTable,
   smallint,
@@ -60,12 +61,19 @@ export const events = pgTable(
     program: jsonb().$type<{ time: string; title: string }[]>(),
     contactPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     cancelledReason: text(),
+    /** Herkunft Spielplan-Import: DFBnet-Spielkennung (je Mannschaft eindeutig) und Importlauf */
+    sourceKey: text(),
+    importBatchId: uuid(),
     /** Trainerteam hat nach dem Termin die tatsächliche Anwesenheit erfasst */
     attendanceRecordedAt: timestamp({ withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [index().on(t.clubId, t.startsAt), index().on(t.teamId, t.startsAt)],
+  (t) => [
+    index().on(t.clubId, t.startsAt),
+    index().on(t.teamId, t.startsAt),
+    index().on(t.importBatchId),
+  ],
 );
 
 /** Spieldaten zu einem Termin vom Typ `match`. */
@@ -80,6 +88,8 @@ export const matchDetails = pgTable('match_details', {
   opponentLogoUrl: text(),
   isHome: boolean().notNull(),
   competition: text(),
+  /** Art des Spiels: league (Liga), cup (Pokal), friendly (Testspiel) */
+  kind: text().notNull().default('league'),
   goalsFor: smallint(),
   goalsAgainst: smallint(),
   /** Aufstellung für die Mannschaft sichtbar und Nominierte benachrichtigt */
@@ -253,3 +263,16 @@ export const carpoolRequests = pgTable(
   },
   (t) => [index().on(t.clubId), unique().on(t.eventId, t.personId)],
 );
+
+/** Ein Lauf des Spielplan-Imports (zum Rückgängigmachen und Nachvollziehen). */
+export const scheduleImports = pgTable('schedule_imports', {
+  id: id(),
+  clubId: uuid()
+    .notNull()
+    .references(() => clubs.id, { onDelete: 'cascade' }),
+  createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+  createdCount: integer().notNull().default(0),
+  updatedCount: integer().notNull().default(0),
+  undoneAt: timestamp({ withTimezone: true }),
+  createdAt: createdAt(),
+});

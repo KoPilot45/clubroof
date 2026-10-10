@@ -1,4 +1,9 @@
+import { MATCH_KINDS, SCHEDULE_FIELDS } from '@clubroof/core';
 import type {
+  SchedulePreview,
+  TeamCandidate,
+  TeamManage,
+  TeamProfile,
   CashStats,
   EventDetail,
   Facility,
@@ -14,6 +19,15 @@ import { schema as s } from '@clubroof/db';
 import { and, asc, eq, ne } from 'drizzle-orm';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+import { runScheduleImport, undoScheduleImport } from '../services/schedule-import';
+import {
+  addTeamMember,
+  getTeamManage,
+  removeTeamMember,
+  searchCandidates,
+  updateTeamMember,
+  updateTeamProfile,
+} from '../services/team-manage';
 import {
   archiveFineType,
   assignFine,
@@ -118,6 +132,124 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
     { schema: { params: teamParams } },
     async (request): Promise<TeamOverview> =>
       getTeamOverview(app.db, request.actor!, request.params.teamId, app.now()),
+  );
+
+  // ── Mannschaft bearbeiten (Trainerteam) ─────────────────────────────────
+  app.get(
+    '/teams/:teamId/manage',
+    { schema: { params: teamParams } },
+    async (request): Promise<TeamManage> =>
+      getTeamManage(app.db, request.actor!, request.params.teamId, app.now()),
+  );
+
+  app.get(
+    '/teams/:teamId/manage/candidates',
+    { schema: { params: teamParams, querystring: z.object({ q: z.string().max(60) }) } },
+    async (request): Promise<TeamCandidate[]> =>
+      searchCandidates(app.db, request.actor!, request.params.teamId, request.query.q, app.now()),
+  );
+
+  app.post(
+    '/teams/:teamId/manage/members',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({
+          personId: z.uuid(),
+          function: z.enum(['player', 'assistant_coach', 'team_manager']),
+          jerseyNumber: z.number().int().min(0).max(99).nullish(),
+        }),
+      },
+    },
+    async (request, reply): Promise<TeamManage> => {
+      await addTeamMember(app.db, request.actor!, request.params.teamId, request.body, app.now());
+      reply.code(201);
+      return getTeamManage(app.db, request.actor!, request.params.teamId, app.now());
+    },
+  );
+
+  app.patch(
+    '/teams/:teamId/manage/members/:membershipId',
+    {
+      schema: {
+        params: teamParams.extend({ membershipId: z.uuid() }),
+        body: z.object({
+          function: z.enum(['player', 'assistant_coach', 'team_manager']).optional(),
+          jerseyNumber: z.number().int().min(0).max(99).nullish(),
+        }),
+      },
+    },
+    async (request): Promise<TeamManage> => {
+      await updateTeamMember(
+        app.db,
+        request.actor!,
+        request.params.teamId,
+        request.params.membershipId,
+        request.body,
+        app.now(),
+      );
+      return getTeamManage(app.db, request.actor!, request.params.teamId, app.now());
+    },
+  );
+
+  app.delete(
+    '/teams/:teamId/manage/members/:membershipId',
+    { schema: { params: teamParams.extend({ membershipId: z.uuid() }) } },
+    async (request): Promise<TeamManage> => {
+      await removeTeamMember(
+        app.db,
+        request.actor!,
+        request.params.teamId,
+        request.params.membershipId,
+        app.now(),
+      );
+      return getTeamManage(app.db, request.actor!, request.params.teamId, app.now());
+    },
+  );
+
+  app.put(
+    '/teams/:teamId/profile',
+    {
+      schema: {
+        params: teamParams,
+        body: z.object({
+          matchMeetingMinutes: z.number().int().min(0).max(300).nullable().optional(),
+          trainingMeetingMinutes: z.number().int().min(0).max(300).nullable().optional(),
+          defaultMeetingPoint: z.string().max(120).nullable().optional(),
+          importAliases: z.array(z.string().max(80)).max(10).optional(),
+        }),
+      },
+    },
+    async (request): Promise<TeamProfile> =>
+      updateTeamProfile(app.db, request.actor!, request.params.teamId, request.body, app.now()),
+  );
+
+  // ── Spielplan-Import (DFBnet) ───────────────────────────────────────────
+  app.post(
+    '/schedule-import',
+    {
+      bodyLimit: 3 * 1024 * 1024,
+      schema: {
+        body: z.object({
+          dataBase64: z.string().min(1).max(2_800_000),
+          teamId: z.uuid().nullish(),
+          columns: z
+            .partialRecord(z.enum(SCHEDULE_FIELDS), z.string().max(80).nullable())
+            .optional(),
+          mapping: z.record(z.string().max(120), z.string().max(40)).optional(),
+          commit: z.boolean().optional(),
+        }),
+      },
+    },
+    async (request): Promise<SchedulePreview> =>
+      runScheduleImport(app.db, request.actor!, request.body, app.now()),
+  );
+
+  app.post(
+    '/schedule-import/:batchId/undo',
+    { schema: { params: z.object({ batchId: z.uuid() }) } },
+    async (request) =>
+      undoScheduleImport(app.db, request.actor!, request.params.batchId, app.now()),
   );
 
   app.get(
@@ -531,6 +663,8 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
           isHome: z.boolean().nullish(),
           allowConflict: z.boolean().optional(),
           repeatWeeks: z.number().int().min(1).max(26).optional(),
+          repeatUntil: z.iso.date().nullish(),
+          matchKind: z.enum(MATCH_KINDS).nullish(),
         }),
       },
     },
@@ -574,6 +708,7 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
           locationUrl: z.string().trim().max(400).nullish(),
           description: z.string().trim().max(1000).nullish(),
           opponentName: z.string().trim().max(80).optional(),
+          matchKind: z.enum(MATCH_KINDS).optional(),
           isHome: z.boolean().optional(),
           scope: z.enum(['single', 'following']).optional(),
           allowConflict: z.boolean().optional(),

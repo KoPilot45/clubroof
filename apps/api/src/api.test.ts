@@ -7,6 +7,9 @@ import type {
   Absence,
   AdminOverview,
   AuditEntry,
+  TeamCandidate,
+  TeamManage,
+  SchedulePreview,
   MemberDetail,
   MemberListItem,
   RoleCatalog,
@@ -75,7 +78,7 @@ import type {
   PollSummary,
 } from '@clubroof/core';
 import { createDb, schema as s } from '@clubroof/db';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { runMigrations } from '@clubroof/db/migrate';
 import { seed } from '@clubroof/db/seed';
 import { mkdtemp } from 'node:fs/promises';
@@ -3280,16 +3283,20 @@ describe.skipIf(!url)('API', () => {
 
   describe('2-Faktor-Anmeldung', () => {
     it('Einrichten, Vereinsvorgabe, Anmeldung mit Code und Wiederherstellungscode', async () => {
-      const board = await login('vorstand');
+      const board = await login('admin');
       const clubId = board.me.club.id;
       expect(await get<TwoFactorStatus>('/auth/2fa', board.token)).toEqual({
         enabled: false,
+        appEnabled: false,
+        emailEnabled: false,
         required: false,
         recoveryCodesLeft: 0,
       });
 
-      // Verein verlangt 2-Faktor → Verwaltung gesperrt, App wird informiert
+      // Verein verlangt 2-Faktor → nur das Administrationskonto ist gesperrt, App wird informiert
       await db.update(s.clubs).set({ requireTwoFactor: true }).where(eq(s.clubs.id, clubId));
+      const vorstand = await login('vorstand');
+      expect((await send('GET', '/admin/overview', vorstand.token)).status).toBe(200);
       const blocked = await send<{ error: string }>('GET', '/admin/overview', board.token);
       expect(blocked.status).toBe(403);
       expect(blocked.body.error).toBe('two_factor_required');
@@ -3320,7 +3327,7 @@ describe.skipIf(!url)('API', () => {
       const first = await app.inject({
         method: 'POST',
         url: '/auth/login',
-        payload: { email: email('vorstand'), password: PASSWORD },
+        payload: { email: email('admin'), password: PASSWORD },
       });
       const challenge = first.json<TwoFactorChallenge>();
       expect(challenge.twoFactorRequired).toBe(true);
@@ -3366,7 +3373,595 @@ describe.skipIf(!url)('API', () => {
         code: totp(secret, step + 1),
       });
       expect(off.status).toBe(204);
-      expect((await login('vorstand')).me.security.twoFactorEnabled).toBe(false);
+      expect((await login('admin')).me.security.twoFactorEnabled).toBe(false);
+    });
+
+    it('Code per E-Mail: einrichten, anmelden, einmalig, nach Fehlversuchen ungültig', async () => {
+      const admin = await login('admin');
+      const lastCode = () => {
+        const mail = [...mailer.outbox].reverse().find((m) => m.subject === 'Dein Anmeldecode');
+        return mail!.text.match(/: (\d{6})/)![1]!;
+      };
+      expect((await send('POST', '/auth/2fa/email/start', admin.token)).status).toBe(202);
+      expect(
+        (await send('POST', '/auth/2fa/email/enable', admin.token, { code: '000000' })).status,
+      ).toBe(400);
+      expect(
+        (await send('POST', '/auth/2fa/email/enable', admin.token, { code: lastCode() })).status,
+      ).toBe(204);
+      const status = await get<TwoFactorStatus>('/auth/2fa', admin.token);
+      expect(status).toMatchObject({ enabled: true, emailEnabled: true, appEnabled: false });
+
+      // Anmeldung: Code geht sofort per E-Mail raus, nur einmal nutzbar
+      const first = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: { email: email('admin'), password: PASSWORD },
+      });
+      const challenge = first.json<TwoFactorChallenge>();
+      expect(challenge.methods).toEqual(['email']);
+      const code = lastCode();
+      const verify = (c: string) =>
+        app.inject({
+          method: 'POST',
+          url: '/auth/2fa/verify',
+          payload: { challenge: challenge.challenge, code: c },
+        });
+      expect((await verify(code)).statusCode).toBe(200);
+      expect((await verify(code)).statusCode).toBe(401);
+
+      // Fünf Fehlversuche machen den Code ungültig – auch der richtige wird dann abgelehnt
+      const second = (
+        await app.inject({
+          method: 'POST',
+          url: '/auth/login',
+          payload: { email: email('admin'), password: PASSWORD },
+        })
+      ).json<TwoFactorChallenge>();
+      const good = lastCode();
+      const wrong = good === '111111' ? '222222' : '111111';
+      for (let i = 0; i < 5; i++) {
+        const r = await app.inject({
+          method: 'POST',
+          url: '/auth/2fa/verify',
+          payload: { challenge: second.challenge, code: wrong },
+        });
+        expect(r.statusCode).toBe(401);
+      }
+      const late = await app.inject({
+        method: 'POST',
+        url: '/auth/2fa/verify',
+        payload: { challenge: second.challenge, code: good },
+      });
+      expect(late.statusCode).toBe(401);
+
+      // Ausschalten mit Passwort und frischem E-Mail-Code
+      await send('POST', '/auth/2fa/email/start', admin.token);
+      const off = await send('POST', '/auth/2fa/disable', admin.token, {
+        password: PASSWORD,
+        code: lastCode(),
+      });
+      expect(off.status).toBe(204);
+      expect((await login('admin')).me.security.twoFactorEnabled).toBe(false);
+    });
+  });
+
+  describe('Rechte-Feinschliff', () => {
+    const teamOf = async (badge: string) => {
+      const me = (await login('trainer')).me;
+      return me.teams.find((t) => t.badge === badge)!.id;
+    };
+
+    it('Vorstand sieht keine Mannschaftskasse', async () => {
+      const board = await login('vorstand');
+      const own = new Set(board.me.teams.map((t) => t.id));
+      const other = (await login('trainer')).me.teams.find((t) => !own.has(t.id))!.id;
+      // Ohne Mitgliedschaft und ohne Kassenrecht: weder Kassenstand noch Buchungen noch Konten
+      const cash = await get<TeamCash>(`/teams/${other}/cash`, board.token);
+      expect(cash.permissions.readCash).toBe(false);
+      expect(cash.balanceCents).toBeNull();
+      expect(cash.entries).toBeNull();
+      expect(cash.members).toBeNull();
+    });
+
+    it('individuelle Rechte: vergeben, wirken, keine Ausweitung, nur Admin', async () => {
+      const admin = await login('admin');
+      const member = await login('mitglied');
+      const personId = member.me.person.id;
+      expect((await send('GET', '/admin/members', member.token)).status).toBe(403);
+
+      const put = (token: string, permissions: string[], id = personId) =>
+        send<MemberDetail>('PUT', `/admin/members/${id}/permissions`, token, { permissions });
+      expect((await put((await login('vorstand')).token, ['members.read'])).status).toBe(403);
+      expect((await put(admin.token, ['gibt.es.nicht'])).status).toBe(400);
+      const set = await put(admin.token, ['members.read']);
+      expect(set.status).toBe(200);
+      expect(set.body.individualPermissions).toEqual(['members.read']);
+      expect((await send('GET', '/admin/members', member.token)).status).toBe(200);
+      // Eigene Rechte ändert man nicht selbst
+      expect((await put(admin.token, ['members.read'], admin.me.person.id)).status).toBe(403);
+      // Filter „Individuelle Rechte“
+      const filtered = await get<MemberListItem[]>(
+        '/admin/members?roleKey=individual',
+        admin.token,
+      );
+      expect(filtered.map((m) => m.id)).toEqual([personId]);
+      expect(filtered[0]!.roles).toContain('Individuelle Rechte');
+      // Entziehen
+      expect((await put(admin.token, [])).body.individualPermissions).toEqual([]);
+      expect((await send('GET', '/admin/members', member.token)).status).toBe(403);
+    });
+
+    it('Mitglieder nach Rolle, Funktion und Zugang filtern', async () => {
+      const admin = await login('admin');
+      const trainers = await get<MemberListItem[]>(
+        '/admin/members?teamFunction=coaches',
+        admin.token,
+      );
+      expect(trainers.length).toBeGreaterThan(0);
+      expect(
+        trainers.every((m) =>
+          m.teams.some((t) => ['coach', 'assistant_coach'].includes(t.function)),
+        ),
+      ).toBe(true);
+      const holders = await get<MemberListItem[]>('/admin/members?roleKey=any', admin.token);
+      expect(holders.length).toBeGreaterThan(0);
+      expect(holders.every((m) => m.roles.length > 0)).toBe(true);
+      const coaches = await get<MemberListItem[]>('/admin/members?roleKey=coach', admin.token);
+      expect(coaches.every((m) => m.roles.includes('Trainer'))).toBe(true);
+      const noAccount = await get<MemberListItem[]>('/admin/members?account=no', admin.token);
+      expect(noAccount.every((m) => !m.hasAccount)).toBe(true);
+    });
+
+    it('Co-Trainer haben für ihre Mannschaft die Rechte eines Trainers', async () => {
+      const admin = await login('admin');
+      const member = await login('mitglied');
+      const b1 = await teamOf('B1');
+      const a1 = (await login('trainer')).me.teams.find((t) => t.badge !== 'B1')?.id;
+      const startsAt = new Date(NOW.getTime() + 50 * 60 * 60 * 1000).toISOString();
+      const create = (teamId: string) =>
+        send('POST', `/teams/${teamId}/events`, member.token, { type: 'training', startsAt });
+      expect((await create(b1)).status).toBe(404);
+      const added = await send<MemberDetail>(
+        'POST',
+        `/admin/members/${member.me.person.id}/memberships`,
+        admin.token,
+        { teamId: b1, function: 'assistant_coach' },
+      );
+      expect(added.status, JSON.stringify(added.body)).toBe(200);
+      const trainingByAssistant = await create(b1);
+      expect(trainingByAssistant.status).toBe(201);
+      await db
+        .delete(s.events)
+        .where(eq(s.events.id, (trainingByAssistant.body as EventDetail).id));
+      // Nicht für andere Mannschaften
+      if (a1) expect((await create(a1)).status).toBe(404);
+      // Aufräumen: Zuordnung wieder entfernen (andere Tests erwarten Heike Brandt ohne Mannschaft)
+      const membershipId = added.body.memberships.find((m) => m.function === 'assistant_coach')!.id;
+      const ended = await send(
+        'DELETE',
+        `/admin/members/${member.me.person.id}/memberships/${membershipId}`,
+        admin.token,
+      );
+      expect(ended.status).toBe(200);
+      expect((await create(b1)).status).toBe(404);
+    });
+  });
+
+  describe('Termine: Zeitraum, Treffpunkt-Regeln, Spielarten', () => {
+    const berlin = (iso: string) =>
+      new Intl.DateTimeFormat('de-DE', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/Berlin',
+      }).format(new Date(iso));
+
+    it('Serie bis zu einem Datum und Treffpunkt nach den Regeln der Mannschaft', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!.id;
+      // Mi., 07.10.2026 17:00 Berlin; Serie bis einschließlich Mi., 28.10. → 4 Termine
+      const startsAt = '2026-10-14T15:00:00Z';
+      const created = await send<EventDetail>('POST', `/teams/${b1}/events`, coach.token, {
+        type: 'training',
+        startsAt,
+        repeatUntil: '2026-11-04',
+      });
+      expect(created.status, JSON.stringify(created.body)).toBe(201);
+      const series = await db
+        .select()
+        .from(s.events)
+        .where(
+          eq(
+            s.events.seriesId,
+            (await db.select().from(s.events).where(eq(s.events.id, created.body.id)))[0]!
+              .seriesId!,
+          ),
+        )
+        .orderBy(s.events.startsAt);
+      expect(series).toHaveLength(4);
+      // Regel: Training 15 Minuten vorher
+      expect(series[0]!.meetingAt!.getTime()).toBe(series[0]!.startsAt.getTime() - 15 * 60_000);
+      expect(
+        (
+          await send('POST', `/teams/${b1}/events`, coach.token, {
+            type: 'training',
+            startsAt,
+            repeatUntil: '2026-10-01',
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await send('POST', `/teams/${b1}/events`, coach.token, {
+            type: 'training',
+            startsAt,
+            repeatUntil: '2028-10-01',
+          })
+        ).status,
+      ).toBe(400);
+
+      // Trainer stellt die Regeln selbst ein; ausdrücklich angegebenes Treffen geht vor
+      const profile = await send<{ matchMeetingMinutes: number | null }>(
+        'PUT',
+        `/teams/${b1}/profile`,
+        coach.token,
+        {
+          matchMeetingMinutes: 90,
+          trainingMeetingMinutes: null,
+          defaultMeetingPoint: 'Vereinsheim',
+        },
+      );
+      expect(profile.status).toBe(200);
+      const match = await send<EventDetail>('POST', `/teams/${b1}/events`, coach.token, {
+        type: 'match',
+        startsAt: '2026-10-17T12:00:00Z',
+        opponentName: 'TSV Pokalgegner',
+        matchKind: 'cup',
+      });
+      expect(match.status).toBe(201);
+      expect(match.body.match!.kind).toBe('cup');
+      expect(berlin(match.body.meetingAt!)).toBe('12:30');
+      expect(match.body.meetingPoint).toBe('Vereinsheim');
+      const noRule = await send<EventDetail>('POST', `/teams/${b1}/events`, coach.token, {
+        type: 'training',
+        startsAt: '2026-10-20T15:00:00Z',
+      });
+      expect(noRule.body.meetingAt).toBeNull();
+      const own = await send<EventDetail>('POST', `/teams/${b1}/events`, coach.token, {
+        type: 'training',
+        startsAt: '2026-10-21T15:00:00Z',
+        meetingAt: '2026-10-21T14:30:00Z',
+        meetingPoint: 'Parkplatz',
+      });
+      expect(berlin(own.body.meetingAt!)).toBe('16:30');
+      expect(own.body.meetingPoint).toBe('Parkplatz');
+      // Spielart nachträglich ändern
+      const patched = await send<EventDetail>('PATCH', `/events/${match.body.id}`, coach.token, {
+        matchKind: 'friendly',
+      });
+      expect(patched.body.match!.kind).toBe('friendly');
+      // Aufräumen: Testtermine entfernen (andere Tests erwarten den unveränderten Demoplan)
+      await db
+        .delete(s.events)
+        .where(
+          inArray(s.events.id, [
+            ...series.map((e) => e.id),
+            match.body.id,
+            noRule.body.id,
+            own.body.id,
+          ]),
+        );
+      // Spieler dürfen das Profil nicht ändern
+      expect(
+        (
+          await send('PUT', `/teams/${b1}/profile`, (await login('spieler')).token, {
+            matchMeetingMinutes: 5,
+          })
+        ).status,
+      ).toBe(403);
+    });
+  });
+
+  describe('Mannschaft bearbeiten (Trainerteam)', () => {
+    it('Kader pflegen, Co-Trainer ernennen, Grenzen einhalten', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!.id;
+      const manage = await get<TeamManage>(`/teams/${b1}/manage`, coach.token);
+      expect(manage.canManageSquad).toBe(true);
+      expect(manage.members.some((m) => m.function === 'coach')).toBe(true);
+      expect(
+        (await send('GET', `/teams/${b1}/manage`, (await login('spieler')).token)).status,
+      ).toBe(403);
+
+      const candidates = await get<TeamCandidate[]>(
+        `/teams/${b1}/manage/candidates?q=Brandt`,
+        coach.token,
+      );
+      const heike = candidates.find((c) => c.name === 'Heike Brandt')!;
+      expect(heike).toBeTruthy();
+      expect(heike).not.toHaveProperty('email');
+
+      const added = await send<TeamManage>('POST', `/teams/${b1}/manage/members`, coach.token, {
+        personId: heike.personId,
+        function: 'assistant_coach',
+      });
+      expect(added.status, JSON.stringify(added.body)).toBe(201);
+      const membership = added.body.members.find((m) => m.personId === heike.personId)!;
+      expect(membership.function).toBe('assistant_coach');
+      // Der Trainer selbst bleibt der Verwaltung vorbehalten
+      expect(
+        (
+          await send('POST', `/teams/${b1}/manage/members`, coach.token, {
+            personId: heike.personId,
+            function: 'coach',
+          })
+        ).status,
+      ).toBe(400);
+      const trainerRow = manage.members.find((m) => m.function === 'coach')!;
+      expect(
+        (
+          await send(
+            'DELETE',
+            `/teams/${b1}/manage/members/${trainerRow.membershipId}`,
+            coach.token,
+          )
+        ).status,
+      ).toBe(403);
+      // Funktion und Rückennummer ändern; doppelte Nummer wird abgelehnt
+      const asPlayer = await send<TeamManage>(
+        'PATCH',
+        `/teams/${b1}/manage/members/${membership.membershipId}`,
+        coach.token,
+        { function: 'player', jerseyNumber: 77 },
+      );
+      expect(asPlayer.body.members.find((m) => m.personId === heike.personId)).toMatchObject({
+        function: 'player',
+        jerseyNumber: 77,
+      });
+      const other = manage.members.find((m) => m.function === 'player')!;
+      expect(
+        (
+          await send('PATCH', `/teams/${b1}/manage/members/${other.membershipId}`, coach.token, {
+            jerseyNumber: 77,
+          })
+        ).status,
+      ).toBe(409);
+      const removed = await send<TeamManage>(
+        'DELETE',
+        `/teams/${b1}/manage/members/${membership.membershipId}`,
+        coach.token,
+      );
+      expect(removed.body.members.some((m) => m.personId === heike.personId)).toBe(false);
+      // Mannschaften ohne eigene Zuständigkeit sind tabu
+      const mine = new Set(coach.me.teams.map((t) => t.id));
+      const foreign = (await db.select().from(s.teams)).find((t) => !mine.has(t.id))!;
+      expect([403, 404]).toContain(
+        (await send('GET', `/teams/${foreign.id}/manage`, coach.token)).status,
+      );
+    });
+  });
+
+  describe('Spielplan-Import', () => {
+    const csv = (rows: string[][]) =>
+      Buffer.from(
+        [
+          'Spiel;Anstoß;Heimmannschaft;Gastmannschaft;SD;MS-Art;Spielklasse;Tore;Sondereignis;Status',
+          ...rows.map((r) => r.join(';')),
+        ].join('\r\n'),
+        'latin1',
+      ).toString('base64');
+    const CLUB = 'SV Grün-Weiß Musterstadt';
+    const rowsFor = (shift = '17:00') => [
+      [
+        '900001',
+        `17.10.2026 ${shift}`,
+        `${CLUB} II`,
+        'TSV Nachbar',
+        'FB',
+        'Herren',
+        'Kreisliga',
+        '',
+        '',
+        '',
+      ],
+      [
+        '900002',
+        '24.10.2026 15:00',
+        'FC Fern',
+        `${CLUB} II`,
+        'FB',
+        'Herren',
+        'Kreisliga',
+        '',
+        '',
+        '',
+      ],
+      [
+        '900003',
+        '31.10.2026 14:00',
+        `${CLUB} I`,
+        `${CLUB} II`,
+        'FB',
+        'Herren',
+        'Kreispokal',
+        '',
+        '',
+        '',
+      ],
+      [
+        '900004',
+        '01.08.2026 14:00',
+        `${CLUB} I`,
+        'SV Alt',
+        'FB',
+        'Herren',
+        'Kreisliga',
+        '1 : 0',
+        '',
+        '',
+      ],
+      ['900005', '07.11.2026 14:00', 'SC A', 'SC B', 'FB', 'Herren', 'Kreisliga', '', '', ''],
+      [
+        '900006',
+        '14.11.2026 14:00',
+        `${CLUB} I`,
+        'SV Weg',
+        'FB',
+        'Herren',
+        'Kreisliga',
+        '',
+        '',
+        'abgesetzt',
+      ],
+    ];
+
+    it('Vorschau, Zuordnung, Derby, Pokal, erneuter Import, Trainer-Grenzen, Rückgängig', async () => {
+      const admin = await login('admin');
+      const coachMe = (await login('trainer')).me;
+      const teamIds = Object.fromEntries(
+        (await db.select().from(s.teams)).map((t) => [t.badge, t.id]),
+      ) as Record<string, string>;
+      const call = (token: string, body: Record<string, unknown>) =>
+        send<SchedulePreview>('POST', '/schedule-import', token, body);
+
+      const first = await call(admin.token, { dataBase64: csv(rowsFor()) });
+      expect(first.status, JSON.stringify(first.body)).toBe(200);
+      expect(first.body.columns).toMatchObject({
+        matchId: 'Spiel',
+        kickoff: 'Anstoß',
+        home: 'Heimmannschaft',
+      });
+      expect(first.body.unmapped.map((u) => u.name).sort()).toEqual([`${CLUB} I`, `${CLUB} II`]);
+      expect(first.body.summary.new).toBe(0);
+      // ohne Zuordnung nicht übernehmbar
+      expect((await call(admin.token, { dataBase64: csv(rowsFor()), commit: true })).status).toBe(
+        409,
+      );
+
+      const mapping = { [`${CLUB} I`]: teamIds['1.']!, [`${CLUB} II`]: teamIds['2.']! };
+      const preview = await call(admin.token, { dataBase64: csv(rowsFor()), mapping });
+      // 900001 (2.), 900002 (2.), Derby 900003 für beide Mannschaften
+      expect(preview.body.summary).toMatchObject({ new: 4, skipped: 3 });
+      const reasons = preview.body.rows.filter((r) => r.status === 'skipped').map((r) => r.reason);
+      expect(reasons).toEqual(
+        expect.arrayContaining([
+          'Das Spiel liegt in der Vergangenheit.',
+          'Kein Spiel einer eigenen Mannschaft.',
+          'Spiel abgesetzt.',
+        ]),
+      );
+      const cup = preview.body.rows.filter((r) => r.kind === 'cup');
+      expect(cup.map((r) => r.teamLabel).sort()).toEqual([
+        '1. · 1. Mannschaft',
+        '2. · 2. Mannschaft',
+      ]);
+
+      // Spalte abwählen: ohne Spielklasse gibt es keinen Pokal mehr
+      const noClass = await call(admin.token, {
+        dataBase64: csv(rowsFor()),
+        mapping,
+        columns: { competition: null },
+      });
+      expect(noClass.status).toBe(200);
+      expect(noClass.body.rows.some((r) => r.kind === 'cup')).toBe(false);
+
+      const done = await call(admin.token, { dataBase64: csv(rowsFor()), mapping, commit: true });
+      expect(done.body.result).toMatchObject({ created: 4, updated: 0 });
+      const batchId = done.body.result!.batchId;
+      const imported = await db.select().from(s.events).where(eq(s.events.importBatchId, batchId));
+      expect(imported).toHaveLength(4);
+      expect(imported.filter((e) => e.sourceKey === '900003')).toHaveLength(2);
+      // Schreibweisen sind gemerkt – nächster Import braucht keine Zuordnung mehr
+      const again = await call(admin.token, { dataBase64: csv(rowsFor()) });
+      expect(again.body.unmapped).toEqual([]);
+      expect(again.body.summary).toMatchObject({ new: 0, changed: 0, unchanged: 4 });
+      // Verlegung → geändert, nichts doppelt
+      const moved = await call(admin.token, { dataBase64: csv(rowsFor('18:30')), commit: true });
+      expect(moved.body.result).toMatchObject({ created: 0, updated: 1 });
+      expect(await db.select().from(s.events).where(eq(s.events.sourceKey, '900001'))).toHaveLength(
+        1,
+      );
+      const [event] = await db.select().from(s.events).where(eq(s.events.sourceKey, '900001'));
+      expect(event!.startsAt.toISOString()).toBe('2026-10-17T16:30:00.000Z');
+      const [details] = await db
+        .select()
+        .from(s.matchDetails)
+        .where(eq(s.matchDetails.eventId, event!.id));
+      expect(details).toMatchObject({ opponentName: 'TSV Nachbar', isHome: true, kind: 'league' });
+
+      // Rückgängig: nur neu angelegte Spiele des Laufs
+      expect(
+        (await send('POST', `/schedule-import/${batchId}/undo`, (await login('spieler')).token))
+          .status,
+      ).toBe(403);
+      const undone = await send<{ removed: number }>(
+        'POST',
+        `/schedule-import/${batchId}/undo`,
+        admin.token,
+      );
+      expect(undone.body.removed).toBe(4);
+      expect((await send('POST', `/schedule-import/${batchId}/undo`, admin.token)).status).toBe(
+        409,
+      );
+
+      // Trainer: nur die eigene Mannschaft
+      const coach = await login('trainer');
+      const b1 = coachMe.teams.find((t) => t.badge === 'B1')!.id;
+      const own = [
+        [
+          '910001',
+          '17.10.2026 11:00',
+          `${CLUB} B1`,
+          'JSG Nord',
+          'FB',
+          'B-Junioren',
+          'Kreisliga B',
+          '',
+          '',
+          '',
+        ],
+        [
+          '910002',
+          '18.10.2026 11:00',
+          `${CLUB} C1`,
+          'JSG Süd',
+          'FB',
+          'C-Junioren',
+          'Kreisliga C',
+          '',
+          '',
+          '',
+        ],
+      ];
+      // C1 in der Datei, aber der Trainer hat dafür kein Terminrecht (sondern die 1. Mannschaft)
+      const mine = new Set(coachMe.teams.map((t) => t.id));
+      const foreign = (await db.select().from(s.teams)).find((t) => !mine.has(t.id))!;
+      const ownMapping = { [`${CLUB} B1`]: b1, [`${CLUB} C1`]: foreign.id };
+      const trainerPreview = await call(coach.token, {
+        dataBase64: csv(own),
+        teamId: b1,
+        mapping: ownMapping,
+      });
+      expect(trainerPreview.status, JSON.stringify(trainerPreview.body)).toBe(200);
+      expect(trainerPreview.body.summary.new).toBe(1);
+      expect(trainerPreview.body.rows[1]!.reason).toBe(
+        'Für diese Mannschaft fehlt dir die Berechtigung.',
+      );
+      expect(
+        (
+          await call(coach.token, {
+            dataBase64: csv(own),
+            teamId: teamIds['1.']!,
+            mapping: ownMapping,
+          })
+        ).status,
+      ).toBe(403);
+      expect((await call((await login('spieler')).token, { dataBase64: csv(own) })).status).toBe(
+        403,
+      );
+      // ohne Mannschaft bleiben fremde Mannschaften für den Trainer unerreichbar
+      const wide = await call(coach.token, { dataBase64: csv(own), mapping: ownMapping });
+      expect(wide.body.rows.every((r) => r.teamId === null || r.teamId === b1)).toBe(true);
     });
   });
 

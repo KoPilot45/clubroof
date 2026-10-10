@@ -1,4 +1,4 @@
-import type { JerseySettings, RosterEntry } from '@clubroof/core';
+import type { RosterEntry, TeamManage } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text, View } from 'react-native';
@@ -97,9 +97,11 @@ export default function RosterScreen() {
     queryKey: ['roster', id],
     queryFn: () => api<RosterEntry[]>(`/teams/${id}/roster`),
   });
-  const jerseys = useQuery({
-    queryKey: ['jerseys', id],
-    queryFn: () => api<JerseySettings>(`/teams/${id}/jerseys`),
+  // „Mannschaft bearbeiten“ nur für das Trainerteam (sonst antwortet die API mit „keine Berechtigung“)
+  const manage = useQuery({
+    queryKey: ['team-manage', id],
+    queryFn: () => api<TeamManage>(`/teams/${id}/manage`),
+    retry: false,
   });
   const staff = (roster.data ?? []).filter((r) => r.function !== 'player');
   const players = (roster.data ?? []).filter((r) => r.function === 'player');
@@ -114,12 +116,12 @@ export default function RosterScreen() {
           <T variant="caption">
             {players.length} Spieler, davon heute {available} verfügbar.
           </T>
-          {jerseys.data?.canEdit ? (
+          {manage.data ? (
             <Button
-              label="Rückennummern verwalten"
+              label="Mannschaft bearbeiten"
               variant="outline"
-              icon="shirt-outline"
-              onPress={() => router.push(`/teams/${id}/jerseys`)}
+              icon="create-outline"
+              onPress={() => router.push(`/teams/${id}/manage`)}
             />
           ) : null}
           <Section title="Trainerteam">

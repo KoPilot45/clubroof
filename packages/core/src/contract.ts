@@ -94,11 +94,18 @@ export type MeResponse = {
 export type LoginResponse = { token: string; expiresAt: string; me: MeResponse };
 
 /** Zweiter Anmeldeschritt nötig: Code aus der Authenticator-App eingeben */
-export type TwoFactorChallenge = { twoFactorRequired: true; challenge: string };
+export type TwoFactorChallenge = {
+  twoFactorRequired: true;
+  challenge: string;
+  /** Verfügbare Verfahren: Authenticator-App und/oder Code per E-Mail */
+  methods: ('app' | 'email')[];
+};
 
 export type TwoFactorStatus = {
   enabled: boolean;
-  /** Der Verein verlangt 2-Faktor für Personen mit Verwaltungsrechten */
+  appEnabled: boolean;
+  emailEnabled: boolean;
+  /** Der Verein verlangt 2-Faktor für das Administrationskonto (Fulladmin) */
   required: boolean;
   recoveryCodesLeft: number;
 };
@@ -136,6 +143,8 @@ export type EventSummary = {
     opponentName: string;
     isHome: boolean;
     competition: string | null;
+    /** Liga, Pokal oder Testspiel */
+    kind: MatchKind;
     goalsFor: number | null;
     goalsAgainst: number | null;
   } | null;
@@ -660,6 +669,9 @@ export const CASH_EXPENSE_CATEGORIES = [
 
 export type Facility = { id: string; name: string; shortName: string | null };
 
+export const MATCH_KINDS = ['league', 'cup', 'friendly'] as const;
+export type MatchKind = (typeof MATCH_KINDS)[number];
+
 export type CreateEventInput = {
   type: 'training' | 'match' | 'team_event';
   title?: string | null;
@@ -678,6 +690,10 @@ export type CreateEventInput = {
   allowConflict?: boolean;
   /** Serientermin: so viele wöchentliche Termine anlegen (2–26) */
   repeatWeeks?: number;
+  /** Serientermin: wöchentlich wiederholen bis einschließlich diesem Tag (Vereinszeitzone, JJJJ-MM-TT) */
+  repeatUntil?: string | null;
+  /** Spiele: Liga (Standard), Pokal oder Testspiel */
+  matchKind?: MatchKind | null;
 };
 
 export type UpdateEventInput = {
@@ -692,6 +708,7 @@ export type UpdateEventInput = {
   description?: string | null;
   opponentName?: string;
   isHome?: boolean;
+  matchKind?: MatchKind;
   /** Bei Serienterminen: nur diesen oder auch alle folgenden Termine ändern */
   scope?: 'single' | 'following';
   allowConflict?: boolean;
@@ -1048,6 +1065,8 @@ export type MemberDetail = {
     validFrom: string;
   }[];
   roles: MemberRoleAssignment[];
+  /** Einzeln vergebene Rechte (zusätzlich zu den Rollen, vereinsweit) */
+  individualPermissions: string[];
   can: AdminPermissions;
 };
 
@@ -1069,6 +1088,50 @@ export type AddMembershipInput = {
   jerseyNumber?: number | null;
   isPrimary?: boolean;
 };
+
+/** Mannschaftsprofil, das Trainer selbst pflegen (Treffpunkt-Regeln, DFBnet-Schreibweisen) */
+export type TeamProfile = {
+  /** Minuten vor Spielbeginn (leer = kein automatisches Treffen) */
+  matchMeetingMinutes: number | null;
+  /** Minuten vor Trainingsbeginn */
+  trainingMeetingMinutes: number | null;
+  defaultMeetingPoint: string | null;
+  /** Weitere Schreibweisen der Mannschaft im DFBnet (für den Spielplan-Import) */
+  importAliases: string[];
+};
+
+export type TeamManageMember = {
+  membershipId: string;
+  personId: string;
+  name: string;
+  function: TeamFunction;
+  jerseyNumber: number | null;
+  isTreasurer: boolean;
+  isMe: boolean;
+};
+
+export type TeamManage = {
+  team: { id: string; name: string; badge: string };
+  profile: TeamProfile;
+  members: TeamManageMember[];
+  canManageSquad: boolean;
+  canEditProfile: boolean;
+};
+
+export type TeamCandidate = { personId: string; name: string; memberNumber: string | null };
+
+export type AddTeamMemberInput = {
+  personId: string;
+  function: Exclude<TeamFunction, 'coach'>;
+  jerseyNumber?: number | null;
+};
+
+export type UpdateTeamMemberInput = {
+  function?: Exclude<TeamFunction, 'coach'>;
+  jerseyNumber?: number | null;
+};
+
+export type SetIndividualPermissionsInput = { permissions: string[] };
 
 export type AssignRoleInput = { roleKey: string; scopeType: ScopeType; scopeId?: string | null };
 
@@ -1508,6 +1571,62 @@ export type MemberImportResult = {
 export const MEMBER_IMPORT_TEMPLATE =
   'Vorname;Nachname;Geburtsdatum;E-Mail;Telefon;Mitgliedsnummer;Eintrittsdatum;Mannschaft;Funktion;Rückennummer\n' +
   'Max;Mustermann;14.05.2011;eltern.mustermann@example.org;0170 1234567;1234;01.08.2026;C1;Spieler;7\n';
+
+// ── Spielplan-Import (DFBnet) ────────────────────────────────────────────
+
+export const SCHEDULE_FIELDS = [
+  'matchId',
+  'kickoff',
+  'date',
+  'time',
+  'home',
+  'away',
+  'competition',
+  'status',
+] as const;
+export type ScheduleField = (typeof SCHEDULE_FIELDS)[number];
+
+export type ScheduleImportInput = {
+  /** Datei wie hochgeladen (UTF-8 oder Windows-1252) */
+  dataBase64: string;
+  /** Trainer: nur diese Mannschaft; Verwaltung: leer = alle Mannschaften des Vereins */
+  teamId?: string | null;
+  /** Spalte je Feld (Text der Kopfzeile); fehlende Felder werden automatisch erkannt */
+  columns?: Partial<Record<ScheduleField, string | null>>;
+  /** DFBnet-Mannschaftsname → Mannschaft (leere Zeichenkette = überspringen) */
+  mapping?: Record<string, string>;
+  commit?: boolean;
+};
+
+export type SchedulePreviewRow = {
+  line: number;
+  /** new = wird angelegt, changed = bestehendes Spiel wird angepasst, unchanged, skipped */
+  status: 'new' | 'changed' | 'unchanged' | 'skipped';
+  reason?: string;
+  teamId: string | null;
+  teamLabel: string | null;
+  startsAt: string | null;
+  opponent: string | null;
+  isHome: boolean | null;
+  kind: MatchKind | null;
+  competition: string | null;
+  /** Bei „changed“: was sich ändert */
+  changes: string[];
+};
+
+export type SchedulePreview = {
+  headers: string[];
+  /** Erkannte bzw. gewählte Spalte je Feld */
+  columns: Record<ScheduleField, string | null>;
+  rows: SchedulePreviewRow[];
+  /** Eigene Mannschaften der Datei, die noch keiner Mannschaft zugeordnet sind */
+  unmapped: { name: string; count: number }[];
+  /** Mannschaften, in die der Nutzer importieren darf */
+  teams: { id: string; label: string }[];
+  summary: { new: number; changed: number; unchanged: number; skipped: number };
+  /** Nur nach dem Übernehmen gesetzt */
+  result: { batchId: string; created: number; updated: number } | null;
+};
 
 // ── Benachrichtigungseinstellungen ───────────────────────────────────────
 

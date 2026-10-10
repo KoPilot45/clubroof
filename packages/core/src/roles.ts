@@ -36,7 +36,6 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
       'forum.moderate',
       'documents.manage',
       'helpers.manage',
-      'cash.read',
     ],
   },
   {

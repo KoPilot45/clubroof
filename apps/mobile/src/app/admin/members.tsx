@@ -1,4 +1,4 @@
-import type { MemberListItem } from '@clubroof/core';
+import type { MemberListItem, RoleCatalog } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -20,19 +20,31 @@ import { useSignedIn } from '@/lib/session';
 import { t } from '@/lib/i18n';
 
 type Filter = 'active' | 'inactive' | 'left' | 'withoutTeam' | 'all';
+/** Rollenübersicht: `role:<Schlüssel>` für eine Rolle, sonst eine der festen Auswahlen */
+type RoleFilter = string;
 
 export default function MembersScreen() {
   const { api } = useSignedIn();
   const params = useLocalSearchParams<{ withoutTeam?: string }>();
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>(params.withoutTeam ? 'withoutTeam' : 'active');
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
+  const catalog = useQuery({
+    queryKey: ['admin', 'roles'],
+    queryFn: () => api<RoleCatalog>('/admin/roles'),
+  });
   const query = new URLSearchParams();
   if (filter === 'withoutTeam') {
     query.set('withoutTeam', 'true');
     query.set('status', 'active');
   } else if (filter !== 'all') query.set('status', filter);
+  if (roleFilter === 'any') query.set('roleKey', 'any');
+  else if (roleFilter === 'individual') query.set('roleKey', 'individual');
+  else if (roleFilter === 'coaches') query.set('teamFunction', 'coaches');
+  else if (roleFilter === 'noaccount') query.set('account', 'no');
+  else if (roleFilter.startsWith('role:')) query.set('roleKey', roleFilter.slice(5));
   const members = useQuery({
-    queryKey: ['admin', 'members', filter],
+    queryKey: ['admin', 'members', filter, roleFilter],
     queryFn: () => api<MemberListItem[]>(`/admin/members?${query.toString()}`),
   });
   const needle = q.trim().toLowerCase();
@@ -63,6 +75,21 @@ export default function MembersScreen() {
           ]}
           selected={[filter]}
           onToggle={setFilter}
+        />
+        <T variant="label">Rollen und Aufgaben</T>
+        <ChoiceChips
+          options={[
+            { value: 'all', label: 'Alle' },
+            { value: 'any', label: 'Alle Rollenträger' },
+            { value: 'coaches', label: 'Trainer und Co-Trainer' },
+            ...(catalog.data?.roles
+              .filter((r) => r.holders.length > 0)
+              .map((r) => ({ value: `role:${r.key}`, label: r.name })) ?? []),
+            { value: 'individual', label: 'Individuelle Rechte' },
+            { value: 'noaccount', label: 'Ohne App-Zugang' },
+          ]}
+          selected={[roleFilter]}
+          onToggle={setRoleFilter}
         />
       </Card>
       {members.isPending ? <Loading /> : null}

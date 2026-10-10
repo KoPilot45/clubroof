@@ -179,6 +179,19 @@ export default function MemberScreen() {
             />
           ))}
         </Card>
+        {m.can.manageRoles && m.status !== 'left' ? (
+          <Card>
+            <ListRow
+              title="Individuelle Rechte"
+              subtitle={
+                m.individualPermissions.length
+                  ? `${m.individualPermissions.length} Rechte einzeln vergeben`
+                  : 'Einzelne Rechte zusätzlich zu den Rollen vergeben'
+              }
+              onPress={() => router.push(`/admin/member-permissions?id=${m.id}`)}
+            />
+          </Card>
+        ) : null}
         {m.can.manageRoles && m.status !== 'left' && catalog.data ? (
           <AddRole
             catalog={catalog.data}

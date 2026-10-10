@@ -69,6 +69,16 @@ export default function AdminScreen() {
               },
             ]
           : []),
+        ...(o.can.planEvents
+          ? [
+              {
+                key: 'schedule-import',
+                label: 'Spielplan-Import',
+                icon: 'calendar' as const,
+                onPress: () => router.push('/schedule-import'),
+              },
+            ]
+          : []),
         ...(o.can.manageRoles || o.can.readMembers
           ? [
               {

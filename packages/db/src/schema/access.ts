@@ -62,6 +62,27 @@ export const roleAssignments = pgTable(
 );
 
 /**
+ * Individuelle Rechte: zusätzlich zu den Rollen vergibt die Administration einer Person einzelne
+ * Rechte (vereinsweit). Eine Zeile je Person.
+ */
+export const personPermissions = pgTable(
+  'person_permissions',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' })
+      .unique(),
+    permissions: text().array().notNull(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index().on(t.clubId)],
+);
+
+/**
  * Modulkonfiguration je Ebene (Verein → Bereich → Mannschaft). Fehlt ein Eintrag auf einer
  * Ebene, gilt die übergeordnete. `version` ermöglicht kontrollierte Migration bei Modul-Updates.
  */
