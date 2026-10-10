@@ -84,10 +84,13 @@ Dokumente und Helferdienste, soweit freigegeben.
 14. Eigene Rollen je Verein (laut Konzept vorgesehen) und eine Rolle „Abteilungsleitung“ für Bereiche.
 15. **Mandantenbetrieb (Paket M):** Betreiber- und Support-Zugang strikt getrennt von Vereinsrechten: zeitlich begrenzt, nur mit Freigabe des Vereins, vollständig protokolliert.
 
-## 5. Zu entscheiden
+## 5. Entscheidungen (10.10.2026)
 
-1. Darf der Vorstand die Kassen aller Mannschaften sehen (heute ja)?
-2. Wie weit soll die 2-Faktor-Pflicht reichen?
-3. Welche Rechte erhalten Co-Trainer und Betreuer?
-4. Sind Amtszeiten für Rollen gewünscht?
-5. Ab welchem Alter dürfen Jugendliche ein eigenes Login haben?
+1. **Vorstand sieht keine Mannschaftskassen.** `cash.read` entfällt in der Rolle Vorstand (Migration für bestehende Vereine).
+2. **2-Faktor nur für den Admin-Account (Fulladmin) verpflichtend.** Zusätzlich als Verfahren: **Code per E-Mail** neben der Authenticator-App.
+3. **Co-Trainer haben dieselben Rechte wie Trainer** (Vertretung). Trainer bearbeiten ihren Kader über eine allgemeine **Bearbeiten-Funktion** (nicht nur Rückennummern),
+   dort auch den Kassenwart bestimmen. Betreuer: noch offen.
+4. **Keine Amtszeiten.**
+5. **Jugendliche: Die Eltern entscheiden selbst**, ob und wann ihr Kind einen eigenen Zugang bekommt (jederzeit widerrufbar).
+
+Zusatz: Admins können in der Mitglieder-Übersicht nach Rollen und Funktionen filtern. Spielplan-Import: siehe `SPIELPLAN-IMPORT.md`.
