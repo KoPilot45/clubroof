@@ -5,9 +5,19 @@
  */
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import type { StatusKey } from '@clubroof/design-tokens';
-import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
+import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
+import type { StatusKey, TintKey } from '@clubroof/design-tokens';
 import {
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from 'react';
+import {
+  AccessibilityInfo,
   ActivityIndicator,
   Animated,
   Switch,
@@ -24,7 +34,15 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, Text as SvgText } from 'react-native-svg';
+import Svg, {
+  Circle,
+  Defs,
+  LinearGradient,
+  Path,
+  Rect,
+  Stop,
+  Text as SvgText,
+} from 'react-native-svg';
 import { HEADING_FONT, inputFont } from '@/lib/fonts';
 import { useTheme } from '@/lib/theme';
 import { Text } from './app-text';
@@ -33,6 +51,18 @@ import { mediaUri } from '@/lib/upload';
 import { dateFormat, t } from '@/lib/i18n';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
+
+/** Weicher Schatten aus den Tokens (`elevation`); als `boxShadow`, damit er auf iOS, Android und Web gleich wirkt. */
+export function shadowStyle(e: {
+  color: string;
+  opacity: number;
+  radius: number;
+  offsetY: number;
+}): ViewStyle {
+  const n = parseInt(e.color.slice(1), 16);
+  const rgba = `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${e.opacity})`;
+  return { boxShadow: `0 ${e.offsetY}px ${e.radius}px ${rgba}` };
+}
 
 // ── Typografie ────────────────────────────────────────────────────────────────
 
@@ -131,15 +161,17 @@ export function Screen({
   edges?: ('top' | 'bottom')[];
 }) {
   const { colors, spacing } = useTheme();
+  // In den Tabs liegt die schwebende Leiste über dem Inhalt: unten Platz dafür lassen
+  const tabBarHeight = useContext(BottomTabBarHeightContext) ?? 0;
   return (
-    <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: colors.surface }}>
+    <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: colors.background }}>
       {header}
       <ScrollView
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{
-          padding: spacing.lg,
-          gap: spacing.lg,
-          paddingBottom: spacing.xxxl,
+          padding: spacing.lg + 4,
+          gap: spacing.lg + 2,
+          paddingBottom: spacing.xxxl + tabBarHeight,
           // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
           width: '100%',
           maxWidth: 960,
@@ -161,17 +193,22 @@ export function Screen({
   );
 }
 
+/**
+ * Weiche Karte (Radius 24): hell mit dezentem Schatten ohne Rahmen, dunkel eine Flächenstufe heller
+ * mit feinem Rahmen (docs/DESIGNSYSTEM.md).
+ */
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, isDark, elevation } = useTheme();
   return (
     <View
       style={[
         {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-          borderWidth: StyleSheet.hairlineWidth * 2,
-          borderRadius: radii.lg,
-          padding: spacing.md,
+          backgroundColor: colors.surfaceRaised,
+          borderRadius: radii.xl,
+          padding: spacing.lg,
+          ...(isDark
+            ? { borderWidth: 1, borderColor: colors.border }
+            : shadowStyle(elevation.card)),
         },
         style,
       ]}
@@ -179,6 +216,71 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
       {children}
     </View>
   );
+}
+
+/**
+ * Blickfangkarte: Verlauf der Vereinsfarbe (`hero.from → hero.to`) mit Wellen und Kreis als SVG, Schrift
+ * immer `hero.onHero`. Je Bildschirm genau eine (docs/DESIGNSYSTEM.md, Regel 1). Inhalte setzt die Seite.
+ */
+export function HeroCard({
+  children,
+  style,
+  onPress,
+  accessibilityLabel,
+}: {
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  /** macht die ganze Karte antippbar (dann keine eigenen Buttons darin) */
+  onPress?: () => void;
+  accessibilityLabel?: string;
+}) {
+  const { colors, radii, spacing, isDark, elevation } = useTheme();
+  const gradientId = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const outer: ViewStyle = {
+    borderRadius: radii.xxl,
+    ...(isDark ? { borderWidth: 1, borderColor: colors.hero.decor } : shadowStyle(elevation.hero)),
+  };
+  const body = (
+    <View style={{ borderRadius: radii.xxl, overflow: 'hidden', padding: spacing.lg, gap: 12 }}>
+      <Svg
+        style={StyleSheet.absoluteFill}
+        viewBox="0 0 306 270"
+        preserveAspectRatio="xMidYMid slice"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Defs>
+          <LinearGradient id={gradientId} x1="0.3" y1="0" x2="0.7" y2="1">
+            <Stop offset="0" stopColor={colors.hero.from} />
+            <Stop offset="0.62" stopColor={colors.hero.to} />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="306" height="270" fill={`url(#${gradientId})`} />
+        <Path
+          d="M0 160 C50 120 100 200 153 160 C206 120 256 180 306 140 L306 270 L0 270Z"
+          fill={colors.hero.decor}
+        />
+        <Path
+          d="M0 200 C60 170 105 235 165 200 C225 170 265 215 306 190 L306 270 L0 270Z"
+          fill={colors.hero.decor}
+        />
+        <Circle cx="270" cy="28" r="64" fill={colors.hero.decor} />
+      </Svg>
+      {children}
+    </View>
+  );
+  if (onPress)
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        onPress={onPress}
+        style={[outer, style]}
+      >
+        {body}
+      </Pressable>
+    );
+  return <View style={[outer, style]}>{body}</View>;
 }
 
 export function Section({
@@ -210,7 +312,11 @@ export function Section({
           </T>
         </View>
         {action && onAction ? (
-          <Pressable onPress={onAction} hitSlop={8} accessibilityRole="link">
+          <Pressable
+            onPress={onAction}
+            hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+            accessibilityRole="link"
+          >
             <T variant="label" color={colors.primaryText}>
               {`${t(action)} ›`}
             </T>
@@ -228,18 +334,30 @@ export function Chip({
   label,
   tone = 'primary',
   icon,
+  size = 'sm',
 }: {
   label: string;
-  tone?: StatusKey | 'primary' | 'neutral';
+  tone?: StatusKey | 'primary' | 'neutral' | TintKey;
   icon?: IconName;
+  /** sm = Statusmarke in Listen und Karten, md = Höhe `sizes.chipHeight` für eigenständige Chips */
+  size?: 'sm' | 'md';
 }) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, sizes } = useTheme();
   const palette =
     tone === 'primary'
       ? { bg: colors.primaryContainer, fg: colors.onPrimaryContainer }
       : tone === 'neutral'
         ? { bg: colors.surfaceVariant, fg: colors.onSurfaceMuted }
-        : { bg: colors.status[tone].container, fg: colors.status[tone].onContainer };
+        : tone in colors.tints
+          ? {
+              bg: colors.tints[tone as TintKey].container,
+              fg: colors.tints[tone as TintKey].onContainer,
+            }
+          : {
+              bg: colors.status[tone as StatusKey].container,
+              fg: colors.status[tone as StatusKey].onContainer,
+            };
+  const md = size === 'md';
   return (
     <View
       style={{
@@ -247,14 +365,25 @@ export function Chip({
         alignItems: 'center',
         gap: 4,
         alignSelf: 'flex-start',
+        maxWidth: '100%',
+        minHeight: md ? sizes.chipHeight : 24,
         backgroundColor: palette.bg,
         borderRadius: radii.pill,
-        paddingHorizontal: 8,
+        paddingHorizontal: md ? 12 : 10,
         paddingVertical: 2,
       }}
     >
-      {icon ? <Ionicons name={icon} size={12} color={palette.fg} /> : null}
-      <Text style={{ color: palette.fg, fontSize: 11.5, fontWeight: '700' }}>{label}</Text>
+      {icon ? <Ionicons name={icon} size={md ? 14 : 12} color={palette.fg} /> : null}
+      <Text
+        style={{
+          flexShrink: 1,
+          color: palette.fg,
+          fontSize: md ? 13 : 12,
+          fontWeight: '700',
+        }}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
@@ -295,16 +424,19 @@ export function Button({
 }: {
   label: string;
   onPress: () => void;
-  /** tonal = dezente Vereinsfarbe für Nebenaktionen in Listen, action = gewählter Zwischenstatus */
-  variant?: 'primary' | 'outline' | 'danger' | 'tonal' | 'action';
-  /** sm für Aktionen innerhalb von Listen und Karten */
+  /**
+   * Pillenförmig. primary = Hauptaktion (gefüllt), outline/danger = Nebenaktion (umrandet), tonal = dezente
+   * Vereinsfarbe, action = Zwischenstatus; hero/heroOutline = auf der Blickfangkarte (Schrift `onHero`).
+   */
+  variant?: 'primary' | 'outline' | 'danger' | 'tonal' | 'action' | 'hero' | 'heroOutline';
+  /** sm für Aktionen innerhalb von Listen und Karten (ebenfalls mindestens 44 pt hoch) */
   size?: 'md' | 'sm';
   icon?: IconName;
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, sizes } = useTheme();
   const palette = {
     primary: {
       bg: colors.primary,
@@ -313,13 +445,13 @@ export function Button({
       border: colors.primary,
     },
     outline: {
-      bg: colors.surface,
+      bg: 'transparent',
       pressed: colors.surfaceVariant,
       fg: colors.onSurface,
       border: colors.border,
     },
     danger: {
-      bg: colors.surface,
+      bg: 'transparent',
       pressed: colors.status.urgent.container,
       fg: colors.status.urgent.onContainer,
       border: colors.border,
@@ -336,8 +468,22 @@ export function Button({
       fg: colors.status.action.onContainer,
       border: colors.status.action.container,
     },
+    // Auf dem Verlauf: weiße (bzw. dunkle) Fläche mit Verlaufsfarbe als Schrift
+    hero: {
+      bg: colors.hero.onHero,
+      pressed: colors.hero.onHero,
+      fg: colors.hero.from,
+      border: colors.hero.onHero,
+    },
+    heroOutline: {
+      bg: 'transparent',
+      pressed: colors.hero.decor,
+      fg: colors.hero.onHero,
+      border: colors.hero.onHero,
+    },
   }[variant];
   const small = size === 'sm';
+  const border = variant === 'heroOutline' ? 2 : 1;
   return (
     <Pressable
       accessibilityRole="button"
@@ -350,10 +496,10 @@ export function Button({
           gap: 6,
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: small ? 36 : 46,
-          paddingHorizontal: small ? 12 : 16,
-          borderRadius: radii.md,
-          borderWidth: 1,
+          minHeight: small ? sizes.buttonSmall : sizes.button,
+          paddingHorizontal: small ? 16 : 22,
+          borderRadius: radii.pill,
+          borderWidth: border,
           borderColor: palette.border,
           backgroundColor: pressed ? palette.pressed : palette.bg,
           opacity: disabled ? 0.5 : 1,
@@ -366,7 +512,16 @@ export function Button({
       ) : (
         <>
           {icon ? <Ionicons name={icon} size={small ? 16 : 18} color={palette.fg} /> : null}
-          <Text style={{ color: palette.fg, fontSize: small ? 13 : 15, fontWeight: '800' }}>
+          <Text
+            numberOfLines={2}
+            style={{
+              flexShrink: 1,
+              textAlign: 'center',
+              color: palette.fg,
+              fontSize: small ? 13 : 15,
+              fontWeight: '800',
+            }}
+          >
             {label}
           </Text>
         </>
@@ -483,34 +638,49 @@ export function Avatar({
   );
 }
 
-/** Rundes Icon in einer Kachel, z. B. vor Listeneinträgen. */
+/**
+ * Icon in einer Kachel, z. B. vor Listeneinträgen. Pastellfarben (`tints`) mit dunkler Schrift für
+ * Bereiche und Kennzahlen; Statusfarben nur zusammen mit einer Beschriftung daneben.
+ */
 export function IconTile({
   name,
   tone = 'primary',
   filled,
+  size = 'md',
 }: {
   name: IconName;
-  tone?: StatusKey | 'primary';
+  tone?: StatusKey | 'primary' | TintKey;
   filled?: boolean;
+  /** md = 40, lg = 52 */
+  size?: 'md' | 'lg';
 }) {
-  const { colors } = useTheme();
+  const { colors, sizes } = useTheme();
   const palette = filled
     ? { bg: colors.primary, fg: colors.onPrimary }
     : tone === 'primary'
       ? { bg: colors.primaryContainer, fg: colors.onPrimaryContainer }
-      : { bg: colors.status[tone].container, fg: colors.status[tone].onContainer };
+      : tone in colors.tints
+        ? {
+            bg: colors.tints[tone as TintKey].container,
+            fg: colors.tints[tone as TintKey].onContainer,
+          }
+        : {
+            bg: colors.status[tone as StatusKey].container,
+            fg: colors.status[tone as StatusKey].onContainer,
+          };
+  const box = size === 'lg' ? sizes.iconTileLarge : sizes.iconTile;
   return (
     <View
       style={{
-        width: 36,
-        height: 36,
-        borderRadius: filled ? 18 : 10,
+        width: box,
+        height: box,
+        borderRadius: filled ? box / 2 : size === 'lg' ? 16 : 14,
         backgroundColor: palette.bg,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <Ionicons name={name} size={18} color={palette.fg} />
+      <Ionicons name={name} size={size === 'lg' ? 26 : 20} color={palette.fg} />
     </View>
   );
 }
@@ -532,7 +702,7 @@ export function ListRow({
   onPress?: () => void;
   first?: boolean;
 }) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, sizes } = useTheme();
   const main = (
     <>
       {leading}
@@ -559,8 +729,9 @@ export function ListRow({
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.md,
+        minHeight: sizes.touchTarget,
         paddingVertical: spacing.sm + 2,
-        borderTopWidth: first ? 0 : StyleSheet.hairlineWidth * 2,
+        borderTopWidth: first ? 0 : 1,
         borderTopColor: colors.border,
       }}
     >
@@ -572,7 +743,7 @@ export function ListRow({
         <View style={inner}>{main}</View>
       )}
       {trailing}
-      {onPress ? <Ionicons name="chevron-forward" size={16} color={colors.onSurfaceMuted} /> : null}
+      {onPress ? <Ionicons name="chevron-forward" size={18} color={colors.onSurfaceMuted} /> : null}
     </View>
   );
 }
@@ -581,21 +752,36 @@ export function ListRow({
 
 /** Grauer, atmender Platzhalter statt Drehkreis: die Seite wirkt schneller und springt weniger. */
 function SkeletonBlock({ height }: { height: number }) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, motion } = useTheme();
   const opacity = useRef(new Animated.Value(0.45)).current;
+  const [reduceMotion, setReduceMotion] = useState(false);
   useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then(setReduceMotion)
+      .catch(() => undefined);
+  }, []);
+  useEffect(() => {
+    if (reduceMotion) return;
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0.45, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: motion.skeletonPulse / 2,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.45,
+          duration: motion.skeletonPulse / 2,
+          useNativeDriver: true,
+        }),
       ]),
     );
     loop.start();
     return () => loop.stop();
-  }, [opacity]);
+  }, [opacity, reduceMotion, motion.skeletonPulse]);
   return (
     <Animated.View
-      style={{ height, borderRadius: radii.lg, backgroundColor: colors.surfaceVariant, opacity }}
+      style={{ height, borderRadius: radii.xl, backgroundColor: colors.surfaceVariant, opacity }}
     />
   );
 }
@@ -718,7 +904,7 @@ export type TileItem = {
 };
 
 export function TileGrid({ items }: { items: TileItem[] }) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, isDark, elevation } = useTheme();
   // Mehr Spalten auf breiten Bildschirmen
   const { width } = useWindowDimensions();
   const basis = width >= 900 ? '23%' : width >= 640 ? '31%' : '47%';
@@ -739,12 +925,13 @@ export function TileGrid({ items }: { items: TileItem[] }) {
               flexGrow: 1,
               minHeight: 96,
               gap: 10,
-              padding: spacing.md,
-              borderRadius: radii.lg,
-              borderWidth: StyleSheet.hairlineWidth * 2,
-              borderColor: colors.border,
-              backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
+              padding: spacing.md + 2,
+              borderRadius: radii.xl,
+              backgroundColor: pressed ? colors.surfaceVariant : colors.surfaceRaised,
               opacity: item.soon ? 0.55 : 1,
+              ...(isDark
+                ? { borderWidth: 1, borderColor: colors.border }
+                : shadowStyle(elevation.card)),
             })}
           >
             <View
@@ -756,15 +943,15 @@ export function TileGrid({ items }: { items: TileItem[] }) {
             >
               <View
                 style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 14,
                   backgroundColor: colors.primaryContainer,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Ionicons name={item.icon} size={19} color={colors.onPrimaryContainer} />
+                <Ionicons name={item.icon} size={20} color={colors.onPrimaryContainer} />
               </View>
               {!item.soon && item.badge !== undefined && item.badge !== 0 ? (
                 <View
@@ -835,7 +1022,7 @@ export function ChoiceChips<T extends string>({
   onToggle: (value: T) => void;
   label?: string;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, sizes } = useTheme();
   return (
     <View style={{ gap: 8 }}>
       {label ? <T variant="label">{label}</T> : null}
@@ -851,17 +1038,19 @@ export function ChoiceChips<T extends string>({
               accessibilityRole="radio"
               accessibilityState={{ checked: active }}
               onPress={() => onToggle(o.value)}
+              hitSlop={{ top: 6, bottom: 6 }}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 6,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
+                minHeight: sizes.chipHeight + 2,
+                paddingHorizontal: 14,
+                paddingVertical: 6,
                 maxWidth: '100%',
                 borderRadius: radii.pill,
                 borderWidth: 1,
                 borderColor: active ? colors.primary : colors.border,
-                backgroundColor: active ? colors.primary : colors.surface,
+                backgroundColor: active ? colors.primary : colors.surfaceRaised,
               }}
             >
               {o.icon ? (
