@@ -94,3 +94,7 @@ Dokumente und Helferdienste, soweit freigegeben.
 5. **Jugendliche: Die Eltern entscheiden selbst**, ob und wann ihr Kind einen eigenen Zugang bekommt (jederzeit widerrufbar).
 
 Zusatz: Admins können in der Mitglieder-Übersicht nach Rollen und Funktionen filtern. Spielplan-Import: siehe `SPIELPLAN-IMPORT.md`.
+
+## 6. Individuelle Rechte (10.10.2026)
+
+Der Admin kann in „Mitglied bearbeiten“ einzelnen Mitgliedern **individuelle Rechte** geben: eine Liste aller Rechte zum An- und Abwählen (zusätzlich zu den Rollen). Zu beachten: Änderungen im Protokoll festhalten, nur Admins dürfen vergeben, Rechte verständlich beschriften und nach Bereich gruppieren, Bereichsbezug (Verein/Bereich/Mannschaft) mit auswählbar. Wird Teil von Paket R.

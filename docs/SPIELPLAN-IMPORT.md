@@ -61,10 +61,12 @@ alle Spiele der Mannschaften automatisch. Trainer können dieselbe Funktion für
 - Tests: Beispieldateien (Windows-1252, Semikolon), zweiter Import ohne Dubletten, Verlegung, Absetzung, Rechte (Trainer fremde Mannschaft), Platzkonflikt, Sammelmeldung.
 - Später: iCal-Abo der Mannschaft von FUSSBALL.DE als laufende Aktualisierung (kein öffentlicher Zugang per Schnittstelle, daher dateibasiert).
 
-## 4. Offene Fragen
+## 4. Entscheidungen (Antworten vom 10.10.2026)
 
-1. Echte Beispieldatei aus dem DFBnet (anonymisiert) für das Vereinsformat?
-2. Vereinsderby: ein Termin je Mannschaft (Vorschlag) oder ein gemeinsamer Termin?
-3. Standardregeln: Spieldauer je Altersklasse, Treffen vor Anstoß, Abfahrt bei Auswärtsspielen?
-4. Soll der Import in die vorbereitete Folgesaison möglich sein, bevor sie gestartet ist (Vorschlag: ja)?
-5. Sollen Pokalspiele, Freundschaftsspiele und Hallenturniere ebenfalls aus der Datei kommen (soweit enthalten)?
+1. **Format:** Vorlage ist der DFBnet-Bildschirm „Meisterschaft → Vereinsspielplan“ (Filter: Datumsbereich, Spielkennung, Heim/Gast, Spielstatus, Sportdisziplin, Mannschaftsart). Spalten: Spielkennung (z. B. 050019077), Anstoß (Datum + Uhrzeit), Heim-/Gastmannschaft, SD, MS-Art (Herren, A-Junioren …), Spielklasse (Liga/Pokal), Tore, Sondereignis, Status. Der genaue Export folgt später; bis dahin Spaltenzuordnung flexibel halten. Die Spielkennung ist der natürliche `source_key`. Ergebnisse (Tore) und Status nicht als Termindaten behandeln, Spielort/Spielstätte nur wenn in der Datei.
+2. **Derby:** Spielt die 2. gegen die 1. Mannschaft, entsteht für **beide** Mannschaften ein normaler Spieltermin; Kader, Zusagen usw. werden je Team geplant.
+3. **Treffpunkt-Regeln:** Je Mannschaft vom Trainer einstellbar. Standard: Spiele 60 min, Trainings 15 min vor Beginn. Daraus wird der Treffpunkt je Termin automatisch berechnet; in der Terminbearbeitung lässt er sich pro Termin überschreiben.
+4. **Folgesaison:** Import erst beim Saisonwechsel (Plan der Folgesaison liegt vorher nicht vor).
+5. **Pokal, Freundschaft, Turniere:** Werden nicht importiert, sondern von Trainer, sportlicher Leitung und Admin manuell angelegt.
+
+Offen: nur noch der genaue Beispiel-Export.
