@@ -78,8 +78,8 @@ Farben und ihre Regeln: [`FARBKONZEPT.md`](FARBKONZEPT.md). Die gewählten Entw�
 
 - **Name für „Mehr“:** entschieden (10.10.2026): bleibt „Mehr“. „Profil“ wäre zu eng (Inhalt: Kinder, Mannschaften,
   Benachrichtigungen, Abwesenheiten, Einstellungen, Hilfe); „Mein Bereich“ bleibt eine mögliche spätere Alternative.
-- **Suche im Kopf:** entschieden (10.10.2026, Schritt 1): Der Knopf fehlt, bis die globale Suche steht. `AppHeader` zeigt ihn nur,
-  wenn `onSearch` übergeben wird; die Suche (Mitglieder, Termine, später mehr) ist ein eigener Schritt.
+- **Suche im Kopf:** umgesetzt (10.10.2026): Die Lupe in `AppHeader` öffnet `/search` (Termine, Mitglieder, News, Mannschaften; `GET /search`).
+  Mitglieder erscheinen nur mit Profil-Sichtbarkeit.
 - **Schrift** für Fließtext (Open Sans bleibt, bis Alternativen verglichen sind).
 
 ## Umsetzung in der App (Paket L)
@@ -244,7 +244,6 @@ Unterseiten; keine Seite mit weißen Flächen, unlesbarem Text oder Überlauf. A
 - Hinweise („1“, „neu“) an den Schnellzugriff-Chips auf Home.
 - Absage direkt über ✕ in „Deine Woche“ (heute öffnet es den Termin).
 - Tabellenplatz und Torschützenkönig im Kader-Blickfang (Team) – braucht Daten in der API.
-- Globale Suche (Knopf in der Kopfzeile).
 - Offline-Warteschlange für Zu-/Absagen („wird gesendet, sobald du wieder online bist“).
 - Unterseiten (Formulare, Detailseiten) schrittweise auf Karten im neuen Look (Radius 24, Pastell-Kacheln) bringen – sie nutzen die Bausteine bereits, behalten aber ihren alten Seitenaufbau.
 

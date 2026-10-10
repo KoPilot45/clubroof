@@ -2037,3 +2037,20 @@ export type TileInfo = Record<string, TileInfoEntry>;
 
 export const TILE_HUBS = ['team', 'club', 'more', 'admin', 'cash'] as const;
 export type TileHub = (typeof TILE_HUBS)[number];
+
+// ── Globale Suche ─────────────────────────────────────────────────────────
+
+/** Ergebnis der globalen Suche – je Bereich nur, was die Person auch sonst sehen darf. */
+export type SearchResponse = {
+  events: {
+    id: string;
+    title: string;
+    startsAt: string;
+    status: 'scheduled' | 'cancelled';
+    type: string;
+    teamBadge: string | null;
+  }[];
+  members: { personId: string; name: string; teamBadges: string[] }[];
+  news: { id: string; title: string; publishedAt: string; source: string }[];
+  teams: { id: string; name: string; badge: string; league: string | null }[];
+};

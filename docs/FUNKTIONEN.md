@@ -49,6 +49,7 @@ Stand: 07.10.2026
 | Spiele zum Wischen (nächste drei, bei Eltern über alle Kinder)       | –          | ✅    | Blickfangkarten mit Zu-/Absage; Grund beim Absagen im Blatt von unten (Paket L, Schritt 2)          |
 | Deine Woche (alle Termine der nächsten 7 Tage, auch abgesagte)       | –          | ✅    | Datumskachel, Status bzw. runde Zusage ✓ (Absage öffnet den Termin); Geburtstage dezent darunter     |
 | Schnellzugriff je Rolle, anpassbar                                   | –          | ✅    | Standard je Rolle (z. B. Verwaltung, Einladen); Auswahl je Person gespeichert (`users.quick_links`); Hinweise („1“, „neu“) folgen |
+| Globale Suche (Lupe in der Kopfzeile)                                | –          | ✅    | `GET /search`: Termine, Mitglieder, News, Mannschaften; Mitglieder nur mit Profil-Sichtbarkeit (eigene, Kinder, gemeinsame/betreute Mannschaft, Vereinsleserecht) |
 
 ## 3. Mannschaft (Team)
 

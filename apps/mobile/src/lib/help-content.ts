@@ -87,6 +87,12 @@ export const HELP_SECTIONS: HelpSection[] = [
     audience: 'all',
     entries: [
       {
+        id: 'search',
+        question: 'Wie suche ich nach Terminen, Personen oder News?',
+        answer:
+          'Tippe oben rechts auf die Lupe und gib mindestens zwei Buchstaben ein. Du findest Termine, Mitglieder, News und Mannschaften. Personen siehst du nur, wenn du auch sonst ihr Profil sehen darfst (z. B. aus deiner Mannschaft oder deine Kinder).',
+      },
+      {
         id: 'quick-access',
         question: 'Wie ändere ich den Schnellzugriff auf Home?',
         answer:

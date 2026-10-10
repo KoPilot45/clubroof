@@ -79,7 +79,7 @@ export function HeaderButton({
 /**
  * Kopfzeile aller Tabs: Vereinslogo (Kreis), darüber/darunter Untertitel und Titel bzw. Begrüßung
  * (lange Namen brechen auf höchstens zwei Zeilen um), optional Suche, Glocke mit Zähler.
- * Der Suchknopf erscheint nur, wenn `onSearch` übergeben wird – die globale Suche folgt später.
+ * Die Lupe öffnet die globale Suche (`/search`), sofern `onSearch` nichts anderes vorgibt.
  */
 export function AppHeader({
   title,
@@ -147,7 +147,11 @@ export function AppHeader({
           {greeting}
         </T>
       </View>
-      {onSearch ? <HeaderButton icon="search-outline" label="Suche" onPress={onSearch} /> : null}
+      <HeaderButton
+        icon="search-outline"
+        label="Suche"
+        onPress={onSearch ?? (() => router.push('/search'))}
+      />
       <HeaderButton
         icon="notifications-outline"
         label={unread ? `Benachrichtigungen, ${unread} ungelesen` : 'Benachrichtigungen'}

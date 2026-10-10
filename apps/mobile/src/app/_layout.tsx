@@ -209,6 +209,7 @@ function Navigator() {
           />
           <Stack.Screen name="helpers" options={{ headerShown: true, title: 'Helfer gesucht' }} />
           <Stack.Screen name="documents" options={{ headerShown: true, title: 'Dokumente' }} />
+          <Stack.Screen name="search" options={{ headerShown: true, title: 'Suche' }} />
           <Stack.Screen name="club-teams" options={{ headerShown: true, title: 'Mannschaften' }} />
           <Stack.Screen name="contacts" options={{ headerShown: true, title: 'Ansprechpartner' }} />
           <Stack.Screen name="help" options={{ headerShown: true, title: 'Hilfe & Anleitung' }} />

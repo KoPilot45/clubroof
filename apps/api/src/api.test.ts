@@ -72,6 +72,7 @@ import type {
   EventDetail,
   EventSummary,
   HomeResponse,
+  SearchResponse,
   LoginResponse,
   NewsItem,
   PollDetail,
@@ -4994,6 +4995,40 @@ describe.skipIf(!url)('API', () => {
       expect((await send('GET', `/teams/${b1.id}/stats?period=custom`, coach.token)).status).toBe(
         400,
       );
+    });
+  });
+
+  describe('Suche', () => {
+    it('findet Termine, Mannschaften und News; zu kurze Begriffe werden abgelehnt', async () => {
+      const { token } = await login('spieler');
+      const res = await get<SearchResponse>('/search?q=Training', token);
+      expect(res.events.length).toBeGreaterThan(0);
+      expect(res.events.every((e) => /training/i.test(e.title))).toBe(true);
+      const teams = await get<SearchResponse>('/search?q=Jugend', token);
+      expect(teams.teams.length).toBeGreaterThan(0);
+      expect((await send('GET', '/search?q=a', token)).status).toBe(400);
+      expect((await app.inject({ method: 'GET', url: '/search?q=Training' })).statusCode).toBe(401);
+    });
+
+    it('Mitglieder: nur Personen mit Bezug (eigene Mannschaft, Kinder) oder mit Leserecht', async () => {
+      const player = await login('spieler');
+      // Vorstandsmitglied ohne gemeinsame Mannschaft ist für Spieler nicht auffindbar
+      const hidden = await get<SearchResponse>('/search?q=Hoffmann', player.token);
+      expect(hidden.members.some((m) => m.name.includes('Sandra'))).toBe(false);
+      // Der Trainer der eigenen Mannschaft ist auffindbar
+      const coach = await get<SearchResponse>('/search?q=Mustermann', player.token);
+      expect(coach.members.some((m) => m.name === 'Max Mustermann')).toBe(true);
+      // Vorstand mit Vereinsleserecht findet beide
+      const board = await login('vorstand');
+      const all = await get<SearchResponse>('/search?q=Hoffmann', board.token);
+      expect(all.members.some((m) => m.name.includes('Sandra'))).toBe(true);
+    });
+
+    it('Platzhalter im Suchbegriff sind gewöhnliche Zeichen', async () => {
+      const { token } = await login('vorstand');
+      const res = await get<SearchResponse>('/search?q=%25%25', token);
+      expect(res.members).toEqual([]);
+      expect(res.events).toEqual([]);
     });
   });
 
