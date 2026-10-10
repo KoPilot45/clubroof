@@ -74,7 +74,9 @@ function ParticipantGroups({
               onPress={() => setOpen({ ...open, [g.status]: !active })}
               style={{
                 flex: 1,
+                minHeight: 44,
                 alignItems: 'center',
+                justifyContent: 'center',
                 paddingVertical: 6,
                 borderRadius: radii.md,
                 backgroundColor: active ? colors.primaryContainer : 'transparent',
@@ -100,6 +102,7 @@ function ParticipantGroups({
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                minHeight: 44,
                 paddingVertical: 8,
                 borderTopWidth: 1,
                 borderTopColor: colors.border,
@@ -283,6 +286,7 @@ function AttendanceCheckCard({ event: e }: { event: EventDetail }) {
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 10,
+                  minHeight: 44,
                   paddingVertical: 8,
                   borderTopWidth: i === 0 ? 0 : 1,
                   borderTopColor: colors.border,

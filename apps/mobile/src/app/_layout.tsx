@@ -14,7 +14,9 @@ import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
-import { Loading } from '@/components/ui';
+import { BrandSplash } from '@/components/brand-splash';
+import { setBrand, useBrand } from '@/lib/brand';
+import { readSetting, writeSetting } from '@/lib/flags';
 import { OfflineBanner } from '@/components/offline-banner';
 import { OutboxSync } from '@/components/outbox-sync';
 import { ToastProvider } from '@/lib/toast';
@@ -24,7 +26,7 @@ import { AppLockGate } from '@/components/app-lock-gate';
 import { loadAppLock } from '@/lib/app-lock';
 import { loadFontScale } from '@/lib/font-scale';
 import { t, useLocale } from '@/lib/i18n';
-import { Pressable, View } from 'react-native';
+import { Pressable } from 'react-native';
 
 function HomeBackButton() {
   const { colors } = useTheme();
@@ -34,7 +36,7 @@ function HomeBackButton() {
       accessibilityLabel={t('Zurück zur Startseite')}
       onPress={() => router.replace('/')}
       hitSlop={12}
-      style={{ paddingRight: 12 }}
+      style={{ minWidth: 44, minHeight: 44, justifyContent: 'center' }}
     >
       <Ionicons name="arrow-back" size={24} color={colors.primaryText} />
     </Pressable>
@@ -60,11 +62,7 @@ function Navigator() {
   fontState.ready = fontsLoaded;
 
   if (session.status === 'loading' || (!fontsLoaded && !fontError)) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', backgroundColor: colors.background }}>
-        <Loading />
-      </View>
-    );
+    return <BrandSplash />;
   }
 
   const signedIn = session.status === 'signedIn';
@@ -331,9 +329,23 @@ function Navigator() {
 function ClubTheme({ children }: { children: React.ReactNode }) {
   const session = useSession();
   const club = session.status === 'signedIn' ? session.me.club : null;
+  const brand = useBrand();
+  // Verein dieses Geräts merken: Ladebildschirm und Anmeldung erscheinen beim nächsten Start in seiner Farbe
+  useEffect(() => {
+    if (club) {
+      setBrand({ colorTheme: club.colorTheme, shortName: club.shortName });
+      void writeSetting('brand', `${club.colorTheme}|${club.shortName}`);
+    }
+  }, [club?.colorTheme, club?.shortName]);
+  useEffect(() => {
+    void readSetting('brand').then((v) => {
+      const [colorTheme, ...rest] = typeof v === 'string' ? v.split('|') : [];
+      if (colorTheme && rest.length) setBrand({ colorTheme, shortName: rest.join('|') });
+    });
+  }, []);
   return (
     <ThemeProvider
-      clubColor={club?.colorTheme}
+      clubColor={club?.colorTheme ?? brand?.colorTheme}
       mode={session.status === 'signedIn' ? session.me.user.colorMode : 'light'}
     >
       {children}

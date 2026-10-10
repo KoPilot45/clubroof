@@ -3,6 +3,7 @@ import { BottomTabBarHeightCallbackContext, type BottomTabBarProps } from 'expo-
 import { useContext, useEffect, useState } from 'react';
 import { Keyboard, Platform, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { hapticSelect } from '@/lib/haptics';
 import { useTheme } from '@/lib/theme';
 import { Text } from './app-text';
 import { shadowStyle, type IconName } from './ui';
@@ -88,7 +89,10 @@ export function FloatingNav({
             accessibilityRole="tab"
             accessibilityLabel={item.label}
             aria-selected={item.active}
-            onPress={item.onPress}
+            onPress={() => {
+              if (!item.active) hapticSelect();
+              item.onPress();
+            }}
             onLongPress={item.onLongPress}
             style={{
               height: sizes.tabItem,

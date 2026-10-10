@@ -150,7 +150,9 @@ export default function LoginScreen() {
                   disabled={busy}
                 />
               ) : null}
-              {mailSent ? <Chip tone="success" icon="mail" label="Der Code ist unterwegs." /> : null}
+              {mailSent ? (
+                <Chip tone="success" icon="mail" label="Der Code ist unterwegs." />
+              ) : null}
               <Button
                 label="Abbrechen"
                 variant="outline"

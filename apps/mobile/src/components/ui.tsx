@@ -23,6 +23,7 @@ import {
   Switch,
   Image,
   Modal,
+  PanResponder,
   Pressable,
   TextInput,
   RefreshControl,
@@ -49,6 +50,7 @@ import { useTheme } from '@/lib/theme';
 import { Text } from './app-text';
 import { RequestError } from '@/lib/api';
 import { mediaUri } from '@/lib/upload';
+import { hapticSelect } from '@/lib/haptics';
 import { dateFormat, t } from '@/lib/i18n';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -322,7 +324,7 @@ export function Section({
         {action && onAction ? (
           <Pressable
             onPress={onAction}
-            hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             accessibilityRole="link"
           >
             <T variant="label" color={colors.primaryText}>
@@ -640,7 +642,10 @@ export function Toggle({
       trackColor={{ true: colors.primary, false: colors.border }}
       thumbColor={colors.surface}
       {...({ activeThumbColor: colors.surface } as object)}
-      onValueChange={onChange}
+      onValueChange={(v) => {
+        hapticSelect();
+        onChange(v);
+      }}
     />
   );
 }
@@ -854,7 +859,15 @@ export function ListRow({
       </View>
     </>
   );
-  const inner = { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md } as const;
+  // Die Polsterung gehört zum Tippbereich: die ganze Zeile (mindestens 44 pt) ist antippbar
+  const inner = {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    minHeight: sizes.touchTarget,
+    paddingVertical: spacing.sm + 2,
+  } as const;
   // Zusatz rechts (Buttons, Schalter) steht neben dem antippbaren Bereich, nie darin:
   // verschachtelte Buttons sind im Web ungültig.
   return (
@@ -863,8 +876,6 @@ export function ListRow({
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.md,
-        minHeight: sizes.touchTarget,
-        paddingVertical: spacing.sm + 2,
         borderTopWidth: first ? 0 : 1,
         borderTopColor: colors.border,
       }}
@@ -878,6 +889,116 @@ export function ListRow({
       )}
       {trailing}
       {onPress ? <Ionicons name="chevron-forward" size={18} color={colors.onSurfaceMuted} /> : null}
+    </View>
+  );
+}
+
+/**
+ * Wisch-Aktion in Listen: Nach links wischen zeigt eine Aktion (z. B. „Zusagen“); Antippen führt sie aus, weiter
+ * Wischen löst sie sofort aus. Immer zusätzlich zu einer sichtbaren Bedienung erreichbar (Screenreader: eigene
+ * Aktion am Element). Die Zeile braucht eine eigene Hintergrundfarbe, damit die Aktion dahinter verdeckt bleibt.
+ */
+export function SwipeRow({
+  children,
+  label,
+  icon,
+  tone = 'success',
+  onAction,
+}: {
+  children: ReactNode;
+  /** Beschriftung der Aktion (auch für Screenreader) */
+  label: string;
+  icon: IconName;
+  tone?: StatusKey;
+  onAction: () => void;
+}) {
+  const { colors } = useTheme();
+  const WIDTH = 92;
+  const x = useRef(new Animated.Value(0)).current;
+  const offset = useRef(0);
+  const [open, setOpen] = useState(false);
+  /** nach einem Wischen kein Antippen auslösen (im Browser folgt auf das Loslassen ein Klick) */
+  const dragged = useRef(false);
+  const snap = (to: number) => {
+    offset.current = to;
+    setOpen(to !== 0);
+    Animated.spring(x, { toValue: to, useNativeDriver: true, bounciness: 0 }).start();
+  };
+  const pan = useRef(
+    PanResponder.create({
+      // nur waagerechte Wischbewegungen übernehmen, damit die Seite weiter scrollt
+      // Capture: auch wenn ein Knopf in der Zeile die Berührung schon hält, übernimmt das Wischen
+      onMoveShouldSetPanResponderCapture: (_, g) =>
+        Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderGrant: () => {
+        dragged.current = true;
+      },
+      onPanResponderMove: (_, g) =>
+        x.setValue(Math.min(0, Math.max(-WIDTH * 1.6, offset.current + g.dx))),
+      onPanResponderRelease: (_, g) => {
+        setTimeout(() => (dragged.current = false), 150);
+        const end = offset.current + g.dx;
+        if (end < -WIDTH * 1.4) {
+          hapticSelect();
+          snap(0);
+          onActionRef.current();
+        } else snap(end < -WIDTH / 2 ? -WIDTH : 0);
+      },
+      onPanResponderTerminate: () => {
+        setTimeout(() => (dragged.current = false), 150);
+        snap(offset.current);
+      },
+    }),
+  ).current;
+  const onActionRef = useRef(onAction);
+  onActionRef.current = onAction;
+  const c = colors.status[tone];
+  return (
+    <View style={{ overflow: 'hidden' }}>
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          right: 0,
+          width: WIDTH,
+          opacity: open ? 1 : 0,
+        }}
+      >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t(label)}
+          disabled={!open}
+          onPress={() => {
+            snap(0);
+            onAction();
+          }}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+            backgroundColor: c.container,
+          }}
+        >
+          <Ionicons name={icon} size={22} color={c.onContainer} />
+          <Text style={{ color: c.onContainer, fontSize: 12, fontWeight: '700' }}>{label}</Text>
+        </Pressable>
+      </View>
+      <Animated.View
+        {...pan.panHandlers}
+        {...({
+          onClickCapture: (e: { stopPropagation: () => void }) => {
+            if (dragged.current) e.stopPropagation();
+          },
+        } as object)}
+        style={{ transform: [{ translateX: x }], backgroundColor: colors.surfaceRaised }}
+        accessibilityActions={[{ name: 'activate', label: t(label) }]}
+        onAccessibilityAction={() => onAction()}
+      >
+        {children}
+      </Animated.View>
     </View>
   );
 }
@@ -1333,7 +1454,10 @@ export function ChoiceChips<T extends string>({
               key={o.value}
               accessibilityRole="radio"
               accessibilityState={{ checked: active }}
-              onPress={() => onToggle(o.value)}
+              onPress={() => {
+                hapticSelect();
+                onToggle(o.value);
+              }}
               hitSlop={{ top: 6, bottom: 6 }}
               style={{
                 flexDirection: 'row',

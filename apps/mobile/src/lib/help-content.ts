@@ -93,6 +93,12 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.',
       },
       {
+        id: 'swipe',
+        question: 'Geht das auch schneller – per Wischen?',
+        answer:
+          'Ja. Bei offenen Terminen und ungelesenen Benachrichtigungen wischst du die Zeile nach links: Es erscheint „Zusagen“ bzw. „Gelesen“. Tippe darauf – oder wische ganz durch, dann passiert es sofort. Alles geht auch ohne Wischen über die Knöpfe in der Zeile.',
+      },
+      {
         id: 'search',
         question: 'Wie suche ich nach Terminen, Personen oder News?',
         answer:

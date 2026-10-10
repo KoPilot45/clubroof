@@ -247,6 +247,21 @@ haben damit den neuen Look automatisch. Zusätzlich umgestellt:
 - **Willkommens-Tour** als erhöhte Karte (Radius 28); lange Kachelnamen (Kassenverwaltung) trennen an Wortfugen.
 - Schrift auf Blickfangkarten ist immer `onHero` (auch Hinweise wie „Rückmeldung nicht mehr möglich“).
 
+### Paket U: iOS-Feinschliff (10.10.2026) ✅
+
+- **Tippflächen:** `ListRow` trägt die Polsterung im Tippbereich (Zeile ≥ 44), Auswahl-Chips 34 pt + 6 pt Tippbereich (`hitSlop`), Abschnittslinks 14 pt, runde
+  Knöpfe, Hilfe-Fragen, Filter, Kontakt-Knöpfe, Zurück-Pfeil und „Beenden“ ≥ 44. `scripts/e2e/touchflaechen.mjs` misst 23 Seiten (Trainer, Eltern, Admin) und
+  meldet alles unter 44 pt (Chip- und Linkregel dokumentiert im Skript).
+- **Haptik:** `expo-haptics` über `lib/haptics.ts` (im Browser ohne Wirkung): Auswahl (Tab, Chip, Schalter), Erfolg (Zu-/Absage gespeichert, Aufgabe), Fehler.
+- **Wisch-Aktionen:** `SwipeRow` – nach links wischen zeigt eine Aktion (Antippen führt sie aus, weit wischen löst sofort aus); für Screenreader als eigene Aktion
+  am Element, immer zusätzlich zu einer sichtbaren Bedienung. Eingesetzt bei ungelesenen Benachrichtigungen („Gelesen“) und offenen Terminen („Zusagen“).
+  Getestet mit Touch-Ereignissen (`ios-feinschliff.mjs`); die Maus löst im Browser keine Wischgeste aus.
+- **iPad:** unterstützt, aber `requireFullScreen` (kein Multitasking) und Hochformat – so bleibt eine einzige Ausrichtung zulässig. Die Inhalte sind auf 960 pt Breite begrenzt.
+- **Ladebildschirm:** `BrandSplash` in der Vereinsfarbe des zuletzt angemeldeten Vereins (Farbe und Kürzel auf dem Gerät gemerkt, `lib/brand.ts`); auch die Anmeldeseite
+  erscheint dann in dieser Farbe. Der native Startbildschirm kann nicht je Verein wechseln.
+- **Übergänge:** Tabs blenden weich über (`animation: 'fade'`), Unterseiten nutzen die Standardübergänge des Systems.
+- **Systemtextgröße:** Texte skalieren mit der Systemeinstellung des Geräts (React Native); die Textgröße der App (Normal/Groß/Sehr groß) kommt dazu.
+
 ### Offene Aufgaben (Paket L)
 
 

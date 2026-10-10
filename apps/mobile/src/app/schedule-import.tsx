@@ -25,7 +25,10 @@ const FIELD_LABELS: Record<ScheduleField, string> = {
   competition: 'Spielklasse',
   status: 'Status',
 };
-const STATUS: Record<SchedulePreviewRow['status'], { label: string; tone: 'success' | 'info' | 'neutral' | 'action' }> = {
+const STATUS: Record<
+  SchedulePreviewRow['status'],
+  { label: string; tone: 'success' | 'info' | 'neutral' | 'action' }
+> = {
   new: { label: 'Neu', tone: 'success' },
   changed: { label: 'Geändert', tone: 'info' },
   unchanged: { label: 'Unverändert', tone: 'neutral' },
@@ -121,7 +124,9 @@ export default function ScheduleImportScreen() {
                 `/schedule-import/${r.batchId}/undo`,
                 { method: 'POST' },
               );
-              setUndone(`${out.removed} Spiele entfernt${out.kept ? `, ${out.kept} bleiben (Spielbericht vorhanden)` : ''}.`);
+              setUndone(
+                `${out.removed} Spiele entfernt${out.kept ? `, ${out.kept} bleiben (Spielbericht vorhanden)` : ''}.`,
+              );
             } catch (e) {
               setError(e instanceof RequestError ? e.message : 'Das hat nicht geklappt.');
             } finally {
@@ -156,9 +161,7 @@ export default function ScheduleImportScreen() {
   }
 
   const ordered = preview
-    ? [...preview.rows].sort(
-        (a, b) => rank(a.status) - rank(b.status) || a.line - b.line,
-      )
+    ? [...preview.rows].sort((a, b) => rank(a.status) - rank(b.status) || a.line - b.line)
     : [];
   const importable = preview ? preview.summary.new + preview.summary.changed : 0;
 
@@ -172,8 +175,9 @@ export default function ScheduleImportScreen() {
           anzulegen.
         </T>
         <T variant="caption">
-          Pokal-, Liga- und Testspiele werden erkannt (Spalte „Spielklasse“). Treffzeit und Treffpunkt
-          kommen aus den Regeln der Mannschaft. Vergangene und abgesetzte Spiele werden übersprungen.
+          Pokal-, Liga- und Testspiele werden erkannt (Spalte „Spielklasse“). Treffzeit und
+          Treffpunkt kommen aus den Regeln der Mannschaft. Vergangene und abgesetzte Spiele werden
+          übersprungen.
         </T>
       </Card>
       <Button
@@ -190,9 +194,21 @@ export default function ScheduleImportScreen() {
           <Section title={`Vorschau: ${file?.name ?? ''}`}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               <Chip tone="success" icon="add-circle" label={`${preview.summary.new} neu`} />
-              <Chip tone="info" icon="create-outline" label={`${preview.summary.changed} geändert`} />
-              <Chip tone="neutral" icon="checkmark" label={`${preview.summary.unchanged} unverändert`} />
-              <Chip tone="action" icon="remove-circle-outline" label={`${preview.summary.skipped} übersprungen`} />
+              <Chip
+                tone="info"
+                icon="create-outline"
+                label={`${preview.summary.changed} geändert`}
+              />
+              <Chip
+                tone="neutral"
+                icon="checkmark"
+                label={`${preview.summary.unchanged} unverändert`}
+              />
+              <Chip
+                tone="action"
+                icon="remove-circle-outline"
+                label={`${preview.summary.skipped} übersprungen`}
+              />
             </View>
           </Section>
 
@@ -213,9 +229,7 @@ export default function ScheduleImportScreen() {
                       { value: 'skip', label: 'Keine eigene Mannschaft' },
                     ]}
                     selected={mapping[u.name] === undefined ? [] : [mapping[u.name] || 'skip']}
-                    onToggle={(v) =>
-                      setMapping((m) => ({ ...m, [u.name]: v === 'skip' ? '' : v }))
-                    }
+                    onToggle={(v) => setMapping((m) => ({ ...m, [u.name]: v === 'skip' ? '' : v }))}
                   />
                 ))}
               </Card>
@@ -248,18 +262,36 @@ export default function ScheduleImportScreen() {
           <Section title="Spiele">
             <Card>
               {ordered.slice(0, SHOWN).map((r, i) => (
-                <View key={`${r.line}-${r.teamId}`} style={{ paddingVertical: 10, gap: 4, borderTopWidth: i ? 1 : 0, borderTopColor: 'rgba(128,128,128,0.25)' }}>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                <View
+                  key={`${r.line}-${r.teamId}`}
+                  style={{
+                    paddingVertical: 10,
+                    gap: 4,
+                    borderTopWidth: i ? 1 : 0,
+                    borderTopColor: 'rgba(128,128,128,0.25)',
+                  }}
+                >
+                  <View
+                    style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}
+                  >
                     <Chip tone={STATUS[r.status].tone} label={STATUS[r.status].label} />
                     {r.teamLabel ? <Chip tone="neutral" label={r.teamLabel} /> : null}
                     {r.kind ? <Chip tone="neutral" label={MATCH_KIND_LABELS[r.kind]} /> : null}
                   </View>
                   <T variant="label">
-                    {r.opponent ? `${r.isHome === false ? '@ ' : ''}${r.opponent}` : `Zeile ${r.line}`}
+                    {r.opponent
+                      ? `${r.isHome === false ? '@ ' : ''}${r.opponent}`
+                      : `Zeile ${r.line}`}
                   </T>
-                  <T variant="caption">{[r.startsAt ? when(r.startsAt) : null, r.competition].filter(Boolean).join(' · ')}</T>
+                  <T variant="caption">
+                    {[r.startsAt ? when(r.startsAt) : null, r.competition]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </T>
                   {r.changes.map((c) => (
-                    <T key={c} variant="caption">{c}</T>
+                    <T key={c} variant="caption">
+                      {c}
+                    </T>
                   ))}
                   {r.reason ? <T variant="caption">{r.reason}</T> : null}
                 </View>

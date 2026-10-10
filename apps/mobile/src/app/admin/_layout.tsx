@@ -80,7 +80,13 @@ function ExitButton() {
       accessibilityLabel={t('Verwaltungsmodus beenden')}
       onPress={() => router.dismissTo('/mehr')}
       hitSlop={8}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6 }}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 6,
+        minHeight: 44,
+      }}
     >
       <Ionicons name="close-circle-outline" size={20} color={colors.onPrimaryContainer} />
       <Text style={{ color: colors.onPrimaryContainer, fontWeight: '700' }}>Beenden</Text>

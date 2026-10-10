@@ -25,8 +25,8 @@ function ActionButton({ icon, label, href }: { icon: IconName; label: string; hr
       onPress={() => void Linking.openURL(href)}
       hitSlop={4}
       style={({ pressed }) => ({
-        width: 40,
-        height: 40,
+        width: 44,
+        height: 44,
         borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',

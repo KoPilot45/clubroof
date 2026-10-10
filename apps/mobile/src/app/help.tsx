@@ -101,6 +101,7 @@ export default function HelpScreen() {
                       flexDirection: 'row',
                       alignItems: 'center',
                       gap: 10,
+                      minHeight: 44,
                       paddingVertical: 10,
                     }}
                   >

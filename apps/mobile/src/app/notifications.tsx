@@ -14,6 +14,7 @@ import {
   Loading,
   Screen,
   Section,
+  SwipeRow,
   type IconName,
 } from '@/components/ui';
 import { formatAgo } from '@/lib/format';
@@ -111,6 +112,8 @@ export default function NotificationsScreen() {
               accessibilityState={{ selected: active }}
               onPress={() => setFilter(key)}
               style={{
+                minHeight: 44,
+                justifyContent: 'center',
                 paddingHorizontal: 14,
                 paddingVertical: 7,
                 borderRadius: radii.pill,
@@ -137,24 +140,43 @@ export default function NotificationsScreen() {
             {group.items.map((n, i) => {
               const level = LEVEL[n.level];
               return (
-                <ListRow
-                  key={n.id}
-                  first={i === 0}
-                  leading={<IconTile name={level.icon} tone={level.tone} />}
-                  title={(n.readAt ? '' : '● ') + n.title}
-                  subtitle={n.body ?? undefined}
-                  trailing={<Chip tone="neutral" label={formatAgo(n.createdAt)} />}
-                  onPress={() => {
-                    if (!n.readAt) markRead.mutate(n.id);
-                    if (n.link && n.link !== '/notifications') openLink(n.link);
-                  }}
-                />
+                <SwipeRowOrPlain key={n.id} unread={!n.readAt} onRead={() => markRead.mutate(n.id)}>
+                  <ListRow
+                    first={i === 0}
+                    leading={<IconTile name={level.icon} tone={level.tone} />}
+                    title={(n.readAt ? '' : '● ') + n.title}
+                    subtitle={n.body ?? undefined}
+                    trailing={<Chip tone="neutral" label={formatAgo(n.createdAt)} />}
+                    onPress={() => {
+                      if (!n.readAt) markRead.mutate(n.id);
+                      if (n.link && n.link !== '/notifications') openLink(n.link);
+                    }}
+                  />
+                </SwipeRowOrPlain>
               );
             })}
           </Card>
         </Section>
       ))}
     </Screen>
+  );
+}
+
+/** Ungelesene Benachrichtigung: nach links wischen markiert sie als gelesen. */
+function SwipeRowOrPlain({
+  unread,
+  onRead,
+  children,
+}: {
+  unread: boolean;
+  onRead: () => void;
+  children: React.ReactNode;
+}) {
+  if (!unread) return <>{children}</>;
+  return (
+    <SwipeRow label="Gelesen" icon="checkmark-done" onAction={onRead}>
+      {children}
+    </SwipeRow>
   );
 }
 

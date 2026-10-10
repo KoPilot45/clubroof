@@ -90,7 +90,8 @@ export default function NewEventScreen() {
         : null;
   const meetingBefore = meetingChoice ?? (ruleMinutes != null ? 'rule' : '0');
   const meetingMinutes = meetingBefore === 'rule' ? (ruleMinutes ?? 0) : Number(meetingBefore);
-  const meetingAt = meetingMinutes > 0 ? new Date(startsAt.getTime() - meetingMinutes * 60_000) : null;
+  const meetingAt =
+    meetingMinutes > 0 ? new Date(startsAt.getTime() - meetingMinutes * 60_000) : null;
   const isAway = type === 'match' && home === 'away';
   // Wiederholen: wöchentlich bis zu einem Datum (Standard: 8 Wochen)
   const until = repeatUntil ?? toIsoDate(addDays(fromIsoDate(date), 56));
@@ -263,7 +264,9 @@ export default function NewEventScreen() {
         {meetingAt ? (
           <TextField
             label={
-              meetingBefore === 'rule' ? 'Treffpunkt (leer = Standard der Mannschaft)' : 'Treffpunkt'
+              meetingBefore === 'rule'
+                ? 'Treffpunkt (leer = Standard der Mannschaft)'
+                : 'Treffpunkt'
             }
             value={meetingPoint}
             onChangeText={setMeetingPoint}

@@ -99,7 +99,7 @@ export default function AccountScreen() {
             accessibilityRole="button"
             accessibilityState={{ expanded: pwOpen }}
             onPress={() => setPwOpen(!pwOpen)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 }}
           >
             <IconTile name="key-outline" />
             <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
@@ -367,8 +367,8 @@ function TwoFactorSection() {
             ) : (
               <>
                 <T variant="caption">
-                  Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code ab –
-                  aus einer Authenticator-App oder per E-Mail.
+                  Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code ab – aus
+                  einer Authenticator-App oder per E-Mail.
                 </T>
                 <Button
                   label="Authenticator-App einrichten"
@@ -417,9 +417,9 @@ function EmailSetup({ onDone, onCancel }: { onDone: () => Promise<void>; onCance
   return (
     <>
       <T variant="caption">
-        Bei der Anmeldung schicken wir dir einen 6-stelligen Code per E-Mail (10 Minuten gültig,
-        nur einmal nutzbar). Sicherer ist eine Authenticator-App – der E-Mail-Code ist die
-        einfachere Alternative.
+        Bei der Anmeldung schicken wir dir einen 6-stelligen Code per E-Mail (10 Minuten gültig, nur
+        einmal nutzbar). Sicherer ist eine Authenticator-App – der E-Mail-Code ist die einfachere
+        Alternative.
       </T>
       {sent ? (
         <>
@@ -437,7 +437,10 @@ function EmailSetup({ onDone, onCancel }: { onDone: () => Promise<void>; onCance
             disabled={code.trim().length !== 6}
             onPress={() =>
               void run(async () => {
-                await api('/auth/2fa/email/enable', { method: 'POST', body: { code: code.trim() } });
+                await api('/auth/2fa/email/enable', {
+                  method: 'POST',
+                  body: { code: code.trim() },
+                });
                 await onDone();
               })
             }

@@ -20,6 +20,7 @@ import {
   MATCH_KIND_LABELS,
   MAYBE_REASONS,
 } from '@/lib/labels';
+import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { enqueueResponse, queuedFor, useOutbox } from '@/lib/outbox';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -34,6 +35,7 @@ import {
   ListRow,
   T,
   Sheet,
+  SwipeRow,
   TeamBadge,
   TextField,
   type IconName,
@@ -158,6 +160,9 @@ export function EventRow({
   const multi = event.myResponses.length > 1 || mine?.relation === 'child';
   const outbox = useOutbox();
   const queued = mine ? queuedFor(outbox, event.id, mine.personId) : undefined;
+  const quick = useQuickYes(event, mine?.personId ?? '');
+  const swipeable =
+    !cancelled && !!mine && !multi && !queued && mine.status === 'pending' && mine.canRespond;
   const text = cancelled
     ? event.cancelledReason
       ? `Grund: ${event.cancelledReason}`
@@ -169,7 +174,7 @@ export function EventRow({
       ]
         .filter(Boolean)
         .join(' · ');
-  return (
+  const row = (
     <ListRow
       first={first}
       onPress={openable ? () => router.push(`/events/${event.id}`) : undefined}
@@ -211,6 +216,13 @@ export function EventRow({
         )
       }
     />
+  );
+  return swipeable ? (
+    <SwipeRow label="Zusagen" icon="checkmark" onAction={quick.yes}>
+      {row}
+    </SwipeRow>
+  ) : (
+    row
   );
 }
 
@@ -262,10 +274,36 @@ function ReasonForm({
   );
 }
 
+/** Sofortige Zusage mit Rückmeldung (Toast, bei fehlender Verbindung gemerkt) – für ✓ und Wischen. */
+function useQuickYes(event: EventSummary, personId: string) {
+  const respond = useRespond(event.id, event.title);
+  const toast = useToast();
+  return {
+    pending: respond.isPending,
+    yes: () =>
+      respond.mutate(
+        { personId, status: 'yes' },
+        {
+          onSuccess: (data) =>
+            toast(
+              data === 'queued'
+                ? { message: 'Gespeichert – wird gesendet, sobald du wieder online bist' }
+                : {
+                    message: 'Zugesagt',
+                    actionLabel: 'Rückgängig',
+                    onAction: () => respond.mutate({ personId, status: 'pending' }),
+                  },
+            ),
+        },
+      ),
+  };
+}
+
 /** Zwei runde Knöpfe (44): ✓ sagt sofort zu, ✕ öffnet den Termin, dort wird der Grund abgefragt. */
 function RoundRespond({ event, personId }: { event: EventSummary; personId: string }) {
   const { colors, sizes } = useTheme();
   const respond = useRespond(event.id, event.title);
+  const quick = useQuickYes(event, personId);
   const toast = useToast();
   const [declining, setDeclining] = useState(false);
   const size = sizes.touchTarget;
@@ -281,24 +319,8 @@ function RoundRespond({ event, personId }: { event: EventSummary; personId: stri
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Zusagen"
-        disabled={respond.isPending}
-        onPress={() =>
-          respond.mutate(
-            { personId, status: 'yes' },
-            {
-              onSuccess: (data) =>
-                toast(
-                  data === 'queued'
-                    ? { message: 'Gespeichert – wird gesendet, sobald du wieder online bist' }
-                    : {
-                        message: 'Zugesagt',
-                        actionLabel: 'Rückgängig',
-                        onAction: () => respond.mutate({ personId, status: 'pending' }),
-                      },
-                ),
-            },
-          )
-        }
+        disabled={quick.pending}
+        onPress={quick.yes}
         style={{ ...round, backgroundColor: colors.status.success.container }}
       >
         <Ionicons name="checkmark" size={22} color={colors.status.success.onContainer} />
@@ -377,7 +399,9 @@ export function useRespond(eventId: string, queueTitle?: string) {
         throw e;
       }
     },
+    onError: hapticError,
     onSuccess: () => {
+      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['home'] });
       void queryClient.invalidateQueries({ queryKey: ['events'] });
       void queryClient.invalidateQueries({ queryKey: ['event', eventId] });
