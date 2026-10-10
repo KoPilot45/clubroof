@@ -148,13 +148,6 @@ export function AppHeader({
         </T>
       </View>
       {onSearch ? <HeaderButton icon="search-outline" label="Suche" onPress={onSearch} /> : null}
-      {me.canAdminister ? (
-        <HeaderButton
-          icon="shield-checkmark-outline"
-          label="Verwaltung öffnen"
-          onPress={() => router.push('/admin')}
-        />
-      ) : null}
       <HeaderButton
         icon="notifications-outline"
         label={unread ? `Benachrichtigungen, ${unread} ungelesen` : 'Benachrichtigungen'}

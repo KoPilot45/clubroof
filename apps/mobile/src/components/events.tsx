@@ -30,6 +30,7 @@ import {
   Crest,
   ListRow,
   T,
+  Sheet,
   TeamBadge,
   TextField,
   type IconName,
@@ -208,7 +209,14 @@ export function useRespond(eventId: string) {
  * Zu-/Absage für jede Person (ich selbst und ggf. meine Kinder). Absagen und „Unsicher“ fragen
  * nach dem Grund – er ist freiwillig und für das Trainerteam bestimmt.
  */
-export function ResponseControls({ event }: { event: EventSummary }) {
+export function ResponseControls({
+  event,
+  tone = 'surface',
+}: {
+  event: EventSummary;
+  /** hero: Schaltflächen auf der Blickfangkarte; der Grund wird in einem Blatt von unten abgefragt */
+  tone?: 'surface' | 'hero';
+}) {
   const respond = useRespond(event.id);
   const [error, setError] = useState<string | null>(null);
   /** Person und Antwort, für die gerade ein Grund gewählt wird */
@@ -259,6 +267,49 @@ export function ResponseControls({ event }: { event: EventSummary }) {
     respond.variables?.personId === r.personId &&
     respond.variables.status === status;
 
+  const outline = tone === 'hero' ? ('heroOutline' as const) : ('outline' as const);
+  const reasonPanel = (r: MyResponse) =>
+    pending && (
+      <View style={{ gap: 10 }}>
+        <ChoiceChips
+          label={pending.status === 'maybe' ? 'Warum bist du unsicher?' : 'Warum kannst du nicht?'}
+          options={(pending.status === 'maybe' ? MAYBE_REASONS : DECLINE_REASONS).map((d) => ({
+            value: d,
+            label: d,
+          }))}
+          selected={reason ? [reason] : []}
+          onToggle={(v) => setReason(v === reason ? null : v)}
+        />
+        <TextField
+          label="Hinweis für das Trainerteam (optional)"
+          value={note}
+          onChangeText={setNote}
+          maxLength={120}
+        />
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Button
+            style={{ flex: 1 }}
+            label="Abbrechen"
+            variant="outline"
+            onPress={() => setPending(null)}
+          />
+          <Button
+            style={{ flex: 1 }}
+            label={pending.status === 'maybe' ? 'Unsicher senden' : 'Absage senden'}
+            variant={pending.status === 'maybe' ? 'action' : 'danger'}
+            loading={busy(r, pending.status)}
+            onPress={() =>
+              send(
+                r,
+                pending.status,
+                [reason, note.trim()].filter(Boolean).join(' – ') || undefined,
+              )
+            }
+          />
+        </View>
+      </View>
+    );
+
   return (
     <View style={{ gap: 12 }}>
       {event.myResponses.map((r) => (
@@ -285,64 +336,33 @@ export function ResponseControls({ event }: { event: EventSummary }) {
                 ? 'Der Termin wurde abgesagt.'
                 : 'Rückmeldung nicht mehr möglich. Bei Änderungen wende dich an dein Trainerteam.'}
             </T>
-          ) : pending?.personId === r.personId ? (
-            <View style={{ gap: 10 }}>
-              <ChoiceChips
-                label={
-                  pending.status === 'maybe' ? 'Warum bist du unsicher?' : 'Warum kannst du nicht?'
-                }
-                options={(pending.status === 'maybe' ? MAYBE_REASONS : DECLINE_REASONS).map(
-                  (d) => ({
-                    value: d,
-                    label: d,
-                  }),
-                )}
-                selected={reason ? [reason] : []}
-                onToggle={(v) => setReason(v === reason ? null : v)}
-              />
-              <TextField
-                label="Hinweis für das Trainerteam (optional)"
-                value={note}
-                onChangeText={setNote}
-                maxLength={120}
-              />
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Button
-                  style={{ flex: 1 }}
-                  label="Abbrechen"
-                  variant="outline"
-                  onPress={() => setPending(null)}
-                />
-                <Button
-                  style={{ flex: 1 }}
-                  label={pending.status === 'maybe' ? 'Unsicher senden' : 'Absage senden'}
-                  variant={pending.status === 'maybe' ? 'action' : 'danger'}
-                  loading={busy(r, pending.status)}
-                  onPress={() =>
-                    send(
-                      r,
-                      pending.status,
-                      [reason, note.trim()].filter(Boolean).join(' – ') || undefined,
-                    )
-                  }
-                />
-              </View>
-            </View>
+          ) : pending?.personId === r.personId && tone !== 'hero' ? (
+            reasonPanel(r)
           ) : (
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Button
                 style={{ flex: 1 }}
                 label={r.status === 'yes' ? 'Zugesagt' : 'Zusagen'}
-                icon={r.status === 'yes' ? 'checkmark-circle' : undefined}
-                variant={r.status === 'yes' || r.status === 'pending' ? 'primary' : 'outline'}
+                icon={r.status === 'yes' && tone !== 'hero' ? 'checkmark-circle' : undefined}
+                compact={tone === 'hero'}
+                size={tone === 'hero' ? 'sm' : 'md'}
+                variant={
+                  r.status === 'yes' || r.status === 'pending'
+                    ? tone === 'hero'
+                      ? 'hero'
+                      : 'primary'
+                    : outline
+                }
                 loading={busy(r, 'yes')}
                 onPress={() => send(r, 'yes')}
               />
               <Button
                 style={{ flex: 1 }}
                 label="Unsicher"
-                icon={r.status === 'maybe' ? 'help-circle' : undefined}
-                variant={r.status === 'maybe' ? 'action' : 'outline'}
+                icon={r.status === 'maybe' && tone !== 'hero' ? 'help-circle' : undefined}
+                compact={tone === 'hero'}
+                size={tone === 'hero' ? 'sm' : 'md'}
+                variant={r.status === 'maybe' ? (tone === 'hero' ? 'hero' : 'action') : outline}
                 onPress={() => {
                   setReason(null);
                   setNote('');
@@ -352,8 +372,10 @@ export function ResponseControls({ event }: { event: EventSummary }) {
               <Button
                 style={{ flex: 1 }}
                 label={r.status === 'no' ? 'Abgesagt' : 'Absagen'}
-                icon={r.status === 'no' ? 'close-circle' : undefined}
-                variant={r.status === 'no' ? 'danger' : 'outline'}
+                icon={r.status === 'no' && tone !== 'hero' ? 'close-circle' : undefined}
+                compact={tone === 'hero'}
+                size={tone === 'hero' ? 'sm' : 'md'}
+                variant={r.status === 'no' ? (tone === 'hero' ? 'hero' : 'danger') : outline}
                 onPress={() => {
                   setReason(null);
                   setNote('');
@@ -365,6 +387,17 @@ export function ResponseControls({ event }: { event: EventSummary }) {
         </View>
       ))}
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+      {tone === 'hero' ? (
+        <Sheet
+          visible={!!pending}
+          onClose={() => setPending(null)}
+          title={pending?.status === 'maybe' ? 'Unsicher melden' : 'Absagen'}
+        >
+          {pending
+            ? reasonPanel(event.myResponses.find((r) => r.personId === pending.personId)!)
+            : null}
+        </Sheet>
+      ) : null}
     </View>
   );
 }

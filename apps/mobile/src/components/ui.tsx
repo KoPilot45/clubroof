@@ -22,6 +22,7 @@ import {
   Animated,
   Switch,
   Image,
+  Modal,
   Pressable,
   TextInput,
   RefreshControl,
@@ -236,14 +237,21 @@ export function HeroCard({
 }) {
   const { colors, radii, spacing, isDark, elevation } = useTheme();
   const gradientId = useId().replace(/[^a-zA-Z0-9]/g, '');
+  // Hintergrund bekommt die gemessene Größe: wächst die Karte (z. B. nach dem Laden), wächst er mit
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const outer: ViewStyle = {
     borderRadius: radii.xxl,
     ...(isDark ? { borderWidth: 1, borderColor: colors.hero.decor } : shadowStyle(elevation.hero)),
   };
   const body = (
-    <View style={{ borderRadius: radii.xxl, overflow: 'hidden', padding: spacing.lg, gap: 12 }}>
+    <View
+      onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
+      style={{ borderRadius: radii.xxl, overflow: 'hidden', padding: spacing.lg, gap: 12 }}
+    >
       <Svg
-        style={StyleSheet.absoluteFill}
+        style={{ position: 'absolute', top: 0, left: 0 }}
+        width={box?.w ?? 0}
+        height={box?.h ?? 0}
         viewBox="0 0 306 270"
         preserveAspectRatio="xMidYMid slice"
         accessibilityElementsHidden
@@ -325,6 +333,76 @@ export function Section({
       </View>
       {children}
     </View>
+  );
+}
+
+/**
+ * Blatt von unten (Bestätigung, Auswahl, Grund-Feld): Hintergrund abgedunkelt, Tippen daneben schließt.
+ * Inhalt scrollt, wenn er höher als 85 % des Bildschirms wird.
+ */
+export function Sheet({
+  visible,
+  onClose,
+  title,
+  children,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+}) {
+  const { colors, radii, spacing, isDark } = useTheme();
+  const { height } = useWindowDimensions();
+  return (
+    <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
+      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('Schließen')}
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
+        />
+        <View
+          accessibilityViewIsModal
+          style={{
+            width: '100%',
+            maxWidth: 560,
+            alignSelf: 'center',
+            maxHeight: height * 0.85,
+            borderTopLeftRadius: radii.xxl,
+            borderTopRightRadius: radii.xxl,
+            backgroundColor: colors.surfaceRaised,
+            ...(isDark ? { borderWidth: 1, borderColor: colors.border } : null),
+          }}
+        >
+          <View
+            style={{
+              alignSelf: 'center',
+              width: 40,
+              height: 5,
+              borderRadius: 3,
+              marginTop: 10,
+              backgroundColor: colors.border,
+            }}
+          />
+          <ScrollView
+            contentContainerStyle={{
+              padding: spacing.xl,
+              gap: spacing.md,
+              paddingBottom: spacing.xxl,
+            }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {title ? (
+              <T variant="headline" accessibilityRole="header">
+                {title}
+              </T>
+            ) : null}
+            {children}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -421,6 +499,7 @@ export function Button({
   loading,
   style,
   size = 'md',
+  compact,
 }: {
   label: string;
   onPress: () => void;
@@ -435,6 +514,8 @@ export function Button({
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
+  /** schmaler Innenabstand für Dreier-Reihen, in denen Beschriftungen sonst umbrechen */
+  compact?: boolean;
 }) {
   const { colors, radii, sizes } = useTheme();
   const palette = {
@@ -497,7 +578,7 @@ export function Button({
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: small ? sizes.buttonSmall : sizes.button,
-          paddingHorizontal: small ? 10 : 14,
+          paddingHorizontal: compact ? 6 : small ? 10 : 14,
           borderRadius: radii.pill,
           borderWidth: border,
           borderColor: palette.border,

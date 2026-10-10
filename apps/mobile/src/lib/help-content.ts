@@ -31,7 +31,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'overview',
         question: 'Wo finde ich was?',
         answer:
-          'Unten gibt es fünf Bereiche:\n• Home: dein Überblick – nächstes Spiel, Neuigkeiten, offene Aufgaben.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Termine: deine nächsten Termine und der Kalender.\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften des Vereins.\n• Mehr: dein Profil, Einstellungen, Abwesenheiten und diese Hilfe.',
+          'Unten gibt es fünf Bereiche:\n• Home: dein Überblick – nächste Spiele (zum Wischen), Offenes, deine Woche, Neuigkeiten und dein Schnellzugriff.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Termine: deine nächsten Termine und der Kalender.\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften des Vereins.\n• Mehr: dein Profil, Einstellungen, Abwesenheiten und diese Hilfe.',
       },
       {
         id: 'login',
@@ -86,6 +86,12 @@ export const HELP_SECTIONS: HelpSection[] = [
     title: 'Termine und Zusagen',
     audience: 'all',
     entries: [
+      {
+        id: 'quick-access',
+        question: 'Wie ändere ich den Schnellzugriff auf Home?',
+        answer:
+          'Ganz unten auf Home findest du den Schnellzugriff – Abkürzungen zu Seiten, die du oft brauchst. Tippe auf „Hinzufügen“, wähle die Einträge aus und speichere. „Zurücksetzen“ stellt die Voreinstellung für deine Rolle wieder her. Die Auswahl gilt auf allen deinen Geräten.',
+      },
       {
         id: 'respond',
         question: 'Wie sage ich zu oder ab?',
@@ -206,7 +212,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'polls',
         question: 'Wie nehme ich an Umfragen teil?',
         answer:
-          'Offene Umfragen erscheinen auf der Startseite unter „Offene Aktionen“ – dort kannst du direkt antworten – und unter „Verein → Umfragen“.',
+          'Offene Umfragen erscheinen auf der Startseite im Band „Offen“ – tippe sie an und antworte direkt – und unter „Verein → Umfragen“.',
         link: { label: 'Umfragen', href: '/polls' },
       },
       {

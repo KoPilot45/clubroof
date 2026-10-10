@@ -1,10 +1,10 @@
-import type { ActionItem, HomeResponse, NewsItem } from '@clubroof/core';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { HomeResponse, NewsItem } from '@clubroof/core';
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
-import { EventRow, NextMatchCard } from '@/components/events';
+import { MatchCarousel, OpenBand, QuickAccess, WeekCard } from '@/components/home';
 import {
   Card,
   ChoiceChips,
@@ -22,10 +22,10 @@ import {
 } from '@/components/ui';
 import { WelcomeTour } from '@/components/welcome-tour';
 import { readFlag, writeFlag } from '@/lib/flags';
-import { formatAgo, formatRemaining } from '@/lib/format';
-import { openLink } from '@/lib/links';
+import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import type { TintKey } from '@clubroof/design-tokens';
 
 const NEWS_TONE = { urgent: 'urgent', important: 'action', info: 'info' } as const;
 const NEWS_ICON: Record<NewsItem['priority'], IconName> = {
@@ -33,24 +33,49 @@ const NEWS_ICON: Record<NewsItem['priority'], IconName> = {
   important: 'megaphone',
   info: 'newspaper',
 };
-const ACTION_ICON: Record<ActionItem['kind'], IconName> = {
-  attendance: 'calendar',
-  poll: 'stats-chart',
-  approval: 'checkmark-done',
-  task: 'clipboard',
-};
+
+type NewsFilter = 'all' | 'club' | 'team' | 'important';
+const NEWS_FILTERS: { value: NewsFilter; label: string }[] = [
+  { value: 'all', label: 'Alle' },
+  { value: 'club', label: 'Verein' },
+  { value: 'team', label: 'Mannschaft' },
+  { value: 'important', label: 'Wichtig' },
+];
 
 export default function HomeScreen() {
-  const { api, me } = useSignedIn();
-  const { colors } = useTheme();
+  const { api, me, refresh } = useSignedIn();
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const data = home.data;
   // Willkommens-Tour beim ersten Start auf diesem Gerät
   const tourKey = `tour.${me.user.id}`;
   const [tour, setTour] = useState(false);
+  const [newsFilter, setNewsFilter] = useState<NewsFilter>('all');
   useEffect(() => {
     void readFlag(tourKey).then((seen) => setTour(!seen));
   }, [tourKey]);
+
+  const news = (data?.news ?? [])
+    .filter((n) =>
+      newsFilter === 'club'
+        ? n.source.type !== 'team'
+        : newsFilter === 'team'
+          ? n.source.type === 'team'
+          : newsFilter === 'important'
+            ? n.priority !== 'info'
+            : true,
+    )
+    .slice(0, 4);
+
+  const overview = data?.clubOverview;
+  const figures: [string, number, TintKey][] = overview
+    ? [
+        ['Mannschaften', overview.teams, 'blue'],
+        ['Mitglieder', overview.members, 'green'],
+        ...(overview.pendingApprovals === null
+          ? []
+          : ([['Freigaben', overview.pendingApprovals, 'orange']] as [string, number, TintKey][])),
+      ]
+    : [];
 
   return (
     <Screen header={<AppHeader />} refreshing={home.isRefetching} onRefresh={() => home.refetch()}>
@@ -65,36 +90,9 @@ export default function HomeScreen() {
       {home.isPending ? <Loading /> : null}
       {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}
 
-      {data?.clubOverview ? (
-        <Card style={{ gap: 12 }}>
-          <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <T variant="overline">Verein im Überblick</T>
-            <Chip label={me.canAdminister ? 'Vorstand' : 'Vereinsmitglied'} tone="primary" />
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-            {[
-              ['Mannschaften', data.clubOverview.teams],
-              ['Mitglieder', data.clubOverview.members],
-              ...(data.clubOverview.pendingApprovals === null
-                ? []
-                : [['Freigaben', data.clubOverview.pendingApprovals]]),
-            ].map(([label, value]) => (
-              <View key={label} style={{ alignItems: 'center' }}>
-                <T variant="title" color={colors.primaryText}>
-                  {value}
-                </T>
-                <T variant="caption">{label}</T>
-              </View>
-            ))}
-          </View>
-        </Card>
-      ) : null}
-
-      {data?.nextMatch ? (
-        <NextMatchCard event={data.nextMatch} clubShortName={me.club.shortName} />
-      ) : null}
+      {data ? <MatchCarousel matches={data.matches} club={me.club.shortName} /> : null}
+      {data ? <OpenBand actions={data.actions} /> : null}
+      {data ? <WeekCard week={data.week} birthdays={data.birthdays} /> : null}
 
       {data ? (
         <Section
@@ -102,11 +100,16 @@ export default function HomeScreen() {
           action="Alle anzeigen"
           onAction={() => router.push('/news')}
         >
+          <ChoiceChips
+            options={NEWS_FILTERS}
+            selected={[newsFilter]}
+            onToggle={(v) => setNewsFilter(v)}
+          />
           <Card>
-            {data.news.length === 0 ? (
+            {news.length === 0 ? (
               <Empty icon="newspaper-outline" text="Keine Neuigkeiten." />
             ) : null}
-            {data.news.map((n, i) => (
+            {news.map((n, i) => (
               <ListRow
                 key={n.id}
                 first={i === 0}
@@ -135,76 +138,19 @@ export default function HomeScreen() {
         </Section>
       ) : null}
 
-      {data && data.actions.length > 0 ? (
-        <Section title="Offene Aktionen">
-          <Card>
-            {data.actions.map((a, i) => (
-              <View key={a.id}>
-                <ListRow
-                  first={i === 0}
-                  onPress={() => openLink(a.link)}
-                  leading={<IconTile name={ACTION_ICON[a.kind]} filled />}
-                  title={a.title}
-                  subtitle={a.subtitle}
-                  trailing={
-                    a.dueAt ? <Chip tone="action" label={formatRemaining(a.dueAt)} /> : null
-                  }
-                />
-                {a.options?.length ? <QuickVote action={a} /> : null}
-              </View>
-            ))}
-          </Card>
-        </Section>
-      ) : null}
+      <QuickAccess me={me} onSaved={refresh} />
 
-      {data ? (
-        <Section
-          title="Nächste Termine"
-          action="Alle anzeigen"
-          onAction={() => router.push('/termine')}
-        >
-          <Card>
-            {data.upcoming.length === 0 ? (
-              <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
-            ) : null}
-            {data.upcoming.map((e, i) => (
-              <EventRow key={e.id} event={e} first={i === 0} />
-            ))}
-          </Card>
-        </Section>
-      ) : null}
-
-      {data && data.birthdays.length > 0 ? (
-        <Section title="Geburtstage">
-          <Card>
-            {data.birthdays.map((b, i) => (
-              <ListRow
-                key={b.personId}
-                first={i === 0}
-                leading={
-                  <IconTile name="gift-outline" tone={b.inDays === 0 ? 'success' : undefined} />
-                }
-                title={b.name}
-                subtitle={
-                  <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
-                    <TeamBadge badge={b.teamBadge} />
-                    <T variant="caption">{b.day}</T>
-                  </View>
-                }
-                trailing={
-                  <Chip
-                    tone={b.inDays === 0 ? 'success' : 'neutral'}
-                    label={
-                      b.inDays === 0
-                        ? 'Heute 🎉'
-                        : b.inDays === 1
-                          ? 'Morgen'
-                          : `in ${b.inDays} Tagen`
-                    }
-                  />
-                }
-              />
-            ))}
+      {data?.clubOverview ? (
+        <Section title="Verein im Überblick">
+          <Card style={{ gap: 12 }}>
+            <View style={{ alignItems: 'flex-start' }}>
+              <Chip label={me.canAdminister ? 'Vorstand' : 'Vereinsmitglied'} tone="primary" />
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+              {figures.map(([label, value, tint]) => (
+                <KeyFigure key={label} label={label} value={value} tint={tint} />
+              ))}
+            </View>
           </Card>
         </Section>
       ) : null}
@@ -212,27 +158,26 @@ export default function HomeScreen() {
   );
 }
 
-/** Umfrage direkt auf der Startseite beantworten (Konzept §3). */
-function QuickVote({ action }: { action: ActionItem }) {
-  const { api } = useSignedIn();
-  const queryClient = useQueryClient();
-  const vote = useMutation({
-    mutationFn: (optionId: string) =>
-      api(`/polls/${action.id}/vote`, { method: 'PUT', body: { optionId } }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['home'] });
-      void queryClient.invalidateQueries({ queryKey: ['polls'] });
-      router.push(`/polls/${action.id}`);
-    },
-  });
+/** Kennzahl auf Pastellfläche (immer mit Beschriftung, dunkle Schrift). */
+function KeyFigure({ label, value, tint }: { label: string; value: number; tint: TintKey }) {
+  const { colors } = useTheme();
   return (
-    <View style={{ gap: 6, paddingBottom: 10, paddingLeft: 52, paddingRight: 4 }}>
-      <ChoiceChips
-        options={action.options!.map((o) => ({ value: o.id, label: o.label }))}
-        selected={vote.variables ? [vote.variables] : []}
-        onToggle={(id) => !vote.isPending && vote.mutate(id)}
-      />
-      {vote.error ? <Chip tone="urgent" icon="alert-circle" label={vote.error.message} /> : null}
+    <View
+      style={{
+        flex: 1,
+        marginHorizontal: 4,
+        alignItems: 'center',
+        paddingVertical: 10,
+        borderRadius: 16,
+        backgroundColor: colors.tints[tint].container,
+      }}
+    >
+      <T variant="figure" color={colors.tints[tint].onContainer}>
+        {value}
+      </T>
+      <T variant="caption" color={colors.tints[tint].onContainer}>
+        {label}
+      </T>
     </View>
   );
 }
