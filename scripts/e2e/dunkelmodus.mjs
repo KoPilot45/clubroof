@@ -8,7 +8,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { api, launch } from '../lib/e2e.mjs';
 
-const mode = (process.argv.includes('--hell') || process.env.HELL) ? 'light' : 'dark';
+const mode = process.argv.includes('--hell') || process.env.HELL ? 'light' : 'dark';
 const prefix = mode === 'dark' ? 'dunkel' : 'hell';
 const SHOTS = process.env.CLUBROOF_SHOTS ?? join(process.cwd(), '.check', 'shots');
 mkdirSync(SHOTS, { recursive: true });
