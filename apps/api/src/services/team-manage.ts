@@ -31,7 +31,27 @@ async function loadManaged(db: Db, actor: Actor, teamId: string) {
   return team;
 }
 
-export function profileOf(team: typeof s.teams.$inferSelect): TeamProfile {
+/** Antwortfristen als Stunden vor Beginn; Wochentagsregeln (z. B. „Freitag 18 Uhr“) erscheinen als leer. */
+async function deadlineHours(db: Db, teamId: string) {
+  const rules = await db
+    .select()
+    .from(s.teamDeadlineRules)
+    .where(eq(s.teamDeadlineRules.teamId, teamId));
+  const hours = (type: 'training' | 'match') => {
+    const rule = rules.find((r) => r.eventType === type && r.kind === 'relative');
+    return rule?.minutesBefore != null ? Math.round(rule.minutesBefore / 60) : null;
+  };
+  return { training: hours('training'), match: hours('match') };
+}
+
+export async function loadProfile(db: Db, team: typeof s.teams.$inferSelect): Promise<TeamProfile> {
+  const d = await deadlineHours(db, team.id);
+  return { ...profileOf(team), trainingDeadlineHours: d.training, matchDeadlineHours: d.match };
+}
+
+export function profileOf(
+  team: typeof s.teams.$inferSelect,
+): Omit<TeamProfile, 'trainingDeadlineHours' | 'matchDeadlineHours'> {
   return {
     matchMeetingMinutes: team.matchMeetingMinutes,
     trainingMeetingMinutes: team.trainingMeetingMinutes,
@@ -105,7 +125,7 @@ export async function getTeamManage(
   };
   return {
     team: { id: team.id, name: team.name, badge: team.badge },
-    profile: profileOf(team),
+    profile: await loadProfile(db, team),
     members: rows
       .map(({ membership, person }) => ({
         membershipId: membership.id,
@@ -320,12 +340,50 @@ export async function updateTeamProfile(
   if (input.leaguePosition !== undefined) patch.leaguePosition = input.leaguePosition;
   if (input.importAliases !== undefined)
     patch.importAliases = [...new Set(input.importAliases.map((a) => a.trim()).filter(Boolean))];
-  if (Object.keys(patch).length === 0) return profileOf(team);
-  const [updated] = await db
-    .update(s.teams)
-    .set({ ...patch, updatedAt: now })
-    .where(eq(s.teams.id, team.id))
-    .returning();
+  // Antwortfristen: je Terminart eine relative Regel; leer löscht sie
+  const deadlines = [
+    ['training', input.trainingDeadlineHours],
+    ['match', input.matchDeadlineHours],
+  ] as const;
+  const deadlinesChanged = deadlines.some(([, v]) => v !== undefined);
+  for (const [eventType, hours] of deadlines) {
+    if (hours === undefined) continue;
+    if (hours === null) {
+      await db
+        .delete(s.teamDeadlineRules)
+        .where(
+          and(
+            eq(s.teamDeadlineRules.teamId, team.id),
+            eq(s.teamDeadlineRules.eventType, eventType),
+          ),
+        );
+    } else {
+      await db
+        .insert(s.teamDeadlineRules)
+        .values({
+          clubId: team.clubId,
+          teamId: team.id,
+          eventType,
+          kind: 'relative',
+          minutesBefore: hours * 60,
+          weekday: null,
+          timeOfDay: null,
+        })
+        .onConflictDoUpdate({
+          target: [s.teamDeadlineRules.teamId, s.teamDeadlineRules.eventType],
+          set: { kind: 'relative', minutesBefore: hours * 60, weekday: null, timeOfDay: null },
+        });
+    }
+  }
+  if (Object.keys(patch).length === 0 && !deadlinesChanged) return loadProfile(db, team);
+  const [updated] =
+    Object.keys(patch).length > 0
+      ? await db
+          .update(s.teams)
+          .set({ ...patch, updatedAt: now })
+          .where(eq(s.teams.id, team.id))
+          .returning()
+      : [team];
   await audit(db, actor, 'team.profile', team.id, `${team.badge}: Mannschaftsprofil geändert`, now);
-  return profileOf(updated!);
+  return loadProfile(db, updated!);
 }

@@ -218,6 +218,8 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
           defaultMeetingPoint: z.string().max(120).nullable().optional(),
           importAliases: z.array(z.string().max(80)).max(10).optional(),
           leaguePosition: z.number().int().min(1).max(40).nullable().optional(),
+          trainingDeadlineHours: z.number().int().min(1).max(336).nullable().optional(),
+          matchDeadlineHours: z.number().int().min(1).max(336).nullable().optional(),
         }),
       },
     },

@@ -352,6 +352,13 @@ export const HELP_SECTIONS: HelpSection[] = [
     audience: 'coach',
     entries: [
       {
+        id: 'team-wizard',
+        question: 'Wie lege ich eine neue Mannschaft an?',
+        answer:
+          'In der Verwaltung unter „Mannschaften & Saison“ führt dich der Assistent in 11 Schritten: Name, Bereich, Altersklasse und Liga, Vorlage, Teilnahme, Trainerteam, Kader, Antwortfristen für Training und Spiele (in Stunden vor Beginn), Treffpunkt und Name im DFBnet. Erst im letzten Schritt wird die Mannschaft angelegt; bis dahin kannst du jederzeit zurück oder abbrechen.',
+        link: { label: 'Mannschaft anlegen', href: '/admin/team-new' },
+      },
+      {
         id: 'coach-event',
         question: 'Wie lege ich einen Termin an oder sage ihn ab?',
         answer:

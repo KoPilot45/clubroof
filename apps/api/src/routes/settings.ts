@@ -1,4 +1,4 @@
-import type { ClubSettings, LoginResponse } from '@clubroof/core';
+import { PITCH_SURFACES, type ClubSettings, type LoginResponse } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { schema } from '@clubroof/db';
 import { z } from 'zod';
@@ -12,7 +12,7 @@ import {
   updateClub,
 } from '../services/club-settings';
 import { buildMe } from '../services/me';
-import { needsSetup, setupClub } from '../services/setup';
+import { needsSetup, sendSetupEmailCode, setupClub, verifySetupEmailCode } from '../services/setup';
 
 // Erlaubte Vereinsfarben: eine Quelle (`@clubroof/design-tokens` → Datenbank-Enum), kein zweites Verzeichnis
 const CLUB_COLOR_KEYS = schema.clubColorEnum.enumValues;
@@ -73,12 +73,44 @@ export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/setup/status', async () => ({ needsSetup: await needsSetup(app.db) }));
 
   app.post(
+    '/setup/email-code',
+    {
+      config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+      schema: {
+        body: z.object({
+          setupToken: z.string().min(1).max(200),
+          email: z.string().trim().toLowerCase().email().max(120),
+        }),
+      },
+    },
+    async (request, reply) => {
+      await sendSetupEmailCode(app.db, app.config, app.mailer, request.body, app.now());
+      return reply.code(204).send();
+    },
+  );
+
+  app.post(
+    '/setup/email-code/verify',
+    {
+      config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+      schema: {
+        body: z.object({
+          email: z.string().trim().toLowerCase().email().max(120),
+          code: z.string().trim().min(4).max(10),
+        }),
+      },
+    },
+    async (request) => verifySetupEmailCode(app.links, request.body, app.now()),
+  );
+
+  app.post(
     '/setup',
     {
       config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
       schema: {
         body: z.object({
           setupToken: z.string().min(1).max(200),
+          emailProof: z.string().min(1).max(400),
           club: z.object({
             name: z.string().trim().min(3).max(100),
             shortName: z.string().trim().min(2).max(40),
@@ -88,6 +120,25 @@ export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
             .array(z.object({ name: unitName, kind: z.enum(KINDS) }))
             .min(1)
             .max(12),
+          venues: z
+            .array(
+              z.object({
+                name: z.string().trim().min(2).max(80),
+                address: z.string().trim().max(160).nullable(),
+                pitches: z
+                  .array(
+                    z.object({
+                      name: z.string().trim().min(1).max(60),
+                      surface: z.enum(PITCH_SURFACES),
+                    }),
+                  )
+                  .max(20),
+                changingRooms: z.array(z.string().trim().min(1).max(60)).max(30),
+              }),
+            )
+            .max(10)
+            .optional(),
+          modules: z.array(z.string().max(40)).max(40).optional(),
           admin: z.object({
             firstName: z.string().trim().min(1).max(60),
             lastName: z.string().trim().min(1).max(60),
@@ -99,7 +150,7 @@ export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request, reply): Promise<LoginResponse> => {
       const now = app.now();
-      const { userId } = await setupClub(app.db, app.config, request.body, now);
+      const { userId } = await setupClub(app.db, app.config, app.links, request.body, now);
       const session = await createSession(app.db, userId, {
         now,
         ttlDays: app.config.sessionTtlDays,

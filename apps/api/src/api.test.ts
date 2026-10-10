@@ -308,6 +308,36 @@ describe.skipIf(!url)('API', () => {
       await send('PUT', `/teams/${b1.id}/profile`, coach.token, { leaguePosition: 3 });
     });
 
+    it('Antwortfristen je Terminart (Stunden) im Mannschaftsprofil setzen und löschen', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const set = await send<TeamProfile>('PUT', `/teams/${b1.id}/profile`, coach.token, {
+        trainingDeadlineHours: 12,
+        matchDeadlineHours: 48,
+      });
+      expect(set.body).toMatchObject({ trainingDeadlineHours: 12, matchDeadlineHours: 48 });
+      // wirkt auf die Frist neuer Rückmeldungen: Zusagefrist des nächsten Spiels liegt 48 Stunden vor Beginn
+      const overview = await get<TeamOverview>(`/teams/${b1.id}`, coach.token);
+      const match = overview.nextEvent ?? null;
+      if (match && match.match) {
+        expect(Date.parse(match.startsAt) - Date.parse(match.deadline!)).toBe(48 * 3600_000);
+      }
+      expect(
+        (await send('PUT', `/teams/${b1.id}/profile`, coach.token, { matchDeadlineHours: 0 }))
+          .status,
+      ).toBe(400);
+      const cleared = await send<TeamProfile>('PUT', `/teams/${b1.id}/profile`, coach.token, {
+        trainingDeadlineHours: null,
+      });
+      expect(cleared.body.trainingDeadlineHours).toBeNull();
+      expect(cleared.body.matchDeadlineHours).toBe(48);
+      // Demodaten-Fristen wiederherstellen (Training 3 Std., Spiele 48 Std.)
+      await send('PUT', `/teams/${b1.id}/profile`, coach.token, {
+        trainingDeadlineHours: 3,
+        matchDeadlineHours: 48,
+      });
+    });
+
     it('Dringende News stehen oben', async () => {
       const home = await get<HomeResponse>('/home', (await login('spieler')).token);
       expect(home.news[0]!.priority).toBe('urgent');
