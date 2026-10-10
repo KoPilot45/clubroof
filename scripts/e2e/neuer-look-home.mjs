@@ -122,6 +122,38 @@ const files = {};
   ok(reset.user.quickLinks === null, 'Zurücksetzen stellt den Standard der Rolle her');
 }
 
+// Spieler: ✕ in „Deine Woche“ sagt direkt über das Grund-Blatt ab
+{
+  const { page, login, goto } = await b.session('spieler');
+  await setMode(login, 'light');
+  const home = await api('/home', login.token);
+  const open = home.week.find(
+    (e) =>
+      e.status === 'scheduled' &&
+      e.myResponses.length === 1 &&
+      e.myResponses[0].relation === 'self' &&
+      e.myResponses[0].status === 'pending' &&
+      e.myResponses[0].canRespond,
+  );
+  if (open) {
+    await goto('/');
+    await text(page, 'Deine Woche').waitFor({ timeout: 20_000 });
+    const cross = page.getByRole('button', { name: 'Absagen' }).filter({ visible: true }).last();
+    await cross.click();
+    await text(page, 'Warum kannst du nicht?').waitFor({ timeout: 5_000 });
+    ok(true, 'Deine Woche: ✕ öffnet das Grund-Blatt');
+    await button(page, 'Absage senden').click();
+    await text(page, 'Abgesagt', { exact: true }).waitFor({ timeout: 10_000 });
+    const after = await api('/home', login.token);
+    const changed = after.week.find((e) => e.id === open.id);
+    ok(changed?.myResponses[0].status === 'no', 'Deine Woche: Absage gespeichert');
+    await api(`/events/${open.id}/responses/${open.myResponses[0].personId}`, login.token, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'pending', reason: null }),
+    });
+  } else console.log('– Deine Woche: Spieler hat keinen offenen Termin in den Demodaten');
+}
+
 // Überblick: vier Bilder in einer Seite
 const img = (p) => `data:image/png;base64,${readFileSync(p).toString('base64')}`;
 const keys = ['eltern-light', 'eltern-dark', 'vorstand-light', 'vorstand-dark'];

@@ -126,7 +126,7 @@ Bausteine in `components/home.tsx`, Seite `app/(tabs)/index.tsx`.
 | Spiele              | `MatchCarousel`: Blickfangkarten (306 breit, auf schmalen Geräten so, dass die nächste ~60 pt herausragt), Punkte und „Nächste Spiele · 1 von 3“; API `home.matches` (bis 3, Spiele und Spielfeste, chronologisch, bei Eltern über alle Kinder) |
 | Zu-/Absage          | `ResponseControls tone="hero"`: Schaltflächen `hero`/`heroOutline`; „Absagen“ und „Unsicher“ fragen den Grund im **Blatt von unten** (`Sheet`) ab                           |
 | Offen               | `OpenBand`: wischbare Mini-Karten (232) mit Pastell-Kachel und Frist; die Aktion mit der nächsten Frist trägt den Statusrahmen. Umfragen öffnen ein Blatt mit den Antworten (Schnellantwort bleibt erhalten) |
-| Deine Woche         | `WeekCard`: alle Termine der nächsten 7 Tage (`home.week`), Datumskachel 48×50, abgesagte durchgestrichen mit Chip „Abgesagt“ und Grund; Eltern sehen je Kind einen Chip; bei offener Rückmeldung runde ✓ (sagt zu) und ✕ (öffnet den Termin, dort wird der Grund abgefragt); Geburtstage der eigenen Mannschaften dezent darunter |
+| Deine Woche         | `WeekCard`: alle Termine der nächsten 7 Tage (`home.week`), Datumskachel 48×50, abgesagte durchgestrichen mit Chip „Abgesagt“ und Grund; Eltern sehen je Kind einen Chip; bei offener Rückmeldung runde ✓ (sagt zu) und ✕ (öffnet das Grund-Blatt, `ReasonForm`, sagt dann ab; „Rückgängig“ im Toast); Geburtstage der eigenen Mannschaften dezent darunter |
 | Neuigkeiten         | Filterchips Alle · Verein · Mannschaft · Wichtig (auf den geladenen sechs News), höchstens vier Zeilen                                                                      |
 | Schnellzugriff      | `QuickAccess`: wischbare Chips (46) mit Pastell-Kachel, „Hinzufügen“ gestrichelt; Katalog und Voreinstellung je Rolle in `lib/quick-links.ts` (Rechte prüfen weiterhin die Zielseiten bzw. der Server); Auswahl je Person in `users.quick_links` (`PUT /me/preferences`, höchstens 12), „Zurücksetzen“ stellt die Rollen-Voreinstellung her |
 | Verein im Überblick | am Ende, Kennzahlen auf Pastellflächen (nur Vorstand/Vereinsmitglieder)                                                                                                     |
@@ -135,8 +135,7 @@ Entscheidungen und Abweichungen:
 
 - **Verwaltung** steht im Schnellzugriff (Voreinstellung für alle mit Verwaltungsrechten); der Knopf in der Kopfzeile entfällt.
 - **Hinweise an Schnellzugriff-Chips** (Zähler oder „neu“) kommen aus den Kachel-Infos (`/tile-info` für Verein, Mehr und Mannschaftskasse); neuer Eintrag „Kasse“.
-- **Noch offen aus dem Entwurf:** Absage direkt über ✕ in „Deine Woche“ (heute öffnet es den Termin),
-  Spielekarte für abgesagte Spiele (abgesagte Spiele erscheinen nur in „Deine Woche“).
+- **Noch offen aus dem Entwurf:** Spielekarte für abgesagte Spiele (abgesagte Spiele erscheinen nur in „Deine Woche“).
 - Die Willkommens-Tour und der Pull-to-refresh bleiben unverändert.
 - Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-home.mjs` (Eltern und Vorstand, hell und dunkel, Blatt beim Absagen, Schnellzugriff
   anpassen/zurücksetzen; Überblicksbild `.check/shots/neuer-look-home.png`).
@@ -240,7 +239,6 @@ Unterseiten; keine Seite mit weißen Flächen, unlesbarem Text oder Überlauf. A
 
 ### Offene Aufgaben (Paket L)
 
-- Absage direkt über ✕ in „Deine Woche“ (heute öffnet es den Termin).
 - Tabellenplatz und Torschützenkönig im Kader-Blickfang (Team) – braucht Daten in der API.
 - Offline-Warteschlange für Zu-/Absagen („wird gesendet, sobald du wieder online bist“).
 - Unterseiten (Formulare, Detailseiten) schrittweise auf Karten im neuen Look (Radius 24, Pastell-Kacheln) bringen – sie nutzen die Bausteine bereits, behalten aber ihren alten Seitenaufbau.

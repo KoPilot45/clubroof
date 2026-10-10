@@ -209,11 +209,60 @@ export function EventRow({
   );
 }
 
+/**
+ * Grund für „Absagen“ oder „Unsicher“: Auswahl und freier Hinweis – freiwillig, nur fürs Trainerteam.
+ * Eigener Zustand, damit Auswahl und Hinweis beim Schließen verworfen werden.
+ */
+function ReasonForm({
+  status,
+  loading,
+  onCancel,
+  onSubmit,
+}: {
+  status: 'no' | 'maybe';
+  loading: boolean;
+  onCancel: () => void;
+  onSubmit: (reason: string | undefined) => void;
+}) {
+  const [reason, setReason] = useState<string | null>(null);
+  const [note, setNote] = useState('');
+  return (
+    <View style={{ gap: 10 }}>
+      <ChoiceChips
+        label={status === 'maybe' ? 'Warum bist du unsicher?' : 'Warum kannst du nicht?'}
+        options={(status === 'maybe' ? MAYBE_REASONS : DECLINE_REASONS).map((d) => ({
+          value: d,
+          label: d,
+        }))}
+        selected={reason ? [reason] : []}
+        onToggle={(v) => setReason(v === reason ? null : v)}
+      />
+      <TextField
+        label="Hinweis für das Trainerteam (optional)"
+        value={note}
+        onChangeText={setNote}
+        maxLength={120}
+      />
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button style={{ flex: 1 }} label="Abbrechen" variant="outline" onPress={onCancel} />
+        <Button
+          style={{ flex: 1 }}
+          label={status === 'maybe' ? 'Unsicher senden' : 'Absage senden'}
+          variant={status === 'maybe' ? 'action' : 'danger'}
+          loading={loading}
+          onPress={() => onSubmit([reason, note.trim()].filter(Boolean).join(' – ') || undefined)}
+        />
+      </View>
+    </View>
+  );
+}
+
 /** Zwei runde Knöpfe (44): ✓ sagt sofort zu, ✕ öffnet den Termin, dort wird der Grund abgefragt. */
 function RoundRespond({ event, personId }: { event: EventSummary; personId: string }) {
   const { colors, sizes } = useTheme();
   const respond = useRespond(event.id);
   const toast = useToast();
+  const [declining, setDeclining] = useState(false);
   const size = sizes.touchTarget;
   const round = {
     width: size,
@@ -248,11 +297,34 @@ function RoundRespond({ event, personId }: { event: EventSummary; personId: stri
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Absagen"
-        onPress={() => router.push(`/events/${event.id}`)}
+        onPress={() => setDeclining(true)}
         style={{ ...round, backgroundColor: colors.status.urgent.container }}
       >
         <Ionicons name="close" size={22} color={colors.status.urgent.onContainer} />
       </Pressable>
+      <Sheet visible={declining} onClose={() => setDeclining(false)} title="Absagen">
+        <T variant="label">{event.title}</T>
+        <ReasonForm
+          status="no"
+          loading={respond.isPending}
+          onCancel={() => setDeclining(false)}
+          onSubmit={(reason) =>
+            respond.mutate(
+              { personId, status: 'no', reason },
+              {
+                onSuccess: () => {
+                  setDeclining(false);
+                  toast({
+                    message: 'Abgesagt',
+                    actionLabel: 'Rückgängig',
+                    onAction: () => respond.mutate({ personId, status: 'pending' }),
+                  });
+                },
+              },
+            )
+          }
+        />
+      </Sheet>
     </View>
   );
 }
@@ -294,8 +366,6 @@ export function ResponseControls({
   const [error, setError] = useState<string | null>(null);
   /** Person und Antwort, für die gerade ein Grund gewählt wird */
   const [pending, setPending] = useState<{ personId: string; status: 'no' | 'maybe' } | null>(null);
-  const [reason, setReason] = useState<string | null>(null);
-  const [note, setNote] = useState('');
   if (event.myResponses.length === 0) return null;
 
   const toast = useToast();
@@ -307,8 +377,6 @@ export function ResponseControls({
       {
         onSuccess: () => {
           setPending(null);
-          setReason(null);
-          setNote('');
           const label = t(
             status === 'yes' ? 'Zugesagt' : status === 'maybe' ? 'Unsicher' : 'Abgesagt',
           );
@@ -343,44 +411,12 @@ export function ResponseControls({
   const outline = tone === 'hero' ? ('heroOutline' as const) : ('outline' as const);
   const reasonPanel = (r: MyResponse) =>
     pending && (
-      <View style={{ gap: 10 }}>
-        <ChoiceChips
-          label={pending.status === 'maybe' ? 'Warum bist du unsicher?' : 'Warum kannst du nicht?'}
-          options={(pending.status === 'maybe' ? MAYBE_REASONS : DECLINE_REASONS).map((d) => ({
-            value: d,
-            label: d,
-          }))}
-          selected={reason ? [reason] : []}
-          onToggle={(v) => setReason(v === reason ? null : v)}
-        />
-        <TextField
-          label="Hinweis für das Trainerteam (optional)"
-          value={note}
-          onChangeText={setNote}
-          maxLength={120}
-        />
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button
-            style={{ flex: 1 }}
-            label="Abbrechen"
-            variant="outline"
-            onPress={() => setPending(null)}
-          />
-          <Button
-            style={{ flex: 1 }}
-            label={pending.status === 'maybe' ? 'Unsicher senden' : 'Absage senden'}
-            variant={pending.status === 'maybe' ? 'action' : 'danger'}
-            loading={busy(r, pending.status)}
-            onPress={() =>
-              send(
-                r,
-                pending.status,
-                [reason, note.trim()].filter(Boolean).join(' – ') || undefined,
-              )
-            }
-          />
-        </View>
-      </View>
+      <ReasonForm
+        status={pending.status}
+        loading={busy(r, pending.status)}
+        onCancel={() => setPending(null)}
+        onSubmit={(text) => send(r, pending.status, text)}
+      />
     );
 
   return (
@@ -443,8 +479,6 @@ export function ResponseControls({
                 size={tone === 'hero' ? 'sm' : 'md'}
                 variant={r.status === 'maybe' ? (tone === 'hero' ? 'hero' : 'action') : outline}
                 onPress={() => {
-                  setReason(null);
-                  setNote('');
                   setPending({ personId: r.personId, status: 'maybe' });
                 }}
               />
@@ -456,8 +490,6 @@ export function ResponseControls({
                 size={tone === 'hero' ? 'sm' : 'md'}
                 variant={r.status === 'no' ? (tone === 'hero' ? 'hero' : 'danger') : outline}
                 onPress={() => {
-                  setReason(null);
-                  setNote('');
                   setPending({ personId: r.personId, status: 'no' });
                 }}
               />
