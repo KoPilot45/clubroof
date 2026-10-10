@@ -16,7 +16,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { AttendanceChip, ResponseControls, useRespond } from '@/components/events';
+import { EventRow, ResponseControls } from '@/components/events';
 import { Text } from '@/components/app-text';
 import {
   Button,
@@ -24,23 +24,20 @@ import {
   ChoiceChips,
   Chip,
   Crest,
-  DateTile,
   HeroCard,
   IconTile,
-  ListRow,
   Section,
   Sheet,
   shadowStyle,
   T,
   type IconName,
 } from '@/components/ui';
-import { clubInitials, formatDateTile, formatDay, formatRemaining, formatTime } from '@/lib/format';
+import { clubInitials, formatDay, formatRemaining, formatTime } from '@/lib/format';
 import { openLink } from '@/lib/links';
-import { ATTENDANCE_LABELS, EVENT_TYPE_LABELS, MATCH_KIND_LABELS } from '@/lib/labels';
+import { MATCH_KIND_LABELS } from '@/lib/labels';
 import { QUICK_LINKS, defaultQuickLinks, quickLinksFor } from '@/lib/quick-links';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
-import { useToast } from '@/lib/toast';
 
 const CARD_GAP = 12;
 
@@ -413,7 +410,7 @@ export function WeekCard({ week, birthdays }: { week: EventSummary[]; birthdays:
           <T variant="caption">In den nächsten sieben Tagen stehen keine Termine an.</T>
         ) : null}
         {week.map((e, i) => (
-          <WeekRow key={e.id} event={e} first={i === 0} />
+          <EventRow key={e.id} event={e} first={i === 0} />
         ))}
         {birthdays.length > 0 ? (
           <View
@@ -435,104 +432,6 @@ export function WeekCard({ week, birthdays }: { week: EventSummary[]; birthdays:
         ) : null}
       </Card>
     </Section>
-  );
-}
-
-/** Terminzeile: Datumskachel, Titel, Untertitel und Status bzw. runde Zusage/Absage. */
-function WeekRow({ event, first }: { event: EventSummary; first: boolean }) {
-  const cancelled = event.status === 'cancelled';
-  const mine = event.myResponses[0];
-  const multi = event.myResponses.length > 1 || mine?.relation === 'child';
-  const subtitle = cancelled
-    ? event.cancelledReason
-      ? `Grund: ${event.cancelledReason}`
-      : formatTime(event.startsAt)
-    : [formatTime(event.startsAt), event.team?.badge, EVENT_TYPE_LABELS[event.type]]
-        .filter(Boolean)
-        .join(' · ');
-  return (
-    <ListRow
-      first={first}
-      onPress={() => router.push(`/events/${event.id}`)}
-      leading={<DateTile {...formatDateTile(event.startsAt)} muted={cancelled} />}
-      title={event.title}
-      subtitle={subtitle}
-      trailing={
-        cancelled ? (
-          <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
-        ) : !mine ? null : multi ? (
-          <View style={{ gap: 4, alignItems: 'flex-end' }}>
-            {event.myResponses.map((r) => (
-              <Chip
-                key={r.personId}
-                tone={
-                  r.status === 'yes'
-                    ? 'success'
-                    : r.status === 'no'
-                      ? 'urgent'
-                      : r.status === 'maybe'
-                        ? 'action'
-                        : 'archived'
-                }
-                label={`${r.relation === 'self' ? 'Ich' : r.firstName}: ${ATTENDANCE_LABELS[r.status]}`}
-              />
-            ))}
-          </View>
-        ) : mine.status === 'pending' && mine.canRespond ? (
-          <RoundRespond event={event} personId={mine.personId} />
-        ) : (
-          <AttendanceChip status={mine.status} />
-        )
-      }
-    />
-  );
-}
-
-/** Zwei runde Knöpfe (44): ✓ sagt sofort zu, ✕ öffnet den Termin, dort wird der Grund abgefragt. */
-function RoundRespond({ event, personId }: { event: EventSummary; personId: string }) {
-  const { colors, sizes } = useTheme();
-  const respond = useRespond(event.id);
-  const toast = useToast();
-  const size = sizes.touchTarget;
-  const round = {
-    width: size,
-    height: size,
-    borderRadius: size / 2,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  };
-  return (
-    <View style={{ flexDirection: 'row', gap: 8 }}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Zusagen"
-        disabled={respond.isPending}
-        onPress={() =>
-          respond.mutate(
-            { personId, status: 'yes' },
-            {
-              onSuccess: () =>
-                toast({
-                  message: 'Zugesagt',
-                  actionLabel: 'Rückgängig',
-                  onAction: () => respond.mutate({ personId, status: 'pending' }),
-                }),
-            },
-          )
-        }
-        style={{ ...round, backgroundColor: colors.status.success.container }}
-      >
-        <Ionicons name="checkmark" size={22} color={colors.status.success.onContainer} />
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Absagen"
-        onPress={() => router.push(`/events/${event.id}`)}
-        style={{ ...round, backgroundColor: colors.status.urgent.container }}
-      >
-        <Ionicons name="close" size={22} color={colors.status.urgent.onContainer} />
-      </Pressable>
-    </View>
   );
 }
 

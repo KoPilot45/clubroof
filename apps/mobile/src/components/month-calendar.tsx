@@ -30,7 +30,16 @@ export function MonthCalendar({
   /** Farbe je Termin (z. B. nach Terminart); ohne Angabe: Vereinstermine in Vereinsfarbe */
   colorOf?: (event: EventSummary) => string;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors, sizes } = useTheme();
+  // Runde Monatsknöpfe (44) wie die Kopfzeilenknöpfe
+  const navButton = {
+    width: sizes.touchTarget,
+    height: sizes.touchTarget,
+    borderRadius: sizes.touchTarget / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceVariant,
+  } as const;
   const first = new Date(month.getFullYear(), month.getMonth(), 1);
   const offset = (first.getDay() + 6) % 7;
   const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
@@ -56,20 +65,20 @@ export function MonthCalendar({
           accessibilityRole="button"
           accessibilityLabel={t('Vorheriger Monat')}
           onPress={() => onMonth(-1)}
-          hitSlop={10}
-          style={{ padding: 6 }}
+          style={navButton}
         >
-          <Ionicons name="chevron-back" size={20} color={colors.primaryText} />
+          <Ionicons name="chevron-back" size={20} color={colors.onSurface} />
         </Pressable>
-        <T variant="heading">{monthLabel.format(month)}</T>
+        <T variant="headline" style={{ fontSize: 20 }}>
+          {monthLabel.format(month)}
+        </T>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('Nächster Monat')}
           onPress={() => onMonth(1)}
-          hitSlop={10}
-          style={{ padding: 6 }}
+          style={navButton}
         >
-          <Ionicons name="chevron-forward" size={20} color={colors.primaryText} />
+          <Ionicons name="chevron-forward" size={20} color={colors.onSurface} />
         </Pressable>
       </View>
       <View style={{ flexDirection: 'row' }}>
@@ -82,7 +91,7 @@ export function MonthCalendar({
       {Array.from({ length: cells.length / 7 }, (_, row) => (
         <View key={row} style={{ flexDirection: 'row' }}>
           {cells.slice(row * 7, row * 7 + 7).map((d, i) => {
-            if (!d) return <View key={i} style={{ flex: 1, height: 46 }} />;
+            if (!d) return <View key={i} style={{ flex: 1, height: 44 }} />;
             const k = dayKey(d);
             const list = byDay.get(k) ?? [];
             const active = k === selected;
@@ -95,11 +104,11 @@ export function MonthCalendar({
                 onPress={() => onSelect(k)}
                 style={{
                   flex: 1,
-                  height: 46,
+                  height: 44,
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 3,
-                  borderRadius: radii.md,
+                  borderRadius: 14,
                   backgroundColor: active ? colors.primary : 'transparent',
                 }}
               >
@@ -116,11 +125,13 @@ export function MonthCalendar({
                   {[
                     ...new Set(
                       list.map((e) =>
-                        colorOf
-                          ? colorOf(e)
-                          : e.team === null
-                            ? colors.primaryText
-                            : colors.onSurfaceMuted,
+                        e.status === 'cancelled'
+                          ? colors.status.urgent.solid
+                          : colorOf
+                            ? colorOf(e)
+                            : e.team === null
+                              ? colors.primaryText
+                              : colors.onSurfaceMuted,
                       ),
                     ),
                   ]
@@ -129,8 +140,8 @@ export function MonthCalendar({
                       <View
                         key={c}
                         style={{
-                          width: 6,
-                          height: 6,
+                          width: 5,
+                          height: 5,
                           borderRadius: 3,
                           backgroundColor: c,
                           borderWidth: active ? 1 : 0,

@@ -5,7 +5,16 @@ import { useState } from 'react';
 import { AppHeader } from '@/components/app-header';
 import { EventRow, FeaturedEventCard } from '@/components/events';
 import { MonthCalendar, dayKey } from '@/components/month-calendar';
-import { Card, Empty, ErrorNotice, Loading, Screen, Section, T } from '@/components/ui';
+import {
+  Card,
+  ChoiceChips,
+  Empty,
+  ErrorNotice,
+  Loading,
+  Screen,
+  Section,
+  T,
+} from '@/components/ui';
 import { KindLegend } from '@/components/kind-legend';
 import { kindColor, kindOf } from '@/lib/event-types';
 import { useSignedIn } from '@/lib/session';
@@ -40,10 +49,25 @@ export default function EventsTab() {
         `/events?from=${encodeURIComponent(month.toISOString())}&to=${encodeURIComponent(new Date(month.getFullYear(), month.getMonth() + 1, 1).toISOString())}`,
       ),
   });
-  const next = (upcoming.data ?? []).filter((e) => e.status === 'scheduled').slice(0, 3);
-  const all = monthEvents.data ?? [];
+  // Filter: Alle, je Kind, Spiele, Training, Verein
+  const children = me.managedPersons.filter((p) => p.relation === 'child');
+  const [filter, setFilter] = useState('all');
+  const matches = (e: EventSummary) =>
+    filter === 'all'
+      ? true
+      : filter === 'match'
+        ? e.type === 'match' || e.type === 'tournament'
+        : filter === 'training'
+          ? e.type === 'training'
+          : filter === 'club'
+            ? e.team === null
+            : e.myResponses.some((r) => r.personId === filter.slice(2));
+  const filtered = (upcoming.data ?? []).filter(matches);
+  const hero = filtered.find((e) => e.status === 'scheduled');
+  const rest = filtered.filter((e) => e !== hero).slice(0, 5);
+  const all = (monthEvents.data ?? []).filter(matches);
   const ofDay = all.filter((e) => day && dayKey(new Date(e.startsAt)) === day);
-  const kinds = [...new Set(all.map(kindOf))];
+  const kinds = [...new Set(all.filter((e) => e.status !== 'cancelled').map(kindOf))];
   const dayTitle = dateFormat({
     weekday: 'long',
     day: 'numeric',
@@ -60,20 +84,32 @@ export default function EventsTab() {
         void monthEvents.refetch();
       }}
     >
+      <ChoiceChips
+        options={[
+          { value: 'all', label: 'Alle' },
+          ...children.map((c) => ({ value: 'p:' + c.id, label: c.firstName })),
+          { value: 'match', label: 'Spiele' },
+          { value: 'training', label: 'Training' },
+          { value: 'club', label: 'Verein' },
+        ]}
+        selected={[filter]}
+        onToggle={setFilter}
+      />
+
       <Section title="Als Nächstes" action="Alle anzeigen" onAction={() => router.push('/events')}>
-        {next[0] ? <FeaturedEventCard event={next[0]} /> : null}
-        {upcoming.isPending || upcoming.error || next.length !== 1 ? (
+        {hero ? <FeaturedEventCard event={hero} /> : null}
+        {upcoming.isPending ? <Loading /> : null}
+        {upcoming.error ? (
+          <ErrorNotice error={upcoming.error} onRetry={() => upcoming.refetch()} />
+        ) : null}
+        {upcoming.data && filtered.length === 0 ? (
+          <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
+        ) : null}
+        {rest.length > 0 ? (
           <Card>
-            {upcoming.isPending ? <Loading /> : null}
-            {upcoming.error ? (
-              <ErrorNotice error={upcoming.error} onRetry={() => upcoming.refetch()} />
-            ) : null}
-            {upcoming.data && next.length === 0 ? (
-              <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
-            ) : null}
-            {next.length > 1
-              ? next.slice(1).map((e, i) => <EventRow key={e.id} event={e} first={i === 0} />)
-              : null}
+            {rest.map((e, i) => (
+              <EventRow key={e.id} event={e} first={i === 0} />
+            ))}
           </Card>
         ) : null}
       </Section>
@@ -91,7 +127,9 @@ export default function EventsTab() {
               setDay(null);
             }}
           />
-          {kinds.length ? <KindLegend kinds={kinds} /> : null}
+          {kinds.length || all.some((e) => e.status === 'cancelled') ? (
+            <KindLegend kinds={kinds} cancelled={all.some((e) => e.status === 'cancelled')} />
+          ) : null}
         </Card>
       </Section>
 

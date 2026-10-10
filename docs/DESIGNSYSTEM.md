@@ -161,3 +161,18 @@ Aufbau wie `TeamNeu`: Team-Kacheln → Funktionschips → Blickfang Kader → Ka
 - Neu in `ui.tsx`: `DateTile` (auch von Home genutzt), `TileGrid compact`, `Button hideLabel`.
 - Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-team.mjs` (Symbole auf den Spielkarten, Team als Eltern und Trainer, hell und dunkel; Überblick `.check/shots/neuer-look-team.png`).
 
+### Stand Schritt 4: Termine (10.10.2026) ✅
+
+Aufbau wie `TermineNeu`: Filter → Als Nächstes (Blickfang) → Liste → Kalender → Tag.
+
+| Teil          | Umsetzung                                                                                                                                                                         |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Filter        | `ChoiceChips`: Alle · je Kind (Vorname) · Spiele · Training · Verein; wirkt auf Liste und Kalender (clientseitig auf den geladenen Terminen; Kinder über `myResponses`)                    |
+| Als Nächstes  | `FeaturedEventCard` als `HeroCard` (ganze Karte antippbar): Wochentag/Tag, Uhrzeit groß, Titel, Ort, Chips Mannschaft/Verein und eigene Rückmeldung („Zusage offen“, „Mia: Zugesagt“)        |
+| Liste         | die folgenden fünf Termine, **auch abgesagte** (durchgestrichen, Chip „Abgesagt“, Grund)                                                                                           |
+| `EventRow`    | gilt jetzt überall (Home, Termine, Vereinskalender, Veranstaltungen, Terminlisten): Datumskachel, Titel, Badge/„Verein“ + Zeit · Art, Status-Chip bzw. runde ✓/✕; `ListRow strike` für abgesagte Titel |
+| Kalender      | Zellen 44, gewählter Tag als Pille in Vereinsfarbe, runde 44er-Monatsknöpfe, Punkte (5) nach Terminart; abgesagte Termine als roter Punkt, Legende ergänzt „Abgesagt“ (auch Vereinskalender) |
+| Gewählter Tag | Abschnitt mit `EventRow`s (Zusage direkt per ✓ möglich)                                                                                                                              |
+
+- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-termine.mjs` (Filter, Kinderfilter, Kalender, Tippflächen; Überblick `.check/shots/neuer-look-termine.png`).
+

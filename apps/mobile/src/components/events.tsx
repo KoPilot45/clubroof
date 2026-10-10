@@ -8,7 +8,7 @@ import { RequestError } from '@/lib/api';
 import {
   clubInitials,
   countdown,
-  formatDay,
+  formatDateTile,
   formatLongDate,
   formatRemaining,
   formatTime,
@@ -28,6 +28,8 @@ import {
   ChoiceChips,
   Chip,
   Crest,
+  DateTile,
+  HeroCard,
   ListRow,
   T,
   Sheet,
@@ -66,57 +68,80 @@ export function AttendanceChip({ status }: { status: AttendanceStatus }) {
   return <Chip tone={STATUS_TONE[status]} label={ATTENDANCE_LABELS[status]} />;
 }
 
-/** Hervorgehobener nächster Termin auf der Vereinsfarbe (Termine › „Als Nächstes“). */
+/** Blickfang „Als Nächstes“ (Termine): der nächste Termin auf dem Verlauf der Vereinsfarbe. */
 export function FeaturedEventCard({ event }: { event: EventSummary }) {
-  const { colors, radii } = useTheme();
-  const on = colors.onPrimary;
+  const { colors } = useTheme();
+  const on = colors.hero.onHero;
   const mine = event.myResponses[0];
-  const cancelled = event.status === 'cancelled';
+  const tile = formatDateTile(event.startsAt);
   return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() => router.push(`/events/${event.id}`)}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 14,
-        padding: 16,
-        borderRadius: radii.lg,
-        backgroundColor: colors.primary,
-      }}
-    >
-      <View style={{ alignItems: 'center', minWidth: 64 }}>
-        <T variant="caption" color={on}>
-          {formatDay(event.startsAt)}
-        </T>
-        <T variant="figure" color={on} style={{ fontSize: 30 }}>
-          {formatTime(event.startsAt)}
-        </T>
-      </View>
-      <View style={{ flex: 1, gap: 4 }}>
-        <T variant="heading" color={on} numberOfLines={2}>
-          {event.title}
-        </T>
-        {event.location ? (
-          <T variant="caption" color={on} numberOfLines={1}>
-            {event.location}
+    <HeroCard onPress={() => router.push(`/events/${event.id}`)} accessibilityLabel={event.title}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+        <View style={{ alignItems: 'center', minWidth: 64 }}>
+          <T variant="caption" color={on}>
+            {`${tile.weekday} ${tile.day}.`}
           </T>
-        ) : null}
-        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          {event.team ? <TeamBadge badge={event.team.badge} /> : null}
-          {cancelled ? (
-            <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
-          ) : mine ? (
-            <AttendanceChip status={mine.status} />
-          ) : null}
+          <T variant="figure" color={on} style={{ fontSize: 34, lineHeight: 40 }}>
+            {formatTime(event.startsAt)}
+          </T>
         </View>
+        <View style={{ flex: 1, gap: 4 }}>
+          <T
+            variant="headline"
+            color={on}
+            numberOfLines={2}
+            style={{ fontSize: 20, lineHeight: 24 }}
+          >
+            {event.title}
+          </T>
+          {event.location ? (
+            <T variant="caption" color={on} numberOfLines={1}>
+              {event.location}
+            </T>
+          ) : null}
+          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+            <View
+              style={{
+                borderRadius: 999,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                backgroundColor: on,
+              }}
+            >
+              <T variant="caption" color={colors.hero.from} style={{ fontWeight: '700' }}>
+                {event.team ? event.team.badge : 'Verein'}
+              </T>
+            </View>
+            {mine ? (
+              <View
+                style={{
+                  borderRadius: 999,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  backgroundColor: 'rgba(255,255,255,0.22)',
+                }}
+              >
+                <T variant="caption" color={on} style={{ fontWeight: '700' }}>
+                  {event.myResponses.length > 1 || mine.relation === 'child'
+                    ? `${mine.relation === 'self' ? 'Ich' : mine.firstName}: ${ATTENDANCE_LABELS[mine.status]}`
+                    : mine.status === 'pending'
+                      ? 'Zusage offen'
+                      : ATTENDANCE_LABELS[mine.status]}
+                </T>
+              </View>
+            ) : null}
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={on} />
       </View>
-      <Ionicons name="chevron-forward" size={18} color={on} />
-    </Pressable>
+    </HeroCard>
   );
 }
 
-/** Zeile in einer Terminliste. */
+/**
+ * Terminzeile: Datumskachel, Titel, Untertitel und Status bzw. runde Zusage ✓ / Absage ✕.
+ * Abgesagte Termine sind durchgestrichen mit Chip „Abgesagt“ und Grund.
+ */
 export function EventRow({
   event,
   first,
@@ -127,22 +152,27 @@ export function EventRow({
   /** Fremde Mannschaftstermine im Vereinskalender lassen sich nur ansehen, nicht öffnen */
   openable?: boolean;
 }) {
-  const { colors } = useTheme();
-  const mine = event.myResponses[0];
   const cancelled = event.status === 'cancelled';
+  const mine = event.myResponses[0];
+  const multi = event.myResponses.length > 1 || mine?.relation === 'child';
+  const text = cancelled
+    ? event.cancelledReason
+      ? `Grund: ${event.cancelledReason}`
+      : formatTime(event.startsAt)
+    : [
+        formatTime(event.startsAt),
+        EVENT_TYPE_LABELS[event.type],
+        event.match ? MATCH_KIND_LABELS[event.match.kind] : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
   return (
     <ListRow
       first={first}
       onPress={openable ? () => router.push(`/events/${event.id}`) : undefined}
-      leading={
-        <View style={{ width: 52 }}>
-          <T variant="caption">{formatDay(event.startsAt)}</T>
-          <T variant="label" style={{ fontWeight: '800' }}>
-            {formatTime(event.startsAt)}
-          </T>
-        </View>
-      }
+      leading={<DateTile {...formatDateTile(event.startsAt)} muted={cancelled} />}
       title={event.title}
+      strike={cancelled}
       subtitle={
         <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           {event.team ? (
@@ -150,37 +180,80 @@ export function EventRow({
           ) : (
             <Chip tone="info" label="Verein" />
           )}
-          {cancelled ? (
-            <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
-          ) : (
-            <T variant="caption">{EVENT_TYPE_LABELS[event.type]}</T>
-          )}
-          {!cancelled && event.match ? (
-            <Chip tone="neutral" label={MATCH_KIND_LABELS[event.match.kind]} />
-          ) : null}
+          <T variant="caption" style={{ flexShrink: 1 }}>
+            {text}
+          </T>
         </View>
       }
       trailing={
-        cancelled ? null : mine ? (
-          event.myResponses.length > 1 || mine.relation === 'child' ? (
-            // Eltern: je Person ein Status mit Vornamen („Mia: Unsicher“)
-            <View style={{ gap: 4, alignItems: 'flex-end' }}>
-              {event.myResponses.map((r) => (
-                <Chip
-                  key={r.personId}
-                  tone={STATUS_TONE[r.status]}
-                  label={`${r.relation === 'self' ? 'Ich' : r.firstName}: ${ATTENDANCE_LABELS[r.status]}`}
-                />
-              ))}
-            </View>
-          ) : (
-            <AttendanceChip status={mine.status} />
-          )
+        cancelled ? (
+          <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+        ) : !mine ? null : multi ? (
+          // Eltern: je Person ein Status mit Vornamen („Mia: Unsicher“)
+          <View style={{ gap: 4, alignItems: 'flex-end' }}>
+            {event.myResponses.map((r) => (
+              <Chip
+                key={r.personId}
+                tone={STATUS_TONE[r.status]}
+                label={`${r.relation === 'self' ? 'Ich' : r.firstName}: ${ATTENDANCE_LABELS[r.status]}`}
+              />
+            ))}
+          </View>
+        ) : mine.status === 'pending' && mine.canRespond ? (
+          <RoundRespond event={event} personId={mine.personId} />
         ) : (
-          <Ionicons name={eventIcon(event)} size={18} color={colors.onSurfaceMuted} />
+          <AttendanceChip status={mine.status} />
         )
       }
     />
+  );
+}
+
+/** Zwei runde Knöpfe (44): ✓ sagt sofort zu, ✕ öffnet den Termin, dort wird der Grund abgefragt. */
+function RoundRespond({ event, personId }: { event: EventSummary; personId: string }) {
+  const { colors, sizes } = useTheme();
+  const respond = useRespond(event.id);
+  const toast = useToast();
+  const size = sizes.touchTarget;
+  const round = {
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  };
+  return (
+    <View style={{ flexDirection: 'row', gap: 8 }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Zusagen"
+        disabled={respond.isPending}
+        onPress={() =>
+          respond.mutate(
+            { personId, status: 'yes' },
+            {
+              onSuccess: () =>
+                toast({
+                  message: 'Zugesagt',
+                  actionLabel: 'Rückgängig',
+                  onAction: () => respond.mutate({ personId, status: 'pending' }),
+                }),
+            },
+          )
+        }
+        style={{ ...round, backgroundColor: colors.status.success.container }}
+      >
+        <Ionicons name="checkmark" size={22} color={colors.status.success.onContainer} />
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Absagen"
+        onPress={() => router.push(`/events/${event.id}`)}
+        style={{ ...round, backgroundColor: colors.status.urgent.container }}
+      >
+        <Ionicons name="close" size={22} color={colors.status.urgent.onContainer} />
+      </Pressable>
+    </View>
   );
 }
 

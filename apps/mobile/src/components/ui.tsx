@@ -820,6 +820,7 @@ export function ListRow({
   trailing,
   onPress,
   first,
+  strike,
 }: {
   leading?: ReactNode;
   title: string;
@@ -827,13 +828,20 @@ export function ListRow({
   trailing?: ReactNode;
   onPress?: () => void;
   first?: boolean;
+  /** durchgestrichener Titel (abgesagt) */
+  strike?: boolean;
 }) {
   const { colors, spacing, sizes } = useTheme();
   const main = (
     <>
       {leading}
       <View style={{ flex: 1, gap: 2 }}>
-        <T variant="label" numberOfLines={2} style={{ fontWeight: '700' }}>
+        <T
+          variant="label"
+          numberOfLines={2}
+          color={strike ? colors.onSurfaceMuted : undefined}
+          style={{ fontWeight: '700', textDecorationLine: strike ? 'line-through' : 'none' }}
+        >
           {title}
         </T>
         {typeof subtitle === 'string' ? (
