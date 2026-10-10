@@ -219,7 +219,7 @@ Nach `ZustandLaden/Offline/Leer/Fehler`:
 | Rückmeldung   | Toast als dunkle Karte mit grünem Haken und „Rückgängig“, steht über der schwebenden Tab-Leiste                                                                                                  |
 | Bestätigung   | `Sheet` (Blatt von unten) „Termin absagen?“ mit Hinweis, Grundauswahl und „Abbrechen“ / „Absagen und informieren“ (erst mit Grund); ebenso Grund beim Absagen/Unsicher auf den Spielkarten            |
 
-- **Nicht umgesetzt:** „Deine Zusage wird gesendet, sobald du wieder online bist“ (Offline-Warteschlange für Rückmeldungen) – Zu-/Absagen brauchen weiter eine Verbindung.
+- **Offline-Warteschlange** (nachgeholt): Zu- und Absagen ohne Verbindung werden auf dem Gerät gemerkt (`lib/outbox.ts`, je Termin und Person gilt die letzte Antwort), sofort angezeigt („Wird gesendet“, Hinweis „Deine Rückmeldung wird gesendet, sobald du wieder online bist.“) und beim Wiederverbinden gesendet (`OutboxSync`); vom Server abgelehnte (z. B. Frist abgelaufen) werden gemeldet. Eingriffe des Trainerteams für andere werden nie gemerkt.
 - Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-zustaende.mjs` (Laden verzögert, Fehler 500 mit erneutem Versuch, Mitglied ohne Mannschaft, Offline, Bestätigungsblatt; Überblick `.check/shots/neuer-look-zustaende.png`).
 
 ### Stand Schritt 8: Dunkelmodus-Durchgang (10.10.2026) ✅
@@ -239,6 +239,5 @@ Unterseiten; keine Seite mit weißen Flächen, unlesbarem Text oder Überlauf. A
 
 ### Offene Aufgaben (Paket L)
 
-- Offline-Warteschlange für Zu-/Absagen („wird gesendet, sobald du wieder online bist“).
 - Unterseiten (Formulare, Detailseiten) schrittweise auf Karten im neuen Look (Radius 24, Pastell-Kacheln) bringen – sie nutzen die Bausteine bereits, behalten aber ihren alten Seitenaufbau.
 

@@ -12,6 +12,7 @@ import {
 import { request, RequestError } from './api';
 import { deviceLocale, setLocale } from './i18n';
 import { disablePush, enablePush, listenForPushTaps } from './push';
+import { clearOutbox } from './outbox';
 import {
   clearOfflineCache,
   persistOfflineCache,
@@ -116,6 +117,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     await writeToken(null);
     queryClient.clear();
     await clearOfflineCache();
+    await clearOutbox();
     if (token) await request('/auth/logout', { method: 'POST', token }).catch(() => undefined);
   }, [state.token, queryClient]);
 

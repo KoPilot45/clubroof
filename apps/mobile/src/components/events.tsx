@@ -20,6 +20,7 @@ import {
   MATCH_KIND_LABELS,
   MAYBE_REASONS,
 } from '@/lib/labels';
+import { enqueueResponse, queuedFor, useOutbox } from '@/lib/outbox';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import {
@@ -155,6 +156,8 @@ export function EventRow({
   const cancelled = event.status === 'cancelled';
   const mine = event.myResponses[0];
   const multi = event.myResponses.length > 1 || mine?.relation === 'child';
+  const outbox = useOutbox();
+  const queued = mine ? queuedFor(outbox, event.id, mine.personId) : undefined;
   const text = cancelled
     ? event.cancelledReason
       ? `Grund: ${event.cancelledReason}`
@@ -188,6 +191,8 @@ export function EventRow({
       trailing={
         cancelled ? (
           <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+        ) : !mine ? null : queued && !multi ? (
+          <Chip tone="info" icon="cloud-upload-outline" label="Wird gesendet" />
         ) : !mine ? null : multi ? (
           // Eltern: je Person ein Status mit Vornamen („Mia: Unsicher“)
           <View style={{ gap: 4, alignItems: 'flex-end' }}>
@@ -260,7 +265,7 @@ function ReasonForm({
 /** Zwei runde Knöpfe (44): ✓ sagt sofort zu, ✕ öffnet den Termin, dort wird der Grund abgefragt. */
 function RoundRespond({ event, personId }: { event: EventSummary; personId: string }) {
   const { colors, sizes } = useTheme();
-  const respond = useRespond(event.id);
+  const respond = useRespond(event.id, event.title);
   const toast = useToast();
   const [declining, setDeclining] = useState(false);
   const size = sizes.touchTarget;
@@ -281,12 +286,16 @@ function RoundRespond({ event, personId }: { event: EventSummary; personId: stri
           respond.mutate(
             { personId, status: 'yes' },
             {
-              onSuccess: () =>
-                toast({
-                  message: 'Zugesagt',
-                  actionLabel: 'Rückgängig',
-                  onAction: () => respond.mutate({ personId, status: 'pending' }),
-                }),
+              onSuccess: (data) =>
+                toast(
+                  data === 'queued'
+                    ? { message: 'Gespeichert – wird gesendet, sobald du wieder online bist' }
+                    : {
+                        message: 'Zugesagt',
+                        actionLabel: 'Rückgängig',
+                        onAction: () => respond.mutate({ personId, status: 'pending' }),
+                      },
+                ),
             },
           )
         }
@@ -312,13 +321,17 @@ function RoundRespond({ event, personId }: { event: EventSummary; personId: stri
             respond.mutate(
               { personId, status: 'no', reason },
               {
-                onSuccess: () => {
+                onSuccess: (data) => {
                   setDeclining(false);
-                  toast({
-                    message: 'Abgesagt',
-                    actionLabel: 'Rückgängig',
-                    onAction: () => respond.mutate({ personId, status: 'pending' }),
-                  });
+                  toast(
+                    data === 'queued'
+                      ? { message: 'Gespeichert – wird gesendet, sobald du wieder online bist' }
+                      : {
+                          message: 'Abgesagt',
+                          actionLabel: 'Rückgängig',
+                          onAction: () => respond.mutate({ personId, status: 'pending' }),
+                        },
+                  );
                 },
               },
             )
@@ -329,19 +342,41 @@ function RoundRespond({ event, personId }: { event: EventSummary; personId: stri
   );
 }
 
-export function useRespond(eventId: string) {
-  const { api } = useSignedIn();
+/**
+ * Zu-/Absage senden. Mit `queueTitle` (eigene Rückmeldung und die der Kinder) wird sie bei fehlender Verbindung
+ * gemerkt und später gesendet (`'queued'`); Eingriffe des Trainerteams für andere Personen werden nie gemerkt.
+ */
+export function useRespond(eventId: string, queueTitle?: string) {
+  const { api, me } = useSignedIn();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: {
+    // Auch ohne Verbindung ausführen: Der Netzfehler wird unten abgefangen und die Antwort gemerkt
+    networkMode: 'always',
+    mutationFn: async (input: {
       personId: string;
       status: 'yes' | 'no' | 'maybe' | 'pending';
       reason?: string;
-    }) =>
-      api<EventSummary>(`/events/${eventId}/responses/${input.personId}`, {
-        method: 'PUT',
-        body: { status: input.status, reason: input.reason ?? null },
-      }),
+    }): Promise<EventSummary | 'queued'> => {
+      try {
+        return await api<EventSummary>(`/events/${eventId}/responses/${input.personId}`, {
+          method: 'PUT',
+          body: { status: input.status, reason: input.reason ?? null },
+        });
+      } catch (e) {
+        if (queueTitle && e instanceof RequestError && e.status === 0) {
+          enqueueResponse({
+            eventId,
+            personId: input.personId,
+            status: input.status,
+            reason: input.reason ?? null,
+            userId: me.user.id,
+            title: queueTitle,
+          });
+          return 'queued';
+        }
+        throw e;
+      }
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['home'] });
       void queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -362,7 +397,12 @@ export function ResponseControls({
   /** hero: Schaltflächen auf der Blickfangkarte; der Grund wird in einem Blatt von unten abgefragt */
   tone?: 'surface' | 'hero';
 }) {
-  const respond = useRespond(event.id);
+  const { colors } = useTheme();
+  const respond = useRespond(event.id, event.title);
+  const outbox = useOutbox();
+  /** Antwort, die schon eingereiht ist, gilt sofort als Anzeige */
+  const eff = (r: MyResponse) => queuedFor(outbox, event.id, r.personId)?.status ?? r.status;
+  const waiting = event.myResponses.some((r) => queuedFor(outbox, event.id, r.personId));
   const [error, setError] = useState<string | null>(null);
   /** Person und Antwort, für die gerade ein Grund gewählt wird */
   const [pending, setPending] = useState<{ personId: string; status: 'no' | 'maybe' } | null>(null);
@@ -371,12 +411,16 @@ export function ResponseControls({
   const toast = useToast();
   const send = (r: MyResponse, status: 'yes' | 'no' | 'maybe', declineReason?: string) => {
     setError(null);
-    const previous = r.status;
+    const previous = eff(r);
     respond.mutate(
       { personId: r.personId, status, reason: declineReason },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setPending(null);
+          if (data === 'queued') {
+            toast({ message: 'Gespeichert – wird gesendet, sobald du wieder online bist' });
+            return;
+          }
           const label = t(
             status === 'yes' ? 'Zugesagt' : status === 'maybe' ? 'Unsicher' : 'Abgesagt',
           );
@@ -432,10 +476,10 @@ export function ResponseControls({
               }}
             >
               <T variant="label">{r.relation === 'self' ? 'Ich' : r.firstName}</T>
-              <AttendanceChip status={r.status} />
+              <AttendanceChip status={eff(r)} />
             </View>
           ) : null}
-          {(r.status === 'no' || r.status === 'maybe') && r.reason ? (
+          {(eff(r) === 'no' || eff(r) === 'maybe') && r.reason ? (
             <T variant="caption">Grund: {r.reason}</T>
           ) : null}
 
@@ -451,18 +495,14 @@ export function ResponseControls({
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Button
                 style={{ flex: 1 }}
-                label={r.status === 'yes' ? 'Zugesagt' : 'Zusagen'}
+                label={eff(r) === 'yes' ? 'Zugesagt' : 'Zusagen'}
                 icon={
-                  tone === 'hero'
-                    ? 'checkmark'
-                    : r.status === 'yes'
-                      ? 'checkmark-circle'
-                      : undefined
+                  tone === 'hero' ? 'checkmark' : eff(r) === 'yes' ? 'checkmark-circle' : undefined
                 }
                 hideLabel={tone === 'hero'}
                 size={tone === 'hero' ? 'sm' : 'md'}
                 variant={
-                  r.status === 'yes' || r.status === 'pending'
+                  eff(r) === 'yes' || eff(r) === 'pending'
                     ? tone === 'hero'
                       ? 'hero'
                       : 'primary'
@@ -474,21 +514,21 @@ export function ResponseControls({
               <Button
                 style={{ flex: 1 }}
                 label="Unsicher"
-                icon={tone === 'hero' ? 'help' : r.status === 'maybe' ? 'help-circle' : undefined}
+                icon={tone === 'hero' ? 'help' : eff(r) === 'maybe' ? 'help-circle' : undefined}
                 hideLabel={tone === 'hero'}
                 size={tone === 'hero' ? 'sm' : 'md'}
-                variant={r.status === 'maybe' ? (tone === 'hero' ? 'hero' : 'action') : outline}
+                variant={eff(r) === 'maybe' ? (tone === 'hero' ? 'hero' : 'action') : outline}
                 onPress={() => {
                   setPending({ personId: r.personId, status: 'maybe' });
                 }}
               />
               <Button
                 style={{ flex: 1 }}
-                label={r.status === 'no' ? 'Abgesagt' : 'Absagen'}
-                icon={tone === 'hero' ? 'close' : r.status === 'no' ? 'close-circle' : undefined}
+                label={eff(r) === 'no' ? 'Abgesagt' : 'Absagen'}
+                icon={tone === 'hero' ? 'close' : eff(r) === 'no' ? 'close-circle' : undefined}
                 hideLabel={tone === 'hero'}
                 size={tone === 'hero' ? 'sm' : 'md'}
-                variant={r.status === 'no' ? (tone === 'hero' ? 'hero' : 'danger') : outline}
+                variant={eff(r) === 'no' ? (tone === 'hero' ? 'hero' : 'danger') : outline}
                 onPress={() => {
                   setPending({ personId: r.personId, status: 'no' });
                 }}
@@ -497,6 +537,22 @@ export function ResponseControls({
           )}
         </View>
       ))}
+      {waiting ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Ionicons
+            name="cloud-upload-outline"
+            size={18}
+            color={tone === 'hero' ? colors.hero.onHero : colors.onSurfaceMuted}
+          />
+          <T
+            variant="caption"
+            color={tone === 'hero' ? colors.hero.onHero : undefined}
+            style={{ flex: 1 }}
+          >
+            Deine Rückmeldung wird gesendet, sobald du wieder online bist.
+          </T>
+        </View>
+      ) : null}
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       {tone === 'hero' ? (
         <Sheet

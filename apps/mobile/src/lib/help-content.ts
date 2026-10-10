@@ -87,6 +87,12 @@ export const HELP_SECTIONS: HelpSection[] = [
     audience: 'all',
     entries: [
       {
+        id: 'offline-respond',
+        question: 'Kann ich ohne Internet zu- oder absagen?',
+        answer:
+          'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.',
+      },
+      {
         id: 'search',
         question: 'Wie suche ich nach Terminen, Personen oder News?',
         answer:

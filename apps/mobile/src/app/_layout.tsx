@@ -16,6 +16,7 @@ import { SessionProvider, useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { Loading } from '@/components/ui';
 import { OfflineBanner } from '@/components/offline-banner';
+import { OutboxSync } from '@/components/outbox-sync';
 import { ToastProvider } from '@/lib/toast';
 import { fontState, HEADING_FONT } from '@/lib/fonts';
 import { headerTitle } from '@/components/header-title';
@@ -356,6 +357,7 @@ export default function RootLayout() {
               <AppLockGate>
                 <Navigator />
                 <OfflineBanner />
+                <OutboxSync />
               </AppLockGate>
             </ToastProvider>
           </ClubTheme>
