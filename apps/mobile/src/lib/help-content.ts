@@ -48,6 +48,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Darstellung ändern', href: '/account' },
       },
       {
+        id: 'comfort',
+        question: 'Kann ich die Schrift vergrößern, die App sperren oder sie ohne Netz nutzen?',
+        answer:
+          'Ja. Unter „Mehr → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.',
+        link: { label: 'Einstellungen öffnen', href: '/account' },
+      },
+      {
         id: 'route',
         question: 'Wie komme ich zum Spielort?',
         answer:

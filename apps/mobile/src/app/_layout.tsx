@@ -10,7 +10,7 @@ import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
@@ -19,6 +19,9 @@ import { OfflineBanner } from '@/components/offline-banner';
 import { ToastProvider } from '@/lib/toast';
 import { fontState, HEADING_FONT } from '@/lib/fonts';
 import { headerTitle } from '@/components/header-title';
+import { AppLockGate } from '@/components/app-lock-gate';
+import { loadAppLock } from '@/lib/app-lock';
+import { loadFontScale } from '@/lib/font-scale';
 import { t, useLocale } from '@/lib/i18n';
 import { Pressable, View } from 'react-native';
 
@@ -40,6 +43,10 @@ function HomeBackButton() {
 function Navigator() {
   const session = useSession();
   useLocale();
+  useEffect(() => {
+    void loadFontScale();
+    void loadAppLock();
+  }, []);
   const { colors, scheme } = useTheme();
   // Überschriftenschrift laden; bei einem Fehler bleibt die Systemschrift
   const [fontsLoaded, fontError] = useFonts({
@@ -335,8 +342,10 @@ export default function RootLayout() {
         <SessionProvider>
           <ClubTheme>
             <ToastProvider>
-              <Navigator />
-              <OfflineBanner />
+              <AppLockGate>
+                <Navigator />
+                <OfflineBanner />
+              </AppLockGate>
             </ToastProvider>
           </ClubTheme>
         </SessionProvider>

@@ -7,6 +7,8 @@ Festlegungen: `ENTSCHEIDUNGEN.md`. Jedes Paket endet mit `pnpm check`, Doku (`FU
 
 ## Wochenende: Optimierung der Bedienung
 
+**Stand 10.10.2026: W1 bis W7 sind umgesetzt** (Kachel-Infos, Neu-Hinweise und Warnungen, Erster Eindruck, Route, Optik, Komfort, Einrichtungs-Demos). Weiter mit den Paketen unter „Danach“.
+
 | Nr. | Paket                                       | Größe | Inhalt                                                                                                                                                            | Abhängigkeit  |
 | --- | ------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
 | W1  | **Kachel-Infos**                            | M     | Hinweis und Zähler in den Kacheln, soweit die Daten schon vorhanden sind (siehe unten)                                                                            | –             |

@@ -25,7 +25,16 @@
       "output": "single",
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-secure-store", "expo-font", "expo-notifications"],
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font",
+      "expo-notifications",
+      [
+        "expo-local-authentication",
+        { "faceIDPermission": "Clubroof nutzt Face ID, um die App zu entsperren." }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

@@ -30,6 +30,7 @@ Nicht jedes Mal neu zusammensetzen – diese Skripte nutzen:
 ```
 pnpm check                     # Lint + Typprüfung + alle Tests (vor jedem Commit), knappe Ausgabe
 pnpm check --grep="Kasse"      # nur passende API-Tests – schnell beim Entwickeln
+pnpm check --only=a11y         # antippbare Elemente ohne Text/accessibilityLabel (Teil von pnpm check)
 pnpm check --routes            # nach neuen Bildschirmen: typisierte Routen neu erzeugen, dann prüfen
 pnpm browser-check             # Web-Export bauen, API + Web starten, Start/Anmeldung prüfen
 pnpm browser-check scripts/e2e/beispiel.mjs --no-build   # eigene Browserprüfung (Vorlage: beispiel.mjs)

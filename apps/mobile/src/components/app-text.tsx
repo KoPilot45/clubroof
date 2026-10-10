@@ -1,6 +1,7 @@
 import { Children, forwardRef, type ReactNode } from 'react';
 import { StyleSheet, Text as RNText, type TextProps } from 'react-native';
 import { bodyFontFor, fontState } from '@/lib/fonts';
+import { useFontScale } from '@/lib/font-scale';
 import { t, useLocale } from '@/lib/i18n';
 
 /** Texte in der aktiven Sprache; zusammengesetzte Teile werden als Ganzes nachgeschlagen. */
@@ -24,17 +25,27 @@ export const Text = forwardRef<RNText, TextProps & { verbatim?: boolean }>(funct
   ref,
 ) {
   useLocale();
+  const scale = useFontScale();
   const content = verbatim ? children : translateChildren(children);
+  const flat = StyleSheet.flatten(style) ?? {};
+  // Schriftgröße der App (Einstellung im Konto) auf Größe und Zeilenhöhe anwenden
+  const sized =
+    scale === 1
+      ? flat
+      : {
+          ...flat,
+          fontSize: Math.round((flat.fontSize ?? 14) * scale),
+          ...(flat.lineHeight ? { lineHeight: Math.round(flat.lineHeight * scale) } : {}),
+        };
   if (!fontState.ready)
     return (
-      <RNText ref={ref} style={style} {...props}>
+      <RNText ref={ref} style={sized} {...props}>
         {content}
       </RNText>
     );
-  const flat = StyleSheet.flatten(style) ?? {};
-  const resolved = flat.fontFamily
-    ? flat
-    : { ...flat, fontFamily: bodyFontFor(flat.fontWeight), fontWeight: '400' as const };
+  const resolved = sized.fontFamily
+    ? sized
+    : { ...sized, fontFamily: bodyFontFor(sized.fontWeight), fontWeight: '400' as const };
   return (
     <RNText ref={ref} style={resolved} {...props}>
       {content}

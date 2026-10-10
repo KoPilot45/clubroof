@@ -6,7 +6,7 @@ import {
   type TwoFactorStatus,
 } from '@clubroof/core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
@@ -22,11 +22,15 @@ import {
   Section,
   T,
   TextField,
+  Toggle,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { t } from '@/lib/i18n';
+import { setFontScale, useFontScaleKey } from '@/lib/font-scale';
+import { useAppLockEnabled, setAppLockEnabled } from '@/lib/app-lock';
+import { deviceAuthAvailable, deviceAuthenticate } from '@/lib/device-auth';
 
 export default function AccountScreen() {
   const { api, me, signOut } = useSignedIn();
@@ -68,6 +72,8 @@ export default function AccountScreen() {
       </Card>
       <AppearanceSection />
       <LanguageSection />
+      <FontSizeSection />
+      <AppLockSection />
       <Section title="Benachrichtigungen & Kalender">
         <Card>
           <ListRow
@@ -395,6 +401,65 @@ function LanguageSection() {
           Automatisch richtet sich nach der Sprache deines Geräts. Die Wahl gilt auf allen deinen
           Geräten.
         </T>
+      </Card>
+    </Section>
+  );
+}
+
+/** Schriftgröße der App: nur für dieses Gerät, zusätzlich zur Systemeinstellung. */
+function FontSizeSection() {
+  const key = useFontScaleKey();
+  return (
+    <Section title="Schriftgröße">
+      <Card style={{ gap: 8 }}>
+        <ChoiceChips
+          options={[
+            { value: 'normal' as const, label: 'Normal' },
+            { value: 'large' as const, label: 'Groß' },
+            { value: 'xlarge' as const, label: 'Sehr groß' },
+          ]}
+          selected={[key]}
+          onToggle={setFontScale}
+        />
+        <T>So sieht ein normaler Text in dieser Größe aus.</T>
+        <T variant="caption">Die Einstellung gilt nur auf diesem Gerät.</T>
+      </Card>
+    </Section>
+  );
+}
+
+/** App-Sperre mit Face ID, Fingerabdruck oder Gerätecode (nur auf dem Handy, nur wenn das Gerät es kann). */
+function AppLockSection() {
+  const enabled = useAppLockEnabled();
+  const [available, setAvailable] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    void deviceAuthAvailable().then(setAvailable);
+  }, []);
+  if (!available) return null;
+  return (
+    <Section title="App-Sperre">
+      <Card style={{ gap: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <T style={{ flex: 1 }}>Mit Face ID oder Fingerabdruck entsperren</T>
+          <Toggle
+            label="App-Sperre"
+            value={enabled}
+            onChange={async (next) => {
+              setError(null);
+              if (next && !(await deviceAuthenticate('App-Sperre einschalten'))) {
+                setError('Das hat nicht geklappt. Die App-Sperre bleibt aus.');
+                return;
+              }
+              await setAppLockEnabled(next);
+            }}
+          />
+        </View>
+        <T variant="caption">
+          Beim Start und nach einer Minute im Hintergrund fragt die App nach Face ID, Fingerabdruck
+          oder dem Gerätecode. Die Einstellung gilt nur auf diesem Gerät.
+        </T>
+        {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       </Card>
     </Section>
   );

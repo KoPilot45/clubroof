@@ -12,6 +12,12 @@ import {
 import { request, RequestError } from './api';
 import { deviceLocale, setLocale } from './i18n';
 import { disablePush, enablePush, listenForPushTaps } from './push';
+import {
+  clearOfflineCache,
+  persistOfflineCache,
+  readOfflineMe,
+  restoreOfflineCache,
+} from './offline-cache';
 import { readToken, writeToken } from './token-storage';
 
 type SessionState =
@@ -48,8 +54,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (!token) return active && setState({ status: 'signedOut', token: null, me: null });
       try {
         const me = await request<MeResponse>('/me', { token });
+        await restoreOfflineCache(queryClient, me.user.id);
         if (active) setState({ status: 'signedIn', token, me });
       } catch (error) {
+        if (error instanceof RequestError && error.status === 0) {
+          // Start ohne Verbindung: mit den zuletzt gespeicherten Daten öffnen statt abzumelden
+          const cached = await readOfflineMe();
+          if (cached) {
+            await restoreOfflineCache(queryClient, cached.user.id);
+            if (active) setState({ status: 'signedIn', token, me: cached });
+            return;
+          }
+        }
         if (error instanceof RequestError && error.status === 401) await writeToken(null);
         if (active) setState({ status: 'signedOut', token: null, me: null });
       }
@@ -69,6 +85,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setState({ status: 'signedIn', token: result.token, me: result.me });
     return null;
   }, []);
+
+  // Offline-Lesen: Daten dieses Kontos laufend auf dem Gerät speichern
+  const signedInMe = state.status === 'signedIn' ? state.me : null;
+  useEffect(() => {
+    if (!signedInMe) return;
+    return persistOfflineCache(queryClient, signedInMe);
+  }, [signedInMe, queryClient]);
 
   // Sprache: gewählte Sprache des Kontos, sonst die des Geräts
   const chosenLanguage = state.status === 'signedIn' ? state.me.user.language : null;
@@ -92,6 +115,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setState({ status: 'signedOut', token: null, me: null });
     await writeToken(null);
     queryClient.clear();
+    await clearOfflineCache();
     if (token) await request('/auth/logout', { method: 'POST', token }).catch(() => undefined);
   }, [state.token, queryClient]);
 
