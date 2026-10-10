@@ -18,20 +18,37 @@ export const TAB_ICONS: Record<string, [IconName, IconName]> = {
 /** Platz, den die schwebende Leiste einnimmt (Höhe + Abstand unten) – Seiten halten darüber Luft. */
 export const TAB_BAR_SPACE = 68 + 22;
 
+export type NavItem = {
+  key: string;
+  label: string;
+  icon: IconName;
+  iconActive: IconName;
+  active: boolean;
+  onPress: () => void;
+  onLongPress?: () => void;
+};
+
 /**
- * Schwebende Tab-Leiste: Pille mit fünf Punkten; der aktive Bereich ist eine farbige Pille mit
- * Beschriftung, die übrigen zeigen nur das Icon (Beschriftung für Screenreader).
+ * Schwebende Leiste: Pille mit bis zu fünf Punkten; der aktive Punkt ist eine farbige Pille mit
+ * Beschriftung, die übrigen zeigen nur das Icon (Beschriftung für Screenreader). Gemeinsame Grundlage
+ * der Tab-Leiste und der Verwaltungs-Navigation.
  */
-export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export function FloatingNav({
+  items,
+  onHeight,
+}: {
+  items: NavItem[];
+  /** meldet Höhe samt Abstand zum unteren Rand (damit Seiten Platz lassen) */
+  onHeight?: (height: number) => void;
+}) {
   const { colors, sizes, isDark, elevation } = useTheme();
   const insets = useSafeAreaInsets();
-  const reportHeight = useContext(BottomTabBarHeightCallbackContext);
   const [keyboard, setKeyboard] = useState(false);
   const bottom = Math.max(insets.bottom, 12) + 10;
 
   useEffect(() => {
-    reportHeight?.(sizes.tabBar + bottom);
-  }, [reportHeight, sizes.tabBar, bottom]);
+    onHeight?.(sizes.tabBar + bottom);
+  }, [onHeight, sizes.tabBar, bottom]);
   useEffect(() => {
     if (Platform.OS === 'web') return;
     const show = Keyboard.addListener('keyboardDidShow', () => setKeyboard(true));
@@ -65,56 +82,69 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
             : shadowStyle(elevation.floating)),
         }}
       >
-        {state.routes.map((route, index) => {
-          const focused = state.index === index;
-          const { options } = descriptors[route.key]!;
-          const label = typeof options.title === 'string' ? options.title : route.name;
-          const [off, on] = TAB_ICONS[route.name] ?? ['ellipse-outline', 'ellipse'];
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
-          };
-          return (
-            <Pressable
-              key={route.key}
-              accessibilityRole="tab"
-              accessibilityLabel={label}
-              aria-selected={focused}
-              onPress={onPress}
-              onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
-              style={{
-                height: sizes.tabItem,
-                minWidth: sizes.touchTarget + 2,
-                paddingHorizontal: focused ? 16 : 0,
-                borderRadius: sizes.tabItem / 2,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                backgroundColor: focused ? colors.primary : 'transparent',
-              }}
-            >
-              <Ionicons
-                name={focused ? on : off}
-                size={22}
-                color={focused ? colors.onPrimary : colors.onSurfaceMuted}
-              />
-              {focused ? (
-                <Text
-                  numberOfLines={1}
-                  style={{ fontSize: 14, fontWeight: '700', color: colors.onPrimary }}
-                >
-                  {label}
-                </Text>
-              ) : null}
-            </Pressable>
-          );
-        })}
+        {items.map((item) => (
+          <Pressable
+            key={item.key}
+            accessibilityRole="tab"
+            accessibilityLabel={item.label}
+            aria-selected={item.active}
+            onPress={item.onPress}
+            onLongPress={item.onLongPress}
+            style={{
+              height: sizes.tabItem,
+              minWidth: sizes.touchTarget + 2,
+              paddingHorizontal: item.active ? 16 : 0,
+              borderRadius: sizes.tabItem / 2,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              backgroundColor: item.active ? colors.primary : 'transparent',
+            }}
+          >
+            <Ionicons
+              name={item.active ? item.iconActive : item.icon}
+              size={22}
+              color={item.active ? colors.onPrimary : colors.onSurfaceMuted}
+            />
+            {item.active ? (
+              <Text
+                numberOfLines={1}
+                style={{ fontSize: 14, fontWeight: '700', color: colors.onPrimary }}
+              >
+                {item.label}
+              </Text>
+            ) : null}
+          </Pressable>
+        ))}
       </View>
     </View>
   );
+}
+
+/** Tab-Leiste der App (Home, Team, Termine, Verein, Mehr). */
+export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const reportHeight = useContext(BottomTabBarHeightCallbackContext);
+  const items: NavItem[] = state.routes.map((route, index) => {
+    const focused = state.index === index;
+    const { options } = descriptors[route.key]!;
+    const [off, on] = TAB_ICONS[route.name] ?? ['ellipse-outline', 'ellipse'];
+    return {
+      key: route.key,
+      label: typeof options.title === 'string' ? options.title : route.name,
+      icon: off,
+      iconActive: on,
+      active: focused,
+      onPress: () => {
+        const event = navigation.emit({
+          type: 'tabPress',
+          target: route.key,
+          canPreventDefault: true,
+        });
+        if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
+      },
+      onLongPress: () => navigation.emit({ type: 'tabLongPress', target: route.key }),
+    };
+  });
+  return <FloatingNav items={items} onHeight={reportHeight} />;
 }

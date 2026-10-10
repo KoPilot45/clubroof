@@ -76,7 +76,8 @@ function Navigator() {
           ...(navigation.canGoBack() ? {} : { headerLeft: () => <HomeBackButton /> }),
           headerShown: false,
           headerTintColor: colors.primaryText,
-          headerStyle: { backgroundColor: colors.surface },
+          headerStyle: { backgroundColor: colors.background },
+          headerShadowVisible: false,
           headerTitleStyle: {
             color: colors.onSurface,
             fontFamily: HEADING_FONT,

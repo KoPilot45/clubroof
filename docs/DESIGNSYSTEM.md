@@ -222,6 +222,21 @@ Nach `ZustandLaden/Offline/Leer/Fehler`:
 - **Nicht umgesetzt:** „Deine Zusage wird gesendet, sobald du wieder online bist“ (Offline-Warteschlange für Rückmeldungen) – Zu-/Absagen brauchen weiter eine Verbindung.
 - Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-zustaende.mjs` (Laden verzögert, Fehler 500 mit erneutem Versuch, Mitglied ohne Mannschaft, Offline, Bestätigungsblatt; Überblick `.check/shots/neuer-look-zustaende.png`).
 
+### Stand Schritt 8: Dunkelmodus-Durchgang (10.10.2026) ✅
+
+`scripts/e2e/dunkelmodus.mjs` öffnet 32 Seiten (Trainer: Tabs, Termin, Kader, Kasse, Statistik, Aufgaben, Profil, Benachrichtigungen, Abwesenheiten, News, Umfragen,
+Forum, Dokumente, Wissen, Helfer, Kontakte, Mannschaften, Kalender, Hilfe, Konto; Admin: Verwaltung, Mitglieder, Rollen, Module, Verein, Mannschaften, Protokoll,
+Einladen) dunkel (mit `--hell` hell), prüft Konsolenfehler und horizontales Scrollen und baut Kontaktbögen `.check/shots/dunkel-bogen-1…4.png`.
+
+Ergebnis: Die Flächenstufen (Hintergrund → Karte → erhöhte Karte), Rahmen statt Schatten, Pastell- und Statusflächen und der helle Akzent für Text tragen auch die
+Unterseiten; keine Seite mit weißen Flächen, unlesbarem Text oder Überlauf. Angepasst:
+
+- **Kopfzeile der Unterseiten** (Stack) liegt jetzt auf dem Seitenhintergrund ohne Trennlinie – wie die Tabs.
+- **Verwaltungsmodus:** untere Navigation als schwebende Pille (`FloatingNav`, gemeinsame Grundlage mit der Tab-Leiste); die Seiten lassen darunter Platz.
+  Die abgesetzte Kopfzeile in `primaryContainer` mit „Beenden“ bleibt als Erkennungszeichen des Modus.
+- Bewusst weiß bleiben: QR-Codes (Kontrast), Gelbe/Rote Karte im Spielbericht.
+- **Seite `/bausteine`** bleibt (nicht verlinkt) als Sichtprüfung für Bausteine, hell und dunkel; `neuer-look-bausteine.mjs` nutzt sie.
+
 ### Offene Aufgaben (Paket L)
 
 - **„Anpassen“ im Vereinsbereich:** Kachel aus dem Entwurf `VereinNeu` – Kacheln des Vereinslebens ordnen/ausblenden mit gespeicherter Auswahl je Person
@@ -231,5 +246,5 @@ Nach `ZustandLaden/Offline/Leer/Fehler`:
 - Tabellenplatz und Torschützenkönig im Kader-Blickfang (Team) – braucht Daten in der API.
 - Globale Suche (Knopf in der Kopfzeile).
 - Offline-Warteschlange für Zu-/Absagen („wird gesendet, sobald du wieder online bist“).
-- Noch: Dunkelmodus-Durchgang über alle Seiten, Seite `/bausteine` entscheiden (behalten oder entfernen).
+- Unterseiten (Formulare, Detailseiten) schrittweise auf Karten im neuen Look (Radius 24, Pastell-Kacheln) bringen – sie nutzen die Bausteine bereits, behalten aber ihren alten Seitenaufbau.
 
