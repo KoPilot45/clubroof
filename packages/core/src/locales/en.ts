@@ -2605,6 +2605,7 @@ export const en: Record<string, string> = {
   'Ungültiges Base32': 'Invalid Base32',
   unsicher: 'unsure',
   Unsicher: 'Maybe',
+  'Unsicher gemeldet': 'Reported unsure',
   'Unsicher melden': 'Report unsure',
   'Unsicher senden': 'Send Maybe',
   'Unten gibt es fünf Bereiche:\n• Home: dein Überblick – nächste Spiele (zum Wischen), Offenes, deine Woche, Neuigkeiten und dein Schnellzugriff.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Termine: deine nächsten Termine und der Kalender.\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften des Vereins.\n• Mehr: dein Profil, Einstellungen, Abwesenheiten und diese Hilfe.':

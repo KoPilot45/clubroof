@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Linking, Pressable, View } from 'react-native';
-import { AttendanceChip, ResponseControls, useRespond } from '@/components/events';
+import { AnswerButtons, AttendanceChip, ResponseControls, useRespond } from '@/components/events';
 import { ShiftRow } from '@/components/helpers';
 import { RequestError } from '@/lib/api';
 import {
@@ -176,27 +176,19 @@ function ParticipantRow({
         onPress={canOverride && p.attended === null ? () => setOpen((v) => !v) : undefined}
       />
       {open ? (
-        <View style={{ flexDirection: 'row', gap: 6, paddingBottom: 10 }}>
-          <Button
-            style={{ flex: 1 }}
-            label="Zusage"
-            variant="outline"
-            onPress={() => set('yes')}
-            loading={respond.isPending && respond.variables?.status === 'yes'}
-          />
-          <Button
-            style={{ flex: 1 }}
-            label="Unsicher"
-            variant="outline"
-            onPress={() => set('maybe')}
-            loading={respond.isPending && respond.variables?.status === 'maybe'}
-          />
-          <Button
-            style={{ flex: 1 }}
-            label="Absage"
-            variant="danger"
-            onPress={() => set('no')}
-            loading={respond.isPending && respond.variables?.status === 'no'}
+        <View style={{ paddingBottom: 10 }}>
+          <AnswerButtons
+            status={null}
+            busy={
+              respond.isPending
+                ? respond.variables?.status === 'pending'
+                  ? null
+                  : (respond.variables?.status ?? null)
+                : null
+            }
+            onYes={() => set('yes')}
+            onMaybe={() => set('maybe')}
+            onNo={() => set('no')}
           />
         </View>
       ) : null}
@@ -369,34 +361,13 @@ function AttendanceCard({
         </T>
       ) : null}
       {open ? (
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Button
-            style={{ flex: 1 }}
-            label={attendance.status === 'yes' ? 'Zugesagt' : 'Zusagen'}
-            icon={attendance.status === 'yes' ? 'checkmark-circle' : undefined}
-            variant={
-              attendance.status === 'yes' || attendance.status === null ? 'primary' : 'outline'
-            }
-            loading={busy('yes')}
-            onPress={() => answer.mutate('yes')}
-          />
-          <Button
-            style={{ flex: 0.8 }}
-            label="Unsicher"
-            icon={attendance.status === 'maybe' ? 'help-circle' : undefined}
-            variant={attendance.status === 'maybe' ? 'action' : 'outline'}
-            loading={busy('maybe')}
-            onPress={() => answer.mutate('maybe')}
-          />
-          <Button
-            style={{ flex: 1 }}
-            label={attendance.status === 'no' ? 'Abgesagt' : 'Absagen'}
-            icon={attendance.status === 'no' ? 'close-circle' : undefined}
-            variant={attendance.status === 'no' ? 'danger' : 'outline'}
-            loading={busy('no')}
-            onPress={() => answer.mutate('no')}
-          />
-        </View>
+        <AnswerButtons
+          status={attendance.status}
+          busy={(['yes', 'maybe', 'no'] as const).find((k) => busy(k)) ?? null}
+          onYes={() => answer.mutate('yes')}
+          onMaybe={() => answer.mutate('maybe')}
+          onNo={() => answer.mutate('no')}
+        />
       ) : null}
       {open && attendance.status ? (
         <Button
