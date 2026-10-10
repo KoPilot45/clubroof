@@ -59,11 +59,40 @@ Festlegungen: `ENTSCHEIDUNGEN.md`. Jedes Paket endet mit `pnpm check`, Doku (`FU
 | M   | **Mandantenbetrieb**               | L     | Vereine manuell anlegen (Betreiber-Konsole), Zuordnung per Einladungscode, Personen in mehreren Vereinen                                                                                                       | Sonnet, Review stark |
 | D   | **Demo-Verein**                    | M     | Demo-Mandant mit Persona-Wechsel, täglich zurückgesetzt, ohne Push/Mail; Startbildschirm „Demo / Login“                                                                                                        | Sonnet               |
 | E   | **Einrichtungsassistenten (echt)** | L     | Echte Formulare für Verein und Mannschaft nach dem Vereinszugang; sie legen Aufbau und Funktionen der App fest (Bereiche, Module, Teilnahmemodelle)                                                            | Sonnet               |
+| SPO | **Sponsoren-Modul** | M | Vom Verein aktivierbares Modul: Admins laden Sponsorenlogo und Banner hoch, hinterlegen Link, Stufe (Haupt/Partner/Förderer), Laufzeit und Zuordnung (Verein, Jugend, Senioren). Banner (gekennzeichnet) auf Startseite, Spieltag und Terminlisten, dazu eigene Seite „Unsere Sponsoren“ unter „Mehr“; Reihenfolge und Kennzeichnung einstellbar. Keine Auswertung, kein Splash-Banner, nie in Anmeldung, Kasse, Chat oder bei Kindern | Sonnet |
 | P   | **Pläne & Abo**                    | L     | Plan-Stufen nach Mitgliederzahl, weiche Grenze mit Fortschrittsbalken, Abo-Status, Zahlungsanbieter, AVV                                                                                                       | Sonnet               |
 | S1  | **Store-Reife (Technik)**          | M–L   | Bildkomprimierung, Kontolöschung (App und Web), Datenschutz-/Impressum-Links, Fehlerberichte                                                                                                                   | Sonnet               |
 | S2  | **Web-Push**                       | M     | Push für die Web-App                                                                                                                                                                                           | Sonnet               |
 | SP  | **Sicherheitsprüfung**             | L     | Mandantentrennung, Rechte, Uploads, Anmeldung, Abhängigkeiten                                                                                                                                                  | stärkstes Modell     |
 | T   | **Testserver (IONOS VPS)**         | M     | Server, HTTPS, Backups, Expo-Projekt und Entwicklungs-Build                                                                                                                                                    | Sonnet               |
+
+### Paket E im Detail (Stand 10.10.2026, Entwurf freigegeben)
+
+Designentwurf: Design-Artefakt „Clubroof Designentwürfe“, Reihen „Verein einrichten“ (V1–V14) und
+„Mannschaft anlegen“ (M1–M12). Gemeinsamer Aufbau jedes Schritts: Zurück, Prozentbalken („Schritt X von N · NN %“),
+Frage mit kurzer Erklärung, Auswahlkarten/Chips/Schalter, optionaler Hinweis, fester Weiter-Knopf, Überspringen-Link.
+Pro Seite nur ein Thema.
+
+**Verein einrichten** – einmaliger Assistent in Clubroof-Farben (#002AFA → #00C3FF, Clubroof-Logo auf der
+Willkommensseite); Hinweis, dass jede Entscheidung später in der Verwaltung änderbar ist. 12 Schritte:
+Name/Kurzname · Spielstätte (Name, Adresse; weitere Anlage möglich) · Plätze und Kabinen je Anlage ·
+Untergrund je Platz (Rasen, Kunstrasen, Hartplatz) · Logo (überspringbar) · Farbe (10 geprüfte) ·
+Bereiche (ein gemeinsamer Bereich, oder „Jugend und Senioren getrennt“ – getrennt heißt: keine Daten des anderen
+Bereichs; Vorstand/Admin sehen alles; „mehrere Abteilungen“ ist Erweiterung für später) ·
+„Wofür nutzt ihr Clubroof?“ in zwei Schritten (Mannschaft, Verein; Module aus `modules.ts`, Kernmodule immer an,
+Empfehlung vorausgewählt) · Konto (E-Mail-Bestätigung Pflicht) · Passwort (Stärkeanzeige, Wiederholen) ·
+Sicherheit (Zwei-Faktor nur **Empfehlung**, Hinweis: betrifft nur neue Anmeldungen, das eigene Gerät bleibt angemeldet) ·
+Fertig mit Vorschlägen (Mannschaft, Mitglieder-/Spielplan-Import, Einladen).
+
+**Mannschaft anlegen** – in der Vereinsfarbe, 11 Schritte: Name/Kürzel · Bereich und Saison · Altersklasse ·
+Liga und Name im DFBnet · Art der Zu-/Absagen · Antwortfrist **Training** · Antwortfrist **Spiele**
+(je 12/24/48 Std. oder eigene Stundenzahl) · Treffpunkt (Spielstätte und Kabine aus der Vereinseinrichtung) ·
+Treffzeit (Spiel/Training) · Trainerteam · Kader · Fertig (Training anlegen, Spielplan importieren, Eltern einladen).
+
+**Folgen für Backend/Daten:** Spielstätten mit Adresse, Plätzen (Untergrund) und Kabinen als Daten (Platzbelegung
+nutzt sie); Bereichsmodell „Jugend/Senioren“; getrennte Antwortfristen Training/Spiel pro Mannschaft
+(mit freier Stundenzahl); Konto-E-Mail-Bestätigung im Einrichtungsablauf; Fortschritt/Wiederaufnahme des Assistenten
+(Abbruch darf nichts halb anlegen). Begriff „Aktive“ wird nicht verwendet – es heißt **Senioren**.
 
 Parallel (ohne Entwicklung): Apple- und Google-Organisationskonten (D-U-N-S) beantragen; Datenschutzerklärung,
 Impressum, AGB und Auftragsverarbeitungsvertrag juristisch prüfen lassen.
