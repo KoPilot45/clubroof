@@ -63,6 +63,7 @@ import type {
   RosterEntry,
   TeamCash,
   TeamOverview,
+  TeamProfile,
   TeamStats,
   TreasurerCandidates,
   Carpool,
@@ -72,6 +73,7 @@ import type {
   EventDetail,
   EventSummary,
   HomeResponse,
+  SearchResponse,
   LoginResponse,
   NewsItem,
   PollDetail,
@@ -270,6 +272,40 @@ describe.skipIf(!url)('API', () => {
       expect((await send('GET', `/teams/${b1}/cash`, (await login('eltern')).token)).status).toBe(
         404,
       );
+    });
+
+    it('Home: Spiele zum Wischen (chronologisch, über alle Kinder) und Deine Woche', async () => {
+      const home = await get<HomeResponse>('/home', (await login('eltern')).token);
+      expect(home.matches.length).toBeGreaterThan(0);
+      expect(home.matches.length).toBeLessThanOrEqual(3);
+      expect(home.matches.every((m) => m.type === 'match' || m.type === 'tournament')).toBe(true);
+      const starts = home.matches.map((m) => Date.parse(m.startsAt));
+      expect(starts).toEqual([...starts].sort((x, y) => x - y));
+      expect(home.nextMatch?.id).toBe(home.matches[0]!.id);
+      const week = Date.now() + 7 * 24 * 60 * 60 * 1000 + 24 * 60 * 60 * 1000;
+      expect(home.week.every((e) => Date.parse(e.startsAt) < week)).toBe(true);
+    });
+
+    it('Team: Tabellenplatz (Trainerteam pflegt ihn) und Torschützenkönig aus Spielberichten', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const before = await get<TeamOverview>(`/teams/${b1.id}`, coach.token);
+      expect(before.leaguePosition).toBe(3);
+      if (before.topScorer) expect(before.topScorer.goals).toBeGreaterThan(0);
+      const changed = await send<TeamProfile>('PUT', `/teams/${b1.id}/profile`, coach.token, {
+        leaguePosition: 2,
+      });
+      expect(changed.body.leaguePosition).toBe(2);
+      expect((await get<TeamOverview>(`/teams/${b1.id}`, coach.token)).leaguePosition).toBe(2);
+      expect(
+        (await send('PUT', `/teams/${b1.id}/profile`, coach.token, { leaguePosition: 0 })).status,
+      ).toBe(400);
+      // Spieler dürfen den Platz nicht ändern
+      const player = await login('spieler');
+      expect(
+        (await send('PUT', `/teams/${b1.id}/profile`, player.token, { leaguePosition: 1 })).status,
+      ).toBe(403);
+      await send('PUT', `/teams/${b1.id}/profile`, coach.token, { leaguePosition: 3 });
     });
 
     it('Dringende News stehen oben', async () => {
@@ -4985,6 +5021,40 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Suche', () => {
+    it('findet Termine, Mannschaften und News; zu kurze Begriffe werden abgelehnt', async () => {
+      const { token } = await login('spieler');
+      const res = await get<SearchResponse>('/search?q=Training', token);
+      expect(res.events.length).toBeGreaterThan(0);
+      expect(res.events.every((e) => /training/i.test(e.title))).toBe(true);
+      const teams = await get<SearchResponse>('/search?q=Jugend', token);
+      expect(teams.teams.length).toBeGreaterThan(0);
+      expect((await send('GET', '/search?q=a', token)).status).toBe(400);
+      expect((await app.inject({ method: 'GET', url: '/search?q=Training' })).statusCode).toBe(401);
+    });
+
+    it('Mitglieder: nur Personen mit Bezug (eigene Mannschaft, Kinder) oder mit Leserecht', async () => {
+      const player = await login('spieler');
+      // Vorstandsmitglied ohne gemeinsame Mannschaft ist für Spieler nicht auffindbar
+      const hidden = await get<SearchResponse>('/search?q=Hoffmann', player.token);
+      expect(hidden.members.some((m) => m.name.includes('Sandra'))).toBe(false);
+      // Der Trainer der eigenen Mannschaft ist auffindbar
+      const coach = await get<SearchResponse>('/search?q=Mustermann', player.token);
+      expect(coach.members.some((m) => m.name === 'Max Mustermann')).toBe(true);
+      // Vorstand mit Vereinsleserecht findet beide
+      const board = await login('vorstand');
+      const all = await get<SearchResponse>('/search?q=Hoffmann', board.token);
+      expect(all.members.some((m) => m.name.includes('Sandra'))).toBe(true);
+    });
+
+    it('Platzhalter im Suchbegriff sind gewöhnliche Zeichen', async () => {
+      const { token } = await login('vorstand');
+      const res = await get<SearchResponse>('/search?q=%25%25', token);
+      expect(res.members).toEqual([]);
+      expect(res.events).toEqual([]);
+    });
+  });
+
   describe('Darstellung', () => {
     it('hell ist Standard, dunkel wählt jede Person selbst', async () => {
       const player = await login('spieler');
@@ -5000,6 +5070,51 @@ describe.skipIf(!url)('API', () => {
         (await send('PUT', '/me/preferences', player.token, { colorMode: 'lila' })).status,
       ).toBe(400);
       await send('PUT', '/me/preferences', player.token, { colorMode: 'light' });
+    });
+
+    it('Schnellzugriff: Auswahl je Person speichern, zurücksetzen, ungültige Schlüssel ablehnen', async () => {
+      const player = await login('spieler');
+      expect(player.me.user.quickLinks).toBeNull();
+      const saved = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        quickLinks: ['termine', 'news'],
+      });
+      expect(saved.body.user.quickLinks).toEqual(['termine', 'news']);
+      expect((await login('trainer')).me.user.quickLinks).toBeNull();
+      expect(
+        (await send('PUT', '/me/preferences', player.token, { quickLinks: ['Ungültig!'] })).status,
+      ).toBe(400);
+      expect(
+        (
+          await send('PUT', '/me/preferences', player.token, {
+            quickLinks: Array.from({ length: 13 }, (_, i) => `link-${i}`),
+          })
+        ).status,
+      ).toBe(400);
+      const reset = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        quickLinks: null,
+      });
+      expect(reset.body.user.quickLinks).toBeNull();
+    });
+
+    it('Vereinsbereich: Kacheln ordnen und ausblenden, je Person gespeichert und zurücksetzbar', async () => {
+      const player = await login('spieler');
+      expect(player.me.user.clubTiles).toBeNull();
+      const saved = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        clubTiles: { order: ['contacts', 'news'], hidden: ['forum'] },
+      });
+      expect(saved.body.user.clubTiles).toEqual({ order: ['contacts', 'news'], hidden: ['forum'] });
+      expect((await login('trainer')).me.user.clubTiles).toBeNull();
+      expect(
+        (
+          await send('PUT', '/me/preferences', player.token, {
+            clubTiles: { order: ['Ungültig!'], hidden: [] },
+          })
+        ).status,
+      ).toBe(400);
+      const reset = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+        clubTiles: null,
+      });
+      expect(reset.body.user.clubTiles).toBeNull();
     });
 
     it('alle zehn Vereinsfarben sind wählbar, unbekannte werden abgelehnt', async () => {

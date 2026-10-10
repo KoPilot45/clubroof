@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   integer,
+  jsonb,
   index,
   pgTable,
   primaryKey,
@@ -30,6 +31,10 @@ export const users = pgTable('users', {
   colorMode: text().notNull().default('light'),
   /** Persönliche Sprache (de | en). Leer = Sprache des Geräts */
   language: text(),
+  /** Schnellzugriff auf Home: gewählte Einträge in Reihenfolge. Leer (null) = Standard der Rolle */
+  quickLinks: text().array(),
+  /** Vereinsbereich: Reihenfolge und ausgeblendete Kacheln. Leer (null) = alle in Standardreihenfolge */
+  clubTiles: jsonb().$type<{ order: string[]; hidden: string[] }>(),
   lastLoginAt: timestamp({ withTimezone: true }),
   passwordChangedAt: timestamp({ withTimezone: true }),
   /** TOTP-Geheimnis (verschlüsselt). Gesetzt = 2-Faktor-Anmeldung aktiv */

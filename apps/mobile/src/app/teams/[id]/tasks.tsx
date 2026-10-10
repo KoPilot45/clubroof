@@ -2,6 +2,7 @@ import type { CreateTeamTaskInput, TeamTask, TeamTaskList } from '@clubroof/core
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
+import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { View } from 'react-native';
 import {
   Button,
@@ -37,11 +38,15 @@ export default function TasksScreen() {
     mutationFn: (v: { path: string; method: 'POST' | 'PATCH' | 'DELETE'; body?: unknown }) =>
       api<TeamTaskList>(v.path, { method: v.method, body: v.body }),
     onSuccess: (data) => {
+      hapticSuccess();
       setError(null);
       queryClient.setQueryData(key, data);
       void queryClient.invalidateQueries({ queryKey: ['home'] });
     },
-    onError: (e) => setError(e instanceof RequestError ? e.message : 'Das hat nicht geklappt.'),
+    onError: (e) => {
+      hapticError();
+      setError(e instanceof RequestError ? e.message : 'Das hat nicht geklappt.');
+    },
   });
 
   // Personen, über die ich zur Mannschaft gehöre (ich selbst oder meine Kinder)

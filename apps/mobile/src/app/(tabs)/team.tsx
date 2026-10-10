@@ -4,23 +4,26 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
-import { EventRow } from '@/components/events';
-import { ResultRow, SquadStatusCard, TeamBand } from '@/components/team';
+import { AttendanceBar, ResultRow, TeamBand } from '@/components/team';
 import {
   Button,
   Card,
   Chip,
+  DateTile,
   Empty,
   ErrorNotice,
+  ListRow,
   Loading,
   Screen,
   Section,
   T,
+  shadowStyle,
   TeamBadge,
   TileGrid,
   type TileItem,
 } from '@/components/ui';
-import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
+import { formatDateTile, formatTime } from '@/lib/format';
+import { EVENT_TYPE_LABELS, TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -73,6 +76,7 @@ export default function TeamScreen() {
     ? [
         {
           key: 'events',
+          tint: 'green' as const,
           label: 'Termine',
           icon: 'calendar',
           onPress: () => router.push(`/events?teamId=${team.id}`),
@@ -81,6 +85,7 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'new',
+                tint: 'green' as const,
                 label: 'Termin anlegen',
                 icon: 'add-circle' as const,
                 onPress: () => router.push(`/teams/${team.id}/event-new`),
@@ -89,6 +94,7 @@ export default function TeamScreen() {
           : [
               {
                 key: 'absence',
+                tint: 'orange' as const,
                 label: 'Abwesenheit melden',
                 icon: 'airplane' as const,
                 onPress: () => router.push('/absences/new'),
@@ -96,6 +102,7 @@ export default function TeamScreen() {
             ]),
         {
           key: 'roster',
+          tint: 'blue' as const,
           label: 'Kader',
           icon: 'people',
           onPress: () => router.push(`/teams/${team.id}/roster`),
@@ -104,6 +111,7 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'stats',
+                tint: 'violet' as const,
                 label: 'Statistik',
                 icon: 'bar-chart' as const,
                 onPress: () => router.push(`/teams/${team.id}/stats`),
@@ -114,6 +122,7 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'cash',
+                tint: 'orange' as const,
                 label: 'Kasse',
                 icon: 'wallet' as const,
                 onPress: () => router.push(`/teams/${team.id}/cash`),
@@ -124,6 +133,7 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'fines',
+                tint: 'pink' as const,
                 label: 'Strafenkatalog',
                 icon: 'list' as const,
                 onPress: () => router.push(`/teams/${team.id}/fines`),
@@ -134,6 +144,7 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'exercises',
+                tint: 'violet' as const,
                 label: 'Übungen',
                 icon: 'library' as const,
                 onPress: () => router.push('/exercises'),
@@ -144,6 +155,7 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'modules',
+                tint: 'blue' as const,
                 label: 'Funktionen',
                 icon: 'options' as const,
                 onPress: () => router.push(`/teams/${team.id}/modules`),
@@ -154,6 +166,7 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'tasks',
+                tint: 'orange' as const,
                 label: 'Aufgaben',
                 icon: 'checkbox' as const,
                 onPress: () => router.push(`/teams/${team.id}/tasks`),
@@ -164,6 +177,7 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'polls',
+                tint: 'blue' as const,
                 label: 'Umfragen',
                 icon: 'stats-chart' as const,
                 badge: openPolls,
@@ -175,6 +189,7 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'docs',
+                tint: 'pink' as const,
                 label: 'Dokumente',
                 icon: 'document-text' as const,
                 onPress: () => router.push(`/documents?teamId=${team.id}`),
@@ -185,6 +200,7 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'exchange',
+                tint: 'green' as const,
                 label: 'Gastspieler',
                 icon: 'swap-horizontal' as const,
                 onPress: () => router.push('/exchange'),
@@ -209,7 +225,13 @@ export default function TeamScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, alignItems: 'stretch' }}
+          style={{ marginHorizontal: -20 }}
+          contentContainerStyle={{
+            gap: 10,
+            alignItems: 'stretch',
+            paddingHorizontal: 20,
+            paddingVertical: 6,
+          }}
         >
           {teams.map((t) => {
             const active = t.id === team?.id;
@@ -230,13 +252,14 @@ export default function TeamScreen() {
                 accessibilityState={{ selected: active }}
                 onPress={() => setSelected(t.id)}
                 style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
+                  minHeight: 44,
+                  justifyContent: 'center',
+                  paddingHorizontal: 16,
                   alignSelf: 'center',
                   borderRadius: radii.pill,
                   borderWidth: 1,
                   borderColor: active ? colors.primary : colors.border,
-                  backgroundColor: active ? colors.primary : colors.surface,
+                  backgroundColor: active ? colors.primary : colors.surfaceRaised,
                 }}
               >
                 <T variant="label" color={active ? colors.onPrimary : colors.onSurface}>
@@ -278,7 +301,8 @@ export default function TeamScreen() {
             <TeamBand
               highlights={o.highlights}
               squad={o.squad}
-              yes={o.nextEvent ? o.nextEvent.counts.yes : null}
+              leaguePosition={o.leaguePosition}
+              topScorer={o.topScorer}
             />
           ) : null}
 
@@ -292,14 +316,32 @@ export default function TeamScreen() {
           {o?.nextEvent ? (
             <Section title="Nächster Termin">
               <Card style={{ gap: 12 }}>
-                <EventRow event={o.nextEvent} first />
+                <ListRow
+                  first
+                  onPress={() => router.push(`/events/${o.nextEvent!.id}`)}
+                  leading={
+                    <DateTile
+                      size="lg"
+                      muted={o.nextEvent.status === 'cancelled'}
+                      {...formatDateTile(o.nextEvent.startsAt)}
+                    />
+                  }
+                  title={o.nextEvent.title}
+                  subtitle={[
+                    formatTime(o.nextEvent.startsAt),
+                    o.nextEvent.location,
+                    EVENT_TYPE_LABELS[o.nextEvent.type],
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  trailing={
+                    o.nextEvent.status === 'cancelled' ? (
+                      <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                    ) : null
+                  }
+                />
                 <T variant="caption">{PARTICIPATION_LABELS[team.participationMode]}</T>
-                {o.squad ? (
-                  <>
-                    <T variant="overline">Kaderstatus</T>
-                    <SquadStatusCard squad={o.squad} />
-                  </>
-                ) : null}
+                <AttendanceBar counts={o.nextEvent.counts} absent={o.squad?.absent} />
               </Card>
             </Section>
           ) : null}
@@ -337,18 +379,33 @@ export default function TeamScreen() {
                   <Empty icon="fitness-outline" text="Keine Trainings in den nächsten 7 Tagen." />
                 ) : null}
                 {o.trainingWeek.map((e, i) => (
-                  <View key={e.id}>
-                    <EventRow event={e} first={i === 0} />
-                    {e.status === 'scheduled' ? (
-                      <T
-                        variant="caption"
-                        style={{ marginTop: -6, marginBottom: 6, marginLeft: 64 }}
-                      >
-                        {e.counts.yes} von{' '}
-                        {e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending} zugesagt
-                      </T>
-                    ) : null}
-                  </View>
+                  <ListRow
+                    key={e.id}
+                    first={i === 0}
+                    onPress={() => router.push(`/events/${e.id}`)}
+                    leading={
+                      <DateTile {...formatDateTile(e.startsAt)} muted={e.status === 'cancelled'} />
+                    }
+                    title={e.title}
+                    subtitle={
+                      e.status === 'cancelled'
+                        ? e.cancelledReason
+                          ? `Grund: ${e.cancelledReason}`
+                          : formatTime(e.startsAt)
+                        : [
+                            formatTime(e.startsAt),
+                            e.location,
+                            `${e.counts.yes} von ${e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending} zugesagt`,
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')
+                    }
+                    trailing={
+                      e.status === 'cancelled' ? (
+                        <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                      ) : null
+                    }
+                  />
                 ))}
               </Card>
             </Section>
@@ -365,7 +422,7 @@ const shortWhen = dateFormat({
   minute: '2-digit',
 });
 
-/** Kachel „Meine Teams“: nächster Termin mit Zusagen, Abwesende und offene Aufgaben. */
+/** Kachel „Meine Teams“ (228 breit): Team, nächster Termin mit Zusagen als Balken, Abwesende, Aufgaben. */
 function MyTeamTile({
   card,
   active,
@@ -375,22 +432,23 @@ function MyTeamTile({
   active: boolean;
   onPress: () => void;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors, isDark, elevation } = useTheme();
   const e = card.nextEvent;
   const total = e ? e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending : 0;
   return (
     <Pressable
       accessibilityRole="tab"
-      accessibilityState={{ selected: active }}
+      aria-selected={active}
       onPress={onPress}
       style={{
-        width: 200,
-        padding: 12,
-        gap: 6,
-        borderRadius: radii.lg,
-        borderWidth: 2,
+        width: 228,
+        padding: 14,
+        gap: 8,
+        borderRadius: 22,
+        borderWidth: active ? 2 : isDark ? 1 : 0,
         borderColor: active ? colors.primary : colors.border,
-        backgroundColor: colors.surface,
+        backgroundColor: colors.surfaceRaised,
+        ...(isDark ? null : shadowStyle(elevation.card)),
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -398,24 +456,45 @@ function MyTeamTile({
         <T variant="label" style={{ fontWeight: '700', flex: 1 }} numberOfLines={1}>
           {card.team.name}
         </T>
+        {active ? <Chip tone="primary" label="aktiv" /> : null}
       </View>
       {e ? (
         <>
           <T variant="caption" numberOfLines={1}>
             {`${shortWhen.format(new Date(e.startsAt))} · ${e.title}`}
           </T>
-          <T variant="label" color={colors.primaryText}>
-            {`${e.counts.yes} von ${total} zugesagt`}
-          </T>
-          {e.counts.pending ? (
-            <T variant="caption">{`${e.counts.pending} ohne Rückmeldung`}</T>
-          ) : null}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View
+              style={{
+                flex: 1,
+                height: 6,
+                borderRadius: 3,
+                overflow: 'hidden',
+                backgroundColor: colors.border,
+              }}
+            >
+              <View
+                style={{
+                  width: `${total ? Math.round((e.counts.yes / total) * 100) : 0}%`,
+                  height: '100%',
+                  backgroundColor: colors.primaryText,
+                }}
+              />
+            </View>
+            <T variant="caption" style={{ fontWeight: '700' }} color={colors.onSurface}>
+              {`${e.counts.yes}/${total}`}
+            </T>
+          </View>
+          <T variant="caption">{`${e.counts.yes} von ${total} zugesagt`}</T>
         </>
       ) : (
         <T variant="caption">Kein Termin geplant</T>
       )}
       <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
         {card.absentToday ? <Chip tone="info" label={`${card.absentToday} abwesend`} /> : null}
+        {card.nextEvent && card.nextEvent.counts.pending ? (
+          <Chip tone="action" label={`${card.nextEvent.counts.pending} ohne Rückmeldung`} />
+        ) : null}
         {card.openTasks ? (
           <Chip
             tone="action"

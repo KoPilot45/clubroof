@@ -18,6 +18,7 @@ import {
   Loading,
   Screen,
   Section,
+  Sheet,
   T,
   TeamBadge,
   TextField,
@@ -73,7 +74,9 @@ function ParticipantGroups({
               onPress={() => setOpen({ ...open, [g.status]: !active })}
               style={{
                 flex: 1,
+                minHeight: 44,
                 alignItems: 'center',
+                justifyContent: 'center',
                 paddingVertical: 6,
                 borderRadius: radii.md,
                 backgroundColor: active ? colors.primaryContainer : 'transparent',
@@ -99,6 +102,7 @@ function ParticipantGroups({
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                minHeight: 44,
                 paddingVertical: 8,
                 borderTopWidth: 1,
                 borderTopColor: colors.border,
@@ -282,6 +286,7 @@ function AttendanceCheckCard({ event: e }: { event: EventDetail }) {
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 10,
+                  minHeight: 44,
                   paddingVertical: 8,
                   borderTopWidth: i === 0 ? 0 : 1,
                   borderTopColor: colors.border,
@@ -430,54 +435,50 @@ function CoachActions({ event }: { event: EventDetail }) {
     <Card style={{ gap: 10 }}>
       <T variant="section">Termin verwalten</T>
       <T variant="caption">Tippe auf einen Spieler, um seine Rückmeldung zu korrigieren.</T>
-      {open ? (
-        <>
-          <ChoiceChips
-            label="Grund der Absage"
-            options={CANCEL_REASONS.map((r) => ({ value: r, label: r }))}
-            selected={CANCEL_REASONS.includes(reason) ? [reason] : []}
-            onToggle={setReason}
-          />
-          <TextField
-            label="Oder eigener Grund"
-            value={reason}
-            onChangeText={setReason}
-            maxLength={200}
-          />
-          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <Button
-              style={{ flex: 1 }}
-              label="Zurück"
-              variant="outline"
-              onPress={() => setOpen(false)}
-            />
-            <Button
-              style={{ flex: 1 }}
-              label="Absagen und informieren"
-              variant="danger"
-              disabled={reason.trim().length < 3}
-              loading={cancel.isPending}
-              onPress={() => cancel.mutate()}
-            />
-          </View>
-        </>
-      ) : (
-        <>
+      <Button
+        label="Termin bearbeiten"
+        variant="outline"
+        icon="create-outline"
+        onPress={() => router.push(`/event-edit/${event.id}`)}
+      />
+      <Button
+        label="Termin absagen"
+        variant="danger"
+        icon="close-circle-outline"
+        onPress={() => setOpen(true)}
+      />
+      <Sheet visible={open} onClose={() => setOpen(false)} title="Termin absagen?">
+        <T variant="caption">Die Mannschaft wird sofort benachrichtigt. Bitte nenne einen Grund.</T>
+        <ChoiceChips
+          label="Grund der Absage"
+          options={CANCEL_REASONS.map((r) => ({ value: r, label: r }))}
+          selected={CANCEL_REASONS.includes(reason) ? [reason] : []}
+          onToggle={setReason}
+        />
+        <TextField
+          label="Oder eigener Grund"
+          value={reason}
+          onChangeText={setReason}
+          maxLength={200}
+        />
+        {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+        <View style={{ flexDirection: 'row', gap: 8 }}>
           <Button
-            label="Termin bearbeiten"
+            style={{ flex: 1 }}
+            label="Abbrechen"
             variant="outline"
-            icon="create-outline"
-            onPress={() => router.push(`/event-edit/${event.id}`)}
+            onPress={() => setOpen(false)}
           />
           <Button
-            label="Termin absagen"
+            style={{ flex: 1 }}
+            label="Absagen und informieren"
             variant="danger"
-            icon="close-circle-outline"
-            onPress={() => setOpen(true)}
+            disabled={reason.trim().length < 3}
+            loading={cancel.isPending}
+            onPress={() => cancel.mutate()}
           />
-        </>
-      )}
+        </View>
+      </Sheet>
     </Card>
   );
 }

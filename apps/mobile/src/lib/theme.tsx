@@ -3,7 +3,10 @@ import {
   fontWeights,
   getThemeColors,
   isClubColorKey,
+  elevation,
+  motion,
   radii,
+  sizes,
   spacing,
   type ClubColorKey,
   type ColorScheme,
@@ -18,6 +21,11 @@ export type Theme = {
   colors: ThemeColors;
   spacing: typeof spacing;
   radii: typeof radii;
+  sizes: typeof sizes;
+  elevation: typeof elevation;
+  motion: typeof motion;
+  /** Dunkelmodus: Rahmen und Flächenstufen statt Schatten */
+  isDark: boolean;
   fontSizes: typeof fontSizes;
   fontWeights: typeof fontWeights;
 };
@@ -48,6 +56,10 @@ export function ThemeProvider({
       colors: getThemeColors(key, scheme),
       spacing,
       radii,
+      sizes,
+      elevation,
+      motion,
+      isDark: scheme === 'dark',
       fontSizes,
       fontWeights,
     }),

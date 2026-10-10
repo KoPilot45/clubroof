@@ -232,6 +232,27 @@
       "when": 1791638892491,
       "tag": "0032_rechte_import_tags",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791649830561,
+      "tag": "0033_quick_links",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1791653910065,
+      "tag": "0034_club_tiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1791654300084,
+      "tag": "0035_league_position",
+      "breakpoints": true
     }
   ]
 }

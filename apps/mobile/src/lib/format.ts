@@ -18,6 +18,13 @@ const longDate = dateFormat({
 });
 const euro = numberFormat({ style: 'currency', currency: 'EUR' });
 
+const tileWeekday = dateFormat({ weekday: 'short', timeZone: TZ });
+const tileDay = dateFormat({ day: 'numeric', timeZone: TZ });
+/** Datumskachel: „Sa.“ und „10“ */
+export const formatDateTile = (iso: string) => ({
+  weekday: tileWeekday.format(new Date(iso)),
+  day: tileDay.format(new Date(iso)),
+});
 export const formatDay = (iso: string) => weekdayDate.format(new Date(iso));
 export const formatTime = (iso: string) => time.format(new Date(iso));
 export const formatLongDate = (iso: string) => longDate.format(new Date(iso));

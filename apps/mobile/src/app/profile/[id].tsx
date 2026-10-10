@@ -392,14 +392,18 @@ function PhotoButton({ profile }: { profile: PersonProfile }) {
         accessibilityRole="button"
         disabled={busy}
         onPress={() => void save(false)}
-        hitSlop={6}
+        style={{ minHeight: 44, justifyContent: 'center' }}
       >
         <T variant="caption" color={colors.primaryText} style={{ fontWeight: '700' }}>
           {busy ? 'Speichert …' : profile.avatarUrl ? 'Foto ändern' : 'Foto hinzufügen'}
         </T>
       </Pressable>
       {profile.avatarUrl && !busy ? (
-        <Pressable accessibilityRole="button" onPress={() => void save(true)} hitSlop={6}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => void save(true)}
+          style={{ minHeight: 44, justifyContent: 'center' }}
+        >
           <T variant="caption">Entfernen</T>
         </Pressable>
       ) : null}

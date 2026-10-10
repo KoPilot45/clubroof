@@ -5,9 +5,11 @@ import {
   type HomeResponse,
   type Locale,
   type MeResponse,
+  type SearchResponse,
   type TileInfo,
 } from '@clubroof/core';
 import { z } from 'zod';
+import { search } from '../services/search';
 import { loadHome } from '../services/home';
 import { getTileInfo } from '../services/tile-info';
 import { buildMe, markSeen, setPreferences } from '../services/me';
@@ -24,10 +26,29 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
         body: z.object({
           colorMode: z.enum(['light', 'dark', 'system']).optional(),
           language: z.custom<Locale>(isLocale).nullable().optional(),
+          clubTiles: z
+            .object({
+              order: z.array(z.string().regex(/^[a-z][a-z0-9-]{1,30}$/)).max(40),
+              hidden: z.array(z.string().regex(/^[a-z][a-z0-9-]{1,30}$/)).max(40),
+            })
+            .nullable()
+            .optional(),
+          quickLinks: z
+            .array(z.string().regex(/^[a-z][a-z0-9-]{1,30}$/))
+            .max(12)
+            .nullable()
+            .optional(),
         }),
       },
     },
     async (request): Promise<MeResponse> => setPreferences(app.db, request.actor!, request.body),
+  );
+
+  app.get(
+    '/search',
+    { schema: { querystring: z.object({ q: z.string().trim().min(2).max(60) }) } },
+    async (request): Promise<SearchResponse> =>
+      search(app.db, request.actor!, request.query.q, app.now()),
   );
 
   app.post(

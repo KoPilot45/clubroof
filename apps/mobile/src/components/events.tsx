@@ -8,7 +8,7 @@ import { RequestError } from '@/lib/api';
 import {
   clubInitials,
   countdown,
-  formatDay,
+  formatDateTile,
   formatLongDate,
   formatRemaining,
   formatTime,
@@ -20,6 +20,8 @@ import {
   MATCH_KIND_LABELS,
   MAYBE_REASONS,
 } from '@/lib/labels';
+import { hapticError, hapticSuccess } from '@/lib/haptics';
+import { enqueueResponse, queuedFor, useOutbox } from '@/lib/outbox';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import {
@@ -28,8 +30,12 @@ import {
   ChoiceChips,
   Chip,
   Crest,
+  DateTile,
+  HeroCard,
   ListRow,
   T,
+  Sheet,
+  SwipeRow,
   TeamBadge,
   TextField,
   type IconName,
@@ -65,57 +71,80 @@ export function AttendanceChip({ status }: { status: AttendanceStatus }) {
   return <Chip tone={STATUS_TONE[status]} label={ATTENDANCE_LABELS[status]} />;
 }
 
-/** Hervorgehobener nächster Termin auf der Vereinsfarbe (Termine › „Als Nächstes“). */
+/** Blickfang „Als Nächstes“ (Termine): der nächste Termin auf dem Verlauf der Vereinsfarbe. */
 export function FeaturedEventCard({ event }: { event: EventSummary }) {
-  const { colors, radii } = useTheme();
-  const on = colors.onPrimary;
+  const { colors } = useTheme();
+  const on = colors.hero.onHero;
   const mine = event.myResponses[0];
-  const cancelled = event.status === 'cancelled';
+  const tile = formatDateTile(event.startsAt);
   return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() => router.push(`/events/${event.id}`)}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 14,
-        padding: 16,
-        borderRadius: radii.lg,
-        backgroundColor: colors.primary,
-      }}
-    >
-      <View style={{ alignItems: 'center', minWidth: 64 }}>
-        <T variant="caption" color={on}>
-          {formatDay(event.startsAt)}
-        </T>
-        <T variant="figure" color={on} style={{ fontSize: 30 }}>
-          {formatTime(event.startsAt)}
-        </T>
-      </View>
-      <View style={{ flex: 1, gap: 4 }}>
-        <T variant="heading" color={on} numberOfLines={2}>
-          {event.title}
-        </T>
-        {event.location ? (
-          <T variant="caption" color={on} numberOfLines={1}>
-            {event.location}
+    <HeroCard onPress={() => router.push(`/events/${event.id}`)} accessibilityLabel={event.title}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+        <View style={{ alignItems: 'center', minWidth: 64 }}>
+          <T variant="caption" color={on}>
+            {`${tile.weekday} ${tile.day}.`}
           </T>
-        ) : null}
-        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          {event.team ? <TeamBadge badge={event.team.badge} /> : null}
-          {cancelled ? (
-            <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
-          ) : mine ? (
-            <AttendanceChip status={mine.status} />
-          ) : null}
+          <T variant="figure" color={on} style={{ fontSize: 34, lineHeight: 40 }}>
+            {formatTime(event.startsAt)}
+          </T>
         </View>
+        <View style={{ flex: 1, gap: 4 }}>
+          <T
+            variant="headline"
+            color={on}
+            numberOfLines={2}
+            style={{ fontSize: 20, lineHeight: 24 }}
+          >
+            {event.title}
+          </T>
+          {event.location ? (
+            <T variant="caption" color={on} numberOfLines={1}>
+              {event.location}
+            </T>
+          ) : null}
+          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+            <View
+              style={{
+                borderRadius: 999,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                backgroundColor: on,
+              }}
+            >
+              <T variant="caption" color={colors.hero.from} style={{ fontWeight: '700' }}>
+                {event.team ? event.team.badge : 'Verein'}
+              </T>
+            </View>
+            {mine ? (
+              <View
+                style={{
+                  borderRadius: 999,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  backgroundColor: 'rgba(255,255,255,0.22)',
+                }}
+              >
+                <T variant="caption" color={on} style={{ fontWeight: '700' }}>
+                  {event.myResponses.length > 1 || mine.relation === 'child'
+                    ? `${mine.relation === 'self' ? 'Ich' : mine.firstName}: ${ATTENDANCE_LABELS[mine.status]}`
+                    : mine.status === 'pending'
+                      ? 'Zusage offen'
+                      : ATTENDANCE_LABELS[mine.status]}
+                </T>
+              </View>
+            ) : null}
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={on} />
       </View>
-      <Ionicons name="chevron-forward" size={18} color={on} />
-    </Pressable>
+    </HeroCard>
   );
 }
 
-/** Zeile in einer Terminliste. */
+/**
+ * Terminzeile: Datumskachel, Titel, Untertitel und Status bzw. runde Zusage ✓ / Absage ✕.
+ * Abgesagte Termine sind durchgestrichen mit Chip „Abgesagt“ und Grund.
+ */
 export function EventRow({
   event,
   first,
@@ -126,22 +155,32 @@ export function EventRow({
   /** Fremde Mannschaftstermine im Vereinskalender lassen sich nur ansehen, nicht öffnen */
   openable?: boolean;
 }) {
-  const { colors } = useTheme();
-  const mine = event.myResponses[0];
   const cancelled = event.status === 'cancelled';
-  return (
+  const mine = event.myResponses[0];
+  const multi = event.myResponses.length > 1 || mine?.relation === 'child';
+  const outbox = useOutbox();
+  const queued = mine ? queuedFor(outbox, event.id, mine.personId) : undefined;
+  const quick = useQuickYes(event, mine?.personId ?? '');
+  const swipeable =
+    !cancelled && !!mine && !multi && !queued && mine.status === 'pending' && mine.canRespond;
+  const text = cancelled
+    ? event.cancelledReason
+      ? `Grund: ${event.cancelledReason}`
+      : formatTime(event.startsAt)
+    : [
+        formatTime(event.startsAt),
+        EVENT_TYPE_LABELS[event.type],
+        event.match ? MATCH_KIND_LABELS[event.match.kind] : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+  const row = (
     <ListRow
       first={first}
       onPress={openable ? () => router.push(`/events/${event.id}`) : undefined}
-      leading={
-        <View style={{ width: 52 }}>
-          <T variant="caption">{formatDay(event.startsAt)}</T>
-          <T variant="label" style={{ fontWeight: '800' }}>
-            {formatTime(event.startsAt)}
-          </T>
-        </View>
-      }
+      leading={<DateTile {...formatDateTile(event.startsAt)} muted={cancelled} />}
       title={event.title}
+      strike={cancelled}
       subtitle={
         <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           {event.team ? (
@@ -149,54 +188,220 @@ export function EventRow({
           ) : (
             <Chip tone="info" label="Verein" />
           )}
-          {cancelled ? (
-            <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
-          ) : (
-            <T variant="caption">{EVENT_TYPE_LABELS[event.type]}</T>
-          )}
-          {!cancelled && event.match ? (
-            <Chip tone="neutral" label={MATCH_KIND_LABELS[event.match.kind]} />
-          ) : null}
+          <T variant="caption" style={{ flexShrink: 1 }}>
+            {text}
+          </T>
         </View>
       }
       trailing={
-        cancelled ? null : mine ? (
-          event.myResponses.length > 1 || mine.relation === 'child' ? (
-            // Eltern: je Person ein Status mit Vornamen („Mia: Unsicher“)
-            <View style={{ gap: 4, alignItems: 'flex-end' }}>
-              {event.myResponses.map((r) => (
-                <Chip
-                  key={r.personId}
-                  tone={STATUS_TONE[r.status]}
-                  label={`${r.relation === 'self' ? 'Ich' : r.firstName}: ${ATTENDANCE_LABELS[r.status]}`}
-                />
-              ))}
-            </View>
-          ) : (
-            <AttendanceChip status={mine.status} />
-          )
+        cancelled ? (
+          <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+        ) : !mine ? null : queued && !multi ? (
+          <Chip tone="info" icon="cloud-upload-outline" label="Wird gesendet" />
+        ) : !mine ? null : multi ? (
+          // Eltern: je Person ein Status mit Vornamen („Mia: Unsicher“)
+          <View style={{ gap: 4, alignItems: 'flex-end' }}>
+            {event.myResponses.map((r) => (
+              <Chip
+                key={r.personId}
+                tone={STATUS_TONE[r.status]}
+                label={`${r.relation === 'self' ? 'Ich' : r.firstName}: ${ATTENDANCE_LABELS[r.status]}`}
+              />
+            ))}
+          </View>
+        ) : mine.status === 'pending' && mine.canRespond ? (
+          <RoundRespond event={event} personId={mine.personId} />
         ) : (
-          <Ionicons name={eventIcon(event)} size={18} color={colors.onSurfaceMuted} />
+          <AttendanceChip status={mine.status} />
         )
       }
     />
   );
+  return swipeable ? (
+    <SwipeRow label="Zusagen" icon="checkmark" onAction={quick.yes}>
+      {row}
+    </SwipeRow>
+  ) : (
+    row
+  );
 }
 
-export function useRespond(eventId: string) {
-  const { api } = useSignedIn();
+/**
+ * Grund für „Absagen“ oder „Unsicher“: Auswahl und freier Hinweis – freiwillig, nur fürs Trainerteam.
+ * Eigener Zustand, damit Auswahl und Hinweis beim Schließen verworfen werden.
+ */
+function ReasonForm({
+  status,
+  loading,
+  onCancel,
+  onSubmit,
+}: {
+  status: 'no' | 'maybe';
+  loading: boolean;
+  onCancel: () => void;
+  onSubmit: (reason: string | undefined) => void;
+}) {
+  const [reason, setReason] = useState<string | null>(null);
+  const [note, setNote] = useState('');
+  return (
+    <View style={{ gap: 10 }}>
+      <ChoiceChips
+        label={status === 'maybe' ? 'Warum bist du unsicher?' : 'Warum kannst du nicht?'}
+        options={(status === 'maybe' ? MAYBE_REASONS : DECLINE_REASONS).map((d) => ({
+          value: d,
+          label: d,
+        }))}
+        selected={reason ? [reason] : []}
+        onToggle={(v) => setReason(v === reason ? null : v)}
+      />
+      <TextField
+        label="Hinweis für das Trainerteam (optional)"
+        value={note}
+        onChangeText={setNote}
+        maxLength={120}
+      />
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Button style={{ flex: 1 }} label="Abbrechen" variant="outline" onPress={onCancel} />
+        <Button
+          style={{ flex: 1 }}
+          label={status === 'maybe' ? 'Unsicher senden' : 'Absage senden'}
+          variant={status === 'maybe' ? 'action' : 'danger'}
+          loading={loading}
+          onPress={() => onSubmit([reason, note.trim()].filter(Boolean).join(' – ') || undefined)}
+        />
+      </View>
+    </View>
+  );
+}
+
+/** Sofortige Zusage mit Rückmeldung (Toast, bei fehlender Verbindung gemerkt) – für ✓ und Wischen. */
+function useQuickYes(event: EventSummary, personId: string) {
+  const respond = useRespond(event.id, event.title);
+  const toast = useToast();
+  return {
+    pending: respond.isPending,
+    yes: () =>
+      respond.mutate(
+        { personId, status: 'yes' },
+        {
+          onSuccess: (data) =>
+            toast(
+              data === 'queued'
+                ? { message: 'Gespeichert – wird gesendet, sobald du wieder online bist' }
+                : {
+                    message: 'Zugesagt',
+                    actionLabel: 'Rückgängig',
+                    onAction: () => respond.mutate({ personId, status: 'pending' }),
+                  },
+            ),
+        },
+      ),
+  };
+}
+
+/** Zwei runde Knöpfe (44): ✓ sagt sofort zu, ✕ öffnet den Termin, dort wird der Grund abgefragt. */
+function RoundRespond({ event, personId }: { event: EventSummary; personId: string }) {
+  const { colors, sizes } = useTheme();
+  const respond = useRespond(event.id, event.title);
+  const quick = useQuickYes(event, personId);
+  const toast = useToast();
+  const [declining, setDeclining] = useState(false);
+  const size = sizes.touchTarget;
+  const round = {
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  };
+  return (
+    <View style={{ flexDirection: 'row', gap: 8 }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Zusagen"
+        disabled={quick.pending}
+        onPress={quick.yes}
+        style={{ ...round, backgroundColor: colors.status.success.container }}
+      >
+        <Ionicons name="checkmark" size={22} color={colors.status.success.onContainer} />
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Absagen"
+        onPress={() => setDeclining(true)}
+        style={{ ...round, backgroundColor: colors.status.urgent.container }}
+      >
+        <Ionicons name="close" size={22} color={colors.status.urgent.onContainer} />
+      </Pressable>
+      <Sheet visible={declining} onClose={() => setDeclining(false)} title="Absagen">
+        <T variant="label">{event.title}</T>
+        <ReasonForm
+          status="no"
+          loading={respond.isPending}
+          onCancel={() => setDeclining(false)}
+          onSubmit={(reason) =>
+            respond.mutate(
+              { personId, status: 'no', reason },
+              {
+                onSuccess: (data) => {
+                  setDeclining(false);
+                  toast(
+                    data === 'queued'
+                      ? { message: 'Gespeichert – wird gesendet, sobald du wieder online bist' }
+                      : {
+                          message: 'Abgesagt',
+                          actionLabel: 'Rückgängig',
+                          onAction: () => respond.mutate({ personId, status: 'pending' }),
+                        },
+                  );
+                },
+              },
+            )
+          }
+        />
+      </Sheet>
+    </View>
+  );
+}
+
+/**
+ * Zu-/Absage senden. Mit `queueTitle` (eigene Rückmeldung und die der Kinder) wird sie bei fehlender Verbindung
+ * gemerkt und später gesendet (`'queued'`); Eingriffe des Trainerteams für andere Personen werden nie gemerkt.
+ */
+export function useRespond(eventId: string, queueTitle?: string) {
+  const { api, me } = useSignedIn();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: {
+    // Auch ohne Verbindung ausführen: Der Netzfehler wird unten abgefangen und die Antwort gemerkt
+    networkMode: 'always',
+    mutationFn: async (input: {
       personId: string;
       status: 'yes' | 'no' | 'maybe' | 'pending';
       reason?: string;
-    }) =>
-      api<EventSummary>(`/events/${eventId}/responses/${input.personId}`, {
-        method: 'PUT',
-        body: { status: input.status, reason: input.reason ?? null },
-      }),
+    }): Promise<EventSummary | 'queued'> => {
+      try {
+        return await api<EventSummary>(`/events/${eventId}/responses/${input.personId}`, {
+          method: 'PUT',
+          body: { status: input.status, reason: input.reason ?? null },
+        });
+      } catch (e) {
+        if (queueTitle && e instanceof RequestError && e.status === 0) {
+          enqueueResponse({
+            eventId,
+            personId: input.personId,
+            status: input.status,
+            reason: input.reason ?? null,
+            userId: me.user.id,
+            title: queueTitle,
+          });
+          return 'queued';
+        }
+        throw e;
+      }
+    },
+    onError: hapticError,
     onSuccess: () => {
+      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['home'] });
       void queryClient.invalidateQueries({ queryKey: ['events'] });
       void queryClient.invalidateQueries({ queryKey: ['event', eventId] });
@@ -208,26 +413,38 @@ export function useRespond(eventId: string) {
  * Zu-/Absage für jede Person (ich selbst und ggf. meine Kinder). Absagen und „Unsicher“ fragen
  * nach dem Grund – er ist freiwillig und für das Trainerteam bestimmt.
  */
-export function ResponseControls({ event }: { event: EventSummary }) {
-  const respond = useRespond(event.id);
+export function ResponseControls({
+  event,
+  tone = 'surface',
+}: {
+  event: EventSummary;
+  /** hero: Schaltflächen auf der Blickfangkarte; der Grund wird in einem Blatt von unten abgefragt */
+  tone?: 'surface' | 'hero';
+}) {
+  const { colors } = useTheme();
+  const respond = useRespond(event.id, event.title);
+  const outbox = useOutbox();
+  /** Antwort, die schon eingereiht ist, gilt sofort als Anzeige */
+  const eff = (r: MyResponse) => queuedFor(outbox, event.id, r.personId)?.status ?? r.status;
+  const waiting = event.myResponses.some((r) => queuedFor(outbox, event.id, r.personId));
   const [error, setError] = useState<string | null>(null);
   /** Person und Antwort, für die gerade ein Grund gewählt wird */
   const [pending, setPending] = useState<{ personId: string; status: 'no' | 'maybe' } | null>(null);
-  const [reason, setReason] = useState<string | null>(null);
-  const [note, setNote] = useState('');
   if (event.myResponses.length === 0) return null;
 
   const toast = useToast();
   const send = (r: MyResponse, status: 'yes' | 'no' | 'maybe', declineReason?: string) => {
     setError(null);
-    const previous = r.status;
+    const previous = eff(r);
     respond.mutate(
       { personId: r.personId, status, reason: declineReason },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setPending(null);
-          setReason(null);
-          setNote('');
+          if (data === 'queued') {
+            toast({ message: 'Gespeichert – wird gesendet, sobald du wieder online bist' });
+            return;
+          }
           const label = t(
             status === 'yes' ? 'Zugesagt' : status === 'maybe' ? 'Unsicher' : 'Abgesagt',
           );
@@ -259,6 +476,17 @@ export function ResponseControls({ event }: { event: EventSummary }) {
     respond.variables?.personId === r.personId &&
     respond.variables.status === status;
 
+  const outline = tone === 'hero' ? ('heroOutline' as const) : ('outline' as const);
+  const reasonPanel = (r: MyResponse) =>
+    pending && (
+      <ReasonForm
+        status={pending.status}
+        loading={busy(r, pending.status)}
+        onCancel={() => setPending(null)}
+        onSubmit={(text) => send(r, pending.status, text)}
+      />
+    );
+
   return (
     <View style={{ gap: 12 }}>
       {event.myResponses.map((r) => (
@@ -272,91 +500,62 @@ export function ResponseControls({ event }: { event: EventSummary }) {
               }}
             >
               <T variant="label">{r.relation === 'self' ? 'Ich' : r.firstName}</T>
-              <AttendanceChip status={r.status} />
+              <AttendanceChip status={eff(r)} />
             </View>
           ) : null}
-          {(r.status === 'no' || r.status === 'maybe') && r.reason ? (
-            <T variant="caption">Grund: {r.reason}</T>
+          {(eff(r) === 'no' || eff(r) === 'maybe') && r.reason ? (
+            <T variant="caption" color={tone === 'hero' ? colors.hero.onHero : undefined}>
+              Grund: {r.reason}
+            </T>
           ) : null}
 
           {!r.canRespond ? (
-            <T variant="caption">
+            <T variant="caption" color={tone === 'hero' ? colors.hero.onHero : undefined}>
               {event.status === 'cancelled'
                 ? 'Der Termin wurde abgesagt.'
                 : 'Rückmeldung nicht mehr möglich. Bei Änderungen wende dich an dein Trainerteam.'}
             </T>
-          ) : pending?.personId === r.personId ? (
-            <View style={{ gap: 10 }}>
-              <ChoiceChips
-                label={
-                  pending.status === 'maybe' ? 'Warum bist du unsicher?' : 'Warum kannst du nicht?'
-                }
-                options={(pending.status === 'maybe' ? MAYBE_REASONS : DECLINE_REASONS).map(
-                  (d) => ({
-                    value: d,
-                    label: d,
-                  }),
-                )}
-                selected={reason ? [reason] : []}
-                onToggle={(v) => setReason(v === reason ? null : v)}
-              />
-              <TextField
-                label="Hinweis für das Trainerteam (optional)"
-                value={note}
-                onChangeText={setNote}
-                maxLength={120}
-              />
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Button
-                  style={{ flex: 1 }}
-                  label="Abbrechen"
-                  variant="outline"
-                  onPress={() => setPending(null)}
-                />
-                <Button
-                  style={{ flex: 1 }}
-                  label={pending.status === 'maybe' ? 'Unsicher senden' : 'Absage senden'}
-                  variant={pending.status === 'maybe' ? 'action' : 'danger'}
-                  loading={busy(r, pending.status)}
-                  onPress={() =>
-                    send(
-                      r,
-                      pending.status,
-                      [reason, note.trim()].filter(Boolean).join(' – ') || undefined,
-                    )
-                  }
-                />
-              </View>
-            </View>
+          ) : pending?.personId === r.personId && tone !== 'hero' ? (
+            reasonPanel(r)
           ) : (
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Button
                 style={{ flex: 1 }}
-                label={r.status === 'yes' ? 'Zugesagt' : 'Zusagen'}
-                icon={r.status === 'yes' ? 'checkmark-circle' : undefined}
-                variant={r.status === 'yes' || r.status === 'pending' ? 'primary' : 'outline'}
+                label={eff(r) === 'yes' ? 'Zugesagt' : 'Zusagen'}
+                icon={
+                  tone === 'hero' ? 'checkmark' : eff(r) === 'yes' ? 'checkmark-circle' : undefined
+                }
+                hideLabel={tone === 'hero'}
+                size={tone === 'hero' ? 'sm' : 'md'}
+                variant={
+                  eff(r) === 'yes' || eff(r) === 'pending'
+                    ? tone === 'hero'
+                      ? 'hero'
+                      : 'primary'
+                    : outline
+                }
                 loading={busy(r, 'yes')}
                 onPress={() => send(r, 'yes')}
               />
               <Button
-                style={{ flex: 0.8 }}
+                style={{ flex: 1 }}
                 label="Unsicher"
-                icon={r.status === 'maybe' ? 'help-circle' : undefined}
-                variant={r.status === 'maybe' ? 'action' : 'outline'}
+                icon={tone === 'hero' ? 'help' : eff(r) === 'maybe' ? 'help-circle' : undefined}
+                hideLabel={tone === 'hero'}
+                size={tone === 'hero' ? 'sm' : 'md'}
+                variant={eff(r) === 'maybe' ? (tone === 'hero' ? 'hero' : 'action') : outline}
                 onPress={() => {
-                  setReason(null);
-                  setNote('');
                   setPending({ personId: r.personId, status: 'maybe' });
                 }}
               />
               <Button
                 style={{ flex: 1 }}
-                label={r.status === 'no' ? 'Abgesagt' : 'Absagen'}
-                icon={r.status === 'no' ? 'close-circle' : undefined}
-                variant={r.status === 'no' ? 'danger' : 'outline'}
+                label={eff(r) === 'no' ? 'Abgesagt' : 'Absagen'}
+                icon={tone === 'hero' ? 'close' : eff(r) === 'no' ? 'close-circle' : undefined}
+                hideLabel={tone === 'hero'}
+                size={tone === 'hero' ? 'sm' : 'md'}
+                variant={eff(r) === 'no' ? (tone === 'hero' ? 'hero' : 'danger') : outline}
                 onPress={() => {
-                  setReason(null);
-                  setNote('');
                   setPending({ personId: r.personId, status: 'no' });
                 }}
               />
@@ -364,7 +563,34 @@ export function ResponseControls({ event }: { event: EventSummary }) {
           )}
         </View>
       ))}
+      {waiting ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Ionicons
+            name="cloud-upload-outline"
+            size={18}
+            color={tone === 'hero' ? colors.hero.onHero : colors.onSurfaceMuted}
+          />
+          <T
+            variant="caption"
+            color={tone === 'hero' ? colors.hero.onHero : undefined}
+            style={{ flex: 1 }}
+          >
+            Deine Rückmeldung wird gesendet, sobald du wieder online bist.
+          </T>
+        </View>
+      ) : null}
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+      {tone === 'hero' ? (
+        <Sheet
+          visible={!!pending}
+          onClose={() => setPending(null)}
+          title={pending?.status === 'maybe' ? 'Unsicher melden' : 'Absagen'}
+        >
+          {pending
+            ? reasonPanel(event.myResponses.find((r) => r.personId === pending.personId)!)
+            : null}
+        </Sheet>
+      ) : null}
     </View>
   );
 }

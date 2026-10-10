@@ -416,6 +416,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
           badge: t.badge,
           ageGroup: t.ageGroup,
           league: t.league,
+          leaguePosition: t.leaguePosition ?? null,
           template: t.template,
           participationMode: t.mode,
           sortOrder: i,

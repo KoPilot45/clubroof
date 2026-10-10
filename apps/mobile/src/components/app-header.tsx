@@ -2,107 +2,162 @@ import { Ionicons } from '@expo/vector-icons';
 import type { HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
-import { clubInitials } from '@/lib/format';
+import { Image, Pressable, View } from 'react-native';
+import { clubInitials, formatLongDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { mediaUri } from '@/lib/upload';
-import { Avatar, Crest, T } from './ui';
+import { Crest, shadowStyle, T, type IconName } from './ui';
+import { Text } from './app-text';
 import { t } from '@/lib/i18n';
 
-/** Kopfzeile aller Tabs: Wappen, Begrüßung, Glocke, Avatar (Mappe S. 3). */
-export function AppHeader({ title, subtitle }: { title?: string; subtitle?: string }) {
+/** Runder Knopf der Kopfzeile (46 pt): hell mit Schatten, dunkel mit Rahmen. */
+export function HeaderButton({
+  icon,
+  label,
+  onPress,
+  count,
+}: {
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+  /** roter Zähler oben rechts (z. B. ungelesene Benachrichtigungen) */
+  count?: number;
+}) {
+  const { colors, sizes, isDark, elevation } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={t(label)}
+      onPress={onPress}
+      style={{
+        width: sizes.headerButton,
+        height: sizes.headerButton,
+        borderRadius: sizes.headerButton / 2,
+        backgroundColor: colors.surfaceRaised,
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...(isDark
+          ? { borderWidth: 1, borderColor: colors.border }
+          : shadowStyle(elevation.control)),
+      }}
+    >
+      <Ionicons name={icon} size={22} color={colors.onSurface} />
+      {count && count > 0 ? (
+        <View
+          style={{
+            position: 'absolute',
+            top: -2,
+            right: -2,
+            minWidth: 20,
+            height: 20,
+            paddingHorizontal: 5,
+            borderRadius: 10,
+            backgroundColor: colors.status.urgent.solid,
+            borderWidth: 2,
+            borderColor: colors.background,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 10,
+              fontWeight: '800',
+              color: colors.status.urgent.onSolid,
+              lineHeight: 12,
+            }}
+          >
+            {count > 99 ? '99+' : count}
+          </Text>
+        </View>
+      ) : null}
+    </Pressable>
+  );
+}
+
+/**
+ * Kopfzeile aller Tabs: Vereinslogo (Kreis), darüber/darunter Untertitel und Titel bzw. Begrüßung
+ * (lange Namen brechen auf höchstens zwei Zeilen um), optional Suche, Glocke mit Zähler.
+ * Die Lupe öffnet die globale Suche (`/search`), sofern `onSearch` nichts anderes vorgibt.
+ */
+export function AppHeader({
+  title,
+  subtitle,
+  onSearch,
+}: {
+  title?: string;
+  /** kleine Zeile über dem Titel; ohne Angabe das heutige Datum */
+  subtitle?: string;
+  onSearch?: () => void;
+}) {
   const { me, api } = useSignedIn();
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, sizes, isDark, elevation } = useTheme();
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const unread = home.data?.unreadNotifications ?? 0;
+  const greeting = title ?? `Hallo, ${me.person.firstName}`;
 
   return (
     <View
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        gap: spacing.md,
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-        backgroundColor: colors.surface,
-        borderBottomWidth: StyleSheet.hairlineWidth * 2,
-        borderBottomColor: colors.border,
+        gap: 10,
+        paddingHorizontal: spacing.lg + 4,
+        paddingTop: spacing.md,
+        paddingBottom: spacing.sm,
+        backgroundColor: colors.background,
       }}
     >
-      {me.club.logoUrl ? (
-        <Image
-          source={{ uri: mediaUri(me.club.logoUrl)! }}
-          accessibilityLabel={t('Vereinslogo')}
-          style={{ width: 38, height: 42 }}
-          resizeMode="contain"
-        />
-      ) : (
-        <Crest initials={clubInitials(me.club.shortName)} size={38} />
-      )}
-      <View style={{ flex: 1 }}>
-        <T variant="headline" numberOfLines={1}>
-          {title ?? `Hallo, ${me.person.firstName}`}
+      <View
+        style={{
+          width: sizes.logo,
+          height: sizes.logo,
+          borderRadius: sizes.logo / 2,
+          overflow: 'hidden',
+          backgroundColor: colors.surfaceRaised,
+          alignItems: 'center',
+          justifyContent: 'center',
+          ...(isDark
+            ? { borderWidth: 1, borderColor: colors.border }
+            : shadowStyle(elevation.control)),
+        }}
+      >
+        {me.club.logoUrl ? (
+          <Image
+            source={{ uri: mediaUri(me.club.logoUrl)! }}
+            accessibilityLabel={t('Vereinslogo')}
+            style={{ width: 32, height: 32 }}
+            resizeMode="contain"
+          />
+        ) : (
+          <Crest initials={clubInitials(me.club.shortName)} size={30} />
+        )}
+      </View>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <T variant="caption" numberOfLines={1}>
+          {subtitle ?? formatLongDate(new Date().toISOString())}
         </T>
-        <T variant="label" color={colors.primaryText} numberOfLines={1}>
-          {subtitle ?? me.club.shortName}
+        <T
+          variant="headline"
+          numberOfLines={2}
+          accessibilityRole="header"
+          style={{ lineHeight: 26 }}
+        >
+          {greeting}
         </T>
       </View>
-      {me.canAdminister ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('Verwaltung öffnen')}
-          onPress={() => router.push('/admin')}
-          hitSlop={8}
-          style={{ padding: 4 }}
-        >
-          <Ionicons name="shield-checkmark-outline" size={23} color={colors.onSurface} />
-        </Pressable>
-      ) : null}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={
-          unread ? `Benachrichtigungen, ${unread} ungelesen` : 'Benachrichtigungen'
-        }
+      <HeaderButton
+        icon="search-outline"
+        label="Suche"
+        onPress={onSearch ?? (() => router.push('/search'))}
+      />
+      <HeaderButton
+        icon="notifications-outline"
+        label={unread ? `Benachrichtigungen, ${unread} ungelesen` : 'Benachrichtigungen'}
+        count={unread}
         onPress={() => router.push('/notifications')}
-        hitSlop={8}
-        style={{ padding: 4 }}
-      >
-        <Ionicons name="notifications-outline" size={24} color={colors.onSurface} />
-        {unread > 0 ? (
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              minWidth: 17,
-              height: 17,
-              paddingHorizontal: 4,
-              borderRadius: 9,
-              backgroundColor: colors.status.urgent.solid,
-              borderWidth: 2,
-              borderColor: colors.surface,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <T
-              variant="caption"
-              color={colors.status.urgent.onSolid}
-              style={{ fontSize: 9, fontWeight: '800' }}
-            >
-              {unread}
-            </T>
-          </View>
-        ) : null}
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={t('Mein Profil')}
-        onPress={() => router.push(`/profile/${me.person.id}`)}
-      >
-        <Avatar name={`${me.person.firstName} ${me.person.lastName}`} uri={me.person.avatarUrl} />
-      </Pressable>
+      />
     </View>
   );
 }

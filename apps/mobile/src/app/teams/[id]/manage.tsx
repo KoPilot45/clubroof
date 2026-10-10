@@ -50,7 +50,9 @@ export default function ManageTeamScreen() {
       void queryClient.invalidateQueries({ queryKey: ['my-teams'] });
     },
     onError: (e) =>
-      setError(e instanceof RequestError ? e.message : 'Die Änderung konnte nicht gespeichert werden.'),
+      setError(
+        e instanceof RequestError ? e.message : 'Die Änderung konnte nicht gespeichert werden.',
+      ),
   });
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -67,7 +69,9 @@ export default function ManageTeamScreen() {
         subtitle={
           <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
             <Chip tone="neutral" label={TEAM_FUNCTION_LABELS[x.function]} />
-            {x.jerseyNumber != null ? <Chip tone="neutral" label={`Nr. ${x.jerseyNumber}`} /> : null}
+            {x.jerseyNumber != null ? (
+              <Chip tone="neutral" label={`Nr. ${x.jerseyNumber}`} />
+            ) : null}
             {x.isTreasurer ? <Chip icon="wallet-outline" label="Kassenwart" /> : null}
           </View>
         }
@@ -177,7 +181,9 @@ function MemberEditor({
   onTreasurer: () => void;
 }) {
   const [fn, setFn] = useState<Assignable>(member.function as Assignable);
-  const [jersey, setJersey] = useState(member.jerseyNumber != null ? String(member.jerseyNumber) : '');
+  const [jersey, setJersey] = useState(
+    member.jerseyNumber != null ? String(member.jerseyNumber) : '',
+  );
   const [confirm, setConfirm] = useState(false);
   return (
     <View style={{ padding: 12, gap: 10 }}>
@@ -196,10 +202,18 @@ function MemberEditor({
         icon="checkmark"
         loading={busy}
         onPress={() =>
-          onSave({ function: fn, ...(fn === 'player' ? { jerseyNumber: jersey ? Number(jersey) : null } : {}) })
+          onSave({
+            function: fn,
+            ...(fn === 'player' ? { jerseyNumber: jersey ? Number(jersey) : null } : {}),
+          })
         }
       />
-      <Button label="Kassenwart bestimmen" variant="outline" icon="wallet-outline" onPress={onTreasurer} />
+      <Button
+        label="Kassenwart bestimmen"
+        variant="outline"
+        icon="wallet-outline"
+        onPress={onTreasurer}
+      />
       {member.isMe ? null : confirm ? (
         <Button label="Wirklich aus dem Kader nehmen" variant="danger" onPress={onRemove} />
       ) : (
@@ -280,6 +294,7 @@ function ProfileEditor({
   const [training, setTraining] = useState(profile.trainingMeetingMinutes?.toString() ?? '');
   const [point, setPoint] = useState(profile.defaultMeetingPoint ?? '');
   const [aliases, setAliases] = useState(profile.importAliases.join(', '));
+  const [position, setPosition] = useState(profile.leaguePosition?.toString() ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const digits = (v: string) => v.replace(/\D/g, '').slice(0, 3);
@@ -293,6 +308,7 @@ function ProfileEditor({
           matchMeetingMinutes: match ? Number(match) : null,
           trainingMeetingMinutes: training ? Number(training) : null,
           defaultMeetingPoint: point.trim() || null,
+          leaguePosition: position ? Number(position) : null,
           importAliases: aliases
             .split(',')
             .map((a) => a.trim())
@@ -301,7 +317,9 @@ function ProfileEditor({
       });
       onSaved();
     } catch (e) {
-      setError(e instanceof RequestError ? e.message : 'Das Profil konnte nicht gespeichert werden.');
+      setError(
+        e instanceof RequestError ? e.message : 'Das Profil konnte nicht gespeichert werden.',
+      );
     } finally {
       setBusy(false);
     }
@@ -334,6 +352,13 @@ function ProfileEditor({
           onChangeText={setPoint}
           placeholder="z. B. Vereinsheim"
           maxLength={120}
+        />
+        <TextField
+          label="Tabellenplatz in der Liga (optional)"
+          kind="code"
+          value={position}
+          onChangeText={(v) => setPosition(digits(v).slice(0, 2))}
+          maxLength={2}
         />
         <TextField
           label="Schreibweisen im DFBnet (durch Komma getrennt)"

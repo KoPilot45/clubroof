@@ -430,14 +430,24 @@ export async function loadHome(db: Db, actor: Actor, now: Date): Promise<HomeRes
     .slice(0, 6);
   const upcoming = await summarizeEvents(db, actor, filtered, now);
 
-  const matchRow = upcomingRows.find(
-    (r) =>
-      (r.event.type === 'match' || r.event.type === 'tournament') && r.event.status === 'scheduled',
-  );
-  const [nextMatch] = matchRow ? await summarizeEvents(db, actor, [matchRow], now) : [];
+  const matchRows = upcomingRows
+    .filter(
+      (r) =>
+        (r.event.type === 'match' || r.event.type === 'tournament') &&
+        r.event.status === 'scheduled',
+    )
+    .slice(0, 3);
+  const matches = await summarizeEvents(db, actor, matchRows, now);
+  const nextMatch = matches[0];
+
+  // „Deine Woche“: alle Termine der nächsten sieben Tage, abgesagte bleiben sichtbar
+  const weekRows = upcomingRows
+    .filter((r) => r.event.startsAt.getTime() - now.getTime() < 7 * DAY)
+    .slice(0, 12);
+  const week = await summarizeEvents(db, actor, weekRows, now);
 
   const [news, actions, clubOverview, [unread], birthdays] = await Promise.all([
-    loadNews(db, actor, now, 3),
+    loadNews(db, actor, now, 6),
     loadActions(db, actor, now),
     loadClubOverview(db, actor, now),
     db
@@ -449,6 +459,8 @@ export async function loadHome(db: Db, actor: Actor, now: Date): Promise<HomeRes
 
   return {
     nextMatch: nextMatch ?? null,
+    matches,
+    week,
     upcoming,
     news,
     actions: actions.slice(0, 5),

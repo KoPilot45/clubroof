@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/app-text';
@@ -43,7 +44,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {toast ? (
         <View
           pointerEvents="box-none"
-          style={{ position: 'absolute', left: 16, right: 16, bottom: insets.bottom + 76 }}
+          // über der schwebenden Tab-Leiste (68 hoch, Abstand unten)
+          style={{
+            position: 'absolute',
+            left: 16,
+            right: 16,
+            bottom: Math.max(insets.bottom, 12) + 10 + 68 + 12,
+            alignItems: 'center',
+          }}
         >
           <View
             accessibilityLiveRegion="polite"
@@ -53,17 +61,31 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               gap: 12,
               paddingVertical: 12,
               paddingHorizontal: 16,
-              borderRadius: radii.lg,
+              width: '100%',
+              maxWidth: 520,
+              borderRadius: radii.xl,
               backgroundColor: colors.onSurface,
             }}
           >
+            <View
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: colors.status.success.solid,
+              }}
+            >
+              <Ionicons name="checkmark" size={18} color={colors.status.success.onSolid} />
+            </View>
             <Text style={{ flex: 1, color: colors.surface, fontWeight: '600' }}>
               {toast.message}
             </Text>
             {toast.actionLabel && toast.onAction ? (
               <Pressable
                 accessibilityRole="button"
-                hitSlop={8}
+                hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
                 onPress={() => {
                   const action = toast.onAction;
                   setToast(null);

@@ -53,6 +53,8 @@ export const teams = pgTable(
     defaultMeetingPoint: text(),
     /** Weitere Schreibweisen im DFBnet (für den Spielplan-Import) */
     importAliases: text().array().notNull().default([]),
+    /** Tabellenplatz in der Liga, vom Trainerteam gepflegt (leer = unbekannt) */
+    leaguePosition: integer(),
     /** Mannschaft der Vorsaison (Saisonwechsel: Kasse, Dokumente und Verlauf gehen mit) */
     previousTeamId: uuid(),
     createdAt: createdAt(),

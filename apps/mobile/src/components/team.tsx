@@ -1,9 +1,10 @@
-import type { MatchResult, SquadStatus, TeamHighlights } from '@clubroof/core';
+import type { AttendanceCounts, MatchResult, SquadStatus, TeamHighlights } from '@clubroof/core';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { formatDay } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
-import { Card, Chip, Stat, T } from './ui';
+import { Card, Chip, HeroCard, Stat, T } from './ui';
+import { Text } from './app-text';
 
 export function SquadStatusCard({ squad }: { squad: SquadStatus }) {
   const { colors } = useTheme();
@@ -19,9 +20,9 @@ export function SquadStatusCard({ squad }: { squad: SquadStatus }) {
 }
 
 const OUTCOME = {
-  win: { tone: 'success', label: 'S' },
-  draw: { tone: 'archived', label: 'U' },
-  loss: { tone: 'urgent', label: 'N' },
+  win: { tone: 'success', label: 'Sieg' },
+  draw: { tone: 'archived', label: 'Remis' },
+  loss: { tone: 'urgent', label: 'Niederlage' },
 } as const;
 
 export function ResultRow({
@@ -58,18 +59,20 @@ export function ResultRow({
         borderTopColor: colors.border,
       }}
     >
-      <Chip tone={OUTCOME[result.outcome].tone} label={OUTCOME[result.outcome].label} />
-      <View style={{ flex: 1 }}>
-        <T variant="label" numberOfLines={1}>
+      <View style={{ flex: 1, gap: 2 }}>
+        <T variant="label" numberOfLines={2} style={{ fontWeight: '700' }}>
           {home} – {away}
         </T>
         <T variant="caption">
           {formatDay(result.startsAt)} · {result.isHome ? 'Heimspiel' : 'Auswärtsspiel'}
         </T>
       </View>
-      <T variant="figure" color={colors.primaryText} style={{ fontSize: 22 }}>
+      <T variant="figure" color={colors.primaryText} style={{ fontSize: 24 }}>
         {gh}:{ga}
       </T>
+      <View style={{ minWidth: 84, alignItems: 'flex-end' }}>
+        <Chip tone={OUTCOME[result.outcome].tone} label={OUTCOME[result.outcome].label} />
+      </View>
     </Pressable>
   );
 }
@@ -98,46 +101,134 @@ export function HighlightsCard({
   );
 }
 
-/** Kopfband der Mannschaft auf der Vereinsfarbe: Zusagen zum nächsten Termin, Bilanz, Trainingsquote. */
+/**
+ * Blickfang der Mannschaft: Kader (Spieler, davon verfügbar) – ohne Kaderstatus die Bilanz –, dazu Chips
+ * für Bilanz und Trainingsquote. Tabellenplatz und Torschützenkönig folgen, sobald es die Daten gibt.
+ */
 export function TeamBand({
   highlights,
   squad,
-  yes,
+  leaguePosition,
+  topScorer,
 }: {
   highlights: TeamHighlights;
   squad: SquadStatus | null;
-  /** Zusagen zum nächsten Termin (null, wenn es keinen gibt) */
-  yes: number | null;
+  leaguePosition?: number | null;
+  topScorer?: { name: string; goals: number } | null;
 }) {
-  const { colors, radii } = useTheme();
-  const items: { value: string; label: string }[] = [];
-  if (yes !== null && squad) items.push({ value: `${yes}/${squad.players}`, label: 'zugesagt' });
-  if (highlights.played > 0)
-    items.push({
-      value: `${highlights.won}-${highlights.drawn}-${highlights.lost}`,
-      label: 'Bilanz S-U-N',
-    });
-  if (highlights.trainingRate !== null)
-    items.push({ value: `${highlights.trainingRate} %`, label: 'Training (4 Wo.)' });
-  if (items.length === 0) return null;
+  const { colors } = useTheme();
+  const on = colors.hero.onHero;
+  const record =
+    highlights.played > 0 ? `${highlights.won}-${highlights.drawn}-${highlights.lost}` : null;
+  if (!squad && !record && highlights.trainingRate === null && !leaguePosition) return null;
+  const chips = [
+    leaguePosition ? `Tabelle: Platz ${leaguePosition}` : null,
+    topScorer ? `Top-Torschütze: ${topScorer.name} · ${topScorer.goals}` : null,
+    squad && record ? `Bilanz ${record}` : null,
+    highlights.trainingRate !== null ? `Training ${highlights.trainingRate} %` : null,
+  ].filter((c): c is string => !!c);
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        padding: 16,
-        borderRadius: radii.lg,
-        backgroundColor: colors.primary,
-      }}
-    >
-      {items.map((i) => (
-        <Stat
-          key={i.label}
-          value={i.value}
-          label={i.label}
-          color={colors.onPrimary}
-          labelColor={colors.onPrimary}
-        />
-      ))}
+    <HeroCard>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          gap: 8,
+        }}
+      >
+        <View style={{ flexShrink: 1 }}>
+          <T variant="overline" color={on}>
+            {squad ? 'Kader' : 'Bilanz S-U-N'}
+          </T>
+          <T variant="figure" color={on} style={{ fontSize: 44, lineHeight: 50 }}>
+            {squad ? squad.players : record}
+          </T>
+          {squad ? (
+            <T variant="label" color={on} style={{ fontWeight: '400' }}>
+              {`Spieler · ${squad.available} verfügbar`}
+            </T>
+          ) : null}
+        </View>
+        <View style={{ gap: 6, alignItems: 'flex-end', flexShrink: 1 }}>
+          {chips.slice(0, 3).map((c, i) => (
+            <View
+              key={c}
+              style={{
+                borderRadius: 999,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                backgroundColor: i === 0 ? on : 'rgba(255,255,255,0.22)',
+              }}
+            >
+              <Text
+                numberOfLines={2}
+                style={{
+                  textAlign: 'right',
+                  fontSize: 12,
+                  fontWeight: '700',
+                  color: i === 0 ? colors.hero.from : on,
+                }}
+              >
+                {c}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </HeroCard>
+  );
+}
+
+/** Balken der Rückmeldungen zu einem Termin mit Legende (zugesagt, unsicher, abgesagt, offen). */
+export function AttendanceBar({ counts, absent }: { counts: AttendanceCounts; absent?: number }) {
+  const { colors } = useTheme();
+  const parts = [
+    { key: 'yes', n: counts.yes, color: colors.status.success.solid, label: 'zugesagt' },
+    { key: 'maybe', n: counts.maybe, color: colors.status.action.solid, label: 'unsicher' },
+    { key: 'no', n: counts.no, color: colors.status.urgent.solid, label: 'abgesagt' },
+    { key: 'pending', n: counts.pending, color: colors.border, label: 'offen' },
+  ];
+  const total = parts.reduce((sum, p) => sum + p.n, 0);
+  return (
+    <View style={{ gap: 8 }}>
+      <View
+        accessibilityElementsHidden
+        style={{
+          flexDirection: 'row',
+          height: 10,
+          borderRadius: 5,
+          overflow: 'hidden',
+          backgroundColor: colors.border,
+        }}
+      >
+        {total > 0
+          ? parts
+              .filter((p) => p.n > 0)
+              .map((p) => <View key={p.key} style={{ flex: p.n, backgroundColor: p.color }} />)
+          : null}
+      </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 14, rowGap: 2 }}>
+        {parts.map((p) => (
+          <View key={p.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: p.color }} />
+            <T variant="caption">{`${p.n} ${p.label}`}</T>
+          </View>
+        ))}
+        {absent ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <View
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: colors.status.info.solid,
+              }}
+            />
+            <T variant="caption">{`${absent} abwesend`}</T>
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 }

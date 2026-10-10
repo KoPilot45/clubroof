@@ -43,9 +43,16 @@ Stand: 07.10.2026
 | Offene Aktionen (Zusagen, Umfragen, Freigaben, Aufgaben)             | M 3–4, K 3 | ✅    | Zusagen, Umfragen und News-Freigaben führen direkt zum Inhalt; Trainerteam: „Anwesenheit erfassen“ für Trainings der letzten Woche |
 | Persönliche Kasse / Teamkasse                                        | M 3, K 3   | ✅    | bewusst nicht auf der Startseite, sondern im Team-Bereich (Festlegung 07.10.2026)                                                  |
 | Vorstand: Verein im Überblick (Teams, Mitglieder, Freigaben, Event)  | M 4        | ✅    |                                                                                                                                    |
-| Umfragen mit Schnellantwort                                          | K 3        | ✅    | Antwortmöglichkeiten direkt unter „Offene Aktionen“ auf der Startseite                                                             |
+| Umfragen mit Schnellantwort                                          | K 3        | ✅    | Antwortmöglichkeiten im Blatt von unten, wenn die Umfrage im Band „Offen“ auf der Startseite angetippt wird                                                             |
 | Persönliche Statistik                                                | K 3        | ✅    | im Profil („Mehr → Profil & Statistik“), je Mannschaft mit Trainingsquote; Eltern über das Profil des Kindes                       |
 | Geburtstage der eigenen Mannschaften                                 | –          | ✅    | nächste 7 Tage, nur Tag und Monat (kein Alter)                                                                                     |
+| Spiele zum Wischen (nächste drei, bei Eltern über alle Kinder)       | –          | ✅    | Blickfangkarten mit Zu-/Absage; Grund beim Absagen im Blatt von unten (Paket L, Schritt 2)          |
+| Deine Woche (alle Termine der nächsten 7 Tage, auch abgesagte)       | –          | ✅    | Datumskachel, Status bzw. runde Zusage ✓ und Absage ✕ (Grund-Blatt); Geburtstage dezent darunter     |
+| Schnellzugriff je Rolle, anpassbar                                   | –          | ✅    | Standard je Rolle (z. B. Verwaltung, Einladen); Auswahl je Person gespeichert (`users.quick_links`); Hinweise (Zähler, „neu“) aus den Kachel-Infos |
+| Globale Suche (Lupe in der Kopfzeile)                                | –          | ✅    | `GET /search`: Termine, Mitglieder, News, Mannschaften; Mitglieder nur mit Profil-Sichtbarkeit (eigene, Kinder, gemeinsame/betreute Mannschaft, Vereinsleserecht) |
+| Zu-/Absage ohne Verbindung (Warteschlange)                           | –          | ✅    | auf dem Gerät gemerkt, beim Wiederverbinden gesendet; Server-Ablehnung (Frist) wird gemeldet; beim Abmelden gelöscht                                           |
+| Team: Tabellenplatz und Top-Torschütze im Kader-Blickfang            | –          | ✅    | Tabellenplatz manuell im Mannschaftsprofil (Trainerteam), Torschütze aus Spielberichten; kein automatischer Tabellenimport                                       |
+| Vereinsbereich anpassen (Kacheln ordnen/ausblenden)                  | –          | ✅    | je Person gespeichert (`users.club_tiles`), Zurücksetzen möglich                                                                                                |
 
 ## 3. Mannschaft (Team)
 

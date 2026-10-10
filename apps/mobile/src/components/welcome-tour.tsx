@@ -93,8 +93,8 @@ export function WelcomeTour({
           style={{
             gap: 16,
             padding: 24,
-            borderRadius: radii.lg,
-            backgroundColor: colors.surface,
+            borderRadius: radii.xxl,
+            backgroundColor: colors.surfaceRaised,
           }}
         >
           <View

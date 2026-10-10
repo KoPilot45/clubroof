@@ -31,7 +31,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'overview',
         question: 'Wo finde ich was?',
         answer:
-          'Unten gibt es fünf Bereiche:\n• Home: dein Überblick – nächstes Spiel, Neuigkeiten, offene Aufgaben.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Termine: deine nächsten Termine und der Kalender.\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften des Vereins.\n• Mehr: dein Profil, Einstellungen, Abwesenheiten und diese Hilfe.',
+          'Unten gibt es fünf Bereiche:\n• Home: dein Überblick – nächste Spiele (zum Wischen), Offenes, deine Woche, Neuigkeiten und dein Schnellzugriff.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Termine: deine nächsten Termine und der Kalender.\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften des Vereins.\n• Mehr: dein Profil, Einstellungen, Abwesenheiten und diese Hilfe.',
       },
       {
         id: 'login',
@@ -86,6 +86,36 @@ export const HELP_SECTIONS: HelpSection[] = [
     title: 'Termine und Zusagen',
     audience: 'all',
     entries: [
+      {
+        id: 'offline-respond',
+        question: 'Kann ich ohne Internet zu- oder absagen?',
+        answer:
+          'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.',
+      },
+      {
+        id: 'swipe',
+        question: 'Geht das auch schneller – per Wischen?',
+        answer:
+          'Ja. Bei offenen Terminen und ungelesenen Benachrichtigungen wischst du die Zeile nach links: Es erscheint „Zusagen“ bzw. „Gelesen“. Tippe darauf – oder wische ganz durch, dann passiert es sofort. Alles geht auch ohne Wischen über die Knöpfe in der Zeile.',
+      },
+      {
+        id: 'search',
+        question: 'Wie suche ich nach Terminen, Personen oder News?',
+        answer:
+          'Tippe oben rechts auf die Lupe und gib mindestens zwei Buchstaben ein. Du findest Termine, Mitglieder, News und Mannschaften. Personen siehst du nur, wenn du auch sonst ihr Profil sehen darfst (z. B. aus deiner Mannschaft oder deine Kinder).',
+      },
+      {
+        id: 'club-tiles',
+        question: 'Kann ich die Kacheln unter „Verein“ anpassen?',
+        answer:
+          'Ja. Tippe unter „Verein“ auf die Kachel „Anpassen“: Blende Kacheln aus, die du nicht brauchst, und verschiebe die wichtigen nach oben. „Zurücksetzen“ zeigt wieder alle in der Standardreihenfolge. Die Auswahl gilt auf allen deinen Geräten.',
+      },
+      {
+        id: 'quick-access',
+        question: 'Wie ändere ich den Schnellzugriff auf Home?',
+        answer:
+          'Ganz unten auf Home findest du den Schnellzugriff – Abkürzungen zu Seiten, die du oft brauchst. Tippe auf „Hinzufügen“, wähle die Einträge aus und speichere. „Zurücksetzen“ stellt die Voreinstellung für deine Rolle wieder her. Die Auswahl gilt auf allen deinen Geräten.',
+      },
       {
         id: 'respond',
         question: 'Wie sage ich zu oder ab?',
@@ -206,7 +236,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'polls',
         question: 'Wie nehme ich an Umfragen teil?',
         answer:
-          'Offene Umfragen erscheinen auf der Startseite unter „Offene Aktionen“ – dort kannst du direkt antworten – und unter „Verein → Umfragen“.',
+          'Offene Umfragen erscheinen auf der Startseite im Band „Offen“ – tippe sie an und antworte direkt – und unter „Verein → Umfragen“.',
         link: { label: 'Umfragen', href: '/polls' },
       },
       {

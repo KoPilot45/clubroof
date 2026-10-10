@@ -5,13 +5,25 @@
  */
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import type { StatusKey } from '@clubroof/design-tokens';
-import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
+import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
+import type { StatusKey, TintKey } from '@clubroof/design-tokens';
 import {
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from 'react';
+import {
+  AccessibilityInfo,
   ActivityIndicator,
   Animated,
   Switch,
   Image,
+  Modal,
+  PanResponder,
   Pressable,
   TextInput,
   RefreshControl,
@@ -24,15 +36,36 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, Text as SvgText } from 'react-native-svg';
+import Svg, {
+  Circle,
+  Defs,
+  LinearGradient,
+  Path,
+  Rect,
+  Stop,
+  Text as SvgText,
+} from 'react-native-svg';
 import { HEADING_FONT, inputFont } from '@/lib/fonts';
 import { useTheme } from '@/lib/theme';
 import { Text } from './app-text';
 import { RequestError } from '@/lib/api';
 import { mediaUri } from '@/lib/upload';
+import { hapticSelect } from '@/lib/haptics';
 import { dateFormat, t } from '@/lib/i18n';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
+
+/** Weicher Schatten aus den Tokens (`elevation`); als `boxShadow`, damit er auf iOS, Android und Web gleich wirkt. */
+export function shadowStyle(e: {
+  color: string;
+  opacity: number;
+  radius: number;
+  offsetY: number;
+}): ViewStyle {
+  const n = parseInt(e.color.slice(1), 16);
+  const rgba = `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${e.opacity})`;
+  return { boxShadow: `0 ${e.offsetY}px ${e.radius}px ${rgba}` };
+}
 
 // ── Typografie ────────────────────────────────────────────────────────────────
 
@@ -131,15 +164,17 @@ export function Screen({
   edges?: ('top' | 'bottom')[];
 }) {
   const { colors, spacing } = useTheme();
+  // In den Tabs liegt die schwebende Leiste über dem Inhalt: unten Platz dafür lassen
+  const tabBarHeight = useContext(BottomTabBarHeightContext) ?? 0;
   return (
-    <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: colors.surface }}>
+    <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: colors.background }}>
       {header}
       <ScrollView
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={{
-          padding: spacing.lg,
-          gap: spacing.lg,
-          paddingBottom: spacing.xxxl,
+          padding: spacing.lg + 4,
+          gap: spacing.lg + 2,
+          paddingBottom: spacing.xxxl + tabBarHeight,
           // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
           width: '100%',
           maxWidth: 960,
@@ -161,17 +196,22 @@ export function Screen({
   );
 }
 
+/**
+ * Weiche Karte (Radius 24): hell mit dezentem Schatten ohne Rahmen, dunkel eine Flächenstufe heller
+ * mit feinem Rahmen (docs/DESIGNSYSTEM.md).
+ */
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii, spacing, isDark, elevation } = useTheme();
   return (
     <View
       style={[
         {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-          borderWidth: StyleSheet.hairlineWidth * 2,
-          borderRadius: radii.lg,
-          padding: spacing.md,
+          backgroundColor: colors.surfaceRaised,
+          borderRadius: radii.xl,
+          padding: spacing.md + 2,
+          ...(isDark
+            ? { borderWidth: 1, borderColor: colors.border }
+            : shadowStyle(elevation.card)),
         },
         style,
       ]}
@@ -179,6 +219,78 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
       {children}
     </View>
   );
+}
+
+/**
+ * Blickfangkarte: Verlauf der Vereinsfarbe (`hero.from → hero.to`) mit Wellen und Kreis als SVG, Schrift
+ * immer `hero.onHero`. Je Bildschirm genau eine (docs/DESIGNSYSTEM.md, Regel 1). Inhalte setzt die Seite.
+ */
+export function HeroCard({
+  children,
+  style,
+  onPress,
+  accessibilityLabel,
+}: {
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  /** macht die ganze Karte antippbar (dann keine eigenen Buttons darin) */
+  onPress?: () => void;
+  accessibilityLabel?: string;
+}) {
+  const { colors, radii, spacing, isDark, elevation } = useTheme();
+  const gradientId = useId().replace(/[^a-zA-Z0-9]/g, '');
+  // Hintergrund bekommt die gemessene Größe: wächst die Karte (z. B. nach dem Laden), wächst er mit
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+  const outer: ViewStyle = {
+    borderRadius: radii.xxl,
+    ...(isDark ? { borderWidth: 1, borderColor: colors.hero.decor } : shadowStyle(elevation.hero)),
+  };
+  const body = (
+    <View
+      onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
+      style={{ borderRadius: radii.xxl, overflow: 'hidden', padding: spacing.lg, gap: 12 }}
+    >
+      <Svg
+        style={{ position: 'absolute', top: 0, left: 0 }}
+        width={box?.w ?? 0}
+        height={box?.h ?? 0}
+        viewBox="0 0 306 270"
+        preserveAspectRatio="xMidYMid slice"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Defs>
+          <LinearGradient id={gradientId} x1="0.3" y1="0" x2="0.7" y2="1">
+            <Stop offset="0" stopColor={colors.hero.from} />
+            <Stop offset="0.62" stopColor={colors.hero.to} />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="306" height="270" fill={`url(#${gradientId})`} />
+        <Path
+          d="M0 160 C50 120 100 200 153 160 C206 120 256 180 306 140 L306 270 L0 270Z"
+          fill={colors.hero.decor}
+        />
+        <Path
+          d="M0 200 C60 170 105 235 165 200 C225 170 265 215 306 190 L306 270 L0 270Z"
+          fill={colors.hero.decor}
+        />
+        <Circle cx="270" cy="28" r="64" fill={colors.hero.decor} />
+      </Svg>
+      {children}
+    </View>
+  );
+  if (onPress)
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        onPress={onPress}
+        style={[outer, style]}
+      >
+        {body}
+      </Pressable>
+    );
+  return <View style={[outer, style]}>{body}</View>;
 }
 
 export function Section({
@@ -210,7 +322,11 @@ export function Section({
           </T>
         </View>
         {action && onAction ? (
-          <Pressable onPress={onAction} hitSlop={8} accessibilityRole="link">
+          <Pressable
+            onPress={onAction}
+            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+            accessibilityRole="link"
+          >
             <T variant="label" color={colors.primaryText}>
               {`${t(action)} ›`}
             </T>
@@ -222,24 +338,106 @@ export function Section({
   );
 }
 
+/**
+ * Blatt von unten (Bestätigung, Auswahl, Grund-Feld): Hintergrund abgedunkelt, Tippen daneben schließt.
+ * Inhalt scrollt, wenn er höher als 85 % des Bildschirms wird.
+ */
+export function Sheet({
+  visible,
+  onClose,
+  title,
+  children,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+}) {
+  const { colors, radii, spacing, isDark } = useTheme();
+  const { height } = useWindowDimensions();
+  return (
+    <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
+      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('Schließen')}
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
+        />
+        <View
+          accessibilityViewIsModal
+          style={{
+            width: '100%',
+            maxWidth: 560,
+            alignSelf: 'center',
+            maxHeight: height * 0.85,
+            borderTopLeftRadius: radii.xxl,
+            borderTopRightRadius: radii.xxl,
+            backgroundColor: colors.surfaceRaised,
+            ...(isDark ? { borderWidth: 1, borderColor: colors.border } : null),
+          }}
+        >
+          <View
+            style={{
+              alignSelf: 'center',
+              width: 40,
+              height: 5,
+              borderRadius: 3,
+              marginTop: 10,
+              backgroundColor: colors.border,
+            }}
+          />
+          <ScrollView
+            contentContainerStyle={{
+              padding: spacing.xl,
+              gap: spacing.md,
+              paddingBottom: spacing.xxl,
+            }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {title ? (
+              <T variant="headline" accessibilityRole="header">
+                {title}
+              </T>
+            ) : null}
+            {children}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 // ── Chips & Badges ────────────────────────────────────────────────────────────
 
 export function Chip({
   label,
   tone = 'primary',
   icon,
+  size = 'sm',
 }: {
   label: string;
-  tone?: StatusKey | 'primary' | 'neutral';
+  tone?: StatusKey | 'primary' | 'neutral' | TintKey;
   icon?: IconName;
+  /** sm = Statusmarke in Listen und Karten, md = Höhe `sizes.chipHeight` für eigenständige Chips */
+  size?: 'sm' | 'md';
 }) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, sizes } = useTheme();
   const palette =
     tone === 'primary'
       ? { bg: colors.primaryContainer, fg: colors.onPrimaryContainer }
       : tone === 'neutral'
         ? { bg: colors.surfaceVariant, fg: colors.onSurfaceMuted }
-        : { bg: colors.status[tone].container, fg: colors.status[tone].onContainer };
+        : tone in colors.tints
+          ? {
+              bg: colors.tints[tone as TintKey].container,
+              fg: colors.tints[tone as TintKey].onContainer,
+            }
+          : {
+              bg: colors.status[tone as StatusKey].container,
+              fg: colors.status[tone as StatusKey].onContainer,
+            };
+  const md = size === 'md';
   return (
     <View
       style={{
@@ -247,14 +445,25 @@ export function Chip({
         alignItems: 'center',
         gap: 4,
         alignSelf: 'flex-start',
+        maxWidth: '100%',
+        minHeight: md ? sizes.chipHeight : 24,
         backgroundColor: palette.bg,
         borderRadius: radii.pill,
-        paddingHorizontal: 8,
+        paddingHorizontal: md ? 12 : 10,
         paddingVertical: 2,
       }}
     >
-      {icon ? <Ionicons name={icon} size={12} color={palette.fg} /> : null}
-      <Text style={{ color: palette.fg, fontSize: 11.5, fontWeight: '700' }}>{label}</Text>
+      {icon ? <Ionicons name={icon} size={md ? 14 : 12} color={palette.fg} /> : null}
+      <Text
+        style={{
+          flexShrink: 1,
+          color: palette.fg,
+          fontSize: md ? 13 : 12,
+          fontWeight: '700',
+        }}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
@@ -292,19 +501,28 @@ export function Button({
   loading,
   style,
   size = 'md',
+  compact,
+  hideLabel,
 }: {
   label: string;
   onPress: () => void;
-  /** tonal = dezente Vereinsfarbe für Nebenaktionen in Listen, action = gewählter Zwischenstatus */
-  variant?: 'primary' | 'outline' | 'danger' | 'tonal' | 'action';
-  /** sm für Aktionen innerhalb von Listen und Karten */
+  /**
+   * Pillenförmig. primary = Hauptaktion (gefüllt), outline/danger = Nebenaktion (umrandet), tonal = dezente
+   * Vereinsfarbe, action = Zwischenstatus; hero/heroOutline = auf der Blickfangkarte (Schrift `onHero`).
+   */
+  variant?: 'primary' | 'outline' | 'danger' | 'tonal' | 'action' | 'hero' | 'heroOutline';
+  /** sm für Aktionen innerhalb von Listen und Karten (ebenfalls mindestens 44 pt hoch) */
   size?: 'md' | 'sm';
   icon?: IconName;
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
+  /** schmaler Innenabstand für Dreier-Reihen, in denen Beschriftungen sonst umbrechen */
+  compact?: boolean;
+  /** nur das Symbol zeigen (Beschriftung bleibt für Screenreader) */
+  hideLabel?: boolean;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, sizes } = useTheme();
   const palette = {
     primary: {
       bg: colors.primary,
@@ -313,13 +531,13 @@ export function Button({
       border: colors.primary,
     },
     outline: {
-      bg: colors.surface,
+      bg: 'transparent',
       pressed: colors.surfaceVariant,
       fg: colors.onSurface,
       border: colors.border,
     },
     danger: {
-      bg: colors.surface,
+      bg: 'transparent',
       pressed: colors.status.urgent.container,
       fg: colors.status.urgent.onContainer,
       border: colors.border,
@@ -336,11 +554,26 @@ export function Button({
       fg: colors.status.action.onContainer,
       border: colors.status.action.container,
     },
+    // Auf dem Verlauf: weiße (bzw. dunkle) Fläche mit Verlaufsfarbe als Schrift
+    hero: {
+      bg: colors.hero.onHero,
+      pressed: colors.hero.onHero,
+      fg: colors.hero.from,
+      border: colors.hero.onHero,
+    },
+    heroOutline: {
+      bg: 'transparent',
+      pressed: colors.hero.decor,
+      fg: colors.hero.onHero,
+      border: colors.hero.onHero,
+    },
   }[variant];
   const small = size === 'sm';
+  const border = variant === 'heroOutline' ? 2 : 1;
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={hideLabel ? t(label) : undefined}
       accessibilityState={{ disabled: !!disabled, busy: !!loading }}
       disabled={disabled || loading}
       onPress={onPress}
@@ -350,10 +583,10 @@ export function Button({
           gap: 6,
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: small ? 36 : 46,
-          paddingHorizontal: small ? 12 : 16,
-          borderRadius: radii.md,
-          borderWidth: 1,
+          minHeight: small ? sizes.buttonSmall : sizes.button,
+          paddingHorizontal: compact ? 6 : small ? 10 : 14,
+          borderRadius: radii.pill,
+          borderWidth: border,
           borderColor: palette.border,
           backgroundColor: pressed ? palette.pressed : palette.bg,
           opacity: disabled ? 0.5 : 1,
@@ -365,10 +598,23 @@ export function Button({
         <ActivityIndicator color={palette.fg} />
       ) : (
         <>
-          {icon ? <Ionicons name={icon} size={small ? 16 : 18} color={palette.fg} /> : null}
-          <Text style={{ color: palette.fg, fontSize: small ? 13 : 15, fontWeight: '800' }}>
-            {label}
-          </Text>
+          {icon ? (
+            <Ionicons name={icon} size={hideLabel ? 24 : small ? 16 : 18} color={palette.fg} />
+          ) : null}
+          {hideLabel ? null : (
+            <Text
+              numberOfLines={2}
+              style={{
+                flexShrink: 1,
+                textAlign: 'center',
+                color: palette.fg,
+                fontSize: small ? 13 : 15,
+                fontWeight: '800',
+              }}
+            >
+              {label}
+            </Text>
+          )}
         </>
       )}
     </Pressable>
@@ -396,7 +642,10 @@ export function Toggle({
       trackColor={{ true: colors.primary, false: colors.border }}
       thumbColor={colors.surface}
       {...({ activeThumbColor: colors.surface } as object)}
-      onValueChange={onChange}
+      onValueChange={(v) => {
+        hapticSelect();
+        onChange(v);
+      }}
     />
   );
 }
@@ -483,34 +732,86 @@ export function Avatar({
   );
 }
 
-/** Rundes Icon in einer Kachel, z. B. vor Listeneinträgen. */
+/**
+ * Icon in einer Kachel, z. B. vor Listeneinträgen. Pastellfarben (`tints`) mit dunkler Schrift für
+ * Bereiche und Kennzahlen; Statusfarben nur zusammen mit einer Beschriftung daneben.
+ */
 export function IconTile({
   name,
   tone = 'primary',
   filled,
+  size = 'md',
 }: {
   name: IconName;
-  tone?: StatusKey | 'primary';
+  tone?: StatusKey | 'primary' | TintKey;
   filled?: boolean;
+  /** md = 40, lg = 52 */
+  size?: 'md' | 'lg';
 }) {
-  const { colors } = useTheme();
+  const { colors, sizes } = useTheme();
   const palette = filled
     ? { bg: colors.primary, fg: colors.onPrimary }
     : tone === 'primary'
       ? { bg: colors.primaryContainer, fg: colors.onPrimaryContainer }
-      : { bg: colors.status[tone].container, fg: colors.status[tone].onContainer };
+      : tone in colors.tints
+        ? {
+            bg: colors.tints[tone as TintKey].container,
+            fg: colors.tints[tone as TintKey].onContainer,
+          }
+        : {
+            bg: colors.status[tone as StatusKey].container,
+            fg: colors.status[tone as StatusKey].onContainer,
+          };
+  const box = size === 'lg' ? sizes.iconTileLarge : sizes.iconTile;
   return (
     <View
       style={{
-        width: 36,
-        height: 36,
-        borderRadius: filled ? 18 : 10,
+        width: box,
+        height: box,
+        borderRadius: filled ? box / 2 : size === 'lg' ? 16 : 14,
         backgroundColor: palette.bg,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <Ionicons name={name} size={18} color={palette.fg} />
+      <Ionicons name={name} size={size === 'lg' ? 26 : 20} color={palette.fg} />
+    </View>
+  );
+}
+
+/** Datumskachel: Wochentag klein, Tag groß (md 48×50, lg 52×56). */
+export function DateTile({
+  weekday,
+  day,
+  muted,
+  size = 'md',
+}: {
+  weekday: string;
+  day: string;
+  /** abgesagt: graue Fläche */
+  muted?: boolean;
+  size?: 'md' | 'lg';
+}) {
+  const { colors } = useTheme();
+  const lg = size === 'lg';
+  const fg = muted ? colors.onSurfaceMuted : colors.onPrimaryContainer;
+  return (
+    <View
+      style={{
+        width: lg ? 52 : 48,
+        height: lg ? 56 : 50,
+        borderRadius: lg ? 16 : 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: muted ? colors.surfaceVariant : colors.primaryContainer,
+      }}
+    >
+      <T variant="caption" color={fg} style={{ fontSize: 11, lineHeight: 13 }}>
+        {weekday}
+      </T>
+      <T variant="figure" color={fg} style={{ fontSize: lg ? 22 : 20, lineHeight: lg ? 26 : 24 }}>
+        {day}
+      </T>
     </View>
   );
 }
@@ -524,6 +825,7 @@ export function ListRow({
   trailing,
   onPress,
   first,
+  strike,
 }: {
   leading?: ReactNode;
   title: string;
@@ -531,13 +833,20 @@ export function ListRow({
   trailing?: ReactNode;
   onPress?: () => void;
   first?: boolean;
+  /** durchgestrichener Titel (abgesagt) */
+  strike?: boolean;
 }) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, sizes } = useTheme();
   const main = (
     <>
       {leading}
       <View style={{ flex: 1, gap: 2 }}>
-        <T variant="label" numberOfLines={2} style={{ fontWeight: '700' }}>
+        <T
+          variant="label"
+          numberOfLines={2}
+          color={strike ? colors.onSurfaceMuted : undefined}
+          style={{ fontWeight: '700', textDecorationLine: strike ? 'line-through' : 'none' }}
+        >
           {title}
         </T>
         {typeof subtitle === 'string' ? (
@@ -550,7 +859,15 @@ export function ListRow({
       </View>
     </>
   );
-  const inner = { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md } as const;
+  // Die Polsterung gehört zum Tippbereich: die ganze Zeile (mindestens 44 pt) ist antippbar
+  const inner = {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    minHeight: sizes.touchTarget,
+    paddingVertical: spacing.sm + 2,
+  } as const;
   // Zusatz rechts (Buttons, Schalter) steht neben dem antippbaren Bereich, nie darin:
   // verschachtelte Buttons sind im Web ungültig.
   return (
@@ -559,8 +876,7 @@ export function ListRow({
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.md,
-        paddingVertical: spacing.sm + 2,
-        borderTopWidth: first ? 0 : StyleSheet.hairlineWidth * 2,
+        borderTopWidth: first ? 0 : 1,
         borderTopColor: colors.border,
       }}
     >
@@ -572,7 +888,117 @@ export function ListRow({
         <View style={inner}>{main}</View>
       )}
       {trailing}
-      {onPress ? <Ionicons name="chevron-forward" size={16} color={colors.onSurfaceMuted} /> : null}
+      {onPress ? <Ionicons name="chevron-forward" size={18} color={colors.onSurfaceMuted} /> : null}
+    </View>
+  );
+}
+
+/**
+ * Wisch-Aktion in Listen: Nach links wischen zeigt eine Aktion (z. B. „Zusagen“); Antippen führt sie aus, weiter
+ * Wischen löst sie sofort aus. Immer zusätzlich zu einer sichtbaren Bedienung erreichbar (Screenreader: eigene
+ * Aktion am Element). Die Zeile braucht eine eigene Hintergrundfarbe, damit die Aktion dahinter verdeckt bleibt.
+ */
+export function SwipeRow({
+  children,
+  label,
+  icon,
+  tone = 'success',
+  onAction,
+}: {
+  children: ReactNode;
+  /** Beschriftung der Aktion (auch für Screenreader) */
+  label: string;
+  icon: IconName;
+  tone?: StatusKey;
+  onAction: () => void;
+}) {
+  const { colors } = useTheme();
+  const WIDTH = 92;
+  const x = useRef(new Animated.Value(0)).current;
+  const offset = useRef(0);
+  const [open, setOpen] = useState(false);
+  /** nach einem Wischen kein Antippen auslösen (im Browser folgt auf das Loslassen ein Klick) */
+  const dragged = useRef(false);
+  const snap = (to: number) => {
+    offset.current = to;
+    setOpen(to !== 0);
+    Animated.spring(x, { toValue: to, useNativeDriver: true, bounciness: 0 }).start();
+  };
+  const pan = useRef(
+    PanResponder.create({
+      // nur waagerechte Wischbewegungen übernehmen, damit die Seite weiter scrollt
+      // Capture: auch wenn ein Knopf in der Zeile die Berührung schon hält, übernimmt das Wischen
+      onMoveShouldSetPanResponderCapture: (_, g) =>
+        Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderGrant: () => {
+        dragged.current = true;
+      },
+      onPanResponderMove: (_, g) =>
+        x.setValue(Math.min(0, Math.max(-WIDTH * 1.6, offset.current + g.dx))),
+      onPanResponderRelease: (_, g) => {
+        setTimeout(() => (dragged.current = false), 150);
+        const end = offset.current + g.dx;
+        if (end < -WIDTH * 1.4) {
+          hapticSelect();
+          snap(0);
+          onActionRef.current();
+        } else snap(end < -WIDTH / 2 ? -WIDTH : 0);
+      },
+      onPanResponderTerminate: () => {
+        setTimeout(() => (dragged.current = false), 150);
+        snap(offset.current);
+      },
+    }),
+  ).current;
+  const onActionRef = useRef(onAction);
+  onActionRef.current = onAction;
+  const c = colors.status[tone];
+  return (
+    <View style={{ overflow: 'hidden' }}>
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          right: 0,
+          width: WIDTH,
+          opacity: open ? 1 : 0,
+        }}
+      >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t(label)}
+          disabled={!open}
+          onPress={() => {
+            snap(0);
+            onAction();
+          }}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+            backgroundColor: c.container,
+          }}
+        >
+          <Ionicons name={icon} size={22} color={c.onContainer} />
+          <Text style={{ color: c.onContainer, fontSize: 12, fontWeight: '700' }}>{label}</Text>
+        </Pressable>
+      </View>
+      <Animated.View
+        {...pan.panHandlers}
+        {...({
+          onClickCapture: (e: { stopPropagation: () => void }) => {
+            if (dragged.current) e.stopPropagation();
+          },
+        } as object)}
+        style={{ transform: [{ translateX: x }], backgroundColor: colors.surfaceRaised }}
+        accessibilityActions={[{ name: 'activate', label: t(label) }]}
+        onAccessibilityAction={() => onAction()}
+      >
+        {children}
+      </Animated.View>
     </View>
   );
 }
@@ -580,37 +1006,178 @@ export function ListRow({
 // ── Zustände ──────────────────────────────────────────────────────────────────
 
 /** Grauer, atmender Platzhalter statt Drehkreis: die Seite wirkt schneller und springt weniger. */
-function SkeletonBlock({ height }: { height: number }) {
-  const { colors, radii } = useTheme();
+function SkeletonBlock({
+  height,
+  width,
+  radius,
+  style,
+}: {
+  height: number;
+  width?: number | `${number}%`;
+  radius?: number;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const { colors, radii, motion } = useTheme();
   const opacity = useRef(new Animated.Value(0.45)).current;
+  const [reduceMotion, setReduceMotion] = useState(false);
   useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then(setReduceMotion)
+      .catch(() => undefined);
+  }, []);
+  useEffect(() => {
+    if (reduceMotion) return;
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0.45, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: motion.skeletonPulse / 2,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.45,
+          duration: motion.skeletonPulse / 2,
+          useNativeDriver: true,
+        }),
       ]),
     );
     loop.start();
     return () => loop.stop();
-  }, [opacity]);
+  }, [opacity, reduceMotion, motion.skeletonPulse]);
   return (
     <Animated.View
-      style={{ height, borderRadius: radii.lg, backgroundColor: colors.surfaceVariant, opacity }}
+      style={[
+        {
+          height,
+          width,
+          borderRadius: radius ?? radii.md,
+          backgroundColor: colors.border,
+          opacity,
+        },
+        style,
+      ]}
     />
   );
 }
 
-export function Loading() {
+/** Platzhalter einer Listenzeile: Kachel, zwei Textzeilen, Status. */
+function SkeletonRow() {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 }}>
+      <SkeletonBlock height={44} width={44} radius={14} />
+      <View style={{ flex: 1, gap: 6 }}>
+        <SkeletonBlock height={12} width="70%" />
+        <SkeletonBlock height={10} width="45%" />
+      </View>
+      <SkeletonBlock height={22} width={64} radius={11} />
+    </View>
+  );
+}
+
+/**
+ * Ladezustand mit pulsierenden Platzhaltern. `list` (Standard) für Listen in Karten; `page` für den
+ * ersten Aufbau einer Seite: Blickfangkarte, Band, Liste.
+ */
+export function Loading({ variant = 'list' }: { variant?: 'list' | 'page' }) {
+  const { colors, radii, isDark, elevation } = useTheme();
+  const rows = (
+    <>
+      <SkeletonRow />
+      <SkeletonRow />
+      <SkeletonRow />
+    </>
+  );
   return (
     <View
       accessibilityRole="progressbar"
       accessibilityLabel={t('Lädt')}
-      style={{ gap: 12, padding: 16 }}
+      style={{ gap: 14, paddingVertical: variant === 'page' ? 0 : 4 }}
     >
-      <SkeletonBlock height={110} />
-      <SkeletonBlock height={64} />
-      <SkeletonBlock height={64} />
-      <SkeletonBlock height={64} />
+      {variant === 'page' ? (
+        <>
+          <SkeletonBlock height={230} radius={radii.xxl} />
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <SkeletonBlock height={92} radius={radii.xl} style={{ flex: 1 }} />
+            <SkeletonBlock height={92} radius={radii.xl} style={{ flex: 1 }} />
+          </View>
+          <View
+            style={{
+              padding: 14,
+              borderRadius: radii.xl,
+              backgroundColor: colors.surfaceRaised,
+              ...(isDark
+                ? { borderWidth: 1, borderColor: colors.border }
+                : shadowStyle(elevation.card)),
+            }}
+          >
+            {rows}
+          </View>
+        </>
+      ) : (
+        rows
+      )}
+    </View>
+  );
+}
+
+/**
+ * Hinweiskarte mit Symbol, Titel, Text und optionaler Handlung. `urgent` für Fehler, `action` für
+ * Warnungen (z. B. 2-Faktor), `info` für ruhige Hinweise. Immer mit Titel – nie Farbe allein.
+ */
+export function Notice({
+  tone,
+  icon,
+  title,
+  text,
+  action,
+}: {
+  tone: 'urgent' | 'action' | 'info';
+  icon: IconName;
+  title: string;
+  text: string;
+  action?: { label: string; onPress: () => void; icon?: IconName };
+}) {
+  const { colors, radii, spacing } = useTheme();
+  const c = colors.status[tone];
+  return (
+    <View
+      accessibilityRole={tone === 'urgent' ? 'alert' : undefined}
+      style={{
+        gap: spacing.md,
+        padding: spacing.lg,
+        borderRadius: radii.xl,
+        backgroundColor: c.container,
+        borderWidth: 1,
+        borderColor: c.solid,
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: c.solid,
+          }}
+        >
+          <Ionicons name={icon} size={20} color={c.onSolid} />
+        </View>
+        <T variant="heading" color={c.onContainer} style={{ flex: 1 }}>
+          {title}
+        </T>
+      </View>
+      <T color={c.onContainer}>{text}</T>
+      {action ? (
+        <Button
+          label={action.label}
+          icon={action.icon}
+          variant="outline"
+          onPress={action.onPress}
+          style={{ alignSelf: 'flex-start', borderColor: c.solid }}
+        />
+      ) : null}
     </View>
   );
 }
@@ -632,27 +1199,29 @@ export function ErrorNotice({
   const text = message ?? error?.message ?? 'Es ist ein unerwarteter Fehler aufgetreten.';
   if (status === 403 || status === 404) {
     return (
-      <Card style={{ gap: 12, alignItems: 'flex-start' }}>
-        <Chip
-          tone="info"
-          icon={status === 403 ? 'lock-closed' : 'search'}
-          label={status === 403 ? 'Kein Zugriff' : 'Nicht gefunden'}
-        />
-        <T>{text}</T>
-        {router.canGoBack() ? (
-          <Button label="Zurück" variant="outline" onPress={() => router.back()} />
-        ) : (
-          <Button label="Zur Startseite" variant="outline" onPress={() => router.replace('/')} />
-        )}
-      </Card>
+      <Notice
+        tone="info"
+        icon={status === 403 ? 'lock-closed' : 'search'}
+        title={status === 403 ? 'Kein Zugriff' : 'Nicht gefunden'}
+        text={text}
+        action={
+          router.canGoBack()
+            ? { label: 'Zurück', onPress: () => router.back() }
+            : { label: 'Zur Startseite', onPress: () => router.replace('/') }
+        }
+      />
     );
   }
   return (
-    <Card style={{ gap: 12, alignItems: 'flex-start' }}>
-      <Chip tone="urgent" icon="alert-circle" label="Fehler" />
-      <T>{text}</T>
-      {onRetry ? <Button label="Erneut versuchen" variant="outline" onPress={onRetry} /> : null}
-    </Card>
+    <Notice
+      tone="urgent"
+      icon="alert"
+      title="Das hat nicht geklappt"
+      text={text}
+      action={
+        onRetry ? { label: 'Erneut versuchen', onPress: onRetry, icon: 'refresh' } : undefined
+      }
+    />
   );
 }
 
@@ -660,10 +1229,13 @@ export function ErrorNotice({
 export function Empty({
   icon,
   text,
+  hint,
   action,
 }: {
   icon: IconName;
   text: string;
+  /** zweite, leisere Zeile (was als Nächstes passiert) */
+  hint?: string;
   action?: { label: string; onPress: () => void };
 }) {
   const { colors, radii } = useTheme();
@@ -674,25 +1246,19 @@ export function Empty({
         gap: 10,
         paddingVertical: 20,
         paddingHorizontal: 16,
-        borderRadius: radii.lg,
+        borderRadius: radii.xl,
         backgroundColor: colors.surfaceVariant,
       }}
     >
-      <View
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: colors.primaryContainer,
-        }}
-      >
-        <Ionicons name={icon} size={22} color={colors.onPrimaryContainer} />
-      </View>
-      <T variant="caption" style={{ textAlign: 'center' }}>
+      <IconTile name={icon} size="lg" />
+      <T variant="label" style={{ textAlign: 'center', fontWeight: '700' }}>
         {text}
       </T>
+      {hint ? (
+        <T variant="caption" style={{ textAlign: 'center', marginTop: -4 }}>
+          {hint}
+        </T>
+      ) : null}
       {action ? (
         <Button label={action.label} size="sm" variant="tonal" onPress={action.onPress} />
       ) : null}
@@ -715,105 +1281,143 @@ export type TileItem = {
   hint?: string;
   /** Ton des Hinweises (immer zusammen mit dem Text, nie Farbe allein) */
   tone?: 'neutral' | 'action' | 'success' | 'urgent' | 'info';
+  /** Pastellfarbe der Icon-Kachel im kompakten Raster (sonst reihum) */
+  tint?: TintKey;
 };
 
+/**
+ * Kachelraster: vier Spalten wie im Entwurf – Kachel 60 hoch mit Pastell-Icon, Beschriftung
+ * darunter, Zähler oder „neu“ oben rechts, ein kurzer Hinweis unter der Beschriftung.
+ */
 export function TileGrid({ items }: { items: TileItem[] }) {
-  const { colors, radii, spacing } = useTheme();
-  // Mehr Spalten auf breiten Bildschirmen
-  const { width } = useWindowDimensions();
-  const basis = width >= 900 ? '23%' : width >= 640 ? '31%' : '47%';
+  return <CompactTileGrid items={items} />;
+}
+
+/** Lange Kachelnamen trennen an Wortfugen (weiche Trennstriche) statt mitten im Wort. */
+const SOFT_BREAKS: [string, string][] = [
+  ['Veranstaltungen', 'Veranstal\u00ADtungen'],
+  ['Ansprechpartner', 'Ansprech\u00ADpartner'],
+  ['Platzbelegung', 'Platz\u00ADbelegung'],
+  ['Strafenkatalog', 'Strafen\u00ADkatalog'],
+  ['Kassenverwaltung', 'Kassen\u00ADverwaltung'],
+  ['Announcements', 'Announce\u00ADments'],
+  ['Contact persons', 'Contact persons'],
+];
+const softBreaks = (label: string) =>
+  SOFT_BREAKS.reduce((text, [word, soft]) => text.replace(word, soft), label);
+
+const TINT_ORDER: TintKey[] = ['blue', 'orange', 'pink', 'green', 'violet'];
+
+function CompactTileGrid({ items }: { items: TileItem[] }) {
+  const { colors, isDark, elevation } = useTheme();
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-      {items.map((item) => {
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 10, rowGap: 14 }}>
+      {items.map((item, index) => {
         const disabled = item.soon || !item.onPress;
+        const showBadge = !item.soon && item.badge !== undefined && item.badge !== 0;
+        const tone = item.tone && item.tone !== 'neutral' ? item.tone : null;
         return (
           <Pressable
             key={item.key}
             accessibilityRole="button"
             accessibilityState={{ disabled }}
-            accessibilityLabel={item.soon ? `${item.label}, bald verfügbar` : item.label}
+            accessibilityLabel={[
+              item.label,
+              showBadge ? String(item.badge) : null,
+              item.soon ? 'bald verfügbar' : item.hint,
+            ]
+              .filter(Boolean)
+              .join(', ')}
             disabled={disabled}
             onPress={item.onPress}
-            style={({ pressed }) => ({
-              flexBasis: basis,
-              flexGrow: 1,
-              minHeight: 96,
-              gap: 10,
-              padding: spacing.md,
-              borderRadius: radii.lg,
-              borderWidth: StyleSheet.hairlineWidth * 2,
-              borderColor: colors.border,
-              backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
+            style={{
+              width: '22.5%',
+              flexGrow: 0,
+              alignItems: 'center',
+              gap: 6,
               opacity: item.soon ? 0.55 : 1,
-            })}
+            }}
           >
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start',
-              }}
-            >
-              <View
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  backgroundColor: colors.primaryContainer,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Ionicons name={item.icon} size={19} color={colors.onPrimaryContainer} />
-              </View>
-              {!item.soon && item.badge !== undefined && item.badge !== 0 ? (
+            {({ pressed }) => (
+              <>
                 <View
                   style={{
-                    minWidth: 22,
-                    height: 22,
-                    paddingHorizontal: 6,
-                    borderRadius: 11,
-                    backgroundColor: colors.status.action.container,
+                    width: '100%',
+                    height: 60,
+                    borderRadius: 20,
                     alignItems: 'center',
                     justifyContent: 'center',
+                    backgroundColor: pressed ? colors.surfaceVariant : colors.surfaceRaised,
+                    ...(isDark
+                      ? { borderWidth: 1, borderColor: colors.border }
+                      : shadowStyle(elevation.control)),
                   }}
                 >
+                  <IconTile
+                    name={item.icon}
+                    tone={item.tint ?? TINT_ORDER[index % TINT_ORDER.length]!}
+                  />
+                  {showBadge ? (
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: -6,
+                        right: -3,
+                        minWidth: 22,
+                        height: 22,
+                        paddingHorizontal: 6,
+                        borderRadius: 11,
+                        borderWidth: 2,
+                        borderColor: colors.background,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: tone
+                          ? colors.status[tone].container
+                          : colors.status.action.container,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: '800',
+                          color: tone
+                            ? colors.status[tone].onContainer
+                            : colors.status.action.onContainer,
+                        }}
+                      >
+                        {item.badge}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+                <Text
+                  numberOfLines={2}
+                  verbatim
+                  style={{
+                    fontSize: item.label.length > 11 ? 11 : 12,
+                    fontWeight: '600',
+                    color: colors.onSurface,
+                    textAlign: 'center',
+                  }}
+                >
+                  {softBreaks(t(item.label))}
+                </Text>
+                {item.soon || item.hint ? (
                   <Text
+                    numberOfLines={2}
                     style={{
-                      fontFamily: HEADING_FONT,
-                      fontSize: 14,
-                      fontWeight: '400',
-                      color: colors.status.action.onContainer,
+                      marginTop: -4,
+                      fontSize: 11,
+                      fontWeight: '600',
+                      textAlign: 'center',
+                      color: tone ? colors.status[tone].onContainer : colors.onSurfaceMuted,
                     }}
                   >
-                    {item.badge}
+                    {item.soon ? 'Bald verfügbar' : item.hint}
                   </Text>
-                </View>
-              ) : null}
-            </View>
-            <View style={{ gap: 2 }}>
-              <Text
-                style={{ fontSize: 14, fontWeight: '700', color: colors.onSurface }}
-                numberOfLines={2}
-              >
-                {item.label}
-              </Text>
-              {item.soon || item.hint ? (
-                <Text
-                  style={{
-                    fontSize: 12,
-                    fontWeight: '600',
-                    color:
-                      item.tone && item.tone !== 'neutral'
-                        ? colors.status[item.tone].onContainer
-                        : colors.onSurfaceMuted,
-                  }}
-                  numberOfLines={2}
-                >
-                  {item.soon ? 'Bald verfügbar' : item.hint}
-                </Text>
-              ) : null}
-            </View>
+                ) : null}
+              </>
+            )}
           </Pressable>
         );
       })}
@@ -835,7 +1439,7 @@ export function ChoiceChips<T extends string>({
   onToggle: (value: T) => void;
   label?: string;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, sizes } = useTheme();
   return (
     <View style={{ gap: 8 }}>
       {label ? <T variant="label">{label}</T> : null}
@@ -850,18 +1454,23 @@ export function ChoiceChips<T extends string>({
               key={o.value}
               accessibilityRole="radio"
               accessibilityState={{ checked: active }}
-              onPress={() => onToggle(o.value)}
+              onPress={() => {
+                hapticSelect();
+                onToggle(o.value);
+              }}
+              hitSlop={{ top: 6, bottom: 6 }}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 6,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
+                minHeight: sizes.chipHeight + 2,
+                paddingHorizontal: 14,
+                paddingVertical: 6,
                 maxWidth: '100%',
                 borderRadius: radii.pill,
                 borderWidth: 1,
                 borderColor: active ? colors.primary : colors.border,
-                backgroundColor: active ? colors.primary : colors.surface,
+                backgroundColor: active ? colors.primary : colors.surfaceRaised,
               }}
             >
               {o.icon ? (

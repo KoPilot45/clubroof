@@ -21,7 +21,7 @@ await s.page.route(/:3999\//, (route) => route.abort());
 await s.page.reload();
 await text(s.page, 'Neuigkeiten für dich', {}).waitFor({ timeout: 20_000 });
 ok(true, 'Ohne Verbindung zeigt Home die gespeicherten Neuigkeiten');
-await text(s.page, 'Keine Verbindung', {}).waitFor({ timeout: 10_000 });
+await text(s.page, 'Du bist offline', {}).waitFor({ timeout: 10_000 });
 ok(true, 'Der Offline-Hinweis erscheint');
 
 // Abmelden löscht den Zwischenspeicher: Seite online öffnen, Kontotab → Abmelden

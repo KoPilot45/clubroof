@@ -64,6 +64,10 @@ export type MeResponse = {
     colorMode: ColorMode;
     /** Gewählte Sprache; `null` = Sprache des Geräts */
     language: Locale | null;
+    /** Schnellzugriff auf Home (Schlüssel in Reihenfolge); `null` = Standard der Rolle */
+    quickLinks: string[] | null;
+    /** Vereinsbereich: Reihenfolge und ausgeblendete Kacheln; `null` = alle in Standardreihenfolge */
+    clubTiles: { order: string[]; hidden: string[] } | null;
   };
   person: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
   club: ClubInfo;
@@ -294,6 +298,10 @@ export type ClubOverview = {
 
 export type HomeResponse = {
   nextMatch: EventSummary | null;
+  /** Die nächsten (bis zu drei) Spiele und Spielfeste über alle meine Personen, chronologisch */
+  matches: EventSummary[];
+  /** Alle meine Termine der nächsten sieben Tage, auch abgesagte */
+  week: EventSummary[];
   upcoming: EventSummary[];
   news: NewsItem[];
   actions: ActionItem[];
@@ -427,6 +435,10 @@ export type TeamOverview = {
   lastResults: MatchResult[];
   trainingWeek: EventSummary[];
   highlights: TeamHighlights;
+  /** Tabellenplatz, falls vom Trainerteam eingetragen */
+  leaguePosition: number | null;
+  /** Erfolgreichster Torschütze der Saison (aus abgeschlossenen Spielberichten), nur mit Statistik-Modul */
+  topScorer: { name: string; goals: number } | null;
 };
 
 export type RosterEntry = {
@@ -1098,6 +1110,8 @@ export type TeamProfile = {
   defaultMeetingPoint: string | null;
   /** Weitere Schreibweisen der Mannschaft im DFBnet (für den Spielplan-Import) */
   importAliases: string[];
+  /** Tabellenplatz in der Liga (vom Trainerteam gepflegt) */
+  leaguePosition: number | null;
 };
 
 export type TeamManageMember = {
@@ -2031,3 +2045,20 @@ export type TileInfo = Record<string, TileInfoEntry>;
 
 export const TILE_HUBS = ['team', 'club', 'more', 'admin', 'cash'] as const;
 export type TileHub = (typeof TILE_HUBS)[number];
+
+// ── Globale Suche ─────────────────────────────────────────────────────────
+
+/** Ergebnis der globalen Suche – je Bereich nur, was die Person auch sonst sehen darf. */
+export type SearchResponse = {
+  events: {
+    id: string;
+    title: string;
+    startsAt: string;
+    status: 'scheduled' | 'cancelled';
+    type: string;
+    teamBadge: string | null;
+  }[];
+  members: { personId: string; name: string; teamBadges: string[] }[];
+  news: { id: string; title: string; publishedAt: string; source: string }[];
+  teams: { id: string; name: string; badge: string; league: string | null }[];
+};

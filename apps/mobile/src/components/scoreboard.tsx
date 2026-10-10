@@ -1,6 +1,6 @@
 import type { EventDetail } from '@clubroof/core';
 import { View } from 'react-native';
-import { T } from '@/components/ui';
+import { HeroCard, T } from '@/components/ui';
 import { MATCH_KIND_LABELS } from '@/lib/labels';
 import { formatLongDate, formatTime } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
@@ -13,7 +13,8 @@ export function Scoreboard({
   event: EventDetail;
   clubShortName: string;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors } = useTheme();
+  const on = colors.hero.onHero;
   const match = event.match;
   if (!match) return null;
   const ours = `${clubShortName}${event.team ? ` ${event.team.badge}` : ''}`;
@@ -25,48 +26,45 @@ export function Scoreboard({
       : `${match.goalsAgainst} : ${match.goalsFor}`
     : formatTime(event.startsAt);
   return (
-    <View
-      accessibilityRole="summary"
-      accessibilityLabel={`${home} gegen ${away}, ${played ? score : formatTime(event.startsAt)}`}
-      style={{
-        gap: 10,
-        padding: 18,
-        borderRadius: radii.lg,
-        backgroundColor: colors.primary,
-      }}
-    >
-      <T variant="overline" color={colors.onPrimary} style={{ textAlign: 'center' }}>
-        {[
-          match.competition,
-          event.type === 'tournament' ? 'Turnier' : MATCH_KIND_LABELS[match.kind],
-        ]
-          .filter(Boolean)
-          .join(' · ')}
-      </T>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <T
-          variant="heading"
-          color={colors.onPrimary}
-          style={{ flex: 1, textAlign: 'center' }}
-          numberOfLines={2}
-        >
-          {home}
+    <HeroCard style={{ gap: 0 }}>
+      <View
+        accessibilityRole="summary"
+        accessibilityLabel={`${home} gegen ${away}, ${played ? score : formatTime(event.startsAt)}`}
+        style={{ gap: 10 }}
+      >
+        <T variant="overline" color={on} style={{ textAlign: 'center' }}>
+          {[
+            match.competition,
+            event.type === 'tournament' ? 'Turnier' : MATCH_KIND_LABELS[match.kind],
+          ]
+            .filter(Boolean)
+            .join(' · ')}
         </T>
-        <T variant="figure" color={colors.onPrimary} style={{ fontSize: 40 }}>
-          {score}
-        </T>
-        <T
-          variant="heading"
-          color={colors.onPrimary}
-          style={{ flex: 1, textAlign: 'center' }}
-          numberOfLines={2}
-        >
-          {away}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <T
+            variant="heading"
+            color={on}
+            style={{ flex: 1, textAlign: 'center' }}
+            numberOfLines={2}
+          >
+            {home}
+          </T>
+          <T variant="figure" color={on} style={{ fontSize: 40 }}>
+            {score}
+          </T>
+          <T
+            variant="heading"
+            color={on}
+            style={{ flex: 1, textAlign: 'center' }}
+            numberOfLines={2}
+          >
+            {away}
+          </T>
+        </View>
+        <T variant="caption" color={on} style={{ textAlign: 'center' }}>
+          {[formatLongDate(event.startsAt), event.location].filter(Boolean).join(' · ')}
         </T>
       </View>
-      <T variant="caption" color={colors.onPrimary} style={{ textAlign: 'center' }}>
-        {[formatLongDate(event.startsAt), event.location].filter(Boolean).join(' · ')}
-      </T>
-    </View>
+    </HeroCard>
   );
 }
