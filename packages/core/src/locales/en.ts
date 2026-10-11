@@ -1270,6 +1270,7 @@ export const en: Record<string, string> = {
   'Diese Strafen gelten in deiner Mannschaft. Festgelegt werden sie vom Trainerteam und der Kasse.':
     'These fines apply on your team. They are set by the coaching staff and the team fund.',
   'Diese Umfrage kannst du nicht beenden.': 'You cannot close this poll.',
+  'Diese Woche': 'This week',
   'Diese Woche stehen keine Termine an.': 'No events this week.',
   'Diesen Bereich darfst du nicht einstellen.': 'You are not allowed to configure this department.',
   'Diesen Termin darfst du nicht absagen.': 'You may not cancel this event.',
@@ -1974,6 +1975,7 @@ export const en: Record<string, string> = {
   'Keine passenden Mitglieder.': 'No matching members.',
   'Keine Rollen vergeben.': 'No roles assigned.',
   'Keine Scorerpunkte im Zeitraum.': 'No scorer points in this period.',
+  'Keine Spiele in dieser Woche': 'No matches this week',
   'keine Termine': 'no events',
   'Keine Termine an diesem Tag.': 'No events on this day.',
   'Keine Termine in den nächsten 60 Tagen.': 'No events in the next 60 days.',
@@ -2066,6 +2068,7 @@ export const en: Record<string, string> = {
   'Letzte Ergebnisse': 'Latest results',
   'Letzte Mahnung': 'Final notice',
   'Letzte Mahnung Mitgliedsbeitrag': 'Final notice: membership fee',
+  'Letzte Woche': 'Last week',
   'Letzter Monat': 'Last month',
   Liga: 'League',
   'Liga (optional)': 'League (optional)',
@@ -2243,6 +2246,7 @@ export const en: Record<string, string> = {
   'Nächste Saison vorbereiten': 'Prepare next season',
   'Nächste Spiele': 'Next matches',
   'Nächste Termine': 'Upcoming events',
+  'Nächste Woche': 'Next week',
   'Nächster Monat': 'Next month',
   'Nächster Termin': 'Next event',
   'Nächster Vereinstermin': 'Next club event',
@@ -2745,6 +2749,7 @@ export const en: Record<string, string> = {
   'Spielerinnen und Spieler': 'Female and male players',
   Spielfest: 'Fun day',
   Spielform: 'Small-sided game',
+  'Spielfrei: {0}': 'No match: {0}',
   Spielkennung: 'Match ID',
   Spielklasse: 'Division',
   Spielort: 'Venue',
@@ -2934,6 +2939,7 @@ export const en: Record<string, string> = {
   'Trainingsquote (4 Wo.)': 'Training rate (4 wks)',
   Trainingswoche: 'Training week',
   Treffen: 'Meet',
+  'Treffen {0}': 'Meet {0}',
   'Treffen {0} Uhr{1}': 'Meet at {0}{1}',
   'Treffen vor Spielbeginn (Minuten)': 'Meeting before kick-off (minutes)',
   'Treffen vor Trainingsbeginn (Minuten)': 'Meeting before training starts (minutes)',
@@ -3062,6 +3068,8 @@ export const en: Record<string, string> = {
     "Under “Club → Today at the facility → Show calendar”. It lists all training sessions, matches and events of all teams. You can't see other teams' confirmations and declines there; tap to open events of your own teams.",
   'Unter „Verein → News schreiben“. Reiche die News zur Freigabe ein; der Vorstand prüft sie und veröffentlicht sie oder meldet sich bei dir.':
     'Under “Club → Write news”. Submit the news for approval; the board reviews it and either publishes it or gets back to you.',
+  'Unter „Verein → Spielplan“. Dort stehen alle Spiele einer Woche, nach Tagen sortiert. Mit den Pfeilen oder durch Wischen wechselst du die Woche, mit dem Filter zeigst du nur Senioren oder Jugend. Mannschaften ohne Spiel stehen unter „Spielfrei“. Tippe auf ein Spiel deiner Mannschaft, um Details und Rückmeldungen zu sehen.':
+    'Under “Club → Schedule”. All matches of a week are listed there, sorted by day. Use the arrows or swipe to change the week, and the filter to show only seniors or youth. Teams without a match are listed under “No match”. Tap a match of your team to see details and responses.',
   'Unter „Verwaltung → Module“. Neue Funktionen erscheinen im Update-Center; du richtest sie ein, schiebst sie auf oder entscheidest dich dagegen. Einzelne Bereiche und Mannschaften lassen sich zusätzlich abweichend einstellen.':
     'Under “Administration → Modules”. New features appear in the update centre; you set them up, postpone them or decide against them. Individual areas and teams can additionally be configured differently.',
   'Unter „Verwaltung → Rollen & Aufgaben“ siehst du je Rolle die Personen. „Alle anzeigen“ öffnet die vollständige Liste mit Suche; „<Rolle> hinzufügen“ vergibt die Rolle an weitere Personen. Rollen sind Rechtepakete und gelten für Verein, Bereich oder Mannschaft. Der letzte Fulladmin kann nicht entfernt werden.':
@@ -3206,6 +3214,7 @@ export const en: Record<string, string> = {
   'vor {0} Std.': '{0} hrs ago',
   'vor {0} Tagen': '{0} days ago',
   'Vor- und Nachname fehlen.': 'First and last name are missing.',
+  'Vorherige Woche': 'Previous week',
   'Vorheriger Monat': 'Previous month',
   'Vorl.': 'Ast.',
   Vorlage: 'Template',
@@ -3383,6 +3392,8 @@ export const en: Record<string, string> = {
     'Will be approved by the board or management after submission',
   'Wirklich aus dem Kader nehmen': 'Really remove from the squad',
   'Wirtschaftlicher Geschäftsbetrieb': 'Commercial business operation',
+  'Wische oder tippe auf die Pfeile, um andere Wochen zu sehen.':
+    'Swipe or tap the arrows to see other weeks.',
   'Wo finde ich AGB, Datenschutz, Impressum und Support?':
     'Where do I find terms, privacy policy, legal notice and support?',
   'Wo finde ich die Funktionen?': 'Where do I find the features?',
@@ -3390,6 +3401,7 @@ export const en: Record<string, string> = {
     'Where do I find the constitution, forms and plans?',
   'Wo finde ich was?': 'Where do I find what?',
   'Wo ist die Verwaltung?': 'Where is the administration?',
+  'Wo sehe ich alle Spiele des Vereins?': 'Where do I see all matches of the club?',
   'Wo sehe ich auf einen Blick, wer zum nächsten Spiel kann?':
     'Where can I see at a glance who is available for the next match?',
   'Wo sehe ich die Termine des ganzen Vereins?': 'Where can I see the events of the whole club?',

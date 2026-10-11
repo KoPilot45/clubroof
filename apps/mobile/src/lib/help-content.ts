@@ -40,6 +40,13 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Mit den Pfeilen verschiebst du das Datum um einen Tag. Tippst du auf das Datum selbst, öffnet sich ein Kalender: Wische oder tippe auf die Pfeile, um den Monat zu wechseln, tippe auf einen Tag zum Auswählen oder wähle „Heute“. Nicht erlaubte Tage sind ausgegraut.',
       },
       {
+        id: 'club-schedule',
+        question: 'Wo sehe ich alle Spiele des Vereins?',
+        answer:
+          'Unter „Verein → Spielplan“. Dort stehen alle Spiele einer Woche, nach Tagen sortiert. Mit den Pfeilen oder durch Wischen wechselst du die Woche, mit dem Filter zeigst du nur Senioren oder Jugend. Mannschaften ohne Spiel stehen unter „Spielfrei“. Tippe auf ein Spiel deiner Mannschaft, um Details und Rückmeldungen zu sehen.',
+        link: { label: 'Spielplan', href: '/club-schedule' },
+      },
+      {
         id: 'login',
         question: 'Ich habe mein Passwort vergessen.',
         answer:

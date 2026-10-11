@@ -8,6 +8,9 @@ import {
   addDays,
   at,
   type ClubCalendarEvent,
+  type ClubSchedule,
+  type OrgUnitKind,
+  toIsoDate,
   type ClubTeamGroup,
   type ContactGroup,
   type DocumentCategory,
@@ -329,4 +332,123 @@ export async function listClubCalendar(
           },
     };
   });
+}
+
+// ── Wochen-Spielplan ────────────────────────────────────────────────────────
+
+/** Montag der Woche, in der `day` liegt. */
+function mondayOf(day: Date): Date {
+  return addDays(day, -((day.getUTCDay() + 6) % 7));
+}
+
+/**
+ * Alle Spiele des Vereins in einer Woche (Montag bis Sonntag, Vereinszeit), nach Tagen gruppiert.
+ * Nur Spiele, keine Trainings; dazu die Mannschaften ohne Spiel („Spielfrei“). Zu- und Absagen
+ * fremder Mannschaften bleiben wie im Vereinskalender verborgen.
+ */
+export async function getClubSchedule(
+  db: Db,
+  actor: Actor,
+  week: string | undefined,
+  now: Date,
+): Promise<ClubSchedule> {
+  const tz = actor.club.timezone;
+  const today = calendarDayOf(now, tz);
+  const monday = mondayOf(week ? new Date(`${week}T00:00:00Z`) : today);
+  const start = at(monday, '00:00', tz);
+  const end = at(addDays(monday, 7), '00:00', tz);
+
+  const [units, teamRows, rows] = await Promise.all([
+    db.select().from(s.orgUnits).where(eq(s.orgUnits.clubId, actor.club.id)),
+    db
+      .select({ team: s.teams })
+      .from(s.teams)
+      .innerJoin(s.seasons, eq(s.seasons.id, s.teams.seasonId))
+      .where(and(eq(s.teams.clubId, actor.club.id), eq(s.seasons.isCurrent, true)))
+      .orderBy(asc(s.teams.sortOrder)),
+    fetchEventRows(
+      db,
+      and(
+        eq(s.events.clubId, actor.club.id),
+        eq(s.events.type, 'match'),
+        gte(s.events.startsAt, start),
+        lt(s.events.startsAt, end),
+      ),
+    ),
+  ]);
+  const kindOfUnit = new Map(units.map((u) => [u.id, u.kind as OrgUnitKind]));
+  const kindOfTeam = new Map(
+    teamRows.map(({ team }) => [team.id, kindOfUnit.get(team.orgUnitId) ?? null]),
+  );
+
+  const own = new Set(
+    rows.length && actor.managedIds.length
+      ? (
+          await db
+            .select({ eventId: s.eventParticipants.eventId })
+            .from(s.eventParticipants)
+            .where(
+              and(
+                inArray(
+                  s.eventParticipants.eventId,
+                  rows.map((r) => r.event.id),
+                ),
+                inArray(s.eventParticipants.personId, actor.managedIds),
+              ),
+            )
+        ).map((r) => r.eventId)
+      : [],
+  );
+  const summaries = await summarizeEvents(db, actor, rows, now);
+  const matches = rows.map((row, i) => {
+    const team = row.team;
+    const canOpen =
+      !team ||
+      actor.teamIds.includes(team.id) ||
+      own.has(row.event.id) ||
+      actorCan(actor, 'events.manage', team) ||
+      actorCan(actor, 'attendance.read', team);
+    const summary = summaries[i]!;
+    return {
+      canOpen,
+      unitKind: team ? (kindOfTeam.get(team.id) ?? null) : null,
+      event: canOpen
+        ? summary
+        : {
+            ...summary,
+            counts: { yes: 0, no: 0, maybe: 0, pending: 0 },
+            deadline: null,
+            myResponses: [],
+          },
+    };
+  });
+
+  const byDay = new Map<string, typeof matches>();
+  for (const m of matches) {
+    const date = toIsoDate(calendarDayOf(new Date(m.event.startsAt), tz));
+    byDay.set(date, [...(byDay.get(date) ?? []), m]);
+  }
+  const playing = new Set(
+    matches.filter((m) => m.event.status !== 'cancelled').map((m) => m.event.team?.id),
+  );
+  return {
+    weekStart: toIsoDate(monday),
+    weekEnd: toIsoDate(addDays(monday, 6)),
+    today: toIsoDate(today),
+    days: [...byDay.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, list]) => ({
+        date,
+        matches: list.sort((a, b) => a.event.startsAt.localeCompare(b.event.startsAt)),
+      })),
+    free: teamRows
+      .filter(({ team }) => !playing.has(team.id))
+      .map(({ team }) => ({
+        id: team.id,
+        name: team.name,
+        badge: team.badge,
+        unitKind: kindOfTeam.get(team.id) ?? null,
+      })),
+    kinds: [...new Set(units.map((u) => u.kind as OrgUnitKind))],
+  };
 }

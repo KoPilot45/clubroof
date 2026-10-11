@@ -197,6 +197,13 @@ export default function ClubScreen() {
         ]
       : []),
     {
+      key: 'schedule',
+      tint: 'green' as const,
+      label: 'Spielplan',
+      icon: 'football' as const,
+      onPress: () => router.push('/club-schedule'),
+    },
+    {
       key: 'teams',
       tint: 'green' as const,
       label: 'Mannschaften',
