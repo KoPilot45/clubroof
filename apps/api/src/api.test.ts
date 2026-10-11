@@ -599,6 +599,144 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Vergangene Termine (Archiv)', () => {
+    it('blättert rückwärts, neueste zuerst, ohne Doppelte und nie über „jetzt“ hinaus', async () => {
+      const player = await login('spieler');
+      const first = await get<EventSummary[]>(
+        `/events?before=${encodeURIComponent('2030-01-01T00:00:00Z')}&limit=5`,
+        player.token,
+      );
+      expect(first).toHaveLength(5);
+      for (const e of first) expect(new Date(e.startsAt).getTime()).toBeLessThan(NOW.getTime());
+      const times = first.map((e) => new Date(e.startsAt).getTime());
+      expect([...times].sort((a, b) => b - a)).toEqual(times);
+      const second = await get<EventSummary[]>(
+        `/events?before=${encodeURIComponent(first[4]!.startsAt)}&limit=5`,
+        player.token,
+      );
+      expect(second.length).toBeGreaterThan(0);
+      expect(second.some((e) => first.some((f) => f.id === e.id))).toBe(false);
+      expect(new Date(second[0]!.startsAt).getTime()).toBeLessThanOrEqual(times[4]!);
+      // nur eigene Mannschaften und Vereinstermine
+      const mine = new Set(player.me.teams.map((t) => t.id));
+      for (const e of [...first, ...second]) expect(!e.team || mine.has(e.team.id)).toBe(true);
+    });
+
+    it('liefert die Saisons für die Zeitraum-Auswahl', async () => {
+      const player = await login('spieler');
+      const seasons = await get<{ id: string; name: string; isCurrent: boolean }[]>(
+        '/events/seasons',
+        player.token,
+      );
+      expect(seasons.length).toBeGreaterThan(0);
+      expect(seasons.filter((x) => x.isCurrent)).toHaveLength(1);
+    });
+
+    it('filtert nach Art, Mannschaft und Zeitraum', async () => {
+      const player = await login('spieler');
+      const before = encodeURIComponent(NOW.toISOString());
+      const matches = await get<EventSummary[]>(
+        `/events?before=${before}&limit=50&kind=match`,
+        player.token,
+      );
+      expect(matches.length).toBeGreaterThan(0);
+      expect(matches.every((e) => e.type === 'match' || e.type === 'tournament')).toBe(true);
+      expect(matches.some((e) => e.match?.goalsFor != null)).toBe(true);
+      const team = player.me.teams[0]!;
+      const ofTeam = await get<EventSummary[]>(
+        `/events?before=${before}&limit=50&teamId=${team.id}`,
+        player.token,
+      );
+      expect(ofTeam.every((e) => e.team?.id === team.id)).toBe(true);
+      const after = new Date(NOW.getTime() - 7 * 86_400_000).toISOString();
+      const week = await get<EventSummary[]>(
+        `/events?before=${before}&after=${encodeURIComponent(after)}&limit=50`,
+        player.token,
+      );
+      expect(week.every((e) => e.startsAt >= after)).toBe(true);
+    });
+
+    it('zeigt die erfasste Anwesenheit nach Einstellung der Mannschaft', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const [rec] = await sql<{ id: string }[]>`
+        select id from events
+        where team_id = ${b1.id} and type = 'training' and status = 'scheduled'
+          and starts_at < ${NOW.toISOString()} and attendance_recorded_at is not null
+        order by starts_at desc limit 1`;
+      const url = `/events/${rec!.id}`;
+      const setVisibility = (v: string) =>
+        send('PUT', `/teams/${b1.id}/profile`, coach.token, { attendanceVisibility: v });
+
+      // Standard: nur Anzahl – Spieler sehen „x von y“, aber nicht, wer da war
+      const asPlayer = await get<EventDetail>(url, player.token);
+      expect(asPlayer.presence).not.toBeNull();
+      expect(asPlayer.presence!.total).toBeGreaterThan(asPlayer.presence!.present);
+      expect(asPlayer.participants.every((p) => p.attended === null)).toBe(true);
+      const asCoach = await get<EventDetail>(url, coach.token);
+      expect(asCoach.participants.some((p) => p.attended === true)).toBe(true);
+
+      // nur Trainerteam
+      expect((await setVisibility('staff')).status).toBe(200);
+      expect((await get<EventDetail>(url, player.token)).presence).toBeNull();
+      expect((await get<EventDetail>(url, coach.token)).presence).not.toBeNull();
+
+      // namentlich
+      expect((await setVisibility('named')).status).toBe(200);
+      const named = await get<EventDetail>(url, player.token);
+      expect(named.participants.some((p) => p.attended === true)).toBe(true);
+
+      // nur das Trainerteam stellt es ein; ungültige Werte werden abgelehnt
+      expect(
+        (
+          await send('PUT', `/teams/${b1.id}/profile`, player.token, {
+            attendanceVisibility: 'count',
+          })
+        ).status,
+      ).toBe(403);
+      expect((await setVisibility('alle')).status).toBe(400);
+      expect((await setVisibility('count')).status).toBe(200);
+      const profile = await get<{ profile: { attendanceVisibility: string } }>(
+        `/teams/${b1.id}/manage`,
+        coach.token,
+      );
+      expect(profile.profile.attendanceVisibility).toBe('count');
+    });
+
+    it('Korrekturfrist: nach 14 Tagen ändert nur noch der Admin, mit Eintrag im Protokoll', async () => {
+      const coach = await login('trainer');
+      const admin = await login('admin');
+      const c1 = coach.me.teams.find((t) => t.badge === 'C1')!;
+      const [old] = await sql<
+        { id: string; starts_at: Date | string; ends_at: Date | string | null }[]
+      >`
+        select id, starts_at, ends_at from events
+        where team_id = ${c1.id} and type = 'training' and status = 'scheduled'
+          and starts_at < ${NOW.toISOString()}
+        order by starts_at asc limit 1`;
+      const url = `/events/${old!.id}/attendance-check`;
+      const longAgo = new Date(NOW.getTime() - 20 * 86_400_000);
+      try {
+        await sql`update events set starts_at = ${longAgo.toISOString()}, ends_at = ${new Date(longAgo.getTime() + 5_400_000).toISOString()} where id = ${old!.id}`;
+        const detail = await get<EventDetail>(`/events/${old!.id}`, coach.token);
+        expect(detail.attendanceCheck!.canRecord).toBe(false);
+        expect(new Date(detail.attendanceCheck!.correctionUntil) < NOW).toBe(true);
+        const late = await send<{ error: string }>('PUT', url, coach.token, { present: [] });
+        expect(late.status).toBe(403);
+        const byAdmin = await send<EventDetail>('PUT', url, admin.token, { present: [] });
+        expect(byAdmin.status).toBe(200);
+        const [entry] = await sql<{ action: string }[]>`
+          select action from audit_log where entity_id = ${old!.id}
+            and action = 'attendance.corrected_late' limit 1`;
+        expect(entry).toBeDefined();
+      } finally {
+        await sql`update events set starts_at = ${new Date(old!.starts_at).toISOString()}, ends_at = ${old!.ends_at ? new Date(old!.ends_at).toISOString() : null}, attendance_recorded_at = null where id = ${old!.id}`;
+        await sql`update event_participants set attended = null where event_id = ${old!.id}`;
+      }
+    });
+  });
+
   describe('Termine und Zusagen', () => {
     async function nextB1Training(token: string): Promise<EventSummary> {
       const events = await get<EventSummary[]>('/events', token);
@@ -716,7 +854,8 @@ describe.skipIf(!url)('API', () => {
           and starts_at < ${NOW.toISOString()} and attendance_recorded_at is null
         order by starts_at desc limit 1`;
       const before = await get<EventDetail>(`/events/${past!.id}`, coach.token);
-      expect(before.attendanceCheck).toEqual({ recordedAt: null, canRecord: true });
+      expect(before.attendanceCheck).toMatchObject({ recordedAt: null, canRecord: true });
+      expect(before.attendanceCheck!.correctionUntil).toBeTruthy();
       const said = before.participants.filter((p) => p.role === 'player' && p.status === 'yes');
       expect(said.length).toBeGreaterThan(3);
       const missing = said[0]!;

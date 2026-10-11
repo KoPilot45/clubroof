@@ -55,6 +55,8 @@ export const teams = pgTable(
     importAliases: text().array().notNull().default([]),
     /** Tabellenplatz in der Liga, vom Trainerteam gepflegt (leer = unbekannt) */
     leaguePosition: integer(),
+    /** Wer die erfasste Anwesenheit vergangener Termine sieht: nur Trainerteam, nur Anzahl (Standard) oder namentlich */
+    attendanceVisibility: text().notNull().default('count'),
     /** Mannschaft der Vorsaison (Saisonwechsel: Kasse, Dokumente und Verlauf gehen mit) */
     previousTeamId: uuid(),
     createdAt: createdAt(),

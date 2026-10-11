@@ -23,7 +23,7 @@ import {
   TeamBadge,
   TextField,
 } from '@/components/ui';
-import { formatLongDate, formatRemaining, formatTime } from '@/lib/format';
+import { formatLongDate, formatRemaining, formatShortDate, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { CarpoolSection } from '@/components/carpool';
 import { MatchSection } from '@/components/match';
@@ -249,6 +249,13 @@ function AttendanceCheckCard({ event: e }: { event: EventDetail }) {
               ? 'Für die Trainingsquote zählt, wer wirklich da war.'
               : 'Hake nach dem Termin ab, wer wirklich da war. Bis dahin zählen die Zusagen.'}
           </T>
+          {check.recordedAt || check.canRecord ? (
+            <T variant="caption">
+              {check.canRecord
+                ? `Korrigieren kannst du bis ${formatShortDate(check.correctionUntil.slice(0, 10))}; danach nur noch der Admin.`
+                : 'Die Frist für Korrekturen ist abgelaufen – nur der Admin kann die Anwesenheit noch ändern.'}
+            </T>
+          ) : null}
           {check.canRecord ? (
             <Button
               label={check.recordedAt ? 'Anwesenheit ändern' : 'Anwesenheit erfassen'}
@@ -316,6 +323,22 @@ function AttendanceCheckCard({ event: e }: { event: EventDetail }) {
           ) : null}
         </>
       )}
+    </Card>
+  );
+}
+
+/** Erfasste Anwesenheit für alle, die sie sehen dürfen (Einstellung der Mannschaft): „14 von 20 da“. */
+function PresenceCard({ presence }: { presence: NonNullable<EventDetail['presence']> }) {
+  return (
+    <Card style={{ gap: 6 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <T variant="section">Anwesenheit</T>
+        <Chip
+          tone="success"
+          icon="checkmark"
+          label={`${presence.present} von ${presence.total} da`}
+        />
+      </View>
     </Card>
   );
 }
@@ -464,6 +487,7 @@ export default function EventScreen() {
     queryFn: () => api<EventDetail>(`/events/${id}`),
   });
   const e = query.data;
+  const past = !!e && new Date(e.startsAt) < new Date();
 
   return (
     <Screen edges={[]} refreshing={query.isRefetching} onRefresh={() => query.refetch()}>
@@ -478,6 +502,9 @@ export default function EventScreen() {
               <Chip tone="neutral" label={EVENT_TYPE_LABELS[e.type]} />
               {e.status === 'cancelled' ? (
                 <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+              ) : null}
+              {past ? (
+                <Chip tone="archived" icon="time-outline" label="Vergangener Termin" />
               ) : null}
             </View>
             <T variant="title">{e.title}</T>
@@ -586,7 +613,7 @@ export default function EventScreen() {
             </Section>
           ) : null}
 
-          {e.myResponses.length > 0 ? (
+          {e.myResponses.length > 0 && !past ? (
             <Card style={{ gap: 10 }}>
               <View
                 style={{
@@ -618,8 +645,11 @@ export default function EventScreen() {
 
           {e.carpool ? <CarpoolSection event={e} /> : null}
 
-          {e.attendanceCheck && (e.attendanceCheck.canRecord || e.attendanceCheck.recordedAt) ? (
+          {e.attendanceCheck &&
+          (e.attendanceCheck.canRecord || (e.canOverride && e.attendanceCheck.recordedAt)) ? (
             <AttendanceCheckCard event={e} />
+          ) : e.presence ? (
+            <PresenceCard presence={e.presence} />
           ) : null}
 
           {e.team ? (
@@ -633,7 +663,9 @@ export default function EventScreen() {
                       participant={p}
                       eventId={e.id}
                       first={i === 0}
-                      canOverride={e.canOverride && p.role !== 'coach' && e.status === 'scheduled'}
+                      canOverride={
+                        e.canOverride && p.role !== 'coach' && e.status === 'scheduled' && !past
+                      }
                     />
                   )}
                 />

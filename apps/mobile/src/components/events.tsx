@@ -145,6 +145,28 @@ export function FeaturedEventCard({ event }: { event: EventSummary }) {
  * Terminzeile: Datumskachel, Titel, Untertitel und Status bzw. runde Zusage ✓ / Absage ✕.
  * Abgesagte Termine sind durchgestrichen mit Chip „Abgesagt“ und Grund.
  */
+/** Ergebnis (Spiele) bzw. erfasste Anwesenheit (Training) eines vergangenen Termins als Chip. */
+function pastChip(event: EventSummary) {
+  const m = event.match;
+  if (m && m.goalsFor !== null && m.goalsAgainst !== null) {
+    const tone =
+      m.goalsFor > m.goalsAgainst ? 'success' : m.goalsFor < m.goalsAgainst ? 'urgent' : 'neutral';
+    const word =
+      m.goalsFor > m.goalsAgainst ? 'Sieg' : m.goalsFor < m.goalsAgainst ? 'Niederlage' : 'Remis';
+    return <Chip tone={tone} label={`${m.goalsFor}:${m.goalsAgainst} · ${t(word)}`} />;
+  }
+  if (event.presence) {
+    return (
+      <Chip
+        tone="success"
+        icon="checkmark"
+        label={t(`${event.presence.present} von ${event.presence.total} da`)}
+      />
+    );
+  }
+  return null;
+}
+
 export function EventRow({
   event,
   first,
@@ -161,8 +183,16 @@ export function EventRow({
   const outbox = useOutbox();
   const queued = mine ? queuedFor(outbox, event.id, mine.personId) : undefined;
   const quick = useQuickYes(event, mine?.personId ?? '');
+  // Vergangene Termine: Ergebnis bzw. Anwesenheit statt Zu-/Absage (Paket VT)
+  const past = new Date(event.startsAt).getTime() < Date.now();
   const swipeable =
-    !cancelled && !!mine && !multi && !queued && mine.status === 'pending' && mine.canRespond;
+    !past &&
+    !cancelled &&
+    !!mine &&
+    !multi &&
+    !queued &&
+    mine.status === 'pending' &&
+    mine.canRespond;
   const text = cancelled
     ? event.cancelledReason
       ? `Grund: ${event.cancelledReason}`
@@ -196,6 +226,8 @@ export function EventRow({
       trailing={
         cancelled ? (
           <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+        ) : past && pastChip(event) ? (
+          pastChip(event)
         ) : !mine ? null : queued && !multi ? (
           <Chip tone="info" icon="cloud-upload-outline" label="Wird gesendet" />
         ) : !mine ? null : multi ? (
@@ -209,7 +241,7 @@ export function EventRow({
               />
             ))}
           </View>
-        ) : mine.status === 'pending' && mine.canRespond ? (
+        ) : mine.status === 'pending' && mine.canRespond && !past ? (
           <RoundRespond event={event} personId={mine.personId} />
         ) : (
           <AttendanceChip status={mine.status} />

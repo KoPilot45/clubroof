@@ -9,7 +9,7 @@ import {
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, eq, inArray } from 'drizzle-orm';
-import { actorCan, moduleEnabled, type Actor } from '../actor';
+import { actorCan, isAdminActor, moduleEnabled, type Actor } from '../actor';
 import { resolveMediaUrl } from '../storage/media-links';
 import { loadScopeContext, targetsWith } from './scopes';
 import { adminPermissions } from './admin';
@@ -17,17 +17,6 @@ import { newsPermissions } from './editorial';
 import { clubCashLevel } from './club-cash';
 import { canInvite } from './invitations';
 import { twoFactorMissing } from './two-factor';
-
-/** Rollen, die den Verwaltungsmodus öffnen (Trainer verwalten ihre Teams in der App selbst). */
-const ADMIN_ROLES = new Set([
-  'fulladmin',
-  'board',
-  'sports_director',
-  'youth_director',
-  'treasurer',
-  'facility_manager',
-  'member_admin',
-]);
 
 export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
   const ctx = await loadScopeContext(db, actor);
@@ -107,7 +96,7 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       scopeType: g.scopeType,
       scopeId: g.scopeId,
     })),
-    canAdminister: actor.grants.some((g) => ADMIN_ROLES.has(g.key)),
+    canAdminister: isAdminActor(actor),
     admin: adminPermissions(actor),
     news: newsPermissions(actor),
     clubCash: (() => {

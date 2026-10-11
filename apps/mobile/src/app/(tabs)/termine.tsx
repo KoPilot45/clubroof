@@ -2,10 +2,12 @@ import type { EventSummary, RefereeDuty } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow, FeaturedEventCard } from '@/components/events';
 import { MonthCalendar, dayKey } from '@/components/month-calendar';
 import {
+  Button,
   Card,
   ChoiceChips,
   Chip,
@@ -19,11 +21,9 @@ import {
   T,
 } from '@/components/ui';
 import { SponsorBannerCard } from '@/components/sponsor-banner';
-import { KindLegend } from '@/components/kind-legend';
-import { kindColor, kindOf } from '@/lib/event-types';
+import { GridLegend } from '@/components/kind-legend';
 import { formatDateTile, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
-import { useTheme } from '@/lib/theme';
 import { dateFormat } from '@/lib/i18n';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -31,12 +31,13 @@ const DAY = 24 * 60 * 60 * 1000;
 /** Meine Termine: die nächsten drei und ein Monatskalender nach Terminart. */
 export default function EventsTab() {
   const { api, me } = useSignedIn();
-  const { colors } = useTheme();
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
   const [day, setDay] = useState<string | null>(dayKey(new Date()));
+  // Kommend oder Vergangen (Paket VT): „Vergangen“ zeigt die letzten Termine, das Archiv alle
+  const [when, setWhen] = useState<'upcoming' | 'past'>('upcoming');
   const upcoming = useQuery({
     queryKey: ['events', 'mine', 'upcoming'],
     queryFn: () => {
@@ -46,6 +47,36 @@ export default function EventsTab() {
         `/events?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
       );
     },
+  });
+  // Filter: Alle, je Kind, Spiele, Training, Verein
+  const children = me.managedPersons.filter((p) => p.relation === 'child');
+  const [filter, setFilter] = useState('all');
+  const matches = (e: EventSummary) =>
+    filter === 'all'
+      ? true
+      : filter === 'match'
+        ? e.type === 'match' || e.type === 'tournament'
+        : filter === 'training'
+          ? e.type === 'training'
+          : filter === 'club'
+            ? e.team === null
+            : e.myResponses.some((r) => r.personId === filter.slice(2));
+
+  const kindParam =
+    filter === 'match'
+      ? 'match'
+      : filter === 'training'
+        ? 'training'
+        : filter === 'club'
+          ? 'club'
+          : '';
+  const past = useQuery({
+    queryKey: ['events', 'mine', 'past', kindParam],
+    queryFn: () =>
+      api<EventSummary[]>(
+        `/events?before=${encodeURIComponent(new Date().toISOString())}&limit=40${kindParam ? `&kind=${kindParam}` : ''}`,
+      ),
+    enabled: when === 'past',
   });
   const monthEvents = useQuery({
     queryKey: ['events', 'mine', 'month', dayKey(month)],
@@ -66,20 +97,8 @@ export default function EventsTab() {
     },
     enabled: me.referees.active,
   });
-  // Filter: Alle, je Kind, Spiele, Training, Verein
-  const children = me.managedPersons.filter((p) => p.relation === 'child');
-  const [filter, setFilter] = useState('all');
-  const matches = (e: EventSummary) =>
-    filter === 'all'
-      ? true
-      : filter === 'match'
-        ? e.type === 'match' || e.type === 'tournament'
-        : filter === 'training'
-          ? e.type === 'training'
-          : filter === 'club'
-            ? e.team === null
-            : e.myResponses.some((r) => r.personId === filter.slice(2));
   const filtered = (upcoming.data ?? []).filter(matches);
+  const pastList = (past.data ?? []).filter(matches).slice(0, 8);
   const hero = filtered.find((e) => e.status === 'scheduled');
   const rest = filtered.filter((e) => e !== hero).slice(0, 5);
   const all = (monthEvents.data ?? []).filter(matches);
@@ -87,7 +106,6 @@ export default function EventsTab() {
   const dutiesOfDay = (duties.data ?? []).filter(
     (d) => day && dayKey(new Date(d.startsAt)) === day,
   );
-  const kinds = [...new Set(all.filter((e) => e.status !== 'cancelled').map(kindOf))];
   const dayTitle = dateFormat({
     weekday: 'long',
     day: 'numeric',
@@ -102,8 +120,28 @@ export default function EventsTab() {
       onRefresh={() => {
         void upcoming.refetch();
         void monthEvents.refetch();
+        if (when === 'past') void past.refetch();
       }}
     >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <View style={{ flex: 1 }}>
+          <ChoiceChips
+            options={[
+              { value: 'upcoming', label: 'Kommend' },
+              { value: 'past', label: 'Vergangen' },
+            ]}
+            selected={[when]}
+            onToggle={setWhen}
+          />
+        </View>
+        <Button
+          label="Archiv"
+          icon="archive-outline"
+          variant="outline"
+          size="sm"
+          onPress={() => router.push('/events/archive')}
+        />
+      </View>
       <ChoiceChips
         options={[
           { value: 'all', label: 'Alle' },
@@ -116,23 +154,44 @@ export default function EventsTab() {
         onToggle={setFilter}
       />
 
-      <Section title="Als Nächstes" action="Alle anzeigen" onAction={() => router.push('/events')}>
-        {hero ? <FeaturedEventCard event={hero} /> : null}
-        {upcoming.isPending ? <Loading /> : null}
-        {upcoming.error ? (
-          <ErrorNotice error={upcoming.error} onRetry={() => upcoming.refetch()} />
-        ) : null}
-        {upcoming.data && filtered.length === 0 ? (
-          <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
-        ) : null}
-        {rest.length > 0 ? (
-          <Card>
-            {rest.map((e, i) => (
-              <EventRow key={e.id} event={e} first={i === 0} />
-            ))}
-          </Card>
-        ) : null}
-      </Section>
+      {when === 'upcoming' ? (
+        <Section
+          title="Als Nächstes"
+          action="Alle anzeigen"
+          onAction={() => router.push('/events')}
+        >
+          {hero ? <FeaturedEventCard event={hero} /> : null}
+          {upcoming.isPending ? <Loading /> : null}
+          {upcoming.error ? (
+            <ErrorNotice error={upcoming.error} onRetry={() => upcoming.refetch()} />
+          ) : null}
+          {upcoming.data && filtered.length === 0 ? (
+            <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
+          ) : null}
+          {rest.length > 0 ? (
+            <Card>
+              {rest.map((e, i) => (
+                <EventRow key={e.id} event={e} first={i === 0} />
+              ))}
+            </Card>
+          ) : null}
+        </Section>
+      ) : (
+        <Section title="Zuletzt" action="Archiv" onAction={() => router.push('/events/archive')}>
+          {past.isPending ? <Loading /> : null}
+          {past.error ? <ErrorNotice error={past.error} onRetry={() => past.refetch()} /> : null}
+          {past.data && pastList.length === 0 ? (
+            <Empty icon="time-outline" text="Keine vergangenen Termine." />
+          ) : null}
+          {pastList.length > 0 ? (
+            <Card>
+              {pastList.map((e, i) => (
+                <EventRow key={e.id} event={e} first={i === 0} />
+              ))}
+            </Card>
+          ) : null}
+        </Section>
+      )}
 
       <SponsorBannerCard placement="events" />
 
@@ -153,19 +212,22 @@ export default function EventsTab() {
       <Section title="Kalender">
         <Card style={{ gap: 10 }}>
           <MonthCalendar
+            variant="grid"
             month={month}
             events={all}
             selected={day}
             onSelect={setDay}
-            colorOf={(e) => kindColor(kindOf(e), colors)}
             onMonth={(delta) => {
               setMonth(new Date(month.getFullYear(), month.getMonth() + delta, 1));
               setDay(null);
             }}
+            onToday={() => {
+              const now = new Date();
+              setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+              setDay(dayKey(now));
+            }}
           />
-          {kinds.length || all.some((e) => e.status === 'cancelled') ? (
-            <KindLegend kinds={kinds} cancelled={all.some((e) => e.status === 'cancelled')} />
-          ) : null}
+          <GridLegend cancelled={all.some((e) => e.status === 'cancelled')} />
         </Card>
       </Section>
 

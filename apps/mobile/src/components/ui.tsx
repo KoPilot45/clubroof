@@ -158,12 +158,15 @@ export function Screen({
   onRefresh,
   header,
   edges = ['top'],
+  onEndReached,
 }: {
   children: ReactNode;
   refreshing?: boolean;
   onRefresh?: () => void;
   header?: ReactNode;
   edges?: ('top' | 'bottom')[];
+  /** wird aufgerufen, wenn man nahe ans Ende der Seite scrollt (Nachladen langer Listen) */
+  onEndReached?: () => void;
 }) {
   const { colors, spacing } = useTheme();
   // In den Tabs liegt die schwebende Leiste über dem Inhalt: unten Platz dafür lassen
@@ -173,6 +176,16 @@ export function Screen({
       {header}
       <ScrollView
         style={{ backgroundColor: colors.background }}
+        scrollEventThrottle={onEndReached ? 100 : undefined}
+        onScroll={
+          onEndReached
+            ? (e) => {
+                const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+                if (contentSize.height - (contentOffset.y + layoutMeasurement.height) < 500)
+                  onEndReached();
+              }
+            : undefined
+        }
         contentContainerStyle={{
           padding: spacing.lg + 4,
           gap: spacing.lg + 2,

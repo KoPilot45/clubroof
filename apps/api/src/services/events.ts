@@ -9,6 +9,7 @@ import {
   responseDeadline,
   type AttendanceCounts,
   type AttendanceStatus,
+  type ClubSeason,
   type DeadlineRule,
   type EventDetail,
   type EventSummary,
@@ -17,10 +18,27 @@ import {
   type EventChange,
   type MatchKind,
   buildRouteUrl,
+  ATTENDANCE_CORRECTION_DAYS,
+  toAttendanceVisibility,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, count, desc, eq, gt, inArray, ne, type SQL } from 'drizzle-orm';
-import { actorCan, type Actor } from '../actor';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNull,
+  lt,
+  ne,
+  or,
+  sql,
+  type SQL,
+} from 'drizzle-orm';
+import { actorCan, isFullAdmin, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { coachUsers, digestAt } from '../notify/coaches';
 import { deliver } from '../notify/deliver';
@@ -32,7 +50,12 @@ const OVERRIDE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type EventRow = Awaited<ReturnType<typeof fetchEventRows>>[number];
 
-export async function fetchEventRows(db: Db, where: SQL | undefined, limit?: number) {
+export async function fetchEventRows(
+  db: Db,
+  where: SQL | undefined,
+  limit?: number,
+  order: 'asc' | 'desc' = 'asc',
+) {
   const query = db
     .select({
       event: s.events,
@@ -42,6 +65,7 @@ export async function fetchEventRows(db: Db, where: SQL | undefined, limit?: num
         badge: s.teams.badge,
         orgUnitId: s.teams.orgUnitId,
         participationMode: s.teams.participationMode,
+        attendanceVisibility: s.teams.attendanceVisibility,
       },
       facilityName: s.facilities.name,
       match: s.matchDetails,
@@ -51,12 +75,77 @@ export async function fetchEventRows(db: Db, where: SQL | undefined, limit?: num
     .leftJoin(s.facilities, eq(s.facilities.id, s.events.facilityId))
     .leftJoin(s.matchDetails, eq(s.matchDetails.eventId, s.events.id))
     .where(where)
-    .orderBy(asc(s.events.startsAt));
+    .orderBy(order === 'asc' ? asc(s.events.startsAt) : desc(s.events.startsAt));
   return limit ? query.limit(limit) : query;
 }
 
 function isTeamMember(actor: Actor, teamId: string | null): boolean {
   return teamId !== null && actor.teamIds.includes(teamId);
+}
+
+/** Saisons des Vereins, neueste zuerst (für die Zeitraum-Auswahl im Archiv). */
+export async function listSeasons(db: Db, actor: Actor): Promise<ClubSeason[]> {
+  const rows = await db
+    .select()
+    .from(s.seasons)
+    .where(eq(s.seasons.clubId, actor.club.id))
+    .orderBy(desc(s.seasons.startsOn));
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    startsOn: r.startsOn,
+    endsOn: r.endsOn,
+    isCurrent: r.isCurrent,
+  }));
+}
+
+/**
+ * Vergangene Termine zum Rückwärts-Blättern („Archiv“): neueste zuerst, Sichtbarkeit wie bei „Meine Termine“.
+ * `before` ist exklusiv (Beginn des ältesten bereits geladenen Termins), `after` inklusiv.
+ */
+export async function listPastEvents(
+  db: Db,
+  actor: Actor,
+  q: {
+    before: Date;
+    after?: Date;
+    limit: number;
+    teamId?: string;
+    kind?: 'match' | 'training' | 'club';
+  },
+  now: Date,
+): Promise<EventSummary[]> {
+  // Nie über „jetzt“ hinaus: das Archiv zeigt nur Beginnzeiten in der Vergangenheit
+  const before = q.before > now ? now : q.before;
+  const rows = await fetchEventRows(
+    db,
+    and(
+      eq(s.events.clubId, actor.club.id),
+      lt(s.events.startsAt, before),
+      q.after ? gte(s.events.startsAt, q.after) : undefined,
+      q.teamId ? eq(s.events.teamId, q.teamId) : undefined,
+      q.kind === 'match'
+        ? inArray(s.events.type, ['match', 'tournament'])
+        : q.kind === 'training'
+          ? eq(s.events.type, 'training')
+          : q.kind === 'club'
+            ? isNull(s.events.teamId)
+            : undefined,
+      or(
+        isNull(s.events.teamId),
+        inArray(
+          s.events.id,
+          sql`(select ${s.eventParticipants.eventId} from ${s.eventParticipants} where ${inArray(
+            s.eventParticipants.personId,
+            actor.managedIds,
+          )})`,
+        ),
+      ),
+    ),
+    q.limit,
+    'desc',
+  );
+  return summarizeEvents(db, actor, rows, now);
 }
 
 export function canOverride(actor: Actor, row: EventRow): boolean {
@@ -74,7 +163,27 @@ export async function summarizeEvents(
   const eventIds = rows.map((r) => r.event.id);
   const teamIds = [...new Set(rows.map((r) => r.team?.id).filter((id): id is string => !!id))];
 
-  const [countRows, mine, rules] = await Promise.all([
+  // Erfasste Anwesenheit vergangener Termine (nur wo erfasst): Anzahl da / Teilnehmer
+  const recordedIds = rows
+    .filter((r) => r.event.attendanceRecordedAt && r.event.status === 'scheduled')
+    .map((r) => r.event.id);
+  const [presenceRows, countRows, mine, rules] = await Promise.all([
+    recordedIds.length
+      ? db
+          .select({
+            eventId: s.eventParticipants.eventId,
+            total: count(),
+            present: sql<number>`count(*) filter (where ${s.eventParticipants.attended} is true)`,
+          })
+          .from(s.eventParticipants)
+          .where(
+            and(
+              inArray(s.eventParticipants.eventId, recordedIds),
+              ne(s.eventParticipants.role, 'coach'),
+            ),
+          )
+          .groupBy(s.eventParticipants.eventId)
+      : Promise.resolve([] as { eventId: string; total: number; present: number }[]),
     db
       .select({
         eventId: s.eventParticipants.eventId,
@@ -159,8 +268,30 @@ export async function summarizeEvents(
       deadline: deadline?.toISOString() ?? null,
       counts,
       myResponses,
+      presence: presenceFor(
+        actor,
+        row,
+        presenceRows.find((p) => p.eventId === event.id),
+      ),
     };
   });
+}
+
+/**
+ * „14 von 20 da“: Das Trainerteam sieht die erfasste Anwesenheit immer; Mitglieder der Mannschaft (und
+ * Eltern) je nach Einstellung der Mannschaft (Standard: nur die Anzahl).
+ */
+function presenceFor(
+  actor: Actor,
+  row: EventRow,
+  p: { total: number; present: number } | undefined,
+): EventSummary['presence'] {
+  if (!p || !row.team) return null;
+  const staff = actorCan(actor, 'attendance.read', row.team) || canOverride(actor, row);
+  const visibility = toAttendanceVisibility(row.team.attendanceVisibility);
+  if (!staff && visibility === 'staff') return null;
+  if (!staff && !isTeamMember(actor, row.team.id)) return null;
+  return { present: Number(p.present), total: Number(p.total) };
 }
 
 export function toDeadlineRule(
@@ -220,6 +351,8 @@ export async function getEventDetail(
     (actorCan(actor, 'absences.read', row.team) ||
       actorCan(actor, 'attendance.override', row.team));
   const seesList = row.team !== null && (isTeamMember(actor, row.team.id) || mayReadAttendance);
+  const namedVisible =
+    row.team !== null && toAttendanceVisibility(row.team.attendanceVisibility) === 'named';
 
   let participants: Participant[] = [];
   if (seesList) {
@@ -249,7 +382,11 @@ export async function getEventDetail(
       // Gründe (z. B. Verletzung) sehen nur Verantwortliche und die Person selbst.
       reason: mayReadReasons || actor.managedIds.includes(p.personId) ? p.reason : null,
       guestFromTeam: p.guestFromTeam,
-      attended: row.event.attendanceRecordedAt ? p.attended === true : null,
+      // Wer da war, sehen Spieler nur, wenn die Mannschaft es namentlich freigibt
+      attended:
+        row.event.attendanceRecordedAt && (mayReadAttendance || namedVisible)
+          ? p.attended === true
+          : null,
     }));
   }
 
@@ -275,7 +412,11 @@ export async function getEventDetail(
       row.team !== null && row.event.status === 'scheduled'
         ? {
             recordedAt: row.event.attendanceRecordedAt?.toISOString() ?? null,
-            canRecord: canOverride(actor, row) && row.event.startsAt <= now,
+            canRecord:
+              canOverride(actor, row) &&
+              row.event.startsAt <= now &&
+              (now <= correctionEnd(row.event.startsAt) || isFullAdmin(actor)),
+            correctionUntil: correctionEnd(row.event.startsAt).toISOString(),
           }
         : null,
     attendance:
@@ -306,6 +447,11 @@ export async function getEventDetail(
           }
         : null,
   };
+}
+
+/** Ende der Korrekturfrist für die Anwesenheit (danach nur die Verwaltung). */
+function correctionEnd(startsAt: Date): Date {
+  return new Date(startsAt.getTime() + ATTENDANCE_CORRECTION_DAYS * 24 * 60 * 60 * 1000);
 }
 
 const CHANGE_RELEVANT_MS = 14 * 24 * 60 * 60 * 1000;
@@ -354,6 +500,13 @@ export async function recordAttendance(
   if (row.event.startsAt > now) {
     throw new HttpError(409, 'not_started', 'Die Anwesenheit lässt sich erst ab Beginn erfassen.');
   }
+  // Nach der Korrekturfrist ändert nur noch die Verwaltung – mit eigenem Eintrag im Änderungsprotokoll
+  const late = now > correctionEnd(row.event.startsAt);
+  if (late && !isFullAdmin(actor)) {
+    throw forbidden(
+      `Die Frist für Korrekturen (${ATTENDANCE_CORRECTION_DAYS} Tage) ist abgelaufen. Die Anwesenheit ändert jetzt nur noch der Admin.`,
+    );
+  }
   await db.transaction(async (tx) => {
     await tx
       .update(s.eventParticipants)
@@ -374,10 +527,10 @@ export async function recordAttendance(
     await tx.insert(s.auditLog).values({
       clubId: actor.club.id,
       actorUserId: actor.user.id,
-      action: 'attendance.recorded',
+      action: late ? 'attendance.corrected_late' : 'attendance.recorded',
       entityType: 'event',
       entityId: eventId,
-      data: { present: present.length },
+      data: { present: present.length, ...(late ? { late: true } : null) },
     });
   });
   return getEventDetail(db, actor, eventId, now);

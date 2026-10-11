@@ -45,6 +45,7 @@ const RULES: Record<string, Rule> = {
   // Termine
   'events/index': section('termine'),
   'events/[id]': section('termine'),
+  'events/archive': section('termine'),
   'event-edit/[id]': section('termine'),
   'match/[id]/lineup': section('termine'),
   'match/[id]/report': section('termine'),

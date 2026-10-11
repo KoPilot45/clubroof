@@ -75,6 +75,7 @@ function Navigator() {
               options={{ headerShown: true, title: 'Alle Termine' }}
             />
             <Stack.Screen name="events/[id]" options={{ headerShown: true, title: 'Termin' }} />
+            <Stack.Screen name="events/archive" options={{ headerShown: true, title: 'Archiv' }} />
             <Stack.Screen
               name="notifications"
               options={{ headerShown: true, title: 'Benachrichtigungen' }}

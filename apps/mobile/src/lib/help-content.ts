@@ -34,6 +34,25 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Unten gibt es fünf Bereiche:\n• Home: dein Überblick – nächste Spiele (zum Wischen), Offenes, deine Woche, Neuigkeiten und dein Schnellzugriff.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Termine: deine nächsten Termine und der Kalender.\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften des Vereins.\n• Mehr: dein Profil, Einstellungen, Abwesenheiten und diese Hilfe.',
       },
       {
+        id: 'archive',
+        question: 'Wie sehe ich vergangene Termine?',
+        answer:
+          'Im Reiter „Termine“ schaltest du oben auf „Vergangen“ oder öffnest das „Archiv“. Dort stehen alle vergangenen Termine, die neuesten zuerst, nach Wochen und Monaten gruppiert; beim Scrollen werden ältere nachgeladen. Filtere nach Zeitraum (letzte 7 Tage, Monat, Saison oder eigener Zeitraum), Mannschaft und Art. Spiele zeigen das Ergebnis, Trainings die Anwesenheit („14 von 20 da“). Ob du auch siehst, wer da war, stellt dein Trainerteam pro Mannschaft ein.',
+        link: { label: 'Archiv', href: '/events/archive' },
+      },
+      {
+        id: 'calendar-grid',
+        question: 'Was bedeuten die Felder im Kalender?',
+        answer:
+          'Im Kalender zeigt jedes Feld die Termine des Tages als Kürzel der Mannschaft: kräftig grün sind Spiele, hellblau Training, hellorange mit gestricheltem Rand Vereinstermine; abgesagte Termine sind rot umrandet und durchgestrichen. „+2“ heißt: zwei weitere Termine. Tippe auf einen Tag, um seine Termine unter dem Kalender zu sehen; „Heute“ springt zum heutigen Tag.',
+      },
+      {
+        id: 'team-switch',
+        question: 'Wie wechsle ich die Mannschaft?',
+        answer:
+          'Im Reiter „Team“ steht oben eine Leiste mit deinen Mannschaften (seitlich wischbar). Die Zahl zeigt, was offen ist: fehlende Rückmeldungen zum nächsten Termin und offene Aufgaben. Die aktive Mannschaft ist grün; die zuletzt gewählte merkt sich die App.',
+      },
+      {
         id: 'path',
         question: 'Wie komme ich zurück oder in einen anderen Bereich?',
         answer:

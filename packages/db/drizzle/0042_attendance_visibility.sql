@@ -1,0 +1,1 @@
+ALTER TABLE "teams" ADD COLUMN "attendance_visibility" text DEFAULT 'count' NOT NULL;
