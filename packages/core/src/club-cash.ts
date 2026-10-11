@@ -185,3 +185,131 @@ export type ClubCashEntryQuery = {
   to?: string;
   includeCancelled?: boolean;
 };
+
+// ── Mitgliedsbeiträge (Paket K2) ────────────────────────────────────────────
+
+export const CLUB_FEE_INTERVALS = ['monthly', 'quarterly', 'yearly', 'once'] as const;
+export type ClubFeeInterval = (typeof CLUB_FEE_INTERVALS)[number];
+export const CLUB_FEE_INTERVAL_LABEL: Record<ClubFeeInterval, string> = {
+  monthly: 'monatlich',
+  quarterly: 'vierteljährlich',
+  yearly: 'jährlich',
+  once: 'einmalig',
+};
+
+/** Höchste Erinnerungsstufe (1 Zahlungserinnerung, 2 erste Mahnung, 3 letzte Mahnung). */
+export const CLUB_FEE_MAX_REMINDER = 3;
+
+export type ClubFeeType = {
+  id: string;
+  name: string;
+  amountCents: number;
+  interval: ClubFeeInterval;
+  categoryId: string | null;
+  categoryName: string | null;
+  archived: boolean;
+  /** Mitglieder mit laufender Zuordnung */
+  members: number;
+};
+
+export type ClubFeeAssignment = {
+  id: string;
+  personId: string;
+  personName: string;
+  memberNumber: string | null;
+  feeTypeId: string;
+  feeTypeName: string;
+  /** wirksamer Betrag (Ausnahme oder Betrag der Beitragsart) */
+  amountCents: number;
+  overridden: boolean;
+  validFrom: string;
+  validTo: string | null;
+};
+
+export type ClubFeeDueStatus = 'open' | 'overdue' | 'paid' | 'cancelled';
+
+export type ClubFeeDue = {
+  id: string;
+  personId: string;
+  personName: string;
+  memberNumber: string | null;
+  feeTypeName: string;
+  periodLabel: string;
+  dueOn: string;
+  amountCents: number;
+  paidCents: number;
+  openCents: number;
+  status: ClubFeeDueStatus;
+  reminderLevel: number;
+  remindedAt: string | null;
+  cancelReason: string | null;
+};
+
+export type ClubFees = {
+  level: 'full' | 'reports';
+  canManage: boolean;
+  today: string;
+  types: ClubFeeType[];
+  summary: {
+    /** offen insgesamt (fällig, noch nicht bezahlt) */
+    openCents: number;
+    openCount: number;
+    /** davon überfällig (Fälligkeit vor heute) */
+    overdueCents: number;
+    overdueCount: number;
+    /** im laufenden Jahr eingegangen */
+    paidThisYearCents: number;
+    /** Mitglieder mit mindestens einer überfälligen Forderung */
+    overduePersons: number;
+  };
+  /** nur bei level full */
+  dues: ClubFeeDue[];
+};
+
+export type ClubFeeTypeInput = {
+  name: string;
+  amountCents: number;
+  interval: ClubFeeInterval;
+  categoryId?: string | null;
+};
+
+export type ClubFeeAssignmentInput = {
+  personId: string;
+  feeTypeId: string;
+  amountOverrideCents?: number | null;
+  validFrom: string;
+};
+
+export type ClubFeeGenerateResult = { created: number; upTo: string };
+
+export type ClubFeePaymentInput = { accountId: string; amountCents: number; paidOn: string };
+
+/** Zeile aus dem Kontoauszug mit gefundenem Beitrag (Vorschau des CSV-Imports). */
+export type ClubFeeImportRow = {
+  row: number;
+  paidOn: string | null;
+  amountCents: number | null;
+  name: string;
+  purpose: string;
+  /** Zuordnung zu einer offenen Forderung, sonst leer */
+  match: {
+    dueId: string;
+    personName: string;
+    periodLabel: string;
+    openCents: number;
+    reason: 'member_number' | 'name';
+  } | null;
+  /** warum nicht zugeordnet bzw. nicht gebucht */
+  note: string | null;
+};
+
+export type ClubFeeImportPreview = {
+  rows: ClubFeeImportRow[];
+  matched: number;
+  skipped: number;
+};
+
+export type ClubFeeImportCommitInput = {
+  accountId: string;
+  items: { dueId: string; amountCents: number; paidOn: string }[];
+};

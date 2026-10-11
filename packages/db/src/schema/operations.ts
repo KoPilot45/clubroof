@@ -10,6 +10,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { clubs, facilities } from './club';
@@ -518,4 +519,104 @@ export const clubCashEntries = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index().on(t.clubId, t.bookedOn), index().on(t.accountId)],
+);
+
+// ── Mitgliedsbeiträge (Paket K2) ────────────────────────────────────────────
+
+/** Beitragsart (z. B. Erwachsene, Jugend, Familie, passiv) mit Betrag und Rhythmus. */
+export const clubFeeTypes = pgTable(
+  'club_fee_types',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    amountCents: integer().notNull(),
+    /** monthly | quarterly | yearly | once */
+    interval: text().notNull(),
+    /** Einnahmekategorie der Vereinskasse, in die Zahlungen gebucht werden */
+    categoryId: uuid().references(() => clubCashCategories.id),
+    archivedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId)],
+);
+
+/** Zuordnung einer Beitragsart zu einem Mitglied (optional mit abweichendem Betrag). */
+export const clubFeeAssignments = pgTable(
+  'club_fee_assignments',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    feeTypeId: uuid()
+      .notNull()
+      .references(() => clubFeeTypes.id),
+    amountOverrideCents: integer(),
+    validFrom: date().notNull(),
+    validTo: date(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId), index().on(t.personId)],
+);
+
+/** Sollstellung: eine fällige Beitragsforderung je Mitglied und Zeitraum. */
+export const clubFeeDues = pgTable(
+  'club_fee_dues',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    feeTypeId: uuid()
+      .notNull()
+      .references(() => clubFeeTypes.id),
+    assignmentId: uuid()
+      .notNull()
+      .references(() => clubFeeAssignments.id),
+    /** z. B. „Oktober 2026“, „3. Quartal 2026“, „2026“ */
+    periodLabel: text().notNull(),
+    dueOn: date().notNull(),
+    amountCents: integer().notNull(),
+    /** Stufe der letzten Erinnerung (0 = keine) */
+    reminderLevel: integer().notNull().default(0),
+    remindedAt: timestamp({ withTimezone: true }),
+    cancelledAt: timestamp({ withTimezone: true }),
+    cancelReason: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index().on(t.clubId, t.dueOn),
+    index().on(t.personId),
+    unique().on(t.assignmentId, t.dueOn),
+  ],
+);
+
+/** Zahlungseingang zu einer Sollstellung; verweist auf die Buchung im Kassenbuch. */
+export const clubFeePayments = pgTable(
+  'club_fee_payments',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    dueId: uuid()
+      .notNull()
+      .references(() => clubFeeDues.id, { onDelete: 'cascade' }),
+    entryId: uuid()
+      .notNull()
+      .references(() => clubCashEntries.id),
+    amountCents: integer().notNull(),
+    paidOn: date().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.dueId)],
 );

@@ -1808,76 +1808,164 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       ...extra,
     });
     const transferId = randomUUID();
-    await tx.insert(s.clubCashEntries).values([
-      clubEntry('income', 'Girokonto', 4200, 'Mitgliedsbeiträge', 'Beiträge Quartal', 60, {
-        receiptNo: 'B-2026-001',
-      }),
-      clubEntry('income', 'Girokonto', 1500, 'Sponsoring', 'Trikotsponsoring Saison', 45, {
-        counterparty: 'Haus & Garten Müller GmbH',
-        receiptNo: 'B-2026-002',
-      }),
-      clubEntry(
-        'expense',
-        'Girokonto',
-        780,
-        'Platzmiete und Hallengebühren',
-        'Hallenmiete Winter',
-        30,
-        {
-          counterparty: 'Stadt Musterstadt',
-          costCenterId: center('Jugend'),
-          receiptNo: 'B-2026-003',
-        },
-      ),
-      clubEntry(
-        'expense',
-        'Girokonto',
-        312.5,
-        'Sportgeräte und Material',
-        'Trainingsmaterial Senioren',
-        21,
-        {
-          counterparty: 'Sportshop Musterstadt',
-          costCenterId: center('Senioren'),
-          receiptNo: 'B-2026-004',
-        },
-      ),
-      clubEntry(
-        'income',
-        'Barkasse',
-        640,
-        'Vereinsfeste und Verkauf',
-        'Einnahmen Sommerfest Grillstand',
-        14,
-        {
+    const seededEntries = await tx
+      .insert(s.clubCashEntries)
+      .values([
+        clubEntry('income', 'Girokonto', 4200, 'Mitgliedsbeiträge', 'Beiträge Quartal', 60, {
+          receiptNo: 'B-2026-001',
+        }),
+        clubEntry('income', 'Girokonto', 1500, 'Sponsoring', 'Trikotsponsoring Saison', 45, {
+          counterparty: 'Haus & Garten Müller GmbH',
+          receiptNo: 'B-2026-002',
+        }),
+        clubEntry(
+          'expense',
+          'Girokonto',
+          780,
+          'Platzmiete und Hallengebühren',
+          'Hallenmiete Winter',
+          30,
+          {
+            counterparty: 'Stadt Musterstadt',
+            costCenterId: center('Jugend'),
+            receiptNo: 'B-2026-003',
+          },
+        ),
+        clubEntry(
+          'expense',
+          'Girokonto',
+          312.5,
+          'Sportgeräte und Material',
+          'Trainingsmaterial Senioren',
+          21,
+          {
+            counterparty: 'Sportshop Musterstadt',
+            costCenterId: center('Senioren'),
+            receiptNo: 'B-2026-004',
+          },
+        ),
+        clubEntry(
+          'income',
+          'Barkasse',
+          640,
+          'Vereinsfeste und Verkauf',
+          'Einnahmen Sommerfest Grillstand',
+          14,
+          {
+            costCenterId: center('Sommerfest'),
+          },
+        ),
+        clubEntry('expense', 'Barkasse', 215.3, 'Einkauf für Feste', 'Einkauf Sommerfest', 16, {
+          counterparty: 'Getränkemarkt Nord',
           costCenterId: center('Sommerfest'),
+        }),
+        {
+          clubId,
+          accountId: acc('Barkasse'),
+          kind: 'transfer_out',
+          amountCents: euro(400),
+          bookedOn: toIsoDate(addDays(today, -7)),
+          purpose: 'Bareinzahlung aufs Girokonto',
+          transferId,
+          createdByPersonId: persona.treasurer.id,
         },
-      ),
-      clubEntry('expense', 'Barkasse', 215.3, 'Einkauf für Feste', 'Einkauf Sommerfest', 16, {
-        counterparty: 'Getränkemarkt Nord',
-        costCenterId: center('Sommerfest'),
-      }),
-      {
-        clubId,
-        accountId: acc('Barkasse'),
-        kind: 'transfer_out',
-        amountCents: euro(400),
-        bookedOn: toIsoDate(addDays(today, -7)),
-        purpose: 'Bareinzahlung aufs Girokonto',
-        transferId,
-        createdByPersonId: persona.treasurer.id,
-      },
-      {
-        clubId,
-        accountId: acc('Girokonto'),
-        kind: 'transfer_in',
-        amountCents: euro(400),
-        bookedOn: toIsoDate(addDays(today, -7)),
-        purpose: 'Bareinzahlung aufs Girokonto',
-        transferId,
-        createdByPersonId: persona.treasurer.id,
-      },
-    ]);
+        {
+          clubId,
+          accountId: acc('Girokonto'),
+          kind: 'transfer_in',
+          amountCents: euro(400),
+          bookedOn: toIsoDate(addDays(today, -7)),
+          purpose: 'Bareinzahlung aufs Girokonto',
+          transferId,
+          createdByPersonId: persona.treasurer.id,
+        },
+      ])
+      .returning({ id: s.clubCashEntries.id, purpose: s.clubCashEntries.purpose });
+
+    // Mitgliedsbeiträge (K2): Beitragsarten, Zuordnung, Forderungen je Quartal; bezahlte Quartale
+    // verweisen auf die Sammelbuchung „Beiträge Quartal“, einige Juli-Beiträge sind überfällig
+    const feeEntryId = seededEntries.find((e) => e.purpose === 'Beiträge Quartal')!.id;
+    const feeIncome = clubCategories.find((c) => c.name === 'Mitgliedsbeiträge')!.id;
+    const feeTypes = await tx
+      .insert(s.clubFeeTypes)
+      .values([
+        {
+          clubId,
+          name: 'Erwachsene',
+          amountCents: euro(45),
+          interval: 'quarterly',
+          categoryId: feeIncome,
+        },
+        {
+          clubId,
+          name: 'Jugend',
+          amountCents: euro(30),
+          interval: 'quarterly',
+          categoryId: feeIncome,
+        },
+      ])
+      .returning({ id: s.clubFeeTypes.id, name: s.clubFeeTypes.name });
+    const feeAdult = feeTypes.find((t) => t.name === 'Erwachsene')!.id;
+    const feeYouth = feeTypes.find((t) => t.name === 'Jugend')!.id;
+    const quarterStarts = ['01-01', '04-01', '07-01', '10-01'].map(
+      (d) => `${today.getUTCFullYear()}-${d}`,
+    );
+    const labels = ['1. Quartal', '2. Quartal', '3. Quartal', '4. Quartal'].map(
+      (l) => `${l} ${today.getUTCFullYear()}`,
+    );
+    const feeMembers = [
+      ...persons
+        .filter((p) => Number(p.birthDate!.slice(0, 4)) <= 2008 && p.id !== persona.admin.id)
+        .slice(0, 16)
+        .map((p) => ({ p, type: feeAdult, cents: euro(45) })),
+      ...persons
+        .filter((p) => Number(p.birthDate!.slice(0, 4)) > 2008)
+        .slice(0, 8)
+        .map((p) => ({ p, type: feeYouth, cents: euro(30) })),
+    ];
+    for (const [index, m] of feeMembers.entries()) {
+      const [assignment] = await tx
+        .insert(s.clubFeeAssignments)
+        .values({ clubId, personId: m.p.id, feeTypeId: m.type, validFrom: quarterStarts[0]! })
+        .returning({ id: s.clubFeeAssignments.id });
+      const dues = await tx
+        .insert(s.clubFeeDues)
+        .values(
+          quarterStarts
+            .filter((d) => d <= toIsoDate(today))
+            .map((dueOn, q) => ({
+              clubId,
+              personId: m.p.id,
+              feeTypeId: m.type,
+              assignmentId: assignment!.id,
+              periodLabel: labels[q]!,
+              dueOn,
+              amountCents: m.cents,
+              // jeder dritte Rückstand wurde schon erinnert
+              reminderLevel: index % 6 === 0 && q === 2 ? 1 : 0,
+              remindedAt: index % 6 === 0 && q === 2 ? addDays(today, -10) : null,
+            })),
+        )
+        .returning({
+          id: s.clubFeeDues.id,
+          dueOn: s.clubFeeDues.dueOn,
+          amountCents: s.clubFeeDues.amountCents,
+        });
+      // Quartale 1 und 2 bezahlt; Quartal 3 bei jedem dritten offen (überfällig); Quartal 4 offen
+      const paid = dues.filter(
+        (d) => d.dueOn < quarterStarts[2]! || (d.dueOn === quarterStarts[2] && index % 3 !== 0),
+      );
+      if (paid.length)
+        await tx.insert(s.clubFeePayments).values(
+          paid.map((d) => ({
+            clubId,
+            dueId: d.id,
+            entryId: feeEntryId,
+            amountCents: d.amountCents,
+            paidOn: d.dueOn,
+          })),
+        );
+    }
 
     // Kassenverwaltung: Monatsbeitrag der 1. Mannschaft (ab nächstem Monat), Kassenprüfung zum
     // Saisonstart und eine offene Zahlungsmeldung in der B-Jugend

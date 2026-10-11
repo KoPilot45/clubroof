@@ -10,6 +10,9 @@ import type {
   ClubCash,
   ClubCashAccount,
   ClubCashEntry,
+  ClubFeeAssignment,
+  ClubFeeImportPreview,
+  ClubFees,
   TeamCandidate,
   TeamManage,
   SchedulePreview,
@@ -5667,6 +5670,262 @@ describe.skipIf(!url)('API', () => {
       const audit = await get<AuditEntry[]>('/admin/audit', admin.token);
       expect(audit.some((a) => a.label.startsWith('Vereinskasse: Buchung storniert'))).toBe(true);
       expect(audit.some((a) => a.label.startsWith('Vereinskasse: Konto angelegt'))).toBe(true);
+    });
+  });
+  describe('Vereinskasse: Beiträge (K2)', () => {
+    async function treasurer() {
+      const admin = await login('admin');
+      const parent = await login('eltern');
+      if (!parent.me.roles.some((r) => r.name === 'Kassenwart (Verein)')) {
+        await send('POST', `/admin/members/${parent.me.person.id}/roles`, admin.token, {
+          roleKey: 'club_treasurer',
+          scopeType: 'club',
+        });
+      }
+      return login('eltern');
+    }
+    const fmt = (cents: number) => (cents / 100).toFixed(2).replace('.', ',');
+
+    it('ist für Kassenführung und Prüfer sichtbar, Prüfer ändern nichts', async () => {
+      for (const who of ['spieler', 'vorstand']) {
+        const t = (await login(who)).token;
+        expect((await send('GET', '/club-cash/fees', t)).status, who).toBe(403);
+      }
+      const auditor = await login('mitglied');
+      const fees = await get<ClubFees>('/club-cash/fees', auditor.token);
+      expect(fees.canManage).toBe(false);
+      expect(fees.types.map((t) => t.name).sort()).toEqual(['Erwachsene', 'Jugend']);
+      expect(fees.summary.openCount).toBeGreaterThan(0);
+      expect(fees.summary.overdueCents).toBeGreaterThan(0);
+      expect(fees.dues.length).toBeGreaterThan(0);
+      const denied = await send('POST', '/club-cash/fees/generate', auditor.token, {});
+      expect(denied.status).toBe(403);
+    });
+
+    it('Vorstand sieht bei „nur Auswertungen“ Summen, aber keine Forderungen je Person', async () => {
+      const admin = await login('admin');
+      const board = await login('vorstand');
+      await send('PUT', '/club-cash/visibility', admin.token, { visibility: 'board_reports' });
+      const reports = await get<ClubFees>('/club-cash/fees', board.token);
+      expect(reports.level).toBe('reports');
+      expect(reports.dues).toEqual([]);
+      expect(reports.summary.openCents).toBeGreaterThan(0);
+      await send('PUT', '/club-cash/visibility', admin.token, { visibility: 'treasury' });
+    });
+
+    it('Beitragsart anlegen, Mitglied zuordnen, Sollstellung erzeugen (ohne Doppelte)', async () => {
+      const { token } = await treasurer();
+      const player = await login('spieler');
+      const made = await send<ClubFees>('POST', '/club-cash/fees/types', token, {
+        name: 'Familie',
+        amountCents: 9000,
+        interval: 'quarterly',
+      });
+      expect(made.status).toBe(201);
+      const family = made.body.types.find((t) => t.name === 'Familie')!;
+
+      const bad = await send('POST', '/club-cash/fees/assignments', token, {
+        personId: player.me.person.id,
+        feeTypeId: family.id,
+        validFrom: '2026-07-01',
+        amountOverrideCents: 0,
+      });
+      expect(bad.status).toBe(400);
+      const assigned = await send<ClubFeeAssignment[]>(
+        'POST',
+        '/club-cash/fees/assignments',
+        token,
+        {
+          personId: player.me.person.id,
+          feeTypeId: family.id,
+          validFrom: '2026-07-01',
+        },
+      );
+      expect(assigned.status).toBe(201);
+      expect(
+        assigned.body.find(
+          (a) => a.personId === player.me.person.id && a.feeTypeName === 'Familie',
+        ),
+      ).toMatchObject({ amountCents: 9000, overridden: false });
+      const twice = await send('POST', '/club-cash/fees/assignments', token, {
+        personId: player.me.person.id,
+        feeTypeId: family.id,
+        validFrom: '2026-07-01',
+      });
+      expect(twice.status).toBe(409);
+
+      const first = await send<{ created: number }>('POST', '/club-cash/fees/generate', token, {});
+      expect(first.body.created).toBe(2); // Juli und Oktober
+      const second = await send<{ created: number }>('POST', '/club-cash/fees/generate', token, {});
+      expect(second.body.created).toBe(0);
+      const mine = await get<ClubFees>(
+        '/club-cash/fees?status=all&q=' + player.me.person.lastName,
+        token,
+      );
+      const family2 = mine.dues.filter((d) => d.feeTypeName === 'Familie');
+      expect(family2.map((d) => d.periodLabel)).toEqual(['3. Quartal 2026', '4. Quartal 2026']);
+      expect(family2.every((d) => d.status === 'overdue')).toBe(true);
+    });
+
+    it('Zahlung bucht ins Kassenbuch, Überzahlung wird abgelehnt, Storno nur ohne Zahlung', async () => {
+      const { token } = await treasurer();
+      const player = await login('spieler');
+      const cash = await get<ClubCash>('/club-cash', token);
+      const giro = cash.accounts[0]!;
+      const list = await get<ClubFees>('/club-cash/fees?q=' + player.me.person.lastName, token);
+      const q3 = list.dues.find(
+        (d) => d.feeTypeName === 'Familie' && d.periodLabel.startsWith('3.'),
+      )!;
+      const q4 = list.dues.find(
+        (d) => d.feeTypeName === 'Familie' && d.periodLabel.startsWith('4.'),
+      )!;
+      const pay = (dueId: string, amountCents: number) =>
+        send<ClubFees>('POST', `/club-cash/fees/dues/${dueId}/payments`, token, {
+          accountId: giro.id,
+          amountCents,
+          paidOn: '2026-10-05',
+        });
+
+      expect((await pay(q3.id, 9001)).status).toBe(400);
+      const part = await pay(q3.id, 4000);
+      expect(part.status).toBe(201);
+      const afterPart = part.body.dues.find((d) => d.id === q3.id)!;
+      expect(afterPart).toMatchObject({ paidCents: 4000, openCents: 5000, status: 'overdue' });
+      expect((await pay(q3.id, 5000)).body.dues.find((d) => d.id === q3.id)).toBeUndefined();
+      const paid = await get<ClubFees>(
+        '/club-cash/fees?status=paid&q=' + player.me.person.lastName,
+        token,
+      );
+      expect(paid.dues.find((d) => d.id === q3.id)).toMatchObject({ status: 'paid', openCents: 0 });
+
+      // Buchung im Kassenbuch und Kontostand
+      const entries = await get<ClubCashEntry[]>(
+        `/club-cash/entries?q=${encodeURIComponent('Beitrag Familie')}`,
+        token,
+      );
+      expect(entries.map((e) => e.amountCents).sort()).toEqual([4000, 5000]);
+      const after = await get<ClubCash>('/club-cash', token);
+      expect(after.accounts[0]!.balanceCents).toBe(giro.balanceCents + 9000);
+
+      // Storno: bezahlt nicht möglich, unbezahlt mit Begründung
+      expect(
+        (await send('POST', `/club-cash/fees/dues/${q3.id}/cancel`, token, { reason: 'Irrtum' }))
+          .status,
+      ).toBe(409);
+      expect(
+        (await send('POST', `/club-cash/fees/dues/${q4.id}/cancel`, token, { reason: ' ' })).status,
+      ).toBe(400);
+      const cancelled = await send<ClubFees>(
+        'POST',
+        `/club-cash/fees/dues/${q4.id}/cancel`,
+        token,
+        {
+          reason: 'Mitglied wechselt die Beitragsart',
+        },
+      );
+      expect(cancelled.status).toBe(200);
+      expect(cancelled.body.dues.find((d) => d.id === q4.id)).toBeUndefined();
+    });
+
+    it('Erinnerungen in Stufen, höchstens eine pro Tag, Benachrichtigung kommt an', async () => {
+      const { token } = await treasurer();
+      const player = await login('spieler');
+      // neue überfällige Forderung für den Spieler: Beitragsart „Jugend“ rückwirkend
+      const fees = await get<ClubFees>('/club-cash/fees', token);
+      const youth = fees.types.find((t) => t.name === 'Jugend')!;
+      await send('POST', '/club-cash/fees/assignments', token, {
+        personId: player.me.person.id,
+        feeTypeId: youth.id,
+        validFrom: '2026-07-01',
+      });
+      await send('POST', '/club-cash/fees/generate', token, {});
+      const list = await get<ClubFees>('/club-cash/fees?q=' + player.me.person.lastName, token);
+      const due = list.dues.find((d) => d.feeTypeName === 'Jugend' && d.status === 'overdue')!;
+      expect(due.reminderLevel).toBe(0);
+
+      const first = await send<{ level: number; notified: boolean }>(
+        'POST',
+        `/club-cash/fees/dues/${due.id}/remind`,
+        token,
+      );
+      expect(first.body).toEqual({ level: 1, notified: true });
+      const sameDay = await send('POST', `/club-cash/fees/dues/${due.id}/remind`, token);
+      expect(sameDay.status).toBe(409);
+      const inbox = await get<NotificationItem[]>('/notifications', player.token);
+      expect(inbox.some((n) => n.title === 'Zahlungserinnerung Mitgliedsbeitrag')).toBe(true);
+
+      const bulk = await send<{ reminded: number }>(
+        'POST',
+        '/club-cash/fees/remind-overdue',
+        token,
+      );
+      expect(bulk.status).toBe(200);
+      expect(bulk.body.reminded).toBeGreaterThan(0);
+    });
+
+    it('CSV-Import ordnet Eingänge per Mitgliedsnummer oder Name zu und bucht sie', async () => {
+      const { token } = await treasurer();
+      const cash = await get<ClubCash>('/club-cash', token);
+      const giro = cash.accounts[0]!;
+      const open = (await get<ClubFees>('/club-cash/fees?status=overdue', token)).dues.filter(
+        (d) => d.memberNumber && d.feeTypeName !== 'Familie',
+      );
+      const [a, b] = [open[0]!, open.find((d) => d.personId !== open[0]!.personId)!];
+      const csv = [
+        'Buchungstag;Name;Verwendungszweck;Betrag',
+        `05.10.2026;Unbekannt;Mitgliedsnummer ${a.memberNumber} Beitrag;${fmt(a.openCents)}`,
+        `05.10.2026;${b.personName};Quartalsbeitrag;${fmt(b.openCents)}`,
+        '05.10.2026;Fremder Absender;Spende;25,00',
+        '05.10.2026;Sportshop;Rechnung;-120,00',
+        `05.10.2026;${b.personName};falscher Betrag;1,00`,
+      ].join('\n');
+      const preview = await send<ClubFeeImportPreview>(
+        'POST',
+        '/club-cash/fees/import/preview',
+        token,
+        { dataBase64: Buffer.from(csv).toString('base64') },
+      );
+      expect(preview.status).toBe(200);
+      expect(preview.body.matched).toBe(2);
+      expect(preview.body.rows[0]!.match).toMatchObject({ dueId: a.id, reason: 'member_number' });
+      expect(preview.body.rows[1]!.match).toMatchObject({ dueId: b.id, reason: 'name' });
+      expect(preview.body.rows[3]!.note).toMatch(/Ausgang/);
+      expect(preview.body.rows[4]!.match).toBeNull();
+
+      const bad = await send('POST', '/club-cash/fees/import/preview', token, {
+        dataBase64: Buffer.from('a;b\n1;2').toString('base64'),
+      });
+      expect(bad.status).toBe(400);
+
+      const committed = await send<{ booked: number }>(
+        'POST',
+        '/club-cash/fees/import/commit',
+        token,
+        {
+          accountId: giro.id,
+          items: preview.body.rows
+            .filter((r) => r.match)
+            .map((r) => ({
+              dueId: r.match!.dueId,
+              amountCents: r.amountCents!,
+              paidOn: r.paidOn!,
+            })),
+        },
+      );
+      expect(committed.body.booked).toBe(2);
+      const now = await get<ClubFees>(
+        '/club-cash/fees?status=paid&q=' + a.personName.split(' ')[1],
+        token,
+      );
+      expect(now.dues.find((d) => d.id === a.id)?.status).toBe('paid');
+    });
+
+    it('steht im Änderungsprotokoll', async () => {
+      const admin = await login('admin');
+      const audit = await get<AuditEntry[]>('/admin/audit', admin.token);
+      expect(audit.some((a) => a.label.startsWith('Beiträge: Sollstellung bis'))).toBe(true);
+      expect(audit.some((a) => a.label.startsWith('Beiträge: Kontoauszug importiert'))).toBe(true);
+      expect(audit.some((a) => a.label.startsWith('Beiträge: Zahlung'))).toBe(true);
     });
   });
 });
