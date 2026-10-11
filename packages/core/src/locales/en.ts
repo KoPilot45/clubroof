@@ -210,6 +210,7 @@ export const en: Record<string, string> = {
   '{0}: einen Tag früher': '{0}: one day earlier',
   '{0}: einen Tag später': '{0}: one day later',
   '{0}: Einnahmen {1}, Ausgaben {2}': '{0}: income {1}, expenses {2}',
+  '{0}: Kalender öffnen': '{0}: open calendar',
   '{0}: Kassenstand {1} €{2}': '{0}: balance {1} €{2}',
   '{0}: Mannschaftsprofil geändert': '{0}: team profile changed',
   '{0}. Quartal {1}': 'Q{0} {1}',
@@ -2174,6 +2175,8 @@ export const en: Record<string, string> = {
   'Mit App-Zugang': 'With app access',
   'Mit dem Start wird {0} zur laufenden Saison. Mannschaftskassen, Mannschaftsdokumente und künftige Termine gehen auf die neuen Mannschaften über. Zuordnungen und Aufgaben der alten Saison enden. Das lässt sich nicht rückgängig machen.':
     'Starting makes {0} the current season. Team funds, team documents and future events move to the new teams. Assignments and tasks of the old season end. This cannot be undone.',
+  'Mit den Pfeilen verschiebst du das Datum um einen Tag. Tippst du auf das Datum selbst, öffnet sich ein Kalender: Wische oder tippe auf die Pfeile, um den Monat zu wechseln, tippe auf einen Tag zum Auswählen oder wähle „Heute“. Nicht erlaubte Tage sind ausgegraut.':
+    'Use the arrows to move the date by one day. If you tap the date itself, a calendar opens: swipe or tap the arrows to change the month, tap a day to select it or choose “Today”. Days that are not allowed are greyed out.',
   'Mit der Zwei-Faktor-Anmeldung braucht jede neue Anmeldung zusätzlich einen Code. Für das Administrationskonto empfehlen wir sie.':
     'With two-factor sign-in, every new sign-in additionally requires a code. We recommend it for the administration account.',
   'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Bitte melde dich an oder nutze „Passwort vergessen“.':
@@ -3359,6 +3362,7 @@ export const en: Record<string, string> = {
   'Wie verwalte ich mein Kind?': 'How do I manage my child?',
   'Wie viele Plätze und Kabinen gibt es je Anlage? Sie lassen sich später umbenennen.':
     'How many pitches and changing rooms does each venue have? They can be renamed later.',
+  'Wie wähle ich ein Datum?': 'How do I pick a date?',
   'Wieder aufnehmen': 'Reinstate',
   'Wieder einblenden': 'Show again',
   'Wieder öffnen': 'Reopen',
