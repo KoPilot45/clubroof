@@ -77,7 +77,6 @@ mehrere Rollen gleichzeitig haben.
 | Kassenwart              | Mannschaftskasse, Buchungen, Strafen/Getränke, Abrechnung                        |
 | Platz-/Materialwart     | Belegung, Sperrungen, Material, Schlüssel, Schäden, Aufgaben                     |
 | Mitgliederverwaltung    | Stammdaten, Ein-/Austritte, Profilprüfung, Mannschaftszuordnung                  |
-| Schiedsrichterobmann    | Schiedsrichter, Verfügbarkeit, Zuweisungen, Lehrgänge                            |
 
 Dazu die Nutzerrollen **Spieler**, **Elternteil** (Eltern-Kind-Verknüpfung), **Mitglied/Helfer**.
 **Datensparsamkeit:** fremde Trainer sehen bei der Gastspielerplanung nur _aggregierte_ Verfügbarkeit, nicht den Grund.

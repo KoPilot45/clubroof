@@ -7,7 +7,7 @@
 import { randomBytes } from 'node:crypto';
 import type { CalendarFeed } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { eq } from 'drizzle-orm';
+import { and, eq, gte, lte } from 'drizzle-orm';
 import { loadActor, moduleEnabled, type Actor } from '../actor';
 import { hashToken } from '../auth/session';
 import { forbidden } from '../errors';
@@ -191,6 +191,33 @@ export async function calendarIcs(
       `STATUS:${event.status === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'}`,
       'END:VEVENT',
     );
+  }
+  // Eigene Schiedsrichter-Einsätze (Verbandsspiele) stehen ebenfalls im Kalender
+  if (moduleEnabled(actor, 'referees')) {
+    const duties = await db
+      .select()
+      .from(s.refereeDuties)
+      .where(
+        and(
+          eq(s.refereeDuties.personId, actor.person.id),
+          gte(s.refereeDuties.endsAt, new Date(now.getTime() - 30 * DAY)),
+          lte(s.refereeDuties.startsAt, new Date(now.getTime() + 180 * DAY)),
+        ),
+      );
+    for (const d of duties) {
+      lines.push(
+        'BEGIN:VEVENT',
+        `UID:referee-duty-${d.id}@clubroof`,
+        `DTSTAMP:${stamp(d.createdAt)}`,
+        `DTSTART:${stamp(d.startsAt)}`,
+        `DTEND:${stamp(d.endsAt)}`,
+        `SUMMARY:${esc(`Schiedsrichter: ${d.title}`)}`,
+        ...(d.location ? [`LOCATION:${esc(d.location)}`] : []),
+        `DESCRIPTION:${esc('Schiedsrichtereinsatz (Verband)')}`,
+        'STATUS:CONFIRMED',
+        'END:VEVENT',
+      );
+    }
   }
   lines.push('END:VCALENDAR');
   return lines.map(fold).join('\r\n') + '\r\n';

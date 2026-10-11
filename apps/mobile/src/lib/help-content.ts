@@ -47,6 +47,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Spielplan', href: '/club-schedule' },
       },
       {
+        id: 'referee',
+        question: 'Ich bin Schiedsrichter – wo trage ich meine Einsätze ein?',
+        answer:
+          'Unter „Verein → Schiedsrichter“. Der Verband setzt dich bei fremden Spielen ein; trage den Einsatz dort mit Spiel, Ort, Datum und Beginn ein. Er erscheint unter „Termine“ und in deinem Kalenderabo. Überschneidet er sich mit einem deiner Termine, bekommst du einen Hinweis; auf Wunsch wird für den Tag eine Abwesenheit eingetragen. Dort pflegst du auch deine Stufe und das Ablaufdatum deiner Lizenz.',
+        link: { label: 'Schiedsrichter', href: '/referees' },
+      },
+      {
         id: 'login',
         question: 'Ich habe mein Passwort vergessen.',
         answer:

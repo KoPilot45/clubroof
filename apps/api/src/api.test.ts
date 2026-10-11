@@ -42,6 +42,8 @@ import type {
   ChangingRoomPlan,
   EquipmentOverview,
   DamageOverview,
+  RefereeDuty,
+  RefereeDutyResult,
   RefereeOverview,
   MemberImportResult,
   InviteLink,
@@ -4734,6 +4736,21 @@ describe.skipIf(!url)('API', () => {
         (await app.inject({ method: 'GET', url: new URL(renewed.body.url!).pathname })).statusCode,
       ).toBe(404);
     });
+    it('Schiedsrichter-Einsätze stehen im eigenen Kalenderabo', async () => {
+      const coach = await login('trainer');
+      const feed = await send<CalendarFeed>('POST', '/me/calendar', coach.token);
+      const ics = (await app.inject({ method: 'GET', url: new URL(feed.body.url!).pathname })).body;
+      expect(ics).toContain('SUMMARY:Schiedsrichter: FC Ost – SV Mitte\\, U11');
+      expect(ics).toContain('LOCATION:Sportanlage Ost');
+      // fremde Einsätze erscheinen nicht
+      const player = await login('spieler');
+      const other = await send<CalendarFeed>('POST', '/me/calendar', player.token);
+      expect(
+        (await app.inject({ method: 'GET', url: new URL(other.body.url!).pathname })).body,
+      ).not.toContain('Schiedsrichter:');
+      await send('DELETE', '/me/calendar', coach.token);
+      await send('DELETE', '/me/calendar', player.token);
+    });
   });
 
   describe('Trainingsplanung', () => {
@@ -5042,54 +5059,114 @@ describe.skipIf(!url)('API', () => {
       ).toBe(true);
     });
 
-    it('Schiedsrichter: einteilen, bestätigen, absagen meldet dem Obmann', async () => {
+    it('Schiedsrichter: eigene Einsätze, Kollision, Abwesenheit, Vereins-Soll', async () => {
       const admin = await login('admin');
       const coach = await login('trainer');
       const player = await login('spieler');
       expect((await send('GET', '/referees', player.token)).status).toBe(403);
-      const own = await get<RefereeOverview>('/referees', coach.token);
-      expect(own.canManage).toBe(false);
-      expect(own.mine).toHaveLength(1);
-      expect(own.mine[0]!.status).toBe('requested');
-      const confirmed = await send<RefereeOverview>(
-        'POST',
-        `/referees/assignments/${own.mine[0]!.assignmentId}/respond`,
-        coach.token,
-        { status: 'confirmed' },
-      );
-      expect(confirmed.body.mine[0]!.status).toBe('confirmed');
-
-      const lead = await get<RefereeOverview>('/referees', admin.token);
-      expect(lead.referees.length).toBe(3);
-      const open = lead.matches.find((m) => m.assignments.length === 0)!;
-      const ref = lead.referees.find((r) => r.name !== 'Max Mustermann')!;
-      const assigned = await send<RefereeOverview>('POST', '/referees/assignments', admin.token, {
-        eventId: open.eventId,
-        personId: ref.personId,
-      });
-      expect(
-        assigned.body.matches.find((m) => m.eventId === open.eventId)!.assignments,
-      ).toHaveLength(1);
       expect(
         (
-          await send('POST', '/referees/assignments', admin.token, {
-            eventId: open.eventId,
-            personId: player.me.person.id,
+          await send('POST', '/referees/duties', player.token, {
+            title: 'Kein Schiedsrichter',
+            startsAt: '2026-10-10T10:00:00Z',
           })
         ).status,
-      ).toBe(400);
-      const declined = await send<RefereeOverview>(
-        'POST',
-        `/referees/assignments/${own.mine[0]!.assignmentId}/respond`,
+      ).toBe(403);
+
+      // Schiedsrichter sieht sein Profil und seine Einsätze (kommende zuerst), nicht die Vereinsübersicht
+      const own = await get<RefereeOverview>('/referees', coach.token);
+      expect(own).toMatchObject({ canManage: false, isReferee: true, club: null });
+      expect(own.profile).toMatchObject({ level: 'Kreisliga', licenseStatus: 'ok' });
+      expect(own.mine.length).toBeGreaterThanOrEqual(3);
+      expect(own.mine[0]!.startsAt > '2026-10-05').toBe(true); // kommender Einsatz zuerst
+
+      // Vereinsübersicht für die Administration: Soll 4, aktiv 3, Lizenzstatus je Schiedsrichter
+      const lead = await get<RefereeOverview>('/referees', admin.token);
+      expect(lead.club).toMatchObject({
+        settings: { requiredReferees: 4, requiredMatches: 5 },
+        active: 3,
+        shortfall: 1,
+      });
+      expect(lead.club!.referees.map((r) => r.licenseStatus).sort()).toEqual([
+        'expired',
+        'expiring',
+        'ok',
+      ]);
+      expect(lead.club!.referees.every((r) => !r.dutiesOk)).toBe(true);
+
+      // Einsatz eintragen, der sich mit dem nächsten eigenen Termin überschneidet; Abwesenheit auf Wunsch
+      const events = await get<EventSummary[]>('/events', coach.token);
+      const training = events.find((e) => e.type === 'training' && e.status === 'scheduled')!;
+      const created = await send<RefereeDutyResult>('POST', '/referees/duties', coach.token, {
+        title: 'FC Test – SV Beispiel, U13',
+        startsAt: training.startsAt,
+        location: 'Sportplatz Test',
+        createAbsence: true,
+      });
+      expect(created.status).toBe(201);
+      expect(created.body.collisions.map((c) => c.eventId)).toContain(training.id);
+      const duty = created.body.overview.mine.find(
+        (d) => d.title === 'FC Test – SV Beispiel, U13',
+      )!;
+      expect(duty.absence).toBe(true);
+      const absences = await get<Absence[]>('/absences', coach.token);
+      expect(absences.some((a) => a.note?.startsWith('Schiedsrichtereinsatz'))).toBe(true);
+
+      // Einsatz im Zeitraum abfragen (für Termine und Kalender)
+      const range = await get<RefereeDuty[]>(
+        `/referees/duties?from=${encodeURIComponent(new Date(Date.parse(training.startsAt) - 3_600_000).toISOString())}&to=${encodeURIComponent(new Date(Date.parse(training.startsAt) + 3_600_000).toISOString())}`,
         coach.token,
-        { status: 'declined' },
       );
-      expect(declined.status).toBe(200);
+      expect(range.map((d) => d.id)).toEqual([duty.id]);
+
+      // Löschen nimmt die Abwesenheit zurück; fremde Einsätze löscht niemand
+      expect((await send('DELETE', `/referees/duties/${duty.id}`, admin.token)).status).toBe(403);
+      const removed = await send<RefereeOverview>(
+        'DELETE',
+        `/referees/duties/${duty.id}`,
+        coach.token,
+      );
+      expect(removed.body.mine.some((d) => d.id === duty.id)).toBe(false);
       expect(
-        (await get<NotificationItem[]>('/notifications', admin.token)).some(
-          (n) => n.title === 'Schiedsrichter hat abgesagt',
+        (await get<Absence[]>('/absences', coach.token)).some((a) =>
+          a.note?.startsWith('Schiedsrichtereinsatz'),
         ),
-      ).toBe(true);
+      ).toBe(false);
+
+      // Soll und Lizenz pflegen: Administration (Recht referees.manage); Schiedsrichter nur das eigene Profil
+      expect(
+        (
+          await send('PUT', '/referees/settings', coach.token, {
+            requiredReferees: 1,
+            requiredMatches: 1,
+          })
+        ).status,
+      ).toBe(403);
+      const settings = await send<RefereeOverview>('PUT', '/referees/settings', admin.token, {
+        requiredReferees: 3,
+        requiredMatches: 2,
+      });
+      expect(settings.body.club).toMatchObject({ shortfall: 0 });
+      expect(settings.body.club!.referees.filter((r) => r.dutiesOk).length).toBeGreaterThan(0);
+      const selfEdit = await send<RefereeOverview>(
+        'PATCH',
+        `/referees/${coach.me.person.id}`,
+        coach.token,
+        { licenseValidUntil: '2030-06-30' },
+      );
+      expect(selfEdit.body.profile!.licenseValidUntil).toBe('2030-06-30');
+      expect(
+        (await send('PATCH', `/referees/${coach.me.person.id}`, coach.token, { active: false }))
+          .status,
+      ).toBe(403);
+      // Rolle „Schiedsrichterobmann“ gibt es nicht mehr
+      const catalog = await get<RoleCatalog>('/admin/roles', admin.token);
+      expect(catalog.roles.some((r) => r.key === 'referee_lead')).toBe(false);
+      // wieder auf das Demo-Soll
+      await send('PUT', '/referees/settings', admin.token, {
+        requiredReferees: 4,
+        requiredMatches: 5,
+      });
     });
   });
 

@@ -27,7 +27,6 @@ const ADMIN_ROLES = new Set([
   'treasurer',
   'facility_manager',
   'member_admin',
-  'referee_lead',
 ]);
 
 export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {

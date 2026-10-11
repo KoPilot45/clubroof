@@ -553,12 +553,6 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         roleId: roleIds.member_admin!,
         scopeType: 'club',
       },
-      {
-        clubId,
-        personId: official.refereeLead.id,
-        roleId: roleIds.referee_lead!,
-        scopeType: 'club',
-      },
     ];
     for (const team of TEAMS) {
       for (const m of teamMembers[team.key]) {
@@ -2345,43 +2339,56 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       },
     ]);
 
-    // ── Schiedsrichter: drei Vereinsschiedsrichter, ein offener Einsatz ─────────────────────
+    // ── Schiedsrichter: drei Vereinsschiedsrichter mit Lizenz, Soll des Verbands, eigene Einsätze ─
     const refPersons = [
       persona.coach,
-      ...persons.filter((p) => p.birthDate! <= '1995-12-31').slice(3, 5),
+      official.refereeLead,
+      ...persons.filter((p) => p.birthDate! <= '1995-12-31').slice(3, 4),
     ];
+    const licenseIn = (days: number) => toIsoDate(addDays(today, days));
+    const refLevels = ['Kreisliga', 'Bezirksliga', 'Jugend'];
+    const refLicenses = [licenseIn(200), licenseIn(30), licenseIn(-20)]; // gültig, läuft ab, abgelaufen
     await tx.insert(s.referees).values(
       refPersons.map((p, i) => ({
         personId: p.id,
         clubId,
-        level: i === 0 ? 'Kreisliga' : 'Jugend',
+        level: refLevels[i],
+        licenseValidUntil: refLicenses[i],
         createdAt: hoursAgo(24 * 200),
       })),
     );
-    const [homeMatch] = await tx
-      .select({ id: s.events.id })
-      .from(s.events)
-      .innerJoin(s.matchDetails, eq(s.matchDetails.eventId, s.events.id))
-      .innerJoin(s.teams, eq(s.teams.id, s.events.teamId))
-      .where(
-        and(
-          eq(s.events.clubId, clubId),
-          eq(s.matchDetails.isHome, true),
-          gte(s.events.startsAt, now),
-          eq(s.teams.orgUnitId, orgUnitIds.youth),
-        ),
-      )
-      .orderBy(asc(s.events.startsAt))
-      .limit(1);
-    if (homeMatch)
-      await tx.insert(s.refereeAssignments).values({
+    // Soll des Verbands: vier aktive Schiedsrichter, je fünf Pflichteinsätze pro Saison
+    await tx.insert(s.refereeSettings).values({ clubId, requiredReferees: 4, requiredMatches: 5 });
+    const duty = (
+      person: (typeof refPersons)[number],
+      daysFromToday: number,
+      hour: number,
+      title: string,
+      location: string,
+    ) => {
+      const startsAt = addDays(today, daysFromToday);
+      startsAt.setUTCHours(hour, 0, 0, 0);
+      return {
         clubId,
-        eventId: homeMatch.id,
-        personId: persona.coach.id,
-        role: 'referee',
-        status: 'requested',
-        createdAt: hoursAgo(12),
-      });
+        personId: person.id,
+        title,
+        startsAt,
+        endsAt: new Date(startsAt.getTime() + 2 * 3_600_000),
+        location,
+        createdAt: hoursAgo(24),
+      };
+    };
+    await tx
+      .insert(s.refereeDuties)
+      .values([
+        duty(persona.coach, -14, 12, 'SV Eichen – FC Nord, U13', 'Sportplatz Eichen'),
+        duty(persona.coach, -7, 13, 'TSV West – SG Süd, U15', 'Waldstadion'),
+        duty(persona.coach, 6, 11, 'FC Ost – SV Mitte, U11', 'Sportanlage Ost'),
+        duty(official.refereeLead, -21, 10, 'SpVgg Nord – FC Süd II', 'Platz 3 Nordpark'),
+        duty(official.refereeLead, -10, 15, 'TSV Ost – SV Lindenau', 'Stadion Ost'),
+        duty(official.refereeLead, -3, 14, 'FC Berg – SC Tal', 'Bergstadion'),
+        duty(refPersons[2]!, -30, 12, 'SG Fluss – FC See, U17', 'Seeplatz'),
+      ]);
 
     // ── Mannschaftsaufgaben (B-Jugend) ──────────────────────────────────────────────────────
     await tx.insert(s.teamTasks).values([

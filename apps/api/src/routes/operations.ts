@@ -2,6 +2,8 @@ import type {
   ChangingRoomPlan,
   DamageOverview,
   EquipmentOverview,
+  RefereeDuty,
+  RefereeDutyResult,
   RefereeOverview,
 } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
@@ -20,10 +22,13 @@ import {
 } from '../services/equipment';
 import {
   addReferee,
-  assignReferee,
+  createDuty,
+  deleteDuty,
   getReferees,
-  removeAssignment,
-  respondAssignment,
+  listOwnDuties,
+  searchRefereeCandidates,
+  setSettings,
+  updateReferee,
 } from '../services/referees';
 
 const id = z.object({ id: z.uuid() });
@@ -129,53 +134,95 @@ export const operationRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/referees', async (request): Promise<RefereeOverview> =>
     getReferees(app.db, request.actor!, app.now()),
   );
+  /** Eigene Einsätze in einem Zeitraum (für Termine und Kalender) */
+  app.get(
+    '/referees/duties',
+    {
+      schema: {
+        querystring: z.object({
+          from: z.iso.datetime({ offset: true }),
+          to: z.iso.datetime({ offset: true }),
+        }),
+      },
+    },
+    async (request): Promise<RefereeDuty[]> =>
+      listOwnDuties(app.db, request.actor!, app.now(), {
+        from: new Date(request.query.from),
+        to: new Date(request.query.to),
+      }),
+  );
+  app.get(
+    '/referees/candidates',
+    { schema: { querystring: z.object({ q: z.string().max(60) }) } },
+    async (request) => searchRefereeCandidates(app.db, request.actor!, request.query.q),
+  );
+  const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
   app.post(
     '/referees',
     {
       schema: {
-        body: z.object({ personId: z.uuid(), level: z.string().trim().max(40).nullish() }),
+        body: z.object({
+          personId: z.uuid(),
+          level: z.string().trim().max(40).nullish(),
+          licenseValidUntil: day.nullish(),
+        }),
       },
     },
-    async (request): Promise<RefereeOverview> =>
-      addReferee(
-        app.db,
-        request.actor!,
-        request.body.personId,
-        request.body.level ?? null,
-        app.now(),
-      ),
+    async (request, reply): Promise<RefereeOverview> => {
+      reply.code(201);
+      return addReferee(app.db, request.actor!, request.body, app.now());
+    },
   );
-  app.post(
-    '/referees/assignments',
+  app.patch(
+    '/referees/:personId',
     {
       schema: {
+        params: z.object({ personId: z.uuid() }),
         body: z.object({
-          eventId: z.uuid(),
-          personId: z.uuid(),
-          role: z.enum(['referee', 'assistant']).default('referee'),
+          level: z.string().trim().max(40).nullable().optional(),
+          licenseValidUntil: day.nullable().optional(),
+          active: z.boolean().optional(),
         }),
       },
     },
     async (request): Promise<RefereeOverview> =>
-      assignReferee(
-        app.db,
-        request.actor!,
-        request.body.eventId,
-        request.body.personId,
-        request.body.role,
-        app.now(),
-      ),
+      updateReferee(app.db, request.actor!, request.params.personId, request.body, app.now()),
+  );
+  app.put(
+    '/referees/settings',
+    {
+      schema: {
+        body: z.object({
+          requiredReferees: z.number().int().min(0).max(99),
+          requiredMatches: z.number().int().min(0).max(99),
+        }),
+      },
+    },
+    async (request): Promise<RefereeOverview> =>
+      setSettings(app.db, request.actor!, request.body, app.now()),
   );
   app.post(
-    '/referees/assignments/:id/respond',
-    { schema: { params: id, body: z.object({ status: z.enum(['confirmed', 'declined']) }) } },
-    async (request): Promise<RefereeOverview> =>
-      respondAssignment(app.db, request.actor!, request.params.id, request.body.status, app.now()),
+    '/referees/duties',
+    {
+      schema: {
+        body: z.object({
+          title: z.string().trim().min(2).max(120),
+          startsAt: z.iso.datetime({ offset: true }),
+          durationMinutes: z.number().int().min(30).max(600).optional(),
+          location: z.string().trim().max(120).nullish(),
+          createAbsence: z.boolean().optional(),
+        }),
+      },
+    },
+    async (request, reply): Promise<RefereeDutyResult> => {
+      reply.code(201);
+      return createDuty(app.db, request.actor!, request.body, app.now());
+    },
   );
   app.delete(
-    '/referees/assignments/:id',
+    '/referees/duties/:id',
     { schema: { params: id } },
     async (request): Promise<RefereeOverview> =>
-      removeAssignment(app.db, request.actor!, request.params.id, app.now()),
+      deleteDuty(app.db, request.actor!, request.params.id, app.now()),
   );
 };

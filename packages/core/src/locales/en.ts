@@ -326,6 +326,7 @@ export const en: Record<string, string> = {
   'Abweichender Betrag in € (optional)': 'Different amount in € (optional)',
   Abwesend: 'Absent',
   'Abwesend: {0}': 'Absent: {0}',
+  Abwesenheit: 'Absence',
   'Abwesenheit eintragen': 'Enter absence',
   'Abwesenheit löschen': 'Delete absence',
   'Abwesenheit melden': 'Report absence',
@@ -341,8 +342,10 @@ export const en: Record<string, string> = {
   Aktionen: 'Actions',
   Aktiv: 'Active',
   'Aktiv (vom Verein)': 'Active (from the club)',
+  'Aktiv oder inaktiv setzt die Verwaltung.': 'The administration sets active or inactive.',
   'Aktive Beiträge': 'Active fees',
   'Aktive Mitglieder': 'Active members',
+  'Aktive Schiedsrichter': 'Active referees',
   'Aktive Zu- und Absage': 'Active yes/no response',
   'Aktive Zu-/Absage': 'Active confirmation/decline',
   Aktivieren: 'Activate',
@@ -445,6 +448,8 @@ export const en: Record<string, string> = {
   Ansprechperson: 'Contact person',
   'Anstoß (Datum und Uhrzeit)': 'Kick-off (date and time)',
   'Anstoß: {0} → {1}': 'Kick-off: {0} → {1}',
+  'Antippen setzt einen Schiedsrichter aktiv oder inaktiv.':
+    'Tap to set a referee active or inactive.',
   'antippen zum Kopieren': 'tap to copy',
   'Antippen: als bezahlt buchen': 'Tap to book as paid',
   Antwort: 'Reply',
@@ -803,6 +808,8 @@ export const en: Record<string, string> = {
   Darstellung: 'Appearance',
   'Darstellung ändern': 'Change appearance',
   'Das aktuelle Passwort stimmt nicht.': 'The current password is incorrect.',
+  'Das ändern Schiedsrichter selbst oder die Verwaltung.':
+    'Referees themselves or the administration change this.',
   'Das änderst du später unter Verwaltung › Verein & Design.':
     'You can change this later under Administration › Club & design.',
   'Das ändert nur die Vereinsadministration.': 'Only the club administration can change this.',
@@ -858,6 +865,8 @@ export const en: Record<string, string> = {
   'Das Profil konnte nicht gespeichert werden.': 'The profile could not be saved.',
   'Das sind optionale Funktionen, die dein Verein einschalten kann: Fundbüro & Marktplatz für Gesuchtes und Gefundenes, ein kleines Forum für wenige Themen und Vereinswissen mit Artikeln wie „Wo gibt es den Schlüssel?“. Sie erscheinen nur, wenn sie aktiv sind.':
     'These are optional features your club can switch on: lost & found and marketplace for wanted and found items, a small forum for a few topics and club knowledge with articles like “Where can I get the key?”. They only appear when they are active.',
+  'Das Soll pflegen Administration und Verantwortliche.':
+    'The administration and those responsible maintain the quota.',
   'Das Speichern hat nicht geklappt.': 'Saving failed.',
   'Das Spiel': 'The match',
   'Das Spiel ist abgesagt.': 'The match has been cancelled.',
@@ -1017,6 +1026,7 @@ export const en: Record<string, string> = {
   'Der Platz ist gesperrt: {0}. Bitte wähle einen anderen Platz oder Zeitpunkt.':
     'The pitch is closed: {0}. Please choose another pitch or time.',
   'Der Platz ist zu dieser Zeit belegt ({0}{1}).': 'The pitch is booked at this time ({0}{1}).',
+  'Der Schiedsrichter': 'The referee',
   'Der Spielbericht ist erst nach Anpfiff möglich.':
     'The match report is only possible after kick-off.',
   'Der Spielbericht konnte nicht gespeichert werden.': 'The match report could not be saved.',
@@ -1041,6 +1051,8 @@ export const en: Record<string, string> = {
   'Der Termin wurde abgesagt.': 'The event has been cancelled.',
   'Der Untergrund je Platz hilft bei der Planung, z. B. wenn Rasenplätze gesperrt sind.':
     'The surface per pitch helps with planning, e.g. when grass pitches are closed.',
+  'Der Verband setzt dich bei fremden Spielen ein. Trage den Einsatz hier ein, damit er in deinem Kalender steht und Überschneidungen mit deinen Terminen auffallen.':
+    'The association assigns you to other clubs’ matches. Enter the assignment here so it appears in your calendar and overlaps with your appointments are noticed.',
   'Der Verein braucht mindestens einen Fulladmin.': 'The club needs at least one full admin.',
   'Der Verein ist bereits eingerichtet.': 'The club is already set up.',
   'Der Verein verlangt für deine Rolle die 2-Faktor-Anmeldung.':
@@ -1200,6 +1212,8 @@ export const en: Record<string, string> = {
   'Die Saison lässt sich später in der Verwaltung wechseln.':
     'The season can be changed later in administration.',
   'Die Schicht': 'The shift',
+  'Die Schiedsrichter-Übersicht sehen Schiedsrichter und Verantwortliche.':
+    'The referee overview is visible to referees and those responsible.',
   'Die Schiedsrichterverwaltung ist im Verein nicht aktiviert.':
     'Referee management is not enabled in the club.',
   'Die Sperrung': 'The closure',
@@ -1415,8 +1429,18 @@ export const en: Record<string, string> = {
   'Einrichtungs-Demo abgeschlossen': 'Setup demo completed',
   'Einrichtungs-Demos (ohne Funktion)': 'Setup demos (no function)',
   Einrichtungscode: 'Setup code',
+  'Einsatz eintragen': 'Enter assignment',
+  'Einsatz gespeichert – keine Überschneidung': 'Assignment saved – no overlap',
+  'Einsatz löschen': 'Delete assignment',
+  'Einsatz speichern': 'Save assignment',
   Einsätze: 'Appearances',
+  'Einsätze {0}': 'Assignments {0}',
+  'Einsätze {0} von {1}': 'Assignments {0} of {1}',
   'Einsätze als Gastspieler und Spielerbedarf': 'Guest player appearances and player needs',
+  'Einsätze löscht nur der Schiedsrichter selbst.':
+    'Only the referee themselves deletes assignments.',
+  'Einsätze tragen aktive Schiedsrichter des Vereins ein.':
+    'Active referees of the club enter assignments.',
   Einschalten: 'Switch on',
   Einstellungen: 'Settings',
   'Einstellungen öffnen': 'Open settings',
@@ -1495,6 +1519,7 @@ export const en: Record<string, string> = {
   'Erstes Training anlegen': 'Create first training',
   'Es erscheint oben in der App bei allen Mitgliedern. Ohne Logo zeigt die App ein Wappen mit dem Kürzel.':
     'It appears at the top of the app for all members. Without a logo, the app shows a crest with the abbreviation.',
+  'Es fehlen {0} aktive Schiedsrichter': '{0} active referees missing',
   'Es gibt {0} neue Funktionen': 'There are {0} new features',
   'Es gibt 1 neue Funktion': 'There is 1 new feature',
   'Es gibt bereits Kategorien.': 'Categories already exist.',
@@ -1565,6 +1590,7 @@ export const en: Record<string, string> = {
   'Fristen ändern sich später im Mannschaftsprofil.':
     'You can change deadlines later in the team profile.',
   Früher: 'Earlier',
+  'Frühere Einsätze': 'Past assignments',
   Fulladmin: 'Full admin',
   'Fulladmin gilt immer für den ganzen Verein.': 'Full admin always applies to the whole club.',
   Fundbüro: 'Lost & found',
@@ -1615,6 +1641,7 @@ export const en: Record<string, string> = {
     'You are not allowed to create a poll for this department.',
   'Für diesen Bereich darfst du keine Veranstaltungen planen.':
     'You may not plan events for this section.',
+  'Für diesen Tag eintragen': 'Enter for this day',
   'Für diesen Termin gibt es bereits einen offenen Bedarf.':
     'There is already an open request for this event.',
   'Für diesen Termin gibt es keine Fahrgemeinschaften.': 'There are no carpools for this event.',
@@ -1777,6 +1804,8 @@ export const en: Record<string, string> = {
   Ich: 'Me',
   'Ich bin im Urlaub oder verletzt. Muss ich jeden Termin absagen?':
     "I'm on holiday or injured. Do I have to cancel every event?",
+  'Ich bin Schiedsrichter – wo trage ich meine Einsätze ein?':
+    'I am a referee – where do I enter my assignments?',
   'Ich fahre': "I'm driving",
   'Ich habe bezahlt': 'I have paid',
   'Ich habe die Codes gesichert': 'I have saved the codes',
@@ -1952,6 +1981,7 @@ export const en: Record<string, string> = {
   'Kein Zugriff': 'No access',
   Keine: 'None',
   'Keine aktuellen oder geplanten Abwesenheiten.': 'No current or planned absences.',
+  'Keine Angabe': 'No information',
   'Keine Angebote.': 'No offers.',
   'Keine anstehenden Termine.': 'No upcoming events.',
   'Keine Benachrichtigungen.': 'No notifications.',
@@ -1964,6 +1994,8 @@ export const en: Record<string, string> = {
   'Keine Frist': 'No deadline',
   'Keine Heimspiele geplant.': 'No home matches scheduled.',
   'Keine Karten im Zeitraum.': 'No cards in this period.',
+  'Keine kommenden Einsätze eingetragen.': 'No upcoming assignments entered.',
+  'Keine Lizenzangabe': 'No license information',
   'Keine neuen Erinnerungen nötig.': 'No new reminders needed.',
   'Keine Neuigkeiten.': 'No news.',
   'Keine offenen Aufgaben.': 'No open tasks.',
@@ -2082,6 +2114,13 @@ export const en: Record<string, string> = {
   'Link/QR zeigen': 'Show link/QR',
   Links: 'Left',
   Liste: 'List',
+  Lizenz: 'License',
+  'Lizenz abgelaufen': 'License expired',
+  'Lizenz bis {0}': 'License until {0}',
+  'Lizenz gültig': 'License valid',
+  'Lizenz gültig bis': 'License valid until',
+  'Lizenz gültig bis {0}': 'License valid until {0}',
+  'Lizenz läuft bald ab': 'License expires soon',
   'Logo auswählen': 'Choose logo',
   'Logo entfernen': 'Remove logo',
   'Logo fehlt': 'Logo missing',
@@ -2162,6 +2201,7 @@ export const en: Record<string, string> = {
   'Meine Mannschaft': 'My team',
   'Meine Mannschaften': 'My teams',
   'Meine Rückmeldung': 'My response',
+  'Meine Schiedsrichter-Einsätze': 'My referee assignments',
   'meist vereinsweit': 'mostly club-wide',
   Melden: 'Report',
   'meldet {0}{1} an': 'registers {0}{1}',
@@ -2175,6 +2215,7 @@ export const en: Record<string, string> = {
   'Mindestens 10 Zeichen. Eine Wortfolge oder ein Satz ist sicherer und leichter zu merken als ein kurzes Passwort mit Sonderzeichen.':
     'At least 10 characters. A phrase or sentence is safer and easier to remember than a short password with special characters.',
   'Mini-Forum': 'Mini forum',
+  'Mit Ablaufdatum': 'With expiry date',
   'Mit App-Zugang': 'With app access',
   'Mit dem Start wird {0} zur laufenden Saison. Mannschaftskassen, Mannschaftsdokumente und künftige Termine gehen auf die neuen Mannschaften über. Zuordnungen und Aufgaben der alten Saison enden. Das lässt sich nicht rückgängig machen.':
     'Starting makes {0} the current season. Team funds, team documents and future events move to the new teams. Assignments and tasks of the old season end. This cannot be undone.',
@@ -2327,6 +2368,7 @@ export const en: Record<string, string> = {
   'Nicht alle Personen gehören zur Mannschaft.': 'Not all persons belong to the team.',
   'Nicht ändern': "Don't change",
   'Nicht angemeldet.': 'Not logged in.',
+  'Nicht eintragen': 'Do not enter',
   'Nicht gefunden': 'Not found',
   'Nicht gesendet.': 'Not sent.',
   'Nicht gespeichert.': 'Not saved.',
@@ -2354,6 +2396,7 @@ export const en: Record<string, string> = {
   'Noch kein Logo – die App zeigt ein Wappen mit den Initialen.':
     'No logo yet – the app shows a crest with the initials.',
   'Noch kein Plan für dieses Training.': 'No plan for this training session yet.',
+  'Noch kein Soll des Verbands eingetragen': 'No association quota entered yet',
   'Noch kein Trainerteam eingetragen.': 'No coaching staff entered yet.',
   'Noch keine Änderungen.': 'No changes yet.',
   'Noch keine Aufstellung.': 'No line-up yet.',
@@ -2373,6 +2416,7 @@ export const en: Record<string, string> = {
   'Noch keine News.': 'No news yet.',
   'Noch keine Person bestimmt': 'No person assigned yet',
   'Noch keine Programmpunkte.': 'No items yet.',
+  'Noch keine Schiedsrichter eingetragen.': 'No referees entered yet.',
   'Noch keine Spieler im Kader.': 'No players in the squad yet.',
   'Noch keine Spielerbewegungen.': 'No player movements yet.',
   'Noch keine Strafen festgelegt.': 'No fines defined yet.',
@@ -2489,6 +2533,11 @@ export const en: Record<string, string> = {
   'Pflicht für die Verwaltung': 'Required for administration',
   'Pflicht sind nur Vorname und Nachname. Datum als TT.MM.JJJJ, Mannschaft als Kürzel (z. B. C1). Ohne Funktion wird „Spieler“ angenommen.':
     'Only first and last name (Vorname, Nachname) are required. Date as DD.MM.YYYY, team as abbreviation (e.g. C1). Without a function, “Player” is assumed. Column names stay in German.',
+  'Pflichteinsätze erfüllt': 'Required assignments met',
+  'Pflichteinsätze gelten je Saison ({0}).': 'Required assignments apply per season ({0}).',
+  'Pflichteinsätze gelten je Saison.': 'Required assignments apply per season.',
+  'Pflichteinsätze je Schiedsrichter': 'Required assignments per referee',
+  'Pflichteinsätze offen': 'Required assignments open',
   'Plan bearbeiten': 'Edit plan',
   'Plan erstellen': 'Create plan',
   'Plan öffnen': 'Open plan',
@@ -2517,6 +2566,7 @@ export const en: Record<string, string> = {
   'Privatsphäre-Einstellungen': 'Privacy settings',
   Profil: 'Profile',
   'Profil & Statistik': 'Profile & statistics',
+  'Profil ändern': 'Edit profile',
   'Profil bearbeiten': 'Edit profile',
   'Profil, Einstellungen und Hilfe': 'Profile, settings and help',
   'Profilfoto {0}': 'Profile photo {0}',
@@ -2636,12 +2686,21 @@ export const en: Record<string, string> = {
   Schiedsrichter: 'Referees',
   'Schiedsrichter einteilen': 'Assign referee',
   'Schiedsrichter hat abgesagt': 'Referee has declined',
+  'Schiedsrichter hinzufügen': 'Add referee',
   'Schiedsrichter und Spielbetrieb': 'Referees and match operations',
+  'Schiedsrichter verwalten Administration und Verantwortliche.':
+    'The administration and those responsible manage referees.',
   'Schiedsrichter verwaltet der Schiedsrichterobmann.': 'The referee coordinator manages referees.',
+  'Schiedsrichter-Soll': 'Referee quota',
+  'Schiedsrichter, Lizenzen und Vereins-Soll verwalten (keine eigene Rolle, per individuellem Recht)':
+    'Manage referees, licenses and club quota (no dedicated role, via individual right)',
   'Schiedsrichter, Verfügbarkeit und Zuweisungen verwalten':
     'Manage referees, availability and assignments',
   'Schiedsrichter, Verfügbarkeit, Zuweisungen, Lehrgänge':
     'Referees, availability, assignments, courses',
+  'Schiedsrichter: {0}': 'Referee: {0}',
+  'Schiedsrichtereinsatz (Verband)': 'Referee assignment (association)',
+  'Schiedsrichtereinsatz: {0}': 'Referee assignment: {0}',
   'Schiedsrichtereinsatz: {0} – {1}': 'Referee assignment: {0} – {1}',
   Schiedsrichterobmann: 'Referee coordinator',
   'Schiri fehlt': 'Referee needed',
@@ -2688,6 +2747,9 @@ export const en: Record<string, string> = {
     "As few people as necessary: only the coaching staff and you can see reasons for declines and absences. Only the people you approve can see contact details. Parents see their children's data. Your own team can see training participation and the team fund balance.",
   'Sobald du einer Mannschaft zugeordnet bist, siehst du hier das nächste Spiel.':
     "As soon as you are assigned to a team, you'll see the next match here.",
+  'Soll des Verbands': 'Association quota',
+  'Soll erfüllt': 'Quota met',
+  'Soll speichern': 'Save quota',
   'Sollstellung erzeugen': 'Create claims',
   'Sonstige Ausgabe': 'Other expense',
   'Sonstige Einnahme': 'Other income',
@@ -2822,10 +2884,13 @@ export const en: Record<string, string> = {
   Strafenkatalog: 'Fine catalogue',
   'Strafenkatalog pflegen und Strafen vergeben': 'Maintain fine catalogue and issue fines',
   'Straße, Ort': 'Street, city',
+  Stufe: 'Level',
+  'Stufe (optional)': 'Level (optional)',
   'Stufe {0}': 'Level {0}',
   'Stufe {0} vermerkt – das Mitglied hat keinen App-Zugang, bitte anders informieren.':
     'Level {0} noted – the member has no app access, please inform them another way.',
   'Stufe {0}: Erinnerung verschickt.': 'Level {0}: reminder sent.',
+  'Stufe offen': 'Level open',
   Stumm: 'Muted',
   'Stummgeschaltete Mannschaften melden sich nur noch bei Dringendem.':
     'Muted teams only notify you about urgent matters.',
@@ -2971,6 +3036,7 @@ export const en: Record<string, string> = {
   Übernehmen: 'Apply',
   'Übernimmt {0}': '{0} is taking it',
   Überschneidung: 'Overlap',
+  'Überschneidung mit eigenen Terminen': 'Overlap with your own appointments',
   Überschrift: 'Headline',
   Übersicht: 'Overview',
   Überspringen: 'Skip',
@@ -3068,6 +3134,8 @@ export const en: Record<string, string> = {
     "Under “Club → Today at the facility → Show calendar”. It lists all training sessions, matches and events of all teams. You can't see other teams' confirmations and declines there; tap to open events of your own teams.",
   'Unter „Verein → News schreiben“. Reiche die News zur Freigabe ein; der Vorstand prüft sie und veröffentlicht sie oder meldet sich bei dir.':
     'Under “Club → Write news”. Submit the news for approval; the board reviews it and either publishes it or gets back to you.',
+  'Unter „Verein → Schiedsrichter“. Der Verband setzt dich bei fremden Spielen ein; trage den Einsatz dort mit Spiel, Ort, Datum und Beginn ein. Er erscheint unter „Termine“ und in deinem Kalenderabo. Überschneidet er sich mit einem deiner Termine, bekommst du einen Hinweis; auf Wunsch wird für den Tag eine Abwesenheit eingetragen. Dort pflegst du auch deine Stufe und das Ablaufdatum deiner Lizenz.':
+    'Under “Club → Referees”. The association assigns you to other clubs’ matches; enter the assignment there with match, place, date and start time. It appears under “Appointments” and in your calendar subscription. If it overlaps one of your appointments you get a notice; on request an absence is entered for the day. You also maintain your level and the expiry date of your license there.',
   'Unter „Verein → Spielplan“. Dort stehen alle Spiele einer Woche, nach Tagen sortiert. Mit den Pfeilen oder durch Wischen wechselst du die Woche, mit dem Filter zeigst du nur Senioren oder Jugend. Mannschaften ohne Spiel stehen unter „Spielfrei“. Tippe auf ein Spiel deiner Mannschaft, um Details und Rückmeldungen zu sehen.':
     'Under “Club → Schedule”. All matches of a week are listed there, sorted by day. Use the arrows or swipe to change the week, and the filter to show only seniors or youth. Teams without a match are listed under “No match”. Tap a match of your team to see details and responses.',
   'Unter „Verwaltung → Module“. Neue Funktionen erscheinen im Update-Center; du richtest sie ein, schiebst sie auf oder entscheidest dich dagegen. Einzelne Bereiche und Mannschaften lassen sich zusätzlich abweichend einstellen.':
@@ -3444,6 +3512,7 @@ export const en: Record<string, string> = {
   'z. B. Girokonto Volksbank': 'e.g. Volksbank checking account',
   'z. B. Grill': 'e.g. Grill',
   'z. B. Kabine Vereinsheim': 'e.g. clubhouse changing room',
+  'z. B. Kreisliga': 'e.g. County league',
   'z. B. Kuchenverkauf Heimspiel': 'e.g. Cake sale at home match',
   'z. B. Mannschaftsabend': 'e.g. Team night',
   'z. B. Mannschaftsabend, Turnierfahrt': 'e.g. team night, tournament trip',
@@ -3453,8 +3522,10 @@ export const en: Record<string, string> = {
   'z. B. Sommerfest': 'e.g. Summer party',
   'z. B. Sportplatz am Wald': 'e.g. Forest Sports Ground',
   'z. B. Sportplatz Blauen': 'e.g. Blauen sports ground',
+  'z. B. Sportplatz Eichen': 'e.g. Eichen sports ground',
   'z. B. Sportshop Musterstadt': 'e.g. Musterstadt Sports Shop',
   'z. B. Stadtpark': 'e.g. City park',
+  'z. B. SV Eichen – FC Nord, U13': 'e.g. SV Eichen – FC Nord, U13',
   'z. B. SV Grün-Weiß': 'e.g. SV Grün-Weiß',
   'z. B. SV Grün-Weiß 1921 e. V.': 'e.g. SV Grün-Weiß 1921 e. V.',
   'z. B. SV Grün-Weiß B2; SV GW II': 'e.g. SV Green-White B2; SV GW II',

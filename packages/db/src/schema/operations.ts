@@ -14,7 +14,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { clubs, facilities } from './club';
-import { events } from './events';
+import { absences, events } from './events';
 import { persons, users } from './people';
 import { teams } from './teams';
 import { cashDirectionEnum, createdAt, documentCategoryEnum, id, scopeTypeEnum } from './_shared';
@@ -390,7 +390,7 @@ export const damageReports = pgTable(
   (t) => [index().on(t.clubId, t.status)],
 );
 
-/** Vereinsschiedsrichter (Modul „Schiedsrichter“). */
+/** Vereinsschiedsrichter (Modul „Schiedsrichter“): vom Verband bei fremden Spielen eingesetzt. */
 export const referees = pgTable('referees', {
   personId: uuid()
     .primaryKey()
@@ -400,32 +400,44 @@ export const referees = pgTable('referees', {
     .references(() => clubs.id, { onDelete: 'cascade' }),
   /** z. B. „Jungschiedsrichter“, „Kreisliga“ */
   level: text(),
+  /** Ablauf der Lizenz (Verband); leer = nicht erfasst */
+  licenseValidUntil: date(),
   active: boolean().notNull().default(true),
   createdAt: createdAt(),
 });
 
-/** Einteilung eines Schiedsrichters zu einem Heimspiel. */
-export const refereeAssignments = pgTable(
-  'referee_assignments',
+/** Einsatz, den ein Schiedsrichter selbst einträgt (Verbandsspiel mit Datum, Zeit, Ort). */
+export const refereeDuties = pgTable(
+  'referee_duties',
   {
     id: id(),
     clubId: uuid()
       .notNull()
       .references(() => clubs.id, { onDelete: 'cascade' }),
-    eventId: uuid()
-      .notNull()
-      .references(() => events.id, { onDelete: 'cascade' }),
     personId: uuid()
       .notNull()
       .references(() => persons.id, { onDelete: 'cascade' }),
-    /** referee | assistant */
-    role: text().notNull().default('referee'),
-    /** requested | confirmed | declined */
-    status: text().notNull().default('requested'),
+    /** z. B. „SV A – SV B, U13“ */
+    title: text().notNull(),
+    startsAt: timestamp({ withTimezone: true }).notNull(),
+    endsAt: timestamp({ withTimezone: true }).notNull(),
+    location: text(),
+    /** Automatisch eingetragene Abwesenheit (wird mit dem Einsatz entfernt) */
+    absenceId: uuid().references(() => absences.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
   },
-  (t) => [index().on(t.eventId), index().on(t.personId)],
+  (t) => [index().on(t.personId, t.startsAt), index().on(t.clubId)],
 );
+
+/** Soll des Verbands je Verein: aktive Schiedsrichter und Pflichteinsätze je Schiedsrichter und Saison. */
+export const refereeSettings = pgTable('referee_settings', {
+  clubId: uuid()
+    .primaryKey()
+    .references(() => clubs.id, { onDelete: 'cascade' }),
+  requiredReferees: integer().notNull().default(0),
+  requiredMatches: integer().notNull().default(0),
+  updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
 
 // ── Vereinskasse (Paket K1) ─────────────────────────────────────────────────
 
