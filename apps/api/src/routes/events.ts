@@ -1,10 +1,12 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import type { Carpool, EventDetail, EventSummary } from '@clubroof/core';
+import type { Carpool, ClubSeason, EventDetail, EventSummary } from '@clubroof/core';
 import { HttpError } from '../errors';
 import {
   fetchEventRows,
   getEventDetail,
+  listPastEvents,
+  listSeasons,
   respondToEvent,
   recordAttendance,
   summarizeEvents,
@@ -24,11 +26,31 @@ export const eventRoutes: FastifyPluginAsyncZod = async (app) => {
         querystring: z.object({
           from: z.iso.datetime({ offset: true }).optional(),
           to: z.iso.datetime({ offset: true }).optional(),
+          // Archiv: vergangene Termine rückwärts blättern (neueste zuerst)
+          before: z.iso.datetime({ offset: true }).optional(),
+          after: z.iso.datetime({ offset: true }).optional(),
+          limit: z.coerce.number().int().min(1).max(100).optional(),
+          teamId: z.uuid().optional(),
+          kind: z.enum(['match', 'training', 'club']).optional(),
         }),
       },
     },
     async (request): Promise<EventSummary[]> => {
       const now = app.now();
+      if (request.query.before) {
+        return listPastEvents(
+          app.db,
+          request.actor!,
+          {
+            before: new Date(request.query.before),
+            after: request.query.after ? new Date(request.query.after) : undefined,
+            limit: request.query.limit ?? 30,
+            teamId: request.query.teamId,
+            kind: request.query.kind,
+          },
+          now,
+        );
+      }
       const from = request.query.from ? new Date(request.query.from) : now;
       const to = request.query.to
         ? new Date(request.query.to)
@@ -39,6 +61,10 @@ export const eventRoutes: FastifyPluginAsyncZod = async (app) => {
       const rows = await fetchEventRows(app.db, myEventsCondition(request.actor!, from, to), 300);
       return summarizeEvents(app.db, request.actor!, rows, now);
     },
+  );
+
+  app.get('/events/seasons', async (request): Promise<ClubSeason[]> =>
+    listSeasons(app.db, request.actor!),
   );
 
   app.get(

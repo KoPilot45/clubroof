@@ -17,8 +17,6 @@ import {
   Screen,
   Section,
   T,
-  shadowStyle,
-  TeamBadge,
   TileGrid,
   type TileItem,
 } from '@/components/ui';
@@ -27,9 +25,10 @@ import { EVENT_TYPE_LABELS, TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
-import { dateFormat } from '@/lib/i18n';
 import type { TintKey } from '@clubroof/design-tokens';
 import { useTileInfo, withTileInfo } from '@/lib/tile-info';
+import { readSetting, writeSetting } from '@/lib/flags';
+import { t } from '@/lib/i18n';
 
 const PARTICIPATION_LABELS = {
   auto_accept: 'Automatische Zusage – nur Absagen nötig',
@@ -39,7 +38,6 @@ const PARTICIPATION_LABELS = {
 
 export default function TeamScreen() {
   const { me, api } = useSignedIn();
-  const { colors, radii } = useTheme();
   const teams = useMemo(() => [...new Map(me.teams.map((t) => [t.id, t])).values()], [me.teams]);
   // Trainer starten in einer Mannschaft, die sie betreuen (nicht dort, wo sie selbst spielen)
   const [selected, setSelected] = useState(
@@ -47,9 +45,20 @@ export default function TeamScreen() {
   );
   // Aufruf mit ?teamId=… (z. B. aus „Mehr → Meine Mannschaften“) wählt die Mannschaft aus
   const { teamId } = useLocalSearchParams<{ teamId?: string }>();
+  // Zuletzt gewählte Mannschaft merken (pro Gerät); ein Aufruf mit ?teamId=… hat Vorrang
   useEffect(() => {
-    if (teamId) setSelected(teamId);
-  }, [teamId]);
+    if (teamId) {
+      setSelected(teamId);
+      return;
+    }
+    void readSetting('lastTeam').then((id) => {
+      if (id && teams.some((t) => t.id === id)) setSelected(id);
+    });
+  }, [teamId, teams]);
+  const choose = (id: string) => {
+    setSelected(id);
+    void writeSetting('lastTeam', id);
+  };
   const team = teams.find((t) => t.id === selected) ?? teams[0];
   const has = (module: string) => team?.modules.includes(module) ?? false;
 
@@ -258,53 +267,12 @@ export default function TeamScreen() {
       }}
     >
       {teams.length > 1 ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ marginHorizontal: -20 }}
-          contentContainerStyle={{
-            gap: 10,
-            alignItems: 'stretch',
-            paddingHorizontal: 20,
-            paddingVertical: 6,
-          }}
-        >
-          {teams.map((t) => {
-            const active = t.id === team?.id;
-            const card = (myTeams.data ?? []).find((c) => c.team.id === t.id);
-            if (card && (myTeams.data?.length ?? 0) > 1)
-              return (
-                <MyTeamTile
-                  key={t.id}
-                  card={card}
-                  active={active}
-                  onPress={() => setSelected(t.id)}
-                />
-              );
-            return (
-              <Pressable
-                key={t.id}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: active }}
-                onPress={() => setSelected(t.id)}
-                style={{
-                  minHeight: 44,
-                  justifyContent: 'center',
-                  paddingHorizontal: 16,
-                  alignSelf: 'center',
-                  borderRadius: radii.pill,
-                  borderWidth: 1,
-                  borderColor: active ? colors.primary : colors.border,
-                  backgroundColor: active ? colors.primary : colors.surfaceRaised,
-                }}
-              >
-                <T variant="label" color={active ? colors.onPrimary : colors.onSurface}>
-                  {teamTitle(t)}
-                </T>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+        <TeamSwitcher
+          teams={teams}
+          activeId={team?.id}
+          cards={myTeams.data ?? []}
+          onSelect={choose}
+        />
       ) : null}
 
       {!team ? (
@@ -464,92 +432,86 @@ export default function TeamScreen() {
   );
 }
 
-const shortWhen = dateFormat({
-  weekday: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-});
-
-/** Kachel „Meine Teams“ (228 breit): Team, nächster Termin mit Zusagen als Balken, Abwesende, Aufgaben. */
-function MyTeamTile({
-  card,
-  active,
-  onPress,
+/**
+ * Mannschaftswechsel (Paket KM, Entwurf C1): eine Zeile, seitlich wischbar; je Mannschaft Kürzel, Name und eine Zahl
+ * für Offenes (fehlende Rückmeldungen zum nächsten Termin plus offene Aufgaben). Die aktive Mannschaft ist gefüllt.
+ */
+function TeamSwitcher({
+  teams,
+  activeId,
+  cards,
+  onSelect,
 }: {
-  card: MyTeamCard;
-  active: boolean;
-  onPress: () => void;
+  teams: { id: string; badge: string; name: string }[];
+  activeId?: string;
+  cards: MyTeamCard[];
+  onSelect: (id: string) => void;
 }) {
-  const { colors, isDark, elevation } = useTheme();
-  const e = card.nextEvent;
-  const total = e ? e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending : 0;
+  const { colors, radii } = useTheme();
   return (
-    <Pressable
-      accessibilityRole="tab"
-      aria-selected={active}
-      onPress={onPress}
-      style={{
-        width: 228,
-        padding: 14,
-        gap: 8,
-        borderRadius: 22,
-        borderWidth: active ? 2 : isDark ? 1 : 0,
-        borderColor: active ? colors.primary : colors.border,
-        backgroundColor: colors.surfaceRaised,
-        ...(isDark ? null : shadowStyle(elevation.card)),
-      }}
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      accessibilityRole="tablist"
+      style={{ marginHorizontal: -20 }}
+      contentContainerStyle={{ gap: 8, paddingHorizontal: 20, paddingVertical: 4 }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <TeamBadge badge={card.team.badge} />
-        <T variant="label" style={{ fontWeight: '700', flex: 1 }} numberOfLines={1}>
-          {card.team.name}
-        </T>
-        {active ? <Chip tone="primary" label="aktiv" /> : null}
-      </View>
-      {e ? (
-        <>
-          <T variant="caption" numberOfLines={1}>
-            {`${shortWhen.format(new Date(e.startsAt))} · ${e.title}`}
-          </T>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View
-              style={{
-                flex: 1,
-                height: 6,
-                borderRadius: 3,
-                overflow: 'hidden',
-                backgroundColor: colors.border,
-              }}
-            >
+      {teams.map((tm) => {
+        const active = tm.id === activeId;
+        const card = cards.find((c) => c.team.id === tm.id);
+        const open = card ? (card.nextEvent?.counts.pending ?? 0) + card.openTasks : 0;
+        const fg = active ? colors.onPrimary : colors.onSurface;
+        return (
+          <Pressable
+            key={tm.id}
+            accessibilityRole="tab"
+            accessibilityLabel={open ? t(`${teamTitle(tm)}, ${open} offen`) : teamTitle(tm)}
+            aria-selected={active}
+            onPress={() => onSelect(tm.id)}
+            style={{
+              minHeight: 44,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              paddingLeft: 14,
+              paddingRight: open ? 8 : 14,
+              borderRadius: radii.pill,
+              borderWidth: 1,
+              borderColor: active ? colors.primary : colors.border,
+              backgroundColor: active ? colors.primary : colors.surfaceRaised,
+            }}
+          >
+            <T variant="label" color={fg} style={{ fontWeight: '800' }} verbatim>
+              {tm.badge}
+            </T>
+            <T variant="label" color={fg} numberOfLines={1} style={{ maxWidth: 130 }} verbatim>
+              {tm.name}
+            </T>
+            {open ? (
               <View
                 style={{
-                  width: `${total ? Math.round((e.counts.yes / total) * 100) : 0}%`,
-                  height: '100%',
-                  backgroundColor: colors.primaryText,
+                  minWidth: 24,
+                  height: 24,
+                  paddingHorizontal: 6,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: active ? colors.onPrimary : colors.status.action.container,
                 }}
-              />
-            </View>
-            <T variant="caption" style={{ fontWeight: '700' }} color={colors.onSurface}>
-              {`${e.counts.yes}/${total}`}
-            </T>
-          </View>
-          <T variant="caption">{`${e.counts.yes} von ${total} zugesagt`}</T>
-        </>
-      ) : (
-        <T variant="caption">Kein Termin geplant</T>
-      )}
-      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-        {card.absentToday ? <Chip tone="info" label={`${card.absentToday} abwesend`} /> : null}
-        {card.nextEvent && card.nextEvent.counts.pending ? (
-          <Chip tone="action" label={`${card.nextEvent.counts.pending} offen`} />
-        ) : null}
-        {card.openTasks ? (
-          <Chip
-            tone="action"
-            label={`${card.openTasks} ${card.openTasks === 1 ? 'Aufgabe' : 'Aufgaben'}`}
-          />
-        ) : null}
-      </View>
-    </Pressable>
+              >
+                <T
+                  variant="caption"
+                  color={active ? colors.primary : colors.status.action.onContainer}
+                  style={{ fontWeight: '800' }}
+                  verbatim
+                >
+                  {open}
+                </T>
+              </View>
+            ) : null}
+          </Pressable>
+        );
+      })}
+    </ScrollView>
   );
 }

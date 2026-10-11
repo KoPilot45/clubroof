@@ -1,4 +1,10 @@
-import type { TeamCandidate, TeamFunction, TeamManage, TeamManageMember } from '@clubroof/core';
+import type {
+  AttendanceVisibility,
+  TeamCandidate,
+  TeamFunction,
+  TeamManage,
+  TeamManageMember,
+} from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -295,6 +301,7 @@ function ProfileEditor({
   const [point, setPoint] = useState(profile.defaultMeetingPoint ?? '');
   const [aliases, setAliases] = useState(profile.importAliases.join(', '));
   const [position, setPosition] = useState(profile.leaguePosition?.toString() ?? '');
+  const [visibility, setVisibility] = useState<AttendanceVisibility>(profile.attendanceVisibility);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const digits = (v: string) => v.replace(/\D/g, '').slice(0, 3);
@@ -309,6 +316,7 @@ function ProfileEditor({
           trainingMeetingMinutes: training ? Number(training) : null,
           defaultMeetingPoint: point.trim() || null,
           leaguePosition: position ? Number(position) : null,
+          attendanceVisibility: visibility,
           importAliases: aliases
             .split(',')
             .map((a) => a.trim())
@@ -366,6 +374,23 @@ function ProfileEditor({
           onChangeText={setAliases}
           placeholder="z. B. SV Grün-Weiß II"
         />
+        <T variant="label">Anwesenheit vergangener Termine für Spieler</T>
+        <ChoiceChips
+          options={[
+            { value: 'staff', label: 'Nur Trainerteam' },
+            { value: 'count', label: 'Nur Anzahl' },
+            { value: 'named', label: 'Namentlich' },
+          ]}
+          selected={[visibility]}
+          onToggle={setVisibility}
+        />
+        <T variant="caption">
+          {visibility === 'staff'
+            ? 'Nur das Trainerteam sieht, wer da war.'
+            : visibility === 'count'
+              ? 'Spieler sehen nur die Anzahl („14 von 20 da“), nicht wer gefehlt hat.'
+              : 'Alle in der Mannschaft sehen, wer da war und wer gefehlt hat.'}
+        </T>
         {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
         <Button label="Speichern" icon="checkmark" loading={busy} onPress={() => void save()} />
       </Card>

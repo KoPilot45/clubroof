@@ -2,6 +2,8 @@ import type { EventSummary } from '@clubroof/core';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 import { T } from '@/components/ui';
+import { kindOf } from '@/lib/event-types';
+import { formatShortDate } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
 import { dateFormat, t } from '@/lib/i18n';
 
@@ -20,6 +22,8 @@ export function MonthCalendar({
   onSelect,
   onMonth,
   colorOf,
+  variant = 'dots',
+  onToday,
 }: {
   /** Erster Tag des Monats (lokal) */
   month: Date;
@@ -29,6 +33,10 @@ export function MonthCalendar({
   onMonth: (delta: number) => void;
   /** Farbe je Termin (z. B. nach Terminart); ohne Angabe: Vereinstermine in Vereinsfarbe */
   colorOf?: (event: EventSummary) => string;
+  /** `grid`: höhere Felder mit Kürzel-Chips der Termine (Paket KM); `dots`: Punkte */
+  variant?: 'dots' | 'grid';
+  /** zeigt den Knopf „Heute“ (springt in den heutigen Monat und wählt den Tag) */
+  onToday?: () => void;
 }) {
   const { colors, sizes } = useTheme();
   // Runde Monatsknöpfe (44) wie die Kopfzeilenknöpfe
@@ -81,6 +89,25 @@ export function MonthCalendar({
           <Ionicons name="chevron-forward" size={20} color={colors.onSurface} />
         </Pressable>
       </View>
+      {onToday ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('Heute')}
+          onPress={onToday}
+          style={{
+            alignSelf: 'center',
+            minHeight: 44,
+            justifyContent: 'center',
+            paddingHorizontal: 16,
+            borderRadius: 22,
+            backgroundColor: colors.primaryContainer,
+          }}
+        >
+          <T variant="label" color={colors.onPrimaryContainer}>
+            Heute
+          </T>
+        </Pressable>
+      ) : null}
       <View style={{ flexDirection: 'row' }}>
         {WEEKDAYS.map((d) => (
           <T key={d} variant="caption" style={{ flex: 1, textAlign: 'center' }}>
@@ -95,6 +122,17 @@ export function MonthCalendar({
             const k = dayKey(d);
             const list = byDay.get(k) ?? [];
             const active = k === selected;
+            if (variant === 'grid')
+              return (
+                <GridCell
+                  key={k}
+                  date={d}
+                  list={list}
+                  active={active}
+                  today={k === today}
+                  onPress={() => onSelect(k)}
+                />
+              );
             return (
               <Pressable
                 key={k}
@@ -156,5 +194,155 @@ export function MonthCalendar({
         </View>
       ))}
     </View>
+  );
+}
+
+type ChipStyle = { bg: string; fg: string; border: string; bold: boolean; dashed: boolean };
+
+/** Darstellung eines Termins im Raster: Spiel kräftig grün, Training hellblau, Verein hellorange. */
+export function gridChipStyle(
+  e: Pick<EventSummary, 'type' | 'team' | 'status'>,
+  colors: ReturnType<typeof useTheme>['colors'],
+): ChipStyle {
+  const kind = kindOf(e);
+  const base: ChipStyle =
+    kind === 'match' || kind === 'tournament'
+      ? {
+          bg: colors.status.success.solid,
+          fg: colors.status.success.onSolid,
+          border: colors.status.success.solid,
+          bold: true,
+          dashed: false,
+        }
+      : kind === 'training'
+        ? {
+            bg: colors.tints.blue.container,
+            fg: colors.tints.blue.onContainer,
+            border: colors.tints.blue.container,
+            bold: false,
+            dashed: false,
+          }
+        : {
+            bg: colors.tints.orange.container,
+            fg: colors.tints.orange.onContainer,
+            border: colors.tints.orange.onContainer,
+            bold: false,
+            dashed: true,
+          };
+  // Abgesagt: rot umrandet (Schrift durchgestrichen im Chip)
+  return e.status === 'cancelled'
+    ? {
+        ...base,
+        bg: colors.surface,
+        fg: colors.status.urgent.onContainer,
+        border: colors.status.urgent.solid,
+        dashed: false,
+      }
+    : base;
+}
+
+/** Kürzel im Chip: Mannschaftskürzel, bei Vereinsterminen „V“. */
+const chipLabel = (e: EventSummary) => e.team?.badge ?? 'V';
+
+function GridCell({
+  date,
+  list,
+  active,
+  today,
+  onPress,
+}: {
+  date: Date;
+  list: EventSummary[];
+  active: boolean;
+  today: boolean;
+  onPress: () => void;
+}) {
+  const { colors, radii } = useTheme();
+  // Spiele zuerst, dann Training, dann Übriges
+  const rank = (e: EventSummary) => {
+    const k = kindOf(e);
+    return k === 'match' || k === 'tournament' ? 0 : k === 'training' ? 1 : 2;
+  };
+  const sorted = [...list].sort((a, b) => rank(a) - rank(b));
+  const shown = sorted.slice(0, 2);
+  const more = sorted.length - shown.length;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${formatShortDate(dayKey(date))} ${
+        list.length ? t(`${list.length} Termine`) : t('keine Termine')
+      }`}
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={{
+        flex: 1,
+        minHeight: 74,
+        padding: 2,
+        gap: 2,
+        alignItems: 'center',
+        borderRadius: radii.sm,
+        borderWidth: active ? 2 : 1,
+        borderColor: active ? colors.primary : colors.border,
+        backgroundColor: active ? colors.primaryContainer : colors.surface,
+      }}
+    >
+      <View
+        style={{
+          minWidth: 22,
+          height: 22,
+          borderRadius: 11,
+          paddingHorizontal: 4,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: today ? colors.primary : 'transparent',
+        }}
+      >
+        <T
+          variant="caption"
+          color={today ? colors.onPrimary : colors.onSurface}
+          style={{ fontWeight: today ? '800' : '600' }}
+          verbatim
+        >
+          {date.getDate()}
+        </T>
+      </View>
+      {shown.map((e) => {
+        const c = gridChipStyle(e, colors);
+        return (
+          <View
+            key={e.id}
+            style={{
+              alignSelf: 'stretch',
+              alignItems: 'center',
+              borderRadius: 6,
+              paddingVertical: 1,
+              backgroundColor: c.bg,
+              borderWidth: 1,
+              borderColor: c.border,
+              borderStyle: c.dashed ? 'dashed' : 'solid',
+            }}
+          >
+            <T
+              variant="caption"
+              color={c.fg}
+              numberOfLines={1}
+              verbatim
+              style={{
+                fontSize: 11,
+                fontWeight: c.bold ? '800' : '600',
+                textDecorationLine: e.status === 'cancelled' ? 'line-through' : 'none',
+              }}
+            >
+              {chipLabel(e)}
+            </T>
+          </View>
+        );
+      })}
+      {more > 0 ? (
+        <T variant="caption" color={colors.onSurfaceMuted} verbatim style={{ fontSize: 11 }}>
+          {`+${more}`}
+        </T>
+      ) : null}
+    </Pressable>
   );
 }

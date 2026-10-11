@@ -188,3 +188,22 @@ export function moduleEnabled(
     team ? { teamId: team.id, orgUnitId: team.orgUnitId } : {},
   ).enabled;
 }
+
+/** Rollen, die den Verwaltungsmodus öffnen (Trainer verwalten ihre Teams in der App selbst). */
+const ADMIN_ROLES = new Set([
+  'fulladmin',
+  'board',
+  'sports_director',
+  'youth_director',
+  'treasurer',
+  'facility_manager',
+  'member_admin',
+]);
+
+/** Hat die Person eine Verwaltungsrolle (Verwaltungsmodus)? */
+export const isAdminActor = (actor: Actor): boolean =>
+  actor.grants.some((g) => ADMIN_ROLES.has(g.key));
+
+/** Vollzugriff (Admin): darf auch nach Ablauf von Fristen korrigieren, z. B. die Anwesenheit. */
+export const isFullAdmin = (actor: Actor): boolean =>
+  actor.grants.some((g) => g.key === 'fulladmin');

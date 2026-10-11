@@ -131,6 +131,18 @@ export type MyResponse = {
   canRespond: boolean;
 };
 
+/** Sichtbarkeit der erfassten Anwesenheit für Spieler: nur Trainerteam, nur Anzahl („14 von 20 da“) oder namentlich. */
+export const ATTENDANCE_VISIBILITIES = ['staff', 'count', 'named'] as const;
+export type AttendanceVisibility = (typeof ATTENDANCE_VISIBILITIES)[number];
+
+/** Tage nach Terminbeginn, in denen das Trainerteam die Anwesenheit noch korrigieren darf; danach nur die Verwaltung. */
+export const ATTENDANCE_CORRECTION_DAYS = 14;
+
+export const toAttendanceVisibility = (value: string): AttendanceVisibility =>
+  (ATTENDANCE_VISIBILITIES as readonly string[]).includes(value)
+    ? (value as AttendanceVisibility)
+    : 'count';
+
 export type EventSummary = {
   id: string;
   type: EventType;
@@ -158,6 +170,20 @@ export type EventSummary = {
   deadline: string | null;
   counts: AttendanceCounts;
   myResponses: MyResponse[];
+  /**
+   * Erfasste Anwesenheit eines vergangenen Termins („14 von 20 da“); null, solange sie nicht erfasst ist
+   * oder die Mannschaft sie für die Person nicht freigibt.
+   */
+  presence: { present: number; total: number } | null;
+};
+
+/** Saison des Vereins (Archiv: „Diese Saison“, „Letzte Saison“). */
+export type ClubSeason = {
+  id: string;
+  name: string;
+  startsOn: string;
+  endsOn: string;
+  isCurrent: boolean;
 };
 
 /** Rückmeldung zu einer Vereinsveranstaltung: Zusage, Absage oder Unsicher – ohne Begründung. */
@@ -205,7 +231,12 @@ export type EventDetail = EventSummary & {
    * Anwesenheit nach dem Termin: Das Trainerteam hakt ab, wer wirklich da war. Danach zählt
    * die erfasste Anwesenheit statt der Zusage für die Trainingsquote. null bei Vereinsterminen.
    */
-  attendanceCheck: { recordedAt: string | null; canRecord: boolean } | null;
+  attendanceCheck: {
+    recordedAt: string | null;
+    canRecord: boolean;
+    /** Ende der Korrekturfrist für das Trainerteam; danach nur die Verwaltung */
+    correctionUntil: string;
+  } | null;
   /** Fahrgemeinschaften bei Auswärtsspielen und Turnieren; sonst null */
   carpool: Carpool | null;
   /** Freiwillige Teilnahme an Vereinsveranstaltungen; null bei Mannschaftsterminen */
@@ -1116,6 +1147,8 @@ export type TeamProfile = {
   importAliases: string[];
   /** Tabellenplatz in der Liga (vom Trainerteam gepflegt) */
   leaguePosition: number | null;
+  /** Wer die erfasste Anwesenheit vergangener Termine sieht (Standard: nur Anzahl) */
+  attendanceVisibility: AttendanceVisibility;
   /** Antwortfrist für Zu-/Absagen zum Training in Stunden vor Beginn (leer = keine feste Frist oder Wochentagsregel) */
   trainingDeadlineHours: number | null;
   /** Antwortfrist für Spiele in Stunden vor Beginn */

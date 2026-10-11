@@ -12,6 +12,7 @@ import {
   type TeamProfile,
   type UpdateTeamMemberInput,
   calendarDayOf,
+  toAttendanceVisibility,
   toIsoDate,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
@@ -58,6 +59,7 @@ export function profileOf(
     defaultMeetingPoint: team.defaultMeetingPoint,
     importAliases: team.importAliases,
     leaguePosition: team.leaguePosition,
+    attendanceVisibility: toAttendanceVisibility(team.attendanceVisibility),
   };
 }
 
@@ -338,6 +340,8 @@ export async function updateTeamProfile(
   if (input.defaultMeetingPoint !== undefined)
     patch.defaultMeetingPoint = input.defaultMeetingPoint?.trim() || null;
   if (input.leaguePosition !== undefined) patch.leaguePosition = input.leaguePosition;
+  if (input.attendanceVisibility !== undefined)
+    patch.attendanceVisibility = input.attendanceVisibility;
   if (input.importAliases !== undefined)
     patch.importAliases = [...new Set(input.importAliases.map((a) => a.trim()).filter(Boolean))];
   // Antwortfristen: je Terminart eine relative Regel; leer löscht sie
