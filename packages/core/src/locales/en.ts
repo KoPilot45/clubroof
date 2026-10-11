@@ -802,6 +802,7 @@ export const en: Record<string, string> = {
   'Code aus der App': 'Code from the app',
   'Code aus der E-Mail': 'Code from the email',
   'Code bestätigen': 'Confirm code',
+  'Code eingeben': 'Enter code',
   'Code erneut per E-Mail senden': 'Send code by email again',
   'Code erneut senden': 'Resend code',
   'Code per E-Mail': 'Code by email',
@@ -852,6 +853,8 @@ export const en: Record<string, string> = {
     'That did not work. The app lock stays off.',
   'Das Heimspiel': 'The home match',
   'Das Hochladen ist fehlgeschlagen.': 'The upload failed.',
+  'Das ist kein gültiger Einladungscode. Prüfe den Code oder den Link und versuche es erneut.':
+    'That is not a valid invitation code. Check the code or the link and try again.',
   'Das Konto': 'The account',
   'Das Konto ist archiviert.': 'The account is archived.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.':
@@ -873,6 +876,8 @@ export const en: Record<string, string> = {
   'Das Passwort stimmt nicht.': 'The password is incorrect.',
   'Das Profil': 'The profile',
   'Das Profil konnte nicht gespeichert werden.': 'The profile could not be saved.',
+  'Das Scannen eines QR-Codes ist in der App auf dem Handy möglich.':
+    'Scanning a QR code is possible in the app on your phone.',
   'Das sind optionale Funktionen, die dein Verein einschalten kann: Fundbüro & Marktplatz für Gesuchtes und Gefundenes, ein kleines Forum für wenige Themen und Vereinswissen mit Artikeln wie „Wo gibt es den Schlüssel?“. Sie erscheinen nur, wenn sie aktiv sind.':
     'These are optional features your club can switch on: lost & found and marketplace for wanted and found items, a small forum for a few topics and club knowledge with articles like “Where can I get the key?”. They only appear when they are active.',
   'Das Soll pflegen Administration und Verantwortliche.':
@@ -967,6 +972,8 @@ export const en: Record<string, string> = {
   'Den Code hast du bei der Installation festgelegt': 'You set the code during installation',
   'Den eigenen Austritt trägt eine andere Person ein.':
     'Someone else must record your own departure.',
+  'Den Einrichtungscode bekommst du von Clubroof, sobald die Zahlung eingegangen ist. Er gilt einmal.':
+    'You receive the setup code from Clubroof as soon as payment has been received. It is valid once.',
   'Den Import macht nur die Person rückgängig, die ihn durchgeführt hat.':
     'Only the person who ran the import can undo it.',
   'Den Kader bearbeitet nur das Trainerteam der Mannschaft.':
@@ -1011,6 +1018,7 @@ export const en: Record<string, string> = {
   'Der Code stimmt nicht.': 'The code is incorrect.',
   'Der Code stimmt nicht. Bitte den aktuellen Code eingeben.':
     'The code is incorrect. Please enter the current code.',
+  'Der Einrichtungscode konnte nicht geprüft werden.': 'The setup code could not be checked.',
   'Der Einrichtungscode stimmt nicht.': 'The setup code is incorrect.',
   'Der Einsatz': 'The assignment',
   'Der Gegenstand': 'The item',
@@ -1311,6 +1319,7 @@ export const en: Record<string, string> = {
   'Dieser Termin gehört zu einer Serie': 'This event is part of a series',
   'Dieser Text ist ein Platzhalter und wird vor dem Start durch die geprüfte Fassung ersetzt.':
     'This text is a placeholder and will be replaced by the reviewed version before launch.',
+  'Dieser Verein ist bereits eingerichtet.': 'This club has already been set up.',
   'Dieses Passwort ist zu leicht zu erraten.': 'This password is too easy to guess.',
   'Dir zugeteilte Mannschaftsaufgaben': 'Team tasks assigned to you',
   Do: 'Thu',
@@ -1431,6 +1440,9 @@ export const en: Record<string, string> = {
   Einladungen: 'Invitations',
   'Einladungen verschickst du unter Verwaltung → Einladungen.':
     'You send invitations under Administration → Invitations.',
+  Einladungscode: 'Invitation code',
+  'Einladungscode eingeben': 'Enter invitation code',
+  'Einladungscode oder Link': 'Invitation code or link',
   'Einladungslinks für den Zugang': 'Invitation links for access',
   Einmalig: 'One-off',
   Einnahme: 'Income',
@@ -1745,6 +1757,8 @@ export const en: Record<string, string> = {
   'Getränke-Strichliste': 'Drinks tally sheet',
   'Gib den 6-stelligen Code aus deiner Authenticator-App ein – oder einen deiner Wiederherstellungscodes.':
     'Enter the 6-digit code from your authenticator app – or one of your recovery codes.',
+  'Gib den Einladungscode ein oder füge den Link aus deiner Einladung ein. Du bekommst ihn von deinem Verein per E-Mail, Nachricht oder als QR-Code.':
+    'Enter the invitation code or paste the link from your invitation. You receive it from your club by e-mail, message or as a QR code.',
   'Gilt ab': 'Valid from',
   'Gilt für': 'Applies to',
   Girokonto: 'Checking account',
@@ -1770,6 +1784,8 @@ export const en: Record<string, string> = {
     'Hello, Maximilian-Alexander von Hohenzollern-Sigmaringen',
   'Hält den Kassenstand von heute fest – z. B. nach der Kassenprüfung oder zum Saisonende. Der Abschluss erscheint auch im Kassenbericht. Beim Saisonwechsel geht die Kasse automatisch auf die neue Mannschaft über.':
     "Records today's fund balance – e.g. after the cash audit or at the end of the season. The closing also appears in the fund report. When the season changes, the fund automatically moves to the new team.",
+  'Halte die Kamera auf den QR-Code deiner Einladung.':
+    'Point the camera at the QR code of your invitation.',
   Hartplatz: 'Hard court',
   'Häufige Fragen und Rundgang': 'Frequently asked questions and tour',
   Hauptsponsor: 'Main sponsor',
@@ -1830,8 +1846,10 @@ export const en: Record<string, string> = {
   'Ich fahre': "I'm driving",
   'Ich habe bezahlt': 'I have paid',
   'Ich habe die Codes gesichert': 'I have saved the codes',
+  'Ich habe einen Einladungscode': 'I have an invitation code',
   'Ich habe mein Passwort vergessen.': "I've forgotten my password.",
   'Ich habe mich verbucht. Was tun?': 'I made a booking mistake. What should I do?',
+  'Ich habe schon ein Konto': 'I already have an account',
   'Ich melde mein Kind an': "I'm registering my child",
   'Ich nutze die App im Browser – bekomme ich Push?':
     'I use the app in the browser – do I get push notifications?',
@@ -1956,6 +1974,7 @@ export const en: Record<string, string> = {
   'Kalender anzeigen': 'Show calendar',
   'Kalender-Abo': 'Calendar subscription',
   Kalenderexport: 'Calendar export',
+  'Kamera erlauben': 'Allow camera',
   'Kann ich alle Termine im Handy-Kalender sehen?': 'Can I see all events in my phone calendar?',
   'Kann ich die App dunkel darstellen?': 'Can I use the app in dark mode?',
   'Kann ich die Kacheln unter „Verein“ anpassen?': 'Can I customise the tiles under “Club”?',
@@ -2232,6 +2251,7 @@ export const en: Record<string, string> = {
   'Meine Mannschaften': 'My teams',
   'Meine Rückmeldung': 'My response',
   'Meine Schiedsrichter-Einsätze': 'My referee assignments',
+  'Meinen Verein einrichten': 'Set up my club',
   'meist vereinsweit': 'mostly club-wide',
   Melden: 'Report',
   'meldet {0}{1} an': 'registers {0}{1}',
@@ -2255,6 +2275,8 @@ export const en: Record<string, string> = {
     'With two-factor sign-in, every new sign-in additionally requires a code. We recommend it for the administration account.',
   'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Bitte melde dich an oder nutze „Passwort vergessen“.':
     'An account already exists with this email address. Please log in or use “Forgot password”.',
+  'Mit Einladungslink oder Einladungscode (auch per QR-Code scannen) trittst du deinem Verein bei – der Verein wird danach auf diesem Gerät gemerkt. Hast du schon ein Konto, melde dich mit E-Mail und Passwort an („Zeigen“ macht das Passwort sichtbar). Einen neuen Verein richtest du mit dem Einrichtungscode (Format CR-XXXX-XXXX) ein, den du von Clubroof nach Zahlungseingang erhältst; er gilt einmal.':
+    'You join your club with an invitation link or invitation code (you can also scan the QR code) – the club is then remembered on this device. If you already have an account, sign in with your email and password (“Show” reveals the password). You set up a new club with the setup code (format CR-XXXX-XXXX) that you receive from Clubroof after payment; it can be used once.',
   'Mit Face ID oder Fingerabdruck entsperren': 'Unlock with Face ID or fingerprint',
   'Mit PayPal bezahlen': 'Pay with PayPal',
   'Mit Rückmeldung zurückgeben': 'Return with feedback',
@@ -2539,10 +2561,12 @@ export const en: Record<string, string> = {
   Passwort: 'Password',
   'Passwort (mind. 10 Zeichen)': 'Password (min. 10 characters)',
   'Passwort ändern': 'Change password',
+  'Passwort anzeigen': 'Show password',
   'Passwort clubroof-demo': 'Password clubroof-demo',
   'Passwort geändert. Andere Geräte wurden abgemeldet.':
     'Password changed. Other devices have been logged out.',
   'Passwort speichern': 'Save password',
+  'Passwort verbergen': 'Hide password',
   'Passwort vergessen': 'Forgot password',
   'Passwort vergessen?': 'Forgot password?',
   'Passwort wiederholen': 'Repeat password',
@@ -2623,7 +2647,9 @@ export const en: Record<string, string> = {
   'Push-Nachrichten gibt es in der App auf dem Handy. Im Browser erscheinen alle Meldungen im Benachrichtigungs-Center (Glocke oben).':
     'Push notifications are available in the app on your phone. In the browser, all messages appear in the notification centre (bell at the top).',
   'Push, Ruhezeit und Themen': 'Push, quiet hours and topics',
+  'QR scannen': 'Scan QR',
   'QR-Code für die Authenticator-App': 'QR code for the authenticator app',
+  'QR-Code scannen': 'Scan QR code',
   'QR-Code: {0}': 'QR code: {0}',
   'Quelle und Ziel müssen verschiedene Konten sein.':
     'Source and target must be different accounts.',
@@ -2761,6 +2787,7 @@ export const en: Record<string, string> = {
   Schwerpunkt: 'Focus',
   Scorer: 'Scorers',
   'Sehr groß': 'Extra large',
+  'seit {0}': 'since {0}',
   'seit dem {0}': 'since {0}',
   Senden: 'Send',
   Senioren: 'Seniors',
@@ -2910,6 +2937,7 @@ export const en: Record<string, string> = {
     'Statistics, drinks fund, shirt numbers per match',
   'Statistik, Kader & Aufstellung, Strafenkatalog, feste Rückennummern':
     'Statistics, squad & line-up, fine catalogue, fixed shirt numbers',
+  'Stattdessen Code eingeben': 'Enter code instead',
   'Status: {0} ist jetzt {1}': 'Status: {0} is now {1}',
   'Std.': 'hrs',
   'Stelle eine Beitrittsanfrage. Das Trainerteam gibt sie frei.':
@@ -3231,6 +3259,7 @@ export const en: Record<string, string> = {
   'Verantwortlich für den Inhalt': 'Responsible for the content',
   'Verantwortliche Stelle': 'Responsible body',
   Verbandsabgaben: 'Association fees',
+  Verbergen: 'Hide',
   Verein: 'Club',
   'Verein & Design': 'Club & design',
   'Verein & System': 'Club & system',
@@ -3482,6 +3511,7 @@ export const en: Record<string, string> = {
   'Wie lege ich einen Termin an oder sage ihn ab?': 'How do I create or cancel an event?',
   'Wie lege ich Mitglieder an oder importiere sie?': 'How do I add or import members?',
   'Wie melde ich mich als Helfer?': 'How do I sign up as a helper?',
+  'Wie melde ich mich an oder richte einen Verein ein?': 'How do I sign in or set up a club?',
   'Wie nehme ich an Umfragen teil?': 'How do I take part in polls?',
   'Wie nehmen Spieler an Terminen teil?': 'How do players take part in events?',
   'Wie organisiere ich eine Fahrgemeinschaft?': 'How do I organise a carpool?',
@@ -3567,6 +3597,7 @@ export const en: Record<string, string> = {
   'z. B. B2': 'e.g. B2',
   'z. B. Bar bezahlt': 'e.g. Paid in cash',
   'z. B. Bitte schwarze Stutzen mitbringen': 'e.g. Please bring black socks',
+  'z. B. CR-XXXX-XXXX': 'e.g. CR-XXXX-XXXX',
   'z. B. doppelt erfasst': 'e.g. recorded twice',
   'z. B. Ein Stürmer hat Zeit': 'e.g. A striker is available',
   'z. B. Eingang Kabinengang': 'e.g. Changing room corridor entrance',
@@ -3616,6 +3647,7 @@ export const en: Record<string, string> = {
   'Zahlungsmeldungen ({0})': 'Payment notices ({0})',
   'Zehn geprüfte Farben – jede ist im hellen und dunklen Modus gut lesbar. So sieht die App für eure Mitglieder aus.':
     'Ten checked colors – each is easy to read in light and dark mode. This is how the app looks for your members.',
+  Zeigen: 'Show',
   'Zeile {0}': 'Row {0}',
   Zeitraum: 'Period',
   'Zeitraum {1} – {2}': 'Period {1} – {2}',
@@ -3652,6 +3684,8 @@ export const en: Record<string, string> = {
   'Zum Kalender': 'To the calendar',
   'Zum Korrigieren stornieren und die Buchung neu erfassen. Stornos bleiben sichtbar.':
     'To correct, reverse the entry and record it again. Reversals remain visible.',
+  'Zum Scannen braucht Clubroof Zugriff auf die Kamera. Das Bild wird nicht gespeichert.':
+    'To scan, Clubroof needs access to the camera. The image is not stored.',
   'Zum Team-Bereich': 'To the team area',
   'Zum Training': 'To training',
   'Zum Trainingsplan hinzugefügt': 'Added to the training plan',

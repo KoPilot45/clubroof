@@ -2143,3 +2143,19 @@ export type ClubSchedule = {
   /** Bereiche, die im Verein vorkommen (für die Filterchips) */
   kinds: OrgUnitKind[];
 };
+
+// ── Anmeldeseite (Paket LG) ─────────────────────────────────────────────────
+
+/** Öffentliche Angaben zum Verein dieses Servers für die Anmeldeseite (ohne Anmeldung). */
+export type PublicClub = {
+  needsSetup: boolean;
+  club: {
+    name: string;
+    shortName: string;
+    colorTheme: ClubColorKey;
+    /** Ort, falls hinterlegt */
+    city: string | null;
+    foundedYear: number | null;
+    logoUrl: string | null;
+  } | null;
+};

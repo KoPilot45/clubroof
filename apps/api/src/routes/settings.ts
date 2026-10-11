@@ -1,4 +1,9 @@
-import { PITCH_SURFACES, type ClubSettings, type LoginResponse } from '@clubroof/core';
+import {
+  PITCH_SURFACES,
+  type ClubSettings,
+  type LoginResponse,
+  type PublicClub,
+} from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { schema } from '@clubroof/db';
 import { z } from 'zod';
@@ -12,7 +17,14 @@ import {
   updateClub,
 } from '../services/club-settings';
 import { buildMe } from '../services/me';
-import { needsSetup, sendSetupEmailCode, setupClub, verifySetupEmailCode } from '../services/setup';
+import { resolveMediaUrl } from '../storage/media-links';
+import {
+  checkSetupCode,
+  needsSetup,
+  sendSetupEmailCode,
+  setupClub,
+  verifySetupEmailCode,
+} from '../services/setup';
 
 // Erlaubte Vereinsfarben: eine Quelle (`@clubroof/design-tokens` → Datenbank-Enum), kein zweites Verzeichnis
 const CLUB_COLOR_KEYS = schema.clubColorEnum.enumValues;
@@ -71,6 +83,36 @@ export const settingsRoutes: FastifyPluginAsyncZod = async (app) => {
 /** Ersteinrichtung (ohne Anmeldung, nur auf einem leeren Server mit Einrichtungscode). */
 export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/setup/status', async () => ({ needsSetup: await needsSetup(app.db) }));
+
+  /** Einrichtungscode prüfen, bevor der Assistent beginnt (ohne etwas anzulegen). */
+  app.post(
+    '/setup/token',
+    {
+      config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+      schema: { body: z.object({ setupToken: z.string().min(1).max(200) }) },
+    },
+    async (request, reply) => {
+      await checkSetupCode(app.db, app.config, request.body.setupToken);
+      reply.code(204);
+    },
+  );
+
+  /** Vereinsangaben für die Anmeldeseite: Name, Ort, Gründungsjahr, Farbe, Logo (öffentlich sichtbar). */
+  app.get('/public/club', async (): Promise<PublicClub> => {
+    const [club] = await app.db.select().from(schema.clubs).limit(1);
+    if (!club) return { needsSetup: true, club: null };
+    return {
+      needsSetup: false,
+      club: {
+        name: club.name,
+        shortName: club.shortName,
+        colorTheme: club.colorTheme,
+        city: club.city,
+        foundedYear: club.foundedYear,
+        logoUrl: resolveMediaUrl(app.links, club.logoUrl, app.now()),
+      },
+    };
+  });
 
   app.post(
     '/setup/email-code',

@@ -32,6 +32,13 @@
       "expo-font",
       "expo-notifications",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Clubroof nutzt die Kamera, um Einladungs-QR-Codes zu scannen.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
         "expo-local-authentication",
         { "faceIDPermission": "Clubroof nutzt Face ID, um die App zu entsperren." }
       ]

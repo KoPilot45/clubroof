@@ -1533,6 +1533,7 @@ export function TextField({
 }) {
   const { colors, radii } = useTheme();
   const secret = kind === 'password' || kind === 'newPassword';
+  const [shown, setShown] = useState(false);
   return (
     <View style={{ gap: 6 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -1541,52 +1542,76 @@ export function TextField({
           <T variant="caption">{`${value.length} / ${maxLength}`}</T>
         ) : null}
       </View>
-      <TextInput
-        accessibilityLabel={label}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder ? t(placeholder) : placeholder}
-        placeholderTextColor={colors.onSurfaceMuted}
-        maxLength={maxLength}
-        multiline={multiline}
-        secureTextEntry={secret}
-        autoCapitalize={kind === 'text' ? 'sentences' : 'none'}
-        autoCorrect={kind === 'text'}
-        keyboardType={
-          kind === 'email'
-            ? 'email-address'
-            : kind === 'code'
-              ? 'number-pad'
-              : kind === 'url'
-                ? 'url'
-                : 'default'
-        }
-        autoComplete={
-          kind === 'email'
-            ? 'email'
-            : kind === 'password'
-              ? 'current-password'
-              : kind === 'newPassword'
-                ? 'new-password'
-                : kind === 'code'
-                  ? 'one-time-code'
-                  : undefined
-        }
-        onSubmitEditing={onSubmit}
-        style={{
-          minHeight: multiline ? 72 : 46,
-          borderWidth: 1,
-          borderColor: colors.border,
-          borderRadius: radii.md,
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          fontSize: 15,
-          ...inputFont(),
-          color: colors.onSurface,
-          backgroundColor: colors.surface,
-          textAlignVertical: multiline ? 'top' : 'center',
-        }}
-      />
+      <View>
+        <TextInput
+          accessibilityLabel={label}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder ? t(placeholder) : placeholder}
+          placeholderTextColor={colors.onSurfaceMuted}
+          maxLength={maxLength}
+          multiline={multiline}
+          secureTextEntry={secret && !shown}
+          autoCapitalize={kind === 'text' ? 'sentences' : 'none'}
+          autoCorrect={kind === 'text'}
+          keyboardType={
+            kind === 'email'
+              ? 'email-address'
+              : kind === 'code'
+                ? 'number-pad'
+                : kind === 'url'
+                  ? 'url'
+                  : 'default'
+          }
+          autoComplete={
+            kind === 'email'
+              ? 'email'
+              : kind === 'password'
+                ? 'current-password'
+                : kind === 'newPassword'
+                  ? 'new-password'
+                  : kind === 'code'
+                    ? 'one-time-code'
+                    : undefined
+          }
+          onSubmitEditing={onSubmit}
+          style={{
+            minHeight: multiline ? 72 : 46,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: radii.md,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            fontSize: 15,
+            ...inputFont(),
+            color: colors.onSurface,
+            backgroundColor: colors.surface,
+            textAlignVertical: multiline ? 'top' : 'center',
+            ...(secret ? { paddingRight: 88 } : null),
+          }}
+        />
+        {secret ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t(shown ? 'Passwort verbergen' : 'Passwort anzeigen')}
+            onPress={() => setShown(!shown)}
+            style={{
+              position: 'absolute',
+              right: 4,
+              top: 0,
+              bottom: 0,
+              minWidth: 80,
+              paddingHorizontal: 10,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={{ color: colors.primaryText, fontSize: 14, fontWeight: '700' }}>
+              {t(shown ? 'Verbergen' : 'Zeigen')}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }

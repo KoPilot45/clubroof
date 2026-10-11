@@ -80,6 +80,25 @@ describe.skipIf(!url)('Ersteinrichtung', () => {
 
   it('richtet den Verein mit Code einmalig ein', async () => {
     expect((await app.inject({ url: '/setup/status' })).json()).toEqual({ needsSetup: true });
+    // Anmeldeseite (LG): ohne Verein keine Angaben
+    expect((await app.inject({ url: '/public/club' })).json()).toEqual({
+      needsSetup: true,
+      club: null,
+    });
+
+    // Einrichtungscode schon beim Einstieg prüfen (LG)
+    const tokenBad = await app.inject({
+      method: 'POST',
+      url: '/setup/token',
+      payload: { setupToken: 'falsch' },
+    });
+    expect(tokenBad.statusCode).toBe(403);
+    const tokenOk = await app.inject({
+      method: 'POST',
+      url: '/setup/token',
+      payload: { setupToken: 'geheimer-code-123' },
+    });
+    expect(tokenOk.statusCode).toBe(204);
 
     const wrong = await app.inject({ method: 'POST', url: '/setup', payload: input('falsch') });
     expect(wrong.statusCode).toBe(403);
@@ -197,6 +216,18 @@ describe.skipIf(!url)('Ersteinrichtung', () => {
     const units = catalog.scopes.filter((sc) => sc.type === 'org_unit').map((sc) => sc.label);
     expect(units.sort()).toEqual(['Jugend', 'Senioren']);
 
+    // Anmeldeseite (LG): Vereinsangaben ohne Anmeldung
+    const publicClub = (await app.inject({ url: '/public/club' })).json();
+    expect(publicClub).toMatchObject({
+      needsSetup: false,
+      club: {
+        name: 'FC Neustadt 1920',
+        shortName: 'FC Neustadt',
+        colorTheme: 'red',
+        logoUrl: null,
+      },
+    });
+
     // Anmeldung mit dem neuen Konto
     const relogin = await app.inject({
       method: 'POST',
@@ -213,5 +244,12 @@ describe.skipIf(!url)('Ersteinrichtung', () => {
       payload: input('geheimer-code-123'),
     });
     expect(again.statusCode).toBe(409);
+    // …und auch der Einstieg in den Assistenten ist danach gesperrt
+    const tokenAgain = await app.inject({
+      method: 'POST',
+      url: '/setup/token',
+      payload: { setupToken: 'geheimer-code-123' },
+    });
+    expect(tokenAgain.statusCode).toBe(409);
   });
 });
