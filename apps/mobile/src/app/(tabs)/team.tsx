@@ -493,7 +493,7 @@ function MyTeamTile({
       <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
         {card.absentToday ? <Chip tone="info" label={`${card.absentToday} abwesend`} /> : null}
         {card.nextEvent && card.nextEvent.counts.pending ? (
-          <Chip tone="action" label={`${card.nextEvent.counts.pending} ohne Rückmeldung`} />
+          <Chip tone="action" label={`${card.nextEvent.counts.pending} offen`} />
         ) : null}
         {card.openTasks ? (
           <Chip

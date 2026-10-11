@@ -227,7 +227,7 @@ export default function ClubScreen() {
 
   return (
     <Screen
-      header={<AppHeader title="Verein" subtitle="Das Vereinsleben auf einen Blick" />}
+      header={<AppHeader title="Verein" subtitle="Dein Vereinsleben" />}
       refreshing={news.isRefetching}
       onRefresh={() => {
         void news.refetch();

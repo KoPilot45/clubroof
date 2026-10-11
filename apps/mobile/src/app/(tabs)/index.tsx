@@ -82,7 +82,7 @@ export default function HomeScreen() {
       {home.isPending ? <Loading variant="page" /> : null}
       {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}
 
-      {data ? (
+      {data && (me.teams.length > 0 || data.matches.length > 0) ? (
         <MatchCarousel
           matches={data.matches}
           club={me.club.shortName}
