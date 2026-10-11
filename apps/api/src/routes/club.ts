@@ -3,6 +3,7 @@ import {
   SCOPE_TYPES,
   type UploadedImage,
   type ClubCalendarEvent,
+  type ClubSchedule,
   type ClubTeamGroup,
   type ContactGroup,
   type DocumentItem,
@@ -20,6 +21,7 @@ import {
   listContacts,
   listDocuments,
   listClubCalendar,
+  getClubSchedule,
   listToday,
   loadVisibleDocument,
 } from '../services/club';
@@ -189,6 +191,21 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
         { from: new Date(request.query.from), to: new Date(request.query.to) },
         app.now(),
       ),
+  );
+  app.get(
+    '/club/schedule',
+    {
+      schema: {
+        querystring: z.object({
+          week: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/)
+            .optional(),
+        }),
+      },
+    },
+    async (request): Promise<ClubSchedule> =>
+      getClubSchedule(app.db, request.actor!, request.query.week, app.now()),
   );
   app.get('/club/today', async (request): Promise<EventSummary[]> =>
     listToday(app.db, request.actor!, app.now()),

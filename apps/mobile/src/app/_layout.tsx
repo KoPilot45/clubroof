@@ -206,6 +206,7 @@ function Navigator() {
           <Stack.Screen name="documents" options={{ headerShown: true, title: 'Dokumente' }} />
           <Stack.Screen name="search" options={{ headerShown: true, title: 'Suche' }} />
           <Stack.Screen name="club-teams" options={{ headerShown: true, title: 'Mannschaften' }} />
+          <Stack.Screen name="club-schedule" options={{ headerShown: true, title: 'Spielplan' }} />
           <Stack.Screen name="contacts" options={{ headerShown: true, title: 'Ansprechpartner' }} />
           <Stack.Screen
             name="club-cash/index"

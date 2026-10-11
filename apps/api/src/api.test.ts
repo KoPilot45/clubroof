@@ -13,6 +13,7 @@ import type {
   ClubFeeAssignment,
   ClubFeeImportPreview,
   ClubFees,
+  ClubSchedule,
   TeamCandidate,
   TeamManage,
   SchedulePreview,
@@ -370,6 +371,59 @@ describe.skipIf(!url)('API', () => {
       const player = await login('spieler');
       const asPlayer = await get<TeamOverview>(`/teams/${b1.id}`, player.token);
       expect(asPlayer.upcomingMatches).toEqual([]);
+    });
+  });
+
+  describe('Wochen-Spielplan des Vereins (WS)', () => {
+    const addDays = (iso: string, days: number) => {
+      const d = new Date(`${iso}T00:00:00Z`);
+      d.setUTCDate(d.getUTCDate() + days);
+      return d.toISOString().slice(0, 10);
+    };
+    const addWeek = (iso: string, weeks: number) => addDays(iso, weeks * 7);
+
+    it('liefert die Spiele einer Woche nach Tagen, nur Spiele, mit Spielfrei-Liste', async () => {
+      const { token } = await login('spieler');
+      const current = await get<ClubSchedule>('/club/schedule', token);
+      expect(new Date(`${current.weekStart}T00:00:00Z`).getUTCDay()).toBe(1); // Montag
+      expect(current.weekEnd).toBe(addDays(current.weekStart, 6));
+      expect(current.kinds).toEqual(expect.arrayContaining(['youth', 'seniors']));
+
+      // In einer der nächsten Wochen gibt es Spiele
+      let found: ClubSchedule | null = null;
+      for (let w = 0; w < 6 && !found; w++) {
+        const week = await get<ClubSchedule>(
+          `/club/schedule?week=${addWeek(current.weekStart, w)}`,
+          token,
+        );
+        if (week.days.length > 0) found = week;
+      }
+      expect(found).not.toBeNull();
+      const week = found!;
+      const dates = week.days.map((d) => d.date);
+      expect([...dates].sort()).toEqual(dates);
+      for (const day of week.days) {
+        expect(day.date >= week.weekStart && day.date <= week.weekEnd).toBe(true);
+        for (const m of day.matches) {
+          expect(m.event.type).toBe('match');
+          expect(m.event.match).not.toBeNull();
+          if (!m.canOpen) expect(m.event.counts).toEqual({ yes: 0, no: 0, maybe: 0, pending: 0 });
+        }
+      }
+      // Mannschaften mit Spiel stehen nicht unter „Spielfrei“
+      const playing = new Set(
+        week.days.flatMap((d) =>
+          d.matches.filter((m) => m.event.status !== 'cancelled').map((m) => m.event.team?.id),
+        ),
+      );
+      expect(week.free.some((t) => playing.has(t.id))).toBe(false);
+      // Datum innerhalb der Woche → gleiche Woche
+      const mid = await get<ClubSchedule>(
+        `/club/schedule?week=${addDays(week.weekStart, 2)}`,
+        token,
+      );
+      expect(mid.weekStart).toBe(week.weekStart);
+      expect((await send('GET', '/club/schedule?week=morgen', token)).status).toBe(400);
     });
   });
 

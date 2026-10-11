@@ -2087,3 +2087,26 @@ export type SearchResponse = {
   news: { id: string; title: string; publishedAt: string; source: string }[];
   teams: { id: string; name: string; badge: string; league: string | null }[];
 };
+
+// ── Wochen-Spielplan des Vereins (Paket WS) ─────────────────────────────────
+
+export type ClubScheduleMatch = {
+  event: EventSummary;
+  /** Bereich der Mannschaft (für den Filter Senioren/Jugend) */
+  unitKind: OrgUnitKind | null;
+  /** Spiel darf geöffnet werden (eigene Mannschaft, Kinder, Verantwortliche) */
+  canOpen: boolean;
+};
+
+export type ClubSchedule = {
+  /** Montag und Sonntag der Woche (Vereinszeit), ISO-Datum */
+  weekStart: string;
+  weekEnd: string;
+  today: string;
+  /** Spiele nach Tagen gruppiert, nur Tage mit Spielen */
+  days: { date: string; matches: ClubScheduleMatch[] }[];
+  /** Mannschaften der laufenden Saison ohne Spiel in dieser Woche („Spielfrei“) */
+  free: { id: string; name: string; badge: string; unitKind: OrgUnitKind | null }[];
+  /** Bereiche, die im Verein vorkommen (für die Filterchips) */
+  kinds: OrgUnitKind[];
+};
