@@ -17,14 +17,14 @@ Farben und ihre Regeln: [`FARBKONZEPT.md`](FARBKONZEPT.md). Die gewählten Entw�
    gefüllt, Nebenaktionen umrandet.
 4. **Pastell mit Bedeutung:** Icon-Kacheln und Kennzahlen nutzen fünf Pastellfarben mit dunkler Schrift; Statusfarben
    (Dringend, Aktion, Info, Erledigt) bleiben davon getrennt und immer mit Beschriftung.
-5. **Alles ist antippbar groß genug:** mindestens 44 pt, Texte sind Open Sans bzw. Oswald, lange Namen brechen um
+5. **Alles ist antippbar groß genug:** mindestens 44 pt, Texte sind Open Sans bzw. Saira Condensed (Überschriften, Zahlen), lange Namen brechen um
    (höchstens zwei Zeilen) statt Bedienelemente zu verdrängen.
 
 ## Bausteine
 
 | Baustein            | Aufbau                                                                                                                                        |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Kopfzeile           | Vereinslogo (Kreis, 48) · Begrüßung bzw. Titel (Oswald, Datum/Untertitel klein darüber/darunter) · Suche (46) · Glocke (46) mit rotem Zähler |
+| Kopfzeile           | Vereinslogo (Kreis, 48) · Begrüßung bzw. Titel (Saira Condensed, Datum/Untertitel klein darüber/darunter) · Suche (46) · Glocke (46) mit rotem Zähler |
 | Blickfangkarte      | Radius 28, Verlauf `hero.from → hero.to`, Wellen/Kreise in `hero.decor`, Schrift `hero.onHero`, Schatten `hero`                                |
 | Wischkarten         | Karten 306 breit, die nächste ragt ~60 pt heraus; darunter Punkte und „Nächste Spiele · 1 von 3“; bei Eltern chronologisch über alle Kinder |
 | Band „Offen“        | wischbare Mini-Karten (232 breit) mit Icon-Kachel, Titel und Frist; dringendste mit Statusrahmen                                             |
@@ -155,7 +155,7 @@ Aufbau wie `TeamNeu`: Team-Kacheln → Funktionschips → Blickfang Kader → Ka
 | Blickfang           | `TeamBand` als `HeroCard`: „KADER“, Spielerzahl groß, „Spieler · n verfügbar“; Chips „Bilanz S-U-N“ und „Training n %“. Ohne Kaderstatus steht die Bilanz groß. Tabellenplatz (vom Trainerteam unter „Verwalten › Mannschaftsprofil“ eingetragen, `teams.league_position`) und Top-Torschütze (aus abgeschlossenen Spielberichten, Statistik-Modul) erscheinen als Chips, höchstens drei |
 | Kacheln             | `TileGrid compact`: vier Spalten, Kachel 60 hoch mit Pastell-Icon (`tint`), Beschriftung darunter, Zähler/„neu“ oben rechts, Hinweis (z. B. „Kasse 512,35 €“) unter der Beschriftung. Gilt auch für Verein und Mehr in den nächsten Schritten |
 | Nächster Termin     | Datumskachel (`DateTile` lg), Titel, Zeit · Ort · Art, Hinweis zum Teilnahmemodell, `AttendanceBar` (zugesagt/unsicher/abgesagt/offen, bei Bedarf abwesend) mit Legende                          |
-| Letzte Ergebnisse   | Zeile mit Paarung, Datum, Ergebnis (Oswald) und Chip „Sieg“, „Remis“, „Niederlage“ (auch auf Vereins-Mannschaftsseite und Statistik)                                                              |
+| Letzte Ergebnisse   | Zeile mit Paarung, Datum, Ergebnis (Saira Condensed) und Chip „Sieg“, „Remis“, „Niederlage“ (auch auf Vereins-Mannschaftsseite und Statistik)                                                              |
 | Trainingswoche      | Datumskachel, Titel, „Zeit · Ort · n von m zugesagt“, abgesagte mit Chip und Grund                                                                                                              |
 
 - Neu in `ui.tsx`: `DateTile` (auch von Home genutzt), `TileGrid compact`, `Button hideLabel`.
@@ -184,7 +184,7 @@ Aufbau wie `VereinNeu`: Nächster Vereinstermin (Blickfang) → „Vereinsleben�
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Nächster Vereinstermin | `HeroCard` mit heller Datumskachel (Wochentag/Tag), Titel, Art · Datum · Ort und Button „Mehr erfahren“ (`hero`)                                                  |
 | Vereinsleben         | `TileGrid compact`, rollen- und modulabhängig wie bisher, Pastellfarbe je Kachel (`tint`), Zähler/„neu“/Hinweise aus `tile-info`; lange Namen trennen an Wortfugen (`softBreaks`: Veranstal-tungen, Ansprech-partner …) |
-| Heute auf der Anlage | Zeilen mit Uhrzeit (Oswald), Titel, Ort; abgesagte durchgestrichen mit Chip                                                                                        |
+| Heute auf der Anlage | Zeilen mit Uhrzeit (Saira Condensed), Titel, Ort; abgesagte durchgestrichen mit Chip                                                                                        |
 | Vereinsnews          | `NewsList` (gemeinsam mit Home): Icon-Kachel nach Dringlichkeit, Titel, Herkunft, Alter                                                                           |
 
 - **„Anpassen“** (Kachel am Ende): Blatt „Kacheln anpassen“ – Kacheln aus- und einblenden, mit Pfeilen verschieben; Auswahl je Person in `users.club_tiles` (`PUT /me/preferences`, `{ order, hidden }`), neue Funktionen erscheinen am Ende, „Zurücksetzen“ stellt alles her (`components/tile-customizer.tsx`).
