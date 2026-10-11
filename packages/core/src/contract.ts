@@ -760,7 +760,7 @@ export type UploadDocumentInput = {
 };
 
 export type UploadImageInput = {
-  purpose: 'news' | 'logo' | 'avatar' | 'board' | 'receipt';
+  purpose: 'news' | 'logo' | 'avatar' | 'board' | 'receipt' | 'sponsor';
   fileName: string;
   dataBase64: string;
 };

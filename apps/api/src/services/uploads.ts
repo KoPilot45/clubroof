@@ -29,6 +29,7 @@ const MEDIA_KIND = {
   avatar: 'avatar',
   board: 'board_image',
   receipt: 'cash_receipt',
+  sponsor: 'sponsor_image',
 } as const;
 
 async function audit(
@@ -62,6 +63,8 @@ export async function uploadImage(
     throw forbidden('Bilder für News laden nur Verfasserinnen und Verfasser hoch.');
   if (input.purpose === 'logo' && !actorCan(actor, 'club.settings.manage'))
     throw forbidden('Das Vereinslogo ändert nur die Vereinsadministration.');
+  if (input.purpose === 'sponsor' && !actorCan(actor, 'club.settings.manage'))
+    throw forbidden('Sponsorenbilder lädt die Vereinsadministration hoch.');
   if (input.purpose === 'receipt') {
     const cash = scopesWith(actor.grants, 'cash.manage');
     if (

@@ -51,6 +51,7 @@ const TEAM_MODULES = [
 ];
 const CLUB_MODULES = [
   'club_cash',
+  'sponsors',
   'polls',
   'club_events',
   'helpers',
@@ -79,6 +80,7 @@ const RECOMMENDED = new Set([
 ]);
 const MODULE_ICON: Record<string, IconName> = {
   club_cash: 'wallet',
+  sponsors: 'heart',
   squad: 'people',
   guest_players: 'swap-horizontal',
   statistics: 'bar-chart',

@@ -34,6 +34,8 @@ export const clubs = pgTable('clubs', {
   requireTwoFactor: boolean().notNull().default(false),
   /** Wer die Vereinskasse außer Kassenführung einsehen darf: treasury | board_reports | board_all */
   clubCashVisibility: text().notNull().default('treasury'),
+  /** Kennzeichnung der Sponsoren-Banner, z. B. „Anzeige“ */
+  sponsorLabel: text().notNull().default('Anzeige'),
   street: text(),
   postalCode: text(),
   city: text(),

@@ -70,6 +70,7 @@ export default function AdminLayout() {
           <Stack.Screen name="transfers" options={{ title: 'Spielerbewegungen' }} />
           <Stack.Screen name="transfer-new" options={{ title: 'Bewegung erfassen' }} />
           <Stack.Screen name="invites" options={{ title: 'Einladungen' }} />
+          <Stack.Screen name="sponsors" options={{ title: 'Sponsoren' }} />
         </Stack>
       </BottomTabBarHeightContext.Provider>
       {wizard ? null : <AdminNavBar onHeight={setNavHeight} />}

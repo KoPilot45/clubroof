@@ -632,3 +632,31 @@ export const clubFeePayments = pgTable(
   },
   (t) => [index().on(t.dueId)],
 );
+
+// ── Sponsoren (Paket SPO) ───────────────────────────────────────────────────
+
+/** Sponsor des Vereins (Modul „Sponsoren“): Logo und Banner, Link, Stufe, Laufzeit, Zuordnung. */
+export const sponsors = pgTable(
+  'sponsors',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    /** main | partner | supporter */
+    tier: text().notNull(),
+    /** nur https */
+    linkUrl: text(),
+    /** Medienverweise (Bilder) */
+    logoRef: text(),
+    bannerRef: text(),
+    /** club | youth | seniors */
+    scope: text().notNull().default('club'),
+    startsOn: date(),
+    endsOn: date(),
+    sortOrder: integer().notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.sortOrder)],
+);
