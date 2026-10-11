@@ -434,6 +434,8 @@ export type TeamOverview = {
   nextEvent: EventSummary | null;
   /** Kaderstatus bezogen auf den nächsten Termin */
   squad: SquadStatus | null;
+  /** Nur für das Trainerteam: die nächsten drei Spiele mit Kaderstatus (Kaderplanung auf einen Blick) */
+  upcomingMatches: { event: EventSummary; squad: SquadStatus }[];
   lastResults: MatchResult[];
   trainingWeek: EventSummary[];
   highlights: TeamHighlights;

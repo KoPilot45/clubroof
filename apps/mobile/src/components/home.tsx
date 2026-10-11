@@ -41,6 +41,7 @@ import {
   type IconName,
 } from '@/components/ui';
 import { clubInitials, formatDay, formatRemaining, formatTime } from '@/lib/format';
+import { ReorderList } from '@/components/reorder';
 import { openLink } from '@/lib/links';
 import { MATCH_KIND_LABELS } from '@/lib/labels';
 import { QUICK_LINKS, defaultQuickLinks, quickLinksFor, routeOf } from '@/lib/quick-links';
@@ -50,13 +51,13 @@ import { useTheme } from '@/lib/theme';
 const CARD_GAP = 12;
 
 /** Breite einer wischbaren Karte: 306, auf schmalen Geräten so, dass die nächste Karte herausragt. */
-function useCardWidth(max: number, peek = 60, gutter = 20) {
+export function useCardWidth(max: number, peek = 60, gutter = 20) {
   const { width } = useWindowDimensions();
   return Math.min(max, Math.max(240, width - gutter - peek));
 }
 
 /** Querliste, die über den Seitenrand hinausläuft und an Karten einrastet. */
-function Swipe({
+export function Swipe({
   width,
   children,
   onIndex,
@@ -657,27 +658,28 @@ function QuickAccessEditor({
     setSelected((cur) =>
       cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key].slice(0, 12),
     );
+  const linkOf = (key: string) => QUICK_LINKS.find((l) => l.key === key)!;
+  const rest = available.filter((l) => !selected.includes(l.key));
   return (
     <Sheet visible={visible} onClose={onClose} title="Schnellzugriff anpassen">
       <T variant="caption">
-        Wähle, was auf deiner Startseite ganz oben erreichbar sein soll. Die Reihenfolge ergibt sich
-        aus deiner Auswahl.
+        Ziehe die Einträge am Griff in deine Reihenfolge. Was oben steht, erreichst du auf der
+        Startseite zuerst.
       </T>
-      <View style={{ gap: 2 }}>
-        {available.map((l, i) => {
-          const on = selected.includes(l.key);
+      <ReorderList
+        keys={selected}
+        onChange={setSelected}
+        rowHeight={52}
+        renderRow={(key, handle) => {
+          const l = linkOf(key);
           return (
-            <Pressable
-              key={l.key}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: on }}
-              onPress={() => toggle(l.key)}
+            <View
               style={{
-                minHeight: 52,
+                flex: 1,
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 12,
-                borderTopWidth: i === 0 ? 0 : 1,
+                borderTopWidth: 1,
                 borderTopColor: colors.border,
               }}
             >
@@ -685,14 +687,44 @@ function QuickAccessEditor({
               <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
                 {l.label}
               </T>
-              <Ionicons
-                name={on ? 'checkbox' : 'square-outline'}
-                size={24}
-                color={on ? colors.primaryText : colors.onSurfaceMuted}
-              />
-            </Pressable>
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: true }}
+                accessibilityLabel={l.label}
+                onPress={() => toggle(key)}
+                hitSlop={8}
+              >
+                <Ionicons name="checkbox" size={24} color={colors.primaryText} />
+              </Pressable>
+              {handle}
+            </View>
           );
-        })}
+        }}
+      />
+      {rest.length > 0 ? <T variant="overline">Weitere Möglichkeiten</T> : null}
+      <View style={{ gap: 2 }}>
+        {rest.map((l, i) => (
+          <Pressable
+            key={l.key}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: false }}
+            onPress={() => toggle(l.key)}
+            style={{
+              minHeight: 52,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              borderTopWidth: i === 0 ? 0 : 1,
+              borderTopColor: colors.border,
+            }}
+          >
+            <IconTile name={l.icon} tone={l.tint} />
+            <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
+              {l.label}
+            </T>
+            <Ionicons name="square-outline" size={24} color={colors.onSurfaceMuted} />
+          </Pressable>
+        ))}
       </View>
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       <View style={{ flexDirection: 'row', gap: 8 }}>

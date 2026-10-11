@@ -350,6 +350,29 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Team: Nächste Spiele für das Trainerteam (Q1)', () => {
+    it('Trainer sehen die nächsten drei Spiele mit Kaderstatus, Spieler nicht', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const overview = await get<TeamOverview>(`/teams/${b1.id}`, coach.token);
+      expect(overview.upcomingMatches.length).toBeGreaterThan(0);
+      expect(overview.upcomingMatches.length).toBeLessThanOrEqual(3);
+      for (const m of overview.upcomingMatches) {
+        expect(m.event.type).toBe('match');
+        expect(m.event.status).toBe('scheduled');
+        expect(m.squad.available + m.squad.declined + m.squad.absent + m.squad.pending).toBe(
+          m.squad.players,
+        );
+      }
+      const starts = overview.upcomingMatches.map((m) => m.event.startsAt);
+      expect([...starts].sort()).toEqual(starts);
+
+      const player = await login('spieler');
+      const asPlayer = await get<TeamOverview>(`/teams/${b1.id}`, player.token);
+      expect(asPlayer.upcomingMatches).toEqual([]);
+    });
+  });
+
   describe('Termine und Zusagen', () => {
     async function nextB1Training(token: string): Promise<EventSummary> {
       const events = await get<EventSummary[]>('/events', token);

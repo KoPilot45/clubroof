@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
-import { AttendanceBar, ResultRow, TeamBand } from '@/components/team';
+import { AttendanceBar, ResultRow, TeamBand, UpcomingMatches } from '@/components/team';
 import {
   Button,
   Card,
@@ -306,13 +306,6 @@ export default function TeamScreen() {
             />
           ) : null}
 
-          <TileGrid items={withTileInfo(tiles, tileInfo)} />
-
-          {overview.isPending ? <Loading /> : null}
-          {overview.error ? (
-            <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />
-          ) : null}
-
           {o?.nextEvent ? (
             <Section title="Nächster Termin">
               <Card style={{ gap: 12 }}>
@@ -346,26 +339,17 @@ export default function TeamScreen() {
             </Section>
           ) : null}
 
-          {o && o.lastResults.length > 0 ? (
-            <Section
-              title="Letzte Ergebnisse"
-              action="Statistik"
-              onAction={
-                has('statistics') ? () => router.push(`/teams/${team.id}/stats`) : undefined
-              }
-            >
-              <Card>
-                {o.lastResults.map((r, i) => (
-                  <ResultRow
-                    key={r.eventId}
-                    result={r}
-                    clubShortName={me.club.shortName}
-                    badge={team.badge}
-                    first={i === 0}
-                  />
-                ))}
-              </Card>
+          {o && o.upcomingMatches.length > 0 ? (
+            <Section title="Nächste Spiele">
+              <UpcomingMatches matches={o.upcomingMatches} />
             </Section>
+          ) : null}
+
+          <TileGrid items={withTileInfo(tiles, tileInfo)} />
+
+          {overview.isPending ? <Loading /> : null}
+          {overview.error ? (
+            <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />
           ) : null}
 
           {o ? (
@@ -405,6 +389,28 @@ export default function TeamScreen() {
                         <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
                       ) : null
                     }
+                  />
+                ))}
+              </Card>
+            </Section>
+          ) : null}
+
+          {o && o.lastResults.length > 0 ? (
+            <Section
+              title="Letzte Ergebnisse"
+              action="Statistik"
+              onAction={
+                has('statistics') ? () => router.push(`/teams/${team.id}/stats`) : undefined
+              }
+            >
+              <Card>
+                {o.lastResults.map((r, i) => (
+                  <ResultRow
+                    key={r.eventId}
+                    result={r}
+                    clubShortName={me.club.shortName}
+                    badge={team.badge}
+                    first={i === 0}
                   />
                 ))}
               </Card>
