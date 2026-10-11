@@ -1,9 +1,18 @@
-import type { AttendanceCounts, MatchResult, SquadStatus, TeamHighlights } from '@clubroof/core';
+import type {
+  AttendanceCounts,
+  EventSummary,
+  MatchResult,
+  SquadStatus,
+  TeamHighlights,
+} from '@clubroof/core';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { formatDay } from '@/lib/format';
+import { formatDateTile, formatDay, formatTime } from '@/lib/format';
+import { MATCH_KIND_LABELS } from '@/lib/labels';
 import { useTheme } from '@/lib/theme';
-import { Card, Chip, HeroCard, Stat, T } from './ui';
+import { Card, Chip, DateTile, HeroCard, ListRow, Stat, T } from './ui';
+import { Swipe, useCardWidth } from './home';
 import { Text } from './app-text';
 
 export function SquadStatusCard({ squad }: { squad: SquadStatus }) {
@@ -229,6 +238,63 @@ export function AttendanceBar({ counts, absent }: { counts: AttendanceCounts; ab
           </View>
         ) : null}
       </View>
+    </View>
+  );
+}
+
+/**
+ * Trainerteam: die nächsten Spiele zum Wischen, je Karte der Zu-/Absage-Balken mit
+ * zugesagt / unsicher / abgesagt / offen / abwesend – die Kaderplanung auf einen Blick.
+ */
+export function UpcomingMatches({
+  matches,
+}: {
+  matches: { event: EventSummary; squad: SquadStatus }[];
+}) {
+  const width = useCardWidth(306);
+  const [index, setIndex] = useState(0);
+  const { colors } = useTheme();
+  const current = Math.min(index, matches.length - 1);
+  return (
+    <View style={{ gap: 8 }}>
+      <Swipe width={width} onIndex={setIndex}>
+        {matches.map(({ event, squad }) => {
+          const kind = event.match ? MATCH_KIND_LABELS[event.match.kind] : null;
+          const where = event.match ? (event.match.isHome ? 'Heimspiel' : 'Auswärts') : null;
+          return (
+            <Card key={event.id} style={{ width, gap: 12 }}>
+              <ListRow
+                first
+                onPress={() => router.push(`/events/${event.id}`)}
+                leading={<DateTile size="lg" {...formatDateTile(event.startsAt)} />}
+                title={event.title}
+                subtitle={[formatTime(event.startsAt), event.location, where, kind]
+                  .filter(Boolean)
+                  .join(' · ')}
+              />
+              <AttendanceBar counts={event.counts} absent={squad.absent} />
+            </Card>
+          );
+        })}
+      </Swipe>
+      {matches.length > 1 ? (
+        <View style={{ alignItems: 'center', gap: 6 }}>
+          <View style={{ flexDirection: 'row', gap: 6 }}>
+            {matches.map((m, i) => (
+              <View
+                key={m.event.id}
+                style={{
+                  width: i === current ? 20 : 7,
+                  height: 7,
+                  borderRadius: 4,
+                  backgroundColor: i === current ? colors.primary : colors.border,
+                }}
+              />
+            ))}
+          </View>
+          <T variant="caption">{`${current + 1} von ${matches.length}`}</T>
+        </View>
+      ) : null}
     </View>
   );
 }

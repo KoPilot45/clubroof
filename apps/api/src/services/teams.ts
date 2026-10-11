@@ -194,6 +194,28 @@ export async function getTeamOverview(
   ]);
 
   const [nextEvent] = await summarizeEvents(db, actor, nextRows, now);
+  // Trainerteam: die nächsten drei Spiele (keine Trainings) mit Kaderstatus
+  const upcomingMatches = permissions.manageEvents
+    ? await Promise.all(
+        (
+          await summarizeEvents(
+            db,
+            actor,
+            await fetchEventRows(
+              db,
+              and(
+                eq(s.events.teamId, team.id),
+                eq(s.events.type, 'match'),
+                eq(s.events.status, 'scheduled'),
+                gt(s.events.startsAt, now),
+              ),
+              3,
+            ),
+            now,
+          )
+        ).map(async (event) => ({ event, squad: await squadStatus(db, event.id) })),
+      )
+    : [];
   const trainingWeek = await summarizeEvents(db, actor, weekRows, now);
 
   // Torschützenkönig der Saison aus den abgeschlossenen Spielberichten (Statistik-Modul)
@@ -220,6 +242,7 @@ export async function getTeamOverview(
         .config.fines === true,
     nextEvent: nextEvent ?? null,
     squad: nextEvent ? await squadStatus(db, nextEvent.id) : null,
+    upcomingMatches,
     lastResults,
     trainingWeek,
     highlights: summarizeResults(allResults, rate),

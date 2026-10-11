@@ -359,6 +359,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Mannschaft anlegen', href: '/admin/team-new' },
       },
       {
+        id: 'coach-matches',
+        question: 'Wo sehe ich auf einen Blick, wer zum nächsten Spiel kann?',
+        answer:
+          'Im Team-Tab unter „Nächste Spiele“: Wische durch die nächsten drei Spiele. Jede Karte zeigt den Balken mit zugesagt, unsicher, abgesagt, offen und abwesend. Tippe auf eine Karte, um die Rückmeldungen im Einzelnen zu sehen.',
+        link: { label: 'Team', href: '/team' },
+      },
+      {
         id: 'coach-event',
         question: 'Wie lege ich einen Termin an oder sage ihn ab?',
         answer:

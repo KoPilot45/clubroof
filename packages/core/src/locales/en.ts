@@ -1801,6 +1801,8 @@ export const en: Record<string, string> = {
     "In the team's Team section under “Team fund → Account <Name>”. The outstanding amount is shown there, and you can report the payment.",
   'Im Team-Menü legst du Termine an und verwaltest Kader, Aufstellung, Kasse und Funktionen deiner Mannschaft.':
     'In the Team menu you create events and manage squad, line-up, team fund and features of your team.',
+  'Im Team-Tab unter „Nächste Spiele“: Wische durch die nächsten drei Spiele. Jede Karte zeigt den Balken mit zugesagt, unsicher, abgesagt, offen und abwesend. Tippe auf eine Karte, um die Rückmeldungen im Einzelnen zu sehen.':
+    'In the Team tab under “Next matches”: swipe through the next three matches. Each card shows the bar with accepted, unsure, declined, open and absent. Tap a card to see the individual responses.',
   'Im Termin steht beim Ort der Button „Route“. Er öffnet die Karten-App deines Handys (oder Google Maps im Browser) mit dem Spielort. Trainer können beim Anlegen einen Maps-Link oder Koordinaten hinterlegen, sonst wird die eingetragene Adresse verwendet.':
     'In the event, the venue has a “Directions” button. It opens your phone’s maps app (or Google Maps in the browser) with the venue. Coaches can add a maps link or coordinates when creating the event, otherwise the address entered is used.',
   'Im Training: „Plan erstellen“ mit Schwerpunkt, Ablauf und Notizen. Die Übungsbibliothek („Team → Übungen“) füllst du selbst; mit „Zum Training“ hängst du eine Übung an einen der nächsten Pläne. Spieler sehen nur Schwerpunkt und Material.':
@@ -2538,6 +2540,7 @@ export const en: Record<string, string> = {
   Rechts: 'Right',
   'Regel der Mannschaft ({0} Min.)': 'Team rule ({0} min.)',
   'regelmäßig fordern': 'request regularly',
+  'Reihenfolge ändern': 'Change order',
   Remis: 'Draw',
   Rhythmus: 'Frequency',
   'Richte zuerst selbst die 2-Faktor-Anmeldung ein – so sperrst du dich nicht aus.':
@@ -3259,6 +3262,7 @@ export const en: Record<string, string> = {
   'Weitere Anlage hinzufügen': 'Add another venue',
   'Weitere Aufgaben': 'More duties',
   'Weitere Datei importieren': 'Import another file',
+  'Weitere Möglichkeiten': 'More options',
   'Weitere Schreibweisen': 'Other spellings',
   'Weiterer Bereich': 'Another section',
   'Welche Bereiche hat dein Verein? Mannschaften werden später einem Bereich zugeordnet; Bereichsleitungen (z. B. Jugendleitung) sehen nur ihren Bereich.':
@@ -3382,6 +3386,8 @@ export const en: Record<string, string> = {
     'Where do I find the constitution, forms and plans?',
   'Wo finde ich was?': 'Where do I find what?',
   'Wo ist die Verwaltung?': 'Where is the administration?',
+  'Wo sehe ich auf einen Blick, wer zum nächsten Spiel kann?':
+    'Where can I see at a glance who is available for the next match?',
   'Wo sehe ich die Termine des ganzen Vereins?': 'Where can I see the events of the whole club?',
   'Wo sehe ich Kader, Rückennummern und Verfügbarkeit?':
     'Where can I see the squad, shirt numbers and availability?',
@@ -3463,6 +3469,8 @@ export const en: Record<string, string> = {
   Zeitraum: 'Period',
   'Zeitraum {1} – {2}': 'Period {1} – {2}',
   'Zentrales Mittelfeld': 'Central midfield',
+  'Ziehe die Einträge am Griff in deine Reihenfolge. Was oben steht, erreichst du auf der Startseite zuerst.':
+    'Drag the entries by the handle into your order. What is at the top is reachable first on the home screen.',
   'Zinsen und Kapitalerträge': 'Interest and investment income',
   'Zu den Mitgliedern': 'Go to members',
   'Zu einem Termin (optional)': 'Linked to an event (optional)',
