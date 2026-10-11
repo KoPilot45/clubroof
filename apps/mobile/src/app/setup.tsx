@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Image, View } from 'react-native';
+import { ClubroofLogo } from '@/components/brand-header';
 import { ClubColorPicker } from '@/components/club-color';
 import { ChoiceCard, NumberStepper, WizardShell, useWizardDraft } from '@/components/wizard';
 import {
@@ -392,7 +393,7 @@ function Wizard({ demo }: { demo?: boolean }) {
         error={error}
         header={
           <View style={{ alignItems: 'center', gap: 8 }}>
-            <Crest initials="CR" size={72} />
+            <ClubroofLogo size={84} />
             <T variant="headline" color={colors.primaryText} style={{ letterSpacing: 2 }} verbatim>
               CLUBROOF
             </T>

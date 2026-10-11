@@ -149,6 +149,7 @@ function Login({ known }: { known: boolean }) {
     <GradientHeader
       from={colors.hero.from}
       to={colors.hero.to}
+      decor={colors.hero.decor}
       style={{ paddingTop: insets.top + 28, paddingBottom: 56, alignItems: 'center', gap: 10 }}
     >
       <View
@@ -203,7 +204,7 @@ function Login({ known }: { known: boolean }) {
         gap: 10,
       }}
     >
-      <ClubroofLogo size={view === 'start' ? 72 : 56} mono />
+      <ClubroofLogo size={view === 'start' ? 84 : 64} mono />
       <Text style={{ color: '#FFFFFF', fontSize: 34, fontWeight: '800', letterSpacing: 3 }}>
         CLUBROOF
       </Text>
