@@ -27,6 +27,7 @@ import { formatLongDate, formatRemaining, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { CarpoolSection } from '@/components/carpool';
 import { MatchSection } from '@/components/match';
+import { SponsorBannerCard } from '@/components/sponsor-banner';
 import { TrainingPlanSection } from '@/components/training-plan';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -612,6 +613,7 @@ export default function EventScreen() {
           ) : null}
 
           {e.type === 'match' && e.team ? <MatchSection event={e} /> : null}
+          {e.type === 'match' ? <SponsorBannerCard placement="match" /> : null}
           <TrainingPlanSection event={e} />
 
           {e.carpool ? <CarpoolSection event={e} /> : null}

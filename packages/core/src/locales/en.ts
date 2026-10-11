@@ -290,12 +290,14 @@ export const en: Record<string, string> = {
   '90 Min.': '90 min',
   '90 Tage': '90 days',
   'ab {2}': 'from {2}',
+  'Ab Datum': 'From date',
   'ab dem {0}': 'from {0}',
   Abbrechen: 'Cancel',
   Abgang: 'Departure',
   'Abgebende Mannschaft': 'Releasing team',
   'Abgebende und aufnehmende Mannschaft sind gleich.':
     'The releasing and receiving teams are the same.',
+  Abgelaufen: 'Expired',
   abgesagt: 'declined',
   Abgesagt: 'Cancelled',
   'Abgesagt: {0}': 'Cancelled: {0}',
@@ -410,6 +412,7 @@ export const en: Record<string, string> = {
   'Andere Person': 'Another person',
   'Andere Strafe': 'Other fine',
   'Anderer Ort': 'Other location',
+  'Anderes Banner wählen': 'Choose another banner',
   'Anderes Bild': 'Different image',
   'Anderes Foto': 'Different photo',
   'Anderes Logo wählen': 'Choose another logo',
@@ -464,6 +467,7 @@ export const en: Record<string, string> = {
   'Anwesenheit erfassen': 'Record attendance',
   Anzahl: 'Quantity',
   'Anzahl Spieler': 'Number of players',
+  Anzeige: 'Advertisement',
   Anzeigen: 'Show',
   'App-Sperre': 'App lock',
   'App-Sperre einschalten': 'Turn on app lock',
@@ -564,6 +568,10 @@ export const en: Record<string, string> = {
   Bank: 'Bench',
   'Bank ({0})': 'Bench ({0})',
   'Bank {0}': 'Bench {0}',
+  'Banner (breites Bild, etwa 4:1)': 'Banner (wide image, about 4:1)',
+  'Banner sind immer gekennzeichnet, nichts wird ausgewertet, und sie erscheinen nie in Anmeldung, Kasse oder Chat und nie bei Minderjährigen.':
+    'Banners are always labeled, nothing is tracked, and they never appear in sign-in, treasury or chat and never for minors.',
+  'Banner wählen': 'Choose banner',
   Bar: 'Cash',
   Barkasse: 'Petty cash',
   Bearbeiten: 'Edit',
@@ -709,6 +717,7 @@ export const en: Record<string, string> = {
   Bis: 'Until',
   'Bis (einschließlich)': 'Until (inclusive)',
   'bis {0}': 'until {0}',
+  'Bis Datum': 'Until date',
   'Bis wann sollen Spieler antworten?': 'By when should players respond?',
   'Bisherige Abschlüsse': 'Previous closings',
   'Bisheriger Verein': 'Previous club',
@@ -873,6 +882,7 @@ export const en: Record<string, string> = {
   'Das Spiel konnte nicht angelegt werden.': 'The match could not be created.',
   'Das Spiel liegt in der Vergangenheit.': 'The match is in the past.',
   'Das Spiel wurde in der App abgesagt.': 'The match was cancelled in the app.',
+  'Das Sponsoren-Modul ist nicht aktiviert.': 'The sponsors module is not enabled.',
   'Das Thema': 'The topic',
   'Das Thema ist geschlossen – Antworten sind nicht mehr möglich.':
     'This topic is closed – replies are no longer possible.',
@@ -1019,6 +1029,7 @@ export const en: Record<string, string> = {
     'The link has expired or has already been used. Please ask the club for a new link.',
   'Der Link ist geheim. Wurde er weitergegeben, erzeuge einfach einen neuen.':
     'The link is secret. If it has been passed on, simply generate a new one.',
+  'Der Link muss mit https:// beginnen.': 'The link must start with https://.',
   'Der Name steht in Terminen und Listen, das Kürzel auf den Kacheln.':
     'The name appears in events and lists, the abbreviation on the tiles.',
   'Der neue Beginn liegt in der Vergangenheit.': 'The new start is in the past.',
@@ -1036,6 +1047,7 @@ export const en: Record<string, string> = {
     'The player permanently moves to another team from today.',
   'Der Spielerbedarf wurde zurückgezogen – du musst nicht aushelfen.':
     "The player request was withdrawn – you don't need to help out.",
+  'Der Sponsor': 'The sponsor',
   'Der Standard-Treffpunkt und die Minuten vor Beginn werden bei neuen Terminen vorbelegt.':
     'The default meeting point and the minutes before the start are prefilled for new events.',
   'Der Strafenkatalog ist noch leer.': 'The fine catalogue is still empty.',
@@ -1203,6 +1215,7 @@ export const en: Record<string, string> = {
   'Die Platzbelegung ist für Trainerteams und Platzverantwortliche.':
     'Pitch booking is for coaching staff and groundskeepers.',
   'Die Rechte konnten nicht gespeichert werden.': 'The permissions could not be saved.',
+  'Die Reihenfolge passt nicht zu den Sponsoren.': 'The order does not match the sponsors.',
   'Die Rolle': 'The role',
   'Die Rolle Kassenwart': 'The treasurer role',
   'Die Rollenübersicht ist für Vorstand und Administration.':
@@ -1284,6 +1297,8 @@ export const en: Record<string, string> = {
   'Diese Strafen gelten in deiner Mannschaft. Festgelegt werden sie vom Trainerteam und der Kasse.':
     'These fines apply on your team. They are set by the coaching staff and the team fund.',
   'Diese Umfrage kannst du nicht beenden.': 'You cannot close this poll.',
+  'Diese Unternehmen unterstützen unseren Verein. Danke! Wir werten nicht aus, wer sich welche Seite ansieht.':
+    'These companies support our club. Thank you! We do not track who looks at which page.',
   'Diese Woche': 'This week',
   'Diese Woche stehen keine Termine an.': 'No events this week.',
   'Diesen Bereich darfst du nicht einstellen.': 'You are not allowed to configure this department.',
@@ -1562,6 +1577,7 @@ export const en: Record<string, string> = {
   Feste: 'Parties',
   'Feste Rückennummern': 'Fixed shirt numbers',
   Finanzen: 'Finances',
+  Förderer: 'Supporter',
   'Forderung stornieren': 'Cancel claim',
   'Forderung storniert.': 'Claim cancelled.',
   Forderungen: 'Claims',
@@ -1717,6 +1733,7 @@ export const en: Record<string, string> = {
   'Gespeichert – wird gesendet, sobald du wieder online bist':
     "Saved – will be sent as soon as you're back online",
   Gesperrt: 'Closed',
+  Gesponsert: 'Sponsored',
   gestern: 'yesterday',
   Gestern: 'Yesterday',
   Getränk: 'Drink',
@@ -1754,6 +1771,8 @@ export const en: Record<string, string> = {
     "Records today's fund balance – e.g. after the cash audit or at the end of the season. The closing also appears in the fund report. When the season changes, the fund automatically moves to the new team.",
   Hartplatz: 'Hard court',
   'Häufige Fragen und Rundgang': 'Frequently asked questions and tour',
+  Hauptsponsor: 'Main sponsor',
+  Hauptsponsoren: 'Main sponsors',
   'Heim- oder Gastmannschaft fehlt.': 'Home or away team is missing.',
   Heimmannschaft: 'Home team',
   Heimspiel: 'Home match',
@@ -1781,6 +1800,7 @@ export const en: Record<string, string> = {
   'Heutiger Stand: {0}': 'Current balance: {0}',
   'Hier findest du alles, womit du selbst bestimmst, wer was von dir sieht und wie die App dich erreicht.':
     'Here you can find everything you use to decide who sees what of you and how the app reaches you.',
+  'Hier gibt es gerade nichts anzuzeigen.': 'There is nothing to show here right now.',
   'Hier siehst du auf einen Blick, was als Nächstes ansteht: Termine, Neuigkeiten und was noch zu tun ist.':
     'Here you see at a glance what is coming up next: events, news and what still needs doing.',
   Hilfe: 'Help',
@@ -2029,6 +2049,7 @@ export const en: Record<string, string> = {
   'Keine Zuordnungen gefunden.': 'No assignments found.',
   Keiner: 'None',
   'Keiner Mannschaft zugeordnet.': 'Not assigned to a team.',
+  Kennzeichnung: 'Label',
   'Kernmodule sind immer aktiv.': 'Core modules are always active.',
   Kind: 'Child',
   'Kind bereits erfasst?': 'Child already registered?',
@@ -2087,6 +2108,9 @@ export const en: Record<string, string> = {
     'Long lines wrap to two lines instead of pushing out controls, then get cut off',
   Länger: 'Longer',
   'Laufende Zuordnungen': 'Current assignments',
+  Läuft: 'Running',
+  'Läuft ab': 'Starts on',
+  'Läuft bis einschließlich': 'Runs until (inclusive)',
   'Lege das Mitglied an und ordne es danach einer Mannschaft zu. Den App-Zugang erhält es später über eine Einladung.':
     'Create the member and then assign them to a team. They will receive app access later via an invitation.',
   'Lege Strafen und Beträge fest. Vergebene Strafen landen auf dem Konto der Person; eine spätere Änderung gilt nur für neue Strafen.':
@@ -2127,8 +2151,11 @@ export const en: Record<string, string> = {
   'Logo hochladen': 'Upload logo',
   'Logo und Darstellung änderst du später unter Verwaltung → Verein & Design.':
     'You change the logo and appearance later under Administration → Club & design.',
+  'Logo wählen': 'Choose logo',
   'Logo, Darstellung und alles Weitere änderst du später unter Verwaltung → Verein & Design.':
     'You can change the logo, appearance and everything else later under Administration → Club & design.',
+  'Logos und Banner mit Kennzeichnung, Seite „Unsere Sponsoren“':
+    'Logos and banners with labeling, “Our sponsors” page',
   'Los geht’s': 'Let’s go',
   Löschen: 'Delete',
   'Löschen kann, wer die Übung angelegt hat.':
@@ -2419,6 +2446,7 @@ export const en: Record<string, string> = {
   'Noch keine Schiedsrichter eingetragen.': 'No referees entered yet.',
   'Noch keine Spieler im Kader.': 'No players in the squad yet.',
   'Noch keine Spielerbewegungen.': 'No player movements yet.',
+  'Noch keine Sponsoren angelegt.': 'No sponsors created yet.',
   'Noch keine Strafen festgelegt.': 'No fines defined yet.',
   'Noch keine Tore oder Karten erfasst.': 'No goals or cards recorded yet.',
   'Noch keine Veranstaltungen geplant.': 'No events planned yet.',
@@ -2499,6 +2527,7 @@ export const en: Record<string, string> = {
   Ordnung: 'Rules',
   Ordnungen: 'Rules',
   Ort: 'Location',
+  'Partner des Vereins': 'Club partner',
   Passiv: 'Inactive',
   'Passiv / Fördermitglied': 'Passive / supporting member',
   'Passt nicht in die Vereins-News': 'Does not fit the club news',
@@ -2743,10 +2772,12 @@ export const en: Record<string, string> = {
   'So kannst du bezahlen': 'How you can pay',
   'So sieht ein normaler Text in dieser Größe aus.':
     'This is what normal text looks like at this size.',
+  'So steht es über jedem Banner.': 'This is what appears above each banner.',
   'So wenig wie nötig: Gründe für Absagen und Abwesenheiten sehen nur das Trainerteam und du. Kontaktdaten sehen nur die Personen, die du freigibst. Eltern sehen die Daten ihrer Kinder. Trainingsbeteiligung und Kassenstand sieht die eigene Mannschaft.':
     "As few people as necessary: only the coaching staff and you can see reasons for declines and absences. Only the people you approve can see contact details. Parents see their children's data. Your own team can see training participation and the team fund balance.",
   'Sobald du einer Mannschaft zugeordnet bist, siehst du hier das nächste Spiel.':
     "As soon as you are assigned to a team, you'll see the next match here.",
+  Sofort: 'Immediately',
   'Soll des Verbands': 'Association quota',
   'Soll erfüllt': 'Quota met',
   'Soll speichern': 'Save quota',
@@ -2825,6 +2856,17 @@ export const en: Record<string, string> = {
     'Plays additionally in another team for a limited time; the main team stays.',
   'Spielt selbst: {0}{1}': 'Playing themselves: {0}{1}',
   Spieltag: 'Match day',
+  'Sponsor angelegt: {0}': 'Sponsor created: {0}',
+  'Sponsor anlegen': 'Create sponsor',
+  'Sponsor bearbeiten': 'Edit sponsor',
+  'Sponsor geändert: {0}': 'Sponsor changed: {0}',
+  'Sponsor gelöscht: {0}': 'Sponsor deleted: {0}',
+  Sponsoren: 'Sponsors',
+  'Sponsoren pflegt die Vereinsadministration.': 'The club administration maintains sponsors.',
+  'Sponsoren: Kennzeichnung „{0}“': 'Sponsors: label “{0}”',
+  'Sponsoren: Reihenfolge geändert': 'Sponsors: order changed',
+  'Sponsorenbilder lädt die Vereinsadministration hoch.':
+    'The club administration uploads sponsor images.',
   Sponsoring: 'Sponsorship',
   'Sportgeräte und Material': 'Sports equipment and materials',
   'Sportliche Leitung': 'Sporting management',
@@ -3069,6 +3111,7 @@ export const en: Record<string, string> = {
   'Umlage: Gesamtbetrag auf gewählte Personen aufteilen oder festen Betrag je Person fordern. Beiträge: z. B. 5 € monatlich, die App bucht sie allen Spielern zum Fälligkeitstag. Getränke: Preis festlegen und je Person Striche zählen. Alle Betroffenen werden benachrichtigt.':
     'Cost split: divide a total amount among selected people or charge a fixed amount per person. Fees: e.g. €5 monthly, which the app books for all players on the due date. Drinks: set a price and count tally marks per person. Everyone affected is notified.',
   'Umsatzsteuer-ID': 'VAT ID',
+  Unbefristet: 'Unlimited',
   Unbekannt: 'Unknown',
   'Unbekannte abgebende Mannschaft.': 'Unknown releasing team.',
   'Unbekannte Art der Kostenstelle.': 'Unknown cost center type.',
@@ -3077,9 +3120,12 @@ export const en: Record<string, string> = {
   'Unbekannte Funktion.': 'Unknown function.',
   'Unbekannte Kabine.': 'Unknown changing room.',
   'Unbekannte Kategorie.': 'Unknown category.',
+  'Unbekannte Kennzeichnung.': 'Unknown label.',
   'Unbekannte Kontoart.': 'Unknown account type.',
   'Unbekannte Person.': 'Unknown person.',
   'Unbekannte Rolle.': 'Unknown role.',
+  'Unbekannte Stufe.': 'Unknown tier.',
+  'Unbekannte Zuordnung.': 'Unknown assignment.',
   'Unbekannter Bereich.': 'Unknown section.',
   'Unbekannter Fehler': 'Unknown error',
   'Unbekannter Geltungsbereich.': 'Unknown scope.',
@@ -3095,6 +3141,7 @@ export const en: Record<string, string> = {
   'Ungültiger Push-Token': 'Invalid push token',
   'Ungültiger Speicherschlüssel.': 'Invalid storage key.',
   'Ungültiges Base32': 'Invalid Base32',
+  'Unsere Sponsoren': 'Our sponsors',
   unsicher: 'unsure',
   Unsicher: 'Maybe',
   'Unsicher gemeldet': 'Reported unsure',
@@ -3327,6 +3374,8 @@ export const en: Record<string, string> = {
   'Was sehe ich in der Kasse?': 'What can I see in the team fund?',
   'Was sich in den letzten Versionen verbessert hat (Beispieleinträge).':
     'What has improved in the latest versions (sample entries).',
+  'Was sind die Banner „Anzeige“ und wo sehe ich alle Sponsoren?':
+    'What are the “Advertisement” banners and where do I see all sponsors?',
   'Was sind Fundbüro, Forum und Vereinswissen?': 'What are lost & found, forum and club knowledge?',
   'Was sind Gastspieler?': 'What are guest players?',
   'Was soll der ganze Verein nutzen können? Empfohlenes ist vorausgewählt.':
@@ -3334,6 +3383,7 @@ export const en: Record<string, string> = {
   'Was suchst du?': 'What are you looking for?',
   'Was zeigt die Statistik?': 'What does the statistics section show?',
   'Was?': 'What?',
+  Webseite: 'Website',
   Wechsel: 'Transfer',
   'Wechsel im Verein': 'Club transfers',
   'Wechsel, Leihe und neue Mannschaft': 'Transfers, loans and new team',
@@ -3362,6 +3412,8 @@ export const en: Record<string, string> = {
   'Wenige Themen, die nach Ablauf schließen – für Absprachen, Ideen und Rückmeldungen. Bitte freundlich bleiben; das Moderationsteam blendet Unpassendes aus.':
     'A few topics that close when they expire – for arrangements, ideas and feedback. Please stay friendly; the moderation team hides anything inappropriate.',
   'Wenige, moderierte Diskussionsthemen': 'A few moderated discussion topics',
+  'Wenn dein Verein das Sponsoren-Modul nutzt, erscheinen auf der Startseite, am Spieltag und in den Terminlisten gekennzeichnete Banner der Sponsoren. Alle Sponsoren findest du unter „Mehr → Unsere Sponsoren“. Die App wertet nicht aus, wer was ansieht oder antippt; Kinder und Jugendliche unter 18 sehen keine Banner.':
+    'If your club uses the sponsors module, labeled sponsor banners appear on the home screen, on match day and in appointment lists. You can find all sponsors under “More → Our sponsors”. The app does not track who views or taps what; children and young people under 18 see no banners.',
   'Wenn deine Rückmeldung (oder die deines Kindes) noch fehlt – so lange vor der Frist:':
     "If your response (or your child's) is still missing – this long before the deadline:",
   'Wenn du das nicht warst, ignoriere diese E-Mail – dein Passwort bleibt unverändert.':
@@ -3388,6 +3440,7 @@ export const en: Record<string, string> = {
   'Wer trainiert die Mannschaft?': 'Who coaches the team?',
   'Wer tritt bei?': 'Who is joining?',
   'Wer übernimmt?': 'Who takes it?',
+  'Wer unseren Verein unterstützt': 'Who supports our club',
   'Werde ich nachts gestört?': 'Will I be disturbed at night?',
   Wetter: 'Weather',
   Wichtig: 'Important',
@@ -3558,6 +3611,8 @@ export const en: Record<string, string> = {
   'Zentrales Mittelfeld': 'Central midfield',
   'Ziehe die Einträge am Griff in deine Reihenfolge. Was oben steht, erreichst du auf der Startseite zuerst.':
     'Drag the entries by the handle into your order. What is at the top is reachable first on the home screen.',
+  'Ziehe die Einträge am Griff, um die Reihenfolge zu ändern.':
+    'Drag the entries by the handle to change the order.',
   'Zinsen und Kapitalerträge': 'Interest and investment income',
   'Zu den Mitgliedern': 'Go to members',
   'Zu einem Termin (optional)': 'Linked to an event (optional)',
@@ -3590,6 +3645,7 @@ export const en: Record<string, string> = {
   'Zum Training': 'To training',
   'Zum Trainingsplan hinzugefügt': 'Added to the training plan',
   Zuordnen: 'Assign',
+  Zuordnung: 'Assignment',
   'Zuordnung prüfen – oder als passiv führen': 'Check assignment – or mark as inactive',
   'Zur Anmeldung': 'To sign-in',
   'Zur App': 'To the app',

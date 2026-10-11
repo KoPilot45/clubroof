@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { EventRow } from '@/components/events';
+import { SponsorBannerCard } from '@/components/sponsor-banner';
 import { Card, ChoiceChips, Empty, ErrorNotice, Loading, Screen, Section } from '@/components/ui';
 import { EVENT_KIND_LABELS, kindOf, type EventKind } from '@/lib/event-types';
 import { useSignedIn } from '@/lib/session';
@@ -72,6 +73,7 @@ export default function AllEventsScreen() {
         selected={[filter]}
         onToggle={setFilter}
       />
+      <SponsorBannerCard placement="events" />
       {list.length === 0 ? (
         <Card>
           <Empty icon="calendar-outline" text="Keine Termine in den nächsten Wochen." />

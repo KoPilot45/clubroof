@@ -76,6 +76,12 @@ export const MODULES = [
     scopes: ['club'],
   },
   {
+    key: 'sponsors',
+    name: 'Sponsoren',
+    description: 'Logos und Banner mit Kennzeichnung, Seite „Unsere Sponsoren“',
+    scopes: ['club'],
+  },
+  {
     key: 'team_tasks',
     name: 'Mannschaftsaufgaben',
     description: 'Fahrdienst, Trikotwäsche, Kuchen – wer übernimmt was',

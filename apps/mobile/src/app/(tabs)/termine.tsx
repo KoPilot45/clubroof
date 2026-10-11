@@ -18,6 +18,7 @@ import {
   Section,
   T,
 } from '@/components/ui';
+import { SponsorBannerCard } from '@/components/sponsor-banner';
 import { KindLegend } from '@/components/kind-legend';
 import { kindColor, kindOf } from '@/lib/event-types';
 import { formatDateTile, formatTime } from '@/lib/format';
@@ -132,6 +133,8 @@ export default function EventsTab() {
           </Card>
         ) : null}
       </Section>
+
+      <SponsorBannerCard placement="events" />
 
       {(duties.data ?? []).length > 0 ? (
         <Section

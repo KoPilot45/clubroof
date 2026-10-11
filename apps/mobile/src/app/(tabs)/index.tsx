@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { MatchCarousel, OpenBand, QuickAccess, WeekCard } from '@/components/home';
+import { SponsorBannerCard } from '@/components/sponsor-banner';
 import { Card, ChoiceChips, Chip, ErrorNotice, Loading, Screen, Section, T } from '@/components/ui';
 import { NewsList } from '@/components/news';
 import { WelcomeTour } from '@/components/welcome-tour';
@@ -108,6 +109,8 @@ export default function HomeScreen() {
       ) : null}
 
       <QuickAccess me={me} info={quickInfo} onSaved={refresh} />
+
+      <SponsorBannerCard placement="home" />
 
       {data?.clubOverview ? (
         <Section title="Verein im Überblick">

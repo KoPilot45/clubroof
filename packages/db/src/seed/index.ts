@@ -2390,6 +2390,57 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         duty(refPersons[2]!, -30, 12, 'SG Fluss – FC See, U17', 'Seeplatz'),
       ]);
 
+    // ── Sponsoren (Paket SPO): Stufen, Zuordnung und Laufzeiten; ohne Bilder (Textbanner) ─────
+    await tx.insert(s.sponsors).values([
+      {
+        clubId,
+        name: 'Haus & Garten Müller GmbH',
+        tier: 'main',
+        linkUrl: 'https://www.example.org/mueller',
+        scope: 'club',
+        sortOrder: 0,
+      },
+      {
+        clubId,
+        name: 'Sportshop Musterstadt',
+        tier: 'partner',
+        linkUrl: 'https://www.example.org/sportshop',
+        scope: 'club',
+        sortOrder: 1,
+      },
+      {
+        clubId,
+        name: 'Fahrschule Lindner',
+        tier: 'partner',
+        linkUrl: 'https://www.example.org/lindner',
+        scope: 'youth',
+        sortOrder: 2,
+      },
+      {
+        clubId,
+        name: 'Gasthaus Zur Linde',
+        tier: 'supporter',
+        scope: 'seniors',
+        sortOrder: 3,
+      },
+      {
+        clubId,
+        name: 'Bäckerei Kaiser',
+        tier: 'supporter',
+        scope: 'club',
+        startsOn: toIsoDate(addDays(today, 30)), // geplant
+        sortOrder: 4,
+      },
+      {
+        clubId,
+        name: 'Autohaus Berger',
+        tier: 'supporter',
+        scope: 'club',
+        endsOn: toIsoDate(addDays(today, -20)), // abgelaufen
+        sortOrder: 5,
+      },
+    ]);
+
     // ── Mannschaftsaufgaben (B-Jugend) ──────────────────────────────────────────────────────
     await tx.insert(s.teamTasks).values([
       {

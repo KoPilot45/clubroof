@@ -133,6 +133,18 @@ export default function MoreScreen() {
       tint: 'violet',
       onPress: () => router.push('/account'),
     },
+    ...(me.clubModules.includes('sponsors')
+      ? [
+          {
+            key: 'sponsors',
+            label: 'Unsere Sponsoren',
+            subtitle: 'Wer unseren Verein unterstützt',
+            icon: 'heart' as const,
+            tint: 'pink' as const,
+            onPress: () => router.push('/sponsors'),
+          },
+        ]
+      : []),
     {
       key: 'help',
       label: 'Hilfe & Anleitung',

@@ -288,6 +288,13 @@
       "when": 1791727923608,
       "tag": "0040_referee_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1791729033284,
+      "tag": "0041_sponsors",
+      "breakpoints": true
     }
   ]
 }

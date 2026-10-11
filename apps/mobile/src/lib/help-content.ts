@@ -54,6 +54,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Schiedsrichter', href: '/referees' },
       },
       {
+        id: 'sponsors',
+        question: 'Was sind die Banner „Anzeige“ und wo sehe ich alle Sponsoren?',
+        answer:
+          'Wenn dein Verein das Sponsoren-Modul nutzt, erscheinen auf der Startseite, am Spieltag und in den Terminlisten gekennzeichnete Banner der Sponsoren. Alle Sponsoren findest du unter „Mehr → Unsere Sponsoren“. Die App wertet nicht aus, wer was ansieht oder antippt; Kinder und Jugendliche unter 18 sehen keine Banner.',
+        link: { label: 'Unsere Sponsoren', href: '/sponsors' },
+      },
+      {
         id: 'login',
         question: 'Ich habe mein Passwort vergessen.',
         answer:

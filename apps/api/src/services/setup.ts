@@ -22,6 +22,7 @@ import { checkPassword, hashPassword } from './account';
 /** Optionale Module starten „verfügbar“ und erscheinen im Update-Center. */
 const OPTIONAL = new Set([
   'club_cash',
+  'sponsors',
   'facility_booking',
   'player_exchange',
   'forum',

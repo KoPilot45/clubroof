@@ -149,6 +149,16 @@ export default function AdminScreen() {
               },
             ]
           : []),
+        ...(me.canManageClub && me.clubModules.includes('sponsors')
+          ? [
+              {
+                key: 'sponsors',
+                label: 'Sponsoren',
+                icon: 'heart' as const,
+                onPress: () => router.push('/admin/sponsors'),
+              },
+            ]
+          : []),
         ...(o.can.manageModules
           ? [
               {
