@@ -28,6 +28,7 @@ import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { dateFormat } from '@/lib/i18n';
+import type { TintKey } from '@clubroof/design-tokens';
 import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 
 const PARTICIPATION_LABELS = {
@@ -72,37 +73,18 @@ export default function TeamScreen() {
   const roles = me.teams.filter((t) => t.id === team?.id);
   const openPolls = (polls.data ?? []).filter((p) => p.isOpen && !p.myOptionId).length;
 
-  const tiles: TileItem[] = team
+  // Kacheln in drei Gruppen (Paket MS): Spiel- & Trainingsbetrieb, Organisation, Verwaltung (nur mit Rechten)
+  const perm = o?.permissions;
+  const play: TileItem[] = team
     ? [
         {
           key: 'events',
-          tint: 'green' as const,
           label: 'Termine',
           icon: 'calendar',
           onPress: () => router.push(`/events?teamId=${team.id}`),
         },
-        ...(o?.permissions.manageEvents
-          ? [
-              {
-                key: 'new',
-                tint: 'green' as const,
-                label: 'Termin anlegen',
-                icon: 'add-circle' as const,
-                onPress: () => router.push(`/teams/${team.id}/event-new`),
-              },
-            ]
-          : [
-              {
-                key: 'absence',
-                tint: 'orange' as const,
-                label: 'Abwesenheit melden',
-                icon: 'airplane' as const,
-                onPress: () => router.push('/absences/new'),
-              },
-            ]),
         {
           key: 'roster',
-          tint: 'blue' as const,
           label: 'Kader',
           icon: 'people',
           onPress: () => router.push(`/teams/${team.id}/roster`),
@@ -111,54 +93,49 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'stats',
-                tint: 'violet' as const,
                 label: 'Statistik',
                 icon: 'bar-chart' as const,
                 onPress: () => router.push(`/teams/${team.id}/stats`),
               },
             ]
           : []),
-        ...(has('team_cash')
-          ? [
-              {
-                key: 'cash',
-                tint: 'orange' as const,
-                label: 'Kasse',
-                icon: 'wallet' as const,
-                onPress: () => router.push(`/teams/${team.id}/cash`),
-              },
-            ]
-          : []),
-        ...(o?.fines
-          ? [
-              {
-                key: 'fines',
-                tint: 'pink' as const,
-                label: 'Strafenkatalog',
-                icon: 'list' as const,
-                onPress: () => router.push(`/teams/${team.id}/fines`),
-              },
-            ]
-          : []),
-        ...(has('training_planning') && o?.permissions.manageEvents
+        ...(has('training_planning') && perm?.manageEvents
           ? [
               {
                 key: 'exercises',
-                tint: 'violet' as const,
                 label: 'Übungen',
                 icon: 'library' as const,
                 onPress: () => router.push('/exercises'),
               },
             ]
           : []),
-        ...(o?.permissions.manageModules
+        ...(perm?.manageDemand && has('guest_players')
           ? [
               {
-                key: 'modules',
-                tint: 'blue' as const,
-                label: 'Funktionen',
-                icon: 'options' as const,
-                onPress: () => router.push(`/teams/${team.id}/modules`),
+                key: 'exchange',
+                label: 'Gastspieler',
+                icon: 'swap-horizontal' as const,
+                onPress: () => router.push('/exchange'),
+              },
+            ]
+          : []),
+        {
+          key: 'absence',
+          label: 'Abwesenheit melden',
+          icon: 'airplane',
+          onPress: () => router.push('/absences/new'),
+        },
+      ]
+    : [];
+  const organisation: TileItem[] = team
+    ? [
+        ...(has('team_cash')
+          ? [
+              {
+                key: 'cash',
+                label: 'Kasse',
+                icon: 'wallet' as const,
+                onPress: () => router.push(`/teams/${team.id}/cash`),
               },
             ]
           : []),
@@ -166,7 +143,6 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'tasks',
-                tint: 'orange' as const,
                 label: 'Aufgaben',
                 icon: 'checkbox' as const,
                 onPress: () => router.push(`/teams/${team.id}/tasks`),
@@ -177,7 +153,6 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'polls',
-                tint: 'blue' as const,
                 label: 'Umfragen',
                 icon: 'stats-chart' as const,
                 badge: openPolls,
@@ -189,26 +164,87 @@ export default function TeamScreen() {
           ? [
               {
                 key: 'docs',
-                tint: 'pink' as const,
                 label: 'Dokumente',
                 icon: 'document-text' as const,
                 onPress: () => router.push(`/documents?teamId=${team.id}`),
               },
             ]
           : []),
-        ...(o?.permissions.manageDemand && has('guest_players')
+      ]
+    : [];
+  const admin: TileItem[] = team
+    ? [
+        ...(perm?.manageEvents
           ? [
               {
-                key: 'exchange',
-                tint: 'green' as const,
-                label: 'Gastspieler',
-                icon: 'swap-horizontal' as const,
-                onPress: () => router.push('/exchange'),
+                key: 'new',
+                label: 'Termin anlegen',
+                icon: 'add-circle' as const,
+                onPress: () => router.push(`/teams/${team.id}/event-new`),
+              },
+              {
+                key: 'squad',
+                label: 'Kader verwalten',
+                icon: 'person-add' as const,
+                onPress: () => router.push(`/teams/${team.id}/manage`),
+              },
+              {
+                key: 'edit',
+                label: 'Mannschaft bearbeiten',
+                icon: 'create' as const,
+                onPress: () => router.push(`/teams/${team.id}/manage`),
+              },
+            ]
+          : []),
+        ...(o?.fines && (perm?.manageFines || perm?.manageCash)
+          ? [
+              {
+                key: 'fines',
+                label: 'Strafen & Katalog',
+                icon: 'list' as const,
+                onPress: () => router.push(`/teams/${team.id}/fines`),
+              },
+            ]
+          : []),
+        ...(perm?.manageCash && has('team_cash')
+          ? [
+              {
+                key: 'cash-admin',
+                label: 'Kassenverwaltung',
+                icon: 'calculator' as const,
+                onPress: () => router.push(`/teams/${team.id}/cash-admin`),
+              },
+            ]
+          : []),
+        ...(perm?.manageModules
+          ? [
+              {
+                key: 'modules',
+                label: 'Funktionen',
+                icon: 'options' as const,
+                onPress: () => router.push(`/teams/${team.id}/modules`),
+              },
+            ]
+          : []),
+        ...(perm?.manageEvents && me.canInvite
+          ? [
+              {
+                key: 'invite',
+                label: 'Spieler einladen',
+                icon: 'person-add-outline' as const,
+                onPress: () => router.push('/admin/invites'),
               },
             ]
           : []),
       ]
     : [];
+  const groups: { key: string; title: string; tint: TintKey; tiles: TileItem[] }[] = (
+    [
+      { key: 'play', title: 'Spiel- & Trainingsbetrieb', tint: 'green', tiles: play },
+      { key: 'org', title: 'Organisation', tint: 'blue', tiles: organisation },
+      { key: 'admin', title: 'Verwaltung', tint: 'violet', tiles: admin },
+    ] as { key: string; title: string; tint: TintKey; tiles: TileItem[] }[]
+  ).filter((g) => g.tiles.length > 0);
 
   return (
     <Screen
@@ -345,7 +381,13 @@ export default function TeamScreen() {
             </Section>
           ) : null}
 
-          <TileGrid items={withTileInfo(tiles, tileInfo)} />
+          {groups.map((g) => (
+            <Section key={g.key} title={g.title}>
+              <TileGrid
+                items={withTileInfo(g.tiles, tileInfo).map((tile) => ({ ...tile, tint: g.tint }))}
+              />
+            </Section>
+          ))}
 
           {overview.isPending ? <Loading /> : null}
           {overview.error ? (
