@@ -49,6 +49,7 @@ import Svg, {
 import { HEADING_FONT, inputFont } from '@/lib/fonts';
 import { useTheme } from '@/lib/theme';
 import { Text } from './app-text';
+import { CalendarSheet } from './calendar-picker';
 import { RequestError } from '@/lib/api';
 import { mediaUri } from '@/lib/upload';
 import { hapticSelect } from '@/lib/haptics';
@@ -1598,25 +1599,31 @@ const dayLabel = dateFormat({
   timeZone: 'UTC',
 });
 
-/** Einfache Datumsauswahl mit Vor/Zurück – ohne zusätzliche native Bibliothek. */
+/**
+ * Datumsauswahl: Pfeile verschieben um einen Tag, Antippen des Datums öffnet einen Kalender
+ * (Monatsraster, Wischen zwischen Monaten, „Heute“, Mindest-/Höchstdatum).
+ */
 export function DateStepper({
   label,
   value,
   onChange,
   min,
+  max,
 }: {
   label: string;
   /** ISO-Datum JJJJ-MM-TT */
   value: string;
   onChange: (iso: string) => void;
   min?: string;
+  max?: string;
 }) {
   const { colors, radii } = useTheme();
+  const [open, setOpen] = useState(false);
   const shift = (days: number) => {
     const d = new Date(`${value}T00:00:00Z`);
     d.setUTCDate(d.getUTCDate() + days);
     const next = d.toISOString().slice(0, 10);
-    if (!min || next >= min) onChange(next);
+    if ((!min || next >= min) && (!max || next <= max)) onChange(next);
   };
   const button = (icon: IconName, days: number, a11y: string) => (
     <Pressable
@@ -1652,19 +1659,42 @@ export function DateStepper({
         }}
       >
         {button('chevron-back', -1, `${label}: einen Tag früher`)}
-        <Text
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${label}: Kalender öffnen`}
+          onPress={() => setOpen(true)}
           style={{
             flex: 1,
-            textAlign: 'center',
-            fontSize: 15,
-            fontWeight: '700',
-            color: colors.onSurface,
+            minHeight: 40,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
           }}
         >
-          {dayLabel.format(new Date(`${value}T00:00:00Z`))}
-        </Text>
+          <Ionicons name="calendar-outline" size={16} color={colors.onSurfaceMuted} />
+          <Text
+            style={{
+              textAlign: 'center',
+              fontSize: 15,
+              fontWeight: '700',
+              color: colors.onSurface,
+            }}
+          >
+            {dayLabel.format(new Date(`${value}T00:00:00Z`))}
+          </Text>
+        </Pressable>
         {button('chevron-forward', 1, `${label}: einen Tag später`)}
       </View>
+      <CalendarSheet
+        visible={open}
+        value={value}
+        min={min}
+        max={max}
+        title={label}
+        onSelect={onChange}
+        onClose={() => setOpen(false)}
+      />
     </View>
   );
 }

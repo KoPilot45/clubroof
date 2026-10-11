@@ -233,6 +233,7 @@ export default function NewEventScreen() {
                   label="Wiederholen bis einschließlich"
                   value={until}
                   min={date}
+                  max={toIsoDate(addDays(fromIsoDate(date), 364))}
                   onChange={setRepeatUntil}
                 />
                 <T variant="caption">
