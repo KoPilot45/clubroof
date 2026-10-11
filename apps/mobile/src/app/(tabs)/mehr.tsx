@@ -312,29 +312,22 @@ export default function MoreScreen() {
         <MenuCard rows={myArea} />
       </Section>
 
-      <Section title="Meine Mannschaften">
-        <Card>
-          {myTeams.length === 0 ? (
-            <ListRow
-              first
-              leading={<IconTile name="shirt-outline" tone="green" />}
-              title="Noch keiner Mannschaft zugeordnet"
-              subtitle="Alle Mannschaften des Vereins ansehen"
-              onPress={() => router.push('/club-teams')}
-            />
-          ) : null}
-          {myTeams.map((t, i) => (
-            <ListRow
-              key={t.id}
-              first={i === 0}
-              leading={<IconTile name="shirt-outline" tone="green" />}
-              title={teamTitle(t)}
-              subtitle={t.subtitle}
-              onPress={() => router.push(`/team?teamId=${t.id}`)}
-            />
-          ))}
-        </Card>
-      </Section>
+      {myTeams.length > 0 ? (
+        <Section title="Meine Mannschaften">
+          <Card>
+            {myTeams.map((t, i) => (
+              <ListRow
+                key={t.id}
+                first={i === 0}
+                leading={<IconTile name="shirt-outline" tone="green" />}
+                title={teamTitle(t)}
+                subtitle={t.subtitle}
+                onPress={() => router.push(`/team?teamId=${t.id}`)}
+              />
+            ))}
+          </Card>
+        </Section>
+      ) : null}
 
       <Section title="Einstellungen">
         <MenuCard rows={settings} />

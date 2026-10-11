@@ -1310,6 +1310,8 @@ const SOFT_BREAKS: [string, string][] = [
   ['Platzbelegung', 'Platz\u00ADbelegung'],
   ['Strafenkatalog', 'Strafen\u00ADkatalog'],
   ['Kassenverwaltung', 'Kassen\u00ADverwaltung'],
+  ['Spielerbewegungen', 'Spieler\u00ADbewegungen'],
+  ['Änderungsprotokoll', 'Änderungs\u00ADprotokoll'],
   ['Announcements', 'Announce\u00ADments'],
   ['Contact persons', 'Contact persons'],
 ];
@@ -1341,7 +1343,7 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
             disabled={disabled}
             onPress={item.onPress}
             style={{
-              width: '22.5%',
+              width: '31%',
               flexGrow: 0,
               alignItems: 'center',
               gap: 6,
@@ -1353,8 +1355,8 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                 <View
                   style={{
                     width: '100%',
-                    height: 60,
-                    borderRadius: 20,
+                    height: 64,
+                    borderRadius: 22,
                     alignItems: 'center',
                     justifyContent: 'center',
                     backgroundColor: pressed ? colors.surfaceVariant : colors.surfaceRaised,
@@ -1404,7 +1406,7 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                   numberOfLines={2}
                   verbatim
                   style={{
-                    fontSize: item.label.length > 11 ? 11 : 12,
+                    fontSize: item.label.length > 14 ? 12 : 13,
                     fontWeight: '600',
                     color: colors.onSurface,
                     textAlign: 'center',
@@ -1417,7 +1419,7 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                     numberOfLines={2}
                     style={{
                       marginTop: -4,
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: '600',
                       textAlign: 'center',
                       color: tone ? colors.status[tone].onContainer : colors.onSurfaceMuted,

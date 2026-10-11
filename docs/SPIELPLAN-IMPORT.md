@@ -8,7 +8,7 @@ alle Spiele der Mannschaften automatisch. Trainer können dieselbe Funktion für
 1. **Datei wählen** (CSV, später auch Excel und iCal). Zeichensatz und Trenner werden erkannt (wie beim Mitglieder-Import).
 2. **Spalten zuordnen:** Vorbelegung für das DFBnet-Format, sonst Zuordnung von Hand (Datum, Uhrzeit, Heim, Gast, Spielort, Wettbewerb/Staffel,
    Spielkennung). Die Zuordnung wird je Verein gemerkt.
-3. **Mannschaften zuordnen:** Aus dem Heim- und Gastnamen erkennt die App die eigenen Mannschaften („SV Grün-Weiß II“, „B-Junioren“). Unklare Namen
+3. **Mannschaften zuordnen:** Aus dem Heim- und Gastnamen erkennt die App die eigenen Mannschaften („SV Grün-Weiß 2.“, „B-Junioren“). Unklare Namen
    wählt der Importierende einmal aus; die Zuordnung wird als **Alias der Mannschaft** gespeichert und gilt für künftige Importe.
 4. **Vorschau:** Zeilen als _neu_, _geändert_, _unverändert_, _übersprungen_ (mit Grund), dazu Warnungen (Platzkonflikt, Zeit fehlt, Termin liegt vor
    Saisonbeginn). Nichts wird gespeichert.
