@@ -2046,6 +2046,7 @@ export const en: Record<string, string> = {
   'Keine passenden Buchungen.': 'No matching entries.',
   'Keine passenden Dokumente.': 'No matching documents.',
   'Keine passenden Mitglieder.': 'No matching members.',
+  'Keine Plätze angelegt.': 'No pitches have been set up.',
   'Keine Rollen vergeben.': 'No roles assigned.',
   'Keine Scorerpunkte im Zeitraum.': 'No scorer points in this period.',
   'Keine Spiele in dieser Woche': 'No matches this week',
@@ -2835,6 +2836,7 @@ export const en: Record<string, string> = {
   Spenden: 'Donations',
   Sperre: 'Suspension',
   'Sperrung anlegen': 'Create block',
+  'Sperrung aufheben': 'Lift closure',
   'Sperrungen dürfen nur Platzverantwortliche anlegen.': 'Only groundskeepers may create closures.',
   'Sperrungen dürfen nur Platzverantwortliche aufheben.': 'Only groundskeepers may lift closures.',
   Spiel: 'Match',
@@ -3007,6 +3009,7 @@ export const en: Record<string, string> = {
   'Termin anlegen': 'Create event',
   'Termin bearbeiten': 'Edit event',
   'Termin geändert': 'Event changed',
+  'Termin öffnen': 'Open event',
   'Termin verwalten': 'Manage event',
   Termine: 'Events',
   'Termine {0}': 'Events {0}',
@@ -3220,6 +3223,8 @@ export const en: Record<string, string> = {
     "Under “Club → Today at the facility → Show calendar”. It lists all training sessions, matches and events of all teams. You can't see other teams' confirmations and declines there; tap to open events of your own teams.",
   'Unter „Verein → News schreiben“. Reiche die News zur Freigabe ein; der Vorstand prüft sie und veröffentlicht sie oder meldet sich bei dir.':
     'Under “Club → Write news”. Submit the news for approval; the board reviews it and either publishes it or gets back to you.',
+  'Unter „Verein → Platzbelegung“ siehst du einen Stundenplan. Tag: eine Spalte je Platz, die Zeit läuft nach unten. Woche: Platz wählen, Spalten Montag bis Sonntag, das Wochenende steht abgesetzt darunter; Wischen wechselt die Woche. Termine sind Blöcke in der Farbe ihrer Mannschaft, Sperrungen sind schraffiert, Überschneidungen tragen ein Warnzeichen. Tippe auf einen Block für Details; verschieben kannst du hier nichts.':
+    'Under “Club → Facility schedule” you see a timetable. Day: one column per pitch, time runs downwards. Week: choose a pitch, columns Monday to Sunday, with the weekend shown separately below; swiping changes the week. Events are blocks in their team’s colour, closures are hatched, overlaps carry a warning sign. Tap a block for details; you cannot move anything here.',
   'Unter „Verein → Schiedsrichter“. Der Verband setzt dich bei fremden Spielen ein; trage den Einsatz dort mit Spiel, Ort, Datum und Beginn ein. Er erscheint unter „Termine“ und in deinem Kalenderabo. Überschneidet er sich mit einem deiner Termine, bekommst du einen Hinweis; auf Wunsch wird für den Tag eine Abwesenheit eingetragen. Dort pflegst du auch deine Stufe und das Ablaufdatum deiner Lizenz.':
     'Under “Club → Referees”. The association assigns you to other clubs’ matches; enter the assignment there with match, place, date and start time. It appears under “Appointments” and in your calendar subscription. If it overlaps one of your appointments you get a notice; on request an absence is entered for the day. You also maintain your level and the expiry date of your license there.',
   'Unter „Verein → Spielplan“. Dort stehen alle Spiele einer Woche, nach Tagen sortiert. Mit den Pfeilen oder durch Wischen wechselst du die Woche, mit dem Filter zeigst du nur Senioren oder Jugend. Mannschaften ohne Spiel stehen unter „Spielfrei“. Tippe auf ein Spiel deiner Mannschaft, um Details und Rückmeldungen zu sehen.':
@@ -3510,6 +3515,7 @@ export const en: Record<string, string> = {
   'Wie lege ich eine neue Mannschaft an?': 'How do I create a new team?',
   'Wie lege ich einen Termin an oder sage ihn ab?': 'How do I create or cancel an event?',
   'Wie lege ich Mitglieder an oder importiere sie?': 'How do I add or import members?',
+  'Wie lese ich die Platzbelegung?': 'How do I read the facility schedule?',
   'Wie melde ich mich als Helfer?': 'How do I sign up as a helper?',
   'Wie melde ich mich an oder richte einen Verein ein?': 'How do I sign in or set up a club?',
   'Wie nehme ich an Umfragen teil?': 'How do I take part in polls?',
@@ -3556,6 +3562,7 @@ export const en: Record<string, string> = {
   'Wirtschaftlicher Geschäftsbetrieb': 'Commercial business operation',
   'Wische oder tippe auf die Pfeile, um andere Wochen zu sehen.':
     'Swipe or tap the arrows to see other weeks.',
+  'Wischen wechselt die Woche.': 'Swipe to change the week.',
   'Wo finde ich AGB, Datenschutz, Impressum und Support?':
     'Where do I find terms, privacy policy, legal notice and support?',
   'Wo finde ich die Funktionen?': 'Where do I find the features?',

@@ -1,8 +1,9 @@
 import type { FacilityBooking, FacilityOccupancy } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { View } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { PanResponder, View } from 'react-native';
+import { FacilityGrid, type GridColumn } from '@/components/facility-grid';
 import {
   Button,
   Card,
@@ -12,10 +13,10 @@ import {
   ErrorNotice,
   Loading,
   Screen,
+  Sheet,
   T,
-  TeamBadge,
 } from '@/components/ui';
-import { formatDay, formatTime, todayIso } from '@/lib/format';
+import { formatDateTile, formatShortDate, formatTime, todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 
 function weekOf(iso: string): { from: string; to: string } {
@@ -26,67 +27,18 @@ function weekOf(iso: string): { from: string; to: string } {
   return { from: mon.toISOString().slice(0, 10), to: sun.toISOString().slice(0, 10) };
 }
 
-function BookingRow({
-  booking,
-  first,
-  onRemove,
-}: {
-  booking: FacilityBooking;
-  first: boolean;
-  onRemove?: () => void;
-}) {
-  const isBlock = booking.kind === 'block';
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        paddingTop: first ? 0 : 10,
-        opacity: booking.cancelled ? 0.6 : 1,
-      }}
-    >
-      <View style={{ width: 92 }}>
-        <T variant="label">
-          {isBlock &&
-          new Date(booking.endsAt).getTime() - new Date(booking.startsAt).getTime() >=
-            23 * 3_600_000
-            ? 'Ganztägig'
-            : `${formatTime(booking.startsAt)}–${formatTime(booking.endsAt)}`}
-        </T>
-      </View>
-      <View style={{ flex: 1, gap: 4 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          {booking.teamBadge ? <TeamBadge badge={booking.teamBadge} /> : null}
-          <T
-            variant="body"
-            numberOfLines={2}
-            style={{
-              flex: 1,
-              textDecorationLine: booking.cancelled ? 'line-through' : 'none',
-            }}
-          >
-            {booking.title}
-          </T>
-        </View>
-        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-          {isBlock ? <Chip tone="urgent" icon="lock-closed" label="Gesperrt" /> : null}
-          {booking.cancelled ? <Chip tone="neutral" label="Abgesagt" /> : null}
-          {booking.conflict ? <Chip tone="action" icon="warning" label="Überschneidung" /> : null}
-        </View>
-      </View>
-      {isBlock && onRemove ? (
-        <Button label="Aufheben" variant="outline" onPress={onRemove} />
-      ) : null}
-    </View>
-  );
-}
+const addDays = (iso: string, days: number) =>
+  new Date(new Date(`${iso}T12:00:00Z`).getTime() + days * 86_400_000).toISOString().slice(0, 10);
 
 export default function FacilitiesScreen() {
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
   const [date, setDate] = useState(todayIso());
   const [mode, setMode] = useState<'day' | 'week'>('day');
+  const [facilityId, setFacilityId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<{ booking: FacilityBooking; place: string } | null>(
+    null,
+  );
   const range = mode === 'day' ? { from: date, to: date } : weekOf(date);
 
   const occupancy = useQuery({
@@ -96,9 +48,60 @@ export default function FacilitiesScreen() {
   });
   const remove = useMutation({
     mutationFn: (id: string) => api<void>(`/facilities/blocks/${id}`, { method: 'DELETE' }),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['facilities'] }),
+    onSuccess: () => {
+      setSelected(null);
+      void queryClient.invalidateQueries({ queryKey: ['facilities'] });
+    },
   });
   const o = occupancy.data;
+
+  // Wochenwechsel per Wisch (nur Wochenansicht: dort gibt es kein waagerechtes Scrollen)
+  const swipe = useRef<(dir: number) => void>(() => {});
+  swipe.current = (dir) => setDate((d) => addDays(d, dir * 7));
+  const pan = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponderCapture: (_e, g) =>
+          Math.abs(g.dx) > 24 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
+        onPanResponderRelease: (_e, g) => {
+          if (Math.abs(g.dx) > 60) swipe.current(g.dx < 0 ? 1 : -1);
+        },
+      }),
+    [],
+  );
+
+  const facility =
+    o?.facilities.find((f) => f.facility.id === facilityId) ??
+    o?.facilities.find((f) => f.bookings.length > 0) ??
+    o?.facilities[0];
+
+  const dayColumns: GridColumn[] =
+    o?.facilities.map(({ facility: f, bookings }) => ({
+      key: f.id,
+      title: f.shortName ?? f.name,
+      day: date,
+      bookings,
+    })) ?? [];
+  const weekColumns: GridColumn[] = facility
+    ? Array.from({ length: 7 }, (_, i) => {
+        const day = addDays(range.from, i);
+        const tile = formatDateTile(`${day}T12:00:00Z`);
+        return {
+          key: day,
+          title: tile.weekday,
+          subtitle: formatShortDate(day),
+          day,
+          bookings: facility.bookings,
+        };
+      })
+    : [];
+
+  const pressBooking = (booking: FacilityBooking, column: GridColumn) => {
+    const place = mode === 'day' ? column.title : (facility?.facility.name ?? '');
+    const full = o?.facilities.find((f) => f.bookings.some((b) => b.id === booking.id));
+    setSelected({ booking, place: full?.facility.name ?? place });
+  };
+  const sel = selected?.booking;
 
   return (
     <Screen
@@ -118,6 +121,16 @@ export default function FacilitiesScreen() {
           onToggle={setMode}
         />
         <DateStepper label={mode === 'day' ? 'Tag' : 'Woche mit'} value={date} onChange={setDate} />
+        {mode === 'week' && o && o.facilities.length > 1 ? (
+          <ChoiceChips
+            options={o.facilities.map((f) => ({
+              value: f.facility.id,
+              label: f.facility.name,
+            }))}
+            selected={facility ? [facility.facility.id] : []}
+            onToggle={setFacilityId}
+          />
+        ) : null}
       </Card>
       {o?.canManage ? (
         <Button
@@ -134,47 +147,76 @@ export default function FacilitiesScreen() {
       {o && o.conflicts > 0 ? (
         <Chip tone="action" icon="warning" label={`${o.conflicts} Belegungen überschneiden sich`} />
       ) : null}
-      {o?.facilities
-        .filter((f) => f.bookings.length > 0)
-        .map(({ facility, bookings }) => {
-          const days = [...new Set(bookings.map((b) => formatDay(b.startsAt)))];
-          return (
-            <Card key={facility.id} style={{ gap: 10 }}>
-              <T variant="heading">{facility.name}</T>
-              {days.map((d) => (
-                <View key={d}>
-                  {mode === 'week' ? (
-                    <T variant="label" style={{ marginBottom: 6 }}>
-                      {d}
-                    </T>
-                  ) : null}
-                  {bookings
-                    .filter((b) => formatDay(b.startsAt) === d)
-                    .map((b, i) => (
-                      <BookingRow
-                        key={b.id}
-                        booking={b}
-                        first={i === 0}
-                        onRemove={o.canManage ? () => remove.mutate(b.id) : undefined}
-                      />
-                    ))}
-                </View>
-              ))}
-            </Card>
-          );
-        })}
-      {o && o.facilities.some((f) => f.bookings.length === 0) ? (
-        <Card style={{ gap: 8 }}>
-          <T variant="overline">{mode === 'week' ? 'Die ganze Woche frei' : 'Frei'}</T>
-          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-            {o.facilities
-              .filter((f) => f.bookings.length === 0)
-              .map(({ facility }) => (
-                <Chip key={facility.id} tone="success" icon="checkmark" label={facility.name} />
-              ))}
-          </View>
-        </Card>
+      {o && mode === 'day' ? (
+        o.facilities.length ? (
+          <FacilityGrid columns={dayColumns} onPressBooking={pressBooking} />
+        ) : (
+          <T variant="body">Keine Plätze angelegt.</T>
+        )
       ) : null}
+      {o && mode === 'week' && facility ? (
+        <View {...pan.panHandlers} style={{ gap: 12 }}>
+          <T variant="heading" verbatim>
+            {facility.facility.name}
+          </T>
+          <FacilityGrid
+            columns={weekColumns.slice(0, 5)}
+            onPressBooking={pressBooking}
+            minColumnWidth={0}
+          />
+          <FacilityGrid
+            columns={weekColumns.slice(5)}
+            onPressBooking={pressBooking}
+            tinted
+            minColumnWidth={0}
+          />
+          <T variant="caption">Wischen wechselt die Woche.</T>
+        </View>
+      ) : null}
+      <Sheet visible={!!sel} onClose={() => setSelected(null)} title={sel?.title}>
+        {sel ? (
+          <>
+            <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+              {sel.kind === 'block' ? (
+                <Chip tone="urgent" icon="lock-closed" label="Gesperrt" />
+              ) : null}
+              {sel.teamBadge ? <Chip tone="primary" label={sel.teamBadge} /> : null}
+              {sel.cancelled ? <Chip tone="neutral" label="Abgesagt" /> : null}
+              {sel.conflict ? <Chip tone="action" icon="warning" label="Überschneidung" /> : null}
+            </View>
+            <T variant="body" verbatim>
+              {`${selected?.place ?? ''} · ${formatTime(sel.startsAt)}–${formatTime(sel.endsAt)}`}
+            </T>
+            {sel.kind === 'event' ? (
+              <Button
+                label="Termin öffnen"
+                onPress={() => {
+                  setSelected(null);
+                  router.push(`/events/${sel.id}`);
+                }}
+              />
+            ) : null}
+            {o?.canManage && sel.kind === 'event' ? (
+              <Button
+                label="Platz sperren"
+                icon="lock-closed"
+                variant="outline"
+                onPress={() => {
+                  setSelected(null);
+                  router.push('/facilities/block-new');
+                }}
+              />
+            ) : null}
+            {o?.canManage && sel.kind === 'block' ? (
+              <Button
+                label="Sperrung aufheben"
+                variant="outline"
+                onPress={() => remove.mutate(sel.id)}
+              />
+            ) : null}
+          </>
+        ) : null}
+      </Sheet>
     </Screen>
   );
 }

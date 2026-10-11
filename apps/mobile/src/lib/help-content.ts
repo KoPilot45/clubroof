@@ -46,6 +46,13 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Mit den Pfeilen verschiebst du das Datum um einen Tag. Tippst du auf das Datum selbst, öffnet sich ein Kalender: Wische oder tippe auf die Pfeile, um den Monat zu wechseln, tippe auf einen Tag zum Auswählen oder wähle „Heute“. Nicht erlaubte Tage sind ausgegraut.',
       },
       {
+        id: 'facility-grid',
+        question: 'Wie lese ich die Platzbelegung?',
+        answer:
+          'Unter „Verein → Platzbelegung“ siehst du einen Stundenplan. Tag: eine Spalte je Platz, die Zeit läuft nach unten. Woche: Platz wählen, Spalten Montag bis Sonntag, das Wochenende steht abgesetzt darunter; Wischen wechselt die Woche. Termine sind Blöcke in der Farbe ihrer Mannschaft, Sperrungen sind schraffiert, Überschneidungen tragen ein Warnzeichen. Tippe auf einen Block für Details; verschieben kannst du hier nichts.',
+        link: { label: 'Platzbelegung', href: '/facilities' },
+      },
+      {
         id: 'club-schedule',
         question: 'Wo sehe ich alle Spiele des Vereins?',
         answer:
