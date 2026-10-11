@@ -142,7 +142,7 @@ export function AppHeader({
           variant="headline"
           numberOfLines={2}
           accessibilityRole="header"
-          style={{ lineHeight: 26 }}
+          style={{ lineHeight: 34 }}
         >
           {greeting}
         </T>

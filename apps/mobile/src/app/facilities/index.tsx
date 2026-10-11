@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { PanResponder, View } from 'react-native';
-import { FacilityGrid, type GridColumn } from '@/components/facility-grid';
+import { FacilityGrid, TeamLegend, teamColors, type GridColumn } from '@/components/facility-grid';
 import {
   Button,
   Card,
@@ -13,11 +13,13 @@ import {
   ErrorNotice,
   Loading,
   Screen,
+  Section,
   Sheet,
   T,
 } from '@/components/ui';
 import { formatDateTile, formatShortDate, formatTime, todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { useTheme } from '@/lib/theme';
 
 function weekOf(iso: string): { from: string; to: string } {
   const d = new Date(`${iso}T12:00:00Z`);
@@ -32,6 +34,7 @@ const addDays = (iso: string, days: number) =>
 
 export default function FacilitiesScreen() {
   const { api } = useSignedIn();
+  const { isDark } = useTheme();
   const queryClient = useQueryClient();
   const [date, setDate] = useState(todayIso());
   const [mode, setMode] = useState<'day' | 'week'>('day');
@@ -54,6 +57,13 @@ export default function FacilitiesScreen() {
     },
   });
   const o = occupancy.data;
+  // Eigene Farbe je Mannschaft über alle Plätze, mit Legende
+  const teams = teamColors(
+    (o?.facilities ?? []).flatMap((f) =>
+      f.bookings.map((b) => b.teamBadge).filter((x): x is string => !!x),
+    ),
+    isDark,
+  );
 
   // Wochenwechsel per Wisch (nur Wochenansicht: dort gibt es kein waagerechtes Scrollen)
   const swipe = useRef<(dir: number) => void>(() => {});
@@ -149,27 +159,40 @@ export default function FacilitiesScreen() {
       ) : null}
       {o && mode === 'day' ? (
         o.facilities.length ? (
-          <FacilityGrid columns={dayColumns} onPressBooking={pressBooking} />
+          <>
+            <TeamLegend colors={teams} />
+            <FacilityGrid columns={dayColumns} onPressBooking={pressBooking} teams={teams} />
+          </>
         ) : (
           <T variant="body">Keine Plätze angelegt.</T>
         )
       ) : null}
       {o && mode === 'week' && facility ? (
-        <View {...pan.panHandlers} style={{ gap: 12 }}>
+        <View {...pan.panHandlers} style={{ gap: 16 }}>
           <T variant="heading" verbatim>
             {facility.facility.name}
           </T>
-          <FacilityGrid
-            columns={weekColumns.slice(0, 5)}
-            onPressBooking={pressBooking}
-            minColumnWidth={0}
-          />
-          <FacilityGrid
-            columns={weekColumns.slice(5)}
-            onPressBooking={pressBooking}
-            tinted
-            minColumnWidth={0}
-          />
+          <TeamLegend colors={teams} />
+          <Section title="Montag bis Freitag">
+            <FacilityGrid
+              columns={weekColumns.slice(0, 5)}
+              onPressBooking={pressBooking}
+              teams={teams}
+              mode="compact"
+              minColumnWidth={0}
+              bleed
+            />
+          </Section>
+          <Section title="Wochenende">
+            <FacilityGrid
+              columns={weekColumns.slice(5)}
+              onPressBooking={pressBooking}
+              teams={teams}
+              mode="wide"
+              minColumnWidth={0}
+              bleed
+            />
+          </Section>
           <T variant="caption">Wischen wechselt die Woche.</T>
         </View>
       ) : null}

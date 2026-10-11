@@ -1,13 +1,16 @@
 import type { TextStyle } from 'react-native';
 
 /**
- * Schriften der App: Open Sans für Text, Oswald für Überschriften und Zahlen. Sie werden im
+ * Schriften der App: Open Sans für Text, Saira Condensed (Variante „Kräftig“) für Überschriften und Zahlen. Sie werden im
  * Wurzel-Layout geladen. Solange (oder falls) das nicht klappt, bleibt die Systemschrift.
  *
  * Eigene Schriftschnitte statt `fontWeight`: native Apps kennen bei eingebundenen Schriften keine
  * Stärken, im Browser würde sonst „fett“ künstlich nachgebaut.
  */
-export const HEADING_FONT = 'Oswald_600SemiBold';
+/** Seitentitel und Zwischenüberschriften: Saira Condensed Bold (700). */
+export const HEADING_FONT = 'SairaCondensed_700Bold';
+/** Große Zahlen („figure“): Saira Condensed ExtraBold (800). */
+export const FIGURE_FONT = 'SairaCondensed_800ExtraBold';
 
 const BODY = {
   regular: 'OpenSans_400Regular',

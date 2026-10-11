@@ -5862,6 +5862,27 @@ describe.skipIf(!url)('API', () => {
   });
 
   describe('Kachel-Infos', () => {
+    it('liefert die Kennzahl oben rechts (Datum, Zahl, Bilanz, Kassenstand)', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const admin = await login('admin');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      type Tiles = Record<string, { figure?: string; tone?: string }>;
+      const tiles = (token: string, query: string) => get<Tiles>(`/tile-info?${query}`, token);
+      const team = await tiles(coach.token, `hub=team&teamId=${b1.id}`);
+      expect(team.events?.figure).toMatch(/^\d\d\.\d\d\.$/);
+      expect(team.roster?.figure).toMatch(/^\d+$/);
+      expect(team.stats?.figure).toMatch(/^\d+-\d+-\d+$/);
+      expect(team.cash?.figure).toMatch(/€/);
+      const mine = await tiles(player.token, `hub=team&teamId=${b1.id}`);
+      expect(mine.cash?.figure).toMatch(/€/);
+      const club = await tiles(player.token, 'hub=club');
+      expect(club.teams?.figure).toMatch(/^\d+$/);
+      expect(club.events?.figure ?? '').toMatch(/^(\d\d\.\d\d\.)?$/);
+      const adminTiles = await tiles(admin.token, 'hub=admin');
+      expect(adminTiles.members?.figure).toMatch(/^\d+$/);
+    });
+
     it('zeigt Hinweise je Rolle und nur, was die Person sehen darf', async () => {
       const coach = await login('trainer');
       const player = await login('spieler');

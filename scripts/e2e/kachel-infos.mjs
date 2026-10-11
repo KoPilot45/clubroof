@@ -1,5 +1,5 @@
 /**
- * Browserprüfung Kachel-Infos: Hinweise in den Menükacheln je Rolle (Text, nicht Bild).
+ * Kennzahlen in den Menükacheln (Paket PO, früher Kachel-Infos): kleine Zahl oben rechts statt Infotext darunter.
  * Aufruf: pnpm browser-check scripts/e2e/kachel-infos.mjs [--no-build]
  */
 import { api, launch, text } from '../lib/e2e.mjs';
@@ -10,45 +10,68 @@ const ok = (cond, msg) => {
   console.log(`${cond ? '✓' : '✗'} ${msg}`);
   if (!cond) failed = true;
 };
-const body = (page) => page.evaluate(() => document.body.innerText);
+// Beschriftung der Kachel samt Kennzahl: „Termine, 13.10.“
+const tile = async (page, name) =>
+  (await page
+    .getByRole('button', { name: new RegExp(`^${name}`) })
+    .filter({ visible: true })
+    .first()
+    .getAttribute('aria-label')
+    .catch(() => null)) ?? '';
 
 const spieler = await b.session('spieler');
 await spieler.goto('/team');
 await text(spieler.page, 'Kasse', { exact: true }).waitFor({ timeout: 20_000 });
-await spieler.page.waitForTimeout(1500);
-const sp = await body(spieler.page);
+await spieler.page.waitForTimeout(2000);
+ok(/€/.test(await tile(spieler.page, 'Kasse')), 'Kasse: Kassenstand als Kennzahl');
 ok(
-  /Du hast .* (offen|Guthaben)|Ausgeglichen/.test(sp),
-  'Spieler sieht den eigenen Kassenstand in der Kachel „Kasse“',
+  /\d\d\.\d\d\./.test(await tile(spieler.page, 'Termine')),
+  'Termine: Datum des nächsten (TT.MM.)',
 );
 ok(
-  /Nächster:|Antwort fehlt:/.test(sp),
-  'Kachel „Termine“ zeigt den nächsten Termin oder fehlende Antwort',
+  /, \d+$/.test(await tile(spieler.page, 'Kader')) ||
+    /Kader, \d+/.test(await tile(spieler.page, 'Kader')),
+  'Kader: Zahl der Spieler',
+);
+const sp = await spieler.page.evaluate(() => document.body.innerText);
+ok(
+  !/Du hast .* (offen|Guthaben)|Nächster:|Antwort fehlt:/.test(sp),
+  'Kein Infotext mehr unter den Kacheln',
 );
 
 await spieler.goto('/verein');
 await spieler.page.waitForTimeout(2500);
-ok(/\d+ neu/.test(await body(spieler.page)), 'Verein zeigt „n neu“ (News, Forum oder Wiki)');
+ok(
+  /\d\d\.\d\d\./.test(await tile(spieler.page, 'Veranstaltungen')),
+  'Veranstaltungen: Datum des nächsten',
+);
+ok(/\d+$/.test(await tile(spieler.page, 'Mannschaften')), 'Mannschaften: Anzahl');
+ok((await spieler.page.getByText('Kacheln anpassen').count()) === 0, '„Kacheln anpassen“ entfällt');
+
 const admin = await b.session('admin');
 await admin.goto('/admin');
 await text(admin.page, 'Mitglieder', { exact: true }).waitFor({ timeout: 20_000 });
-await admin.page.waitForTimeout(1500);
-ok(
-  /aktive Mitglieder/.test(await body(admin.page)),
-  'Verwaltung zeigt „aktive Mitglieder“ in der Kachel',
-);
+await admin.page.waitForTimeout(2000);
+ok(/Mitglieder, \d+/.test(await tile(admin.page, 'Mitglieder')), 'Verwaltung: Mitglieder mit Zahl');
 await admin.goto('/mehr');
 await admin.page.waitForTimeout(2500);
-ok(/offene Aufgaben/.test(await body(admin.page)), 'Mehr → Verwaltung zeigt „offene Aufgaben“');
+// „Mehr“ besteht aus Zeilen, nicht aus Kacheln: dort bleibt der Hinweistext
+ok(
+  /offene Aufgabe/.test(await admin.page.evaluate(() => document.body.innerText)),
+  'Mehr → Verwaltung: Hinweis „offene Aufgaben“ in der Zeile',
+);
 
-const trainerMe = await api('/me', admin.login.token).then(() => api('/me', spieler.login.token));
-const teamId = trainerMe.teams[0].id;
+const me = await api('/me', spieler.login.token);
+const teamId = me.teams[0].id;
 await admin.goto(`/teams/${teamId}/cash-admin`);
 await admin.page.waitForTimeout(3000);
-const k = await body(admin.page);
 ok(
-  /Zahlungsmeldung|Offen gesamt|Bezahlinfos fehlen/.test(k),
-  'Kassenverwaltung zeigt Hinweise an den Kacheln',
+  (await admin.page.getByText('!', { exact: true }).filter({ visible: true }).count()) > 0,
+  'Kassenverwaltung: Kennzahl „!“ (Handlungsbedarf, orange) an der Kachel',
+);
+ok(
+  (await admin.page.getByText('1', { exact: true }).filter({ visible: true }).count()) > 0,
+  'Kassenverwaltung: Zahl der Zahlungsmeldungen an der Kachel',
 );
 
 await b.close();

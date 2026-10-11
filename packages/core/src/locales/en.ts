@@ -767,6 +767,7 @@ export const en: Record<string, string> = {
   'Bitte gib einen Verwendungszweck ein.': 'Please enter a purpose.',
   'Bitte höchstens {0} Mitglieder auf einmal importieren.':
     'Please import at most {0} members at a time.',
+  'Bitte kurz begründen': 'Please give a short reason',
   'Bitte lege einen Getränkepreis fest.': 'Please set a drink price.',
   'Bitte melde dich an, um fortzufahren.': 'Please log in to continue.',
   'Bitte mindestens einen Bereich anlegen.': 'Please create at least one department.',
@@ -1202,6 +1203,8 @@ export const en: Record<string, string> = {
     'Team fund administration is for the treasurer and coaching staff.',
   'Die Kategorie': 'The category',
   'Die Kategorie ist archiviert.': 'The category is archived.',
+  'Die Kennzahl zeigt auf einen Blick, was dort los ist: bei Terminen und Veranstaltungen das Datum des nächsten (TT.MM.), beim Kader die Zahl der Spieler, bei der Statistik die Bilanz (Siege-Remis-Niederlagen), bei der Kasse den Kassenstand, bei Aufgaben und Umfragen die offenen, bei News, Dokumenten und Wissen die neuen, beim Spielplan die Spiele der Woche, bei Helfern die freien Plätze. Orange heißt: Hier wartet etwas auf dich. Kacheln ohne sinnvolle Zahl haben keine Kennzahl.':
+    'The figure shows at a glance what is going on there: for events the date of the next one (DD.MM.), for the squad the number of players, for statistics the record (wins-draws-losses), for the cash the balance, for tasks and polls the open ones, for news, documents and knowledge the new ones, for the schedule the matches of the week, for helpers the free spots. Orange means: something is waiting for you here. Tiles without a meaningful number have no figure.',
   'Die kleine Zeile unter dem Namen einer Kachel zeigt, was für dich gerade wichtig ist, z. B. „Du hast 12,50 € offen“, „Antwort fehlt“ oder „2 zur Freigabe“. Die Farbe verstärkt den Text: Orange heißt, es gibt etwas zu tun. Was du nicht sehen darfst, wird nicht angezeigt.':
     'The small line under a tile’s name shows what matters to you right now, e.g. “You owe €12.50”, “Reply missing” or “2 awaiting approval”. The colour reinforces the text: orange means there is something to do. Anything you are not allowed to see is not shown.',
   'Die Kostenstelle': 'The cost center',
@@ -2370,6 +2373,7 @@ export const en: Record<string, string> = {
   Monat: 'Month',
   Monatlich: 'Monthly',
   'Monatlich erinnern': 'Remind monthly',
+  'Montag bis Freitag': 'Monday to Friday',
   morgen: 'tomorrow',
   Morgen: 'Tomorrow',
   Nach: 'To',
@@ -2589,6 +2593,8 @@ export const en: Record<string, string> = {
   'Offener Bedarf ({0})': 'Open requests ({0})',
   'Offener Betrag Mannschaftskasse {0}': 'Outstanding amount team fund {0}',
   'Offensives Mittelfeld': 'Attacking midfield',
+  'Öffne den Termin (Home, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ kannst du einen Grund wählen oder schreiben – das ist freiwillig; bei „Unsicher“ bitten wir um eine kurze Begründung. Den Grund sehen nur das Trainerteam und du selbst.':
+    'Open the event (Home, Events or Team) and tap Yes, Maybe or No. When declining you can choose or write a reason – this is optional; when you are unsure we ask for a short reason. Only the coaching staff and you see the reason.',
   'Öffne den Termin (Home, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ und „Unsicher“ kannst du einen Grund wählen oder schreiben – das ist freiwillig. Den Grund sehen nur das Trainerteam und du selbst.':
     'Open the event (Home, Events or Team) and tap Yes, Maybe or No. For “No” and “Maybe” you can choose or write a reason – this is optional. Only the coaching staff and you can see the reason.',
   'ohne App': 'no app',
@@ -3472,6 +3478,8 @@ export const en: Record<string, string> = {
   'Was bedeuten die Farben und Abzeichen?': 'What do the colours and badges mean?',
   'Was bedeuten die Felder im Kalender?': 'What do the cells in the calendar mean?',
   'Was bedeuten die Hinweise unter den Kacheln?': 'What do the notes under the tiles mean?',
+  'Was bedeutet die kleine Zahl oben rechts an den Kacheln?':
+    'What does the small number at the top right of the tiles mean?',
   'Was bringt „Anwesenheit erfassen“?': 'What does “Record attendance” do?',
   'Was darf das Trainerteam in der Kasse?': 'What can the coaching staff do in the team fund?',
   'Was ist die 2-Faktor-Anmeldung?': 'What is two-factor login?',
@@ -3656,6 +3664,7 @@ export const en: Record<string, string> = {
   Woche: 'Week',
   'Woche {0} – {1}': 'Week {0} – {1}',
   'Woche mit': 'Week with',
+  Wochenende: 'Weekend',
   'Wöchentlich bis …': 'Weekly until …',
   'wöchentlich, {0} Termine': 'weekly, {0} events',
   'Wofür bekomme ich Strafen und wo stehen sie?':

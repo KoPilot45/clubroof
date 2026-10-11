@@ -461,13 +461,13 @@ function CoachActions({ event }: { event: EventDetail }) {
           <Button
             style={{ flex: 1 }}
             label="Abbrechen"
-            variant="outline"
+            variant="neutral"
             onPress={() => setOpen(false)}
           />
           <Button
             style={{ flex: 1 }}
             label="Absagen und informieren"
-            variant="danger"
+            variant="dangerSolid"
             disabled={reason.trim().length < 3}
             loading={cancel.isPending}
             onPress={() => cancel.mutate()}

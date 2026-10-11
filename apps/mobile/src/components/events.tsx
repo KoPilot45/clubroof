@@ -18,7 +18,6 @@ import {
   DECLINE_REASONS,
   EVENT_TYPE_LABELS,
   MATCH_KIND_LABELS,
-  MAYBE_REASONS,
 } from '@/lib/labels';
 import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { enqueueResponse, queuedFor, useOutbox } from '@/lib/outbox';
@@ -259,8 +258,10 @@ export function EventRow({
 }
 
 /**
- * Grund für „Absagen“ oder „Unsicher“: Auswahl und freier Hinweis – freiwillig, nur fürs Trainerteam.
- * Eigener Zustand, damit Auswahl und Hinweis beim Schließen verworfen werden.
+ * Grund für „Absagen“ oder „Unsicher“ (Paket PO). Absage: Auswahl und freier Hinweis, freiwillig; „Absage senden“
+ * rot gefüllt, „Abbrechen“ grau, der gewählte Grund rot mit Häkchen. Unsicher: nur eine verpflichtende Begründung
+ * (Textfeld mit Zähler, gelb umrandet), „Unsicher senden“ orange und erst mit Text aktiv. Eigener Zustand, damit
+ * Auswahl und Text beim Schließen verworfen werden.
  */
 function ReasonForm({
   status,
@@ -273,18 +274,43 @@ function ReasonForm({
   onCancel: () => void;
   onSubmit: (reason: string | undefined) => void;
 }) {
+  const { colors } = useTheme();
   const [reason, setReason] = useState<string | null>(null);
   const [note, setNote] = useState('');
+  if (status === 'maybe')
+    return (
+      <View style={{ gap: 12 }}>
+        <TextField
+          label="Warum bist du unsicher?"
+          value={note}
+          onChangeText={setNote}
+          maxLength={120}
+          multiline
+          accent={colors.status.action.solid}
+          hint="Bitte kurz begründen"
+        />
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Button style={{ flex: 1 }} label="Abbrechen" variant="neutral" onPress={onCancel} />
+          <Button
+            style={{ flex: 1 }}
+            label="Unsicher senden"
+            variant="actionSolid"
+            disabled={note.trim().length === 0}
+            loading={loading}
+            onPress={() => onSubmit(note.trim())}
+          />
+        </View>
+      </View>
+    );
   return (
     <View style={{ gap: 10 }}>
       <ChoiceChips
-        label={status === 'maybe' ? 'Warum bist du unsicher?' : 'Warum kannst du nicht?'}
-        options={(status === 'maybe' ? MAYBE_REASONS : DECLINE_REASONS).map((d) => ({
-          value: d,
-          label: d,
-        }))}
+        label="Warum kannst du nicht?"
+        options={DECLINE_REASONS.map((d) => ({ value: d, label: d }))}
         selected={reason ? [reason] : []}
         onToggle={(v) => setReason(v === reason ? null : v)}
+        tone="urgent"
+        check
       />
       <TextField
         label="Hinweis für das Trainerteam (optional)"
@@ -293,11 +319,11 @@ function ReasonForm({
         maxLength={120}
       />
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        <Button style={{ flex: 1 }} label="Abbrechen" variant="outline" onPress={onCancel} />
+        <Button style={{ flex: 1 }} label="Abbrechen" variant="neutral" onPress={onCancel} />
         <Button
           style={{ flex: 1 }}
-          label={status === 'maybe' ? 'Unsicher senden' : 'Absage senden'}
-          variant={status === 'maybe' ? 'action' : 'danger'}
+          label="Absage senden"
+          variant="dangerSolid"
           loading={loading}
           onPress={() => onSubmit([reason, note.trim()].filter(Boolean).join(' – ') || undefined)}
         />
