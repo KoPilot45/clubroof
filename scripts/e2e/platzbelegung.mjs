@@ -19,8 +19,8 @@ await api('/facilities/blocks', s.login.token, {
   method: 'POST',
   body: JSON.stringify({
     facilityId: kunst.id,
-    startsAt: new Date(Date.now() + 2 * 3_600_000).toISOString(),
-    endsAt: new Date(Date.now() + 4 * 3_600_000).toISOString(),
+    startsAt: new Date(Date.now() + 2 * 60_000).toISOString(),
+    endsAt: new Date(Date.now() + 20 * 60_000).toISOString(),
     reason: 'Platzpflege',
   }),
 });
