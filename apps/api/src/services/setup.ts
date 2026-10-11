@@ -43,6 +43,13 @@ function checkSetupToken(config: Config, token: string) {
     throw new HttpError(403, 'setup_token', 'Der Einrichtungscode stimmt nicht.');
 }
 
+/** Prüft den Einrichtungscode schon beim Einstieg in den Assistenten (Code stimmt, Server noch leer). */
+export async function checkSetupCode(db: Db, config: Config, token: string) {
+  checkSetupToken(config, token);
+  if (!(await needsSetup(db)))
+    throw new HttpError(409, 'already_set_up', 'Dieser Verein ist bereits eingerichtet.');
+}
+
 /**
  * E-Mail-Bestätigung des ersten Kontos: 6-stelliger Code per E-Mail (15 Minuten gültig, höchstens 5 Versuche),
  * danach ein signierter Nachweis (2 Stunden), den die Einrichtung verlangt. Bewusst im Speicher des Servers: Die

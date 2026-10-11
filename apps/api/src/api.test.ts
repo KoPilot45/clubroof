@@ -14,6 +14,7 @@ import type {
   ClubFeeImportPreview,
   ClubFees,
   ClubSchedule,
+  PublicClub,
   AdminSponsors,
   SponsorBanner,
   SponsorPage,
@@ -572,6 +573,29 @@ describe.skipIf(!url)('API', () => {
       expect(banner.sponsor?.name).toBe('Bild GmbH');
       expect(banner.sponsor?.bannerUrl).toBeTruthy();
       await send('DELETE', `/admin/sponsors/${withImage.id}`, admin.token);
+    });
+  });
+
+  describe('Öffentliche Vereinsangaben für die Anmeldeseite (LG)', () => {
+    it('liefert Name, Ort, Gründungsjahr und Farbe ohne Anmeldung – aber nichts Internes', async () => {
+      const res = await app.inject({ method: 'GET', url: '/public/club' });
+      expect(res.statusCode).toBe(200);
+      const body = res.json<PublicClub>();
+      expect(body.needsSetup).toBe(false);
+      expect(body.club).toMatchObject({
+        name: 'SV Grün-Weiß Musterstadt 1920 e.V.',
+        shortName: 'SV Grün-Weiß',
+        city: 'Musterstadt',
+        foundedYear: 1920,
+      });
+      expect(Object.keys(body.club!).sort()).toEqual([
+        'city',
+        'colorTheme',
+        'foundedYear',
+        'logoUrl',
+        'name',
+        'shortName',
+      ]);
     });
   });
 

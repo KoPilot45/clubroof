@@ -381,7 +381,14 @@ function Wizard({ demo }: { demo?: boolean }) {
         explanation="In wenigen Minuten richtest du deinen Verein ein: Name, Anlage, Farbe, Funktionen und dein Konto. Du kannst jederzeit zurück, und alles lässt sich später in der Verwaltung ändern."
         nextLabel="Los geht’s"
         nextDisabled={token.trim().length === 0}
-        onNext={() => go(1)}
+        busy={busy}
+        onNext={() =>
+          call(async () => {
+            if (!demo)
+              await request('/setup/token', { method: 'POST', body: { setupToken: token.trim() } });
+            go(1);
+          }, 'Der Einrichtungscode konnte nicht geprüft werden.')
+        }
         error={error}
         header={
           <View style={{ alignItems: 'center', gap: 8 }}>
@@ -394,11 +401,15 @@ function Wizard({ demo }: { demo?: boolean }) {
       >
         <TextField
           label="Einrichtungscode"
-          kind="password"
           value={token}
           onChangeText={setToken}
-          placeholder={t('Den Code hast du bei der Installation festgelegt')}
+          placeholder={t('z. B. CR-XXXX-XXXX')}
+          maxLength={60}
         />
+        <T variant="caption">
+          Den Einrichtungscode bekommst du von Clubroof, sobald die Zahlung eingegangen ist. Er gilt
+          einmal.
+        </T>
       </WizardShell>
     );
 

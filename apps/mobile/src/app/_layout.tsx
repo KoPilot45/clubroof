@@ -242,10 +242,6 @@ function Navigator() {
           />
           <Stack.Screen name="help" options={{ headerShown: true, title: 'Hilfe & Anleitung' }} />
           <Stack.Screen
-            name="about/[page]"
-            options={{ headerShown: true, title: 'Über Clubroof' }}
-          />
-          <Stack.Screen
             name="about/privacy"
             options={{ headerShown: true, title: 'Privatsphäre-Einstellungen' }}
           />
@@ -356,6 +352,8 @@ function Navigator() {
         </Stack.Protected>
         {/* Öffentliche Links aus E-Mails – mit und ohne Anmeldung erreichbar */}
         <Stack.Screen name="join/[token]" />
+        <Stack.Screen name="join-code" options={{ headerShown: true, title: 'Einladungscode' }} />
+        <Stack.Screen name="about/[page]" options={{ headerShown: true, title: 'Über Clubroof' }} />
         <Stack.Screen name="reset/[token]" />
       </Stack>
     </>
