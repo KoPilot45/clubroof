@@ -151,7 +151,6 @@ const FUNCTION_LABELS: Record<string, string> = {
   treasurer: 'Kasse',
   member_admin: 'Mitgliederverwaltung',
   facility_manager: 'Platz- und Materialwart',
-  referee_lead: 'Schiedsrichterobmann',
 };
 
 export async function listContacts(db: Db, actor: Actor, now: Date): Promise<ContactGroup[]> {

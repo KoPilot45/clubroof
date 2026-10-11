@@ -49,7 +49,7 @@ Alle Demo-Logins haben das Passwort `clubroof-demo`. Auf der Anmeldeseite (Entwi
 - **Update-Center:** Das Mini-Forum wartet auf „Einrichten“ (Admin → Verwaltung → Module); danach erscheint ein angeheftetes Thema zur Weihnachtsfeier.
 - **Trainingsplanung:** Übungsbibliothek mit 8 Übungen, Plan fürs nächste B1-Training („Gegenpressing nach Ballverlust“).
 - **Anlage & Material:** Kabinen 1–4 (heutige Trainings zugeteilt), Schlüssel und Material (Trainer hat den Vereinsheim-Schlüssel), zwei Schadensmeldungen.
-- **Schiedsrichter:** Trainer Max Mustermann ist Vereinsschiedsrichter mit einer offenen Anfrage für ein Jugend-Heimspiel.
+- **Schiedsrichter:** drei Vereinsschiedsrichter (Max Mustermann, Uwe Krüger und eine weitere Person) mit Lizenz gültig / läuft ab / abgelaufen, Soll des Verbands 4 aktive Schiedsrichter und 5 Pflichteinsätze, eigene Einsätze (Max Mustermann hat einen kommenden).
 - **Fundbüro & Marktplatz, Vereinswissen:** je einige Einträge; Kalender-Abo unter Mehr.
 
 ## Ausprobieren ohne Demodaten

@@ -1,4 +1,4 @@
-import type { EventSummary } from '@clubroof/core';
+import type { EventSummary, RefereeDuty } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -8,8 +8,11 @@ import { MonthCalendar, dayKey } from '@/components/month-calendar';
 import {
   Card,
   ChoiceChips,
+  Chip,
+  DateTile,
   Empty,
   ErrorNotice,
+  ListRow,
   Loading,
   Screen,
   Section,
@@ -17,6 +20,7 @@ import {
 } from '@/components/ui';
 import { KindLegend } from '@/components/kind-legend';
 import { kindColor, kindOf } from '@/lib/event-types';
+import { formatDateTile, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { dateFormat } from '@/lib/i18n';
@@ -49,6 +53,18 @@ export default function EventsTab() {
         `/events?from=${encodeURIComponent(month.toISOString())}&to=${encodeURIComponent(new Date(month.getFullYear(), month.getMonth() + 1, 1).toISOString())}`,
       ),
   });
+  // Eigene Schiedsrichter-Einsätze (Verbandsspiele) stehen im Kalender der Person
+  const duties = useQuery({
+    queryKey: ['referee-duties', 'upcoming'],
+    queryFn: () => {
+      const from = new Date();
+      const to = new Date(from.getTime() + 60 * DAY);
+      return api<RefereeDuty[]>(
+        `/referees/duties?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
+      );
+    },
+    enabled: me.referees.active,
+  });
   // Filter: Alle, je Kind, Spiele, Training, Verein
   const children = me.managedPersons.filter((p) => p.relation === 'child');
   const [filter, setFilter] = useState('all');
@@ -67,6 +83,9 @@ export default function EventsTab() {
   const rest = filtered.filter((e) => e !== hero).slice(0, 5);
   const all = (monthEvents.data ?? []).filter(matches);
   const ofDay = all.filter((e) => day && dayKey(new Date(e.startsAt)) === day);
+  const dutiesOfDay = (duties.data ?? []).filter(
+    (d) => day && dayKey(new Date(d.startsAt)) === day,
+  );
   const kinds = [...new Set(all.filter((e) => e.status !== 'cancelled').map(kindOf))];
   const dayTitle = dateFormat({
     weekday: 'long',
@@ -114,6 +133,20 @@ export default function EventsTab() {
         ) : null}
       </Section>
 
+      {(duties.data ?? []).length > 0 ? (
+        <Section
+          title="Meine Schiedsrichter-Einsätze"
+          action="Alle"
+          onAction={() => router.push('/referees')}
+        >
+          <Card>
+            {duties.data!.slice(0, 3).map((d, i) => (
+              <DutyRow key={d.id} duty={d} first={i === 0} />
+            ))}
+          </Card>
+        </Section>
+      ) : null}
+
       <Section title="Kalender">
         <Card style={{ gap: 10 }}>
           <MonthCalendar
@@ -136,13 +169,32 @@ export default function EventsTab() {
       {day ? (
         <Section title={dayTitle.format(new Date(`${day}T12:00:00`))}>
           <Card>
-            {ofDay.length === 0 ? <T variant="caption">Keine Termine an diesem Tag.</T> : null}
+            {ofDay.length === 0 && dutiesOfDay.length === 0 ? (
+              <T variant="caption">Keine Termine an diesem Tag.</T>
+            ) : null}
             {ofDay.map((e, i) => (
               <EventRow key={e.id} event={e} first={i === 0} />
+            ))}
+            {dutiesOfDay.map((d, i) => (
+              <DutyRow key={d.id} duty={d} first={ofDay.length === 0 && i === 0} />
             ))}
           </Card>
         </Section>
       ) : null}
     </Screen>
+  );
+}
+
+/** Schiedsrichter-Einsatz in der Terminliste (öffnet „Schiedsrichter“). */
+function DutyRow({ duty, first }: { duty: RefereeDuty; first?: boolean }) {
+  return (
+    <ListRow
+      first={first}
+      onPress={() => router.push('/referees')}
+      leading={<DateTile {...formatDateTile(duty.startsAt)} />}
+      title={duty.title}
+      subtitle={[formatTime(duty.startsAt), duty.location].filter(Boolean).join(' · ')}
+      trailing={<Chip tone="info" icon="flag" label="Schiedsrichter" />}
+    />
   );
 }

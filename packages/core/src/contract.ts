@@ -2025,37 +2025,70 @@ export type DamageOverview = {
 
 // ── Schiedsrichter ───────────────────────────────────────────────────────
 
-export type RefereeAssignment = {
+/** Lizenzstatus: keine Angabe, gültig, läuft in den nächsten 60 Tagen ab, abgelaufen */
+export type RefereeLicenseStatus = 'none' | 'ok' | 'expiring' | 'expired';
+
+/** Einsatz bei einem Verbandsspiel, vom Schiedsrichter selbst eingetragen. */
+export type RefereeDuty = {
   id: string;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  location: string | null;
+  /** Abwesenheit wurde automatisch eingetragen */
+  absence: boolean;
+};
+
+/** Überschneidung eines Einsatzes mit einem eigenen Termin (Spiel, Training …). */
+export type RefereeCollision = { eventId: string; title: string; startsAt: string };
+
+export type RefereeProfile = {
+  level: string | null;
+  licenseValidUntil: string | null;
+  licenseStatus: RefereeLicenseStatus;
+  active: boolean;
+};
+
+export type RefereeRow = RefereeProfile & {
   personId: string;
   name: string;
-  role: 'referee' | 'assistant';
-  status: 'requested' | 'confirmed' | 'declined';
+  /** Einsätze in der laufenden Saison */
+  duties: number;
+  /** Pflichteinsätze erfüllt (oder keine verlangt) */
+  dutiesOk: boolean;
 };
 
-export type RefereeMatch = {
-  eventId: string;
-  title: string;
-  badge: string;
-  startsAt: string;
-  location: string | null;
-  assignments: RefereeAssignment[];
-};
+export type RefereeSettings = { requiredReferees: number; requiredMatches: number };
 
 export type RefereeOverview = {
-  referees: {
-    personId: string;
-    name: string;
-    level: string | null;
-    active: boolean;
-    upcoming: number;
-  }[];
-  /** Heimspiele der nächsten 6 Wochen */
-  matches: RefereeMatch[];
   canManage: boolean;
-  /** Meine eigenen Einsätze als Schiedsrichter */
-  mine: (RefereeMatch & { assignmentId: string; status: RefereeAssignment['status'] })[];
+  /** Ich bin aktiver Schiedsrichter des Vereins */
+  isReferee: boolean;
+  /** Mein Profil als Schiedsrichter (Stufe, Lizenz) */
+  profile: RefereeProfile | null;
+  /** Meine Einsätze: kommende zuerst, dazu die letzten 90 Tage */
+  mine: RefereeDuty[];
+  /** Vereinsübersicht „Schiedsrichter-Soll“ – nur mit Recht zum Verwalten */
+  club: {
+    settings: RefereeSettings;
+    active: number;
+    /** fehlende aktive Schiedsrichter gegenüber dem Soll (0 = erfüllt) */
+    shortfall: number;
+    seasonName: string;
+    referees: RefereeRow[];
+  } | null;
 };
+
+export type RefereeDutyInput = {
+  title: string;
+  startsAt: string;
+  durationMinutes?: number;
+  location?: string | null;
+  /** Abwesenheit für diesen Tag automatisch eintragen */
+  createAbsence?: boolean;
+};
+
+export type RefereeDutyResult = { overview: RefereeOverview; collisions: RefereeCollision[] };
 
 // ── Kachel-Infos ─────────────────────────────────────────────────────────────
 

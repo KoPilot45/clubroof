@@ -148,11 +148,4 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
     defaultScope: 'club',
     permissions: ['members.read', 'members.manage', 'members.invite'],
   },
-  {
-    key: 'referee_lead',
-    name: 'Schiedsrichterobmann',
-    description: 'Schiedsrichter, Verfügbarkeit, Zuweisungen, Lehrgänge',
-    defaultScope: 'club',
-    permissions: ['referees.manage', 'members.read'],
-  },
 ];

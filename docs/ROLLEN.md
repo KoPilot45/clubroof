@@ -22,7 +22,6 @@ Stand: 10.10.2026. Grundlage: `packages/core/src/roles.ts`, `permissions.ts`, `a
 | Kassenwart (Mannschaft)       | –                    | –                           | –                                                      | –                                                              | –                                         | lesen, buchen, Strafen        | –                                   |
 | Platz-/Materialwart (Verein)  | –                    | –                           | –                                                      | –                                                              | News verfassen                            | –                             | Anlage, Material, Schlüssel, Helfer |
 | Mitgliederverwaltung (Verein) | –                    | lesen, **ändern**, einladen | –                                                      | –                                                              | –                                         | –                             | –                                   |
-| Schiedsrichterobmann (Verein) | –                    | **lesen (alle)**            | –                                                      | –                                                              | –                                         | –                             | Schiedsrichter                      |
 | Vereinsmitglied (Verein)      | Überblick            | –                           | –                                                      | –                                                              | News verfassen (Freigabe nötig)           | –                             | –                                   |
 
 Ohne Rolle (Spieler, Eltern) sehen und beantworten Personen ihre eigenen Termine, ihr Kassenkonto (bzw. das ihrer Kinder), News, Umfragen,
@@ -44,7 +43,7 @@ Dokumente und Helferdienste, soweit freigegeben.
    Der Vorstand kann beides nicht. Der letzte Fulladmin ist geschützt, es gibt aber keinen Hinweis auf „nur ein Fulladmin“.
 6. **Vorlagen sind nicht einheitlich.** Die Jugendleitung hat keinen Vereinsüberblick (die Sportliche Leitung schon) und keine Dokumente; die Sportliche Leitung
    darf keine News oder Umfragen; Platzwart und Kassenwart haben keinen Überblick.
-7. **Zu weite Sicht des Schiedsrichterobmanns:** `members.read` gibt die ganze Mitgliederliste, gebraucht werden nur die Schiedsrichter.
+7. ~~Zu weite Sicht des Schiedsrichterobmanns~~ – erledigt mit Paket SR: Die Rolle entfällt, Schiedsrichter werden von der Administration bzw. per individuellem Recht `referees.manage` gepflegt.
 8. **Vorstand liest alle Mannschaftskassen** (vereinsweites `cash.read`). Bei Mannschaftskassen sind das Interna der Mannschaft.
 9. **Trainer buchen und lesen selbst** (`cash.manage`, Festlegung 07.10.2026). Eine zweite Person für Stornos oder hohe Beträge fehlt; es gibt die Kassenprüfung, aber keine Prüferrolle.
 10. **Gesundheitsnahe Angaben:** Trainer sehen Abwesenheitsgründe (Verletzung, Krankheit) samt Freitext. Es gibt keine Abstufung.
@@ -61,7 +60,7 @@ Dokumente und Helferdienste, soweit freigegeben.
 
 1. 2-Faktor-Pflicht einstellbar erweitern: „Verwaltung“ (heute) / „+ Kasse und Trainer“ / „alle mit Rolle“.
 2. Abwesenheitsgründe abstufen: Trainer sehen die Kategorie (krank, verletzt, Urlaub), den Freitext nur, wenn die Person ihn freigibt.
-3. Schiedsrichterobmann: eingeschränkte Sicht (nur Schiedsrichter) statt `members.read`.
+3. ~~Schiedsrichterobmann~~ – entfällt (Paket SR).
 4. `forum.moderate` tatsächlich verwenden oder entfernen.
 
 **B. Konsistenz (mittel)**

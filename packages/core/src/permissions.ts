@@ -50,7 +50,8 @@ export const PERMISSIONS = {
   'facilities.manage': 'Platzbelegung, Sperrungen, Material und Schlüssel verwalten',
   'documents.manage': 'Dokumente hochladen und verwalten',
   'helpers.manage': 'Helferdienste und Aufgaben planen',
-  'referees.manage': 'Schiedsrichter, Verfügbarkeit und Zuweisungen verwalten',
+  'referees.manage':
+    'Schiedsrichter, Lizenzen und Vereins-Soll verwalten (keine eigene Rolle, per individuellem Recht)',
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;
