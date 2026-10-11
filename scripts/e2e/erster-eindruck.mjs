@@ -53,7 +53,7 @@ if (target) {
 await s.goto('/team');
 await s.page.waitForTimeout(2000);
 await s.page.evaluate(() => window.dispatchEvent(new Event('offline')));
-await text(s.page, 'Keine Verbindung', {}).waitFor({ timeout: 5_000 });
+await text(s.page, 'Du bist offline', {}).waitFor({ timeout: 5_000 });
 ok(true, 'Offline-Hinweis erscheint');
 await s.page.evaluate(() => window.dispatchEvent(new Event('online')));
 

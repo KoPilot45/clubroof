@@ -1,15 +1,12 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, usePathname, type Href } from 'expo-router';
-import { Pressable, View } from 'react-native';
-import { Text } from '@/components/app-text';
+import { View } from 'react-native';
+import { SubHeader } from '@/components/sub-header';
 import { FloatingNav } from '@/components/tab-bar';
 import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import { useState } from 'react';
 import type { IconName } from '@/components/ui';
-import { HEADING_FONT } from '@/lib/fonts';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
-import { headerTitle } from '@/components/header-title';
 import { t, useLocale } from '@/lib/i18n';
 
 /**
@@ -29,19 +26,9 @@ export default function AdminLayout() {
         <Stack
           screenOptions={{
             headerShown: true,
-            headerStyle: { backgroundColor: colors.primaryContainer },
-            headerTintColor: colors.onPrimaryContainer,
-            headerTitleStyle: {
-              color: colors.onPrimaryContainer,
-              fontFamily: HEADING_FONT,
-              fontWeight: '400',
-              fontSize: 20,
-            },
-            headerShadowVisible: false,
-            headerBackTitle: t('Zurück'),
-            headerTitle: headerTitle(colors.onPrimaryContainer),
+            // Pfad „Verein › Verwaltung › …“ wie auf allen Unterseiten (Paket NV)
+            header: (p) => <SubHeader route={p.route} options={p.options} prefix="admin/" />,
             contentStyle: { backgroundColor: colors.background },
-            headerRight: () => <ExitButton />,
           }}
         >
           <Stack.Screen name="index" options={{ title: 'Verwaltung' }} />
@@ -75,28 +62,6 @@ export default function AdminLayout() {
       </BottomTabBarHeightContext.Provider>
       {wizard ? null : <AdminNavBar onHeight={setNavHeight} />}
     </View>
-  );
-}
-
-function ExitButton() {
-  const { colors } = useTheme();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={t('Verwaltungsmodus beenden')}
-      onPress={() => router.dismissTo('/mehr')}
-      hitSlop={8}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        paddingHorizontal: 6,
-        minHeight: 44,
-      }}
-    >
-      <Ionicons name="close-circle-outline" size={20} color={colors.onPrimaryContainer} />
-      <Text style={{ color: colors.onPrimaryContainer, fontWeight: '700' }}>Beenden</Text>
-    </Pressable>
   );
 }
 

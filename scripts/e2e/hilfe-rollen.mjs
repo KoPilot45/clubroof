@@ -23,7 +23,7 @@ ok(
   'Kachel-Beschriftung in Open Sans (Standardschrift)',
 );
 await t.goto('/verein');
-const heading = text(t.page, 'Vereinsnews', { exact: true });
+const heading = text(t.page, 'Vereinsleben', { exact: true });
 await heading.waitFor({ timeout: 20_000 });
 ok(/Oswald/.test(await family(t.page, heading)), 'Zwischenüberschrift in Oswald');
 
