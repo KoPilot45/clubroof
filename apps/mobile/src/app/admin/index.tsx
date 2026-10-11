@@ -163,7 +163,7 @@ export default function AdminScreen() {
           ? [
               {
                 key: 'modules',
-                label: 'Module',
+                label: 'Funktionen',
                 icon: 'apps' as const,
                 onPress: () => router.push('/admin/modules'),
               },

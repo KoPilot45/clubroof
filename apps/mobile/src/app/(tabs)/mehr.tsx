@@ -111,6 +111,18 @@ export default function MoreScreen() {
       badge: home.data?.unreadNotifications,
       onPress: () => router.push('/notifications'),
     },
+    ...(me.referees.manage || me.referees.active
+      ? [
+          {
+            key: 'referees',
+            label: 'Schiedsrichter',
+            subtitle: 'Meine Einsätze und Vereins-Soll',
+            icon: 'flag' as const,
+            tint: 'green' as const,
+            onPress: () => router.push('/referees'),
+          },
+        ]
+      : []),
     ...(me.clubModules.includes('calendar_export')
       ? [
           {

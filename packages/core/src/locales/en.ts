@@ -361,6 +361,7 @@ export const en: Record<string, string> = {
   Alle: 'All',
   'Alle an offene Beträge erinnern': 'Remind everyone of outstanding amounts',
   'Alle anzeigen': 'Show all',
+  'Alle anzeigen ›': 'Show all ›',
   'Alle anzeigen ({0})': 'Show all ({0})',
   'Alle Arten': 'All types',
   'Alle Buchungen': 'All entries',
@@ -1943,6 +1944,7 @@ export const en: Record<string, string> = {
   Kader: 'Squad',
   'Kader ({0} Spieler)': 'Squad ({0} players)',
   'Kader & Aufstellung': 'Squad & line-up',
+  'Kader verwalten': 'Manage squad',
   'Kader-Statistik': 'Squad statistics',
   'Kader, Aufstellung und Nominierungen verwalten': 'Manage squad, line-up and nominations',
   'Kader: {0}': 'Squad: {0}',
@@ -2223,6 +2225,7 @@ export const en: Record<string, string> = {
   'Mein Profil': 'My profile',
   Meine: 'My',
   'Meine Einsätze': 'My assignments',
+  'Meine Einsätze und Vereins-Soll': 'My assignments and club quota',
   'Meine Entwürfe und Einreichungen': 'My drafts and submissions',
   'Meine Kinder': 'My children',
   'Meine Mannschaft': 'My team',
@@ -2373,6 +2376,7 @@ export const en: Record<string, string> = {
   'Neues Passwort': 'New password',
   'Neues Passwort (mind. 10 Zeichen)': 'New password (min. 10 characters)',
   'Neues Passwort wiederholen': 'Repeat new password',
+  Neuigkeiten: 'News',
   'Neuigkeiten für dich': 'News for you',
   'Neuigkeiten in Clubroof': "What's new in Clubroof",
   'Neuzugang von einem anderen Verein. Das Mitglied muss angelegt sein.':
@@ -2526,6 +2530,7 @@ export const en: Record<string, string> = {
   'Oktober 2026': 'October 2026',
   Ordnung: 'Rules',
   Ordnungen: 'Rules',
+  Organisation: 'Organization',
   Ort: 'Location',
   'Partner des Vereins': 'Club partner',
   Passiv: 'Inactive',
@@ -2576,6 +2581,7 @@ export const en: Record<string, string> = {
   'Platz {0}': 'Pitch {0}',
   'Platz belegt': 'Pitch booked',
   'Platz gesperrt': 'Pitch closed',
+  'Platz sperren': 'Block pitch',
   'Platz- und Materialwart': 'Groundskeeper and equipment manager',
   Platzbelegung: 'Pitch bookings',
   'Platzbelegung, Sperrungen, Material und Schlüssel verwalten':
@@ -2643,6 +2649,7 @@ export const en: Record<string, string> = {
   'Rolle vergeben': 'Role assigned',
   'Rolle vergeben: {0} ({1}) an {2}': 'Role assigned: {0} ({1}) to {2}',
   'Rollen & Aufgaben': 'Roles & tasks',
+  'Rollen & Rechte': 'Roles & rights',
   'Rollen & Zusatzaufgaben': 'Roles & additional duties',
   'Rollen sind Rechtepakete. Sie werden zusätzlich zur Mannschaft vergeben – z. B. ist ein Spieler „Kassenwart“ seiner Mannschaft. Jede Rolle kann mehrere Personen haben.':
     'Roles are permission packages. They are assigned in addition to the team – e.g. a player can be the treasurer of their team. Each role can have several people.',
@@ -2805,6 +2812,7 @@ export const en: Record<string, string> = {
   'Sperrungen dürfen nur Platzverantwortliche aufheben.': 'Only groundskeepers may lift closures.',
   Spiel: 'Match',
   'Spiel abgesetzt.': 'Match postponed.',
+  'Spiel- & Trainingsbetrieb': 'Matches & training',
   Spielbericht: 'Match report',
   'Spielbericht abschließen': 'Finalise match report',
   'Spielbericht bearbeiten': 'Edit match report',
@@ -2821,6 +2829,7 @@ export const en: Record<string, string> = {
     'Players from other teams for individual events',
   'Spieler der eigenen Mannschaft brauchen keinen Gastspieleinsatz.':
     "Players from your own team don't need a guest appearance.",
+  'Spieler einladen': 'Invite players',
   'Spieler gesucht': 'Players wanted',
   'Spieler oder Eltern der Mannschaft': 'Players or parents of the team',
   'Spieler sehen den Schwerpunkt und das benötigte Material.':
@@ -2863,6 +2872,7 @@ export const en: Record<string, string> = {
   'Sponsor gelöscht: {0}': 'Sponsor deleted: {0}',
   Sponsoren: 'Sponsors',
   'Sponsoren pflegt die Vereinsadministration.': 'The club administration maintains sponsors.',
+  'Sponsoren verwalten': 'Manage sponsors',
   'Sponsoren: Kennzeichnung „{0}“': 'Sponsors: label “{0}”',
   'Sponsoren: Reihenfolge geändert': 'Sponsors: order changed',
   'Sponsorenbilder lädt die Vereinsadministration hoch.':
@@ -2916,6 +2926,7 @@ export const en: Record<string, string> = {
   'Strafe vergeben': 'Issue fine',
   'Strafe: {0}': 'Fine: {0}',
   Strafen: 'Fines',
+  'Strafen & Katalog': 'Fines & catalog',
   'Strafen je Person': 'Fines per person',
   'Strafen nach Art': 'Fines by type',
   'Strafen sind für diese Mannschaft nicht aktiviert.': 'Fines are not enabled for this team.',

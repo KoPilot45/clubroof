@@ -4,7 +4,9 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
-import { NewsList } from '@/components/news';
+import { ClubNewsTicker } from '@/components/club-news-ticker';
+import type { TintKey } from '@clubroof/design-tokens';
+import { adminFunctionTiles } from '@/lib/admin-tiles';
 import { TileCustomizeSheet, applyTilePrefs } from '@/components/tile-customizer';
 import {
   Button,
@@ -64,37 +66,44 @@ export default function ClubScreen() {
     queryFn: () => api<EventSummary[]>('/club/today'),
   });
 
-  const tiles: TileItem[] = [
-    {
-      key: 'news',
-      tint: 'blue' as const,
-      label: 'News',
-      icon: 'newspaper',
-      onPress: () => router.push('/news'),
-    },
-    ...(me.news.write || me.news.publish
-      ? [
-          {
-            key: 'editorial',
-            tint: 'violet' as const,
-            label: 'News schreiben',
-            icon: 'create' as const,
-            onPress: () => router.push('/admin/news'),
-          },
-        ]
-      : []),
+  // Kacheln in Kategorien (Paket MS): Veranstaltungen, Neuigkeiten, Vereinsleben, Verwaltung
+  type Group = { key: string; title: string; tint: TintKey; tiles: TileItem[] };
+  const eventTiles: TileItem[] = [
     {
       key: 'events',
-      tint: 'pink' as const,
       label: 'Veranstaltungen',
       icon: 'calendar',
       onPress: () => router.push('/club-events'),
+    },
+    {
+      key: 'schedule',
+      label: 'Spielplan',
+      icon: 'football',
+      onPress: () => router.push('/club-schedule'),
+    },
+    ...(has('helpers')
+      ? [
+          {
+            key: 'helpers',
+            label: 'Helfer gesucht',
+            icon: 'hand-left' as const,
+            badge: openSpots || undefined,
+            onPress: () => router.push('/helpers'),
+          },
+        ]
+      : []),
+  ];
+  const newsTiles: TileItem[] = [
+    {
+      key: 'news',
+      label: 'News',
+      icon: 'newspaper',
+      onPress: () => router.push('/news'),
     },
     ...(has('polls')
       ? [
           {
             key: 'polls',
-            tint: 'blue' as const,
             label: 'Umfragen',
             icon: 'stats-chart' as const,
             badge: openPolls,
@@ -106,10 +115,65 @@ export default function ClubScreen() {
       ? [
           {
             key: 'forum',
-            tint: 'violet' as const,
             label: 'Forum',
             icon: 'chatbubbles' as const,
             onPress: () => router.push('/forum'),
+          },
+        ]
+      : []),
+  ];
+  const life: TileItem[] = [
+    {
+      key: 'teams',
+      label: 'Mannschaften',
+      icon: 'shirt',
+      onPress: () => router.push('/club-teams'),
+    },
+    {
+      key: 'contacts',
+      label: 'Ansprechpartner',
+      icon: 'call',
+      onPress: () => router.push('/contacts'),
+    },
+    ...(has('wiki')
+      ? [
+          {
+            key: 'wiki',
+            label: 'Vereinswissen',
+            icon: 'book' as const,
+            onPress: () => router.push('/wiki'),
+          },
+        ]
+      : []),
+    ...(has('documents')
+      ? [
+          {
+            key: 'docs',
+            label: 'Dokumente',
+            icon: 'folder-open' as const,
+            onPress: () => router.push('/documents'),
+          },
+        ]
+      : []),
+    ...(has('facility_booking') &&
+    (me.canAdminister ||
+      me.teams.some((t) => t.functions.some((f) => f === 'coach' || f === 'assistant_coach')))
+      ? [
+          {
+            key: 'pitch',
+            label: 'Platzbelegung',
+            icon: 'grid' as const,
+            onPress: () => router.push('/facilities'),
+          },
+        ]
+      : []),
+    ...(has('equipment')
+      ? [
+          {
+            key: 'equipment',
+            label: 'Anlage & Material',
+            icon: 'construct' as const,
+            onPress: () => router.push('/equipment'),
           },
         ]
       : []),
@@ -117,7 +181,6 @@ export default function ClubScreen() {
       ? [
           {
             key: 'board',
-            tint: 'orange' as const,
             label:
               has('lost_and_found') && has('marketplace')
                 ? 'Fundbüro & Marktplatz'
@@ -129,108 +192,33 @@ export default function ClubScreen() {
           },
         ]
       : []),
-    ...(has('equipment')
+    ...(has('sponsors')
       ? [
           {
-            key: 'equipment',
-            tint: 'orange' as const,
-            label: 'Anlage & Material',
-            icon: 'construct' as const,
-            onPress: () => router.push('/equipment'),
-          },
-        ]
-      : []),
-    ...(me.referees.manage || me.referees.active
-      ? [
-          {
-            key: 'referees',
-            tint: 'green' as const,
-            label: 'Schiedsrichter',
-            icon: 'flag' as const,
-            onPress: () => router.push('/referees'),
-          },
-        ]
-      : []),
-    ...(has('wiki')
-      ? [
-          {
-            key: 'wiki',
-            tint: 'pink' as const,
-            label: 'Vereinswissen',
-            icon: 'book' as const,
-            onPress: () => router.push('/wiki'),
-          },
-        ]
-      : []),
-    ...(has('helpers')
-      ? [
-          {
-            key: 'helpers',
-            tint: 'green' as const,
-            label: 'Helfer gesucht',
-            icon: 'hand-left' as const,
-            badge: openSpots || undefined,
-            onPress: () => router.push('/helpers'),
-          },
-        ]
-      : []),
-    ...(has('documents')
-      ? [
-          {
-            key: 'docs',
-            tint: 'pink' as const,
-            label: 'Dokumente',
-            icon: 'folder-open' as const,
-            onPress: () => router.push('/documents'),
-          },
-        ]
-      : []),
-    ...(me.clubCash
-      ? [
-          {
-            key: 'clubcash',
-            tint: 'orange' as const,
-            label: 'Vereinskasse',
-            icon: 'wallet' as const,
-            onPress: () => router.push('/club-cash'),
-          },
-        ]
-      : []),
-    {
-      key: 'schedule',
-      tint: 'green' as const,
-      label: 'Spielplan',
-      icon: 'football' as const,
-      onPress: () => router.push('/club-schedule'),
-    },
-    {
-      key: 'teams',
-      tint: 'green' as const,
-      label: 'Mannschaften',
-      icon: 'shirt',
-      onPress: () => router.push('/club-teams'),
-    },
-    {
-      key: 'contacts',
-      tint: 'violet' as const,
-      label: 'Ansprechpartner',
-      icon: 'call',
-      onPress: () => router.push('/contacts'),
-    },
-    ...(has('facility_booking') &&
-    (me.canAdminister ||
-      me.teams.some((t) => t.functions.some((f) => f === 'coach' || f === 'assistant_coach')))
-      ? [
-          {
-            key: 'pitch',
-            tint: 'blue' as const,
-            label: 'Platzbelegung',
-            icon: 'grid' as const,
-            onPress: () => router.push('/facilities'),
+            key: 'sponsors',
+            label: 'Sponsoren',
+            icon: 'heart' as const,
+            onPress: () => router.push('/sponsors'),
           },
         ]
       : []),
   ];
+  const groups: Group[] = [
+    { key: 'events', title: 'Veranstaltungen', tint: 'orange', tiles: eventTiles },
+    { key: 'news', title: 'Neuigkeiten', tint: 'pink', tiles: newsTiles },
+    { key: 'life', title: 'Vereinsleben', tint: 'blue', tiles: life },
+    // Verwaltung: alle ausführbaren Funktionen der Rolle, ohne Einklappen; ohne Rechte entfällt sie
+    { key: 'admin', title: 'Verwaltung', tint: 'violet', tiles: adminFunctionTiles(me) },
+  ];
+  // Eigene Reihenfolge und Ausblenden (Anpassen) gelten innerhalb der Kategorien
+  const everyTile = withTileInfo(
+    groups.flatMap((g) => g.tiles),
+    tileInfo,
+  );
+  const shown = applyTilePrefs(everyTile, me.user.clubTiles);
+  const customizable = everyTile.filter(
+    (t) => !groups.find((g) => g.key === 'admin')!.tiles.some((x) => x.key === t.key),
+  );
 
   return (
     <Screen
@@ -246,27 +234,35 @@ export default function ClubScreen() {
     >
       {highlight ? <ClubEventHero event={highlight} /> : null}
 
-      <Section title="Vereinsleben">
-        <TileGrid
-          items={[
-            ...applyTilePrefs(withTileInfo(tiles, tileInfo), me.user.clubTiles),
-            {
-              key: 'customize',
-              label: 'Anpassen',
-              icon: 'options',
-              tint: 'violet',
-              onPress: () => setCustomizing(true),
-            },
-          ]}
-        />
-        <TileCustomizeSheet
-          visible={customizing}
-          onClose={() => setCustomizing(false)}
-          tiles={withTileInfo(tiles, tileInfo)}
-          prefs={me.user.clubTiles}
-          onSaved={refresh}
-        />
-      </Section>
+      {news.data && news.data.length > 0 ? <ClubNewsTicker items={news.data} /> : null}
+      {news.isPending ? <Loading /> : null}
+
+      {groups.map((g) => {
+        const items = shown
+          .filter((t) => g.tiles.some((x) => x.key === t.key))
+          .map((t) => ({ ...t, tint: g.tint }));
+        if (items.length === 0) return null;
+        return (
+          <Section key={g.key} title={g.title}>
+            <TileGrid items={items} />
+          </Section>
+        );
+      })}
+      <Button
+        label="Kacheln anpassen"
+        icon="options-outline"
+        variant="tonal"
+        size="sm"
+        style={{ alignSelf: 'flex-start' }}
+        onPress={() => setCustomizing(true)}
+      />
+      <TileCustomizeSheet
+        visible={customizing}
+        onClose={() => setCustomizing(false)}
+        tiles={customizable}
+        prefs={me.user.clubTiles}
+        onSaved={refresh}
+      />
 
       <Section
         title="Heute auf der Anlage"
@@ -301,11 +297,6 @@ export default function ClubScreen() {
             />
           ))}
         </Card>
-      </Section>
-
-      <Section title="Vereinsnews" action="Alle anzeigen" onAction={() => router.push('/news')}>
-        {news.isPending ? <Loading /> : null}
-        {news.data ? <NewsList items={news.data.slice(0, 3)} /> : null}
       </Section>
     </Screen>
   );
