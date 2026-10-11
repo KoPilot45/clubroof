@@ -3,11 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
+import type { ReactNode } from 'react';
+import { AreaOverviewScreen } from '@/components/area-overview';
 import { AppHeader } from '@/components/app-header';
 import { AttendanceBar, ResultRow, TeamBand, UpcomingMatches } from '@/components/team';
 import {
   Button,
   Card,
+  ChoiceChips,
   Chip,
   DateTile,
   Empty,
@@ -36,7 +39,40 @@ const PARTICIPATION_LABELS = {
   absences_only: 'Nur Abwesenheiten melden',
 } as const;
 
+/**
+ * Team-Tab: Wer Sportliche Leitung, Jugendleitung oder Vorstand ist, sieht die Bereichsübersicht (Paket BU);
+ * mit eigener Mannschaft schaltet oben „Meine Mannschaft | Übersicht“ um (letzte Wahl wird gemerkt).
+ */
 export default function TeamScreen() {
+  const { me } = useSignedIn();
+  const hasTeams = me.teams.length > 0;
+  const [mode, setMode] = useState<'team' | 'overview'>('team');
+  useEffect(() => {
+    void readSetting('teamTabMode').then((v) => {
+      if (v === 'overview' || v === 'team') setMode(v);
+    });
+  }, []);
+  const choose = (m: 'team' | 'overview') => {
+    setMode(m);
+    void writeSetting('teamTabMode', m);
+  };
+  const switcher =
+    me.areaOverview && hasTeams ? (
+      <ChoiceChips
+        options={[
+          { value: 'team', label: 'Meine Mannschaft' },
+          { value: 'overview', label: 'Übersicht' },
+        ]}
+        selected={[mode]}
+        onToggle={choose}
+      />
+    ) : null;
+  if (me.areaOverview && (!hasTeams || mode === 'overview'))
+    return <AreaOverviewScreen switcher={switcher} />;
+  return <MyTeamScreen switcher={switcher} />;
+}
+
+function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
   const { me, api } = useSignedIn();
   const teams = useMemo(() => [...new Map(me.teams.map((t) => [t.id, t])).values()], [me.teams]);
   // Trainer starten in einer Mannschaft, die sie betreuen (nicht dort, wo sie selbst spielen)
@@ -266,6 +302,7 @@ export default function TeamScreen() {
         void polls.refetch();
       }}
     >
+      {switcher}
       {teams.length > 1 ? (
         <TeamSwitcher
           teams={teams}

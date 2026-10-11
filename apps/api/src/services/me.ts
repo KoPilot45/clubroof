@@ -16,6 +16,7 @@ import { adminPermissions } from './admin';
 import { newsPermissions } from './editorial';
 import { clubCashLevel } from './club-cash';
 import { canInvite } from './invitations';
+import { areaAccess } from './area-overview';
 import { twoFactorMissing } from './two-factor';
 
 export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
@@ -97,6 +98,7 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       scopeId: g.scopeId,
     })),
     canAdminister: isAdminActor(actor),
+    areaOverview: await areaAccess(db, actor),
     admin: adminPermissions(actor),
     news: newsPermissions(actor),
     clubCash: (() => {

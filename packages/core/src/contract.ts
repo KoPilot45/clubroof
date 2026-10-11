@@ -76,6 +76,8 @@ export type MeResponse = {
   roles: { key: string; name: string; scopeType: ScopeType; scopeId: string | null }[];
   /** Ob der Nutzer den Verwaltungsmodus betreten darf */
   canAdminister: boolean;
+  /** Bereichsübersicht im Team-Tab (Leitung und Vorstand); null ohne Zugriff */
+  areaOverview: AreaAccess | null;
   /** Rechte im Verwaltungsbereich (Mitglieder, Rollen, Audit-Log) */
   admin: AdminPermissions;
   /** Bereiche, in denen ich Umfragen erstellen bzw. Dokumente hochladen darf */
@@ -2191,4 +2193,72 @@ export type PublicClub = {
     foundedYear: number | null;
     logoUrl: string | null;
   } | null;
+};
+
+// ── Bereichsübersicht (Leitung und Vorstand) ───────────────────────────────
+
+/** Bereiche des Vereins: Senioren (inkl. Alte Herren), Frauen, Jugend. */
+export const AREA_KEYS = ['seniors', 'women', 'youth'] as const;
+export type AreaKey = (typeof AREA_KEYS)[number];
+export const AREA_LABELS: Record<AreaKey, string> = {
+  seniors: 'Senioren',
+  women: 'Frauen',
+  youth: 'Jugend',
+};
+
+/** Ampel der Trainingsbeteiligung: grün ab 65 %, gelb 50–64 %, rot darunter; unter 3 erfassten Einheiten zu wenig Daten. */
+export const PARTICIPATION_GOOD_FROM = 65;
+export const PARTICIPATION_MEDIUM_FROM = 50;
+export const PARTICIPATION_MIN_SESSIONS = 3;
+export type ParticipationLevel = 'good' | 'medium' | 'low' | 'none';
+
+export function participationLevel(percent: number | null, sessions: number): ParticipationLevel {
+  if (percent === null || sessions < PARTICIPATION_MIN_SESSIONS) return 'none';
+  if (percent >= PARTICIPATION_GOOD_FROM) return 'good';
+  if (percent >= PARTICIPATION_MEDIUM_FROM) return 'medium';
+  return 'low';
+}
+
+export type AreaAccess = {
+  /** Bereiche, die die Person sehen darf (Filter erscheint ab zwei) */
+  areas: AreaKey[];
+};
+
+export type AreaTeamCard = {
+  id: string;
+  badge: string;
+  name: string;
+  area: AreaKey;
+  /** Spieler im Kader und davon heute nicht abwesend */
+  squad: { total: number; available: number };
+  /** Namen des Trainerteams; leer = kein Trainer */
+  coaches: string[];
+  /** Trainingsbeteiligung der letzten 4 Wochen (nur Einheiten mit erfasster Anwesenheit, Abwesenheiten herausgerechnet) */
+  participation: { percent: number | null; sessions: number; level: ParticipationLevel };
+  nextMatch: {
+    startsAt: string;
+    isHome: boolean;
+    opponent: string;
+    yes: number;
+    no: number;
+    open: number;
+  } | null;
+};
+
+export type AreaOverview = {
+  /** Gewählter Bereich; „all“ = alle Bereiche, auf die die Person Zugriff hat */
+  area: AreaKey | 'all';
+  areas: AreaKey[];
+  summary: {
+    teams: number;
+    players: number;
+    coaches: number;
+    matchesThisWeek: number;
+    /** Mittel der Trainingsbeteiligung aller Mannschaften mit genug Daten (nur bei „all“) */
+    trainingAverage: number | null;
+  };
+  /** Bilanz der Saison (nur bei „all“) */
+  record: { won: number; drawn: number; lost: number } | null;
+  /** Mannschaften nach Altersklasse sortiert: Jugend A → G, Senioren 1. → Alte Herren */
+  teams: AreaTeamCard[];
 };

@@ -22,6 +22,7 @@ import type {
   TeamManage,
   SchedulePreview,
   MemberDetail,
+  MeResponse,
   MemberListItem,
   RoleCatalog,
   DemandDetail,
@@ -63,6 +64,7 @@ import type {
   UploadedImage,
   EditorialNews,
   EditorialOverview,
+  AreaOverview,
   FacilityOccupancy,
   ExchangeOverview,
   PersonProfile,
@@ -92,6 +94,7 @@ import type {
   PollDetail,
   PollSummary,
 } from '@clubroof/core';
+import { participationLevel } from '@clubroof/core';
 import { createDb, schema as s } from '@clubroof/db';
 import { eq, inArray } from 'drizzle-orm';
 import { runMigrations } from '@clubroof/db/migrate';
@@ -734,6 +737,109 @@ describe.skipIf(!url)('API', () => {
         await sql`update events set starts_at = ${new Date(old!.starts_at).toISOString()}, ends_at = ${old!.ends_at ? new Date(old!.ends_at).toISOString() : null}, attendance_recorded_at = null where id = ${old!.id}`;
         await sql`update event_participants set attended = null where event_id = ${old!.id}`;
       }
+    });
+  });
+
+  describe('Bereichsübersicht (Leitung und Vorstand)', () => {
+    it('ist nur für Vorstand, Leitung und Admin freigegeben', async () => {
+      for (const who of ['spieler', 'trainer', 'eltern', 'kasse', 'mitglied'] as const) {
+        const user = await login(who);
+        expect(user.me.areaOverview).toBeNull();
+        const res = await app.inject({
+          method: 'GET',
+          url: '/club/areas',
+          headers: { authorization: `Bearer ${user.token}` },
+        });
+        expect(res.statusCode).toBe(403);
+      }
+      const board = await login('vorstand');
+      expect(board.me.areaOverview!.areas).toEqual(['seniors', 'women', 'youth']);
+    });
+
+    it('zeigt Mannschaften nach Altersklasse sortiert mit Kader, Trainerteam und Ampel', async () => {
+      const board = await login('vorstand');
+      const all = await get<AreaOverview>('/club/areas', board.token);
+      expect(all.area).toBe('all');
+      expect(all.summary.teams).toBe(all.teams.length);
+      expect(all.summary.players).toBe(all.teams.reduce((n, t) => n + t.squad.total, 0));
+      expect(all.record).not.toBeNull();
+      // Reihenfolge: Senioren, Frauen, Jugend; Senioren 1. vor 2. vor Alte Herren; Jugend A vor B vor C
+      const order = all.teams.map((t) => t.area);
+      expect(
+        [...order].sort(
+          (a, b) =>
+            ['seniors', 'women', 'youth'].indexOf(a) - ['seniors', 'women', 'youth'].indexOf(b),
+        ),
+      ).toEqual(order);
+      const seniors = all.teams.filter((t) => t.area === 'seniors').map((t) => t.badge);
+      expect(seniors.indexOf('1.')).toBeLessThan(seniors.indexOf('2.'));
+      expect(seniors.indexOf('2.')).toBeLessThan(seniors.indexOf('AH'));
+      const youth = all.teams.filter((t) => t.area === 'youth').map((t) => t.badge[0]);
+      expect([...youth].sort()).toEqual(youth);
+      for (const t of all.teams) {
+        expect(t.squad.available).toBeLessThanOrEqual(t.squad.total);
+        expect(t.participation.level).toBe(
+          participationLevel(t.participation.percent, t.participation.sessions),
+        );
+        if (t.nextMatch)
+          expect(t.nextMatch.yes + t.nextMatch.no + t.nextMatch.open).toBeGreaterThan(0);
+      }
+      // Beteiligung mit Daten (B1: vergangene Trainings sind erfasst)
+      const b1 = all.teams.find((t) => t.badge === 'B1')!;
+      expect(b1.participation.sessions).toBeGreaterThanOrEqual(3);
+      expect(b1.participation.percent).not.toBeNull();
+      expect(b1.coaches.length).toBeGreaterThan(0);
+    });
+
+    it('filtert nach Bereich und zeigt Bilanz und Durchschnitt nur beim Verein', async () => {
+      const board = await login('vorstand');
+      const youth = await get<AreaOverview>('/club/areas?area=youth', board.token);
+      expect(youth.area).toBe('youth');
+      expect(youth.teams.length).toBeGreaterThan(0);
+      expect(youth.teams.every((t) => t.area === 'youth')).toBe(true);
+      expect(youth.record).toBeNull();
+      expect(youth.summary.trainingAverage).toBeNull();
+      const all = await get<AreaOverview>('/club/areas', board.token);
+      expect(all.summary.trainingAverage).not.toBeNull();
+      expect(all.record!.won + all.record!.drawn + all.record!.lost).toBeGreaterThan(0);
+    });
+
+    it('Jugendleitung sieht nur den Jugendbereich, ohne Filter', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const [youth] = await sql<
+        { id: string }[]
+      >`select id from org_units where kind = 'youth' limit 1`;
+      const given = await send<MemberDetail>(
+        'POST',
+        `/admin/members/${coach.me.person.id}/roles`,
+        admin.token,
+        { roleKey: 'youth_director', scopeType: 'org_unit', scopeId: youth!.id },
+      );
+      expect(given.status).toBe(200);
+      try {
+        const me = await get<MeResponse>('/me', coach.token);
+        expect(me.areaOverview).toEqual({ areas: ['youth'] });
+        const res = await get<AreaOverview>('/club/areas?area=seniors', coach.token);
+        // ein nicht erlaubter Bereich fällt auf „alle erlaubten“ zurück
+        expect(res.area).toBe('all');
+        expect(res.teams.length).toBeGreaterThan(0);
+        expect(res.teams.every((t) => t.area === 'youth')).toBe(true);
+      } finally {
+        const a = given.body.roles.find((r) => r.roleKey === 'youth_director')!;
+        await send('DELETE', `/admin/members/${coach.me.person.id}/roles/${a.id}`, admin.token);
+      }
+    });
+
+    it('verrät keine Absagegründe, Kasse oder Anwesenheitslisten', async () => {
+      const board = await login('vorstand');
+      const res = await app.inject({
+        method: 'GET',
+        url: '/club/areas',
+        headers: { authorization: `Bearer ${board.token}` },
+      });
+      const text = res.body;
+      expect(text).not.toMatch(/reason|cash|participants|personId/i);
     });
   });
 

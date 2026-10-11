@@ -1,4 +1,6 @@
 import {
+  type AreaOverview,
+  AREA_KEYS,
   type ClubTeamPage,
   SCOPE_TYPES,
   type UploadedImage,
@@ -27,6 +29,7 @@ import {
 } from '../services/club';
 import { cashReportCsv, cashReportPdf } from '../services/cash';
 import { getClubTeamPage } from '../services/teams';
+import { getAreaOverview } from '../services/area-overview';
 import { listHelperEvents, setAttendance, signUp, withdraw } from '../services/helpers';
 import { placeholderPdf } from '../storage/files';
 import { deleteDocument, setClubLogo, uploadDocument, uploadImage } from '../services/uploads';
@@ -36,6 +39,13 @@ const LINK_VALIDITY_MS = 10 * 60 * 1000;
 /** Vereinsleben: Helfer, Teilnahme, Dokumente, Mannschaften, Ansprechpartner, Heute. */
 export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.authenticate);
+
+  app.get(
+    '/club/areas',
+    { schema: { querystring: z.object({ area: z.enum([...AREA_KEYS, 'all']).default('all') }) } },
+    async (request): Promise<AreaOverview> =>
+      getAreaOverview(app.db, request.actor!, request.query.area, app.now()),
+  );
 
   app.get('/helpers', async (request): Promise<HelperEvent[]> =>
     listHelperEvents(app.db, request.actor!, app.now()),
