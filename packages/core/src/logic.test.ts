@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { can, scopesWith, type Grant } from './access';
+import { participationLevel } from './contract';
 import { isResponseOpen, responseDeadline } from './deadlines';
 import { resolveModule, type ModuleSetting } from './module-resolution';
 import { at, fromIsoDate } from './time';
@@ -155,5 +156,19 @@ describe('resolveModule', () => {
 
   it('unbekanntes Modul ist aus', () => {
     expect(resolveModule(settings, 'gibt_es_nicht').enabled).toBe(false);
+  });
+});
+
+describe('participationLevel', () => {
+  it('Ampel: grün ab 65 %, gelb 50–64 %, rot darunter', () => {
+    expect(participationLevel(65, 5)).toBe('good');
+    expect(participationLevel(64, 5)).toBe('medium');
+    expect(participationLevel(50, 5)).toBe('medium');
+    expect(participationLevel(49, 5)).toBe('low');
+  });
+  it('unter drei erfassten Einheiten: zu wenig Daten', () => {
+    expect(participationLevel(90, 2)).toBe('none');
+    expect(participationLevel(null, 0)).toBe('none');
+    expect(participationLevel(90, 3)).toBe('good');
   });
 });
