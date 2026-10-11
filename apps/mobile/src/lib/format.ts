@@ -85,6 +85,24 @@ export function todayIso(now = new Date()): string {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
+const clubParts = new Intl.DateTimeFormat('en-GB', {
+  timeZone: TZ,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+/** Kalendertag (JJJJ-MM-TT) und Minuten seit Mitternacht eines Zeitpunkts in der Vereinszeitzone. */
+export function clubDayMinutes(iso: string): { day: string; minutes: number } {
+  const p = Object.fromEntries(
+    clubParts.formatToParts(new Date(iso)).map((x) => [x.type, x.value]),
+  );
+  return { day: `${p.year}-${p.month}-${p.day}`, minutes: Number(p.hour) * 60 + Number(p.minute) };
+}
+
 const shortDate = dateFormat({
   day: '2-digit',
   month: '2-digit',
