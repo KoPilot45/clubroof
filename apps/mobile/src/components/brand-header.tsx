@@ -5,7 +5,7 @@
  */
 import { useId, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import Svg, { Defs, LinearGradient, Path, Rect, Stop, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { Text } from '@/components/app-text';
 import { useTheme } from '@/lib/theme';
 
@@ -16,55 +16,87 @@ export const CLUBROOF_CYAN = '#00C3FF';
 export function GradientHeader({
   from,
   to,
+  decor = 'rgba(255,255,255,0.14)',
   children,
   style,
 }: {
   from: string;
   to: string;
+  /** Farbe der Wellen und des Kreises (wie in der Blickfangkarte); Vereine nutzen `hero.decor` */
+  decor?: string;
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
   return (
-    <View style={[{ overflow: 'hidden' }, style]}>
-      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
+    <View style={{ overflow: 'hidden' }}>
+      <Svg
+        style={StyleSheet.absoluteFill}
+        width="100%"
+        height="100%"
+        viewBox="0 0 306 270"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden
+      >
         <Defs>
-          <LinearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <LinearGradient id={id} x1="0.3" y1="0" x2="0.7" y2="1">
             <Stop offset="0" stopColor={from} />
-            <Stop offset="1" stopColor={to} />
+            <Stop offset="0.62" stopColor={to} />
           </LinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
+        <Rect x="0" y="0" width="306" height="270" fill={`url(#${id})`} />
+        <Path
+          d="M0 160 C50 120 100 200 153 160 C206 120 256 180 306 140 L306 270 L0 270Z"
+          fill={decor}
+        />
+        <Path
+          d="M0 200 C60 170 105 235 165 200 C225 170 265 215 306 190 L306 270 L0 270Z"
+          fill={decor}
+        />
+        <Circle cx="270" cy="28" r="64" fill={decor} />
       </Svg>
-      {children}
+      {/* eigene Ebene über dem Hintergrund: absolut positionierte Flächen liegen sonst über dem Inhalt */}
+      <View style={[style, { position: 'relative', zIndex: 1 }]}>{children}</View>
     </View>
   );
 }
 
-/** Clubroof-Logo: Schild mit „CR“. `mono` = weißes Schild (auf dem Blauverlauf). */
+/**
+ * Clubroof-Logo (Original-Vektor „ClubRoof.svg“): Dach mit C und R im Blauverlauf #002AFA → #00C3FF.
+ * `mono` = weiß (auf dem Blauverlauf). `size` ist die Höhe.
+ */
 export function ClubroofLogo({ size = 40, mono }: { size?: number; mono?: boolean }) {
+  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
   return (
-    <Svg width={size} height={size * 1.1} viewBox="0 0 40 44" accessibilityLabel="Clubroof">
+    <Svg
+      width={(size * 950) / 1035}
+      height={size}
+      viewBox="150 100 950 1035"
+      accessibilityLabel="Clubroof"
+    >
+      {mono ? null : (
+        <Defs>
+          <LinearGradient
+            id={id}
+            gradientUnits="userSpaceOnUse"
+            x1="200"
+            y1="1000"
+            x2="1057"
+            y2="627"
+          >
+            <Stop offset="0" stopColor={CLUBROOF_BLUE} />
+            <Stop offset="1" stopColor={CLUBROOF_CYAN} />
+          </LinearGradient>
+        </Defs>
+      )}
       <Path
-        d="M20 1 L38 6 V20 C38 32 30 39 20 43 C10 39 2 32 2 20 V6 Z"
-        fill={mono ? '#FFFFFF' : CLUBROOF_BLUE}
+        fill={mono ? '#FFFFFF' : `url(#${id})`}
+        d="M 190.5,451 C 190.5,413 211,379 246,356 L 561,158 C 604,131 651,131 694,158 L 1014,365 C 1045,385 1063,418 1063,452 L 1063,538 C 1063,552 1051,561 1039,553 L 672,313 C 643,294 613,294 584,313 L 361,452 C 341,464 330,483 330,506 L 330,876 C 330,930 373,970 425,970 L 707,970 C 715,970 720,973 726,979 L 811,1071 C 821,1082 812,1094 800,1094 L 378,1094 C 276,1094 190.5,1013 190.5,918 Z"
       />
       <Path
-        d="M20 5 L34.5 9 V20 C34.5 30 28 35.6 20 39 C12 35.6 5.5 30 5.5 20 V9 Z"
-        fill="none"
-        stroke={mono ? CLUBROOF_BLUE : '#FFFFFF'}
-        strokeWidth={1.4}
+        fill={mono ? '#FFFFFF' : `url(#${id})`}
+        d="M 477,515.8 L 782,515.8 C 865,515.8 929.5,580 929.5,663.5 C 929.5,738 878,793 806.5,811 L 1057,1071 C 1067,1082 1058,1094 1047,1094 L 930,1094 C 909,1094 892,1087 876,1071 L 609,787 C 578,755 603,703 641,703 L 762,703 C 783,703 800,687 800,666 C 800,645 783,628.5 762,628.5 L 572,628.5 C 560,628.5 551.5,636 551.5,647 L 551.5,902 C 551.5,908 548,911.5 541,911.5 L 437,911.5 C 430,911.5 426.5,908 426.5,902 L 426.5,566 C 426.5,538 449,515.8 477,515.8 Z"
       />
-      <SvgText
-        x="20"
-        y="25"
-        textAnchor="middle"
-        fontWeight="800"
-        fontSize={10}
-        fill={mono ? CLUBROOF_BLUE : '#FFFFFF'}
-      >
-        CR
-      </SvgText>
     </Svg>
   );
 }
