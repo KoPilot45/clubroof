@@ -34,6 +34,12 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Unten gibt es fünf Bereiche:\n• Home: dein Überblick – nächste Spiele (zum Wischen), Offenes, deine Woche, Neuigkeiten und dein Schnellzugriff.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Termine: deine nächsten Termine und der Kalender.\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften des Vereins.\n• Mehr: dein Profil, Einstellungen, Abwesenheiten und diese Hilfe.',
       },
       {
+        id: 'path',
+        question: 'Wie komme ich zurück oder in einen anderen Bereich?',
+        answer:
+          'Auf jeder Unterseite siehst du oben deinen Weg, zum Beispiel „Team › Kasse › Strafenkatalog“. Tippe auf eine frühere Stufe, um dorthin zurückzugehen, oder auf den runden Pfeil für einen Schritt zurück. Bei langen Wegen steht „…“ für die ausgelassenen Stufen; ein Tipp zeigt sie als Liste. Die untere Leiste bleibt sichtbar, der aktuelle Bereich ist markiert.',
+      },
+      {
         id: 'first-start',
         question: 'Wie melde ich mich an oder richte einen Verein ein?',
         answer:

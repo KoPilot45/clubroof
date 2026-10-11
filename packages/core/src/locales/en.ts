@@ -492,6 +492,8 @@ export const en: Record<string, string> = {
     'The claim has already been paid. Cancel the entry in the cash book first.',
   'Auf Home und unter Termine sagst du zu oder ab. Mit „Rückgängig“ nimmst du es gleich wieder zurück.':
     'On Home and under Events you confirm or decline. With “Undo” you take it back right away.',
+  'Auf jeder Unterseite siehst du oben deinen Weg, zum Beispiel „Team › Kasse › Strafenkatalog“. Tippe auf eine frühere Stufe, um dorthin zurückzugehen, oder auf den runden Pfeil für einen Schritt zurück. Bei langen Wegen steht „…“ für die ausgelassenen Stufen; ein Tipp zeigt sie als Liste. Die untere Leiste bleibt sichtbar, der aktuelle Bereich ist markiert.':
+    'On every sub-page you see your path at the top, for example “Team › Cash › Fine catalogue”. Tap an earlier level to go back there, or the round arrow to go back one step. On long paths “…” stands for the skipped levels; tapping it shows them as a list. The bottom bar stays visible and the current section is highlighted.',
   'Auf Konto': 'To account',
   'auf später verschoben': 'postponed',
   Aufgabe: 'Task',
@@ -2588,6 +2590,7 @@ export const en: Record<string, string> = {
   Personen: 'people',
   'Personen einladen': 'Invite people',
   'Personen sind': 'people are',
+  Pfad: 'Path',
   'Pflicht aufheben': 'Remove requirement',
   'Pflicht für die Verwaltung': 'Required for administration',
   'Pflicht sind nur Vorname und Nachname. Datum als TT.MM.JJJJ, Mannschaft als Kürzel (z. B. C1). Ohne Funktion wird „Spieler“ angenommen.':
@@ -3439,6 +3442,7 @@ export const en: Record<string, string> = {
   'Weitere Datei importieren': 'Import another file',
   'Weitere Möglichkeiten': 'More options',
   'Weitere Schreibweisen': 'Other spellings',
+  'Weitere Stufen anzeigen': 'Show more levels',
   'Weiterer Bereich': 'Another section',
   'Welche Bereiche hat dein Verein? Mannschaften werden später einem Bereich zugeordnet; Bereichsleitungen (z. B. Jugendleitung) sehen nur ihren Bereich.':
     'Which sections does your club have? Teams are assigned to a section later; section heads (e.g. youth director) only see their own section.',
@@ -3511,6 +3515,8 @@ export const en: Record<string, string> = {
     'How do I import the club fixture list from DFBnet?',
   'Wie ist euer Verein aufgebaut?': 'How is your club structured?',
   'Wie komme ich zum Spielort?': 'How do I get to the venue?',
+  'Wie komme ich zurück oder in einen anderen Bereich?':
+    'How do I go back or switch to another section?',
   'Wie lade ich neue Spieler ein?': 'How do I invite new players?',
   'Wie lege ich eine neue Mannschaft an?': 'How do I create a new team?',
   'Wie lege ich einen Termin an oder sage ihn ab?': 'How do I create or cancel an event?',

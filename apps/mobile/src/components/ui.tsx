@@ -447,6 +447,7 @@ export function Chip({
   const md = size === 'md';
   return (
     <View
+      testID="chip"
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -894,7 +895,8 @@ export function ListRow({
       ) : (
         <View style={inner}>{main}</View>
       )}
-      {trailing}
+      {/* Chips setzen alignSelf: flex-start; der Container zentriert sie wieder zur Zeile */}
+      {trailing ? <View style={{ alignSelf: 'center' }}>{trailing}</View> : null}
       {onPress ? <Ionicons name="chevron-forward" size={18} color={colors.onSurfaceMuted} /> : null}
     </View>
   );
