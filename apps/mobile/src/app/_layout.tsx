@@ -220,6 +220,18 @@ function Navigator() {
             options={{ headerShown: true, title: 'Buchung erfassen' }}
           />
           <Stack.Screen
+            name="club-cash/fees"
+            options={{ headerShown: true, title: 'Mitgliedsbeiträge' }}
+          />
+          <Stack.Screen
+            name="club-cash/fee-import"
+            options={{ headerShown: true, title: 'Kontoauszug importieren' }}
+          />
+          <Stack.Screen
+            name="club-cash/fee-setup"
+            options={{ headerShown: true, title: 'Beitragsarten und Mitglieder' }}
+          />
+          <Stack.Screen
             name="club-cash/manage"
             options={{ headerShown: true, title: 'Vereinskasse einrichten' }}
           />

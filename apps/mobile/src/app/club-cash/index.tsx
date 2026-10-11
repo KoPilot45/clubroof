@@ -137,6 +137,13 @@ export default function ClubCashScreen() {
             </View>
           ) : null}
 
+          <Button
+            label="Mitgliedsbeiträge"
+            icon="people-outline"
+            variant="outline"
+            onPress={() => router.push('/club-cash/fees')}
+          />
+
           <Section title="Konten">
             <Card>
               {c.accounts

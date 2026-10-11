@@ -1,6 +1,6 @@
 # Vereinskasse – ganzheitliche Finanzverwaltung (Planung)
 
-Stand 10.10.2026 · **K1 umgesetzt** (Konten, Kassenbuch, Kategorien, Kostenstellen, Umbuchung, Storno, Rollen, Einsichtsstufen); K2–K5 geplant. Pakete siehe `PAKETE.md`.
+Stand 10.10.2026 · **K1 und K2 umgesetzt** (Konten, Kassenbuch, Kategorien, Kostenstellen, Umbuchung, Storno, Rollen, Einsichtsstufen; Beiträge mit Sollstellung, Zahlungseingang, Rückständen, Erinnerungen, CSV-Import); K3–K5 geplant. Pakete siehe `PAKETE.md`.
 
 **Umsetzungshinweis K1:** Die Vereinskasse nutzt eigene Tabellen (`club_cash_accounts`, `club_cash_categories`, `club_cost_centers`, `club_cash_entries`) statt `cash_accounts` ohne `teamId`, damit die Mannschaftskassen unberührt bleiben. Einstieg: Kachel „Vereinskasse“ im Verein-Tab (Modul `club_cash`, im Vereins-Assistenten wählbar), Bildschirme unter `/club-cash`. Demo: `kasse` = Kassenwart (Verein), `mitglied` = Kassenprüfer.
 
@@ -34,3 +34,6 @@ Stand 10.10.2026 · **K1 umgesetzt** (Konten, Kassenbuch, Kategorien, Kostenstel
 ## Rechte (Entwurf)
 
 Neue Rechte (Gruppe „Vereinsfinanzen“): `clubcash.read` (einsehen), `clubcash.manage` (buchen, verwalten), `clubcash.audit` (prüfen, Vermerke). Sichtbarkeit zusätzlich über die Vereinseinstellung „Wer darf die Kasse einsehen?“ (Rollen/Gruppen wählbar). Rollen: `club_treasurer` (read + manage), `cash_auditor` (read + audit). Rechte nur serverseitig prüfen.
+
+
+**Umsetzungshinweis K2:** Tabellen `club_fee_types`, `club_fee_assignments`, `club_fee_dues`, `club_fee_payments` (Migration 0038). Zahlungen erzeugen eine Einnahme im Kassenbuch und verweisen darauf; Überzahlung wird abgelehnt (als eigene Einnahme buchen). Erinnerungen laufen über die Benachrichtigungen (Thema Kasse) an das Mitglied bzw. die Eltern; Mitglieder ohne App-Zugang werden nur vermerkt. Die Mitglieder sehen ihre Beiträge noch nicht selbst (nicht Teil von K2). Demo: Quartalsbeiträge für 24 Mitglieder, einige im Rückstand.

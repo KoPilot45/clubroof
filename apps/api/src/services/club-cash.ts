@@ -42,7 +42,7 @@ export function clubCashLevel(actor: Actor): Level {
   return 'none';
 }
 
-function requireLevel(actor: Actor): Exclude<Level, 'none'> {
+export function requireLevel(actor: Actor): Exclude<Level, 'none'> {
   if (!moduleEnabled(actor, 'club_cash'))
     throw new HttpError(404, 'module_off', 'Die Vereinskasse ist nicht aktiviert.');
   const level = clubCashLevel(actor);
@@ -50,18 +50,18 @@ function requireLevel(actor: Actor): Exclude<Level, 'none'> {
   return level;
 }
 
-function requireFull(actor: Actor) {
+export function requireFull(actor: Actor) {
   if (requireLevel(actor) !== 'full')
     throw forbidden('Du siehst die Vereinskasse nur als Auswertung, nicht einzelne Buchungen.');
 }
 
-function requireManage(actor: Actor) {
+export function requireManage(actor: Actor) {
   requireLevel(actor);
   if (!actorCan(actor, 'clubcash.manage'))
     throw forbidden('Die Vereinskasse führt der Kassenwart (Verein).');
 }
 
-async function audit(
+export async function audit(
   db: Db,
   actor: Actor,
   action: string,
@@ -81,7 +81,7 @@ async function audit(
   });
 }
 
-const euro = (cents: number) =>
+export const euro = (cents: number) =>
   `${(cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
 
 // ── Lesen ───────────────────────────────────────────────────────────────────
