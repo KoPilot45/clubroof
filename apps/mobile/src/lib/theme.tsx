@@ -39,7 +39,7 @@ const ThemeContext = createContext<Theme | null>(null);
  * (hell, dunkel, wie Gerät) bleibt gespeichert und vorbereitet; solange es kein helles Thema im neuen
  * Stil gibt, gilt immer dunkel.
  */
-const DARK_ONLY = true;
+export const DARK_ONLY = true;
 
 /**
  * Stellt das Farbthema bereit. Vor der Anmeldung gelten die Clubroof-Farben, danach die Vereinsfarbe.

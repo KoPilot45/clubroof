@@ -56,7 +56,21 @@ export default function NewAbsenceScreen() {
   const invalid = scope === 'selected' && teamIds.length === 0;
 
   return (
-    <Screen edges={[]}>
+    <Screen
+      edges={[]}
+      footer={
+        <>
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          <Button
+            label="Abwesenheit speichern"
+            icon="checkmark"
+            disabled={invalid}
+            loading={save.isPending}
+            onPress={() => save.mutate()}
+          />
+        </>
+      }
+    >
       {me.managedPersons.length > 1 ? (
         <Card>
           <ChoiceChips
@@ -140,15 +154,6 @@ export default function NewAbsenceScreen() {
           multiline
         />
       </Card>
-
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      <Button
-        label="Abwesenheit speichern"
-        icon="checkmark"
-        disabled={invalid}
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
     </Screen>
   );
 }

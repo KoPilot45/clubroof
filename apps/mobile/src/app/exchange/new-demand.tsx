@@ -48,7 +48,21 @@ export default function NewDemandScreen() {
   const valid = !!team && !!eventId && Number.isInteger(n) && n >= 1 && n <= 10;
 
   return (
-    <Screen edges={[]}>
+    <Screen
+      edges={[]}
+      footer={
+        <>
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          <Button
+            label="Bedarf melden"
+            icon="megaphone"
+            disabled={!valid}
+            loading={save.isPending}
+            onPress={() => save.mutate()}
+          />
+        </>
+      }
+    >
       <Card style={{ gap: 12 }}>
         {teams.length > 1 ? (
           <ChoiceChips
@@ -89,14 +103,6 @@ export default function NewDemandScreen() {
           maxLength={300}
         />
       </Card>
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      <Button
-        label="Bedarf melden"
-        icon="megaphone"
-        disabled={!valid}
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
     </Screen>
   );
 }

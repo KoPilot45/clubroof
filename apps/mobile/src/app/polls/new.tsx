@@ -55,7 +55,21 @@ export default function NewPollScreen() {
   });
 
   return (
-    <Screen edges={[]}>
+    <Screen
+      edges={[]}
+      footer={
+        <>
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          <Button
+            label="Umfrage starten"
+            icon="stats-chart"
+            disabled={question.trim().length < 3 || new Set(filled).size < 2 || !target}
+            loading={save.isPending}
+            onPress={() => save.mutate()}
+          />
+        </>
+      }
+    >
       <Card style={{ gap: 12 }}>
         <TextField label="Frage" value={question} onChangeText={setQuestion} maxLength={200} />
         <TextField
@@ -120,14 +134,6 @@ export default function NewPollScreen() {
           onToggle={setVisibility}
         />
       </Card>
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      <Button
-        label="Umfrage starten"
-        icon="stats-chart"
-        disabled={question.trim().length < 3 || new Set(filled).size < 2 || !target}
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
     </Screen>
   );
 }

@@ -11,10 +11,9 @@ import {
   Loading,
   Screen,
   Section,
-  TextField,
+  SearchField,
 } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
-import { t } from '@/lib/i18n';
 import { useMarkSeen } from '@/lib/tile-info';
 
 export default function WikiScreen() {
@@ -32,7 +31,7 @@ export default function WikiScreen() {
   );
   return (
     <Screen edges={[]} refreshing={wiki.isRefetching} onRefresh={() => wiki.refetch()}>
-      <TextField label="Suchen" value={q} onChangeText={setQ} placeholder={t('z. B. Schlüssel')} />
+      <SearchField value={q} onChangeText={setQ} placeholder="z. B. Schlüssel" />
       {w.canEdit ? (
         <Button label="Artikel schreiben" icon="add" onPress={() => router.push('/wiki/new')} />
       ) : null}

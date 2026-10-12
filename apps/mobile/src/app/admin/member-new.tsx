@@ -45,7 +45,24 @@ export default function NewMemberScreen() {
   const invalid = !firstName.trim() || !lastName.trim() || birthDate === undefined;
 
   return (
-    <Screen edges={[]}>
+    <Screen
+      edges={[]}
+      footer={
+        <>
+          {birthDate === undefined ? (
+            <Chip tone="action" label="Datum bitte als TT.MM.JJJJ" />
+          ) : null}
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          <Button
+            label="Mitglied anlegen"
+            icon="person-add"
+            disabled={invalid}
+            loading={save.isPending}
+            onPress={() => save.mutate()}
+          />
+        </>
+      }
+    >
       <T variant="caption">
         Lege das Mitglied an und ordne es danach einer Mannschaft zu. Den App-Zugang erhält es
         später über eine Einladung.
@@ -79,15 +96,6 @@ export default function NewMemberScreen() {
           maxLength={30}
         />
       </Card>
-      {birthDate === undefined ? <Chip tone="action" label="Datum bitte als TT.MM.JJJJ" /> : null}
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      <Button
-        label="Mitglied anlegen"
-        icon="person-add"
-        disabled={invalid}
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
     </Screen>
   );
 }

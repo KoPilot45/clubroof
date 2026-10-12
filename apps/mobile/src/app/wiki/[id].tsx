@@ -10,6 +10,7 @@ import {
   Chip,
   ErrorNotice,
   Loading,
+  MoreMenu,
   Screen,
   T,
   TextField,
@@ -132,12 +133,16 @@ export default function WikiPageScreen() {
             style={{ flex: 1 }}
             onPress={() => setEditing(true)}
           />
-          <Button
-            label="Löschen"
-            variant="danger"
-            style={{ flex: 1 }}
-            loading={remove.isPending}
-            onPress={() => confirmDelete({ name: p.title, onConfirm: () => remove.mutate() })}
+          <MoreMenu
+            title={p.title}
+            actions={[
+              {
+                label: 'Löschen',
+                icon: 'trash-outline',
+                danger: true,
+                onPress: () => confirmDelete({ name: p.title, onConfirm: () => remove.mutate() }),
+              },
+            ]}
           />
         </View>
       ) : null}

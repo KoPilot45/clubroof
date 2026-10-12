@@ -2278,7 +2278,12 @@ export function Stat({
   const counted = useCountUp(typeof value === 'number' ? value : 0);
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      <T variant="figure" color={color ?? colors.primaryText}>
+      <T
+        variant="figure"
+        color={color ?? colors.primaryText}
+        numberOfLines={1}
+        style={{ fontSize: 28, lineHeight: 32 }}
+      >
         {typeof value === 'number' ? counted : value}
       </T>
       <T variant="caption" color={labelColor} style={{ textAlign: 'center' }}>
@@ -2480,7 +2485,9 @@ export function SearchField({
   placeholder,
   filterCount,
   onFilter,
+  autoFocus,
 }: {
+  autoFocus?: boolean;
   value: string;
   onChangeText: (v: string) => void;
   placeholder: string;
@@ -2513,7 +2520,14 @@ export function SearchField({
           placeholder={t(placeholder)}
           placeholderTextColor={colors.anstoss.placeholder}
           autoCorrect={false}
-          style={{ flex: 1, fontSize: 14, color: colors.onSurface, ...inputFont() }}
+          autoFocus={autoFocus}
+          style={{
+            flex: 1,
+            fontSize: 14,
+            color: colors.onSurface,
+            ...inputFont(),
+            ...({ outlineStyle: 'none' } as object),
+          }}
         />
       </View>
       {onFilter ? (

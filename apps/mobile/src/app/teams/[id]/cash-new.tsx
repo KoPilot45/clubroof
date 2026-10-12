@@ -179,7 +179,26 @@ export default function NewBookingScreen() {
     );
 
   return (
-    <Screen edges={[]}>
+    <Screen
+      footer={
+        <>
+          <Button
+            label={
+              isFine && cents && persons.length > 1
+                ? `${persons.length} Strafen vergeben (je ${formatEuro(cents)})`
+                : isFine
+                  ? 'Strafe vergeben'
+                  : 'Buchung speichern'
+            }
+            icon="checkmark"
+            disabled={!!validationError}
+            loading={save.isPending}
+            onPress={() => save.mutate()}
+          />
+        </>
+      }
+      edges={[]}
+    >
       {kinds.length > 1 ? (
         <Card>
           <ChoiceChips
@@ -336,19 +355,6 @@ export default function NewBookingScreen() {
       {validationError && (amount || fineType || persons.length) ? (
         <Chip tone="action" label={validationError} />
       ) : null}
-      <Button
-        label={
-          isFine && cents && persons.length > 1
-            ? `${persons.length} Strafen vergeben (je ${formatEuro(cents)})`
-            : isFine
-              ? 'Strafe vergeben'
-              : 'Buchung speichern'
-        }
-        icon="checkmark"
-        disabled={!!validationError}
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
     </Screen>
   );
 }

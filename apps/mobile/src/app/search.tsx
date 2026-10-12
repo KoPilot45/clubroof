@@ -1,9 +1,8 @@
 import type { SearchResponse } from '@clubroof/core';
-import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { View } from 'react-native';
 import {
   Avatar,
   Card,
@@ -15,20 +14,18 @@ import {
   ListRow,
   Loading,
   Screen,
+  SearchField,
   Section,
   T,
   TeamBadge,
 } from '@/components/ui';
 import { formatDateTile } from '@/lib/format';
 import { formatAgo } from '@/lib/format';
-import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
-import { useTheme } from '@/lib/theme';
 
 /** Globale Suche (Lupe in der Kopfzeile): Termine, Mitglieder, News und Mannschaften. */
 export default function SearchScreen() {
   const { api } = useSignedIn();
-  const { colors, sizes } = useTheme();
   const [input, setInput] = useState('');
   const [q, setQ] = useState('');
   // Kurz warten, bis die Eingabe ruht
@@ -49,32 +46,12 @@ export default function SearchScreen() {
 
   return (
     <Screen>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 10,
-          minHeight: sizes.input,
-          paddingHorizontal: 16,
-          borderRadius: 999,
-          backgroundColor: colors.surfaceRaised,
-          borderWidth: 1,
-          borderColor: colors.border,
-        }}
-      >
-        <Ionicons name="search-outline" size={20} color={colors.onSurfaceMuted} />
-        <TextInput
-          autoFocus
-          accessibilityLabel={t('Suche')}
-          value={input}
-          onChangeText={setInput}
-          placeholder={t('Termine, Mitglieder, News …')}
-          placeholderTextColor={colors.onSurfaceMuted}
-          returnKeyType="search"
-          maxLength={60}
-          style={{ flex: 1, minHeight: sizes.input, color: colors.onSurface, fontSize: 16 }}
-        />
-      </View>
+      <SearchField
+        autoFocus
+        value={input}
+        onChangeText={setInput}
+        placeholder="Termine, Mitglieder, News …"
+      />
 
       {!enabled ? (
         <Empty

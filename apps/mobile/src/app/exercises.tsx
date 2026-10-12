@@ -18,6 +18,7 @@ import {
   Empty,
   ErrorNotice,
   Loading,
+  MoreMenu,
   Screen,
   T,
   TextField,
@@ -200,17 +201,20 @@ export default function ExercisesScreen() {
                 onPress={() => setAdding(adding === e.id ? null : e.id)}
               />
               {e.canDelete ? (
-                <Button
-                  label="Löschen"
-                  icon="trash-outline"
-                  variant="danger"
-                  size="sm"
-                  onPress={() =>
-                    confirmDelete({
-                      name: e.title,
-                      onConfirm: () => change.mutate({ method: 'DELETE', id: e.id }),
-                    })
-                  }
+                <MoreMenu
+                  title={e.title}
+                  actions={[
+                    {
+                      label: 'Löschen',
+                      icon: 'trash-outline',
+                      danger: true,
+                      onPress: () =>
+                        confirmDelete({
+                          name: e.title,
+                          onConfirm: () => change.mutate({ method: 'DELETE', id: e.id }),
+                        }),
+                    },
+                  ]}
                 />
               ) : null}
             </View>

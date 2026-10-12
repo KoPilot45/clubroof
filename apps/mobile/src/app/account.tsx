@@ -26,7 +26,7 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
-import { useTheme } from '@/lib/theme';
+import { DARK_ONLY, useTheme } from '@/lib/theme';
 import { t } from '@/lib/i18n';
 import { setFontScale, useFontScaleKey } from '@/lib/font-scale';
 import { setHapticsEnabled, useHapticsEnabled } from '@/lib/haptics';
@@ -480,6 +480,8 @@ function AppearanceSection() {
       setSaving(null);
     }
   };
+  // Zunächst gibt es nur den dunklen Stil „Anstoß“; die Auswahl kommt mit dem hellen Stil zurück
+  if (DARK_ONLY) return null;
   return (
     <Section title="Darstellung">
       <Card style={{ gap: 8 }}>

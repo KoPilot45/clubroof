@@ -23,6 +23,7 @@ import {
   HeroCard,
   ListRow,
   Loading,
+  MoreMenu,
   Screen,
   Section,
   T,
@@ -244,14 +245,17 @@ function DutySection({
       />
       {open === d.id ? (
         <View style={{ paddingBottom: 8 }}>
-          <Button
-            label="Einsatz löschen"
-            icon="trash-outline"
-            variant="danger"
-            size="sm"
-            style={{ alignSelf: 'flex-start' }}
-            loading={remove.isPending}
-            onPress={() => confirmDelete({ name: d.title, onConfirm: () => remove.mutate(d.id) })}
+          <MoreMenu
+            title={d.title}
+            actions={[
+              {
+                label: 'Einsatz löschen',
+                icon: 'trash-outline',
+                danger: true,
+                onPress: () =>
+                  confirmDelete({ name: d.title, onConfirm: () => remove.mutate(d.id) }),
+              },
+            ]}
           />
         </View>
       ) : null}
