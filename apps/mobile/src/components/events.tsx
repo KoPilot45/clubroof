@@ -22,6 +22,7 @@ import {
 } from '@/lib/labels';
 import { hapticError, hapticSuccess } from '@/lib/haptics';
 import { PressScale } from '@/lib/motion';
+import { useTeamColor } from '@/lib/team-colors';
 import { Text } from '@/components/app-text';
 import { enqueueResponse, queuedFor, useOutbox } from '@/lib/outbox';
 import { useSignedIn } from '@/lib/session';
@@ -180,6 +181,7 @@ export function EventRow({
   openable?: boolean;
 }) {
   const cancelled = event.status === 'cancelled';
+  const teamColor = useTeamColor(event.team?.id);
   const mine = event.myResponses[0];
   const multi = event.myResponses.length > 1 || mine?.relation === 'child';
   const outbox = useOutbox();
@@ -210,7 +212,13 @@ export function EventRow({
     <ListRow
       first={first}
       onPress={openable ? () => router.push(`/events/${event.id}`) : undefined}
-      leading={<DateTile {...formatDateTile(event.startsAt)} muted={cancelled} />}
+      leading={
+        <DateTile
+          {...formatDateTile(event.startsAt)}
+          muted={cancelled}
+          color={teamColor ?? undefined}
+        />
+      }
       title={event.title}
       strike={cancelled}
       subtitle={

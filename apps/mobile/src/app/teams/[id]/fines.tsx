@@ -70,13 +70,13 @@ export default function FinesScreen() {
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <Button
             style={{ flex: 1 }}
-            label="Strafe vergeben"
+            label="Vergeben"
             icon="hand-left-outline"
             onPress={() => router.push(`/teams/${id}/cash-new?kind=fine`)}
           />
           <Button
             style={{ flex: 1 }}
-            label="Neue Strafe"
+            label="Neu"
             icon="add"
             variant="outline"
             onPress={() => setEditing('new')}
