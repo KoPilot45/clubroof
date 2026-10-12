@@ -1,0 +1,99 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Prototyp Look und Haptik</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"><style>
+*{box-sizing:border-box}
+.pp{position:relative;width:390px;height:900px;overflow:hidden;background:#F6F8F6;font-family:'Open Sans',sans-serif;color:#17231B}
+.pp.buzz{animation:buzz .16s linear}
+@keyframes buzz{0%{transform:translateX(0)}25%{transform:translateX(-2px)}50%{transform:translateX(2px)}75%{transform:translateX(-1px)}100%{transform:translateX(0)}}
+.pp.rm *,.pp.rm{transition:none!important;animation:none!important}
+#hd{position:absolute;left:0;right:0;top:0;z-index:5;padding:20px 20px 10px 20px;display:flex;align-items:center;gap:12px;transition:background .2s}
+#hd.sc{background:rgba(246,248,246,.86);backdrop-filter:blur(10px);box-shadow:0 1px 0 #E1E8E3}
+.ic{width:44px;height:44px;border-radius:22px;background:#fff;box-shadow:0 4px 14px rgba(20,40,28,.08);display:flex;align-items:center;justify-content:center;position:relative}
+#sub{font-size:12px;color:#5B6B60;overflow:hidden;white-space:nowrap}
+#ttl{font-family:'Saira Condensed',sans-serif;font-weight:700;line-height:1.05;transform-origin:left center}
+#scr{position:absolute;inset:0;overflow-y:auto;padding:100px 0 170px 0;scrollbar-width:none}
+#scr::-webkit-scrollbar{display:none}
+.st{opacity:0;transform:translateY(14px);transition:opacity .35s ease,transform .35s ease}
+.st.in{opacity:1;transform:none}
+.sect{margin:20px 24px 14px 24px;display:flex;align-items:center;gap:10px}
+.sect i{width:4px;height:22px;border-radius:2px;background:#1F7A3D}
+.sect b{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;letter-spacing:.6px;text-transform:uppercase}
+.pr{cursor:pointer;transition:transform .1s ease,filter .1s ease;-webkit-tap-highlight-color:transparent;user-select:none}
+.pr:active{transform:scale(.97);filter:brightness(.93)}
+.chip{display:inline-flex;align-items:center;white-space:nowrap;font-size:13.5px;font-weight:700;border-radius:999px;padding:9px 15px;background:#fff;border:1.5px solid #D5DDD7}
+.chip.on{background:#1F7A3D;border-color:#1F7A3D;color:#fff}
+.hero{margin:0 24px;border-radius:26px;padding:16px 18px;background:linear-gradient(160deg,#145A2A,#1F7A3D 62%);color:#fff;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;right:-40px;top:-50px;width:180px;height:180px;border-radius:90px;background:rgba(255,255,255,.09)}
+.fig{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:48px;line-height:1.05;position:relative}
+.lab{font-size:12px;font-weight:700;letter-spacing:1.2px;position:relative}
+.seg{display:flex;height:10px;border-radius:5px;overflow:hidden;background:rgba(255,255,255,.18);margin-top:10px;position:relative}
+.seg span{display:block;height:100%;width:0;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.segl{display:flex;justify-content:space-between;font-size:11.5px;margin-top:6px;position:relative;opacity:.95}
+.card{margin:0 24px;background:#fff;border-radius:22px;padding:14px 16px;box-shadow:0 4px 14px rgba(20,40,28,.06)}
+.row{display:flex;align-items:center;gap:12px}
+.dk{flex:0 0 52px;border-radius:14px;background:#E3F4E7;text-align:center;padding:5px 0}
+.dk small{display:block;font-size:10.5px;font-weight:700;color:#14532D}
+.dk b{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:26px;line-height:1}
+.bar{height:8px;border-radius:4px;background:#E9EFEA;overflow:hidden;margin-top:10px;display:flex}
+.bar span{display:block;height:100%;width:0;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.tiles{display:flex;gap:10px;padding:0 24px}
+.tile{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:12.5px;font-weight:600;position:relative}
+.tile .b{width:100%;height:62px;border-radius:20px;background:#fff;box-shadow:0 4px 14px rgba(20,40,28,.06);display:flex;align-items:center;justify-content:center;position:relative}
+.tile .k{position:absolute;top:-6px;right:8px;font-size:11px;font-weight:800;padding:2px 7px;border-radius:9px;background:#E3F4E7;color:#14532D}
+.act{display:flex;gap:8px;margin-top:12px}
+.act div{flex:1;height:46px;border-radius:23px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+#tb{position:absolute;left:16px;right:16px;bottom:14px;height:64px;border-radius:32px;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);box-shadow:0 8px 30px rgba(20,40,28,.16);display:flex;padding:0;z-index:6;overflow:hidden}
+#cap{position:absolute;top:8px;bottom:8px;left:8px;border-radius:24px;background:#1F7A3D;transition:left .38s cubic-bezier(.3,1.25,.5,1),width .38s cubic-bezier(.3,1.25,.5,1)}
+.tab{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:700;color:#5B6B60;cursor:pointer;transition:flex .38s cubic-bezier(.3,1.25,.5,1),color .2s}
+.tab.on{flex:2.2;color:#fff}
+.tab span{display:none}.tab.on span{display:inline}
+.tab:active{transform:scale(.94)}
+#ctl{position:absolute;left:16px;right:16px;bottom:88px;z-index:6;display:flex;gap:8px;justify-content:center}
+.pill{font-size:11.5px;font-weight:700;background:rgba(23,35,27,.86);color:#fff;border-radius:999px;padding:7px 12px;cursor:pointer;user-select:none}
+.pill.off{background:rgba(23,35,27,.45)}
+#hap{position:absolute;top:92px;left:50%;transform:translateX(-50%) translateY(-6px);z-index:8;background:#17231B;color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:6px 12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+#hap.show{opacity:1;transform:translateX(-50%)}
+.hint{margin:14px 24px 0 24px;font-size:12.5px;color:#44544A;background:#EEF5FF;border-radius:14px;padding:10px 12px;line-height:1.45}
+</style><style>body{margin:0;background:#1b1f1c}</style></head><body><div id="pp" class="pp" style="height:900px">
+<div id="hd"><div class="ic" style="width:48px;height:48px;border-radius:24px"><svg width="36" height="36" viewBox="0 0 100 100" aria-label="Vereinslogo SV Grün-Weiß"><path d="M50 8 L84 20 V50 C84 72 70 86 50 94 C30 86 16 72 16 50 V20Z" fill="#1F7A3D" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><text x="50" y="58" text-anchor="middle" font-family="Oswald,sans-serif" font-size="24" font-weight="600" fill="#fff">SGW</text></svg></div><div style="flex:1;min-width:0"><div id="sub">Bezirksliga</div><div id="ttl" style="font-size:32px">B-Jugend</div></div><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17V11a6 6 0 0112 0v6l2 2H4zM10 21h4"/></svg></div></div>
+<div id="scr"></div><div id="hap">Haptik</div>
+<div id="ctl"><span id="rm" class="pill">Bewegung: an</span><span id="rp" class="pill">Neu abspielen ↻</span></div>
+<div id="tb"><div id="cap"></div><div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg><span>Home</span></div><div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.5-6 6-6s6 2.5 6 6"/><path d="M16 5a3.5 3.5 0 010 6M18 14c2 .8 3 2.8 3 6"/></svg><span>Team</span></div><div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span>Termine</span></div><div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg><span>Verein</span></div><div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg><span>Mehr</span></div></div>
+</div><script>window.addEventListener('load',function(){setTimeout(function(){
+(function(){
+var root=document.getElementById('pp'),scr=document.getElementById('scr'),hd=document.getElementById('hd'),ttl=document.getElementById('ttl'),sub=document.getElementById('sub'),cap=document.getElementById('cap'),hap=document.getElementById('hap');
+var RM=false,cur=1,tabs=['home','team','termine','verein','mehr'];
+function ease(t){return 1-Math.pow(1-t,3);}
+function countUp(el){var to=parseFloat(el.getAttribute('data-n')),dec=parseInt(el.getAttribute('data-d')||'0',10),suf=el.getAttribute('data-s')||'';
+ function fmt(v){return v.toFixed(dec).replace('.',',')+suf;}
+ if(RM){el.textContent=fmt(to);return;}
+ var t0=null;function step(ts){if(!t0)t0=ts;var p=Math.min(1,(ts-t0)/900);el.textContent=fmt(to*ease(p));if(p<1)requestAnimationFrame(step);}
+ el.textContent=fmt(0);requestAnimationFrame(step);}
+function play(){
+ var st=scr.querySelectorAll('.st');for(var i=0;i<st.length;i++){st[i].classList.remove('in');}
+ void scr.offsetWidth;
+ for(var j=0;j<st.length;j++){(function(el,k){var d=RM?0:k*70;setTimeout(function(){el.classList.add('in');},d+20);})(st[j],j);}
+ var cs=scr.querySelectorAll('[data-n]');for(var c=0;c<cs.length;c++)countUp(cs[c]);
+ var ws=scr.querySelectorAll('[data-w]');for(var w=0;w<ws.length;w++){ws[w].style.width='0';}
+ setTimeout(function(){for(var w2=0;w2<ws.length;w2++){ws[w2].style.width=ws[w2].getAttribute('data-w')+'%';}},RM?0:350);
+}
+function buzz(txt){hap.textContent='📳 Haptik: '+txt;hap.classList.add('show');if(!RM){root.classList.remove('buzz');void root.offsetWidth;root.classList.add('buzz');}
+ clearTimeout(buzz.t);buzz.t=setTimeout(function(){hap.classList.remove('show');},900);}
+function onScroll(){var t=Math.min(1,scr.scrollTop/60);ttl.style.fontSize=(32-10*t)+'px';sub.style.opacity=1-t;sub.style.maxHeight=(16*(1-t))+'px';hd.classList.toggle('sc',scr.scrollTop>6);}
+scr.addEventListener('scroll',onScroll);
+var SCREENS={
+home:{sub:'Montag, 12. Oktober',t:'Hallo, Max',html:'<div class="st hero pr" style="margin-top:6px"><div class="lab">HEIMSPIEL · LIGA</div><div class="fig" style="font-size:34px">C-Jugend</div><div style="font-size:13px;position:relative">Sa., 17.10. · 13:00 · Rasenplatz (Platz 1)</div><div class="act"><div class="pr" style="background:#fff;color:#1F7A3D" onclick="LF.buzz(\'Erfolg\')">✓</div><div class="pr" style="border:2px solid #fff;color:#fff" onclick="LF.buzz(\'leicht\')">?</div><div class="pr" style="border:2px solid #fff;color:#fff" onclick="LF.buzz(\'leicht\')">✕</div></div></div><div class="st sect"><i></i><b>Deine Woche</b></div>'+[['Mo','12','Training','C1 · 17:30','Zugesagt'],['Di','13','Training','B1 · 18:00','Zugesagt'],['Mi','14','Training','C1 · 17:30','Zugesagt'],['Sa','17','Spiel gegen TSV Blauen','C1 · 13:00','Zugesagt']].map(function(r){return '<div class="st card pr" style="margin-bottom:10px"><div class="row"><div class="dk"><small>'+r[0]+'</small><b>'+r[1]+'</b></div><div style="flex:1"><div style="font-weight:700;font-size:15px">'+r[2]+'</div><div style="font-size:12.5px;color:#5B6B60">'+r[3]+'</div></div><span style="font-size:12px;font-weight:700;background:#E3F4E7;color:#14532D;border-radius:999px;padding:4px 10px">'+r[4]+'</span></div></div>';}).join('')},
+team:{sub:'Bezirksliga',t:'B-Jugend',html:'<div class="st" style="padding:6px 24px 0;display:flex;gap:8px;overflow:hidden"><span class="chip pr">2. Mannschaft</span><span class="chip on pr">B1 B-Jugend</span><span class="chip pr">C1</span></div><div class="st hero pr" style="margin-top:14px" onclick="LF.replay()"><div class="lab">KADER</div><div style="display:flex;align-items:baseline;gap:10px;position:relative"><span class="fig" data-n="20">20</span><span style="font-size:14px">Spieler · 11 verfügbar</span></div><div class="seg"><span data-w="10" style="background:#FFD54F"></span><span data-w="30" style="background:#fff"></span><span data-w="35" style="background:#9FE3B2"></span><span data-w="25" style="background:#7FC4FF"></span></div><div class="segl"><span>Tor 2</span><span>Abwehr 6</span><span>Mittelfeld 7</span><span>Sturm 5</span></div></div><div class="st sect"><i></i><b>Nächster Termin</b></div><div class="st card pr"><div class="row"><div class="dk"><small>Di</small><b>13</b></div><div style="flex:1"><div style="font-weight:700;font-size:15px">Training</div><div style="font-size:12.5px;color:#5B6B60">18:00 · Kunstrasen (Platz 2)</div></div></div><div style="font-size:12.5px;color:#5B6B60;margin-top:10px">Aktive Zu- und Absage</div><div class="bar"><span data-w="50" style="background:#2E9B52"></span><span data-w="5" style="background:#E08A1E"></span><span data-w="10" style="background:#C62828"></span></div></div><div class="st card" style="margin-top:12px"><div style="font-weight:700;font-size:15px">Zusage offen · Training Mi 14.10.</div><div class="act"><div class="pr" style="background:#E3F4E7;color:#14532D" onclick="LF.buzz(\'Erfolg\')">✓</div><div class="pr" style="background:#FFE9D0;color:#8A4B07" onclick="LF.buzz(\'leicht\')">?</div><div class="pr" style="background:#FDE3E3;color:#9B1C1C" onclick="LF.buzz(\'leicht\')">✕</div></div></div><div class="st sect"><i></i><b>Spiel- &amp; Trainingsbetrieb</b></div><div class="st tiles">'+[['Termine','13.10.',''],['Kader','20',20],['Statistik','2-2-2','']].map(function(t){return '<div class="tile pr"><div class="b"><div style="width:34px;height:34px;border-radius:11px;background:#E3F4E7"></div><span class="k"'+(t[2]?' data-n="'+t[2]+'"':'')+'>'+t[1]+'</span></div>'+t[0]+'</div>';}).join('')+'</div><div class="st sect"><i></i><b>Nächste Spiele</b></div><div class="st card pr" style="margin-bottom:10px"><div class="row"><div class="dk"><small>Sa</small><b>17</b></div><div style="flex:1"><div style="font-weight:700;font-size:15px">VfR Sonnenberg – SV Grün-Weiß B1</div><div style="font-size:12.5px;color:#5B6B60">15:00 · Auswärts · Liga</div></div></div></div><div class="st card pr" style="margin-bottom:10px"><div class="row"><div class="dk"><small>Sa</small><b>24</b></div><div style="flex:1"><div style="font-weight:700;font-size:15px">SV Grün-Weiß B1 – FC Nord</div><div style="font-size:12.5px;color:#5B6B60">13:00 · Heim · Liga</div></div></div></div><div class="st hint">Tippe auf die Kader-Karte, um die Bewegung noch einmal zu sehen. Wische nach oben: die Kopfzeile wird kleiner.</div>'},
+termine:{sub:'Alles auf einen Blick',t:'Termine',html:'<div class="st" style="padding:6px 24px 0;display:flex;gap:8px"><span class="chip on pr">Kommend</span><span class="chip pr">Vergangen</span></div><div class="st sect"><i></i><b>Als nächstes</b></div>'+[['Di','13','Training','B1 · 18:00'],['Di','13','Training','2. · 19:30'],['Mi','14','Training','C1 · 17:30'],['Sa','17','Spiel · Liga','B1 · 15:00'],['So','18','Spiel · Liga','2. · 13:00'],['Di','20','Vorstandssitzung','Verein · 19:30']].map(function(r){return '<div class="st card pr" style="margin-bottom:10px"><div class="row"><div class="dk"><small>'+r[0]+'</small><b>'+r[1]+'</b></div><div style="flex:1"><div style="font-weight:700;font-size:15px">'+r[2]+'</div><div style="font-size:12.5px;color:#5B6B60">'+r[3]+'</div></div></div></div>';}).join('')},
+verein:{sub:'Dein Vereinsleben',t:'Verein',html:'<div class="st hero pr" style="margin-top:6px"><div class="lab">NÄCHSTER VEREINSTERMIN</div><div class="fig" style="font-size:30px">Jugend-Hallenturnier</div><div style="font-size:13px;position:relative">Samstag, 21. November · 09:00 Uhr</div></div><div class="st sect"><i></i><b>Veranstaltungen</b></div><div class="st tiles">'+[['Veranstaltungen','20.10.'],['Spielplan','9'],['Helfer gesucht','22']].map(function(t){return '<div class="tile pr"><div class="b"><div style="width:34px;height:34px;border-radius:11px;background:#FFE9D0"></div><span class="k" style="background:#FFE9D0;color:#B45309">'+t[1]+'</span></div>'+t[0]+'</div>';}).join('')+'</div>'},
+mehr:{sub:'Profil, Einstellungen und Hilfe',t:'Mehr',html:'<div class="st hero pr" style="margin-top:6px"><div class="fig" style="font-size:30px">Max Mustermann</div><div style="font-size:13px;position:relative">Trainer B1 · Trainer C1</div></div><div class="st sect"><i></i><b>Mein Bereich</b></div>'+['Profil &amp; Statistik','Abwesenheiten','Benachrichtigungen','Kalender-Abo'].map(function(t){return '<div class="st card pr" style="margin-bottom:10px;padding:16px"><b style="font-size:15px">'+t+'</b></div>';}).join('')}
+};
+function show(i,first){cur=i;var s=SCREENS[tabs[i]];ttl.textContent=s.t;sub.textContent=s.sub;scr.innerHTML=s.html;scr.scrollTop=0;onScroll();play();
+ var tb=document.querySelectorAll('.tab');for(var k=0;k<tb.length;k++)tb[k].classList.toggle('on',k===i);
+ if(!first)buzz('Auswahl');moveCap();}
+function moveCap(){var tb=document.querySelectorAll('.tab')[cur];var p=document.getElementById('tb');var r=tb.getBoundingClientRect(),pr=p.getBoundingClientRect();var k=390/root.getBoundingClientRect().width;cap.style.left=((r.left-pr.left)*k+4)+'px';cap.style.width=(r.width*k-8)+'px';}
+document.querySelectorAll('.tab').forEach(function(el,i){el.addEventListener('click',function(){if(i!==cur){show(i);}});});
+document.getElementById('rm').addEventListener('click',function(){RM=!RM;root.classList.toggle('rm',RM);this.textContent=RM?'Bewegung: aus':'Bewegung: an';this.classList.toggle('off',RM);});
+document.getElementById('rp').addEventListener('click',function(){play();});
+window.LF={buzz:buzz,replay:play};
+show(1,true);setTimeout(moveCap,60);setTimeout(moveCap,400);
+})();
+},50);});</script></body></html>
