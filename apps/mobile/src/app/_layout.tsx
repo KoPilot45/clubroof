@@ -212,34 +212,8 @@ function Navigator() {
               name="contacts"
               options={{ headerShown: true, title: 'Ansprechpartner' }}
             />
-            <Stack.Screen
-              name="club-cash/index"
-              options={{ headerShown: true, title: 'Vereinskasse' }}
-            />
-            <Stack.Screen
-              name="club-cash/entries"
-              options={{ headerShown: true, title: 'Kassenbuch' }}
-            />
-            <Stack.Screen
-              name="club-cash/new"
-              options={{ headerShown: true, title: 'Buchung erfassen' }}
-            />
-            <Stack.Screen
-              name="club-cash/fees"
-              options={{ headerShown: true, title: 'Mitgliedsbeiträge' }}
-            />
-            <Stack.Screen
-              name="club-cash/fee-import"
-              options={{ headerShown: true, title: 'Kontoauszug importieren' }}
-            />
-            <Stack.Screen
-              name="club-cash/fee-setup"
-              options={{ headerShown: true, title: 'Beitragsarten und Mitglieder' }}
-            />
-            <Stack.Screen
-              name="club-cash/manage"
-              options={{ headerShown: true, title: 'Vereinskasse einrichten' }}
-            />
+            {/* Vereinskasse als eigener Bereich mit Kopfband und Reitern (app/club-cash/_layout.tsx) */}
+            <Stack.Screen name="club-cash" />
             <Stack.Screen name="help" options={{ headerShown: true, title: 'Hilfe & Anleitung' }} />
             <Stack.Screen
               name="about/privacy"

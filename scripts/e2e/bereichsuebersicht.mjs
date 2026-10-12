@@ -2,7 +2,7 @@
  * BU: Bereichsübersicht im Team-Tab für Vorstand/Leitung – Filter, Blickfläche, Mannschaftskarten, Ampel, nicht antippbar.
  * Aufruf: pnpm browser-check scripts/e2e/bereichsuebersicht.mjs [--no-build|--reset]
  */
-import { api, launch, text } from '../lib/e2e.mjs';
+import { api, del, launch, text } from '../lib/e2e.mjs';
 
 const b = await launch();
 let failed = false;
@@ -128,9 +128,7 @@ try {
   await b.shot(t.page, 'bu-umschalter', false);
   await t.page.evaluate(() => localStorage.removeItem('clubroof.setting.teamTabMode'));
 } finally {
-  await api(`/admin/members/${tme.person.id}/roles/${assignment.id}`, admin.login.token, {
-    method: 'DELETE',
-  });
+  await del(`/admin/members/${tme.person.id}/roles/${assignment.id}`, admin.login.token);
 }
 
 await b.close();

@@ -47,6 +47,15 @@ export async function api(path, token, init = {}) {
   return res.json();
 }
 
+/** DELETE ohne Inhalt (der Server lehnt „application/json“ mit leerem Körper ab). */
+export async function del(path, token) {
+  const res = await fetch(`${API}${path}`, {
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${token}` },
+  });
+  return res.status;
+}
+
 /** Browser starten; `session()` öffnet eine Seite, bereits als Person angemeldet. */
 export async function launch() {
   const { chromium } = await loadPlaywright();

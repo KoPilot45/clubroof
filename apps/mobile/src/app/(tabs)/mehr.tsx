@@ -1,7 +1,8 @@
 import type { Absence, HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Linking, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Linking, Pressable, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import {
   Avatar,
@@ -15,6 +16,7 @@ import {
   T,
   HeroCard,
   Notice,
+  type IconName,
   type TileItem,
 } from '@/components/ui';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
@@ -25,6 +27,73 @@ import { Text } from '@/components/app-text';
 import type { TintKey } from '@clubroof/design-tokens';
 import { useTheme } from '@/lib/theme';
 import { ABOUT_LINKS } from '@/lib/about-content';
+import { canOpenAdmin, canOpenClubCash } from '@/lib/areas';
+
+/** Hervorgehobener Zugang zu einem eigenen Bereich (Verwaltung violett, Vereinskasse blau). */
+function AreaButton({
+  tone,
+  icon,
+  title,
+  subtitle,
+  badge,
+  onPress,
+}: {
+  tone: 'violet' | 'blue';
+  icon: IconName;
+  title: string;
+  subtitle: string;
+  badge?: string;
+  onPress: () => void;
+}) {
+  const { colors } = useTheme();
+  const c = colors.tints[tone];
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      onPress={onPress}
+      style={{
+        flex: 1,
+        minHeight: 96,
+        padding: 14,
+        gap: 6,
+        borderRadius: 22,
+        backgroundColor: c.container,
+        justifyContent: 'space-between',
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Ionicons name={icon} size={26} color={c.onContainer} />
+        {badge ? (
+          <View
+            style={{
+              minWidth: 24,
+              height: 24,
+              paddingHorizontal: 6,
+              borderRadius: 12,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: colors.status.action.container,
+            }}
+          >
+            <Text
+              verbatim
+              style={{ fontSize: 12, fontWeight: '800', color: colors.status.action.onContainer }}
+            >
+              {badge}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+      <View>
+        <Text style={{ fontSize: 16, fontWeight: '800', color: c.onContainer }}>{title}</Text>
+        <Text style={{ fontSize: 12, color: c.onContainer }} numberOfLines={2}>
+          {subtitle}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
 
 export default function MoreScreen() {
   const { me, api, signOut } = useSignedIn();
@@ -177,18 +246,6 @@ export default function MoreScreen() {
           },
         ]
       : []),
-    ...(Object.values(me.admin).some(Boolean)
-      ? [
-          {
-            key: 'admin',
-            label: 'Verwaltung',
-            subtitle: 'Mitglieder, Rollen, Einstellungen des Vereins',
-            icon: 'shield-checkmark' as const,
-            tint: 'orange' as const,
-            onPress: () => router.push('/admin'),
-          },
-        ]
-      : []),
   ]);
 
   const about: Row[] = [
@@ -301,6 +358,31 @@ export default function MoreScreen() {
           ))}
         </View>
       </HeroCard>
+
+      {/* Eigene Bereiche (Paket AV): Admin-Verwaltung (violett) und Vereinskasse (blau) */}
+      {canOpenAdmin(me) || canOpenClubCash(me) ? (
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          {canOpenAdmin(me) ? (
+            <AreaButton
+              tone="violet"
+              icon="shield-checkmark"
+              title="Admin-Verwaltung"
+              subtitle="Mitglieder, Sport, Inhalte, Verein"
+              badge={tileInfo?.admin?.figure}
+              onPress={() => router.push('/admin')}
+            />
+          ) : null}
+          {canOpenClubCash(me) ? (
+            <AreaButton
+              tone="blue"
+              icon="wallet"
+              title="Vereinskasse"
+              subtitle="Buchung, Beiträge, Planung, Prüfung"
+              onPress={() => router.push('/club-cash')}
+            />
+          ) : null}
+        </View>
+      ) : null}
 
       {me.security.twoFactorRequired ? (
         <Notice

@@ -49,16 +49,18 @@ ok(/\d+$/.test(await tile(spieler.page, 'Mannschaften')), 'Mannschaften: Anzahl'
 ok((await spieler.page.getByText('Kacheln anpassen').count()) === 0, '„Kacheln anpassen“ entfällt');
 
 const admin = await b.session('admin');
-await admin.goto('/admin');
-await text(admin.page, 'Mitglieder', { exact: true }).waitFor({ timeout: 20_000 });
+await admin.goto('/admin/area/mitglieder');
+await text(admin.page, 'Personen', { exact: true }).waitFor({ timeout: 20_000 });
 await admin.page.waitForTimeout(2000);
-ok(/Mitglieder, \d+/.test(await tile(admin.page, 'Mitglieder')), 'Verwaltung: Mitglieder mit Zahl');
+ok(
+  /Mitglieder, \d+/.test(await tile(admin.page, 'Mitglieder')),
+  'Verwaltung (Mitglieder): Mitglieder mit Zahl',
+);
 await admin.goto('/mehr');
 await admin.page.waitForTimeout(2500);
-// „Mehr“ besteht aus Zeilen, nicht aus Kacheln: dort bleibt der Hinweistext
 ok(
-  /offene Aufgabe/.test(await admin.page.evaluate(() => document.body.innerText)),
-  'Mehr → Verwaltung: Hinweis „offene Aufgaben“ in der Zeile',
+  (await admin.page.getByRole('button', { name: /^Admin-Verwaltung/ }).count()) > 0,
+  'Mehr: Zugang „Admin-Verwaltung“',
 );
 
 const me = await api('/me', spieler.login.token);

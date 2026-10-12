@@ -111,39 +111,6 @@ export default function ClubCashScreen() {
             ) : null}
           </HeroCard>
 
-          {c.canManage ? (
-            <View style={{ gap: 8 }}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Button
-                  label="Einnahme"
-                  icon="arrow-down"
-                  style={{ flex: 1 }}
-                  onPress={() => router.push('/club-cash/new?kind=income')}
-                />
-                <Button
-                  label="Ausgabe"
-                  icon="arrow-up"
-                  variant="outline"
-                  style={{ flex: 1 }}
-                  onPress={() => router.push('/club-cash/new?kind=expense')}
-                />
-              </View>
-              <Button
-                label="Umbuchung zwischen Konten"
-                icon="swap-horizontal"
-                variant="outline"
-                onPress={() => router.push('/club-cash/new?kind=transfer')}
-              />
-            </View>
-          ) : null}
-
-          <Button
-            label="Mitgliedsbeiträge"
-            icon="people-outline"
-            variant="outline"
-            onPress={() => router.push('/club-cash/fees')}
-          />
-
           <Section title="Konten">
             <Card>
               {c.accounts
@@ -206,13 +173,6 @@ export default function ClubCashScreen() {
               />
             </Section>
           ) : null}
-
-          <Button
-            label={c.canManage || c.canChangeSettings ? 'Einrichtung' : 'Konten und Kategorien'}
-            icon="settings-outline"
-            variant="outline"
-            onPress={() => router.push('/club-cash/manage')}
-          />
         </>
       ) : null}
     </Screen>

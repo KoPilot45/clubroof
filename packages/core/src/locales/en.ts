@@ -316,10 +316,12 @@ export const en: Record<string, string> = {
   Abgestimmt: 'Voted',
   'Abhaken kann, wer die Aufgabe übernommen hat.':
     'Only the person who took the task can tick it off.',
+  Ablage: 'Filing',
   Ablauf: 'Schedule',
   'Ablaufplan (optional)': 'Schedule (optional)',
   Ablehnen: 'Decline',
   Abmelden: 'Log out',
+  'Abo & Kontrolle': 'Plan & control',
   'Abo beenden': 'End subscription',
   'Abo-Link erstellen': 'Create subscription link',
   Absage: 'No',
@@ -328,6 +330,7 @@ export const en: Record<string, string> = {
   'Absagefrist: {0}': 'Cancellation deadline: {0}',
   Absagen: 'Declines',
   'Absagen und informieren': 'Cancel and notify',
+  Abschluss: 'Closing',
   'Abschluss festhalten': 'Record closing',
   Abstellen: 'Release',
   'Abstimmen bis': 'Vote until',
@@ -348,6 +351,7 @@ export const en: Record<string, string> = {
   'Abwesenheiten in der Vergangenheit können nicht eingetragen werden.':
     'Absences in the past cannot be entered.',
   'Abwesenheitsgründe einsehen': 'View absence reasons',
+  'Admin-Verwaltung': 'Admin area',
   'Administration, Kassenwart und Kassenprüfer – der Standard':
     'Administration, treasurer and auditors – the default',
   Adresse: 'Address',
@@ -456,8 +460,10 @@ export const en: Record<string, string> = {
   Anheften: 'Pin',
   'Ankündigungen für Verein, Bereiche und Mannschaften':
     'Announcements for the club, departments and teams',
+  Anlage: 'Facility',
   'Anlage & Material': 'Facility & equipment',
   'Anlage entfernen': 'Remove venue',
+  'Anlagen & Plätze': 'Facilities & pitches',
   Anlegen: 'Create',
   Anmelden: 'Sign in',
   Anpassen: 'Customise',
@@ -523,6 +529,7 @@ export const en: Record<string, string> = {
   Aufstellung: 'Line-up',
   'Aufstellung bearbeiten': 'Edit line-up',
   'Aufstellung erstellen': 'Create line-up',
+  Auftritt: 'Appearance',
   Aufwandsentschädigungen: 'Expense allowances',
   Aufwärmen: 'Warm-up',
   Aus: 'Off',
@@ -659,6 +666,7 @@ export const en: Record<string, string> = {
   Beitragsarten: 'Fee types',
   'Beitragsarten & Mitglieder': 'Fee types & members',
   'Beitragsarten und Mitglieder': 'Fee types and members',
+  Beitragsübersicht: 'Fee overview',
   'Beitritt {0}': 'Joining {0}',
   'Beitritt freigegeben: {0} {1} → {2}': 'Join approved: {0} {1} → {2}',
   Beitrittsanfrage: 'join request',
@@ -689,6 +697,7 @@ export const en: Record<string, string> = {
   'Bereiche gliedern den Verein. Wer einen Bereich leitet, sieht nur dessen Mannschaften.':
     'Divisions structure the club. Whoever leads a division sees only its teams.',
   Bereichsübersicht: 'Area overview',
+  Bereinigen: 'Clean up',
   'Bereite die nächste Saison vor: Alle Mannschaften werden mit Modulen, Fristen, Trainerteams und Zusatzaufgaben (z. B. Kassenwart) übernommen. Die laufende Saison bleibt unverändert, bis du die neue startest.':
     'Prepare the next season: all teams are carried over with modules, deadlines, coaching staff and additional duties (e.g. treasurer). The current season stays unchanged until you start the new one.',
   'Bereits eingeteilt.': 'Already assigned.',
@@ -716,6 +725,7 @@ export const en: Record<string, string> = {
   'Betroffene Termine': 'Affected events',
   'Bewahre sie sicher auf (z. B. ausdrucken). Jeder Code funktioniert einmal, falls dein Handy nicht zur Hand ist. Sie werden nur jetzt angezeigt.':
     "Keep them safe (e.g. print them). Each code works once, in case your phone isn't to hand. They are only shown now.",
+  Bewegung: 'Movement',
   'Bewegung erfassen': 'Record movement',
   Bezahlen: 'Pay',
   'Bezahlen / Zahlung melden': 'Pay / report payment',
@@ -802,9 +812,11 @@ export const en: Record<string, string> = {
   Buchen: 'Book',
   'Buchen, Strafen vergeben, Einzahlungen erfassen und den Strafenkatalog pflegen – gemeinsam mit dem Kassenwart. Alles Weitere steht im Abschnitt „Kassenverwaltung“.':
     'Make entries, issue fines, record payments and maintain the fine catalogue – together with the treasurer. Everything else is in the “Team fund administration” section.',
+  Buchung: 'Booking',
   'Buchung erfassen': 'Record entry',
   'Buchung speichern': 'Save entry',
   'Buchung stornieren': 'Reverse entry',
+  'Buchung, Beiträge, Planung, Prüfung': 'Bookings, fees, planning, audit',
   Buchungen: 'Entries',
   'Buchungen & Storno': 'Entries & reversals',
   'Buchungen dürfen nur Kassenverantwortliche erfassen.':
@@ -838,6 +850,7 @@ export const en: Record<string, string> = {
   'CSV-Import': 'CSV import',
   'Dabei: {0}': 'In: {0}',
   'Dafür fehlt dir die Berechtigung.': "You don't have permission for that.",
+  'Dafür hast du keine Rechte.': 'You do not have the rights for this.',
   'Damit würdest du dich selbst aussperren.': 'You would lock yourself out.',
   Darstellung: 'Appearance',
   'Darstellung ändern': 'Change appearance',
@@ -1555,6 +1568,7 @@ export const en: Record<string, string> = {
     'It is valid for {0} minutes and can only be used once.',
   'Ereignis hinzufügen': 'Add event',
   Ereignisse: 'Events',
+  Erfassen: 'Record',
   'Erfasst sind {0} Tore, das Ergebnis nennt {1}. Bitte angleichen.':
     '{0} goals are recorded, but the score says {1}. Please make them match.',
   'Erfasst sind {0} von {1} Toren.': '{0} of {1} goals recorded.',
@@ -1609,6 +1623,7 @@ export const en: Record<string, string> = {
   'Es wird nur dieser eine Termin angelegt.': 'Only this one event will be created.',
   'Eure Vereinsfarbe': 'Your club color',
   'Expo antwortet mit {0}': 'Expo responded with {0}',
+  Exportieren: 'Export',
   Fahrdienst: 'Driving',
   'Fahrdienst, Trikotwäsche, Kuchen – wer übernimmt was':
     'Driving, kit washing, cakes – who takes what',
@@ -1638,6 +1653,7 @@ export const en: Record<string, string> = {
   Forderungen: 'Claims',
   Formular: 'Form',
   Formulare: 'Forms',
+  'Forum-Moderation': 'Forum moderation',
   'Forum: Beitrag gemeldet': 'Forum: post reported',
   'Forumsthemen erstellen und moderieren': 'Create and moderate forum topics',
   'Foto ändern': 'Change photo',
@@ -1688,6 +1704,7 @@ export const en: Record<string, string> = {
   'Für den Bereich sind noch Rollen vergeben (z. B. Jugendleitung).':
     'Roles are still assigned for the section (e.g. youth management).',
   'Für den Versand fehlt eine E-Mail-Adresse.': 'An email address is missing for sending.',
+  'Für dich': 'For you',
   'Für dich: {0} offen': 'For you: {0} open',
   'Für die Daten deines Vereins ist der Verein verantwortlich, Clubroof verarbeitet sie in seinem Auftrag. Genaue Angaben folgen in der endgültigen Fassung.':
     "The club is responsible for your club's data; Clubroof processes it on the club's behalf. Exact details will follow in the final version.",
@@ -1837,6 +1854,8 @@ export const en: Record<string, string> = {
   'Häufige Fragen und Rundgang': 'Frequently asked questions and tour',
   Hauptsponsor: 'Main sponsor',
   Hauptsponsoren: 'Main sponsors',
+  Haushalt: 'Budget',
+  Haushaltsplan: 'Budget plan',
   Heim: 'Home',
   'Heim- oder Gastmannschaft fehlt.': 'Home or away team is missing.',
   Heimmannschaft: 'Home team',
@@ -1937,6 +1956,7 @@ export const en: Record<string, string> = {
   'Immer aktiv': 'Always active',
   'Import rückgängig gemacht': 'Import undone',
   'Import rückgängig machen (neu angelegte Spiele)': 'Undo import (newly created matches)',
+  Importieren: 'Import',
   Impressum: 'Legal notice',
   'in {0} Mannschaften': 'in {0} teams',
   'in {0} Tagen': 'in {0} days',
@@ -1963,6 +1983,7 @@ export const en: Record<string, string> = {
   'Individuelle Rechte gespeichert': 'Individual permissions saved',
   'Info für die Mannschaft': 'Info for the team',
   'Info für die Mannschaft (optional)': 'Info for the team (optional)',
+  Inhalte: 'Content',
   Innenverteidigung: 'Centre-back',
   'Ist schon im Verein oder weiter oben in der Datei – wird übersprungen.':
     'Already in the club or further up in the file – skipped.',
@@ -1980,6 +2001,7 @@ export const en: Record<string, string> = {
     'Yes. Under “More → Account & settings → Language” choose Deutsch, English or “Automatic” (your device language). Your choice applies on all your devices, including push notifications. Texts that coaches or the board write themselves (e.g. news) stay in the author’s language.',
   'Ja. Unter „Mehr → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Yes. Under “More → Account & settings” you set the font size (Normal, Large, Extra large) and can lock the app with Face ID, fingerprint or device code. Without internet the app shows the most recently loaded events, news and squad; a notice appears at the top. Replies and changes are only possible with a connection.',
+  Jahresabschluss: 'Annual accounts',
   jährlich: 'yearly',
   Januar: 'January',
   'je Bereich': 'per section',
@@ -2148,6 +2170,7 @@ export const en: Record<string, string> = {
   'Kontaktdaten von Trainerinnen und Trainern anderer Mannschaften erscheinen nur, wenn sie sie für den ganzen Verein freigegeben haben.':
     'Contact details of coaches of other teams only appear if they have shared them with the whole club.',
   Konten: 'Accounts',
+  'Konten & Kategorien': 'Accounts & categories',
   'Konten und Kategorien': 'Accounts and categories',
   'Konten, Kassenbuch mit Belegen, Kategorien, Kostenstellen':
     'Accounts, cash book with receipts, categories, cost centers',
@@ -2250,6 +2273,7 @@ export const en: Record<string, string> = {
     'Only the person who created the exercise can delete it.',
   Mahnung: 'Reminder notice',
   'Mahnung Mitgliedsbeitrag': 'Reminder notice: membership fee',
+  Mahnwesen: 'Dunning',
   Mai: 'May',
   Mannschaft: 'Team',
   'Mannschaft „{0}“ gibt es nicht.': 'Team “{0}” does not exist.',
@@ -2369,6 +2393,7 @@ export const en: Record<string, string> = {
   'Mitglieder melden Zahlungen in ihrem Konto. Du siehst sie in der Kassenverwaltung unter „Zahlungsmeldungen“ und bestätigst mit „Eingegangen“ – dann wird die Einzahlung gebucht – oder „Nicht gefunden“.':
     'Members report payments in their account. You see them in the team fund administration under “Payment reports” and confirm with “Received” – the payment is then booked – or “Not found”.',
   'Mitglieder, Rollen, Einstellungen des Vereins': 'Members, roles, club settings',
+  'Mitglieder, Sport, Inhalte, Verein': 'Members, sports, content, club',
   'Mitgliederliste einsehen': 'View member list',
   Mitgliederverwaltung: 'Member administration',
   Mitgliedsbeiträge: 'Membership fees',
@@ -2376,6 +2401,7 @@ export const en: Record<string, string> = {
   Mitgliedsnummer: 'Membership number',
   'Mitgliedsnummer (optional)': 'Membership number (optional)',
   Mitgliedsstatus: 'Membership status',
+  Mitteilungen: 'Messages',
   'mittel {0}–{1} %': 'medium {0}–{1} %',
   Mittelfeld: 'Midfield',
   Mo: 'Mon',
@@ -2505,6 +2531,7 @@ export const en: Record<string, string> = {
   'Nicht verwendet: {0}': 'Not used: {0}',
   'Nichts gefunden': 'Nothing found',
   'Nichts gefunden.': 'Nothing found.',
+  'Nichts zu tun – alles erledigt.': 'Nothing to do – all done.',
   Niederlage: 'Defeat',
   'niedrig unter {0} %': 'low below {0} %',
   'Niemand gefunden – oder schon im Kader.': 'Nobody found – or already in the squad.',
@@ -2632,6 +2659,7 @@ export const en: Record<string, string> = {
   Ordnungen: 'Rules',
   Organisation: 'Organization',
   Ort: 'Location',
+  'Partner & Helfer': 'Partners & helpers',
   'Partner des Vereins': 'Club partner',
   Passiv: 'Inactive',
   'Passiv / Fördermitglied': 'Passive / supporting member',
@@ -2675,11 +2703,13 @@ export const en: Record<string, string> = {
   'Pflichteinsätze gelten je Saison.': 'Required assignments apply per season.',
   'Pflichteinsätze je Schiedsrichter': 'Required assignments per referee',
   'Pflichteinsätze offen': 'Required assignments open',
+  'Plan & Abo': 'Plan & subscription',
   'Plan bearbeiten': 'Edit plan',
   'Plan erstellen': 'Create plan',
   'Plan öffnen': 'Open plan',
   'Plan speichern': 'Save plan',
   'Plan vom {0} übernehmen': 'Copy plan from {0}',
+  Planung: 'Planning',
   Platz: 'Pitch',
   'Platz {0}': 'Pitch {0}',
   'Platz belegt': 'Pitch booked',
@@ -2715,6 +2745,7 @@ export const en: Record<string, string> = {
     'Check the details. Only now is the team created.',
   'Prüfe die Schreibweise oder suche nach einem kürzeren Begriff.':
     'Check the spelling or try a shorter term.',
+  Prüfung: 'Audit',
   'Push (nicht versendet) an {0}…: {1}': 'Push (not sent) to {0}…: {1}',
   'Push aktivieren': 'Enable push',
   'Push auf diesem Gerät': 'Push on this device',
@@ -2779,6 +2810,7 @@ export const en: Record<string, string> = {
   'Rückfragen ausblenden': 'Hide questions',
   Rückgängig: 'Undo',
   'Rückgängig geht nur innerhalb von {0} Stunden.': 'Undo is only possible within {0} hours.',
+  Rücklagen: 'Reserves',
   Rückmeldung: 'Feedback',
   'Rückmeldung an die Verfasserin / den Verfasser': 'Feedback to the author',
   'Rückmeldung der Freigabe': 'Approval feedback',
@@ -2894,6 +2926,7 @@ export const en: Record<string, string> = {
   'Soll des Verbands': 'Association quota',
   'Soll erfüllt': 'Quota met',
   'Soll speichern': 'Save quota',
+  'Soll-Ist': 'Target vs. actual',
   'Sollstellung erzeugen': 'Create claims',
   'Sonstige Ausgabe': 'Other expense',
   'Sonstige Einnahme': 'Other income',
@@ -2912,6 +2945,7 @@ export const en: Record<string, string> = {
   'Speichert …': 'Saving …',
   Spende: 'Donation',
   Spenden: 'Donations',
+  Spendenquittungen: 'Donation receipts',
   Sperre: 'Suspension',
   'Sperrung anlegen': 'Create block',
   'Sperrung aufheben': 'Lift closure',
@@ -2925,6 +2959,7 @@ export const en: Record<string, string> = {
   'Spielbericht bearbeiten': 'Edit match report',
   'Spielbericht erfassen': 'Create match report',
   'Spielbericht: {0} {1}': 'Match report: {0} {1}',
+  Spielbetrieb: 'Match operations',
   Spiele: 'Matches',
   'Spiele dabei': 'Matches played',
   'Spiele diese Woche': 'Matches this week',
@@ -2988,6 +3023,7 @@ export const en: Record<string, string> = {
   'Sponsorenbilder lädt die Vereinsadministration hoch.':
     'The club administration uploads sponsor images.',
   Sponsoring: 'Sponsorship',
+  Sport: 'Sports',
   'Sportgeräte und Material': 'Sports equipment and materials',
   'Sportliche Leitung': 'Sporting management',
   'Sportliche Leitung, Jugendleitung und Vorstand sehen im Reiter „Team“ eine Übersicht über die Bereiche (Senioren, Frauen, Jugend) – ohne Zugriff in die einzelnen Mannschaften. Oben stehen die Kennzahlen, darunter eine Karte je Mannschaft mit Kader, Trainerteam, Trainingsbeteiligung der letzten 4 Wochen und dem nächsten Spiel. Die Ampel gilt nur für die Trainingsbeteiligung: gut ab 65 %, mittel 50–64 %, niedrig darunter; bei weniger als 3 erfassten Einheiten steht „zu wenig Daten“. Wer auch selbst in einer Mannschaft ist, schaltet oben zwischen „Meine Mannschaft“ und „Übersicht“ um.':
@@ -3296,6 +3332,8 @@ export const en: Record<string, string> = {
     'Under “More → Profile & statistics”. There you can change your photo, position, contact details and the visibility of your contact details. You decide who may see them.',
   'Unter „Mehr → Über Clubroof“: AGB, Datenschutzerklärung, Privatsphäre-Einstellungen, Impressum, Neuigkeiten (Changelog) sowie Links zu Support und „Funktion anfragen“ auf der Webseite.':
     'Under "More → About Clubroof": terms, privacy policy, privacy settings, legal notice, news (changelog) and links to support and "Request a feature" on the website.',
+  'Unter „Mehr“ stehen direkt unter deinem Profil zwei Zugänge: „Admin-Verwaltung“ (violett) für alle mit Verwaltungsrechten und „Vereinskasse“ (blau) für alle mit Kassenzugriff. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Beenden“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Prüfung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.':
+    'Under “More”, directly below your profile, there are two entries: “Admin area” (violet) for everyone with administration rights and “Club cash” (blue) for everyone with cash access. Both open their own area with a coloured header band and “Exit” at the top and a bar with tabs at the bottom. The administration has the tabs Overview, Members, Sports, Content and Club – you only see what you have rights for. The club cash has Overview, Booking, Fees, Planning and Audit. Functions marked “Coming soon” follow in a later update.',
   'Unter „Team → Aufgaben“ stehen Dinge wie Trikotwäsche, Fahrdienst oder Kuchen. Offene Aufgaben übernimmst du mit „Ich übernehme“ (Eltern auch für ihr Kind) und hakst sie ab, wenn sie erledigt sind.':
     "Under “Team → Tasks” you'll find things like washing the kit, driving or cake. Take on open tasks with “I'll do it” (parents can do so for their child too) and tick them off when they're done.",
   'Unter „Team → Funktionen“ schaltest du z. B. Statistik, Kasse oder Aufgaben für deine Mannschaft ein und aus. Was der Verein oder Bereich ausgeschaltet hat, bleibt gesperrt.':
@@ -3674,6 +3712,8 @@ export const en: Record<string, string> = {
   'Wo finde ich AGB, Datenschutz, Impressum und Support?':
     'Where do I find terms, privacy policy, legal notice and support?',
   'Wo finde ich die Funktionen?': 'Where do I find the features?',
+  'Wo finde ich die Verwaltung und die Vereinskasse?':
+    'Where do I find the administration and the club cash?',
   'Wo finde ich Satzung, Formulare und Pläne?':
     'Where do I find the constitution, forms and plans?',
   'Wo finde ich was?': 'Where do I find what?',
@@ -3789,6 +3829,7 @@ export const en: Record<string, string> = {
   'Zu- und Absagen stellvertretend korrigieren':
     'Correct confirmations and declines on behalf of others',
   Zugang: 'Signing',
+  'Zugang & Rechte': 'Access & rights',
   'Zugang einrichten': 'Set up access',
   'Zugangsdaten sind geheim zu halten. Inhalte, die gegen Gesetze oder Rechte Dritter verstoßen, dürfen nicht eingestellt werden.':
     'Access data must be kept secret. Content that violates laws or the rights of third parties must not be posted.',
