@@ -17,7 +17,14 @@ import { clubs, facilities, orgUnits } from './club';
 import { absences, events } from './events';
 import { persons, users } from './people';
 import { teams } from './teams';
-import { cashDirectionEnum, createdAt, documentCategoryEnum, id, scopeTypeEnum } from './_shared';
+import {
+  cashDirectionEnum,
+  createdAt,
+  updatedAt,
+  documentCategoryEnum,
+  id,
+  scopeTypeEnum,
+} from './_shared';
 
 /** Helferschicht zu einer Veranstaltung (z. B. Grillstand 17–21 Uhr, 6 Helfer). */
 export const helperShifts = pgTable(
@@ -657,6 +664,104 @@ export const clubPeriodLocks = pgTable(
     unlockReason: text(),
   },
   (t) => [index().on(t.clubId, t.year)],
+);
+
+// ── Prüfung und Spenden (Paket K4) ──────────────────────────────────────────
+
+/** Kassenprüfung eines Jahres (ganzer Verein oder eine Kasse); nach der Abgabe unveränderlich. */
+export const clubAudits = pgTable(
+  'club_audits',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    year: integer().notNull(),
+    /** leer = ganzer Verein */
+    fundId: uuid().references(() => clubCashFunds.id),
+    startedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    startedAt: timestamp({ withTimezone: true }).notNull(),
+    /** gesetzt = Prüfbericht abgegeben */
+    submittedAt: timestamp({ withTimezone: true }),
+    /** Ergebnis in eigenen Worten (Grundlage der Entlastung) */
+    conclusion: text(),
+  },
+  (t) => [index().on(t.clubId, t.year)],
+);
+
+/**
+ * Feststellung einer Prüfung: Stichprobe (pending → checked | objection) zu einer Buchung oder
+ * ein freier Vermerk (note).
+ */
+export const clubAuditFindings = pgTable(
+  'club_audit_findings',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    auditId: uuid()
+      .notNull()
+      .references(() => clubAudits.id, { onDelete: 'cascade' }),
+    entryId: uuid().references(() => clubCashEntries.id),
+    /** pending | checked | objection | note */
+    kind: text().notNull(),
+    text: text(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.auditId), unique().on(t.auditId, t.entryId)],
+);
+
+/** Steuerdaten des Vereins für Zuwendungsbestätigungen; Ändern setzt die rechtliche Freigabe zurück. */
+export const clubTaxInfo = pgTable('club_tax_info', {
+  clubId: uuid()
+    .primaryKey()
+    .references(() => clubs.id, { onDelete: 'cascade' }),
+  taxOffice: text(),
+  taxNumber: text(),
+  /** freistellung | feststellung */
+  exemptionKind: text(),
+  exemptionDate: date(),
+  /** z. B. „2022 bis 2024“ (Veranlagungszeitraum bzw. Jahr der Feststellung) */
+  exemptionPeriod: text(),
+  /** begünstigter Zweck, z. B. „Förderung des Sports“ */
+  purposes: text(),
+  /** Die Vorlage wurde rechtlich bzw. steuerlich geprüft – erst dann können Bestätigungen ausgestellt werden */
+  reviewedAt: timestamp({ withTimezone: true }),
+  reviewedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+  reviewNote: text(),
+  updatedAt: updatedAt(),
+});
+
+/** Spende (Geldzuwendung) mit Buchung im Kassenbuch und optionaler Zuwendungsbestätigung. */
+export const clubDonations = pgTable(
+  'club_donations',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    entryId: uuid()
+      .notNull()
+      .references(() => clubCashEntries.id),
+    personId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    donorName: text().notNull(),
+    donorAddress: text().notNull(),
+    amountCents: integer().notNull(),
+    donatedOn: date().notNull(),
+    /** Verzicht auf Erstattung von Aufwendungen */
+    waiver: boolean().notNull().default(false),
+    /** Laufende Nummer der Bestätigung (z. B. 2026-001), leer = noch nicht ausgestellt */
+    receiptNo: text(),
+    issuedAt: timestamp({ withTimezone: true }),
+    issuedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    /** eingefrorene Angaben der ausgestellten Bestätigung (Steuerdaten) */
+    receiptSnapshot: jsonb(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.donatedOn), unique().on(t.clubId, t.receiptNo)],
 );
 
 // ── Mitgliedsbeiträge (Paket K2) ────────────────────────────────────────────

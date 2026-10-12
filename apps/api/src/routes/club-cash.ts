@@ -255,7 +255,13 @@ export const clubCashRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         params: idParams,
-        body: fundBody.partial().extend({ archived: z.boolean().optional() }),
+        // ohne Vorgabewerte: nur mitgesendete Felder ändern (sonst würden die Abteilungen geleert)
+        body: z.object({
+          name: z.string().trim().min(2).max(60).optional(),
+          unitIds: z.array(z.uuid()).max(30).optional(),
+          isMain: z.boolean().optional(),
+          archived: z.boolean().optional(),
+        }),
       },
     },
     async (request): Promise<ClubCash> => {

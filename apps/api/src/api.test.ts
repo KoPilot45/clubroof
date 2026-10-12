@@ -9,9 +9,13 @@ import type {
   AuditEntry,
   ClubCash,
   ClubCashAccount,
+  ClubAuditDetail,
+  ClubAudits,
   ClubBudget,
   ClubCashEntry,
   ClubClosing,
+  ClubDonations,
+  ClubTaxInfo,
   ClubFeeAssignment,
   ClubFeeImportPreview,
   ClubFees,
@@ -6819,6 +6823,9 @@ describe.skipIf(!url)('API', () => {
       });
       expect(renamed.body.funds.find((f) => f.id === youthFundId)!.name).toBe('Jugendkasse (Abt.)');
       await send('PATCH', `/club-cash/funds/${youthFundId}`, token, { name: 'Jugendkasse' });
+      // Ändern von Name oder Hauptkasse lässt die Abteilungen unberührt
+      const kept = await get<ClubCash>('/club-cash', token);
+      expect(kept.funds.find((f) => f.id === youthFundId)!.units.length).toBe(1);
     });
 
     it('Beiträge fließen in die Zielkasse der Beitragsart', async () => {
@@ -7164,6 +7171,353 @@ describe.skipIf(!url)('API', () => {
       expect(labels).toContain('Rücklage angelegt: Platzsanierung (Hauptkasse)');
       expect(labels).toContain('Vereinskasse: Jahr 2025 abgeschlossen');
       expect(labels).toContain('Vereinskasse: Jahr 2025 wieder geöffnet: Beleg nachgereicht');
+    });
+  });
+  describe('Vereinskasse: Prüfung und Spenden (K4)', () => {
+    async function treasurer() {
+      const admin = await login('admin');
+      const parent = await login('eltern');
+      if (!parent.me.roles.some((r) => r.name === 'Kassenwart (Verein)')) {
+        await send('POST', `/admin/members/${parent.me.person.id}/roles`, admin.token, {
+          roleKey: 'club_treasurer',
+          scopeType: 'club',
+        });
+      }
+      return login('eltern');
+    }
+    let auditId = '';
+
+    it('Prüfung: nur Prüfer; Stichproben werden gezogen und müssen erledigt werden', async () => {
+      const kasse = await treasurer();
+      const auditor = await login('mitglied');
+      expect((await send('POST', '/club-cash/audits', kasse.token, { year: 2026 })).status).toBe(
+        403,
+      );
+      expect((await send('GET', '/club-cash/audits', (await login('spieler')).token)).status).toBe(
+        403,
+      );
+      expect((await send('POST', '/club-cash/audits', auditor.token, { year: 2999 })).status).toBe(
+        400,
+      );
+      const started = await send<ClubAuditDetail>('POST', '/club-cash/audits', auditor.token, {
+        year: 2026,
+      });
+      expect(started.status).toBe(201);
+      auditId = started.body.id;
+      expect(started.body).toMatchObject({ status: 'open', fundName: 'Ganzer Verein', pending: 0 });
+      expect(started.body.entryCount).toBeGreaterThan(5);
+      expect((await send('POST', '/club-cash/audits', auditor.token, { year: 2026 })).status).toBe(
+        409,
+      );
+
+      const drawn = await send<ClubAuditDetail>(
+        'POST',
+        `/club-cash/audits/${auditId}/sample`,
+        auditor.token,
+        { count: 4 },
+      );
+      expect(drawn.status).toBe(200);
+      expect(drawn.body.pending).toBe(4);
+      expect(drawn.body.findings.every((f) => f.kind === 'pending' && f.entry)).toBe(true);
+      // Noch einmal ziehen: keine Doppelten
+      const more = await send<ClubAuditDetail>(
+        'POST',
+        `/club-cash/audits/${auditId}/sample`,
+        auditor.token,
+        { count: 3 },
+      );
+      const ids = more.body.findings.map((f) => f.entry!.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      expect(more.body.pending).toBe(Math.min(7, started.body.entryCount));
+      expect(
+        (await send('POST', `/club-cash/audits/${auditId}/sample`, auditor.token, { count: 99 }))
+          .status,
+      ).toBe(400);
+      // Prüfer buchen nicht, Kassenwart prüft nicht
+      expect(
+        (await send('POST', `/club-cash/audits/${auditId}/sample`, kasse.token, { count: 1 }))
+          .status,
+      ).toBe(403);
+      // Abgabe mit offenen Stichproben geht nicht
+      const early = await send('POST', `/club-cash/audits/${auditId}/submit`, auditor.token, {
+        conclusion: 'Alles ordnungsgemäß geführt.',
+      });
+      expect(early.status).toBe(409);
+      expect((early.body as unknown as { error: string }).error).toBe('pending_samples');
+    });
+
+    it('abhaken, beanstanden (mit Begründung), Vermerk; Bericht abgeben und sperren', async () => {
+      const auditor = await login('mitglied');
+      const kasse = await treasurer();
+      const detail = await get<ClubAuditDetail>(`/club-cash/audits/${auditId}`, auditor.token);
+      const [first, ...rest] = detail.findings.filter((f) => f.kind === 'pending');
+      const post = (payload: unknown) =>
+        send<ClubAuditDetail>(
+          'POST',
+          `/club-cash/audits/${auditId}/findings`,
+          auditor.token,
+          payload,
+        );
+      // Beanstandung braucht eine Begründung
+      expect((await post({ kind: 'objection', entryId: first!.entry!.id })).status).toBe(400);
+      const objected = await post({
+        kind: 'objection',
+        entryId: first!.entry!.id,
+        text: 'Beleg fehlt',
+      });
+      expect(objected.status).toBe(201);
+      expect(objected.body.objections).toBe(1);
+      for (const f of rest) await post({ kind: 'checked', entryId: f.entry!.id });
+      const note = await post({ kind: 'note', text: 'Belege sind übersichtlich abgelegt.' });
+      expect(note.body.pending).toBe(0);
+      expect(note.body).toMatchObject({ checked: rest.length, objections: 1, notes: 1 });
+      // Ein Vermerk kann entfernt werden, solange offen
+      const noteId = note.body.findings.find((f) => f.kind === 'note')!.id;
+      const removed = await send<ClubAuditDetail>(
+        'DELETE',
+        `/club-cash/audits/${auditId}/findings/${noteId}`,
+        auditor.token,
+      );
+      expect(removed.body.notes).toBe(0);
+      await post({ kind: 'note', text: 'Belege sind übersichtlich abgelegt.' });
+      // Der Kassenwart sieht die offene Prüfung noch nicht
+      const listBefore = await get<ClubAudits>('/club-cash/audits', kasse.token);
+      expect(listBefore.audits.some((a) => a.id === auditId)).toBe(false);
+      expect((await send('GET', `/club-cash/audits/${auditId}`, kasse.token)).status).toBe(403);
+
+      expect(
+        (
+          await send('POST', `/club-cash/audits/${auditId}/submit`, auditor.token, {
+            conclusion: 'kurz',
+          })
+        ).status,
+      ).toBe(400);
+      const submitted = await send<ClubAuditDetail>(
+        'POST',
+        `/club-cash/audits/${auditId}/submit`,
+        auditor.token,
+        {
+          conclusion: 'Die Kasse wurde ordnungsgemäß geführt; eine Beanstandung ist nachzureichen.',
+        },
+      );
+      expect(submitted.status).toBe(200);
+      expect(submitted.body.status).toBe('submitted');
+      // Unveränderlich
+      expect((await post({ kind: 'note', text: 'Zu spät ergänzt' })).status).toBe(409);
+      expect(
+        (await send('POST', `/club-cash/audits/${auditId}/sample`, auditor.token, { count: 1 }))
+          .status,
+      ).toBe(409);
+      // Jetzt sieht die Kassenführung den abgegebenen Bericht (mit Beanstandung)
+      const seen = await get<ClubAuditDetail>(`/club-cash/audits/${auditId}`, kasse.token);
+      expect(seen.objections).toBe(1);
+      expect(seen.findings.find((f) => f.kind === 'objection')!.text).toBe('Beleg fehlt');
+    });
+
+    it('Prüfbericht als CSV und PDF über kurzlebige Links', async () => {
+      const kasse = await treasurer();
+      const csvLink = await get<{ url: string }>(
+        `/club-cash/audits/${auditId}/report-link?format=csv`,
+        kasse.token,
+      );
+      const csv = await app.inject({ method: 'GET', url: new URL(csvLink.url).pathname });
+      expect(csv.statusCode).toBe(200);
+      expect(csv.headers['content-type']).toContain('text/csv');
+      expect(csv.body.startsWith('\uFEFFPrüfbericht Vereinskasse 2026;')).toBe(true);
+      expect(csv.body).toContain('Beanstandet;');
+      expect(csv.body).toContain('Beleg fehlt');
+      const pdfLink = await get<{ url: string }>(
+        `/club-cash/audits/${auditId}/report-link?format=pdf`,
+        kasse.token,
+      );
+      const pdf = await app.inject({ method: 'GET', url: new URL(pdfLink.url).pathname });
+      expect(pdf.headers['content-type']).toContain('application/pdf');
+      expect(pdf.rawPayload.subarray(0, 5).toString('latin1')).toBe('%PDF-');
+      expect(
+        (
+          await send(
+            'GET',
+            `/club-cash/audits/${auditId}/report-link?format=csv`,
+            (await login('spieler')).token,
+          )
+        ).status,
+      ).toBe(403);
+    });
+
+    it('Prüfung für einzelne Kassen: nur die eigene Kasse, nicht der ganze Verein', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const [youth] = await sql<
+        { id: string }[]
+      >`select id from org_units where kind = 'youth' limit 1`;
+      const given = await send<MemberDetail>(
+        'POST',
+        `/admin/members/${coach.me.person.id}/roles`,
+        admin.token,
+        { roleKey: 'cash_auditor', scopeType: 'org_unit', scopeId: youth!.id },
+      );
+      expect(given.status).toBe(200);
+      const assignment = given.body.roles.find((r) => r.roleKey === 'cash_auditor')!;
+      try {
+        const me = await login('trainer');
+        const list = await get<ClubAudits>('/club-cash/audits', me.token);
+        expect(list.canAudit).toBe(true);
+        expect(list.wholeClub).toBe(false);
+        expect(list.funds.map((f) => f.name)).toEqual(['Jugendkasse']);
+        expect((await send('POST', '/club-cash/audits', me.token, { year: 2026 })).status).toBe(
+          403,
+        );
+        const main = (await get<ClubCash>('/club-cash', admin.token)).funds.find((f) => f.isMain)!;
+        expect(
+          (await send('POST', '/club-cash/audits', me.token, { year: 2026, fundId: main.id }))
+            .status,
+        ).toBe(403);
+        const mine = await send<ClubAuditDetail>('POST', '/club-cash/audits', me.token, {
+          year: 2026,
+          fundId: list.funds[0]!.id,
+        });
+        expect(mine.status).toBe(201);
+        expect(mine.body.fundName).toBe('Jugendkasse');
+        // der Bericht über den ganzen Verein gehört nicht zu den eigenen Kassen
+        expect((await send('GET', `/club-cash/audits/${auditId}`, me.token)).status).toBe(403);
+      } finally {
+        await send(
+          'DELETE',
+          `/admin/members/${coach.me.person.id}/roles/${assignment.id}`,
+          admin.token,
+        );
+      }
+    });
+
+    it('Steuerdaten: nur Administration; Änderung setzt die Freigabe zurück', async () => {
+      const kasse = await treasurer();
+      const admin = await login('admin');
+      const tax = {
+        taxOffice: 'Finanzamt Musterstadt',
+        taxNumber: '123/456/78901',
+        exemptionKind: 'freistellung',
+        exemptionDate: '2025-03-01',
+        exemptionPeriod: '2022 bis 2024',
+        purposes: 'Förderung des Sports',
+      };
+      const empty = await get<ClubTaxInfo>('/club-cash/tax', kasse.token);
+      expect(empty).toMatchObject({ complete: false, reviewed: null });
+      expect((await send('PUT', '/club-cash/tax', kasse.token, tax)).status).toBe(403);
+      expect(
+        (await send('POST', '/club-cash/tax/approve', admin.token, { note: 'Steuerberatung' }))
+          .status,
+      ).toBe(409);
+      const saved = await send<ClubTaxInfo>('PUT', '/club-cash/tax', admin.token, tax);
+      expect(saved.status).toBe(200);
+      expect(saved.body).toMatchObject({ complete: true, reviewed: null });
+      expect(
+        (await send('POST', '/club-cash/tax/approve', kasse.token, { note: 'Steuerberatung' }))
+          .status,
+      ).toBe(403);
+      expect(
+        (await send('POST', '/club-cash/tax/approve', admin.token, { note: 'x' })).status,
+      ).toBe(400);
+      const approved = await send<ClubTaxInfo>('POST', '/club-cash/tax/approve', admin.token, {
+        note: 'Steuerberatung Muster',
+      });
+      expect(approved.body.reviewed).toMatchObject({ note: 'Steuerberatung Muster' });
+      // Änderung → neue Freigabe nötig
+      const changed = await send<ClubTaxInfo>('PUT', '/club-cash/tax', admin.token, {
+        ...tax,
+        taxNumber: '123/456/78902',
+      });
+      expect(changed.body.reviewed).toBeNull();
+    });
+
+    it('Spende erfassen, Bestätigung nur mit freigegebener Vorlage, PDF, kein stilles Storno', async () => {
+      const kasse = await treasurer();
+      const admin = await login('admin');
+      const cash = await get<ClubCash>('/club-cash', kasse.token);
+      const giro = cash.accounts.find((a) => a.name === 'Girokonto Sparkasse')!;
+      const donationCategory = cash.categories.find((c) => c.name === 'Spenden')!;
+      const base = {
+        accountId: giro.id,
+        categoryId: donationCategory.id,
+        donorName: 'Erika Beispiel',
+        donorAddress: 'Hauptstraße 1, 12345 Musterstadt',
+        amountCents: 12500,
+        donatedOn: '2026-10-05',
+        waiver: false,
+      };
+      expect(
+        (await send('POST', '/club-cash/donations', kasse.token, { ...base, donorAddress: 'x' }))
+          .status,
+      ).toBe(400);
+      expect(
+        (await send('POST', '/club-cash/donations', (await login('mitglied')).token, base)).status,
+      ).toBe(403);
+      const before = cash.totalBalanceCents;
+      const made = await send<ClubDonations>('POST', '/club-cash/donations', kasse.token, base);
+      expect(made.status).toBe(201);
+      const donation = made.body.donations.find((d) => d.donorName === 'Erika Beispiel')!;
+      expect(donation).toMatchObject({ amountCents: 12500, receiptNo: null, cancelled: false });
+      expect(made.body.totalCents).toBeGreaterThanOrEqual(12500);
+      expect((await get<ClubCash>('/club-cash', kasse.token)).totalBalanceCents).toBe(
+        before + 12500,
+      );
+
+      // Freigabe der Vorlage wurde durch die Steuerdatenänderung zurückgesetzt
+      const early = await send<{ error: string }>(
+        'POST',
+        `/club-cash/donations/${donation.id}/issue?year=2026`,
+        kasse.token,
+      );
+      expect(early.status).toBe(409);
+      expect(early.body.error).toBe('template_not_reviewed');
+      await send('POST', '/club-cash/tax/approve', admin.token, { note: 'Steuerberatung Muster' });
+      const issued = await send<ClubDonations>(
+        'POST',
+        `/club-cash/donations/${donation.id}/issue?year=2026`,
+        kasse.token,
+      );
+      expect(issued.status).toBe(200);
+      const done = issued.body.donations.find((d) => d.id === donation.id)!;
+      expect(done.receiptNo).toMatch(/^2026-\d{3}$/);
+      expect(issued.body.canIssue).toBe(true);
+      expect(
+        (await send('POST', `/club-cash/donations/${donation.id}/issue?year=2026`, kasse.token))
+          .status,
+      ).toBe(409);
+      // Mit Bestätigung kein stilles Storno der Buchung
+      const cancel = await send<{ error: string }>(
+        'POST',
+        `/club-cash/entries/${donation.entryId}/cancel`,
+        kasse.token,
+        { reason: 'Versehen' },
+      );
+      expect(cancel.status).toBe(409);
+      expect(cancel.body.error).toBe('receipt_issued');
+      // PDF mit eingefrorenen Angaben
+      const link = await get<{ url: string }>(
+        `/club-cash/donations/${donation.id}/receipt-link`,
+        kasse.token,
+      );
+      const pdf = await app.inject({ method: 'GET', url: new URL(link.url).pathname });
+      expect(pdf.statusCode).toBe(200);
+      expect(pdf.headers['content-type']).toContain('application/pdf');
+      const text = pdf.rawPayload.toString('latin1');
+      expect(text.startsWith('%PDF-')).toBe(true);
+      expect(text).toContain('Erika Beispiel');
+      expect(text).toContain('123/456/78902');
+      expect(text).toContain(done.receiptNo!);
+    });
+
+    it('steht im Änderungsprotokoll', async () => {
+      const rows = await sql<{ label: string }[]>`
+        select data->>'label' as label from audit_log
+        where action in ('clubcash.audit', 'clubcash.tax', 'clubcash.donation')`;
+      const labels = rows.map((r) => r.label);
+      expect(labels).toContain('Kassenprüfung 2026 begonnen');
+      expect(labels).toContain('Kassenprüfung 2026: Prüfbericht abgegeben');
+      expect(labels).toContain(
+        'Spenden: Steuerdaten des Vereins gespeichert (Freigabe zurückgesetzt)',
+      );
+      expect(labels.some((l) => l.startsWith('Spenden: Zuwendungsbestätigung 2026-'))).toBe(true);
     });
   });
 });

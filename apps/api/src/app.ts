@@ -38,6 +38,7 @@ import { facilityRoutes } from './routes/facilities';
 import { profileRoutes } from './routes/profiles';
 import { teamRoutes } from './routes/teams';
 import { clubCashRoutes } from './routes/club-cash';
+import { clubAuditRoutes } from './routes/club-audit';
 import { clubPlanningRoutes } from './routes/club-planning';
 import { clubFeeRoutes } from './routes/club-fees';
 import { sponsorRoutes } from './routes/sponsors';
@@ -153,6 +154,7 @@ export async function buildApp({
   await app.register(teamRoutes);
   await app.register(clubCashRoutes);
   await app.register(clubPlanningRoutes);
+  await app.register(clubAuditRoutes);
   await app.register(clubFeeRoutes);
   await app.register(sponsorRoutes);
   await app.register(clubRoutes);
