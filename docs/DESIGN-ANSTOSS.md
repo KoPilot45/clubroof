@@ -133,3 +133,10 @@ Hintergrund `#F2F5F3`, Flächen weiß mit Rand `#E2E8E4` (kaum Schatten), Text `
 **Hero und Plakat bleiben farbig** (Verlauf p1 → p2, Waben weiß, Plakat mit Radius 34 unten, Hero-Blöcke Radius 28), Antwortknöpfe „Unsicher“ `#FFF0DB`/`#B45309`, „Absagen“ `#FDE8E6`/`#B3261E`,
 Kategorie-Symbole auf Pastell (Farbe bei 12 % Deckkraft, Symbol in dunklerer Kategoriefarbe), untere Leiste weiß mit Rand und weichem Schatten. Gleiche Regeln wie dunkel: Heros in Vereinsfarbe,
 kein Zusagen-Bereich auf Home, Wisch-Spiele im Plakat, Waben statt Kürzel. Helle Vereinsfarben (Gelb, Orange) brauchen dort für Akzent und Text eine abgedunkelte Variante – noch nicht gezeichnet.
+
+**Heller Hero (Entscheidung Vorstand, Variante A, weicher Auslauf):** Das Plakat hat **keine feste Unterkante und keine runden unteren Ecken**; der farbige Verlauf geht unten
+**in den hellen Hintergrund über**. Technisch: Plakat-Verlauf wie dunkel (p1 → p2), darüber eine Überblendung zum Seitenhintergrund `#F2F5F3` über die **unteren 42 % der Plakathöhe**
+mit mehrstufigem (weich auslaufendem) Verlauf: `0 % → 0`, `12 % → .04`, `24 % → .12`, `36 % → .26`, `50 % → .46`, `64 % → .68`, `78 % → .86`, `90 % → .96`, `100 % → 1`.
+**Aller weißer Text liegt oberhalb des Auslaufs** (Plakathöhe so wählen, dass Meta-Zeile endet, bevor die Überblendung stärker als 12 % wird; bei zweizeiligen Spielnamen wächst das Plakat mit,
+nicht der Auslauf). Pager-Punkte und „Spiel 1 von 3 · wischen“ stehen **im Auslauf in dunkler Schrift** (`#3E4F45`, aktiver Punkt Akzentfarbe). Die Kinderkarten folgen direkt darunter.
+Referenz: Boards „Hell Hero A“ und „Hell 1 · Home“ im Design-Artefakt.
