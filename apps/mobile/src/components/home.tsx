@@ -56,7 +56,6 @@ import {
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { PressScale, useCountUp } from '@/lib/motion';
 import { t } from '@/lib/i18n';
-import { PosterMark } from '@/components/poster-mark';
 import { ReorderList } from '@/components/reorder';
 import { openLink } from '@/lib/links';
 import { MATCH_KIND_LABELS } from '@/lib/labels';
@@ -545,7 +544,7 @@ export function QuickAccess({
                 justifyContent: 'center',
                 gap: 6,
                 paddingVertical: 14,
-                paddingHorizontal: 10,
+                paddingHorizontal: 6,
                 borderRadius: 22,
                 backgroundColor: colors.anstoss.card,
                 borderWidth: 1,
@@ -556,7 +555,7 @@ export function QuickAccess({
               <Text
                 numberOfLines={2}
                 style={{
-                  fontSize: 12.5,
+                  fontSize: 12,
                   fontWeight: '700',
                   textAlign: 'center',
                   color: colors.onSurface,
@@ -770,145 +769,210 @@ function daysUntil(iso: string): number {
   return Math.max(0, Math.round((dayOf(new Date(iso)) - dayOf(new Date())) / 86_400_000));
 }
 
-/**
- * Blickfang der Startseite: großes Plakat mit Countdown, Paarung und Ort; darüber die Kopfzeile.
- * Ohne Spiel steht hier der Hinweis „Kein Spiel in Sicht“ bzw. „Noch keine Mannschaft“.
- */
-export function HomePoster({
-  header,
+/** Eine Seite des Plakats: Countdown, Paarung und Ort eines Spiels (oder der Hinweis ohne Spiel). */
+function PosterSlide({
   event,
   club,
-  code,
   hasTeam,
+  width,
 }: {
-  header: React.ReactNode;
   event: EventSummary | undefined;
   club: string;
-  /** Vereinskürzel als Wasserzeichen */
-  code: string;
   hasTeam: boolean;
+  width: number;
 }) {
-  const { colors, spacing } = useTheme();
+  const { colors } = useTheme();
   const days = event ? daysUntil(event.startsAt) : 0;
   const counted = useCountUp(days);
   const on = colors.hero.onHero;
   const soft = withAlpha(on, 0.82);
   return (
-    <HeroCard
-      poster
-      background={<PosterMark code={code} />}
-      style={{ marginHorizontal: -22, marginTop: -(spacing.md + 2) }}
-    >
-      <View style={{ minHeight: 450 }}>
-        {header}
-        <View style={{ paddingHorizontal: 22, paddingTop: 38, gap: 10 }}>
-          {event ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={event.title}
-              onPress={() => router.push(`/events/${event.id}`)}
-              style={{ gap: 6 }}
+    <View style={{ width, paddingHorizontal: 22, paddingTop: 38, gap: 10 }}>
+      {event ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={event.title}
+          onPress={() => router.push(`/events/${event.id}`)}
+          style={{ gap: 6 }}
+        >
+          <View
+            style={{
+              alignSelf: 'flex-start',
+              backgroundColor: colors.primary,
+              borderRadius: 999,
+              paddingVertical: 5,
+              paddingHorizontal: 12,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 11.5,
+                fontWeight: '800',
+                letterSpacing: 1.4,
+                color: colors.onPrimary,
+                textTransform: 'uppercase',
+              }}
             >
-              <View
-                style={{
-                  alignSelf: 'flex-start',
-                  backgroundColor: colors.primary,
-                  borderRadius: 999,
-                  paddingVertical: 5,
-                  paddingHorizontal: 12,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 11.5,
-                    fontWeight: '800',
-                    letterSpacing: 1.4,
-                    color: colors.onPrimary,
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  {[
-                    t(event.type === 'tournament' ? 'Nächstes Spielfest' : 'Nächstes Spiel'),
-                    event.team?.name,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </Text>
-              </View>
-              {days > 0 ? (
-                <T
-                  variant="figure"
-                  color={on}
-                  style={{ fontSize: 108, lineHeight: 103, letterSpacing: -1 }}
-                >
-                  {counted}
-                  <T variant="headline" color={on} style={{ fontSize: 32, letterSpacing: 2 }}>
-                    {` ${t(days === 1 ? 'Tag' : 'Tage').toUpperCase()}`}
-                  </T>
-                </T>
-              ) : (
-                <T variant="figure" color={on} style={{ fontSize: 84, lineHeight: 88 }}>
-                  {t('Heute').toUpperCase()}
-                </T>
-              )}
-              {event.match ? (
-                <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
-                  {`${club}${event.team ? ` ${event.team.badge}` : ''}\n`}
-                  <T variant="headline" color={colors.primaryText} style={{ fontSize: 32 }}>
-                    vs.
-                  </T>
-                  {` ${event.match.opponentName}`}
-                </T>
-              ) : (
-                <T
-                  variant="headline"
-                  color={on}
-                  numberOfLines={3}
-                  style={{ fontSize: 32, lineHeight: 34 }}
-                >
-                  {event.title}
-                </T>
-              )}
-              <T color={soft} style={{ fontSize: 13.5, lineHeight: 20, marginTop: 4 }}>
-                {[
-                  formatDay(event.startsAt),
-                  `${formatTime(event.startsAt)} ${t('Uhr')}`,
-                  event.location,
-                  event.match
-                    ? [
-                        event.match.isHome ? t('Heimspiel') : t('Auswärts'),
-                        t(MATCH_KIND_LABELS[event.match.kind]),
-                      ].join(' · ')
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
+              {[
+                t(event.type === 'tournament' ? 'Nächstes Spielfest' : 'Nächstes Spiel'),
+                event.team?.name,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </Text>
+          </View>
+          {days > 0 ? (
+            <T
+              variant="figure"
+              color={on}
+              style={{ fontSize: 108, lineHeight: 103, letterSpacing: -1 }}
+            >
+              {counted}
+              <T variant="headline" color={on} style={{ fontSize: 32, letterSpacing: 2 }}>
+                {` ${t(days === 1 ? 'Tag' : 'Tage').toUpperCase()}`}
               </T>
-            </Pressable>
-          ) : hasTeam ? (
-            <View style={{ gap: 8 }}>
-              <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
-                Kein Spiel in Sicht
-              </T>
-              <T color={soft}>Neue Spiele erscheinen hier, sobald sie angesetzt sind.</T>
-            </View>
+            </T>
           ) : (
-            <View style={{ gap: 12, alignItems: 'flex-start' }}>
-              <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
-                Noch keine Mannschaft
-              </T>
-              <T color={soft}>
-                Sobald du einer Mannschaft zugeordnet bist, siehst du hier das nächste Spiel.
-              </T>
-              <Button
-                label="Alle Mannschaften ansehen"
-                variant="heroOutline"
-                size="sm"
-                onPress={() => router.push('/club-teams')}
-              />
-            </View>
+            <T variant="figure" color={on} style={{ fontSize: 84, lineHeight: 88 }}>
+              {t('Heute').toUpperCase()}
+            </T>
           )}
+          {event.match ? (
+            <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
+              {`${club}${event.team ? ` ${event.team.badge}` : ''}\n`}
+              <T variant="headline" color={colors.primaryText} style={{ fontSize: 32 }}>
+                vs.
+              </T>
+              {` ${event.match.opponentName}`}
+            </T>
+          ) : (
+            <T
+              variant="headline"
+              color={on}
+              numberOfLines={3}
+              style={{ fontSize: 32, lineHeight: 34 }}
+            >
+              {event.title}
+            </T>
+          )}
+          <T color={soft} style={{ fontSize: 13.5, lineHeight: 20, marginTop: 4 }}>
+            {[
+              formatDay(event.startsAt),
+              `${formatTime(event.startsAt)} ${t('Uhr')}`,
+              event.location,
+              event.match
+                ? [
+                    event.match.isHome ? t('Heimspiel') : t('Auswärts'),
+                    t(MATCH_KIND_LABELS[event.match.kind]),
+                  ].join(' · ')
+                : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </T>
+        </Pressable>
+      ) : hasTeam ? (
+        <View style={{ gap: 8 }}>
+          <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
+            Kein Spiel in Sicht
+          </T>
+          <T color={soft}>Neue Spiele erscheinen hier, sobald sie angesetzt sind.</T>
         </View>
+      ) : (
+        <View style={{ gap: 12, alignItems: 'flex-start' }}>
+          <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
+            Noch keine Mannschaft
+          </T>
+          <T color={soft}>
+            Sobald du einer Mannschaft zugeordnet bist, siehst du hier das nächste Spiel.
+          </T>
+          <Button
+            label="Alle Mannschaften ansehen"
+            variant="heroOutline"
+            size="sm"
+            onPress={() => router.push('/club-teams')}
+          />
+        </View>
+      )}
+    </View>
+  );
+}
+
+/**
+ * Blickfang der Startseite: großes Plakat; nach links wischen zeigt die nächsten drei Spiele
+ * (Pager-Punkte und „Spiel 1 von 3 · wischen“ unten). Darüber die Kopfzeile.
+ * Ohne Spiel steht hier der Hinweis „Kein Spiel in Sicht“ bzw. „Noch keine Mannschaft“.
+ */
+export function HomePoster({
+  header,
+  events,
+  club,
+  hasTeam,
+}: {
+  header: React.ReactNode;
+  events: EventSummary[];
+  club: string;
+  hasTeam: boolean;
+}) {
+  const { colors, spacing } = useTheme();
+  const [width, setWidth] = useState(0);
+  const [index, setIndex] = useState(0);
+  const slides = events.slice(0, 3);
+  const current = Math.min(index, Math.max(0, slides.length - 1));
+  return (
+    <HeroCard poster style={{ marginHorizontal: -22, marginTop: -(spacing.md + 2) }}>
+      <View style={{ minHeight: 450 }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+        {header}
+        {width > 0 ? (
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEnabled={slides.length > 1}
+            scrollEventThrottle={32}
+            onScroll={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
+          >
+            {(slides.length ? slides : [undefined]).map((ev, i) => (
+              <PosterSlide
+                key={ev?.id ?? `leer${i}`}
+                event={ev}
+                club={club}
+                hasTeam={hasTeam}
+                width={width}
+              />
+            ))}
+          </ScrollView>
+        ) : null}
+        {slides.length > 1 ? (
+          <View
+            style={{
+              position: 'absolute',
+              left: 22,
+              right: 22,
+              bottom: 18,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              {slides.map((ev, i) => (
+                <View
+                  key={ev.id}
+                  style={{
+                    width: i === current ? 22 : 6,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: i === current ? colors.primary : 'rgba(255,255,255,0.35)',
+                  }}
+                />
+              ))}
+            </View>
+            <T variant="caption" color={withAlpha(colors.hero.onHero, 0.8)}>
+              {t(`Spiel ${current + 1} von ${slides.length} · wischen`)}
+            </T>
+          </View>
+        ) : null}
       </View>
     </HeroCard>
   );

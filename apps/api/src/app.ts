@@ -12,7 +12,7 @@ import { findSessionUser } from './auth/session';
 import type { Config } from './config';
 import { HttpError, unauthorized } from './errors';
 import { authRoutes } from './routes/auth';
-import { clubRoutes, fileRoutes } from './routes/club';
+import { brandRoutes, clubRoutes, fileRoutes } from './routes/club';
 import { createMailer, type Mailer } from './security/mailer';
 import { createPushSender, type PushSender } from './notify/push';
 import { twoFactorMissing } from './services/two-factor';
@@ -179,6 +179,7 @@ export async function buildApp({
   await app.register(setupRoutes);
   await app.register(facilityRoutes);
   await app.register(fileRoutes);
+  await app.register(brandRoutes);
 
   return app;
 }

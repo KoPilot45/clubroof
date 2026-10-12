@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import {
   type AreaOverview,
   AREA_KEYS,
@@ -222,6 +224,28 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
   );
   app.get('/club/today', async (request): Promise<EventSummary[]> =>
     listToday(app.db, request.actor!, app.now()),
+  );
+};
+
+/** Feste Bilder der Marke und des Demovereins (öffentlich, nur diese Namen). */
+const BRAND_FILES: Record<string, string> = { 'demo-wappen.png': 'image/png' };
+
+export const brandRoutes: FastifyPluginAsyncZod = async (app) => {
+  app.get(
+    '/brand/:name',
+    { schema: { params: z.object({ name: z.string().max(60) }) } },
+    async (request, reply) => {
+      const type = BRAND_FILES[request.params.name];
+      if (!type) throw notFound('Das Bild');
+      const file = await readFile(
+        fileURLToPath(new URL(`../../assets/${request.params.name}`, import.meta.url)),
+      );
+      return reply
+        .header('content-type', type)
+        .header('cache-control', 'public, max-age=86400')
+        .header('x-content-type-options', 'nosniff')
+        .send(file);
+    },
   );
 };
 

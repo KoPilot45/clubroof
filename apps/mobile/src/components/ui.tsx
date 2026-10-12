@@ -53,6 +53,7 @@ import { FIGURE_FONT, HEADING_FONT, inputFont } from '@/lib/fonts';
 import { useTheme } from '@/lib/theme';
 import { Text } from './app-text';
 import { CalendarSheet } from './calendar-picker';
+import { Honeycomb } from './honeycomb';
 import { RequestError } from '@/lib/api';
 import { mediaUri } from '@/lib/upload';
 import { FadeIn, PressScale, ScrollYContext, useCountUp } from '@/lib/motion';
@@ -346,6 +347,9 @@ export function HeroCard({
         overflow: 'hidden',
         padding: poster ? 0 : 18,
         gap: poster ? 0 : 12,
+        // Kartenkante im Hero-Block: 1 px Aufhellung
+        borderWidth: poster ? 0 : 1,
+        borderColor: 'rgba(255,255,255,0.08)',
       }}
     >
       <Svg
@@ -358,12 +362,13 @@ export function HeroCard({
       >
         <Defs>
           {poster ? (
+            // CSS „120 % 80 % at 80 % 0“: in der gestreckten 0–100-Fläche ein Kreis (r) mit gestauchter Höhe
             <RadialGradient
               id={gradientId}
               cx="80"
               cy="0"
-              rx="120"
-              ry="80"
+              r="120"
+              gradientTransform="scale(1 0.6667)"
               gradientUnits="userSpaceOnUse"
             >
               <Stop offset="0" stopColor={colors.anstoss.poster.from} />
@@ -371,14 +376,8 @@ export function HeroCard({
               <Stop offset="1" stopColor={colors.background} />
             </RadialGradient>
           ) : (
-            <RadialGradient
-              id={gradientId}
-              cx="90"
-              cy="0"
-              rx="156"
-              ry="156"
-              gradientUnits="userSpaceOnUse"
-            >
+            // CSS „120 % 120 % at 90 % 0“, Endfarbe bei 130 %: Kreis mit r = 156 in der gestreckten Fläche
+            <RadialGradient id={gradientId} cx="90" cy="0" r="156" gradientUnits="userSpaceOnUse">
               <Stop offset="0" stopColor={palette?.from ?? colors.hero.from} />
               <Stop offset="0.46" stopColor={palette?.to ?? colors.hero.to} />
               <Stop offset="1" stopColor={colors.background} />
@@ -394,6 +393,7 @@ export function HeroCard({
           <Rect x="0" y="0" width="100" height="100" fill={`url(#${gradientId}f)`} />
         ) : null}
       </Svg>
+      <Honeycomb poster={poster} />
       {background}
       {children}
     </View>
@@ -1866,7 +1866,10 @@ export function TextField({
   onSubmit,
   accent,
   hint,
+  letterSpacing,
 }: {
+  /** Laufweite in px (z. B. Kürzel) */
+  letterSpacing?: number;
   label: string;
   value: string;
   onChangeText: (v: string) => void;
@@ -1935,6 +1938,7 @@ export function TextField({
             fontSize: 16,
             ...inputFont(),
             color: colors.onSurface,
+            ...(letterSpacing ? { letterSpacing, fontWeight: '800' as const } : null),
             backgroundColor: colors.anstoss.card,
             textAlignVertical: multiline ? 'top' : 'center',
             ...(secret ? { paddingRight: 88 } : null),

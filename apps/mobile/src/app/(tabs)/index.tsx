@@ -4,7 +4,6 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
-import { EventRow } from '@/components/events';
 import {
   BirthdayCard,
   HomePoster,
@@ -12,7 +11,6 @@ import {
   OpenBand,
   PersonStatusCards,
   QuickAccess,
-  ResponseBlock,
   WeekTickets,
 } from '@/components/home';
 import { SponsorBannerCard } from '@/components/sponsor-banner';
@@ -92,28 +90,16 @@ export default function HomeScreen() {
       />
       <HomePoster
         header={<AppHeader overlay />}
-        event={first}
+        events={data?.matches ?? []}
         club={me.club.shortName}
-        code={me.club.shortCode}
         hasTeam={me.teams.length > 0}
       />
       {home.isPending ? <Loading variant="page" /> : null}
       {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}
 
       {first ? <PersonStatusCards event={first} /> : null}
-      {first ? <ResponseBlock event={first} /> : null}
       {data ? <OpenBand actions={data.actions} /> : null}
       {data ? <WeekTickets week={data.week} /> : null}
-      {data && data.matches.length > 1 ? (
-        <Section title="Weitere Spiele">
-          <Card list>
-            {data.matches.slice(1).map((m, i) => (
-              <EventRow key={m.id} event={m} first={i === 0} />
-            ))}
-          </Card>
-        </Section>
-      ) : null}
-
       {data ? (
         <Section title="Neuigkeiten" action="Alle anzeigen" onAction={() => router.push('/news')}>
           <ChoiceChips
