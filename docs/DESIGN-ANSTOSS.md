@@ -125,3 +125,11 @@ Siehe Paket LF und `ProtoLF.html` (Tempo, Gedrückt-Zustand 0,97, Reiter-Kapsel,
 2. Kontrastprüfung je Vereinsfarbe (Tabelle oben) als Test oder Skript.
 3. Keine eigenen Stile je Bildschirm: Farben, Radien und Abstände nur über Theme und gemeinsame Bausteine
    (`components/ui.tsx`, `tab-bar.tsx`, `app-header.tsx`, `app-text.tsx`); neue dunkle Farbwerte in `packages/design-tokens`.
+
+## Heller Stil (später, Entwürfe vorhanden)
+
+Zunächst nur dunkel (Entscheidung Vorstand). Für später liegen Entwürfe im Design-Artefakt („Hell …“) vor; Eckpunkte, damit sie nicht verloren gehen:
+Hintergrund `#F2F5F3`, Flächen weiß mit Rand `#E2E8E4` (kaum Schatten), Text `#0F1A14` / `#3E4F45` / `#6B7B71` / `#9AA79E`, Akzent = Vereinsfarbe (Grün `#1F7A3D`, Blau `#1F55D6`),
+**Hero und Plakat bleiben farbig** (Verlauf p1 → p2, Waben weiß, Plakat mit Radius 34 unten, Hero-Blöcke Radius 28), Antwortknöpfe „Unsicher“ `#FFF0DB`/`#B45309`, „Absagen“ `#FDE8E6`/`#B3261E`,
+Kategorie-Symbole auf Pastell (Farbe bei 12 % Deckkraft, Symbol in dunklerer Kategoriefarbe), untere Leiste weiß mit Rand und weichem Schatten. Gleiche Regeln wie dunkel: Heros in Vereinsfarbe,
+kein Zusagen-Bereich auf Home, Wisch-Spiele im Plakat, Waben statt Kürzel. Helle Vereinsfarben (Gelb, Orange) brauchen dort für Akzent und Text eine abgedunkelte Variante – noch nicht gezeichnet.
