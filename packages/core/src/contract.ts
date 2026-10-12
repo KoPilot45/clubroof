@@ -247,6 +247,8 @@ export type EventDetail = EventSummary & {
   shifts: HelperShift[];
   /** Letzte Änderung (alt → neu), solange sie noch relevant ist */
   lastChange: { at: string; items: EventChange[] } | null;
+  /** Gezielt eingeladen (Vereinsveranstaltung): Mannschaftskürzel und Zahl der Personen; sonst null */
+  invited: { teams: string[]; persons: number } | null;
   /** Für das Bearbeiten (nur mit Recht gefüllt) */
   edit: {
     facilityId: string | null;
@@ -1823,6 +1825,9 @@ export type CreateClubEventInput = {
   startsAt: string;
   endsAt: string;
   orgUnitId?: string | null;
+  /** Gezielt einladen: Mannschaften (mit Trainerrecht) und Personen (nur mit Mitgliederrecht) */
+  teamIds?: string[];
+  personIds?: string[];
   facilityId?: string | null;
   locationText?: string | null;
   locationUrl?: string | null;

@@ -399,9 +399,21 @@ export async function getEventDetail(
     if (c) contactPerson = { name: `${c.firstName} ${c.lastName}` };
   }
 
+  // Gezielt eingeladene Mannschaften (Kürzel) und Zahl der Personen
+  const audience = row.event.audience;
+  const invitedBadges = audience?.teamIds.length
+    ? (
+        await db
+          .select({ badge: s.teams.badge })
+          .from(s.teams)
+          .where(inArray(s.teams.id, audience.teamIds))
+      ).map((t) => t.badge)
+    : [];
+
   return {
     ...summary!,
     description: row.event.description,
+    invited: audience ? { teams: invitedBadges.sort(), persons: audience.personIds.length } : null,
     contactPerson,
     participants,
     canManage: row.team !== null && actorCan(actor, 'events.manage', row.team),

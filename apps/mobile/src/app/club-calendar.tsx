@@ -2,7 +2,7 @@ import type { ClubCalendarEvent } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { EventRow } from '@/components/events';
-import { KindLegend } from '@/components/kind-legend';
+import { GridLegend } from '@/components/kind-legend';
 import { MonthCalendar, dayKey } from '@/components/month-calendar';
 import {
   Card,
@@ -14,9 +14,8 @@ import {
   Section,
   T,
 } from '@/components/ui';
-import { EVENT_KIND_LABELS, kindColor, kindOf, type EventKind } from '@/lib/event-types';
+import { EVENT_KIND_LABELS, kindOf, type EventKind } from '@/lib/event-types';
 import { useSignedIn } from '@/lib/session';
-import { useTheme } from '@/lib/theme';
 import { dateFormat } from '@/lib/i18n';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -32,7 +31,6 @@ const dayTitle = dateFormat({
  */
 export default function ClubCalendarScreen() {
   const { api, me } = useSignedIn();
-  const { colors } = useTheme();
   const [view, setView] = useState<'month' | 'list'>('month');
   const [kind, setKind] = useState<EventKind | 'all'>('all');
   const [teamId, setTeamId] = useState<string>('all');
@@ -110,6 +108,7 @@ export default function ClubCalendarScreen() {
         <>
           <Card style={{ gap: 12 }}>
             <MonthCalendar
+              variant="grid"
               month={month}
               events={list.map((c) => c.event)}
               selected={day}
@@ -118,9 +117,13 @@ export default function ClubCalendarScreen() {
                 setMonth(new Date(month.getFullYear(), month.getMonth() + delta, 1));
                 setDay(null);
               }}
-              colorOf={(e) => kindColor(kindOf(e), colors)}
+              onToday={() => {
+                const now = new Date();
+                setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+                setDay(dayKey(now));
+              }}
             />
-            {kinds.length ? <KindLegend kinds={kinds} /> : null}
+            <GridLegend cancelled={list.some((c) => c.event.status === 'cancelled')} />
           </Card>
           {day ? (
             <Section title={dayTitle.format(new Date(`${day}T12:00:00`))}>

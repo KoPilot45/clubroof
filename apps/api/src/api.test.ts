@@ -5123,6 +5123,56 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Veranstaltung gezielt einladen', () => {
+    it('lädt gewählte Mannschaften und Personen ein; nur Berechtigte dürfen Personen wählen', async () => {
+      const board = await login('vorstand');
+      const player = await login('spieler');
+      const other = await login('eltern');
+      const b1 = player.me.teams.find((t) => t.badge === 'B1')!;
+      const at = (time: string) => new Date(`2026-11-21T${time}:00+01:00`).toISOString();
+      const base = {
+        type: 'club_event' as const,
+        title: 'Nikolausturnier',
+        startsAt: at('10:00'),
+        endsAt: at('15:00'),
+      };
+      // Mannschaft B1 und eine Person werden eingeladen: nur deren Konten bekommen die Meldung
+      const created = await send<EventPlanning>('POST', '/admin/club-events', board.token, {
+        ...base,
+        teamIds: [b1.id],
+        personIds: [other.me.person.id],
+      });
+      expect(created.status, JSON.stringify(created.body)).toBe(201);
+      const ev = created.body.upcoming.find((e) => e.title === 'Nikolausturnier')!;
+      const detail = await get<EventDetail>(`/events/${ev.id}`, board.token);
+      expect(detail.invited).toEqual({ teams: ['B1'], persons: 1 });
+      const own = await get<NotificationItem[]>('/notifications', player.token);
+      expect(own.some((n) => n.link === `/events/${ev.id}`)).toBe(true);
+      const parent = await get<NotificationItem[]>('/notifications', other.token);
+      expect(parent.some((n) => n.link === `/events/${ev.id}`)).toBe(true);
+      const mitglied = await login('mitglied');
+      const unrelated = await get<NotificationItem[]>('/notifications', mitglied.token);
+      expect(unrelated.some((n) => n.link === `/events/${ev.id}`)).toBe(false);
+
+      // ungültige Angaben und fehlende Rechte
+      const unknown = await send('POST', '/admin/club-events', board.token, {
+        ...base,
+        teamIds: ['00000000-0000-4000-8000-000000000000'],
+      });
+      expect(unknown.status).toBe(400);
+      const coach = await login('trainer');
+      expect(
+        (
+          await send('POST', '/admin/club-events', coach.token, {
+            ...base,
+            personIds: [other.me.person.id],
+          })
+        ).status,
+      ).toBe(403);
+      await send('POST', `/events/${ev.id}/cancel`, board.token, { reason: 'Test beendet' });
+    });
+  });
+
   describe('Kalenderexport', () => {
     it('persönlicher Abo-Link mit eigenen und Vereinsterminen, erneuerbar', async () => {
       const player = await login('spieler');

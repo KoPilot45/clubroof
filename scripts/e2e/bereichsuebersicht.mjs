@@ -44,7 +44,10 @@ ok(
   (await vis(page, /\d+ zugesagt · \d+ abgesagt · \d+ offen/).count()) > 0,
   'Nächstes Spiel mit zugesagt / abgesagt / offen',
 );
-ok((await vis(page, /gut ab 65 %/).count()) > 0, 'Legende der Ampel mit Wort');
+ok(
+  (await vis(page, /gut ab 65 %/).count()) === 0,
+  'Keine Legende unter der Blickfläche (Paket ZE)',
+);
 // reine Übersicht: Karten sind nicht antippbar
 const clickable = await page.evaluate(() => {
   const el = [...document.querySelectorAll('*')].find(

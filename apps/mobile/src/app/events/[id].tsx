@@ -512,6 +512,20 @@ export default function EventScreen() {
               <T color={colors.status.urgent.onContainer}>{e.cancelledReason}</T>
             ) : null}
             {e.description ? <T color={colors.onSurfaceMuted}>{e.description}</T> : null}
+            {e.invited ? (
+              <T variant="caption">
+                {t(
+                  `Eingeladen: ${[
+                    ...e.invited.teams,
+                    e.invited.persons
+                      ? `${e.invited.persons} ${e.invited.persons === 1 ? 'Person' : 'Personen'}`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}`,
+                )}
+              </T>
+            ) : null}
           </Card>
 
           {e.lastChange && e.status === 'scheduled' ? (

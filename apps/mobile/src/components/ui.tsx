@@ -1507,6 +1507,7 @@ export function ChoiceChips<T extends string>({
   label,
   tone = 'primary',
   check = false,
+  scroll = false,
 }: {
   options: { value: T; label: string; icon?: IconName }[];
   selected: T[];
@@ -1516,61 +1517,81 @@ export function ChoiceChips<T extends string>({
   tone?: 'primary' | 'urgent';
   /** zeigt bei der gewählten Option ein Häkchen */
   check?: boolean;
+  /** eine einzige, seitlich wischbare Zeile statt Umbruch */
+  scroll?: boolean;
 }) {
   const { colors, radii, sizes } = useTheme();
   return (
     <View style={{ gap: 8 }}>
       {label ? <T variant="label">{label}</T> : null}
-      <View
-        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
-        accessibilityRole="radiogroup"
-      >
-        {options.map((o) => {
-          const active = selected.includes(o.value);
-          const fill = tone === 'urgent' ? colors.status.urgent.solid : colors.primary;
-          const onFill = tone === 'urgent' ? colors.status.urgent.onSolid : colors.onPrimary;
-          return (
-            <Pressable
-              key={o.value}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: active }}
-              onPress={() => {
-                hapticSelect();
-                onToggle(o.value);
-              }}
-              hitSlop={{ top: 6, bottom: 6 }}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                minHeight: sizes.chipHeight + 2,
-                paddingHorizontal: 14,
-                paddingVertical: 6,
-                maxWidth: '100%',
-                borderRadius: radii.pill,
-                borderWidth: 1,
-                borderColor: active ? fill : colors.border,
-                backgroundColor: active ? fill : colors.surfaceRaised,
-              }}
+      {(() => {
+        const row = (children: ReactNode) =>
+          scroll ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginHorizontal: -20 }}
+              contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}
+              accessibilityRole="radiogroup"
             >
-              {active && check ? <Ionicons name="checkmark" size={16} color={onFill} /> : null}
-              {o.icon ? (
-                <Ionicons name={o.icon} size={15} color={active ? onFill : colors.onSurface} />
-              ) : null}
-              <Text
+              {children}
+            </ScrollView>
+          ) : (
+            <View
+              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
+              accessibilityRole="radiogroup"
+            >
+              {children}
+            </View>
+          );
+        return row(
+          options.map((o) => {
+            const active = selected.includes(o.value);
+            const fill = tone === 'urgent' ? colors.status.urgent.solid : colors.primary;
+            const onFill = tone === 'urgent' ? colors.status.urgent.onSolid : colors.onPrimary;
+            return (
+              <Pressable
+                key={o.value}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: active }}
+                onPress={() => {
+                  hapticSelect();
+                  onToggle(o.value);
+                }}
+                hitSlop={{ top: 6, bottom: 6 }}
                 style={{
-                  flexShrink: 1,
-                  fontSize: 13.5,
-                  fontWeight: '700',
-                  color: active ? onFill : colors.onSurface,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  minHeight: sizes.chipHeight + 2,
+                  paddingHorizontal: 14,
+                  paddingVertical: 6,
+                  maxWidth: '100%',
+                  borderRadius: radii.pill,
+                  borderWidth: 1,
+                  borderColor: active ? fill : colors.border,
+                  backgroundColor: active ? fill : colors.surfaceRaised,
                 }}
               >
-                {o.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+                {active && check ? <Ionicons name="checkmark" size={16} color={onFill} /> : null}
+                {o.icon ? (
+                  <Ionicons name={o.icon} size={15} color={active ? onFill : colors.onSurface} />
+                ) : null}
+                <Text
+                  style={{
+                    flexShrink: 1,
+                    fontSize: 13.5,
+                    fontWeight: '700',
+                    color: active ? onFill : colors.onSurface,
+                  }}
+                >
+                  {o.label}
+                </Text>
+              </Pressable>
+            );
+          }),
+        );
+      })()}
     </View>
   );
 }
@@ -1795,74 +1816,186 @@ export function DateStepper({
   );
 }
 
-/** Uhrzeit in 15-Minuten-Schritten (HH:MM). */
+const WHEEL_ITEM = 44;
+const WHEEL_ROWS = 5;
+
+/** Drehwalze (Wecker-Prinzip): wischen oder scrollen, die Zeile in der Mitte gilt; Antippen springt dorthin. */
+function Wheel({
+  values,
+  value,
+  onChange,
+  label,
+}: {
+  values: number[];
+  value: number;
+  onChange: (v: number) => void;
+  label: string;
+}) {
+  const { colors, radii } = useTheme();
+  const ref = useRef<ScrollView>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const index = Math.max(0, values.indexOf(value));
+  useEffect(() => {
+    // Startposition ohne Animation (nach dem Aufbau des Fensters)
+    const id = setTimeout(
+      () => ref.current?.scrollTo({ y: index * WHEEL_ITEM, animated: false }),
+      30,
+    );
+    return () => clearTimeout(id);
+    // nur beim Öffnen
+  }, []);
+  const settle = (y: number) => {
+    const i = Math.min(values.length - 1, Math.max(0, Math.round(y / WHEEL_ITEM)));
+    ref.current?.scrollTo({ y: i * WHEEL_ITEM, animated: true });
+    if (values[i] !== value) onChange(values[i]!);
+  };
+  const step = (delta: number) => {
+    const i = Math.min(values.length - 1, Math.max(0, index + delta));
+    ref.current?.scrollTo({ y: i * WHEEL_ITEM, animated: true });
+    onChange(values[i]!);
+  };
+  return (
+    <View
+      accessible
+      accessibilityRole="adjustable"
+      accessibilityLabel={label}
+      accessibilityValue={{ text: String(value).padStart(2, '0') }}
+      accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+      onAccessibilityAction={(e) => step(e.nativeEvent.actionName === 'increment' ? 1 : -1)}
+      style={{ width: 84, height: WHEEL_ITEM * WHEEL_ROWS }}
+    >
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: WHEEL_ITEM * 2,
+          height: WHEEL_ITEM,
+          borderRadius: radii.md,
+          backgroundColor: colors.primaryContainer,
+        }}
+      />
+      <ScrollView
+        ref={ref}
+        nestedScrollEnabled
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={(e) => {
+          const y = e.nativeEvent.contentOffset.y;
+          if (timer.current) clearTimeout(timer.current);
+          timer.current = setTimeout(() => settle(y), 140);
+        }}
+        contentContainerStyle={{ paddingVertical: WHEEL_ITEM * 2 }}
+      >
+        {values.map((v, i) => (
+          <Pressable
+            key={v}
+            accessible={false}
+            onPress={() => {
+              ref.current?.scrollTo({ y: i * WHEEL_ITEM, animated: true });
+              onChange(v);
+            }}
+            style={{ height: WHEEL_ITEM, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Text
+              verbatim
+              style={{
+                fontSize: 24,
+                fontWeight: v === value ? '800' : '500',
+                color: v === value ? colors.onPrimaryContainer : colors.onSurfaceMuted,
+                fontVariant: ['tabular-nums'],
+              }}
+            >
+              {String(v).padStart(2, '0')}
+            </Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+/**
+ * Zeitauswahl überall (Paket ZE, Wecker-Prinzip): Tippen auf die Uhrzeit öffnet ein Fenster mit zwei Drehwalzen
+ * (Stunde 00–23, Minute in 5er-Schritten); „Übernehmen“ setzt die Zeit. Ersetzt die −/+-Knöpfe.
+ */
 export function TimeStepper({
   label,
   value,
   onChange,
-  step = 15,
 }: {
   label: string;
   value: string;
   onChange: (hhmm: string) => void;
+  /** wird nicht mehr gebraucht (die Walze geht in 5er-Schritten); bleibt für bestehende Aufrufe */
   step?: number;
 }) {
   const { colors, radii } = useTheme();
-  const shift = (delta: number) => {
-    const [h, m] = value.split(':').map(Number) as [number, number];
-    const total = (((h * 60 + m + delta) % 1440) + 1440) % 1440;
-    onChange(
-      `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`,
-    );
-  };
-  const button = (icon: IconName, delta: number, a11y: string) => (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={a11y}
-      onPress={() => shift(delta)}
-      hitSlop={6}
-      style={({ pressed }) => ({
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
-      })}
-    >
-      <Ionicons name={icon} size={18} color={colors.onSurface} />
-    </Pressable>
+  const [open, setOpen] = useState(false);
+  const [h0, m0] = value.split(':').map(Number) as [number, number];
+  const [hour, setHour] = useState(h0);
+  const [minute, setMinute] = useState(m0);
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  // 5er-Schritte; eine bestehende Zeit dazwischen (z. B. 17:50 → 17:45 gibt es, 17:47 nicht) bleibt wählbar
+  const minutes = [...new Set([...Array.from({ length: 12 }, (_, i) => i * 5), m0])].sort(
+    (a, b) => a - b,
   );
+  const show = () => {
+    setHour(h0);
+    setMinute(m0);
+    setOpen(true);
+  };
   return (
     <View style={{ gap: 6 }}>
       <T variant="label">{label}</T>
-      <View
-        style={{
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${t(label)}: ${value} Uhr`}
+        onPress={show}
+        style={({ pressed }) => ({
           flexDirection: 'row',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: 10,
-          padding: 6,
+          minHeight: 48,
           borderRadius: radii.md,
-          backgroundColor: colors.surfaceVariant,
-        }}
+          backgroundColor: pressed ? colors.border : colors.surfaceVariant,
+        })}
       >
-        {button('remove', -step, `${label}: ${step} Minuten früher`)}
+        <Ionicons name="time-outline" size={20} color={colors.primaryText} />
         <Text
+          verbatim
           style={{
-            flex: 1,
-            textAlign: 'center',
-            fontSize: 17,
+            fontSize: 20,
             fontWeight: '800',
             color: colors.onSurface,
             fontVariant: ['tabular-nums'],
           }}
         >
-          {value} Uhr
+          {value}
         </Text>
-        {button('add', step, `${label}: ${step} Minuten später`)}
-      </View>
+        <Text style={{ fontSize: 14, color: colors.onSurfaceMuted }}>Uhr</Text>
+      </Pressable>
+      <Sheet visible={open} onClose={() => setOpen(false)} title={label}>
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 }}
+        >
+          <Wheel values={hours} value={hour} onChange={setHour} label={t('Stunde')} />
+          <Text verbatim style={{ fontSize: 28, fontWeight: '800', color: colors.onSurface }}>
+            :
+          </Text>
+          <Wheel values={minutes} value={minute} onChange={setMinute} label={t('Minute')} />
+        </View>
+        <Button
+          label="Übernehmen"
+          icon="checkmark"
+          onPress={() => {
+            onChange(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+            setOpen(false);
+          }}
+        />
+      </Sheet>
     </View>
   );
 }

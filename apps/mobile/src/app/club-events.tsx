@@ -2,6 +2,7 @@ import type { EventSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { EventRow } from '@/components/events';
+import { GridLegend } from '@/components/kind-legend';
 import { MonthCalendar, dayKey } from '@/components/month-calendar';
 import {
   Card,
@@ -80,15 +81,22 @@ export default function ClubEventsScreen() {
         <>
           <Card>
             <MonthCalendar
+              variant="grid"
               month={month}
               events={list}
               selected={day}
               onSelect={setDay}
+              onToday={() => {
+                const now = new Date();
+                setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+                setDay(dayKey(now));
+              }}
               onMonth={(delta) => {
                 setMonth(new Date(month.getFullYear(), month.getMonth() + delta, 1));
                 setDay(null);
               }}
             />
+            <GridLegend cancelled={list.some((e) => e.status === 'cancelled')} />
           </Card>
           {day ? (
             <Section title={dayTitle.format(new Date(`${day}T12:00:00`))}>

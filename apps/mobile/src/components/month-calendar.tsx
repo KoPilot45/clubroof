@@ -147,7 +147,11 @@ export function MonthCalendar({
                   justifyContent: 'center',
                   gap: 3,
                   borderRadius: 14,
-                  backgroundColor: active ? colors.primary : 'transparent',
+                  backgroundColor: active
+                    ? colors.primary
+                    : k === today
+                      ? colors.primaryContainer
+                      : 'transparent',
                 }}
               >
                 <T
