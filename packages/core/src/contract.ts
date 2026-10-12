@@ -25,6 +25,8 @@ export type ClubInfo = {
   id: string;
   name: string;
   shortName: string;
+  /** Vereinskürzel (2–4 Zeichen) für Plakat und Wappen-Ersatz */
+  shortCode: string;
   logoUrl: string | null;
   /** Schlüssel der Vereinsfarbe (siehe @clubroof/design-tokens) */
   colorTheme: string;
@@ -466,6 +468,9 @@ export type SquadStatus = {
   pending: number;
 };
 
+/** Spieler je Mannschaftsteil (nur Spieler mit eingetragener Position) */
+export type SquadComposition = Record<'goalkeeper' | 'defense' | 'midfield' | 'attack', number>;
+
 export type TeamOverview = {
   team: { id: string; name: string; badge: string; league: string | null; ageGroup: string | null };
   permissions: TeamPermissions;
@@ -474,6 +479,8 @@ export type TeamOverview = {
   nextEvent: EventSummary | null;
   /** Kaderstatus bezogen auf den nächsten Termin */
   squad: SquadStatus | null;
+  /** Kaderzusammensetzung nach Mannschaftsteilen (Tor, Abwehr, Mittelfeld, Sturm) */
+  composition: SquadComposition;
   /** Nur für das Trainerteam: die nächsten drei Spiele mit Kaderstatus (Kaderplanung auf einen Blick) */
   upcomingMatches: { event: EventSummary; squad: SquadStatus }[];
   lastResults: MatchResult[];
@@ -1531,6 +1538,7 @@ export type JoinInfo = {
   club: {
     name: string;
     shortName: string;
+    shortCode: string;
     colorTheme: ClubInfo['colorTheme'];
     logoUrl: string | null;
   };
@@ -1578,6 +1586,8 @@ export type OrgUnitKind = 'seniors' | 'youth' | 'women' | 'veterans' | 'other';
 export type ClubSettings = {
   name: string;
   shortName: string;
+  /** Vereinskürzel (gespeichert oder Vorgabe aus den Initialen des Kurznamens) */
+  shortCode: string;
   colorTheme: ClubColorKey;
   colorMode: 'light' | 'dark' | 'system';
   requireTwoFactor: boolean;
@@ -1589,6 +1599,7 @@ export type ClubSettings = {
 export type UpdateClubInput = Partial<{
   name: string;
   shortName: string;
+  shortCode: string;
   colorTheme: ClubColorKey;
   colorMode: 'light' | 'dark' | 'system';
   requireTwoFactor: boolean;
@@ -1610,7 +1621,7 @@ export type SetupInput = {
   setupToken: string;
   /** Nachweis der bestätigten E-Mail-Adresse des ersten Kontos (`POST /setup/email-code/verify`) */
   emailProof: string;
-  club: { name: string; shortName: string; colorTheme: ClubColorKey };
+  club: { name: string; shortName: string; shortCode?: string; colorTheme: ClubColorKey };
   orgUnits: { name: string; kind: OrgUnitKind }[];
   venues?: SetupVenue[];
   /** Gewählte optionale Module (Schlüssel aus `MODULES`); ohne Angabe die bisherige Voreinstellung */
@@ -2200,6 +2211,7 @@ export type PublicClub = {
   club: {
     name: string;
     shortName: string;
+    shortCode: string;
     colorTheme: ClubColorKey;
     /** Ort, falls hinterlegt */
     city: string | null;

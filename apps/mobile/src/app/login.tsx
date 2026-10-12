@@ -12,18 +12,11 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { LoginResponse, PublicClub, TwoFactorChallenge } from '@clubroof/core';
 import { Text } from '@/components/app-text';
-import {
-  CLUBROOF_BLUE,
-  CLUBROOF_CYAN,
-  ClubroofLogo,
-  GradientHeader,
-  PoweredBy,
-} from '@/components/brand-header';
-import { Button, Card, Chip, Crest, T, TextField } from '@/components/ui';
+import { ClubroofLogo, GradientHeader, PoweredBy } from '@/components/brand-header';
+import { Button, Chip, Crest, T, TextField } from '@/components/ui';
 import { request, RequestError } from '@/lib/api';
 import { setBrand, useBrand } from '@/lib/brand';
 import { readSetting } from '@/lib/flags';
-import { clubInitials } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { mediaUri } from '@/lib/upload';
@@ -60,7 +53,7 @@ export default function LoginScreen() {
   if (!checked) return <View style={{ flex: 1 }} />;
   // Verein bekannt: Vereinsfarbe; sonst Clubroof-Blau
   return (
-    <ThemeProvider clubColor={brand ? (brand.colorTheme as never) : 'blue'}>
+    <ThemeProvider clubColor={brand ? (brand.colorTheme as never) : 'clubroof'}>
       <Login known={!!brand} />
     </ThemeProvider>
   );
@@ -147,46 +140,29 @@ function Login({ known }: { known: boolean }) {
   // ── Kopf: Vereinsverlauf (bekannt) oder Clubroof-Verlauf ─────────────────
   const header = known ? (
     <GradientHeader
-      from={colors.hero.from}
-      to={colors.hero.to}
-      decor={colors.hero.decor}
-      style={{ paddingTop: insets.top + 28, paddingBottom: 56, alignItems: 'center', gap: 10 }}
+      code={club?.shortCode ?? null}
+      style={{ paddingTop: insets.top + 40, paddingBottom: 48, alignItems: 'center', gap: 12 }}
     >
-      <View
-        style={{
-          width: 104,
-          height: 104,
-          borderRadius: 52,
-          backgroundColor: '#FFFFFF',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-        }}
-      >
-        {logo ? (
-          <Image
-            source={{ uri: logo }}
-            accessibilityLabel={t('Vereinslogo')}
-            resizeMode="contain"
-            style={{ width: 84, height: 84 }}
-          />
-        ) : (
-          <Crest initials={clubInitials(club?.shortName ?? '')} size={64} />
-        )}
-      </View>
-      <Text
-        style={{
-          color: on,
-          fontSize: 24,
-          fontWeight: '800',
-          textAlign: 'center',
-          paddingHorizontal: 24,
-        }}
+      {logo ? (
+        <Image
+          source={{ uri: logo }}
+          accessibilityLabel={t('Vereinslogo')}
+          resizeMode="contain"
+          style={{ width: 84, height: 92 }}
+        />
+      ) : (
+        <Crest initials={club?.shortCode ?? ''} size={84} />
+      )}
+      <T
+        variant="headline"
+        color={on}
+        style={{ fontSize: 34, lineHeight: 36, textAlign: 'center', paddingHorizontal: 24 }}
+        verbatim
       >
         {club?.name ?? ''}
-      </Text>
+      </T>
       {club && (club.city || club.foundedYear) ? (
-        <Text style={{ color: on, fontSize: 14 }}>
+        <Text style={{ color: on, fontSize: 14, opacity: 0.85 }}>
           {[club.city, club.foundedYear ? t(`seit ${club.foundedYear}`) : null]
             .filter(Boolean)
             .join(' · ')}
@@ -195,28 +171,29 @@ function Login({ known }: { known: boolean }) {
     </GradientHeader>
   ) : (
     <GradientHeader
-      from={CLUBROOF_BLUE}
-      to={CLUBROOF_CYAN}
+      rings
       style={{
-        paddingTop: insets.top + (view === 'start' ? 48 : 28),
-        paddingBottom: view === 'start' ? 72 : 48,
+        paddingTop: insets.top + (view === 'start' ? 64 : 36),
+        paddingBottom: view === 'start' ? 56 : 32,
         alignItems: 'center',
         gap: 10,
       }}
     >
-      <ClubroofLogo size={view === 'start' ? 84 : 64} mono />
-      <Text style={{ color: '#FFFFFF', fontSize: 34, fontWeight: '800', letterSpacing: 3 }}>
-        CLUBROOF
-      </Text>
+      <ClubroofLogo size={view === 'start' ? 96 : 64} mono />
+      <T variant="headline" color="#FFFFFF" style={{ fontSize: 44, lineHeight: 46 }} verbatim>
+        Clubroof
+      </T>
       {view === 'start' ? (
-        <Text style={{ color: '#FFFFFF', fontSize: 15 }}>{t('Dein Verein unter einem Dach.')}</Text>
+        <Text style={{ color: '#FFFFFF', fontSize: 15, opacity: 0.85 }}>
+          {t('Dein Verein unter einem Dach.')}
+        </Text>
       ) : null}
     </GradientHeader>
   );
 
   // ── Startauswahl beim ersten Start ───────────────────────────────────────
   const start = (
-    <Card style={{ gap: spacing.lg, padding: spacing.lg }}>
+    <View style={{ gap: spacing.md }}>
       <View style={{ gap: 10 }}>
         <T variant="label" style={{ fontWeight: '700' }}>
           Ich habe einen Einladungscode
@@ -249,11 +226,11 @@ function Login({ known }: { known: boolean }) {
         variant="tonal"
         onPress={() => router.push('/setup')}
       />
-    </Card>
+    </View>
   );
 
   const twoFactor = (
-    <Card style={{ gap: spacing.md, padding: spacing.lg }}>
+    <View style={{ gap: spacing.md }}>
       <T variant="section">Bestätigungscode</T>
       <T variant="caption">
         {pending?.methods.includes('app')
@@ -299,11 +276,11 @@ function Login({ known }: { known: boolean }) {
           setError(null);
         }}
       />
-    </Card>
+    </View>
   );
 
   const form = (
-    <Card style={{ gap: spacing.md, padding: spacing.lg }}>
+    <View style={{ gap: spacing.md }}>
       {known ? <PoweredBy /> : null}
       <TextField
         label="E-Mail-Adresse"
@@ -346,7 +323,7 @@ function Login({ known }: { known: boolean }) {
           onPress={() => setView('start')}
         />
       ) : null}
-    </Card>
+    </View>
   );
 
   const link = (label: string, onPress: () => void) => (
@@ -376,7 +353,7 @@ function Login({ known }: { known: boolean }) {
               maxWidth: wide ? 460 : 520,
               alignSelf: 'center',
               paddingHorizontal: spacing.xl,
-              marginTop: -32,
+              marginTop: -8,
               gap: spacing.xl,
               paddingBottom: spacing.xl,
             }}

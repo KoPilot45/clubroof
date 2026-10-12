@@ -71,7 +71,21 @@ export default function NewBlockScreen() {
   const valid = !!facility && reason.trim().length >= 2 && endsAt > startsAt;
 
   return (
-    <Screen edges={[]}>
+    <Screen
+      edges={[]}
+      footer={
+        <>
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          <Button
+            label="Sperrung anlegen"
+            icon="lock-closed"
+            disabled={!valid}
+            loading={save.isPending}
+            onPress={() => save.mutate()}
+          />
+        </>
+      }
+    >
       <Card style={{ gap: 12 }}>
         <ChoiceChips
           label="Platz"
@@ -114,14 +128,6 @@ export default function NewBlockScreen() {
           onToggle={setCancel}
         />
       </Card>
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      <Button
-        label="Sperrung anlegen"
-        icon="lock-closed"
-        disabled={!valid}
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
     </Screen>
   );
 }

@@ -18,12 +18,14 @@ import {
 import { RequestError } from '@/lib/api';
 import { formatEuro, parseEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { useConfirmDelete } from '@/lib/confirm';
 import { t } from '@/lib/i18n';
 
 type Call = { path: string; method: 'POST' | 'PUT' | 'DELETE'; body?: unknown };
 
 /** Strafenkatalog der Mannschaft: alle sehen ihn, Trainerteam und Kassenwart pflegen ihn. */
 export default function FinesScreen() {
+  const confirmDelete = useConfirmDelete();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
@@ -68,13 +70,13 @@ export default function FinesScreen() {
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <Button
             style={{ flex: 1 }}
-            label="Strafe vergeben"
+            label="Vergeben"
             icon="hand-left-outline"
             onPress={() => router.push(`/teams/${id}/cash-new?kind=fine`)}
           />
           <Button
             style={{ flex: 1 }}
-            label="Neue Strafe"
+            label="Neu"
             icon="add"
             variant="outline"
             onPress={() => setEditing('new')}
@@ -106,7 +108,13 @@ export default function FinesScreen() {
               onSave={(body) =>
                 run.mutate({ path: `/cash/fine-types/${f.id}`, method: 'PUT', body })
               }
-              onDelete={() => run.mutate({ path: `/cash/fine-types/${f.id}`, method: 'DELETE' })}
+              onDelete={() =>
+                confirmDelete({
+                  name: f.name,
+                  onConfirm: () =>
+                    run.mutate({ path: `/cash/fine-types/${f.id}`, method: 'DELETE' }),
+                })
+              }
             />
           ) : (
             <ListRow

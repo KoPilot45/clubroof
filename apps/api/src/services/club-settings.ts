@@ -2,7 +2,14 @@
  * Vereinseinstellungen (Fulladmin, `club.settings.manage`): Name, Kurzname, Farbe, Darstellung,
  * Bereiche und die Vorgabe zur 2-Faktor-Anmeldung.
  */
-import type { ClubSettings, OrgUnitKind, UpdateClubInput } from '@clubroof/core';
+import {
+  CLUB_CODE_PATTERN,
+  effectiveClubCode,
+  normalizeClubCode,
+  type ClubSettings,
+  type OrgUnitKind,
+  type UpdateClubInput,
+} from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, eq } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
@@ -38,6 +45,7 @@ export async function getClubSettings(db: Db, actor: Actor): Promise<ClubSetting
   return {
     name: club!.name,
     shortName: club!.shortName,
+    shortCode: effectiveClubCode(club!.shortCode, club!.shortName),
     colorTheme: club!.colorTheme,
     colorMode: club!.colorMode,
     requireTwoFactor: club!.requireTwoFactor,
@@ -68,13 +76,23 @@ export async function updateClub(
   const patch: Partial<typeof s.clubs.$inferInsert> = {};
   if (input.name !== undefined) patch.name = input.name.trim();
   if (input.shortName !== undefined) patch.shortName = input.shortName.trim();
+  if (input.shortCode !== undefined) {
+    const code = normalizeClubCode(input.shortCode);
+    if (!CLUB_CODE_PATTERN.test(code))
+      throw new HttpError(
+        400,
+        'invalid_club_code',
+        'Das Kürzel besteht aus 2 bis 4 Buchstaben oder Ziffern.',
+      );
+    patch.shortCode = code;
+  }
   if (input.colorTheme !== undefined) patch.colorTheme = input.colorTheme;
   if (input.colorMode !== undefined) patch.colorMode = input.colorMode;
   if (input.requireTwoFactor !== undefined) patch.requireTwoFactor = input.requireTwoFactor;
   if (Object.keys(patch).length) {
     await db.update(s.clubs).set(patch).where(eq(s.clubs.id, actor.club.id));
     const what = [
-      patch.name || patch.shortName ? 'Name' : null,
+      patch.name || patch.shortName || patch.shortCode ? 'Name' : null,
       patch.colorTheme || patch.colorMode ? 'Design' : null,
       patch.requireTwoFactor !== undefined
         ? `2-Faktor-Pflicht ${patch.requireTwoFactor ? 'an' : 'aus'}`

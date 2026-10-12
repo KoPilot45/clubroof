@@ -21,6 +21,7 @@ import { formatEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { useConfirmDelete } from '@/lib/confirm';
 
 const KIND_LABEL: Record<ClubAuditFinding['kind'], string> = {
   pending: 'Offen',
@@ -31,6 +32,7 @@ const KIND_LABEL: Record<ClubAuditFinding['kind'], string> = {
 
 /** Eine Prüfung: Stichproben abhaken oder beanstanden, Vermerke, Prüfbericht abgeben und öffnen. */
 export default function AuditDetailScreen() {
+  const confirmDelete = useConfirmDelete();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
   const { colors } = useTheme();
@@ -190,7 +192,15 @@ export default function AuditDetailScreen() {
           size="sm"
           variant="outline"
           style={{ alignSelf: 'flex-start' }}
-          onPress={() => remove.mutate(f.id)}
+          onPress={() =>
+            confirmDelete({
+              title: 'Wirklich entfernen?',
+              confirmLabel: 'Entfernen',
+              name: f.text?.slice(0, 40) ?? 'Vermerk',
+              text: 'Der Vermerk wird entfernt.',
+              onConfirm: () => remove.mutate(f.id),
+            })
+          }
         />
       ) : null}
     </Card>

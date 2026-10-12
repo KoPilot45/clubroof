@@ -4,10 +4,19 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
-import { MatchCarousel, OpenBand, QuickAccess, WeekCard } from '@/components/home';
+import { EventRow } from '@/components/events';
+import {
+  BirthdayCard,
+  HomePoster,
+  NewsCards,
+  OpenBand,
+  PersonStatusCards,
+  QuickAccess,
+  ResponseBlock,
+  WeekTickets,
+} from '@/components/home';
 import { SponsorBannerCard } from '@/components/sponsor-banner';
 import { Card, ChoiceChips, Chip, ErrorNotice, Loading, Screen, Section, T } from '@/components/ui';
-import { NewsList } from '@/components/news';
 import { WelcomeTour } from '@/components/welcome-tour';
 import { readFlag, writeFlag } from '@/lib/flags';
 import { cashTeamId } from '@/lib/quick-links';
@@ -70,8 +79,9 @@ export default function HomeScreen() {
       ]
     : [];
 
+  const first = data?.matches[0];
   return (
-    <Screen header={<AppHeader />} refreshing={home.isRefetching} onRefresh={() => home.refetch()}>
+    <Screen edges={[]} refreshing={home.isRefetching} onRefresh={() => home.refetch()}>
       <WelcomeTour
         me={me}
         visible={tour}
@@ -80,33 +90,41 @@ export default function HomeScreen() {
           void writeFlag(tourKey, true);
         }}
       />
+      <HomePoster
+        header={<AppHeader overlay />}
+        event={first}
+        club={me.club.shortName}
+        code={me.club.shortCode}
+        hasTeam={me.teams.length > 0}
+      />
       {home.isPending ? <Loading variant="page" /> : null}
       {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}
 
-      {data && (me.teams.length > 0 || data.matches.length > 0) ? (
-        <MatchCarousel
-          matches={data.matches}
-          club={me.club.shortName}
-          hasTeam={me.teams.length > 0}
-        />
-      ) : null}
+      {first ? <PersonStatusCards event={first} /> : null}
+      {first ? <ResponseBlock event={first} /> : null}
       {data ? <OpenBand actions={data.actions} /> : null}
-      {data ? <WeekCard week={data.week} birthdays={data.birthdays} /> : null}
+      {data ? <WeekTickets week={data.week} /> : null}
+      {data && data.matches.length > 1 ? (
+        <Section title="Weitere Spiele">
+          <Card list>
+            {data.matches.slice(1).map((m, i) => (
+              <EventRow key={m.id} event={m} first={i === 0} />
+            ))}
+          </Card>
+        </Section>
+      ) : null}
 
       {data ? (
-        <Section
-          title="Neuigkeiten für dich"
-          action="Alle anzeigen"
-          onAction={() => router.push('/news')}
-        >
+        <Section title="Neuigkeiten" action="Alle anzeigen" onAction={() => router.push('/news')}>
           <ChoiceChips
             options={NEWS_FILTERS}
             selected={[newsFilter]}
             onToggle={(v) => setNewsFilter(v)}
           />
-          <NewsList items={news} />
+          <NewsCards items={news} />
         </Section>
       ) : null}
+      {data ? <BirthdayCard birthdays={data.birthdays} /> : null}
 
       <QuickAccess me={me} info={quickInfo} onSaved={refresh} />
 

@@ -25,6 +25,7 @@ import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { useConfirmDelete } from '@/lib/confirm';
 
 const STATUS = {
   draft: { label: 'Entwurf', tone: 'neutral' },
@@ -40,6 +41,7 @@ const REJECT_NOTES = [
 ];
 
 export default function EditNewsScreen() {
+  const confirmDelete = useConfirmDelete();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
   const { colors } = useTheme();
@@ -218,7 +220,14 @@ export default function EditNewsScreen() {
           variant="danger"
           icon="trash-outline"
           loading={remove.isPending}
-          onPress={() => remove.mutate()}
+          onPress={() =>
+            confirmDelete({
+              name: n.title,
+              title: n.status === 'published' ? 'Wirklich zurückziehen?' : undefined,
+              confirmLabel: n.status === 'published' ? 'Zurückziehen' : undefined,
+              onConfirm: () => remove.mutate(),
+            })
+          }
         />
       ) : null}
     </Screen>

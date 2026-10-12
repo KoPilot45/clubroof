@@ -9,7 +9,7 @@ import { Keyboard, Platform, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/app-text';
 import { Breadcrumbs } from '@/components/sub-header';
-import { Screen, T, TileGrid, shadowStyle, type IconName } from '@/components/ui';
+import { GradientFill, Screen, T, TileGrid, shadowStyle, type IconName } from '@/components/ui';
 import { breadcrumbsFor } from '@/lib/breadcrumbs';
 import type { AreaCategory } from '@/lib/areas';
 import { t } from '@/lib/i18n';
@@ -21,26 +21,34 @@ export type AreaTone = 'violet' | 'blue';
 function AreaBand({ tone, title, subtitle }: { tone: AreaTone; title: string; subtitle?: string }) {
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
-  const c = colors.tints[tone];
+  const band = colors.anstoss.bands[tone === 'violet' ? 'admin' : 'cash'];
+  const c = { container: band[0], onContainer: '#FFFFFF' };
   return (
     <View
       style={{
-        paddingTop: insets.top + spacing.md,
-        paddingBottom: spacing.md,
+        paddingTop: insets.top + 18,
+        paddingBottom: 14,
         paddingHorizontal: spacing.lg + 4,
-        backgroundColor: c.container,
+        overflow: 'hidden',
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.md,
       }}
     >
+      <GradientFill from={band[0]} to={band[1]} vertical />
       <View style={{ flex: 1, minWidth: 0 }}>
         {subtitle ? (
-          <T variant="caption" color={c.onContainer} numberOfLines={1}>
+          <T variant="caption" color="rgba(255,255,255,0.78)" numberOfLines={1}>
             {subtitle}
           </T>
         ) : null}
-        <T variant="headline" color={c.onContainer} numberOfLines={1} accessibilityRole="header">
+        <T
+          variant="figure"
+          color={c.onContainer}
+          numberOfLines={1}
+          accessibilityRole="header"
+          style={{ fontSize: 28, lineHeight: 30, letterSpacing: 0 }}
+        >
           {title}
         </T>
       </View>
@@ -56,11 +64,11 @@ function AreaBand({ tone, title, subtitle }: { tone: AreaTone; title: string; su
           paddingHorizontal: 14,
           borderRadius: 22,
           borderWidth: 1.5,
-          borderColor: c.onContainer,
+          borderColor: 'rgba(255,255,255,0.4)',
         }}
       >
         <Ionicons name="close-circle-outline" size={20} color={c.onContainer} />
-        <Text style={{ color: c.onContainer, fontWeight: '800' }}>Beenden</Text>
+        <Text style={{ color: c.onContainer, fontSize: 13.5, fontWeight: '800' }}>Beenden</Text>
       </Pressable>
     </View>
   );
@@ -173,10 +181,10 @@ export function AreaTabBar({
           padding: 6,
           flexDirection: 'row',
           gap: 4,
-          backgroundColor: colors.surfaceRaised,
-          ...(isDark
-            ? { borderWidth: 1, borderColor: colors.border }
-            : shadowStyle(elevation.floating)),
+          backgroundColor: colors.anstoss.tabBar,
+          borderWidth: 1,
+          borderColor: colors.anstoss.tabBarBorder,
+          ...(isDark ? null : shadowStyle(elevation.floating)),
         }}
       >
         {items.map((item) => (

@@ -26,6 +26,7 @@ import { RequestError } from '@/lib/api';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { useToast } from '@/lib/toast';
+import { useConfirmDelete } from '@/lib/confirm';
 
 type Assignable = Exclude<TeamFunction, 'coach'>;
 const FUNCTIONS: { value: Assignable; label: string }[] = [
@@ -36,6 +37,7 @@ const FUNCTIONS: { value: Assignable; label: string }[] = [
 
 /** Mannschaft bearbeiten: Kader, Co-Trainer/Betreuer, Kassenwart, Treffpunkt-Regeln, Spielplan. */
 export default function ManageTeamScreen() {
+  const confirmDelete = useConfirmDelete();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
@@ -95,10 +97,18 @@ export default function ManageTeamScreen() {
             change.mutate({ path: `/members/${x.membershipId}`, method: 'PATCH', body });
             setEditing(null);
           }}
-          onRemove={() => {
-            change.mutate({ path: `/members/${x.membershipId}`, method: 'DELETE' });
-            setEditing(null);
-          }}
+          onRemove={() =>
+            confirmDelete({
+              title: 'Wirklich entfernen?',
+              confirmLabel: 'Entfernen',
+              name: x.name,
+              text: `${x.name} wird aus der Mannschaft entfernt.`,
+              onConfirm: () => {
+                change.mutate({ path: `/members/${x.membershipId}`, method: 'DELETE' });
+                setEditing(null);
+              },
+            })
+          }
           onTreasurer={() => router.push(`/teams/${id}/cash-treasurers`)}
         />
       ) : null}

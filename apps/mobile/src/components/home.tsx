@@ -7,6 +7,7 @@ import type {
   Birthday,
   EventSummary,
   MeResponse,
+  NewsItem,
   TileInfo,
   TileInfoEntry,
 } from '@clubroof/core';
@@ -32,15 +33,30 @@ import {
   Chip,
   Crest,
   Empty,
+  GradientFill,
   HeroCard,
   IconTile,
+  ListRow,
   Section,
   Sheet,
   shadowStyle,
   T,
+  Ticket,
+  withAlpha,
   type IconName,
 } from '@/components/ui';
-import { clubInitials, formatDay, formatRemaining, formatTime } from '@/lib/format';
+import {
+  clubInitials,
+  formatAgo,
+  formatDateTile,
+  formatDay,
+  formatRemaining,
+  formatTime,
+} from '@/lib/format';
+import { EVENT_TYPE_LABELS } from '@/lib/labels';
+import { PressScale, useCountUp } from '@/lib/motion';
+import { t } from '@/lib/i18n';
+import { PosterMark } from '@/components/poster-mark';
 import { ReorderList } from '@/components/reorder';
 import { openLink } from '@/lib/links';
 import { MATCH_KIND_LABELS } from '@/lib/labels';
@@ -506,56 +522,49 @@ export function QuickAccess({
   info: TileInfo;
   onSaved: () => Promise<void>;
 }) {
-  const { colors, isDark, elevation } = useTheme();
+  const { colors } = useTheme();
   const { api } = useSignedIn();
   const [editing, setEditing] = useState(false);
   const links = quickLinksFor(me);
   return (
     <Section title="Schnellzugriff">
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ marginHorizontal: -20 }}
-        contentContainerStyle={{ paddingHorizontal: 20, gap: 10, paddingVertical: 6 }}
-      >
-        {links.map((l) => (
-          <Pressable
-            key={l.key}
-            accessibilityRole="button"
-            onPress={() => router.push(routeOf(l, me) as never)}
-            accessibilityLabel={[l.label, info[l.key]?.hint].filter(Boolean).join(', ')}
-            style={{
-              height: 46,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-              paddingLeft: 6,
-              paddingRight: 16,
-              borderRadius: 23,
-              backgroundColor: colors.surfaceRaised,
-              ...(isDark
-                ? { borderWidth: 1, borderColor: colors.border }
-                : shadowStyle(elevation.control)),
-            }}
-          >
-            <View
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+        {links.map((l) => {
+          const hint = chipHint(info[l.key]);
+          return (
+            <PressScale
+              key={l.key}
+              accessibilityRole="button"
+              onPress={() => router.push(routeOf(l, me) as never)}
+              accessibilityLabel={[l.label, info[l.key]?.hint].filter(Boolean).join(', ')}
               style={{
-                width: 34,
-                height: 34,
-                borderRadius: 17,
+                flexGrow: 1,
+                flexBasis: '29%',
+                minHeight: 84,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: colors.tints[l.tint].container,
+                gap: 6,
+                paddingVertical: 14,
+                paddingHorizontal: 10,
+                borderRadius: 22,
+                backgroundColor: colors.anstoss.card,
+                borderWidth: 1,
+                borderColor: colors.anstoss.cardBorder,
               }}
             >
-              <Ionicons name={l.icon} size={18} color={colors.tints[l.tint].onContainer} />
-            </View>
-            <Text style={{ color: colors.onSurface, fontSize: 14, fontWeight: '700' }}>
-              {l.label}
-            </Text>
-            {(() => {
-              const hint = chipHint(info[l.key]);
-              return hint ? (
+              <Ionicons name={l.icon} size={22} color={colors.primaryText} />
+              <Text
+                numberOfLines={2}
+                style={{
+                  fontSize: 12.5,
+                  fontWeight: '700',
+                  textAlign: 'center',
+                  color: colors.onSurface,
+                }}
+              >
+                {l.label}
+              </Text>
+              {hint ? (
                 <View
                   style={{
                     position: 'absolute',
@@ -582,31 +591,32 @@ export function QuickAccess({
                     {hint.text}
                   </Text>
                 </View>
-              ) : null;
-            })()}
-          </Pressable>
-        ))}
+              ) : null}
+            </PressScale>
+          );
+        })}
         <Pressable
           accessibilityRole="button"
           onPress={() => setEditing(true)}
           style={{
-            height: 46,
-            flexDirection: 'row',
+            flexGrow: 1,
+            flexBasis: '29%',
+            minHeight: 84,
             alignItems: 'center',
+            justifyContent: 'center',
             gap: 6,
-            paddingHorizontal: 16,
-            borderRadius: 23,
+            borderRadius: 22,
             borderWidth: 1.5,
             borderStyle: 'dashed',
-            borderColor: colors.onSurfaceMuted,
+            borderColor: colors.anstoss.textTertiary,
           }}
         >
-          <Ionicons name="add" size={18} color={colors.onSurfaceMuted} />
-          <Text style={{ color: colors.onSurfaceMuted, fontSize: 14, fontWeight: '700' }}>
+          <Ionicons name="add" size={22} color={colors.anstoss.textTertiary} />
+          <Text style={{ color: colors.anstoss.textTertiary, fontSize: 12.5, fontWeight: '700' }}>
             Hinzufügen
           </Text>
         </Pressable>
-      </ScrollView>
+      </View>
       <QuickAccessEditor
         me={me}
         visible={editing}
@@ -746,5 +756,485 @@ function QuickAccessEditor({
         .map((k) => QUICK_LINKS.find((l) => l.key === k)?.label)
         .join(' · ')}`}</T>
     </Sheet>
+  );
+}
+
+// ── Plakat „Nächstes Spiel“ (Stil „Anstoß“) ───────────────────────────────────
+
+/** Kalendertage bis zum Beginn (Vereinszeit), 0 = heute */
+function daysUntil(iso: string): number {
+  const dayOf = (d: Date) =>
+    new Date(
+      new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(d) + 'T00:00:00Z',
+    ).getTime();
+  return Math.max(0, Math.round((dayOf(new Date(iso)) - dayOf(new Date())) / 86_400_000));
+}
+
+/**
+ * Blickfang der Startseite: großes Plakat mit Countdown, Paarung und Ort; darüber die Kopfzeile.
+ * Ohne Spiel steht hier der Hinweis „Kein Spiel in Sicht“ bzw. „Noch keine Mannschaft“.
+ */
+export function HomePoster({
+  header,
+  event,
+  club,
+  code,
+  hasTeam,
+}: {
+  header: React.ReactNode;
+  event: EventSummary | undefined;
+  club: string;
+  /** Vereinskürzel als Wasserzeichen */
+  code: string;
+  hasTeam: boolean;
+}) {
+  const { colors, spacing } = useTheme();
+  const days = event ? daysUntil(event.startsAt) : 0;
+  const counted = useCountUp(days);
+  const on = colors.hero.onHero;
+  const soft = withAlpha(on, 0.82);
+  return (
+    <HeroCard
+      poster
+      background={<PosterMark code={code} />}
+      style={{ marginHorizontal: -22, marginTop: -(spacing.md + 2) }}
+    >
+      <View style={{ minHeight: 450 }}>
+        {header}
+        <View style={{ paddingHorizontal: 22, paddingTop: 38, gap: 10 }}>
+          {event ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={event.title}
+              onPress={() => router.push(`/events/${event.id}`)}
+              style={{ gap: 6 }}
+            >
+              <View
+                style={{
+                  alignSelf: 'flex-start',
+                  backgroundColor: colors.primary,
+                  borderRadius: 999,
+                  paddingVertical: 5,
+                  paddingHorizontal: 12,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 11.5,
+                    fontWeight: '800',
+                    letterSpacing: 1.4,
+                    color: colors.onPrimary,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {[
+                    t(event.type === 'tournament' ? 'Nächstes Spielfest' : 'Nächstes Spiel'),
+                    event.team?.name,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Text>
+              </View>
+              {days > 0 ? (
+                <T
+                  variant="figure"
+                  color={on}
+                  style={{ fontSize: 108, lineHeight: 103, letterSpacing: -1 }}
+                >
+                  {counted}
+                  <T variant="headline" color={on} style={{ fontSize: 32, letterSpacing: 2 }}>
+                    {` ${t(days === 1 ? 'Tag' : 'Tage').toUpperCase()}`}
+                  </T>
+                </T>
+              ) : (
+                <T variant="figure" color={on} style={{ fontSize: 84, lineHeight: 88 }}>
+                  {t('Heute').toUpperCase()}
+                </T>
+              )}
+              {event.match ? (
+                <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
+                  {`${club}${event.team ? ` ${event.team.badge}` : ''}\n`}
+                  <T variant="headline" color={colors.primaryText} style={{ fontSize: 32 }}>
+                    vs.
+                  </T>
+                  {` ${event.match.opponentName}`}
+                </T>
+              ) : (
+                <T
+                  variant="headline"
+                  color={on}
+                  numberOfLines={3}
+                  style={{ fontSize: 32, lineHeight: 34 }}
+                >
+                  {event.title}
+                </T>
+              )}
+              <T color={soft} style={{ fontSize: 13.5, lineHeight: 20, marginTop: 4 }}>
+                {[
+                  formatDay(event.startsAt),
+                  `${formatTime(event.startsAt)} ${t('Uhr')}`,
+                  event.location,
+                  event.match
+                    ? [
+                        event.match.isHome ? t('Heimspiel') : t('Auswärts'),
+                        t(MATCH_KIND_LABELS[event.match.kind]),
+                      ].join(' · ')
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </T>
+            </Pressable>
+          ) : hasTeam ? (
+            <View style={{ gap: 8 }}>
+              <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
+                Kein Spiel in Sicht
+              </T>
+              <T color={soft}>Neue Spiele erscheinen hier, sobald sie angesetzt sind.</T>
+            </View>
+          ) : (
+            <View style={{ gap: 12, alignItems: 'flex-start' }}>
+              <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
+                Noch keine Mannschaft
+              </T>
+              <T color={soft}>
+                Sobald du einer Mannschaft zugeordnet bist, siehst du hier das nächste Spiel.
+              </T>
+              <Button
+                label="Alle Mannschaften ansehen"
+                variant="heroOutline"
+                size="sm"
+                onPress={() => router.push('/club-teams')}
+              />
+            </View>
+          )}
+        </View>
+      </View>
+    </HeroCard>
+  );
+}
+
+// ── Personenkarten, Zusage, Woche, Neuigkeiten, Geburtstage ───────────────────
+
+const STATUS_WORD: Record<string, string> = {
+  pending: 'Zusage offen',
+  yes: 'Zugesagt',
+  maybe: 'Unsicher',
+  no: 'Abgesagt',
+};
+
+/** Pro Person (ich, meine Kinder) eine Karte mit dem Stand der Rückmeldung zum nächsten Spiel. */
+export function PersonStatusCards({ event }: { event: EventSummary }) {
+  const { colors } = useTheme();
+  const list = event.myResponses;
+  if (list.length === 0 || (list.length === 1 && list[0]!.relation === 'self')) return null;
+  const open = event.deadline && new Date(event.deadline) > new Date();
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+      {list.map((r) => {
+        const key =
+          r.status === 'yes' || r.status === 'no' || r.status === 'maybe' ? r.status : 'pending';
+        const tone =
+          key === 'yes'
+            ? { fill: colors.primary, text: colors.primaryText, on: colors.onPrimary }
+            : key === 'no'
+              ? {
+                  fill: colors.status.urgent.solid,
+                  text: colors.status.urgent.onContainer,
+                  on: colors.status.urgent.onSolid,
+                }
+              : {
+                  fill: colors.status.action.solid,
+                  text: colors.status.action.onContainer,
+                  on: colors.status.action.onSolid,
+                };
+        return (
+          <View
+            key={r.personId}
+            accessible
+            accessibilityLabel={`${r.firstName}, ${t(STATUS_WORD[key]!)}`}
+            style={{
+              flexGrow: 1,
+              flexBasis: '40%',
+              borderRadius: 22,
+              padding: 14,
+              gap: 8,
+              backgroundColor: colors.anstoss.card,
+              borderWidth: 1,
+              borderColor: colors.anstoss.cardBorder,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: tone.fill,
+                }}
+              >
+                <Text verbatim style={{ fontSize: 13, fontWeight: '800', color: tone.on }}>
+                  {r.firstName.slice(0, 1).toUpperCase()}
+                </Text>
+              </View>
+              <View style={{ flexShrink: 1 }}>
+                <Text
+                  numberOfLines={1}
+                  verbatim
+                  style={{ fontSize: 14, fontWeight: '700', color: colors.onSurface }}
+                >
+                  {r.firstName}
+                </Text>
+                {event.team ? (
+                  <T variant="caption" verbatim style={{ fontSize: 11.5 }}>
+                    {event.team.badge}
+                  </T>
+                ) : null}
+              </View>
+            </View>
+            <View>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: tone.text }}>
+                {STATUS_WORD[key]}
+              </Text>
+              <T variant="caption" style={{ fontSize: 11.5 }}>
+                {key === 'pending' && open
+                  ? formatRemaining(event.deadline!)
+                  : formatDay(event.startsAt)}
+              </T>
+            </View>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+/** „Zusage für Leon“: Überschrift mit Frist und die drei Antwort-Pillen. */
+export function ResponseBlock({ event }: { event: EventSummary }) {
+  const { colors } = useTheme();
+  const list = event.myResponses;
+  if (list.length === 0) return null;
+  const only = list.length === 1 ? list[0]! : null;
+  const title = !only
+    ? 'Zusagen'
+    : only.relation === 'self'
+      ? 'Deine Zusage'
+      : `Zusage für ${only.firstName}`;
+  const open = event.deadline && new Date(event.deadline) > new Date();
+  return (
+    <Section title={title}>
+      {open ? (
+        <T
+          variant="caption"
+          color={colors.primaryText}
+          style={{ fontSize: 12.5, fontWeight: '700', marginTop: -6 }}
+        >
+          {`Absagefrist: ${formatRemaining(event.deadline!)}`}
+        </T>
+      ) : null}
+      <ResponseControls event={event} />
+    </Section>
+  );
+}
+
+const weekColor = (e: EventSummary, colors: ReturnType<typeof useTheme>['colors']) => {
+  if (e.status === 'cancelled') return colors.status.urgent.solid;
+  const r = e.myResponses[0];
+  if (!r) return colors.anstoss.textTertiary;
+  if (r.status === 'yes') return colors.primary;
+  if (r.status === 'no') return colors.status.urgent.solid;
+  return colors.status.action.solid;
+};
+
+/** „Diese Woche“: Tickets zum Wischen, Farbstreifen = Stand der eigenen Rückmeldung. */
+export function WeekTickets({ week }: { week: EventSummary[] }) {
+  const { colors } = useTheme();
+  return (
+    <Section title="Diese Woche" action="Alle anzeigen" onAction={() => router.push('/termine')}>
+      {week.length === 0 ? (
+        <Empty
+          icon="calendar-outline"
+          text="Diese Woche stehen keine Termine an."
+          hint="Im Kalender siehst du, was danach kommt."
+        />
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ marginHorizontal: -22 }}
+          contentContainerStyle={{ paddingHorizontal: 22, gap: 10 }}
+        >
+          {week.map((e) => {
+            const r = e.myResponses[0];
+            const cancelled = e.status === 'cancelled';
+            const word =
+              r?.status === 'no'
+                ? t('abgesagt')
+                : r?.status === 'maybe'
+                  ? t('unsicher')
+                  : r?.status === 'pending'
+                    ? t('offen')
+                    : null;
+            const caption = cancelled
+              ? (e.cancelledReason ?? t('Abgesagt'))
+              : [
+                  e.team?.badge,
+                  r?.relation === 'child' ? r.firstName : null,
+                  word ?? formatTime(e.startsAt),
+                ]
+                  .filter(Boolean)
+                  .join(' · ');
+            const tile = formatDateTile(e.startsAt);
+            return (
+              <Ticket
+                key={e.id}
+                weekday={tile.weekday}
+                day={tile.day}
+                title={e.match ? t('Spiel') : t(EVENT_TYPE_LABELS[e.type])}
+                caption={caption}
+                color={weekColor(e, colors)}
+                struck={cancelled}
+                onPress={() => router.push(`/events/${e.id}`)}
+              />
+            );
+          })}
+        </ScrollView>
+      )}
+    </Section>
+  );
+}
+
+/** Neuigkeiten als Bildkarten (280 × 170) zum Wischen; Dringendes in Rot bzw. Bernstein. */
+export function NewsCards({ items }: { items: NewsItem[] }) {
+  const { colors } = useTheme();
+  if (items.length === 0)
+    return (
+      <Empty
+        icon="newspaper-outline"
+        text="Keine Neuigkeiten."
+        hint="Neue Meldungen erscheinen hier und als Hinweis."
+      />
+    );
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{ marginHorizontal: -22 }}
+      contentContainerStyle={{ paddingHorizontal: 22, gap: 12 }}
+    >
+      {items.map((n) => {
+        const [from, to] =
+          n.priority === 'urgent'
+            ? colors.anstoss.amberUrgent
+              ? colors.anstoss.amberGradient
+              : (['#8A1C1C', '#3A0F0F'] as const)
+            : n.priority === 'important'
+              ? (['#1E5FA8', '#0F2A4D'] as const)
+              : ([colors.anstoss.poster.from, colors.anstoss.poster.to] as const);
+        const label =
+          n.priority === 'urgent'
+            ? 'Dringend'
+            : n.priority === 'important'
+              ? 'Wichtig'
+              : n.source.label;
+        return (
+          <PressScale
+            key={n.id}
+            accessibilityRole="button"
+            accessibilityLabel={`${t(label)}, ${n.title}`}
+            onPress={() => router.push(`/news/${n.id}`)}
+            style={{
+              width: 280,
+              height: 170,
+              borderRadius: 24,
+              overflow: 'hidden',
+              padding: 16,
+              justifyContent: 'flex-end',
+            }}
+          >
+            <GradientFill from={from} to={to} overlay={0.62} />
+            <View style={{ gap: 3 }}>
+              <View
+                style={{
+                  alignSelf: 'flex-start',
+                  borderRadius: 999,
+                  paddingVertical: 3,
+                  paddingHorizontal: 9,
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: '800',
+                    letterSpacing: 1,
+                    color: '#FFFFFF',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {label}
+                </Text>
+              </View>
+              <T
+                variant="headline"
+                color="#FFFFFF"
+                numberOfLines={3}
+                style={{ fontSize: 23, lineHeight: 25, marginTop: 5 }}
+              >
+                {n.title}
+              </T>
+              <T color="#D5E3DA" style={{ fontSize: 12 }}>
+                {`${n.source.label} · ${t(formatAgo(n.publishedAt))}`}
+              </T>
+            </View>
+          </PressScale>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+/** Geburtstage der Woche (eigene und die der Mannschaften, soweit freigegeben). */
+export function BirthdayCard({ birthdays }: { birthdays: Birthday[] }) {
+  const { colors } = useTheme();
+  if (birthdays.length === 0) return null;
+  const today = birthdays.some((b) => b.inDays === 0);
+  return (
+    <Section title={today ? 'Heute Geburtstag' : 'Bald Geburtstag'}>
+      <Card list>
+        {birthdays.map((b, i) => (
+          <ListRow
+            key={b.personId}
+            first={i === 0}
+            leading={
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: colors.status.action.solid,
+                }}
+              >
+                <Text verbatim style={{ fontWeight: '800', color: colors.status.action.onSolid }}>
+                  {b.name
+                    .split(' ')
+                    .map((w) => w[0])
+                    .join('')
+                    .slice(0, 2)
+                    .toUpperCase()}
+                </Text>
+              </View>
+            }
+            title={b.inDays === 0 ? `${b.name} hat heute Geburtstag` : `${b.name} · ${b.day}`}
+            subtitle={b.teamBadge}
+            trailing={<Ionicons name="gift-outline" size={22} color={colors.primaryText} />}
+          />
+        ))}
+      </Card>
+    </Section>
   );
 }

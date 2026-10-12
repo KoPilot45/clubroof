@@ -1,3 +1,5 @@
+> **Stand Oktober 2026:** Der verbindliche Look ist „Anstoß“ (dunkel) – siehe `docs/DESIGN-ANSTOSS.md` und die Referenzentwürfe in `docs/design/anstoss/`. Abschnitte dieser Datei zum früheren „Neuen Look“ sind überholt; Umsetzung in `packages/design-tokens/src/anstoss.ts` (Farben je Vereinsfarbe, Kontrasttests) und `apps/mobile/src/components/ui.tsx`.
+
 # Designsystem „Neuer Look“
 
 Stand 10.10.2026. Grundlage sind die gemeinsam gewählten Entwürfe (Designfläche „Clubroof Designentwürfe“: Home,

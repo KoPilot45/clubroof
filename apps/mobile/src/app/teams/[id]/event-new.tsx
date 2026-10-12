@@ -14,11 +14,12 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import {
   Button,
-  Card,
   ChoiceChips,
   Chip,
   DateStepper,
   Screen,
+  Section,
+  Segment,
   T,
   TextField,
   TimeStepper,
@@ -55,7 +56,6 @@ export default function NewEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api, me } = useSignedIn();
   const queryClient = useQueryClient();
-  const team = me.teams.find((t) => t.id === id);
   const facilities = useQuery({
     queryKey: ['facilities'],
     queryFn: () => api<Facility[]>('/facilities'),
@@ -171,27 +171,48 @@ export default function NewEventScreen() {
                 : null;
 
   return (
-    <Screen edges={[]}>
-      <Card>
-        <ChoiceChips
-          label={`Neuer Termin für ${team?.name ?? 'die Mannschaft'}`}
-          options={[
-            { value: 'training', label: 'Training', icon: 'fitness-outline' },
-            { value: 'match', label: 'Spiel', icon: 'football-outline' },
-            { value: 'team_event', label: 'Teamevent', icon: 'people-outline' },
-          ]}
-          selected={[type]}
-          onToggle={(v: Type) => {
-            setType(v);
-            setTime(DEFAULTS[v].time);
-            setEndPicked(null);
-            setMeetPicked(null);
-          }}
-        />
-      </Card>
+    <Screen
+      edges={[]}
+      footer={
+        <>
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          {conflict ? (
+            <Button
+              label="Trotzdem anlegen"
+              variant="outline"
+              icon="warning"
+              loading={save.isPending}
+              onPress={() => save.mutate(true)}
+            />
+          ) : null}
+          {validation ? <Chip tone="action" label={validation} /> : null}
+          <Button
+            label="Termin anlegen"
+            icon="checkmark"
+            disabled={!!validation}
+            loading={save.isPending}
+            onPress={() => save.mutate(false)}
+          />
+        </>
+      }
+    >
+      <Segment
+        options={[
+          { value: 'training' as Type, label: 'Training' },
+          { value: 'match' as Type, label: 'Spiel' },
+          { value: 'team_event' as Type, label: 'Teamevent' },
+        ]}
+        value={type}
+        onChange={(v: Type) => {
+          setType(v);
+          setTime(DEFAULTS[v].time);
+          setEndPicked(null);
+          setMeetPicked(null);
+        }}
+      />
 
       {type === 'match' ? (
-        <Card style={{ gap: 12 }}>
+        <Section title="Spiel">
           <TextField
             label="Gegner"
             value={opponent}
@@ -213,10 +234,10 @@ export default function NewEventScreen() {
             selected={[kind]}
             onToggle={setKind}
           />
-        </Card>
+        </Section>
       ) : null}
       {type === 'team_event' ? (
-        <Card>
+        <Section title="Teamevent">
           <TextField
             label="Titel"
             value={title}
@@ -224,10 +245,10 @@ export default function NewEventScreen() {
             placeholder={t('z. B. Mannschaftsabend')}
             maxLength={120}
           />
-        </Card>
+        </Section>
       ) : null}
 
-      <Card style={{ gap: 14 }}>
+      <Section title="Wann">
         <DateStepper label="Datum" value={date} min={todayIso()} onChange={setDate} />
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <View style={{ flex: 1 }}>
@@ -273,14 +294,16 @@ export default function NewEventScreen() {
             ) : null}
           </>
         ) : null}
-        <ChoiceChips
-          label="Treffpunkt und Treffzeit"
+      </Section>
+
+      <Section title="Treffpunkt">
+        <Segment
           options={[
             { value: 'standard' as const, label: 'Standard der Mannschaft' },
             { value: 'custom' as const, label: 'Individuell' },
           ]}
-          selected={[meetingMode]}
-          onToggle={setMeetingMode}
+          value={meetingMode}
+          onChange={setMeetingMode}
         />
         {customMeeting ? (
           <>
@@ -306,9 +329,9 @@ export default function NewEventScreen() {
               : t('Die Mannschaft hat keine Treffpunkt-Regel; es wird kein Treffen angelegt.')}
           </T>
         )}
-      </Card>
+      </Section>
 
-      <Card style={{ gap: 12 }}>
+      <Section title="Ort">
         {!isAway ? (
           <ChoiceChips
             label="Ort"
@@ -343,26 +366,7 @@ export default function NewEventScreen() {
           maxLength={1000}
           multiline
         />
-      </Card>
-
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      {conflict ? (
-        <Button
-          label="Trotzdem anlegen"
-          variant="outline"
-          icon="warning"
-          loading={save.isPending}
-          onPress={() => save.mutate(true)}
-        />
-      ) : null}
-      {validation ? <Chip tone="action" label={validation} /> : null}
-      <Button
-        label="Termin anlegen"
-        icon="checkmark"
-        disabled={!!validation}
-        loading={save.isPending}
-        onPress={() => save.mutate(false)}
-      />
+      </Section>
     </Screen>
   );
 }

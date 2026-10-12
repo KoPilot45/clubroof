@@ -139,7 +139,22 @@ export default function ClubCashNewScreen() {
           : null;
 
   return (
-    <Screen edges={[]}>
+    <Screen
+      footer={
+        <>
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          {problem && amount ? <Chip tone="action" label={problem} /> : null}
+          <Button
+            label={cents ? `${t('Buchen')}: ${formatEuro(cents)}` : 'Buchen'}
+            icon="checkmark"
+            disabled={!!problem}
+            loading={save.isPending}
+            onPress={() => save.mutate()}
+          />
+        </>
+      }
+      edges={[]}
+    >
       <Card style={{ gap: 12 }}>
         <ChoiceChips
           label="Art der Buchung"
@@ -247,15 +262,6 @@ export default function ClubCashNewScreen() {
           )}
         </Card>
       ) : null}
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      {problem && amount ? <Chip tone="action" label={problem} /> : null}
-      <Button
-        label={cents ? `${t('Buchen')}: ${formatEuro(cents)}` : 'Buchen'}
-        icon="checkmark"
-        disabled={!!problem}
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
     </Screen>
   );
 }

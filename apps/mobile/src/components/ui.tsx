@@ -4,10 +4,13 @@
  * Statusfarben immer mit Beschriftung.
  */
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import type { StatusKey, TintKey } from '@clubroof/design-tokens';
 import {
+  Children,
+  createContext,
+  isValidElement,
   useContext,
   useEffect,
   useId,
@@ -38,10 +41,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, {
-  Circle,
   Defs,
   LinearGradient,
   Path,
+  RadialGradient,
   Rect,
   Stop,
   Text as SvgText,
@@ -52,6 +55,7 @@ import { Text } from './app-text';
 import { CalendarSheet } from './calendar-picker';
 import { RequestError } from '@/lib/api';
 import { mediaUri } from '@/lib/upload';
+import { FadeIn, PressScale, ScrollYContext, useCountUp } from '@/lib/motion';
 import { hapticSelect } from '@/lib/haptics';
 import { dateFormat, t } from '@/lib/i18n';
 
@@ -67,6 +71,12 @@ export function shadowStyle(e: {
   const n = parseInt(e.color.slice(1), 16);
   const rgba = `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${e.opacity})`;
   return { boxShadow: `0 ${e.offsetY}px ${e.radius}px ${rgba}` };
+}
+
+/** Hex-Farbe mit Deckkraft als rgba (für Ränder und Flächen in Statusfarbe). */
+export function withAlpha(hex: string, alpha: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
 }
 
 // ── Typografie ────────────────────────────────────────────────────────────────
@@ -108,37 +118,38 @@ export function T({
   const { colors, fontSizes } = useTheme();
   const variants: Record<TextVariant, TextStyle> = {
     display: { fontSize: fontSizes.headline, fontWeight: '800', letterSpacing: -0.3 },
-    title: { fontSize: fontSizes.title, fontWeight: '800' },
+    // Kartentitel: Saira Condensed 22–24
+    title: { fontFamily: HEADING_FONT, fontSize: 23, lineHeight: 26, fontWeight: '400' },
     heading: { fontSize: fontSizes.bodyLarge, fontWeight: '700' },
     body: { fontSize: fontSizes.body, fontWeight: '400', lineHeight: 21 },
     label: { fontSize: fontSizes.label, fontWeight: '600' },
-    caption: { fontSize: fontSizes.caption, fontWeight: '500' },
-    // Zwischenüberschriften: Saira Condensed Bold, Großbuchstaben, 20 px (Festlegung 11.10.2026)
+    caption: { fontSize: fontSizes.caption, lineHeight: 17, fontWeight: '500' },
+    // Zwischenüberschriften (Stil „Anstoß“): Saira Condensed 700, 21 px, Großbuchstaben, Laufweite 1 px
     section: {
       fontFamily: HEADING_FONT,
-      fontSize: 20,
+      fontSize: 21,
       lineHeight: 24,
       fontWeight: '400',
-      letterSpacing: 0.6,
+      letterSpacing: 1,
       textTransform: 'uppercase',
     },
-    // Seitentitel: Saira Condensed Bold, ca. 32 px, normale Schreibweise
+    // Seitentitel: Saira Condensed 700, 28 px (Kopfzeilen-Titel), normale Schreibweise
     headline: {
       fontFamily: HEADING_FONT,
-      fontSize: 32,
-      lineHeight: 34,
+      fontSize: 28,
+      lineHeight: 30,
       fontWeight: '400',
-      letterSpacing: 0.2,
     },
     // Große Zahlen (Kassenstand, Ergebnisse, Countdown): Saira Condensed ExtraBold, ca. 48 px
     figure: { fontFamily: FIGURE_FONT, fontSize: 48, fontWeight: '400', letterSpacing: 0.2 },
     overline: {
-      fontSize: 11,
+      fontSize: 11.5,
       fontWeight: '800',
-      letterSpacing: 0.9,
+      letterSpacing: 1.4,
       textTransform: 'uppercase',
     },
   };
+  // Nebentext und Eyebrow: tertiäre Textfarbe (Anstoß)
   const muted = variant === 'caption' || variant === 'overline';
   return (
     <Text
@@ -148,7 +159,7 @@ export function T({
       verbatim={verbatim}
       style={[
         variants[variant],
-        { color: color ?? (muted ? colors.onSurfaceMuted : colors.onSurface) },
+        { color: color ?? (muted ? colors.anstoss.textTertiary : colors.onSurface) },
         style,
       ]}
     >
@@ -166,7 +177,10 @@ export function Screen({
   header,
   edges = ['top'],
   onEndReached,
+  footer,
 }: {
+  /** feste untere Leiste mit dem Hauptknopf (Formulare): Verlauf nach oben, Knopf 52 hoch */
+  footer?: ReactNode;
   children: ReactNode;
   refreshing?: boolean;
   onRefresh?: () => void;
@@ -178,62 +192,103 @@ export function Screen({
   const { colors, spacing } = useTheme();
   // In den Tabs liegt die schwebende Leiste über dem Inhalt: unten Platz dafür lassen
   const tabBarHeight = useContext(BottomTabBarHeightContext) ?? 0;
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const pathname = usePathname();
   return (
-    <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: colors.background }}>
-      {header}
-      <ScrollView
-        style={{ backgroundColor: colors.background }}
-        scrollEventThrottle={onEndReached ? 100 : undefined}
-        onScroll={
-          onEndReached
-            ? (e) => {
-                const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
-                if (contentSize.height - (contentOffset.y + layoutMeasurement.height) < 500)
-                  onEndReached();
-              }
-            : undefined
-        }
-        contentContainerStyle={{
-          padding: spacing.lg + 4,
-          gap: spacing.lg + 2,
-          paddingBottom: spacing.xxxl + tabBarHeight,
-          // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
-          width: '100%',
-          maxWidth: 960,
-          alignSelf: 'center',
-        }}
-        refreshControl={
-          onRefresh ? (
-            <RefreshControl
-              refreshing={!!refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primaryText}
-            />
-          ) : undefined
-        }
-      >
-        {children}
-      </ScrollView>
-    </SafeAreaView>
+    <ScrollYContext.Provider value={header ? scrollY : null}>
+      <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: colors.background }}>
+        {header}
+        <ScrollView
+          style={{ backgroundColor: colors.background }}
+          scrollEventThrottle={header || onEndReached ? 16 : undefined}
+          onScroll={
+            header || onEndReached
+              ? (e) => {
+                  const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+                  if (header) scrollY.setValue(contentOffset.y);
+                  if (
+                    onEndReached &&
+                    contentSize.height - (contentOffset.y + layoutMeasurement.height) < 500
+                  )
+                    onEndReached();
+                }
+              : undefined
+          }
+          contentContainerStyle={{
+            // Seitenrand 22 px (Stil „Anstoß“); Abschnitte bringen 12 px Luft nach oben mit (26 insgesamt)
+            paddingHorizontal: 22,
+            paddingTop: spacing.md + 2,
+            gap: spacing.md + 2,
+            paddingBottom: spacing.xxxl + tabBarHeight,
+            // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
+            width: '100%',
+            maxWidth: 960,
+            alignSelf: 'center',
+          }}
+          refreshControl={
+            onRefresh ? (
+              <RefreshControl
+                refreshing={!!refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primaryText}
+              />
+            ) : undefined
+          }
+        >
+          {Children.toArray(children).map((child, i) => (
+            <FadeIn
+              key={isValidElement(child) && child.key != null ? child.key : i}
+              group={pathname}
+              index={Math.min(i, 8)}
+            >
+              {child}
+            </FadeIn>
+          ))}
+        </ScrollView>
+        {footer ? (
+          <View
+            style={{
+              paddingHorizontal: 22,
+              paddingTop: 12,
+              paddingBottom: 18 + (tabBarHeight > 0 ? tabBarHeight - 8 : 0),
+              gap: 10,
+              backgroundColor: colors.background,
+              borderTopWidth: 1,
+              borderTopColor: colors.anstoss.divider,
+            }}
+          >
+            {footer}
+          </View>
+        ) : null}
+      </SafeAreaView>
+    </ScrollYContext.Provider>
   );
 }
 
 /**
- * Weiche Karte (Radius 24): hell mit dezentem Schatten ohne Rahmen, dunkel eine Flächenstufe heller
- * mit feinem Rahmen (docs/DESIGNSYSTEM.md).
+ * Fläche (Stil „Anstoß“): Weiß bei 6 % auf dem Hintergrund mit feinem Rand, Radius 22. `list`: Karte für
+ * Listenzeilen (die Zeilen bringen ihren Abstand selbst mit, Trennlinien innen).
  */
-export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  const { colors, radii, spacing, isDark, elevation } = useTheme();
+export function Card({
+  children,
+  style,
+  list,
+}: {
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  list?: boolean;
+}) {
+  const { colors, radii } = useTheme();
   return (
     <View
       style={[
         {
-          backgroundColor: colors.surfaceRaised,
+          backgroundColor: colors.anstoss.card,
           borderRadius: radii.xl,
-          padding: spacing.md + 2,
-          ...(isDark
-            ? { borderWidth: 1, borderColor: colors.border }
-            : shadowStyle(elevation.card)),
+          paddingHorizontal: 16,
+          paddingVertical: list ? 4 : 16,
+          borderWidth: 1,
+          borderColor: colors.anstoss.cardBorder,
         },
         style,
       ]}
@@ -244,81 +299,126 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
 }
 
 /**
- * Blickfangkarte: Verlauf der Vereinsfarbe (`hero.from → hero.to`) mit Wellen und Kreis als SVG, Schrift
- * immer `hero.onHero`. Je Bildschirm genau eine (docs/DESIGNSYSTEM.md, Regel 1). Inhalte setzt die Seite.
+ * Plakat bzw. Hero-Block (Stil „Anstoß“): radialer Verlauf Plakatfarbe 1 → 2 → Hintergrund, Radius 28,
+ * Innenabstand 18, Schrift immer `hero.onHero`. Je Bildschirm genau eine. Inhalte setzt die Seite.
+ * `poster`: großer Plakatverlauf mit Überblendung nach unten (Home), sonst der kleinere Hero-Block.
  */
 export function HeroCard({
   children,
   style,
   onPress,
   accessibilityLabel,
+  poster,
+  background,
+  palette,
 }: {
+  /** eigene Farben statt der Vereinsfarbe (z. B. Orange für Veranstaltungen); `to` färbt auch die weißen Knöpfe */
+  palette?: { from: string; to: string };
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   /** macht die ganze Karte antippbar (dann keine eigenen Buttons darin) */
   onPress?: () => void;
   accessibilityLabel?: string;
+  poster?: boolean;
+  /** Wasserzeichen hinter dem Inhalt (Plakat-Kürzel, Rasenstreifen) */
+  background?: ReactNode;
 }) {
-  const { colors, radii, spacing, isDark, elevation } = useTheme();
+  const { colors, radii } = useTheme();
+  // In den eigenen Bereichen trägt der Hero deren Farbe (Verwaltung violett, Vereinskasse blau)
+  const pathname = usePathname();
+  const area = pathname.startsWith('/admin')
+    ? colors.anstoss.areaHeroes.admin
+    : pathname.startsWith('/club-cash')
+      ? colors.anstoss.areaHeroes.cash
+      : null;
+  palette = palette ?? area ?? undefined;
   const gradientId = useId().replace(/[^a-zA-Z0-9]/g, '');
   // Hintergrund bekommt die gemessene Größe: wächst die Karte (z. B. nach dem Laden), wächst er mit
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-  const outer: ViewStyle = {
-    borderRadius: radii.xxl,
-    ...(isDark ? { borderWidth: 1, borderColor: colors.hero.decor } : shadowStyle(elevation.hero)),
-  };
+  const radius = poster ? 0 : radii.xxl;
+  const outer: ViewStyle = { borderRadius: radius };
   const body = (
     <View
       onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
       style={{
         flexGrow: 1,
-        borderRadius: radii.xxl,
+        borderRadius: radius,
         overflow: 'hidden',
-        padding: spacing.lg,
-        gap: 12,
+        padding: poster ? 0 : 18,
+        gap: poster ? 0 : 12,
       }}
     >
       <Svg
         style={{ position: 'absolute', top: 0, left: 0 }}
         width={box?.w ?? 0}
         height={box?.h ?? 0}
-        viewBox="0 0 306 270"
-        preserveAspectRatio="xMidYMid slice"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
         aria-hidden
       >
         <Defs>
-          <LinearGradient id={gradientId} x1="0.3" y1="0" x2="0.7" y2="1">
-            <Stop offset="0" stopColor={colors.hero.from} />
-            <Stop offset="0.62" stopColor={colors.hero.to} />
+          {poster ? (
+            <RadialGradient
+              id={gradientId}
+              cx="80"
+              cy="0"
+              rx="120"
+              ry="80"
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop offset="0" stopColor={colors.anstoss.poster.from} />
+              <Stop offset="0.45" stopColor={colors.anstoss.poster.to} />
+              <Stop offset="1" stopColor={colors.background} />
+            </RadialGradient>
+          ) : (
+            <RadialGradient
+              id={gradientId}
+              cx="90"
+              cy="0"
+              rx="156"
+              ry="156"
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop offset="0" stopColor={palette?.from ?? colors.hero.from} />
+              <Stop offset="0.46" stopColor={palette?.to ?? colors.hero.to} />
+              <Stop offset="1" stopColor={colors.background} />
+            </RadialGradient>
+          )}
+          <LinearGradient id={`${gradientId}f`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0.4" stopColor={colors.background} stopOpacity={0} />
+            <Stop offset="1" stopColor={colors.background} stopOpacity={1} />
           </LinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="306" height="270" fill={`url(#${gradientId})`} />
-        <Path
-          d="M0 160 C50 120 100 200 153 160 C206 120 256 180 306 140 L306 270 L0 270Z"
-          fill={colors.hero.decor}
-        />
-        <Path
-          d="M0 200 C60 170 105 235 165 200 C225 170 265 215 306 190 L306 270 L0 270Z"
-          fill={colors.hero.decor}
-        />
-        <Circle cx="270" cy="28" r="64" fill={colors.hero.decor} />
+        <Rect x="0" y="0" width="100" height="100" fill={`url(#${gradientId})`} />
+        {poster ? (
+          <Rect x="0" y="0" width="100" height="100" fill={`url(#${gradientId}f)`} />
+        ) : null}
       </Svg>
+      {background}
       {children}
     </View>
   );
+  const toned = (
+    <HeroToneContext.Provider value={palette?.to ?? colors.hero.to}>
+      {body}
+    </HeroToneContext.Provider>
+  );
   if (onPress)
     return (
-      <Pressable
+      <PressScale
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         onPress={onPress}
         style={[outer, style]}
       >
-        {body}
-      </Pressable>
+        {toned}
+      </PressScale>
     );
-  return <View style={[outer, style]}>{body}</View>;
+  return <View style={[outer, style]}>{toned}</View>;
 }
+
+/** Textfarbe weißer Knöpfe auf dem Plakat bzw. Hero-Block (dunkler Ton der Hero-Farbe). */
+const HeroToneContext = createContext<string | null>(null);
 
 export function Section({
   title,
@@ -332,15 +432,16 @@ export function Section({
   children: ReactNode;
 }) {
   const { colors } = useTheme();
-  // Zwischenüberschrift mit mindestens 20 px Luft oben und unten (Wunsch des Vorstands)
+  // Abschnittsüberschrift (Stil „Anstoß“): Akzentlinie 4 × 18, 12 px Abstand zum Inhalt; die Seite
+  // lässt 14 px Abstand, Abschnitte ergänzen oben 12 → 26 px wie im Entwurf.
   return (
-    <View style={{ gap: 20, paddingTop: 8 }}>
+    <View style={{ gap: 12, paddingTop: 12 }}>
       <View style={styles.rowBetween}>
         <View style={styles.sectionTitle}>
           <View
             style={{
               width: 4,
-              alignSelf: 'stretch',
+              height: 18,
               borderRadius: 2,
               backgroundColor: colors.primary,
             }}
@@ -355,7 +456,7 @@ export function Section({
             hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             accessibilityRole="link"
           >
-            <T variant="label" color={colors.primaryText}>
+            <T variant="caption" color={colors.primaryText} style={{ fontWeight: '700' }}>
               {`${t(action)} ›`}
             </T>
           </Pressable>
@@ -381,11 +482,11 @@ export function Sheet({
   title?: string;
   children: ReactNode;
 }) {
-  const { colors, radii, spacing, isDark } = useTheme();
+  const { colors, radii, spacing } = useTheme();
   const { height } = useWindowDimensions();
   return (
     <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' }}>
+      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: colors.anstoss.scrim }}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('Schließen')}
@@ -401,35 +502,136 @@ export function Sheet({
             maxHeight: height * 0.85,
             borderTopLeftRadius: radii.xxl,
             borderTopRightRadius: radii.xxl,
-            backgroundColor: colors.surfaceRaised,
-            ...(isDark ? { borderWidth: 1, borderColor: colors.border } : null),
+            backgroundColor: colors.anstoss.sheet,
+            borderTopWidth: 1,
+            borderColor: colors.anstoss.sheetBorder,
           }}
         >
           <View
             style={{
               alignSelf: 'center',
-              width: 40,
+              width: 44,
               height: 5,
               borderRadius: 3,
               marginTop: 10,
-              backgroundColor: colors.border,
+              backgroundColor: 'rgba(255,255,255,0.25)',
             }}
           />
           <ScrollView
             contentContainerStyle={{
-              padding: spacing.xl,
+              paddingHorizontal: 24,
+              paddingTop: spacing.md,
               gap: spacing.md,
               paddingBottom: spacing.xxl,
             }}
             keyboardShouldPersistTaps="handled"
           >
             {title ? (
-              <T variant="headline" accessibilityRole="header">
+              <T variant="headline" style={{ fontSize: 26 }} accessibilityRole="header">
                 {title}
               </T>
             ) : null}
             {children}
           </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+/**
+ * Dialog in der Mitte (Stil „Anstoß“, Vorlage U15): „Wirklich löschen?“ mit Name des Eintrags und zwei
+ * Knöpfen. Löschen fragt immer nach; es verschiebt in das Archiv (docs/ARCHIV.md).
+ */
+export function Dialog({
+  visible,
+  onClose,
+  title,
+  text,
+  confirmLabel,
+  onConfirm,
+  cancelLabel = 'Abbrechen',
+  danger = true,
+  icon = 'trash-outline',
+  loading,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  title: string;
+  text?: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  cancelLabel?: string;
+  /** Bestätigen ist rot (Löschen) */
+  danger?: boolean;
+  icon?: IconName;
+  loading?: boolean;
+}) {
+  const { colors, radii } = useTheme();
+  const tone = danger ? colors.status.urgent : colors.status.info;
+  return (
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 28,
+          backgroundColor: colors.anstoss.scrimDialog,
+        }}
+      >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('Schließen')}
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
+        />
+        <View
+          accessibilityViewIsModal
+          style={{
+            width: '100%',
+            maxWidth: 420,
+            borderRadius: radii.xxl,
+            padding: 24,
+            gap: 14,
+            backgroundColor: colors.anstoss.sheet,
+            borderWidth: 1,
+            borderColor: colors.anstoss.sheetBorder,
+            alignItems: 'center',
+          }}
+        >
+          <View
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: tone.container,
+            }}
+          >
+            <Ionicons name={icon} size={26} color={tone.onContainer} />
+          </View>
+          <T
+            variant="headline"
+            style={{ fontSize: 26, textAlign: 'center' }}
+            accessibilityRole="header"
+          >
+            {title}
+          </T>
+          {text ? (
+            <T style={{ textAlign: 'center', color: colors.onSurfaceMuted }}>{text}</T>
+          ) : null}
+          <View style={{ flexDirection: 'row', gap: 10, alignSelf: 'stretch', marginTop: 4 }}>
+            <Button label={cancelLabel} variant="neutral" onPress={onClose} style={{ flex: 1 }} />
+            <Button
+              label={confirmLabel}
+              variant={danger ? 'dangerSolid' : 'primary'}
+              loading={loading}
+              onPress={onConfirm}
+              style={{ flex: 1 }}
+            />
+          </View>
         </View>
       </View>
     </Modal>
@@ -447,15 +649,15 @@ export function Chip({
   label: string;
   tone?: StatusKey | 'primary' | 'neutral' | TintKey;
   icon?: IconName;
-  /** sm = Statusmarke in Listen und Karten, md = Höhe `sizes.chipHeight` für eigenständige Chips */
+  /** sm = Statusmarke (Radius 8, 11,5 px) in Listen und Karten, md = Pille (12 px) für eigenständige Marken */
   size?: 'sm' | 'md';
 }) {
-  const { colors, radii, sizes } = useTheme();
+  const { colors, radii } = useTheme();
   const palette =
     tone === 'primary'
       ? { bg: colors.primaryContainer, fg: colors.onPrimaryContainer }
       : tone === 'neutral'
-        ? { bg: colors.surfaceVariant, fg: colors.onSurfaceMuted }
+        ? { bg: 'rgba(255,255,255,0.08)', fg: colors.onSurfaceMuted }
         : tone in colors.tints
           ? {
               bg: colors.tints[tone as TintKey].container,
@@ -472,14 +674,14 @@ export function Chip({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        gap: md ? 6 : 4,
         alignSelf: 'flex-start',
         maxWidth: '100%',
-        minHeight: md ? sizes.chipHeight : 24,
+        minHeight: md ? 28 : 22,
         backgroundColor: palette.bg,
-        borderRadius: radii.pill,
-        paddingHorizontal: md ? 12 : 10,
-        paddingVertical: 2,
+        borderRadius: md ? radii.pill : 8,
+        paddingHorizontal: md ? 11 : 8,
+        paddingVertical: md ? 5 : 2,
       }}
     >
       {icon ? <Ionicons name={icon} size={md ? 14 : 12} color={palette.fg} /> : null}
@@ -487,7 +689,7 @@ export function Chip({
         style={{
           flexShrink: 1,
           color: palette.fg,
-          fontSize: md ? 13 : 12,
+          fontSize: md ? 12 : 11.5,
           fontWeight: '700',
         }}
       >
@@ -503,18 +705,16 @@ export function TeamBadge({ badge }: { badge: string }) {
   return (
     <View
       style={{
-        minWidth: 28,
-        height: 20,
-        paddingHorizontal: 5,
-        borderRadius: 6,
+        minWidth: 30,
+        height: 22,
+        paddingHorizontal: 6,
+        borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: colors.surfaceVariant,
-        borderWidth: 1,
-        borderColor: colors.border,
+        backgroundColor: 'rgba(255,255,255,0.08)',
       }}
     >
-      <Text style={{ fontSize: 11, fontWeight: '800', color: colors.onSurface }}>{badge}</Text>
+      <Text style={{ fontSize: 11.5, fontWeight: '800', color: colors.onSurface }}>{badge}</Text>
     </View>
   );
 }
@@ -562,6 +762,7 @@ export function Button({
   hideLabel?: boolean;
 }) {
   const { colors, radii, sizes } = useTheme();
+  const heroTone = useContext(HeroToneContext);
   const palette = {
     primary: {
       bg: colors.primary,
@@ -569,19 +770,20 @@ export function Button({
       fg: colors.onPrimary,
       border: colors.primary,
     },
+    // Nebenknopf: Fläche mit feinem Rand (Stil „Anstoß“)
     outline: {
-      bg: 'transparent',
-      pressed: colors.surfaceVariant,
+      bg: colors.anstoss.card,
+      pressed: 'rgba(255,255,255,0.12)',
       fg: colors.onSurface,
-      border: colors.border,
+      border: colors.anstoss.fieldBorder,
     },
     danger: {
       bg: 'transparent',
       pressed: colors.status.urgent.container,
       fg: colors.status.urgent.onContainer,
-      border: colors.border,
+      border: colors.status.urgent.onContainer,
     },
-    // Rot gefüllt (z. B. „Absage senden“), orange gefüllt („Unsicher senden“), grau („Abbrechen“)
+    // Rot gefüllt (z. B. „Löschen“, „Absage senden“), orange gefüllt („Unsicher senden“), grau („Abbrechen“)
     dangerSolid: {
       bg: colors.status.urgent.solid,
       pressed: colors.status.urgent.onContainer,
@@ -595,10 +797,10 @@ export function Button({
       border: colors.status.action.solid,
     },
     neutral: {
-      bg: colors.surfaceVariant,
-      pressed: colors.border,
+      bg: 'rgba(255,255,255,0.1)',
+      pressed: 'rgba(255,255,255,0.16)',
       fg: colors.onSurface,
-      border: colors.surfaceVariant,
+      border: 'transparent',
     },
     tonal: {
       bg: colors.primaryContainer,
@@ -612,24 +814,24 @@ export function Button({
       fg: colors.status.action.onContainer,
       border: colors.status.action.container,
     },
-    // Auf dem Verlauf: weiße (bzw. dunkle) Fläche mit Verlaufsfarbe als Schrift
+    // Auf dem Plakat: helle Fläche mit dunkler Schrift bzw. umrandet in Weiß
     hero: {
-      bg: colors.hero.onHero,
-      pressed: colors.hero.onHero,
-      fg: colors.hero.from,
-      border: colors.hero.onHero,
+      bg: '#FFFFFF',
+      pressed: 'rgba(255,255,255,0.85)',
+      fg: heroTone ?? colors.hero.to,
+      border: '#FFFFFF',
     },
     heroOutline: {
       bg: 'transparent',
       pressed: colors.hero.decor,
       fg: colors.hero.onHero,
-      border: colors.hero.onHero,
+      border: 'rgba(255,255,255,0.4)',
     },
   }[variant];
   const small = size === 'sm';
   const border = variant === 'heroOutline' ? 2 : 1;
   return (
-    <Pressable
+    <PressScale
       accessibilityRole="button"
       accessibilityLabel={hideLabel ? t(label) : undefined}
       accessibilityState={{ disabled: !!disabled, busy: !!loading }}
@@ -638,11 +840,11 @@ export function Button({
       style={({ pressed }) => [
         {
           flexDirection: 'row',
-          gap: 6,
+          gap: 8,
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: small ? sizes.buttonSmall : sizes.button,
-          paddingHorizontal: compact ? 6 : small ? 10 : 14,
+          paddingHorizontal: compact ? 8 : small ? 14 : 18,
           borderRadius: radii.pill,
           borderWidth: border,
           borderColor: palette.border,
@@ -657,7 +859,7 @@ export function Button({
       ) : (
         <>
           {icon ? (
-            <Ionicons name={icon} size={hideLabel ? 24 : small ? 16 : 18} color={palette.fg} />
+            <Ionicons name={icon} size={hideLabel ? 24 : small ? 17 : 19} color={palette.fg} />
           ) : null}
           {hideLabel ? null : (
             <Text
@@ -666,7 +868,7 @@ export function Button({
                 flexShrink: 1,
                 textAlign: 'center',
                 color: palette.fg,
-                fontSize: small ? 13 : 15,
+                fontSize: small ? 14 : 16,
                 fontWeight: '800',
               }}
             >
@@ -675,7 +877,7 @@ export function Button({
           )}
         </>
       )}
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -697,9 +899,9 @@ export function Toggle({
       accessibilityLabel={label}
       value={value}
       disabled={disabled}
-      trackColor={{ true: colors.primary, false: colors.border }}
-      thumbColor={colors.surface}
-      {...({ activeThumbColor: colors.surface } as object)}
+      trackColor={{ true: colors.primary, false: 'rgba(255,255,255,0.22)' }}
+      thumbColor="#FFFFFF"
+      {...({ activeThumbColor: '#FFFFFF' } as object)}
       onValueChange={(v) => {
         hapticSelect();
         onChange(v);
@@ -732,7 +934,7 @@ export function Crest({ initials, size = 40 }: { initials: string; size?: number
         y="25"
         textAnchor="middle"
         fontWeight="800"
-        fontSize={initials.length > 3 ? 8 : 10}
+        fontSize={initials.length > 3 ? 7.5 : initials.length === 3 ? 9 : 11}
         fill={colors.onPrimary}
       >
         {initials}
@@ -761,7 +963,7 @@ export function Avatar({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: colors.primaryContainer,
+          backgroundColor: withAlpha(colors.primary, 0.15),
         }}
       />
     );
@@ -772,18 +974,19 @@ export function Avatar({
     .slice(0, 2)
     .join('')
     .toUpperCase();
+  // Anstoß: Akzentfarbe bei 15 % als Fläche, Initialen in der Akzentfarbe
   return (
     <View
       style={{
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor: colors.primaryContainer,
+        backgroundColor: withAlpha(colors.primary, 0.15),
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <Text style={{ color: colors.onPrimaryContainer, fontWeight: '800', fontSize: size * 0.36 }}>
+      <Text style={{ color: colors.primaryText, fontWeight: '800', fontSize: size * 0.34 }}>
         {initials}
       </Text>
     </View>
@@ -843,31 +1046,43 @@ export function DateTile({
   day,
   muted,
   size = 'md',
+  color,
 }: {
   weekday: string;
   day: string;
   /** abgesagt: graue Fläche */
   muted?: boolean;
   size?: 'md' | 'lg';
+  /** Farbe des Wochentags und der Fläche (15 %); Standard: Kategorie „Mannschaft“ */
+  color?: string;
 }) {
   const { colors } = useTheme();
   const lg = size === 'lg';
-  const fg = muted ? colors.onSurfaceMuted : colors.onPrimaryContainer;
+  const tint = color ?? colors.anstoss.categories.team;
+  const fg = muted ? colors.anstoss.textTertiary : tint;
   return (
     <View
       style={{
-        width: lg ? 52 : 48,
-        height: lg ? 56 : 50,
-        borderRadius: lg ? 16 : 14,
+        width: lg ? 54 : 50,
+        paddingVertical: lg ? 6 : 5,
+        borderRadius: lg ? 15 : 14,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: muted ? colors.surfaceVariant : colors.primaryContainer,
+        backgroundColor: muted ? colors.anstoss.card : withAlpha(tint, 0.15),
       }}
     >
-      <T variant="caption" color={fg} style={{ fontSize: 11, lineHeight: 13 }}>
-        {weekday}
+      <T
+        variant="caption"
+        color={fg}
+        style={{ fontSize: 10.5, lineHeight: 13, fontWeight: '800', textTransform: 'uppercase' }}
+      >
+        {weekday.replace('.', '')}
       </T>
-      <T variant="figure" color={fg} style={{ fontSize: lg ? 22 : 20, lineHeight: lg ? 26 : 24 }}>
+      <T
+        variant="figure"
+        color={muted ? colors.anstoss.textTertiary : colors.onSurface}
+        style={{ fontSize: lg ? 28 : 26, lineHeight: lg ? 28 : 26 }}
+      >
         {day}
       </T>
     </View>
@@ -894,16 +1109,20 @@ export function ListRow({
   /** durchgestrichener Titel (abgesagt) */
   strike?: boolean;
 }) {
-  const { colors, spacing, sizes } = useTheme();
+  const { colors, sizes } = useTheme();
   const main = (
     <>
       {leading}
       <View style={{ flex: 1, gap: 2 }}>
         <T
-          variant="label"
           numberOfLines={2}
-          color={strike ? colors.onSurfaceMuted : undefined}
-          style={{ fontWeight: '700', textDecorationLine: strike ? 'line-through' : 'none' }}
+          color={strike ? colors.anstoss.textTertiary : undefined}
+          style={{
+            fontSize: 15,
+            lineHeight: 20,
+            fontWeight: '700',
+            textDecorationLine: strike ? 'line-through' : 'none',
+          }}
         >
           {title}
         </T>
@@ -922,22 +1141,28 @@ export function ListRow({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: 14,
     minHeight: sizes.touchTarget,
-    paddingVertical: spacing.sm + 2,
+    paddingVertical: 12,
   } as const;
   // Zusatz rechts (Buttons, Schalter) steht neben dem antippbaren Bereich, nie darin:
   // verschachtelte Buttons sind im Web ungültig.
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.md,
-        borderTopWidth: first ? 0 : 1,
-        borderTopColor: colors.border,
-      }}
-    >
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      {/* Trennlinie, links bis hinter das Symbol eingerückt (Stil „Anstoß“) */}
+      {first ? null : (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: leading ? 54 : 0,
+            right: 0,
+            height: 1,
+            backgroundColor: colors.anstoss.divider,
+          }}
+        />
+      )}
       {onPress ? (
         <Pressable onPress={onPress} accessibilityRole="button" style={inner}>
           {main}
@@ -947,7 +1172,9 @@ export function ListRow({
       )}
       {/* Chips setzen alignSelf: flex-start; der Container zentriert sie wieder zur Zeile */}
       {trailing ? <View style={{ alignSelf: 'center' }}>{trailing}</View> : null}
-      {onPress ? <Ionicons name="chevron-forward" size={18} color={colors.onSurfaceMuted} /> : null}
+      {onPress && !trailing ? (
+        <Ionicons name="chevron-forward" size={18} color={colors.anstoss.textTertiary} />
+      ) : null}
     </View>
   );
 }
@@ -1056,7 +1283,7 @@ export function SwipeRow({
             if (dragged.current) e.stopPropagation();
           },
         } as object)}
-        style={{ transform: [{ translateX: x }], backgroundColor: colors.surfaceRaised }}
+        style={{ transform: [{ translateX: x }], backgroundColor: colors.surface }}
         accessibilityActions={[{ name: 'activate', label: t(label) }]}
         onAccessibilityAction={() => onAction()}
       >
@@ -1080,7 +1307,7 @@ function SkeletonBlock({
   radius?: number;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { colors, radii, motion } = useTheme();
+  const { radii, motion } = useTheme();
   const opacity = useRef(new Animated.Value(0.45)).current;
   const [reduceMotion, setReduceMotion] = useState(false);
   useEffect(() => {
@@ -1114,7 +1341,7 @@ function SkeletonBlock({
           height,
           width,
           borderRadius: radius ?? radii.md,
-          backgroundColor: colors.border,
+          backgroundColor: 'rgba(255,255,255,0.1)',
           opacity,
         },
         style,
@@ -1142,7 +1369,7 @@ function SkeletonRow() {
  * ersten Aufbau einer Seite: Blickfangkarte, Band, Liste.
  */
 export function Loading({ variant = 'list' }: { variant?: 'list' | 'page' }) {
-  const { colors, radii, isDark, elevation } = useTheme();
+  const { colors, radii } = useTheme();
   const rows = (
     <>
       <SkeletonRow />
@@ -1167,10 +1394,9 @@ export function Loading({ variant = 'list' }: { variant?: 'list' | 'page' }) {
             style={{
               padding: 14,
               borderRadius: radii.xl,
-              backgroundColor: colors.surfaceRaised,
-              ...(isDark
-                ? { borderWidth: 1, borderColor: colors.border }
-                : shadowStyle(elevation.card)),
+              backgroundColor: colors.anstoss.card,
+              borderWidth: 1,
+              borderColor: colors.anstoss.cardBorder,
             }}
           >
             {rows}
@@ -1200,47 +1426,64 @@ export function Notice({
   text: string;
   action?: { label: string; onPress: () => void; icon?: IconName };
 }) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii } = useTheme();
   const c = colors.status[tone];
+  // Karte mit Rand in Statusfarbe, Symbolkreis, Titel in Saira und Text (Stil „Anstoß“, U12)
   return (
     <View
       accessibilityRole={tone === 'urgent' ? 'alert' : undefined}
       style={{
-        gap: spacing.md,
-        padding: spacing.lg,
+        flexDirection: 'row',
+        gap: 12,
+        padding: 16,
         borderRadius: radii.xl,
-        backgroundColor: c.container,
+        backgroundColor: colors.anstoss.card,
         borderWidth: 1,
-        borderColor: c.solid,
+        borderColor: withAlpha(c.solid, 0.4),
       }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <View
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: c.solid,
-          }}
-        >
-          <Ionicons name={icon} size={20} color={c.onSolid} />
-        </View>
-        <T variant="heading" color={c.onContainer} style={{ flex: 1 }}>
+      <View
+        style={{
+          width: 42,
+          height: 42,
+          borderRadius: 21,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: withAlpha(c.solid, 0.18),
+        }}
+      >
+        <Ionicons name={icon} size={22} color={c.onContainer} />
+      </View>
+      <View style={{ flex: 1, gap: 4 }}>
+        <T variant="title" color={c.onContainer} style={{ fontSize: 22, lineHeight: 25 }}>
           {title}
         </T>
+        <T style={{ fontSize: 13, lineHeight: 18, color: colors.onSurfaceMuted }}>{text}</T>
+        {action ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={action.onPress}
+            style={({ pressed }) => ({
+              alignSelf: 'flex-start',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              marginTop: 8,
+              minHeight: 44,
+              paddingHorizontal: 14,
+              borderRadius: 999,
+              borderWidth: 1.5,
+              borderColor: withAlpha(c.onContainer, 0.5),
+              backgroundColor: pressed ? c.container : 'transparent',
+            })}
+          >
+            {action.icon ? <Ionicons name={action.icon} size={16} color={c.onContainer} /> : null}
+            <Text style={{ fontSize: 13, fontWeight: '700', color: c.onContainer }}>
+              {action.label}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
-      <T color={c.onContainer}>{text}</T>
-      {action ? (
-        <Button
-          label={action.label}
-          icon={action.icon}
-          variant="outline"
-          onPress={action.onPress}
-          style={{ alignSelf: 'flex-start', borderColor: c.solid }}
-        />
-      ) : null}
     </View>
   );
 }
@@ -1301,29 +1544,34 @@ export function Empty({
   hint?: string;
   action?: { label: string; onPress: () => void };
 }) {
-  const { colors, radii } = useTheme();
+  const { colors } = useTheme();
+  // Leerer Zustand (Stil „Anstoß“, U12): Symbolkreis in Akzent bei 13 %, Titel in Saira, leiser Hinweis
   return (
-    <View
-      style={{
-        alignItems: 'center',
-        gap: 10,
-        paddingVertical: 20,
-        paddingHorizontal: 16,
-        borderRadius: radii.xl,
-        backgroundColor: colors.surfaceVariant,
-      }}
-    >
-      <IconTile name={icon} size="lg" />
-      <T variant="label" style={{ textAlign: 'center', fontWeight: '700' }}>
+    <View style={{ alignItems: 'center', gap: 4, paddingVertical: 24, paddingHorizontal: 12 }}>
+      <View
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 32,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: withAlpha(colors.primary, 0.13),
+        }}
+      >
+        <Ionicons name={icon} size={28} color={colors.primary} />
+      </View>
+      <T variant="title" style={{ textAlign: 'center', marginTop: 8 }}>
         {text}
       </T>
       {hint ? (
-        <T variant="caption" style={{ textAlign: 'center', marginTop: -4 }}>
+        <T variant="caption" style={{ textAlign: 'center', fontSize: 13 }}>
           {hint}
         </T>
       ) : null}
       {action ? (
-        <Button label={action.label} size="sm" variant="tonal" onPress={action.onPress} />
+        <View style={{ marginTop: 10 }}>
+          <Button label={action.label} size="sm" variant="tonal" onPress={action.onPress} />
+        </View>
       ) : null}
     </View>
   );
@@ -1388,7 +1636,7 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
         const tint = item.tint ?? TINT_ORDER[index % TINT_ORDER.length]!;
         const urgent = item.tone === 'action' || item.tone === 'urgent';
         return (
-          <Pressable
+          <PressScale
             key={item.key}
             accessibilityRole="button"
             accessibilityState={{ disabled }}
@@ -1414,14 +1662,14 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                 <View
                   style={{
                     width: '100%',
-                    height: 64,
+                    height: 66,
                     borderRadius: 22,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: pressed ? colors.surfaceVariant : colors.surfaceRaised,
-                    ...(isDark
-                      ? { borderWidth: 1, borderColor: colors.border }
-                      : shadowStyle(elevation.control)),
+                    backgroundColor: pressed ? colors.surfaceVariant : colors.anstoss.card,
+                    borderWidth: 1,
+                    borderColor: colors.anstoss.cardBorder,
+                    ...(isDark ? null : shadowStyle(elevation.control)),
                   }}
                 >
                   <IconTile
@@ -1490,7 +1738,7 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                 ) : null}
               </>
             )}
-          </Pressable>
+          </PressScale>
         );
       })}
     </View>
@@ -1514,7 +1762,7 @@ export function ChoiceChips<T extends string>({
   onToggle: (value: T) => void;
   label?: string;
   /** Farbe der gewählten Option: Vereinsfarbe oder rot (z. B. Grund einer Absage) */
-  tone?: 'primary' | 'urgent';
+  tone?: 'primary' | 'urgent' | 'light';
   /** zeigt bei der gewählten Option ein Häkchen */
   check?: boolean;
   /** eine einzige, seitlich wischbare Zeile statt Umbruch */
@@ -1547,8 +1795,19 @@ export function ChoiceChips<T extends string>({
         return row(
           options.map((o) => {
             const active = selected.includes(o.value);
-            const fill = tone === 'urgent' ? colors.status.urgent.solid : colors.primary;
-            const onFill = tone === 'urgent' ? colors.status.urgent.onSolid : colors.onPrimary;
+            // `light`: Filterzeile – die gewählte Option ist weiß mit dunkler Schrift
+            const fill =
+              tone === 'urgent'
+                ? colors.status.urgent.solid
+                : tone === 'light'
+                  ? '#FFFFFF'
+                  : colors.primary;
+            const onFill =
+              tone === 'urgent'
+                ? colors.status.urgent.onSolid
+                : tone === 'light'
+                  ? colors.background
+                  : colors.onPrimary;
             return (
               <Pressable
                 key={o.value}
@@ -1564,13 +1823,13 @@ export function ChoiceChips<T extends string>({
                   alignItems: 'center',
                   gap: 6,
                   minHeight: sizes.chipHeight + 2,
-                  paddingHorizontal: 14,
-                  paddingVertical: 6,
+                  paddingHorizontal: 15,
+                  paddingVertical: 9,
                   maxWidth: '100%',
                   borderRadius: radii.pill,
-                  borderWidth: 1,
-                  borderColor: active ? fill : colors.border,
-                  backgroundColor: active ? fill : colors.surfaceRaised,
+                  borderWidth: 1.5,
+                  borderColor: active ? fill : colors.anstoss.fieldBorder,
+                  backgroundColor: active ? fill : colors.anstoss.card,
                 }}
               >
                 {active && check ? <Ionicons name="checkmark" size={16} color={onFill} /> : null}
@@ -1622,7 +1881,7 @@ export function TextField({
   /** Hinweis unter dem Feld */
   hint?: string;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors } = useTheme();
   const secret = kind === 'password' || kind === 'newPassword';
   const [shown, setShown] = useState(false);
   return (
@@ -1639,7 +1898,7 @@ export function TextField({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder ? t(placeholder) : placeholder}
-          placeholderTextColor={colors.onSurfaceMuted}
+          placeholderTextColor={colors.anstoss.placeholder}
           maxLength={maxLength}
           multiline={multiline}
           secureTextEntry={secret && !shown}
@@ -1667,16 +1926,16 @@ export function TextField({
           }
           onSubmitEditing={onSubmit}
           style={{
-            minHeight: multiline ? 72 : 46,
-            borderWidth: accent ? 2 : 1,
-            borderColor: accent ?? colors.border,
-            borderRadius: radii.md,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            fontSize: 15,
+            minHeight: multiline ? 88 : 56,
+            borderWidth: accent ? 2 : 1.5,
+            borderColor: accent ?? colors.anstoss.fieldBorder,
+            borderRadius: 16,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            fontSize: 16,
             ...inputFont(),
             color: colors.onSurface,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.anstoss.card,
             textAlignVertical: multiline ? 'top' : 'center',
             ...(secret ? { paddingRight: 88 } : null),
           }}
@@ -1734,7 +1993,7 @@ export function DateStepper({
   min?: string;
   max?: string;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors } = useTheme();
   const [open, setOpen] = useState(false);
   const shift = (days: number) => {
     const d = new Date(`${value}T00:00:00Z`);
@@ -1749,14 +2008,12 @@ export function DateStepper({
       onPress={() => shift(days)}
       hitSlop={6}
       style={({ pressed }) => ({
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
+        backgroundColor: pressed ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.1)',
       })}
     >
       <Ionicons name={icon} size={18} color={colors.onSurface} />
@@ -1771,8 +2028,10 @@ export function DateStepper({
           alignItems: 'center',
           gap: 10,
           padding: 6,
-          borderRadius: radii.md,
-          backgroundColor: colors.surfaceVariant,
+          borderRadius: 18,
+          backgroundColor: colors.anstoss.card,
+          borderWidth: 1.5,
+          borderColor: colors.anstoss.fieldBorder,
         }}
       >
         {button('chevron-back', -1, `${label}: einen Tag früher`)}
@@ -1931,7 +2190,7 @@ export function TimeStepper({
   /** wird nicht mehr gebraucht (die Walze geht in 5er-Schritten); bleibt für bestehende Aufrufe */
   step?: number;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors } = useTheme();
   const [open, setOpen] = useState(false);
   const [h0, m0] = value.split(':').map(Number) as [number, number];
   const [hour, setHour] = useState(h0);
@@ -1958,17 +2217,19 @@ export function TimeStepper({
           alignItems: 'center',
           justifyContent: 'center',
           gap: 10,
-          minHeight: 48,
-          borderRadius: radii.md,
-          backgroundColor: pressed ? colors.border : colors.surfaceVariant,
+          minHeight: 58,
+          borderRadius: 18,
+          borderWidth: 1.5,
+          borderColor: open ? colors.primary : colors.anstoss.fieldBorder,
+          backgroundColor: pressed ? 'rgba(255,255,255,0.12)' : colors.anstoss.card,
         })}
       >
         <Ionicons name="time-outline" size={20} color={colors.primaryText} />
         <Text
           verbatim
           style={{
-            fontSize: 20,
-            fontWeight: '800',
+            fontSize: 24,
+            fontWeight: '700',
             color: colors.onSurface,
             fontVariant: ['tabular-nums'],
           }}
@@ -2014,10 +2275,16 @@ export function Stat({
   labelColor?: string;
 }) {
   const { colors } = useTheme();
+  const counted = useCountUp(typeof value === 'number' ? value : 0);
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      <T variant="figure" color={color ?? colors.primaryText}>
-        {value}
+      <T
+        variant="figure"
+        color={color ?? colors.primaryText}
+        numberOfLines={1}
+        style={{ fontSize: 28, lineHeight: 32 }}
+      >
+        {typeof value === 'number' ? counted : value}
       </T>
       <T variant="caption" color={labelColor} style={{ textAlign: 'center' }}>
         {label}
@@ -2030,3 +2297,353 @@ const styles = StyleSheet.create({
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sectionTitle: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
 });
+
+/** Umschalter zwischen wenigen Ansichten (Anstoß: Behälter 7 % Weiß, aktive Option in Vereinsfarbe). */
+export function Segment<V extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: V; label: string }[];
+  value: V;
+  onChange: (value: V) => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View
+      accessibilityRole="tablist"
+      style={{
+        flexDirection: 'row',
+        padding: 4,
+        gap: 4,
+        borderRadius: 16,
+        backgroundColor: withAlpha('#ffffff', 0.07),
+      }}
+    >
+      {options.map((o) => {
+        const active = o.value === value;
+        return (
+          <Pressable
+            key={o.value}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            onPress={() => {
+              if (!active) {
+                hapticSelect();
+                onChange(o.value);
+              }
+            }}
+            style={{
+              flex: 1,
+              minHeight: 44,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: 11,
+              paddingHorizontal: 13,
+              borderRadius: 12,
+              backgroundColor: active ? colors.primary : 'transparent',
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 13.5,
+                fontWeight: '700',
+                color: active ? colors.onPrimary : colors.onSurface,
+              }}
+            >
+              {o.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/**
+ * Ticket (Wochenansicht): 132 breit, Farbstreifen links (Status), Wochentag, große Tageszahl, Titel und
+ * Nebenzeile. Die Farbe ist nie die einzige Information: der Zustand steht in `caption` bzw. im Titel.
+ */
+export function Ticket({
+  weekday,
+  day,
+  title,
+  caption,
+  color,
+  struck,
+  onPress,
+}: {
+  weekday: string;
+  day: string;
+  title: string;
+  caption?: string;
+  color: string;
+  struck?: boolean;
+  onPress?: () => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <PressScale
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={[weekday, day, title, caption].filter(Boolean).join(', ')}
+      disabled={!onPress}
+      onPress={onPress}
+      style={{
+        width: 132,
+        minHeight: 44,
+        borderRadius: 20,
+        overflow: 'hidden',
+        padding: 14,
+        backgroundColor: colors.anstoss.card,
+        borderWidth: 1,
+        borderColor: colors.anstoss.cardBorder,
+      }}
+    >
+      <View
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 4,
+          backgroundColor: color,
+        }}
+      />
+      <T variant="caption" style={{ fontWeight: '700', textTransform: 'uppercase' }}>
+        {weekday.replace('.', '')}
+      </T>
+      <T variant="figure" style={{ fontSize: 40, lineHeight: 40 }} verbatim>
+        {day}
+      </T>
+      <T
+        numberOfLines={1}
+        style={{
+          marginTop: 8,
+          fontSize: 13.5,
+          fontWeight: '700',
+          textDecorationLine: struck ? 'line-through' : 'none',
+        }}
+      >
+        {title}
+      </T>
+      {caption ? (
+        <T variant="caption" numberOfLines={2} style={{ marginTop: 2, fontSize: 11.5 }}>
+          {caption}
+        </T>
+      ) : null}
+    </PressScale>
+  );
+}
+
+/** Linearer Farbverlauf als Hintergrund (diagonal 135° wie im Entwurf), füllt den Elternbereich. */
+export function GradientFill({
+  from,
+  to,
+  overlay,
+  vertical,
+}: {
+  from: string;
+  to: string;
+  /** senkrecht (180°) statt diagonal */
+  vertical?: boolean;
+  /** zusätzliche Abdunklung nach unten (Bildkarten), 0–1 an der Unterkante */
+  overlay?: number;
+}) {
+  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  return (
+    <Svg
+      style={StyleSheet.absoluteFill}
+      width="100%"
+      height="100%"
+      preserveAspectRatio="none"
+      aria-hidden
+    >
+      <Defs>
+        <LinearGradient id={`${id}a`} x1="0" y1="0" x2={vertical ? '0' : '1'} y2="1">
+          <Stop offset="0" stopColor={from} />
+          <Stop offset="1" stopColor={to} />
+        </LinearGradient>
+        <LinearGradient id={`${id}b`} x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0.2" stopColor="#000000" stopOpacity={0} />
+          <Stop offset="1" stopColor="#000000" stopOpacity={overlay ?? 0} />
+        </LinearGradient>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}a)`} />
+      {overlay ? <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}b)`} /> : null}
+    </Svg>
+  );
+}
+
+/**
+ * Suchfeld für Listen (Stil „Anstoß“): 50 hoch, Lupe, optional daneben der Filterknopf in der Akzentfarbe
+ * („Filter · 1“, wenn Filter aktiv sind).
+ */
+export function SearchField({
+  value,
+  onChangeText,
+  placeholder,
+  filterCount,
+  onFilter,
+  autoFocus,
+}: {
+  autoFocus?: boolean;
+  value: string;
+  onChangeText: (v: string) => void;
+  placeholder: string;
+  /** Anzahl aktiver Filter; mit `onFilter` erscheint der Filterknopf */
+  filterCount?: number;
+  onFilter?: () => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', gap: 10 }}>
+      <View
+        style={{
+          flex: 1,
+          height: 50,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          paddingHorizontal: 14,
+          borderRadius: 16,
+          backgroundColor: colors.anstoss.card,
+          borderWidth: 1.5,
+          borderColor: colors.anstoss.fieldBorder,
+        }}
+      >
+        <Ionicons name="search-outline" size={18} color={colors.anstoss.placeholder} />
+        <TextInput
+          accessibilityLabel={t(placeholder)}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={t(placeholder)}
+          placeholderTextColor={colors.anstoss.placeholder}
+          autoCorrect={false}
+          autoFocus={autoFocus}
+          style={{
+            flex: 1,
+            fontSize: 14,
+            color: colors.onSurface,
+            ...inputFont(),
+            ...({ outlineStyle: 'none' } as object),
+          }}
+        />
+      </View>
+      {onFilter ? (
+        <PressScale
+          accessibilityRole="button"
+          accessibilityLabel={t('Filter')}
+          onPress={onFilter}
+          style={{
+            height: 50,
+            minWidth: 50,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            paddingHorizontal: 15,
+            borderRadius: 16,
+            backgroundColor: colors.primary,
+          }}
+        >
+          <Ionicons name="options-outline" size={18} color={colors.onPrimary} />
+          <Text style={{ fontSize: 14, fontWeight: '800', color: colors.onPrimary }}>
+            {filterCount ? t(`Filter · ${filterCount}`) : t('Filter')}
+          </Text>
+        </PressScale>
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * Runder „…“-Knopf (44) mit Menü von unten (Vorlage U13/U14): ein Hauptknopf je Karte, alles Weitere
+ * hier; Löschen steht zuletzt in Rot und fragt immer nach (siehe `useConfirmDelete`).
+ */
+export function MoreMenu({
+  title,
+  actions,
+}: {
+  title: string;
+  actions: { label: string; icon: IconName; onPress: () => void; danger?: boolean }[];
+}) {
+  const { colors } = useTheme();
+  const [open, setOpen] = useState(false);
+  if (actions.length === 0) return null;
+  return (
+    <>
+      <PressScale
+        accessibilityRole="button"
+        accessibilityLabel={t('Weitere Aktionen')}
+        onPress={() => setOpen(true)}
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(255,255,255,0.1)',
+        }}
+      >
+        <Ionicons name="ellipsis-horizontal" size={20} color={colors.onSurface} />
+      </PressScale>
+      <Sheet visible={open} onClose={() => setOpen(false)} title={title}>
+        <View>
+          {actions.map((a, i) => (
+            <Pressable
+              key={a.label}
+              accessibilityRole="button"
+              onPress={() => {
+                setOpen(false);
+                a.onPress();
+              }}
+              style={{
+                minHeight: 52,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 14,
+                borderTopWidth: i === 0 ? 0 : 1,
+                borderTopColor: colors.anstoss.divider,
+              }}
+            >
+              <Ionicons
+                name={a.icon}
+                size={20}
+                color={a.danger ? colors.status.urgent.onContainer : colors.onSurface}
+              />
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: '700',
+                  color: a.danger ? colors.status.urgent.onContainer : colors.onSurface,
+                }}
+              >
+                {a.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </Sheet>
+    </>
+  );
+}
+
+/** Kennzahl-Pille im Hero („Bilanz 5-1-0“, „Einnahmen 662,35 €“): Saira 19, Weiß bei 18 %. */
+export function HeroPill({ label }: { label: string }) {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={{
+        borderRadius: 14,
+        paddingHorizontal: 12,
+        paddingVertical: 3,
+        backgroundColor: 'rgba(255,255,255,0.18)',
+      }}
+    >
+      <T variant="headline" color={colors.hero.onHero} style={{ fontSize: 19, lineHeight: 24 }}>
+        {label}
+      </T>
+    </View>
+  );
+}

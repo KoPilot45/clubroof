@@ -1,4 +1,5 @@
 export * from './access';
+export * from './club-code';
 export * from './contract';
 export * from './deadlines';
 export * from './domain';

@@ -54,7 +54,21 @@ export default function NewOfferScreen() {
   const valid = !!team && !!day && Number.isInteger(n) && n >= 1 && n <= 10;
 
   return (
-    <Screen edges={[]}>
+    <Screen
+      edges={[]}
+      footer={
+        <>
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          <Button
+            label="Angebot speichern"
+            icon="hand-right"
+            disabled={!valid}
+            loading={save.isPending}
+            onPress={() => save.mutate()}
+          />
+        </>
+      }
+    >
       <Card style={{ gap: 12 }}>
         {teams.length > 1 ? (
           <ChoiceChips
@@ -81,14 +95,6 @@ export default function NewOfferScreen() {
           maxLength={300}
         />
       </Card>
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      <Button
-        label="Angebot speichern"
-        icon="hand-right"
-        disabled={!valid}
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
     </Screen>
   );
 }

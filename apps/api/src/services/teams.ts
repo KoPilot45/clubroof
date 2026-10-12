@@ -7,6 +7,7 @@ import {
   at,
   calendarDayOf,
   fromIsoDate,
+  positionGroup,
   resolveModule,
   toIsoDate,
   type StatsPeriod,
@@ -17,6 +18,7 @@ import {
   type PlayerStat,
   type RosterEntry,
   type SquadStatRow,
+  type SquadComposition,
   type SquadStatus,
   type TeamHighlights,
   type TeamOverview,
@@ -227,6 +229,25 @@ export async function getTeamOverview(
     if (best && best.goals > 0) topScorer = { name: best.name, goals: best.goals };
   }
 
+  // Kaderzusammensetzung: aktuelle Spieler nach Mannschaftsteil (nur Anzahlen, keine Namen)
+  const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
+  const positions = await db
+    .select({ position: s.persons.position })
+    .from(s.teamMemberships)
+    .innerJoin(s.persons, eq(s.persons.id, s.teamMemberships.personId))
+    .where(
+      and(
+        eq(s.teamMemberships.teamId, team.id),
+        eq(s.teamMemberships.function, 'player'),
+        or(isNull(s.teamMemberships.validTo), gte(s.teamMemberships.validTo, today)),
+      ),
+    );
+  const composition: SquadComposition = { goalkeeper: 0, defense: 0, midfield: 0, attack: 0 };
+  for (const row of positions) {
+    const group = positionGroup(row.position);
+    if (group) composition[group] += 1;
+  }
+
   return {
     team: {
       id: team.id,
@@ -242,6 +263,7 @@ export async function getTeamOverview(
         .config.fines === true,
     nextEvent: nextEvent ?? null,
     squad: nextEvent ? await squadStatus(db, nextEvent.id) : null,
+    composition,
     upcomingMatches,
     lastResults,
     trainingWeek,

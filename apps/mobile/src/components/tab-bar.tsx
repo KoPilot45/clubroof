@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarHeightCallbackContext, type BottomTabBarProps } from 'expo-router/js-tabs';
-import { useContext, useEffect, useState } from 'react';
-import { Keyboard, Platform, Pressable, View } from 'react-native';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Keyboard, Platform, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hapticSelect } from '@/lib/haptics';
+import { useReduceMotion } from '@/lib/motion';
 import { useTheme } from '@/lib/theme';
 import { Text } from './app-text';
 import { shadowStyle, type IconName } from './ui';
@@ -29,6 +30,36 @@ export type NavItem = {
   onLongPress?: () => void;
 };
 
+/** Aktive Kapsel: federt beim Aktivieren in 380 ms mit leichtem Überschwingen auf. */
+function useCapsule(active: boolean) {
+  const reduce = useReduceMotion();
+  const value = useRef(new Animated.Value(active ? 1 : 0)).current;
+  useEffect(() => {
+    if (reduce) {
+      value.setValue(active ? 1 : 0);
+      return;
+    }
+    Animated.timing(value, {
+      toValue: active ? 1 : 0,
+      duration: 380,
+      easing: active ? Easing.out(Easing.back(1.6)) : Easing.out(Easing.quad),
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  }, [active, reduce, value]);
+  return value.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] });
+}
+
+function NavDot({ item, children }: { item: NavItem; children: React.ReactNode }) {
+  const scale = useCapsule(item.active);
+  return (
+    <Animated.View
+      style={{ flex: item.active ? 2.2 : 1, flexDirection: 'row', transform: [{ scale }] }}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
 /**
  * Schwebende Leiste: Pille mit bis zu fünf Punkten; der aktive Punkt ist eine farbige Pille mit
  * Beschriftung, die übrigen zeigen nur das Icon (Beschriftung für Screenreader). Gemeinsame Grundlage
@@ -45,7 +76,7 @@ export function FloatingNav({
   const { colors, sizes, isDark, elevation } = useTheme();
   const insets = useSafeAreaInsets();
   const [keyboard, setKeyboard] = useState(false);
-  const bottom = Math.max(insets.bottom, 12) + 10;
+  const bottom = Math.max(insets.bottom, 4) + 10;
 
   useEffect(() => {
     onHeight?.(sizes.tabBar + bottom);
@@ -64,7 +95,7 @@ export function FloatingNav({
   return (
     <View
       pointerEvents="box-none"
-      style={{ position: 'absolute', left: 20, right: 20, bottom, alignItems: 'center' }}
+      style={{ position: 'absolute', left: 16, right: 16, bottom, alignItems: 'center' }}
     >
       <View
         accessibilityRole="tablist"
@@ -77,49 +108,50 @@ export function FloatingNav({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: colors.surfaceRaised,
-          ...(isDark
-            ? { borderWidth: 1, borderColor: colors.border }
-            : shadowStyle(elevation.floating)),
+          backgroundColor: colors.anstoss.tabBar,
+          borderWidth: 1,
+          borderColor: colors.anstoss.tabBarBorder,
+          ...(isDark ? null : shadowStyle(elevation.floating)),
         }}
       >
         {items.map((item) => (
-          <Pressable
-            key={item.key}
-            accessibilityRole="tab"
-            accessibilityLabel={item.label}
-            aria-selected={item.active}
-            onPress={() => {
-              if (!item.active) hapticSelect();
-              item.onPress();
-            }}
-            onLongPress={item.onLongPress}
-            style={{
-              height: sizes.tabItem,
-              minWidth: sizes.touchTarget + 2,
-              paddingHorizontal: item.active ? 16 : 0,
-              borderRadius: sizes.tabItem / 2,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              backgroundColor: item.active ? colors.primary : 'transparent',
-            }}
-          >
-            <Ionicons
-              name={item.active ? item.iconActive : item.icon}
-              size={22}
-              color={item.active ? colors.onPrimary : colors.onSurfaceMuted}
-            />
-            {item.active ? (
-              <Text
-                numberOfLines={1}
-                style={{ fontSize: 14, fontWeight: '700', color: colors.onPrimary }}
-              >
-                {item.label}
-              </Text>
-            ) : null}
-          </Pressable>
+          <NavDot key={item.key} item={item}>
+            <Pressable
+              accessibilityRole="tab"
+              accessibilityLabel={item.label}
+              aria-selected={item.active}
+              onPress={() => {
+                if (!item.active) hapticSelect();
+                item.onPress();
+              }}
+              onLongPress={item.onLongPress}
+              style={{
+                height: sizes.tabItem,
+                minWidth: sizes.touchTarget + 2,
+                paddingHorizontal: item.active ? 16 : 0,
+                borderRadius: sizes.tabItem / 2,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                backgroundColor: item.active ? colors.primary : 'transparent',
+              }}
+            >
+              <Ionicons
+                name={item.active ? item.iconActive : item.icon}
+                size={22}
+                color={item.active ? colors.onPrimary : colors.anstoss.textTertiary}
+              />
+              {item.active ? (
+                <Text
+                  numberOfLines={1}
+                  style={{ fontSize: 14, fontWeight: '700', color: colors.onPrimary }}
+                >
+                  {item.label}
+                </Text>
+              ) : null}
+            </Pressable>
+          </NavDot>
         ))}
       </View>
     </View>

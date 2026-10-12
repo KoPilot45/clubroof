@@ -51,7 +51,7 @@ export default function AdminOverviewScreen() {
             <T variant="overline" color={on}>
               Aktive Mitglieder
             </T>
-            <T variant="figure" color={on}>
+            <T variant="figure" color={on} style={{ fontSize: 72, lineHeight: 74 }}>
               {o.members.active}
             </T>
             <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>

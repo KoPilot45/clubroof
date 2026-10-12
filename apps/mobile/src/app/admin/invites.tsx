@@ -22,6 +22,7 @@ import { toGermanDate } from '@/lib/dates';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
+import { useConfirmDelete } from '@/lib/confirm';
 import { t } from '@/lib/i18n';
 
 type Tab = 'requests' | 'links' | 'people';
@@ -240,6 +241,7 @@ function PersonRow({ p }: { p: InvitePerson }) {
 }
 
 export default function InvitesScreen() {
+  const confirmDelete = useConfirmDelete();
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>('requests');
@@ -324,7 +326,15 @@ export default function InvitesScreen() {
                       style={{ flex: 1 }}
                       label="Zurückziehen"
                       variant="outline"
-                      onPress={() => teamLink.mutate({ teamId: t.id, revoke: true })}
+                      onPress={() =>
+                        confirmDelete({
+                          title: 'Wirklich zurückziehen?',
+                          confirmLabel: 'Zurückziehen',
+                          name: teamTitle(t),
+                          text: `Der Beitrittslink für „${teamTitle(t)}“ wird ungültig.`,
+                          onConfirm: () => teamLink.mutate({ teamId: t.id, revoke: true }),
+                        })
+                      }
                     />
                   ) : null}
                 </View>

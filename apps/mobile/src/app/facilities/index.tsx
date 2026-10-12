@@ -20,6 +20,7 @@ import {
 import { formatDateTile, formatShortDate, formatTime, todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { useConfirmDelete } from '@/lib/confirm';
 
 function weekOf(iso: string): { from: string; to: string } {
   const d = new Date(`${iso}T12:00:00Z`);
@@ -33,6 +34,7 @@ const addDays = (iso: string, days: number) =>
   new Date(new Date(`${iso}T12:00:00Z`).getTime() + days * 86_400_000).toISOString().slice(0, 10);
 
 export default function FacilitiesScreen() {
+  const confirmDelete = useConfirmDelete();
   const { api } = useSignedIn();
   const { isDark } = useTheme();
   const queryClient = useQueryClient();
@@ -234,7 +236,15 @@ export default function FacilitiesScreen() {
               <Button
                 label="Sperrung aufheben"
                 variant="outline"
-                onPress={() => remove.mutate(sel.id)}
+                onPress={() =>
+                  confirmDelete({
+                    title: 'Wirklich aufheben?',
+                    confirmLabel: 'Aufheben',
+                    name: sel.title,
+                    text: 'Die Sperrung wird aufgehoben.',
+                    onConfirm: () => remove.mutate(sel.id),
+                  })
+                }
               />
             ) : null}
           </>

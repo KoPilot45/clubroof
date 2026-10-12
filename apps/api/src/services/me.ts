@@ -1,5 +1,6 @@
 import {
   MODULES,
+  effectiveClubCode,
   scopesWith,
   isLocale,
   type ColorMode,
@@ -85,6 +86,7 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       id: actor.club.id,
       name: actor.club.name,
       shortName: actor.club.shortName,
+      shortCode: effectiveClubCode(actor.club.shortCode, actor.club.shortName),
       logoUrl: resolveMediaUrl(actor.links, actor.club.logoUrl),
       colorTheme: actor.club.colorTheme,
       colorMode: actor.club.colorMode,

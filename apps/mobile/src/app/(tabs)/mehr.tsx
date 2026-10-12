@@ -311,51 +311,75 @@ export default function MoreScreen() {
     <Screen header={<AppHeader title="Mehr" subtitle="Profil, Einstellungen und Hilfe" />}>
       <HeroCard style={{ marginTop: 4 }}>
         <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-          <View
-            style={{
-              padding: 3,
-              borderRadius: 36,
-              backgroundColor: colors.hero.onHero,
-            }}
-          >
-            <Avatar name={name} size={64} uri={me.person.avatarUrl} />
-          </View>
-          <View style={{ flex: 1, gap: 4 }}>
+          {me.person.avatarUrl ? (
+            <View style={{ padding: 3, borderRadius: 37, backgroundColor: colors.hero.onHero }}>
+              <Avatar name={name} size={62} uri={me.person.avatarUrl} />
+            </View>
+          ) : (
+            <View
+              accessibilityLabel={name}
+              style={{
+                width: 68,
+                height: 68,
+                borderRadius: 34,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#FFFFFF',
+              }}
+            >
+              <T
+                variant="figure"
+                color={colors.hero.to}
+                style={{ fontSize: 30, lineHeight: 34 }}
+                verbatim
+              >
+                {name
+                  .split(' ')
+                  .map((p) => p[0])
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .join('')
+                  .toUpperCase()}
+              </T>
+            </View>
+          )}
+          <View style={{ flex: 1, gap: 2 }}>
             <T
-              variant="headline"
+              variant="figure"
               color={colors.hero.onHero}
               numberOfLines={2}
-              style={{ fontSize: 22, lineHeight: 26 }}
+              style={{ fontSize: 30, lineHeight: 32 }}
+              verbatim
             >
               {name}
             </T>
-            <T variant="caption" color={colors.hero.onHero} numberOfLines={1}>
+            <T
+              variant="caption"
+              color="rgba(255,255,255,0.8)"
+              numberOfLines={1}
+              style={{ fontSize: 12.5 }}
+              verbatim
+            >
               {me.user.email}
             </T>
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-          {roleLabels.map((label, i) => (
-            <View
-              key={label}
-              style={{
-                borderRadius: 999,
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                backgroundColor: i === 0 ? colors.hero.onHero : 'rgba(255,255,255,0.22)',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontWeight: '700',
-                  color: i === 0 ? colors.hero.from : colors.hero.onHero,
-                }}
-              >
-                {label}
-              </Text>
+            <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+              {roleLabels.map((label) => (
+                <View
+                  key={label}
+                  style={{
+                    borderRadius: 999,
+                    paddingHorizontal: 10,
+                    paddingVertical: 3,
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                  }}
+                >
+                  <Text style={{ fontSize: 11.5, fontWeight: '800', color: colors.hero.onHero }}>
+                    {label}
+                  </Text>
+                </View>
+              ))}
             </View>
-          ))}
+          </View>
         </View>
       </HeroCard>
 

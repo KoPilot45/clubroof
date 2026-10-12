@@ -9,7 +9,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import {
   Button,
@@ -26,9 +26,10 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
-import { useTheme } from '@/lib/theme';
+import { DARK_ONLY, useTheme } from '@/lib/theme';
 import { t } from '@/lib/i18n';
 import { setFontScale, useFontScaleKey } from '@/lib/font-scale';
+import { setHapticsEnabled, useHapticsEnabled } from '@/lib/haptics';
 import { useAppLockEnabled, setAppLockEnabled } from '@/lib/app-lock';
 import { deviceAuthAvailable, deviceAuthenticate } from '@/lib/device-auth';
 
@@ -73,6 +74,7 @@ export default function AccountScreen() {
       <AppearanceSection />
       <LanguageSection />
       <FontSizeSection />
+      <VibrationSection />
       <AppLockSection />
       <Section title="Benachrichtigungen & Kalender">
         <Card>
@@ -478,6 +480,8 @@ function AppearanceSection() {
       setSaving(null);
     }
   };
+  // Zunächst gibt es nur den dunklen Stil „Anstoß“; die Auswahl kommt mit dem hellen Stil zurück
+  if (DARK_ONLY) return null;
   return (
     <Section title="Darstellung">
       <Card style={{ gap: 8 }}>
@@ -548,6 +552,23 @@ function FontSizeSection() {
           onToggle={setFontScale}
         />
         <T>So sieht ein normaler Text in dieser Größe aus.</T>
+        <T variant="caption">Die Einstellung gilt nur auf diesem Gerät.</T>
+      </Card>
+    </Section>
+  );
+}
+
+/** Vibration bei Bestätigungen: nur auf dem Handy, nur für dieses Gerät. */
+function VibrationSection() {
+  const on = useHapticsEnabled();
+  if (Platform.OS === 'web') return null;
+  return (
+    <Section title="Vibration">
+      <Card style={{ gap: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <T style={{ flex: 1 }}>Kurz vibrieren bei Auswahl und Bestätigung</T>
+          <Toggle label="Vibration" value={on} onChange={setHapticsEnabled} />
+        </View>
         <T variant="caption">Die Einstellung gilt nur auf diesem Gerät.</T>
       </Card>
     </Section>

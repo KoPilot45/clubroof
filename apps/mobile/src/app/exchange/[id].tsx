@@ -18,6 +18,7 @@ import { CommentThread } from '@/components/comments';
 import { RequestError } from '@/lib/api';
 import { formatDay, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { useConfirmDelete } from '@/lib/confirm';
 
 const STATE_LABEL = {
   available: null,
@@ -27,6 +28,7 @@ const STATE_LABEL = {
 } as const;
 
 export default function DemandScreen() {
+  const confirmDelete = useConfirmDelete();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
@@ -116,7 +118,15 @@ export default function DemandScreen() {
                   <Button
                     label="Zurückziehen"
                     variant="outline"
-                    onPress={() => withdraw.mutate(g.personId)}
+                    onPress={() =>
+                      confirmDelete({
+                        title: 'Wirklich zurückziehen?',
+                        confirmLabel: 'Zurückziehen',
+                        name: g.name,
+                        text: `Die Meldung von ${g.name} wird zurückgezogen.`,
+                        onConfirm: () => withdraw.mutate(g.personId),
+                      })
+                    }
                   />
                 ) : null}
               </View>
@@ -195,7 +205,15 @@ export default function DemandScreen() {
           variant="danger"
           icon="trash"
           loading={cancel.isPending}
-          onPress={() => cancel.mutate()}
+          onPress={() =>
+            confirmDelete({
+              title: 'Wirklich zurückziehen?',
+              confirmLabel: 'Zurückziehen',
+              name: d.event.title,
+              text: `Der Bedarf „${d.event.title}“ wird zurückgezogen.`,
+              onConfirm: () => cancel.mutate(),
+            })
+          }
         />
       ) : null}
       <CommentThread type="demand" id={d.id} />

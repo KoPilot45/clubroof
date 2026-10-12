@@ -17,8 +17,9 @@ export const radii = {
   sm: 6,
   md: 10,
   lg: 16,
-  xl: 24,
-  /** Blickfangkarte (Hero) */
+  /** Karte, Fläche, Kachel (Stil „Anstoß“) */
+  xl: 22,
+  /** Blickfangkarte (Plakat, Hero-Block), Fenster von unten, Dialog */
   xxl: 28,
   pill: 999,
 } as const;
@@ -26,17 +27,21 @@ export const radii = {
 /** Feste Größen: Bedienelemente erreichen mindestens 44 pt (Apple Human Interface Guidelines). */
 export const sizes = {
   touchTarget: 44,
-  button: 48,
-  buttonSmall: 44,
-  chipHeight: 32,
-  input: 48,
+  /** Hauptknopf 52–56 */
+  button: 54,
+  /** Nebenknopf 46–50 */
+  buttonSmall: 46,
+  chipHeight: 36,
+  /** Feld 54–58 */
+  input: 56,
+  /** Symbolfläche in Kacheln und Zeilen */
   iconTile: 40,
   iconTileLarge: 52,
-  avatar: 48,
-  logo: 48,
-  headerButton: 46,
-  tabBar: 68,
-  tabItem: 48,
+  avatar: 42,
+  logo: 44,
+  headerButton: 44,
+  tabBar: 64,
+  tabItem: 46,
 } as const;
 
 /** Weiche Schatten im hellen Modus; im dunklen Modus tragen Rahmen und Flächenstufen die Tiefe. */
@@ -55,14 +60,14 @@ export const motion = {
 } as const;
 
 export const fontSizes = {
-  chip: 11,
-  caption: 12,
-  label: 13,
+  chip: 13.5,
+  caption: 12.5,
+  label: 13.5,
   body: 15,
   bodyLarge: 17,
-  title: 20,
-  section: 22,
-  headline: 26,
+  title: 22,
+  section: 21,
+  headline: 28,
   display: 32,
   hero: 46,
 } as const;

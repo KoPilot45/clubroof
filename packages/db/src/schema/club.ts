@@ -24,6 +24,8 @@ export const clubs = pgTable('clubs', {
   id: id(),
   name: text().notNull(),
   shortName: text().notNull(),
+  /** Vereinskürzel (2–4 Zeichen, Großbuchstaben/Ziffern); leer = Vorgabe aus den Initialen des Kurznamens */
+  shortCode: text(),
   slug: text().notNull().unique(),
   foundedYear: integer(),
   logoUrl: text(),

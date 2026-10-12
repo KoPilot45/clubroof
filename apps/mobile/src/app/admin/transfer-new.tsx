@@ -99,7 +99,21 @@ export default function NewTransferScreen() {
     (kind !== 'join' || external.trim().length > 1);
 
   return (
-    <Screen edges={[]}>
+    <Screen
+      edges={[]}
+      footer={
+        <>
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          <Button
+            label="Bewegung erfassen"
+            icon="checkmark"
+            disabled={!valid}
+            loading={save.isPending}
+            onPress={() => save.mutate()}
+          />
+        </>
+      }
+    >
       <Card style={{ gap: 10 }}>
         {person ? (
           <>
@@ -166,14 +180,6 @@ export default function NewTransferScreen() {
         ) : null}
         <TextField label="Notiz (optional)" value={note} onChangeText={setNote} maxLength={300} />
       </Card>
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      <Button
-        label="Bewegung erfassen"
-        icon="checkmark"
-        disabled={!valid}
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
     </Screen>
   );
 }

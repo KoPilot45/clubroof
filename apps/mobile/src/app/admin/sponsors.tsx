@@ -33,6 +33,7 @@ import { RequestError } from '@/lib/api';
 import { todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { pickFile } from '@/lib/upload';
+import { useConfirmDelete } from '@/lib/confirm';
 import { t } from '@/lib/i18n';
 
 const STATUS = {
@@ -74,6 +75,7 @@ const empty = (): Form => ({
 
 /** Sponsoren pflegen (Vereinsadministration): Reihenfolge ziehen, Bilder, Link, Stufe, Laufzeit, Zuordnung. */
 export default function AdminSponsorsScreen() {
+  const confirmDelete = useConfirmDelete();
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
   const data = useQuery({
@@ -335,7 +337,12 @@ export default function AdminSponsorsScreen() {
                   variant="danger"
                   style={{ flex: 1 }}
                   loading={remove.isPending}
-                  onPress={() => remove.mutate(form.id!)}
+                  onPress={() =>
+                    confirmDelete({
+                      name: form.name,
+                      onConfirm: () => remove.mutate(form.id!),
+                    })
+                  }
                 />
               ) : null}
             </View>

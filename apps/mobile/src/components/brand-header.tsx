@@ -5,28 +5,40 @@
  */
 import { useId, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import Svg, {
+  Circle,
+  Defs,
+  LinearGradient,
+  Path,
+  RadialGradient,
+  Rect,
+  Stop,
+} from 'react-native-svg';
+import { PosterMark } from '@/components/poster-mark';
 import { Text } from '@/components/app-text';
 import { useTheme } from '@/lib/theme';
 
 export const CLUBROOF_BLUE = '#002AFA';
 export const CLUBROOF_CYAN = '#00C3FF';
 
-/** Verlaufsfläche für den Kopf der Anmeldeseite; Inhalt liegt darüber. */
+/**
+ * Kopf der Anmeldeseite im Plakat-Stil „Anstoß“: radialer Verlauf in den Farben des Vereins (bzw. Clubroof),
+ * unten in den Hintergrund überblendet, dahinter das Vereinskürzel als Wasserzeichen; Inhalt liegt darüber.
+ */
 export function GradientHeader({
-  from,
-  to,
-  decor = 'rgba(255,255,255,0.14)',
+  code,
+  rings,
   children,
   style,
 }: {
-  from: string;
-  to: string;
-  /** Farbe der Wellen und des Kreises (wie in der Blickfangkarte); Vereine nutzen `hero.decor` */
-  decor?: string;
+  /** Vereinskürzel als Wasserzeichen; ohne Kürzel Rasenstreifen (nur wenn `rings` fehlt) */
+  code?: string | null;
+  /** Clubroof ohne Verein: konzentrische Kreise statt Kürzel */
+  rings?: boolean;
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
 }) {
+  const { colors } = useTheme();
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
   return (
     <View style={{ overflow: 'hidden' }}>
@@ -34,27 +46,48 @@ export function GradientHeader({
         style={StyleSheet.absoluteFill}
         width="100%"
         height="100%"
-        viewBox="0 0 306 270"
-        preserveAspectRatio="xMidYMid slice"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
         aria-hidden
       >
         <Defs>
-          <LinearGradient id={id} x1="0.3" y1="0" x2="0.7" y2="1">
-            <Stop offset="0" stopColor={from} />
-            <Stop offset="0.62" stopColor={to} />
+          <RadialGradient id={id} cx="80" cy="0" rx="120" ry="80" gradientUnits="userSpaceOnUse">
+            <Stop offset="0" stopColor={colors.anstoss.poster.from} />
+            <Stop offset="0.45" stopColor={colors.anstoss.poster.to} />
+            <Stop offset="1" stopColor={colors.background} />
+          </RadialGradient>
+          <LinearGradient id={`${id}f`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0.4" stopColor={colors.background} stopOpacity={0} />
+            <Stop offset="1" stopColor={colors.background} stopOpacity={1} />
           </LinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="306" height="270" fill={`url(#${id})`} />
-        <Path
-          d="M0 160 C50 120 100 200 153 160 C206 120 256 180 306 140 L306 270 L0 270Z"
-          fill={decor}
-        />
-        <Path
-          d="M0 200 C60 170 105 235 165 200 C225 170 265 215 306 190 L306 270 L0 270Z"
-          fill={decor}
-        />
-        <Circle cx="270" cy="28" r="64" fill={decor} />
+        <Rect x="0" y="0" width="100" height="100" fill={`url(#${id})`} />
+        <Rect x="0" y="0" width="100" height="100" fill={`url(#${id}f)`} />
       </Svg>
+      {rings ? (
+        <Svg
+          style={StyleSheet.absoluteFill}
+          width="100%"
+          height="100%"
+          viewBox="0 0 390 450"
+          preserveAspectRatio="xMidYMin slice"
+          aria-hidden
+        >
+          {[70, 130, 190].map((r) => (
+            <Circle
+              key={r}
+              cx={195}
+              cy={150}
+              r={r}
+              fill="none"
+              stroke="rgba(255,255,255,0.08)"
+              strokeWidth={2}
+            />
+          ))}
+        </Svg>
+      ) : (
+        <PosterMark code={code} />
+      )}
       {/* eigene Ebene über dem Hintergrund: absolut positionierte Flächen liegen sonst über dem Inhalt */}
       <View style={[style, { position: 'relative', zIndex: 1 }]}>{children}</View>
     </View>

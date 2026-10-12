@@ -343,7 +343,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
               highlights={o.highlights}
               squad={o.squad}
               leaguePosition={o.leaguePosition}
-              topScorer={o.topScorer}
+              composition={o.composition}
             />
           ) : null}
 

@@ -22,7 +22,7 @@ import {
 } from '@/components/ui';
 import { SponsorBannerCard } from '@/components/sponsor-banner';
 import { GridLegend } from '@/components/kind-legend';
-import { formatDateTile, formatTime } from '@/lib/format';
+import { formatDateTile, formatShortDate, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { dateFormat } from '@/lib/i18n';
 
@@ -100,7 +100,20 @@ export default function EventsTab() {
   const filtered = (upcoming.data ?? []).filter(matches);
   const pastList = (past.data ?? []).filter(matches).slice(0, 8);
   const hero = filtered.find((e) => e.status === 'scheduled');
-  const rest = filtered.filter((e) => e !== hero).slice(0, 5);
+  // Woche (Montag bis Sonntag) des nächsten Termins: Titel „Woche 12.10. – 18.10.“, Liste ohne Blickfang
+  const weekStart = hero ? new Date(hero.startsAt) : null;
+  if (weekStart) {
+    weekStart.setHours(0, 0, 0, 0);
+    weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+  }
+  const weekEnd = weekStart ? new Date(weekStart.getTime() + 7 * 24 * 3600 * 1000) : null;
+  const rest = filtered
+    .filter((e) => e !== hero)
+    .filter((e) => !weekEnd || new Date(e.startsAt) < weekEnd)
+    .slice(0, 8);
+  const weekTitle = weekStart
+    ? `Woche ${formatShortDate(dayKey(weekStart))} – ${formatShortDate(dayKey(new Date(weekEnd!.getTime() - 1)))}`
+    : 'Als Nächstes';
   const all = (monthEvents.data ?? []).filter(matches);
   const ofDay = all.filter((e) => day && dayKey(new Date(e.startsAt)) === day);
   const dutiesOfDay = (duties.data ?? []).filter(
@@ -152,30 +165,30 @@ export default function EventsTab() {
         ]}
         selected={[filter]}
         onToggle={setFilter}
+        tone="light"
+        scroll
       />
 
       {when === 'upcoming' ? (
-        <Section
-          title="Als Nächstes"
-          action="Alle anzeigen"
-          onAction={() => router.push('/events')}
-        >
+        <>
           {hero ? <FeaturedEventCard event={hero} /> : null}
-          {upcoming.isPending ? <Loading /> : null}
-          {upcoming.error ? (
-            <ErrorNotice error={upcoming.error} onRetry={() => upcoming.refetch()} />
-          ) : null}
-          {upcoming.data && filtered.length === 0 ? (
-            <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
-          ) : null}
-          {rest.length > 0 ? (
-            <Card>
-              {rest.map((e, i) => (
-                <EventRow key={e.id} event={e} first={i === 0} />
-              ))}
-            </Card>
-          ) : null}
-        </Section>
+          <Section title={weekTitle} action="Alle anzeigen" onAction={() => router.push('/events')}>
+            {upcoming.isPending ? <Loading /> : null}
+            {upcoming.error ? (
+              <ErrorNotice error={upcoming.error} onRetry={() => upcoming.refetch()} />
+            ) : null}
+            {upcoming.data && filtered.length === 0 ? (
+              <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
+            ) : null}
+            {rest.length > 0 ? (
+              <Card list>
+                {rest.map((e, i) => (
+                  <EventRow key={e.id} event={e} first={i === 0} />
+                ))}
+              </Card>
+            ) : null}
+          </Section>
+        </>
       ) : (
         <Section title="Zuletzt" action="Archiv" onAction={() => router.push('/events/archive')}>
           {past.isPending ? <Loading /> : null}

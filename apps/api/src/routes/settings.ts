@@ -1,5 +1,6 @@
 import {
   PITCH_SURFACES,
+  effectiveClubCode,
   type ClubSettings,
   type LoginResponse,
   type PublicClub,
@@ -46,6 +47,7 @@ export const settingsRoutes: FastifyPluginAsyncZod = async (app) => {
         body: z.object({
           name: z.string().trim().min(3).max(100).optional(),
           shortName: z.string().trim().min(2).max(40).optional(),
+          shortCode: z.string().trim().min(2).max(4).optional(),
           colorTheme: z.enum(CLUB_COLOR_KEYS).optional(),
           colorMode: z.enum(['light', 'dark', 'system']).optional(),
           requireTwoFactor: z.boolean().optional(),
@@ -106,6 +108,7 @@ export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
       club: {
         name: club.name,
         shortName: club.shortName,
+        shortCode: effectiveClubCode(club.shortCode, club.shortName),
         colorTheme: club.colorTheme,
         city: club.city,
         foundedYear: club.foundedYear,
@@ -156,6 +159,7 @@ export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
           club: z.object({
             name: z.string().trim().min(3).max(100),
             shortName: z.string().trim().min(2).max(40),
+            shortCode: z.string().trim().min(2).max(4).optional(),
             colorTheme: z.enum(CLUB_COLOR_KEYS),
           }),
           orgUnits: z

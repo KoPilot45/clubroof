@@ -29,6 +29,7 @@ import { parseGermanDate, toGermanDate } from '@/lib/dates';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
+import { useConfirmDelete } from '@/lib/confirm';
 
 const STATUS: Record<MembershipStatus, { label: string; tone: 'success' | 'neutral' | 'urgent' }> =
   {
@@ -40,6 +41,7 @@ const STATUS: Record<MembershipStatus, { label: string; tone: 'success' | 'neutr
 type Request = { path: string; method: 'POST' | 'PATCH' | 'DELETE'; body?: unknown };
 
 export default function MemberScreen() {
+  const confirmDelete = useConfirmDelete();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
@@ -142,7 +144,15 @@ export default function MemberScreen() {
                   <Button
                     label="Beenden"
                     variant="outline"
-                    onPress={() => run({ path: `/memberships/${ms.id}`, method: 'DELETE' })}
+                    onPress={() =>
+                      confirmDelete({
+                        title: 'Wirklich beenden?',
+                        confirmLabel: 'Beenden',
+                        name: ms.team.name,
+                        text: `Die Zugehörigkeit zu „${ms.team.name}“ wird beendet.`,
+                        onConfirm: () => run({ path: `/memberships/${ms.id}`, method: 'DELETE' }),
+                      })
+                    }
                   />
                 ) : undefined
               }
@@ -172,7 +182,15 @@ export default function MemberScreen() {
                   <Button
                     label="Entziehen"
                     variant="outline"
-                    onPress={() => run({ path: `/roles/${r.id}`, method: 'DELETE' })}
+                    onPress={() =>
+                      confirmDelete({
+                        title: 'Wirklich entziehen?',
+                        confirmLabel: 'Entziehen',
+                        name: r.roleName,
+                        text: `Die Rolle „${r.roleName}“ wird entzogen.`,
+                        onConfirm: () => run({ path: `/roles/${r.id}`, method: 'DELETE' }),
+                      })
+                    }
                   />
                 ) : undefined
               }

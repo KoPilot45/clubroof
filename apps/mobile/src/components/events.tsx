@@ -3,12 +3,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 import { RequestError } from '@/lib/api';
 import {
   clubInitials,
   countdown,
   formatDateTile,
+  formatDay,
   formatLongDate,
   formatRemaining,
   formatTime,
@@ -20,6 +21,9 @@ import {
   MATCH_KIND_LABELS,
 } from '@/lib/labels';
 import { hapticError, hapticSuccess } from '@/lib/haptics';
+import { PressScale } from '@/lib/motion';
+import { useTeamColor } from '@/lib/team-colors';
+import { Text } from '@/components/app-text';
 import { enqueueResponse, queuedFor, useOutbox } from '@/lib/outbox';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -37,6 +41,7 @@ import {
   SwipeRow,
   TeamBadge,
   TextField,
+  withAlpha,
   type IconName,
 } from './ui';
 import { useToast } from '@/lib/toast';
@@ -70,71 +75,70 @@ export function AttendanceChip({ status }: { status: AttendanceStatus }) {
   return <Chip tone={STATUS_TONE[status]} label={ATTENDANCE_LABELS[status]} />;
 }
 
-/** Blickfang „Als Nächstes“ (Termine): der nächste Termin auf dem Verlauf der Vereinsfarbe. */
+/** Blickfang „Als Nächstes“ (Termine): der nächste Termin als Hero, Uhrzeit groß. */
 export function FeaturedEventCard({ event }: { event: EventSummary }) {
   const { colors } = useTheme();
   const on = colors.hero.onHero;
   const mine = event.myResponses[0];
-  const tile = formatDateTile(event.startsAt);
+  const multi = event.myResponses.length > 1 || mine?.relation === 'child';
+  const c = countdown(event.startsAt);
+  const left =
+    c.days >= 1
+      ? c.days === 1
+        ? 'In 1 Tag'
+        : `In ${c.days} Tagen`
+      : c.hours >= 1
+        ? `In ${c.hours} Std.`
+        : `In ${Math.max(1, c.minutes)} Min.`;
   return (
     <HeroCard onPress={() => router.push(`/events/${event.id}`)} accessibilityLabel={event.title}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <View style={{ alignItems: 'center', minWidth: 64 }}>
-          <T variant="caption" color={on}>
-            {`${tile.weekday} ${tile.day}.`}
-          </T>
-          <T variant="figure" color={on} style={{ fontSize: 34, lineHeight: 40 }}>
-            {formatTime(event.startsAt)}
-          </T>
-        </View>
-        <View style={{ flex: 1, gap: 4 }}>
+      <T variant="overline" color={on}>
+        {[t('Als Nächstes'), t(left)].join(' · ')}
+      </T>
+      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+        <T variant="figure" color={on} style={{ fontSize: 72, lineHeight: 72 }}>
+          {formatTime(event.startsAt)}
+        </T>
+        <T variant="headline" color={on} numberOfLines={2} style={{ fontSize: 28, flexShrink: 1 }}>
+          {event.title}
+        </T>
+      </View>
+      <T color="rgba(255,255,255,0.85)" style={{ fontSize: 13.5 }}>
+        {[formatDay(event.startsAt), event.location].filter(Boolean).join(' · ')}
+      </T>
+      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+        <View
+          style={{
+            borderRadius: 999,
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            backgroundColor: colors.primary,
+          }}
+        >
           <T
-            variant="headline"
-            color={on}
-            numberOfLines={2}
-            style={{ fontSize: 20, lineHeight: 24 }}
+            variant="caption"
+            color={colors.onPrimary}
+            style={{ fontWeight: '800', fontSize: 11.5 }}
           >
-            {event.title}
+            {[event.team ? event.team.badge : 'Verein', multi && mine ? mine.firstName : null]
+              .filter(Boolean)
+              .join(' · ')}
           </T>
-          {event.location ? (
-            <T variant="caption" color={on} numberOfLines={1}>
-              {event.location}
-            </T>
-          ) : null}
-          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-            <View
-              style={{
-                borderRadius: 999,
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                backgroundColor: on,
-              }}
-            >
-              <T variant="caption" color={colors.hero.from} style={{ fontWeight: '700' }}>
-                {event.team ? event.team.badge : 'Verein'}
-              </T>
-            </View>
-            {mine ? (
-              <View
-                style={{
-                  borderRadius: 999,
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  backgroundColor: 'rgba(255,255,255,0.22)',
-                }}
-              >
-                <T variant="caption" color={on} style={{ fontWeight: '700' }}>
-                  {event.myResponses.length > 1 || mine.relation === 'child'
-                    ? `${mine.relation === 'self' ? 'Ich' : mine.firstName}: ${ATTENDANCE_LABELS[mine.status]}`
-                    : mine.status === 'pending'
-                      ? 'Zusage offen'
-                      : ATTENDANCE_LABELS[mine.status]}
-                </T>
-              </View>
-            ) : null}
-          </View>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={on} />
+        {mine ? (
+          <View
+            style={{
+              borderRadius: 999,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              backgroundColor: 'rgba(255,255,255,0.2)',
+            }}
+          >
+            <T variant="caption" color={on} style={{ fontWeight: '800', fontSize: 11.5 }}>
+              {mine.status === 'pending' ? 'Zusage offen' : ATTENDANCE_LABELS[mine.status]}
+            </T>
+          </View>
+        ) : null}
       </View>
     </HeroCard>
   );
@@ -177,6 +181,7 @@ export function EventRow({
   openable?: boolean;
 }) {
   const cancelled = event.status === 'cancelled';
+  const teamColor = useTeamColor(event.team?.id);
   const mine = event.myResponses[0];
   const multi = event.myResponses.length > 1 || mine?.relation === 'child';
   const outbox = useOutbox();
@@ -207,7 +212,13 @@ export function EventRow({
     <ListRow
       first={first}
       onPress={openable ? () => router.push(`/events/${event.id}`) : undefined}
-      leading={<DateTile {...formatDateTile(event.startsAt)} muted={cancelled} />}
+      leading={
+        <DateTile
+          {...formatDateTile(event.startsAt)}
+          muted={cancelled}
+          color={teamColor ?? undefined}
+        />
+      }
       title={event.title}
       strike={cancelled}
       subtitle={
@@ -477,7 +488,7 @@ export function AnswerButtons({
   onMaybe,
   onNo,
   busy = null,
-  tone = 'surface',
+  variant = 'pills',
 }: {
   status: 'yes' | 'no' | 'maybe' | 'pending' | null;
   onYes: () => void;
@@ -486,47 +497,180 @@ export function AnswerButtons({
   /** Antwort, die gerade gesendet wird (Ladeanzeige) */
   busy?: 'yes' | 'maybe' | 'no' | null;
   tone?: 'surface' | 'hero';
+  /** pills: drei Pillen (Home); segment: ein Umschalter in einem Behälter (Detailseiten) */
+  variant?: 'pills' | 'segment';
 }) {
-  const hero = tone === 'hero';
-  const outline = hero ? ('heroOutline' as const) : ('outline' as const);
+  const { colors } = useTheme();
+  const answered = status === 'yes' || status === 'maybe' || status === 'no';
+  // Drei Pillen (Anstoß): Zusagen in der Vereinsfarbe, Unsicher in Bernstein, Absagen in Rot –
+  // jeweils mit Beschriftung. Nach der Antwort bleibt nur die gewählte Pille gefüllt.
+  const pill = (
+    key: 'yes' | 'maybe' | 'no',
+    label: string,
+    icon: IconName,
+    fill: string,
+    onFill: string,
+    tint: string,
+    onTint: string,
+    onPress: () => void,
+  ) => {
+    const chosen = status === key;
+    const dim = answered && !chosen;
+    return (
+      <PressScale
+        key={key}
+        accessibilityRole="button"
+        accessibilityState={{ selected: chosen, busy: busy === key }}
+        accessibilityLabel={t(label)}
+        disabled={busy !== null}
+        onPress={onPress}
+        style={{
+          flex: 1,
+          minHeight: 52,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 7,
+          paddingHorizontal: 8,
+          borderRadius: 26,
+          backgroundColor: chosen || (!answered && key === 'yes') ? fill : tint,
+          opacity: dim ? 0.6 : 1,
+        }}
+      >
+        {busy === key ? (
+          <ActivityIndicator color={chosen || (!answered && key === 'yes') ? onFill : onTint} />
+        ) : (
+          <>
+            <Ionicons
+              name={icon}
+              size={19}
+              color={chosen || (!answered && key === 'yes') ? onFill : onTint}
+            />
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 14,
+                fontWeight: '800',
+                color: chosen || (!answered && key === 'yes') ? onFill : onTint,
+              }}
+            >
+              {label}
+            </Text>
+          </>
+        )}
+      </PressScale>
+    );
+  };
+  if (variant === 'segment') {
+    const seg = (
+      key: 'yes' | 'maybe' | 'no',
+      label: string,
+      fill: string,
+      onFill: string,
+      onPress: () => void,
+    ) => {
+      const chosen = status === key;
+      return (
+        <PressScale
+          key={key}
+          accessibilityRole="button"
+          accessibilityState={{ selected: chosen, busy: busy === key }}
+          accessibilityLabel={t(label)}
+          disabled={busy !== null}
+          onPress={onPress}
+          style={{
+            flex: 1,
+            minHeight: 44,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 12,
+            paddingVertical: 11,
+            backgroundColor: chosen ? fill : 'transparent',
+          }}
+        >
+          {busy === key ? (
+            <ActivityIndicator color={onFill} />
+          ) : (
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 13.5,
+                fontWeight: '700',
+                color: chosen ? onFill : colors.onSurface,
+              }}
+            >
+              {label}
+            </Text>
+          )}
+        </PressScale>
+      );
+    };
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: 4,
+          padding: 4,
+          borderRadius: 16,
+          backgroundColor: withAlpha('#ffffff', 0.07),
+        }}
+      >
+        {seg(
+          'yes',
+          status === 'yes' ? 'Zugesagt' : 'Zusagen',
+          colors.primary,
+          colors.onPrimary,
+          onYes,
+        )}
+        {seg(
+          'maybe',
+          status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher',
+          colors.status.action.solid,
+          colors.status.action.onSolid,
+          onMaybe,
+        )}
+        {seg(
+          'no',
+          status === 'no' ? 'Abgesagt' : 'Absagen',
+          colors.status.urgent.solid,
+          colors.status.urgent.onSolid,
+          onNo,
+        )}
+      </View>
+    );
+  }
   return (
-    <View style={{ flexDirection: 'row', gap: 8 }}>
-      <Button
-        style={{ flex: 1 }}
-        label={status === 'yes' ? 'Zugesagt' : 'Zusagen'}
-        icon="checkmark"
-        hideLabel
-        size={hero ? 'sm' : 'md'}
-        variant={
-          status === 'yes' || status === 'pending' || status === null
-            ? hero
-              ? 'hero'
-              : 'primary'
-            : outline
-        }
-        loading={busy === 'yes'}
-        onPress={onYes}
-      />
-      <Button
-        style={{ flex: 1 }}
-        label={status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher'}
-        icon="help"
-        hideLabel
-        size={hero ? 'sm' : 'md'}
-        variant={status === 'maybe' ? (hero ? 'hero' : 'action') : outline}
-        loading={busy === 'maybe'}
-        onPress={onMaybe}
-      />
-      <Button
-        style={{ flex: 1 }}
-        label={status === 'no' ? 'Abgesagt' : 'Absagen'}
-        icon="close"
-        hideLabel
-        size={hero ? 'sm' : 'md'}
-        variant={status === 'no' ? (hero ? 'hero' : 'danger') : outline}
-        loading={busy === 'no'}
-        onPress={onNo}
-      />
+    <View style={{ flexDirection: 'row', gap: 10 }}>
+      {pill(
+        'yes',
+        status === 'yes' ? 'Zugesagt' : 'Zusagen',
+        'checkmark',
+        colors.primary,
+        colors.onPrimary,
+        withAlpha(colors.primary, 0.16),
+        colors.primaryText,
+        onYes,
+      )}
+      {pill(
+        'maybe',
+        status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher',
+        'help',
+        colors.status.action.solid,
+        colors.status.action.onSolid,
+        withAlpha(colors.status.action.solid, 0.16),
+        colors.status.action.onContainer,
+        onMaybe,
+      )}
+      {pill(
+        'no',
+        status === 'no' ? 'Abgesagt' : 'Absagen',
+        'close',
+        colors.status.urgent.solid,
+        colors.status.urgent.onSolid,
+        withAlpha(colors.status.urgent.solid, 0.16),
+        colors.status.urgent.onContainer,
+        onNo,
+      )}
     </View>
   );
 }
@@ -538,8 +682,10 @@ export function AnswerButtons({
 export function ResponseControls({
   event,
   tone = 'surface',
+  variant = 'pills',
 }: {
   event: EventSummary;
+  variant?: 'pills' | 'segment';
   /** hero: Schaltflächen auf der Blickfangkarte; der Grund wird in einem Blatt von unten abgefragt */
   tone?: 'surface' | 'hero';
 }) {
@@ -641,6 +787,7 @@ export function ResponseControls({
           ) : (
             <AnswerButtons
               tone={tone}
+              variant={variant}
               status={eff(r)}
               busy={
                 respond.isPending && respond.variables?.personId === r.personId

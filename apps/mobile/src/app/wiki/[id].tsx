@@ -10,6 +10,7 @@ import {
   Chip,
   ErrorNotice,
   Loading,
+  MoreMenu,
   Screen,
   T,
   TextField,
@@ -17,8 +18,10 @@ import {
 import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { useConfirmDelete } from '@/lib/confirm';
 
 export default function WikiPageScreen() {
+  const confirmDelete = useConfirmDelete();
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
   const { api } = useSignedIn();
@@ -130,12 +133,16 @@ export default function WikiPageScreen() {
             style={{ flex: 1 }}
             onPress={() => setEditing(true)}
           />
-          <Button
-            label="Löschen"
-            variant="danger"
-            style={{ flex: 1 }}
-            loading={remove.isPending}
-            onPress={() => remove.mutate()}
+          <MoreMenu
+            title={p.title}
+            actions={[
+              {
+                label: 'Löschen',
+                icon: 'trash-outline',
+                danger: true,
+                onPress: () => confirmDelete({ name: p.title, onConfirm: () => remove.mutate() }),
+              },
+            ]}
           />
         </View>
       ) : null}

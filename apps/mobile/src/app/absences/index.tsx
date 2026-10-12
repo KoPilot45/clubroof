@@ -1,7 +1,6 @@
 import type { Absence } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { View } from 'react-native';
 import {
   Button,
@@ -17,6 +16,7 @@ import {
 } from '@/components/ui';
 import { ABSENCE_ICONS, ABSENCE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
+import { useConfirmDelete } from '@/lib/confirm';
 import { dateFormat } from '@/lib/i18n';
 
 const dateFmt = dateFormat({
@@ -30,7 +30,7 @@ const formatDate = (iso: string) => dateFmt.format(new Date(`${iso}T00:00:00Z`))
 function AbsenceCard({ absence, showPerson }: { absence: Absence; showPerson: boolean }) {
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
-  const [confirm, setConfirm] = useState(false);
+  const confirmDelete = useConfirmDelete();
   const remove = useMutation({
     mutationFn: () => api(`/absences/${absence.id}`, { method: 'DELETE' }),
     onSuccess: () => {
@@ -72,36 +72,19 @@ function AbsenceCard({ absence, showPerson }: { absence: Absence; showPerson: bo
         />
       </View>
       {absence.note ? <T variant="caption">„{absence.note}“</T> : null}
-      {confirm ? (
-        <View style={{ gap: 8 }}>
-          <T variant="caption">
-            Beim Löschen werden die automatischen Absagen zurückgenommen. Bei Mannschaften mit
-            aktiver Zu-/Absage ist die Rückmeldung danach wieder offen.
-          </T>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <Button
-              style={{ flex: 1 }}
-              label="Behalten"
-              variant="outline"
-              onPress={() => setConfirm(false)}
-            />
-            <Button
-              style={{ flex: 1 }}
-              label="Löschen"
-              variant="danger"
-              loading={remove.isPending}
-              onPress={() => remove.mutate()}
-            />
-          </View>
-        </View>
-      ) : (
-        <Button
-          label="Abwesenheit löschen"
-          variant="outline"
-          icon="trash-outline"
-          onPress={() => setConfirm(true)}
-        />
-      )}
+      <Button
+        label="Abwesenheit löschen"
+        variant="outline"
+        icon="trash-outline"
+        loading={remove.isPending}
+        onPress={() =>
+          confirmDelete({
+            name: `${ABSENCE_LABELS[absence.kind]} · ${range}`,
+            text: 'Beim Löschen werden die automatischen Absagen zurückgenommen. Bei Mannschaften mit aktiver Zu-/Absage ist die Rückmeldung danach wieder offen.',
+            onConfirm: () => remove.mutate(),
+          })
+        }
+      />
     </Card>
   );
 }

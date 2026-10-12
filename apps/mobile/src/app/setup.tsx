@@ -1,5 +1,7 @@
 import {
   MODULES,
+  defaultClubCode,
+  normalizeClubCode,
   type ClubColorKey,
   type LoginResponse,
   type PitchSurface,
@@ -12,6 +14,7 @@ import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { ClubroofLogo } from '@/components/brand-header';
 import { ClubColorPicker } from '@/components/club-color';
+import { PosterMark } from '@/components/poster-mark';
 import { ChoiceCard, NumberStepper, WizardShell, useWizardDraft } from '@/components/wizard';
 import {
   Button,
@@ -19,6 +22,7 @@ import {
   ChoiceChips,
   Chip,
   Crest,
+  GradientFill,
   T,
   TextField,
   type IconName,
@@ -124,6 +128,8 @@ type Draft = {
   step: number;
   name: string;
   shortName: string;
+  /** Kürzel; leer = Vorgabe aus den Initialen des Kurznamens */
+  code: string;
   venues: VenueDraft[];
   color: ClubColorKey;
   orgMode: 'single' | 'split';
@@ -136,6 +142,7 @@ const INITIAL: Draft = {
   step: 0,
   name: '',
   shortName: '',
+  code: '',
   venues: [emptyVenue()],
   color: 'green',
   orgMode: 'split',
@@ -158,7 +165,7 @@ export default function SetupScreen() {
 export function SetupWizard({ demo }: { demo?: boolean }) {
   // Clubroof-Farben (Blau) während der Einrichtung; die Vereinsfarbe zeigt nur der Farbschritt als Vorschau
   return (
-    <ThemeProvider clubColor="blue">
+    <ThemeProvider clubColor="clubroof">
       <Wizard demo={demo} />
     </ThemeProvider>
   );
@@ -263,7 +270,12 @@ function Wizard({ demo }: { demo?: boolean }) {
       const body: SetupInput = {
         setupToken: token.trim(),
         emailProof: proof!.value,
-        club: { name: d.name.trim(), shortName: d.shortName.trim(), colorTheme: d.color },
+        club: {
+          name: d.name.trim(),
+          shortName: d.shortName.trim(),
+          shortCode: d.code || defaultClubCode(d.shortName.trim()),
+          colorTheme: d.color,
+        },
         orgUnits:
           d.orgMode === 'split'
             ? [
@@ -439,6 +451,26 @@ function Wizard({ demo }: { demo?: boolean }) {
           maxLength={40}
           placeholder={t('z. B. SV Grün-Weiß')}
         />
+        <TextField
+          label="Kürzel (2 bis 4 Zeichen)"
+          value={d.code || (d.shortName.trim().length >= 2 ? defaultClubCode(d.shortName) : '')}
+          onChangeText={(v) => patch({ code: normalizeClubCode(v) })}
+          maxLength={4}
+          hint="Steht groß im Plakat der Startseite und ersetzt das Wappen ohne Logo."
+        />
+        <View
+          style={{
+            height: 170,
+            borderRadius: 24,
+            overflow: 'hidden',
+            backgroundColor: colors.anstoss.poster.to,
+          }}
+        >
+          <GradientFill from={colors.anstoss.poster.from} to={colors.background} vertical />
+          <PosterMark
+            code={d.code || (d.shortName.trim().length >= 2 ? defaultClubCode(d.shortName) : '')}
+          />
+        </View>
       </WizardShell>
     );
 
@@ -616,7 +648,7 @@ function Wizard({ demo }: { demo?: boolean }) {
           hint="Die Farbe änderst du später jederzeit unter Verwaltung › Verein & Design."
         >
           <ClubColorPicker value={d.color} onChange={(c) => patch({ color: c })} />
-          <ColorPreview shortName={d.shortName} />
+          <ColorPreview shortName={d.shortName} code={d.code || defaultClubCode(d.shortName)} />
         </WizardShell>
       </ThemeProvider>
     );
@@ -822,12 +854,12 @@ function Wizard({ demo }: { demo?: boolean }) {
 }
 
 /** Vorschau der gewählten Vereinsfarbe: Wappen, Blickfang und Knopf. */
-function ColorPreview({ shortName }: { shortName: string }) {
+function ColorPreview({ shortName, code }: { shortName: string; code: string }) {
   const { colors } = useTheme();
   return (
     <Card style={{ gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <Crest initials={clubInitials(shortName || 'CR')} size={36} />
+        <Crest initials={code || 'CR'} size={36} />
         <T variant="heading">{shortName.trim() || 'Dein Verein'}</T>
       </View>
       <View
