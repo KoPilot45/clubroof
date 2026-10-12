@@ -299,6 +299,20 @@ export function Card({
   );
 }
 
+/** Das Plakat läuft so weit unter die Folgeelemente aus (px). */
+const POSTER_RUNOUT = 150;
+const POSTER_FADE: [number, number][] = [
+  [0, 0],
+  [0.12, 0.04],
+  [0.24, 0.12],
+  [0.36, 0.26],
+  [0.5, 0.46],
+  [0.64, 0.68],
+  [0.78, 0.86],
+  [0.9, 0.96],
+  [1, 1],
+];
+
 /**
  * Plakat bzw. Hero-Block (Stil „Anstoß“): radialer Verlauf Plakatfarbe 1 → 2 → Hintergrund, Radius 28,
  * Innenabstand 18, Schrift immer `hero.onHero`. Je Bildschirm genau eine. Inhalte setzt die Seite.
@@ -324,7 +338,7 @@ export function HeroCard({
   /** Wasserzeichen hinter dem Inhalt (Plakat-Kürzel, Rasenstreifen) */
   background?: ReactNode;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors, radii, isDark } = useTheme();
   // In den eigenen Bereichen trägt der Hero deren Farbe (Verwaltung violett, Vereinskasse blau)
   const pathname = usePathname();
   const area = pathname.startsWith('/admin')
@@ -344,7 +358,8 @@ export function HeroCard({
       style={{
         flexGrow: 1,
         borderRadius: radius,
-        overflow: 'hidden',
+        // Plakat: der Körper läuft 150 px über das Layout hinaus und blendet hinter den Folgeelementen aus
+        overflow: poster ? 'visible' : 'hidden',
         padding: poster ? 0 : 18,
         gap: poster ? 0 : 12,
         // Kartenkante im Hero-Block: 1 px Aufhellung
@@ -355,7 +370,7 @@ export function HeroCard({
       <Svg
         style={{ position: 'absolute', top: 0, left: 0 }}
         width={box?.w ?? 0}
-        height={box?.h ?? 0}
+        height={(box?.h ?? 0) + (poster ? POSTER_RUNOUT : 0)}
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
         aria-hidden
@@ -365,32 +380,37 @@ export function HeroCard({
             // CSS „120 % 80 % at 80 % 0“: in der gestreckten 0–100-Fläche ein Kreis (r) mit gestauchter Höhe
             <RadialGradient
               id={gradientId}
-              cx="80"
+              cx={isDark ? '80' : '85'}
               cy="0"
               r="120"
-              gradientTransform="scale(1 0.6667)"
+              gradientTransform={`scale(1 ${isDark ? 0.5833 : 0.65})`}
               gradientUnits="userSpaceOnUse"
             >
               <Stop offset="0" stopColor={colors.anstoss.poster.from} />
-              <Stop offset="0.45" stopColor={colors.anstoss.poster.to} />
-              <Stop offset="1" stopColor={colors.background} />
+              <Stop offset={isDark ? '0.55' : '0.99'} stopColor={colors.anstoss.poster.to} />
+              <Stop offset="1" stopColor={isDark ? colors.background : colors.anstoss.poster.to} />
             </RadialGradient>
           ) : (
             // CSS „120 % 120 % at 90 % 0“, Endfarbe bei 130 %: Kreis mit r = 156 in der gestreckten Fläche
             <RadialGradient id={gradientId} cx="90" cy="0" r="156" gradientUnits="userSpaceOnUse">
               <Stop offset="0" stopColor={palette?.from ?? colors.hero.from} />
               <Stop offset="0.46" stopColor={palette?.to ?? colors.hero.to} />
-              <Stop offset="1" stopColor={colors.background} />
+              <Stop
+                offset="1"
+                stopColor={isDark ? colors.background : (palette?.to ?? colors.hero.to)}
+              />
             </RadialGradient>
           )}
+          {/* Auslauf: neunstufige Überblendung zum Seitenhintergrund über die unteren 55 % des Körpers */}
           <LinearGradient id={`${gradientId}f`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0.4" stopColor={colors.background} stopOpacity={0} />
-            <Stop offset="1" stopColor={colors.background} stopOpacity={1} />
+            {POSTER_FADE.map(([at, alpha]) => (
+              <Stop key={at} offset={at} stopColor={colors.background} stopOpacity={alpha} />
+            ))}
           </LinearGradient>
         </Defs>
         <Rect x="0" y="0" width="100" height="100" fill={`url(#${gradientId})`} />
         {poster ? (
-          <Rect x="0" y="0" width="100" height="100" fill={`url(#${gradientId}f)`} />
+          <Rect x="0" y="45" width="100" height="55" fill={`url(#${gradientId}f)`} />
         ) : null}
       </Svg>
       <Honeycomb poster={poster} />
@@ -521,7 +541,8 @@ export function Sheet({
               height: 5,
               borderRadius: 3,
               marginTop: 10,
-              backgroundColor: 'rgba(255,255,255,0.25)',
+              backgroundColor: colors.anstoss.textTertiary,
+              opacity: 0.5,
             }}
           />
           <ScrollView
@@ -664,7 +685,7 @@ export function Chip({
     tone === 'primary'
       ? { bg: colors.primaryContainer, fg: colors.onPrimaryContainer }
       : tone === 'neutral'
-        ? { bg: 'rgba(255,255,255,0.08)', fg: colors.onSurfaceMuted }
+        ? { bg: colors.anstoss.overlay, fg: colors.onSurfaceMuted }
         : tone in colors.tints
           ? {
               bg: colors.tints[tone as TintKey].container,
@@ -718,7 +739,7 @@ export function TeamBadge({ badge }: { badge: string }) {
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: colors.anstoss.overlay,
       }}
     >
       <Text style={{ fontSize: 11.5, fontWeight: '800', color: colors.onSurface }}>{badge}</Text>
@@ -780,7 +801,7 @@ export function Button({
     // Nebenknopf: Fläche mit feinem Rand (Stil „Anstoß“)
     outline: {
       bg: colors.anstoss.card,
-      pressed: 'rgba(255,255,255,0.12)',
+      pressed: colors.anstoss.overlayStrong,
       fg: colors.onSurface,
       border: colors.anstoss.fieldBorder,
     },
@@ -804,8 +825,8 @@ export function Button({
       border: colors.status.action.solid,
     },
     neutral: {
-      bg: 'rgba(255,255,255,0.1)',
-      pressed: 'rgba(255,255,255,0.16)',
+      bg: colors.anstoss.overlayStrong,
+      pressed: colors.anstoss.overlayStrong,
       fg: colors.onSurface,
       border: 'transparent',
     },
@@ -906,7 +927,7 @@ export function Toggle({
       accessibilityLabel={label}
       value={value}
       disabled={disabled}
-      trackColor={{ true: colors.primary, false: 'rgba(255,255,255,0.22)' }}
+      trackColor={{ true: colors.primary, false: colors.anstoss.fieldBorder }}
       thumbColor="#FFFFFF"
       {...({ activeThumbColor: '#FFFFFF' } as object)}
       onValueChange={(v) => {
@@ -1314,7 +1335,7 @@ function SkeletonBlock({
   radius?: number;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { radii, motion } = useTheme();
+  const { colors, radii, motion } = useTheme();
   const opacity = useRef(new Animated.Value(0.45)).current;
   const [reduceMotion, setReduceMotion] = useState(false);
   useEffect(() => {
@@ -1348,7 +1369,7 @@ function SkeletonBlock({
           height,
           width,
           borderRadius: radius ?? radii.md,
-          backgroundColor: 'rgba(255,255,255,0.1)',
+          backgroundColor: colors.anstoss.overlayStrong,
           opacity,
         },
         style,
@@ -1918,7 +1939,7 @@ export function ChoiceChips<T extends string>({
               tone === 'urgent'
                 ? colors.status.urgent.solid
                 : tone === 'light'
-                  ? '#FFFFFF'
+                  ? colors.onSurface
                   : colors.primary;
             const onFill =
               tone === 'urgent'
@@ -2135,7 +2156,7 @@ export function DateStepper({
         borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: pressed ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.1)',
+        backgroundColor: pressed ? colors.anstoss.overlayStrong : colors.anstoss.overlay,
       })}
     >
       <Ionicons name={icon} size={18} color={colors.onSurface} />
@@ -2343,7 +2364,7 @@ export function TimeStepper({
           borderRadius: 18,
           borderWidth: 1.5,
           borderColor: open ? colors.primary : colors.anstoss.fieldBorder,
-          backgroundColor: pressed ? 'rgba(255,255,255,0.12)' : colors.anstoss.card,
+          backgroundColor: pressed ? colors.anstoss.overlayStrong : colors.anstoss.card,
         })}
       >
         <Ionicons name="time-outline" size={20} color={colors.primaryText} />
@@ -2439,7 +2460,7 @@ export function Segment<V extends string>({
         padding: 4,
         gap: 4,
         borderRadius: 16,
-        backgroundColor: withAlpha('#ffffff', 0.07),
+        backgroundColor: colors.anstoss.overlay,
       }}
     >
       {options.map((o) => {
@@ -2705,7 +2726,7 @@ export function MoreMenu({
           borderRadius: 22,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'rgba(255,255,255,0.1)',
+          backgroundColor: colors.anstoss.overlayStrong,
         }}
       >
         <Ionicons name="ellipsis-horizontal" size={20} color={colors.onSurface} />

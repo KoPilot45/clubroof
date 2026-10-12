@@ -69,6 +69,8 @@ export async function launch() {
         viewport: { width, height },
         timezoneId: 'Europe/Berlin',
         locale: 'de-DE',
+        // Darstellung „Wie Gerät“: SCHEME=light für den hellen Stil, sonst dunkel
+        colorScheme: process.env.SCHEME === 'light' ? 'light' : 'dark',
       });
       await ctx.addInitScript(
         ([t, id, skipTour]) => {
@@ -93,6 +95,8 @@ export async function launch() {
         viewport: { width, height },
         timezoneId: 'Europe/Berlin',
         locale: 'de-DE',
+        // Darstellung „Wie Gerät“: SCHEME=light für den hellen Stil, sonst dunkel
+        colorScheme: process.env.SCHEME === 'light' ? 'light' : 'dark',
       });
       const page = await ctx.newPage();
       page.on('pageerror', (e) => errors.push(`anonym: ${e.message}`));

@@ -15,6 +15,7 @@ import {
 } from '@clubroof/design-tokens';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
+import { useAppearance } from '@/lib/appearance';
 
 export type Theme = {
   scheme: ColorScheme;
@@ -35,27 +36,22 @@ export type Theme = {
 const ThemeContext = createContext<Theme | null>(null);
 
 /**
- * Der Stil „Anstoß“ ist zunächst nur dunkel (docs/DESIGN-ANSTOSS.md). Die Einstellung „Darstellung“
- * (hell, dunkel, wie Gerät) bleibt gespeichert und vorbereitet; solange es kein helles Thema im neuen
- * Stil gibt, gilt immer dunkel.
- */
-export const DARK_ONLY = true;
-
-/**
  * Stellt das Farbthema bereit. Vor der Anmeldung gelten die Clubroof-Farben, danach die Vereinsfarbe.
  */
 export function ThemeProvider({
   clubColor,
-  mode = 'dark',
+  mode,
   children,
 }: {
   clubColor?: string | null;
+  /** ohne Angabe gilt die gewählte Darstellung des Geräts (Standard: wie das Gerät) */
   mode?: 'light' | 'dark' | 'system';
   children: ReactNode;
 }) {
   const system = useColorScheme();
-  const wanted: ColorScheme = mode === 'system' ? (system === 'dark' ? 'dark' : 'light') : mode;
-  const scheme: ColorScheme = DARK_ONLY ? 'dark' : wanted;
+  const appearance = useAppearance();
+  const choice = mode ?? appearance;
+  const wanted: ColorScheme = choice === 'system' ? (system === 'dark' ? 'dark' : 'light') : choice;
   const key: ClubColorKey | 'clubroof' =
     clubColor === 'clubroof'
       ? 'clubroof'
@@ -63,6 +59,8 @@ export function ThemeProvider({
         ? clubColor
         : 'clubroof';
 
+  // Ohne Vereinsfarbe (Start ohne Verein, Einrichtung) gelten die dunklen Clubroof-Farben
+  const scheme: ColorScheme = key === 'clubroof' ? 'dark' : wanted;
   const theme = useMemo<Theme>(
     () => ({
       scheme,

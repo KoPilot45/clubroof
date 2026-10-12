@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { anstossTheme, CLUB_COLOR_KEYS, getThemeColors } from './colors';
+import { anstossLightTheme, anstossTheme, CLUB_COLOR_KEYS, getThemeColors } from './colors';
 import { blend } from './anstoss';
 import { MIN_CONTRAST, contrastRatio } from './contrast';
 
@@ -79,5 +79,63 @@ describe('Dringend bei roter Vereinsfarbe', () => {
     expect(anstossTheme('red').anstoss.amberUrgent).toBe(true);
     expect(anstossTheme('green').status.urgent.solid).toBe('#FF5A5F');
     expect(anstossTheme('green').anstoss.amberUrgent).toBe(false);
+  });
+});
+
+describe.each(CLUB_COLOR_KEYS)('Anstoß hell, Kontrast %s', (key) => {
+  const t = anstossLightTheme(key);
+  const bg = t.background;
+
+  const cases: [string, string, string][] = [
+    ['Text auf Hintergrund', t.onSurface, bg],
+    ['Text auf Fläche', t.onSurface, t.surface],
+    ['Text sekundär auf Fläche', t.onSurfaceMuted, t.surface],
+    ['Text tertiär auf Fläche', t.anstoss.textTertiary, t.surface],
+    ['Akzent als Text auf Fläche', t.primaryText, t.surface],
+    ['Akzent als Text auf Hintergrund', t.primaryText, bg],
+    ['Text auf Akzent', t.onPrimary, t.primary],
+    ['Akzent auf Akzent-Fläche', t.onPrimaryContainer, t.primaryContainer],
+    ['weißer Text auf Plakat (p1)', t.hero.onHero, t.hero.from],
+    ['weißer Text auf Plakat (p2)', t.hero.onHero, t.hero.to],
+    ['dringend auf Fläche', t.status.urgent.onContainer, t.status.urgent.container],
+    ['Aktion auf Fläche', t.status.action.onContainer, t.status.action.container],
+    ['Info auf Fläche', t.status.info.onContainer, t.status.info.container],
+    ['erledigt auf Fläche', t.status.success.onContainer, t.status.success.container],
+    ['archiviert auf Fläche', t.status.archived.onContainer, t.status.archived.container],
+    ['Text auf dringender Fläche', t.status.urgent.onSolid, t.status.urgent.solid],
+    ...(['blue', 'orange', 'pink', 'green', 'violet'] as const).map(
+      (k): [string, string, string] => [
+        `Kategorie ${k}`,
+        t.tints[k].onContainer,
+        t.tints[k].container,
+      ],
+    ),
+  ];
+  it.each(cases)('%s ≥ 4,5 : 1', (_label, fg, back) => {
+    expect(contrastRatio(fg, back)).toBeGreaterThanOrEqual(MIN_CONTRAST.text);
+  });
+
+  it('Platzhalter bleibt als Bedienelement erkennbar (≥ 3 : 1)', () => {
+    expect(contrastRatio(t.anstoss.placeholder, t.surface)).toBeGreaterThanOrEqual(
+      MIN_CONTRAST.largeTextOrUi,
+    );
+  });
+
+  it('Feldrand ist erkennbar genug (Fläche weiß, Rand sichtbar)', () => {
+    expect(t.anstoss.fieldBorder).not.toBe(t.surface);
+  });
+});
+
+describe('Anstoß hell: festgelegte Werte', () => {
+  it('Grün und Blau', () => {
+    const g = anstossLightTheme('green');
+    expect(g.background).toBe('#F2F5F3');
+    expect(g.onSurface).toBe('#0F1A14');
+    expect(g.hero.from).toBe('#1E7A44');
+    expect(getThemeColors('green', 'light')).toEqual(g);
+  });
+  it('rote Vereinsfarbe: „Dringend“ in Bernstein', () => {
+    expect(anstossLightTheme('red').status.urgent.solid).toBe('#B45309');
+    expect(anstossLightTheme('red').anstoss.amberUrgent).toBe(true);
   });
 });

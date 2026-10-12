@@ -290,6 +290,7 @@
   "role:{0}",
   "scale(1 0.6667)",
   "scale(1 1.2778)",
+  "scale(1 {0})",
   "seit dem",
   "select pg_try_advisory_xact_lock({0}) as locked",
   "setting.{0}",

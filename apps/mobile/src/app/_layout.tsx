@@ -29,6 +29,7 @@ import { AppLockGate } from '@/components/app-lock-gate';
 import { loadAppLock } from '@/lib/app-lock';
 import { loadFontScale } from '@/lib/font-scale';
 import { loadHaptics } from '@/lib/haptics';
+import { loadAppearance } from '@/lib/appearance';
 import { useLocale } from '@/lib/i18n';
 import { View } from 'react-native';
 import { NO_SUB_NAV, SubNav } from '@/components/sub-nav';
@@ -40,6 +41,7 @@ function Navigator() {
   useEffect(() => {
     void loadFontScale();
     void loadHaptics();
+    void loadAppearance();
     void loadAppLock();
   }, []);
   const { colors, scheme } = useTheme();
@@ -389,12 +391,7 @@ function ClubTheme({ children }: { children: React.ReactNode }) {
     });
   }, []);
   return (
-    <ThemeProvider
-      clubColor={club?.colorTheme ?? brand?.colorTheme}
-      mode={session.status === 'signedIn' ? session.me.user.colorMode : 'dark'}
-    >
-      {children}
-    </ThemeProvider>
+    <ThemeProvider clubColor={club?.colorTheme ?? brand?.colorTheme}>{children}</ThemeProvider>
   );
 }
 

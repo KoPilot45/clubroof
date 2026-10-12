@@ -1,10 +1,4 @@
-import {
-  LOCALES,
-  type ColorMode,
-  type Locale,
-  type TwoFactorSetup,
-  type TwoFactorStatus,
-} from '@clubroof/core';
+import { LOCALES, type Locale, type TwoFactorSetup, type TwoFactorStatus } from '@clubroof/core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,7 +20,8 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
-import { DARK_ONLY, useTheme } from '@/lib/theme';
+import { useTheme } from '@/lib/theme';
+import { setAppearance, useAppearance } from '@/lib/appearance';
 import { t } from '@/lib/i18n';
 import { setFontScale, useFontScaleKey } from '@/lib/font-scale';
 import { setHapticsEnabled, useHapticsEnabled } from '@/lib/haptics';
@@ -467,21 +462,9 @@ function EmailSetup({ onDone, onCancel }: { onDone: () => Promise<void>; onCance
   );
 }
 
-/** Persönliche Darstellung – gilt auf allen Geräten dieses Kontos. */
+/** Darstellung: Hell, Dunkel oder wie das Gerät – gilt nur auf diesem Gerät. */
 function AppearanceSection() {
-  const { api, me, refresh } = useSignedIn();
-  const [saving, setSaving] = useState<ColorMode | null>(null);
-  const choose = async (colorMode: ColorMode) => {
-    setSaving(colorMode);
-    try {
-      await api('/me/preferences', { method: 'PUT', body: { colorMode } });
-      await refresh();
-    } finally {
-      setSaving(null);
-    }
-  };
-  // Zunächst gibt es nur den dunklen Stil „Anstoß“; die Auswahl kommt mit dem hellen Stil zurück
-  if (DARK_ONLY) return null;
+  const value = useAppearance();
   return (
     <Section title="Darstellung">
       <Card style={{ gap: 8 }}>
@@ -491,10 +474,10 @@ function AppearanceSection() {
             { value: 'dark' as const, label: 'Dunkel', icon: 'moon-outline' },
             { value: 'system' as const, label: 'Wie Gerät', icon: 'phone-portrait-outline' },
           ]}
-          selected={[saving ?? me.user.colorMode]}
-          onToggle={(m) => void choose(m)}
+          selected={[value]}
+          onToggle={setAppearance}
         />
-        <T variant="caption">Hell ist voreingestellt. Die Wahl gilt auf allen deinen Geräten.</T>
+        <T variant="caption">Die Einstellung gilt nur auf diesem Gerät.</T>
       </Card>
     </Section>
   );

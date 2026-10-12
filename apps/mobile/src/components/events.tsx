@@ -612,7 +612,7 @@ export function AnswerButtons({
           gap: 4,
           padding: 4,
           borderRadius: 16,
-          backgroundColor: withAlpha('#ffffff', 0.07),
+          backgroundColor: colors.anstoss.overlay,
         }}
       >
         {seg(
