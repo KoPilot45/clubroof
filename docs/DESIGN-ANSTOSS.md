@@ -45,6 +45,8 @@ die **Bewegung** (Tempo, Gedrückt-Zustand, Reiter); seine Farben sind der alte 
 | Rot | `#FF5A5F` | `#2B0507` | `#140A0B` | `#B3202B` / `#5C0F16` | `#C7A9AB` |
 | Gelb | `#FFD54F` | `#2B2100` | `#0F0D06` | `#8A6A00` / `#3F3000` | `#C9BF98` |
 
+**Gelb geprüft** (Entwurf `DarkHomeGelb`): weißer Text auf Plakat-Verlauf p1 `#8A6A00` = 5,1 : 1 (auf p2 12,9 : 1), Text auf Akzent `#2B2100` auf `#FFD54F` = 11,3 : 1, Akzent auf Hintergrund 13,8 : 1, tertiärer Text 10,5 : 1; die Waben bleiben weiß mit geringer Deckkraft und sind lesbar, stören den Text nicht. Dieselbe Rechnung für Orange, Türkis und Himmelblau wiederholen.
+
 **Ableitung für die übrigen Vereinsfarben** (Schwarz, Orange, Lila, Weinrot, Himmelblau, Türkis): Akzent = Vereinsfarbe aufgehellt
 (Helligkeit ca. 70–75 %), Text auf Akzent = sehr dunkle Variante desselben Farbtons, p1 = Vereinsfarbe bei ca. 55 % Helligkeit,
 p2 = ca. 28 %, Hintergrund = fast Schwarz mit 5 % Farbton; tertiärer Text = leicht eingefärbtes Hellgrau. **Prüfung Pflicht:**
