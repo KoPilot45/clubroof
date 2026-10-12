@@ -143,7 +143,7 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
       bodyLimit: 8 * 1024 * 1024,
       schema: {
         body: z.object({
-          purpose: z.enum(['news', 'logo', 'avatar', 'board', 'receipt', 'sponsor']),
+          purpose: z.enum(['news', 'logo', 'avatar', 'board', 'receipt', 'sponsor', 'claim']),
           fileName: z.string().trim().min(1).max(200),
           dataBase64: z.string().min(1),
         }),

@@ -14,7 +14,13 @@ import type {
   ClubBudget,
   ClubCashEntry,
   ClubClosing,
+  ClubAllowances,
   ClubDonations,
+  ClubExpenseClaims,
+  ClubGrants,
+  ClubInventory,
+  ClubSponsorIncome,
+  ClubTeamGrants,
   ClubTaxInfo,
   ClubFeeAssignment,
   ClubFeeImportPreview,
@@ -7518,6 +7524,414 @@ describe.skipIf(!url)('API', () => {
         'Spenden: Steuerdaten des Vereins gespeichert (Freigabe zurückgesetzt)',
       );
       expect(labels.some((l) => l.startsWith('Spenden: Zuwendungsbestätigung 2026-'))).toBe(true);
+    });
+  });
+  describe('Vereinskasse: Erweiterungen (K5)', () => {
+    async function treasurer() {
+      const admin = await login('admin');
+      const parent = await login('eltern');
+      if (!parent.me.roles.some((r) => r.name === 'Kassenwart (Verein)')) {
+        await send('POST', `/admin/members/${parent.me.person.id}/roles`, admin.token, {
+          roleKey: 'club_treasurer',
+          scopeType: 'club',
+        });
+      }
+      return login('eltern');
+    }
+    async function setup() {
+      const kasse = await treasurer();
+      const cash = await get<ClubCash>('/club-cash', kasse.token);
+      return {
+        kasse,
+        cash,
+        giro: cash.accounts.find((a) => a.name === 'Girokonto Sparkasse')!,
+        expense: cash.categories.find((c) => c.direction === 'expense')!,
+        income: cash.categories.find((c) => c.direction === 'income')!,
+      };
+    }
+
+    it('Auslagen: Mitglied reicht ein, Kassenwart genehmigt, lehnt ab und erstattet', async () => {
+      const { kasse, giro, expense, cash } = await setup();
+      const player = await login('spieler');
+      const day = '2026-10-04';
+      expect(
+        (
+          await send('POST', '/club-cash/claims', player.token, {
+            kind: 'mileage',
+            description: 'Fahrt',
+            kilometers: 9999,
+            expenseDate: day,
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await send('POST', '/club-cash/claims', player.token, {
+            kind: 'expense',
+            description: 'Zukunft',
+            amountCents: 500,
+            expenseDate: '2999-01-01',
+          })
+        ).status,
+      ).toBe(400);
+      const a = await send<ClubExpenseClaims>('POST', '/club-cash/claims', player.token, {
+        kind: 'expense',
+        description: 'Bälle für das Training',
+        amountCents: 2500,
+        expenseDate: day,
+      });
+      expect(a.status).toBe(201);
+      const b = await send<ClubExpenseClaims>('POST', '/club-cash/claims', player.token, {
+        kind: 'mileage',
+        description: 'Fahrt zum Auswärtsspiel',
+        kilometers: 40,
+        expenseDate: day,
+      });
+      // Fahrtkosten: 40 km × 0,30 €
+      expect(b.body.claims.find((c) => c.kilometers === 40)!.amountCents).toBe(1200);
+      expect(b.body.canManage).toBe(false);
+      expect(b.body.claims.every((c) => c.personId === player.me.person.id)).toBe(true);
+      // Der Spieler genehmigt nicht
+      const mine = b.body.claims.find((c) => c.description === 'Bälle für das Training')!;
+      expect(
+        (await send('POST', `/club-cash/claims/${mine.id}/approve`, player.token)).status,
+      ).toBe(403);
+
+      const all = await get<ClubExpenseClaims>('/club-cash/claims', kasse.token);
+      expect(all.canManage).toBe(true);
+      expect(all.openCount).toBeGreaterThanOrEqual(2);
+      const km = all.claims.find((c) => c.kilometers === 40)!;
+      // Ohne Genehmigung keine Erstattung
+      const payBody = { accountId: giro.id, categoryId: expense.id, paidOn: '2026-10-05' };
+      expect(
+        (await send('POST', `/club-cash/claims/${mine.id}/pay`, kasse.token, payBody)).status,
+      ).toBe(409);
+      expect(
+        (await send('POST', `/club-cash/claims/${km.id}/reject`, kasse.token, { reason: 'x' }))
+          .status,
+      ).toBe(400);
+      const rejected = await send<ClubExpenseClaims>(
+        'POST',
+        `/club-cash/claims/${km.id}/reject`,
+        kasse.token,
+        {
+          reason: 'Fahrgemeinschaft, keine Erstattung',
+        },
+      );
+      expect(rejected.body.claims.find((c) => c.id === km.id)).toMatchObject({
+        status: 'rejected',
+      });
+      expect((await send('POST', `/club-cash/claims/${km.id}/approve`, kasse.token)).status).toBe(
+        409,
+      );
+      // Das Mitglied sieht die Begründung
+      const own = await get<ClubExpenseClaims>('/club-cash/claims', player.token);
+      expect(own.claims.find((c) => c.id === km.id)!.rejectReason).toBe(
+        'Fahrgemeinschaft, keine Erstattung',
+      );
+
+      await send('POST', `/club-cash/claims/${mine.id}/approve`, kasse.token);
+      const paid = await send<ClubExpenseClaims>(
+        'POST',
+        `/club-cash/claims/${mine.id}/pay`,
+        kasse.token,
+        payBody,
+      );
+      expect(paid.status).toBe(200);
+      expect(paid.body.claims.find((c) => c.id === mine.id)).toMatchObject({
+        status: 'paid',
+        paidOn: '2026-10-05',
+      });
+      const after = await get<ClubCash>('/club-cash', kasse.token);
+      expect(after.totalBalanceCents).toBe(cash.totalBalanceCents - 2500);
+      const entries = await get<ClubCashEntry[]>(
+        '/club-cash/entries?q=Auslagenerstattung',
+        kasse.token,
+      );
+      expect(entries[0]).toMatchObject({ amountCents: 2500, kind: 'expense' });
+      // Mit Erstattung kein stilles Storno
+      const cancel = await send<{ error: string }>(
+        'POST',
+        `/club-cash/entries/${entries[0]!.id}/cancel`,
+        kasse.token,
+        { reason: 'Versehen' },
+      );
+      expect(cancel.status).toBe(409);
+      expect(cancel.body.error).toBe('linked_claim');
+    });
+
+    it('Pauschalen: Freibetrag je Person und Jahr wird überwacht', async () => {
+      const { kasse, giro, expense } = await setup();
+      const coach = await login('trainer');
+      const base = {
+        personId: coach.me.person.id,
+        kind: 'trainer',
+        accountId: giro.id,
+        categoryId: expense.id,
+        paidOn: '2026-10-05',
+      };
+      const first = await send<ClubAllowances>('POST', '/club-cash/allowances', kasse.token, {
+        ...base,
+        amountCents: 200000,
+      });
+      expect(first.status).toBe(201);
+      expect(first.body.rows.find((r) => r.personId === coach.me.person.id)).toMatchObject({
+        limitCents: 330000,
+        paidCents: 200000,
+        remainingCents: 130000,
+        status: 'ok',
+      });
+      const over = await send<{ error: string; message: string }>(
+        'POST',
+        '/club-cash/allowances',
+        kasse.token,
+        { ...base, amountCents: 150000 },
+      );
+      expect(over.status).toBe(409);
+      expect(over.body.error).toBe('allowance_exceeded');
+      expect(over.body.message).toContain('Freibetrag');
+      const forced = await send<ClubAllowances>('POST', '/club-cash/allowances', kasse.token, {
+        ...base,
+        amountCents: 150000,
+        force: true,
+      });
+      expect(forced.status).toBe(201);
+      expect(forced.body.rows.find((r) => r.personId === coach.me.person.id)!.status).toBe('full');
+      // Ehrenamtspauschale zählt getrennt
+      const volunteer = await send<ClubAllowances>('POST', '/club-cash/allowances', kasse.token, {
+        ...base,
+        kind: 'volunteer',
+        amountCents: 50000,
+      });
+      expect(volunteer.body.rows.filter((r) => r.personId === coach.me.person.id)).toHaveLength(2);
+      // Vorjahr hat den kleineren Freibetrag
+      const past = await send<ClubAllowances>('POST', '/club-cash/allowances', kasse.token, {
+        ...base,
+        paidOn: '2025-06-01',
+        amountCents: 10000,
+      });
+      expect(past.body.rows[0]!.limitCents).toBe(300000);
+      // Rechte: Mitglieder und Vorstand sehen es nicht
+      expect(
+        (await send('GET', '/club-cash/allowances?year=2026', (await login('spieler')).token))
+          .status,
+      ).toBe(403);
+      expect(
+        (
+          await send('POST', '/club-cash/allowances', (await login('mitglied')).token, {
+            ...base,
+            amountCents: 100,
+          })
+        ).status,
+      ).toBe(403);
+    });
+
+    it('Zuschüsse: Weg von geplant bis eingegangen, Frist und Verwendungsnachweis', async () => {
+      const { kasse, giro, income, cash } = await setup();
+      const made = await send<ClubGrants>('POST', '/club-cash/grants', kasse.token, {
+        name: 'Sportstättenförderung',
+        grantor: 'Stadt Musterstadt',
+        amountCents: 150000,
+        proofDeadline: '2026-09-01',
+      });
+      expect(made.status).toBe(201);
+      const g = made.body.grants.find((x) => x.name === 'Sportstättenförderung')!;
+      expect(g).toMatchObject({ status: 'planned', proofOverdue: true });
+      const post = (path: string, body?: unknown) =>
+        send<ClubGrants>('POST', `/club-cash/grants/${g.id}/${path}`, kasse.token, body);
+      // Reihenfolge einhalten
+      expect((await post('status', { status: 'approved' })).status).toBe(409);
+      expect((await post('status', { status: 'received' })).status).toBe(400);
+      await post('status', { status: 'applied' });
+      expect(
+        (
+          await post('receive', {
+            accountId: giro.id,
+            categoryId: income.id,
+            receivedOn: '2026-10-05',
+          })
+        ).status,
+      ).toBe(409);
+      await post('status', { status: 'approved' });
+      const received = await post('receive', {
+        accountId: giro.id,
+        categoryId: income.id,
+        receivedOn: '2026-10-05',
+      });
+      expect(received.body.grants.find((x) => x.id === g.id)!.status).toBe('received');
+      expect(received.body.receivedCents).toBeGreaterThanOrEqual(150000);
+      expect((await get<ClubCash>('/club-cash', kasse.token)).totalBalanceCents).toBe(
+        cash.totalBalanceCents + 150000,
+      );
+      // Verwendungsnachweis: überfällig bis eingereicht
+      const done = await post('proof', { submitted: true });
+      expect(done.body.grants.find((x) => x.id === g.id)).toMatchObject({ proofOverdue: false });
+      expect(done.body.grants.find((x) => x.id === g.id)!.proofSubmittedAt).not.toBeNull();
+      // Eingegangene Buchung nicht stornieren
+      const entry = (
+        await get<ClubCashEntry[]>('/club-cash/entries?q=Sportstättenförderung', kasse.token)
+      )[0]!;
+      const cancel = await send<{ error: string }>(
+        'POST',
+        `/club-cash/entries/${entry.id}/cancel`,
+        kasse.token,
+        { reason: 'Versehen' },
+      );
+      expect(cancel.body.error).toBe('linked_grant');
+      expect(
+        (
+          await send('POST', '/club-cash/grants', (await login('spieler')).token, {
+            name: 'Test',
+            grantor: 'Stadt',
+            amountCents: 100,
+          })
+        ).status,
+      ).toBe(403);
+    });
+
+    it('Sponsoren: Einnahmen mit Sponsor werden je Sponsor ausgewertet', async () => {
+      const { kasse, giro, income } = await setup();
+      const choices = await get<{ id: string; name: string }[]>(
+        '/club-cash/sponsor-choices',
+        kasse.token,
+      );
+      expect(choices.length).toBeGreaterThan(0);
+      const sponsor = choices[0]!;
+      const expenseCat = (await get<ClubCash>('/club-cash', kasse.token)).categories.find(
+        (c) => c.direction === 'expense',
+      )!;
+      const post = (body: object) =>
+        send<ClubCashEntry>('POST', '/club-cash/entries', kasse.token, {
+          accountId: giro.id,
+          bookedOn: '2026-10-05',
+          purpose: 'Bandenwerbung',
+          ...body,
+        });
+      // Nur für Einnahmen
+      expect(
+        (
+          await post({
+            kind: 'expense',
+            amountCents: 100,
+            categoryId: expenseCat.id,
+            sponsorId: sponsor.id,
+          })
+        ).status,
+      ).toBe(400);
+      const booked = await post({
+        kind: 'income',
+        amountCents: 80000,
+        categoryId: income.id,
+        sponsorId: sponsor.id,
+      });
+      expect(booked.status).toBe(201);
+      expect(booked.body).toMatchObject({ sponsorId: sponsor.id, sponsorName: sponsor.name });
+      const report = await get<ClubSponsorIncome>(
+        '/club-cash/sponsor-income?year=2026',
+        kasse.token,
+      );
+      expect(report.sponsors.find((x) => x.id === sponsor.id)).toMatchObject({
+        cents: 80000,
+        count: 1,
+      });
+      expect(report.total).toBe(80000);
+    });
+
+    it('Zuschuss an eine Mannschaftskasse: Ausgabe im Verein, Einnahme in der Mannschaft', async () => {
+      const { kasse, giro, expense, cash } = await setup();
+      const coach = await login('trainer');
+      // die aktuelle Mannschaft des Trainers (der Saisonwechsel legt neue Mannschaften an)
+      const team = { id: coach.me.teams[0]!.id };
+      const before = await get<TeamCash>(`/teams/${team.id}/cash`, coach.token);
+      const made = await send<ClubTeamGrants>('POST', '/club-cash/team-grants', kasse.token, {
+        teamId: team.id,
+        accountId: giro.id,
+        categoryId: expense.id,
+        amountCents: 30000,
+        bookedOn: '2026-10-05',
+        note: 'Trikotsatz',
+      });
+      expect(made.status).toBe(201);
+      expect(made.body.grants[0]).toMatchObject({ amountCents: 30000 });
+      const after = await get<TeamCash>(`/teams/${team.id}/cash`, coach.token);
+      expect(after.balanceCents).toBe(before.balanceCents! + 30000);
+      expect((await get<ClubCash>('/club-cash', kasse.token)).totalBalanceCents).toBe(
+        cash.totalBalanceCents - 30000,
+      );
+      const entry = (
+        await get<ClubCashEntry[]>('/club-cash/entries?q=Trikotsatz', kasse.token)
+      )[0]!;
+      const cancel = await send<{ error: string }>(
+        'POST',
+        `/club-cash/entries/${entry.id}/cancel`,
+        kasse.token,
+        { reason: 'Versehen' },
+      );
+      expect(cancel.body.error).toBe('linked_team_grant');
+      expect(
+        (
+          await send('POST', '/club-cash/team-grants', coach.token, {
+            teamId: team.id,
+            accountId: giro.id,
+            categoryId: expense.id,
+            amountCents: 100,
+            bookedOn: '2026-10-05',
+          })
+        ).status,
+      ).toBe(403);
+    });
+
+    it('Inventar: aufnehmen, Wert summieren, mit Grund aussondern', async () => {
+      const { kasse } = await setup();
+      const added = await send<ClubInventory>('POST', '/club-cash/inventory', kasse.token, {
+        name: 'Trainingsbälle',
+        category: 'Sportgeräte',
+        quantity: 12,
+        acquiredOn: '2026-08-01',
+        costCents: 24000,
+        location: 'Geräteraum',
+      });
+      expect(added.status).toBe(201);
+      const item = added.body.items.find((i) => i.name === 'Trainingsbälle')!;
+      expect(added.body.totalCostCents).toBeGreaterThanOrEqual(24000);
+      expect(
+        (await send('PATCH', `/club-cash/inventory/${item.id}`, kasse.token, { dispose: true }))
+          .status,
+      ).toBe(400);
+      const before = added.body.totalCostCents;
+      const gone = await send<ClubInventory>(
+        'PATCH',
+        `/club-cash/inventory/${item.id}`,
+        kasse.token,
+        {
+          dispose: true,
+          reason: 'Verschleiß',
+        },
+      );
+      expect(gone.body.items.find((i) => i.id === item.id)).toMatchObject({
+        disposedReason: 'Verschleiß',
+      });
+      expect(gone.body.totalCostCents).toBe(before - 24000);
+      // Prüfer lesen, ändern aber nicht
+      const auditor = await login('mitglied');
+      expect((await get<ClubInventory>('/club-cash/inventory', auditor.token)).canManage).toBe(
+        false,
+      );
+      expect(
+        (await send('POST', '/club-cash/inventory', auditor.token, { name: 'Nein' })).status,
+      ).toBe(403);
+    });
+
+    it('steht im Änderungsprotokoll', async () => {
+      const rows = await sql<{ label: string }[]>`
+        select data->>'label' as label from audit_log
+        where action in ('clubcash.claim', 'clubcash.allowance', 'clubcash.grant', 'clubcash.teamgrant', 'clubcash.inventory')`;
+      const labels = rows.map((r) => r.label);
+      expect(labels.some((l) => l.startsWith('Auslage erstattet: 25,00'))).toBe(true);
+      expect(labels.some((l) => l.includes('Freibetrag überschritten'))).toBe(true);
+      expect(labels.some((l) => l.startsWith('Zuschuss Sportstättenförderung: 1.500,00'))).toBe(
+        true,
+      );
     });
   });
 });

@@ -20,6 +20,12 @@ const TAB_OF: Record<string, string> = {
   audit: 'pruefung',
   donations: 'pruefung',
   tax: 'pruefung',
+  claims: 'buchung',
+  allowances: 'buchung',
+  grants: 'buchung',
+  'team-grants': 'buchung',
+  sponsors: 'buchung',
+  inventory: 'planung',
   fees: 'beitraege',
   'fee-import': 'beitraege',
   'fee-setup': 'beitraege',
@@ -94,6 +100,12 @@ export default function ClubCashLayout() {
           <Stack.Screen name="audit/[id]" options={{ title: 'Prüfung' }} />
           <Stack.Screen name="donations" options={{ title: 'Spenden' }} />
           <Stack.Screen name="tax" options={{ title: 'Steuerdaten' }} />
+          <Stack.Screen name="claims" options={{ title: 'Auslagen' }} />
+          <Stack.Screen name="allowances" options={{ title: 'Pauschalen' }} />
+          <Stack.Screen name="grants" options={{ title: 'Zuschüsse' }} />
+          <Stack.Screen name="team-grants" options={{ title: 'Mannschaftszuschuss' }} />
+          <Stack.Screen name="sponsors" options={{ title: 'Sponsoren-Einnahmen' }} />
+          <Stack.Screen name="inventory" options={{ title: 'Inventar' }} />
         </Stack>
       </BottomTabBarHeightContext.Provider>
       <AreaTabBar tone="blue" items={items} onHeight={setNavHeight} />

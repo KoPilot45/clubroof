@@ -146,6 +146,9 @@ export type ClubCashEntry = {
   area: ClubCashArea | null;
   costCenterId: string | null;
   costCenterName: string | null;
+  /** Sponsor, von dem die Einnahme stammt */
+  sponsorId: string | null;
+  sponsorName: string | null;
   counterparty: string | null;
   purpose: string;
   receiptNo: string | null;
@@ -197,6 +200,8 @@ export type ClubCashEntryInput = {
   bookedOn: string;
   categoryId: string;
   costCenterId?: string | null;
+  /** nur bei Einnahmen: Sponsor, von dem das Geld stammt (Paket K5) */
+  sponsorId?: string | null;
   counterparty?: string | null;
   purpose: string;
   receiptNo?: string | null;
@@ -623,4 +628,208 @@ export type ClubDonationInput = {
   amountCents: number;
   donatedOn: string;
   waiver: boolean;
+};
+
+// ── Erweiterungen (Paket K5) ────────────────────────────────────────────────
+
+/** Kilometerpauschale für Fahrtkosten (Cent je km, Vorgabe – steuerlich bzw. nach Vereinsbeschluss prüfen). */
+export const CLUB_MILEAGE_RATE_CENTS = 30;
+
+export const CLUB_ALLOWANCE_KINDS = ['trainer', 'volunteer'] as const;
+export type ClubAllowanceKind = (typeof CLUB_ALLOWANCE_KINDS)[number];
+export const CLUB_ALLOWANCE_KIND_LABEL: Record<ClubAllowanceKind, string> = {
+  trainer: 'Übungsleiterpauschale',
+  volunteer: 'Ehrenamtspauschale',
+};
+
+/**
+ * Freibeträge je Person und Jahr in Cent (§ 3 Nr. 26 bzw. Nr. 26a EStG). Die Werte bitte vor der Nutzung
+ * steuerlich prüfen lassen; die App ersetzt keine Steuerberatung.
+ */
+export function clubAllowanceLimitCents(kind: ClubAllowanceKind, year: number): number {
+  if (kind === 'trainer') return year >= 2026 ? 330_000 : 300_000;
+  return year >= 2026 ? 96_000 : 84_000;
+}
+
+export const CLUB_CLAIM_STATUSES = ['submitted', 'approved', 'rejected', 'paid'] as const;
+export type ClubClaimStatus = (typeof CLUB_CLAIM_STATUSES)[number];
+export const CLUB_CLAIM_STATUS_LABEL: Record<ClubClaimStatus, string> = {
+  submitted: 'Eingereicht',
+  approved: 'Genehmigt',
+  rejected: 'Abgelehnt',
+  paid: 'Erstattet',
+};
+
+export type ClubExpenseClaim = {
+  id: string;
+  personId: string;
+  personName: string;
+  kind: 'expense' | 'mileage';
+  description: string;
+  amountCents: number;
+  kilometers: number | null;
+  expenseDate: string;
+  receiptUrl: string | null;
+  status: ClubClaimStatus;
+  decidedByName: string | null;
+  decidedAt: string | null;
+  rejectReason: string | null;
+  paidOn: string | null;
+  createdAt: string;
+};
+
+export type ClubExpenseClaims = {
+  /** Kassenführung sieht und bearbeitet alle; sonst nur die eigenen */
+  canManage: boolean;
+  claims: ClubExpenseClaim[];
+  openCount: number;
+  openCents: number;
+};
+
+export type ClubExpenseClaimInput = {
+  kind: 'expense' | 'mileage';
+  description: string;
+  /** bei kind expense: Betrag in Cent; bei mileage wird er aus den Kilometern berechnet */
+  amountCents?: number;
+  kilometers?: number;
+  expenseDate: string;
+  receiptImageId?: string | null;
+};
+
+export type ClubClaimPayInput = { accountId: string; categoryId: string; paidOn: string };
+
+export type ClubAllowanceRow = {
+  personId: string;
+  personName: string;
+  kind: ClubAllowanceKind;
+  limitCents: number;
+  paidCents: number;
+  remainingCents: number;
+  status: 'ok' | 'warn' | 'full';
+};
+
+export type ClubAllowancePayment = {
+  id: string;
+  personName: string;
+  kind: ClubAllowanceKind;
+  amountCents: number;
+  paidOn: string;
+  note: string | null;
+};
+
+export type ClubAllowances = {
+  year: number;
+  canManage: boolean;
+  rows: ClubAllowanceRow[];
+  payments: ClubAllowancePayment[];
+};
+
+export type ClubAllowancePaymentInput = {
+  personId: string;
+  kind: ClubAllowanceKind;
+  amountCents: number;
+  paidOn: string;
+  accountId: string;
+  categoryId: string;
+  note?: string | null;
+  /** trotz Überschreitung des Freibetrags buchen (nach Rücksprache) */
+  force?: boolean;
+};
+
+export const CLUB_GRANT_STATUSES = [
+  'planned',
+  'applied',
+  'approved',
+  'received',
+  'rejected',
+] as const;
+export type ClubGrantStatus = (typeof CLUB_GRANT_STATUSES)[number];
+export const CLUB_GRANT_STATUS_LABEL: Record<ClubGrantStatus, string> = {
+  planned: 'Geplant',
+  applied: 'Beantragt',
+  approved: 'Bewilligt',
+  received: 'Eingegangen',
+  rejected: 'Abgelehnt',
+};
+
+export type ClubGrant = {
+  id: string;
+  name: string;
+  grantor: string;
+  amountCents: number;
+  status: ClubGrantStatus;
+  proofDeadline: string | null;
+  proofSubmittedAt: string | null;
+  /** Verwendungsnachweis überfällig (Frist vorbei, noch nicht eingereicht) */
+  proofOverdue: boolean;
+  /** Frist in den nächsten 30 Tagen */
+  proofDueSoon: boolean;
+  note: string | null;
+};
+
+export type ClubGrants = {
+  canManage: boolean;
+  grants: ClubGrant[];
+  receivedCents: number;
+  expectedCents: number;
+};
+
+export type ClubGrantInput = {
+  name: string;
+  grantor: string;
+  amountCents: number;
+  proofDeadline?: string | null;
+  note?: string | null;
+};
+
+export type ClubInventoryItem = {
+  id: string;
+  name: string;
+  category: string | null;
+  quantity: number;
+  acquiredOn: string | null;
+  costCents: number | null;
+  location: string | null;
+  note: string | null;
+  disposedAt: string | null;
+  disposedReason: string | null;
+};
+
+export type ClubInventory = {
+  canManage: boolean;
+  items: ClubInventoryItem[];
+  /** Summe der Anschaffungswerte der vorhandenen (nicht ausgesonderten) Gegenstände */
+  totalCostCents: number;
+};
+
+export type ClubInventoryInput = {
+  name: string;
+  category?: string | null;
+  quantity?: number;
+  acquiredOn?: string | null;
+  costCents?: number | null;
+  location?: string | null;
+  note?: string | null;
+};
+
+export type ClubSponsorIncome = {
+  year: number;
+  canManage: boolean;
+  total: number;
+  sponsors: { id: string | null; name: string; cents: number; count: number }[];
+};
+
+export type ClubTeamGrantInput = {
+  teamId: string;
+  accountId: string;
+  categoryId: string;
+  amountCents: number;
+  bookedOn: string;
+  note?: string | null;
+};
+
+export type ClubTeamGrants = {
+  canManage: boolean;
+  teams: { id: string; name: string }[];
+  grants: { id: string; teamName: string; amountCents: number; bookedOn: string }[];
 };

@@ -79,6 +79,7 @@ export const clubCashRoutes: FastifyPluginAsyncZod = async (app) => {
           bookedOn: day,
           categoryId: z.uuid(),
           costCenterId: z.uuid().nullish(),
+          sponsorId: z.uuid().nullish(),
           counterparty: z.string().trim().max(120).nullish(),
           purpose: z.string().trim().min(1).max(200),
           receiptNo: z.string().trim().max(40).nullish(),

@@ -127,6 +127,13 @@ const RULES: Record<string, Rule> = {
   ]),
   'club-cash/donations': under('verein', 'Vereinskasse', '/club-cash'),
   'club-cash/tax': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/claims': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/allowances': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/grants': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/team-grants': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/sponsors': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/inventory': under('verein', 'Vereinskasse', '/club-cash'),
+  'expense-claims': section('verein'),
   // Mehr
   account: section('mehr'),
   help: section('mehr'),

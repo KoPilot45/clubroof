@@ -205,6 +205,10 @@ function Navigator() {
               options={{ headerShown: true, title: 'Unsere Sponsoren' }}
             />
             <Stack.Screen
+              name="expense-claims"
+              options={{ headerShown: true, title: 'Auslage einreichen' }}
+            />
+            <Stack.Screen
               name="club-cash-overview"
               options={{ headerShown: true, title: 'Kassenübersicht' }}
             />

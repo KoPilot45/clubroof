@@ -330,6 +330,13 @@
       "when": 1791794598874,
       "tag": "0046_cash_audit_donations",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1791804417495,
+      "tag": "0047_cash_extensions",
+      "breakpoints": true
     }
   ]
 }

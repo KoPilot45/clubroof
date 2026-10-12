@@ -50,9 +50,7 @@ await pa
   .getByLabel('Ergebnis der Prüfung')
   .fill('Die Kasse wurde ordnungsgemäß geführt, eine Beanstandung ist nachzureichen.');
 await button(pa, 'Prüfbericht abgeben').click();
-await text(pa, /Bericht abgegeben/)
-  .first()
-  .waitFor({ timeout: 10_000 });
+await button(pa, 'Prüfbericht abgeben').waitFor({ state: 'detached', timeout: 10_000 });
 ok(
   (await button(pa, 'Prüfbericht abgeben').count()) === 0,
   'Bericht abgegeben, nicht mehr änderbar',
