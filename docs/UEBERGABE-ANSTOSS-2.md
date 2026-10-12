@@ -36,3 +36,10 @@ Es ändert **nur Aussehen und Aufbau**, keine Fachlogik.
 ## Regeln und Abnahme
 Regeln wie im ersten Übergabeprompt (`docs/UEBERGABE-ANSTOSS.md`): Tokens und Bausteine statt Einzelstile, Texte Deutsch/übersetzt, Barrierefreiheit, kleine Commits.
 Abnahme: Bildschirme öffnen, **neben die aktualisierten Referenzdateien legen**, Abweichungen benennen und beheben; am Ende kurze Liste erledigt / bewusst abweichend / offen.
+
+---
+
+# Folgepakete (nach Abnahme von AN)
+
+- **Paket AK** (`docs/PAKETE.md`): große 2-spaltige Kacheln und größere Abstände auf Home und Verein. Vorgabe in `docs/DESIGN-ANSTOSS.md`, Referenzen `DarkHomeG`, `DarkVereinG`.
+- **Paket LH** (`docs/PAKETE.md`): heller Stil als zweite Darstellung (Einstellung „Darstellung“: Hell, Dunkel, Wie das Gerät). Erst beginnen, wenn AL, AN und AK im Dunklen abgenommen sind.
