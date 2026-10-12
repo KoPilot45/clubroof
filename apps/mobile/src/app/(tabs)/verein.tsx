@@ -257,13 +257,14 @@ export default function ClubScreen() {
           .map((t) => ({ ...t, tint: g.tint }));
         if (items.length === 0) return null;
         return (
-          <Section key={g.key} title={g.title}>
-            <TileGrid items={items} />
+          <Section key={g.key} title={g.title} roomy>
+            <TileGrid large items={items} />
           </Section>
         );
       })}
 
       <Section
+        roomy
         title="Heute auf der Anlage"
         action="Kalender anzeigen"
         onAction={() => router.push('/club-calendar')}
