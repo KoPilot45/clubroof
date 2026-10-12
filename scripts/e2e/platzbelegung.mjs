@@ -1,5 +1,5 @@
 /** PB: Platzbelegung als Stundenplan – Tag (Spalte je Platz), Woche (Mo–Fr + Wochenende), Details per Antippen. */
-import { api, button, launch, text } from '../lib/e2e.mjs';
+import { api, button, del, launch, text } from '../lib/e2e.mjs';
 
 const b = await launch();
 let failed = false;
@@ -68,7 +68,7 @@ await page.getByRole('button', { name: 'Schließen' }).last().click();
 await radio('Tag').click();
 await page.waitForTimeout(800);
 await b.shot(page, 'pb-tag');
-await api(`/facilities/blocks/${blockId}`, s.login.token, { method: 'DELETE' }).catch(() => {});
+await del(`/facilities/blocks/${blockId}`, s.login.token);
 await b.close();
 console.log(b.errors.length ? `Konsolenfehler:\n${b.errors.join('\n')}` : '✓ keine Konsolenfehler');
 if (failed || b.errors.length) process.exit(1);
