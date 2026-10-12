@@ -2479,6 +2479,7 @@ export const en: Record<string, string> = {
   Krankheit: 'Illness',
   'Kuchen backen': 'Bake a cake',
   Kunstrasen: 'Artificial turf',
+  'Kurz vibrieren bei Auswahl und Bestätigung': 'Vibrate briefly on selection and confirmation',
   'Kurze Artikel zu Abläufen und Regeln im Verein':
     'Short articles on procedures and rules in the club',
   Kürzel: 'Abbreviation',

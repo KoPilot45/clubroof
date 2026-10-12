@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import type { HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Image, Pressable, View } from 'react-native';
+import { Animated, Image, Pressable, View } from 'react-native';
+import { useReduceMotion, useScrollY } from '@/lib/motion';
 import { clubInitials, formatLongDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -96,6 +97,17 @@ export function AppHeader({
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const unread = home.data?.unreadNotifications ?? 0;
   const greeting = title ?? `Hallo, ${me.person.firstName}`;
+  // Titel schrumpft beim Scrollen über 60 px von 32 auf 22
+  const scrollY = useScrollY();
+  const reduce = useReduceMotion();
+  const shrink =
+    scrollY && !reduce
+      ? scrollY.interpolate({
+          inputRange: [0, 60],
+          outputRange: [1, 22 / 32],
+          extrapolate: 'clamp',
+        })
+      : 1;
 
   return (
     <View
@@ -138,14 +150,21 @@ export function AppHeader({
         <T variant="caption" numberOfLines={1}>
           {subtitle ?? formatLongDate(new Date().toISOString())}
         </T>
-        <T
-          variant="headline"
-          numberOfLines={2}
-          accessibilityRole="header"
-          style={{ lineHeight: 34 }}
+        <Animated.View
+          style={{
+            transformOrigin: 'left center',
+            transform: [{ scale: shrink }],
+          }}
         >
-          {greeting}
-        </T>
+          <T
+            variant="headline"
+            numberOfLines={2}
+            accessibilityRole="header"
+            style={{ fontSize: 32, lineHeight: 36 }}
+          >
+            {greeting}
+          </T>
+        </Animated.View>
       </View>
       <HeaderButton
         icon="search-outline"

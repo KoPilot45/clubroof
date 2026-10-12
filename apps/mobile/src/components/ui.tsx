@@ -4,10 +4,12 @@
  * Statusfarben immer mit Beschriftung.
  */
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import type { StatusKey, TintKey } from '@clubroof/design-tokens';
 import {
+  Children,
+  isValidElement,
   useContext,
   useEffect,
   useId,
@@ -52,6 +54,7 @@ import { Text } from './app-text';
 import { CalendarSheet } from './calendar-picker';
 import { RequestError } from '@/lib/api';
 import { mediaUri } from '@/lib/upload';
+import { FadeIn, PressScale, ScrollYContext, useCountUp } from '@/lib/motion';
 import { hapticSelect } from '@/lib/haptics';
 import { dateFormat, t } from '@/lib/i18n';
 
@@ -185,45 +188,61 @@ export function Screen({
   const { colors, spacing } = useTheme();
   // In den Tabs liegt die schwebende Leiste über dem Inhalt: unten Platz dafür lassen
   const tabBarHeight = useContext(BottomTabBarHeightContext) ?? 0;
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const pathname = usePathname();
   return (
-    <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: colors.background }}>
-      {header}
-      <ScrollView
-        style={{ backgroundColor: colors.background }}
-        scrollEventThrottle={onEndReached ? 100 : undefined}
-        onScroll={
-          onEndReached
-            ? (e) => {
-                const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
-                if (contentSize.height - (contentOffset.y + layoutMeasurement.height) < 500)
-                  onEndReached();
-              }
-            : undefined
-        }
-        contentContainerStyle={{
-          // Seitenrand 22 px (Stil „Anstoß“); Abschnitte bringen 12 px Luft nach oben mit (26 insgesamt)
-          paddingHorizontal: 22,
-          paddingTop: spacing.md + 2,
-          gap: spacing.md + 2,
-          paddingBottom: spacing.xxxl + tabBarHeight,
-          // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
-          width: '100%',
-          maxWidth: 960,
-          alignSelf: 'center',
-        }}
-        refreshControl={
-          onRefresh ? (
-            <RefreshControl
-              refreshing={!!refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primaryText}
-            />
-          ) : undefined
-        }
-      >
-        {children}
-      </ScrollView>
-    </SafeAreaView>
+    <ScrollYContext.Provider value={header ? scrollY : null}>
+      <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: colors.background }}>
+        {header}
+        <ScrollView
+          style={{ backgroundColor: colors.background }}
+          scrollEventThrottle={header || onEndReached ? 16 : undefined}
+          onScroll={
+            header || onEndReached
+              ? (e) => {
+                  const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+                  if (header) scrollY.setValue(contentOffset.y);
+                  if (
+                    onEndReached &&
+                    contentSize.height - (contentOffset.y + layoutMeasurement.height) < 500
+                  )
+                    onEndReached();
+                }
+              : undefined
+          }
+          contentContainerStyle={{
+            // Seitenrand 22 px (Stil „Anstoß“); Abschnitte bringen 12 px Luft nach oben mit (26 insgesamt)
+            paddingHorizontal: 22,
+            paddingTop: spacing.md + 2,
+            gap: spacing.md + 2,
+            paddingBottom: spacing.xxxl + tabBarHeight,
+            // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
+            width: '100%',
+            maxWidth: 960,
+            alignSelf: 'center',
+          }}
+          refreshControl={
+            onRefresh ? (
+              <RefreshControl
+                refreshing={!!refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primaryText}
+              />
+            ) : undefined
+          }
+        >
+          {Children.toArray(children).map((child, i) => (
+            <FadeIn
+              key={isValidElement(child) && child.key != null ? child.key : i}
+              group={pathname}
+              index={Math.min(i, 8)}
+            >
+              {child}
+            </FadeIn>
+          ))}
+        </ScrollView>
+      </SafeAreaView>
+    </ScrollYContext.Provider>
   );
 }
 
@@ -350,14 +369,14 @@ export function HeroCard({
   );
   if (onPress)
     return (
-      <Pressable
+      <PressScale
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         onPress={onPress}
         style={[outer, style]}
       >
         {body}
-      </Pressable>
+      </PressScale>
     );
   return <View style={[outer, style]}>{body}</View>;
 }
@@ -772,7 +791,7 @@ export function Button({
   const small = size === 'sm';
   const border = variant === 'heroOutline' ? 2 : 1;
   return (
-    <Pressable
+    <PressScale
       accessibilityRole="button"
       accessibilityLabel={hideLabel ? t(label) : undefined}
       accessibilityState={{ disabled: !!disabled, busy: !!loading }}
@@ -818,7 +837,7 @@ export function Button({
           )}
         </>
       )}
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -1564,7 +1583,7 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
         const tint = item.tint ?? TINT_ORDER[index % TINT_ORDER.length]!;
         const urgent = item.tone === 'action' || item.tone === 'urgent';
         return (
-          <Pressable
+          <PressScale
             key={item.key}
             accessibilityRole="button"
             accessibilityState={{ disabled }}
@@ -1666,7 +1685,7 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                 ) : null}
               </>
             )}
-          </Pressable>
+          </PressScale>
         );
       })}
     </View>
@@ -2190,10 +2209,11 @@ export function Stat({
   labelColor?: string;
 }) {
   const { colors } = useTheme();
+  const counted = useCountUp(typeof value === 'number' ? value : 0);
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
       <T variant="figure" color={color ?? colors.primaryText}>
-        {value}
+        {typeof value === 'number' ? counted : value}
       </T>
       <T variant="caption" color={labelColor} style={{ textAlign: 'center' }}>
         {label}

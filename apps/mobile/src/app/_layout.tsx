@@ -27,6 +27,7 @@ import { fontState } from '@/lib/fonts';
 import { AppLockGate } from '@/components/app-lock-gate';
 import { loadAppLock } from '@/lib/app-lock';
 import { loadFontScale } from '@/lib/font-scale';
+import { loadHaptics } from '@/lib/haptics';
 import { useLocale } from '@/lib/i18n';
 import { View } from 'react-native';
 import { NO_SUB_NAV, SubNav } from '@/components/sub-nav';
@@ -37,6 +38,7 @@ function Navigator() {
   useLocale();
   useEffect(() => {
     void loadFontScale();
+    void loadHaptics();
     void loadAppLock();
   }, []);
   const { colors, scheme } = useTheme();
