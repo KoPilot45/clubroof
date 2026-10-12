@@ -77,10 +77,10 @@ export function FloatingNav({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: colors.surfaceRaised,
-          ...(isDark
-            ? { borderWidth: 1, borderColor: colors.border }
-            : shadowStyle(elevation.floating)),
+          backgroundColor: colors.anstoss.tabBar,
+          borderWidth: 1,
+          borderColor: colors.anstoss.tabBarBorder,
+          ...(isDark ? null : shadowStyle(elevation.floating)),
         }}
       >
         {items.map((item) => (
@@ -109,7 +109,7 @@ export function FloatingNav({
             <Ionicons
               name={item.active ? item.iconActive : item.icon}
               size={22}
-              color={item.active ? colors.onPrimary : colors.onSurfaceMuted}
+              color={item.active ? colors.onPrimary : colors.anstoss.textTertiary}
             />
             {item.active ? (
               <Text

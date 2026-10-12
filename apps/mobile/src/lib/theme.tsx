@@ -57,7 +57,11 @@ export function ThemeProvider({
   const wanted: ColorScheme = mode === 'system' ? (system === 'dark' ? 'dark' : 'light') : mode;
   const scheme: ColorScheme = DARK_ONLY ? 'dark' : wanted;
   const key: ClubColorKey | 'clubroof' =
-    clubColor === 'clubroof' ? 'clubroof' : clubColor && isClubColorKey(clubColor) ? clubColor : 'clubroof';
+    clubColor === 'clubroof'
+      ? 'clubroof'
+      : clubColor && isClubColorKey(clubColor)
+        ? clubColor
+        : 'clubroof';
 
   const theme = useMemo<Theme>(
     () => ({

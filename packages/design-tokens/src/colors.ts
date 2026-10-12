@@ -527,7 +527,12 @@ export function anstossTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
     surfaceRaised: base.sheet,
     status,
     tints,
-    hero: { from: base.posterFrom, to: base.posterTo, onHero: '#FFFFFF', decor: 'rgba(255,255,255,0.08)' },
+    hero: {
+      from: base.posterFrom,
+      to: base.posterTo,
+      onHero: '#FFFFFF',
+      decor: 'rgba(255,255,255,0.08)',
+    },
     anstoss: {
       card: 'rgba(255,255,255,0.06)',
       cardBorder: 'rgba(255,255,255,0.09)',

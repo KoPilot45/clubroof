@@ -21,7 +21,8 @@ export type AreaTone = 'violet' | 'blue';
 function AreaBand({ tone, title, subtitle }: { tone: AreaTone; title: string; subtitle?: string }) {
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
-  const c = colors.tints[tone];
+  const band = colors.anstoss.bands[tone === 'violet' ? 'admin' : 'cash'];
+  const c = { container: band[0], onContainer: '#FFFFFF' };
   return (
     <View
       style={{
@@ -36,7 +37,7 @@ function AreaBand({ tone, title, subtitle }: { tone: AreaTone; title: string; su
     >
       <View style={{ flex: 1, minWidth: 0 }}>
         {subtitle ? (
-          <T variant="caption" color={c.onContainer} numberOfLines={1}>
+          <T variant="caption" color="rgba(255,255,255,0.78)" numberOfLines={1}>
             {subtitle}
           </T>
         ) : null}
@@ -60,7 +61,7 @@ function AreaBand({ tone, title, subtitle }: { tone: AreaTone; title: string; su
         }}
       >
         <Ionicons name="close-circle-outline" size={20} color={c.onContainer} />
-        <Text style={{ color: c.onContainer, fontWeight: '800' }}>Beenden</Text>
+        <Text style={{ color: c.onContainer, fontSize: 13.5, fontWeight: '800' }}>Beenden</Text>
       </Pressable>
     </View>
   );
@@ -173,10 +174,10 @@ export function AreaTabBar({
           padding: 6,
           flexDirection: 'row',
           gap: 4,
-          backgroundColor: colors.surfaceRaised,
-          ...(isDark
-            ? { borderWidth: 1, borderColor: colors.border }
-            : shadowStyle(elevation.floating)),
+          backgroundColor: colors.anstoss.tabBar,
+          borderWidth: 1,
+          borderColor: colors.anstoss.tabBarBorder,
+          ...(isDark ? null : shadowStyle(elevation.floating)),
         }}
       >
         {items.map((item) => (

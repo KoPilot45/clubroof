@@ -38,10 +38,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, {
-  Circle,
   Defs,
   LinearGradient,
   Path,
+  RadialGradient,
   Rect,
   Stop,
   Text as SvgText,
@@ -67,6 +67,12 @@ export function shadowStyle(e: {
   const n = parseInt(e.color.slice(1), 16);
   const rgba = `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${e.opacity})`;
   return { boxShadow: `0 ${e.offsetY}px ${e.radius}px ${rgba}` };
+}
+
+/** Hex-Farbe mit Deckkraft als rgba (für Ränder und Flächen in Statusfarbe). */
+export function withAlpha(hex: string, alpha: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
 }
 
 // ── Typografie ────────────────────────────────────────────────────────────────
@@ -108,37 +114,38 @@ export function T({
   const { colors, fontSizes } = useTheme();
   const variants: Record<TextVariant, TextStyle> = {
     display: { fontSize: fontSizes.headline, fontWeight: '800', letterSpacing: -0.3 },
-    title: { fontSize: fontSizes.title, fontWeight: '800' },
+    // Kartentitel: Saira Condensed 22–24
+    title: { fontFamily: HEADING_FONT, fontSize: 23, lineHeight: 26, fontWeight: '400' },
     heading: { fontSize: fontSizes.bodyLarge, fontWeight: '700' },
     body: { fontSize: fontSizes.body, fontWeight: '400', lineHeight: 21 },
     label: { fontSize: fontSizes.label, fontWeight: '600' },
-    caption: { fontSize: fontSizes.caption, fontWeight: '500' },
-    // Zwischenüberschriften: Saira Condensed Bold, Großbuchstaben, 20 px (Festlegung 11.10.2026)
+    caption: { fontSize: fontSizes.caption, lineHeight: 17, fontWeight: '500' },
+    // Zwischenüberschriften (Stil „Anstoß“): Saira Condensed 700, 21 px, Großbuchstaben, Laufweite 1 px
     section: {
       fontFamily: HEADING_FONT,
-      fontSize: 20,
+      fontSize: 21,
       lineHeight: 24,
       fontWeight: '400',
-      letterSpacing: 0.6,
+      letterSpacing: 1,
       textTransform: 'uppercase',
     },
-    // Seitentitel: Saira Condensed Bold, ca. 32 px, normale Schreibweise
+    // Seitentitel: Saira Condensed 700, 28 px (Kopfzeilen-Titel), normale Schreibweise
     headline: {
       fontFamily: HEADING_FONT,
-      fontSize: 32,
-      lineHeight: 34,
+      fontSize: 28,
+      lineHeight: 30,
       fontWeight: '400',
-      letterSpacing: 0.2,
     },
     // Große Zahlen (Kassenstand, Ergebnisse, Countdown): Saira Condensed ExtraBold, ca. 48 px
     figure: { fontFamily: FIGURE_FONT, fontSize: 48, fontWeight: '400', letterSpacing: 0.2 },
     overline: {
-      fontSize: 11,
+      fontSize: 11.5,
       fontWeight: '800',
-      letterSpacing: 0.9,
+      letterSpacing: 1.4,
       textTransform: 'uppercase',
     },
   };
+  // Nebentext und Eyebrow: tertiäre Textfarbe (Anstoß)
   const muted = variant === 'caption' || variant === 'overline';
   return (
     <Text
@@ -148,7 +155,7 @@ export function T({
       verbatim={verbatim}
       style={[
         variants[variant],
-        { color: color ?? (muted ? colors.onSurfaceMuted : colors.onSurface) },
+        { color: color ?? (muted ? colors.anstoss.textTertiary : colors.onSurface) },
         style,
       ]}
     >
@@ -194,8 +201,10 @@ export function Screen({
             : undefined
         }
         contentContainerStyle={{
-          padding: spacing.lg + 4,
-          gap: spacing.lg + 2,
+          // Seitenrand 22 px (Stil „Anstoß“); Abschnitte bringen 12 px Luft nach oben mit (26 insgesamt)
+          paddingHorizontal: 22,
+          paddingTop: spacing.md + 2,
+          gap: spacing.md + 2,
           paddingBottom: spacing.xxxl + tabBarHeight,
           // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
           width: '100%',
@@ -219,21 +228,29 @@ export function Screen({
 }
 
 /**
- * Weiche Karte (Radius 24): hell mit dezentem Schatten ohne Rahmen, dunkel eine Flächenstufe heller
- * mit feinem Rahmen (docs/DESIGNSYSTEM.md).
+ * Fläche (Stil „Anstoß“): Weiß bei 6 % auf dem Hintergrund mit feinem Rand, Radius 22. `list`: Karte für
+ * Listenzeilen (die Zeilen bringen ihren Abstand selbst mit, Trennlinien innen).
  */
-export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  const { colors, radii, spacing, isDark, elevation } = useTheme();
+export function Card({
+  children,
+  style,
+  list,
+}: {
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  list?: boolean;
+}) {
+  const { colors, radii } = useTheme();
   return (
     <View
       style={[
         {
-          backgroundColor: colors.surfaceRaised,
+          backgroundColor: colors.anstoss.card,
           borderRadius: radii.xl,
-          padding: spacing.md + 2,
-          ...(isDark
-            ? { borderWidth: 1, borderColor: colors.border }
-            : shadowStyle(elevation.card)),
+          paddingHorizontal: 16,
+          paddingVertical: list ? 4 : 16,
+          borderWidth: 1,
+          borderColor: colors.anstoss.cardBorder,
         },
         style,
       ]}
@@ -244,29 +261,32 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
 }
 
 /**
- * Blickfangkarte: Verlauf der Vereinsfarbe (`hero.from → hero.to`) mit Wellen und Kreis als SVG, Schrift
- * immer `hero.onHero`. Je Bildschirm genau eine (docs/DESIGNSYSTEM.md, Regel 1). Inhalte setzt die Seite.
+ * Plakat bzw. Hero-Block (Stil „Anstoß“): radialer Verlauf Plakatfarbe 1 → 2 → Hintergrund, Radius 28,
+ * Innenabstand 18, Schrift immer `hero.onHero`. Je Bildschirm genau eine. Inhalte setzt die Seite.
+ * `poster`: großer Plakatverlauf mit Überblendung nach unten (Home), sonst der kleinere Hero-Block.
  */
 export function HeroCard({
   children,
   style,
   onPress,
   accessibilityLabel,
+  poster,
+  background,
 }: {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   /** macht die ganze Karte antippbar (dann keine eigenen Buttons darin) */
   onPress?: () => void;
   accessibilityLabel?: string;
+  poster?: boolean;
+  /** Wasserzeichen hinter dem Inhalt (Plakat-Kürzel, Rasenstreifen) */
+  background?: ReactNode;
 }) {
-  const { colors, radii, spacing, isDark, elevation } = useTheme();
+  const { colors, radii } = useTheme();
   const gradientId = useId().replace(/[^a-zA-Z0-9]/g, '');
   // Hintergrund bekommt die gemessene Größe: wächst die Karte (z. B. nach dem Laden), wächst er mit
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-  const outer: ViewStyle = {
-    borderRadius: radii.xxl,
-    ...(isDark ? { borderWidth: 1, borderColor: colors.hero.decor } : shadowStyle(elevation.hero)),
-  };
+  const outer: ViewStyle = { borderRadius: radii.xxl };
   const body = (
     <View
       onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
@@ -274,7 +294,7 @@ export function HeroCard({
         flexGrow: 1,
         borderRadius: radii.xxl,
         overflow: 'hidden',
-        padding: spacing.lg,
+        padding: 18,
         gap: 12,
       }}
     >
@@ -282,27 +302,49 @@ export function HeroCard({
         style={{ position: 'absolute', top: 0, left: 0 }}
         width={box?.w ?? 0}
         height={box?.h ?? 0}
-        viewBox="0 0 306 270"
-        preserveAspectRatio="xMidYMid slice"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
         aria-hidden
       >
         <Defs>
-          <LinearGradient id={gradientId} x1="0.3" y1="0" x2="0.7" y2="1">
-            <Stop offset="0" stopColor={colors.hero.from} />
-            <Stop offset="0.62" stopColor={colors.hero.to} />
+          {poster ? (
+            <RadialGradient
+              id={gradientId}
+              cx="80"
+              cy="0"
+              rx="120"
+              ry="80"
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop offset="0" stopColor={colors.anstoss.poster.from} />
+              <Stop offset="0.45" stopColor={colors.anstoss.poster.to} />
+              <Stop offset="1" stopColor={colors.background} />
+            </RadialGradient>
+          ) : (
+            <RadialGradient
+              id={gradientId}
+              cx="90"
+              cy="0"
+              rx="156"
+              ry="156"
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop offset="0" stopColor={colors.hero.from} />
+              <Stop offset="0.46" stopColor={colors.hero.to} />
+              <Stop offset="1" stopColor={colors.background} />
+            </RadialGradient>
+          )}
+          <LinearGradient id={`${gradientId}f`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0.4" stopColor={colors.background} stopOpacity={0} />
+            <Stop offset="1" stopColor={colors.background} stopOpacity={1} />
           </LinearGradient>
         </Defs>
-        <Rect x="0" y="0" width="306" height="270" fill={`url(#${gradientId})`} />
-        <Path
-          d="M0 160 C50 120 100 200 153 160 C206 120 256 180 306 140 L306 270 L0 270Z"
-          fill={colors.hero.decor}
-        />
-        <Path
-          d="M0 200 C60 170 105 235 165 200 C225 170 265 215 306 190 L306 270 L0 270Z"
-          fill={colors.hero.decor}
-        />
-        <Circle cx="270" cy="28" r="64" fill={colors.hero.decor} />
+        <Rect x="0" y="0" width="100" height="100" fill={`url(#${gradientId})`} />
+        {poster ? (
+          <Rect x="0" y="0" width="100" height="100" fill={`url(#${gradientId}f)`} />
+        ) : null}
       </Svg>
+      {background}
       {children}
     </View>
   );
@@ -332,15 +374,16 @@ export function Section({
   children: ReactNode;
 }) {
   const { colors } = useTheme();
-  // Zwischenüberschrift mit mindestens 20 px Luft oben und unten (Wunsch des Vorstands)
+  // Abschnittsüberschrift (Stil „Anstoß“): Akzentlinie 4 × 18, 12 px Abstand zum Inhalt; die Seite
+  // lässt 14 px Abstand, Abschnitte ergänzen oben 12 → 26 px wie im Entwurf.
   return (
-    <View style={{ gap: 20, paddingTop: 8 }}>
+    <View style={{ gap: 12, paddingTop: 12 }}>
       <View style={styles.rowBetween}>
         <View style={styles.sectionTitle}>
           <View
             style={{
               width: 4,
-              alignSelf: 'stretch',
+              height: 18,
               borderRadius: 2,
               backgroundColor: colors.primary,
             }}
@@ -355,7 +398,7 @@ export function Section({
             hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             accessibilityRole="link"
           >
-            <T variant="label" color={colors.primaryText}>
+            <T variant="caption" color={colors.primaryText} style={{ fontWeight: '700' }}>
               {`${t(action)} ›`}
             </T>
           </Pressable>
@@ -381,11 +424,11 @@ export function Sheet({
   title?: string;
   children: ReactNode;
 }) {
-  const { colors, radii, spacing, isDark } = useTheme();
+  const { colors, radii, spacing } = useTheme();
   const { height } = useWindowDimensions();
   return (
     <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.45)' }}>
+      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: colors.anstoss.scrim }}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('Schließen')}
@@ -401,35 +444,136 @@ export function Sheet({
             maxHeight: height * 0.85,
             borderTopLeftRadius: radii.xxl,
             borderTopRightRadius: radii.xxl,
-            backgroundColor: colors.surfaceRaised,
-            ...(isDark ? { borderWidth: 1, borderColor: colors.border } : null),
+            backgroundColor: colors.anstoss.sheet,
+            borderTopWidth: 1,
+            borderColor: colors.anstoss.sheetBorder,
           }}
         >
           <View
             style={{
               alignSelf: 'center',
-              width: 40,
+              width: 44,
               height: 5,
               borderRadius: 3,
               marginTop: 10,
-              backgroundColor: colors.border,
+              backgroundColor: 'rgba(255,255,255,0.25)',
             }}
           />
           <ScrollView
             contentContainerStyle={{
-              padding: spacing.xl,
+              paddingHorizontal: 24,
+              paddingTop: spacing.md,
               gap: spacing.md,
               paddingBottom: spacing.xxl,
             }}
             keyboardShouldPersistTaps="handled"
           >
             {title ? (
-              <T variant="headline" accessibilityRole="header">
+              <T variant="headline" style={{ fontSize: 26 }} accessibilityRole="header">
                 {title}
               </T>
             ) : null}
             {children}
           </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+/**
+ * Dialog in der Mitte (Stil „Anstoß“, Vorlage U15): „Wirklich löschen?“ mit Name des Eintrags und zwei
+ * Knöpfen. Löschen fragt immer nach; es verschiebt in das Archiv (docs/ARCHIV.md).
+ */
+export function Dialog({
+  visible,
+  onClose,
+  title,
+  text,
+  confirmLabel,
+  onConfirm,
+  cancelLabel = 'Abbrechen',
+  danger = true,
+  icon = 'trash-outline',
+  loading,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  title: string;
+  text?: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  cancelLabel?: string;
+  /** Bestätigen ist rot (Löschen) */
+  danger?: boolean;
+  icon?: IconName;
+  loading?: boolean;
+}) {
+  const { colors, radii } = useTheme();
+  const tone = danger ? colors.status.urgent : colors.status.info;
+  return (
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 28,
+          backgroundColor: colors.anstoss.scrimDialog,
+        }}
+      >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('Schließen')}
+          style={StyleSheet.absoluteFill}
+          onPress={onClose}
+        />
+        <View
+          accessibilityViewIsModal
+          style={{
+            width: '100%',
+            maxWidth: 420,
+            borderRadius: radii.xxl,
+            padding: 24,
+            gap: 14,
+            backgroundColor: colors.anstoss.sheet,
+            borderWidth: 1,
+            borderColor: colors.anstoss.sheetBorder,
+            alignItems: 'center',
+          }}
+        >
+          <View
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: tone.container,
+            }}
+          >
+            <Ionicons name={icon} size={26} color={tone.onContainer} />
+          </View>
+          <T
+            variant="headline"
+            style={{ fontSize: 26, textAlign: 'center' }}
+            accessibilityRole="header"
+          >
+            {title}
+          </T>
+          {text ? (
+            <T style={{ textAlign: 'center', color: colors.onSurfaceMuted }}>{text}</T>
+          ) : null}
+          <View style={{ flexDirection: 'row', gap: 10, alignSelf: 'stretch', marginTop: 4 }}>
+            <Button label={cancelLabel} variant="neutral" onPress={onClose} style={{ flex: 1 }} />
+            <Button
+              label={confirmLabel}
+              variant={danger ? 'dangerSolid' : 'primary'}
+              loading={loading}
+              onPress={onConfirm}
+              style={{ flex: 1 }}
+            />
+          </View>
         </View>
       </View>
     </Modal>
@@ -447,15 +591,15 @@ export function Chip({
   label: string;
   tone?: StatusKey | 'primary' | 'neutral' | TintKey;
   icon?: IconName;
-  /** sm = Statusmarke in Listen und Karten, md = Höhe `sizes.chipHeight` für eigenständige Chips */
+  /** sm = Statusmarke (Radius 8, 11,5 px) in Listen und Karten, md = Pille (12 px) für eigenständige Marken */
   size?: 'sm' | 'md';
 }) {
-  const { colors, radii, sizes } = useTheme();
+  const { colors, radii } = useTheme();
   const palette =
     tone === 'primary'
       ? { bg: colors.primaryContainer, fg: colors.onPrimaryContainer }
       : tone === 'neutral'
-        ? { bg: colors.surfaceVariant, fg: colors.onSurfaceMuted }
+        ? { bg: 'rgba(255,255,255,0.08)', fg: colors.onSurfaceMuted }
         : tone in colors.tints
           ? {
               bg: colors.tints[tone as TintKey].container,
@@ -472,14 +616,14 @@ export function Chip({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        gap: md ? 6 : 4,
         alignSelf: 'flex-start',
         maxWidth: '100%',
-        minHeight: md ? sizes.chipHeight : 24,
+        minHeight: md ? 28 : 22,
         backgroundColor: palette.bg,
-        borderRadius: radii.pill,
-        paddingHorizontal: md ? 12 : 10,
-        paddingVertical: 2,
+        borderRadius: md ? radii.pill : 8,
+        paddingHorizontal: md ? 11 : 8,
+        paddingVertical: md ? 5 : 2,
       }}
     >
       {icon ? <Ionicons name={icon} size={md ? 14 : 12} color={palette.fg} /> : null}
@@ -487,7 +631,7 @@ export function Chip({
         style={{
           flexShrink: 1,
           color: palette.fg,
-          fontSize: md ? 13 : 12,
+          fontSize: md ? 12 : 11.5,
           fontWeight: '700',
         }}
       >
@@ -503,18 +647,16 @@ export function TeamBadge({ badge }: { badge: string }) {
   return (
     <View
       style={{
-        minWidth: 28,
-        height: 20,
-        paddingHorizontal: 5,
-        borderRadius: 6,
+        minWidth: 30,
+        height: 22,
+        paddingHorizontal: 6,
+        borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: colors.surfaceVariant,
-        borderWidth: 1,
-        borderColor: colors.border,
+        backgroundColor: 'rgba(255,255,255,0.08)',
       }}
     >
-      <Text style={{ fontSize: 11, fontWeight: '800', color: colors.onSurface }}>{badge}</Text>
+      <Text style={{ fontSize: 11.5, fontWeight: '800', color: colors.onSurface }}>{badge}</Text>
     </View>
   );
 }
@@ -569,19 +711,20 @@ export function Button({
       fg: colors.onPrimary,
       border: colors.primary,
     },
+    // Nebenknopf: Fläche mit feinem Rand (Stil „Anstoß“)
     outline: {
-      bg: 'transparent',
-      pressed: colors.surfaceVariant,
+      bg: colors.anstoss.card,
+      pressed: 'rgba(255,255,255,0.12)',
       fg: colors.onSurface,
-      border: colors.border,
+      border: colors.anstoss.fieldBorder,
     },
     danger: {
       bg: 'transparent',
       pressed: colors.status.urgent.container,
       fg: colors.status.urgent.onContainer,
-      border: colors.border,
+      border: colors.status.urgent.onContainer,
     },
-    // Rot gefüllt (z. B. „Absage senden“), orange gefüllt („Unsicher senden“), grau („Abbrechen“)
+    // Rot gefüllt (z. B. „Löschen“, „Absage senden“), orange gefüllt („Unsicher senden“), grau („Abbrechen“)
     dangerSolid: {
       bg: colors.status.urgent.solid,
       pressed: colors.status.urgent.onContainer,
@@ -595,10 +738,10 @@ export function Button({
       border: colors.status.action.solid,
     },
     neutral: {
-      bg: colors.surfaceVariant,
-      pressed: colors.border,
+      bg: 'rgba(255,255,255,0.1)',
+      pressed: 'rgba(255,255,255,0.16)',
       fg: colors.onSurface,
-      border: colors.surfaceVariant,
+      border: 'transparent',
     },
     tonal: {
       bg: colors.primaryContainer,
@@ -612,18 +755,18 @@ export function Button({
       fg: colors.status.action.onContainer,
       border: colors.status.action.container,
     },
-    // Auf dem Verlauf: weiße (bzw. dunkle) Fläche mit Verlaufsfarbe als Schrift
+    // Auf dem Plakat: helle Fläche mit dunkler Schrift bzw. umrandet in Weiß
     hero: {
-      bg: colors.hero.onHero,
-      pressed: colors.hero.onHero,
-      fg: colors.hero.from,
-      border: colors.hero.onHero,
+      bg: colors.primary,
+      pressed: colors.primaryPressed,
+      fg: colors.onPrimary,
+      border: colors.primary,
     },
     heroOutline: {
       bg: 'transparent',
       pressed: colors.hero.decor,
       fg: colors.hero.onHero,
-      border: colors.hero.onHero,
+      border: 'rgba(255,255,255,0.4)',
     },
   }[variant];
   const small = size === 'sm';
@@ -638,11 +781,11 @@ export function Button({
       style={({ pressed }) => [
         {
           flexDirection: 'row',
-          gap: 6,
+          gap: 8,
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: small ? sizes.buttonSmall : sizes.button,
-          paddingHorizontal: compact ? 6 : small ? 10 : 14,
+          paddingHorizontal: compact ? 8 : small ? 14 : 18,
           borderRadius: radii.pill,
           borderWidth: border,
           borderColor: palette.border,
@@ -657,7 +800,7 @@ export function Button({
       ) : (
         <>
           {icon ? (
-            <Ionicons name={icon} size={hideLabel ? 24 : small ? 16 : 18} color={palette.fg} />
+            <Ionicons name={icon} size={hideLabel ? 24 : small ? 17 : 19} color={palette.fg} />
           ) : null}
           {hideLabel ? null : (
             <Text
@@ -666,7 +809,7 @@ export function Button({
                 flexShrink: 1,
                 textAlign: 'center',
                 color: palette.fg,
-                fontSize: small ? 13 : 15,
+                fontSize: small ? 14 : 16,
                 fontWeight: '800',
               }}
             >
@@ -697,9 +840,9 @@ export function Toggle({
       accessibilityLabel={label}
       value={value}
       disabled={disabled}
-      trackColor={{ true: colors.primary, false: colors.border }}
-      thumbColor={colors.surface}
-      {...({ activeThumbColor: colors.surface } as object)}
+      trackColor={{ true: colors.primary, false: 'rgba(255,255,255,0.22)' }}
+      thumbColor="#FFFFFF"
+      {...({ activeThumbColor: '#FFFFFF' } as object)}
       onValueChange={(v) => {
         hapticSelect();
         onChange(v);
@@ -894,16 +1037,20 @@ export function ListRow({
   /** durchgestrichener Titel (abgesagt) */
   strike?: boolean;
 }) {
-  const { colors, spacing, sizes } = useTheme();
+  const { colors, sizes } = useTheme();
   const main = (
     <>
       {leading}
       <View style={{ flex: 1, gap: 2 }}>
         <T
-          variant="label"
           numberOfLines={2}
-          color={strike ? colors.onSurfaceMuted : undefined}
-          style={{ fontWeight: '700', textDecorationLine: strike ? 'line-through' : 'none' }}
+          color={strike ? colors.anstoss.textTertiary : undefined}
+          style={{
+            fontSize: 15,
+            lineHeight: 20,
+            fontWeight: '700',
+            textDecorationLine: strike ? 'line-through' : 'none',
+          }}
         >
           {title}
         </T>
@@ -922,22 +1069,28 @@ export function ListRow({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: 14,
     minHeight: sizes.touchTarget,
-    paddingVertical: spacing.sm + 2,
+    paddingVertical: 12,
   } as const;
   // Zusatz rechts (Buttons, Schalter) steht neben dem antippbaren Bereich, nie darin:
   // verschachtelte Buttons sind im Web ungültig.
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.md,
-        borderTopWidth: first ? 0 : 1,
-        borderTopColor: colors.border,
-      }}
-    >
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      {/* Trennlinie, links bis hinter das Symbol eingerückt (Stil „Anstoß“) */}
+      {first ? null : (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: leading ? 54 : 0,
+            right: 0,
+            height: 1,
+            backgroundColor: colors.anstoss.divider,
+          }}
+        />
+      )}
       {onPress ? (
         <Pressable onPress={onPress} accessibilityRole="button" style={inner}>
           {main}
@@ -947,7 +1100,9 @@ export function ListRow({
       )}
       {/* Chips setzen alignSelf: flex-start; der Container zentriert sie wieder zur Zeile */}
       {trailing ? <View style={{ alignSelf: 'center' }}>{trailing}</View> : null}
-      {onPress ? <Ionicons name="chevron-forward" size={18} color={colors.onSurfaceMuted} /> : null}
+      {onPress ? (
+        <Ionicons name="chevron-forward" size={18} color={colors.anstoss.textTertiary} />
+      ) : null}
     </View>
   );
 }
@@ -1056,7 +1211,7 @@ export function SwipeRow({
             if (dragged.current) e.stopPropagation();
           },
         } as object)}
-        style={{ transform: [{ translateX: x }], backgroundColor: colors.surfaceRaised }}
+        style={{ transform: [{ translateX: x }], backgroundColor: colors.surface }}
         accessibilityActions={[{ name: 'activate', label: t(label) }]}
         onAccessibilityAction={() => onAction()}
       >
@@ -1080,7 +1235,7 @@ function SkeletonBlock({
   radius?: number;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { colors, radii, motion } = useTheme();
+  const { radii, motion } = useTheme();
   const opacity = useRef(new Animated.Value(0.45)).current;
   const [reduceMotion, setReduceMotion] = useState(false);
   useEffect(() => {
@@ -1114,7 +1269,7 @@ function SkeletonBlock({
           height,
           width,
           borderRadius: radius ?? radii.md,
-          backgroundColor: colors.border,
+          backgroundColor: 'rgba(255,255,255,0.1)',
           opacity,
         },
         style,
@@ -1142,7 +1297,7 @@ function SkeletonRow() {
  * ersten Aufbau einer Seite: Blickfangkarte, Band, Liste.
  */
 export function Loading({ variant = 'list' }: { variant?: 'list' | 'page' }) {
-  const { colors, radii, isDark, elevation } = useTheme();
+  const { colors, radii } = useTheme();
   const rows = (
     <>
       <SkeletonRow />
@@ -1167,10 +1322,9 @@ export function Loading({ variant = 'list' }: { variant?: 'list' | 'page' }) {
             style={{
               padding: 14,
               borderRadius: radii.xl,
-              backgroundColor: colors.surfaceRaised,
-              ...(isDark
-                ? { borderWidth: 1, borderColor: colors.border }
-                : shadowStyle(elevation.card)),
+              backgroundColor: colors.anstoss.card,
+              borderWidth: 1,
+              borderColor: colors.anstoss.cardBorder,
             }}
           >
             {rows}
@@ -1200,47 +1354,64 @@ export function Notice({
   text: string;
   action?: { label: string; onPress: () => void; icon?: IconName };
 }) {
-  const { colors, radii, spacing } = useTheme();
+  const { colors, radii } = useTheme();
   const c = colors.status[tone];
+  // Karte mit Rand in Statusfarbe, Symbolkreis, Titel in Saira und Text (Stil „Anstoß“, U12)
   return (
     <View
       accessibilityRole={tone === 'urgent' ? 'alert' : undefined}
       style={{
-        gap: spacing.md,
-        padding: spacing.lg,
+        flexDirection: 'row',
+        gap: 12,
+        padding: 16,
         borderRadius: radii.xl,
-        backgroundColor: c.container,
+        backgroundColor: colors.anstoss.card,
         borderWidth: 1,
-        borderColor: c.solid,
+        borderColor: withAlpha(c.solid, 0.4),
       }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <View
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: c.solid,
-          }}
-        >
-          <Ionicons name={icon} size={20} color={c.onSolid} />
-        </View>
-        <T variant="heading" color={c.onContainer} style={{ flex: 1 }}>
+      <View
+        style={{
+          width: 42,
+          height: 42,
+          borderRadius: 21,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: withAlpha(c.solid, 0.18),
+        }}
+      >
+        <Ionicons name={icon} size={22} color={c.onContainer} />
+      </View>
+      <View style={{ flex: 1, gap: 4 }}>
+        <T variant="title" color={c.onContainer} style={{ fontSize: 22, lineHeight: 25 }}>
           {title}
         </T>
+        <T style={{ fontSize: 13, lineHeight: 18, color: colors.onSurfaceMuted }}>{text}</T>
+        {action ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={action.onPress}
+            style={({ pressed }) => ({
+              alignSelf: 'flex-start',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              marginTop: 8,
+              minHeight: 44,
+              paddingHorizontal: 14,
+              borderRadius: 999,
+              borderWidth: 1.5,
+              borderColor: withAlpha(c.onContainer, 0.5),
+              backgroundColor: pressed ? c.container : 'transparent',
+            })}
+          >
+            {action.icon ? <Ionicons name={action.icon} size={16} color={c.onContainer} /> : null}
+            <Text style={{ fontSize: 13, fontWeight: '700', color: c.onContainer }}>
+              {action.label}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
-      <T color={c.onContainer}>{text}</T>
-      {action ? (
-        <Button
-          label={action.label}
-          icon={action.icon}
-          variant="outline"
-          onPress={action.onPress}
-          style={{ alignSelf: 'flex-start', borderColor: c.solid }}
-        />
-      ) : null}
     </View>
   );
 }
@@ -1301,29 +1472,34 @@ export function Empty({
   hint?: string;
   action?: { label: string; onPress: () => void };
 }) {
-  const { colors, radii } = useTheme();
+  const { colors } = useTheme();
+  // Leerer Zustand (Stil „Anstoß“, U12): Symbolkreis in Akzent bei 13 %, Titel in Saira, leiser Hinweis
   return (
-    <View
-      style={{
-        alignItems: 'center',
-        gap: 10,
-        paddingVertical: 20,
-        paddingHorizontal: 16,
-        borderRadius: radii.xl,
-        backgroundColor: colors.surfaceVariant,
-      }}
-    >
-      <IconTile name={icon} size="lg" />
-      <T variant="label" style={{ textAlign: 'center', fontWeight: '700' }}>
+    <View style={{ alignItems: 'center', gap: 4, paddingVertical: 24, paddingHorizontal: 12 }}>
+      <View
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 32,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: withAlpha(colors.primary, 0.13),
+        }}
+      >
+        <Ionicons name={icon} size={28} color={colors.primary} />
+      </View>
+      <T variant="title" style={{ textAlign: 'center', marginTop: 8 }}>
         {text}
       </T>
       {hint ? (
-        <T variant="caption" style={{ textAlign: 'center', marginTop: -4 }}>
+        <T variant="caption" style={{ textAlign: 'center', fontSize: 13 }}>
           {hint}
         </T>
       ) : null}
       {action ? (
-        <Button label={action.label} size="sm" variant="tonal" onPress={action.onPress} />
+        <View style={{ marginTop: 10 }}>
+          <Button label={action.label} size="sm" variant="tonal" onPress={action.onPress} />
+        </View>
       ) : null}
     </View>
   );
@@ -1414,14 +1590,14 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                 <View
                   style={{
                     width: '100%',
-                    height: 64,
+                    height: 66,
                     borderRadius: 22,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: pressed ? colors.surfaceVariant : colors.surfaceRaised,
-                    ...(isDark
-                      ? { borderWidth: 1, borderColor: colors.border }
-                      : shadowStyle(elevation.control)),
+                    backgroundColor: pressed ? colors.surfaceVariant : colors.anstoss.card,
+                    borderWidth: 1,
+                    borderColor: colors.anstoss.cardBorder,
+                    ...(isDark ? null : shadowStyle(elevation.control)),
                   }}
                 >
                   <IconTile
@@ -1564,13 +1740,13 @@ export function ChoiceChips<T extends string>({
                   alignItems: 'center',
                   gap: 6,
                   minHeight: sizes.chipHeight + 2,
-                  paddingHorizontal: 14,
-                  paddingVertical: 6,
+                  paddingHorizontal: 15,
+                  paddingVertical: 9,
                   maxWidth: '100%',
                   borderRadius: radii.pill,
-                  borderWidth: 1,
-                  borderColor: active ? fill : colors.border,
-                  backgroundColor: active ? fill : colors.surfaceRaised,
+                  borderWidth: 1.5,
+                  borderColor: active ? fill : colors.anstoss.fieldBorder,
+                  backgroundColor: active ? fill : colors.anstoss.card,
                 }}
               >
                 {active && check ? <Ionicons name="checkmark" size={16} color={onFill} /> : null}
@@ -1622,7 +1798,7 @@ export function TextField({
   /** Hinweis unter dem Feld */
   hint?: string;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors } = useTheme();
   const secret = kind === 'password' || kind === 'newPassword';
   const [shown, setShown] = useState(false);
   return (
@@ -1639,7 +1815,7 @@ export function TextField({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder ? t(placeholder) : placeholder}
-          placeholderTextColor={colors.onSurfaceMuted}
+          placeholderTextColor={colors.anstoss.placeholder}
           maxLength={maxLength}
           multiline={multiline}
           secureTextEntry={secret && !shown}
@@ -1667,16 +1843,16 @@ export function TextField({
           }
           onSubmitEditing={onSubmit}
           style={{
-            minHeight: multiline ? 72 : 46,
-            borderWidth: accent ? 2 : 1,
-            borderColor: accent ?? colors.border,
-            borderRadius: radii.md,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            fontSize: 15,
+            minHeight: multiline ? 88 : 56,
+            borderWidth: accent ? 2 : 1.5,
+            borderColor: accent ?? colors.anstoss.fieldBorder,
+            borderRadius: 16,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            fontSize: 16,
             ...inputFont(),
             color: colors.onSurface,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.anstoss.card,
             textAlignVertical: multiline ? 'top' : 'center',
             ...(secret ? { paddingRight: 88 } : null),
           }}
@@ -2030,3 +2206,111 @@ const styles = StyleSheet.create({
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sectionTitle: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
 });
+
+/** Umschalter zwischen wenigen Ansichten (Anstoß: Behälter 7 % Weiß, aktive Option in Vereinsfarbe). */
+export function Segment<V extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: V; label: string }[];
+  value: V;
+  onChange: (value: V) => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View
+      accessibilityRole="tablist"
+      style={{
+        flexDirection: 'row',
+        padding: 4,
+        gap: 4,
+        borderRadius: 16,
+        backgroundColor: withAlpha('#ffffff', 0.07),
+      }}
+    >
+      {options.map((o) => {
+        const active = o.value === value;
+        return (
+          <Pressable
+            key={o.value}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            onPress={() => {
+              if (!active) {
+                hapticSelect();
+                onChange(o.value);
+              }
+            }}
+            style={{
+              flex: 1,
+              minHeight: 44,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: 11,
+              paddingHorizontal: 13,
+              borderRadius: 12,
+              backgroundColor: active ? colors.primary : 'transparent',
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 13.5,
+                fontWeight: '700',
+                color: active ? colors.onPrimary : colors.onSurface,
+              }}
+            >
+              {o.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** Ticket (Wochenansicht, Kennzahlen): 132 breit, Farbstreifen oben, große Zahl. */
+export function Ticket({
+  number,
+  label,
+  caption,
+  color,
+  onPress,
+}: {
+  number: string;
+  label: string;
+  caption?: string;
+  color: string;
+  onPress?: () => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={[label, number, caption].filter(Boolean).join(', ')}
+      disabled={!onPress}
+      onPress={onPress}
+      style={{
+        width: 132,
+        minHeight: 44,
+        borderRadius: 20,
+        overflow: 'hidden',
+        backgroundColor: colors.anstoss.card,
+        borderWidth: 1,
+        borderColor: colors.anstoss.cardBorder,
+      }}
+    >
+      <View style={{ height: 4, backgroundColor: color }} />
+      <View style={{ padding: 14, gap: 2 }}>
+        <T variant="caption" verbatim>
+          {label}
+        </T>
+        <T variant="figure" style={{ fontSize: 40, lineHeight: 44 }} verbatim>
+          {number}
+        </T>
+        {caption ? <T variant="caption">{caption}</T> : null}
+      </View>
+    </Pressable>
+  );
+}
