@@ -80,7 +80,8 @@ export function timeWindow(columns: GridColumn[]): { from: number; to: number } 
         .map((b) => clip(b, c.day))
         .filter((x): x is { start: number; end: number } => x !== null),
     );
-  const used = collect('event').length ? collect('event') : collect('block');
+  // Termine bestimmen das Fenster; kurze Sperrungen (unter 12 Std.) zählen mit, ganztägige werden gekürzt
+  const used = [...collect('event'), ...collect('block').filter((u) => u.end - u.start < 12 * 60)];
   if (!used.length) return { from: 8, to: 20 };
   let from = Math.floor(Math.min(...used.map((u) => u.start)) / 60);
   let to = Math.ceil(Math.max(...used.map((u) => u.end)) / 60);
@@ -332,16 +333,23 @@ export function FacilityGrid({
                     }}
                   />
                 ))}
-                {layout(c).map((seg) => (
-                  <Block
-                    key={seg.booking.id}
-                    seg={seg}
-                    from={from}
-                    teams={teams}
-                    mode={mode}
-                    onPress={(b) => onPressBooking(b, c)}
-                  />
-                ))}
+                {layout(c)
+                  .map((seg) => ({
+                    ...seg,
+                    start: Math.max(seg.start, from * 60),
+                    end: Math.min(seg.end, to * 60),
+                  }))
+                  .filter((seg) => seg.end > seg.start)
+                  .map((seg) => (
+                    <Block
+                      key={seg.booking.id}
+                      seg={seg}
+                      from={from}
+                      teams={teams}
+                      mode={mode}
+                      onPress={(b) => onPressBooking(b, c)}
+                    />
+                  ))}
               </View>
             </View>
           ))}
