@@ -13,6 +13,7 @@ const TABS: TabKey[] = ['index', 'team', 'termine', 'verein', 'mehr'];
 export const NO_SUB_NAV = new Set([
   '(tabs)',
   'admin',
+  'club-cash',
   'login',
   'forgot',
   'setup',

@@ -1,37 +1,95 @@
-import { router, Stack, usePathname, type Href } from 'expo-router';
-import { View } from 'react-native';
-import { SubHeader } from '@/components/sub-header';
-import { FloatingNav } from '@/components/tab-bar';
+import { Stack, router, usePathname } from 'expo-router';
 import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import { useState } from 'react';
-import type { IconName } from '@/components/ui';
+import { View } from 'react-native';
+import { AreaHeader, AreaTabBar } from '@/components/area-shell';
+import { adminCategories } from '@/lib/areas';
+import { t, useLocale } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
-import { t, useLocale } from '@/lib/i18n';
+
+/** Welche Kategorie zu einer Seite der Verwaltung gehört (für den markierten Reiter). */
+const CATEGORY_OF: Record<string, string> = {
+  members: 'mitglieder',
+  member: 'mitglieder',
+  'member-new': 'mitglieder',
+  'member-permissions': 'mitglieder',
+  import: 'mitglieder',
+  roles: 'mitglieder',
+  role: 'mitglieder',
+  transfers: 'mitglieder',
+  'transfer-new': 'mitglieder',
+  invites: 'mitglieder',
+  teams: 'sport',
+  team: 'sport',
+  unit: 'sport',
+  'club-events': 'sport',
+  'club-event-new': 'sport',
+  news: 'inhalte',
+  sponsors: 'inhalte',
+  club: 'verein',
+  modules: 'verein',
+  audit: 'verein',
+};
 
 /**
- * Verwaltungsmodus als „App in der App“ (Mappe S. 8, Konzept §6): abgesetzte Kopfzeile mit
- * „Beenden“ und eine eigene untere Navigation für die wichtigsten Verwaltungsbereiche.
+ * Verwaltung als eigener Bereich (Paket AV): violettes Kopfband mit „Beenden“, untere Leiste mit beschrifteten
+ * Reitern (Übersicht, Mitglieder, Sport, Inhalte, Verein – je nach Rechten) und Seiten mit farbigen Untergruppen.
  */
 export default function AdminLayout() {
   const { colors } = useTheme();
   const { me } = useSignedIn();
   const [navHeight, setNavHeight] = useState(0);
-  // Der Assistent „Mannschaft anlegen“ füllt den Bildschirm: ohne Kopfzeile und Verwaltungsleiste
-  const wizard = usePathname() === '/admin/team-new';
+  // Der Assistent „Mannschaft anlegen“ füllt den Bildschirm: ohne Kopfband und Leiste
+  const path = usePathname();
+  const wizard = path === '/admin/team-new';
   useLocale();
+  const categories = adminCategories(me);
+  const segment = path.split('/')[2] ?? '';
+  const activeKey =
+    path === '/admin'
+      ? 'overview'
+      : segment === 'area'
+        ? (path.split('/')[3] ?? '')
+        : (CATEGORY_OF[segment] ?? '');
+  const items = [
+    {
+      key: 'overview',
+      label: t('Übersicht'),
+      icon: (activeKey === 'overview' ? 'grid' : 'grid-outline') as never,
+      active: activeKey === 'overview',
+      onPress: () => router.navigate('/admin'),
+    },
+    ...categories.map((c) => ({
+      key: c.key,
+      label: t(c.label),
+      icon: (activeKey === c.key ? c.icon : `${c.icon}-outline`) as never,
+      active: activeKey === c.key,
+      onPress: () => router.navigate(`/admin/area/${c.key}` as never),
+    })),
+  ];
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <BottomTabBarHeightContext.Provider value={me.canAdminister && !wizard ? navHeight : 0}>
+      <BottomTabBarHeightContext.Provider value={wizard ? 0 : navHeight}>
         <Stack
           screenOptions={{
             headerShown: true,
-            // Pfad „Verein › Verwaltung › …“ wie auf allen Unterseiten (Paket NV)
-            header: (p) => <SubHeader route={p.route} options={p.options} prefix="admin/" />,
+            header: (p) => (
+              <AreaHeader
+                tone="violet"
+                areaTitle="Admin-Verwaltung"
+                rootCrumb={{ label: 'Verwaltung', href: '/admin' }}
+                roots={['index', 'area/[key]']}
+                route={p.route}
+                options={p.options}
+                prefix="admin/"
+              />
+            ),
             contentStyle: { backgroundColor: colors.background },
           }}
         >
           <Stack.Screen name="index" options={{ title: 'Verwaltung' }} />
+          <Stack.Screen name="area/[key]" options={{ title: 'Verwaltung' }} />
           <Stack.Screen name="members" options={{ title: 'Mitglieder' }} />
           <Stack.Screen name="member/[id]" options={{ title: 'Mitglied' }} />
           <Stack.Screen name="member-new" options={{ title: 'Mitglied anlegen' }} />
@@ -60,74 +118,7 @@ export default function AdminLayout() {
           <Stack.Screen name="sponsors" options={{ title: 'Sponsoren' }} />
         </Stack>
       </BottomTabBarHeightContext.Provider>
-      {wizard ? null : <AdminNavBar onHeight={setNavHeight} />}
+      {wizard ? null : <AreaTabBar tone="violet" items={items} onHeight={setNavHeight} />}
     </View>
-  );
-}
-
-type NavItem = { href: Href; match: string; label: string; icon: IconName };
-
-function AdminNavBar({ onHeight }: { onHeight: (height: number) => void }) {
-  const { me } = useSignedIn();
-  const path = usePathname();
-  if (!me.canAdminister) return null;
-  const a = me.admin;
-  const items: NavItem[] = [
-    { href: '/admin', match: '/admin', label: 'Übersicht', icon: 'grid' },
-    ...(a.readMembers
-      ? [
-          {
-            href: '/admin/members' as Href,
-            match: '/admin/member',
-            label: 'Mitglieder',
-            icon: 'people' as IconName,
-          },
-        ]
-      : []),
-    ...(a.manageTeams || a.planSeason
-      ? [
-          {
-            href: '/admin/teams' as Href,
-            match: '/admin/team',
-            label: 'Teams',
-            icon: 'shirt' as IconName,
-          },
-        ]
-      : []),
-    ...(a.planEvents
-      ? [
-          {
-            href: '/admin/club-events' as Href,
-            match: '/admin/club-event',
-            label: 'Feste',
-            icon: 'balloon' as IconName,
-          },
-        ]
-      : []),
-    ...(me.news.write || me.news.publish
-      ? [
-          {
-            href: '/admin/news' as Href,
-            match: '/admin/news',
-            label: 'News',
-            icon: 'newspaper' as IconName,
-          },
-        ]
-      : []),
-  ];
-  const active = (item: NavItem) =>
-    item.match === '/admin' ? path === '/admin' : path.startsWith(item.match);
-  return (
-    <FloatingNav
-      onHeight={onHeight}
-      items={items.map((item) => ({
-        key: item.label,
-        label: t(item.label),
-        icon: `${item.icon}-outline` as IconName,
-        iconActive: item.icon,
-        active: active(item),
-        onPress: () => router.navigate(item.href),
-      }))}
-    />
   );
 }

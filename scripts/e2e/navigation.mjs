@@ -98,7 +98,7 @@ await tab('Verein').click();
 await wait(1200);
 ok(new URL(page.url()).pathname === '/verein', 'Reiter „Verein“ führt in den Tab');
 
-// Verwaltung: Verein › Verwaltung › Mitglieder, ohne „Beenden“
+// Verwaltung als eigener Bereich (Paket AV): Kopfband mit „Beenden“, Pfad „Verwaltung › Mitglieder“
 const admin = await b.session('admin');
 await admin.goto('/admin/members');
 await admin.page
@@ -106,14 +106,16 @@ await admin.page
   .waitFor({ timeout: 20_000 });
 await admin.page.waitForTimeout(1500);
 ok(
-  (await admin.page.getByRole('button', { name: 'Verein', exact: true }).count()) > 0,
-  'Verwaltung: Pfad „Verein › Verwaltung › Mitglieder“',
+  (await admin.page.getByRole('button', { name: /beenden$/ }).count()) > 0,
+  'Verwaltung: Kopfband mit „Beenden“',
 );
-ok((await admin.page.getByText('Beenden').count()) === 0, 'Verwaltung: kein „Beenden“-Knopf mehr');
-ok((await admin.page.getByRole('tab').count()) > 0, 'Verwaltung: eigene untere Navigation bleibt');
-await admin.page.getByRole('button', { name: 'Verein', exact: true }).first().click();
+ok(
+  (await admin.page.getByRole('tab').count()) >= 4,
+  'Verwaltung: eigene untere Leiste mit Reitern',
+);
+await admin.page.getByRole('button', { name: 'Verwaltung', exact: true }).first().click();
 await admin.page.waitForTimeout(1200);
-ok(new URL(admin.page.url()).pathname === '/verein', 'Pfad „Verein“ verlässt die Verwaltung');
+ok(new URL(admin.page.url()).pathname === '/admin', 'Pfad „Verwaltung“ führt zur Übersicht');
 
 await b.close();
 console.log(b.errors.length ? `Konsolenfehler:\n${b.errors.join('\n')}` : '✓ keine Konsolenfehler');

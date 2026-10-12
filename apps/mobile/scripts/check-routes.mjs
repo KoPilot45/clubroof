@@ -11,6 +11,7 @@ const names = (file) =>
 const layouts = {
   '': names('_layout.tsx'),
   'admin/': names('admin/_layout.tsx'),
+  'club-cash/': names('club-cash/_layout.tsx'),
   '(tabs)/': names('(tabs)/_layout.tsx'),
 };
 
@@ -26,7 +27,7 @@ const walk = (dir) => {
 walk(app);
 
 const missing = files.filter((route) => {
-  const prefix = ['admin/', '(tabs)/'].find((x) => route.startsWith(x)) ?? '';
+  const prefix = ['admin/', 'club-cash/', '(tabs)/'].find((x) => route.startsWith(x)) ?? '';
   return !layouts[prefix].has(route.slice(prefix.length));
 });
 if (missing.length) {

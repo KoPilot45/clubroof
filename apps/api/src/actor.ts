@@ -195,7 +195,6 @@ const ADMIN_ROLES = new Set([
   'board',
   'sports_director',
   'youth_director',
-  'treasurer',
   'facility_manager',
   'member_admin',
 ]);
