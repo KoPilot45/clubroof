@@ -76,6 +76,7 @@ export const en: Record<string, string> = {
   '{0} ausgewählt': '{0} selected',
   '{0} Auto': '{0} car',
   '{0} Autos': '{0} cars',
+  '{0} Beanstandungen': '{0} objections',
   '{0} beenden': 'End {0}',
   '{0} Beitrittsanfrage': '{0} join request',
   '{0} Beitrittsanfragen': '{0} join requests',
@@ -83,6 +84,7 @@ export const en: Record<string, string> = {
   '{0} benachrichtigen': 'Notify {0}',
   '{0} bestehende Spiele wurden angepasst.': '{0} existing matches were updated.',
   '{0} Buchungen': '{0} entries',
+  '{0} Buchungen im Prüfumfang': '{0} bookings in audit scope',
   '{0} Dubletten': '{0} duplicates',
   '{0} Dubletten und {1} fehlerhafte Zeilen wurden übersprungen.':
     '{0} duplicates and {1} faulty rows were skipped.',
@@ -106,6 +108,7 @@ export const en: Record<string, string> = {
   '{0} gefällt das': '{0} like this',
   '{0} gegen {1}, {2}': '{0} versus {1}, {2}',
   '{0} geplant: {1}': '{0} planned: {1}',
+  '{0} geprüft': '{0} checked',
   '{0} Geräte für Push angemeldet.': '{0} devices registered for push.',
   '{0} gesperrt ({1})': '{0} closed ({1})',
   '{0} Getränk à {1}': '{0} drink at {1} each',
@@ -115,6 +118,7 @@ export const en: Record<string, string> = {
   '{0} Helfer fehlen': '{0} helpers missing',
   '{0} heute 🎉': '{0} today 🎉',
   '{0} hinzufügen': 'Add {0}',
+  '{0} in Ordnung': '{0} OK',
   '{0} ist an diesem Tag abwesend.': '{0} is absent on this day.',
   '{0} ist zur selben Zeit anderweitig im Einsatz.': '{0} is playing elsewhere at the same time.',
   '{0} Konten': '{0} accounts',
@@ -151,6 +155,7 @@ export const en: Record<string, string> = {
   '{0} Siege': '{0} wins',
   '{0} sind in der Mannschaftskasse {1} eingegangen.':
     '{0} has been received in the team fund {1}.',
+  '{0} Spenden': '{0} donations',
   '{0} Spiele angelegt': '{0} matches created',
   '{0} Spiele entfernt{1}.': '{0} matches removed{1}.',
   '{0} Spiele übernehmen': 'Import {0} matches',
@@ -207,6 +212,7 @@ export const en: Record<string, string> = {
   '{0}, {1} offen': '{0}, {1} open',
   '{0}, {1} Uhr': '{0}, {1}',
   '{0}, bald verfügbar': '{0}, coming soon',
+  '{0}, StNr. {1}': '{0}, tax no. {1}',
   '{0}: {1} – bitte gib Bescheid, ob du kannst.':
     '{0}: {1} – please let us know if you can make it.',
   '{0}: {1} bearbeitet{2}': '{0}: {1} edited{2}',
@@ -265,6 +271,7 @@ export const en: Record<string, string> = {
   '1 Mannschaft': '1 team',
   '1 Monat': '1 month',
   '1 Person gefällt das': '1 person likes this',
+  '1 Spende': '1 donation',
   '1 Tag': '1 day',
   '1 Termin abgesagt': '1 event cancelled',
   '1 Woche': '1 week',
@@ -469,6 +476,7 @@ export const en: Record<string, string> = {
   'Anfrage wartet': 'request waiting',
   'Anfragen ({0})': 'Requests ({0})',
   'Anfragen warten': 'requests waiting',
+  'Angaben zur Steuerbegünstigung': 'Details on tax exemption',
   'Angebot speichern': 'Save offer',
   'Angebot zurückziehen': 'Withdraw offer',
   Angebote: 'Offers',
@@ -487,6 +495,7 @@ export const en: Record<string, string> = {
   Anlegen: 'Create',
   Anmelden: 'Sign in',
   Anpassen: 'Customise',
+  'Anschrift (für die Bestätigung)': 'Address (for the receipt)',
   Ansprechpartner: 'Contacts',
   'Ansprechpartner anzeigen': 'Show contacts',
   Ansprechperson: 'Contact person',
@@ -620,6 +629,8 @@ export const en: Record<string, string> = {
   'Banner wählen': 'Choose banner',
   Bar: 'Cash',
   Barkasse: 'Petty cash',
+  Beanstanden: 'Object',
+  Beanstandet: 'Objected',
   Bearbeiten: 'Edit',
   'Bedarf melden': 'Report a need',
   'Bedarf und Angebote zwischen Mannschaften': 'Needs and offers between teams',
@@ -633,6 +644,7 @@ export const en: Record<string, string> = {
     'Starts on {0}. You plan squads under Administration → Members: teams of the new season are marked there with “(Season {1})”.',
   Begründung: 'Reason',
   'Begründung für das Storno': 'Reason for cancellation',
+  'Begünstigter Zweck': 'Eligible purpose',
   Behalten: 'Keep',
   'Bei Auswärtsspielen und Turnieren gibt es im Termin den Bereich „Fahrgemeinschaften“. Tippe auf „Ich fahre“ und gib die freien Plätze an, oder wähle bei einem Auto „Mitfahren“. Wer keine Mitfahrt hat, tippt auf „Mitfahrt suchen“. Eltern buchen für ihre Kinder.':
     "For away matches and tournaments, the event has a “Carpools” section. Tap “I'm driving” and enter the free seats, or choose “Join” on a car. If you don't have a ride, tap “Find a ride”. Parents book for their children.",
@@ -722,14 +734,22 @@ export const en: Record<string, string> = {
   'Bereits im Verein erfasst?': 'Already registered in the club?',
   'Bericht (Excel)': 'Report (Excel)',
   'Bericht (PDF)': 'Report (PDF)',
+  'Bericht abgegeben': 'Report submitted',
+  'Beschreibe das Ergebnis der Prüfung. Danach ist der Bericht abgegeben und nicht mehr änderbar; er ist die Grundlage der Entlastung.':
+    'Describe the result of the audit. Afterwards the report is submitted and can no longer be changed; it is the basis for discharge.',
   Beschreibung: 'Description',
   'Beschreibung (optional)': 'Description (optional)',
   Bestand: 'Balance',
   'Bestand der Kasse': 'Balance of fund',
   Bestände: 'Balances',
+  'Bestätige, dass die Vorlage rechtlich bzw. steuerlich geprüft wurde, und nenne die prüfende Stelle.':
+    'Confirm that the template has been reviewed legally or by a tax adviser, and name the reviewer.',
   Bestätigen: 'Confirm',
   'Bestätigen kann nur der eingeteilte Schiedsrichter.': 'Only the assigned referee can confirm.',
   Bestätigt: 'Confirmed',
+  Bestätigung: 'Receipt',
+  'Bestätigung ausstellen': 'Issue receipt',
+  'Bestätigung öffnen': 'Open receipt',
   Bestätigungscode: 'Verification code',
   'Bestätigungscode senden': 'Send confirmation code',
   'Bestehender Kasse zuordnen': 'Assign to existing fund',
@@ -776,20 +796,27 @@ export const en: Record<string, string> = {
   'Bis wann sollen Spieler antworten?': 'By when should players respond?',
   'Bisherige Abschlüsse': 'Previous closings',
   'Bisheriger Verein': 'Previous club',
+  'Bitte 1 bis {0} Stichproben wählen.': 'Please choose 1 to {0} samples.',
+  'Bitte angeben, wer die Vorlage geprüft hat (z. B. Steuerberatung, Verband).':
+    'Please state who reviewed the template (e.g. tax adviser, association).',
   'Bitte Beginn und Ende des Zeitraums angeben.': 'Please enter the start and end of the period.',
   'Bitte bestätige zuerst deine E-Mail-Adresse mit dem Code, den wir dir geschickt haben.':
     'Please confirm your email address first with the code we sent you.',
   'bitte bestätigen': 'please confirm',
+  'Bitte das Ergebnis der Prüfung beschreiben.': 'Please describe the result of the audit.',
   'Bitte Datum/Uhrzeit ergänzen': 'Please add date/time',
   'Bitte den abgebenden Verein angeben.': 'Please enter the releasing club.',
+  'Bitte den Namen der Spenderin oder des Spenders angeben.': "Please enter the donor's name.",
   'Bitte die abgebende Mannschaft wählen.': 'Please choose the releasing team.',
   'Bitte die aufnehmende Mannschaft wählen.': 'Please choose the receiving team.',
+  'Bitte die Beanstandung begründen.': 'Please give a reason for the objection.',
   'Bitte die Einrichtung neu starten.': 'Please restart the setup.',
   'Bitte ein Bild im Format JPG, PNG oder WebP hochladen.':
     'Please upload an image in JPG, PNG or WebP format.',
   'Bitte eine Begründung angeben.': 'Please give a reason.',
   'Bitte einen Namen angeben.': 'Please enter a name.',
   'Bitte einen Spieler aus dem Kader wählen.': 'Please choose a player from the squad.',
+  'Bitte einen Vermerk schreiben.': 'Please write a note.',
   'Bitte einen Verwendungszweck angeben.': 'Please enter a purpose.',
   'Bitte füge einen Maps-Link (https://…) oder Koordinaten wie 50.1234, 8.5678 ein.':
     'Please enter a maps link (https://…) or coordinates such as 50.1234, 8.5678.',
@@ -828,6 +855,9 @@ export const en: Record<string, string> = {
   'Bitte wähle eine Strafe aus.': 'Please select a fine.',
   'Bitte wähle mindestens eine Person aus.': 'Please select at least one person.',
   'Bitte zuerst alle Mannschaften zuordnen.': 'Please assign all teams first.',
+  'Bitte zuerst alle Steuerdaten ausfüllen.': 'Please fill in all tax data first.',
+  'Bitte zuerst alle Steuerdaten des Vereins ausfüllen.':
+    'Please fill in all tax data of the club first.',
   Blau: 'Blue',
   'Blende Kacheln aus, die du nicht brauchst, und schiebe die wichtigen nach oben. Neue Funktionen erscheinen am Ende.':
     'Hide tiles you do not need and move the important ones to the top. New features appear at the end.',
@@ -950,6 +980,7 @@ export const en: Record<string, string> = {
   'Das Passwort stimmt nicht.': 'The password is incorrect.',
   'Das Profil': 'The profile',
   'Das Profil konnte nicht gespeichert werden.': 'The profile could not be saved.',
+  'Das Prüfjahr ist ungültig.': 'The audit year is invalid.',
   'Das Scannen eines QR-Codes ist in der App auf dem Handy möglich.':
     'Scanning a QR code is possible in the app on your phone.',
   'Das sieht nur die Kassenführung des ganzen Vereins.': 'Only the club-wide treasury sees this.',
@@ -993,6 +1024,7 @@ export const en: Record<string, string> = {
   Datenschutzerklärung: 'Privacy policy',
   Datum: 'Date',
   'Datum bitte als TT.MM.JJJJ': 'Please enter the date as DD.MM.YYYY',
+  'Datum des Bescheids': 'Date of the notice',
   'Datum oder Uhrzeit nicht lesbar.': 'Date or time not readable.',
   Dauer: 'Duration',
   'Dauer: {0}:{1} Std.': 'Duration: {0}:{1} hrs',
@@ -1124,6 +1156,9 @@ export const en: Record<string, string> = {
   'Der Platz ist gesperrt: {0}. Bitte wähle einen anderen Platz oder Zeitpunkt.':
     'The pitch is closed: {0}. Please choose another pitch or time.',
   'Der Platz ist zu dieser Zeit belegt ({0}{1}).': 'The pitch is booked at this time ({0}{1}).',
+  'Der Prüfbericht': 'The audit report',
+  'Der Prüfbericht ist abgegeben und nicht mehr änderbar.':
+    'The audit report has been submitted and can no longer be changed.',
   'Der Schiedsrichter': 'The referee',
   'Der Spielbericht ist erst nach Anpfiff möglich.':
     'The match report is only possible after kick-off.',
@@ -1164,6 +1199,7 @@ export const en: Record<string, string> = {
     'The club requires it for your administration rights.',
   'Der Verein verlangt sie für deine Verwaltungsrechte. Bis dahin ist die Verwaltung gesperrt.':
     'The club requires it for your administration rights. Until then, administration is locked.',
+  'Der Vermerk': 'The note',
   'Der volle Name steht auf Dokumenten, der Kurzname in der Kopfzeile und auf dem Wappen.':
     'The full name appears on documents, the short name in the header and on the crest.',
   'Der Vorstand sieht – wenn der Verein es in „Wer darf die Kasse einsehen?“ freigibt – unter „Verein → Vereinsleben → Kassenübersicht“ eine reine Anzeige: Kassenstand gesamt, Einnahmen und Ausgaben, die einzelnen Kassen und die Beitragsquote. Buchungen, Belege und Funktionen gibt es dort nicht; die Vereinskasse selbst führen Kassenwart und Kassenprüfer.':
@@ -1203,6 +1239,8 @@ export const en: Record<string, string> = {
   'Die Anwesenheit erfasst das Trainerteam.': 'The coaching staff records attendance.',
   'Die Anwesenheit lässt sich erst ab Beginn erfassen.':
     'Attendance can only be recorded from the start.',
+  'Die App zieht zufällige Buchungen des Prüfjahrs, die noch nicht ausgewählt sind.':
+    'The app draws random bookings of the audit year that have not been selected yet.',
   'Die Aufgabe': 'The task',
   'Die Aufgabe hat schon jemand übernommen.': 'Someone has already taken the task.',
   'Die Aufgabe ist schon erledigt.': 'The task is already done.',
@@ -1211,8 +1249,11 @@ export const en: Record<string, string> = {
   'Die Auswahl konnte nicht gespeichert werden.': 'The selection could not be saved.',
   'Die Beitragsart': 'The fee type',
   'Die Benachrichtigung': 'The notification',
+  'Die Bestätigung ist noch nicht ausgestellt.': 'The receipt has not been issued yet.',
+  'Die Bestätigung ist schon ausgestellt.': 'The receipt has already been issued.',
   'Die Bewegung konnte nicht erfasst werden.': 'The movement could not be recorded.',
   'Die Buchung': 'The entry',
+  'Die Buchung der Spende ist storniert.': 'The booking of the donation is cancelled.',
   'Die Buchung ist bereits storniert.': 'The entry has already been reversed.',
   'Die Buchung konnte nicht gespeichert werden.': 'The entry could not be saved.',
   'Die Buchung konnte nicht storniert werden.': 'The entry could not be cancelled.',
@@ -1273,6 +1314,9 @@ export const en: Record<string, string> = {
   'Die Kasse bestätigt den Eingang – erst dann ist dein Konto ausgeglichen.':
     'The team fund confirms receipt – only then is your account balanced.',
   'Die Kasse ist stillgelegt.': 'The fund is deactivated.',
+  'Die Kassenprüfung machen Kassenprüfer.': 'The treasury audit is done by auditors.',
+  'Die Kassenprüfung machen Kassenprüfer. Hier siehst du die abgegebenen Prüfberichte.':
+    'The treasury audit is done by auditors. Here you see the submitted audit reports.',
   'Die Kassenstatistik sieht die Mannschaft.': 'The team can see the team fund statistics.',
   'Die Kassenverwaltung ist für Kassenwart und Trainerteam.':
     'Team fund administration is for the treasurer and coaching staff.',
@@ -1328,6 +1372,7 @@ export const en: Record<string, string> = {
     'Pitch booking is not activated for the club.',
   'Die Platzbelegung ist für Trainerteams und Platzverantwortliche.':
     'Pitch booking is for coaching staff and groundskeepers.',
+  'Die Prüfung': 'The audit',
   'Die Rechte konnten nicht gespeichert werden.': 'The permissions could not be saved.',
   'Die Reihenfolge passt nicht zu den Sponsoren.': 'The order does not match the sponsors.',
   'Die Rolle': 'The role',
@@ -1347,8 +1392,15 @@ export const en: Record<string, string> = {
     'The referee overview is visible to referees and those responsible.',
   'Die Schiedsrichterverwaltung ist im Verein nicht aktiviert.':
     'Referee management is not enabled in the club.',
+  'Die Spende': 'The donation',
+  'Die Spende wird als Einnahme im Kassenbuch gebucht. Mit ausgestellter Bestätigung kann die Buchung nicht mehr storniert werden.':
+    'The donation is booked as income in the cash book. Once a receipt has been issued, the booking can no longer be cancelled.',
   'Die Sperrung': 'The closure',
   'Die Sperrung konnte nicht angelegt werden.': 'The closure could not be created.',
+  'Die Steuerdaten des Vereins sind noch nicht vollständig. Die Administration trägt sie ein und gibt die Vorlage nach rechtlicher Prüfung frei.':
+    "The club's tax data is not complete yet. The administration enters it and releases the template after a legal review.",
+  'Die Steuerdaten pflegt die Vereinsadministration.':
+    'The tax data is maintained by the club administration.',
   'Die Stimme konnte nicht gespeichert werden.': 'Your vote could not be saved.',
   'Die Strafe': 'The fine',
   'Die Teilnahme': 'The participation',
@@ -1375,11 +1427,16 @@ export const en: Record<string, string> = {
     'Only treasury management and auditors can see the club treasury.',
   'Die Verwaltung ist für Vorstand, Leitung und Administration.':
     'Administration is for the board, management and administrators.',
+  'Die Vorlage ist noch nicht freigegeben. Sie muss zuerst rechtlich bzw. steuerlich geprüft werden.':
+    'The template has not been released yet. It must first be reviewed legally or by a tax adviser.',
+  'Die Vorlage muss zuerst rechtlich bzw. steuerlich geprüft und von der Administration freigegeben werden.':
+    'The template must first be reviewed legally or by a tax adviser and released by the administration.',
   'Die Vorlage schaltet passende Funktionen für die Mannschaft ein.':
     'The template enables suitable features for the team.',
   'Die Werte anderer Spieler sieht nur die Mannschaft.':
     "Other players' figures are only visible to the team.",
   'Die Zuordnung': 'The assignment',
+  'Die Zuwendungsbestätigung': 'The donation receipt',
   'Dies ist ein Platzhalter aus dem Demoverein.': 'This is a placeholder from the demo club.',
   'Diese Abteilung darfst du nicht einstellen.':
     'You are not allowed to configure this department.',
@@ -1396,6 +1453,7 @@ export const en: Record<string, string> = {
     'This feature is not enabled for the team.',
   'Diese Funktionen folgen. Bis dahin wende dich bitte an deinen Verein oder den Support.':
     'These functions are coming. Until then, please contact your club or support.',
+  'Diese Kasse prüfst du nicht.': 'You do not audit this fund.',
   'Diese Kasse siehst du nicht.': 'You cannot see this fund.',
   'Diese Mannschaft darfst du nicht bearbeiten.': 'You are not allowed to edit this team.',
   'Diese Mannschaft darfst du nicht einstellen.': 'You are not allowed to configure this team.',
@@ -1406,6 +1464,8 @@ export const en: Record<string, string> = {
   'Diese Namen aus dem DFBnet gehören vermutlich zu eurem Verein. Wähle die passende Mannschaft – die Schreibweise wird gemerkt. Gegner mit ähnlichem Namen kannst du überspringen.':
     'These DFBnet names probably belong to your club. Choose the matching team – the spelling is remembered. You can skip opponents with a similar name.',
   'Diese Person hat bereits einen App-Zugang.': 'This person already has app access.',
+  'Diese Prüfung gehört nicht zu deinen Kassen.': 'This audit does not belong to your funds.',
+  'Diese Prüfung siehst du nicht.': 'You cannot see this audit.',
   'Diese Rechte gelten zusätzlich zu den Rollen und immer für den ganzen Verein. Für ein Recht nur in einer Mannschaft oder einer Abteilung lieber eine Rolle mit Geltungsbereich vergeben.':
     'These permissions apply in addition to the roles and always for the whole club. For a permission in just one team or section, assign a role with a scope instead.',
   'Diese Rolle gibt es nicht.': 'This role does not exist.',
@@ -1451,6 +1511,7 @@ export const en: Record<string, string> = {
   'Du bist im Kader (Bank).': 'You are in the squad (bench).',
   'Du bist noch keiner Mannschaft zugeordnet.': 'You are not yet assigned to a team.',
   'Du bist offline': 'You are offline',
+  'Du darfst nur einzelne Kassen prüfen.': 'You may only audit individual funds.',
   'Du fährst selbst.': 'You are driving yourself.',
   'Du gehörst ab heute zu {0}.': 'You belong to {0} from today.',
   'Du hast {0} Guthaben': 'You have {0} credit',
@@ -1546,6 +1607,7 @@ export const en: Record<string, string> = {
     'A series may have at most {0} events (about a year).',
   'Eine stillgelegte Kasse kann nicht Hauptkasse sein.':
     'A deactivated fund cannot be the main fund.',
+  'Eingang auf Konto': 'Received on account',
   Eingegangen: 'Received',
   'Eingegangen am': 'Received on',
   'Eingegangen in diesem Jahr: {0}': 'Received this year: {0}',
@@ -1646,6 +1708,8 @@ export const en: Record<string, string> = {
     '{0} goals are recorded, but the score says {1}. Please make them match.',
   'Erfasst sind {0} von {1} Toren.': '{0} of {1} goals recorded.',
   Ergebnis: 'Result',
+  'Ergebnis ändern': 'Change result',
+  'Ergebnis der Prüfung': 'Result of the audit',
   Ergebnisse: 'Results',
   'Ergebnisse sichtbar': 'Results visible',
   erhöhen: 'increase',
@@ -1692,6 +1756,9 @@ export const en: Record<string, string> = {
   'Es ist keine laufende Saison eingerichtet.': 'No current season is set up.',
   'Es muss immer eine Hauptkasse geben. Lege eine andere Kasse als Hauptkasse fest.':
     'There must always be a main fund. Set another fund as the main fund.',
+  'Es sind noch {0} Stichproben offen.': '{0} samples are still open.',
+  'Es sind noch {0} Stichproben offen. Bitte alle abhaken oder beanstanden.':
+    '{0} samples are still open. Please check or object to all of them.',
   'Es sind nur noch {0} offen. Zu viel Gezahltes bitte als eigene Einnahme buchen.':
     'Only {0} is still open. Please book any excess as a separate income entry.',
   'Es werden {0} von {1} Zeilen angezeigt.': 'Showing {0} of {1} rows.',
@@ -1724,6 +1791,8 @@ export const en: Record<string, string> = {
   'Fest für die Saison': 'Fixed for the season',
   Feste: 'Parties',
   'Feste Rückennummern': 'Fixed shirt numbers',
+  'Feststellung nach § 60a AO': 'Determination under § 60a AO',
+  Finanzamt: 'Tax office',
   Finanzen: 'Finances',
   Förderer: 'Supporter',
   'Forderung stornieren': 'Cancel claim',
@@ -1749,6 +1818,7 @@ export const en: Record<string, string> = {
   Freigeben: 'Approve',
   'Freigeben darfst du hier nicht.': 'You may not approve here.',
   'Freigeben und veröffentlichen': 'Approve and publish',
+  Freistellungsbescheid: 'Exemption notice',
   Freiwillig: 'Optional',
   'Freiwillige gesucht': 'Volunteers wanted',
   Freizeit: 'Recreational',
@@ -1791,6 +1861,8 @@ export const en: Record<string, string> = {
   'Für die Funktion fehlt die Mannschaft.': 'The team is missing for this function.',
   'Für die Trainingsquote zählt, wer wirklich da war.':
     'The training rate counts who actually attended.',
+  'Für die Zuwendungsbestätigung wird die Anschrift gebraucht.':
+    'The address is needed for the donation receipt.',
   'Für diese Abteilung darfst du keine Dokumente hochladen.':
     'You are not allowed to upload documents for this department.',
   'Für diese Abteilung darfst du keine News schreiben.': 'You may not write news for this section.',
@@ -1813,6 +1885,8 @@ export const en: Record<string, string> = {
   'Für diese Person gibt es bereits ein Konto.': 'This person already has an account.',
   'Für diese Schicht sind keine Änderungen mehr möglich.':
     'No more changes are possible for this shift.',
+  'Für diese Spende wurde schon die Zuwendungsbestätigung {0} ausgestellt. Sie kann nicht storniert werden.':
+    'A donation receipt {0} has already been issued for this donation. It cannot be cancelled.',
   'Für diesen Tag eintragen': 'Enter for this day',
   'Für diesen Termin gibt es bereits einen offenen Bedarf.':
     'There is already an open request for this event.',
@@ -1821,6 +1895,7 @@ export const en: Record<string, string> = {
     'There is no voluntary participation for this event.',
   'Für diesen Termin kann kein Bedarf mehr gemeldet werden.':
     'No more player needs can be reported for this event.',
+  'Für dieses Jahr läuft schon eine Prüfung.': 'An audit is already running for this year.',
   'Für Einnahmen passt nur eine Einnahmekategorie.': 'Only an income category fits income.',
   'Für Eltern': 'For parents',
   'Für Trainer': 'For coaches',
@@ -1875,6 +1950,7 @@ export const en: Record<string, string> = {
   'Gemeldet: {0} ({1}) – wartet auf Bestätigung': 'Reported: {0} ({1}) – awaiting confirmation',
   Geplant: 'Planned',
   'Geprüft von (optional)': 'Audited by (optional)',
+  'Geprüft von (z. B. Steuerberatung Muster)': 'Reviewed by (e.g. Muster tax advisers)',
   'geprüft von {0}': 'audited by {0}',
   'Gerade keine Aushänge.': 'No notices at the moment.',
   'Gerade keine Themen.': 'No topics right now.',
@@ -2066,6 +2142,7 @@ export const en: Record<string, string> = {
   'In diesem Auto ist kein Platz mehr frei.': 'There are no seats left in this car.',
   'In dieser Abteilung darfst du keine Mannschaften anlegen.':
     'You are not allowed to create teams in this department.',
+  'In Ordnung': 'OK',
   'In Vorbereitung': 'In preparation',
   'In wenigen Minuten richtest du deinen Verein ein: Name, Anlage, Farbe, Funktionen und dein Konto. Du kannst jederzeit zurück, und alles lässt sich später in der Verwaltung ändern.':
     'In a few minutes you set up your club: name, venue, color, features and your account. You can go back at any time, and everything can be changed later in administration.',
@@ -2107,6 +2184,8 @@ export const en: Record<string, string> = {
   'je Mannschaft': 'per team',
   'Je Saison': 'Per season',
   'Je Spiel in der Aufstellung': 'Per match in the line-up',
+  'Jede Änderung setzt die Freigabe der Vorlage zurück.':
+    'Every change resets the release of the template.',
   'Jede Kasse hat eigene Konten, Beiträge und Auswertung. Ohne Zuordnung läuft eine Abteilung über die Hauptkasse. Der Jahresabschluss gilt immer für den ganzen Verein.':
     'Each fund has its own accounts, fees and reports. A department without an assigned fund runs through the main fund. The annual statement always covers the whole club.',
   'Jede Leitung sieht nur Daten ihrer Abteilung': "Each lead sees only their division's data",
@@ -2178,7 +2257,13 @@ export const en: Record<string, string> = {
   'Kassenbuch öffnen': 'Open cash book',
   'Kassenbuchung erfasst': 'Team fund entry recorded',
   Kassenprüfer: 'Cash auditor',
+  'Kassenprüfer beginnen unter „Vereinskasse → Prüfung → Kassenprüfung“ eine Prüfung für ein Jahr – für den ganzen Verein oder nur für ihre Kasse. Die App zieht auf Wunsch zufällige Stichproben; jede Buchung wird abgehakt oder mit Begründung beanstandet, den Beleg siehst du direkt. Dazu kommen freie Vermerke. Sind alle Stichproben erledigt, gibst du den Prüfbericht mit deinem Ergebnis ab; danach ist er nicht mehr änderbar und dient als Grundlage der Entlastung. Die Kassenführung sieht abgegebene Berichte (auch als PDF oder CSV). Prüfer buchen nicht, der Kassenwart prüft nicht.':
+    'Auditors start an audit for a year under “Club treasury → Audit → Treasury audit” – for the whole club or only for their fund. On request the app draws random samples; each booking is ticked off or objected to with a reason, and you can see the receipt directly. Free notes can be added. Once all samples are done, you submit the audit report with your result; afterwards it can no longer be changed and serves as the basis for discharge. The treasury sees submitted reports (also as PDF or CSV). Auditors do not book, the treasurer does not audit.',
   Kassenprüfung: 'Cash audit',
+  'Kassenprüfung {0} begonnen': 'Treasury audit {0} started',
+  'Kassenprüfung {0}: {1} Stichproben gezogen': 'Treasury audit {0}: {1} samples drawn',
+  'Kassenprüfung {0}: Beanstandung vermerkt': 'Treasury audit {0}: objection noted',
+  'Kassenprüfung {0}: Prüfbericht abgegeben': 'Treasury audit {0}: audit report submitted',
   Kassenprüfungen: 'Cash audits',
   Kassenstand: 'Fund balance',
   'Kassenstand am {0}: {1} €': 'Balance on {0}: {1} €',
@@ -2214,6 +2299,7 @@ export const en: Record<string, string> = {
   'Keine Angebote.': 'No offers.',
   'Keine anstehenden Termine.': 'No upcoming events.',
   'Keine Benachrichtigungen.': 'No notifications.',
+  'Keine Bestätigung': 'No receipt',
   'Keine Buchungen gefunden.': 'No entries found.',
   'Keine Buchungen.': 'No entries.',
   'Keine eigene Mannschaft': 'Not one of our teams',
@@ -2260,6 +2346,7 @@ export const en: Record<string, string> = {
   'Keine Vereinstermine in den nächsten Wochen.': 'No club events in the coming weeks.',
   'Keine vergangenen Termine für diese Auswahl.': 'No past events for this selection.',
   'Keine vergangenen Termine.': 'No past events.',
+  'Keine Vermerke.': 'No notes.',
   'Keine Zuordnungen gefunden.': 'No assignments found.',
   Keiner: 'None',
   'Keiner Mannschaft zugeordnet.': 'Not assigned to a team.',
@@ -2552,6 +2639,7 @@ export const en: Record<string, string> = {
   'Nächster: {0}': 'Next: {0}',
   'Nächstes Spiel': 'Next match',
   'Nächstes Spielfest': 'Next fun day',
+  Nachweis: 'Evidence',
   'Name & Design': 'Name & design',
   'Name der Anlage': 'Venue name',
   'Name der Anlage {0}': 'Name of venue {0}',
@@ -2587,6 +2675,7 @@ export const en: Record<string, string> = {
     'New messages appear here and as a notification.',
   'Neue Nachrichten aus Verein und Mannschaft': 'New news from the club and team',
   'Neue News schreiben': 'Write new news',
+  'Neue Prüfung': 'New audit',
   'Neue Spiele erscheinen hier, sobald sie angesetzt sind.':
     'New matches appear here as soon as they are scheduled.',
   'Neue Strafe': 'New fine',
@@ -2603,6 +2692,7 @@ export const en: Record<string, string> = {
   'Neuer Termin für {0}': 'New event for {0}',
   'Neuer Termin: {0}': 'New event: {0}',
   'Neuer Verein (optional)': 'New club (optional)',
+  'Neuer Vermerk': 'New note',
   'Neues Passwort': 'New password',
   'Neues Passwort (mind. 10 Zeichen)': 'New password (min. 10 characters)',
   'Neues Passwort wiederholen': 'Repeat new password',
@@ -2684,11 +2774,14 @@ export const en: Record<string, string> = {
   'Noch keine Planzeile für Ausgaben.': 'No plan line for expenses yet.',
   'Noch keine Planzeile für Einnahmen.': 'No plan line for income yet.',
   'Noch keine Programmpunkte.': 'No items yet.',
+  'Noch keine Prüfung.': 'No audit yet.',
   'Noch keine Rücklage.': 'No reserve yet.',
   'Noch keine Schiedsrichter eingetragen.': 'No referees entered yet.',
+  'Noch keine Spende in diesem Jahr.': 'No donation in this year yet.',
   'Noch keine Spieler im Kader.': 'No players in the squad yet.',
   'Noch keine Spielerbewegungen.': 'No player movements yet.',
   'Noch keine Sponsoren angelegt.': 'No sponsors created yet.',
+  'Noch keine Stichprobe.': 'No sample yet.',
   'Noch keine Strafen festgelegt.': 'No fines defined yet.',
   'Noch keine Tore oder Karten erfasst.': 'No goals or cards recorded yet.',
   'Noch keine Veranstaltungen geplant.': 'No events planned yet.',
@@ -2761,6 +2854,7 @@ export const en: Record<string, string> = {
     'Open the event (Home, Events or Team) and tap Yes, Maybe or No. For “No” and “Maybe” you can choose or write a reason – this is optional. Only the coaching staff and you can see the reason.',
   'ohne App': 'no app',
   'Ohne App-Zugang': 'Without app access',
+  'ohne Belegnummer': 'no receipt number',
   'Ohne Ehrenamt läuft nichts. Trag dich in eine Schicht ein – das Organisationsteam sieht sofort, wo noch Hände fehlen.':
     'Nothing works without volunteers. Sign up for a shift – the organising team can see right away where help is still needed.',
   'Ohne Ende': 'No end',
@@ -2862,13 +2956,20 @@ export const en: Record<string, string> = {
   Programm: 'Programme',
   'Programmpunkt {0}': 'Programme item {0}',
   'Programmpunkt hinzufügen': 'Add programme item',
+  Prüfbericht: 'Audit report',
+  'Prüfbericht abgeben': 'Submit audit report',
   'Prüfe die Angaben. Erst jetzt wird die Mannschaft angelegt.':
     'Check the details. Only now is the team created.',
   'Prüfe die rot markierten Zeilen und passe Plan oder Ausgaben an.':
     'Check the lines marked in red and adjust the plan or the expenses.',
   'Prüfe die Schreibweise oder suche nach einem kürzeren Begriff.':
     'Check the spelling or try a shorter term.',
+  Prüfen: 'Check',
+  Prüfjahr: 'Audit year',
+  Prüfumfang: 'Audit scope',
   Prüfung: 'Audit',
+  'Prüfung beginnen': 'Start audit',
+  Prüfungen: 'Audits',
   'Push (nicht versendet) an {0}…: {1}': 'Push (not sent) to {0}…: {1}',
   'Push aktivieren': 'Enable push',
   'Push auf diesem Gerät': 'Push on this device',
@@ -3077,7 +3178,17 @@ export const en: Record<string, string> = {
   'Speichern ({0})': 'Save ({0})',
   'Speichert …': 'Saving …',
   Spende: 'Donation',
+  'Spende buchen': 'Book donation',
+  'Spende erfassen': 'Record donation',
   Spenden: 'Donations',
+  'Spenden: Spende {0} von {1} erfasst': 'Donations: donation of {0} from {1} recorded',
+  'Spenden: Steuerdaten des Vereins gespeichert (Freigabe zurückgesetzt)':
+    'Donations: tax data of the club saved (release reset)',
+  'Spenden: Vorlage der Zuwendungsbestätigung freigegeben ({0})':
+    'Donations: donation receipt template released ({0})',
+  'Spenden: Zuwendungsbestätigung {0} ausgestellt ({1})':
+    'Donations: donation receipt {0} issued ({1})',
+  Spendendatum: 'Donation date',
   Spendenquittungen: 'Donation receipts',
   Sperre: 'Suspension',
   'Sperrung anlegen': 'Create block',
@@ -3197,7 +3308,11 @@ export const en: Record<string, string> = {
   'Std.': 'hrs',
   'Stelle eine Beitrittsanfrage. Das Trainerteam gibt sie frei.':
     'Submit a join request. The coaching staff will approve it.',
+  Steuerdaten: 'Tax data',
   'Steuerlicher Bereich': 'Tax area',
+  Steuernummer: 'Tax number',
+  Stichproben: 'Samples',
+  'Stichproben ziehen': 'Draw samples',
   Stillgelegt: 'Deactivated',
   Stilllegen: 'Deactivate',
   Stimme: 'vote',
@@ -3222,6 +3337,7 @@ export const en: Record<string, string> = {
   Strafenkatalog: 'Fine catalogue',
   'Strafenkatalog pflegen und Strafen vergeben': 'Maintain fine catalogue and issue fines',
   'Straße, Ort': 'Street, city',
+  'Straße, PLZ Ort': 'Street, postcode city',
   Struktur: 'Structure',
   Stufe: 'Level',
   'Stufe (optional)': 'Level (optional)',
@@ -3499,6 +3615,8 @@ export const en: Record<string, string> = {
     'Under “Club → Referees”. The association assigns you to other clubs’ matches; enter the assignment there with match, place, date and start time. It appears under “Appointments” and in your calendar subscription. If it overlaps one of your appointments you get a notice; on request an absence is entered for the day. You also maintain your level and the expiry date of your license there.',
   'Unter „Verein → Spielplan“. Dort stehen alle Spiele einer Woche, nach Tagen sortiert. Mit den Pfeilen oder durch Wischen wechselst du die Woche, mit dem Filter zeigst du nur Senioren oder Jugend. Mannschaften ohne Spiel stehen unter „Spielfrei“. Tippe auf ein Spiel deiner Mannschaft, um Details und Rückmeldungen zu sehen.':
     'Under “Club → Schedule”. All matches of a week are listed there, sorted by day. Use the arrows or swipe to change the week, and the filter to show only seniors or youth. Teams without a match are listed under “No match”. Tap a match of your team to see details and responses.',
+  'Unter „Vereinskasse → Prüfung → Spenden“ erfasst der Kassenwart die Spende mit Name, Anschrift, Betrag und Datum; sie steht als Einnahme im Kassenbuch. Eine Zuwendungsbestätigung gibt es erst, wenn die Administration unter „Steuerdaten“ Finanzamt, Steuernummer, Bescheid, Zeitraum und Zweck eingetragen und die Vorlage freigegeben hat – nachdem sie von deiner Steuerberatung oder deinem Verband rechtlich geprüft wurde. Jede Änderung der Steuerdaten setzt die Freigabe zurück. Danach stellst du die Bestätigung mit einem Tipp aus (laufende Nummer, Betrag auch in Buchstaben) und öffnest sie als PDF. Eine Spende mit ausgestellter Bestätigung kann nicht storniert werden. Die App ersetzt keine Steuerberatung.':
+    'Under “Club treasury → Audit → Donations” the treasurer records the donation with name, address, amount and date; it appears as income in the cash book. A donation receipt is only possible once the administration has entered tax office, tax number, notice, period and purpose under “Tax data” and released the template – after it has been reviewed legally by your tax adviser or association. Every change of the tax data resets the release. After that you issue the receipt with one tap (running number, amount also in words) and open it as PDF. A donation with an issued receipt cannot be cancelled. The app does not replace tax advice.',
   'Unter „Verwaltung → Module“. Neue Funktionen erscheinen im Update-Center; du richtest sie ein, schiebst sie auf oder entscheidest dich dagegen. Einzelne Bereiche und Mannschaften lassen sich zusätzlich abweichend einstellen.':
     'Under “Administration → Modules”. New features appear in the update centre; you set them up, postpone them or decide against them. Individual areas and teams can additionally be configured differently.',
   'Unter „Verwaltung → Rollen & Aufgaben“ siehst du je Rolle die Personen. „Alle anzeigen“ öffnet die vollständige Liste mit Suche; „<Rolle> hinzufügen“ vergibt die Rolle an weitere Personen. Rollen sind Rechtepakete und gelten für Verein, Bereich oder Mannschaft. Der letzte Fulladmin kann nicht entfernt werden.':
@@ -3618,6 +3736,11 @@ export const en: Record<string, string> = {
   Verletzt: 'Injured',
   Verletzung: 'Injury',
   Verloren: 'Lost',
+  Vermerk: 'Note',
+  'Vermerk (bei Beanstandung nötig)': 'Note (required for an objection)',
+  'Vermerk entfernen': 'Remove note',
+  'Vermerk speichern': 'Save note',
+  Vermerke: 'Notes',
   Vermögensverwaltung: 'Asset management',
   Veröffentlichen: 'Publish',
   'Veröffentlichen darf hier nur die Freigabe. Bitte einreichen.':
@@ -3636,6 +3759,7 @@ export const en: Record<string, string> = {
   'Verwaltungsrechte schützen Daten aller Mitglieder. Ein zweiter Faktor (Authenticator-App oder Code per E-Mail) verhindert, dass ein gestohlenes Passwort allein genügt.':
     "Administration rights protect all members' data. A second factor (authenticator app or code by e-mail) prevents a stolen password from being enough on its own.",
   Verwendungszweck: 'Purpose',
+  'Verzicht auf Erstattung von Aufwendungen': 'Waiver of reimbursement of expenses',
   vierteljährlich: 'quarterly',
   Voll: 'Full',
   'Voll besetzt': 'Fully staffed',
@@ -3659,7 +3783,10 @@ export const en: Record<string, string> = {
   Vorlage: 'Template',
   'Vorlage (optional)': 'Assist (optional)',
   'Vorlage & Teilnahme': 'Template & participation',
+  'Vorlage freigeben': 'Release template',
+  'Vorlage freigegeben': 'Template released',
   'Vorlage herunterladen': 'Download template',
+  'Vorlage noch nicht freigegeben': 'Template not yet released',
   'Vorlage übernehmen': 'Apply template',
   'Vorlage: {0}': 'Template: {0}',
   Vorlagen: 'Assists',
@@ -3787,6 +3914,8 @@ export const en: Record<string, string> = {
     'How do I edit the squad, treasurer and meeting rules?',
   'Wie bezahle ich meinen offenen Betrag?': 'How do I pay my outstanding amount?',
   'Wie buche ich Einzahlungen?': 'How do I book payments?',
+  'Wie erstelle ich eine Zuwendungsbestätigung (Spendenquittung)?':
+    'How do I create a donation receipt?',
   'Wie funktionieren Haushaltsplan, Rücklagen und Jahresabschluss?':
     'How do the budget plan, reserves and annual statement work?',
   'Wie funktionieren Kassen und Abteilungen?': 'How do funds and departments work?',
@@ -3808,6 +3937,7 @@ export const en: Record<string, string> = {
   'Wie lade ich neue Spieler ein?': 'How do I invite new players?',
   'Wie lade ich nur bestimmte Mannschaften oder Personen zu einer Veranstaltung ein?':
     'How do I invite only certain teams or people to an event?',
+  'Wie läuft die Kassenprüfung?': 'How does the treasury audit work?',
   'Wie lege ich eine neue Mannschaft an?': 'How do I create a new team?',
   'Wie lege ich einen Termin an oder sage ihn ab?': 'How do I create or cancel an event?',
   'Wie lege ich Mitglieder an oder importiere sie?': 'How do I add or import members?',
@@ -3912,6 +4042,7 @@ export const en: Record<string, string> = {
   'z. B. Ein Stürmer hat Zeit': 'e.g. A striker is available',
   'z. B. Eingang Kabinengang': 'e.g. Changing room corridor entrance',
   'z. B. Erwachsene': 'e.g. Adults',
+  'z. B. Förderung des Sports': 'e.g. Promotion of sport',
   'z. B. Fußballschuhe Größe 38': 'e.g. football boots size 38',
   'z. B. Gegenpressing': 'e.g. Counter-pressing',
   'z. B. Girokonto Volksbank': 'e.g. Volksbank checking account',
@@ -3964,6 +4095,7 @@ export const en: Record<string, string> = {
   'Zeile anlegen': 'Create line',
   'Zeile entfernen': 'Remove line',
   Zeitraum: 'Period',
+  'Zeitraum (z. B. 2022 bis 2024)': 'Period (e.g. 2022 to 2024)',
   'Zeitraum {1} – {2}': 'Period {1} – {2}',
   'Zentrales Mittelfeld': 'Central midfield',
   'Ziehe die Einträge am Griff in deine Reihenfolge. Was oben steht, erreichst du auf der Startseite zuerst.':
@@ -4046,6 +4178,9 @@ export const en: Record<string, string> = {
   Zusatzteam: 'Additional team',
   Zuschuss: 'Grant',
   Zuschüsse: 'Grants',
+  'Zuwendungsbestätigungen haben gesetzliche Pflichtangaben und Formulierungen. Lass die Vorlage von deiner Steuerberatung oder deinem Verband prüfen, bevor du sie freigibst. Die App ersetzt keine Steuerberatung.':
+    'Donation receipts have statutory mandatory details and wording. Have the template reviewed by your tax adviser or association before you release it. The app does not replace tax advice.',
+  'Zuwendungsbestätigungen noch nicht freigegeben': 'Donation receipts not yet released',
   'Zweck (optional)': 'Purpose (optional)',
   'Zweck, Gegenpartei oder Belegnummer': 'Purpose, counterparty or receipt number',
   Zweckbetrieb: 'Purpose-related operation',

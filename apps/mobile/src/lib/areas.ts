@@ -320,8 +320,14 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
       label: 'Prüfung',
       icon: 'checkmark-done',
       groups: groups([
-        ['Kassenprüfung', [['audit', 'Kassenprüfung', 'search', null, true]]],
-        ['Spenden', [['donations', 'Spendenquittungen', 'ribbon', null, true]]],
+        ['Kassenprüfung', [['audit', 'Kassenprüfung', 'search', '/club-cash/audit', true]]],
+        [
+          'Spenden',
+          [
+            ['donations', 'Spenden', 'heart', '/club-cash/donations', full],
+            ['tax', 'Steuerdaten', 'document-text', '/club-cash/tax', full],
+          ],
+        ],
       ]),
     },
   ];

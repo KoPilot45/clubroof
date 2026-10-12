@@ -121,6 +121,12 @@ const RULES: Record<string, Rule> = {
   'club-cash/budget': under('verein', 'Vereinskasse', '/club-cash'),
   'club-cash/reserves': under('verein', 'Vereinskasse', '/club-cash'),
   'club-cash/closing': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/audit/index': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/audit/[id]': section('verein', () => [
+    { label: 'Kassenprüfung', href: '/club-cash/audit' },
+  ]),
+  'club-cash/donations': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/tax': under('verein', 'Vereinskasse', '/club-cash'),
   // Mehr
   account: section('mehr'),
   help: section('mehr'),
