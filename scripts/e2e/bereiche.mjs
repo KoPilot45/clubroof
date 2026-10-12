@@ -108,7 +108,8 @@ for (const g of ['Mitglieder', 'Einrichtung', 'Mahnwesen'])
   ok((await vis(c, g, { exact: true }).count()) > 0, `Beiträge: Untergruppe „${g}“`);
 await tab(c, 'Planung').click();
 await text(c, 'Haushalt', { exact: true }).waitFor({ timeout: 8000 });
-ok((await vis(c, 'Bald verfügbar').count()) > 0, 'Planung: „Bald verfügbar“');
+for (const g of ['Haushalt', 'Abschluss'])
+  ok((await vis(c, g, { exact: true }).count()) > 0, `Planung: Untergruppe „${g}“`);
 await tab(c, 'Buchung').click();
 await text(c, 'Kassenbuch', { exact: true }).first().waitFor({ timeout: 8000 });
 await c

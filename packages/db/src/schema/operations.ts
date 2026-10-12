@@ -571,6 +571,94 @@ export const clubCashEntries = pgTable(
   (t) => [index().on(t.clubId, t.bookedOn), index().on(t.accountId)],
 );
 
+// ── Planung und Abschluss (Paket K3) ────────────────────────────────────────
+
+/** Haushaltsplan: Planbetrag je Kasse, Jahr, Kategorie (und optional Kostenstelle). */
+export const clubBudgetLines = pgTable(
+  'club_budget_lines',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    fundId: uuid()
+      .notNull()
+      .references(() => clubCashFunds.id),
+    year: integer().notNull(),
+    categoryId: uuid()
+      .notNull()
+      .references(() => clubCashCategories.id),
+    costCenterId: uuid().references(() => clubCostCenters.id),
+    plannedCents: integer().notNull(),
+    note: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index().on(t.clubId, t.year),
+    unique().on(t.fundId, t.year, t.categoryId, t.costCenterId).nullsNotDistinct(),
+  ],
+);
+
+/** Rücklagen-Topf: zweckgebundener Anteil des Kassenbestands einer Kasse (kein eigenes Konto). */
+export const clubReserves = pgTable(
+  'club_reserves',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    fundId: uuid()
+      .notNull()
+      .references(() => clubCashFunds.id),
+    name: text().notNull(),
+    targetCents: integer(),
+    note: text(),
+    archivedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId)],
+);
+
+/** Zuführung (allocate) oder Entnahme (release) bei einem Rücklagen-Topf. */
+export const clubReserveMoves = pgTable(
+  'club_reserve_moves',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    reserveId: uuid()
+      .notNull()
+      .references(() => clubReserves.id, { onDelete: 'cascade' }),
+    /** allocate | release */
+    kind: text().notNull(),
+    amountCents: integer().notNull(),
+    bookedOn: date().notNull(),
+    note: text(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.reserveId)],
+);
+
+/** Periodensperre: ein abgeschlossenes Jahr nimmt keine Buchungen mehr an (nur Admin kann öffnen). */
+export const clubPeriodLocks = pgTable(
+  'club_period_locks',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    year: integer().notNull(),
+    lockedAt: timestamp({ withTimezone: true }).notNull(),
+    lockedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    unlockedAt: timestamp({ withTimezone: true }),
+    unlockedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    unlockReason: text(),
+  },
+  (t) => [index().on(t.clubId, t.year)],
+);
+
 // ── Mitgliedsbeiträge (Paket K2) ────────────────────────────────────────────
 
 /** Beitragsart (z. B. Erwachsene, Jugend, Familie, passiv) mit Betrag und Rhythmus. */

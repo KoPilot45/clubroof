@@ -118,6 +118,9 @@ const RULES: Record<string, Rule> = {
   'club-cash/fee-setup': under('verein', 'Vereinskasse', '/club-cash'),
   'club-cash/manage': under('verein', 'Vereinskasse', '/club-cash'),
   'club-cash/funds': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/budget': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/reserves': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/closing': under('verein', 'Vereinskasse', '/club-cash'),
   // Mehr
   account: section('mehr'),
   help: section('mehr'),
