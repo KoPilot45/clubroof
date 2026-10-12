@@ -70,3 +70,41 @@ export async function assertNoReceipt(db: Db, entryId: string): Promise<void> {
       `Für diese Spende wurde schon die Zuwendungsbestätigung ${row.receiptNo} ausgestellt. Sie kann nicht storniert werden.`,
     );
 }
+
+/**
+ * Buchungen, die zu einer erstatteten Auslage, einem eingegangenen Zuschuss oder einem Zuschuss an eine
+ * Mannschaftskasse gehören, werden nicht still storniert (Paket K5) – sonst stimmen die Gegenseite
+ * und der Status nicht mehr.
+ */
+export async function assertNotLinked(db: Db, entryId: string): Promise<void> {
+  const [claim] = await db
+    .select({ id: s.clubExpenseClaims.id })
+    .from(s.clubExpenseClaims)
+    .where(eq(s.clubExpenseClaims.entryId, entryId));
+  if (claim)
+    throw new HttpError(
+      409,
+      'linked_claim',
+      'Diese Buchung gehört zu einer erstatteten Auslage und kann nicht storniert werden.',
+    );
+  const [grant] = await db
+    .select({ id: s.clubGrants.id })
+    .from(s.clubGrants)
+    .where(eq(s.clubGrants.entryId, entryId));
+  if (grant)
+    throw new HttpError(
+      409,
+      'linked_grant',
+      'Diese Buchung gehört zu einem eingegangenen Zuschuss und kann nicht storniert werden.',
+    );
+  const [teamGrant] = await db
+    .select({ id: s.clubTeamGrants.id })
+    .from(s.clubTeamGrants)
+    .where(eq(s.clubTeamGrants.entryId, entryId));
+  if (teamGrant)
+    throw new HttpError(
+      409,
+      'linked_team_grant',
+      'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.',
+    );
+}

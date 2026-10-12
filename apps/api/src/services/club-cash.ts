@@ -29,7 +29,7 @@ import { randomUUID } from 'node:crypto';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { assertFund, ensureMainFund, fundScope, listFunds } from './club-funds';
-import { assertNoReceipt, assertPeriodOpen } from './club-periods';
+import { assertNoReceipt, assertNotLinked, assertPeriodOpen } from './club-periods';
 import { mediaReference } from './uploads';
 import { resolveMediaUrl } from '../storage/media-links';
 
@@ -296,12 +296,14 @@ export async function listEntries(
       categoryName: s.clubCashCategories.name,
       area: s.clubCashCategories.area,
       costCenterName: s.clubCostCenters.name,
+      sponsorName: s.sponsors.name,
     })
     .from(e)
     .innerJoin(s.clubCashAccounts, eq(s.clubCashAccounts.id, e.accountId))
     .innerJoin(s.clubCashFunds, eq(s.clubCashFunds.id, s.clubCashAccounts.fundId))
     .leftJoin(s.clubCashCategories, eq(s.clubCashCategories.id, e.categoryId))
     .leftJoin(s.clubCostCenters, eq(s.clubCostCenters.id, e.costCenterId))
+    .leftJoin(s.sponsors, eq(s.sponsors.id, e.sponsorId))
     .where(and(...conditions))
     .orderBy(desc(e.bookedOn), desc(e.createdAt))
     .limit(limit);
@@ -338,6 +340,8 @@ export async function listEntries(
     area: (r.area as ClubCashArea | null) ?? null,
     costCenterId: r.entry.costCenterId,
     costCenterName: r.costCenterName,
+    sponsorId: r.entry.sponsorId,
+    sponsorName: r.sponsorName,
     counterparty: r.entry.counterparty,
     purpose: r.entry.purpose,
     receiptNo: r.entry.receiptNo,
@@ -417,6 +421,17 @@ export async function createEntry(
     if (!center || center.archivedAt) throw notFound('Die Kostenstelle');
     costCenterId = center.id;
   }
+  let sponsorId: string | null = null;
+  if (input.sponsorId) {
+    if (input.kind !== 'income')
+      throw new HttpError(400, 'sponsor_income_only', 'Ein Sponsor passt nur zu einer Einnahme.');
+    const [sponsor] = await db
+      .select({ id: s.sponsors.id })
+      .from(s.sponsors)
+      .where(and(eq(s.sponsors.id, input.sponsorId), eq(s.sponsors.clubId, actor.club.id)));
+    if (!sponsor) throw notFound('Der Sponsor');
+    sponsorId = sponsor.id;
+  }
   const receiptRef = input.receiptImageId
     ? await mediaReference(db, actor, input.receiptImageId, 'receipt')
     : null;
@@ -433,6 +448,7 @@ export async function createEntry(
       bookedOn: input.bookedOn,
       categoryId: category.id,
       costCenterId,
+      sponsorId,
       counterparty: input.counterparty?.trim() || null,
       purpose,
       receiptNo: input.receiptNo?.trim() || null,
@@ -516,6 +532,7 @@ export async function cancelEntry(
     throw new HttpError(409, 'already_cancelled', 'Die Buchung ist bereits storniert.');
   await assertPeriodOpen(db, actor.club.id, entry.bookedOn);
   await assertNoReceipt(db, entry.id);
+  await assertNotLinked(db, entry.id);
   // Auch eine Umbuchung zwischen Kassen: Rechte für jede betroffene Kasse nötig
   const sides = await db
     .select({ fundId: s.clubCashAccounts.fundId })

@@ -569,6 +569,8 @@ export const clubCashEntries = pgTable(
     /** Beleg (Foto) als Medienverweis */
     receiptRef: text(),
     transferId: uuid(),
+    /** Sponsor, von dem die Einnahme stammt (Paket K5) */
+    sponsorId: uuid().references((): AnyPgColumn => sponsors.id, { onDelete: 'set null' }),
     createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     cancelledAt: timestamp({ withTimezone: true }),
     cancelledByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
@@ -762,6 +764,139 @@ export const clubDonations = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index().on(t.clubId, t.donatedOn), unique().on(t.clubId, t.receiptNo)],
+);
+
+// ── Erweiterungen (Paket K5) ────────────────────────────────────────────────
+
+/** Auslagenerstattung: ein Mitglied reicht Kosten oder Fahrtkosten ein, der Kassenwart prüft und zahlt. */
+export const clubExpenseClaims = pgTable(
+  'club_expense_claims',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    /** expense | mileage */
+    kind: text().notNull(),
+    description: text().notNull(),
+    amountCents: integer().notNull(),
+    kilometers: integer(),
+    expenseDate: date().notNull(),
+    receiptRef: text(),
+    /** submitted | approved | rejected | paid */
+    status: text().notNull().default('submitted'),
+    decidedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    decidedAt: timestamp({ withTimezone: true }),
+    rejectReason: text(),
+    /** Ausgabe im Kassenbuch nach der Zahlung */
+    entryId: uuid().references(() => clubCashEntries.id),
+    paidOn: date(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.status), index().on(t.personId)],
+);
+
+/** Auszahlung unter die Übungsleiter- bzw. Ehrenamtspauschale (Freibetrag je Person und Jahr). */
+export const clubAllowancePayments = pgTable(
+  'club_allowance_payments',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    personId: uuid()
+      .notNull()
+      .references(() => persons.id, { onDelete: 'cascade' }),
+    year: integer().notNull(),
+    /** trainer | volunteer */
+    kind: text().notNull(),
+    amountCents: integer().notNull(),
+    paidOn: date().notNull(),
+    entryId: uuid()
+      .notNull()
+      .references(() => clubCashEntries.id),
+    note: text(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.year), index().on(t.personId)],
+);
+
+/** Zuschuss (z. B. von Stadt, Verband) mit Frist und Verwendungsnachweis. */
+export const clubGrants = pgTable(
+  'club_grants',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    grantor: text().notNull(),
+    amountCents: integer().notNull(),
+    /** planned | applied | approved | received | rejected */
+    status: text().notNull().default('planned'),
+    /** Frist für den Verwendungsnachweis */
+    proofDeadline: date(),
+    proofSubmittedAt: timestamp({ withTimezone: true }),
+    note: text(),
+    /** Einnahme im Kassenbuch, sobald der Zuschuss eingegangen ist */
+    entryId: uuid().references(() => clubCashEntries.id),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.status)],
+);
+
+/** Inventar des Vereins (Anschaffungen mit Wert, Standort, Aussonderung). */
+export const clubInventory = pgTable(
+  'club_inventory',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    category: text(),
+    quantity: integer().notNull().default(1),
+    acquiredOn: date(),
+    /** Anschaffungswert insgesamt in Cent */
+    costCents: integer(),
+    location: text(),
+    note: text(),
+    /** zugehörige Ausgabe im Kassenbuch */
+    entryId: uuid().references(() => clubCashEntries.id),
+    disposedAt: timestamp({ withTimezone: true }),
+    disposedReason: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId)],
+);
+
+/** Zuschuss des Vereins an eine Mannschaftskasse: Ausgabe der Vereinskasse, Einnahme der Mannschaft. */
+export const clubTeamGrants = pgTable(
+  'club_team_grants',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    entryId: uuid()
+      .notNull()
+      .references(() => clubCashEntries.id),
+    teamId: uuid()
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
+    transactionId: uuid()
+      .notNull()
+      .references(() => cashTransactions.id),
+    amountCents: integer().notNull(),
+    bookedOn: date().notNull(),
+    createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId), index().on(t.teamId)],
 );
 
 // ── Mitgliedsbeiträge (Paket K2) ────────────────────────────────────────────

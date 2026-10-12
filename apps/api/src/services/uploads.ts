@@ -15,7 +15,7 @@ import {
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, eq } from 'drizzle-orm';
-import { actorCan, type Actor } from '../actor';
+import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import type { FileStorage } from '../storage/files';
 import { mediaRef, resolveMediaUrl } from '../storage/media-links';
@@ -29,6 +29,8 @@ const MEDIA_KIND = {
   avatar: 'avatar',
   board: 'board_image',
   receipt: 'cash_receipt',
+  /** Beleg einer Auslagenerstattung: jedes Mitglied darf ihn hochladen (Paket K5) */
+  claim: 'cash_receipt',
   sponsor: 'sponsor_image',
 } as const;
 
@@ -65,6 +67,8 @@ export async function uploadImage(
     throw forbidden('Das Vereinslogo ändert nur die Vereinsadministration.');
   if (input.purpose === 'sponsor' && !actorCan(actor, 'club.settings.manage'))
     throw forbidden('Sponsorenbilder lädt die Vereinsadministration hoch.');
+  if (input.purpose === 'claim' && !moduleEnabled(actor, 'club_cash'))
+    throw forbidden('Die Vereinskasse ist nicht aktiviert.');
   if (input.purpose === 'receipt') {
     const cash = scopesWith(actor.grants, 'cash.manage');
     if (

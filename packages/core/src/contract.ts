@@ -800,7 +800,7 @@ export type UploadDocumentInput = {
 };
 
 export type UploadImageInput = {
-  purpose: 'news' | 'logo' | 'avatar' | 'board' | 'receipt' | 'sponsor';
+  purpose: 'news' | 'logo' | 'avatar' | 'board' | 'receipt' | 'sponsor' | 'claim';
   fileName: string;
   dataBase64: string;
 };
