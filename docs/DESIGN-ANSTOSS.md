@@ -77,10 +77,26 @@ Saira Condensed (Gewichte 700, 800) für Kopfzeilen-Titel (28), Abschnitte (21),
 (Plakat 108 bei einer Ziffer, 64 bei längeren Zahlen; Kasse 60–72; Ticket 40; Datumsblock 26–28), Uhrzeiten in Feldern (28).
 Open Sans für alles andere: Text 15, sekundär 12,5, klein 11,5, Eyebrow 11,5 fett 800 Großbuchstaben Laufweite 1,4.
 
-## Plakat-Kürzel
+## Hero-Hintergrund: Waben (ersetzt Kürzel und Fadenkreuz)
 
-Siehe Paket AL: 2–4 Zeichen, Umriss `rgba(255,255,255,.2)` 2,5 px plus Füllung `rgba(255,255,255,.05)`, **immer auf dieselbe Breite**
-(ca. 320 px von 390) gesetzt, Höhe folgt der Zeichenzahl, leicht gedreht (−6°), hinter dem Text. Ohne Kürzel Rasenstreifen (`DarkBg1`).
+**Entscheidung Vorstand:** Der Hero-Hintergrund ist das **Waben-Muster** (Entwurf `DarkBg4`, Home in `DarkHome*`). Das Vereinskürzel (2–4 Zeichen)
+bleibt als Einstellung erhalten, dient aber **nur noch als Wappen-Ersatz** ohne Logo und wirkt sich **nicht** auf den Hero aus.
+
+- Muster: Sechsecke (Radius 24, Strichstärke 2 px, Linienfarbe weiß), **links oben/rechts oben ausgeblendet**: Deckkraft 0,24 im Plakat, 0,18 in
+  Hero-Blöcken, Maske `radial-gradient(90% 115% at 100% 0%, #000 0%, rgba(0,0,0,.35) 45%, transparent 78%)` – die Waben sind oben rechts am
+  deutlichsten und laufen nach links und unten aus. Das Muster liegt **hinter** Text und Inhalt, über dem Verlauf (`isolation: isolate`).
+- Verlauf des Hero bleibt vollständig sichtbar (Kartenform erkennbar): `radial-gradient(120% 120% at 90% 0%, p1 0%, p2 60%, …)`; Hero-Blöcke haben Radius 28.
+- **Dezent auch an anderen Stellen:** Hero-Blöcke (Kader, Kasse, nächster Termin, Vereinstermin, Profil, Verwaltungs-Übersicht), Login-Kopf, Einrichtung
+  (Vorschau), Willkommen-Seiten und Leerzustände; **nie** hinter Listen, Feldern oder Fließtext.
+- Rückfall und Kontrast: Waben immer weiß mit geringer Deckkraft, damit sie auf allen Vereinsfarben funktionieren; Text bleibt weiß, helle Vereinsfarben
+  nutzen den abgedunkelten Verlauf (siehe Tabelle).
+
+## Startseite (Home)
+
+- **Plakat mit Wisch-Spielen:** Das Plakat zeigt das nächste Spiel (Zahl „5 TAGE“, Paarung, Ort); **nach links wischen** zeigt die nächsten **drei** Spiele
+  (Pager-Punkte und „Spiel 1 von 3 · wischen“ unten im Plakat).
+- **Kein eigener Zusagen-Bereich** auf Home (Entscheidung Vorstand): Zu-/Absagen laufen über Kinderkarten („Zusage offen“), „Offen“-Karten und die
+  Termine. Darunter: Wochen-Tickets, Neuigkeiten, Geburtstag, Schnellzugriff.
 
 ## Bewegung und Haptik
 
