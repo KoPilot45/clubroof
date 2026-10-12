@@ -774,7 +774,7 @@ function PosterSlide({
           {event.match ? (
             <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
               {`${club}${event.team ? ` ${event.team.badge}` : ''}\n`}
-              <T variant="headline" color={colors.primaryText} style={{ fontSize: 32 }}>
+              <T variant="headline" color={colors.anstoss.posterAccent} style={{ fontSize: 32 }}>
                 vs.
               </T>
               {` ${event.match.opponentName}`}
@@ -848,7 +848,7 @@ export function HomePoster({
   club: string;
   hasTeam: boolean;
 }) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, isDark } = useTheme();
   const [width, setWidth] = useState(0);
   const [index, setIndex] = useState(0);
   const slides = events.slice(0, 3);
@@ -897,12 +897,16 @@ export function HomePoster({
                     width: i === current ? 22 : 6,
                     height: 6,
                     borderRadius: 3,
-                    backgroundColor: i === current ? colors.primary : 'rgba(255,255,255,0.35)',
+                    backgroundColor: i === current ? colors.primary : colors.anstoss.textTertiary,
+                    opacity: i === current ? 1 : 0.5,
                   }}
                 />
               ))}
             </View>
-            <T variant="caption" color={withAlpha(colors.hero.onHero, 0.8)}>
+            <T
+              variant="caption"
+              color={isDark ? colors.anstoss.textTertiary : colors.onSurfaceMuted}
+            >
               {t(`Spiel ${current + 1} von ${slides.length} · wischen`)}
             </T>
           </View>
