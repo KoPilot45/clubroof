@@ -142,3 +142,14 @@ dunkel: `radial-gradient(120% 70% at 80% 0%, p1 0%, p2 55%, bg 100%)`), darüber
 mehrstufigem Verlauf: `0 % → 0`, `12 % → .04`, `24 % → .12`, `36 % → .26`, `50 % → .46`, `64 % → .68`, `78 % → .86`, `90 % → .96`, `100 % → 1`. Aller weißer Text liegt im Bereich unter 12 % Überblendung;
 bei zweizeiligen Spielnamen wächst das Plakat mit. Pager-Punkte und „Spiel 1 von 3 · wischen“: hell dunkle Schrift (`#3E4F45`, aktiver Punkt Akzent), dunkel helle Schrift (`#9FB5A6`).
 Referenz: `DarkHome*` (Repository) und „Hell 1 · Home“ (Design-Artefakt).
+
+## Große 2-spaltige Kacheln und Abstände (Home, Verein; Entscheidung Vorstand)
+
+Gilt für **Home und Verein** (Referenz `DarkHomeG`, `DarkVereinG`, hell im Design-Artefakt „Hell · Home/Verein: große 2-spaltige Kacheln“); die Referenzen `DarkHome` und `DarkVerein` zeigen für **Kacheln und
+Abschnittsabstände** den alten Stand (3-spaltig), für Hero/Plakat weiter den gültigen.
+- **Kacheln:** 2 Spalten, Abstand 14, Seitenrand 22; Kachel mindestens **124 hoch**, Innenabstand 16, Radius 24; Symbolfläche **60 × 60** (Radius 19) mit Symbol **34 px** oben links;
+  Kennzahl-Plakette oben rechts (12 px, 800, Radius 10); Beschriftung unten links 14 px fett, Zeilenumbruch erlaubt, lange Wörter mit weichem Trennzeichen („Ansprech­partner“). Ungerade Anzahl:
+  die letzte Kachel bleibt halbe Breite (ggf. sinnvolle Kachel ergänzen statt Lücke).
+- **Abschnittsabstände:** vor der Überschrift **48**, nach der Überschrift **18**, Überschrift 22 px (statt 26/12/21).
+- **Home-Schnellzugriff:** vier Kacheln (Abwesenheit melden, Spielplan, Route zum Platz, Platzbelegung). Verein: Veranstaltungen (4), Neuigkeiten (2), Vereinsleben (8).
+- **Team, Mehr und weitere Seiten mit Kachelraster** folgen derselben Regel, sobald der Vorstand es bestätigt (Team noch 3-spaltig im Entwurf).
