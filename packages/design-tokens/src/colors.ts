@@ -12,6 +12,16 @@
  *    werden immer zusammen mit Icon und Beschriftung gezeigt, nie als reine Farbfläche.
  */
 
+import {
+  AMBER_URGENT,
+  ANSTOSS_BANDS,
+  ANSTOSS_CATEGORIES,
+  ANSTOSS_FIXED,
+  blend,
+  completeAnstossBase,
+  deriveAnstossBase,
+  type AnstossCategory,
+} from './anstoss';
 import { contrastRatio, MIN_CONTRAST } from './contrast';
 import { prefersDarkText, shade } from './shade';
 
@@ -96,6 +106,33 @@ export type HeroColorRoles = {
   decor: string;
 };
 
+/** Zusätzliche Rollen des Stils „Anstoß“ (docs/DESIGN-ANSTOSS.md). */
+export type AnstossRoles = {
+  /** Fläche für Karten, Kacheln und Felder (dunkel: Weiß bei 6 %) */
+  card: string;
+  cardBorder: string;
+  fieldBorder: string;
+  /** Trennlinie in Listen */
+  divider: string;
+  textTertiary: string;
+  placeholder: string;
+  /** Fenster von unten und Dialog */
+  sheet: string;
+  sheetBorder: string;
+  scrim: string;
+  scrimDialog: string;
+  tabBar: string;
+  tabBarBorder: string;
+  /** Plakat: Verlauf p1 → p2 → Hintergrund */
+  poster: { from: string; to: string };
+  categories: Record<AnstossCategory, string>;
+  bands: { admin: readonly [string, string]; cash: readonly [string, string] };
+  /** rote Vereinsfarbe: „Dringend“ erscheint in Bernstein */
+  amberUrgent: boolean;
+  /** Verlauf der Dringend-Fläche in Bernstein */
+  amberGradient: readonly [string, string];
+};
+
 export type ThemeColors = ClubColorRoles &
   NeutralColorRoles & {
     /** Karten, die sich vom Hintergrund abheben (hell: weiß mit Schatten, dunkel: eine Stufe heller) */
@@ -103,6 +140,7 @@ export type ThemeColors = ClubColorRoles &
     status: Record<StatusKey, StatusColorRoles>;
     tints: Record<TintKey, TintColorRoles>;
     hero: HeroColorRoles;
+    anstoss: AnstossRoles;
   };
 
 export const clubColors: Record<ClubColorKey, Record<ColorScheme, ClubColorRoles>> = {
@@ -386,16 +424,152 @@ export function heroColors(roles: ClubColorRoles, scheme: ColorScheme): HeroColo
   };
 }
 
-/** Liefert das vollständige Farbthema für eine Vereinsfarbe und einen Modus. */
+/** Rollen des Stils „Anstoß“ für den hellen Modus (noch nicht gestaltet; Näherung aus dem bisherigen Thema). */
+function lightAnstoss(roles: ClubColorRoles, neutral: NeutralColorRoles): AnstossRoles {
+  return {
+    card: neutral.surface,
+    cardBorder: neutral.border,
+    fieldBorder: neutral.border,
+    divider: neutral.border,
+    textTertiary: neutral.onSurfaceMuted,
+    placeholder: '#8A93A0',
+    sheet: '#FFFFFF',
+    sheetBorder: neutral.border,
+    scrim: 'rgba(0,0,0,0.45)',
+    scrimDialog: 'rgba(0,0,0,0.5)',
+    tabBar: 'rgba(255,255,255,0.9)',
+    tabBarBorder: neutral.border,
+    poster: { from: shade(roles.primary, -0.3), to: roles.primary },
+    categories: { ...ANSTOSS_CATEGORIES },
+    bands: { ...ANSTOSS_BANDS },
+    amberUrgent: false,
+    amberGradient: AMBER_URGENT.gradient,
+  };
+}
+
+/**
+ * Dunkles Thema im Stil „Anstoß“. `key` ist eine Vereinsfarbe oder `clubroof` (Anmeldung ohne Verein, Einrichtung).
+ */
+export function anstossTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
+  const base = completeAnstossBase(
+    ANSTOSS_FIXED[key] ?? deriveAnstossBase(clubColors[key as ClubColorKey].light.primary),
+  );
+  const bg = base.background;
+  const WHITE = '#FFFFFF';
+  const category = ANSTOSS_CATEGORIES;
+  const amber = key === 'red';
+  const status: Record<StatusKey, StatusColorRoles> = {
+    urgent: amber
+      ? {
+          solid: AMBER_URGENT.text,
+          onSolid: '#2B1A00',
+          container: blend('#FFB020', bg, 0.16),
+          onContainer: AMBER_URGENT.text,
+        }
+      : {
+          solid: '#FF5A5F',
+          onSolid: '#2B0507',
+          container: blend('#FF5A5A', bg, 0.16),
+          onContainer: '#FF8A8A',
+        },
+    action: {
+      solid: '#FFB020',
+      onSolid: '#2B1A00',
+      container: blend('#FFB020', bg, 0.16),
+      onContainer: '#FFB020',
+    },
+    info: {
+      solid: category.club,
+      onSolid: '#04162E',
+      container: blend(category.club, bg, 0.16),
+      onContainer: category.club,
+    },
+    success: {
+      solid: '#2EDB6B',
+      onSolid: '#06210F',
+      container: blend('#2EDB6B', bg, 0.16),
+      onContainer: '#2EDB6B',
+    },
+    archived: {
+      solid: '#9AA6A0',
+      onSolid: '#101412',
+      container: blend(WHITE, bg, 0.08),
+      onContainer: base.textSecondary,
+    },
+  };
+  const tints = Object.fromEntries(
+    (
+      [
+        ['blue', category.club],
+        ['orange', category.events],
+        ['pink', category.news],
+        ['green', category.team],
+        ['violet', category.admin],
+      ] as const
+    ).map(([name, color]) => [name, { container: blend(color, bg, 0.15), onContainer: color }]),
+  ) as Record<TintKey, TintColorRoles>;
+  const roles: ClubColorRoles = {
+    primary: base.accent,
+    onPrimary: base.onAccent,
+    primaryPressed: shade(base.accent, -0.1),
+    primaryContainer: blend(base.accent, bg, 0.15),
+    onPrimaryContainer: base.accent,
+    primaryText: base.accent,
+  };
+  return {
+    ...roles,
+    background: bg,
+    surface: blend(WHITE, bg, 0.06),
+    surfaceVariant: blend(WHITE, bg, 0.1),
+    onSurface: base.text,
+    onSurfaceMuted: base.textSecondary,
+    border: blend(WHITE, bg, 0.09),
+    surfaceRaised: base.sheet,
+    status,
+    tints,
+    hero: { from: base.posterFrom, to: base.posterTo, onHero: '#FFFFFF', decor: 'rgba(255,255,255,0.08)' },
+    anstoss: {
+      card: 'rgba(255,255,255,0.06)',
+      cardBorder: 'rgba(255,255,255,0.09)',
+      fieldBorder: 'rgba(255,255,255,0.12)',
+      divider: 'rgba(255,255,255,0.08)',
+      textTertiary: base.textTertiary,
+      placeholder: base.placeholder,
+      sheet: base.sheet,
+      sheetBorder: 'rgba(255,255,255,0.12)',
+      scrim: 'rgba(0,0,0,0.6)',
+      scrimDialog: 'rgba(0,0,0,0.7)',
+      tabBar: hexAlpha(base.tabBar, 0.86),
+      tabBarBorder: 'rgba(255,255,255,0.1)',
+      poster: { from: base.posterFrom, to: base.posterTo },
+      categories: { ...ANSTOSS_CATEGORIES },
+      bands: { ...ANSTOSS_BANDS },
+      amberUrgent: amber,
+      amberGradient: AMBER_URGENT.gradient,
+    },
+  };
+}
+
+function hexAlpha(hex: string, alpha: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+}
+
+/**
+ * Liefert das vollständige Farbthema für eine Vereinsfarbe und einen Modus. Dunkel ist der Stil „Anstoß“ und
+ * zunächst die einzige Darstellung der App; hell bleibt für eine spätere Umsetzung erhalten.
+ */
 export function getThemeColors(clubColor: ClubColorKey, scheme: ColorScheme): ThemeColors {
+  if (scheme === 'dark') return anstossTheme(clubColor);
   const roles = clubColors[clubColor][scheme];
   return {
     ...neutralColors[scheme],
-    surfaceRaised: scheme === 'light' ? '#FFFFFF' : '#1F242B',
+    surfaceRaised: '#FFFFFF',
     ...roles,
     status: statusColors[scheme],
     tints: tintColors[scheme],
     hero: heroColors(roles, scheme),
+    anstoss: lightAnstoss(roles, neutralColors[scheme]),
   };
 }
 

@@ -158,7 +158,7 @@ export default function SetupScreen() {
 export function SetupWizard({ demo }: { demo?: boolean }) {
   // Clubroof-Farben (Blau) während der Einrichtung; die Vereinsfarbe zeigt nur der Farbschritt als Vorschau
   return (
-    <ThemeProvider clubColor="blue">
+    <ThemeProvider clubColor="clubroof">
       <Wizard demo={demo} />
     </ThemeProvider>
   );

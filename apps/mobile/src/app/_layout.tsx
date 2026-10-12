@@ -371,7 +371,7 @@ function ClubTheme({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
       clubColor={club?.colorTheme ?? brand?.colorTheme}
-      mode={session.status === 'signedIn' ? session.me.user.colorMode : 'light'}
+      mode={session.status === 'signedIn' ? session.me.user.colorMode : 'dark'}
     >
       {children}
     </ThemeProvider>

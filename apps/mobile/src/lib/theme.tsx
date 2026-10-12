@@ -1,4 +1,5 @@
 import {
+  anstossTheme,
   fontSizes,
   fontWeights,
   getThemeColors,
@@ -17,7 +18,8 @@ import { useColorScheme } from 'react-native';
 
 export type Theme = {
   scheme: ColorScheme;
-  clubColor: ClubColorKey;
+  /** Vereinsfarbe oder `clubroof` (Anmeldung ohne Verein, Einrichtung) */
+  clubColor: ClubColorKey | 'clubroof';
   colors: ThemeColors;
   spacing: typeof spacing;
   radii: typeof radii;
@@ -33,12 +35,18 @@ export type Theme = {
 const ThemeContext = createContext<Theme | null>(null);
 
 /**
- * Stellt das Farbthema bereit. Vor der Anmeldung gilt Grün (Clubroof), danach die
- * Vereinsfarbe. Hell ist Standard; jede Person kann dunkel oder „wie Gerät“ wählen.
+ * Der Stil „Anstoß“ ist zunächst nur dunkel (docs/DESIGN-ANSTOSS.md). Die Einstellung „Darstellung“
+ * (hell, dunkel, wie Gerät) bleibt gespeichert und vorbereitet; solange es kein helles Thema im neuen
+ * Stil gibt, gilt immer dunkel.
+ */
+const DARK_ONLY = true;
+
+/**
+ * Stellt das Farbthema bereit. Vor der Anmeldung gelten die Clubroof-Farben, danach die Vereinsfarbe.
  */
 export function ThemeProvider({
   clubColor,
-  mode = 'light',
+  mode = 'dark',
   children,
 }: {
   clubColor?: string | null;
@@ -46,14 +54,16 @@ export function ThemeProvider({
   children: ReactNode;
 }) {
   const system = useColorScheme();
-  const scheme: ColorScheme = mode === 'system' ? (system === 'dark' ? 'dark' : 'light') : mode;
-  const key: ClubColorKey = clubColor && isClubColorKey(clubColor) ? clubColor : 'green';
+  const wanted: ColorScheme = mode === 'system' ? (system === 'dark' ? 'dark' : 'light') : mode;
+  const scheme: ColorScheme = DARK_ONLY ? 'dark' : wanted;
+  const key: ClubColorKey | 'clubroof' =
+    clubColor === 'clubroof' ? 'clubroof' : clubColor && isClubColorKey(clubColor) ? clubColor : 'clubroof';
 
   const theme = useMemo<Theme>(
     () => ({
       scheme,
       clubColor: key,
-      colors: getThemeColors(key, scheme),
+      colors: key === 'clubroof' ? anstossTheme('clubroof') : getThemeColors(key, scheme),
       spacing,
       radii,
       sizes,

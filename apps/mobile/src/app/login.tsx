@@ -60,7 +60,7 @@ export default function LoginScreen() {
   if (!checked) return <View style={{ flex: 1 }} />;
   // Verein bekannt: Vereinsfarbe; sonst Clubroof-Blau
   return (
-    <ThemeProvider clubColor={brand ? (brand.colorTheme as never) : 'blue'}>
+    <ThemeProvider clubColor={brand ? (brand.colorTheme as never) : 'clubroof'}>
       <Login known={!!brand} />
     </ThemeProvider>
   );
