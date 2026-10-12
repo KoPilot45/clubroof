@@ -20,6 +20,13 @@ const teams = await api('/admin/teams', S.admin.login.token).catch(() => []);
 const t = b1.id;
 
 const pages = [
+  ['a-mitglieder', 'admin', '/admin/area/mitglieder'],
+  ['a-sport', 'admin', '/admin/area/sport'],
+  ['a-verein', 'admin', '/admin/area/verein'],
+  ['k-buchung', 'kasse', '/club-cash/area/buchung'],
+  ['k-beitraege', 'kasse', '/club-cash/area/beitraege'],
+  ['k-pruefung', 'kasse', '/club-cash/area/pruefung'],
+  ['team', 'trainer', '/team'],
   ['events', 'trainer', '/events'],
   ['archive', 'trainer', '/events/archive'],
   ['absences', 'eltern', '/absences'],

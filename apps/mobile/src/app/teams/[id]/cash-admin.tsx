@@ -137,7 +137,7 @@ export default function CashAdminScreen() {
       <TileGrid items={withTileInfo(tiles, tileInfo)} />
 
       {full && pending.length ? (
-        <Section title={`Zahlungsmeldungen (${pending.length})`}>
+        <Section roomy title={`Zahlungsmeldungen (${pending.length})`}>
           <Card
             style={{
               backgroundColor: colors.status.action.container,
@@ -187,7 +187,7 @@ export default function CashAdminScreen() {
       ) : null}
 
       {full ? (
-        <Section title="Offene Beträge">
+        <Section roomy title="Offene Beträge">
           <Card style={{ gap: 10 }}>
             <T variant="label">
               {open.length

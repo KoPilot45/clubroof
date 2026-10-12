@@ -258,7 +258,7 @@ export default function ClubScreen() {
         if (items.length === 0) return null;
         return (
           <Section key={g.key} title={g.title} roomy>
-            <TileGrid large items={items} />
+            <TileGrid items={items} />
           </Section>
         );
       })}

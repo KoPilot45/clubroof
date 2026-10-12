@@ -47,7 +47,7 @@ export default function StatsOverview() {
       {d ? (
         <HighlightsCard h={d.highlights} title="Saison-Bilanz" rateLabel="Trainingsquote" />
       ) : null}
-      <Section title="Auswertungen">
+      <Section roomy title="Auswertungen">
         <TileGrid items={tiles} />
       </Section>
     </Screen>

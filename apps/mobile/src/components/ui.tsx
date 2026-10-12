@@ -1630,8 +1630,8 @@ export type TileItem = {
  * Kachelraster: vier Spalten wie im Entwurf – Kachel 60 hoch mit Pastell-Icon, Beschriftung
  * darunter, Zähler oder „neu“ oben rechts, ein kurzer Hinweis unter der Beschriftung.
  */
-export function TileGrid({ items, large }: { items: TileItem[]; large?: boolean }) {
-  return large ? <LargeTileGrid items={items} /> : <CompactTileGrid items={items} />;
+export function TileGrid({ items }: { items: TileItem[] }) {
+  return <LargeTileGrid items={items} />;
 }
 
 /**
@@ -1754,6 +1754,11 @@ const SOFT_BREAKS: [string, string][] = [
   ['Kassenverwaltung', 'Kassen\u00ADverwaltung'],
   ['Spielerbewegungen', 'Spieler\u00ADbewegungen'],
   ['Änderungsprotokoll', 'Änderungs\u00ADprotokoll'],
+  ['Benachrichtigungen', 'Benachrichti\u00ADgungen'],
+  ['Mannschaftszuschuss', 'Mannschafts\u00ADzuschuss'],
+  ['Beitragsübersicht', 'Beitrags\u00ADübersicht'],
+  ['Beitragsarten', 'Beitrags\u00ADarten'],
+  ['Kassenprüfung', 'Kassen\u00ADprüfung'],
   ['Announcements', 'Announce\u00ADments'],
   ['Contact persons', 'Contact persons'],
 ];
@@ -1761,128 +1766,6 @@ const softBreaks = (label: string) =>
   SOFT_BREAKS.reduce((text, [word, soft]) => text.replace(word, soft), label);
 
 const TINT_ORDER: TintKey[] = ['blue', 'orange', 'pink', 'green', 'violet'];
-
-function CompactTileGrid({ items }: { items: TileItem[] }) {
-  const { colors, isDark, elevation } = useTheme();
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 10, rowGap: 14 }}>
-      {items.map((item, index) => {
-        const disabled = item.soon || !item.onPress;
-        // Kennzahl: `figure` vom Server, sonst ein Zähler; Kategoriefarbe, nur dringend wird orange
-        const value =
-          item.figure ?? (item.badge !== undefined && item.badge !== 0 ? String(item.badge) : null);
-        const showBadge = !item.soon && value !== null;
-        const tint = item.tint ?? TINT_ORDER[index % TINT_ORDER.length]!;
-        const urgent = item.tone === 'action' || item.tone === 'urgent';
-        return (
-          <PressScale
-            key={item.key}
-            accessibilityRole="button"
-            accessibilityState={{ disabled }}
-            accessibilityLabel={[
-              item.label,
-              showBadge ? value : null,
-              item.soon ? 'bald verfügbar' : item.hint,
-            ]
-              .filter(Boolean)
-              .join(', ')}
-            disabled={disabled}
-            onPress={item.onPress}
-            style={{
-              width: '31%',
-              flexGrow: 0,
-              alignItems: 'center',
-              gap: 6,
-              opacity: item.soon ? 0.55 : 1,
-            }}
-          >
-            {({ pressed }) => (
-              <>
-                <View
-                  style={{
-                    width: '100%',
-                    height: 66,
-                    borderRadius: 22,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: pressed ? colors.surfaceVariant : colors.anstoss.card,
-                    borderWidth: 1,
-                    borderColor: colors.anstoss.cardBorder,
-                    ...(isDark ? null : shadowStyle(elevation.control)),
-                  }}
-                >
-                  <IconTile
-                    name={item.icon}
-                    tone={item.tint ?? TINT_ORDER[index % TINT_ORDER.length]!}
-                  />
-                  {showBadge ? (
-                    <View
-                      style={{
-                        position: 'absolute',
-                        top: -6,
-                        right: -3,
-                        minWidth: 22,
-                        height: 22,
-                        paddingHorizontal: 6,
-                        borderRadius: 11,
-                        borderWidth: 2,
-                        borderColor: colors.background,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: urgent
-                          ? colors.status.action.container
-                          : colors.tints[tint].container,
-                      }}
-                    >
-                      <Text
-                        verbatim
-                        style={{
-                          fontSize: 12,
-                          fontWeight: '800',
-                          color: urgent
-                            ? colors.status.action.onContainer
-                            : colors.tints[tint].onContainer,
-                        }}
-                      >
-                        {value}
-                      </Text>
-                    </View>
-                  ) : null}
-                </View>
-                <Text
-                  numberOfLines={2}
-                  verbatim
-                  style={{
-                    fontSize: item.label.length > 14 ? 12 : 13,
-                    fontWeight: '600',
-                    color: colors.onSurface,
-                    textAlign: 'center',
-                  }}
-                >
-                  {softBreaks(t(item.label))}
-                </Text>
-                {item.soon ? (
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      marginTop: -4,
-                      fontSize: 12,
-                      fontWeight: '600',
-                      textAlign: 'center',
-                      color: colors.onSurfaceMuted,
-                    }}
-                  >
-                    Bald verfügbar
-                  </Text>
-                ) : null}
-              </>
-            )}
-          </PressScale>
-        );
-      })}
-    </View>
-  );
-}
 
 // ── Formulare ─────────────────────────────────────────────────────────────────
 

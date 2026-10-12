@@ -263,7 +263,7 @@ export function CategoryPage({
   return (
     <Screen edges={[]}>
       {category.groups.map((g) => (
-        <View key={g.key} style={{ gap: 16 }}>
+        <View key={g.key} style={{ gap: 18, paddingTop: 20 }}>
           <GroupHeading title={g.title} tint={g.tint} />
           <TileGrid items={g.tiles.map((tile) => ({ ...tile, tint: g.tint }))} />
         </View>
