@@ -425,7 +425,10 @@ export function Section({
   action,
   onAction,
   children,
+  roomy,
 }: {
+  /** größere Abstände (Home, Verein): 48 davor, 18 danach, Überschrift 22 px */
+  roomy?: boolean;
   title: string;
   action?: string;
   onAction?: () => void;
@@ -435,7 +438,7 @@ export function Section({
   // Abschnittsüberschrift (Stil „Anstoß“): Akzentlinie 4 × 18, 12 px Abstand zum Inhalt; die Seite
   // lässt 14 px Abstand, Abschnitte ergänzen oben 12 → 26 px wie im Entwurf.
   return (
-    <View style={{ gap: 12, paddingTop: 12 }}>
+    <View style={{ gap: roomy ? 18 : 12, paddingTop: roomy ? 34 : 12 }}>
       <View style={styles.rowBetween}>
         <View style={styles.sectionTitle}>
           <View
@@ -446,7 +449,11 @@ export function Section({
               backgroundColor: colors.primary,
             }}
           />
-          <T variant="section" style={{ flexShrink: 1 }} accessibilityRole="header">
+          <T
+            variant="section"
+            style={roomy ? { flexShrink: 1, fontSize: 22, lineHeight: 25 } : { flexShrink: 1 }}
+            accessibilityRole="header"
+          >
             {title}
           </T>
         </View>
@@ -1602,8 +1609,119 @@ export type TileItem = {
  * Kachelraster: vier Spalten wie im Entwurf – Kachel 60 hoch mit Pastell-Icon, Beschriftung
  * darunter, Zähler oder „neu“ oben rechts, ein kurzer Hinweis unter der Beschriftung.
  */
-export function TileGrid({ items }: { items: TileItem[] }) {
-  return <CompactTileGrid items={items} />;
+export function TileGrid({ items, large }: { items: TileItem[]; large?: boolean }) {
+  return large ? <LargeTileGrid items={items} /> : <CompactTileGrid items={items} />;
+}
+
+/**
+ * Große Kacheln (Paket AK, Home und Verein): 2 Spalten, Abstand 14, mindestens 124 hoch, Radius 24,
+ * Symbolfläche 60 × 60 oben links, Kennzahl oben rechts, Beschriftung unten links. Eine ungerade letzte
+ * Kachel bleibt halbe Breite.
+ */
+/** Große Kacheln zeigen Umrisssymbole (wie im Entwurf), sofern es das Symbol als Umriss gibt. */
+const outlineIcon = (name: IconName): IconName =>
+  !name.endsWith('-outline') && `${name}-outline` in Ionicons.glyphMap
+    ? (`${name}-outline` as IconName)
+    : name;
+
+function LargeTileGrid({ items }: { items: TileItem[] }) {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        rowGap: 14,
+      }}
+    >
+      {items.map((item, index) => {
+        const disabled = item.soon || !item.onPress;
+        const value =
+          item.figure ?? (item.badge !== undefined && item.badge !== 0 ? String(item.badge) : null);
+        const showBadge = !item.soon && value !== null;
+        const tint = item.tint ?? TINT_ORDER[index % TINT_ORDER.length]!;
+        const urgent = item.tone === 'action' || item.tone === 'urgent';
+        const accent = urgent ? colors.status.action.solid : colors.tints[tint].onContainer;
+        return (
+          <PressScale
+            key={item.key}
+            accessibilityRole="button"
+            accessibilityState={{ disabled }}
+            accessibilityLabel={[
+              item.label,
+              showBadge ? value : null,
+              item.soon ? 'bald verfügbar' : item.hint,
+            ]
+              .filter(Boolean)
+              .join(', ')}
+            disabled={disabled}
+            onPress={item.onPress}
+            style={{
+              width: '47.9%',
+              minHeight: 124,
+              padding: 16,
+              borderRadius: 24,
+              justifyContent: 'space-between',
+              backgroundColor: colors.anstoss.card,
+              borderWidth: 1,
+              borderColor: colors.anstoss.cardBorder,
+              opacity: item.soon ? 0.55 : 1,
+            }}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View
+                style={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: 19,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: colors.tints[tint].container,
+                }}
+              >
+                <Ionicons
+                  name={outlineIcon(item.icon)}
+                  size={34}
+                  color={colors.tints[tint].onContainer}
+                />
+              </View>
+              {showBadge ? (
+                <View
+                  style={{
+                    alignSelf: 'flex-start',
+                    minWidth: 24,
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    borderRadius: 10,
+                    alignItems: 'center',
+                    backgroundColor: accent,
+                  }}
+                >
+                  <Text
+                    verbatim
+                    style={{ fontSize: 12, fontWeight: '800', color: colors.background }}
+                  >
+                    {value}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+            <View>
+              <Text verbatim style={{ fontSize: 14, fontWeight: '700', color: colors.onSurface }}>
+                {softBreaks(t(item.label))}
+              </Text>
+              {item.soon ? (
+                <Text style={{ fontSize: 12, color: colors.anstoss.textTertiary }}>
+                  Bald verfügbar
+                </Text>
+              ) : null}
+            </View>
+          </PressScale>
+        );
+      })}
+    </View>
+  );
 }
 
 /** Lange Kachelnamen trennen an Wortfugen (weiche Trennstriche) statt mitten im Wort. */

@@ -42,6 +42,7 @@ import {
   shadowStyle,
   T,
   Ticket,
+  TileGrid,
   withAlpha,
   type IconName,
 } from '@/components/ui';
@@ -352,7 +353,7 @@ export function OpenBand({ actions }: { actions: ActionItem[] }) {
   const [poll, setPoll] = useState<ActionItem | null>(null);
   if (actions.length === 0)
     return (
-      <Section title="Offen">
+      <Section roomy title="Offen">
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <IconTile name="checkmark-done" tone="success" />
@@ -368,7 +369,7 @@ export function OpenBand({ actions }: { actions: ActionItem[] }) {
     .filter((a) => a.dueAt)
     .sort((a, b) => Date.parse(a.dueAt!) - Date.parse(b.dueAt!))[0];
   return (
-    <Section title="Offen">
+    <Section roomy title="Offen">
       <Swipe width={width}>
         {actions.map((a) => {
           const isUrgent = a.id === urgent?.id;
@@ -521,101 +522,34 @@ export function QuickAccess({
   info: TileInfo;
   onSaved: () => Promise<void>;
 }) {
-  const { colors } = useTheme();
   const { api } = useSignedIn();
   const [editing, setEditing] = useState(false);
   const links = quickLinksFor(me);
   return (
-    <Section title="Schnellzugriff">
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-        {links.map((l) => {
-          const hint = chipHint(info[l.key]);
-          return (
-            <PressScale
-              key={l.key}
-              accessibilityRole="button"
-              onPress={() => router.push(routeOf(l, me) as never)}
-              accessibilityLabel={[l.label, info[l.key]?.hint].filter(Boolean).join(', ')}
-              style={{
-                flexGrow: 1,
-                flexBasis: '29%',
-                minHeight: 84,
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6,
-                paddingVertical: 14,
-                paddingHorizontal: 6,
-                borderRadius: 22,
-                backgroundColor: colors.anstoss.card,
-                borderWidth: 1,
-                borderColor: colors.anstoss.cardBorder,
-              }}
-            >
-              <Ionicons name={l.icon} size={22} color={colors.primaryText} />
-              <Text
-                numberOfLines={2}
-                style={{
-                  fontSize: 12,
-                  fontWeight: '700',
-                  textAlign: 'center',
-                  color: colors.onSurface,
-                }}
-              >
-                {l.label}
-              </Text>
-              {hint ? (
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: -6,
-                    right: -2,
-                    minWidth: 22,
-                    height: 22,
-                    paddingHorizontal: 6,
-                    borderRadius: 11,
-                    borderWidth: 2,
-                    borderColor: colors.background,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: colors.status.action.container,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      fontWeight: '800',
-                      color: colors.status.action.onContainer,
-                    }}
-                  >
-                    {hint.text}
-                  </Text>
-                </View>
-              ) : null}
-            </PressScale>
-          );
-        })}
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => setEditing(true)}
-          style={{
-            flexGrow: 1,
-            flexBasis: '29%',
-            minHeight: 84,
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
-            borderRadius: 22,
-            borderWidth: 1.5,
-            borderStyle: 'dashed',
-            borderColor: colors.anstoss.textTertiary,
-          }}
-        >
-          <Ionicons name="add" size={22} color={colors.anstoss.textTertiary} />
-          <Text style={{ color: colors.anstoss.textTertiary, fontSize: 12.5, fontWeight: '700' }}>
-            Hinzufügen
-          </Text>
-        </Pressable>
-      </View>
+    <Section title="Schnellzugriff" roomy>
+      <TileGrid
+        large
+        items={[
+          ...links.map((l) => {
+            const hint = chipHint(info[l.key]);
+            return {
+              key: l.key,
+              label: l.label,
+              icon: l.icon,
+              tint: l.tint,
+              badge: hint?.text,
+              hint: info[l.key]?.hint,
+              onPress: () => router.push(routeOf(l, me) as never),
+            };
+          }),
+          {
+            key: 'add',
+            label: 'Hinzufügen',
+            icon: 'add' as const,
+            onPress: () => setEditing(true),
+          },
+        ]}
+      />
       <QuickAccessEditor
         me={me}
         visible={editing}
@@ -1116,7 +1050,12 @@ const weekColor = (e: EventSummary, colors: ReturnType<typeof useTheme>['colors'
 export function WeekTickets({ week }: { week: EventSummary[] }) {
   const { colors } = useTheme();
   return (
-    <Section title="Diese Woche" action="Alle anzeigen" onAction={() => router.push('/termine')}>
+    <Section
+      roomy
+      title="Diese Woche"
+      action="Alle anzeigen"
+      onAction={() => router.push('/termine')}
+    >
       {week.length === 0 ? (
         <Empty
           icon="calendar-outline"
@@ -1266,7 +1205,7 @@ export function BirthdayCard({ birthdays }: { birthdays: Birthday[] }) {
   if (birthdays.length === 0) return null;
   const today = birthdays.some((b) => b.inDays === 0);
   return (
-    <Section title={today ? 'Heute Geburtstag' : 'Bald Geburtstag'}>
+    <Section roomy title={today ? 'Heute Geburtstag' : 'Bald Geburtstag'}>
       <Card list>
         {birthdays.map((b, i) => (
           <ListRow
