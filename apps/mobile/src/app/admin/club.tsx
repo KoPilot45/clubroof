@@ -5,15 +5,12 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, View } from 'react-native';
 import { ClubColorPicker } from '@/components/club-color';
-import { PosterMark } from '@/components/poster-mark';
-import { useTheme } from '@/lib/theme';
 import {
   Button,
   Card,
   Chip,
   Crest,
   ErrorNotice,
-  GradientFill,
   Loading,
   Screen,
   Section,
@@ -100,7 +97,6 @@ export default function ClubSettingsScreen() {
 /** Name, Design, Bereiche und Sicherheitsvorgabe des Vereins. */
 function ClubForm() {
   const { api, refresh } = useSignedIn();
-  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const settings = useQuery({
     queryKey: ['admin', 'club'],
@@ -152,28 +148,6 @@ function ClubForm() {
   return (
     <>
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      <Section title="Vorschau">
-        <View
-          style={{
-            height: 190,
-            borderRadius: 24,
-            overflow: 'hidden',
-            justifyContent: 'flex-end',
-            padding: 16,
-            backgroundColor: colors.anstoss.poster.to,
-          }}
-        >
-          <GradientFill from={colors.anstoss.poster.from} to={colors.background} vertical />
-          <PosterMark code={code} />
-          <T variant="headline" color={colors.hero.onHero} style={{ fontSize: 28 }} verbatim>
-            {shortName || s.shortName}
-          </T>
-        </View>
-        <T variant="caption">
-          Mit 2 Zeichen wird das Kürzel größer, mit 4 kleiner – immer vollständig sichtbar.
-        </T>
-      </Section>
-
       <Section title="Name & Design">
         <Card style={{ gap: 14 }}>
           <TextField
@@ -202,6 +176,7 @@ function ClubForm() {
               setSaved(false);
             }}
             maxLength={4}
+            letterSpacing={3}
             hint="Das Kürzel steht groß im Plakat auf der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist."
           />
           <ClubColorPicker

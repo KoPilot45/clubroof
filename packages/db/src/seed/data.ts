@@ -9,6 +9,8 @@ export const DEMO_CLUB = {
   name: 'SV Grün-Weiß Musterstadt 1920 e.V.',
   shortName: 'SV Grün-Weiß',
   shortCode: 'SGW',
+  /** Platzhalter-Wappen des Demovereins (von der API unter /brand/ ausgeliefert) */
+  logoUrl: '/brand/demo-wappen.png',
   slug: 'sv-gruen-weiss',
   foundedYear: 1920,
   colorTheme: 'green' as const,

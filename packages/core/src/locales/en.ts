@@ -3339,6 +3339,7 @@ export const en: Record<string, string> = {
   'Sperrungen dürfen nur Platzverantwortliche anlegen.': 'Only groundskeepers may create closures.',
   'Sperrungen dürfen nur Platzverantwortliche aufheben.': 'Only groundskeepers may lift closures.',
   Spiel: 'Match',
+  'Spiel {0} von {1}': 'Match {0} of {1}',
   'Spiel abgesetzt.': 'Match postponed.',
   'Spiel- & Trainingsbetrieb': 'Matches & training',
   Spielbericht: 'Match report',
@@ -3433,6 +3434,7 @@ export const en: Record<string, string> = {
     'As of: sample text. These terms govern the use of Clubroof.',
   'Stand: Beispieltext. Wir nehmen den Schutz deiner Daten ernst und erklären hier kurz, was wir verarbeiten.':
     'As of: sample text. We take the protection of your data seriously and briefly explain here what we process.',
+  Standard: 'Default',
   'Standard der Mannschaft': 'Team default',
   'Standard für dich: {0}': 'Default for you: {0}',
   'Standard-Treffpunkt': 'Default meeting point',

@@ -14,7 +14,6 @@ import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { ClubroofLogo } from '@/components/brand-header';
 import { ClubColorPicker } from '@/components/club-color';
-import { PosterMark } from '@/components/poster-mark';
 import { ChoiceCard, NumberStepper, WizardShell, useWizardDraft } from '@/components/wizard';
 import {
   Button,
@@ -22,7 +21,6 @@ import {
   ChoiceChips,
   Chip,
   Crest,
-  GradientFill,
   T,
   TextField,
   type IconName,
@@ -456,21 +454,9 @@ function Wizard({ demo }: { demo?: boolean }) {
           value={d.code || (d.shortName.trim().length >= 2 ? defaultClubCode(d.shortName) : '')}
           onChangeText={(v) => patch({ code: normalizeClubCode(v) })}
           maxLength={4}
+          letterSpacing={3}
           hint="Steht groß im Plakat der Startseite und ersetzt das Wappen ohne Logo."
         />
-        <View
-          style={{
-            height: 170,
-            borderRadius: 24,
-            overflow: 'hidden',
-            backgroundColor: colors.anstoss.poster.to,
-          }}
-        >
-          <GradientFill from={colors.anstoss.poster.from} to={colors.background} vertical />
-          <PosterMark
-            code={d.code || (d.shortName.trim().length >= 2 ? defaultClubCode(d.shortName) : '')}
-          />
-        </View>
       </WizardShell>
     );
 

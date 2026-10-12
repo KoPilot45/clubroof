@@ -299,7 +299,7 @@ export default function NewEventScreen() {
       <Section title="Treffpunkt">
         <Segment
           options={[
-            { value: 'standard' as const, label: 'Standard der Mannschaft' },
+            { value: 'standard' as const, label: 'Standard' },
             { value: 'custom' as const, label: 'Individuell' },
           ]}
           value={meetingMode}

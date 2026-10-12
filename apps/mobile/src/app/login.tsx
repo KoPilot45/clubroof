@@ -140,7 +140,6 @@ function Login({ known }: { known: boolean }) {
   // ── Kopf: Vereinsverlauf (bekannt) oder Clubroof-Verlauf ─────────────────
   const header = known ? (
     <GradientHeader
-      code={club?.shortCode ?? null}
       style={{ paddingTop: insets.top + 40, paddingBottom: 48, alignItems: 'center', gap: 12 }}
     >
       {logo ? (
@@ -171,7 +170,6 @@ function Login({ known }: { known: boolean }) {
     </GradientHeader>
   ) : (
     <GradientHeader
-      rings
       style={{
         paddingTop: insets.top + (view === 'start' ? 64 : 36),
         paddingBottom: view === 'start' ? 56 : 32,

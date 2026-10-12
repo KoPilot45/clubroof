@@ -4564,6 +4564,18 @@ describe.skipIf(!url)('API', () => {
   });
 
   describe('Vereinseinstellungen', () => {
+    it('Demoverein hat ein Platzhalter-Wappen, das die API öffentlich ausliefert', async () => {
+      const res = await app.inject({ method: 'GET', url: '/brand/demo-wappen.png' });
+      expect(res.statusCode).toBe(200);
+      expect(res.headers['content-type']).toBe('image/png');
+      expect(res.rawPayload.subarray(1, 4).toString()).toBe('PNG');
+      // nur freigegebene Namen, kein Zugriff auf andere Dateien
+      expect(
+        (await app.inject({ method: 'GET', url: '/brand/..%2Fpackage.json' })).statusCode,
+      ).toBe(404);
+      expect((await app.inject({ method: 'GET', url: '/brand/anderes.png' })).statusCode).toBe(404);
+    });
+
     it('Vereinskürzel: Vorgabe aus den Initialen, Änderung nur durch die Vereinsadministration', async () => {
       const admin = await login('admin');
       const board = await login('vorstand');
