@@ -79,6 +79,20 @@ Saira Condensed (Gewichte 700, 800) für Kopfzeilen-Titel (28), Abschnitte (21),
 (Plakat 108 bei einer Ziffer, 64 bei längeren Zahlen; Kasse 60–72; Ticket 40; Datumsblock 26–28), Uhrzeiten in Feldern (28).
 Open Sans für alles andere: Text 15, sekundär 12,5, klein 11,5, Eyebrow 11,5 fett 800 Großbuchstaben Laufweite 1,4.
 
+## Hero-Blöcke: exakte Vorgabe
+
+**Die Referenzdateien sind die Wahrheit** (`DarkTeam`, `DarkTermine`, `DarkVerein`, `DarkMehr`, `DarkU5`; Plakat in `DarkHome`). Quelltext öffnen und Werte übernehmen.
+
+- **Farbe = immer die gewählte Vereinsfarbe** (p1/p2 aus den Design-Tokens). **Nie** eine Kategoriefarbe: auch der „Nächste Vereinstermin“ im Verein-Reiter ist in der Vereinsfarbe
+  (kein Orange). Ausnahmen nur Verwaltung (violettes Kopfband und Hero) und Vereinskasse (blau), damit man den Bereich erkennt.
+- **Hero-Block (Karte):** Außenabstand `14 22 0 22`, Innenabstand 18, Radius 28, `overflow: hidden`, `isolation: isolate`,
+  Hintergrund `radial-gradient(120% 120% at 90% 0%, p1 0%, p2 60%, bg 130%)`; Waben-Schicht dahinter-liegend (siehe nächsten Abschnitt), Inhalt darüber.
+  Weißer Text, kleine Beschriftungen `11,5 px / 800 / Laufweite 1,4 / Großbuchstaben`, große Zahl Saira 800, Knöpfe im Hero weiß mit Text in p2.
+- **Plakat (Home):** Höhe 450, ohne Karte, voller Rand, Verlauf `radial-gradient(120% 80% at 80% 0%, p1 0%, p2 45%, bg 100%)` plus Überblendung nach unten in den Hintergrund.
+- **Abnahme der Heros, messbar:** Referenzdatei und App-Bildschirm jeweils bei 390 px Breite rendern, den Hero ausschneiden und **fünf Punkte** vergleichen
+  (links oben, rechts oben, Mitte, links unten, rechts unten – 24 px vom Rand): jeder Farbkanal darf höchstens **±10** abweichen; zusätzlich
+  muss die Kartenkante links und unten sichtbar sein (Helligkeitsunterschied Karte zu Hintergrund an den Randpunkten ≥ 12 Stufen). Schlägt das fehl, ist der Hero nicht abgenommen.
+
 ## Hero-Hintergrund: Waben (ersetzt Kürzel und Fadenkreuz)
 
 **Entscheidung Vorstand:** Der Hero-Hintergrund ist das **Waben-Muster** (Entwurf `DarkBg4`, Home in `DarkHome*`). Das Vereinskürzel (2–4 Zeichen)

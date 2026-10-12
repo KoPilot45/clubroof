@@ -28,6 +28,9 @@ Es ändert **nur Aussehen und Aufbau**, keine Fachlogik.
 6. Alles andere aus Paket AN (Nummern 4–6) **bleibt so bzw. ist egal**. Nicht geprüft und nachzuholen: Anmeldung mit bekanntem Verein, Einrichtungsassistent, Zeitwalze und Fenster von unten, Bewegungen auf dem Gerät,
    Home in Blau, Rot und Gelb, Kontrast je Vereinsfarbe.
 
+7. **Verein-Reiter**: „Nächster Vereinstermin“ ist orange gefärbt – falsch (kam aus meinem Entwurf). Der Hero ist wie alle anderen **in der gewählten Vereinsfarbe** (Referenz `DarkVerein`); nur Verwaltung (violett) und Vereinskasse (blau) behalten ihre Bereichsfarbe.
+8. **Heros exakt wie die Entwürfe**: Werte und messbare Abnahme (fünf Messpunkte, ±10 je Kanal, Kartenkante sichtbar) stehen in `docs/DESIGN-ANSTOSS.md`, Abschnitt „Hero-Blöcke: exakte Vorgabe“. Heros erst als erledigt melden, wenn die Messung besteht.
+
 ## Regeln und Abnahme
 Regeln wie im ersten Übergabeprompt (`docs/UEBERGABE-ANSTOSS.md`): Tokens und Bausteine statt Einzelstile, Texte Deutsch/übersetzt, Barrierefreiheit, kleine Commits.
 Abnahme: Bildschirme öffnen, **neben die aktualisierten Referenzdateien legen**, Abweichungen benennen und beheben; am Ende kurze Liste erledigt / bewusst abweichend / offen.
