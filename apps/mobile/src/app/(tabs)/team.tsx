@@ -40,7 +40,7 @@ const PARTICIPATION_LABELS = {
 } as const;
 
 /**
- * Team-Tab: Wer Sportliche Leitung, Jugendleitung oder Vorstand ist, sieht die Bereichsübersicht (Paket BU);
+ * Team-Tab: Wer Sportliche Leitung, Jugendleitung oder Vorstand ist, sieht die Abteilungsübersicht (Paket BU);
  * mit eigener Mannschaft schaltet oben „Meine Mannschaft | Übersicht“ um (letzte Wahl wird gemerkt).
  */
 export default function TeamScreen() {

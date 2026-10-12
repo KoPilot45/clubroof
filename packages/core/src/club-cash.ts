@@ -81,8 +81,33 @@ export const CLUB_CASH_CATEGORY_TEMPLATE: {
   { name: 'Verwaltung und Bankgebühren', direction: 'expense', area: 'ideal' },
 ];
 
+/** Kasse des Vereins (Paket K6): Konten, Beiträge und Auswertung gehören zu einer Kasse. */
+export type ClubCashFund = {
+  id: string;
+  name: string;
+  /** genau eine Kasse ist Hauptkasse (Buchungen ohne Abteilungsbezug) */
+  isMain: boolean;
+  archived: boolean;
+  /** zugeordnete Abteilungen (mehrere möglich) */
+  units: { id: string; name: string }[];
+  accountCount: number;
+  /** Summe der Kontostände */
+  balanceCents: number;
+  /** Es wurde schon gebucht – dann kann die Kasse nur stillgelegt werden */
+  hasEntries: boolean;
+};
+
+export type ClubCashFundInput = {
+  name: string;
+  unitIds: string[];
+  /** als Hauptkasse festlegen (die bisherige verliert den Status) */
+  isMain?: boolean;
+};
+
 export type ClubCashAccount = {
   id: string;
+  /** Kasse, zu der das Konto gehört */
+  fundId: string;
   name: string;
   kind: ClubCashAccountKind;
   openingBalanceCents: number;
@@ -112,6 +137,8 @@ export type ClubCashEntry = {
   kind: 'income' | 'expense' | 'transfer_in' | 'transfer_out';
   accountId: string;
   accountName: string;
+  fundId: string;
+  fundName: string;
   amountCents: number;
   bookedOn: string;
   categoryId: string | null;
@@ -141,11 +168,19 @@ export type ClubCash = {
   /** full: alles; reports: nur Kontostände und Summen; */
   level: 'full' | 'reports';
   canManage: boolean;
+  /** Kassen anlegen und ändern, Hauptkasse wechseln: nur Kassenführung des ganzen Vereins */
+  canManageFunds: boolean;
   canAudit: boolean;
   /** Einstellung ändern darf nur die Vereinsadministration */
   canChangeSettings: boolean;
   visibility: ClubCashVisibility;
   year: number;
+  /** Kassen, die der Nutzer sehen darf (bei Rechten nur für einzelne Kassen weniger als alle) */
+  funds: ClubCashFund[];
+  /** Abteilungen des Vereins (zum Zuordnen von Kassen) */
+  units: { id: string; name: string }[];
+  /** gewählte Kasse; null = alle sichtbaren Kassen zusammen */
+  fundId: string | null;
   accounts: ClubCashAccount[];
   categories: ClubCashCategory[];
   costCenters: ClubCostCenter[];
@@ -177,6 +212,7 @@ export type ClubCashTransferInput = {
 };
 
 export type ClubCashEntryQuery = {
+  fundId?: string;
   accountId?: string;
   categoryId?: string;
   costCenterId?: string;
@@ -207,6 +243,9 @@ export type ClubFeeType = {
   interval: ClubFeeInterval;
   categoryId: string | null;
   categoryName: string | null;
+  /** Zielkasse der Beiträge; null = Hauptkasse */
+  fundId: string | null;
+  fundName: string;
   archived: boolean;
   /** Mitglieder mit laufender Zuordnung */
   members: number;
@@ -234,6 +273,8 @@ export type ClubFeeDue = {
   personName: string;
   memberNumber: string | null;
   feeTypeName: string;
+  /** Zielkasse der Beitragsart; null = Hauptkasse */
+  fundId: string | null;
   periodLabel: string;
   dueOn: string;
   amountCents: number;
@@ -271,6 +312,8 @@ export type ClubFeeTypeInput = {
   amountCents: number;
   interval: ClubFeeInterval;
   categoryId?: string | null;
+  /** Zielkasse; leer = Hauptkasse */
+  fundId?: string | null;
 };
 
 export type ClubFeeAssignmentInput = {

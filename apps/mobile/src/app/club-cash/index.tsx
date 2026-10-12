@@ -22,6 +22,8 @@ import {
   T,
   type IconName,
 } from '@/components/ui';
+import { FundSwitcher } from '@/components/fund-switcher';
+import { useFundFilter } from '@/lib/fund-filter';
 import { formatEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -44,10 +46,13 @@ export function signedAmount(e: Pick<ClubCashEntry, 'kind' | 'amountCents'>) {
 export function EntryRow({
   entry,
   first,
+  showFund,
   onPress,
 }: {
   entry: ClubCashEntry;
   first?: boolean;
+  /** Kasse in der Zeile nennen (nur sinnvoll, wenn es mehrere Kassen gibt) */
+  showFund?: boolean;
   onPress?: () => void;
 }) {
   const transfer = entry.kind === 'transfer_in' || entry.kind === 'transfer_out';
@@ -73,7 +78,7 @@ export function EntryRow({
       title={entry.purpose}
       subtitle={[
         entry.bookedOn.split('-').reverse().join('.'),
-        entry.accountName,
+        showFund ? `${entry.fundName} › ${entry.accountName}` : entry.accountName,
         entry.categoryName,
       ]
         .filter(Boolean)
@@ -83,12 +88,17 @@ export function EntryRow({
   );
 }
 
-/** Vereinskasse (Paket K1): Gesamtbestand, Konten, Summen je Bereich, letzte Buchungen. */
+/** Vereinskasse (Paket K1): Gesamtbestand, Konten, Summen je Abteilung, letzte Buchungen. */
 export default function ClubCashScreen() {
   const { api } = useSignedIn();
   const { colors } = useTheme();
-  const cash = useQuery({ queryKey: ['club-cash'], queryFn: () => api<ClubCash>('/club-cash') });
+  const [fundId, setFundId] = useFundFilter();
+  const cash = useQuery({
+    queryKey: ['club-cash', 'overview', fundId ?? 'all'],
+    queryFn: () => api<ClubCash>(fundId ? `/club-cash?fundId=${fundId}` : '/club-cash'),
+  });
   const c = cash.data;
+  const fund = c?.funds.find((f) => f.id === c.fundId);
   const full = c?.level === 'full';
 
   return (
@@ -97,9 +107,10 @@ export default function ClubCashScreen() {
       {cash.error ? <ErrorNotice error={cash.error} onRetry={() => cash.refetch()} /> : null}
       {c ? (
         <>
+          <FundSwitcher funds={c.funds} value={c.fundId} onChange={setFundId} />
           <HeroCard>
             <T variant="overline" color={colors.hero.onHero}>
-              Gesamtbestand aller Konten
+              {fund ? `${t('Bestand der Kasse')} ${fund.name}` : 'Gesamtbestand aller Konten'}
             </T>
             <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 44 }}>
               {formatEuro(c.totalBalanceCents)}
@@ -110,6 +121,31 @@ export default function ClubCashScreen() {
               </T>
             ) : null}
           </HeroCard>
+
+          {!fund && c.funds.filter((f) => !f.archived).length > 1 ? (
+            <Section title="Kassen">
+              <Card>
+                {c.funds
+                  .filter((f) => !f.archived)
+                  .map((f, i) => (
+                    <ListRow
+                      key={f.id}
+                      first={i === 0}
+                      leading={<IconTile name="wallet" tone="violet" />}
+                      title={f.name}
+                      subtitle={[
+                        f.isMain ? t('Hauptkasse') : null,
+                        f.units.map((u) => u.name).join(', ') || null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                      trailing={<Chip tone="neutral" label={formatEuro(f.balanceCents)} />}
+                      onPress={() => setFundId(f.id)}
+                    />
+                  ))}
+              </Card>
+            </Section>
+          ) : null}
 
           <Section title="Konten">
             <Card>

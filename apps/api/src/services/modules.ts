@@ -239,7 +239,7 @@ export async function setTeamModule(
     throw new HttpError(409, 'club_disabled', `„${def.name}“ ist im Verein ausgeschaltet.`);
   }
   if (enabled && !resolveModule(settings, key, { orgUnitId: team.orgUnitId }).enabled) {
-    throw new HttpError(409, 'unit_disabled', `„${def.name}“ ist im Bereich ausgeschaltet.`);
+    throw new HttpError(409, 'unit_disabled', `„${def.name}“ ist in der Abteilung ausgeschaltet.`);
   }
   const [own] = await db
     .select()
@@ -286,7 +286,7 @@ async function loadUnit(db: Db, actor: Actor, unitId: string) {
     .select()
     .from(s.orgUnits)
     .where(and(eq(s.orgUnits.id, unitId), eq(s.orgUnits.clubId, actor.club.id)));
-  if (!unit) throw notFound('Der Bereich');
+  if (!unit) throw notFound('Die Abteilung');
   return unit;
 }
 
@@ -297,7 +297,7 @@ const mayConfigureUnit = (actor: Actor, unitId: string) =>
 export async function unitModules(db: Db, actor: Actor, unitId: string): Promise<TeamModule[]> {
   const unit = await loadUnit(db, actor, unitId);
   if (!mayConfigureUnit(actor, unit.id))
-    throw forbidden('Diesen Bereich darfst du nicht einstellen.');
+    throw forbidden('Diese Abteilung darfst du nicht einstellen.');
   const rows = await loadSettings(db, actor);
   const settings = rows.map(asSetting);
   return DEFS.filter((m) => !m.core && m.scopes.includes('team')).map((m) => ({
@@ -324,7 +324,7 @@ export async function setUnitModule(
 ): Promise<TeamModule[]> {
   const unit = await loadUnit(db, actor, unitId);
   if (!mayConfigureUnit(actor, unit.id))
-    throw forbidden('Diesen Bereich darfst du nicht einstellen.');
+    throw forbidden('Diese Abteilung darfst du nicht einstellen.');
   const def = DEFS.find((m) => m.key === key && !m.core && m.scopes.includes('team'));
   if (!def) throw notFound('Das Modul');
   const settings = (await loadSettings(db, actor)).map(asSetting);

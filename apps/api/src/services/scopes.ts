@@ -56,7 +56,7 @@ export function targetOf(
 
 export function labelOf(ctx: ScopeContext, type: ScopeType, id: string | null): string {
   if (type === 'club') return 'Verein';
-  if (type === 'org_unit') return ctx.units.find((u) => u.id === id)?.name ?? 'Bereich';
+  if (type === 'org_unit') return ctx.units.find((u) => u.id === id)?.name ?? 'Abteilung';
   const team = ctx.teams.find((t) => t.id === id);
   return team ? teamLabel(team) : 'Mannschaft';
 }
@@ -88,7 +88,7 @@ export function requireScope(
 ): { scopeId: string | null; target: AccessTarget } {
   const id = scopeType === 'club' ? null : (scopeId ?? null);
   const target = targetOf(ctx, scopeType, id);
-  if (!target) throw new HttpError(400, 'invalid_scope', 'Unbekannter Bereich.');
+  if (!target) throw new HttpError(400, 'invalid_scope', 'Unbekannte Abteilung.');
   if (!can(actor.grants, permission, target)) throw forbidden(message);
   return { scopeId: id, target };
 }

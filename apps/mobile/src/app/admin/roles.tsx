@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { Button, Card, Chip, ErrorNotice, ListRow, Loading, Screen, T } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
 
-const SCOPE_HINT = { club: 'meist vereinsweit', org_unit: 'je Bereich', team: 'je Mannschaft' };
+const SCOPE_HINT = { club: 'meist vereinsweit', org_unit: 'je Abteilung', team: 'je Mannschaft' };
 /** So viele Personen zeigt die Übersicht je Rolle; der Rest steht hinter „Alle anzeigen“ */
 const PREVIEW = 3;
 

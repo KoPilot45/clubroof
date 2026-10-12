@@ -309,6 +309,13 @@
       "when": 1791786586810,
       "tag": "0043_event_audience",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1791791085399,
+      "tag": "0044_cash_funds",
+      "breakpoints": true
     }
   ]
 }

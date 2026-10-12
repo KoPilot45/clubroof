@@ -60,7 +60,7 @@ function TeamList({
               leading={
                 <Ionicons name="extension-puzzle-outline" size={20} color={colors.primaryText} />
               }
-              title="Module für diesen Bereich"
+              title="Module für diese Abteilung"
               onPress={() =>
                 router.push({ pathname: '/admin/unit/[id]', params: { id: u.id, name: u.name } })
               }

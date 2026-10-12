@@ -41,9 +41,9 @@ export default function UnitModulesScreen() {
   return (
     <Screen edges={[]}>
       <Card style={{ gap: 6 }}>
-        <T variant="heading">{name ?? 'Bereich'}</T>
+        <T variant="heading">{name ?? 'Abteilung'}</T>
         <T variant="caption">
-          Die Einstellung gilt für alle Mannschaften des Bereichs. Ist ein Modul hier aus, kann es
+          Die Einstellung gilt für alle Mannschaften der Abteilung. Ist ein Modul hier aus, kann es
           keine Mannschaft darin einschalten. „Wie Verein“ übernimmt die Vereinseinstellung.
         </T>
       </Card>

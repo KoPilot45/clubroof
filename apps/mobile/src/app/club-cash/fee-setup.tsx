@@ -53,6 +53,7 @@ export default function FeeSetupScreen() {
   const [amount, setAmount] = useState('');
   const [interval, setInterval] = useState<ClubFeeInterval>('quarterly');
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [fundId, setFundId] = useState<string | null>(null);
   // Zuordnen
   const [search, setSearch] = useState('');
   const [person, setPerson] = useState<Candidate | null>(null);
@@ -78,7 +79,7 @@ export default function FeeSetupScreen() {
     mutationFn: () =>
       api('/club-cash/fees/types', {
         method: 'POST',
-        body: { name: name.trim(), amountCents: parseEuro(amount), interval, categoryId },
+        body: { name: name.trim(), amountCents: parseEuro(amount), interval, categoryId, fundId },
       }),
     onSuccess: () => {
       setError(null);
@@ -129,6 +130,7 @@ export default function FeeSetupScreen() {
     return <ErrorNotice error={fees.error} onRetry={() => fees.refetch()} />;
   const types = fees.data.types;
   const activeTypes = types.filter((x) => !x.archived);
+  const funds = (cash.data?.funds ?? []).filter((f) => !f.archived);
   const incomeCategories = (cash.data?.categories ?? []).filter(
     (c) => !c.archived && c.direction === 'income',
   );
@@ -147,9 +149,14 @@ export default function FeeSetupScreen() {
               first={i === 0}
               strike={x.archived}
               title={x.name}
-              subtitle={t(
-                `${formatEuro(x.amountCents)} ${t(CLUB_FEE_INTERVAL_LABEL[x.interval])} · ${x.members} Mitglieder`,
-              )}
+              subtitle={[
+                t(
+                  `${formatEuro(x.amountCents)} ${t(CLUB_FEE_INTERVAL_LABEL[x.interval])} · ${x.members} Mitglieder`,
+                ),
+                funds.length > 1 ? x.fundName : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
               trailing={
                 <Button
                   label={x.archived ? 'Aktivieren' : 'Archivieren'}
@@ -193,6 +200,17 @@ export default function FeeSetupScreen() {
               options={incomeCategories.map((c) => ({ value: c.id, label: c.name }))}
               selected={categoryId ? [categoryId] : []}
               onToggle={(v) => setCategoryId(categoryId === v ? null : v)}
+            />
+          ) : null}
+          {funds.length > 1 ? (
+            <ChoiceChips
+              label="Zielkasse"
+              options={funds.map((f) => ({
+                value: f.id,
+                label: f.isMain ? `${f.name} (${t('Hauptkasse')})` : f.name,
+              }))}
+              selected={[fundId ?? funds.find((f) => f.isMain)?.id ?? '']}
+              onToggle={(v) => setFundId(funds.find((f) => f.id === v)?.isMain ? null : v)}
             />
           ) : null}
           <Button

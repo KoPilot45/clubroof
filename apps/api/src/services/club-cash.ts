@@ -21,26 +21,40 @@ import {
   type ClubCashTransferInput,
   type ClubCashVisibility,
   type ClubCostCenterKind,
+  scopesWith,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, gte, ilike, inArray, isNull, lte, or, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
+import { assertFund, ensureMainFund, fundScope, listFunds } from './club-funds';
 import { mediaReference } from './uploads';
 import { resolveMediaUrl } from '../storage/media-links';
 
 type Level = 'full' | 'reports' | 'none';
 
-/** Wer die Kasse in welchem Umfang sieht: Kassenführung immer, Vorstand je nach Einstellung des Vereins. */
+/** Platzhalter, damit `inArray` bei leerer Liste gültig bleibt (trifft nie). */
+const NO_ID = '00000000-0000-0000-0000-000000000000';
+
+/**
+ * Wer die Kasse in welchem Umfang sieht: Kassenführung immer (für den ganzen Verein oder für
+ * einzelne Abteilungen und deren Kassen), Vorstand je nach Einstellung des Vereins.
+ */
 export function clubCashLevel(actor: Actor): Level {
-  if (actorCan(actor, 'clubcash.read')) return 'full';
+  const read = scopesWith(actor.grants, 'clubcash.read');
+  if (read.all || read.orgUnitIds.length > 0) return 'full';
   const visibility = actor.club.clubCashVisibility as ClubCashVisibility;
   const isBoard = actor.grants.some((g) => g.key === 'board' && g.scopeType === 'club');
   if (isBoard && visibility === 'board_all') return 'full';
   if (isBoard && visibility === 'board_reports') return 'reports';
   return 'none';
 }
+
+/** Sieht der Nutzer alle Kassen (Recht für den ganzen Verein oder Vorstand mit Einsicht)? */
+const seesAllFunds = (actor: Actor) =>
+  actorCan(actor, 'clubcash.read') ||
+  scopesWith(actor.grants, 'clubcash.read').orgUnitIds.length === 0;
 
 export function requireLevel(actor: Actor): Exclude<Level, 'none'> {
   if (!moduleEnabled(actor, 'club_cash'))
@@ -55,7 +69,27 @@ export function requireFull(actor: Actor) {
     throw forbidden('Du siehst die Vereinskasse nur als Auswertung, nicht einzelne Buchungen.');
 }
 
+/** Buchen darf, wer das Recht für den ganzen Verein oder für Abteilungen mit Kassen hat. */
 export function requireManage(actor: Actor) {
+  requireLevel(actor);
+  const manage = scopesWith(actor.grants, 'clubcash.manage');
+  if (!manage.all && manage.orgUnitIds.length === 0)
+    throw forbidden('Die Vereinskasse führt der Kassenwart (Verein).');
+}
+
+// Beiträge, Planung und Abschluss gelten für den ganzen Verein: nur Rechte ohne Beschränkung auf einzelne Kassen.
+export function requireClubLevel(actor: Actor): Exclude<Level, 'none'> {
+  const level = requireLevel(actor);
+  if (!seesAllFunds(actor)) throw forbidden('Das sieht nur die Kassenführung des ganzen Vereins.');
+  return level;
+}
+
+export function requireClubFull(actor: Actor) {
+  if (requireClubLevel(actor) !== 'full')
+    throw forbidden('Du siehst die Vereinskasse nur als Auswertung, nicht einzelne Buchungen.');
+}
+
+export function requireClubManage(actor: Actor) {
   requireLevel(actor);
   if (!actorCan(actor, 'clubcash.manage'))
     throw forbidden('Die Vereinskasse führt der Kassenwart (Verein).');
@@ -86,17 +120,37 @@ export const euro = (cents: number) =>
 
 // ── Lesen ───────────────────────────────────────────────────────────────────
 
-export async function getClubCash(db: Db, actor: Actor, now: Date): Promise<ClubCash> {
+export async function getClubCash(
+  db: Db,
+  actor: Actor,
+  now: Date,
+  fundIdQuery: string | null = null,
+): Promise<ClubCash> {
   const level = requireLevel(actor);
   const clubId = actor.club.id;
   const year = now.getUTCFullYear();
 
+  await ensureMainFund(db, clubId, now);
+  const funds = await listFunds(
+    db,
+    clubId,
+    await fundScope(db, actor, 'clubcash.read', seesAllFunds(actor)),
+  );
+  if (fundIdQuery && !funds.some((f) => f.id === fundIdQuery))
+    throw forbidden('Diese Kasse siehst du nicht.');
+  const shownFunds = fundIdQuery ? funds.filter((f) => f.id === fundIdQuery) : funds;
+  const fundIds = shownFunds.map((f) => f.id);
+
   const [accounts, categories, centers] = await Promise.all([
-    db
-      .select()
-      .from(s.clubCashAccounts)
-      .where(eq(s.clubCashAccounts.clubId, clubId))
-      .orderBy(asc(s.clubCashAccounts.sortOrder), asc(s.clubCashAccounts.createdAt)),
+    fundIds.length
+      ? db
+          .select()
+          .from(s.clubCashAccounts)
+          .where(
+            and(eq(s.clubCashAccounts.clubId, clubId), inArray(s.clubCashAccounts.fundId, fundIds)),
+          )
+          .orderBy(asc(s.clubCashAccounts.sortOrder), asc(s.clubCashAccounts.createdAt))
+      : Promise.resolve([] as (typeof s.clubCashAccounts.$inferSelect)[]),
     db
       .select()
       .from(s.clubCashCategories)
@@ -116,12 +170,19 @@ export async function getClubCash(db: Db, actor: Actor, now: Date): Promise<Club
       cents: sql<number>`coalesce(sum(case when ${s.clubCashEntries.kind} in ('income','transfer_in') then ${s.clubCashEntries.amountCents} else -${s.clubCashEntries.amountCents} end), 0)::int`,
     })
     .from(s.clubCashEntries)
-    .where(and(eq(s.clubCashEntries.clubId, clubId), isNull(s.clubCashEntries.cancelledAt)))
+    .where(
+      and(
+        eq(s.clubCashEntries.clubId, clubId),
+        isNull(s.clubCashEntries.cancelledAt),
+        inArray(s.clubCashEntries.accountId, accounts.map((a) => a.id).concat(NO_ID)),
+      ),
+    )
     .groupBy(s.clubCashEntries.accountId);
   const balanceOf = new Map(moved.map((m) => [m.accountId, Number(m.cents)]));
 
   const accountList: ClubCashAccount[] = accounts.map((a) => ({
     id: a.id,
+    fundId: a.fundId,
     name: a.name,
     kind: a.kind as ClubCashAccountKind,
     openingBalanceCents: a.openingBalanceCents,
@@ -141,6 +202,7 @@ export async function getClubCash(db: Db, actor: Actor, now: Date): Promise<Club
       and(
         eq(s.clubCashEntries.clubId, clubId),
         isNull(s.clubCashEntries.cancelledAt),
+        inArray(s.clubCashEntries.accountId, accounts.map((a) => a.id).concat(NO_ID)),
         gte(s.clubCashEntries.bookedOn, `${year}-01-01`),
         lte(s.clubCashEntries.bookedOn, `${year}-12-31`),
       ),
@@ -154,11 +216,22 @@ export async function getClubCash(db: Db, actor: Actor, now: Date): Promise<Club
 
   return {
     level,
-    canManage: actorCan(actor, 'clubcash.manage'),
+    canManage: !!(
+      scopesWith(actor.grants, 'clubcash.manage').all ||
+      scopesWith(actor.grants, 'clubcash.manage').orgUnitIds.length
+    ),
+    canManageFunds: actorCan(actor, 'clubcash.manage'),
     canAudit: actorCan(actor, 'clubcash.audit'),
     canChangeSettings: actorCan(actor, 'club.settings.manage'),
     visibility: actor.club.clubCashVisibility as ClubCashVisibility,
     year,
+    funds,
+    units: await db
+      .select({ id: s.orgUnits.id, name: s.orgUnits.name })
+      .from(s.orgUnits)
+      .where(eq(s.orgUnits.clubId, clubId))
+      .orderBy(asc(s.orgUnits.sortOrder), asc(s.orgUnits.name)),
+    fundId: fundIdQuery,
     accounts: accountList,
     categories: categories.map((c) => ({
       id: c.id,
@@ -177,7 +250,10 @@ export async function getClubCash(db: Db, actor: Actor, now: Date): Promise<Club
     totalBalanceCents: accountList
       .filter((a) => !a.archived)
       .reduce((sum, a) => sum + a.balanceCents, 0),
-    recent: level === 'full' ? (await listEntries(db, actor, {}, now, 8)).slice(0, 8) : [],
+    recent:
+      level === 'full'
+        ? (await listEntries(db, actor, { fundId: fundIdQuery ?? undefined }, now, 8)).slice(0, 8)
+        : [],
   };
 }
 
@@ -191,6 +267,13 @@ export async function listEntries(
   requireFull(actor);
   const e = s.clubCashEntries;
   const conditions = [eq(e.clubId, actor.club.id)];
+  const scope = await fundScope(db, actor, 'clubcash.read', seesAllFunds(actor));
+  if (scope !== null) {
+    if (query.fundId && !scope.includes(query.fundId))
+      throw forbidden('Diese Kasse siehst du nicht.');
+    conditions.push(inArray(s.clubCashAccounts.fundId, scope.concat(NO_ID)));
+  }
+  if (query.fundId) conditions.push(eq(s.clubCashAccounts.fundId, query.fundId));
   if (!query.includeCancelled) conditions.push(isNull(e.cancelledAt));
   if (query.accountId) conditions.push(eq(e.accountId, query.accountId));
   if (query.categoryId) conditions.push(eq(e.categoryId, query.categoryId));
@@ -207,12 +290,15 @@ export async function listEntries(
     .select({
       entry: e,
       accountName: s.clubCashAccounts.name,
+      fundId: s.clubCashAccounts.fundId,
+      fundName: s.clubCashFunds.name,
       categoryName: s.clubCashCategories.name,
       area: s.clubCashCategories.area,
       costCenterName: s.clubCostCenters.name,
     })
     .from(e)
     .innerJoin(s.clubCashAccounts, eq(s.clubCashAccounts.id, e.accountId))
+    .innerJoin(s.clubCashFunds, eq(s.clubCashFunds.id, s.clubCashAccounts.fundId))
     .leftJoin(s.clubCashCategories, eq(s.clubCashCategories.id, e.categoryId))
     .leftJoin(s.clubCostCenters, eq(s.clubCostCenters.id, e.costCenterId))
     .where(and(...conditions))
@@ -242,6 +328,8 @@ export async function listEntries(
     kind: r.entry.kind as ClubCashEntry['kind'],
     accountId: r.entry.accountId,
     accountName: r.accountName,
+    fundId: r.fundId,
+    fundName: r.fundName,
     amountCents: r.entry.amountCents,
     bookedOn: r.entry.bookedOn,
     categoryId: r.entry.categoryId,
@@ -275,6 +363,12 @@ async function activeAccount(db: Db, actor: Actor, id: string) {
     .where(and(eq(s.clubCashAccounts.id, id), eq(s.clubCashAccounts.clubId, actor.club.id)));
   if (!account) throw notFound('Das Konto');
   if (account.archivedAt) throw new HttpError(409, 'archived', 'Das Konto ist archiviert.');
+  await assertFund(db, actor, account.fundId, 'clubcash.manage');
+  const [fund] = await db
+    .select({ archivedAt: s.clubCashFunds.archivedAt })
+    .from(s.clubCashFunds)
+    .where(eq(s.clubCashFunds.id, account.fundId));
+  if (fund?.archivedAt) throw new HttpError(409, 'archived', 'Die Kasse ist stillgelegt.');
   return account;
 }
 
@@ -417,6 +511,17 @@ export async function cancelEntry(
   if (!entry) throw notFound('Die Buchung');
   if (entry.cancelledAt)
     throw new HttpError(409, 'already_cancelled', 'Die Buchung ist bereits storniert.');
+  // Auch eine Umbuchung zwischen Kassen: Rechte für jede betroffene Kasse nötig
+  const sides = await db
+    .select({ fundId: s.clubCashAccounts.fundId })
+    .from(s.clubCashEntries)
+    .innerJoin(s.clubCashAccounts, eq(s.clubCashAccounts.id, s.clubCashEntries.accountId))
+    .where(
+      entry.transferId
+        ? eq(s.clubCashEntries.transferId, entry.transferId)
+        : eq(s.clubCashEntries.id, entry.id),
+    );
+  for (const side of sides) await assertFund(db, actor, side.fundId, 'clubcash.manage');
   // Beide Seiten einer Umbuchung werden gemeinsam storniert
   const target = entry.transferId
     ? eq(s.clubCashEntries.transferId, entry.transferId)
@@ -453,12 +558,20 @@ export async function createAccount(
   db: Db,
   actor: Actor,
   input: Required<Pick<ClubCashAccountInput, 'name' | 'kind'>> &
-    Pick<ClubCashAccountInput, 'openingBalanceCents'>,
+    Pick<ClubCashAccountInput, 'openingBalanceCents'> & { fundId?: string | null },
   now: Date,
 ): Promise<void> {
   requireManage(actor);
   if (!CLUB_CASH_ACCOUNT_KINDS.includes(input.kind))
     throw new HttpError(400, 'invalid_kind', 'Unbekannte Kontoart.');
+  const fundId = input.fundId ?? (await ensureMainFund(db, actor.club.id, now));
+  const [fund] = await db
+    .select()
+    .from(s.clubCashFunds)
+    .where(and(eq(s.clubCashFunds.id, fundId), eq(s.clubCashFunds.clubId, actor.club.id)));
+  if (!fund) throw notFound('Die Kasse');
+  if (fund.archivedAt) throw new HttpError(409, 'archived', 'Die Kasse ist stillgelegt.');
+  await assertFund(db, actor, fund.id, 'clubcash.manage');
   const [{ n }] = (await db
     .select({ n: sql<number>`count(*)::int` })
     .from(s.clubCashAccounts)
@@ -467,6 +580,7 @@ export async function createAccount(
     .insert(s.clubCashAccounts)
     .values({
       clubId: actor.club.id,
+      fundId: fund.id,
       name: input.name.trim(),
       kind: input.kind,
       openingBalanceCents: input.openingBalanceCents ?? 0,
@@ -498,6 +612,7 @@ export async function updateAccount(
     .from(s.clubCashAccounts)
     .where(and(eq(s.clubCashAccounts.id, id), eq(s.clubCashAccounts.clubId, actor.club.id)));
   if (!account) throw notFound('Das Konto');
+  await assertFund(db, actor, account.fundId, 'clubcash.manage');
   const patch: Partial<typeof s.clubCashAccounts.$inferInsert> = {};
   if (input.name !== undefined) patch.name = input.name.trim();
   if (input.kind !== undefined) patch.kind = input.kind;

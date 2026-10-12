@@ -322,9 +322,9 @@ async function afterPublish(db: Db, actor: Actor, ctx: Context, row: NewsRow, no
 function validateScope(actor: Actor, ctx: Context, input: SaveNewsInput) {
   const scopeId = input.scopeType === 'club' ? null : (input.scopeId ?? null);
   const target = targetOf(ctx, input.scopeType, scopeId);
-  if (!target) throw new HttpError(400, 'invalid_scope', 'Unbekannter Bereich.');
+  if (!target) throw new HttpError(400, 'invalid_scope', 'Unbekannte Abteilung.');
   if (!can(actor.grants, 'news.create', target))
-    throw forbidden('Für diesen Bereich darfst du keine News schreiben.');
+    throw forbidden('Für diese Abteilung darfst du keine News schreiben.');
   return { scopeId, canPublish: can(actor.grants, 'news.publish', target) };
 }
 

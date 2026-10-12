@@ -1,4 +1,4 @@
-/** Globale Suche: Lupe öffnet die Suche, Ergebnisse je Bereich, Antippen öffnet das Ziel. */
+/** Globale Suche: Lupe öffnet die Suche, Ergebnisse je Abteilung, Antippen öffnet das Ziel. */
 import { button, launch, text } from '../lib/e2e.mjs';
 
 const b = await launch();

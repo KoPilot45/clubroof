@@ -102,7 +102,7 @@ export default function RoleScreen() {
             label="Suchen"
             value={filter}
             onChangeText={setFilter}
-            placeholder={t('Name oder Bereich …')}
+            placeholder={t('Name oder Abteilung …')}
           />
         ) : null}
         <Card>

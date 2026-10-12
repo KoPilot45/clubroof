@@ -28,6 +28,8 @@ const CATEGORY_OF: Record<string, string> = {
   news: 'inhalte',
   sponsors: 'inhalte',
   club: 'verein',
+  departments: 'verein',
+  funds: 'verein',
   modules: 'verein',
   audit: 'verein',
 };
@@ -110,12 +112,14 @@ export default function AdminLayout() {
             name="team-new"
             options={{ title: 'Mannschaft anlegen', headerShown: false }}
           />
-          <Stack.Screen name="unit/[id]" options={{ title: 'Module im Bereich' }} />
+          <Stack.Screen name="unit/[id]" options={{ title: 'Module in der Abteilung' }} />
           <Stack.Screen name="team/[id]" options={{ title: 'Mannschaft' }} />
           <Stack.Screen name="transfers" options={{ title: 'Spielerbewegungen' }} />
           <Stack.Screen name="transfer-new" options={{ title: 'Bewegung erfassen' }} />
           <Stack.Screen name="invites" options={{ title: 'Einladungen' }} />
           <Stack.Screen name="sponsors" options={{ title: 'Sponsoren' }} />
+          <Stack.Screen name="departments" options={{ title: 'Abteilungen' }} />
+          <Stack.Screen name="funds" options={{ title: 'Kassen' }} />
         </Stack>
       </BottomTabBarHeightContext.Provider>
       {wizard ? null : <AreaTabBar tone="violet" items={items} onHeight={setNavHeight} />}

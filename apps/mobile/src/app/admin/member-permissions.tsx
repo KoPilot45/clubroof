@@ -65,7 +65,7 @@ export default function MemberPermissionsScreen() {
         <T variant="heading">{`${m.firstName} ${m.lastName}`}</T>
         <T variant="caption">
           Diese Rechte gelten zusätzlich zu den Rollen und immer für den ganzen Verein. Für ein
-          Recht nur in einer Mannschaft oder einem Bereich lieber eine Rolle mit Geltungsbereich
+          Recht nur in einer Mannschaft oder einer Abteilung lieber eine Rolle mit Geltungsbereich
           vergeben.
         </T>
       </Card>

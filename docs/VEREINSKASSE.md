@@ -37,3 +37,6 @@ Neue Rechte (Gruppe „Vereinsfinanzen“): `clubcash.read` (einsehen), `clubcas
 
 
 **Umsetzungshinweis K2:** Tabellen `club_fee_types`, `club_fee_assignments`, `club_fee_dues`, `club_fee_payments` (Migration 0038). Zahlungen erzeugen eine Einnahme im Kassenbuch und verweisen darauf; Überzahlung wird abgelehnt (als eigene Einnahme buchen). Erinnerungen laufen über die Benachrichtigungen (Thema Kasse) an das Mitglied bzw. die Eltern; Mitglieder ohne App-Zugang werden nur vermerkt. Die Mitglieder sehen ihre Beiträge noch nicht selbst (nicht Teil von K2). Demo: Quartalsbeiträge für 24 Mitglieder, einige im Rückstand.
+
+**Umsetzungshinweis K6:** Tabellen `club_cash_funds` (Kasse, Kennzeichen Hauptkasse, stillgelegt) und `club_cash_fund_units` (Zuordnung zu `org_units`), `club_cash_accounts.fund_id` (Pflicht) und `club_fee_types.fund_id` (leer = Hauptkasse), Migration 0044. Die Hauptkasse wird bei Bedarf angelegt (`ensureMainFund`). Rechte je Kasse: ein Recht mit Geltungsbereich Abteilung gilt für die Kassen dieser Abteilung (`fundScope`); Beiträge und Kassenverwaltung bleiben vereinsweit. Vorstand mit Einsicht (`me.clubCash.viewer = 'board'`) bekommt nur die Kassenübersicht (`/club-cash-overview`). Haushalt Soll/Ist ergänzt die Übersicht mit Paket K3.
+

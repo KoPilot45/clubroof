@@ -1,5 +1,5 @@
 /**
- * BU: Bereichsübersicht im Team-Tab für Vorstand/Leitung – Filter, Blickfläche, Mannschaftskarten, Ampel, nicht antippbar.
+ * BU: Abteilungsübersicht im Team-Tab für Vorstand/Leitung – Filter, Blickfläche, Mannschaftskarten, Ampel, nicht antippbar.
  * Aufruf: pnpm browser-check scripts/e2e/bereichsuebersicht.mjs [--no-build|--reset]
  */
 import { api, del, launch, text } from '../lib/e2e.mjs';
@@ -16,7 +16,7 @@ const s = await b.session('vorstand');
 const { page } = s;
 const me = await api('/me', s.login.token);
 await s.goto('/team');
-await text(page, 'Bereichsübersicht', { exact: true }).waitFor({ timeout: 20_000 });
+await text(page, 'Abteilungsübersicht', { exact: true }).waitFor({ timeout: 20_000 });
 await page.waitForTimeout(2500);
 const radio = (name) => page.getByRole('radio', { name, exact: true });
 ok(
@@ -99,7 +99,7 @@ ok(
 const t = await b.session('trainer');
 await t.goto('/team');
 await t.page.waitForTimeout(3000);
-ok((await vis(t.page, 'Bereichsübersicht').count()) === 0, 'Trainer sieht keine Bereichsübersicht');
+ok((await vis(t.page, 'Abteilungsübersicht').count()) === 0, 'Trainer sieht keine Abteilungsübersicht');
 
 // Trainer mit zusätzlicher Rolle „Sportliche Leitung“: Umschalter „Meine Mannschaft | Übersicht“
 const admin = await b.session('admin');
@@ -118,13 +118,13 @@ try {
     (await modeRadio('Übersicht').count()) > 0,
     'Leitung mit Mannschaft: Umschalter „Meine Mannschaft | Übersicht“',
   );
-  ok((await vis(t.page, 'Bereichsübersicht').count()) === 0, 'Standard: Meine Mannschaft');
+  ok((await vis(t.page, 'Abteilungsübersicht').count()) === 0, 'Standard: Meine Mannschaft');
   await modeRadio('Übersicht').click();
   await t.page.waitForTimeout(2000);
-  ok((await vis(t.page, 'Bereichsübersicht').count()) > 0, 'Umschalten zeigt die Übersicht');
+  ok((await vis(t.page, 'Abteilungsübersicht').count()) > 0, 'Umschalten zeigt die Übersicht');
   await t.page.reload();
   await t.page.waitForTimeout(3000);
-  ok((await vis(t.page, 'Bereichsübersicht').count()) > 0, 'Letzte Wahl wird gemerkt');
+  ok((await vis(t.page, 'Abteilungsübersicht').count()) > 0, 'Letzte Wahl wird gemerkt');
   await b.shot(t.page, 'bu-umschalter', false);
   await t.page.evaluate(() => localStorage.removeItem('clubroof.setting.teamTabMode'));
 } finally {

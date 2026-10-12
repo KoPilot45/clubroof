@@ -13,7 +13,7 @@ import {
   unique,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { clubs, facilities } from './club';
+import { clubs, facilities, orgUnits } from './club';
 import { absences, events } from './events';
 import { persons, users } from './people';
 import { teams } from './teams';
@@ -441,6 +441,40 @@ export const refereeSettings = pgTable('referee_settings', {
 
 // ── Vereinskasse (Paket K1) ─────────────────────────────────────────────────
 
+/**
+ * Kasse des Vereins (Paket K6): eigene Einheit mit Konten, Beiträgen und Auswertung. Genau eine ist
+ * Hauptkasse (nimmt Buchungen ohne Abteilungsbezug auf). Kassen mit Buchungen werden nur stillgelegt.
+ */
+export const clubCashFunds = pgTable(
+  'club_cash_funds',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    name: text().notNull(),
+    isMain: boolean().notNull().default(false),
+    archivedAt: timestamp({ withTimezone: true }),
+    sortOrder: integer().notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId)],
+);
+
+/** Zuordnung einer Kasse zu einer oder mehreren Abteilungen (org_units). */
+export const clubCashFundUnits = pgTable(
+  'club_cash_fund_units',
+  {
+    fundId: uuid()
+      .notNull()
+      .references(() => clubCashFunds.id, { onDelete: 'cascade' }),
+    orgUnitId: uuid()
+      .notNull()
+      .references(() => orgUnits.id, { onDelete: 'cascade' }),
+  },
+  (t) => [primaryKey({ columns: [t.fundId, t.orgUnitId] })],
+);
+
 /** Konto der Vereinskasse (Girokonto, Barkasse, Sparkonto, PayPal …) mit Anfangsbestand. */
 export const clubCashAccounts = pgTable(
   'club_cash_accounts',
@@ -449,6 +483,10 @@ export const clubCashAccounts = pgTable(
     clubId: uuid()
       .notNull()
       .references(() => clubs.id, { onDelete: 'cascade' }),
+    /** Kasse, zu der das Konto gehört (Paket K6) */
+    fundId: uuid()
+      .notNull()
+      .references(() => clubCashFunds.id),
     name: text().notNull(),
     /** bank | cash | savings | paypal | other */
     kind: text().notNull(),
@@ -549,6 +587,8 @@ export const clubFeeTypes = pgTable(
     interval: text().notNull(),
     /** Einnahmekategorie der Vereinskasse, in die Zahlungen gebucht werden */
     categoryId: uuid().references(() => clubCashCategories.id),
+    /** Zielkasse der Beiträge (Paket K6); leer = Hauptkasse */
+    fundId: uuid().references(() => clubCashFunds.id),
     archivedAt: timestamp({ withTimezone: true }),
     createdAt: createdAt(),
   },

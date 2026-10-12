@@ -46,6 +46,10 @@ export default function ClubCashNewScreen() {
   const c = cash.data;
   const accounts = (c?.accounts ?? []).filter((a) => !a.archived);
   const from = accountId ?? accounts[0]?.id ?? null;
+  // Bei mehreren Kassen steht die Kasse vor dem Konto („Jugendkasse › Konto Jugend“)
+  const manyFunds = (c?.funds.filter((f) => !f.archived).length ?? 0) > 1;
+  const accountLabel = (a: ClubCash['accounts'][number]) =>
+    manyFunds ? `${c?.funds.find((f) => f.id === a.fundId)?.name ?? ''} › ${a.name}` : a.name;
   const cents = parseEuro(amount);
   const categories = (c?.categories ?? []).filter((k) => !k.archived && k.direction === kind);
 
@@ -147,7 +151,7 @@ export default function ClubCashNewScreen() {
         />
         <ChoiceChips
           label={kind === 'transfer' ? 'Von Konto' : 'Konto'}
-          options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+          options={accounts.map((a) => ({ value: a.id, label: accountLabel(a) }))}
           selected={from ? [from] : []}
           onToggle={setAccountId}
         />
@@ -156,7 +160,7 @@ export default function ClubCashNewScreen() {
             label="Auf Konto"
             options={accounts
               .filter((a) => a.id !== from)
-              .map((a) => ({ value: a.id, label: a.name }))}
+              .map((a) => ({ value: a.id, label: accountLabel(a) }))}
             selected={toAccountId ? [toAccountId] : []}
             onToggle={setToAccountId}
           />

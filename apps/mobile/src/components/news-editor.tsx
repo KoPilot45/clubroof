@@ -148,8 +148,8 @@ export function NewsEditor({
         />
         {priority !== 'info' ? (
           <T variant="caption">
-            Wichtige und dringende News werden beim Veröffentlichen an alle im gewählten Bereich
-            gesendet.
+            Wichtige und dringende News werden beim Veröffentlichen an alle in der gewählten
+            Abteilung gesendet.
           </T>
         ) : null}
       </Card>

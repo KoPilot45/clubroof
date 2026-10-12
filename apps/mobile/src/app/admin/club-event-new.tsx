@@ -269,8 +269,8 @@ export default function NewClubEventScreen() {
         }}
       />
       <T variant="caption">
-        Alle im gewählten Bereich werden benachrichtigt. Helferschichten erscheinen unter „Helfer
-        gesucht“.
+        Alle in der gewählten Abteilung werden benachrichtigt. Helferschichten erscheinen unter
+        „Helfer gesucht“.
       </T>
     </Screen>
   );

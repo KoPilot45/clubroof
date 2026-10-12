@@ -9,6 +9,7 @@ import {
 } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+import { createFund, updateFund } from '../services/club-funds';
 import {
   applyCategoryTemplate,
   cancelEntry,
@@ -33,16 +34,21 @@ const cents = z.number().int().min(1).max(100_000_000);
 export const clubCashRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.authenticate);
 
-  const overview = (request: { actor?: unknown }) =>
-    getClubCash(app.db, request.actor as never, app.now());
+  const overview = (request: { actor?: unknown }, fundId: string | null = null) =>
+    getClubCash(app.db, request.actor as never, app.now(), fundId);
 
-  app.get('/club-cash', async (request): Promise<ClubCash> => overview(request));
+  app.get(
+    '/club-cash',
+    { schema: { querystring: z.object({ fundId: z.uuid().optional() }) } },
+    async (request): Promise<ClubCash> => overview(request, request.query.fundId ?? null),
+  );
 
   app.get(
     '/club-cash/entries',
     {
       schema: {
         querystring: z.object({
+          fundId: z.uuid().optional(),
           accountId: z.uuid().optional(),
           categoryId: z.uuid().optional(),
           costCenterId: z.uuid().optional(),
@@ -125,6 +131,7 @@ export const clubCashRoutes: FastifyPluginAsyncZod = async (app) => {
           name: z.string().trim().min(2).max(60),
           kind: z.enum(CLUB_CASH_ACCOUNT_KINDS),
           openingBalanceCents: z.number().int().min(-100_000_000).max(100_000_000).optional(),
+          fundId: z.uuid().optional(),
         }),
       },
     },
@@ -224,6 +231,35 @@ export const clubCashRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request): Promise<ClubCash> => {
       await updateCostCenter(app.db, request.actor!, request.params.id, request.body, app.now());
+      return overview(request);
+    },
+  );
+
+  // ── Kassen (Paket K6) ────────────────────────────────────────────────────
+  const fundBody = z.object({
+    name: z.string().trim().min(2).max(60),
+    unitIds: z.array(z.uuid()).max(30).default([]),
+    isMain: z.boolean().optional(),
+  });
+  app.post(
+    '/club-cash/funds',
+    { schema: { body: fundBody } },
+    async (request, reply): Promise<ClubCash> => {
+      await createFund(app.db, request.actor!, request.body, app.now());
+      reply.code(201);
+      return overview(request);
+    },
+  );
+  app.patch(
+    '/club-cash/funds/:id',
+    {
+      schema: {
+        params: idParams,
+        body: fundBody.partial().extend({ archived: z.boolean().optional() }),
+      },
+    },
+    async (request): Promise<ClubCash> => {
+      await updateFund(app.db, request.actor!, request.params.id, request.body, app.now());
       return overview(request);
     },
   );

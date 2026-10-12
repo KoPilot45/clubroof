@@ -11,7 +11,7 @@ await text(page, 'Schritt 1 von 11', { exact: false }).waitFor();
 await page.getByLabel('Name', { exact: true }).fill(name);
 await page.getByLabel('Kürzel', { exact: true }).fill('TE');
 await button(page, 'Weiter').click();
-await text(page, 'Zu welchem Bereich gehört sie?').waitFor();
+await text(page, 'Zu welcher Abteilung gehört sie?').waitFor();
 await button(page, 'Weiter').click();
 await text(page, 'Altersklasse und Liga').waitFor();
 await page.getByLabel('Altersklasse').fill('U15');

@@ -6,6 +6,7 @@ import { AppHeader } from '@/components/app-header';
 import { ClubNewsTicker } from '@/components/club-news-ticker';
 import type { TintKey } from '@clubroof/design-tokens';
 import { adminFunctionTiles } from '@/lib/admin-tiles';
+import { canSeeCashOverview } from '@/lib/areas';
 import {
   Button,
   Card,
@@ -126,6 +127,16 @@ export default function ClubScreen() {
       icon: 'shirt',
       onPress: () => router.push('/club-teams'),
     },
+    ...(canSeeCashOverview(me)
+      ? [
+          {
+            key: 'cash-overview',
+            label: 'Kassenübersicht',
+            icon: 'analytics' as const,
+            onPress: () => router.push('/club-cash-overview'),
+          },
+        ]
+      : []),
     {
       key: 'contacts',
       label: 'Ansprechpartner',

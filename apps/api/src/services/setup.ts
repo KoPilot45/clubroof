@@ -145,7 +145,7 @@ export async function setupClub(
     );
   checkPassword(input.admin.password, email);
   if (input.orgUnits.length === 0)
-    throw new HttpError(400, 'org_units', 'Bitte mindestens einen Bereich anlegen.');
+    throw new HttpError(400, 'org_units', 'Bitte mindestens eine Abteilung anlegen.');
   const passwordHash = await hashPassword(input.admin.password);
 
   // Saison läuft vom 1. Juli bis 30. Juni

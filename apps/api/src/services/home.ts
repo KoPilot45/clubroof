@@ -68,7 +68,7 @@ export async function scopeLabels(db: Db, clubId: string) {
   return {
     label(type: 'club' | 'org_unit' | 'team', id: string | null): string {
       if (type === 'club') return 'Verein';
-      if (type === 'org_unit') return units.find((u) => u.id === id)?.name ?? 'Bereich';
+      if (type === 'org_unit') return units.find((u) => u.id === id)?.name ?? 'Abteilung';
       return teams.find((t) => t.id === id)?.badge ?? 'Team';
     },
     teamOrgUnit(teamId: string | null): string | null {

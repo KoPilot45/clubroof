@@ -76,7 +76,7 @@ export type MeResponse = {
   roles: { key: string; name: string; scopeType: ScopeType; scopeId: string | null }[];
   /** Ob der Nutzer den Verwaltungsmodus betreten darf */
   canAdminister: boolean;
-  /** Bereichsübersicht im Team-Tab (Leitung und Vorstand); null ohne Zugriff */
+  /** Abteilungsübersicht im Team-Tab (Leitung und Vorstand); null ohne Zugriff */
   areaOverview: AreaAccess | null;
   /** Rechte im Verwaltungsbereich (Mitglieder, Rollen, Audit-Log) */
   admin: AdminPermissions;
@@ -90,7 +90,12 @@ export type MeResponse = {
   /** News schreiben bzw. ohne Freigabe veröffentlichen (irgendwo im Verein) */
   news: { write: boolean; publish: boolean };
   /** Vereinskasse: Umfang der Einsicht (full = Kassenbuch, reports = nur Auswertungen) oder leer; manage = buchen */
-  clubCash: { level: 'full' | 'reports'; manage: boolean } | null;
+  clubCash: {
+    level: 'full' | 'reports';
+    manage: boolean;
+    /** treasury = Kassenführung/Prüfer (eigener Bereich), board = Vorstand mit Einsicht (nur Kassenübersicht) */
+    viewer: 'treasury' | 'board';
+  } | null;
   /** Auf Vereinsebene aktivierte Module (bestimmen die Kacheln im Vereinsbereich) */
   clubModules: string[];
   /** Schiedsrichter: einteilen bzw. selbst als Schiedsrichter aktiv */
@@ -2203,7 +2208,7 @@ export type PublicClub = {
   } | null;
 };
 
-// ── Bereichsübersicht (Leitung und Vorstand) ───────────────────────────────
+// ── Abteilungsübersicht (Leitung und Vorstand) ───────────────────────────────
 
 /** Bereiche des Vereins: Senioren (inkl. Alte Herren), Frauen, Jugend. */
 export const AREA_KEYS = ['seniors', 'women', 'youth'] as const;

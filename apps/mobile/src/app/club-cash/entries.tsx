@@ -17,6 +17,8 @@ import {
   TextField,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
+import { FundSwitcher } from '@/components/fund-switcher';
+import { useFundFilter } from '@/lib/fund-filter';
 import { mediaUri } from '@/lib/upload';
 import { formatEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
@@ -28,6 +30,7 @@ export default function ClubCashEntriesScreen() {
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
   const [q, setQ] = useState('');
+  const [fundId, setFundId] = useFundFilter();
   const [accountId, setAccountId] = useState<string | null>(params.accountId ?? null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [withCancelled, setWithCancelled] = useState(false);
@@ -38,6 +41,7 @@ export default function ClubCashEntriesScreen() {
   const cash = useQuery({ queryKey: ['club-cash'], queryFn: () => api<ClubCash>('/club-cash') });
   const query = new URLSearchParams();
   if (q.trim()) query.set('q', q.trim());
+  if (fundId) query.set('fundId', fundId);
   if (accountId) query.set('accountId', accountId);
   if (categoryId) query.set('categoryId', categoryId);
   if (withCancelled) query.set('includeCancelled', 'true');
@@ -71,9 +75,19 @@ export default function ClubCashEntriesScreen() {
         />
         {c ? (
           <>
+            <FundSwitcher
+              funds={c.funds}
+              value={fundId}
+              onChange={(id) => {
+                setFundId(id);
+                setAccountId(null);
+              }}
+            />
             <ChoiceChips
               label="Konto"
-              options={c.accounts.map((a) => ({ value: a.id, label: a.name }))}
+              options={c.accounts
+                .filter((a) => !fundId || a.fundId === fundId)
+                .map((a) => ({ value: a.id, label: a.name }))}
               selected={accountId ? [accountId] : []}
               onToggle={(v) => setAccountId(accountId === v ? null : v)}
             />
@@ -106,7 +120,12 @@ export default function ClubCashEntriesScreen() {
       ) : null}
       {entries.data?.map((e) => (
         <Card key={e.id}>
-          <EntryRow entry={e} first onPress={() => setOpen(open === e.id ? null : e.id)} />
+          <EntryRow
+            entry={e}
+            first
+            showFund={(c?.funds.filter((f) => !f.archived).length ?? 0) > 1}
+            onPress={() => setOpen(open === e.id ? null : e.id)}
+          />
           {open === e.id ? (
             <View style={{ gap: 8, paddingTop: 8 }}>
               <T variant="caption">

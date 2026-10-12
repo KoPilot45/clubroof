@@ -740,7 +740,7 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
-  describe('Bereichsübersicht (Leitung und Vorstand)', () => {
+  describe('Abteilungsübersicht (Leitung und Vorstand)', () => {
     it('ist nur für Vorstand, Leitung und Admin freigegeben', async () => {
       for (const who of ['spieler', 'trainer', 'eltern', 'kasse', 'mitglied'] as const) {
         const user = await login(who);
@@ -3177,7 +3177,7 @@ describe.skipIf(!url)('API', () => {
       await send('PUT', `/teams/${b1.id}/modules/team_tasks`, coach.token, { enabled: true });
     });
 
-    it('Module je Bereich: Vorgabe für alle Mannschaften, zurück auf Vereinswert', async () => {
+    it('Module je Abteilung: Vorgabe für alle Mannschaften, zurück auf Vereinswert', async () => {
       const admin = await login('admin');
       const coach = await login('trainer');
       const youth = (await get<ClubSettings>('/admin/club', admin.token)).orgUnits.find(
@@ -6075,7 +6075,7 @@ describe.skipIf(!url)('API', () => {
         expect((await send('GET', '/club-cash', t)).status, who).toBe(403);
       }
       const kasse = await treasurer();
-      expect(kasse.me.clubCash).toEqual({ level: 'full', manage: true });
+      expect(kasse.me.clubCash).toEqual({ level: 'full', manage: true, viewer: 'treasury' });
       const cash = await get<ClubCash>('/club-cash', kasse.token);
       expect(cash.accounts.map((a) => a.name)).toEqual([
         'Girokonto Sparkasse',
@@ -6089,7 +6089,7 @@ describe.skipIf(!url)('API', () => {
       expect(cash.areaTotals.find((a) => a.area === 'ideal')!.incomeCents).toBe(420000);
 
       const auditor = await login('mitglied');
-      expect(auditor.me.clubCash).toEqual({ level: 'full', manage: false });
+      expect(auditor.me.clubCash).toEqual({ level: 'full', manage: false, viewer: 'treasury' });
       const entry = await send('POST', '/club-cash/entries', auditor.token, {
         accountId: cash.accounts[0]!.id,
         kind: 'expense',
@@ -6566,6 +6566,304 @@ describe.skipIf(!url)('API', () => {
       expect(audit.some((a) => a.label.startsWith('Beiträge: Sollstellung bis'))).toBe(true);
       expect(audit.some((a) => a.label.startsWith('Beiträge: Kontoauszug importiert'))).toBe(true);
       expect(audit.some((a) => a.label.startsWith('Beiträge: Zahlung'))).toBe(true);
+    });
+  });
+  describe('Vereinskasse: Abteilungen und Kassen (K6)', () => {
+    async function treasurer() {
+      const admin = await login('admin');
+      const parent = await login('eltern');
+      if (!parent.me.roles.some((r) => r.name === 'Kassenwart (Verein)')) {
+        await send('POST', `/admin/members/${parent.me.person.id}/roles`, admin.token, {
+          roleKey: 'club_treasurer',
+          scopeType: 'club',
+        });
+      }
+      return login('eltern');
+    }
+    let youthFundId = '';
+    let youthAccountId = '';
+    let mainBalance = 0;
+
+    it('startet mit einer Hauptkasse; Konten gehören zu einer Kasse', async () => {
+      const { token } = await treasurer();
+      const cash = await get<ClubCash>('/club-cash', token);
+      expect(cash.funds.map((f) => [f.name, f.isMain])).toEqual([['Hauptkasse', true]]);
+      expect(cash.fundId).toBeNull();
+      expect(cash.accounts.every((a) => a.fundId === cash.funds[0]!.id)).toBe(true);
+      expect(cash.canManageFunds).toBe(true);
+    });
+
+    it('Kasse anlegen: nur Kassenführung des Vereins, Name eindeutig, Abteilung zuordnen', async () => {
+      const { token } = await treasurer();
+      const auditor = await login('mitglied');
+      const [youth] = await sql<
+        { id: string }[]
+      >`select id from org_units where kind = 'youth' limit 1`;
+      const denied = await send('POST', '/club-cash/funds', auditor.token, {
+        name: 'Jugendkasse',
+        unitIds: [youth!.id],
+      });
+      expect(denied.status).toBe(403);
+      const made = await send<ClubCash>('POST', '/club-cash/funds', token, {
+        name: 'Jugendkasse',
+        unitIds: [youth!.id],
+      });
+      expect(made.status).toBe(201);
+      const fund = made.body.funds.find((f) => f.name === 'Jugendkasse')!;
+      expect(fund).toMatchObject({ isMain: false, accountCount: 0, balanceCents: 0 });
+      expect(fund.units.map((u) => u.id)).toEqual([youth!.id]);
+      youthFundId = fund.id;
+      const dup = await send('POST', '/club-cash/funds', token, {
+        name: 'jugendkasse',
+        unitIds: [],
+      });
+      expect(dup.status).toBe(409);
+      const strange = await send('POST', '/club-cash/funds', token, {
+        name: 'Fremd',
+        unitIds: ['00000000-0000-4000-8000-000000000000'],
+      });
+      expect(strange.status).toBe(404);
+
+      const acc = await send<ClubCash>('POST', '/club-cash/accounts', token, {
+        name: 'Konto Jugend',
+        kind: 'bank',
+        openingBalanceCents: 100000,
+        fundId: youthFundId,
+      });
+      expect(acc.status).toBe(201);
+      youthAccountId = acc.body.accounts.find((a) => a.name === 'Konto Jugend')!.id;
+      expect(acc.body.accounts.find((a) => a.id === youthAccountId)!.fundId).toBe(youthFundId);
+    });
+
+    it('Übersicht und Kassenbuch lassen sich auf eine Kasse eingrenzen', async () => {
+      const { token } = await treasurer();
+      const all = await get<ClubCash>('/club-cash', token);
+      mainBalance = all.funds.find((f) => f.isMain)!.balanceCents;
+      const youth = await get<ClubCash>(`/club-cash?fundId=${youthFundId}`, token);
+      expect(youth.fundId).toBe(youthFundId);
+      expect(youth.accounts.map((a) => a.name)).toEqual(['Konto Jugend']);
+      expect(youth.totalBalanceCents).toBe(100000);
+      expect(all.totalBalanceCents).toBe(mainBalance + 100000);
+      const main = all.funds.find((f) => f.isMain)!;
+      const entries = await get<ClubCashEntry[]>(`/club-cash/entries?fundId=${youthFundId}`, token);
+      expect(entries).toEqual([]);
+      const mainEntries = await get<ClubCashEntry[]>(`/club-cash/entries?fundId=${main.id}`, token);
+      expect(mainEntries.length).toBeGreaterThan(0);
+      expect(mainEntries.every((e) => e.fundName === 'Hauptkasse')).toBe(true);
+    });
+
+    it('Umbuchung zwischen Kassen bucht in beiden, Storno wirkt in beiden', async () => {
+      const { token } = await treasurer();
+      const cash = await get<ClubCash>('/club-cash', token);
+      const barkasse = cash.accounts.find((a) => a.name === 'Barkasse')!;
+      const moved = await send<ClubCashEntry[]>('POST', '/club-cash/transfers', token, {
+        fromAccountId: barkasse.id,
+        toAccountId: youthAccountId,
+        amountCents: 5000,
+        bookedOn: '2026-10-05',
+        purpose: 'Zuschuss Jugend',
+      });
+      expect(moved.status).toBe(201);
+      expect(moved.body.map((e) => e.fundName).sort()).toEqual(['Hauptkasse', 'Jugendkasse']);
+      const mid = await get<ClubCash>('/club-cash', token);
+      expect(mid.funds.find((f) => f.id === youthFundId)!.balanceCents).toBe(105000);
+      expect(mid.funds.find((f) => f.isMain)!.balanceCents).toBe(mainBalance - 5000);
+      expect(mid.totalBalanceCents).toBe(mainBalance + 100000);
+      const out = moved.body.find((e) => e.kind === 'transfer_out')!;
+      const cancelled = await send('POST', `/club-cash/entries/${out.id}/cancel`, token, {
+        reason: 'Fehlbuchung',
+      });
+      expect(cancelled.status).toBe(200);
+      const after = await get<ClubCash>('/club-cash', token);
+      expect(after.funds.find((f) => f.id === youthFundId)!.balanceCents).toBe(100000);
+      expect(after.funds.find((f) => f.isMain)!.balanceCents).toBe(mainBalance);
+    });
+
+    it('Rechte für eine Abteilung gelten nur für deren Kassen', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const [youth] = await sql<
+        { id: string }[]
+      >`select id from org_units where kind = 'youth' limit 1`;
+      const given = await send<MemberDetail>(
+        'POST',
+        `/admin/members/${coach.me.person.id}/roles`,
+        admin.token,
+        { roleKey: 'club_treasurer', scopeType: 'org_unit', scopeId: youth!.id },
+      );
+      expect(given.status).toBe(200);
+      const assignment = given.body.roles.find((r) => r.roleKey === 'club_treasurer')!;
+      try {
+        const me = await login('trainer');
+        expect(me.me.clubCash).toEqual({ level: 'full', manage: true, viewer: 'treasury' });
+        const cash = await get<ClubCash>('/club-cash', me.token);
+        expect(cash.funds.map((f) => f.name)).toEqual(['Jugendkasse']);
+        expect(cash.accounts.map((a) => a.name)).toEqual(['Konto Jugend']);
+        expect(cash.canManageFunds).toBe(false);
+        const full = await get<ClubCash>('/club-cash', admin.token);
+        const main = full.funds.find((f) => f.isMain)!;
+        const category = cash.categories.find((c) => c.direction === 'expense')!;
+        // Buchen auf der eigenen Kasse
+        const own = await send('POST', '/club-cash/entries', me.token, {
+          accountId: youthAccountId,
+          kind: 'expense',
+          amountCents: 2500,
+          bookedOn: '2026-10-05',
+          categoryId: category.id,
+          purpose: 'Trikotwäsche',
+        });
+        expect(own.status).toBe(201);
+        // fremde Kasse: weder lesen noch buchen
+        const foreignAccount = full.accounts.find((a) => a.fundId === main.id)!;
+        expect(
+          (
+            await send('POST', '/club-cash/entries', me.token, {
+              accountId: foreignAccount.id,
+              kind: 'expense',
+              amountCents: 100,
+              bookedOn: '2026-10-05',
+              categoryId: category.id,
+              purpose: 'Unerlaubt',
+            })
+          ).status,
+        ).toBe(403);
+        expect((await send('GET', `/club-cash?fundId=${main.id}`, me.token)).status).toBe(403);
+        expect((await send('GET', `/club-cash/entries?fundId=${main.id}`, me.token)).status).toBe(
+          403,
+        );
+        const mine = await get<ClubCashEntry[]>('/club-cash/entries', me.token);
+        expect(mine.every((e) => e.fundId === youthFundId)).toBe(true);
+        // Kassen und Beiträge: nur Kassenführung des ganzen Vereins
+        expect(
+          (await send('POST', '/club-cash/funds', me.token, { name: 'Eigene', unitIds: [] }))
+            .status,
+        ).toBe(403);
+        expect((await send('GET', '/club-cash/fees', me.token)).status).toBe(403);
+        // Stornieren nur in eigener Kasse
+        const mainEntry = (
+          await get<ClubCashEntry[]>(`/club-cash/entries?fundId=${main.id}`, admin.token)
+        )[0]!;
+        expect(
+          (
+            await send('POST', `/club-cash/entries/${mainEntry.id}/cancel`, me.token, {
+              reason: 'Fremde Buchung',
+            })
+          ).status,
+        ).toBe(403);
+        // Umbuchung aus der eigenen in eine fremde Kasse braucht auch dort das Recht
+        expect(
+          (
+            await send('POST', '/club-cash/transfers', me.token, {
+              fromAccountId: youthAccountId,
+              toAccountId: foreignAccount.id,
+              amountCents: 100,
+              bookedOn: '2026-10-05',
+            })
+          ).status,
+        ).toBe(403);
+      } finally {
+        await send(
+          'DELETE',
+          `/admin/members/${coach.me.person.id}/roles/${assignment.id}`,
+          admin.token,
+        );
+      }
+    });
+
+    it('Vorstand mit Einsicht bekommt nur die Kassenübersicht, nicht den Kassenbereich', async () => {
+      const admin = await login('admin');
+      try {
+        await send('PUT', '/club-cash/visibility', admin.token, { visibility: 'board_reports' });
+        const board = await login('vorstand');
+        expect(board.me.clubCash).toEqual({ level: 'reports', manage: false, viewer: 'board' });
+        const cash = await get<ClubCash>('/club-cash', board.token);
+        expect(cash.funds.length).toBeGreaterThan(1);
+        expect(cash.canManageFunds).toBe(false);
+        expect(
+          (
+            await send('POST', '/club-cash/funds', board.token, {
+              name: 'Vorstandskasse',
+              unitIds: [],
+            })
+          ).status,
+        ).toBe(403);
+      } finally {
+        await send('PUT', '/club-cash/visibility', admin.token, { visibility: 'treasury' });
+      }
+    });
+
+    it('Hauptkasse wechseln; die Hauptkasse wird nicht stillgelegt', async () => {
+      const { token } = await treasurer();
+      const before = await get<ClubCash>('/club-cash', token);
+      const oldMain = before.funds.find((f) => f.isMain)!;
+      const switched = await send<ClubCash>('PATCH', `/club-cash/funds/${youthFundId}`, token, {
+        isMain: true,
+      });
+      expect(switched.status).toBe(200);
+      expect(switched.body.funds.filter((f) => f.isMain).map((f) => f.name)).toEqual([
+        'Jugendkasse',
+      ]);
+      expect(
+        (await send('PATCH', `/club-cash/funds/${youthFundId}`, token, { archived: true })).status,
+      ).toBe(409);
+      expect(
+        (await send('PATCH', `/club-cash/funds/${youthFundId}`, token, { isMain: false })).status,
+      ).toBe(409);
+      // zurück
+      await send('PATCH', `/club-cash/funds/${oldMain.id}`, token, { isMain: true });
+      const renamed = await send<ClubCash>('PATCH', `/club-cash/funds/${youthFundId}`, token, {
+        name: 'Jugendkasse (Abt.)',
+      });
+      expect(renamed.body.funds.find((f) => f.id === youthFundId)!.name).toBe('Jugendkasse (Abt.)');
+      await send('PATCH', `/club-cash/funds/${youthFundId}`, token, { name: 'Jugendkasse' });
+    });
+
+    it('Beiträge fließen in die Zielkasse der Beitragsart', async () => {
+      const { token } = await treasurer();
+      const player = await login('spieler');
+      const made = await send<ClubFees>('POST', '/club-cash/fees/types', token, {
+        name: 'Jugendumlage',
+        amountCents: 2000,
+        interval: 'once',
+        fundId: youthFundId,
+      });
+      expect(made.status).toBe(201);
+      const type = made.body.types.find((x) => x.name === 'Jugendumlage')!;
+      expect(type).toMatchObject({ fundId: youthFundId, fundName: 'Jugendkasse' });
+      const erwachsene = made.body.types.find((x) => x.name === 'Erwachsene')!;
+      expect(erwachsene).toMatchObject({ fundId: null, fundName: 'Hauptkasse' });
+      await send('POST', '/club-cash/fees/assignments', token, {
+        personId: player.me.person.id,
+        feeTypeId: type.id,
+        validFrom: '2026-10-01',
+      });
+      await send('POST', '/club-cash/fees/generate', token, {});
+      const dues = await get<ClubFees>('/club-cash/fees?q=' + player.me.person.lastName, token);
+      const due = dues.dues.find((d) => d.feeTypeName === 'Jugendumlage')!;
+      const cash = await get<ClubCash>('/club-cash', token);
+      const giro = cash.accounts.find((a) => a.name === 'Girokonto Sparkasse')!;
+      const wrong = await send<{ message: string }>(
+        'POST',
+        `/club-cash/fees/dues/${due.id}/payments`,
+        token,
+        { accountId: giro.id, amountCents: 2000, paidOn: '2026-10-05' },
+      );
+      expect(wrong.status).toBe(400);
+      expect(wrong.body.message).toContain('Jugendkasse');
+      const right = await send('POST', `/club-cash/fees/dues/${due.id}/payments`, token, {
+        accountId: youthAccountId,
+        amountCents: 2000,
+        paidOn: '2026-10-05',
+      });
+      expect(right.status).toBeLessThan(300);
+    });
+
+    it('steht im Änderungsprotokoll', async () => {
+      const rows = await sql<{ label: string }[]>`
+        select data->>'label' as label from audit_log where action = 'clubcash.fund'`;
+      const labels = rows.map((r) => r.label);
+      expect(labels).toContain('Vereinskasse: Kasse angelegt: Jugendkasse');
+      expect(labels.some((l) => l.startsWith('Vereinskasse: Hauptkasse gewechselt'))).toBe(true);
     });
   });
 });
