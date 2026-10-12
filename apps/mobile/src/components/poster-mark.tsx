@@ -25,7 +25,7 @@ export function PosterMark({ code }: { code?: string | null }) {
       aria-hidden
     >
       {spec ? (
-        <G rotation={-6} origin="195, 240">
+        <G transform="rotate(-6 195 240)">
           <SvgText
             x={spec.x}
             y={365}
@@ -51,7 +51,7 @@ export function PosterMark({ code }: { code?: string | null }) {
               <Rect width="390" height="450" fill="url(#stripeFade)" />
             </Mask>
           </Defs>
-          <G mask="url(#stripeMask)" rotation={-16} origin="195, 225">
+          <G mask="url(#stripeMask)" transform="rotate(-16 195 225)">
             {Array.from({ length: 14 }, (_, i) => (
               <Rect key={i} x={-120 + i * 70} y={-140} width={35} height={760} fill="#FFFFFF" />
             ))}
