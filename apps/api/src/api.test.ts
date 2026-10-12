@@ -7839,11 +7839,12 @@ describe.skipIf(!url)('API', () => {
 
     it('Zuschuss an eine Mannschaftskasse: Ausgabe im Verein, Einnahme in der Mannschaft', async () => {
       const { kasse, giro, expense, cash } = await setup();
-      const [team] = await sql<{ id: string }[]>`select id from teams where badge = 'B1'`;
       const coach = await login('trainer');
-      const before = await get<TeamCash>(`/teams/${team!.id}/cash`, coach.token);
+      // die aktuelle Mannschaft des Trainers (der Saisonwechsel legt neue Mannschaften an)
+      const team = { id: coach.me.teams[0]!.id };
+      const before = await get<TeamCash>(`/teams/${team.id}/cash`, coach.token);
       const made = await send<ClubTeamGrants>('POST', '/club-cash/team-grants', kasse.token, {
-        teamId: team!.id,
+        teamId: team.id,
         accountId: giro.id,
         categoryId: expense.id,
         amountCents: 30000,
@@ -7852,7 +7853,7 @@ describe.skipIf(!url)('API', () => {
       });
       expect(made.status).toBe(201);
       expect(made.body.grants[0]).toMatchObject({ amountCents: 30000 });
-      const after = await get<TeamCash>(`/teams/${team!.id}/cash`, coach.token);
+      const after = await get<TeamCash>(`/teams/${team.id}/cash`, coach.token);
       expect(after.balanceCents).toBe(before.balanceCents! + 30000);
       expect((await get<ClubCash>('/club-cash', kasse.token)).totalBalanceCents).toBe(
         cash.totalBalanceCents - 30000,
@@ -7870,7 +7871,7 @@ describe.skipIf(!url)('API', () => {
       expect(
         (
           await send('POST', '/club-cash/team-grants', coach.token, {
-            teamId: team!.id,
+            teamId: team.id,
             accountId: giro.id,
             categoryId: expense.id,
             amountCents: 100,
