@@ -71,6 +71,7 @@ export const en: Record<string, string> = {
   '{0} Antworten': '{0} replies',
   '{0} Aufgabe': '{0} task',
   '{0} Aufgaben': '{0} tasks',
+  '{0} Ausgaben liegen über dem Plan': '{0} expenses are over plan',
   '{0} ausgeschaltet: {1}': '{0} disabled: {1}',
   '{0} ausgewählt': '{0} selected',
   '{0} Auto': '{0} car',
@@ -195,6 +196,7 @@ export const en: Record<string, string> = {
   '{0} Zahlungen buchen': 'Book {0} payments',
   '{0} Zahlungsmeldung': '{0} payment notice',
   '{0} Zahlungsmeldungen': '{0} payment notices',
+  '{0} Zeilen übernommen.': '{0} lines copied.',
   '{0} zu vergeben': '{0} to assign',
   '{0} zugeordnet': '{0} matched',
   '{0} zugesagt': '{0} confirmed',
@@ -316,6 +318,7 @@ export const en: Record<string, string> = {
   Abgesagt: 'Cancelled',
   'Abgesagt: {0}': 'Cancelled: {0}',
   'Abgesagte Termine können nicht geändert werden.': 'Cancelled events cannot be changed.',
+  'Abgeschlossen am': 'Closed on',
   Abgestimmt: 'Voted',
   'Abhaken kann, wer die Aufgabe übernommen hat.':
     'Only the person who took the task can tick it off.',
@@ -333,6 +336,7 @@ export const en: Record<string, string> = {
   'Absagefrist: {0}': 'Cancellation deadline: {0}',
   Absagen: 'Declines',
   'Absagen und informieren': 'Cancel and notify',
+  Abschließen: 'Close',
   Abschluss: 'Closing',
   'Abschluss festhalten': 'Record closing',
   Abstellen: 'Release',
@@ -422,9 +426,11 @@ export const en: Record<string, string> = {
   'Alles gelesen': 'All read',
   'Alles in Kacheln': 'Everything in tiles',
   'Allgemeine Geschäftsbedingungen': 'General terms and conditions',
+  'Als CSV für Excel': 'As CSV for Excel',
   'Als Entwurf speichern': 'Save as draft',
   'Als Hauptkasse festlegen': 'Set as main fund',
   'Als Nächstes': 'Next up',
+  'Als PDF öffnen': 'Open as PDF',
   'Alte Herren': 'Veterans',
   'Ältere Termine laden': 'Load older events',
   Altersklasse: 'Age group',
@@ -625,6 +631,7 @@ export const en: Record<string, string> = {
   Beginn: 'Start',
   'Beginnt am {0}. Kader planst du unter Verwaltung → Mitglieder: Mannschaften der neuen Saison sind dort mit „(Saison {1})“ gekennzeichnet.':
     'Starts on {0}. You plan squads under Administration → Members: teams of the new season are marked there with “(Season {1})”.',
+  Begründung: 'Reason',
   'Begründung für das Storno': 'Reason for cancellation',
   Behalten: 'Keep',
   'Bei Auswärtsspielen und Turnieren gibt es im Termin den Bereich „Fahrgemeinschaften“. Tippe auf „Ich fahre“ und gib die freien Plätze an, oder wähle bei einem Auto „Mitfahren“. Wer keine Mitfahrt hat, tippt auf „Mitfahrt suchen“. Eltern buchen für ihre Kinder.':
@@ -717,7 +724,9 @@ export const en: Record<string, string> = {
   'Bericht (PDF)': 'Report (PDF)',
   Beschreibung: 'Description',
   'Beschreibung (optional)': 'Description (optional)',
+  Bestand: 'Balance',
   'Bestand der Kasse': 'Balance of fund',
+  Bestände: 'Balances',
   Bestätigen: 'Confirm',
   'Bestätigen kann nur der eingeteilte Schiedsrichter.': 'Only the assigned referee can confirm.',
   Bestätigt: 'Confirmed',
@@ -779,6 +788,7 @@ export const en: Record<string, string> = {
   'Bitte ein Bild im Format JPG, PNG oder WebP hochladen.':
     'Please upload an image in JPG, PNG or WebP format.',
   'Bitte eine Begründung angeben.': 'Please give a reason.',
+  'Bitte einen Namen angeben.': 'Please enter a name.',
   'Bitte einen Spieler aus dem Kader wählen.': 'Please choose a player from the squad.',
   'Bitte einen Verwendungszweck angeben.': 'Please enter a purpose.',
   'Bitte füge einen Maps-Link (https://…) oder Koordinaten wie 50.1234, 8.5678 ein.':
@@ -806,6 +816,7 @@ export const en: Record<string, string> = {
   'Bitte prüfe die E-Mail-Adresse und die Telefonnummer.':
     'Please check the email address and phone number.',
   'Bitte Rechtschreibung prüfen': 'Please check spelling',
+  'Bitte schließe zuerst das Jahr {0} ab.': 'Please close the year {0} first.',
   'Bitte trage mindestens ein Getränk ein.': 'Please enter at least one drink.',
   'Bitte Vor- und Nachname des Kindes angeben.': "Please enter the child's first and last name.",
   'Bitte wähle Abteilung oder Mannschaft.': 'Please select a section or team.',
@@ -865,6 +876,8 @@ export const en: Record<string, string> = {
   'Dafür fehlt dir die Berechtigung.': "You don't have permission for that.",
   'Dafür hast du keine Rechte.': 'You do not have the rights for this.',
   'Damit würdest du dich selbst aussperren.': 'You would lock yourself out.',
+  'Danach sind Buchungen, Stornos, Plan und Rücklagen in diesem Jahr gesperrt. Öffnen kann es nur die Administration, mit Begründung.':
+    'Afterwards bookings, cancellations, plan and reserves are locked for this year. Only the administration can reopen it, with a reason.',
   Darstellung: 'Appearance',
   'Darstellung ändern': 'Change appearance',
   'Das aktuelle Passwort stimmt nicht.': 'The current password is incorrect.',
@@ -906,10 +919,20 @@ export const en: Record<string, string> = {
   'Das Hochladen ist fehlgeschlagen.': 'The upload failed.',
   'Das ist kein gültiger Einladungscode. Prüfe den Code oder den Link und versuche es erneut.':
     'That is not a valid invitation code. Check the code or the link and try again.',
+  'Das Jahr {0} ist abgeschlossen.': 'The year {0} is closed.',
+  'Das Jahr {0} ist abgeschlossen. Buchungen sind dort gesperrt; nur die Administration kann es wieder öffnen.':
+    'The year {0} is closed. Bookings are locked; only the administration can reopen it.',
+  'Das Jahr {0} ist bereits abgeschlossen.': 'The year {0} is already closed.',
+  'Das Jahr {0} ist nicht abgeschlossen.': 'The year {0} is not closed.',
+  'Das Jahr {0} ist noch abgeschlossen. Öffne zuerst die späteren Jahre.':
+    'The year {0} is still closed. Reopen the later years first.',
+  'Das Jahr ist ungültig.': 'The year is invalid.',
   'Das Konto': 'The account',
   'Das Konto ist archiviert.': 'The account is archived.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.':
     'The abbreviation “{0}” is already taken this season.',
+  'Das laufende Jahr kann erst nach seinem Ende abgeschlossen werden.':
+    'The current year can only be closed after it has ended.',
   'Das Logo erscheint oben in der App bei allen Mitgliedern.':
     'The logo appears at the top of the app for all members.',
   'Das Logo konnte nicht gelesen werden.': 'The logo could not be read.',
@@ -973,6 +996,7 @@ export const en: Record<string, string> = {
   'Datum oder Uhrzeit nicht lesbar.': 'Date or time not readable.',
   Dauer: 'Duration',
   'Dauer: {0}:{1} Std.': 'Duration: {0}:{1} hrs',
+  'Davon als Rücklage gebunden': 'Of which tied up as reserves',
   'davon überfällig {0}': 'of which overdue {0}',
   'Dazu habe ich nichts gefunden. Versuche ein anderes Stichwort.':
     'I found nothing on that. Try a different keyword.',
@@ -1076,6 +1100,7 @@ export const en: Record<string, string> = {
   'Der Gegenstand': 'The item',
   'Der Import': 'The import',
   'Der Import wurde schon rückgängig gemacht.': 'The import has already been undone.',
+  'Der Jahresabschluss': 'The annual statement',
   'Der Kalender': 'The calendar',
   'Der Kalenderexport ist im Verein nicht aktiviert.':
     'Calendar export is not activated in the club.',
@@ -1094,6 +1119,7 @@ export const en: Record<string, string> = {
   'Der Name steht in Terminen und Listen, das Kürzel auf den Kacheln.':
     'The name appears in events and lists, the abbreviation on the tiles.',
   'Der neue Beginn liegt in der Vergangenheit.': 'The new start is in the past.',
+  'Der Planbetrag darf nicht negativ sein.': 'The planned amount must not be negative.',
   'Der Platz': 'The pitch',
   'Der Platz ist gesperrt: {0}. Bitte wähle einen anderen Platz oder Zeitpunkt.':
     'The pitch is closed: {0}. Please choose another pitch or time.',
@@ -1150,6 +1176,7 @@ export const en: Record<string, string> = {
   'Der Zeitraum ist ungültig oder zu lang.': 'The period is invalid or too long.',
   'Der Zeitraum ist ungültig.': 'The period is invalid.',
   'Der Zeitraum liegt in der Vergangenheit.': 'The period is in the past.',
+  'Der Zielbetrag muss größer als 0 sein.': 'The target amount must be greater than 0.',
   Dezember: 'December',
   Dezent: 'Subtle',
   'DFBnet-Datei (CSV) → alle Spiele der Mannschaft automatisch anlegen':
@@ -1296,6 +1323,7 @@ export const en: Record<string, string> = {
   'Die Person ist dort bereits mit dieser Funktion eingetragen.':
     'The person is already registered there with this function.',
   'Die Person ist kein aktiver Vereinsschiedsrichter.': 'The person is not an active club referee.',
+  'Die Planzeile': 'The plan line',
   'Die Platzbelegung ist für den Verein nicht aktiviert.':
     'Pitch booking is not activated for the club.',
   'Die Platzbelegung ist für Trainerteams und Platzverantwortliche.':
@@ -1306,6 +1334,10 @@ export const en: Record<string, string> = {
   'Die Rolle Kassenwart': 'The treasurer role',
   'Die Rollenübersicht ist für Vorstand und Administration.':
     'The role overview is for the board and administration.',
+  'Die Rücklage': 'The reserve',
+  'Die Rücklage ist aufgelöst.': 'The reserve is dissolved.',
+  'Die Rücklage ist noch nicht leer. Entnimm zuerst den Rest.':
+    'The reserve is not empty yet. Withdraw the rest first.',
   'Die Rückmeldung konnte nicht gespeichert werden.': 'Your response could not be saved.',
   'Die Saison {0} ist bereits vorbereitet.': 'Season {0} has already been prepared.',
   'Die Saison lässt sich später in der Verwaltung wechseln.':
@@ -1489,8 +1521,12 @@ export const en: Record<string, string> = {
   'Eigener Programmpunkt': 'Custom item',
   'Eigener Zeitraum': 'Custom period',
   'Eigentor des Gegners': "Opponent's own goal",
+  'Ein abgeschlossenes Jahr öffnet nur die Administration.':
+    'Only the administration reopens a closed year.',
   'Ein Getränk mehr': 'One more drink',
   'Ein Getränk weniger': 'One fewer drink',
+  'Ein Jahr kann erst nach seinem Ende abgeschlossen werden.':
+    'A year can only be closed after it has ended.',
   'Ein Mannschafts-Link (oder QR-Code als Aushang) lässt neue Spieler und Eltern eine Beitrittsanfrage stellen. Du gibst jede Anfrage frei. Ein neuer Link macht den alten ungültig.':
     'A team link (or QR code as a poster) lets new players and parents submit a join request. You approve each request. A new link invalidates the old one.',
   'Ein Spieler steht doppelt in der Aufstellung.': 'A player appears twice in the line-up.',
@@ -1499,6 +1535,7 @@ export const en: Record<string, string> = {
   'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code aus einer Authenticator-App ab. Du richtest ihn unter „Mehr → Konto & Einstellungen“ ein. Wer Verwaltungsrechte hat, muss ihn nutzen, wenn der Verein es verlangt.':
     'Extra protection: after your password, the app asks for a code from an authenticator app. You set it up under “More → Account & settings”. Anyone with administration rights must use it if the club requires it.',
   'Eine Abwesenheit darf höchstens ein Jahr dauern.': 'An absence may last one year at most.',
+  'Eine Ausgabe liegt über dem Plan': 'One expense is over plan',
   'Eine ausgewählte Mannschaft gehört nicht zu dieser Person.':
     'A selected team does not belong to this person.',
   'Eine gemeinsame Abteilung': 'One shared division',
@@ -1592,9 +1629,12 @@ export const en: Record<string, string> = {
     'Involved in the club without office or team: club overview, events, write news (for approval), no administration rights',
   Entfernen: 'Remove',
   'Enthaltene Rechte anzeigen': 'Show included permissions',
+  Entnahme: 'Withdrawal',
+  Entnehmen: 'Withdraw',
   Entsperren: 'Unlock',
   'Entweder csv oder dataBase64 angeben.': 'Provide either csv or dataBase64.',
   Entwurf: 'Draft',
+  'Entwurf – das Jahr ist noch offen': 'Draft – the year is still open',
   'Entwurf – nur für das Trainerteam sichtbar': 'Draft – only visible to the coaching staff',
   Entziehen: 'Revoke',
   'Er ist {0} Minuten gültig und nur einmal nutzbar.':
@@ -1605,6 +1645,7 @@ export const en: Record<string, string> = {
   'Erfasst sind {0} Tore, das Ergebnis nennt {1}. Bitte angleichen.':
     '{0} goals are recorded, but the score says {1}. Please make them match.',
   'Erfasst sind {0} von {1} Toren.': '{0} of {1} goals recorded.',
+  Ergebnis: 'Result',
   Ergebnisse: 'Results',
   'Ergebnisse sichtbar': 'Results visible',
   erhöhen: 'increase',
@@ -1637,6 +1678,7 @@ export const en: Record<string, string> = {
   'Es erscheint oben in der App bei allen Mitgliedern. Ohne Logo zeigt die App ein Wappen mit dem Kürzel.':
     'It appears at the top of the app for all members. Without a logo, the app shows a crest with the abbreviation.',
   'Es fehlen {0} aktive Schiedsrichter': '{0} active referees missing',
+  'Es gab nichts zu übernehmen.': 'There was nothing to copy.',
   'Es gibt {0} neue Funktionen': 'There are {0} new features',
   'Es gibt 1 neue Funktion': 'There is 1 new feature',
   'Es gibt bereits Kategorien.': 'Categories already exist.',
@@ -1673,6 +1715,7 @@ export const en: Record<string, string> = {
   'Falls zu {0} ein Konto existiert, ist die E-Mail unterwegs. Der Link ist 30 Minuten gültig.':
     'If an account exists for {0}, the email is on its way. The link is valid for 30 minutes.',
   Familie: 'Family',
+  'fast aufgebraucht': 'almost used up',
   Februar: 'February',
   Fehler: 'Error',
   'Fehlerhafte Zeilen werden übersprungen. Du kannst sie in der Datei korrigieren und danach erneut importieren – bereits übernommene Mitglieder werden als Dublette erkannt.':
@@ -1698,6 +1741,8 @@ export const en: Record<string, string> = {
   Frauen: 'Women',
   'Frauen & Mädchen': 'Women & Girls',
   Frei: 'Free',
+  'Frei verfügbar sind nur {0} (Kassenbestand minus bereits gebundene Rücklagen).':
+    'Only {0} is freely available (fund balance minus reserves already tied up).',
   'Freie Plätze': 'Free seats',
   Freigaben: 'Approvals',
   'Freigaben und Beitrittsanfragen': 'Approvals and join requests',
@@ -1801,6 +1846,7 @@ export const en: Record<string, string> = {
   'geb. {0}': 'born {0}',
   'Gebucht von': 'Booked by',
   'Gebucht wird auf Konto': 'Book to account',
+  'Gebundene Rücklagen': 'Tied-up reserves',
   Geburtsdatum: 'Date of birth',
   'Geburtsdatum „{0}“ ist ungültig.': 'Date of birth “{0}” is invalid.',
   'Geburtsdatum (TT.MM.JJJJ, optional)': 'Date of birth (DD.MM.YYYY, optional)',
@@ -1893,7 +1939,13 @@ export const en: Record<string, string> = {
   Hauptsponsor: 'Main sponsor',
   Hauptsponsoren: 'Main sponsors',
   Haushalt: 'Budget',
+  'Haushalt Soll/Ist': 'Budget plan vs. actual',
   Haushaltsplan: 'Budget plan',
+  'Haushaltsplan: {0} geändert auf {1}': 'Budget: {0} changed to {1}',
+  'Haushaltsplan: {0} geplant mit {1}': 'Budget: {0} planned at {1}',
+  'Haushaltsplan: {0} Zeilen von {1} nach {2} übernommen':
+    'Budget: {0} lines copied from {1} to {2}',
+  'Haushaltsplan: Planzeile entfernt ({0})': 'Budget: plan line removed ({0})',
   Heim: 'Home',
   'Heim- oder Gastmannschaft fehlt.': 'Home or away team is missing.',
   Heimmannschaft: 'Home team',
@@ -1971,6 +2023,7 @@ export const en: Record<string, string> = {
     'In the calendar each cell shows the day’s events as the team’s abbreviation: strong green are matches, light blue training, light orange with a dashed border club events; cancelled events have a red outline and are struck through. “+2” means two more events. Tap a day to see its events below the calendar; “Today” jumps to today.',
   'Im Mitglied unter „Rollen & Zusatzaufgaben → Individuelle Rechte“: Liste aller Rechte zum An- und Abwählen. Sie gelten zusätzlich zu den Rollen für den ganzen Verein, jede Änderung steht im Änderungsprotokoll. Ein Recht für nur eine Mannschaft vergibst du besser über eine Rolle mit Geltungsbereich.':
     'In the member under “Roles & extra duties → Individual permissions”: a list of all permissions to tick or untick. They apply in addition to the roles for the whole club, every change is in the change log. A permission for just one team is better granted through a role with a scope.',
+  'im Plan': 'on plan',
   'Im Reiter „Team“ steht oben eine Leiste mit deinen Mannschaften (seitlich wischbar). Die Zahl zeigt, was offen ist: fehlende Rückmeldungen zum nächsten Termin und offene Aufgaben. Die aktive Mannschaft ist grün; die zuletzt gewählte merkt sich die App.':
     'In the “Team” tab there is a bar with your teams at the top (swipe sideways). The number shows what is open: missing responses for the next event and open tasks. The active team is green; the app remembers the one you chose last.',
   'Im Reiter „Termine“ schaltest du oben auf „Vergangen“ oder öffnest das „Archiv“. Dort stehen alle vergangenen Termine, die neuesten zuerst, nach Wochen und Monaten gruppiert; beim Scrollen werden ältere nachgeladen. Filtere nach Zeitraum (letzte 7 Tage, Monat, Saison oder eigener Zeitraum), Mannschaft und Art. Spiele zeigen das Ergebnis, Trainings die Anwesenheit („14 von 20 da“). Ob du auch siehst, wer da war, stellt dein Trainerteam pro Mannschaft ein.':
@@ -2001,6 +2054,7 @@ export const en: Record<string, string> = {
   'In Arbeit': 'In progress',
   'In den nächsten sieben Tagen stehen keine Termine an.': 'No events in the next seven days.',
   'In der Abteilung ausgeschaltet': 'Turned off in the section',
+  'In der Rücklage sind nur {0}.': 'The reserve only holds {0}.',
   'In der Startelf stehen höchstens 11 Spieler.':
     'At most 11 players can be in the starting line-up.',
   'In der Vereinskasse unter „Mitgliedsbeiträge“. Lege zuerst unter „Beitragsarten & Mitglieder“ die Beitragsarten (Betrag und Rhythmus) an und ordne sie den Mitgliedern zu. Mit „Sollstellung erzeugen“ entstehen die fälligen Forderungen (nie doppelt). Zahlungen buchst du an der Forderung oder per Kontoauszug-Import (CSV): die App ordnet Eingänge per Mitgliedsnummer oder Name zu, wenn der Betrag genau passt, und zeigt alles vor dem Buchen. Bei Rückständen erinnerst du in drei Stufen selbst (Erinnerung, Mahnung, letzte Mahnung); das Mitglied bzw. die Eltern bekommen eine Benachrichtigung.':
@@ -2023,8 +2077,10 @@ export const en: Record<string, string> = {
   'Info für die Mannschaft (optional)': 'Info for the team (optional)',
   Inhalte: 'Content',
   Innenverteidigung: 'Centre-back',
+  Ist: 'Actual',
   'Ist schon im Verein oder weiter oben in der Datei – wird übersprungen.':
     'Already in the club or further up in the file – skipped.',
+  'Ja, {0} abschließen': 'Yes, close {0}',
   'Ja, mit dem Kalender-Abo: „Mehr → Kalender-Abo“, Abo-Link erstellen und im Kalender des Handys hinzufügen. Dort erscheinen deine Termine, die deiner Kinder und die Vereinstermine. Der Link ist geheim – gib ihn nicht weiter. Du kannst ihn jederzeit erneuern.':
     "Yes, with the calendar subscription: “More → Calendar subscription”, create a subscription link and add it to your phone's calendar. Your events, your children's events and the club events will appear there. The link is secret – don't share it. You can renew it at any time.",
   'Ja. Bei offenen Terminen und ungelesenen Benachrichtigungen wischst du die Zeile nach links: Es erscheint „Zusagen“ bzw. „Gelesen“. Tippe darauf – oder wische ganz durch, dann passiert es sofort. Alles geht auch ohne Wischen über die Knöpfe in der Zeile.':
@@ -2039,7 +2095,10 @@ export const en: Record<string, string> = {
     'Yes. Under “More → Account & settings → Language” choose Deutsch, English or “Automatic” (your device language). Your choice applies on all your devices, including push notifications. Texts that coaches or the board write themselves (e.g. news) stay in the author’s language.',
   'Ja. Unter „Mehr → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Yes. Under “More → Account & settings” you set the font size (Normal, Large, Extra large) and can lock the app with Face ID, fingerprint or device code. Without internet the app shows the most recently loaded events, news and squad; a notice appears at the top. Replies and changes are only possible with a connection.',
+  'Jahr {0} abschließen': 'Close year {0}',
+  'Jahr wieder öffnen': 'Reopen year',
   Jahresabschluss: 'Annual accounts',
+  Jahresergebnis: 'Annual result',
   jährlich: 'yearly',
   Januar: 'January',
   'je Abteilung': 'per section',
@@ -2597,6 +2656,7 @@ export const en: Record<string, string> = {
   'Noch kein Konto angelegt.': 'No account yet.',
   'Noch kein Logo – die App zeigt ein Wappen mit den Initialen.':
     'No logo yet – the app shows a crest with the initials.',
+  'Noch kein Plan für Ausgaben.': 'No plan for expenses yet.',
   'Noch kein Plan für dieses Training.': 'No plan for this training session yet.',
   'Noch kein Soll des Verbands eingetragen': 'No association quota entered yet',
   'Noch kein Trainerteam eingetragen.': 'No coaching staff entered yet.',
@@ -2619,7 +2679,10 @@ export const en: Record<string, string> = {
   'Noch keine Mannschaft': 'No team yet',
   'Noch keine News.': 'No news yet.',
   'Noch keine Person bestimmt': 'No person assigned yet',
+  'Noch keine Planzeile für Ausgaben.': 'No plan line for expenses yet.',
+  'Noch keine Planzeile für Einnahmen.': 'No plan line for income yet.',
   'Noch keine Programmpunkte.': 'No items yet.',
+  'Noch keine Rücklage.': 'No reserve yet.',
   'Noch keine Schiedsrichter eingetragen.': 'No referees entered yet.',
   'Noch keine Spieler im Kader.': 'No players in the squad yet.',
   'Noch keine Spielerbewegungen.': 'No player movements yet.',
@@ -2756,12 +2819,16 @@ export const en: Record<string, string> = {
   'Pflichteinsätze je Schiedsrichter': 'Required assignments per referee',
   'Pflichteinsätze offen': 'Required assignments open',
   'Plan & Abo': 'Plan & subscription',
+  'Plan aus {0} übernehmen': 'Copy plan from {0}',
   'Plan bearbeiten': 'Edit plan',
   'Plan erstellen': 'Create plan',
   'Plan öffnen': 'Open plan',
   'Plan speichern': 'Save plan',
   'Plan vom {0} übernehmen': 'Copy plan from {0}',
+  'Planbetrag ändern': 'Change planned amount',
+  'Planbetrag in €': 'Planned amount in €',
   Planung: 'Planning',
+  'Planzeile hinzufügen': 'Add plan line',
   Platz: 'Pitch',
   'Platz {0}': 'Pitch {0}',
   'Platz belegt': 'Pitch booked',
@@ -2795,6 +2862,8 @@ export const en: Record<string, string> = {
   'Programmpunkt hinzufügen': 'Add programme item',
   'Prüfe die Angaben. Erst jetzt wird die Mannschaft angelegt.':
     'Check the details. Only now is the team created.',
+  'Prüfe die rot markierten Zeilen und passe Plan oder Ausgaben an.':
+    'Check the lines marked in red and adjust the plan or the expenses.',
   'Prüfe die Schreibweise oder suche nach einem kürzeren Begriff.':
     'Check the spelling or try a shorter term.',
   Prüfung: 'Audit',
@@ -2813,6 +2882,7 @@ export const en: Record<string, string> = {
   'QR-Code für die Authenticator-App': 'QR code for the authenticator app',
   'QR-Code scannen': 'Scan QR code',
   'QR-Code: {0}': 'QR code: {0}',
+  'Quell- und Zieljahr müssen verschieden sein.': 'Source and target year must differ.',
   'Quelle und Ziel müssen verschiedene Konten sein.':
     'Source and target must be different accounts.',
   Rasen: 'Grass',
@@ -2862,6 +2932,13 @@ export const en: Record<string, string> = {
   'Rückfragen ausblenden': 'Hide questions',
   Rückgängig: 'Undo',
   'Rückgängig geht nur innerhalb von {0} Stunden.': 'Undo is only possible within {0} hours.',
+  'Rücklage {0}: Entnahme {1}': 'Reserve {0}: withdrawal {1}',
+  'Rücklage {0}: Zuführung {1}': 'Reserve {0}: allocation {1}',
+  'Rücklage angelegt: {0} ({1})': 'Reserve created: {0} ({1})',
+  'Rücklage anlegen': 'Create reserve',
+  'Rücklage aufgelöst: {0}': 'Reserve dissolved: {0}',
+  'Rücklage auflösen': 'Dissolve reserve',
+  'Rücklage geändert: {0}': 'Reserve changed: {0}',
   Rücklagen: 'Reserves',
   Rückmeldung: 'Feedback',
   'Rückmeldung an die Verfasserin / den Verfasser': 'Feedback to the author',
@@ -3173,6 +3250,8 @@ export const en: Record<string, string> = {
   'Team-Highlights': 'Team highlights',
   Teamevent: 'Team event',
   Technik: 'Technique',
+  'Teil des Kassenbestands, der für einen Zweck zurückgelegt ist.':
+    'Part of the balance that is set aside for a purpose.',
   Teilnahme: 'Participation',
   'Teilnahme an Terminen': 'Event participation',
   Teilnehmer: 'Participants',
@@ -3301,6 +3380,7 @@ export const en: Record<string, string> = {
     'Use this link to set your password (valid for {0} days):',
   'Über Mehr → Verwaltung erreichst du Mitglieder, Rollen und Module.':
     'Under More → Administration you reach members, roles and modules.',
+  'über Plan': 'over plan',
   Überfällig: 'Overdue',
   Übernehmen: 'Apply',
   'Übernimmt {0}': '{0} is taking it',
@@ -3485,6 +3565,8 @@ export const en: Record<string, string> = {
   'Vereinskasse: Einnahme {0} – {1}': 'Club treasury: income {0} – {1}',
   'Vereinskasse: Einsicht geändert ({0})': 'Club treasury: visibility changed ({0})',
   'Vereinskasse: Hauptkasse gewechselt: {0}': 'Club treasury: main fund changed: {0}',
+  'Vereinskasse: Jahr {0} abgeschlossen': 'Club treasury: year {0} closed',
+  'Vereinskasse: Jahr {0} wieder geöffnet: {1}': 'Club treasury: year {0} reopened: {1}',
   'Vereinskasse: Kasse angelegt: {0}': 'Club treasury: fund created: {0}',
   'Vereinskasse: Kasse geändert: {0}': 'Club treasury: fund changed: {0}',
   'Vereinskasse: Kasse stillgelegt: {0}': 'Club treasury: fund deactivated: {0}',
@@ -3570,6 +3652,7 @@ export const en: Record<string, string> = {
   'Vor- und Nachname fehlen.': 'First and last name are missing.',
   'Vorherige Woche': 'Previous week',
   'Vorheriger Monat': 'Previous month',
+  Vorjahr: 'Previous year',
   'Vorl.': 'Ast.',
   Vorlage: 'Template',
   'Vorlage (optional)': 'Assist (optional)',
@@ -3593,6 +3676,8 @@ export const en: Record<string, string> = {
   'Vorstand und Administration sehen immer alles. Weitere Abteilungen kannst du später ergänzen.':
     'The board and administration always see everything. You can add more departments later.',
   'Wähle ein Passwort': 'Choose a password',
+  'Wähle oben eine einzelne Kasse, um deren Plan zu bearbeiten.':
+    'Select a single fund above to edit its plan.',
   'Wähle, was auf deiner Startseite ganz oben erreichbar sein soll. Die Reihenfolge ergibt sich aus deiner Auswahl.':
     'Choose what should be reachable right at the top of your home screen. The order follows your selection.',
   'War da': 'Attended',
@@ -3834,6 +3919,7 @@ export const en: Record<string, string> = {
   'z. B. Mannschaftsabend': 'e.g. Team night',
   'z. B. Mannschaftsabend, Turnierfahrt': 'e.g. team night, tournament trip',
   'z. B. Platzpflege': 'e.g. Pitch maintenance',
+  'z. B. Platzsanierung': 'e.g. Pitch renovation',
   'z. B. Satzung, Aufnahmeantrag': 'e.g. articles of association, membership application',
   'z. B. Schlüssel': 'e.g. Keys',
   'z. B. Sommerfest': 'e.g. Summer party',
@@ -3871,6 +3957,8 @@ export const en: Record<string, string> = {
     'Ten checked colors – each is easy to read in light and dark mode. This is how the app looks for your members.',
   Zeigen: 'Show',
   'Zeile {0}': 'Row {0}',
+  'Zeile anlegen': 'Create line',
+  'Zeile entfernen': 'Remove line',
   Zeitraum: 'Period',
   'Zeitraum {1} – {2}': 'Period {1} – {2}',
   'Zentrales Mittelfeld': 'Central midfield',
@@ -3878,6 +3966,8 @@ export const en: Record<string, string> = {
     'Drag the entries by the handle into your order. What is at the top is reachable first on the home screen.',
   'Ziehe die Einträge am Griff, um die Reihenfolge zu ändern.':
     'Drag the entries by the handle to change the order.',
+  Ziel: 'Target',
+  'Zielbetrag in € (optional)': 'Target amount in € (optional)',
   Zielkasse: 'Target fund',
   'Zinsen und Kapitalerträge': 'Interest and investment income',
   'Zu den Mitgliedern': 'Go to members',
@@ -3895,6 +3985,8 @@ export const en: Record<string, string> = {
   'Zu- und Absagen mit einem Tipp': 'Confirm or decline with one tap',
   'Zu- und Absagen stellvertretend korrigieren':
     'Correct confirmations and declines on behalf of others',
+  Zuführen: 'Allocate',
+  Zuführung: 'Allocation',
   Zugang: 'Signing',
   'Zugang & Rechte': 'Access & rights',
   'Zugang einrichten': 'Set up access',

@@ -9,10 +9,13 @@ import type {
   AuditEntry,
   ClubCash,
   ClubCashAccount,
+  ClubBudget,
   ClubCashEntry,
+  ClubClosing,
   ClubFeeAssignment,
   ClubFeeImportPreview,
   ClubFees,
+  ClubReserves,
   ClubSchedule,
   PublicClub,
   AdminSponsors,
@@ -6864,6 +6867,303 @@ describe.skipIf(!url)('API', () => {
       const labels = rows.map((r) => r.label);
       expect(labels).toContain('Vereinskasse: Kasse angelegt: Jugendkasse');
       expect(labels.some((l) => l.startsWith('Vereinskasse: Hauptkasse gewechselt'))).toBe(true);
+    });
+  });
+  describe('Vereinskasse: Planung und Abschluss (K3)', () => {
+    async function treasurer() {
+      const admin = await login('admin');
+      const parent = await login('eltern');
+      if (!parent.me.roles.some((r) => r.name === 'Kassenwart (Verein)')) {
+        await send('POST', `/admin/members/${parent.me.person.id}/roles`, admin.token, {
+          roleKey: 'club_treasurer',
+          scopeType: 'club',
+        });
+      }
+      return login('eltern');
+    }
+    let expenseCategoryId = '';
+    let mainFundId = '';
+    let giroId = '';
+
+    async function book(token: string, cents: number, bookedOn: string, purpose = 'K3') {
+      return send<ClubCashEntry>('POST', '/club-cash/entries', token, {
+        accountId: giroId,
+        kind: 'expense',
+        amountCents: cents,
+        bookedOn,
+        categoryId: expenseCategoryId,
+        purpose,
+      });
+    }
+
+    it('legt einen Haushaltsplan an; Soll-Ist warnt ab 90 % und über 100 %', async () => {
+      const { token } = await treasurer();
+      const cash = await get<ClubCash>('/club-cash', token);
+      mainFundId = cash.funds.find((f) => f.isMain)!.id;
+      giroId = cash.accounts.find((a) => a.name === 'Girokonto Sparkasse')!.id;
+      const made = await send<ClubCash>('POST', '/club-cash/categories', token, {
+        name: 'K3 Testausgaben',
+        direction: 'expense',
+        area: 'ideal',
+      });
+      expect(made.status).toBe(201);
+      expenseCategoryId = made.body.categories.find((c) => c.name === 'K3 Testausgaben')!.id;
+
+      const plan = { fundId: mainFundId, year: 2026, categoryId: expenseCategoryId };
+      expect(
+        (await send('PUT', '/club-cash/budget', token, { ...plan, plannedCents: -5 })).status,
+      ).toBe(400);
+      const saved = await send<ClubBudget>('PUT', '/club-cash/budget', token, {
+        ...plan,
+        plannedCents: 10000,
+      });
+      expect(saved.status).toBe(200);
+      const line = () =>
+        get<ClubBudget>(`/club-cash/budget?year=2026&fundId=${mainFundId}`, token).then((b) =>
+          b.lines.find((l) => l.categoryId === expenseCategoryId)!,
+        );
+      expect(await line()).toMatchObject({ plannedCents: 10000, actualCents: 0, status: 'ok' });
+      await book(token, 5000, '2026-10-05');
+      expect(await line()).toMatchObject({ actualCents: 5000, status: 'ok' });
+      await book(token, 4500, '2026-10-06');
+      expect(await line()).toMatchObject({ actualCents: 9500, status: 'warn' });
+      const over = await book(token, 1000, '2026-10-07');
+      expect(await line()).toMatchObject({ actualCents: 10500, status: 'over' });
+      // Storno nimmt die Überschreitung zurück
+      await send('POST', `/club-cash/entries/${over.body.id}/cancel`, token, {
+        reason: 'Fehlbuchung',
+      });
+      expect(await line()).toMatchObject({ actualCents: 9500, status: 'warn' });
+      // Planzeile ändern statt doppelt anlegen
+      await send('PUT', '/club-cash/budget', token, { ...plan, plannedCents: 20000 });
+      const budget = await get<ClubBudget>(`/club-cash/budget?year=2026`, token);
+      expect(budget.lines.filter((l) => l.categoryId === expenseCategoryId)).toHaveLength(1);
+      expect(budget.totals.plannedExpenseCents).toBe(20000);
+      expect(budget.totals.actualExpenseCents).toBe(9500);
+      expect(budget.canManage).toBe(true);
+    });
+
+    it('Prüfer und Vorstand lesen den Plan, ändern ihn aber nicht', async () => {
+      const auditor = await login('mitglied');
+      const read = await get<ClubBudget>('/club-cash/budget?year=2026', auditor.token);
+      expect(read.canManage).toBe(false);
+      expect(
+        (
+          await send('PUT', '/club-cash/budget', auditor.token, {
+            fundId: mainFundId,
+            year: 2026,
+            categoryId: expenseCategoryId,
+            plannedCents: 1,
+          })
+        ).status,
+      ).toBe(403);
+      expect(
+        (await send('GET', '/club-cash/budget?year=2026', (await login('spieler')).token)).status,
+      ).toBe(403);
+      const admin = await login('admin');
+      try {
+        await send('PUT', '/club-cash/visibility', admin.token, { visibility: 'board_reports' });
+        const board = await login('vorstand');
+        const view = await get<ClubBudget>('/club-cash/budget?year=2026', board.token);
+        expect(view.level).toBe('reports');
+        expect(view.lines.length).toBeGreaterThan(0);
+        expect(
+          (await send('GET', '/club-cash/closing/link?year=2026&format=csv', board.token)).status,
+        ).toBe(403);
+      } finally {
+        await send('PUT', '/club-cash/visibility', admin.token, { visibility: 'treasury' });
+      }
+    });
+
+    it('übernimmt den Plan in ein anderes Jahr (nur fehlende Zeilen)', async () => {
+      const { token } = await treasurer();
+      const copied = await send<ClubBudget & { copied: number }>(
+        'POST',
+        '/club-cash/budget/copy',
+        token,
+        { fundId: mainFundId, fromYear: 2026, toYear: 2027 },
+      );
+      expect(copied.status).toBe(200);
+      expect(copied.body.copied).toBeGreaterThan(0);
+      const again = await send<{ copied: number }>('POST', '/club-cash/budget/copy', token, {
+        fundId: mainFundId,
+        fromYear: 2026,
+        toYear: 2027,
+      });
+      expect(again.body.copied).toBe(0);
+      expect(
+        (
+          await send('POST', '/club-cash/budget/copy', token, {
+            fundId: mainFundId,
+            fromYear: 2026,
+            toYear: 2026,
+          })
+        ).status,
+      ).toBe(400);
+      const next = await get<ClubBudget>(`/club-cash/budget?year=2027`, token);
+      const lineId = next.lines.find((l) => l.categoryId === expenseCategoryId)!.id;
+      const removed = await send<ClubBudget>(
+        'DELETE',
+        `/club-cash/budget/${lineId}?year=2027`,
+        token,
+      );
+      expect(removed.status).toBe(200);
+      expect(removed.body.lines.find((l) => l.id === lineId)).toBeUndefined();
+    });
+
+    it('Rücklagen binden nur freien Bestand der Kasse', async () => {
+      const { token } = await treasurer();
+      const made = await send<ClubReserves>('POST', '/club-cash/reserves', token, {
+        fundId: mainFundId,
+        name: 'Platzsanierung',
+        targetCents: 500000,
+      });
+      expect(made.status).toBe(201);
+      const reserve = made.body.reserves.find((r) => r.name === 'Platzsanierung')!;
+      const fund = made.body.funds.find((f) => f.fundId === mainFundId)!;
+      const move = (kind: string, amountCents: number, bookedOn = '2026-10-05') =>
+        send<ClubReserves>('POST', `/club-cash/reserves/${reserve.id}/moves`, token, {
+          kind,
+          amountCents,
+          bookedOn,
+        });
+      expect((await move('allocate', fund.balanceCents + 100)).status).toBe(400);
+      const ok = await move('allocate', 100000);
+      expect(ok.status).toBe(201);
+      const after = ok.body.reserves.find((r) => r.id === reserve.id)!;
+      expect(after.balanceCents).toBe(100000);
+      expect(ok.body.funds.find((f) => f.fundId === mainFundId)!.reservedCents).toBe(100000);
+      expect((await move('release', 100001)).status).toBe(400);
+      const archive = () =>
+        send('PATCH', `/club-cash/reserves/${reserve.id}`, token, { archived: true });
+      expect((await archive()).status).toBe(409);
+      expect((await move('release', 100000)).status).toBe(201);
+      expect((await archive()).status).toBe(200);
+      const moves = await get<{ kind: string }[]>(`/club-cash/reserves/${reserve.id}/moves`, token);
+      expect(moves.map((m) => m.kind).sort()).toEqual(['allocate', 'release']);
+    });
+
+    it('Jahresabschluss: Rechnung nach vier Bereichen, Bestände, Vorjahr', async () => {
+      const { token } = await treasurer();
+      const cash = await get<ClubCash>('/club-cash', token);
+      const closing = await get<ClubClosing>('/club-cash/closing?year=2026', token);
+      expect(closing.areas.map((a) => a.area)).toEqual(['ideal', 'asset', 'purpose', 'business']);
+      expect(closing.closingCents).toBe(cash.totalBalanceCents);
+      const ideal = closing.areas.find((a) => a.area === 'ideal')!;
+      expect(ideal.expenseLines.find((l) => l.categoryName === 'K3 Testausgaben')!.cents).toBe(
+        9500,
+      );
+      expect(closing.incomeCents).toBe(cash.areaTotals.reduce((n, a) => n + a.incomeCents, 0));
+      expect(closing.expenseCents).toBe(cash.areaTotals.reduce((n, a) => n + a.expenseCents, 0));
+      expect(closing.lock).toBeNull();
+      expect(closing.canClose).toBe(false);
+      // Das laufende Jahr lässt sich noch nicht abschließen
+      expect((await send('POST', '/club-cash/closing/close', token, { year: 2026 })).status).toBe(
+        409,
+      );
+      // Auswertung für den ganzen Verein: nicht für Kassenführung einer Abteilung
+      expect(
+        (await send('GET', '/club-cash/closing?year=2026', (await login('spieler')).token)).status,
+      ).toBe(403);
+    });
+
+    it('Export als CSV und PDF über kurzlebige Links', async () => {
+      const { token } = await treasurer();
+      const csvLink = await get<{ url: string }>(
+        '/club-cash/closing/link?year=2026&format=csv',
+        token,
+      );
+      const csv = await app.inject({ method: 'GET', url: new URL(csvLink.url).pathname });
+      expect(csv.statusCode).toBe(200);
+      expect(csv.headers['content-type']).toContain('text/csv');
+      expect(csv.body.startsWith('\uFEFFJahresabschluss 2026;')).toBe(true);
+      expect(csv.body).toContain('Ideeller Bereich;Ausgabe;K3 Testausgaben;95,00;0,00');
+      expect(csv.body).toContain('Jahresergebnis');
+      const pdfLink = await get<{ url: string }>(
+        '/club-cash/closing/link?year=2026&format=pdf',
+        token,
+      );
+      const pdf = await app.inject({ method: 'GET', url: new URL(pdfLink.url).pathname });
+      expect(pdf.statusCode).toBe(200);
+      expect(pdf.headers['content-type']).toContain('application/pdf');
+      expect(pdf.rawPayload.subarray(0, 5).toString('latin1')).toBe('%PDF-');
+      const bad = await app.inject({ method: 'GET', url: `${new URL(csvLink.url).pathname}x` });
+      expect(bad.statusCode).toBe(404);
+    });
+
+    it('Periodensperre: Jahr abschließen sperrt Buchen, Stornieren und Zahlungen; nur Admin öffnet', async () => {
+      const { token } = await treasurer();
+      const admin = await login('admin');
+      const entry = await book(token, 100, '2025-06-01', 'Vorjahr');
+      expect(entry.status).toBe(201);
+      const lockedBefore = await send('POST', '/club-cash/closing/close', token, { year: 2025 });
+      expect(lockedBefore.status).toBe(200);
+      expect((lockedBefore.body as unknown as ClubClosing).lock).toMatchObject({ year: 2025 });
+      expect((await send('POST', '/club-cash/closing/close', token, { year: 2025 })).status).toBe(
+        409,
+      );
+      // Gesperrt: Buchen, Stornieren, Umbuchen, Rücklage
+      const blocked = await book(token, 100, '2025-07-01');
+      expect(blocked.status).toBe(409);
+      expect((blocked.body as unknown as { error: string }).error).toBe('period_locked');
+      expect(
+        (
+          await send('POST', `/club-cash/entries/${entry.body.id}/cancel`, token, {
+            reason: 'zu spät',
+          })
+        ).status,
+      ).toBe(409);
+      const accounts = (await get<ClubCash>('/club-cash', token)).accounts;
+      expect(
+        (
+          await send('POST', '/club-cash/transfers', token, {
+            fromAccountId: accounts[0]!.id,
+            toAccountId: accounts[1]!.id,
+            amountCents: 100,
+            bookedOn: '2025-08-01',
+          })
+        ).status,
+      ).toBe(409);
+      // Planung des Jahres ebenfalls gesperrt
+      expect(
+        (
+          await send('PUT', '/club-cash/budget', token, {
+            fundId: mainFundId,
+            year: 2025,
+            categoryId: expenseCategoryId,
+            plannedCents: 100,
+          })
+        ).status,
+      ).toBe(409);
+      // Andere Jahre bleiben offen
+      expect((await book(token, 100, '2026-10-08')).status).toBe(201);
+      // Öffnen: nicht Kassenwart, nur Administration, mit Begründung
+      expect(
+        (await send('POST', '/club-cash/closing/reopen', token, { year: 2025, reason: 'Fehler' }))
+          .status,
+      ).toBe(403);
+      expect(
+        (await send('POST', '/club-cash/closing/reopen', admin.token, { year: 2025, reason: 'x' }))
+          .status,
+      ).toBe(400);
+      const reopened = await send<ClubClosing>('POST', '/club-cash/closing/reopen', admin.token, {
+        year: 2025,
+        reason: 'Beleg nachgereicht',
+      });
+      expect(reopened.status).toBe(200);
+      expect(reopened.body.lock).toBeNull();
+      expect((await book(token, 100, '2025-07-01', 'nach Öffnen')).status).toBe(201);
+    });
+
+    it('steht im Änderungsprotokoll', async () => {
+      const rows = await sql<{ label: string }[]>`
+        select data->>'label' as label from audit_log
+        where action in ('clubcash.budget', 'clubcash.reserve', 'clubcash.close', 'clubcash.reopen')`;
+      const labels = rows.map((r) => r.label);
+      expect(labels.some((l) => l.startsWith('Haushaltsplan: K3 Testausgaben 2026'))).toBe(true);
+      expect(labels).toContain('Rücklage angelegt: Platzsanierung (Hauptkasse)');
+      expect(labels).toContain('Vereinskasse: Jahr 2025 abgeschlossen');
+      expect(labels).toContain('Vereinskasse: Jahr 2025 wieder geöffnet: Beleg nachgereicht');
     });
   });
 });

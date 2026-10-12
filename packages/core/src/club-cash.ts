@@ -356,3 +356,144 @@ export type ClubFeeImportCommitInput = {
   accountId: string;
   items: { dueId: string; amountCents: number; paidOn: string }[];
 };
+
+// ── Planung und Abschluss (Paket K3) ────────────────────────────────────────
+
+/** Ab diesem Anteil der Planung (Ausgaben) warnt die Soll-Ist-Anzeige. */
+export const CLUB_BUDGET_WARN_RATIO = 0.9;
+
+export type ClubBudgetStatus = 'ok' | 'warn' | 'over';
+
+export type ClubBudgetLine = {
+  id: string;
+  fundId: string;
+  fundName: string;
+  categoryId: string;
+  categoryName: string;
+  direction: ClubCashDirection;
+  area: ClubCashArea;
+  costCenterId: string | null;
+  costCenterName: string | null;
+  plannedCents: number;
+  /** bisher gebucht (ohne Stornos) im Planjahr */
+  actualCents: number;
+  /** Ausgaben: ok / ab 90 % warn / über 100 % over; Einnahmen immer ok */
+  status: ClubBudgetStatus;
+  note: string | null;
+};
+
+export type ClubBudgetInput = {
+  fundId: string;
+  year: number;
+  categoryId: string;
+  costCenterId?: string | null;
+  plannedCents: number;
+  note?: string | null;
+};
+
+export type ClubBudget = {
+  year: number;
+  /** gewählte Kasse; null = alle sichtbaren Kassen zusammen */
+  fundId: string | null;
+  level: 'full' | 'reports';
+  canManage: boolean;
+  /** Das Jahr ist abgeschlossen: Plan und Buchungen sind gesperrt */
+  locked: boolean;
+  lines: ClubBudgetLine[];
+  totals: {
+    plannedIncomeCents: number;
+    actualIncomeCents: number;
+    plannedExpenseCents: number;
+    actualExpenseCents: number;
+    /** Anzahl Ausgabenzeilen über Plan */
+    overCount: number;
+    warnCount: number;
+  };
+};
+
+export type ClubReserve = {
+  id: string;
+  fundId: string;
+  fundName: string;
+  name: string;
+  targetCents: number | null;
+  balanceCents: number;
+  note: string | null;
+  archived: boolean;
+};
+
+export type ClubReserveMove = {
+  id: string;
+  kind: 'allocate' | 'release';
+  amountCents: number;
+  bookedOn: string;
+  note: string | null;
+  createdByName: string | null;
+};
+
+export type ClubReserves = {
+  canManage: boolean;
+  reserves: ClubReserve[];
+  /** je Kasse: Kassenbestand, davon gebunden, frei verfügbar */
+  funds: { fundId: string; fundName: string; balanceCents: number; reservedCents: number }[];
+};
+
+export type ClubReserveInput = {
+  fundId: string;
+  name: string;
+  targetCents?: number | null;
+  note?: string | null;
+};
+
+export type ClubReserveMoveInput = {
+  kind: 'allocate' | 'release';
+  amountCents: number;
+  bookedOn: string;
+  note?: string | null;
+};
+
+export type ClubPeriodLock = {
+  year: number;
+  lockedAt: string;
+  lockedByName: string | null;
+};
+
+/** Zeile der Einnahmen-Ausgaben-Rechnung: Kategorie mit Jahressumme und Vorjahr. */
+export type ClubClosingLine = {
+  categoryName: string;
+  cents: number;
+  previousCents: number;
+};
+
+export type ClubClosingArea = {
+  area: ClubCashArea;
+  incomeLines: ClubClosingLine[];
+  expenseLines: ClubClosingLine[];
+  incomeCents: number;
+  expenseCents: number;
+  previousIncomeCents: number;
+  previousExpenseCents: number;
+};
+
+/** Jahresabschluss: Einnahmen-Ausgaben-Rechnung nach den vier Bereichen, Bestände, Rücklagen. */
+export type ClubClosing = {
+  year: number;
+  /** null = ganzer Verein (der Abschluss gilt immer für den ganzen Verein) */
+  clubName: string;
+  level: 'full' | 'reports';
+  canManage: boolean;
+  canUnlock: boolean;
+  lock: ClubPeriodLock | null;
+  /** Jahr ist beendet und kann abgeschlossen werden */
+  canClose: boolean;
+  openingCents: number;
+  closingCents: number;
+  incomeCents: number;
+  expenseCents: number;
+  previousIncomeCents: number;
+  previousExpenseCents: number;
+  areas: ClubClosingArea[];
+  /** Buchungen ohne Kategorie (Umbuchungen sind ausgenommen und bewegen die Summe nicht) */
+  accounts: { name: string; fundName: string; openingCents: number; closingCents: number }[];
+  reserves: { name: string; fundName: string; balanceCents: number }[];
+};

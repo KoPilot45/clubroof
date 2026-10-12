@@ -28,6 +28,7 @@ import {
   loadVisibleDocument,
 } from '../services/club';
 import { cashReportCsv, cashReportPdf } from '../services/cash';
+import { closingCsv, closingPdf } from '../services/club-planning';
 import { getClubTeamPage } from '../services/teams';
 import { getAreaOverview } from '../services/area-overview';
 import { listHelperEvents, setAttendance, signUp, withdraw } from '../services/helpers';
@@ -243,6 +244,24 @@ export const fileRoutes: FastifyPluginAsyncZod = async (app) => {
           .header('cache-control', 'no-store')
           .header('x-content-type-options', 'nosniff')
           .send(report.pdf);
+      }
+      if (documentId.startsWith('kp:') || documentId.startsWith('k:')) {
+        const pdf = documentId.startsWith('kp:');
+        const payload = documentId.slice(pdf ? 3 : 2);
+        const report = pdf
+          ? await closingPdf(app.db, payload, app.now())
+          : await closingCsv(app.db, payload, app.now());
+        if (!report) throw notFound('Der Jahresabschluss');
+        const body = 'pdf' in report ? report.pdf : report.csv;
+        return reply
+          .header('content-type', pdf ? 'application/pdf' : 'text/csv; charset=utf-8')
+          .header(
+            'content-disposition',
+            `attachment; filename*=UTF-8''${encodeURIComponent(report.fileName)}`,
+          )
+          .header('cache-control', 'no-store')
+          .header('x-content-type-options', 'nosniff')
+          .send(body);
       }
       if (documentId.startsWith('c:')) {
         const report = await cashReportCsv(app.db, documentId.slice(2), app.now());

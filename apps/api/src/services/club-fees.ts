@@ -37,6 +37,7 @@ import {
   requireClubManage as requireManage,
 } from './club-cash';
 import { ensureMainFund } from './club-funds';
+import { assertPeriodOpen } from './club-periods';
 import { parseCsv } from './csv';
 
 const MONTHS = [
@@ -639,6 +640,7 @@ async function bookPayment(
       'overpayment',
       `Es sind nur noch ${euro(open)} offen. Zu viel Gezahltes bitte als eigene Einnahme buchen.`,
     );
+  await assertPeriodOpen(db, actor.club.id, input.paidOn);
   const [account] = await db
     .select()
     .from(s.clubCashAccounts)

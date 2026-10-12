@@ -1,6 +1,12 @@
-import { CLUB_CASH_AREA_LABEL, type ClubCash, type ClubFees } from '@clubroof/core';
+import {
+  CLUB_CASH_AREA_LABEL,
+  type ClubBudget,
+  type ClubCash,
+  type ClubFees,
+} from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { View } from 'react-native';
+import { BudgetBar } from '@/components/budget-bar';
 import {
   Card,
   Chip,
@@ -31,6 +37,12 @@ export default function ClubCashOverviewScreen() {
     queryKey: ['club-fees', 'summary'],
     queryFn: () => api<ClubFees>('/club-cash/fees?status=open'),
   });
+  const budget = useQuery({
+    queryKey: ['club-budget', new Date().getFullYear(), 'all'],
+    queryFn: () => api<ClubBudget>(`/club-cash/budget?year=${new Date().getFullYear()}`),
+  });
+  const bud = budget.data?.totals;
+  const budgetStatus = !bud ? 'ok' : bud.overCount > 0 ? 'over' : bud.warnCount > 0 ? 'warn' : 'ok';
   const c = cash.data;
   const f = fees.data?.summary;
   const income = c?.areaTotals.reduce((sum, a) => sum + a.incomeCents, 0) ?? 0;
@@ -98,6 +110,32 @@ export default function ClubCashOverviewScreen() {
                       trailing={<Chip tone="neutral" label={formatEuro(k.balanceCents)} />}
                     />
                   ))}
+              </Card>
+            </Section>
+          ) : null}
+
+          {bud && bud.plannedExpenseCents > 0 ? (
+            <Section title="Haushalt Soll/Ist">
+              <Card style={{ gap: 8 }}>
+                <BudgetBar
+                  planned={bud.plannedExpenseCents}
+                  actual={bud.actualExpenseCents}
+                  status={budgetStatus}
+                />
+                <T variant="caption">
+                  {`${t('Ausgaben')} ${formatEuro(bud.actualExpenseCents)} ${t('von')} ${formatEuro(bud.plannedExpenseCents)} ${t('geplant')}`}
+                </T>
+                {bud.overCount > 0 ? (
+                  <Chip
+                    tone="urgent"
+                    icon="warning"
+                    label={
+                      bud.overCount === 1
+                        ? t('Eine Ausgabe liegt über dem Plan')
+                        : t(`${bud.overCount} Ausgaben liegen über dem Plan`)
+                    }
+                  />
+                ) : null}
               </Card>
             </Section>
           ) : null}

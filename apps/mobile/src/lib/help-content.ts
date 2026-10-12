@@ -545,6 +545,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Kassen', href: '/club-cash/funds' },
       },
       {
+        id: 'club-budget',
+        question: 'Wie funktionieren Haushaltsplan, Rücklagen und Jahresabschluss?',
+        answer:
+          'In der Vereinskasse unter „Planung“. Im Haushaltsplan legst du je Kasse und Jahr Planbeträge je Kategorie fest; „Soll-Ist“ zeigt mit Fortschrittsbalken, wie viel davon gebucht ist – ab 90 % wird gewarnt, über 100 % ist die Zeile rot. „Plan aus dem Vorjahr übernehmen“ spart Tipparbeit. Rücklagen sind zweckgebundene Töpfe innerhalb einer Kasse: Du kannst nur den freien Kassenbestand binden. Der Jahresabschluss zeigt die Einnahmen-Ausgaben-Rechnung nach den vier Bereichen mit Vorjahr, die Bestände und die Rücklagen; du kannst ihn als PDF oder CSV (für Excel) öffnen. Nach Jahresende schließt der Kassenwart das Jahr ab: Danach sind Buchungen, Stornos, Plan und Rücklagen dieses Jahres gesperrt, und nur die Administration kann es mit Begründung wieder öffnen. Die App führt eine einfache Einnahmen-Ausgaben-Rechnung und ersetzt keine Steuerberatung.',
+        link: { label: 'Haushaltsplan', href: '/club-cash/budget?mode=plan' },
+      },
+      {
         id: 'club-fees',
         question: 'Wie verwalte ich die Mitgliedsbeiträge?',
         answer:

@@ -302,15 +302,15 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
         [
           'Haushalt',
           [
-            ['budget', 'Haushaltsplan', 'clipboard', null, true],
-            ['actual', 'Soll-Ist', 'git-compare', null, true],
+            ['budget', 'Haushaltsplan', 'clipboard', '/club-cash/budget?mode=plan', true],
+            ['actual', 'Soll-Ist', 'git-compare', '/club-cash/budget?mode=actual', true],
           ],
         ],
         [
           'Abschluss',
           [
-            ['reserves', 'Rücklagen', 'wallet', null, true],
-            ['year-end', 'Jahresabschluss', 'document-text', null, true],
+            ['reserves', 'Rücklagen', 'wallet', '/club-cash/reserves', true],
+            ['year-end', 'Jahresabschluss', 'document-text', '/club-cash/closing', full],
           ],
         ],
       ]),

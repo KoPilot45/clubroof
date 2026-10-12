@@ -29,6 +29,7 @@ import { randomUUID } from 'node:crypto';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { assertFund, ensureMainFund, fundScope, listFunds } from './club-funds';
+import { assertPeriodOpen } from './club-periods';
 import { mediaReference } from './uploads';
 import { resolveMediaUrl } from '../storage/media-links';
 
@@ -52,7 +53,7 @@ export function clubCashLevel(actor: Actor): Level {
 }
 
 /** Sieht der Nutzer alle Kassen (Recht für den ganzen Verein oder Vorstand mit Einsicht)? */
-const seesAllFunds = (actor: Actor) =>
+export const seesAllFunds = (actor: Actor) =>
   actorCan(actor, 'clubcash.read') ||
   scopesWith(actor.grants, 'clubcash.read').orgUnitIds.length === 0;
 
@@ -381,6 +382,7 @@ export async function createEntry(
   requireManage(actor);
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0)
     throw new HttpError(400, 'invalid_amount', 'Der Betrag muss größer als 0 sein.');
+  await assertPeriodOpen(db, actor.club.id, input.bookedOn);
   const account = await activeAccount(db, actor, input.accountId);
   const [category] = await db
     .select()
@@ -465,6 +467,7 @@ export async function createTransfer(
     throw new HttpError(400, 'invalid_amount', 'Der Betrag muss größer als 0 sein.');
   if (input.fromAccountId === input.toAccountId)
     throw new HttpError(400, 'same_account', 'Quelle und Ziel müssen verschiedene Konten sein.');
+  await assertPeriodOpen(db, actor.club.id, input.bookedOn);
   const from = await activeAccount(db, actor, input.fromAccountId);
   const to = await activeAccount(db, actor, input.toAccountId);
   const transferId = randomUUID();
@@ -511,6 +514,7 @@ export async function cancelEntry(
   if (!entry) throw notFound('Die Buchung');
   if (entry.cancelledAt)
     throw new HttpError(409, 'already_cancelled', 'Die Buchung ist bereits storniert.');
+  await assertPeriodOpen(db, actor.club.id, entry.bookedOn);
   // Auch eine Umbuchung zwischen Kassen: Rechte für jede betroffene Kasse nötig
   const sides = await db
     .select({ fundId: s.clubCashAccounts.fundId })
