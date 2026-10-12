@@ -9,6 +9,7 @@ import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import type { StatusKey, TintKey } from '@clubroof/design-tokens';
 import {
   Children,
+  createContext,
   isValidElement,
   useContext,
   useEffect,
@@ -291,7 +292,10 @@ export function HeroCard({
   accessibilityLabel,
   poster,
   background,
+  palette,
 }: {
+  /** eigene Farben statt der Vereinsfarbe (z. B. Orange für Veranstaltungen); `to` färbt auch die weißen Knöpfe */
+  palette?: { from: string; to: string };
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   /** macht die ganze Karte antippbar (dann keine eigenen Buttons darin) */
@@ -305,16 +309,17 @@ export function HeroCard({
   const gradientId = useId().replace(/[^a-zA-Z0-9]/g, '');
   // Hintergrund bekommt die gemessene Größe: wächst die Karte (z. B. nach dem Laden), wächst er mit
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-  const outer: ViewStyle = { borderRadius: radii.xxl };
+  const radius = poster ? 0 : radii.xxl;
+  const outer: ViewStyle = { borderRadius: radius };
   const body = (
     <View
       onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
       style={{
         flexGrow: 1,
-        borderRadius: radii.xxl,
+        borderRadius: radius,
         overflow: 'hidden',
-        padding: 18,
-        gap: 12,
+        padding: poster ? 0 : 18,
+        gap: poster ? 0 : 12,
       }}
     >
       <Svg
@@ -348,8 +353,8 @@ export function HeroCard({
               ry="156"
               gradientUnits="userSpaceOnUse"
             >
-              <Stop offset="0" stopColor={colors.hero.from} />
-              <Stop offset="0.46" stopColor={colors.hero.to} />
+              <Stop offset="0" stopColor={palette?.from ?? colors.hero.from} />
+              <Stop offset="0.46" stopColor={palette?.to ?? colors.hero.to} />
               <Stop offset="1" stopColor={colors.background} />
             </RadialGradient>
           )}
@@ -367,6 +372,11 @@ export function HeroCard({
       {children}
     </View>
   );
+  const toned = (
+    <HeroToneContext.Provider value={palette?.to ?? colors.hero.to}>
+      {body}
+    </HeroToneContext.Provider>
+  );
   if (onPress)
     return (
       <PressScale
@@ -375,11 +385,14 @@ export function HeroCard({
         onPress={onPress}
         style={[outer, style]}
       >
-        {body}
+        {toned}
       </PressScale>
     );
-  return <View style={[outer, style]}>{body}</View>;
+  return <View style={[outer, style]}>{toned}</View>;
 }
+
+/** Textfarbe weißer Knöpfe auf dem Plakat bzw. Hero-Block (dunkler Ton der Hero-Farbe). */
+const HeroToneContext = createContext<string | null>(null);
 
 export function Section({
   title,
@@ -723,6 +736,7 @@ export function Button({
   hideLabel?: boolean;
 }) {
   const { colors, radii, sizes } = useTheme();
+  const heroTone = useContext(HeroToneContext);
   const palette = {
     primary: {
       bg: colors.primary,
@@ -776,10 +790,10 @@ export function Button({
     },
     // Auf dem Plakat: helle Fläche mit dunkler Schrift bzw. umrandet in Weiß
     hero: {
-      bg: colors.primary,
-      pressed: colors.primaryPressed,
-      fg: colors.onPrimary,
-      border: colors.primary,
+      bg: '#FFFFFF',
+      pressed: 'rgba(255,255,255,0.85)',
+      fg: heroTone ?? colors.hero.to,
+      border: '#FFFFFF',
     },
     heroOutline: {
       bg: 'transparent',
@@ -2290,25 +2304,32 @@ export function Segment<V extends string>({
   );
 }
 
-/** Ticket (Wochenansicht, Kennzahlen): 132 breit, Farbstreifen oben, große Zahl. */
+/**
+ * Ticket (Wochenansicht): 132 breit, Farbstreifen links (Status), Wochentag, große Tageszahl, Titel und
+ * Nebenzeile. Die Farbe ist nie die einzige Information: der Zustand steht in `caption` bzw. im Titel.
+ */
 export function Ticket({
-  number,
-  label,
+  weekday,
+  day,
+  title,
   caption,
   color,
+  struck,
   onPress,
 }: {
-  number: string;
-  label: string;
+  weekday: string;
+  day: string;
+  title: string;
   caption?: string;
   color: string;
+  struck?: boolean;
   onPress?: () => void;
 }) {
   const { colors } = useTheme();
   return (
-    <Pressable
+    <PressScale
       accessibilityRole={onPress ? 'button' : undefined}
-      accessibilityLabel={[label, number, caption].filter(Boolean).join(', ')}
+      accessibilityLabel={[weekday, day, title, caption].filter(Boolean).join(', ')}
       disabled={!onPress}
       onPress={onPress}
       style={{
@@ -2316,21 +2337,80 @@ export function Ticket({
         minHeight: 44,
         borderRadius: 20,
         overflow: 'hidden',
+        padding: 14,
         backgroundColor: colors.anstoss.card,
         borderWidth: 1,
         borderColor: colors.anstoss.cardBorder,
       }}
     >
-      <View style={{ height: 4, backgroundColor: color }} />
-      <View style={{ padding: 14, gap: 2 }}>
-        <T variant="caption" verbatim>
-          {label}
+      <View
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 4,
+          backgroundColor: color,
+        }}
+      />
+      <T variant="caption" style={{ fontWeight: '700', textTransform: 'uppercase' }}>
+        {weekday.replace('.', '')}
+      </T>
+      <T variant="figure" style={{ fontSize: 40, lineHeight: 40 }} verbatim>
+        {day}
+      </T>
+      <T
+        numberOfLines={1}
+        style={{
+          marginTop: 8,
+          fontSize: 13.5,
+          fontWeight: '700',
+          textDecorationLine: struck ? 'line-through' : 'none',
+        }}
+      >
+        {title}
+      </T>
+      {caption ? (
+        <T variant="caption" numberOfLines={2} style={{ marginTop: 2, fontSize: 11.5 }}>
+          {caption}
         </T>
-        <T variant="figure" style={{ fontSize: 40, lineHeight: 44 }} verbatim>
-          {number}
-        </T>
-        {caption ? <T variant="caption">{caption}</T> : null}
-      </View>
-    </Pressable>
+      ) : null}
+    </PressScale>
+  );
+}
+
+/** Linearer Farbverlauf als Hintergrund (diagonal 135° wie im Entwurf), füllt den Elternbereich. */
+export function GradientFill({
+  from,
+  to,
+  overlay,
+}: {
+  from: string;
+  to: string;
+  /** zusätzliche Abdunklung nach unten (Bildkarten), 0–1 an der Unterkante */
+  overlay?: number;
+}) {
+  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  return (
+    <Svg
+      style={StyleSheet.absoluteFill}
+      width="100%"
+      height="100%"
+      preserveAspectRatio="none"
+      aria-hidden
+    >
+      <Defs>
+        <LinearGradient id={`${id}a`} x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor={from} />
+          <Stop offset="1" stopColor={to} />
+        </LinearGradient>
+        <LinearGradient id={`${id}b`} x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0.2" stopColor="#000000" stopOpacity={0} />
+          <Stop offset="1" stopColor="#000000" stopOpacity={overlay ?? 0} />
+        </LinearGradient>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}a)`} />
+      {overlay ? <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}b)`} /> : null}
+    </Svg>
   );
 }

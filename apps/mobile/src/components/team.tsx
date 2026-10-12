@@ -2,6 +2,7 @@ import type {
   AttendanceCounts,
   EventSummary,
   MatchResult,
+  SquadComposition,
   SquadStatus,
   TeamHighlights,
 } from '@clubroof/core';
@@ -13,7 +14,6 @@ import { MATCH_KIND_LABELS } from '@/lib/labels';
 import { useTheme } from '@/lib/theme';
 import { Card, Chip, DateTile, HeroCard, ListRow, Stat, T } from './ui';
 import { Swipe, useCardWidth } from './home';
-import { Text } from './app-text';
 
 export function SquadStatusCard({ squad }: { squad: SquadStatus }) {
   const { colors } = useTheme();
@@ -110,20 +110,29 @@ export function HighlightsCard({
   );
 }
 
+/** Farben der Mannschaftsteile im Kaderbalken (immer gleich, mit Beschriftung darunter) */
+const COMPOSITION: { key: keyof SquadComposition; label: (n: number) => string; color: string }[] =
+  [
+    { key: 'goalkeeper', label: (n) => `Tor ${n}`, color: '#FFD54F' },
+    { key: 'defense', label: (n) => `Abwehr ${n}`, color: '#FFFFFF' },
+    { key: 'midfield', label: (n) => `Mittelfeld ${n}`, color: '#9FE3B2' },
+    { key: 'attack', label: (n) => `Sturm ${n}`, color: '#7FC4FF' },
+  ];
+
 /**
- * Blickfang der Mannschaft: Kader (Spieler, davon verfügbar) – ohne Kaderstatus die Bilanz –, dazu Chips
- * für Bilanz und Trainingsquote. Tabellenplatz und Torschützenkönig folgen, sobald es die Daten gibt.
+ * Blickfang der Mannschaft: Kader (Spieler, davon verfügbar) mit Zusammensetzung nach Mannschaftsteilen
+ * – ohne Kaderstatus die Bilanz –, dazu Chips für Bilanz, Tabellenplatz und Trainingsquote.
  */
 export function TeamBand({
   highlights,
   squad,
+  composition,
   leaguePosition,
-  topScorer,
 }: {
   highlights: TeamHighlights;
   squad: SquadStatus | null;
+  composition?: SquadComposition;
   leaguePosition?: number | null;
-  topScorer?: { name: string; goals: number } | null;
 }) {
   const { colors } = useTheme();
   const on = colors.hero.onHero;
@@ -131,60 +140,70 @@ export function TeamBand({
     highlights.played > 0 ? `${highlights.won}-${highlights.drawn}-${highlights.lost}` : null;
   if (!squad && !record && highlights.trainingRate === null && !leaguePosition) return null;
   const chips = [
-    leaguePosition ? `Tabelle: Platz ${leaguePosition}` : null,
-    topScorer ? `Top-Torschütze: ${topScorer.name} · ${topScorer.goals}` : null,
     squad && record ? `Bilanz ${record}` : null,
+    leaguePosition ? `Platz ${leaguePosition}` : null,
     highlights.trainingRate !== null ? `Training ${highlights.trainingRate} %` : null,
   ].filter((c): c is string => !!c);
+  const parts = composition ? COMPOSITION.filter((c) => composition[c.key] > 0) : [];
+  const total = parts.reduce((n, c) => n + composition![c.key], 0);
   return (
     <HeroCard>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          gap: 8,
-        }}
-      >
-        <View style={{ flexShrink: 1 }}>
-          <T variant="overline" color={on}>
-            {squad ? 'Kader' : 'Bilanz S-U-N'}
+      <T variant="overline" color={on}>
+        {squad ? 'Kader' : 'Bilanz S-U-N'}
+      </T>
+      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10 }}>
+        <T variant="figure" color={on} style={{ fontSize: 92, lineHeight: 92 }}>
+          {squad ? squad.players : record}
+        </T>
+        {squad ? (
+          <T color={on} style={{ fontSize: 14, flexShrink: 1 }}>
+            {`Spieler · ${squad.available} verfügbar`}
           </T>
-          <T variant="figure" color={on} style={{ fontSize: 44, lineHeight: 50 }}>
-            {squad ? squad.players : record}
-          </T>
-          {squad ? (
-            <T variant="label" color={on} style={{ fontWeight: '400' }}>
-              {`Spieler · ${squad.available} verfügbar`}
-            </T>
-          ) : null}
+        ) : null}
+      </View>
+      {squad && total > 0 ? (
+        <View style={{ gap: 6 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              height: 10,
+              borderRadius: 5,
+              overflow: 'hidden',
+              backgroundColor: 'rgba(255,255,255,0.18)',
+            }}
+          >
+            {parts.map((c) => (
+              <View key={c.key} style={{ flex: composition![c.key], backgroundColor: c.color }} />
+            ))}
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            {parts.map((c) => (
+              <T key={c.key} color={on} style={{ fontSize: 11.5 }}>
+                {c.label(composition![c.key])}
+              </T>
+            ))}
+          </View>
         </View>
-        <View style={{ gap: 6, alignItems: 'flex-end', flexShrink: 1 }}>
-          {chips.slice(0, 3).map((c, i) => (
+      ) : null}
+      {chips.length > 0 ? (
+        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+          {chips.slice(0, 3).map((c) => (
             <View
               key={c}
               style={{
-                borderRadius: 999,
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                backgroundColor: i === 0 ? on : 'rgba(255,255,255,0.22)',
+                borderRadius: 14,
+                paddingHorizontal: 12,
+                paddingVertical: 3,
+                backgroundColor: 'rgba(255,255,255,0.18)',
               }}
             >
-              <Text
-                numberOfLines={2}
-                style={{
-                  textAlign: 'right',
-                  fontSize: 12,
-                  fontWeight: '700',
-                  color: i === 0 ? colors.hero.from : on,
-                }}
-              >
+              <T variant="headline" color={on} style={{ fontSize: 19, lineHeight: 24 }}>
                 {c}
-              </Text>
+              </T>
             </View>
           ))}
         </View>
-      </View>
+      ) : null}
     </HeroCard>
   );
 }

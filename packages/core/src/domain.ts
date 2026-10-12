@@ -53,6 +53,30 @@ export const PLAYER_POSITIONS = [
 ] as const;
 export type PlayerPosition = (typeof PLAYER_POSITIONS)[number];
 
+/** Mannschaftsteile für die Kaderzusammensetzung (Team-Hero) */
+export const POSITION_GROUPS = ['goalkeeper', 'defense', 'midfield', 'attack'] as const;
+export type PositionGroup = (typeof POSITION_GROUPS)[number];
+
+/** Ordnet eine Spielposition ihrem Mannschaftsteil zu; ohne (bekannte) Position: null */
+export function positionGroup(position: string | null | undefined): PositionGroup | null {
+  switch (position) {
+    case 'Torwart':
+      return 'goalkeeper';
+    case 'Innenverteidigung':
+    case 'Außenverteidigung':
+      return 'defense';
+    case 'Defensives Mittelfeld':
+    case 'Zentrales Mittelfeld':
+    case 'Offensives Mittelfeld':
+    case 'Außenbahn':
+      return 'midfield';
+    case 'Sturm':
+      return 'attack';
+    default:
+      return null;
+  }
+}
+
 export const CONTACT_VISIBILITIES = ['club', 'team_and_coaches', 'coaches_only'] as const;
 export type ContactVisibility = (typeof CONTACT_VISIBILITIES)[number];
 

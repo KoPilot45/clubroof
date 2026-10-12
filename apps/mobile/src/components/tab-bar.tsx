@@ -51,7 +51,13 @@ function useCapsule(active: boolean) {
 
 function NavDot({ item, children }: { item: NavItem; children: React.ReactNode }) {
   const scale = useCapsule(item.active);
-  return <Animated.View style={{ transform: [{ scale }] }}>{children}</Animated.View>;
+  return (
+    <Animated.View
+      style={{ flex: item.active ? 2.2 : 1, flexDirection: 'row', transform: [{ scale }] }}
+    >
+      {children}
+    </Animated.View>
+  );
 }
 
 /**
@@ -70,7 +76,7 @@ export function FloatingNav({
   const { colors, sizes, isDark, elevation } = useTheme();
   const insets = useSafeAreaInsets();
   const [keyboard, setKeyboard] = useState(false);
-  const bottom = Math.max(insets.bottom, 12) + 10;
+  const bottom = Math.max(insets.bottom, 4) + 10;
 
   useEffect(() => {
     onHeight?.(sizes.tabBar + bottom);
@@ -89,7 +95,7 @@ export function FloatingNav({
   return (
     <View
       pointerEvents="box-none"
-      style={{ position: 'absolute', left: 20, right: 20, bottom, alignItems: 'center' }}
+      style={{ position: 'absolute', left: 16, right: 16, bottom, alignItems: 'center' }}
     >
       <View
         accessibilityRole="tablist"

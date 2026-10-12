@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 import { RequestError } from '@/lib/api';
 import {
   clubInitials,
@@ -20,6 +20,8 @@ import {
   MATCH_KIND_LABELS,
 } from '@/lib/labels';
 import { hapticError, hapticSuccess } from '@/lib/haptics';
+import { PressScale } from '@/lib/motion';
+import { Text } from '@/components/app-text';
 import { enqueueResponse, queuedFor, useOutbox } from '@/lib/outbox';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -37,6 +39,7 @@ import {
   SwipeRow,
   TeamBadge,
   TextField,
+  withAlpha,
   type IconName,
 } from './ui';
 import { useToast } from '@/lib/toast';
@@ -477,7 +480,6 @@ export function AnswerButtons({
   onMaybe,
   onNo,
   busy = null,
-  tone = 'surface',
 }: {
   status: 'yes' | 'no' | 'maybe' | 'pending' | null;
   onYes: () => void;
@@ -487,46 +489,99 @@ export function AnswerButtons({
   busy?: 'yes' | 'maybe' | 'no' | null;
   tone?: 'surface' | 'hero';
 }) {
-  const hero = tone === 'hero';
-  const outline = hero ? ('heroOutline' as const) : ('outline' as const);
+  const { colors } = useTheme();
+  const answered = status === 'yes' || status === 'maybe' || status === 'no';
+  // Drei Pillen (Anstoß): Zusagen in der Vereinsfarbe, Unsicher in Bernstein, Absagen in Rot –
+  // jeweils mit Beschriftung. Nach der Antwort bleibt nur die gewählte Pille gefüllt.
+  const pill = (
+    key: 'yes' | 'maybe' | 'no',
+    label: string,
+    icon: IconName,
+    fill: string,
+    onFill: string,
+    tint: string,
+    onTint: string,
+    onPress: () => void,
+  ) => {
+    const chosen = status === key;
+    const dim = answered && !chosen;
+    return (
+      <PressScale
+        key={key}
+        accessibilityRole="button"
+        accessibilityState={{ selected: chosen, busy: busy === key }}
+        accessibilityLabel={t(label)}
+        disabled={busy !== null}
+        onPress={onPress}
+        style={{
+          flex: 1,
+          minHeight: 52,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 7,
+          paddingHorizontal: 8,
+          borderRadius: 26,
+          backgroundColor: chosen || (!answered && key === 'yes') ? fill : tint,
+          opacity: dim ? 0.6 : 1,
+        }}
+      >
+        {busy === key ? (
+          <ActivityIndicator color={chosen || (!answered && key === 'yes') ? onFill : onTint} />
+        ) : (
+          <>
+            <Ionicons
+              name={icon}
+              size={19}
+              color={chosen || (!answered && key === 'yes') ? onFill : onTint}
+            />
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 14,
+                fontWeight: '800',
+                color: chosen || (!answered && key === 'yes') ? onFill : onTint,
+              }}
+            >
+              {label}
+            </Text>
+          </>
+        )}
+      </PressScale>
+    );
+  };
   return (
-    <View style={{ flexDirection: 'row', gap: 8 }}>
-      <Button
-        style={{ flex: 1 }}
-        label={status === 'yes' ? 'Zugesagt' : 'Zusagen'}
-        icon="checkmark"
-        hideLabel
-        size={hero ? 'sm' : 'md'}
-        variant={
-          status === 'yes' || status === 'pending' || status === null
-            ? hero
-              ? 'hero'
-              : 'primary'
-            : outline
-        }
-        loading={busy === 'yes'}
-        onPress={onYes}
-      />
-      <Button
-        style={{ flex: 1 }}
-        label={status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher'}
-        icon="help"
-        hideLabel
-        size={hero ? 'sm' : 'md'}
-        variant={status === 'maybe' ? (hero ? 'hero' : 'action') : outline}
-        loading={busy === 'maybe'}
-        onPress={onMaybe}
-      />
-      <Button
-        style={{ flex: 1 }}
-        label={status === 'no' ? 'Abgesagt' : 'Absagen'}
-        icon="close"
-        hideLabel
-        size={hero ? 'sm' : 'md'}
-        variant={status === 'no' ? (hero ? 'hero' : 'danger') : outline}
-        loading={busy === 'no'}
-        onPress={onNo}
-      />
+    <View style={{ flexDirection: 'row', gap: 10 }}>
+      {pill(
+        'yes',
+        status === 'yes' ? 'Zugesagt' : 'Zusagen',
+        'checkmark',
+        colors.primary,
+        colors.onPrimary,
+        withAlpha(colors.primary, 0.16),
+        colors.primaryText,
+        onYes,
+      )}
+      {pill(
+        'maybe',
+        status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher',
+        'help',
+        colors.status.action.solid,
+        colors.status.action.onSolid,
+        withAlpha(colors.status.action.solid, 0.16),
+        colors.status.action.onContainer,
+        onMaybe,
+      )}
+      {pill(
+        'no',
+        status === 'no' ? 'Abgesagt' : 'Absagen',
+        'close',
+        colors.status.urgent.solid,
+        colors.status.urgent.onSolid,
+        withAlpha(colors.status.urgent.solid, 0.16),
+        colors.status.urgent.onContainer,
+        onNo,
+      )}
     </View>
   );
 }

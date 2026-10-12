@@ -307,25 +307,25 @@ function ClubEventHero({ event }: { event: EventSummary }) {
   const on = colors.hero.onHero;
   const tile = formatDateTile(event.startsAt);
   return (
-    <HeroCard>
+    <HeroCard palette={colors.anstoss.eventHero}>
       <T variant="overline" color={on}>
         Nächster Vereinstermin
       </T>
       <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
         <View
           style={{
-            width: 58,
-            height: 62,
-            borderRadius: 18,
+            width: 62,
+            borderRadius: 16,
+            paddingVertical: 7,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: on,
+            backgroundColor: 'rgba(255,255,255,0.2)',
           }}
         >
-          <T variant="caption" color={colors.hero.from} style={{ fontSize: 11, fontWeight: '700' }}>
+          <T variant="caption" color={on} style={{ fontSize: 11, fontWeight: '800' }}>
             {tile.weekday}
           </T>
-          <T variant="figure" color={colors.hero.from} style={{ fontSize: 26, lineHeight: 30 }}>
+          <T variant="figure" color={on} style={{ fontSize: 34, lineHeight: 34 }}>
             {tile.day}
           </T>
         </View>
@@ -334,11 +334,11 @@ function ClubEventHero({ event }: { event: EventSummary }) {
             variant="headline"
             color={on}
             numberOfLines={2}
-            style={{ fontSize: 22, lineHeight: 26 }}
+            style={{ fontSize: 32, lineHeight: 34 }}
           >
             {event.title}
           </T>
-          <T variant="caption" color={on}>
+          <T variant="caption" color={colors.anstoss.eventHero.soft} style={{ fontSize: 13 }}>
             {[
               EVENT_TYPE_LABELS[event.type],
               `${formatLongDate(event.startsAt)}, ${formatTime(event.startsAt)} Uhr`,

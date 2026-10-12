@@ -315,6 +315,20 @@ describe.skipIf(!url)('API', () => {
       expect(home.week.every((e) => Date.parse(e.startsAt) < week)).toBe(true);
     });
 
+    it('Team: Kaderzusammensetzung nach Mannschaftsteilen (nur Anzahlen)', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const overview = await get<TeamOverview>(`/teams/${b1.id}`, coach.token);
+      const c = overview.composition;
+      expect(Object.keys(c).sort()).toEqual(['attack', 'defense', 'goalkeeper', 'midfield']);
+      expect(c.goalkeeper).toBeGreaterThanOrEqual(1);
+      expect(c.goalkeeper + c.defense + c.midfield + c.attack).toBeGreaterThanOrEqual(8);
+      // ein Spieler der Mannschaft sieht dieselben Zahlen
+      const player = await login('spieler');
+      const own = await get<TeamOverview>(`/teams/${b1.id}`, player.token);
+      expect(own.composition).toEqual(c);
+    });
+
     it('Team: Tabellenplatz (Trainerteam pflegt ihn) und Torschützenkönig aus Spielberichten', async () => {
       const coach = await login('trainer');
       const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;

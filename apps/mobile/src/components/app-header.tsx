@@ -3,6 +3,7 @@ import type { HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Animated, Image, Pressable, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useReduceMotion, useScrollY } from '@/lib/motion';
 import { clubInitials, formatLongDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
@@ -18,7 +19,9 @@ export function HeaderButton({
   label,
   onPress,
   count,
+  glass,
 }: {
+  glass?: boolean;
   icon: IconName;
   label: string;
   onPress: () => void;
@@ -35,12 +38,14 @@ export function HeaderButton({
         width: sizes.headerButton,
         height: sizes.headerButton,
         borderRadius: sizes.headerButton / 2,
-        backgroundColor: colors.surfaceRaised,
+        backgroundColor: glass ? 'rgba(255,255,255,0.12)' : colors.surfaceRaised,
         alignItems: 'center',
         justifyContent: 'center',
-        ...(isDark
-          ? { borderWidth: 1, borderColor: colors.border }
-          : shadowStyle(elevation.control)),
+        ...(glass
+          ? null
+          : isDark
+            ? { borderWidth: 1, borderColor: colors.border }
+            : shadowStyle(elevation.control)),
       }}
     >
       <Ionicons name={icon} size={22} color={colors.onSurface} />
@@ -86,13 +91,17 @@ export function AppHeader({
   title,
   subtitle,
   onSearch,
+  overlay,
 }: {
+  /** liegt auf dem Plakat (Home): durchsichtig, Titel 26 ohne Schrumpfen */
+  overlay?: boolean;
   title?: string;
   /** kleine Zeile über dem Titel; ohne Angabe das heutige Datum */
   subtitle?: string;
   onSearch?: () => void;
 }) {
   const { me, api } = useSignedIn();
+  const insets = useSafeAreaInsets();
   const { colors, spacing, sizes, isDark, elevation } = useTheme();
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const unread = home.data?.unreadNotifications ?? 0;
@@ -101,7 +110,7 @@ export function AppHeader({
   const scrollY = useScrollY();
   const reduce = useReduceMotion();
   const shrink =
-    scrollY && !reduce
+    scrollY && !reduce && !overlay
       ? scrollY.interpolate({
           inputRange: [0, 60],
           outputRange: [1, 22 / 32],
@@ -116,9 +125,9 @@ export function AppHeader({
         alignItems: 'center',
         gap: 10,
         paddingHorizontal: spacing.lg + 4,
-        paddingTop: spacing.md,
+        paddingTop: overlay ? insets.top + 22 : spacing.md,
         paddingBottom: spacing.sm,
-        backgroundColor: colors.background,
+        backgroundColor: overlay ? 'transparent' : colors.background,
       }}
     >
       <View
@@ -127,12 +136,14 @@ export function AppHeader({
           height: sizes.logo,
           borderRadius: sizes.logo / 2,
           overflow: 'hidden',
-          backgroundColor: colors.surfaceRaised,
+          backgroundColor: overlay ? 'rgba(255,255,255,0.12)' : colors.surfaceRaised,
           alignItems: 'center',
           justifyContent: 'center',
-          ...(isDark
-            ? { borderWidth: 1, borderColor: colors.border }
-            : shadowStyle(elevation.control)),
+          ...(overlay
+            ? null
+            : isDark
+              ? { borderWidth: 1, borderColor: colors.border }
+              : shadowStyle(elevation.control)),
         }}
       >
         {me.club.logoUrl ? (
@@ -160,18 +171,20 @@ export function AppHeader({
             variant="headline"
             numberOfLines={2}
             accessibilityRole="header"
-            style={{ fontSize: 32, lineHeight: 36 }}
+            style={overlay ? { fontSize: 26, lineHeight: 28 } : { fontSize: 32, lineHeight: 36 }}
           >
             {greeting}
           </T>
         </Animated.View>
       </View>
       <HeaderButton
+        glass={overlay}
         icon="search-outline"
         label="Suche"
         onPress={onSearch ?? (() => router.push('/search'))}
       />
       <HeaderButton
+        glass={overlay}
         icon="notifications-outline"
         label={unread ? `Benachrichtigungen, ${unread} ungelesen` : 'Benachrichtigungen'}
         count={unread}

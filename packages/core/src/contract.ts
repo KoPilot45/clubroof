@@ -466,6 +466,9 @@ export type SquadStatus = {
   pending: number;
 };
 
+/** Spieler je Mannschaftsteil (nur Spieler mit eingetragener Position) */
+export type SquadComposition = Record<'goalkeeper' | 'defense' | 'midfield' | 'attack', number>;
+
 export type TeamOverview = {
   team: { id: string; name: string; badge: string; league: string | null; ageGroup: string | null };
   permissions: TeamPermissions;
@@ -474,6 +477,8 @@ export type TeamOverview = {
   nextEvent: EventSummary | null;
   /** Kaderstatus bezogen auf den nächsten Termin */
   squad: SquadStatus | null;
+  /** Kaderzusammensetzung nach Mannschaftsteilen (Tor, Abwehr, Mittelfeld, Sturm) */
+  composition: SquadComposition;
   /** Nur für das Trainerteam: die nächsten drei Spiele mit Kaderstatus (Kaderplanung auf einen Blick) */
   upcomingMatches: { event: EventSummary; squad: SquadStatus }[];
   lastResults: MatchResult[];

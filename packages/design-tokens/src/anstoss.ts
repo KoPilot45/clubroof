@@ -211,6 +211,9 @@ export const ANSTOSS_BANDS = {
   cash: ['#1C4FA3', '#143A7A'],
 } as const;
 
+/** Hero für Veranstaltungen: Orange, immer gleich. */
+export const EVENT_HERO = { from: '#C26A00', to: '#5C3300', soft: '#FFE2B8' } as const;
+
 /** „Dringend“ bei roter Vereinsfarbe: Bernstein, damit Vereins- und Warnfarbe nicht verwechselt werden. */
 export const AMBER_URGENT = {
   text: '#FFC94D',
