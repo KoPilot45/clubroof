@@ -31,6 +31,8 @@ Es ändert **nur Aussehen und Aufbau**, keine Fachlogik.
 7. **Verein-Reiter**: „Nächster Vereinstermin“ ist orange gefärbt – falsch (kam aus meinem Entwurf). Der Hero ist wie alle anderen **in der gewählten Vereinsfarbe** (Referenz `DarkVerein`); nur Verwaltung (violett) und Vereinskasse (blau) behalten ihre Bereichsfarbe.
 8. **Heros exakt wie die Entwürfe**: Werte und messbare Abnahme (fünf Messpunkte, ±10 je Kanal, Kartenkante sichtbar) stehen in `docs/DESIGN-ANSTOSS.md`, Abschnitt „Hero-Blöcke: exakte Vorgabe“. Heros erst als erledigt melden, wenn die Messung besteht.
 
+9. **Hero-Auslauf (dunkel, jetzt neu)**: Das Plakat läuft weich in den Hintergrund aus, **auch hinter Pager, Kinderkarten und dem nächsten Abschnitt** (Plakatkörper 150 px höher als das Layout, mehrstufige Überblendung über die unteren 55 %); Folgeelemente liegen darüber. Werte in `docs/DESIGN-ANSTOSS.md`, Abschnitt „Hero-Auslauf, hell und dunkel gleich“, Referenz `DarkHome*`.
+
 ## Regeln und Abnahme
 Regeln wie im ersten Übergabeprompt (`docs/UEBERGABE-ANSTOSS.md`): Tokens und Bausteine statt Einzelstile, Texte Deutsch/übersetzt, Barrierefreiheit, kleine Commits.
 Abnahme: Bildschirme öffnen, **neben die aktualisierten Referenzdateien legen**, Abweichungen benennen und beheben; am Ende kurze Liste erledigt / bewusst abweichend / offen.

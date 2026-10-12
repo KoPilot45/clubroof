@@ -134,9 +134,11 @@ Hintergrund `#F2F5F3`, Flächen weiß mit Rand `#E2E8E4` (kaum Schatten), Text `
 Kategorie-Symbole auf Pastell (Farbe bei 12 % Deckkraft, Symbol in dunklerer Kategoriefarbe), untere Leiste weiß mit Rand und weichem Schatten. Gleiche Regeln wie dunkel: Heros in Vereinsfarbe,
 kein Zusagen-Bereich auf Home, Wisch-Spiele im Plakat, Waben statt Kürzel. Helle Vereinsfarben (Gelb, Orange) brauchen dort für Akzent und Text eine abgedunkelte Variante – noch nicht gezeichnet.
 
-**Heller Hero (Entscheidung Vorstand, Variante A, weicher Auslauf):** Das Plakat hat **keine feste Unterkante und keine runden unteren Ecken**; der farbige Verlauf geht unten
-**in den hellen Hintergrund über**. Technisch: Plakat-Verlauf wie dunkel (p1 → p2), darüber eine Überblendung zum Seitenhintergrund `#F2F5F3` über die **unteren 42 % der Plakathöhe**
-mit mehrstufigem (weich auslaufendem) Verlauf: `0 % → 0`, `12 % → .04`, `24 % → .12`, `36 % → .26`, `50 % → .46`, `64 % → .68`, `78 % → .86`, `90 % → .96`, `100 % → 1`.
-**Aller weißer Text liegt oberhalb des Auslaufs** (Plakathöhe so wählen, dass Meta-Zeile endet, bevor die Überblendung stärker als 12 % wird; bei zweizeiligen Spielnamen wächst das Plakat mit,
-nicht der Auslauf). Pager-Punkte und „Spiel 1 von 3 · wischen“ stehen **im Auslauf in dunkler Schrift** (`#3E4F45`, aktiver Punkt Akzentfarbe). Die Kinderkarten folgen direkt darunter.
-Referenz: Boards „Hell Hero A“ und „Hell 1 · Home“ im Design-Artefakt.
+**Hero-Auslauf, hell und dunkel gleich (Entscheidung Vorstand):** Das Plakat hat **keine feste Unterkante und keine runden unteren Ecken**. Hell und dunkel haben **dieselbe Layouthöhe (450 px)
+und dieselben Abstände**: Pager-Punkte (`margin-top: -40`, Höhe 40), danach Kinderkarten (`margin-top: 10–12`), danach „Diese Woche“ – keine zusätzliche Lücke im hellen Stil.
+Damit der Verlauf trotzdem weich ausläuft und der weiße Text lesbar bleibt, ist der **Plakatkörper 150 px höher als das Layout** (`H + 150`) und **läuft hinter Pager, Kinderkarten und dem Beginn des nächsten Abschnitts weiter**
+(Körper `position: absolute`, Folgeelemente `position: relative; z-index: 2`, Abschnitts-Überschriften ebenfalls `z-index: 2`). Verlauf: Vereinsfarbe p1 → p2 (hell: `radial-gradient(120% 78% at 85% 0%, p1, p2)`,
+dunkel: `radial-gradient(120% 70% at 80% 0%, p1 0%, p2 55%, bg 100%)`), darüber eine Überblendung zum Seitenhintergrund (hell `#F2F5F3`, dunkel `bg` des Themes) über die **unteren 55 % des Körpers** mit
+mehrstufigem Verlauf: `0 % → 0`, `12 % → .04`, `24 % → .12`, `36 % → .26`, `50 % → .46`, `64 % → .68`, `78 % → .86`, `90 % → .96`, `100 % → 1`. Aller weißer Text liegt im Bereich unter 12 % Überblendung;
+bei zweizeiligen Spielnamen wächst das Plakat mit. Pager-Punkte und „Spiel 1 von 3 · wischen“: hell dunkle Schrift (`#3E4F45`, aktiver Punkt Akzent), dunkel helle Schrift (`#9FB5A6`).
+Referenz: `DarkHome*` (Repository) und „Hell 1 · Home“ (Design-Artefakt).
