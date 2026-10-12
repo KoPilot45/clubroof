@@ -1,5 +1,5 @@
 /**
- * Bereichsübersicht im Team-Tab (Paket BU) für Sportliche Leitung, Jugendleitung und Vorstand: reine Übersicht,
+ * Abteilungsübersicht im Team-Tab (Paket BU) für Sportliche Leitung, Jugendleitung und Vorstand: reine Übersicht,
  * kein Zugriff in die Mannschaften. Ampel nur für die Trainingsbeteiligung – immer mit Wort.
  */
 import {
@@ -184,7 +184,7 @@ export function AreaOverviewScreen({ switcher }: { switcher?: ReactNode }) {
 
   return (
     <Screen
-      header={<AppHeader title="Team" subtitle="Bereichsübersicht" />}
+      header={<AppHeader title="Team" subtitle="Abteilungsübersicht" />}
       refreshing={query.isRefetching}
       onRefresh={() => void query.refetch()}
     >
@@ -248,7 +248,7 @@ export function AreaOverviewScreen({ switcher }: { switcher?: ReactNode }) {
           </HeroCard>
 
           {o.teams.length === 0 ? (
-            <Empty icon="shirt-outline" text="Keine Mannschaften im Bereich." />
+            <Empty icon="shirt-outline" text="Keine Mannschaften in der Abteilung." />
           ) : null}
           {o.teams.map((card) => (
             <TeamCard key={card.id} card={card} />

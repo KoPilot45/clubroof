@@ -42,7 +42,7 @@ export default function TeamModulesScreen() {
       <Card>
         <T variant="caption">
           Schalte ein, was deine Mannschaft nutzt. Ausgeschaltete Funktionen verschwinden für alle
-          in der Mannschaft. Was der Verein oder der Bereich ausgeschaltet hat, bleibt aus.
+          in der Mannschaft. Was der Verein oder die Abteilung ausgeschaltet hat, bleibt aus.
         </T>
       </Card>
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
@@ -66,7 +66,9 @@ export default function TeamModulesScreen() {
               <T variant="caption">{m.description}</T>
               {m.lockedBy ? (
                 <T variant="caption">
-                  {m.lockedBy === 'club' ? 'Im Verein ausgeschaltet' : 'Im Bereich ausgeschaltet'}
+                  {m.lockedBy === 'club'
+                    ? 'Im Verein ausgeschaltet'
+                    : 'In der Abteilung ausgeschaltet'}
                 </T>
               ) : null}
             </View>

@@ -281,8 +281,8 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
     return (
       <WizardShell
         {...shell}
-        title="Zu welchem Bereich gehört sie?"
-        explanation="Der Bereich bestimmt, wer die Mannschaft verwalten darf."
+        title="Zu welcher Abteilung gehört sie?"
+        explanation="Die Abteilung bestimmt, wer die Mannschaft verwalten darf."
         nextDisabled={!unitId}
         hint={o.next ? undefined : 'Die Saison lässt sich später in der Verwaltung wechseln.'}
       >

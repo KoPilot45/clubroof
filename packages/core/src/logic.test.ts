@@ -74,7 +74,7 @@ describe('can', () => {
     expect(can(grants, 'attendance.override', { teamId: 'team-c1' })).toBe(false);
   });
 
-  it('Bereichsrechte gelten für Mannschaften des Bereichs', () => {
+  it('Bereichsrechte gelten für Mannschaften der Abteilung', () => {
     expect(can(grants, 'news.publish', { teamId: 'x', orgUnitId: 'unit-youth' })).toBe(true);
     expect(can(grants, 'news.publish', { orgUnitId: 'unit-seniors' })).toBe(false);
   });

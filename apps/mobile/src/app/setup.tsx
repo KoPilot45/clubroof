@@ -627,12 +627,12 @@ function Wizard({ demo }: { demo?: boolean }) {
       <WizardShell
         {...shell}
         title="Wie ist euer Verein aufgebaut?"
-        explanation="Bereiche gliedern den Verein. Wer einen Bereich leitet, sieht nur dessen Mannschaften."
+        explanation="Abteilungen gliedern den Verein. Wer eine Abteilung leitet, sieht nur deren Mannschaften."
         hint="Vorstand und Administration sehen immer alles. Weitere Abteilungen kannst du später ergänzen."
       >
         <ChoiceCard
           icon="layers"
-          title="Ein gemeinsamer Bereich"
+          title="Eine gemeinsame Abteilung"
           text="Alle Mannschaften gehören zusammen"
           selected={d.orgMode === 'single'}
           onPress={() => patch({ orgMode: 'single' })}
@@ -640,7 +640,7 @@ function Wizard({ demo }: { demo?: boolean }) {
         <ChoiceCard
           icon="git-branch"
           title="Jugend und Senioren getrennt"
-          text="Jede Leitung sieht nur Daten ihres Bereichs"
+          text="Jede Leitung sieht nur Daten ihrer Abteilung"
           selected={d.orgMode === 'split'}
           onPress={() => patch({ orgMode: 'split' })}
           badge="Üblich"

@@ -534,7 +534,7 @@ export async function getTeamStats(
  * Kader-Statistik: alle Spieler der Mannschaft mit Einsätzen (veröffentlichte Aufstellungen
  * vergangener Spiele) sowie Toren, Vorlagen und Karten aus abgeschlossenen Spielberichten.
  * Sportliche Werte und Trainingsquoten sieht die ganze Mannschaft; Außenstehende mit Leserecht
- * (z. B. Bereichsleitung) nur mit `attendance.read`, sonst nur die eigenen.
+ * (z. B. Abteilungsleitung) nur mit `attendance.read`, sonst nur die eigenen.
  */
 async function squadTable(
   db: Db,

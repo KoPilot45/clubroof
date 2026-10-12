@@ -71,7 +71,8 @@ export async function uploadImage(
       !cash.all &&
       !cash.orgUnitIds.length &&
       !cash.teamIds.length &&
-      !actorCan(actor, 'clubcash.manage')
+      !actorCan(actor, 'clubcash.manage') &&
+      !scopesWith(actor.grants, 'clubcash.manage').orgUnitIds.length
     )
       throw forbidden('Belege laden Kassenwart und Trainerteam hoch.');
   }
@@ -144,7 +145,7 @@ export async function uploadDocument(
     'documents.manage',
     input.scopeType,
     input.scopeId,
-    'Für diesen Bereich darfst du keine Dokumente hochladen.',
+    'Für diese Abteilung darfst du keine Dokumente hochladen.',
   );
   const file = checkUpload('document', input.dataBase64, input.fileName);
   const id = randomUUID();

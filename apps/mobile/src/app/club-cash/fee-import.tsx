@@ -32,23 +32,35 @@ export default function FeeImportScreen() {
     setError(
       e instanceof RequestError ? e.message : 'Das hat nicht geklappt. Bitte versuche es erneut.',
     );
+  const [csv, setCsv] = useState<string | null>(null);
+  const accounts = (cash.data?.accounts ?? []).filter((a) => !a.archived);
+  const target = accountId ?? accounts[0]?.id ?? null;
+  // Die Vorschau gilt für das gewählte Konto (Beiträge gehören in die Zielkasse ihrer Beitragsart)
+  const run = useMutation({
+    mutationFn: (v: { dataBase64: string; accountId: string | null }) =>
+      api<ClubFeeImportPreview>('/club-cash/fees/import/preview', {
+        method: 'POST',
+        body: v,
+      }),
+    onSuccess: (p) => {
+      setError(null);
+      setPreview(p);
+    },
+    onError: fail,
+  });
   const read = useMutation({
     mutationFn: async () => {
       const file = await pickFile('csv');
       if (!file) return null;
-      return api<ClubFeeImportPreview>('/club-cash/fees/import/preview', {
-        method: 'POST',
-        body: { dataBase64: file.dataBase64 },
-      });
-    },
-    onSuccess: (p) => {
-      setError(null);
-      if (p) setPreview(p);
+      setCsv(file.dataBase64);
+      return run.mutateAsync({ dataBase64: file.dataBase64, accountId: target });
     },
     onError: fail,
   });
-  const accounts = (cash.data?.accounts ?? []).filter((a) => !a.archived);
-  const target = accountId ?? accounts[0]?.id ?? null;
+  const chooseAccount = (id: string) => {
+    setAccountId(id);
+    if (csv) run.mutate({ dataBase64: csv, accountId: id });
+  };
   const book = useMutation({
     mutationFn: () =>
       api<{ booked: number }>('/club-cash/fees/import/commit', {
@@ -79,9 +91,15 @@ export default function FeeImportScreen() {
         </T>
         <ChoiceChips
           label="Gebucht wird auf Konto"
-          options={accounts.map((a) => ({ value: a.id, label: a.name }))}
+          options={accounts.map((a) => ({
+            value: a.id,
+            label:
+              (cash.data?.funds.filter((f) => !f.archived).length ?? 0) > 1
+                ? `${cash.data?.funds.find((f) => f.id === a.fundId)?.name ?? ''} › ${a.name}`
+                : a.name,
+          }))}
           selected={target ? [target] : []}
-          onToggle={setAccountId}
+          onToggle={chooseAccount}
         />
         <Button
           label={preview ? 'Andere Datei wählen' : 'CSV-Datei wählen'}

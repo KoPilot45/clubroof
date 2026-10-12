@@ -102,7 +102,7 @@ export async function addOrgUnit(
     kind: input.kind,
     sortOrder: Number(n),
   });
-  await audit(db, actor, `Bereich angelegt: ${input.name.trim()}`, now);
+  await audit(db, actor, `Abteilung angelegt: ${input.name.trim()}`, now);
   return getClubSettings(db, actor);
 }
 
@@ -113,8 +113,8 @@ export async function renameOrgUnit(db: Db, actor: Actor, id: string, name: stri
     .set({ name: name.trim() })
     .where(and(eq(s.orgUnits.id, id), eq(s.orgUnits.clubId, actor.club.id)))
     .returning({ id: s.orgUnits.id });
-  if (!updated.length) throw notFound('Der Bereich');
-  await audit(db, actor, `Bereich umbenannt: ${name.trim()}`, now);
+  if (!updated.length) throw notFound('Die Abteilung');
+  await audit(db, actor, `Abteilung umbenannt: ${name.trim()}`, now);
   return getClubSettings(db, actor);
 }
 
@@ -122,12 +122,12 @@ export async function deleteOrgUnit(db: Db, actor: Actor, id: string, now: Date)
   requireSettings(actor);
   const settings = await getClubSettings(db, actor);
   const unit = settings.orgUnits.find((u) => u.id === id);
-  if (!unit) throw notFound('Der Bereich');
+  if (!unit) throw notFound('Die Abteilung');
   if (unit.teams > 0)
     throw new HttpError(
       409,
       'in_use',
-      'Der Bereich hat Mannschaften und kann nicht gelöscht werden.',
+      'Die Abteilung hat Mannschaften und kann nicht gelöscht werden.',
     );
   const [assigned] = await db
     .select({ id: s.roleAssignments.id })
@@ -138,9 +138,9 @@ export async function deleteOrgUnit(db: Db, actor: Actor, id: string, now: Date)
     throw new HttpError(
       409,
       'in_use',
-      'Für den Bereich sind noch Rollen vergeben (z. B. Jugendleitung).',
+      'Für die Abteilung sind noch Rollen vergeben (z. B. Jugendleitung).',
     );
   await db.delete(s.orgUnits).where(eq(s.orgUnits.id, id));
-  await audit(db, actor, `Bereich gelöscht: ${unit.name}`, now);
+  await audit(db, actor, `Abteilung gelöscht: ${unit.name}`, now);
   return getClubSettings(db, actor);
 }

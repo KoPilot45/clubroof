@@ -168,7 +168,7 @@ export async function createPoll(
     'polls.manage',
     input.scopeType,
     input.scopeId,
-    'Für diesen Bereich darfst du keine Umfrage erstellen.',
+    'Für diese Abteilung darfst du keine Umfrage erstellen.',
   );
   const options = [...new Set(input.options.map((o) => o.trim()).filter(Boolean))];
   if (options.length < 2)

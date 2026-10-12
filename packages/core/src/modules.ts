@@ -33,7 +33,7 @@ export const MODULES = [
   {
     key: 'news',
     name: 'News',
-    description: 'Ankündigungen für Verein, Bereiche und Mannschaften',
+    description: 'Ankündigungen für Verein, Abteilungen und Mannschaften',
     scopes: ['club', 'org_unit', 'team'],
     core: true,
   },

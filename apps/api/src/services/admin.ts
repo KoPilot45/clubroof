@@ -440,7 +440,7 @@ async function scopeLabels(db: Db | Tx, actor: Actor) {
   ]);
   return (scopeType: string, scopeId: string | null) => {
     if (scopeType === 'club') return 'Verein';
-    if (scopeType === 'org_unit') return units.find((u) => u.id === scopeId)?.name ?? 'Bereich';
+    if (scopeType === 'org_unit') return units.find((u) => u.id === scopeId)?.name ?? 'Abteilung';
     const team = teams.find((t) => t.id === scopeId);
     return team ? teamLabel(team) : 'Mannschaft (Vorsaison)';
   };
@@ -966,7 +966,7 @@ export async function assignRole(
   const scopeId = input.scopeType === 'club' ? null : (input.scopeId ?? null);
   if (input.scopeType !== 'club') {
     if (!scopeId)
-      throw new HttpError(400, 'scope_required', 'Bitte wähle Bereich oder Mannschaft.');
+      throw new HttpError(400, 'scope_required', 'Bitte wähle Abteilung oder Mannschaft.');
     const valid =
       input.scopeType === 'org_unit'
         ? (

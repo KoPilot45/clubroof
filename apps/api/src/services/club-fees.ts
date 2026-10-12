@@ -29,7 +29,14 @@ import { actorCan, type Actor } from '../actor';
 import { HttpError, notFound } from '../errors';
 import { deliver } from '../notify/deliver';
 import { usersByPerson } from '../notify/persons';
-import { audit, euro, requireFull, requireLevel, requireManage } from './club-cash';
+import {
+  audit,
+  euro,
+  requireClubFull as requireFull,
+  requireClubLevel as requireLevel,
+  requireClubManage as requireManage,
+} from './club-cash';
+import { ensureMainFund } from './club-funds';
 import { parseCsv } from './csv';
 
 const MONTHS = [
@@ -55,6 +62,7 @@ const deLong = (iso: string) => iso.split('-').reverse().join('.');
 type DueRow = {
   due: typeof s.clubFeeDues.$inferSelect;
   typeName: string;
+  typeFundId: string | null;
   first: string;
   last: string;
   memberNumber: string | null;
@@ -66,6 +74,7 @@ async function loadDues(db: Db, clubId: string): Promise<DueRow[]> {
     .select({
       due: s.clubFeeDues,
       typeName: s.clubFeeTypes.name,
+      typeFundId: s.clubFeeTypes.fundId,
       first: s.persons.firstName,
       last: s.persons.lastName,
       memberNumber: s.persons.memberNumber,
@@ -94,6 +103,7 @@ function toDue(r: DueRow, day: string): ClubFeeDue {
     personName: `${r.first} ${r.last}`,
     memberNumber: r.memberNumber,
     feeTypeName: r.typeName,
+    fundId: r.typeFundId,
     periodLabel: r.due.periodLabel,
     dueOn: r.due.dueOn,
     amountCents: r.due.amountCents,
@@ -139,8 +149,15 @@ export async function getClubFees(
       ),
     )
     .groupBy(s.clubFeeAssignments.feeTypeId);
+  const fundRows = await db
+    .select({ id: s.clubCashFunds.id, name: s.clubCashFunds.name, isMain: s.clubCashFunds.isMain })
+    .from(s.clubCashFunds)
+    .where(eq(s.clubCashFunds.clubId, clubId));
+  const mainFund = fundRows.find((f) => f.isMain);
   const types: ClubFeeType[] = typeRows.map((r) => ({
     id: r.type.id,
+    fundId: r.type.fundId,
+    fundName: fundRows.find((f) => f.id === (r.type.fundId ?? mainFund?.id))?.name ?? 'Hauptkasse',
     name: r.type.name,
     amountCents: r.type.amountCents,
     interval: r.type.interval as ClubFeeInterval,
@@ -283,6 +300,18 @@ export async function searchFeeMembers(
     }));
 }
 
+/** Zielkasse einer Beitragsart prüfen (leer = Hauptkasse). */
+async function targetFund(db: Db, actor: Actor, id: string | null | undefined) {
+  if (!id) return null;
+  const [fund] = await db
+    .select()
+    .from(s.clubCashFunds)
+    .where(and(eq(s.clubCashFunds.id, id), eq(s.clubCashFunds.clubId, actor.club.id)));
+  if (!fund) throw notFound('Die Kasse');
+  if (fund.archivedAt) throw new HttpError(409, 'archived', 'Die Kasse ist stillgelegt.');
+  return fund;
+}
+
 async function incomeCategory(db: Db, actor: Actor, id: string | null | undefined) {
   if (!id) return null;
   const [category] = await db
@@ -304,6 +333,7 @@ export async function createFeeType(
   if (!CLUB_FEE_INTERVALS.includes(input.interval))
     throw new HttpError(400, 'invalid_interval', 'Unbekannter Rhythmus.');
   const category = await incomeCategory(db, actor, input.categoryId);
+  const fund = await targetFund(db, actor, input.fundId);
   const [row] = await db
     .insert(s.clubFeeTypes)
     .values({
@@ -312,6 +342,7 @@ export async function createFeeType(
       amountCents: input.amountCents,
       interval: input.interval,
       categoryId: category?.id ?? null,
+      fundId: fund?.id ?? null,
       createdAt: now,
     })
     .returning({ id: s.clubFeeTypes.id });
@@ -330,7 +361,13 @@ export async function updateFeeType(
   db: Db,
   actor: Actor,
   id: string,
-  input: { name?: string; amountCents?: number; categoryId?: string | null; archived?: boolean },
+  input: {
+    name?: string;
+    amountCents?: number;
+    categoryId?: string | null;
+    fundId?: string | null;
+    archived?: boolean;
+  },
   now: Date,
 ): Promise<void> {
   requireManage(actor);
@@ -344,6 +381,8 @@ export async function updateFeeType(
   if (input.amountCents !== undefined) patch.amountCents = input.amountCents;
   if (input.categoryId !== undefined)
     patch.categoryId = (await incomeCategory(db, actor, input.categoryId))?.id ?? null;
+  if (input.fundId !== undefined)
+    patch.fundId = (await targetFund(db, actor, input.fundId))?.id ?? null;
   if (input.archived !== undefined) patch.archivedAt = input.archived ? now : null;
   if (Object.keys(patch).length === 0) return;
   await db.update(s.clubFeeTypes).set(patch).where(eq(s.clubFeeTypes.id, id));
@@ -612,6 +651,19 @@ async function bookPayment(
     .select()
     .from(s.clubFeeTypes)
     .where(eq(s.clubFeeTypes.id, r.due.feeTypeId));
+  // Beiträge fließen in die Zielkasse der Beitragsart (leer = Hauptkasse)
+  const targetFundId = type!.fundId ?? (await ensureMainFund(db, actor.club.id, now));
+  if (account.fundId !== targetFundId) {
+    const [target] = await db
+      .select({ name: s.clubCashFunds.name })
+      .from(s.clubCashFunds)
+      .where(eq(s.clubCashFunds.id, targetFundId));
+    throw new HttpError(
+      400,
+      'wrong_fund',
+      `Beiträge der Art ${r.typeName} gehören in die Kasse ${target?.name ?? 'Hauptkasse'}. Bitte ein Konto dieser Kasse wählen.`,
+    );
+  }
   const categoryId = await feeCategoryFor(db, actor.club.id, type!.categoryId);
   const name = `${r.first} ${r.last}`;
   await db.transaction(async (tx) => {
@@ -833,6 +885,7 @@ export async function previewImport(
   actor: Actor,
   csv: string,
   now: Date,
+  accountId: string | null = null,
 ): Promise<ClubFeeImportPreview> {
   requireManage(actor);
   const table = parseCsv(csv).filter((row) => row.some((c) => c !== ''));
@@ -848,9 +901,22 @@ export async function previewImport(
     );
   const cols = findColumns(table[headerAt]!);
   const day = today(actor, now);
-  const dues = (await loadDues(db, actor.club.id))
+  const allDues = (await loadDues(db, actor.club.id))
     .map((r) => ({ r, due: toDue(r, day) }))
     .filter((x) => x.due.openCents > 0);
+  // Beiträge gehören in die Zielkasse ihrer Beitragsart: nur Forderungen der Kasse des gewählten Kontos
+  let dues = allDues;
+  if (accountId) {
+    const [account] = await db
+      .select({ fundId: s.clubCashAccounts.fundId })
+      .from(s.clubCashAccounts)
+      .where(
+        and(eq(s.clubCashAccounts.id, accountId), eq(s.clubCashAccounts.clubId, actor.club.id)),
+      );
+    if (!account) throw notFound('Das Konto');
+    const main = await ensureMainFund(db, actor.club.id, now);
+    dues = allDues.filter((x) => (x.r.typeFundId ?? main) === account.fundId);
+  }
   const people = await db
     .select({
       id: s.persons.id,
@@ -912,7 +978,20 @@ export async function previewImport(
         x.due.openCents === amount,
     );
     if (!pick) {
-      rows.push({ ...base, note: 'Betrag passt zu keiner offenen Forderung' });
+      const otherFund =
+        dues !== allDues &&
+        allDues.some(
+          (x) =>
+            !used.has(x.r.due.id) &&
+            candidates.some((p) => p.id === x.r.due.personId) &&
+            x.due.openCents === amount,
+        );
+      rows.push({
+        ...base,
+        note: otherFund
+          ? 'Der Beitrag gehört in eine andere Kasse – bitte ein Konto dieser Kasse wählen'
+          : 'Betrag passt zu keiner offenen Forderung',
+      });
       continue;
     }
     used.add(pick.r.due.id);

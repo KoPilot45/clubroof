@@ -202,11 +202,12 @@ export function adminCategories(me: MeResponse): AreaCategory[] {
       label: 'Verein',
       icon: 'shield',
       groups: groups([
+        ['Auftritt', [['club', 'Verein & Design', 'shield', '/admin/club', club]]],
         [
-          'Auftritt',
+          'Struktur',
           [
-            ['club', 'Verein & Design', 'shield', '/admin/club', club],
-            ['areas', 'Bereiche', 'git-branch', '/admin/teams', a.manageTeams || a.planSeason],
+            ['departments', 'Abteilungen', 'git-branch', '/admin/departments', club],
+            ['funds', 'Kassen', 'wallet', '/admin/funds', canOpenClubCash(me)],
           ],
         ],
         [
@@ -235,7 +236,10 @@ export const canOpenAdmin = (me: MeResponse) =>
   me.canAdminister || Object.values(me.admin).some(Boolean) || me.news.write || me.news.publish;
 
 /** Wer die Vereinskasse als eigenen Bereich öffnen darf. */
-export const canOpenClubCash = (me: MeResponse) => !!me.clubCash;
+export const canOpenClubCash = (me: MeResponse) => me.clubCash?.viewer === 'treasury';
+
+/** Vorstand mit freigegebener Einsicht: nur die reine Kassenübersicht (Verein → Vereinsleben). */
+export const canSeeCashOverview = (me: MeResponse) => me.clubCash?.viewer === 'board';
 
 /** Kategorien der Vereinskasse: Buchung, Beiträge, Planung, Prüfung. */
 export function cashCategories(me: MeResponse): AreaCategory[] {
@@ -258,7 +262,10 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
         ['Kassenbuch', [['entries', 'Kassenbuch', 'book', '/club-cash/entries', full]]],
         [
           'Einrichtung',
-          [['accounts', 'Konten & Kategorien', 'settings', '/club-cash/manage', true]],
+          [
+            ['accounts', 'Konten & Kategorien', 'settings', '/club-cash/manage', true],
+            ['funds', 'Kassen', 'wallet', '/club-cash/funds', true],
+          ],
         ],
       ]),
     },

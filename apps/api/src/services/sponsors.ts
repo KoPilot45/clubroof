@@ -60,7 +60,7 @@ const toItem = (row: typeof s.sponsors.$inferSelect, actor: Actor, now: Date): S
   endsOn: row.endsOn,
 });
 
-/** Laufende Sponsoren, die zu dieser Person passen (Verein für alle, Jugend/Senioren je Bereich). */
+/** Laufende Sponsoren, die zu dieser Person passen (Verein für alle, Jugend/Senioren je Abteilung). */
 async function eligible(db: Db, actor: Actor, now: Date) {
   if (!moduleEnabled(actor, 'sponsors') || isMinor(actor, now)) return [];
   const day = today(actor, now);

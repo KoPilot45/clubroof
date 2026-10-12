@@ -72,7 +72,7 @@ export function adminFunctionTiles(me: MeResponse): TileItem[] {
       icon: 'create',
       onPress: () => router.push('/admin/news'),
     },
-    !!me.clubCash && {
+    me.clubCash?.viewer === 'treasury' && {
       key: 'clubcash',
       label: 'Vereinskasse',
       icon: 'wallet',

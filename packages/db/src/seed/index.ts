@@ -1747,19 +1747,33 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     await insertChunked(tx, s.cashTransactions, txRows);
 
     // ── Vereinskasse (Paket K1) ───────────────────────────────────────────────────────────
+    const [mainFund] = await tx
+      .insert(s.clubCashFunds)
+      .values({ clubId, name: 'Hauptkasse', isMain: true, sortOrder: 0 })
+      .returning({ id: s.clubCashFunds.id });
+    const fundId = mainFund!.id;
     const clubAccounts = await tx
       .insert(s.clubCashAccounts)
       .values([
         {
           clubId,
+          fundId,
           name: 'Girokonto Sparkasse',
           kind: 'bank',
           openingBalanceCents: euro(8250),
           sortOrder: 0,
         },
-        { clubId, name: 'Barkasse', kind: 'cash', openingBalanceCents: euro(300), sortOrder: 1 },
         {
           clubId,
+          fundId,
+          name: 'Barkasse',
+          kind: 'cash',
+          openingBalanceCents: euro(300),
+          sortOrder: 1,
+        },
+        {
+          clubId,
+          fundId,
           name: 'Tagesgeld',
           kind: 'savings',
           openingBalanceCents: euro(5000),

@@ -272,7 +272,9 @@ function DueActions({
   onError: (message: string) => void;
 }) {
   const { api } = useSignedIn();
-  const accounts = (cash?.accounts ?? []).filter((a) => !a.archived);
+  // Zahlungen gehören in die Zielkasse der Beitragsart (leer = Hauptkasse)
+  const targetFundId = due.fundId ?? cash?.funds.find((f) => f.isMain)?.id;
+  const accounts = (cash?.accounts ?? []).filter((a) => !a.archived && a.fundId === targetFundId);
   const [accountId, setAccountId] = useState<string | null>(null);
   const [amount, setAmount] = useState(String(due.openCents / 100).replace('.', ','));
   const [paidOn, setPaidOn] = useState(today);

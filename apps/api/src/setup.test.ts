@@ -209,7 +209,7 @@ describe.skipIf(!url)('Ersteinrichtung', () => {
       { label: 'Kabine 2 · Sportplatz am Wald' },
     ]);
 
-    // „Jugend und Senioren getrennt“: zwei Bereiche, Leitungsrollen lassen sich je Bereich vergeben
+    // „Jugend und Senioren getrennt“: zwei Bereiche, Leitungsrollen lassen sich je Abteilung vergeben
     const catalog = (
       await app.inject({ url: '/admin/roles', headers: { authorization: `Bearer ${login.token}` } })
     ).json<RoleCatalog>();

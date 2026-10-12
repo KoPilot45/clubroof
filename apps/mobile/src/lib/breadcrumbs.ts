@@ -92,6 +92,7 @@ const RULES: Record<string, Rule> = {
   'club-calendar': section('verein'),
   'club-schedule': section('verein'),
   sponsors: section('verein'),
+  'club-cash-overview': section('verein'),
   contacts: section('verein'),
   'forum/index': section('verein'),
   'forum/[id]': under('verein', 'Forum', '/forum'),
@@ -116,6 +117,7 @@ const RULES: Record<string, Rule> = {
   'club-cash/fee-import': under('verein', 'Vereinskasse', '/club-cash'),
   'club-cash/fee-setup': under('verein', 'Vereinskasse', '/club-cash'),
   'club-cash/manage': under('verein', 'Vereinskasse', '/club-cash'),
+  'club-cash/funds': under('verein', 'Vereinskasse', '/club-cash'),
   // Mehr
   account: section('mehr'),
   help: section('mehr'),
@@ -150,6 +152,8 @@ const RULES: Record<string, Rule> = {
   'admin/transfer-new': admin({ label: 'Spielerbewegungen', href: '/admin/transfers' }),
   'admin/invites': admin(),
   'admin/sponsors': admin(),
+  'admin/departments': admin(),
+  'admin/funds': admin(),
 };
 
 /** Bereich und Pfad einer Seite. `title` ist die letzte Stufe (aktuelle Seite). */

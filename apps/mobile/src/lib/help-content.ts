@@ -35,9 +35,9 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         id: 'area-overview',
-        question: 'Was zeigt die Bereichsübersicht im Team-Tab?',
+        question: 'Was zeigt die Abteilungsübersicht im Team-Tab?',
         answer:
-          'Sportliche Leitung, Jugendleitung und Vorstand sehen im Reiter „Team“ eine Übersicht über die Bereiche (Senioren, Frauen, Jugend) – ohne Zugriff in die einzelnen Mannschaften. Oben stehen die Kennzahlen, darunter eine Karte je Mannschaft mit Kader, Trainerteam, Trainingsbeteiligung der letzten 4 Wochen und dem nächsten Spiel. Die Ampel gilt nur für die Trainingsbeteiligung: gut ab 65 %, mittel 50–64 %, niedrig darunter; bei weniger als 3 erfassten Einheiten steht „zu wenig Daten“. Wer auch selbst in einer Mannschaft ist, schaltet oben zwischen „Meine Mannschaft“ und „Übersicht“ um.',
+          'Sportliche Leitung, Jugendleitung und Vorstand sehen im Reiter „Team“ eine Übersicht über die Abteilungen (Senioren, Frauen, Jugend) – ohne Zugriff in die einzelnen Mannschaften. Oben stehen die Kennzahlen, darunter eine Karte je Mannschaft mit Kader, Trainerteam, Trainingsbeteiligung der letzten 4 Wochen und dem nächsten Spiel. Die Ampel gilt nur für die Trainingsbeteiligung: gut ab 65 %, mittel 50–64 %, niedrig darunter; bei weniger als 3 erfassten Einheiten steht „zu wenig Daten“. Wer auch selbst in einer Mannschaft ist, schaltet oben zwischen „Meine Mannschaft“ und „Übersicht“ um.',
       },
       {
         id: 'time-picker',
@@ -50,13 +50,20 @@ export const HELP_SECTIONS: HelpSection[] = [
         question:
           'Wie lade ich nur bestimmte Mannschaften oder Personen zu einer Veranstaltung ein?',
         answer:
-          'Beim Planen einer Veranstaltung wählst du oben die Gruppe („Ganzer Verein“, ein Bereich …). Mit „Mannschaften oder Personen auswählen“ lädst du gezielt ein: Setze im Fenster Häkchen bei Mannschaften oder suche Personen. Die Auswahl erscheint als Chips; mit „×“ nimmst du jemanden wieder heraus. Nur die Eingeladenen werden benachrichtigt. Einzelne Personen darfst du nur mit dem Recht für die Mitgliederliste einladen.',
+          'Beim Planen einer Veranstaltung wählst du oben die Gruppe („Ganzer Verein“, eine Abteilung …). Mit „Mannschaften oder Personen auswählen“ lädst du gezielt ein: Setze im Fenster Häkchen bei Mannschaften oder suche Personen. Die Auswahl erscheint als Chips; mit „×“ nimmst du jemanden wieder heraus. Nur die Eingeladenen werden benachrichtigt. Einzelne Personen darfst du nur mit dem Recht für die Mitgliederliste einladen.',
       },
       {
         id: 'admin-area',
         question: 'Wo finde ich die Verwaltung und die Vereinskasse?',
         answer:
           'Unter „Mehr“ stehen direkt unter deinem Profil zwei Zugänge: „Admin-Verwaltung“ (violett) für alle mit Verwaltungsrechten und „Vereinskasse“ (blau) für alle mit Kassenzugriff. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Beenden“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Prüfung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.',
+      },
+      {
+        id: 'cash-overview',
+        question: 'Was ist die Kassenübersicht?',
+        answer:
+          'Der Vorstand sieht – wenn der Verein es in „Wer darf die Kasse einsehen?“ freigibt – unter „Verein → Vereinsleben → Kassenübersicht“ eine reine Anzeige: Kassenstand gesamt, Einnahmen und Ausgaben, die einzelnen Kassen und die Beitragsquote. Buchungen, Belege und Funktionen gibt es dort nicht; die Vereinskasse selbst führen Kassenwart und Kassenprüfer.',
+        link: { label: 'Kassenübersicht', href: '/club-cash-overview' },
       },
       {
         id: 'archive',
@@ -445,7 +452,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'team-wizard',
         question: 'Wie lege ich eine neue Mannschaft an?',
         answer:
-          'In der Verwaltung unter „Mannschaften & Saison“ führt dich der Assistent in 11 Schritten: Name, Bereich, Altersklasse und Liga, Vorlage, Teilnahme, Trainerteam, Kader, Antwortfristen für Training und Spiele (in Stunden vor Beginn), Treffpunkt und Name im DFBnet. Erst im letzten Schritt wird die Mannschaft angelegt; bis dahin kannst du jederzeit zurück oder abbrechen.',
+          'In der Verwaltung unter „Mannschaften & Saison“ führt dich der Assistent in 11 Schritten: Name, Abteilung, Altersklasse und Liga, Vorlage, Teilnahme, Trainerteam, Kader, Antwortfristen für Training und Spiele (in Stunden vor Beginn), Treffpunkt und Name im DFBnet. Erst im letzten Schritt wird die Mannschaft angelegt; bis dahin kannst du jederzeit zurück oder abbrechen.',
         link: { label: 'Mannschaft anlegen', href: '/admin/team-new' },
       },
       {
@@ -502,7 +509,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'coach-modules',
         question: 'Wie stelle ich Funktionen meiner Mannschaft ein?',
         answer:
-          'Unter „Team → Funktionen“ schaltest du z. B. Statistik, Kasse oder Aufgaben für deine Mannschaft ein und aus. Was der Verein oder Bereich ausgeschaltet hat, bleibt gesperrt.',
+          'Unter „Team → Funktionen“ schaltest du z. B. Statistik, Kasse oder Aufgaben für deine Mannschaft ein und aus. Was der Verein oder Abteilung ausgeschaltet hat, bleibt gesperrt.',
       },
       {
         id: 'coach-invite',
@@ -529,6 +536,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         answer:
           'Die Vereinskasse ist von den Mannschaftskassen getrennt und liegt unter „Verein → Vereinskasse“ (wenn das Modul aktiv ist). Der Kassenwart (Verein) legt Konten mit Anfangsbestand an, bucht Einnahmen und Ausgaben mit Kategorie, optionaler Kostenstelle, Belegnummer und Belegfoto und bucht um zwischen Konten. Buchungen werden nie gelöscht, sondern mit Begründung storniert. Die Kategorien gehören zu den vier steuerlichen Bereichen (ideell, Vermögensverwaltung, Zweckbetrieb, wirtschaftlicher Geschäftsbetrieb). Kassenprüfer lesen alles, buchen aber nicht. Wer außerdem einsehen darf (z. B. der Vorstand), stellt die Vereinsadministration unter „Einrichtung“ ein.',
         link: { label: 'Vereinskasse', href: '/club-cash' },
+      },
+      {
+        id: 'club-funds',
+        question: 'Wie funktionieren Kassen und Abteilungen?',
+        answer:
+          'Der Verein kann mehrere Kassen führen, z. B. eine Jugendkasse. Unter „Admin-Verwaltung → Verein → Abteilungen“ legst du Abteilungen an (z. B. Senioren, Frauen, Jugend); danach fragt die App, ob die Abteilung eine eigene Kasse bekommen soll. Unter „Kassen“ legst du Kassen an, ordnest sie einer oder mehreren Abteilungen zu und bestimmst genau eine Hauptkasse. Ohne eigene Kasse laufen die Buchungen einer Abteilung über die Hauptkasse. Jede Kasse hat eigene Konten und Beiträge; in der Vereinskasse wechselst du oben zwischen „Alle“ und einer einzelnen Kasse. Kassen werden nie gelöscht, nur stillgelegt. Eine Umbuchung zwischen Konten verschiedener Kassen wird in beiden Kassen gebucht, ein Storno wirkt in beiden. Die Rolle Kassenwart (Verein) kann für den ganzen Verein oder nur für eine Abteilung vergeben werden und gilt dann nur für deren Kassen.',
+        link: { label: 'Kassen', href: '/club-cash/funds' },
       },
       {
         id: 'club-fees',

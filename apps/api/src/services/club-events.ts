@@ -46,7 +46,7 @@ export async function getEventPlanning(db: Db, actor: Actor, now: Date): Promise
     .orderBy(asc(s.orgUnits.sortOrder));
   const scopes = planScopes(actor, units);
   if (scopes.length === 0)
-    throw forbidden('Veranstaltungen plant der Vorstand bzw. die Bereichsleitung.');
+    throw forbidden('Veranstaltungen plant der Vorstand bzw. die Abteilungsleitung.');
   const [facilities, events] = await Promise.all([
     db
       .select({ id: s.facilities.id, name: s.facilities.name })
@@ -111,7 +111,7 @@ export async function createClubEvent(
   if (!can(actor.grants, 'events.manage', target))
     throw forbidden(
       input.orgUnitId
-        ? 'Für diesen Bereich darfst du keine Veranstaltungen planen.'
+        ? 'Für diese Abteilung darfst du keine Veranstaltungen planen.'
         : 'Vereinsveranstaltungen plant der Vorstand.',
     );
   // Gezielte Einladung: Mannschaften brauchen das Trainerrecht für die Mannschaft, Personen das Mitgliederrecht
@@ -143,7 +143,7 @@ export async function createClubEvent(
       .select({ id: s.orgUnits.id })
       .from(s.orgUnits)
       .where(and(eq(s.orgUnits.id, input.orgUnitId), eq(s.orgUnits.clubId, actor.club.id)));
-    if (!unit) throw new HttpError(400, 'invalid_unit', 'Unbekannter Bereich.');
+    if (!unit) throw new HttpError(400, 'invalid_unit', 'Unbekannte Abteilung.');
   }
   const startsAt = new Date(input.startsAt);
   const endsAt = new Date(input.endsAt);

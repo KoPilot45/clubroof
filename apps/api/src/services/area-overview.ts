@@ -1,5 +1,5 @@
 /**
- * Bereichsübersicht für Sportliche Leitung, Jugendleitung und Vorstand (Paket BU): eine reine Übersicht über
+ * Abteilungsübersicht für Sportliche Leitung, Jugendleitung und Vorstand (Paket BU): eine reine Übersicht über
  * Mannschaften mit Kader, Trainerteam, Trainingsbeteiligung und nächstem Spiel – kein Zugriff in die Mannschaft.
  * Keine Absagegründe, keine Kasse, keine Anwesenheitslisten.
  */
@@ -78,7 +78,7 @@ export async function getAreaOverview(
   now: Date,
 ): Promise<AreaOverview> {
   const units = await allowedUnits(db, actor);
-  if (!units) throw forbidden('Die Bereichsübersicht sehen nur Leitung und Vorstand.');
+  if (!units) throw forbidden('Die Abteilungsübersicht sehen nur Leitung und Vorstand.');
   const areas = AREA_KEYS.filter((a) => units.some((u) => areaOf(u.kind) === a));
   const area = areaParam !== 'all' && areas.includes(areaParam) ? areaParam : 'all';
   const unitArea = new Map(units.map((u) => [u.id, areaOf(u.kind)]));

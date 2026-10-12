@@ -73,6 +73,7 @@ export const clubFeeRoutes: FastifyPluginAsyncZod = async (app) => {
           amountCents: cents,
           interval: z.enum(CLUB_FEE_INTERVALS),
           categoryId: z.uuid().nullish(),
+          fundId: z.uuid().nullish(),
         }),
       },
     },
@@ -91,6 +92,7 @@ export const clubFeeRoutes: FastifyPluginAsyncZod = async (app) => {
           name: z.string().trim().min(2).max(60).optional(),
           amountCents: cents.optional(),
           categoryId: z.uuid().nullable().optional(),
+          fundId: z.uuid().nullable().optional(),
           archived: z.boolean().optional(),
         }),
       },
@@ -185,7 +187,12 @@ export const clubFeeRoutes: FastifyPluginAsyncZod = async (app) => {
     '/club-cash/fees/import/preview',
     {
       bodyLimit: 3 * 1024 * 1024,
-      schema: { body: z.object({ dataBase64: z.string().min(1).max(4_000_000) }) },
+      schema: {
+        body: z.object({
+          dataBase64: z.string().min(1).max(4_000_000),
+          accountId: z.uuid().nullish(),
+        }),
+      },
     },
     async (request): Promise<ClubFeeImportPreview> =>
       previewImport(
@@ -193,6 +200,7 @@ export const clubFeeRoutes: FastifyPluginAsyncZod = async (app) => {
         request.actor!,
         decodeText(Buffer.from(request.body.dataBase64, 'base64')),
         app.now(),
+        request.body.accountId ?? null,
       ),
   );
   app.post(

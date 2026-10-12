@@ -47,6 +47,7 @@ export default function ClubCashManageScreen() {
   const [accName, setAccName] = useState('');
   const [accKind, setAccKind] = useState<ClubCashAccountKind>('bank');
   const [accOpening, setAccOpening] = useState('');
+  const [accFundId, setAccFundId] = useState<string | null>(null);
   const [catName, setCatName] = useState('');
   const [catDirection, setCatDirection] = useState<ClubCashDirection>('expense');
   const [catArea, setCatArea] = useState<ClubCashArea>('ideal');
@@ -71,6 +72,8 @@ export default function ClubCashManageScreen() {
   if (cash.isPending) return <Loading />;
   if (cash.error || !c) return <ErrorNotice error={cash.error} onRetry={() => cash.refetch()} />;
   const manage = c.canManage;
+  const activeFunds = c.funds.filter((f) => !f.archived);
+  const accFund = activeFunds.find((f) => f.id === accFundId) ?? activeFunds[0];
 
   return (
     <Screen edges={[]}>
@@ -112,7 +115,13 @@ export default function ClubCashManageScreen() {
               first={i === 0}
               strike={a.archived}
               title={a.name}
-              subtitle={`${CLUB_CASH_ACCOUNT_KIND_LABEL[a.kind]} · ${t('Anfangsbestand')} ${formatEuro(a.openingBalanceCents)}`}
+              subtitle={[
+                activeFunds.length > 1 ? c.funds.find((f) => f.id === a.fundId)?.name : null,
+                CLUB_CASH_ACCOUNT_KIND_LABEL[a.kind],
+                `${t('Anfangsbestand')} ${formatEuro(a.openingBalanceCents)}`,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
               trailing={
                 manage ? (
                   <Button
@@ -153,6 +162,14 @@ export default function ClubCashManageScreen() {
               selected={[accKind]}
               onToggle={setAccKind}
             />
+            {activeFunds.length > 1 ? (
+              <ChoiceChips
+                label="Kasse"
+                options={activeFunds.map((f) => ({ value: f.id, label: f.name }))}
+                selected={accFund ? [accFund.id] : []}
+                onToggle={setAccFundId}
+              />
+            ) : null}
             <TextField
               label="Anfangsbestand in €"
               value={accOpening}
@@ -172,6 +189,7 @@ export default function ClubCashManageScreen() {
                     name: accName.trim(),
                     kind: accKind,
                     openingBalanceCents: parseEuro(accOpening) ?? 0,
+                    fundId: accFund?.id,
                   },
                 });
                 setAccName('');

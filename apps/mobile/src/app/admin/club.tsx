@@ -1,24 +1,15 @@
-import { Ionicons } from '@expo/vector-icons';
-import type {
-  ClubColorKey,
-  ClubSettings,
-  OrgUnitKind,
-  UpdateClubInput,
-  UploadedImage,
-} from '@clubroof/core';
+import type { ClubColorKey, ClubSettings, UpdateClubInput, UploadedImage } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
-import { ClubColorPicker, ORG_UNIT_KIND_LABELS } from '@/components/club-color';
+import { Image, View } from 'react-native';
+import { ClubColorPicker } from '@/components/club-color';
 import {
   Button,
   Card,
-  ChoiceChips,
   Chip,
   Crest,
   ErrorNotice,
-  ListRow,
   Loading,
   Screen,
   Section,
@@ -28,7 +19,6 @@ import {
 import { RequestError } from '@/lib/api';
 import { clubInitials } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
-import { useTheme } from '@/lib/theme';
 import { mediaUri, pickFile } from '@/lib/upload';
 import { t } from '@/lib/i18n';
 
@@ -117,9 +107,6 @@ function ClubForm() {
   const [color, setColor] = useState<ClubColorKey>('green');
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const [unitName, setUnitName] = useState('');
-  const [unitKind, setUnitKind] = useState<OrgUnitKind>('youth');
-  const [editing, setEditing] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (!settings.data) return;
@@ -146,21 +133,6 @@ function ClubForm() {
     },
     onError,
   });
-  const unit = useMutation({
-    mutationFn: (v: { method: 'POST' | 'PATCH' | 'DELETE'; id?: string; body?: object }) =>
-      api<ClubSettings>(v.id ? `/admin/org-units/${v.id}` : '/admin/org-units', {
-        method: v.method,
-        body: v.body,
-      }),
-    onSuccess: (data) => {
-      onDone(data);
-      setUnitName('');
-      setEditing(null);
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'teams'] });
-    },
-    onError,
-  });
-
   if (settings.isPending) return <Loading />;
   if (settings.error)
     return <ErrorNotice error={settings.error} onRetry={() => settings.refetch()} />;
@@ -221,95 +193,6 @@ function ClubForm() {
         </Card>
       </Section>
 
-      <Section title="Bereiche">
-        <Card>
-          {s.orgUnits.map((u, i) =>
-            editing?.id === u.id ? (
-              <View key={u.id} style={{ gap: 8, paddingVertical: 8 }}>
-                <TextField
-                  label="Neuer Name"
-                  value={editing.name}
-                  onChangeText={(v) => setEditing({ id: u.id, name: v })}
-                  maxLength={50}
-                />
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  <Button
-                    label="Übernehmen"
-                    style={{ flex: 1 }}
-                    disabled={editing.name.trim().length < 2}
-                    loading={unit.isPending}
-                    onPress={() =>
-                      unit.mutate({
-                        method: 'PATCH',
-                        id: u.id,
-                        body: { name: editing.name.trim() },
-                      })
-                    }
-                  />
-                  <Button
-                    label="Abbrechen"
-                    variant="outline"
-                    style={{ flex: 1 }}
-                    onPress={() => setEditing(null)}
-                  />
-                </View>
-              </View>
-            ) : (
-              <ListRow
-                key={u.id}
-                first={i === 0}
-                title={u.name}
-                subtitle={`${ORG_UNIT_KIND_LABELS[u.kind]} · ${u.teams === 1 ? '1 Mannschaft' : `${u.teams} Mannschaften`}`}
-                trailing={
-                  <View style={{ flexDirection: 'row', gap: 4 }}>
-                    <IconAction
-                      icon="pencil"
-                      label={`${u.name} umbenennen`}
-                      onPress={() => setEditing({ id: u.id, name: u.name })}
-                    />
-                    {u.teams === 0 ? (
-                      <IconAction
-                        icon="trash-outline"
-                        label={`${u.name} löschen`}
-                        onPress={() => unit.mutate({ method: 'DELETE', id: u.id })}
-                      />
-                    ) : null}
-                  </View>
-                }
-              />
-            ),
-          )}
-        </Card>
-        <Card style={{ gap: 12 }}>
-          <T variant="label">Bereich hinzufügen</T>
-          <TextField
-            label="Name"
-            value={unitName}
-            onChangeText={setUnitName}
-            maxLength={50}
-            placeholder={t('z. B. Walking Football')}
-          />
-          <ChoiceChips
-            options={(Object.keys(ORG_UNIT_KIND_LABELS) as OrgUnitKind[]).map((k) => ({
-              value: k,
-              label: ORG_UNIT_KIND_LABELS[k],
-            }))}
-            selected={[unitKind]}
-            onToggle={setUnitKind}
-          />
-          <Button
-            label="Bereich anlegen"
-            icon="add"
-            variant="outline"
-            disabled={unitName.trim().length < 2}
-            loading={unit.isPending && !editing}
-            onPress={() =>
-              unit.mutate({ method: 'POST', body: { name: unitName.trim(), kind: unitKind } })
-            }
-          />
-        </Card>
-      </Section>
-
       <Section title="Sicherheit">
         <Card style={{ gap: 10 }}>
           <T variant="label" style={{ fontWeight: '700' }}>
@@ -347,32 +230,5 @@ function ClubForm() {
         </Card>
       </Section>
     </>
-  );
-}
-
-function IconAction({
-  icon,
-  label,
-  onPress,
-}: {
-  icon: 'pencil' | 'trash-outline';
-  label: string;
-  onPress: () => void;
-}) {
-  const { colors } = useTheme();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      onPress={onPress}
-      hitSlop={8}
-      style={{ padding: 6 }}
-    >
-      <Ionicons
-        name={icon}
-        size={18}
-        color={icon === 'pencil' ? colors.primaryText : colors.onSurfaceMuted}
-      />
-    </Pressable>
   );
 }

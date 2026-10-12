@@ -13,6 +13,7 @@ const TAB_OF: Record<string, string> = {
   entries: 'buchung',
   new: 'buchung',
   manage: 'buchung',
+  funds: 'buchung',
   fees: 'beitraege',
   'fee-import': 'beitraege',
   'fee-setup': 'beitraege',
@@ -79,6 +80,7 @@ export default function ClubCashLayout() {
           <Stack.Screen name="fee-import" options={{ title: 'Kontoauszug importieren' }} />
           <Stack.Screen name="fee-setup" options={{ title: 'Beitragsarten und Mitglieder' }} />
           <Stack.Screen name="manage" options={{ title: 'Vereinskasse einrichten' }} />
+          <Stack.Screen name="funds" options={{ title: 'Kassen' }} />
         </Stack>
       </BottomTabBarHeightContext.Provider>
       <AreaTabBar tone="blue" items={items} onHeight={setNavHeight} />

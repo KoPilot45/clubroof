@@ -209,9 +209,9 @@ export async function createTeam(
     .select()
     .from(s.orgUnits)
     .where(and(eq(s.orgUnits.id, input.orgUnitId), eq(s.orgUnits.clubId, actor.club.id)));
-  if (!unit) throw new HttpError(400, 'invalid_unit', 'Unbekannter Bereich.');
+  if (!unit) throw new HttpError(400, 'invalid_unit', 'Unbekannte Abteilung.');
   if (!can(actor.grants, 'teams.manage', { orgUnitId: unit.id }))
-    throw forbidden('In diesem Bereich darfst du keine Mannschaften anlegen.');
+    throw forbidden('In dieser Abteilung darfst du keine Mannschaften anlegen.');
   await checkBadge(db, seasonId, input.badge.trim());
 
   const [{ last } = { last: 0 }] = await db
