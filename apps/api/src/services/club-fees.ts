@@ -911,10 +911,7 @@ export async function previewImport(
       .select({ fundId: s.clubCashAccounts.fundId })
       .from(s.clubCashAccounts)
       .where(
-        and(
-          eq(s.clubCashAccounts.id, accountId),
-          eq(s.clubCashAccounts.clubId, actor.club.id),
-        ),
+        and(eq(s.clubCashAccounts.id, accountId), eq(s.clubCashAccounts.clubId, actor.club.id)),
       );
     if (!account) throw notFound('Das Konto');
     const main = await ensureMainFund(db, actor.club.id, now);

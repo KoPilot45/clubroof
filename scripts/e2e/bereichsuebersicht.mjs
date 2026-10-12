@@ -99,7 +99,10 @@ ok(
 const t = await b.session('trainer');
 await t.goto('/team');
 await t.page.waitForTimeout(3000);
-ok((await vis(t.page, 'Abteilungsübersicht').count()) === 0, 'Trainer sieht keine Abteilungsübersicht');
+ok(
+  (await vis(t.page, 'Abteilungsübersicht').count()) === 0,
+  'Trainer sieht keine Abteilungsübersicht',
+);
 
 // Trainer mit zusätzlicher Rolle „Sportliche Leitung“: Umschalter „Meine Mannschaft | Übersicht“
 const admin = await b.session('admin');

@@ -112,7 +112,9 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
               scopesWith(actor.grants, 'clubcash.manage').orgUnitIds.length > 0,
             viewer: (() => {
               const read = scopesWith(actor.grants, 'clubcash.read');
-              return read.all || read.orgUnitIds.length > 0 ? ('treasury' as const) : ('board' as const);
+              return read.all || read.orgUnitIds.length > 0
+                ? ('treasury' as const)
+                : ('board' as const);
             })(),
           }
         : null;
