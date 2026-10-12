@@ -259,6 +259,21 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
             ['transfer', 'Umbuchung', 'swap-horizontal', '/club-cash/new?kind=transfer', manage],
           ],
         ],
+        [
+          'Auslagen & Vergütungen',
+          [
+            ['claims', 'Auslagen', 'receipt', '/club-cash/claims', manage],
+            ['allowances', 'Pauschalen', 'ribbon', '/club-cash/allowances', full],
+          ],
+        ],
+        [
+          'Zuschüsse & Sponsoren',
+          [
+            ['grants', 'Zuschüsse', 'gift', '/club-cash/grants', full],
+            ['team-grants', 'Mannschaftszuschuss', 'shirt', '/club-cash/team-grants', full],
+            ['sponsors', 'Sponsoren', 'heart', '/club-cash/sponsors', full],
+          ],
+        ],
         ['Kassenbuch', [['entries', 'Kassenbuch', 'book', '/club-cash/entries', full]]],
         [
           'Einrichtung',
@@ -311,6 +326,7 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
           [
             ['reserves', 'Rücklagen', 'wallet', '/club-cash/reserves', true],
             ['year-end', 'Jahresabschluss', 'document-text', '/club-cash/closing', full],
+            ['inventory', 'Inventar', 'cube', '/club-cash/inventory', full],
           ],
         ],
       ]),

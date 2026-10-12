@@ -566,6 +566,27 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Spenden', href: '/club-cash/donations' },
       },
       {
+        id: 'club-claims',
+        question: 'Wie funktionieren Auslagen und Fahrtkosten?',
+        answer:
+          'Jedes Mitglied reicht unter „Verein → Auslage einreichen“ Kosten mit Beleg (Foto) oder Fahrtkosten ein – bei Fahrtkosten rechnet die App aus den Kilometern (30 Cent je km). Der Kassenwart sieht die Auslagen unter „Vereinskasse → Buchung → Auslagen“, genehmigt oder lehnt mit Begründung ab und erstattet: Dabei entsteht eine Ausgabe im Kassenbuch. Du bekommst zu jedem Schritt eine Benachrichtigung. Eine erstattete Auslage kann nicht storniert werden.',
+        link: { label: 'Auslagen', href: '/club-cash/claims' },
+      },
+      {
+        id: 'club-allowances',
+        question: 'Was ist mit Übungsleiter- und Ehrenamtspauschale?',
+        answer:
+          'Unter „Vereinskasse → Buchung → Pauschalen“ siehst du je Person und Jahr, wie viel von der Übungsleiterpauschale bzw. der Ehrenamtspauschale schon ausgezahlt ist (Fortschrittsbalken, Warnung bei fast ausgeschöpft). Eine Auszahlung, die den Freibetrag überschreiten würde, bucht die App nicht stillschweigend: Du bekommst eine Rückfrage und kannst sie nach steuerlicher Klärung bewusst trotzdem buchen. Die Freibeträge (ab 2026: 3.300 € bzw. 960 €) bitte steuerlich prüfen lassen; die App ersetzt keine Steuerberatung.',
+        link: { label: 'Pauschalen', href: '/club-cash/allowances' },
+      },
+      {
+        id: 'club-grants',
+        question: 'Wie verwalte ich Zuschüsse, Sponsoren, Mannschaftszuschüsse und Inventar?',
+        answer:
+          'Zuschüsse: Unter „Vereinskasse → Buchung → Zuschüsse“ legst du Förderungen mit Geber, Betrag und Frist für den Verwendungsnachweis an und führst sie von „Geplant“ über „Beantragt“ und „Bewilligt“ bis zum Eingang (Buchung als Einnahme); überfällige Nachweise sind rot. Sponsoren: Beim Buchen einer Einnahme wählst du den Sponsor; unter „Sponsoren“ siehst du die Einnahmen je Sponsor und Jahr. Mannschaftszuschuss: Ausgabe der Vereinskasse und Einnahme der Mannschaftskasse in einem Schritt. Inventar: Unter „Planung → Inventar“ erfasst du Anschaffungen mit Wert und Standort; Gegenstände werden mit Grund ausgesondert, nicht gelöscht.',
+        link: { label: 'Zuschüsse', href: '/club-cash/grants' },
+      },
+      {
         id: 'club-fees',
         question: 'Wie verwalte ich die Mitgliedsbeiträge?',
         answer:

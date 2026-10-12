@@ -34,6 +34,7 @@ export default function ClubCashNewScreen() {
   const [toAccountId, setToAccountId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [costCenterId, setCostCenterId] = useState<string | null>(null);
+  const [sponsorId, setSponsorId] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
   const [purpose, setPurpose] = useState('');
   const [counterparty, setCounterparty] = useState('');
@@ -43,6 +44,10 @@ export default function ClubCashNewScreen() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const sponsors = useQuery({
+    queryKey: ['club-sponsor-choices'],
+    queryFn: () => api<{ id: string; name: string }[]>('/club-cash/sponsor-choices'),
+  });
   const c = cash.data;
   const accounts = (c?.accounts ?? []).filter((a) => !a.archived);
   const from = accountId ?? accounts[0]?.id ?? null;
@@ -94,6 +99,7 @@ export default function ClubCashNewScreen() {
               bookedOn,
               categoryId,
               costCenterId,
+              sponsorId: kind === 'income' ? sponsorId : null,
               counterparty: counterparty.trim() || null,
               purpose: purpose.trim(),
               receiptNo: receiptNo.trim() || null,
@@ -203,6 +209,15 @@ export default function ClubCashNewScreen() {
                 .map((k) => ({ value: k.id, label: k.name }))}
               selected={costCenterId ? [costCenterId] : []}
               onToggle={(v) => setCostCenterId(costCenterId === v ? null : v)}
+            />
+          ) : null}
+          {kind === 'income' && (sponsors.data?.length ?? 0) > 0 ? (
+            <ChoiceChips
+              scroll
+              label="Sponsor (optional)"
+              options={(sponsors.data ?? []).map((x) => ({ value: x.id, label: x.name }))}
+              selected={sponsorId ? [sponsorId] : []}
+              onToggle={(v) => setSponsorId(sponsorId === v ? null : v)}
             />
           ) : null}
           <TextField

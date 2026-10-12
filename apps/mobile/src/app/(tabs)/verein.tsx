@@ -127,6 +127,16 @@ export default function ClubScreen() {
       icon: 'shirt',
       onPress: () => router.push('/club-teams'),
     },
+    ...(has('club_cash')
+      ? [
+          {
+            key: 'expense-claims',
+            label: 'Auslage einreichen',
+            icon: 'receipt' as const,
+            onPress: () => router.push('/expense-claims'),
+          },
+        ]
+      : []),
     ...(canSeeCashOverview(me)
       ? [
           {
