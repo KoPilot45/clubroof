@@ -528,7 +528,6 @@ export function QuickAccess({
   return (
     <Section title="Schnellzugriff" roomy>
       <TileGrid
-        large
         items={[
           ...links.map((l) => {
             const hint = chipHint(info[l.key]);
