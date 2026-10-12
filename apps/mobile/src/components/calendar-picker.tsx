@@ -130,7 +130,7 @@ export function CalendarSheet({
     <Sheet visible={visible} onClose={onClose} title={title}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         {arrow('chevron-back', canPrev, t('Vorheriger Monat'), -1)}
-        <T variant="label" style={{ fontWeight: '700', fontSize: 16 }} accessibilityRole="header">
+        <T variant="headline" style={{ fontSize: 20, lineHeight: 24 }} accessibilityRole="header">
           {monthTitle.format(new Date(Date.UTC(cursor.y, cursor.m, 1)))}
         </T>
         {arrow('chevron-forward', canNext, t('Nächster Monat'), 1)}
@@ -170,16 +170,23 @@ export function CalendarSheet({
                       alignItems: 'center',
                       justifyContent: 'center',
                       opacity: enabled ? 1 : 0.3,
-                      backgroundColor: selected ? colors.primary : 'transparent',
-                      borderWidth: d === today && !selected ? 1.5 : 0,
-                      borderColor: colors.primary,
+                      // heutiger Tag in Vereinsfarbe wie in allen Kalendern der App
+                      backgroundColor: selected
+                        ? colors.primary
+                        : d === today
+                          ? colors.primaryContainer
+                          : 'transparent',
                     }}
                   >
                     <Text
                       style={{
                         fontSize: 15,
                         fontWeight: selected || d === today ? '700' : '400',
-                        color: selected ? colors.onPrimary : colors.onSurface,
+                        color: selected
+                          ? colors.onPrimary
+                          : d === today
+                            ? colors.onPrimaryContainer
+                            : colors.onSurface,
                       }}
                     >
                       {dayNumber.format(utc(d))}

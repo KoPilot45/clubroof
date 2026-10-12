@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import {
   Avatar,
+  Button,
   Card,
   ChoiceChips,
   Chip,
@@ -13,6 +14,7 @@ import {
   ListRow,
   Loading,
   Screen,
+  Sheet,
   T,
   TextField,
 } from '@/components/ui';
@@ -29,6 +31,7 @@ export default function MembersScreen() {
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>(params.withoutTeam ? 'withoutTeam' : 'active');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
+  const [filterOpen, setFilterOpen] = useState(false);
   const catalog = useQuery({
     queryKey: ['admin', 'roles'],
     queryFn: () => api<RoleCatalog>('/admin/roles'),
@@ -56,9 +59,30 @@ export default function MembersScreen() {
       (m.memberNumber ?? '').includes(needle),
   );
 
+  // Rollen im Filterfenster nach Häufigkeit: „Alle“ zuerst, dann die häufigsten, besondere Auswahlen zuletzt
+  const roleOptions: { value: RoleFilter; label: string; count?: number }[] = [
+    { value: 'all', label: 'Alle' },
+    ...(catalog.data?.roles
+      .filter((r) => r.holders.length > 0)
+      .sort((a, b) => b.holders.length - a.holders.length)
+      .map((r) => ({ value: `role:${r.key}`, label: r.name, count: r.holders.length })) ?? []),
+    { value: 'any', label: 'Alle Rollenträger' },
+    { value: 'coaches', label: 'Trainer und Co-Trainer' },
+    { value: 'individual', label: 'Individuelle Rechte' },
+    { value: 'noaccount', label: 'Ohne App-Zugang' },
+  ];
+  const activeFilters =
+    (filter !== 'active' ? 1 : 0) + (roleFilter !== 'all' ? 1 : 0) + (needle ? 1 : 0);
+  const roleLabel = roleOptions.find((o) => o.value === roleFilter)?.label;
+  const reset = () => {
+    setQ('');
+    setFilter('active');
+    setRoleFilter('all');
+  };
+
   return (
     <Screen edges={[]} refreshing={members.isRefetching} onRefresh={() => members.refetch()}>
-      <Card style={{ gap: 12 }}>
+      <View style={{ gap: 12 }}>
         <TextField
           label="Suche"
           value={q}
@@ -66,6 +90,7 @@ export default function MembersScreen() {
           placeholder={t('Name oder Mitgliedsnummer')}
         />
         <ChoiceChips
+          scroll
           options={[
             { value: 'active', label: 'Aktiv' },
             { value: 'inactive', label: 'Passiv' },
@@ -76,22 +101,51 @@ export default function MembersScreen() {
           selected={[filter]}
           onToggle={setFilter}
         />
-        <T variant="label">Rollen und Aufgaben</T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Button
+            label={
+              roleFilter === 'all' ? 'Rollen und Aufgaben' : (roleLabel ?? 'Rollen und Aufgaben')
+            }
+            icon="options-outline"
+            variant={roleFilter === 'all' ? 'outline' : 'tonal'}
+            size="sm"
+            onPress={() => setFilterOpen(true)}
+          />
+          {activeFilters > 0 ? (
+            <>
+              <Chip tone="primary" label={t(`${activeFilters} Filter aktiv`)} />
+              <Button label="Zurücksetzen" variant="neutral" size="sm" onPress={reset} />
+            </>
+          ) : null}
+        </View>
+      </View>
+      <Sheet
+        visible={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        title={t('Rollen und Aufgaben')}
+      >
         <ChoiceChips
-          options={[
-            { value: 'all', label: 'Alle' },
-            { value: 'any', label: 'Alle Rollenträger' },
-            { value: 'coaches', label: 'Trainer und Co-Trainer' },
-            ...(catalog.data?.roles
-              .filter((r) => r.holders.length > 0)
-              .map((r) => ({ value: `role:${r.key}`, label: r.name })) ?? []),
-            { value: 'individual', label: 'Individuelle Rechte' },
-            { value: 'noaccount', label: 'Ohne App-Zugang' },
-          ]}
+          options={roleOptions.map((o) => ({
+            value: o.value,
+            label: o.count ? `${o.label} (${o.count})` : o.label,
+          }))}
           selected={[roleFilter]}
-          onToggle={setRoleFilter}
+          onToggle={(v) => {
+            setRoleFilter(v);
+            setFilterOpen(false);
+          }}
         />
-      </Card>
+        {roleFilter !== 'all' ? (
+          <Button
+            label="Zurücksetzen"
+            variant="neutral"
+            onPress={() => {
+              setRoleFilter('all');
+              setFilterOpen(false);
+            }}
+          />
+        ) : null}
+      </Sheet>
       {members.isPending ? <Loading /> : null}
       {members.error ? (
         <ErrorNotice error={members.error} onRetry={() => members.refetch()} />

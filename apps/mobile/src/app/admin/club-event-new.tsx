@@ -21,6 +21,7 @@ import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { t } from '@/lib/i18n';
 import { MapLinkField } from '@/components/map-link-field';
+import { AudiencePicker, type Audience } from '@/components/audience-picker';
 
 const TYPES: { value: ClubEventType; label: string }[] = [
   { value: 'club_event', label: 'Veranstaltung' },
@@ -45,6 +46,7 @@ export default function NewClubEventScreen() {
   const [from, setFrom] = useState('14:00');
   const [to, setTo] = useState('18:00');
   const [scope, setScope] = useState<string>('club');
+  const [audience, setAudience] = useState<Audience>({ teamIds: [], personIds: [] });
   const [place, setPlace] = useState<string>('text');
   const [locationText, setLocationText] = useState('');
   const [locationUrl, setLocationUrl] = useState('');
@@ -62,6 +64,8 @@ export default function NewClubEventScreen() {
         startsAt: iso(from),
         endsAt: iso(to),
         orgUnitId: scope === 'club' ? null : scope,
+        ...(audience.teamIds.length ? { teamIds: audience.teamIds } : {}),
+        ...(audience.personIds.length ? { personIds: audience.personIds } : {}),
         facilityId: place === 'text' ? null : place,
         locationText: place === 'text' ? locationText.trim() || null : null,
         locationUrl: place === 'text' ? locationUrl.trim() || null : null,
@@ -135,6 +139,7 @@ export default function NewClubEventScreen() {
             onToggle={setScope}
           />
         ) : null}
+        <AudiencePicker value={audience} onChange={setAudience} />
         <ChoiceChips
           label="Ort"
           options={[

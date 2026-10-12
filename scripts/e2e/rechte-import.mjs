@@ -15,9 +15,18 @@ const ok = (m) => console.log(`✓ ${m}`);
 {
   const { page, goto } = await b.session('admin');
   await goto('/admin/members');
-  await text(page, 'Rollen und Aufgaben').waitFor({ timeout: 15_000 });
+  // Rollen und Aufgaben stehen hinter einem Filter-Knopf (Paket ZE)
+  const filterButton = () =>
+    page
+      .getByRole('button', {
+        name: /Rollen und Aufgaben|Trainer und Co-Trainer|Individuelle Rechte/,
+      })
+      .first();
+  await filterButton().waitFor({ timeout: 15_000 });
+  await filterButton().click();
   await text(page, 'Trainer und Co-Trainer', { exact: true }).click();
   await text(page, 'Personen').waitFor({ timeout: 15_000 });
+  await filterButton().click();
   await text(page, 'Individuelle Rechte', { exact: true }).click();
   await text(page, 'Keine passenden Mitglieder.').waitFor({ timeout: 15_000 });
   ok('Rollenfilter in der Mitgliederliste');

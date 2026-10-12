@@ -40,6 +40,19 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Sportliche Leitung, Jugendleitung und Vorstand sehen im Reiter „Team“ eine Übersicht über die Bereiche (Senioren, Frauen, Jugend) – ohne Zugriff in die einzelnen Mannschaften. Oben stehen die Kennzahlen, darunter eine Karte je Mannschaft mit Kader, Trainerteam, Trainingsbeteiligung der letzten 4 Wochen und dem nächsten Spiel. Die Ampel gilt nur für die Trainingsbeteiligung: gut ab 65 %, mittel 50–64 %, niedrig darunter; bei weniger als 3 erfassten Einheiten steht „zu wenig Daten“. Wer auch selbst in einer Mannschaft ist, schaltet oben zwischen „Meine Mannschaft“ und „Übersicht“ um.',
       },
       {
+        id: 'time-picker',
+        question: 'Wie stelle ich eine Uhrzeit ein?',
+        answer:
+          'Tippe auf die Uhrzeit: Es öffnet sich ein Fenster mit zwei Drehwalzen wie bei einem Wecker – links die Stunde, rechts die Minute (in 5er-Schritten). Wische oder scrolle, bis die richtige Zeit in der Mitte steht, und tippe auf „Übernehmen“. Beim Anlegen eines Termins wählst du Beginn und Ende; die Dauer zeigt die App darunter.',
+      },
+      {
+        id: 'invite-audience',
+        question:
+          'Wie lade ich nur bestimmte Mannschaften oder Personen zu einer Veranstaltung ein?',
+        answer:
+          'Beim Planen einer Veranstaltung wählst du oben die Gruppe („Ganzer Verein“, ein Bereich …). Mit „Mannschaften oder Personen auswählen“ lädst du gezielt ein: Setze im Fenster Häkchen bei Mannschaften oder suche Personen. Die Auswahl erscheint als Chips; mit „×“ nimmst du jemanden wieder heraus. Nur die Eingeladenen werden benachrichtigt. Einzelne Personen darfst du nur mit dem Recht für die Mitgliederliste einladen.',
+      },
+      {
         id: 'archive',
         question: 'Wie sehe ich vergangene Termine?',
         answer:

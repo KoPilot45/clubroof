@@ -4,8 +4,6 @@
  */
 import {
   AREA_LABELS,
-  PARTICIPATION_GOOD_FROM,
-  PARTICIPATION_MEDIUM_FROM,
   type AreaKey,
   type AreaOverview,
   type AreaTeamCard,
@@ -172,29 +170,6 @@ function TeamCard({ card }: { card: AreaTeamCard }) {
   );
 }
 
-/** Ampel-Erklärung (immer mit Wort): grün ab 65 %, gelb 50–64 %, rot darunter. */
-function Legend() {
-  const { colors } = useTheme();
-  const items: [string, string][] = [
-    [colors.status.success.solid, `gut ab ${PARTICIPATION_GOOD_FROM} %`],
-    [
-      colors.status.action.solid,
-      `mittel ${PARTICIPATION_MEDIUM_FROM}–${PARTICIPATION_GOOD_FROM - 1} %`,
-    ],
-    [colors.status.urgent.solid, `niedrig unter ${PARTICIPATION_MEDIUM_FROM} %`],
-  ];
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-      {items.map(([color, label]) => (
-        <View key={label} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />
-          <T variant="caption">{t(label)}</T>
-        </View>
-      ))}
-    </View>
-  );
-}
-
 export function AreaOverviewScreen({ switcher }: { switcher?: ReactNode }) {
   const { api, me } = useSignedIn();
   const { colors } = useTheme();
@@ -272,7 +247,6 @@ export function AreaOverviewScreen({ switcher }: { switcher?: ReactNode }) {
             ) : null}
           </HeroCard>
 
-          <Legend />
           {o.teams.length === 0 ? (
             <Empty icon="shirt-outline" text="Keine Mannschaften im Bereich." />
           ) : null}

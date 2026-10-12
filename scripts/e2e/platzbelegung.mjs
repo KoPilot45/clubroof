@@ -39,18 +39,23 @@ await page.getByRole('radio', { name: /Kunstrasen/ }).click();
 await page.waitForTimeout(800);
 const blocks = page.getByRole('button', { name: /Gesperrt:/ });
 ok((await blocks.count()) > 0, 'Woche: Sperrung als Block im Stundenplan');
-const events = page.getByRole('button', { name: /\d\d:\d\d–\d\d:\d\d/ });
+const events = page.getByRole('button', { name: /^(?!Gesperrt).*\d\d:\d\d–\d\d:\d\d/ });
 ok((await events.count()) > 1, `Woche: Termine als Blöcke (${await events.count()})`);
 ok((await text(page, /Wischen wechselt die Woche/).count()) > 0, 'Hinweis zum Wischen');
 await b.shot(page, 'pb-woche');
 
 // Block antippen: Details
+// in die Mitte holen: unten verdeckt die schwebende Leiste sonst den Block
+await blocks.first().evaluate((e) => e.scrollIntoView({ block: 'center' }));
+await page.waitForTimeout(300);
 await blocks.first().click();
 await text(page, /Sperrung aufheben/).waitFor({ timeout: 5000 });
 ok(true, 'Sperrung antippen zeigt Details mit „Sperrung aufheben“');
 await page.getByRole('button', { name: 'Schließen' }).last().click();
 await page.waitForTimeout(400);
 const first = events.first();
+await first.evaluate((e) => e.scrollIntoView({ block: 'center' }));
+await page.waitForTimeout(300);
 await first.click();
 await button(page, 'Termin öffnen').waitFor({ timeout: 5000 });
 ok(

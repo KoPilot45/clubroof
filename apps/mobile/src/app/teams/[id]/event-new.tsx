@@ -11,6 +11,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
+import { View } from 'react-native';
 import {
   Button,
   Card,
@@ -36,11 +37,19 @@ const MATCH_KIND_OPTIONS: { value: MatchKind; label: string }[] = [
   { value: 'friendly', label: 'Testspiel' },
 ];
 
-const DEFAULTS: Record<Type, { time: string; minutes: string }> = {
-  training: { time: '18:00', minutes: '90' },
-  match: { time: '15:00', minutes: '105' },
-  team_event: { time: '19:00', minutes: '120' },
+/** Regeldauer je Terminart in Minuten (Vorschlag für das Ende) */
+const DEFAULTS: Record<Type, { time: string; minutes: number }> = {
+  training: { time: '18:00', minutes: 90 },
+  match: { time: '15:00', minutes: 105 },
+  team_event: { time: '19:00', minutes: 120 },
 };
+
+/** „HH:MM“ plus Minuten (über Mitternacht hinaus umlaufend) */
+function shiftTime(hhmm: string, delta: number): string {
+  const [h, m] = hhmm.split(':').map(Number) as [number, number];
+  const total = (((h * 60 + m + delta) % 1440) + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
 
 export default function NewEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -63,9 +72,11 @@ export default function NewEventScreen() {
   const [kind, setKind] = useState<MatchKind>('league');
   const [date, setDate] = useState(todayIso());
   const [time, setTime] = useState(DEFAULTS.training.time);
-  const [minutes, setMinutes] = useState(DEFAULTS.training.minutes);
-  // `rule` = Regel der Mannschaft (Standard), sonst Minuten vorher oder `0` = kein Treffen
-  const [meetingChoice, setMeetingChoice] = useState<string | null>(null);
+  // Ende: Vorschlag aus Beginn + Regeldauer, bis jemand ein eigenes Ende wählt
+  const [endPicked, setEndPicked] = useState<string | null>(null);
+  // Treffen: „Standard der Mannschaft“ oder „Individuell“ (eigene Treffzeit und Treffpunkt)
+  const [meetingMode, setMeetingMode] = useState<'standard' | 'custom'>('standard');
+  const [meetPicked, setMeetPicked] = useState<string | null>(null);
   const [placeChoice, setPlace] = useState<string | null>(null);
   const [locationText, setLocationText] = useState('');
   const [locationUrl, setLocationUrl] = useState('');
@@ -81,17 +92,23 @@ export default function NewEventScreen() {
 
   const place = placeChoice ?? facilities.data?.[0]?.id ?? 'other';
   const startsAt = at(fromIsoDate(date), time, me.club.timezone);
-  const endsAt = new Date(startsAt.getTime() + Number(minutes) * 60_000);
+  const endTime = endPicked ?? shiftTime(time, DEFAULTS[type].minutes);
+  let endsAt = at(fromIsoDate(date), endTime, me.club.timezone);
+  // Ende vor dem Beginn = nach Mitternacht
+  if (endsAt <= startsAt) endsAt = new Date(endsAt.getTime() + 86_400_000);
+  const durationMinutes = Math.round((endsAt.getTime() - startsAt.getTime()) / 60_000);
   const ruleMinutes =
     type === 'match'
       ? rules.data?.profile.matchMeetingMinutes
       : type === 'training'
         ? rules.data?.profile.trainingMeetingMinutes
         : null;
-  const meetingBefore = meetingChoice ?? (ruleMinutes != null ? 'rule' : '0');
-  const meetingMinutes = meetingBefore === 'rule' ? (ruleMinutes ?? 0) : Number(meetingBefore);
-  const meetingAt =
-    meetingMinutes > 0 ? new Date(startsAt.getTime() - meetingMinutes * 60_000) : null;
+  const meetTime = meetPicked ?? shiftTime(time, -(ruleMinutes || 30));
+  const customMeeting = meetingMode === 'custom';
+  let customMeetAt = at(fromIsoDate(date), meetTime, me.club.timezone);
+  // Treffzeit nach dem Beginn gilt als am Vortag
+  if (customMeetAt > startsAt) customMeetAt = new Date(customMeetAt.getTime() - 86_400_000);
+  const meetingAt = customMeeting ? customMeetAt : null;
   const isAway = type === 'match' && home === 'away';
   // Wiederholen: wöchentlich bis zu einem Datum (Standard: 8 Wochen)
   const until = repeatUntil ?? toIsoDate(addDays(fromIsoDate(date), 56));
@@ -110,11 +127,11 @@ export default function NewEventScreen() {
           startsAt: startsAt.toISOString(),
           endsAt: endsAt.toISOString(),
           // „Regel der Mannschaft“: Treffen und Standard-Treffpunkt berechnet der Server
-          ...(meetingBefore === 'rule'
-            ? { ...(meetingPoint.trim() ? { meetingPoint: meetingPoint.trim() } : {}) }
+          ...(!customMeeting
+            ? {}
             : {
                 meetingAt: meetingAt?.toISOString() ?? null,
-                meetingPoint: meetingAt ? meetingPoint.trim() || null : null,
+                meetingPoint: meetingPoint.trim() || null,
               }),
           facilityId: !isAway && place !== 'other' ? place : null,
           locationText: isAway || place === 'other' ? locationText.trim() || null : null,
@@ -145,11 +162,13 @@ export default function NewEventScreen() {
         ? 'Bitte gib einen Titel an.'
         : startsAt < new Date()
           ? 'Der Beginn liegt in der Vergangenheit.'
-          : type !== 'match' && repeat === 'weekly' && !untilValid
-            ? 'Das Enddatum liegt vor dem ersten Termin.'
-            : type !== 'match' && repeat === 'weekly' && occurrences > 53
-              ? 'Höchstens 53 Termine (etwa ein Jahr).'
-              : null;
+          : durationMinutes > 12 * 60
+            ? 'Das Ende liegt mehr als 12 Stunden nach dem Beginn.'
+            : type !== 'match' && repeat === 'weekly' && !untilValid
+              ? 'Das Enddatum liegt vor dem ersten Termin.'
+              : type !== 'match' && repeat === 'weekly' && occurrences > 53
+                ? 'Höchstens 53 Termine (etwa ein Jahr).'
+                : null;
 
   return (
     <Screen edges={[]}>
@@ -165,7 +184,8 @@ export default function NewEventScreen() {
           onToggle={(v: Type) => {
             setType(v);
             setTime(DEFAULTS[v].time);
-            setMinutes(DEFAULTS[v].minutes);
+            setEndPicked(null);
+            setMeetPicked(null);
           }}
         />
       </Card>
@@ -209,13 +229,19 @@ export default function NewEventScreen() {
 
       <Card style={{ gap: 14 }}>
         <DateStepper label="Datum" value={date} min={todayIso()} onChange={setDate} />
-        <TimeStepper label="Beginn" value={time} onChange={setTime} />
-        <ChoiceChips
-          label="Dauer"
-          options={['60', '75', '90', '105', '120'].map((m) => ({ value: m, label: `${m} Min.` }))}
-          selected={[minutes]}
-          onToggle={setMinutes}
-        />
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flex: 1 }}>
+            <TimeStepper label="Beginn" value={time} onChange={setTime} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <TimeStepper label="Ende" value={endTime} onChange={setEndPicked} />
+          </View>
+        </View>
+        <T variant="caption">
+          {t(
+            `Dauer: ${Math.floor(durationMinutes / 60)}:${String(durationMinutes % 60).padStart(2, '0')} Std.`,
+          )}
+        </T>
         {type !== 'match' ? (
           <>
             <ChoiceChips
@@ -248,33 +274,38 @@ export default function NewEventScreen() {
           </>
         ) : null}
         <ChoiceChips
-          label="Treffpunkt vorher"
+          label="Treffpunkt und Treffzeit"
           options={[
-            ...(ruleMinutes != null
-              ? [{ value: 'rule', label: `Regel der Mannschaft (${ruleMinutes} Min.)` }]
-              : []),
-            { value: '0', label: 'Keiner' },
-            { value: '15', label: '15 Min.' },
-            { value: '30', label: '30 Min.' },
-            { value: '60', label: '60 Min.' },
-            { value: '90', label: '90 Min.' },
+            { value: 'standard' as const, label: 'Standard der Mannschaft' },
+            { value: 'custom' as const, label: 'Individuell' },
           ]}
-          selected={[meetingBefore]}
-          onToggle={setMeetingChoice}
+          selected={[meetingMode]}
+          onToggle={setMeetingMode}
         />
-        {meetingAt ? (
-          <TextField
-            label={
-              meetingBefore === 'rule'
-                ? 'Treffpunkt (leer = Standard der Mannschaft)'
-                : 'Treffpunkt'
-            }
-            value={meetingPoint}
-            onChangeText={setMeetingPoint}
-            placeholder={rules.data?.profile.defaultMeetingPoint ?? 'z. B. Kabine Vereinsheim'}
-            maxLength={120}
-          />
-        ) : null}
+        {customMeeting ? (
+          <>
+            <TimeStepper label="Treffzeit" value={meetTime} onChange={setMeetPicked} />
+            <TextField
+              label="Treffpunkt"
+              value={meetingPoint}
+              onChangeText={setMeetingPoint}
+              placeholder={rules.data?.profile.defaultMeetingPoint ?? 'z. B. Kabine Vereinsheim'}
+              maxLength={120}
+            />
+          </>
+        ) : (
+          <T variant="caption">
+            {ruleMinutes != null
+              ? t(
+                  `Treffen ${ruleMinutes} Min. vorher am Standard-Treffpunkt der Mannschaft${
+                    rules.data?.profile.defaultMeetingPoint
+                      ? `: ${rules.data.profile.defaultMeetingPoint}`
+                      : ''
+                  }`,
+                )
+              : t('Die Mannschaft hat keine Treffpunkt-Regel; es wird kein Treffen angelegt.')}
+          </T>
+        )}
       </Card>
 
       <Card style={{ gap: 12 }}>

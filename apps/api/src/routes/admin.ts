@@ -91,6 +91,8 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
           startsAt: z.iso.datetime({ offset: true }),
           endsAt: z.iso.datetime({ offset: true }),
           orgUnitId: z.uuid().nullish(),
+          teamIds: z.array(z.uuid()).max(60).optional(),
+          personIds: z.array(z.uuid()).max(200).optional(),
           facilityId: z.uuid().nullish(),
           locationText: z.string().trim().max(120).nullish(),
           locationUrl: z.string().trim().max(400).nullish(),

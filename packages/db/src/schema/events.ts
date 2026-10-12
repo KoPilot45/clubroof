@@ -59,6 +59,8 @@ export const events = pgTable(
     imageUrl: text(),
     /** Ablaufplan einer Veranstaltung, z. B. [{ time: '16:00', title: 'Eröffnung' }] */
     program: jsonb().$type<{ time: string; title: string }[]>(),
+    /** Gezielt eingeladene Mannschaften und Personen einer Vereinsveranstaltung (leer = nach Bereich) */
+    audience: jsonb().$type<{ teamIds: string[]; personIds: string[] }>(),
     contactPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     cancelledReason: text(),
     /** Herkunft Spielplan-Import: DFBnet-Spielkennung (je Mannschaft eindeutig) und Importlauf */

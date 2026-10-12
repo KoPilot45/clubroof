@@ -13,10 +13,11 @@ import {
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, eq, gt, inArray, isNull, ne } from 'drizzle-orm';
-import type { Actor } from '../actor';
+import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden } from '../errors';
 import { locationUrlFrom } from './location';
 import { notify } from './event-admin';
+import { usersOfPersons } from '../notify/persons';
 import { usersInScope } from './editorial';
 import { assertFacilityFree } from './facilities';
 import { loadScopeContext } from './scopes';
@@ -113,6 +114,30 @@ export async function createClubEvent(
         ? 'Für diesen Bereich darfst du keine Veranstaltungen planen.'
         : 'Vereinsveranstaltungen plant der Vorstand.',
     );
+  // Gezielte Einladung: Mannschaften brauchen das Trainerrecht für die Mannschaft, Personen das Mitgliederrecht
+  const teamIds = [...new Set(input.teamIds ?? [])];
+  const personIds = [...new Set(input.personIds ?? [])];
+  if (teamIds.length) {
+    const rows = await db
+      .select({ id: s.teams.id, orgUnitId: s.teams.orgUnitId })
+      .from(s.teams)
+      .where(and(inArray(s.teams.id, teamIds), eq(s.teams.clubId, actor.club.id)));
+    if (rows.length !== teamIds.length)
+      throw new HttpError(400, 'invalid_team', 'Unbekannte Mannschaft.');
+    for (const t of rows)
+      if (!can(actor.grants, 'events.manage', { teamId: t.id, orgUnitId: t.orgUnitId }))
+        throw forbidden('Für diese Mannschaft darfst du keine Veranstaltungen planen.');
+  }
+  if (personIds.length) {
+    if (!actorCan(actor, 'members.read'))
+      throw forbidden('Einzelne Personen einladen dürfen nur Berechtigte.');
+    const rows = await db
+      .select({ id: s.persons.id })
+      .from(s.persons)
+      .where(and(inArray(s.persons.id, personIds), eq(s.persons.clubId, actor.club.id)));
+    if (rows.length !== personIds.length)
+      throw new HttpError(400, 'invalid_person', 'Unbekannte Person.');
+  }
   if (input.orgUnitId) {
     const [unit] = await db
       .select({ id: s.orgUnits.id })
@@ -171,6 +196,7 @@ export async function createClubEvent(
         locationText: input.facilityId ? null : input.locationText?.trim() || null,
         locationUrl: input.facilityId ? null : locationUrlFrom(input.locationUrl),
         program: input.program?.length ? input.program : null,
+        audience: teamIds.length || personIds.length ? { teamIds, personIds } : null,
         contactPersonId: actor.person.id,
         createdAt: now,
       })
@@ -207,17 +233,29 @@ export async function createClubEvent(
     minute: '2-digit',
     timeZone: actor.club.timezone,
   }).format(startsAt);
+  // Empfänger: gezielt Eingeladene, sonst der Bereich (oder der ganze Verein)
+  const invited = teamIds.length || personIds.length;
+  const recipients = invited
+    ? [
+        ...new Set([
+          ...(
+            await Promise.all(teamIds.map((id) => usersInScope(db, actor, ctx, 'team', id, now)))
+          ).flat(),
+          ...(await usersOfPersons(db, personIds)).filter((u) => u !== actor.user.id),
+        ]),
+      ]
+    : await usersInScope(
+        db,
+        actor,
+        ctx,
+        input.orgUnitId ? 'org_unit' : 'club',
+        input.orgUnitId ?? null,
+        now,
+      );
   await notify(
     db,
     actor,
-    await usersInScope(
-      db,
-      actor,
-      ctx,
-      input.orgUnitId ? 'org_unit' : 'club',
-      input.orgUnitId ?? null,
-      now,
-    ),
+    recipients,
     {
       level: 'info',
       topic: 'events',
