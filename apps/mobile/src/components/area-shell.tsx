@@ -9,7 +9,7 @@ import { Keyboard, Platform, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/app-text';
 import { Breadcrumbs } from '@/components/sub-header';
-import { Screen, T, TileGrid, shadowStyle, type IconName } from '@/components/ui';
+import { GradientFill, Screen, T, TileGrid, shadowStyle, type IconName } from '@/components/ui';
 import { breadcrumbsFor } from '@/lib/breadcrumbs';
 import type { AreaCategory } from '@/lib/areas';
 import { t } from '@/lib/i18n';
@@ -26,22 +26,29 @@ function AreaBand({ tone, title, subtitle }: { tone: AreaTone; title: string; su
   return (
     <View
       style={{
-        paddingTop: insets.top + spacing.md,
-        paddingBottom: spacing.md,
+        paddingTop: insets.top + 18,
+        paddingBottom: 14,
         paddingHorizontal: spacing.lg + 4,
-        backgroundColor: c.container,
+        overflow: 'hidden',
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.md,
       }}
     >
+      <GradientFill from={band[0]} to={band[1]} vertical />
       <View style={{ flex: 1, minWidth: 0 }}>
         {subtitle ? (
           <T variant="caption" color="rgba(255,255,255,0.78)" numberOfLines={1}>
             {subtitle}
           </T>
         ) : null}
-        <T variant="headline" color={c.onContainer} numberOfLines={1} accessibilityRole="header">
+        <T
+          variant="figure"
+          color={c.onContainer}
+          numberOfLines={1}
+          accessibilityRole="header"
+          style={{ fontSize: 28, lineHeight: 30, letterSpacing: 0 }}
+        >
           {title}
         </T>
       </View>
@@ -57,7 +64,7 @@ function AreaBand({ tone, title, subtitle }: { tone: AreaTone; title: string; su
           paddingHorizontal: 14,
           borderRadius: 22,
           borderWidth: 1.5,
-          borderColor: c.onContainer,
+          borderColor: 'rgba(255,255,255,0.4)',
         }}
       >
         <Ionicons name="close-circle-outline" size={20} color={c.onContainer} />

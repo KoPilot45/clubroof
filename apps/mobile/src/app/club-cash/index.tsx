@@ -112,7 +112,7 @@ export default function ClubCashScreen() {
             <T variant="overline" color={colors.hero.onHero}>
               {fund ? `${t('Bestand der Kasse')} ${fund.name}` : 'Gesamtbestand aller Konten'}
             </T>
-            <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 44 }}>
+            <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 64, lineHeight: 68 }}>
               {formatEuro(c.totalBalanceCents)}
             </T>
             {!full ? (

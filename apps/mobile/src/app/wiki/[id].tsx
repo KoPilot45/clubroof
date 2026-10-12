@@ -17,8 +17,10 @@ import {
 import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { useConfirmDelete } from '@/lib/confirm';
 
 export default function WikiPageScreen() {
+  const confirmDelete = useConfirmDelete();
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
   const { api } = useSignedIn();
@@ -135,7 +137,7 @@ export default function WikiPageScreen() {
             variant="danger"
             style={{ flex: 1 }}
             loading={remove.isPending}
-            onPress={() => remove.mutate()}
+            onPress={() => confirmDelete({ name: p.title, onConfirm: () => remove.mutate() })}
           />
         </View>
       ) : null}

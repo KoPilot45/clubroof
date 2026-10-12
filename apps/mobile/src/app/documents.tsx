@@ -13,16 +13,17 @@ import {
   IconTile,
   ListRow,
   Loading,
+  MoreMenu,
   Screen,
+  SearchField,
   TeamBadge,
-  TextField,
   type IconName,
 } from '@/components/ui';
 import { openDocument } from '@/lib/documents';
 import { formatBytes, formatShortDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
-import { t } from '@/lib/i18n';
 import { useMarkSeen } from '@/lib/tile-info';
+import { useConfirmDelete } from '@/lib/confirm';
 
 const CATEGORIES: { value: DocumentCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'Alle' },
@@ -41,6 +42,7 @@ function fileIcon(mime: string): IconName {
 }
 
 export default function DocumentsScreen() {
+  const confirmDelete = useConfirmDelete();
   const { teamId } = useLocalSearchParams<{ teamId?: string }>();
   const { api, me } = useSignedIn();
   useMarkSeen(teamId ? `documents:${teamId}` : 'documents');
@@ -73,25 +75,19 @@ export default function DocumentsScreen() {
       {me.create.documents.length ? (
         <Button
           label="Dokument hochladen"
-          icon="cloud-upload"
           variant="outline"
           onPress={() =>
             router.push(teamId ? `/documents-upload?teamId=${teamId}` : '/documents-upload')
           }
         />
       ) : null}
-      <TextField
-        label="Suchen"
-        value={q}
-        onChangeText={setQ}
-        placeholder={t('z. B. Satzung, Aufnahmeantrag')}
-      />
-      <ChoiceChips options={CATEGORIES} selected={[category]} onToggle={setCategory} />
+      <SearchField value={q} onChangeText={setQ} placeholder="z. B. Satzung, Aufnahmeantrag" />
+      <ChoiceChips scroll options={CATEGORIES} selected={[category]} onToggle={setCategory} />
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       {docs.isPending ? <Loading /> : null}
       {docs.error ? <ErrorNotice error={docs.error} onRetry={() => docs.refetch()} /> : null}
       {docs.data ? (
-        <Card>
+        <Card list>
           {docs.data.length === 0 ? (
             <Empty icon="folder-open-outline" text="Keine passenden Dokumente." />
           ) : null}
@@ -103,14 +99,26 @@ export default function DocumentsScreen() {
               leading={<IconTile name={fileIcon(d.mimeType)} />}
               title={d.title}
               trailing={
-                d.canDelete ? (
-                  <Button
-                    label="Löschen"
-                    variant="outline"
-                    loading={remove.isPending && remove.variables === d.id}
-                    onPress={() => remove.mutate(d.id)}
-                  />
-                ) : undefined
+                <MoreMenu
+                  title={d.title}
+                  actions={[
+                    { label: 'Öffnen', icon: 'open-outline', onPress: () => open(d) },
+                    ...(d.canDelete
+                      ? [
+                          {
+                            label: 'Löschen',
+                            icon: 'trash-outline' as const,
+                            danger: true,
+                            onPress: () =>
+                              confirmDelete({
+                                name: d.title,
+                                onConfirm: () => remove.mutate(d.id),
+                              }),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
               }
               subtitle={
                 <View

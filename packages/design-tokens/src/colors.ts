@@ -14,6 +14,7 @@
 
 import {
   AMBER_URGENT,
+  AREA_HEROES,
   EVENT_HERO,
   ANSTOSS_BANDS,
   ANSTOSS_CATEGORIES,
@@ -134,6 +135,8 @@ export type AnstossRoles = {
   amberGradient: readonly [string, string];
   /** Hero für Veranstaltungen (immer Orange, unabhängig von der Vereinsfarbe) */
   eventHero: { from: string; to: string; soft: string };
+  /** Hero in den eigenen Bereichen (Verwaltung, Vereinskasse) */
+  areaHeroes: Record<'admin' | 'cash', { from: string; to: string }>;
 };
 
 export type ThemeColors = ClubColorRoles &
@@ -448,6 +451,7 @@ function lightAnstoss(roles: ClubColorRoles, neutral: NeutralColorRoles): Anstos
     amberUrgent: false,
     amberGradient: AMBER_URGENT.gradient,
     eventHero: EVENT_HERO,
+    areaHeroes: AREA_HEROES,
   };
 }
 
@@ -556,6 +560,7 @@ export function anstossTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
       amberUrgent: amber,
       amberGradient: AMBER_URGENT.gradient,
       eventHero: EVENT_HERO,
+      areaHeroes: AREA_HEROES,
     },
   };
 }

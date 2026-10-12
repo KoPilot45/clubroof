@@ -5,14 +5,17 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Linking, Pressable, View } from 'react-native';
 import { AnswerButtons, AttendanceChip, ResponseControls, useRespond } from '@/components/events';
+import { AttendanceBar } from '@/components/team';
 import { ShiftRow } from '@/components/helpers';
 import { RequestError } from '@/lib/api';
 import {
   Button,
+  Avatar,
   Card,
   ChoiceChips,
   Chip,
   ErrorNotice,
+  HeroCard,
   IconTile,
   ListRow,
   Loading,
@@ -23,7 +26,7 @@ import {
   TeamBadge,
   TextField,
 } from '@/components/ui';
-import { formatLongDate, formatRemaining, formatShortDate, formatTime } from '@/lib/format';
+import { formatDay, formatRemaining, formatShortDate, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { CarpoolSection } from '@/components/carpool';
 import { MatchSection } from '@/components/match';
@@ -42,9 +45,18 @@ const GROUP_LABELS: Record<Participant['status'], string> = {
   no: 'Abgesagt',
 };
 
+const DOT = (status: Participant['status'], colors: ReturnType<typeof useTheme>['colors']) =>
+  status === 'yes'
+    ? colors.primary
+    : status === 'maybe'
+      ? colors.status.action.solid
+      : status === 'no'
+        ? colors.status.urgent.solid
+        : colors.anstoss.textTertiary;
+
 /**
- * Teilnehmer nach Rückmeldung gruppiert. Oben die Zahlen als Schalter; lange Zusagelisten
- * starten eingeklappt, damit Offene und Absagen sofort sichtbar sind.
+ * Teilnahme: Balken mit Legende (zugesagt, unsicher, abgesagt, offen) und darunter alle Personen,
+ * sortiert nach Rückmeldung (Zugesagt, Unsicher, Offen, Abgesagt).
  */
 function ParticipantGroups({
   participants,
@@ -53,72 +65,17 @@ function ParticipantGroups({
   participants: Participant[];
   render: (p: Participant, index: number) => React.ReactNode;
 }) {
-  const { colors, radii } = useTheme();
-  const groups = ORDER.map((status) => ({
-    status,
-    people: participants.filter((p) => p.status === status),
-  }));
-  const [open, setOpen] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(groups.map((g) => [g.status, g.status !== 'yes' || g.people.length <= 8])),
-  );
+  const counts = {
+    yes: participants.filter((p) => p.status === 'yes').length,
+    maybe: participants.filter((p) => p.status === 'maybe').length,
+    no: participants.filter((p) => p.status === 'no').length,
+    pending: participants.filter((p) => p.status === 'pending').length,
+  };
+  const sorted = ORDER.flatMap((status) => participants.filter((p) => p.status === status));
   return (
-    <View style={{ gap: 10 }}>
-      <View style={{ flexDirection: 'row', gap: 6 }}>
-        {groups.map((g) => {
-          const active = open[g.status];
-          return (
-            <Pressable
-              key={g.status}
-              accessibilityRole="button"
-              accessibilityState={{ expanded: active }}
-              accessibilityLabel={t(`${GROUP_LABELS[g.status]}: ${g.people.length}`)}
-              onPress={() => setOpen({ ...open, [g.status]: !active })}
-              style={{
-                flex: 1,
-                minHeight: 44,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 6,
-                borderRadius: radii.md,
-                backgroundColor: active ? colors.primaryContainer : 'transparent',
-              }}
-            >
-              <T variant="title" color={colors.primaryText}>
-                {g.people.length}
-              </T>
-              <T variant="caption">{GROUP_LABELS[g.status]}</T>
-            </Pressable>
-          );
-        })}
-      </View>
-      {groups
-        .filter((g) => g.people.length > 0)
-        .map((g) => (
-          <View key={g.status}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ expanded: open[g.status] }}
-              onPress={() => setOpen({ ...open, [g.status]: !open[g.status] })}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                minHeight: 44,
-                paddingVertical: 8,
-                borderTopWidth: 1,
-                borderTopColor: colors.border,
-              }}
-            >
-              <T variant="overline">{`${GROUP_LABELS[g.status]} (${g.people.length})`}</T>
-              <Ionicons
-                name={open[g.status] ? 'chevron-up' : 'chevron-down'}
-                size={16}
-                color={colors.onSurfaceMuted}
-              />
-            </Pressable>
-            {open[g.status] ? g.people.map((p, i) => render(p, i)) : null}
-          </View>
-        ))}
+    <View style={{ gap: 12 }}>
+      <AttendanceBar counts={counts} />
+      <Card list>{sorted.map((p, i) => render(p, i))}</Card>
     </View>
   );
 }
@@ -138,18 +95,19 @@ function ParticipantRow({
   canOverride: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const { colors } = useTheme();
   const respond = useRespond(eventId);
-  const subtitle =
-    [
-      p.role === 'coach'
-        ? 'Trainer'
-        : p.role === 'guest_player'
-          ? `Gastspieler aus ${p.guestFromTeam}`
-          : null,
-      p.reason,
-    ]
-      .filter(Boolean)
-      .join(' · ') || undefined;
+  const subtitle = [
+    p.role === 'coach'
+      ? 'Trainer'
+      : p.role === 'guest_player'
+        ? `Gastspieler aus ${p.guestFromTeam}`
+        : null,
+    GROUP_LABELS[p.status],
+    p.reason ? `„${p.reason}“` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
   const set = (status: 'yes' | 'no' | 'maybe') =>
     respond.mutate(
       {
@@ -163,11 +121,20 @@ function ParticipantRow({
     <View>
       <ListRow
         first={first}
+        leading={<Avatar name={p.name} size={42} />}
         title={p.name}
         subtitle={subtitle}
         trailing={
           p.attended === null ? (
-            <AttendanceChip status={p.status} />
+            <View
+              accessibilityLabel={t(GROUP_LABELS[p.status])}
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: DOT(p.status, colors),
+              }}
+            />
           ) : p.attended ? (
             <Chip tone="success" icon="checkmark" label="War da" />
           ) : (
@@ -496,7 +463,7 @@ export default function EventScreen() {
       {e ? (
         <>
           {e.match ? <Scoreboard event={e} clubShortName={me.club.shortName} /> : null}
-          <Card style={{ gap: 10 }}>
+          <HeroCard>
             <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
               {e.team ? <TeamBadge badge={e.team.badge} /> : <Chip tone="info" label="Verein" />}
               <Chip tone="neutral" label={EVENT_TYPE_LABELS[e.type]} />
@@ -507,13 +474,32 @@ export default function EventScreen() {
                 <Chip tone="archived" icon="time-outline" label="Vergangener Termin" />
               ) : null}
             </View>
-            <T variant="title">{e.title}</T>
+            <T
+              variant="figure"
+              color={colors.hero.onHero}
+              style={{
+                fontSize: 46,
+                lineHeight: 48,
+                textDecorationLine: e.status === 'cancelled' ? 'line-through' : 'none',
+              }}
+              verbatim
+            >
+              {e.title}
+            </T>
+            <T color="rgba(255,255,255,0.88)" style={{ fontSize: 14 }}>
+              {[
+                formatDay(e.startsAt),
+                `${formatTime(e.startsAt)}${e.endsAt ? `–${formatTime(e.endsAt)}` : ''} Uhr`,
+              ].join(' · ')}
+            </T>
             {e.cancelledReason ? (
-              <T color={colors.status.urgent.onContainer}>{e.cancelledReason}</T>
+              <T color={colors.hero.onHero} style={{ fontWeight: '700' }}>
+                {e.cancelledReason}
+              </T>
             ) : null}
-            {e.description ? <T color={colors.onSurfaceMuted}>{e.description}</T> : null}
+            {e.description ? <T color="rgba(255,255,255,0.88)">{e.description}</T> : null}
             {e.invited ? (
-              <T variant="caption">
+              <T variant="caption" color="rgba(255,255,255,0.8)">
                 {t(
                   `Eingeladen: ${[
                     ...e.invited.teams,
@@ -526,7 +512,49 @@ export default function EventScreen() {
                 )}
               </T>
             ) : null}
-          </Card>
+            {e.location ? (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: 14,
+                  borderRadius: 16,
+                  backgroundColor: 'rgba(0,0,0,0.25)',
+                }}
+              >
+                <Ionicons name="location-outline" size={20} color={colors.hero.onHero} />
+                <View style={{ flex: 1 }}>
+                  <T style={{ fontWeight: '700', fontSize: 15 }} color={colors.hero.onHero}>
+                    {e.location}
+                  </T>
+                  {e.meetingAt || e.meetingPoint || e.match?.competition ? (
+                    <T variant="caption" color="rgba(255,255,255,0.8)">
+                      {[
+                        e.meetingAt ? `${t('Treffpunkt')} ${formatTime(e.meetingAt)}` : null,
+                        e.meetingPoint,
+                        e.match?.competition,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </T>
+                  ) : null}
+                </View>
+                {e.routeUrl ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel={t('Route')}
+                    hitSlop={10}
+                    onPress={() => void Linking.openURL(e.routeUrl!)}
+                  >
+                    <T style={{ fontWeight: '800', fontSize: 13 }} color={colors.primaryText}>
+                      Route ›
+                    </T>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
+          </HeroCard>
 
           {e.lastChange && e.status === 'scheduled' ? (
             <Card style={{ gap: 6 }}>
@@ -540,46 +568,16 @@ export default function EventScreen() {
             </Card>
           ) : null}
 
-          <Card>
-            <ListRow
-              first
-              leading={<IconTile name="calendar-outline" />}
-              title={formatLongDate(e.startsAt)}
-              subtitle={`${formatTime(e.startsAt)}${e.endsAt ? ` – ${formatTime(e.endsAt)}` : ''} Uhr`}
-            />
-            {e.meetingAt ? (
+          {e.contactPerson ? (
+            <Card list>
               <ListRow
-                leading={<IconTile name="people-outline" />}
-                title={`Treffpunkt ${formatTime(e.meetingAt)} Uhr`}
-                subtitle={e.meetingPoint ?? undefined}
-              />
-            ) : null}
-            {e.location ? (
-              <ListRow
-                leading={<IconTile name="location-outline" />}
-                title={e.location}
-                subtitle={e.match?.competition ?? undefined}
-                trailing={
-                  e.routeUrl ? (
-                    <Button
-                      label="Route"
-                      icon="navigate-outline"
-                      size="sm"
-                      variant="tonal"
-                      onPress={() => void Linking.openURL(e.routeUrl!)}
-                    />
-                  ) : undefined
-                }
-              />
-            ) : null}
-            {e.contactPerson ? (
-              <ListRow
+                first
                 leading={<IconTile name="person-outline" />}
                 title={e.contactPerson.name}
                 subtitle="Ansprechperson"
               />
-            ) : null}
-          </Card>
+            </Card>
+          ) : null}
 
           {e.program.length > 0 ? (
             <Section title="Programm">
@@ -628,25 +626,18 @@ export default function EventScreen() {
           ) : null}
 
           {e.myResponses.length > 0 && !past ? (
-            <Card style={{ gap: 10 }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <T variant="section">Meine Rückmeldung</T>
-                {e.deadline && new Date(e.deadline) > new Date() ? (
-                  <Chip
-                    tone="action"
-                    icon="hourglass-outline"
-                    label={`Frist: ${formatRemaining(e.deadline)}`}
-                  />
-                ) : null}
-              </View>
-              <ResponseControls event={e} />
-            </Card>
+            <Section title="Deine Antwort">
+              {e.deadline && new Date(e.deadline) > new Date() ? (
+                <T
+                  variant="caption"
+                  color={colors.primaryText}
+                  style={{ fontSize: 12.5, fontWeight: '700', marginTop: -6 }}
+                >
+                  {`Frist: ${formatRemaining(e.deadline)}`}
+                </T>
+              ) : null}
+              <ResponseControls event={e} variant="segment" />
+            </Section>
           ) : null}
 
           {e.canManage && e.status === 'scheduled' && new Date(e.startsAt) > new Date() ? (
@@ -667,8 +658,8 @@ export default function EventScreen() {
           ) : null}
 
           {e.team ? (
-            <Section title="Teilnehmer">
-              <Card style={{ gap: 10 }}>
+            <Section title="Teilnahme">
+              <View style={{ gap: 10 }}>
                 <ParticipantGroups
                   participants={e.participants}
                   render={(p, i) => (
@@ -683,7 +674,7 @@ export default function EventScreen() {
                     />
                   )}
                 />
-              </Card>
+              </View>
             </Section>
           ) : null}
         </>

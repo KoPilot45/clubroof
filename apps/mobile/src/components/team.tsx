@@ -12,7 +12,7 @@ import { Pressable, View } from 'react-native';
 import { formatDateTile, formatDay, formatTime } from '@/lib/format';
 import { MATCH_KIND_LABELS } from '@/lib/labels';
 import { useTheme } from '@/lib/theme';
-import { Card, Chip, DateTile, HeroCard, ListRow, Stat, T } from './ui';
+import { Card, Chip, DateTile, HeroCard, HeroPill, ListRow, Stat, T } from './ui';
 import { Swipe, useCardWidth } from './home';
 
 export function SquadStatusCard({ squad }: { squad: SquadStatus }) {
@@ -188,19 +188,7 @@ export function TeamBand({
       {chips.length > 0 ? (
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
           {chips.slice(0, 3).map((c) => (
-            <View
-              key={c}
-              style={{
-                borderRadius: 14,
-                paddingHorizontal: 12,
-                paddingVertical: 3,
-                backgroundColor: 'rgba(255,255,255,0.18)',
-              }}
-            >
-              <T variant="headline" color={on} style={{ fontSize: 19, lineHeight: 24 }}>
-                {c}
-              </T>
-            </View>
+            <HeroPill key={c} label={c} />
           ))}
         </View>
       ) : null}

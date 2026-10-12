@@ -22,12 +22,14 @@ import { RequestError } from '@/lib/api';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { useConfirmDelete } from '@/lib/confirm';
 
 /**
  * Abteilungen des Vereins (Paket K6; bisher „Bereiche“): anlegen, umbenennen, löschen. Nach dem
  * Anlegen fragt ein Hinweis, ob die Abteilung eine eigene Kasse bekommen soll.
  */
 export default function DepartmentsScreen() {
+  const confirmDelete = useConfirmDelete();
   const { api, me, refresh } = useSignedIn();
   const queryClient = useQueryClient();
   const settings = useQuery({
@@ -217,7 +219,12 @@ export default function DepartmentsScreen() {
                       <IconAction
                         icon="trash-outline"
                         label={`${u.name} löschen`}
-                        onPress={() => unit.mutate({ method: 'DELETE', id: u.id })}
+                        onPress={() =>
+                          confirmDelete({
+                            name: u.name,
+                            onConfirm: () => unit.mutate({ method: 'DELETE', id: u.id }),
+                          })
+                        }
                       />
                     ) : null}
                   </View>

@@ -9,6 +9,7 @@ import {
   clubInitials,
   countdown,
   formatDateTile,
+  formatDay,
   formatLongDate,
   formatRemaining,
   formatTime,
@@ -73,71 +74,70 @@ export function AttendanceChip({ status }: { status: AttendanceStatus }) {
   return <Chip tone={STATUS_TONE[status]} label={ATTENDANCE_LABELS[status]} />;
 }
 
-/** Blickfang „Als Nächstes“ (Termine): der nächste Termin auf dem Verlauf der Vereinsfarbe. */
+/** Blickfang „Als Nächstes“ (Termine): der nächste Termin als Hero, Uhrzeit groß. */
 export function FeaturedEventCard({ event }: { event: EventSummary }) {
   const { colors } = useTheme();
   const on = colors.hero.onHero;
   const mine = event.myResponses[0];
-  const tile = formatDateTile(event.startsAt);
+  const multi = event.myResponses.length > 1 || mine?.relation === 'child';
+  const c = countdown(event.startsAt);
+  const left =
+    c.days >= 1
+      ? c.days === 1
+        ? 'In 1 Tag'
+        : `In ${c.days} Tagen`
+      : c.hours >= 1
+        ? `In ${c.hours} Std.`
+        : `In ${Math.max(1, c.minutes)} Min.`;
   return (
     <HeroCard onPress={() => router.push(`/events/${event.id}`)} accessibilityLabel={event.title}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <View style={{ alignItems: 'center', minWidth: 64 }}>
-          <T variant="caption" color={on}>
-            {`${tile.weekday} ${tile.day}.`}
-          </T>
-          <T variant="figure" color={on} style={{ fontSize: 34, lineHeight: 40 }}>
-            {formatTime(event.startsAt)}
-          </T>
-        </View>
-        <View style={{ flex: 1, gap: 4 }}>
+      <T variant="overline" color={on}>
+        {[t('Als Nächstes'), t(left)].join(' · ')}
+      </T>
+      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+        <T variant="figure" color={on} style={{ fontSize: 72, lineHeight: 72 }}>
+          {formatTime(event.startsAt)}
+        </T>
+        <T variant="headline" color={on} numberOfLines={2} style={{ fontSize: 28, flexShrink: 1 }}>
+          {event.title}
+        </T>
+      </View>
+      <T color="rgba(255,255,255,0.85)" style={{ fontSize: 13.5 }}>
+        {[formatDay(event.startsAt), event.location].filter(Boolean).join(' · ')}
+      </T>
+      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+        <View
+          style={{
+            borderRadius: 999,
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            backgroundColor: colors.primary,
+          }}
+        >
           <T
-            variant="headline"
-            color={on}
-            numberOfLines={2}
-            style={{ fontSize: 20, lineHeight: 24 }}
+            variant="caption"
+            color={colors.onPrimary}
+            style={{ fontWeight: '800', fontSize: 11.5 }}
           >
-            {event.title}
+            {[event.team ? event.team.badge : 'Verein', multi && mine ? mine.firstName : null]
+              .filter(Boolean)
+              .join(' · ')}
           </T>
-          {event.location ? (
-            <T variant="caption" color={on} numberOfLines={1}>
-              {event.location}
-            </T>
-          ) : null}
-          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-            <View
-              style={{
-                borderRadius: 999,
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                backgroundColor: on,
-              }}
-            >
-              <T variant="caption" color={colors.hero.from} style={{ fontWeight: '700' }}>
-                {event.team ? event.team.badge : 'Verein'}
-              </T>
-            </View>
-            {mine ? (
-              <View
-                style={{
-                  borderRadius: 999,
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  backgroundColor: 'rgba(255,255,255,0.22)',
-                }}
-              >
-                <T variant="caption" color={on} style={{ fontWeight: '700' }}>
-                  {event.myResponses.length > 1 || mine.relation === 'child'
-                    ? `${mine.relation === 'self' ? 'Ich' : mine.firstName}: ${ATTENDANCE_LABELS[mine.status]}`
-                    : mine.status === 'pending'
-                      ? 'Zusage offen'
-                      : ATTENDANCE_LABELS[mine.status]}
-                </T>
-              </View>
-            ) : null}
-          </View>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={on} />
+        {mine ? (
+          <View
+            style={{
+              borderRadius: 999,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              backgroundColor: 'rgba(255,255,255,0.2)',
+            }}
+          >
+            <T variant="caption" color={on} style={{ fontWeight: '800', fontSize: 11.5 }}>
+              {mine.status === 'pending' ? 'Zusage offen' : ATTENDANCE_LABELS[mine.status]}
+            </T>
+          </View>
+        ) : null}
       </View>
     </HeroCard>
   );
@@ -480,6 +480,7 @@ export function AnswerButtons({
   onMaybe,
   onNo,
   busy = null,
+  variant = 'pills',
 }: {
   status: 'yes' | 'no' | 'maybe' | 'pending' | null;
   onYes: () => void;
@@ -488,6 +489,8 @@ export function AnswerButtons({
   /** Antwort, die gerade gesendet wird (Ladeanzeige) */
   busy?: 'yes' | 'maybe' | 'no' | null;
   tone?: 'surface' | 'hero';
+  /** pills: drei Pillen (Home); segment: ein Umschalter in einem Behälter (Detailseiten) */
+  variant?: 'pills' | 'segment';
 }) {
   const { colors } = useTheme();
   const answered = status === 'yes' || status === 'maybe' || status === 'no';
@@ -550,6 +553,84 @@ export function AnswerButtons({
       </PressScale>
     );
   };
+  if (variant === 'segment') {
+    const seg = (
+      key: 'yes' | 'maybe' | 'no',
+      label: string,
+      fill: string,
+      onFill: string,
+      onPress: () => void,
+    ) => {
+      const chosen = status === key;
+      return (
+        <PressScale
+          key={key}
+          accessibilityRole="button"
+          accessibilityState={{ selected: chosen, busy: busy === key }}
+          accessibilityLabel={t(label)}
+          disabled={busy !== null}
+          onPress={onPress}
+          style={{
+            flex: 1,
+            minHeight: 44,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 12,
+            paddingVertical: 11,
+            backgroundColor: chosen ? fill : 'transparent',
+          }}
+        >
+          {busy === key ? (
+            <ActivityIndicator color={onFill} />
+          ) : (
+            <Text
+              numberOfLines={1}
+              style={{
+                fontSize: 13.5,
+                fontWeight: '700',
+                color: chosen ? onFill : colors.onSurface,
+              }}
+            >
+              {label}
+            </Text>
+          )}
+        </PressScale>
+      );
+    };
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: 4,
+          padding: 4,
+          borderRadius: 16,
+          backgroundColor: withAlpha('#ffffff', 0.07),
+        }}
+      >
+        {seg(
+          'yes',
+          status === 'yes' ? 'Zugesagt' : 'Zusagen',
+          colors.primary,
+          colors.onPrimary,
+          onYes,
+        )}
+        {seg(
+          'maybe',
+          status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher',
+          colors.status.action.solid,
+          colors.status.action.onSolid,
+          onMaybe,
+        )}
+        {seg(
+          'no',
+          status === 'no' ? 'Abgesagt' : 'Absagen',
+          colors.status.urgent.solid,
+          colors.status.urgent.onSolid,
+          onNo,
+        )}
+      </View>
+    );
+  }
   return (
     <View style={{ flexDirection: 'row', gap: 10 }}>
       {pill(
@@ -593,8 +674,10 @@ export function AnswerButtons({
 export function ResponseControls({
   event,
   tone = 'surface',
+  variant = 'pills',
 }: {
   event: EventSummary;
+  variant?: 'pills' | 'segment';
   /** hero: Schaltflächen auf der Blickfangkarte; der Grund wird in einem Blatt von unten abgefragt */
   tone?: 'surface' | 'hero';
 }) {
@@ -696,6 +779,7 @@ export function ResponseControls({
           ) : (
             <AnswerButtons
               tone={tone}
+              variant={variant}
               status={eff(r)}
               busy={
                 respond.isPending && respond.variables?.personId === r.personId

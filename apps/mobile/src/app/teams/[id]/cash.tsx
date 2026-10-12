@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   HeroCard,
+  HeroPill,
   Chip,
   Empty,
   ErrorNotice,
@@ -133,16 +134,16 @@ export default function CashScreen() {
               <T variant="overline" color={colors.hero.onHero}>
                 Aktueller Kassenstand
               </T>
-              <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 44 }}>
+              <T
+                variant="figure"
+                color={colors.hero.onHero}
+                style={{ fontSize: 72, lineHeight: 76 }}
+              >
                 {formatEuro(c.balanceCents)}
               </T>
-              <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap' }}>
-                <T variant="label" color={colors.hero.onHero}>
-                  Einnahmen {formatEuro(c.incomeCents ?? 0)}
-                </T>
-                <T variant="label" color={colors.hero.onHero}>
-                  Ausgaben {formatEuro(c.expenseCents ?? 0)}
-                </T>
+              <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+                <HeroPill label={`Einnahmen ${formatEuro(c.incomeCents ?? 0)}`} />
+                <HeroPill label={`Ausgaben ${formatEuro(c.expenseCents ?? 0)}`} />
               </View>
               {c.treasurers.length ? (
                 <T variant="caption" color={colors.hero.onHero}>

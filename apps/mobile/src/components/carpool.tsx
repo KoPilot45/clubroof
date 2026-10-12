@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { useConfirmDelete } from '@/lib/confirm';
 import { Button, Card, ChoiceChips, Chip, Section, T, TextField } from './ui';
 import { t } from '@/lib/i18n';
 
@@ -12,6 +13,7 @@ type Call = { path: string; method: 'PUT' | 'DELETE'; body?: unknown };
 
 /** Fahrgemeinschaften zu Auswärtsspielen und Turnieren. */
 export function CarpoolSection({ event }: { event: EventDetail }) {
+  const confirmDelete = useConfirmDelete();
   const { api, me } = useSignedIn();
   const { colors } = useTheme();
   const queryClient = useQueryClient();
@@ -118,7 +120,14 @@ export function CarpoolSection({ event }: { event: EventDetail }) {
                     size="sm"
                     variant="danger"
                     onPress={() =>
-                      run.mutate({ path: `/carpool/offers/${o.id}`, method: 'DELETE' })
+                      confirmDelete({
+                        title: o.mine ? 'Wirklich zurückziehen?' : 'Wirklich entfernen?',
+                        confirmLabel: o.mine ? 'Zurückziehen' : 'Entfernen',
+                        name: o.driverName,
+                        text: `Das Angebot von ${o.driverName} wird entfernt.`,
+                        onConfirm: () =>
+                          run.mutate({ path: `/carpool/offers/${o.id}`, method: 'DELETE' }),
+                      })
                     }
                   />
                 ) : null}

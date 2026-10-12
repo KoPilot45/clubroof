@@ -32,6 +32,7 @@ import { formatEuro, parseEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { useConfirmDelete } from '@/lib/confirm';
 
 const STATUS_LABEL: Record<ClubBudgetStatus, string> = {
   ok: 'im Plan',
@@ -44,6 +45,7 @@ const STATUS_LABEL: Record<ClubBudgetStatus, string> = {
  * Fortschrittsbalken, Warnung bei Überschreitung. `mode=actual` zeigt nur die Auswertung.
  */
 export default function BudgetScreen() {
+  const confirmDelete = useConfirmDelete();
   const { mode } = useLocalSearchParams<{ mode?: string }>();
   const { api } = useSignedIn();
   const { colors } = useTheme();
@@ -177,7 +179,15 @@ export default function BudgetScreen() {
                 variant="danger"
                 style={{ flex: 1 }}
                 loading={remove.isPending}
-                onPress={() => remove.mutate(l.id)}
+                onPress={() =>
+                  confirmDelete({
+                    title: 'Wirklich entfernen?',
+                    confirmLabel: 'Entfernen',
+                    name: l.categoryName,
+                    text: `Die Zeile „${l.categoryName}“ wird aus dem Haushaltsplan entfernt.`,
+                    onConfirm: () => remove.mutate(l.id),
+                  })
+                }
               />
             </View>
           </View>

@@ -18,6 +18,7 @@ import {
 } from '@/components/ui';
 import { toGermanDate } from '@/lib/dates';
 import { formatEuro, parseEuro } from '@/lib/format';
+import { useConfirmDelete } from '@/lib/confirm';
 import { t } from '@/lib/i18n';
 
 const INTERVALS: { value: CashFee['interval']; label: string }[] = [
@@ -28,6 +29,7 @@ const INTERVALS: { value: CashFee['interval']; label: string }[] = [
 
 /** Mannschaftsbeiträge: werden allen Spielern automatisch als Forderung gebucht. */
 export default function CashFeesScreen() {
+  const confirmDelete = useConfirmDelete();
   const { id } = useLocalSearchParams<{ id: string }>();
   const cash = useCash(id);
   const action = useCashAction(id, () => setCreating(false));
@@ -62,7 +64,16 @@ export default function CashFeesScreen() {
                   label="Beenden"
                   size="sm"
                   variant="danger"
-                  onPress={() => action.mutate({ path: `/cash/fees/${f.id}`, method: 'DELETE' })}
+                  onPress={() =>
+                    confirmDelete({
+                      title: 'Wirklich beenden?',
+                      confirmLabel: 'Beenden',
+                      name: f.name,
+                      text: `Der Beitrag „${f.name}“ wird nicht mehr erhoben.`,
+                      onConfirm: () =>
+                        action.mutate({ path: `/cash/fees/${f.id}`, method: 'DELETE' }),
+                    })
+                  }
                 />
               }
             />

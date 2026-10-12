@@ -14,9 +14,9 @@ import {
   ListRow,
   Loading,
   Screen,
+  SearchField,
   Sheet,
   T,
-  TextField,
 } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
 import { t } from '@/lib/i18n';
@@ -83,11 +83,12 @@ export default function MembersScreen() {
   return (
     <Screen edges={[]} refreshing={members.isRefetching} onRefresh={() => members.refetch()}>
       <View style={{ gap: 12 }}>
-        <TextField
-          label="Suche"
+        <SearchField
           value={q}
           onChangeText={setQ}
-          placeholder={t('Name oder Mitgliedsnummer')}
+          placeholder="Name oder Nummer"
+          filterCount={activeFilters}
+          onFilter={() => setFilterOpen(true)}
         />
         <ChoiceChips
           scroll
@@ -101,23 +102,12 @@ export default function MembersScreen() {
           selected={[filter]}
           onToggle={setFilter}
         />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Button
-            label={
-              roleFilter === 'all' ? 'Rollen und Aufgaben' : (roleLabel ?? 'Rollen und Aufgaben')
-            }
-            icon="options-outline"
-            variant={roleFilter === 'all' ? 'outline' : 'tonal'}
-            size="sm"
-            onPress={() => setFilterOpen(true)}
-          />
-          {activeFilters > 0 ? (
-            <>
-              <Chip tone="primary" label={t(`${activeFilters} Filter aktiv`)} />
-              <Button label="Zurücksetzen" variant="neutral" size="sm" onPress={reset} />
-            </>
-          ) : null}
-        </View>
+        {activeFilters > 0 ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            {roleFilter !== 'all' ? <Chip tone="primary" label={roleLabel ?? ''} /> : null}
+            <Button label="Zurücksetzen" variant="neutral" size="sm" onPress={reset} />
+          </View>
+        ) : null}
       </View>
       <Sheet
         visible={filterOpen}
@@ -159,33 +149,34 @@ export default function MembersScreen() {
         <Empty icon="people-outline" text="Keine passenden Mitglieder." />
       ) : null}
       {list.length ? (
-        <Card>
-          {list.map((m, i) => (
-            <ListRow
-              key={m.id}
-              first={i === 0}
-              leading={<Avatar name={`${m.firstName} ${m.lastName}`} />}
-              title={`${m.lastName}, ${m.firstName}`}
-              subtitle={
-                <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
-                  {m.teams.map((t) => (
-                    <Chip
-                      key={t.badge + t.function}
-                      tone="neutral"
-                      label={t.function === 'player' ? t.badge : `${t.badge} · Trainerteam`}
-                    />
-                  ))}
-                  {m.roles.map((r) => (
-                    <Chip key={r} label={r} />
-                  ))}
-                  {!m.hasAccount ? (
-                    <Chip tone="neutral" icon="phone-portrait-outline" label="ohne App" />
-                  ) : null}
-                </View>
-              }
-              onPress={() => router.push(`/admin/member/${m.id}`)}
-            />
-          ))}
+        <Card list>
+          {list.map((m, i) => {
+            const tag = m.roles[0] ?? (!m.hasAccount ? 'ohne App' : null);
+            const sub = [
+              ...m.teams.map((t) =>
+                t.function === 'player' ? t.badge : `${t.badge} · Trainerteam`,
+              ),
+              ...m.roles.slice(1),
+              m.roles.length > 0 && !m.hasAccount ? 'ohne App' : null,
+            ]
+              .filter(Boolean)
+              .join(' · ');
+            return (
+              <ListRow
+                key={m.id}
+                first={i === 0}
+                leading={<Avatar name={`${m.firstName} ${m.lastName}`} size={42} />}
+                title={`${m.lastName}, ${m.firstName}`}
+                subtitle={sub || undefined}
+                trailing={
+                  tag ? (
+                    <Chip tone={m.roles.length > 0 ? 'primary' : 'neutral'} label={tag} />
+                  ) : null
+                }
+                onPress={() => router.push(`/admin/member/${m.id}`)}
+              />
+            );
+          })}
         </Card>
       ) : null}
     </Screen>

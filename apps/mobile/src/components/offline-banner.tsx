@@ -6,6 +6,7 @@ import { Text } from '@/components/app-text';
 import { lastOnlineAt, setOffline, useOffline } from '@/lib/connection';
 import { formatTime } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
+import { withAlpha } from '@/components/ui';
 
 /**
  * Hinweis am oberen Rand, solange keine Verbindung zum Server besteht: Stand der Anzeige,
@@ -35,17 +36,17 @@ export function OfflineBanner() {
           alignItems: 'center',
           gap: 10,
           borderRadius: radii.xl,
-          backgroundColor: c.container,
+          backgroundColor: colors.anstoss.sheet,
           borderWidth: 1,
-          borderColor: c.solid,
+          borderColor: withAlpha(c.solid, 0.5),
         }}
       >
-        <Ionicons name="cloud-offline-outline" size={22} color={c.onContainer} />
+        <Ionicons name="cloud-offline-outline" size={22} color={c.solid} />
         <View style={{ flex: 1 }}>
-          <Text style={{ color: c.onContainer, fontWeight: '800', fontSize: 14 }}>
+          <Text style={{ color: colors.onSurface, fontWeight: '800', fontSize: 14 }}>
             Du bist offline
           </Text>
-          <Text style={{ color: c.onContainer, fontSize: 12 }}>
+          <Text style={{ color: colors.onSurfaceMuted, fontSize: 12 }}>
             {`Angezeigt wird der Stand von ${formatTime(new Date(lastOnlineAt()).toISOString())} Uhr. Termine und Kader sind lesbar.`}
           </Text>
         </View>

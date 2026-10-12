@@ -25,6 +25,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
 import { PARTICIPATION_OPTIONS } from '@/lib/team-labels';
+import { useConfirmDelete } from '@/lib/confirm';
 
 export default function TeamAdminScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,6 +40,7 @@ export default function TeamAdminScreen() {
 }
 
 function Editor({ team }: { team: TeamDetailAdmin }) {
+  const confirmDelete = useConfirmDelete();
   const { api, refresh } = useSignedIn();
   const queryClient = useQueryClient();
   const [name, setName] = useState(team.name);
@@ -197,7 +199,7 @@ function Editor({ team }: { team: TeamDetailAdmin }) {
           variant="danger"
           icon="trash-outline"
           loading={remove.isPending}
-          onPress={() => remove.mutate()}
+          onPress={() => confirmDelete({ name: team.name, onConfirm: () => remove.mutate() })}
         />
       ) : null}
     </Screen>

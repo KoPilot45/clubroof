@@ -177,7 +177,10 @@ export function Screen({
   header,
   edges = ['top'],
   onEndReached,
+  footer,
 }: {
+  /** feste untere Leiste mit dem Hauptknopf (Formulare): Verlauf nach oben, Knopf 52 hoch */
+  footer?: ReactNode;
   children: ReactNode;
   refreshing?: boolean;
   onRefresh?: () => void;
@@ -242,6 +245,21 @@ export function Screen({
             </FadeIn>
           ))}
         </ScrollView>
+        {footer ? (
+          <View
+            style={{
+              paddingHorizontal: 22,
+              paddingTop: 12,
+              paddingBottom: 18 + (tabBarHeight > 0 ? tabBarHeight - 8 : 0),
+              gap: 10,
+              backgroundColor: colors.background,
+              borderTopWidth: 1,
+              borderTopColor: colors.anstoss.divider,
+            }}
+          >
+            {footer}
+          </View>
+        ) : null}
       </SafeAreaView>
     </ScrollYContext.Provider>
   );
@@ -306,6 +324,14 @@ export function HeroCard({
   background?: ReactNode;
 }) {
   const { colors, radii } = useTheme();
+  // In den eigenen Bereichen trägt der Hero deren Farbe (Verwaltung violett, Vereinskasse blau)
+  const pathname = usePathname();
+  const area = pathname.startsWith('/admin')
+    ? colors.anstoss.areaHeroes.admin
+    : pathname.startsWith('/club-cash')
+      ? colors.anstoss.areaHeroes.cash
+      : null;
+  palette = palette ?? area ?? undefined;
   const gradientId = useId().replace(/[^a-zA-Z0-9]/g, '');
   // Hintergrund bekommt die gemessene Größe: wächst die Karte (z. B. nach dem Laden), wächst er mit
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
@@ -937,7 +963,7 @@ export function Avatar({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: colors.primaryContainer,
+          backgroundColor: withAlpha(colors.primary, 0.15),
         }}
       />
     );
@@ -948,18 +974,19 @@ export function Avatar({
     .slice(0, 2)
     .join('')
     .toUpperCase();
+  // Anstoß: Akzentfarbe bei 15 % als Fläche, Initialen in der Akzentfarbe
   return (
     <View
       style={{
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor: colors.primaryContainer,
+        backgroundColor: withAlpha(colors.primary, 0.15),
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <Text style={{ color: colors.onPrimaryContainer, fontWeight: '800', fontSize: size * 0.36 }}>
+      <Text style={{ color: colors.primaryText, fontWeight: '800', fontSize: size * 0.34 }}>
         {initials}
       </Text>
     </View>
@@ -1019,31 +1046,43 @@ export function DateTile({
   day,
   muted,
   size = 'md',
+  color,
 }: {
   weekday: string;
   day: string;
   /** abgesagt: graue Fläche */
   muted?: boolean;
   size?: 'md' | 'lg';
+  /** Farbe des Wochentags und der Fläche (15 %); Standard: Kategorie „Mannschaft“ */
+  color?: string;
 }) {
   const { colors } = useTheme();
   const lg = size === 'lg';
-  const fg = muted ? colors.onSurfaceMuted : colors.onPrimaryContainer;
+  const tint = color ?? colors.anstoss.categories.team;
+  const fg = muted ? colors.anstoss.textTertiary : tint;
   return (
     <View
       style={{
-        width: lg ? 52 : 48,
-        height: lg ? 56 : 50,
-        borderRadius: lg ? 16 : 14,
+        width: lg ? 54 : 50,
+        paddingVertical: lg ? 6 : 5,
+        borderRadius: lg ? 15 : 14,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: muted ? colors.surfaceVariant : colors.primaryContainer,
+        backgroundColor: muted ? colors.anstoss.card : withAlpha(tint, 0.15),
       }}
     >
-      <T variant="caption" color={fg} style={{ fontSize: 11, lineHeight: 13 }}>
-        {weekday}
+      <T
+        variant="caption"
+        color={fg}
+        style={{ fontSize: 10.5, lineHeight: 13, fontWeight: '800', textTransform: 'uppercase' }}
+      >
+        {weekday.replace('.', '')}
       </T>
-      <T variant="figure" color={fg} style={{ fontSize: lg ? 22 : 20, lineHeight: lg ? 26 : 24 }}>
+      <T
+        variant="figure"
+        color={muted ? colors.anstoss.textTertiary : colors.onSurface}
+        style={{ fontSize: lg ? 28 : 26, lineHeight: lg ? 28 : 26 }}
+      >
         {day}
       </T>
     </View>
@@ -1133,7 +1172,7 @@ export function ListRow({
       )}
       {/* Chips setzen alignSelf: flex-start; der Container zentriert sie wieder zur Zeile */}
       {trailing ? <View style={{ alignSelf: 'center' }}>{trailing}</View> : null}
-      {onPress ? (
+      {onPress && !trailing ? (
         <Ionicons name="chevron-forward" size={18} color={colors.anstoss.textTertiary} />
       ) : null}
     </View>
@@ -1723,7 +1762,7 @@ export function ChoiceChips<T extends string>({
   onToggle: (value: T) => void;
   label?: string;
   /** Farbe der gewählten Option: Vereinsfarbe oder rot (z. B. Grund einer Absage) */
-  tone?: 'primary' | 'urgent';
+  tone?: 'primary' | 'urgent' | 'light';
   /** zeigt bei der gewählten Option ein Häkchen */
   check?: boolean;
   /** eine einzige, seitlich wischbare Zeile statt Umbruch */
@@ -1756,8 +1795,19 @@ export function ChoiceChips<T extends string>({
         return row(
           options.map((o) => {
             const active = selected.includes(o.value);
-            const fill = tone === 'urgent' ? colors.status.urgent.solid : colors.primary;
-            const onFill = tone === 'urgent' ? colors.status.urgent.onSolid : colors.onPrimary;
+            // `light`: Filterzeile – die gewählte Option ist weiß mit dunkler Schrift
+            const fill =
+              tone === 'urgent'
+                ? colors.status.urgent.solid
+                : tone === 'light'
+                  ? '#FFFFFF'
+                  : colors.primary;
+            const onFill =
+              tone === 'urgent'
+                ? colors.status.urgent.onSolid
+                : tone === 'light'
+                  ? colors.background
+                  : colors.onPrimary;
             return (
               <Pressable
                 key={o.value}
@@ -1943,7 +1993,7 @@ export function DateStepper({
   min?: string;
   max?: string;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors } = useTheme();
   const [open, setOpen] = useState(false);
   const shift = (days: number) => {
     const d = new Date(`${value}T00:00:00Z`);
@@ -1958,14 +2008,12 @@ export function DateStepper({
       onPress={() => shift(days)}
       hitSlop={6}
       style={({ pressed }) => ({
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: pressed ? colors.surfaceVariant : colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
+        backgroundColor: pressed ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.1)',
       })}
     >
       <Ionicons name={icon} size={18} color={colors.onSurface} />
@@ -1980,8 +2028,10 @@ export function DateStepper({
           alignItems: 'center',
           gap: 10,
           padding: 6,
-          borderRadius: radii.md,
-          backgroundColor: colors.surfaceVariant,
+          borderRadius: 18,
+          backgroundColor: colors.anstoss.card,
+          borderWidth: 1.5,
+          borderColor: colors.anstoss.fieldBorder,
         }}
       >
         {button('chevron-back', -1, `${label}: einen Tag früher`)}
@@ -2140,7 +2190,7 @@ export function TimeStepper({
   /** wird nicht mehr gebraucht (die Walze geht in 5er-Schritten); bleibt für bestehende Aufrufe */
   step?: number;
 }) {
-  const { colors, radii } = useTheme();
+  const { colors } = useTheme();
   const [open, setOpen] = useState(false);
   const [h0, m0] = value.split(':').map(Number) as [number, number];
   const [hour, setHour] = useState(h0);
@@ -2167,17 +2217,19 @@ export function TimeStepper({
           alignItems: 'center',
           justifyContent: 'center',
           gap: 10,
-          minHeight: 48,
-          borderRadius: radii.md,
-          backgroundColor: pressed ? colors.border : colors.surfaceVariant,
+          minHeight: 58,
+          borderRadius: 18,
+          borderWidth: 1.5,
+          borderColor: open ? colors.primary : colors.anstoss.fieldBorder,
+          backgroundColor: pressed ? 'rgba(255,255,255,0.12)' : colors.anstoss.card,
         })}
       >
         <Ionicons name="time-outline" size={20} color={colors.primaryText} />
         <Text
           verbatim
           style={{
-            fontSize: 20,
-            fontWeight: '800',
+            fontSize: 24,
+            fontWeight: '700',
             color: colors.onSurface,
             fontVariant: ['tabular-nums'],
           }}
@@ -2384,9 +2436,12 @@ export function GradientFill({
   from,
   to,
   overlay,
+  vertical,
 }: {
   from: string;
   to: string;
+  /** senkrecht (180°) statt diagonal */
+  vertical?: boolean;
   /** zusätzliche Abdunklung nach unten (Bildkarten), 0–1 an der Unterkante */
   overlay?: number;
 }) {
@@ -2400,7 +2455,7 @@ export function GradientFill({
       aria-hidden
     >
       <Defs>
-        <LinearGradient id={`${id}a`} x1="0" y1="0" x2="1" y2="1">
+        <LinearGradient id={`${id}a`} x1="0" y1="0" x2={vertical ? '0' : '1'} y2="1">
           <Stop offset="0" stopColor={from} />
           <Stop offset="1" stopColor={to} />
         </LinearGradient>
@@ -2412,5 +2467,169 @@ export function GradientFill({
       <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}a)`} />
       {overlay ? <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id}b)`} /> : null}
     </Svg>
+  );
+}
+
+/**
+ * Suchfeld für Listen (Stil „Anstoß“): 50 hoch, Lupe, optional daneben der Filterknopf in der Akzentfarbe
+ * („Filter · 1“, wenn Filter aktiv sind).
+ */
+export function SearchField({
+  value,
+  onChangeText,
+  placeholder,
+  filterCount,
+  onFilter,
+}: {
+  value: string;
+  onChangeText: (v: string) => void;
+  placeholder: string;
+  /** Anzahl aktiver Filter; mit `onFilter` erscheint der Filterknopf */
+  filterCount?: number;
+  onFilter?: () => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', gap: 10 }}>
+      <View
+        style={{
+          flex: 1,
+          height: 50,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          paddingHorizontal: 14,
+          borderRadius: 16,
+          backgroundColor: colors.anstoss.card,
+          borderWidth: 1.5,
+          borderColor: colors.anstoss.fieldBorder,
+        }}
+      >
+        <Ionicons name="search-outline" size={18} color={colors.anstoss.placeholder} />
+        <TextInput
+          accessibilityLabel={t(placeholder)}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={t(placeholder)}
+          placeholderTextColor={colors.anstoss.placeholder}
+          autoCorrect={false}
+          style={{ flex: 1, fontSize: 14, color: colors.onSurface, ...inputFont() }}
+        />
+      </View>
+      {onFilter ? (
+        <PressScale
+          accessibilityRole="button"
+          accessibilityLabel={t('Filter')}
+          onPress={onFilter}
+          style={{
+            height: 50,
+            minWidth: 50,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            paddingHorizontal: 15,
+            borderRadius: 16,
+            backgroundColor: colors.primary,
+          }}
+        >
+          <Ionicons name="options-outline" size={18} color={colors.onPrimary} />
+          <Text style={{ fontSize: 14, fontWeight: '800', color: colors.onPrimary }}>
+            {filterCount ? t(`Filter · ${filterCount}`) : t('Filter')}
+          </Text>
+        </PressScale>
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * Runder „…“-Knopf (44) mit Menü von unten (Vorlage U13/U14): ein Hauptknopf je Karte, alles Weitere
+ * hier; Löschen steht zuletzt in Rot und fragt immer nach (siehe `useConfirmDelete`).
+ */
+export function MoreMenu({
+  title,
+  actions,
+}: {
+  title: string;
+  actions: { label: string; icon: IconName; onPress: () => void; danger?: boolean }[];
+}) {
+  const { colors } = useTheme();
+  const [open, setOpen] = useState(false);
+  if (actions.length === 0) return null;
+  return (
+    <>
+      <PressScale
+        accessibilityRole="button"
+        accessibilityLabel={t('Weitere Aktionen')}
+        onPress={() => setOpen(true)}
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(255,255,255,0.1)',
+        }}
+      >
+        <Ionicons name="ellipsis-horizontal" size={20} color={colors.onSurface} />
+      </PressScale>
+      <Sheet visible={open} onClose={() => setOpen(false)} title={title}>
+        <View>
+          {actions.map((a, i) => (
+            <Pressable
+              key={a.label}
+              accessibilityRole="button"
+              onPress={() => {
+                setOpen(false);
+                a.onPress();
+              }}
+              style={{
+                minHeight: 52,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 14,
+                borderTopWidth: i === 0 ? 0 : 1,
+                borderTopColor: colors.anstoss.divider,
+              }}
+            >
+              <Ionicons
+                name={a.icon}
+                size={20}
+                color={a.danger ? colors.status.urgent.onContainer : colors.onSurface}
+              />
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: '700',
+                  color: a.danger ? colors.status.urgent.onContainer : colors.onSurface,
+                }}
+              >
+                {a.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </Sheet>
+    </>
+  );
+}
+
+/** Kennzahl-Pille im Hero („Bilanz 5-1-0“, „Einnahmen 662,35 €“): Saira 19, Weiß bei 18 %. */
+export function HeroPill({ label }: { label: string }) {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={{
+        borderRadius: 14,
+        paddingHorizontal: 12,
+        paddingVertical: 3,
+        backgroundColor: 'rgba(255,255,255,0.18)',
+      }}
+    >
+      <T variant="headline" color={colors.hero.onHero} style={{ fontSize: 19, lineHeight: 24 }}>
+        {label}
+      </T>
+    </View>
   );
 }

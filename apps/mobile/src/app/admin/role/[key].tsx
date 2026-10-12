@@ -19,12 +19,14 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
+import { useConfirmDelete } from '@/lib/confirm';
 import { t } from '@/lib/i18n';
 
 const key = (sc: { type: ScopeType; id: string | null }) => `${sc.type}:${sc.id ?? ''}`;
 
 /** Eine Rolle mit allen Personen: durchsuchen, entziehen und neue Personen hinzufügen. */
 export default function RoleScreen() {
+  const confirmDelete = useConfirmDelete();
   const { key: roleKey, add } = useLocalSearchParams<{ key: string; add?: string }>();
   const { api, me } = useSignedIn();
   const queryClient = useQueryClient();
@@ -126,7 +128,15 @@ export default function RoleScreen() {
                     size="sm"
                     variant="danger"
                     loading={revoke.isPending && revoke.variables?.assignmentId === h.assignmentId}
-                    onPress={() => revoke.mutate(h)}
+                    onPress={() =>
+                      confirmDelete({
+                        title: 'Wirklich entziehen?',
+                        confirmLabel: 'Entziehen',
+                        name: role.name,
+                        text: `${h.name} verliert die Rolle „${role.name}“.`,
+                        onConfirm: () => revoke.mutate(h),
+                      })
+                    }
                   />
                 ) : null
               }

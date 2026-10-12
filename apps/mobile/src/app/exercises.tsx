@@ -27,6 +27,7 @@ import { useSignedIn } from '@/lib/session';
 import { CATEGORY_LABELS } from '@/lib/training';
 import { dateFormat, t } from '@/lib/i18n';
 import { useMarkSeen } from '@/lib/tile-info';
+import { useConfirmDelete } from '@/lib/confirm';
 
 const categories = EXERCISE_CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }));
 
@@ -120,6 +121,7 @@ function AddToTraining({ exercise, onDone }: { exercise: Exercise; onDone: () =>
 
 /** Übungsbibliothek des Vereins (Trainingsplanung). */
 export default function ExercisesScreen() {
+  const confirmDelete = useConfirmDelete();
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<ExerciseCategory | 'all'>('all');
@@ -203,7 +205,12 @@ export default function ExercisesScreen() {
                   icon="trash-outline"
                   variant="danger"
                   size="sm"
-                  onPress={() => change.mutate({ method: 'DELETE', id: e.id })}
+                  onPress={() =>
+                    confirmDelete({
+                      name: e.title,
+                      onConfirm: () => change.mutate({ method: 'DELETE', id: e.id }),
+                    })
+                  }
                 />
               ) : null}
             </View>

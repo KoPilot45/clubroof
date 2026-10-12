@@ -33,6 +33,7 @@ import { RequestError } from '@/lib/api';
 import { formatDateTile, formatTime, todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { useConfirmDelete } from '@/lib/confirm';
 import { t } from '@/lib/i18n';
 
 const LICENSE = {
@@ -184,6 +185,7 @@ function DutySection({
   onChanged: (next?: RefereeOverview) => void;
   onError: (e: Error) => void;
 }) {
+  const confirmDelete = useConfirmDelete();
   const { api } = useSignedIn();
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState('');
@@ -249,7 +251,7 @@ function DutySection({
             size="sm"
             style={{ alignSelf: 'flex-start' }}
             loading={remove.isPending}
-            onPress={() => remove.mutate(d.id)}
+            onPress={() => confirmDelete({ name: d.title, onConfirm: () => remove.mutate(d.id) })}
           />
         </View>
       ) : null}

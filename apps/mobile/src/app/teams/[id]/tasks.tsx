@@ -13,14 +13,18 @@ import {
   Empty,
   ErrorNotice,
   Loading,
+  MoreMenu,
   Screen,
   Section,
   T,
   TextField,
+  type IconName,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatShortDate } from '@/lib/format';
+import { useConfirmDelete } from '@/lib/confirm';
 import { useSignedIn } from '@/lib/session';
+import { useTheme } from '@/lib/theme';
 import { dateFormat } from '@/lib/i18n';
 
 const eventLabel = (e: { title: string; startsAt: string }) =>
@@ -30,6 +34,7 @@ export default function TasksScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api, me } = useSignedIn();
   const queryClient = useQueryClient();
+  const confirmDelete = useConfirmDelete();
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const key = ['tasks', id];
@@ -85,81 +90,112 @@ export default function TasksScreen() {
             <Empty icon="checkmark-done-outline" text="Keine offenen Aufgaben." />
           </Card>
         ) : null}
-        {l.open.map((task) => (
-          <TaskCard key={task.id} task={task}>
-            {task.can.take
-              ? mine.map((p) => (
-                  <Button
-                    key={p.id}
-                    label={p.relation === 'child' ? `Übernimmt ${p.firstName}` : 'Ich übernehme'}
-                    icon="hand-left-outline"
-                    variant="tonal"
-                    size="sm"
-                    onPress={() =>
-                      run.mutate({
-                        path: `/tasks/${task.id}/take`,
-                        method: 'POST',
-                        body: { personId: p.id },
-                      })
-                    }
-                  />
-                ))
-              : null}
-            {task.can.complete ? (
-              <Button
-                label="Erledigt"
-                icon="checkmark"
-                variant={task.can.take ? 'outline' : 'tonal'}
-                size="sm"
-                onPress={() => run.mutate({ path: `/tasks/${task.id}/done`, method: 'POST' })}
-              />
-            ) : null}
-            {task.can.manage && task.assignee ? (
-              <Button
-                label="Freigeben"
-                variant="outline"
-                size="sm"
-                onPress={() =>
+        {l.open.map((task) => {
+          const take = task.can.take
+            ? mine.map((p) => ({
+                label: p.relation === 'child' ? `Übernimmt ${p.firstName}` : 'Ich übernehme',
+                run: () =>
                   run.mutate({
-                    path: `/tasks/${task.id}`,
-                    method: 'PATCH',
-                    body: { assigneePersonId: null },
-                  })
-                }
-              />
-            ) : null}
-            {task.can.manage ? (
-              <Button
-                label="Löschen"
-                icon="trash-outline"
-                variant="danger"
-                size="sm"
-                onPress={() => run.mutate({ path: `/tasks/${task.id}`, method: 'DELETE' })}
-              />
-            ) : null}
-          </TaskCard>
-        ))}
+                    path: `/tasks/${task.id}/take`,
+                    method: 'POST',
+                    body: { personId: p.id },
+                  }),
+              }))
+            : [];
+          const complete = task.can.complete
+            ? () => run.mutate({ path: `/tasks/${task.id}/done`, method: 'POST' })
+            : null;
+          // Ein Hauptknopf: Übernehmen, sonst Erledigt; alles Weitere im „…“-Menü
+          const main = take[0]
+            ? { label: take[0].label, icon: 'hand-left-outline' as const, run: take[0].run }
+            : complete
+              ? { label: 'Erledigt', icon: 'checkmark' as const, run: complete }
+              : null;
+          const menu = [
+            ...take.slice(1).map((x) => ({
+              label: x.label,
+              icon: 'hand-left-outline' as const,
+              onPress: x.run,
+            })),
+            ...(take[0] && complete
+              ? [{ label: 'Als erledigt markieren', icon: 'checkmark' as const, onPress: complete }]
+              : []),
+            ...(task.can.manage && task.assignee
+              ? [
+                  {
+                    label: 'Freigeben',
+                    icon: 'swap-horizontal-outline' as const,
+                    onPress: () =>
+                      run.mutate({
+                        path: `/tasks/${task.id}`,
+                        method: 'PATCH',
+                        body: { assigneePersonId: null },
+                      }),
+                  },
+                ]
+              : []),
+            ...(task.can.manage
+              ? [
+                  {
+                    label: 'Löschen',
+                    icon: 'trash-outline' as const,
+                    danger: true,
+                    onPress: () =>
+                      confirmDelete({
+                        name: task.title,
+                        onConfirm: () =>
+                          run.mutate({ path: `/tasks/${task.id}`, method: 'DELETE' }),
+                      }),
+                  },
+                ]
+              : []),
+          ];
+          return (
+            <TaskCard key={task.id} task={task} main={main} menu={menu} busy={run.isPending} />
+          );
+        })}
       </Section>
 
       {l.done.length ? (
         <Section title="Erledigt">
           {l.done.map((task) => (
-            <TaskCard key={task.id} task={task}>
-              {task.can.manage ? (
-                <Button
-                  label="Wieder öffnen"
-                  variant="outline"
-                  size="sm"
-                  onPress={() =>
-                    run.mutate({
-                      path: `/tasks/${task.id}`,
-                      method: 'PATCH',
-                      body: { reopen: true },
-                    })
-                  }
-                />
-              ) : null}
-            </TaskCard>
+            <TaskCard
+              key={task.id}
+              task={task}
+              busy={run.isPending}
+              main={
+                task.can.manage
+                  ? {
+                      label: 'Wieder öffnen',
+                      icon: 'checkmark-circle-outline',
+                      neutral: true,
+                      run: () =>
+                        run.mutate({
+                          path: `/tasks/${task.id}`,
+                          method: 'PATCH',
+                          body: { reopen: true },
+                        }),
+                    }
+                  : null
+              }
+              menu={
+                task.can.manage
+                  ? [
+                      {
+                        label: 'Löschen',
+                        icon: 'trash-outline',
+                        danger: true,
+                        onPress: () =>
+                          confirmDelete({
+                            name: task.title,
+                            onConfirm: () =>
+                              run.mutate({ path: `/tasks/${task.id}`, method: 'DELETE' }),
+                          }),
+                      },
+                    ]
+                  : []
+              }
+            />
           ))}
         </Section>
       ) : null}
@@ -167,17 +203,36 @@ export default function TasksScreen() {
   );
 }
 
-function TaskCard({ task, children }: { task: TeamTask; children?: React.ReactNode }) {
+function TaskCard({
+  task,
+  main,
+  menu,
+  busy,
+}: {
+  task: TeamTask;
+  main: { label: string; icon: IconName; run: () => void; neutral?: boolean } | null;
+  menu?: { label: string; icon: IconName; onPress: () => void; danger?: boolean }[];
+  busy?: boolean;
+}) {
+  const { colors } = useTheme();
   return (
-    <Card style={{ gap: 8 }}>
+    <Card style={{ gap: 10, opacity: task.doneAt ? 0.85 : 1 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
-        <T variant="label" style={{ fontWeight: '700', flex: 1 }}>
+        <T
+          variant="label"
+          color={task.doneAt ? colors.anstoss.textTertiary : undefined}
+          style={{ fontWeight: '700', fontSize: 15, flex: 1 }}
+        >
           {task.title}
         </T>
         {task.doneAt ? (
-          <Chip tone="success" icon="checkmark-circle" label="Erledigt" />
+          task.assignee ? (
+            <Chip tone="neutral" label={task.assignee.name} />
+          ) : (
+            <Chip tone="success" icon="checkmark-circle" label="Erledigt" />
+          )
         ) : task.assignee ? (
-          <Chip tone="info" icon="person" label={task.assignee.name} />
+          <Chip tone="neutral" label={task.assignee.name} />
         ) : (
           <Chip tone="action" label="Freiwillige gesucht" />
         )}
@@ -190,10 +245,23 @@ function TaskCard({ task, children }: { task: TeamTask; children?: React.ReactNo
         {task.event ? (
           <Chip tone="neutral" icon="calendar-outline" label={eventLabel(task.event)} />
         ) : null}
-        {task.doneAt && task.assignee ? <Chip tone="neutral" label={task.assignee.name} /> : null}
       </View>
-      {children ? (
-        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>{children}</View>
+      {main || (menu && menu.length > 0) ? (
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+          {main ? (
+            <Button
+              style={{ flex: 1 }}
+              label={main.label}
+              icon={main.icon}
+              variant={main.neutral ? 'neutral' : 'primary'}
+              disabled={busy}
+              onPress={main.run}
+            />
+          ) : (
+            <View style={{ flex: 1 }} />
+          )}
+          <MoreMenu title={task.title} actions={menu ?? []} />
+        </View>
       ) : null}
     </Card>
   );

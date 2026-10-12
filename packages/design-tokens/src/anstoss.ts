@@ -211,6 +211,12 @@ export const ANSTOSS_BANDS = {
   cash: ['#1C4FA3', '#143A7A'],
 } as const;
 
+/** Hero-Verläufe der eigenen Bereiche (Verwaltung violett, Vereinskasse blau) */
+export const AREA_HEROES = {
+  admin: { from: '#5B43B8', to: '#2A1E58' },
+  cash: { from: '#2F6FE0', to: '#143A7A' },
+} as const;
+
 /** Hero für Veranstaltungen: Orange, immer gleich. */
 export const EVENT_HERO = { from: '#C26A00', to: '#5C3300', soft: '#FFE2B8' } as const;
 

@@ -13,6 +13,8 @@ export const en: Record<string, string> = {
   '„{0}“ ist im Verein ausgeschaltet.': '“{0}” is turned off in the club.',
   '„{0}“ ist im Verein nicht aktiviert.': '“{0}” is not activated in the club.',
   '„{0}“ ist in der Abteilung ausgeschaltet.': '“{0}” is turned off in the department.',
+  '„{0}“ wird gelöscht. Das lässt sich nicht rückgängig machen.':
+    '“{0}” will be deleted. This cannot be undone.',
   '„Anlage & Material“ ist im Verein nicht aktiviert.':
     '“Facility & equipment” is not activated in the club.',
   '„Mannschaft bearbeiten → Spielplan importieren“: CSV-Datei aus dem DFBnet wählen, Vorschau prüfen (neu, geändert, unverändert, übersprungen) und übernehmen. Die Mannschaft bekommt eine Sammelmeldung. Ein erneuter Import aktualisiert Verlegungen, statt Spiele doppelt anzulegen. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.':
@@ -188,6 +190,7 @@ export const en: Record<string, string> = {
   '{0} unverändert': '{0} unchanged',
   '{0} verfügbar': '{0} available',
   '{0} verlässt {1} ({2})': '{0} leaves {1} ({2})',
+  '{0} verliert die Rolle „{1}“.': '{0} loses the role “{1}”.',
   '{0} verringern': 'Decrease {0}',
   '{0} vielleicht': '{0} maybe',
   '{0} von {1}': '{0} of {1}',
@@ -200,6 +203,7 @@ export const en: Record<string, string> = {
   '{0} von {1} verfügbar': '{0} of {1} available',
   '{0} von {1} zugesagt': '{0} of {1} confirmed',
   '{0} wie Verein: {1}': '{0} like club: {1}',
+  '{0} wird aus der Mannschaft entfernt.': '{0} will be removed from the team.',
   '{0} wurde nicht gefunden.': '{0} was not found.',
   '{0} Zahlungen buchen': 'Book {0} payments',
   '{0} Zahlungsmeldung': '{0} payment notice',
@@ -446,6 +450,7 @@ export const en: Record<string, string> = {
   'Als CSV für Excel': 'As CSV for Excel',
   'Als Einnahme buchen': 'Book as income',
   'Als Entwurf speichern': 'Save as draft',
+  'Als erledigt markieren': 'Mark as done',
   'Als Hauptkasse festlegen': 'Set as main fund',
   'Als Nächstes': 'Next up',
   'Als PDF öffnen': 'Open as PDF',
@@ -960,6 +965,7 @@ export const en: Record<string, string> = {
   'Das ändert nur die Vereinsadministration.': 'Only the club administration can change this.',
   'Das Angebot': 'The offer',
   'Das Angebot konnte nicht gespeichert werden.': 'The offer could not be saved.',
+  'Das Angebot von {0} wird entfernt.': 'The offer from {0} will be removed.',
   'Das Audit-Log ist dem Vorstand vorbehalten.': 'The audit log is reserved for the board.',
   'Das betrifft nur neue Anmeldungen – dein jetziges Gerät bleibt angemeldet. Du richtest sie später unter Mehr › Konto & Einstellungen ein.':
     'This only affects new sign-ins – your current device stays signed in. You can set it up later under More › Account & settings.',
@@ -1152,13 +1158,16 @@ export const en: Record<string, string> = {
   'Der Artikel': 'The article',
   'Der Aushang': 'The notice',
   'Der Bedarf': 'The request',
+  'Der Bedarf „{0}“ wird zurückgezogen.': 'The request “{0}” will be withdrawn.',
   'Der Bedarf ist bereits gedeckt.': 'The request has already been filled.',
   'Der Bedarf konnte nicht gemeldet werden.': 'The request could not be submitted.',
   'Der Beginn liegt in der Vergangenheit.': 'The start is in the past.',
   'Der Beginn liegt nach dem Ende.': 'The start is after the end.',
   'Der Beitrag': 'The fee',
+  'Der Beitrag „{0}“ wird nicht mehr erhoben.': 'The fee “{0}” will no longer be charged.',
   'Der Beitrag gehört in eine andere Kasse – bitte ein Konto dieser Kasse wählen':
     'The fee belongs in another fund – please choose an account of that fund',
+  'Der Beitrittslink für „{0}“ wird ungültig.': 'The join link for “{0}” will become invalid.',
   'Der Beleg konnte nicht hochgeladen werden.': 'The receipt could not be uploaded.',
   'Der Bereich': 'The section',
   'Der Betrag ist zu klein für so viele Personen.': 'The amount is too small for so many people.',
@@ -1248,6 +1257,7 @@ export const en: Record<string, string> = {
   'Der Verein verlangt sie für deine Verwaltungsrechte. Bis dahin ist die Verwaltung gesperrt.':
     'The club requires it for your administration rights. Until then, administration is locked.',
   'Der Vermerk': 'The note',
+  'Der Vermerk wird entfernt.': 'The note will be removed.',
   'Der volle Name steht auf Dokumenten, der Kurzname in der Kopfzeile und auf dem Wappen.':
     'The full name appears on documents, the short name in the header and on the crest.',
   'Der Vorstand sieht – wenn der Verein es in „Wer darf die Kasse einsehen?“ freigibt – unter „Verein → Vereinsleben → Kassenübersicht“ eine reine Anzeige: Kassenstand gesamt, Einnahmen und Ausgaben, die einzelnen Kassen und die Beitragsquote. Buchungen, Belege und Funktionen gibt es dort nicht; die Vereinskasse selbst führen Kassenwart und Kassenprüfer.':
@@ -1402,6 +1412,7 @@ export const en: Record<string, string> = {
   'Die Mannschaftszuordnung': 'The team assignment',
   'Die Meldung': 'The report',
   'Die Meldung ist schon erledigt.': 'The report has already been dealt with.',
+  'Die Meldung von {0} wird zurückgezogen.': 'The nomination of {0} will be withdrawn.',
   'Die Mitfahrgelegenheit': 'The ride',
   'Die Mitgliederverwaltung ist für Vorstand und Mitgliederverwaltung.':
     'Member administration is for the board and member administration.',
@@ -1430,6 +1441,7 @@ export const en: Record<string, string> = {
   'Die Rechte konnten nicht gespeichert werden.': 'The permissions could not be saved.',
   'Die Reihenfolge passt nicht zu den Sponsoren.': 'The order does not match the sponsors.',
   'Die Rolle': 'The role',
+  'Die Rolle „{0}“ wird entzogen.': 'The role “{0}” will be revoked.',
   'Die Rolle Kassenwart': 'The treasurer role',
   'Die Rollenübersicht ist für Vorstand und Administration.':
     'The role overview is for the board and administration.',
@@ -1451,6 +1463,7 @@ export const en: Record<string, string> = {
     'The donation is booked as income in the cash book. Once a receipt has been issued, the booking can no longer be cancelled.',
   'Die Sperrung': 'The closure',
   'Die Sperrung konnte nicht angelegt werden.': 'The closure could not be created.',
+  'Die Sperrung wird aufgehoben.': 'The block will be lifted.',
   'Die Steuerdaten des Vereins sind noch nicht vollständig. Die Administration trägt sie ein und gibt die Vorlage nach rechtlicher Prüfung frei.':
     "The club's tax data is not complete yet. The administration enters it and releases the template after a legal review.",
   'Die Steuerdaten pflegt die Vereinsadministration.':
@@ -1489,6 +1502,9 @@ export const en: Record<string, string> = {
     'The template enables suitable features for the team.',
   'Die Werte anderer Spieler sieht nur die Mannschaft.':
     "Other players' figures are only visible to the team.",
+  'Die Zeile „{0}“ wird aus dem Haushaltsplan entfernt.':
+    'The line “{0}” will be removed from the budget.',
+  'Die Zugehörigkeit zu „{0}“ wird beendet.': 'Membership of “{0}” will end.',
   'Die Zuordnung': 'The assignment',
   'Die Zuwendungsbestätigung': 'The donation receipt',
   'Dies ist ein Platzhalter aus dem Demoverein.': 'This is a placeholder from the demo club.',
@@ -2212,7 +2228,11 @@ export const en: Record<string, string> = {
   Importieren: 'Import',
   Impressum: 'Legal notice',
   'in {0} Mannschaften': 'in {0} teams',
+  'In {0} Min.': 'In {0} min',
+  'In {0} Std.': 'In {0} hrs',
   'in {0} Tagen': 'in {0} days',
+  'In {0} Tagen': 'In {0} days',
+  'In 1 Tag': 'In 1 day',
   'in Arbeit': 'in progress',
   'In Arbeit': 'In progress',
   'In den nächsten sieben Tagen stehen keine Termine an.': 'No events in the next seven days.',
@@ -2752,6 +2772,7 @@ export const en: Record<string, string> = {
   'Name oder Mitgliedsnummer': 'Name or membership number',
   'Name oder Mitgliedsnummer (mind. 2 Zeichen)':
     'Name or membership number (at least 2 characters)',
+  'Name oder Nummer': 'Name or number',
   'Name und Adresse der Sportanlage. Sie erscheinen bei Terminen, mit Link zur Karten-App.':
     'Name and address of the sports venue. They appear on events, with a link to the maps app.',
   'Name, Beschreibung …': 'Name, description …',
@@ -2963,6 +2984,7 @@ export const en: Record<string, string> = {
     'Open the event (Home, Events or Team) and tap Yes, Maybe or No. When declining you can choose or write a reason – this is optional; when you are unsure we ask for a short reason. Only the coaching staff and you see the reason.',
   'Öffne den Termin (Home, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ und „Unsicher“ kannst du einen Grund wählen oder schreiben – das ist freiwillig. Den Grund sehen nur das Trainerteam und du selbst.':
     'Open the event (Home, Events or Team) and tap Yes, Maybe or No. For “No” and “Maybe” you can choose or write a reason – this is optional. Only the coaching staff and you can see the reason.',
+  Öffnen: 'Open',
   'ohne App': 'no app',
   'Ohne App-Zugang': 'Without app access',
   'ohne Belegnummer': 'no receipt number',
@@ -3933,6 +3955,7 @@ export const en: Record<string, string> = {
     'Select a single fund above to edit its plan.',
   'Wähle, was auf deiner Startseite ganz oben erreichbar sein soll. Die Reihenfolge ergibt sich aus deiner Auswahl.':
     'Choose what should be reachable right at the top of your home screen. The order follows your selection.',
+  Wann: 'When',
   'War da': 'Attended',
   'Wartet auf deine Freigabe ({0})': 'Awaiting your approval ({0})',
   'Wartet auf Freigabe': 'Awaiting approval',
@@ -3974,6 +3997,7 @@ export const en: Record<string, string> = {
   'Wechsel, Leihe und neue Mannschaft': 'Transfers, loans and new team',
   Weinrot: 'Burgundy',
   Weiter: 'Next',
+  'Weitere Aktionen': 'More actions',
   'Weitere Anlage hinzufügen': 'Add another venue',
   'Weitere Aufgaben': 'More duties',
   'Weitere Datei importieren': 'Import another file',
@@ -4120,7 +4144,13 @@ export const en: Record<string, string> = {
   'Wird gesendet': 'Sending',
   'Wird nach dem Einreichen von Vorstand bzw. Leitung freigegeben':
     'Will be approved by the board or management after submission',
+  'Wirklich aufheben?': 'Really lift?',
   'Wirklich aus dem Kader nehmen': 'Really remove from the squad',
+  'Wirklich beenden?': 'Really end?',
+  'Wirklich entfernen?': 'Really remove?',
+  'Wirklich entziehen?': 'Really revoke?',
+  'Wirklich löschen?': 'Really delete?',
+  'Wirklich zurückziehen?': 'Really withdraw?',
   'Wirtschaftlicher Geschäftsbetrieb': 'Commercial business operation',
   'Wische oder tippe auf die Pfeile, um andere Wochen zu sehen.':
     'Swipe or tap the arrows to see other weeks.',
