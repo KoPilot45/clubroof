@@ -29,7 +29,7 @@ import { randomUUID } from 'node:crypto';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { assertFund, ensureMainFund, fundScope, listFunds } from './club-funds';
-import { assertPeriodOpen } from './club-periods';
+import { assertNoReceipt, assertPeriodOpen } from './club-periods';
 import { mediaReference } from './uploads';
 import { resolveMediaUrl } from '../storage/media-links';
 
@@ -515,6 +515,7 @@ export async function cancelEntry(
   if (entry.cancelledAt)
     throw new HttpError(409, 'already_cancelled', 'Die Buchung ist bereits storniert.');
   await assertPeriodOpen(db, actor.club.id, entry.bookedOn);
+  await assertNoReceipt(db, entry.id);
   // Auch eine Umbuchung zwischen Kassen: Rechte für jede betroffene Kasse nötig
   const sides = await db
     .select({ fundId: s.clubCashAccounts.fundId })

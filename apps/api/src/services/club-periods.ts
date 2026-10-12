@@ -3,7 +3,7 @@
  */
 import type { ClubPeriodLock } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, isNotNull, isNull } from 'drizzle-orm';
 import { HttpError } from '../errors';
 
 const yearOf = (day: string) => Number(day.slice(0, 4));
@@ -55,4 +55,18 @@ export async function activeLock(
     lockedAt: row.lock.lockedAt.toISOString(),
     lockedByName: row.first ? `${row.first} ${row.last}` : null,
   };
+}
+
+/** Eine Spende mit ausgestellter Bestätigung darf nicht still storniert werden. */
+export async function assertNoReceipt(db: Db, entryId: string): Promise<void> {
+  const [row] = await db
+    .select({ receiptNo: s.clubDonations.receiptNo })
+    .from(s.clubDonations)
+    .where(and(eq(s.clubDonations.entryId, entryId), isNotNull(s.clubDonations.receiptNo)));
+  if (row)
+    throw new HttpError(
+      409,
+      'receipt_issued',
+      `Für diese Spende wurde schon die Zuwendungsbestätigung ${row.receiptNo} ausgestellt. Sie kann nicht storniert werden.`,
+    );
 }

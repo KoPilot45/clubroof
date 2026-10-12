@@ -497,3 +497,130 @@ export type ClubClosing = {
   accounts: { name: string; fundName: string; openingCents: number; closingCents: number }[];
   reserves: { name: string; fundName: string; balanceCents: number }[];
 };
+
+// ── Prüfung und Spenden (Paket K4) ──────────────────────────────────────────
+
+export type ClubAuditFindingKind = 'pending' | 'checked' | 'objection' | 'note';
+
+export type ClubAuditEntryRef = {
+  id: string;
+  kind: ClubCashEntry['kind'];
+  bookedOn: string;
+  amountCents: number;
+  purpose: string;
+  counterparty: string | null;
+  accountName: string;
+  fundName: string;
+  categoryName: string | null;
+  receiptNo: string | null;
+  receiptUrl: string | null;
+  cancelled: boolean;
+};
+
+export type ClubAuditFinding = {
+  id: string;
+  kind: ClubAuditFindingKind;
+  entry: ClubAuditEntryRef | null;
+  text: string | null;
+  createdByName: string | null;
+  createdAt: string;
+};
+
+export type ClubAuditSummary = {
+  id: string;
+  year: number;
+  /** null = ganzer Verein */
+  fundId: string | null;
+  fundName: string;
+  startedByName: string | null;
+  startedAt: string;
+  submittedAt: string | null;
+  status: 'open' | 'submitted';
+  pending: number;
+  checked: number;
+  objections: number;
+  notes: number;
+  conclusion: string | null;
+};
+
+export type ClubAudits = {
+  /** darf prüfen (Stichproben, Vermerke, Bericht) */
+  canAudit: boolean;
+  /** Kassen, für die der Nutzer prüfen darf; leer bei Prüfung des ganzen Vereins nicht nötig */
+  funds: { id: string; name: string }[];
+  /** darf den ganzen Verein prüfen */
+  wholeClub: boolean;
+  audits: ClubAuditSummary[];
+};
+
+export type ClubAuditDetail = ClubAuditSummary & {
+  findings: ClubAuditFinding[];
+  /** Buchungen im Prüfumfang (Einnahmen und Ausgaben des Jahres, ohne Storno) */
+  entryCount: number;
+};
+
+export type ClubAuditInput = { year: number; fundId?: string | null };
+
+export type ClubAuditFindingInput =
+  | { kind: 'note'; text: string }
+  | { kind: 'objection' | 'checked'; entryId: string; text?: string | null };
+
+export const CLUB_AUDIT_MAX_SAMPLE = 50;
+
+export type ClubTaxInfo = {
+  taxOffice: string | null;
+  taxNumber: string | null;
+  exemptionKind: 'freistellung' | 'feststellung' | null;
+  exemptionDate: string | null;
+  exemptionPeriod: string | null;
+  purposes: string | null;
+  /** alle Pflichtangaben für die Zuwendungsbestätigung sind erfasst */
+  complete: boolean;
+  /** Die Vorlage wurde rechtlich bzw. steuerlich geprüft und freigegeben */
+  reviewed: { at: string; byName: string | null; note: string | null } | null;
+};
+
+export type ClubTaxInfoInput = {
+  taxOffice: string;
+  taxNumber: string;
+  exemptionKind: 'freistellung' | 'feststellung';
+  exemptionDate: string;
+  exemptionPeriod: string;
+  purposes: string;
+};
+
+export type ClubDonation = {
+  id: string;
+  entryId: string;
+  personId: string | null;
+  donorName: string;
+  donorAddress: string;
+  amountCents: number;
+  donatedOn: string;
+  waiver: boolean;
+  receiptNo: string | null;
+  issuedAt: string | null;
+  /** die Buchung wurde storniert – dann nur noch ansehen */
+  cancelled: boolean;
+};
+
+export type ClubDonations = {
+  canManage: boolean;
+  /** Die Steuerdaten sind vollständig und freigegeben – Bestätigungen können ausgestellt werden */
+  canIssue: boolean;
+  tax: ClubTaxInfo;
+  year: number;
+  totalCents: number;
+  donations: ClubDonation[];
+};
+
+export type ClubDonationInput = {
+  accountId: string;
+  categoryId: string;
+  donorName: string;
+  donorAddress: string;
+  personId?: string | null;
+  amountCents: number;
+  donatedOn: string;
+  waiver: boolean;
+};

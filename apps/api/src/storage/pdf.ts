@@ -81,6 +81,23 @@ export class SimplePdf {
     this.put(MARGIN, fit(text, PAGE_W - 2 * MARGIN, size, !!opts.bold), size, !!opts.bold);
   }
 
+  /** Fließtext mit Zeilenumbruch (Wörter), über Seiten hinweg. */
+  paragraph(text: string, opts: { size?: number; bold?: boolean } = {}) {
+    const size = opts.size ?? 10;
+    const max = PAGE_W - 2 * MARGIN;
+    for (const block of text.split('\n')) {
+      let line = '';
+      for (const word of block.split(/\s+/).filter(Boolean)) {
+        const next = line ? `${line} ${word}` : word;
+        if (line && width(next, size, !!opts.bold) > max) {
+          this.text(line, opts);
+          line = word;
+        } else line = next;
+      }
+      this.text(line, opts);
+    }
+  }
+
   gap(points: number) {
     this.y -= points;
   }

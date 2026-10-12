@@ -552,6 +552,20 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Haushaltsplan', href: '/club-cash/budget?mode=plan' },
       },
       {
+        id: 'club-audit',
+        question: 'Wie läuft die Kassenprüfung?',
+        answer:
+          'Kassenprüfer beginnen unter „Vereinskasse → Prüfung → Kassenprüfung“ eine Prüfung für ein Jahr – für den ganzen Verein oder nur für ihre Kasse. Die App zieht auf Wunsch zufällige Stichproben; jede Buchung wird abgehakt oder mit Begründung beanstandet, den Beleg siehst du direkt. Dazu kommen freie Vermerke. Sind alle Stichproben erledigt, gibst du den Prüfbericht mit deinem Ergebnis ab; danach ist er nicht mehr änderbar und dient als Grundlage der Entlastung. Die Kassenführung sieht abgegebene Berichte (auch als PDF oder CSV). Prüfer buchen nicht, der Kassenwart prüft nicht.',
+        link: { label: 'Kassenprüfung', href: '/club-cash/audit' },
+      },
+      {
+        id: 'club-donations',
+        question: 'Wie erstelle ich eine Zuwendungsbestätigung (Spendenquittung)?',
+        answer:
+          'Unter „Vereinskasse → Prüfung → Spenden“ erfasst der Kassenwart die Spende mit Name, Anschrift, Betrag und Datum; sie steht als Einnahme im Kassenbuch. Eine Zuwendungsbestätigung gibt es erst, wenn die Administration unter „Steuerdaten“ Finanzamt, Steuernummer, Bescheid, Zeitraum und Zweck eingetragen und die Vorlage freigegeben hat – nachdem sie von deiner Steuerberatung oder deinem Verband rechtlich geprüft wurde. Jede Änderung der Steuerdaten setzt die Freigabe zurück. Danach stellst du die Bestätigung mit einem Tipp aus (laufende Nummer, Betrag auch in Buchstaben) und öffnest sie als PDF. Eine Spende mit ausgestellter Bestätigung kann nicht storniert werden. Die App ersetzt keine Steuerberatung.',
+        link: { label: 'Spenden', href: '/club-cash/donations' },
+      },
+      {
         id: 'club-fees',
         question: 'Wie verwalte ich die Mitgliedsbeiträge?',
         answer:

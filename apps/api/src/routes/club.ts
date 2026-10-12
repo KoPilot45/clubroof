@@ -28,6 +28,8 @@ import {
   loadVisibleDocument,
 } from '../services/club';
 import { cashReportCsv, cashReportPdf } from '../services/cash';
+import { auditReportCsv, auditReportPdf } from '../services/club-audit';
+import { receiptPdf } from '../services/club-donations';
 import { closingCsv, closingPdf } from '../services/club-planning';
 import { getClubTeamPage } from '../services/teams';
 import { getAreaOverview } from '../services/area-overview';
@@ -244,6 +246,37 @@ export const fileRoutes: FastifyPluginAsyncZod = async (app) => {
           .header('cache-control', 'no-store')
           .header('x-content-type-options', 'nosniff')
           .send(report.pdf);
+      }
+      if (documentId.startsWith('dp:')) {
+        const report = await receiptPdf(app.db, documentId.slice(3));
+        if (!report) throw notFound('Die Zuwendungsbestätigung');
+        return reply
+          .header('content-type', 'application/pdf')
+          .header(
+            'content-disposition',
+            `attachment; filename*=UTF-8''${encodeURIComponent(report.fileName)}`,
+          )
+          .header('cache-control', 'no-store')
+          .header('x-content-type-options', 'nosniff')
+          .send(report.pdf);
+      }
+      if (documentId.startsWith('ap:') || documentId.startsWith('a:')) {
+        const pdf = documentId.startsWith('ap:');
+        const payload = documentId.slice(pdf ? 3 : 2);
+        const report = pdf
+          ? await auditReportPdf(app.db, payload, app.now())
+          : await auditReportCsv(app.db, payload, app.now());
+        if (!report) throw notFound('Der Prüfbericht');
+        const body = 'pdf' in report ? report.pdf : report.csv;
+        return reply
+          .header('content-type', pdf ? 'application/pdf' : 'text/csv; charset=utf-8')
+          .header(
+            'content-disposition',
+            `attachment; filename*=UTF-8''${encodeURIComponent(report.fileName)}`,
+          )
+          .header('cache-control', 'no-store')
+          .header('x-content-type-options', 'nosniff')
+          .send(body);
       }
       if (documentId.startsWith('kp:') || documentId.startsWith('k:')) {
         const pdf = documentId.startsWith('kp:');

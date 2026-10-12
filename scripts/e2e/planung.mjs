@@ -72,9 +72,12 @@ ok(
 );
 ok((await vis(page, /Entwurf/).count()) > 0, 'Offenes Jahr als Entwurf gekennzeichnet');
 ok(
-  (await button(page, 'Abschließen').count()) > 0,
-  'Kassenwart kann das vergangene Jahr abschließen',
+  (await vis(page, /erst nach seinem Ende abgeschlossen/).count()) > 0,
+  'Laufendes Jahr lässt sich noch nicht abschließen',
 );
+await page.getByRole('radio', { name: '2025', exact: true }).click();
+await button(page, 'Abschließen').waitFor({ timeout: 10_000 });
+ok(true, 'Kassenwart kann das vergangene Jahr abschließen');
 await b.shot(page, 'k3-abschluss', false);
 
 // ── Prüfer ändert nichts ─────────────────────────────────────────────────────
