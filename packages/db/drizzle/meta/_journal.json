@@ -337,6 +337,13 @@
       "when": 1791804417495,
       "tag": "0047_cash_extensions",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1791810494017,
+      "tag": "0048_club_code",
+      "breakpoints": true
     }
   ]
 }

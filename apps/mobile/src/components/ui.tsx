@@ -934,7 +934,7 @@ export function Crest({ initials, size = 40 }: { initials: string; size?: number
         y="25"
         textAnchor="middle"
         fontWeight="800"
-        fontSize={initials.length > 3 ? 8 : 10}
+        fontSize={initials.length > 3 ? 7.5 : initials.length === 3 ? 9 : 11}
         fill={colors.onPrimary}
       >
         {initials}

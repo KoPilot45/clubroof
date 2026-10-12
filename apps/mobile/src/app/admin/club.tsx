@@ -1,15 +1,19 @@
-import type { ClubColorKey, ClubSettings, UpdateClubInput, UploadedImage } from '@clubroof/core';
+import type { ClubSettings, UpdateClubInput, UploadedImage } from '@clubroof/core';
+import { normalizeClubCode, type ClubColorKey } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, View } from 'react-native';
 import { ClubColorPicker } from '@/components/club-color';
+import { PosterMark } from '@/components/poster-mark';
+import { useTheme } from '@/lib/theme';
 import {
   Button,
   Card,
   Chip,
   Crest,
   ErrorNotice,
+  GradientFill,
   Loading,
   Screen,
   Section,
@@ -17,7 +21,6 @@ import {
   TextField,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
-import { clubInitials } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { mediaUri, pickFile } from '@/lib/upload';
 import { t } from '@/lib/i18n';
@@ -64,7 +67,7 @@ export default function ClubSettingsScreen() {
               resizeMode="contain"
             />
           ) : (
-            <Crest initials={clubInitials(me.club.shortName)} size={110} />
+            <Crest initials={me.club.shortCode} size={110} />
           )}
           <T variant="heading">{me.club.name}</T>
           <T variant="caption" style={{ textAlign: 'center' }}>
@@ -97,6 +100,7 @@ export default function ClubSettingsScreen() {
 /** Name, Design, Bereiche und Sicherheitsvorgabe des Vereins. */
 function ClubForm() {
   const { api, refresh } = useSignedIn();
+  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const settings = useQuery({
     queryKey: ['admin', 'club'],
@@ -104,6 +108,7 @@ function ClubForm() {
   });
   const [name, setName] = useState('');
   const [shortName, setShortName] = useState('');
+  const [code, setCode] = useState('');
   const [color, setColor] = useState<ClubColorKey>('green');
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -112,6 +117,7 @@ function ClubForm() {
     if (!settings.data) return;
     setName(settings.data.name);
     setShortName(settings.data.shortName);
+    setCode(settings.data.shortCode);
     setColor(settings.data.colorTheme);
   }, [settings.data]);
 
@@ -138,11 +144,36 @@ function ClubForm() {
     return <ErrorNotice error={settings.error} onRetry={() => settings.refetch()} />;
   const s = settings.data;
   const dirty =
-    name.trim() !== s.name || shortName.trim() !== s.shortName || color !== s.colorTheme;
+    name.trim() !== s.name ||
+    shortName.trim() !== s.shortName ||
+    code !== s.shortCode ||
+    color !== s.colorTheme;
 
   return (
     <>
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+      <Section title="Vorschau">
+        <View
+          style={{
+            height: 190,
+            borderRadius: 24,
+            overflow: 'hidden',
+            justifyContent: 'flex-end',
+            padding: 16,
+            backgroundColor: colors.anstoss.poster.to,
+          }}
+        >
+          <GradientFill from={colors.anstoss.poster.from} to={colors.background} vertical />
+          <PosterMark code={code} />
+          <T variant="headline" color={colors.hero.onHero} style={{ fontSize: 28 }} verbatim>
+            {shortName || s.shortName}
+          </T>
+        </View>
+        <T variant="caption">
+          Mit 2 Zeichen wird das Kürzel größer, mit 4 kleiner – immer vollständig sichtbar.
+        </T>
+      </Section>
+
       <Section title="Name & Design">
         <Card style={{ gap: 14 }}>
           <TextField
@@ -163,6 +194,16 @@ function ClubForm() {
             }}
             maxLength={40}
           />
+          <TextField
+            label="Kürzel (2 bis 4 Zeichen)"
+            value={code}
+            onChangeText={(v) => {
+              setCode(normalizeClubCode(v));
+              setSaved(false);
+            }}
+            maxLength={4}
+            hint="Das Kürzel steht groß im Plakat auf der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist."
+          />
           <ClubColorPicker
             value={color}
             onChange={(c) => {
@@ -173,12 +214,15 @@ function ClubForm() {
           <Button
             label="Speichern"
             icon="checkmark"
-            disabled={!dirty || name.trim().length < 3 || shortName.trim().length < 2}
+            disabled={
+              !dirty || name.trim().length < 3 || shortName.trim().length < 2 || code.length < 2
+            }
             loading={save.isPending}
             onPress={() =>
               save.mutate({
                 name: name.trim(),
                 shortName: shortName.trim(),
+                shortCode: code,
                 colorTheme: color,
               })
             }

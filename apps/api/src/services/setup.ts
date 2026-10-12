@@ -9,6 +9,7 @@ import {
   CLUB_CASH_CATEGORY_TEMPLATE,
   MODULES,
   SYSTEM_ROLES,
+  normalizeClubCode,
   type SetupInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
@@ -157,6 +158,7 @@ export async function setupClub(
       .values({
         name: input.club.name.trim(),
         shortName: input.club.shortName.trim(),
+        shortCode: input.club.shortCode ? normalizeClubCode(input.club.shortCode) : null,
         slug: slugOf(input.club.name),
         colorTheme: input.club.colorTheme,
       })

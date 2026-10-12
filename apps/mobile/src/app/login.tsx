@@ -23,7 +23,6 @@ import { Button, Card, Chip, Crest, T, TextField } from '@/components/ui';
 import { request, RequestError } from '@/lib/api';
 import { setBrand, useBrand } from '@/lib/brand';
 import { readSetting } from '@/lib/flags';
-import { clubInitials } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { mediaUri } from '@/lib/upload';
@@ -171,7 +170,7 @@ function Login({ known }: { known: boolean }) {
             style={{ width: 84, height: 84 }}
           />
         ) : (
-          <Crest initials={clubInitials(club?.shortName ?? '')} size={64} />
+          <Crest initials={club?.shortCode ?? ''} size={64} />
         )}
       </View>
       <Text

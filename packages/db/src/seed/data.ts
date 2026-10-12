@@ -8,6 +8,7 @@ import type { ParticipationMode, TeamTemplate } from '@clubroof/core';
 export const DEMO_CLUB = {
   name: 'SV Grün-Weiß Musterstadt 1920 e.V.',
   shortName: 'SV Grün-Weiß',
+  shortCode: 'SGW',
   slug: 'sv-gruen-weiss',
   foundedYear: 1920,
   colorTheme: 'green' as const,

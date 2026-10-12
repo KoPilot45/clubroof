@@ -15,7 +15,7 @@ export function PublicShell({
 }: {
   title: string;
   subtitle?: string;
-  club?: { shortName: string; logoUrl: string | null } | null;
+  club?: { shortName: string; shortCode?: string; logoUrl: string | null } | null;
   children: ReactNode;
 }) {
   const { colors, spacing } = useTheme();
@@ -37,7 +37,10 @@ export function PublicShell({
                   resizeMode="contain"
                 />
               ) : (
-                <Crest initials={club ? clubInitials(club.shortName) : 'CR'} size={56} />
+                <Crest
+                  initials={club ? (club.shortCode ?? clubInitials(club.shortName)) : 'CR'}
+                  size={56}
+                />
               )}
               <T variant="title" style={{ textAlign: 'center' }}>
                 {title}

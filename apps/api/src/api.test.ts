@@ -624,6 +624,7 @@ describe.skipIf(!url)('API', () => {
         'foundedYear',
         'logoUrl',
         'name',
+        'shortCode',
         'shortName',
       ]);
     });
@@ -4563,6 +4564,40 @@ describe.skipIf(!url)('API', () => {
   });
 
   describe('Vereinseinstellungen', () => {
+    it('Vereinskürzel: Vorgabe aus den Initialen, Änderung nur durch die Vereinsadministration', async () => {
+      const admin = await login('admin');
+      const board = await login('vorstand');
+      const member = await login('mitglied');
+      const before = await get<ClubSettings>('/admin/club', admin.token);
+      expect(before.shortCode).toMatch(/^[A-Z0-9]{2,4}$/);
+      expect(admin.me.club.shortCode).toBe(before.shortCode);
+
+      // Eingabe wird auf Großbuchstaben und Ziffern gebracht
+      const changed = await send<ClubSettings>('PATCH', '/admin/club', admin.token, {
+        shortCode: 'fc-1',
+      });
+      expect(changed.status).toBe(200);
+      expect(changed.body.shortCode).toBe('FC1');
+      expect((await get<LoginResponse['me']>('/me', member.token)).club.shortCode).toBe('FC1');
+      const pub = await app.inject({ method: 'GET', url: '/public/club' });
+      expect(pub.json().club.shortCode).toBe('FC1');
+
+      // ungültig: zu kurz, zu lang, nur Sonderzeichen
+      for (const bad of ['A', 'ABCDE', '--']) {
+        expect(
+          (await send('PATCH', '/admin/club', admin.token, { shortCode: bad })).status,
+        ).toBeGreaterThanOrEqual(400);
+      }
+      // Rechte: der Vorstand ändert die Vereinseinstellungen nicht
+      expect((await send('PATCH', '/admin/club', board.token, { shortCode: 'XYZ' })).status).toBe(
+        403,
+      );
+      expect((await get<ClubSettings>('/admin/club', admin.token)).shortCode).toBe('FC1');
+
+      // zurück auf die Demodaten
+      await send('PATCH', '/admin/club', admin.token, { shortCode: before.shortCode });
+    });
+
     it('ändert Name und Design, verwaltet Bereiche und schützt die 2-Faktor-Vorgabe', async () => {
       const admin = await login('admin');
       const board = await login('vorstand');

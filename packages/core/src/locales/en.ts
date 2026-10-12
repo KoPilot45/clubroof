@@ -1010,6 +1010,12 @@ export const en: Record<string, string> = {
   'Das Konto ist archiviert.': 'The account is archived.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.':
     'The abbreviation “{0}” is already taken this season.',
+  'Das Kürzel (2 bis 4 Zeichen, z. B. „SGW“) steht groß im Plakat der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist. Die Vereinsadministration ändert es unter „Verwaltung → Verein & Design“, mit Vorschau. Die Vibration bei Auswahl und Bestätigung schaltest du auf dem Handy unter „Mehr → Konto & Einstellungen → Vibration“ aus; bei eingestellter „Bewegung reduzieren“ des Geräts bleiben auch die Animationen aus.':
+    'The code (2 to 4 characters, e.g. “SGW”) appears large in the home poster and replaces the crest until a logo is uploaded. Club administration changes it under “Administration → Club & design”, with a preview. On your phone you can switch off vibration under “More → Account & settings → Vibration”; with “Reduce motion” enabled on the device, animations stay off as well.',
+  'Das Kürzel besteht aus 2 bis 4 Buchstaben oder Ziffern.':
+    'The code consists of 2 to 4 letters or digits.',
+  'Das Kürzel steht groß im Plakat auf der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist.':
+    'The code appears large in the poster on the home page and replaces the crest until a logo is uploaded.',
   'Das laufende Jahr kann erst nach seinem Ende abgeschlossen werden.':
     'The current year can only be closed after it has ended.',
   'Das Logo erscheint oben in der App bei allen Mitgliedern.':
@@ -2508,6 +2514,7 @@ export const en: Record<string, string> = {
   'Kurze Artikel zu Abläufen und Regeln im Verein':
     'Short articles on procedures and rules in the club',
   Kürzel: 'Abbreviation',
+  'Kürzel (2 bis 4 Zeichen)': 'Code (2 to 4 characters)',
   Kürzer: 'Shorter',
   'Kurzfristige Absage: {0} {1}': 'Late cancellation: {0} {1}',
   'Kurzfristige Absagen und dringende Vereinsnews erreichen dich unabhängig von diesen Einstellungen – auch in der Ruhezeit.':
@@ -2670,6 +2677,8 @@ export const en: Record<string, string> = {
     'At least 10 characters. A phrase or sentence is safer and easier to remember than a short password with special characters.',
   'Mindestens zwei Buchstaben eingeben.': 'Enter at least two letters.',
   'Mini-Forum': 'Mini forum',
+  'Mit 2 Zeichen wird das Kürzel größer, mit 4 kleiner – immer vollständig sichtbar.':
+    'With 2 characters the code is taller, with 4 it is lower – always fully visible.',
   'Mit Ablaufdatum': 'With expiry date',
   'Mit App-Zugang': 'With app access',
   'Mit dem Start wird {0} zur laufenden Saison. Mannschaftskassen, Mannschaftsdokumente und künftige Termine gehen auf die neuen Mannschaften über. Zuordnungen und Aufgaben der alten Saison enden. Das lässt sich nicht rückgängig machen.':
@@ -3442,6 +3451,8 @@ export const en: Record<string, string> = {
   'Stattdessen Code eingeben': 'Enter code instead',
   'Status: {0} ist jetzt {1}': 'Status: {0} is now {1}',
   'Std.': 'hrs',
+  'Steht groß im Plakat der Startseite und ersetzt das Wappen ohne Logo.':
+    'Appears large in the home poster and replaces the crest without a logo.',
   'Stelle eine Beitrittsanfrage. Das Trainerteam gibt sie frei.':
     'Submit a join request. The coaching staff will approve it.',
   Steuerdaten: 'Tax data',
@@ -3968,6 +3979,8 @@ export const en: Record<string, string> = {
     'What does the small number at the top right of the tiles mean?',
   'Was bringt „Anwesenheit erfassen“?': 'What does “Record attendance” do?',
   'Was darf das Trainerteam in der Kasse?': 'What can the coaching staff do in the team fund?',
+  'Was ist das Vereinskürzel und wie ändere ich die Vibration?':
+    'What is the club code and how do I change vibration?',
   'Was ist die 2-Faktor-Anmeldung?': 'What is two-factor login?',
   'Was ist die Absagefrist?': 'What is the cancellation deadline?',
   'Was ist die Kassenübersicht?': 'What is the treasury overview?',

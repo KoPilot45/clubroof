@@ -152,6 +152,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Einstellungen öffnen', href: '/account' },
       },
       {
+        id: 'club-code',
+        question: 'Was ist das Vereinskürzel und wie ändere ich die Vibration?',
+        answer:
+          'Das Kürzel (2 bis 4 Zeichen, z. B. „SGW“) steht groß im Plakat der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist. Die Vereinsadministration ändert es unter „Verwaltung → Verein & Design“, mit Vorschau. Die Vibration bei Auswahl und Bestätigung schaltest du auf dem Handy unter „Mehr → Konto & Einstellungen → Vibration“ aus; bei eingestellter „Bewegung reduzieren“ des Geräts bleiben auch die Animationen aus.',
+        link: { label: 'Einstellungen öffnen', href: '/account' },
+      },
+      {
         id: 'route',
         question: 'Wie komme ich zum Spielort?',
         answer:

@@ -15,6 +15,7 @@ import {
   can,
   scopesWith,
   toIsoDate,
+  effectiveClubCode,
   type AcceptInviteInput,
   type ApproveJoinInput,
   type InviteLink,
@@ -409,6 +410,7 @@ export async function getJoinInfo(
     club: {
       name: row.club.name,
       shortName: row.club.shortName,
+      shortCode: effectiveClubCode(row.club.shortCode, row.club.shortName),
       colorTheme: row.club.colorTheme,
       logoUrl: resolveMediaUrl(links, row.club.logoUrl, now),
     },

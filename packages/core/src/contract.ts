@@ -25,6 +25,8 @@ export type ClubInfo = {
   id: string;
   name: string;
   shortName: string;
+  /** Vereinskürzel (2–4 Zeichen) für Plakat und Wappen-Ersatz */
+  shortCode: string;
   logoUrl: string | null;
   /** Schlüssel der Vereinsfarbe (siehe @clubroof/design-tokens) */
   colorTheme: string;
@@ -1536,6 +1538,7 @@ export type JoinInfo = {
   club: {
     name: string;
     shortName: string;
+    shortCode: string;
     colorTheme: ClubInfo['colorTheme'];
     logoUrl: string | null;
   };
@@ -1583,6 +1586,8 @@ export type OrgUnitKind = 'seniors' | 'youth' | 'women' | 'veterans' | 'other';
 export type ClubSettings = {
   name: string;
   shortName: string;
+  /** Vereinskürzel (gespeichert oder Vorgabe aus den Initialen des Kurznamens) */
+  shortCode: string;
   colorTheme: ClubColorKey;
   colorMode: 'light' | 'dark' | 'system';
   requireTwoFactor: boolean;
@@ -1594,6 +1599,7 @@ export type ClubSettings = {
 export type UpdateClubInput = Partial<{
   name: string;
   shortName: string;
+  shortCode: string;
   colorTheme: ClubColorKey;
   colorMode: 'light' | 'dark' | 'system';
   requireTwoFactor: boolean;
@@ -1615,7 +1621,7 @@ export type SetupInput = {
   setupToken: string;
   /** Nachweis der bestätigten E-Mail-Adresse des ersten Kontos (`POST /setup/email-code/verify`) */
   emailProof: string;
-  club: { name: string; shortName: string; colorTheme: ClubColorKey };
+  club: { name: string; shortName: string; shortCode?: string; colorTheme: ClubColorKey };
   orgUnits: { name: string; kind: OrgUnitKind }[];
   venues?: SetupVenue[];
   /** Gewählte optionale Module (Schlüssel aus `MODULES`); ohne Angabe die bisherige Voreinstellung */
@@ -2205,6 +2211,7 @@ export type PublicClub = {
   club: {
     name: string;
     shortName: string;
+    shortCode: string;
     colorTheme: ClubColorKey;
     /** Ort, falls hinterlegt */
     city: string | null;

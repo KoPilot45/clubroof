@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { Animated, Image, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useReduceMotion, useScrollY } from '@/lib/motion';
-import { clubInitials, formatLongDate } from '@/lib/format';
+import { formatLongDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { mediaUri } from '@/lib/upload';
@@ -154,7 +154,7 @@ export function AppHeader({
             resizeMode="contain"
           />
         ) : (
-          <Crest initials={clubInitials(me.club.shortName)} size={30} />
+          <Crest initials={me.club.shortCode} size={30} />
         )}
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>

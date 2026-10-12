@@ -94,6 +94,7 @@ export default function HomeScreen() {
         header={<AppHeader overlay />}
         event={first}
         club={me.club.shortName}
+        code={me.club.shortCode}
         hasTeam={me.teams.length > 0}
       />
       {home.isPending ? <Loading variant="page" /> : null}

@@ -56,7 +56,7 @@ import {
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { PressScale, useCountUp } from '@/lib/motion';
 import { t } from '@/lib/i18n';
-import Svg, { Circle, G, Rect } from 'react-native-svg';
+import { PosterMark } from '@/components/poster-mark';
 import { ReorderList } from '@/components/reorder';
 import { openLink } from '@/lib/links';
 import { MATCH_KIND_LABELS } from '@/lib/labels';
@@ -770,25 +770,6 @@ function daysUntil(iso: string): number {
   return Math.max(0, Math.round((dayOf(new Date(iso)) - dayOf(new Date())) / 86_400_000));
 }
 
-/** Zeichnung im Plakat: Mittelkreis und Strafraum, ganz dezent. */
-function PosterLines() {
-  return (
-    <Svg
-      width={390}
-      height={450}
-      viewBox="0 0 390 450"
-      style={{ position: 'absolute', left: 0, top: 0 }}
-      aria-hidden
-    >
-      <G fill="none" stroke="rgba(255,255,255,.10)" strokeWidth={2}>
-        <Circle cx={300} cy={190} r={120} />
-        <Circle cx={300} cy={190} r={6} fill="rgba(255,255,255,.10)" />
-        <Rect x={-60} y={330} width={260} height={170} rx={4} />
-      </G>
-    </Svg>
-  );
-}
-
 /**
  * Blickfang der Startseite: großes Plakat mit Countdown, Paarung und Ort; darüber die Kopfzeile.
  * Ohne Spiel steht hier der Hinweis „Kein Spiel in Sicht“ bzw. „Noch keine Mannschaft“.
@@ -797,11 +778,14 @@ export function HomePoster({
   header,
   event,
   club,
+  code,
   hasTeam,
 }: {
   header: React.ReactNode;
   event: EventSummary | undefined;
   club: string;
+  /** Vereinskürzel als Wasserzeichen */
+  code: string;
   hasTeam: boolean;
 }) {
   const { colors, spacing } = useTheme();
@@ -812,7 +796,7 @@ export function HomePoster({
   return (
     <HeroCard
       poster
-      background={<PosterLines />}
+      background={<PosterMark code={code} />}
       style={{ marginHorizontal: -22, marginTop: -(spacing.md + 2) }}
     >
       <View style={{ minHeight: 450 }}>
