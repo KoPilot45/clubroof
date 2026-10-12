@@ -2130,8 +2130,11 @@ export type RefereeDutyResult = { overview: RefereeOverview; collisions: Referee
 /** Ton eines Kachelhinweises; wird immer mit Text angezeigt, nie Farbe allein */
 export type TileTone = 'neutral' | 'action' | 'success' | 'urgent' | 'info';
 
-/** Kurzer Hinweis und/oder Zähler zu einer Kachel (Text ist bereits in der Sprache der Person) */
-export type TileInfoEntry = { hint?: string; badge?: number; tone?: TileTone };
+/**
+ * Zu einer Kachel: `figure` ist die kleine Kennzahl oben rechts (Datum, Zahl, Bilanz, Kassenstand), `hint` ein
+ * längerer Hinweis (nur für Screenreader), `badge` ein Zähler. Texte sind bereits in der Sprache der Person.
+ */
+export type TileInfoEntry = { figure?: string; hint?: string; badge?: number; tone?: TileTone };
 
 /** Kachel-Infos eines Menüs, Schlüssel = Kachelname */
 export type TileInfo = Record<string, TileInfoEntry>;

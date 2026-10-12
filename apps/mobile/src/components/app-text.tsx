@@ -17,7 +17,7 @@ function translateChildren(children: ReactNode): ReactNode {
 
 /**
  * Text in der App-Schrift (Open Sans): übersetzt `fontWeight` in den passenden Schriftschnitt.
- * Gesetzte `fontFamily` (z. B. Oswald) bleibt unberührt.
+ * Gesetzte `fontFamily` (z. B. Saira Condensed) bleibt unberührt.
  */
 /** `verbatim`: Text nicht übersetzen (z. B. feste Spaltennamen einer CSV-Vorlage). */
 export const Text = forwardRef<RNText, TextProps & { verbatim?: boolean }>(function Text(

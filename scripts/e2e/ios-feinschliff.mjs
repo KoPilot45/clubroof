@@ -74,6 +74,9 @@ async function swipeAt(page, x0, y, dx = 130) {
     // Zeile mit dem runden ✓ (offene Rückmeldung): links davon ansetzen und nach links wischen
     const tick = page.locator('[role=button][aria-label="Zusagen"]:not([disabled])').first();
     await tick.waitFor({ timeout: 10_000 });
+    // Zeile in die Mitte holen: unten verdeckt die schwebende Leiste sonst die Wischfläche
+    await tick.evaluate((e) => e.scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(400);
     const t = await tick.boundingBox();
     await swipeAt(page, t.x - 20, t.y + t.height / 2, 100); // halb geöffnet: Aktion antippen
     await page.waitForTimeout(500);

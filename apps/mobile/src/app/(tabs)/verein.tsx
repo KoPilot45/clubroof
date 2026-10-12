@@ -1,13 +1,11 @@
 import type { EventSummary, HelperEvent, NewsItem, PollSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { ClubNewsTicker } from '@/components/club-news-ticker';
 import type { TintKey } from '@clubroof/design-tokens';
 import { adminFunctionTiles } from '@/lib/admin-tiles';
-import { TileCustomizeSheet, applyTilePrefs } from '@/components/tile-customizer';
 import {
   Button,
   Card,
@@ -29,8 +27,7 @@ import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 import { useTheme } from '@/lib/theme';
 
 export default function ClubScreen() {
-  const { api, me, refresh } = useSignedIn();
-  const [customizing, setCustomizing] = useState(false);
+  const { api, me } = useSignedIn();
   const tileInfo = useTileInfo('club');
   const has = (module: string) => me.clubModules.includes(module);
   const news = useQuery({ queryKey: ['news'], queryFn: () => api<NewsItem[]>('/news') });
@@ -210,14 +207,10 @@ export default function ClubScreen() {
     // Verwaltung: alle ausführbaren Funktionen der Rolle, ohne Einklappen; ohne Rechte entfällt sie
     { key: 'admin', title: 'Verwaltung', tint: 'violet', tiles: adminFunctionTiles(me) },
   ];
-  // Eigene Reihenfolge und Ausblenden (Anpassen) gelten innerhalb der Kategorien
-  const everyTile = withTileInfo(
+  // „Kacheln anpassen“ entfällt (Paket PO): alle Kacheln der Rolle stehen in ihren Kategorien
+  const shown = withTileInfo(
     groups.flatMap((g) => g.tiles),
     tileInfo,
-  );
-  const shown = applyTilePrefs(everyTile, me.user.clubTiles);
-  const customizable = everyTile.filter(
-    (t) => !groups.find((g) => g.key === 'admin')!.tiles.some((x) => x.key === t.key),
   );
 
   return (
@@ -248,21 +241,6 @@ export default function ClubScreen() {
           </Section>
         );
       })}
-      <Button
-        label="Kacheln anpassen"
-        icon="options-outline"
-        variant="tonal"
-        size="sm"
-        style={{ alignSelf: 'flex-start' }}
-        onPress={() => setCustomizing(true)}
-      />
-      <TileCustomizeSheet
-        visible={customizing}
-        onClose={() => setCustomizing(false)}
-        tiles={customizable}
-        prefs={me.user.clubTiles}
-        onSaved={refresh}
-      />
 
       <Section
         title="Heute auf der Anlage"

@@ -73,8 +73,8 @@ pnpm browser-check --reset     # vorher Demodaten neu laden
 - Jede Tabelle mit fachlichen Daten trägt `club_id`. Zeiten in UTC speichern, Fristen in Vereinszeitzone.
 - Neue Funktion = Backend-Service + Route + Test in `api.test.ts` + App-Bildschirm + Eintrag in `docs/FUNKTIONEN.md`
   - Eintrag in der Hilfe (`apps/mobile/src/lib/help-content.ts`).
-- Zwischenüberschriften: `<Section title=…>` bzw. `<T variant="section">` (Oswald, Großbuchstaben, Akzentlinie in Vereinsfarbe) – keine eigenen Überschriftenstile.
-- Große Zahlen: `<T variant="figure">`; Titel in Kopfzeilen: `variant="headline"` (Oswald). Alle anderen Texte laufen in Open Sans (`T` bzw. `Text` aus `components/app-text.tsx`); bei eingebundenen Schriften nie `fontWeight` voraussetzen.
+- Zwischenüberschriften: `<Section title=…>` bzw. `<T variant="section">` (Saira Condensed, Großbuchstaben, Akzentlinie in Vereinsfarbe) – keine eigenen Überschriftenstile.
+- Große Zahlen: `<T variant="figure">`; Titel in Kopfzeilen: `variant="headline"` (Saira Condensed). Alle anderen Texte laufen in Open Sans (`T` bzw. `Text` aus `components/app-text.tsx`); bei eingebundenen Schriften nie `fontWeight` voraussetzen.
 - Farben nur aus dem Theme (`useTheme`): `primary` als Fläche, `primaryText` für Text/Icons, Statusfarben mit Beschriftung. **Eine Blickfang-Fläche pro Bildschirm** (wichtigste Zahl/Aussage, Verlauf `hero`, Text `onHero`); weitere Hervorhebungen mit `primaryContainer` oder Pastell (`tints`, Text `onContainer`), Dringendes als Statusfläche (siehe `docs/FARBKONZEPT.md`, `docs/DESIGNSYSTEM.md`).
 - Schemaänderung → Migration erzeugen **und** Seed anpassen; `pnpm db:reset` muss laufen.
 - Kleine, thematisch getrennte Commits; Push auf den Entwicklungsbranch.

@@ -5,11 +5,11 @@
  */
 import { Ionicons } from '@expo/vector-icons';
 import type { FacilityBooking } from '@clubroof/core';
-import { TINT_KEYS } from '@clubroof/design-tokens';
 import { useId } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import Svg, { Defs, Line, Pattern, Rect } from 'react-native-svg';
 import { T } from '@/components/ui';
+import { EVENT_TYPE_LABELS } from '@/lib/labels';
 import { clubDayMinutes, formatTime } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme';
@@ -89,11 +89,53 @@ export function timeWindow(columns: GridColumn[]): { from: number; to: number } 
   return { from, to };
 }
 
-export function badgeTint(badge: string | null): (typeof TINT_KEYS)[number] {
-  if (!badge) return 'blue';
-  let h = 0;
-  for (const ch of badge) h = (h * 31 + ch.charCodeAt(0)) % 997;
-  return TINT_KEYS[h % TINT_KEYS.length]!;
+/** Eigene Farbe je Mannschaft: gleichmäßig über den Farbkreis verteilt, in der Reihenfolge der Kürzel. */
+export function teamColors(
+  badges: string[],
+  isDark: boolean,
+): Map<string, { bg: string; fg: string }> {
+  const order = [...new Set(badges)].sort();
+  return new Map(
+    order.map((badge, i) => {
+      const hue = Math.round((i * 137.5) % 360);
+      return [
+        badge,
+        isDark
+          ? { bg: `hsl(${hue}, 45%, 26%)`, fg: `hsl(${hue}, 70%, 88%)` }
+          : { bg: `hsl(${hue}, 72%, 86%)`, fg: `hsl(${hue}, 65%, 20%)` },
+      ];
+    }),
+  );
+}
+
+/** Legende: Farbfläche mit Kürzel je Mannschaft (Farbe nie allein). */
+export function TeamLegend({ colors }: { colors: Map<string, { bg: string; fg: string }> }) {
+  const { colors: theme } = useTheme();
+  if (colors.size === 0) return null;
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      {[...colors.entries()].map(([badge, c]) => (
+        <View
+          key={badge}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 8,
+            paddingVertical: 3,
+            borderRadius: 8,
+            backgroundColor: c.bg,
+            borderWidth: 1,
+            borderColor: theme.border,
+          }}
+        >
+          <T variant="caption" color={c.fg} verbatim style={{ fontWeight: '800' }}>
+            {badge}
+          </T>
+        </View>
+      ))}
+    </View>
+  );
 }
 
 function Hatch({ color }: { color: string }) {
@@ -110,27 +152,43 @@ function Hatch({ color }: { color: string }) {
   );
 }
 
+type LabelMode = 'default' | 'compact' | 'wide';
+
 function Block({
   seg,
   from,
   onPress,
+  teams,
+  mode,
 }: {
   seg: Segment;
   from: number;
   onPress: (b: FacilityBooking) => void;
+  teams: Map<string, { bg: string; fg: string }>;
+  mode: LabelMode;
 }) {
   const { colors, radii } = useTheme();
   const b = seg.booking;
   const isBlock = b.kind === 'block';
-  const tint = colors.tints[badgeTint(b.teamBadge)];
+  const tint = {
+    container: (b.teamBadge && teams.get(b.teamBadge)?.bg) || colors.surfaceVariant,
+    onContainer: (b.teamBadge && teams.get(b.teamBadge)?.fg) || colors.onSurface,
+  };
   const top = ((seg.start - from * 60) / 60) * HOUR;
   const height = Math.max(22, ((seg.end - seg.start) / 60) * HOUR - 2);
   const bg = isBlock ? colors.status.urgent.container : tint.container;
   const fg = isBlock ? colors.status.urgent.onContainer : tint.onContainer;
+  const time = `${formatTime(b.startsAt)}–${formatTime(b.endsAt)}`;
+  // Wochenende: Zeit und Text ohne Gegner („B1 · Spiel“); Mo–Fr: nur Kürzel und Uhrzeit
+  const kind = b.eventType ? t(EVENT_TYPE_LABELS[b.eventType]) : b.title;
   const label = isBlock
     ? `${t('Gesperrt')}: ${b.title}`
-    : `${b.teamBadge ? `${b.teamBadge} · ` : ''}${b.title}`;
-  const time = `${formatTime(b.startsAt)}–${formatTime(b.endsAt)}`;
+    : mode === 'compact'
+      ? (b.teamBadge ?? b.title)
+      : mode === 'wide'
+        ? `${b.teamBadge ? `${b.teamBadge} · ` : ''}${kind}`
+        : `${b.teamBadge ? `${b.teamBadge} · ` : ''}${b.title}`;
+  const shownTime = mode === 'compact' ? formatTime(b.startsAt) : time;
   return (
     <Pressable
       accessibilityRole="button"
@@ -172,9 +230,9 @@ function Block({
             {label}
           </T>
         </View>
-        {height > 40 ? (
+        {height > 40 || mode !== 'default' ? (
           <T variant="caption" color={fg} numberOfLines={1} verbatim>
-            {time}
+            {shownTime}
           </T>
         ) : null}
       </View>
@@ -186,13 +244,21 @@ function Block({
 export function FacilityGrid({
   columns,
   onPressBooking,
+  teams,
   tinted = false,
   minColumnWidth = 84,
+  mode = 'default',
+  bleed = false,
 }: {
   columns: GridColumn[];
   onPressBooking: (b: FacilityBooking, column: GridColumn) => void;
+  /** Farbe je Mannschaftskürzel */
+  teams: Map<string, { bg: string; fg: string }>;
   tinted?: boolean;
   minColumnWidth?: number;
+  mode?: LabelMode;
+  /** randlos über die volle Breite (ohne Rahmen und runde Ecken) */
+  bleed?: boolean;
 }) {
   const { colors, radii } = useTheme();
   const { from, to } = timeWindow(columns);
@@ -201,8 +267,9 @@ export function FacilityGrid({
   return (
     <View
       style={{
-        borderRadius: radii.md,
-        borderWidth: 1,
+        ...(bleed
+          ? { marginHorizontal: -24, borderTopWidth: 1, borderBottomWidth: 1 }
+          : { borderRadius: radii.md, borderWidth: 1 }),
         borderColor: colors.border,
         backgroundColor: tinted ? colors.surfaceVariant : colors.surface,
         overflow: 'hidden',
@@ -270,6 +337,8 @@ export function FacilityGrid({
                     key={seg.booking.id}
                     seg={seg}
                     from={from}
+                    teams={teams}
+                    mode={mode}
                     onPress={(b) => onPressBooking(b, c)}
                   />
                 ))}

@@ -176,10 +176,10 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Tippe oben rechts auf die Lupe und gib mindestens zwei Buchstaben ein. Du findest Termine, Mitglieder, News und Mannschaften. Personen siehst du nur, wenn du auch sonst ihr Profil sehen darfst (z. B. aus deiner Mannschaft oder deine Kinder).',
       },
       {
-        id: 'club-tiles',
-        question: 'Kann ich die Kacheln unter „Verein“ anpassen?',
+        id: 'tile-figures',
+        question: 'Was bedeutet die kleine Zahl oben rechts an den Kacheln?',
         answer:
-          'Ja. Tippe unter „Verein“ auf die Kachel „Anpassen“: Blende Kacheln aus, die du nicht brauchst, und verschiebe die wichtigen nach oben. „Zurücksetzen“ zeigt wieder alle in der Standardreihenfolge. Die Auswahl gilt auf allen deinen Geräten.',
+          'Die Kennzahl zeigt auf einen Blick, was dort los ist: bei Terminen und Veranstaltungen das Datum des nächsten (TT.MM.), beim Kader die Zahl der Spieler, bei der Statistik die Bilanz (Siege-Remis-Niederlagen), bei der Kasse den Kassenstand, bei Aufgaben und Umfragen die offenen, bei News, Dokumenten und Wissen die neuen, beim Spielplan die Spiele der Woche, bei Helfern die freien Plätze. Orange heißt: Hier wartet etwas auf dich. Kacheln ohne sinnvolle Zahl haben keine Kennzahl.',
       },
       {
         id: 'quick-access',
@@ -191,7 +191,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'respond',
         question: 'Wie sage ich zu oder ab?',
         answer:
-          'Öffne den Termin (Home, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ und „Unsicher“ kannst du einen Grund wählen oder schreiben – das ist freiwillig. Den Grund sehen nur das Trainerteam und du selbst.',
+          'Öffne den Termin (Home, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ kannst du einen Grund wählen oder schreiben – das ist freiwillig; bei „Unsicher“ bitten wir um eine kurze Begründung. Den Grund sehen nur das Trainerteam und du selbst.',
       },
       {
         id: 'deadline',

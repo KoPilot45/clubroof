@@ -1,6 +1,6 @@
 /**
  * Browserprüfung: Rollen (mehrere Personen, „Alle anzeigen“, „… hinzufügen“), Hilfe & Anleitung,
- * Schriften (Open Sans für Text, Oswald für Überschriften, Kachel-Beschriftungen in Standardschrift).
+ * Schriften (Open Sans für Text, Saira Condensed für Überschriften, Kachel-Beschriftungen in Standardschrift).
  * Aufruf: pnpm browser-check scripts/e2e/hilfe-rollen.mjs [--reset]
  */
 import { button, launch, text } from '../lib/e2e.mjs';
@@ -25,7 +25,7 @@ ok(
 await t.goto('/verein');
 const heading = text(t.page, 'Vereinsleben', { exact: true });
 await heading.waitFor({ timeout: 20_000 });
-ok(/Oswald/.test(await family(t.page, heading)), 'Zwischenüberschrift in Oswald');
+ok(/Saira/.test(await family(t.page, heading)), 'Zwischenüberschrift in Saira Condensed');
 
 // ── Hilfe ────────────────────────────────────────────────────────────────────
 await t.goto('/mehr');

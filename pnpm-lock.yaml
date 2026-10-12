@@ -93,9 +93,9 @@ importers:
       '@expo-google-fonts/open-sans':
         specifier: ^0.4.2
         version: 0.4.2
-      '@expo-google-fonts/oswald':
-        specifier: ^0.4.2
-        version: 0.4.2
+      '@expo-google-fonts/saira-condensed':
+        specifier: ^0.4.1
+        version: 0.4.1
       '@expo/vector-icons':
         specifier: ^15.0.2
         version: 15.1.1(expo-font@57.0.4)(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.87.1(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)
@@ -1124,8 +1124,8 @@ packages:
   '@expo-google-fonts/open-sans@0.4.2':
     resolution: {integrity: sha512-gvhPqLXYnltWgll3iBwRGUwf5yN2HCh4mgQmFoQ8oU66LTs23oX4N7T3t0BDsKfP/1Z8F8+4c7wSkA11Nnk4kA==}
 
-  '@expo-google-fonts/oswald@0.4.2':
-    resolution: {integrity: sha512-ZLB8ou0SmSWThyLDCHQdFnbMrj93hRrpkKMLLoPrIs4QTrPxZyOxHoJ4mFoFCs0efZdV1Yd8mULfaggAblX5Mg==}
+  '@expo-google-fonts/saira-condensed@0.4.1':
+    resolution: {integrity: sha512-j33zK4yFI9juwusWj7jSK8F7fiKqPLXPxsG4/HnMMcAIEmQYKUgyUwsAmWDFca0ixFVDNpOXGr9OHC+M9Hy33Q==}
 
   '@expo/cli@57.0.27':
     resolution: {integrity: sha512-Jauk4chxmpVG5ElrMLTCwjFP20jbYU7PB4l3LYV8j+4e/3HU5jdl7qTQ4eVy1AaDUE9Ia2NCQ5A9kar2V1gaLg==}
@@ -5466,7 +5466,7 @@ snapshots:
 
   '@expo-google-fonts/open-sans@0.4.2': {}
 
-  '@expo-google-fonts/oswald@0.4.2': {}
+  '@expo-google-fonts/saira-condensed@0.4.1': {}
 
   '@expo/cli@57.0.27(@expo/dom-webview@57.0.1)(@expo/metro-runtime@57.0.16)(expo-constants@57.0.20)(expo-font@57.0.4)(expo-router@57.0.24)(expo@57.0.26)(react-dom@19.2.3(react@19.2.3))(react-native@0.86.3(@babel/core@7.29.7)(@react-native/metro-config@0.87.1(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.3))(react@19.2.3)(typescript@6.0.3)':
     dependencies:

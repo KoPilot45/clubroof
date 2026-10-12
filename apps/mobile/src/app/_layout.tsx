@@ -5,7 +5,10 @@ import {
   OpenSans_700Bold,
   OpenSans_800ExtraBold,
 } from '@expo-google-fonts/open-sans';
-import { Oswald_600SemiBold } from '@expo-google-fonts/oswald';
+import {
+  SairaCondensed_700Bold,
+  SairaCondensed_800ExtraBold,
+} from '@expo-google-fonts/saira-condensed';
 import { useFonts } from 'expo-font';
 import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import { Stack, useSegments } from 'expo-router';
@@ -42,7 +45,8 @@ function Navigator() {
   const [navHeight, setNavHeight] = useState(0);
   // Überschriftenschrift laden; bei einem Fehler bleibt die Systemschrift
   const [fontsLoaded, fontError] = useFonts({
-    Oswald_600SemiBold,
+    SairaCondensed_700Bold,
+    SairaCondensed_800ExtraBold,
     OpenSans_400Regular,
     OpenSans_600SemiBold,
     OpenSans_700Bold,

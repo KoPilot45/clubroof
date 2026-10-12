@@ -25,6 +25,7 @@ export function withTileInfo(tiles: TileItem[], info: TileInfo | undefined): Til
     return {
       ...tile,
       hint: entry.hint ?? tile.hint,
+      figure: entry.figure ?? tile.figure,
       badge: entry.badge ?? tile.badge,
       tone: entry.tone ?? tile.tone,
     };

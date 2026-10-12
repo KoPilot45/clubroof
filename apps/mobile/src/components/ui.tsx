@@ -46,7 +46,7 @@ import Svg, {
   Stop,
   Text as SvgText,
 } from 'react-native-svg';
-import { HEADING_FONT, inputFont } from '@/lib/fonts';
+import { FIGURE_FONT, HEADING_FONT, inputFont } from '@/lib/fonts';
 import { useTheme } from '@/lib/theme';
 import { Text } from './app-text';
 import { CalendarSheet } from './calendar-picker';
@@ -113,18 +113,25 @@ export function T({
     body: { fontSize: fontSizes.body, fontWeight: '400', lineHeight: 21 },
     label: { fontSize: fontSizes.label, fontWeight: '600' },
     caption: { fontSize: fontSizes.caption, fontWeight: '500' },
-    // Zwischenüberschriften: Oswald, Großbuchstaben (Festlegung 07.10.2026)
+    // Zwischenüberschriften: Saira Condensed Bold, Großbuchstaben, 20 px (Festlegung 11.10.2026)
     section: {
       fontFamily: HEADING_FONT,
-      fontSize: 18,
+      fontSize: 20,
+      lineHeight: 24,
       fontWeight: '400',
       letterSpacing: 0.6,
       textTransform: 'uppercase',
     },
-    // Kopfzeilen-Titel: Oswald in normaler Schreibweise
-    headline: { fontFamily: HEADING_FONT, fontSize: 22, fontWeight: '400', letterSpacing: 0.3 },
-    // Große Zahlen (Kassenstand, Ergebnisse, Countdown): Oswald wie eine Anzeigetafel
-    figure: { fontFamily: HEADING_FONT, fontSize: 26, fontWeight: '400', letterSpacing: 0.3 },
+    // Seitentitel: Saira Condensed Bold, ca. 32 px, normale Schreibweise
+    headline: {
+      fontFamily: HEADING_FONT,
+      fontSize: 32,
+      lineHeight: 34,
+      fontWeight: '400',
+      letterSpacing: 0.2,
+    },
+    // Große Zahlen (Kassenstand, Ergebnisse, Countdown): Saira Condensed ExtraBold, ca. 48 px
+    figure: { fontFamily: FIGURE_FONT, fontSize: 48, fontWeight: '400', letterSpacing: 0.2 },
     overline: {
       fontSize: 11,
       fontWeight: '800',
@@ -324,9 +331,10 @@ export function Section({
   onAction?: () => void;
   children: ReactNode;
 }) {
-  const { colors, spacing } = useTheme();
+  const { colors } = useTheme();
+  // Zwischenüberschrift mit mindestens 20 px Luft oben und unten (Wunsch des Vorstands)
   return (
-    <View style={{ gap: spacing.sm }}>
+    <View style={{ gap: 20, paddingTop: 8 }}>
       <View style={styles.rowBetween}>
         <View style={styles.sectionTitle}>
           <View
@@ -531,7 +539,17 @@ export function Button({
    * Pillenförmig. primary = Hauptaktion (gefüllt), outline/danger = Nebenaktion (umrandet), tonal = dezente
    * Vereinsfarbe, action = Zwischenstatus; hero/heroOutline = auf der Blickfangkarte (Schrift `onHero`).
    */
-  variant?: 'primary' | 'outline' | 'danger' | 'tonal' | 'action' | 'hero' | 'heroOutline';
+  variant?:
+    | 'primary'
+    | 'outline'
+    | 'danger'
+    | 'tonal'
+    | 'action'
+    | 'hero'
+    | 'heroOutline'
+    | 'dangerSolid'
+    | 'actionSolid'
+    | 'neutral';
   /** sm für Aktionen innerhalb von Listen und Karten (ebenfalls mindestens 44 pt hoch) */
   size?: 'md' | 'sm';
   icon?: IconName;
@@ -562,6 +580,25 @@ export function Button({
       pressed: colors.status.urgent.container,
       fg: colors.status.urgent.onContainer,
       border: colors.border,
+    },
+    // Rot gefüllt (z. B. „Absage senden“), orange gefüllt („Unsicher senden“), grau („Abbrechen“)
+    dangerSolid: {
+      bg: colors.status.urgent.solid,
+      pressed: colors.status.urgent.onContainer,
+      fg: colors.status.urgent.onSolid,
+      border: colors.status.urgent.solid,
+    },
+    actionSolid: {
+      bg: colors.status.action.solid,
+      pressed: colors.status.action.onContainer,
+      fg: colors.status.action.onSolid,
+      border: colors.status.action.solid,
+    },
+    neutral: {
+      bg: colors.surfaceVariant,
+      pressed: colors.border,
+      fg: colors.onSurface,
+      border: colors.surfaceVariant,
     },
     tonal: {
       bg: colors.primaryContainer,
@@ -1301,9 +1338,11 @@ export type TileItem = {
   onPress?: () => void;
   /** Zahl oder kurzer Hinweis oben rechts, z. B. offene Umfragen */
   badge?: string | number;
+  /** Kleine Kennzahl oben rechts in der Kategoriefarbe (Datum, Zahl, Bilanz, Kassenstand), Paket PO */
+  figure?: string;
   /** Funktion folgt in einem späteren Paket */
   soon?: boolean;
-  /** Kurze zweite Zeile, z. B. wer eine Liste anführt */
+  /** Längerer Hinweis nur für Screenreader (unter der Kachel steht er nicht mehr) */
   hint?: string;
   /** Ton des Hinweises (immer zusammen mit dem Text, nie Farbe allein) */
   tone?: 'neutral' | 'action' | 'success' | 'urgent' | 'info';
@@ -1342,8 +1381,12 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 10, rowGap: 14 }}>
       {items.map((item, index) => {
         const disabled = item.soon || !item.onPress;
-        const showBadge = !item.soon && item.badge !== undefined && item.badge !== 0;
-        const tone = item.tone && item.tone !== 'neutral' ? item.tone : null;
+        // Kennzahl: `figure` vom Server, sonst ein Zähler; Kategoriefarbe, nur dringend wird orange
+        const value =
+          item.figure ?? (item.badge !== undefined && item.badge !== 0 ? String(item.badge) : null);
+        const showBadge = !item.soon && value !== null;
+        const tint = item.tint ?? TINT_ORDER[index % TINT_ORDER.length]!;
+        const urgent = item.tone === 'action' || item.tone === 'urgent';
         return (
           <Pressable
             key={item.key}
@@ -1351,7 +1394,7 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
             accessibilityState={{ disabled }}
             accessibilityLabel={[
               item.label,
-              showBadge ? String(item.badge) : null,
+              showBadge ? value : null,
               item.soon ? 'bald verfügbar' : item.hint,
             ]
               .filter(Boolean)
@@ -1399,21 +1442,22 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                         borderColor: colors.background,
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: tone
-                          ? colors.status[tone].container
-                          : colors.status.action.container,
+                        backgroundColor: urgent
+                          ? colors.status.action.container
+                          : colors.tints[tint].container,
                       }}
                     >
                       <Text
+                        verbatim
                         style={{
                           fontSize: 12,
                           fontWeight: '800',
-                          color: tone
-                            ? colors.status[tone].onContainer
-                            : colors.status.action.onContainer,
+                          color: urgent
+                            ? colors.status.action.onContainer
+                            : colors.tints[tint].onContainer,
                         }}
                       >
-                        {item.badge}
+                        {value}
                       </Text>
                     </View>
                   ) : null}
@@ -1430,18 +1474,18 @@ function CompactTileGrid({ items }: { items: TileItem[] }) {
                 >
                   {softBreaks(t(item.label))}
                 </Text>
-                {item.soon || item.hint ? (
+                {item.soon ? (
                   <Text
-                    numberOfLines={2}
+                    numberOfLines={1}
                     style={{
                       marginTop: -4,
                       fontSize: 12,
                       fontWeight: '600',
                       textAlign: 'center',
-                      color: tone ? colors.status[tone].onContainer : colors.onSurfaceMuted,
+                      color: colors.onSurfaceMuted,
                     }}
                   >
-                    {item.soon ? 'Bald verfügbar' : item.hint}
+                    Bald verfügbar
                   </Text>
                 ) : null}
               </>
@@ -1461,11 +1505,17 @@ export function ChoiceChips<T extends string>({
   selected,
   onToggle,
   label,
+  tone = 'primary',
+  check = false,
 }: {
   options: { value: T; label: string; icon?: IconName }[];
   selected: T[];
   onToggle: (value: T) => void;
   label?: string;
+  /** Farbe der gewählten Option: Vereinsfarbe oder rot (z. B. Grund einer Absage) */
+  tone?: 'primary' | 'urgent';
+  /** zeigt bei der gewählten Option ein Häkchen */
+  check?: boolean;
 }) {
   const { colors, radii, sizes } = useTheme();
   return (
@@ -1477,6 +1527,8 @@ export function ChoiceChips<T extends string>({
       >
         {options.map((o) => {
           const active = selected.includes(o.value);
+          const fill = tone === 'urgent' ? colors.status.urgent.solid : colors.primary;
+          const onFill = tone === 'urgent' ? colors.status.urgent.onSolid : colors.onPrimary;
           return (
             <Pressable
               key={o.value}
@@ -1497,23 +1549,20 @@ export function ChoiceChips<T extends string>({
                 maxWidth: '100%',
                 borderRadius: radii.pill,
                 borderWidth: 1,
-                borderColor: active ? colors.primary : colors.border,
-                backgroundColor: active ? colors.primary : colors.surfaceRaised,
+                borderColor: active ? fill : colors.border,
+                backgroundColor: active ? fill : colors.surfaceRaised,
               }}
             >
+              {active && check ? <Ionicons name="checkmark" size={16} color={onFill} /> : null}
               {o.icon ? (
-                <Ionicons
-                  name={o.icon}
-                  size={15}
-                  color={active ? colors.onPrimary : colors.onSurface}
-                />
+                <Ionicons name={o.icon} size={15} color={active ? onFill : colors.onSurface} />
               ) : null}
               <Text
                 style={{
                   flexShrink: 1,
                   fontSize: 13.5,
                   fontWeight: '700',
-                  color: active ? colors.onPrimary : colors.onSurface,
+                  color: active ? onFill : colors.onSurface,
                 }}
               >
                 {o.label}
@@ -1535,6 +1584,8 @@ export function TextField({
   multiline,
   kind = 'text',
   onSubmit,
+  accent,
+  hint,
 }: {
   label: string;
   value: string;
@@ -1545,6 +1596,10 @@ export function TextField({
   /** Steuert Tastatur, Autovervollständigung und verdeckte Eingabe */
   kind?: 'text' | 'email' | 'password' | 'newPassword' | 'code' | 'url';
   onSubmit?: () => void;
+  /** hebt das Feld farbig umrandet hervor (z. B. Pflichtfeld in Gelb) */
+  accent?: string;
+  /** Hinweis unter dem Feld */
+  hint?: string;
 }) {
   const { colors, radii } = useTheme();
   const secret = kind === 'password' || kind === 'newPassword';
@@ -1592,8 +1647,8 @@ export function TextField({
           onSubmitEditing={onSubmit}
           style={{
             minHeight: multiline ? 72 : 46,
-            borderWidth: 1,
-            borderColor: colors.border,
+            borderWidth: accent ? 2 : 1,
+            borderColor: accent ?? colors.border,
             borderRadius: radii.md,
             paddingHorizontal: 12,
             paddingVertical: 10,
@@ -1627,6 +1682,7 @@ export function TextField({
           </Pressable>
         ) : null}
       </View>
+      {hint ? <T variant="caption">{hint}</T> : null}
     </View>
   );
 }

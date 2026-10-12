@@ -1,7 +1,7 @@
 import { Text } from '@/components/app-text';
 import { HEADING_FONT } from '@/lib/fonts';
 
-/** Kopfzeilentitel in Oswald; der Titel wird in der gewählten Sprache angezeigt. */
+/** Kopfzeilentitel in Saira Condensed; der Titel wird in der gewählten Sprache angezeigt. */
 export const headerTitle =
   (color: string) =>
   ({ children }: { children: string }) => (
