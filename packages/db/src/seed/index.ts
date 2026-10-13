@@ -2404,52 +2404,59 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         duty(refPersons[2]!, -30, 12, 'SG Fluss – FC See, U17', 'Seeplatz'),
       ]);
 
-    // ── Sponsoren (Paket SPO): Stufen, Zuordnung und Laufzeiten; ohne Bilder (Textbanner) ─────
+    // ── Sponsoren (Paket SP2): Werbung je Sponsor; ohne Bilder (Logo = Initialen im Container) ──
     await tx.insert(s.sponsors).values([
       {
         clubId,
         name: 'Haus & Garten Müller GmbH',
-        tier: 'main',
+        slogan: 'Alles für Haus und Garten',
+        description:
+          'Seit über 30 Jahren Ihr Partner für Haus, Hof und Garten in Musterstadt. Vom Rasensamen bis zur Gartenhütte – und seit vielen Jahren Unterstützer unserer Jugendmannschaften.',
         linkUrl: 'https://www.example.org/mueller',
-        scope: 'club',
+        advertise: true,
         sortOrder: 0,
       },
       {
         clubId,
         name: 'Sportshop Musterstadt',
-        tier: 'partner',
+        slogan: 'Ausrüstung für jede Sportart',
+        description:
+          'Trikots, Schuhe und Zubehör – für Vereinsmitglieder gibt es Mengenrabatt. Der Shop läuft ohne Werbung in der App und ist nur in der Sponsorenübersicht zu sehen.',
         linkUrl: 'https://www.example.org/sportshop',
-        scope: 'club',
+        advertise: false,
         sortOrder: 1,
       },
       {
         clubId,
         name: 'Fahrschule Lindner',
-        tier: 'partner',
+        slogan: 'Führerschein ohne Umwege',
+        description: 'Fahrschule im Zentrum mit Theorie am Abend und flexiblen Fahrstunden.',
         linkUrl: 'https://www.example.org/lindner',
-        scope: 'youth',
+        advertise: true,
         sortOrder: 2,
       },
       {
         clubId,
         name: 'Gasthaus Zur Linde',
-        tier: 'supporter',
-        scope: 'seniors',
+        slogan: 'Gut essen nach dem Spiel',
+        description: 'Bürgerliche Küche und Vereinsstammtisch jeden Freitag ab 19 Uhr.',
+        advertise: true,
+        hideForYouth: true, // Gaststätte: nicht bei Jugendspielern
         sortOrder: 3,
       },
       {
         clubId,
         name: 'Bäckerei Kaiser',
-        tier: 'supporter',
-        scope: 'club',
+        slogan: 'Frische Brötchen, jeden Morgen',
+        advertise: true,
         startsOn: toIsoDate(addDays(today, 30)), // geplant
         sortOrder: 4,
       },
       {
         clubId,
         name: 'Autohaus Berger',
-        tier: 'supporter',
-        scope: 'club',
+        slogan: 'Mobil in Musterstadt',
+        advertise: true,
         endsOn: toIsoDate(addDays(today, -20)), // abgelaufen
         sortOrder: 5,
       },

@@ -344,6 +344,20 @@
       "when": 1791810494017,
       "tag": "0048_club_code",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1791887406750,
+      "tag": "0049_sponsors_advertising",
+      "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1791887414111,
+      "tag": "0050_sponsors_cleanup",
+      "breakpoints": true
     }
   ]
 }

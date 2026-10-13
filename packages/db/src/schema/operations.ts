@@ -1003,7 +1003,10 @@ export const clubFeePayments = pgTable(
 
 // ── Sponsoren (Paket SPO) ───────────────────────────────────────────────────
 
-/** Sponsor des Vereins (Modul „Sponsoren“): Logo und Banner, Link, Stufe, Laufzeit, Zuordnung. */
+/**
+ * Sponsor des Vereins (Modul „Sponsoren“, Paket SP2): Logo, Slogan, Text, Link, Laufzeit. Werbung wird je
+ * Sponsor gesteuert (`advertise`); ohne Werbung erscheint der Sponsor nur in der Übersicht „Unsere Sponsoren“.
+ */
 export const sponsors = pgTable(
   'sponsors',
   {
@@ -1012,15 +1015,19 @@ export const sponsors = pgTable(
       .notNull()
       .references(() => clubs.id, { onDelete: 'cascade' }),
     name: text().notNull(),
-    /** main | partner | supporter */
-    tier: text().notNull(),
+    /** kurzer Werbespruch, eine Zeile im Container */
+    slogan: text(),
+    /** längerer Text der Detailseite */
+    description: text(),
     /** nur https */
     linkUrl: text(),
-    /** Medienverweise (Bilder) */
+    /** Medienverweise (Bilder): Logo, optional eigenes Logo für den Dunkelmodus */
     logoRef: text(),
-    bannerRef: text(),
-    /** club | youth | seniors */
-    scope: text().notNull().default('club'),
+    logoDarkRef: text(),
+    /** als Werbung im Container der App ausspielen */
+    advertise: boolean().notNull().default(false),
+    /** Nur mit `advertise`: nicht bei Jugendspielern anzeigen (Funktion Spieler in einer Jugendmannschaft) */
+    hideForYouth: boolean().notNull().default(false),
     startsOn: date(),
     endsOn: date(),
     sortOrder: integer().notNull().default(0),

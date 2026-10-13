@@ -1,10 +1,7 @@
 import {
   SPONSOR_LABELS,
-  SPONSOR_PLACEMENTS,
-  SPONSOR_SCOPES,
-  SPONSOR_TIERS,
   type AdminSponsors,
-  type SponsorBanner,
+  type SponsorAds,
   type SponsorPage,
 } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
@@ -12,7 +9,7 @@ import { z } from 'zod';
 import {
   createSponsor,
   deleteSponsor,
-  getSponsorBanner,
+  getSponsorAds,
   getSponsorPage,
   listAdminSponsors,
   setLabel,
@@ -23,13 +20,15 @@ import {
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const body = z.object({
   name: z.string().trim().min(2).max(80),
-  tier: z.enum(SPONSOR_TIERS),
+  slogan: z.string().trim().max(80).nullish(),
+  description: z.string().trim().max(1000).nullish(),
   linkUrl: z.string().trim().max(300).nullish(),
-  scope: z.enum(SPONSOR_SCOPES),
   startsOn: day.nullish(),
   endsOn: day.nullish(),
+  advertise: z.boolean(),
+  hideForYouth: z.boolean(),
   logoImageId: z.uuid().nullish(),
-  bannerImageId: z.uuid().nullish(),
+  logoDarkImageId: z.uuid().nullish(),
 });
 
 /** Sponsoren (Paket SPO): Anzeige für Mitglieder und Pflege durch die Vereinsadministration. */
@@ -39,11 +38,12 @@ export const sponsorRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get('/sponsors', async (request): Promise<SponsorPage> =>
     getSponsorPage(app.db, request.actor!, app.now()),
   );
+  // Container (Home, Team, Verein): bis zu drei zufällige Sponsoren mit Werbung, je Sitzung stabil (`seed`)
   app.get(
-    '/sponsors/banner',
-    { schema: { querystring: z.object({ placement: z.enum(SPONSOR_PLACEMENTS) }) } },
-    async (request): Promise<SponsorBanner> =>
-      getSponsorBanner(app.db, request.actor!, request.query.placement, app.now()),
+    '/sponsors/ads',
+    { schema: { querystring: z.object({ seed: z.string().max(64).optional() }) } },
+    async (request): Promise<SponsorAds> =>
+      getSponsorAds(app.db, request.actor!, request.query.seed, app.now()),
   );
 
   app.get('/admin/sponsors', async (request): Promise<AdminSponsors> =>
@@ -64,7 +64,7 @@ export const sponsorRoutes: FastifyPluginAsyncZod = async (app) => {
         params: z.object({ id: z.uuid() }),
         body: body.extend({
           removeLogo: z.boolean().optional(),
-          removeBanner: z.boolean().optional(),
+          removeLogoDark: z.boolean().optional(),
         }),
       },
     },
