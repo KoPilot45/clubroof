@@ -1,68 +1,60 @@
 /**
- * Sponsoren-Modul (Paket SPO): Logo und Banner, Link, Stufe, Laufzeit, Zuordnung. Banner sind
- * gekennzeichnet, ohne Auswertung (kein Zählen von Aufrufen oder Klicks) und erscheinen nie in
- * Anmeldung, Kasse, Chat oder bei Minderjährigen.
+ * Sponsoren-Modul (Paket SPO, umgebaut in SP2): Logo, Slogan, Text, Link, Laufzeit. Werbung wird je Sponsor
+ * geschaltet; der Container zeigt bis zu drei zufällige Sponsoren mit Werbung. Ohne Werbung bleibt der Sponsor in
+ * der Übersicht „Unsere Sponsoren“. Gekennzeichnet, ohne Auswertung (kein Zählen von Aufrufen oder Klicks) und nie in
+ * Anmeldung, Kasse, Chat oder Kinderdaten.
  */
 
-export const SPONSOR_TIERS = ['main', 'partner', 'supporter'] as const;
-export type SponsorTier = (typeof SPONSOR_TIERS)[number];
-export const SPONSOR_TIER_LABEL: Record<SponsorTier, string> = {
-  main: 'Hauptsponsor',
-  partner: 'Partner',
-  supporter: 'Förderer',
-};
-export const SPONSOR_TIER_PLURAL: Record<SponsorTier, string> = {
-  main: 'Hauptsponsoren',
-  partner: 'Partner',
-  supporter: 'Förderer',
-};
-
-/** Zuordnung: ganzer Verein oder nur Jugend bzw. Senioren (Mitglieder dieser Bereiche). */
-export const SPONSOR_SCOPES = ['club', 'youth', 'seniors'] as const;
-export type SponsorScope = (typeof SPONSOR_SCOPES)[number];
-export const SPONSOR_SCOPE_LABEL: Record<SponsorScope, string> = {
-  club: 'Ganzer Verein',
-  youth: 'Jugend',
-  seniors: 'Senioren',
-};
-
-/** Wo ein Banner stehen darf (nie in Anmeldung, Kasse oder Chat). */
-export const SPONSOR_PLACEMENTS = ['home', 'match', 'events'] as const;
-export type SponsorPlacement = (typeof SPONSOR_PLACEMENTS)[number];
-
-/** Auswahl für die Kennzeichnung der Banner (Verein stellt ein). */
+/** Auswahl für die Kennzeichnung der Werbung (Verein stellt ein). */
 export const SPONSOR_LABELS = ['Anzeige', 'Partner des Vereins', 'Gesponsert'] as const;
+
+/** Höchstzahl der Sponsoren im Container (Wischelement). */
+export const SPONSOR_AD_MAX = 3;
 
 export type SponsorStatus = 'active' | 'planned' | 'expired';
 
 export type SponsorItem = {
   id: string;
   name: string;
-  tier: SponsorTier;
+  slogan: string | null;
+  /** Text der Detailseite */
+  description: string | null;
   linkUrl: string | null;
   logoUrl: string | null;
-  bannerUrl: string | null;
-  scope: SponsorScope;
+  /** eigenes Logo für den Dunkelmodus (sonst `logoUrl`) */
+  logoDarkUrl: string | null;
   startsOn: string | null;
   endsOn: string | null;
 };
 
-/** Seite „Unsere Sponsoren“ (nur aktuell laufende, für diese Person passende Sponsoren). */
+/** Übersicht „Unsere Sponsoren“: alle laufenden Sponsoren, auch ohne Werbung. */
 export type SponsorPage = { label: string; sponsors: SponsorItem[] };
 
-/** Ein Banner für einen Platz in der App; leer, wenn nichts anzuzeigen ist. */
-export type SponsorBanner = { label: string; sponsor: SponsorItem | null };
+/** Inhalt des Containers: bis zu drei zufällige Sponsoren mit Werbung; leer = kein Container. */
+export type SponsorAds = { label: string; sponsors: SponsorItem[] };
 
-export type AdminSponsor = SponsorItem & { status: SponsorStatus };
-export type AdminSponsors = { label: string; sponsors: AdminSponsor[] };
+export type AdminSponsor = SponsorItem & {
+  status: SponsorStatus;
+  advertise: boolean;
+  hideForYouth: boolean;
+};
+export type AdminSponsors = {
+  label: string;
+  /** Sponsoren, die jetzt als Werbung laufen (Werbung an und Laufzeit aktiv) */
+  advertising: number;
+  sponsors: AdminSponsor[];
+};
 
 export type SponsorInput = {
   name: string;
-  tier: SponsorTier;
+  slogan?: string | null;
+  description?: string | null;
   linkUrl?: string | null;
-  scope: SponsorScope;
   startsOn?: string | null;
   endsOn?: string | null;
+  advertise: boolean;
+  /** nur wirksam mit `advertise` */
+  hideForYouth: boolean;
   logoImageId?: string | null;
-  bannerImageId?: string | null;
+  logoDarkImageId?: string | null;
 };

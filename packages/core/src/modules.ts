@@ -78,7 +78,7 @@ export const MODULES = [
   {
     key: 'sponsors',
     name: 'Sponsoren',
-    description: 'Logos und Banner mit Kennzeichnung, Seite „Unsere Sponsoren“',
+    description: 'Werbung je Sponsor als Wischelement mit Kennzeichnung, Seite „Unsere Sponsoren“',
     scopes: ['club'],
   },
   {

@@ -1,25 +1,21 @@
 /**
- * Sponsoren-Modul (Paket SPO, optional): Die Vereinsadministration pflegt Sponsoren mit Logo,
- * Banner, Link, Stufe, Laufzeit und Zuordnung. Banner stehen gekennzeichnet auf Startseite,
- * Spieltag und Terminlisten, dazu die Seite „Unsere Sponsoren“. Keine Auswertung (nichts wird
- * gezählt), nie bei Minderjährigen; Anmeldung, Kasse und Chat haben gar keinen Platz dafür.
+ * Sponsoren-Modul (Paket SPO, umgebaut in SP2): Die Vereinsadministration pflegt Sponsoren mit Logo, Slogan,
+ * Text, Link und Laufzeit und schaltet je Sponsor Werbung. Der Container in Home, Team und Verein zeigt bis zu
+ * drei zufällige Sponsoren mit Werbung; die Übersicht „Unsere Sponsoren“ zeigt alle laufenden. Keine Auswertung
+ * (nichts wird gezählt); Anmeldung, Kasse, Chat und Kinderdaten haben gar keinen Platz dafür.
  */
 import {
+  SPONSOR_AD_MAX,
   SPONSOR_LABELS,
-  SPONSOR_SCOPES,
-  SPONSOR_TIERS,
   calendarDayOf,
   toIsoDate,
   type AdminSponsor,
   type AdminSponsors,
-  type SponsorBanner,
+  type SponsorAds,
   type SponsorInput,
   type SponsorItem,
   type SponsorPage,
-  type SponsorPlacement,
-  type SponsorScope,
   type SponsorStatus,
-  type SponsorTier,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, eq, inArray } from 'drizzle-orm';
@@ -30,13 +26,25 @@ import { mediaReference } from './uploads';
 
 const today = (actor: Actor, now: Date) => toIsoDate(calendarDayOf(now, actor.club.timezone));
 
-/** Minderjährige sehen keine Werbung (Jugendschutz, Datensparsamkeit). */
-function isMinor(actor: Actor, now: Date): boolean {
-  const born = actor.person.birthDate;
-  if (!born) return false;
-  const limit = new Date(now);
-  limit.setUTCFullYear(limit.getUTCFullYear() - 18);
-  return born > toIsoDate(limit);
+/**
+ * Jugendspieler: eigenes Konto mit der Funktion Spieler in einer Mannschaft des Bereichs Jugend. Eltern und
+ * Trainer zählen nicht (Eltern sehen die Werbung weiter).
+ */
+async function isYouthPlayer(db: Db, actor: Actor): Promise<boolean> {
+  const own = actor.memberships.filter(
+    (m) => m.personId === actor.person.id && m.function === 'player',
+  );
+  if (own.length === 0) return false;
+  const units = await db
+    .select({ id: s.orgUnits.id })
+    .from(s.orgUnits)
+    .where(
+      and(
+        inArray(s.orgUnits.id, [...new Set(own.map((m) => m.team.orgUnitId))]),
+        eq(s.orgUnits.kind, 'youth'),
+      ),
+    );
+  return units.length > 0;
 }
 
 function statusOf(
@@ -51,61 +59,66 @@ function statusOf(
 const toItem = (row: typeof s.sponsors.$inferSelect, actor: Actor, now: Date): SponsorItem => ({
   id: row.id,
   name: row.name,
-  tier: row.tier as SponsorTier,
+  slogan: row.slogan,
+  description: row.description,
   linkUrl: row.linkUrl,
   logoUrl: resolveMediaUrl(actor.links, row.logoRef, now),
-  bannerUrl: resolveMediaUrl(actor.links, row.bannerRef, now),
-  scope: row.scope as SponsorScope,
+  logoDarkUrl: resolveMediaUrl(actor.links, row.logoDarkRef, now),
   startsOn: row.startsOn,
   endsOn: row.endsOn,
 });
 
-/** Laufende Sponsoren, die zu dieser Person passen (Verein für alle, Jugend/Senioren je Abteilung). */
-async function eligible(db: Db, actor: Actor, now: Date) {
-  if (!moduleEnabled(actor, 'sponsors') || isMinor(actor, now)) return [];
+/** Laufende Sponsoren des Vereins in der Reihenfolge der Verwaltung. */
+async function running(db: Db, actor: Actor, now: Date) {
+  if (!moduleEnabled(actor, 'sponsors')) return [];
   const day = today(actor, now);
-  const units = actor.orgUnitIds.length
-    ? await db
-        .select({ kind: s.orgUnits.kind })
-        .from(s.orgUnits)
-        .where(inArray(s.orgUnits.id, actor.orgUnitIds))
-    : [];
-  const kinds = new Set(units.map((u) => u.kind));
   const rows = await db
     .select()
     .from(s.sponsors)
     .where(eq(s.sponsors.clubId, actor.club.id))
     .orderBy(asc(s.sponsors.sortOrder), asc(s.sponsors.createdAt));
-  return rows.filter(
-    (r) =>
-      statusOf(r, day) === 'active' &&
-      (r.scope === 'club' ||
-        (r.scope === 'youth' && kinds.has('youth')) ||
-        (r.scope === 'seniors' && kinds.has('seniors'))),
-  );
+  return rows.filter((r) => statusOf(r, day) === 'active');
 }
 
+/** Übersicht „Unsere Sponsoren“: alle laufenden Sponsoren, auch ohne Werbung. */
 export async function getSponsorPage(db: Db, actor: Actor, now: Date): Promise<SponsorPage> {
-  const rows = await eligible(db, actor, now);
+  const rows = await running(db, actor, now);
   return { label: actor.club.sponsorLabel, sponsors: rows.map((r) => toItem(r, actor, now)) };
 }
 
-const PLACEMENT_OFFSET: Record<SponsorPlacement, number> = { home: 0, match: 1, events: 2 };
+/** Einfacher, stabiler Mischer: gleicher Startwert → gleiche Reihenfolge (Auswahl je Sitzung). */
+function shuffled<T>(items: T[], seed: string): T[] {
+  let h = 2166136261;
+  for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+  const next = () => {
+    h = (Math.imul(h, 1664525) + 1013904223) >>> 0;
+    return h / 2 ** 32;
+  };
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(next() * (i + 1));
+    [out[i], out[j]] = [out[j]!, out[i]!];
+  }
+  return out;
+}
 
-/** Ein Banner für den Platz; wechselt alle sechs Stunden reihum – ohne zu zählen, was angezeigt wird. */
-export async function getSponsorBanner(
+/**
+ * Inhalt des Containers: bis zu drei zufällige Sponsoren mit Werbung. Die Reihenfolge folgt dem Startwert
+ * (`seed`, je App-Sitzung stabil; ohne Angabe zufällig). Jugendspieler erhalten keinen Sponsor mit gesetztem
+ * Schalter „Nicht bei Jugendspielern anzeigen“. Es wird nichts gezählt.
+ */
+export async function getSponsorAds(
   db: Db,
   actor: Actor,
-  placement: SponsorPlacement,
+  seed: string | undefined,
   now: Date,
-): Promise<SponsorBanner> {
-  const rows = (await eligible(db, actor, now)).filter((r) => r.bannerRef || r.logoRef);
-  if (rows.length === 0) return { label: actor.club.sponsorLabel, sponsor: null };
-  const slot = Math.floor(now.getTime() / (6 * 3_600_000)) + PLACEMENT_OFFSET[placement];
-  return {
-    label: actor.club.sponsorLabel,
-    sponsor: toItem(rows[slot % rows.length]!, actor, now),
-  };
+): Promise<SponsorAds> {
+  const youth = await isYouthPlayer(db, actor);
+  const rows = (await running(db, actor, now)).filter(
+    (r) => r.advertise && !(youth && r.hideForYouth),
+  );
+  const picked = shuffled(rows, seed ?? Math.random().toString(36)).slice(0, SPONSOR_AD_MAX);
+  return { label: actor.club.sponsorLabel, sponsors: picked.map((r) => toItem(r, actor, now)) };
 }
 
 // ── Pflege (Vereinsadministration) ──────────────────────────────────────────
@@ -125,20 +138,20 @@ export async function listAdminSponsors(db: Db, actor: Actor, now: Date): Promis
     .from(s.sponsors)
     .where(eq(s.sponsors.clubId, actor.club.id))
     .orderBy(asc(s.sponsors.sortOrder), asc(s.sponsors.createdAt));
+  const sponsors = rows.map((r): AdminSponsor => ({
+    ...toItem(r, actor, now),
+    status: statusOf(r, day),
+    advertise: r.advertise,
+    hideForYouth: r.advertise && r.hideForYouth,
+  }));
   return {
     label: actor.club.sponsorLabel,
-    sponsors: rows.map((r): AdminSponsor => ({
-      ...toItem(r, actor, now),
-      status: statusOf(r, day),
-    })),
+    advertising: sponsors.filter((x) => x.advertise && x.status === 'active').length,
+    sponsors,
   };
 }
 
 function checkInput(input: SponsorInput) {
-  if (!SPONSOR_TIERS.includes(input.tier))
-    throw new HttpError(400, 'invalid_tier', 'Unbekannte Stufe.');
-  if (!SPONSOR_SCOPES.includes(input.scope))
-    throw new HttpError(400, 'invalid_scope', 'Unbekannte Zuordnung.');
   if (input.startsOn && input.endsOn && input.endsOn < input.startsOn)
     throw new HttpError(400, 'invalid_range', 'Das Ende liegt vor dem Beginn.');
   if (input.linkUrl) {
@@ -159,8 +172,8 @@ async function refs(db: Db, actor: Actor, input: SponsorInput) {
     logoRef: input.logoImageId
       ? await mediaReference(db, actor, input.logoImageId, 'sponsor')
       : undefined,
-    bannerRef: input.bannerImageId
-      ? await mediaReference(db, actor, input.bannerImageId, 'sponsor')
+    logoDarkRef: input.logoDarkImageId
+      ? await mediaReference(db, actor, input.logoDarkImageId, 'sponsor')
       : undefined,
   };
 }
@@ -185,7 +198,7 @@ export async function createSponsor(
 ): Promise<AdminSponsors> {
   requireAdmin(actor);
   checkInput(input);
-  const { logoRef, bannerRef } = await refs(db, actor, input);
+  const { logoRef, logoDarkRef } = await refs(db, actor, input);
   const existing = await db
     .select({ id: s.sponsors.id })
     .from(s.sponsors)
@@ -195,11 +208,13 @@ export async function createSponsor(
     .values({
       clubId: actor.club.id,
       name: input.name.trim(),
-      tier: input.tier,
+      slogan: input.slogan?.trim() || null,
+      description: input.description?.trim() || null,
       linkUrl: input.linkUrl ?? null,
       logoRef: logoRef ?? null,
-      bannerRef: bannerRef ?? null,
-      scope: input.scope,
+      logoDarkRef: logoDarkRef ?? null,
+      advertise: input.advertise,
+      hideForYouth: input.advertise && input.hideForYouth,
       startsOn: input.startsOn ?? null,
       endsOn: input.endsOn ?? null,
       sortOrder: existing.length,
@@ -214,7 +229,7 @@ export async function updateSponsor(
   db: Db,
   actor: Actor,
   id: string,
-  input: SponsorInput & { removeLogo?: boolean; removeBanner?: boolean },
+  input: SponsorInput & { removeLogo?: boolean; removeLogoDark?: boolean },
   now: Date,
 ): Promise<AdminSponsors> {
   requireAdmin(actor);
@@ -224,18 +239,24 @@ export async function updateSponsor(
     .from(s.sponsors)
     .where(and(eq(s.sponsors.id, id), eq(s.sponsors.clubId, actor.club.id)));
   if (!row) throw notFound('Der Sponsor');
-  const { logoRef, bannerRef } = await refs(db, actor, input);
+  const { logoRef, logoDarkRef } = await refs(db, actor, input);
   await db
     .update(s.sponsors)
     .set({
       name: input.name.trim(),
-      tier: input.tier,
+      slogan: input.slogan?.trim() || null,
+      description: input.description?.trim() || null,
       linkUrl: input.linkUrl ?? null,
-      scope: input.scope,
+      advertise: input.advertise,
+      hideForYouth: input.advertise && input.hideForYouth,
       startsOn: input.startsOn ?? null,
       endsOn: input.endsOn ?? null,
       ...(logoRef !== undefined ? { logoRef } : input.removeLogo ? { logoRef: null } : {}),
-      ...(bannerRef !== undefined ? { bannerRef } : input.removeBanner ? { bannerRef: null } : {}),
+      ...(logoDarkRef !== undefined
+        ? { logoDarkRef }
+        : input.removeLogoDark
+          ? { logoDarkRef: null }
+          : {}),
     })
     .where(eq(s.sponsors.id, id));
   await audit(db, actor, id, `Sponsor geändert: ${input.name.trim()}`, now);
@@ -295,11 +316,5 @@ export async function setLabel(
     throw new HttpError(400, 'invalid_label', 'Unbekannte Kennzeichnung.');
   await db.update(s.clubs).set({ sponsorLabel: label }).where(eq(s.clubs.id, actor.club.id));
   await audit(db, actor, actor.club.id, `Sponsoren: Kennzeichnung „${label}“`, now);
-  return {
-    ...(await listAdminSponsors(
-      db,
-      { ...actor, club: { ...actor.club, sponsorLabel: label } },
-      now,
-    )),
-  };
+  return listAdminSponsors(db, { ...actor, club: { ...actor.club, sponsorLabel: label } }, now);
 }

@@ -29,7 +29,7 @@ import type {
   ClubSchedule,
   PublicClub,
   AdminSponsors,
-  SponsorBanner,
+  SponsorAds,
   SponsorPage,
   TeamCandidate,
   TeamManage,
@@ -465,36 +465,56 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
-  describe('Sponsoren (SPO)', () => {
-    const names = (page: SponsorPage) => page.sponsors.map((x) => x.name);
+  describe('Sponsoren (SPO, SP2)', () => {
+    const names = (page: { sponsors: { name: string }[] }) => page.sponsors.map((x) => x.name);
+    const FOUR = [
+      'Haus & Garten Müller GmbH',
+      'Sportshop Musterstadt',
+      'Fahrschule Lindner',
+      'Gasthaus Zur Linde',
+    ];
+    const input = (name: string, extra: Record<string, unknown> = {}) => ({
+      name,
+      advertise: false,
+      hideForYouth: false,
+      ...extra,
+    });
 
-    it('zeigt laufende Sponsoren je Zuordnung; Minderjährige sehen keine', async () => {
-      const coach = await login('trainer'); // Erwachsener, Jugend- und Seniorenmannschaft
-      const board = await login('vorstand'); // Erwachsener ohne Mannschaft
-      const player = await login('spieler'); // Jugendspieler (minderjährig)
+    it('Übersicht zeigt alle laufenden Sponsoren, der Container nur die mit Werbung (bis zu drei)', async () => {
+      const coach = await login('trainer');
       const full = await get<SponsorPage>('/sponsors', coach.token);
-      expect(names(full)).toEqual([
-        'Haus & Garten Müller GmbH',
-        'Sportshop Musterstadt',
-        'Fahrschule Lindner',
-        'Gasthaus Zur Linde',
-      ]);
+      expect(names(full)).toEqual(FOUR);
       expect(full.label).toBe('Anzeige');
       // geplant (Bäckerei Kaiser) und abgelaufen (Autohaus Berger) erscheinen nirgends
       expect(names(full)).not.toContain('Bäckerei Kaiser');
       expect(names(full)).not.toContain('Autohaus Berger');
-      expect(names(await get<SponsorPage>('/sponsors', board.token))).toEqual([
-        'Haus & Garten Müller GmbH',
-        'Sportshop Musterstadt',
-      ]);
-      expect((await get<SponsorPage>('/sponsors', player.token)).sponsors).toEqual([]);
-      const banner = await get<SponsorBanner>('/sponsors/banner?placement=home', player.token);
-      expect(banner.sponsor).toBeNull();
-      expect((await send('GET', '/sponsors/banner?placement=login', coach.token)).status).toBe(400);
-      // ohne Bilder (Textbanner) erscheint noch kein Banner – erst mit Logo oder Banner
-      expect(
-        (await get<SponsorBanner>('/sponsors/banner?placement=home', coach.token)).sponsor,
-      ).toBeNull();
+      const ads = await get<SponsorAds>('/sponsors/ads?seed=a', coach.token);
+      // Sportshop läuft ohne Werbung: nur in der Übersicht
+      expect(names(ads).sort()).toEqual(
+        ['Fahrschule Lindner', 'Gasthaus Zur Linde', 'Haus & Garten Müller GmbH'].sort(),
+      );
+      // gleicher Startwert → gleiche Reihenfolge (stabil je Sitzung)
+      expect(names(await get<SponsorAds>('/sponsors/ads?seed=a', coach.token))).toEqual(names(ads));
+      // Platzhalter alter Wege gibt es nicht mehr
+      expect((await send('GET', '/sponsors/banner?placement=home', coach.token)).status).toBe(404);
+    });
+
+    it('Jugendspieler erhalten keinen Sponsor mit gesetztem Schalter; Eltern und Trainer sehen die Werbung', async () => {
+      const player = await login('spieler'); // Spielerin der E-Jugend, eigenes Konto
+      const parent = await login('eltern'); // Elternteil (und Co-Trainer)
+      const board = await login('vorstand');
+      const forPlayer = await get<SponsorAds>('/sponsors/ads', player.token);
+      expect(names(forPlayer)).not.toContain('Gasthaus Zur Linde');
+      expect(names(forPlayer).sort()).toEqual(
+        ['Fahrschule Lindner', 'Haus & Garten Müller GmbH'].sort(),
+      );
+      for (const who of [parent, board]) {
+        expect(names(await get<SponsorAds>('/sponsors/ads', who.token))).toContain(
+          'Gasthaus Zur Linde',
+        );
+      }
+      // Übersicht: auch Jugendspieler sehen alle laufenden Sponsoren
+      expect(names(await get<SponsorPage>('/sponsors', player.token))).toEqual(FOUR);
     });
 
     it('Pflege nur durch die Administration: anlegen, ändern, Reihenfolge, Kennzeichnung, löschen', async () => {
@@ -503,6 +523,7 @@ describe.skipIf(!url)('API', () => {
       expect((await send('GET', '/admin/sponsors', coach.token)).status).toBe(403);
       const list = await get<AdminSponsors>('/admin/sponsors', admin.token);
       expect(list.sponsors).toHaveLength(6);
+      expect(list.advertising).toBe(3);
       expect(list.sponsors.map((x) => x.status)).toEqual([
         'active',
         'active',
@@ -511,36 +532,53 @@ describe.skipIf(!url)('API', () => {
         'planned',
         'expired',
       ]);
+      expect(list.sponsors.map((x) => [x.advertise, x.hideForYouth])).toEqual([
+        [true, false],
+        [false, false],
+        [true, false],
+        [true, true],
+        [true, false],
+        [true, false],
+      ]);
 
       const badLink = await send('POST', '/admin/sponsors', admin.token, {
-        name: 'Test GmbH',
-        tier: 'partner',
-        scope: 'club',
+        ...input('Test GmbH'),
         linkUrl: 'http://unsicher.example',
       });
       expect(badLink.status).toBe(400);
       const created = await send<AdminSponsors>('POST', '/admin/sponsors', admin.token, {
-        name: 'Test GmbH',
-        tier: 'partner',
-        scope: 'club',
+        ...input('Test GmbH', { slogan: 'Immer vorn', advertise: true, hideForYouth: true }),
         linkUrl: 'https://test.example/sponsor',
       });
       expect(created.status).toBe(201);
+      expect(created.body.advertising).toBe(4);
       const test = created.body.sponsors.find((x) => x.name === 'Test GmbH')!;
-      expect(test.status).toBe('active');
+      expect(test).toMatchObject({ status: 'active', slogan: 'Immer vorn', hideForYouth: true });
       expect(names(await get<SponsorPage>('/sponsors', coach.token))).toContain('Test GmbH');
+      // mehr als drei werbende Sponsoren: der Container zeigt höchstens drei
+      expect((await get<SponsorAds>('/sponsors/ads', coach.token)).sponsors).toHaveLength(3);
 
-      // Ändern (Laufzeit in der Vergangenheit → verschwindet)
+      // Werbung aus: „nicht bei Jugendspielern“ ist dann nicht mehr wirksam, der Sponsor bleibt in der Übersicht
+      const off = await send<AdminSponsors>('PATCH', `/admin/sponsors/${test.id}`, admin.token, {
+        ...input('Test GmbH', { advertise: false, hideForYouth: true }),
+      });
+      expect(off.body.sponsors.find((x) => x.id === test.id)).toMatchObject({
+        advertise: false,
+        hideForYouth: false,
+      });
+      expect(off.body.advertising).toBe(3);
+      expect(names(await get<SponsorPage>('/sponsors', coach.token))).toContain('Test GmbH');
+      expect(names(await get<SponsorAds>('/sponsors/ads', coach.token))).not.toContain('Test GmbH');
+
+      // Laufzeit in der Vergangenheit → verschwindet aus Übersicht und Container
       const ended = await send<AdminSponsors>('PATCH', `/admin/sponsors/${test.id}`, admin.token, {
-        name: 'Test GmbH',
-        tier: 'supporter',
-        scope: 'club',
+        ...input('Test GmbH', { advertise: true }),
         endsOn: '2020-01-01',
       });
       expect(ended.body.sponsors.find((x) => x.id === test.id)).toMatchObject({
-        tier: 'supporter',
         status: 'expired',
       });
+      expect(ended.body.advertising).toBe(3);
       expect(names(await get<SponsorPage>('/sponsors', coach.token))).not.toContain('Test GmbH');
 
       // Reihenfolge
@@ -560,7 +598,9 @@ describe.skipIf(!url)('API', () => {
         label: 'Partner des Vereins',
       });
       expect(label.body.label).toBe('Partner des Vereins');
-      expect((await get<SponsorPage>('/sponsors', coach.token)).label).toBe('Partner des Vereins');
+      expect((await get<SponsorAds>('/sponsors/ads', coach.token)).label).toBe(
+        'Partner des Vereins',
+      );
       expect(
         (await send('PUT', '/admin/sponsors/label', admin.token, { label: 'Werbung' })).status,
       ).toBe(400);
@@ -574,7 +614,7 @@ describe.skipIf(!url)('API', () => {
       expect(removed.body.sponsors).toHaveLength(6);
     });
 
-    it('Logo und Banner: nur die Administration lädt Bilder hoch; mit Bild erscheint das Banner', async () => {
+    it('Logo: nur die Administration lädt Bilder hoch; das Logo erscheint im Container', async () => {
       const admin = await login('admin');
       const coach = await login('trainer');
       const png = Buffer.from(
@@ -589,21 +629,24 @@ describe.skipIf(!url)('API', () => {
       expect(denied.status).toBe(403);
       const image = await send<UploadedImage>('POST', '/media', admin.token, {
         purpose: 'sponsor',
-        fileName: 'banner.png',
+        fileName: 'logo.png',
         dataBase64: png,
       });
       expect(image.status).toBe(201);
       const created = await send<AdminSponsors>('POST', '/admin/sponsors', admin.token, {
-        name: 'Bild GmbH',
-        tier: 'main',
-        scope: 'club',
-        bannerImageId: image.body.id,
+        ...input('Bild GmbH', { advertise: true }),
+        logoImageId: image.body.id,
       });
       const withImage = created.body.sponsors.find((x) => x.name === 'Bild GmbH')!;
-      expect(withImage.bannerUrl).toBeTruthy();
-      const banner = await get<SponsorBanner>('/sponsors/banner?placement=events', coach.token);
-      expect(banner.sponsor?.name).toBe('Bild GmbH');
-      expect(banner.sponsor?.bannerUrl).toBeTruthy();
+      expect(withImage.logoUrl).toBeTruthy();
+      // vier werbende Sponsoren, höchstens drei im Container: mit Startwerten kommt das Logo irgendwann vor
+      const seen = new Set<string>();
+      for (const seed of ['1', '2', '3', '4', '5', '6']) {
+        for (const sp of (await get<SponsorAds>(`/sponsors/ads?seed=${seed}`, coach.token))
+          .sponsors)
+          seen.add(sp.name);
+      }
+      expect(seen.has('Bild GmbH')).toBe(true);
       await send('DELETE', `/admin/sponsors/${withImage.id}`, admin.token);
     });
   });

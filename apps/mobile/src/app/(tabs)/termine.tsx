@@ -20,7 +20,6 @@ import {
   Section,
   T,
 } from '@/components/ui';
-import { SponsorBannerCard } from '@/components/sponsor-banner';
 import { GridLegend } from '@/components/kind-legend';
 import { formatDateTile, formatShortDate, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
@@ -205,8 +204,6 @@ export default function EventsTab() {
           ) : null}
         </Section>
       )}
-
-      <SponsorBannerCard placement="events" />
 
       {(duties.data ?? []).length > 0 ? (
         <Section title="Schiedsrichter" action="Alle" onAction={() => router.push('/referees')}>

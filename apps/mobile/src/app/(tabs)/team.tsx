@@ -6,6 +6,11 @@ import { Pressable, ScrollView, View } from 'react-native';
 import type { ReactNode } from 'react';
 import { AreaOverviewScreen } from '@/components/area-overview';
 import { AppHeader } from '@/components/app-header';
+import {
+  SponsorAdContainer,
+  useHasSponsorAds,
+  useRefreshSponsorAds,
+} from '@/components/sponsor-ads';
 import { AttendanceBar, ResultRow, TeamBand, UpcomingMatches } from '@/components/team';
 import {
   Button,
@@ -74,6 +79,8 @@ export default function TeamScreen() {
 
 function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
   const { me, api } = useSignedIn();
+  const hasAds = useHasSponsorAds();
+  const refreshAds = useRefreshSponsorAds();
   const teams = useMemo(() => [...new Map(me.teams.map((t) => [t.id, t])).values()], [me.teams]);
   // Trainer starten in einer Mannschaft, die sie betreuen (nicht dort, wo sie selbst spielen)
   const [selected, setSelected] = useState(
@@ -298,6 +305,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
       }
       refreshing={overview.isRefetching}
       onRefresh={() => {
+        refreshAds();
         void overview.refetch();
         void polls.refetch();
       }}
@@ -393,6 +401,8 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
               />
             </Section>
           ))}
+
+          {hasAds ? <SponsorAdContainer /> : null}
 
           {overview.isPending ? <Loading /> : null}
           {overview.error ? (

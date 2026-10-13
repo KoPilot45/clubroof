@@ -1,20 +1,16 @@
 import {
+  SPONSOR_AD_MAX,
   SPONSOR_LABELS,
-  SPONSOR_SCOPES,
-  SPONSOR_SCOPE_LABEL,
-  SPONSOR_TIERS,
-  SPONSOR_TIER_LABEL,
   type AdminSponsor,
   type AdminSponsors,
   type SponsorInput,
-  type SponsorScope,
-  type SponsorTier,
   type UploadedImage,
 } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { ReorderList } from '@/components/reorder';
+import { AdTag, SponsorLogo } from '@/components/sponsor-ads';
 import {
   Button,
   Card,
@@ -28,10 +24,12 @@ import {
   Section,
   T,
   TextField,
+  Toggle,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
+import { useTheme } from '@/lib/theme';
 import { pickFile } from '@/lib/upload';
 import { useConfirmDelete } from '@/lib/confirm';
 import { t } from '@/lib/i18n';
@@ -45,37 +43,45 @@ const STATUS = {
 type Form = {
   id: string | null;
   name: string;
-  tier: SponsorTier;
+  slogan: string;
+  description: string;
   linkUrl: string;
-  scope: SponsorScope;
+  advertise: boolean;
+  hideForYouth: boolean;
   hasStart: boolean;
   startsOn: string;
   hasEnd: boolean;
   endsOn: string;
   logo: { id: string; name: string } | null;
-  banner: { id: string; name: string } | null;
+  logoDark: { id: string; name: string } | null;
   removeLogo: boolean;
-  removeBanner: boolean;
+  removeLogoDark: boolean;
 };
 const empty = (): Form => ({
   id: null,
   name: '',
-  tier: 'partner',
+  slogan: '',
+  description: '',
   linkUrl: '',
-  scope: 'club',
+  advertise: false,
+  hideForYouth: false,
   hasStart: false,
   startsOn: todayIso(),
   hasEnd: false,
   endsOn: todayIso(),
   logo: null,
-  banner: null,
+  logoDark: null,
   removeLogo: false,
-  removeBanner: false,
+  removeLogoDark: false,
 });
 
-/** Sponsoren pflegen (Vereinsadministration): Reihenfolge ziehen, Bilder, Link, Stufe, Laufzeit, Zuordnung. */
+/**
+ * Sponsoren pflegen (Vereinsadministration, SP2): Reihenfolge ziehen, Logo, Slogan, Text, Link, Laufzeit und je
+ * Sponsor die Werbung in der App.
+ */
 export default function AdminSponsorsScreen() {
   const confirmDelete = useConfirmDelete();
+  const { colors } = useTheme();
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
   const data = useQuery({
@@ -84,12 +90,12 @@ export default function AdminSponsorsScreen() {
   });
   const [form, setForm] = useState<Form | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState<'logo' | 'banner' | null>(null);
+  const [uploading, setUploading] = useState<'logo' | 'logoDark' | null>(null);
   const done = (next: AdminSponsors) => {
     setError(null);
     queryClient.setQueryData(['admin', 'sponsors'], next);
     void queryClient.invalidateQueries({ queryKey: ['sponsors'] });
-    void queryClient.invalidateQueries({ queryKey: ['sponsor-banner'] });
+    void queryClient.invalidateQueries({ queryKey: ['sponsor-ads'] });
   };
   const fail = (e: Error) =>
     setError(
@@ -98,17 +104,19 @@ export default function AdminSponsorsScreen() {
 
   const save = useMutation({
     mutationFn: (f: Form) => {
-      const body: SponsorInput & { removeLogo?: boolean; removeBanner?: boolean } = {
+      const body: SponsorInput & { removeLogo?: boolean; removeLogoDark?: boolean } = {
         name: f.name.trim(),
-        tier: f.tier,
+        slogan: f.slogan.trim() || null,
+        description: f.description.trim() || null,
         linkUrl: f.linkUrl.trim() || null,
-        scope: f.scope,
+        advertise: f.advertise,
+        hideForYouth: f.advertise && f.hideForYouth,
         startsOn: f.hasStart ? f.startsOn : null,
         endsOn: f.hasEnd ? f.endsOn : null,
         logoImageId: f.logo?.id ?? null,
-        bannerImageId: f.banner?.id ?? null,
+        logoDarkImageId: f.logoDark?.id ?? null,
         removeLogo: f.removeLogo,
-        removeBanner: f.removeBanner,
+        removeLogoDark: f.removeLogoDark,
       };
       return f.id
         ? api<AdminSponsors>(`/admin/sponsors/${f.id}`, { method: 'PATCH', body })
@@ -141,7 +149,7 @@ export default function AdminSponsorsScreen() {
     onError: fail,
   });
 
-  const upload = async (kind: 'logo' | 'banner') => {
+  const upload = async (kind: 'logo' | 'logoDark') => {
     try {
       const file = await pickFile('image');
       if (!file || !form) return;
@@ -153,7 +161,7 @@ export default function AdminSponsorsScreen() {
       setForm({
         ...form,
         [kind]: { id: image.id, name: file.name },
-        ...(kind === 'logo' ? { removeLogo: false } : { removeBanner: false }),
+        ...(kind === 'logo' ? { removeLogo: false } : { removeLogoDark: false }),
       });
     } catch (e) {
       fail(e as Error);
@@ -167,9 +175,11 @@ export default function AdminSponsorsScreen() {
       ...empty(),
       id: s.id,
       name: s.name,
-      tier: s.tier,
+      slogan: s.slogan ?? '',
+      description: s.description ?? '',
       linkUrl: s.linkUrl ?? '',
-      scope: s.scope,
+      advertise: s.advertise,
+      hideForYouth: s.hideForYouth,
       hasStart: !!s.startsOn,
       startsOn: s.startsOn ?? todayIso(),
       hasEnd: !!s.endsOn,
@@ -186,8 +196,9 @@ export default function AdminSponsorsScreen() {
     <Screen edges={[]}>
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       <T variant="caption">
-        Banner sind immer gekennzeichnet, nichts wird ausgewertet, und sie erscheinen nie in
-        Anmeldung, Kasse oder Chat und nie bei Minderjährigen.
+        {t(
+          `Werbung läuft für ${data.data.advertising} von ${list.length} Sponsoren. Die App zeigt bis zu ${SPONSOR_AD_MAX} davon zufällig.`,
+        )}
       </T>
 
       <Section title="Sponsoren">
@@ -197,7 +208,7 @@ export default function AdminSponsorsScreen() {
           ) : (
             <ReorderList
               keys={list.map((s) => s.id)}
-              rowHeight={64}
+              rowHeight={72}
               onChange={(ids) => order.mutate(ids)}
               renderRow={(id, handle) => {
                 const s = byId.get(id)!;
@@ -212,11 +223,17 @@ export default function AdminSponsorsScreen() {
                       <T variant="label" numberOfLines={1} style={{ fontWeight: '700' }} verbatim>
                         {s.name}
                       </T>
-                      <T variant="caption" numberOfLines={1}>
-                        {`${t(SPONSOR_TIER_LABEL[s.tier])} · ${t(SPONSOR_SCOPE_LABEL[s.scope])}`}
-                      </T>
+                      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+                        <Chip
+                          tone={s.advertise ? 'primary' : 'neutral'}
+                          label={s.advertise ? 'Werbung an' : 'keine Werbung'}
+                        />
+                        {s.hideForYouth ? <Chip tone="neutral" label="nicht Jugend" /> : null}
+                      </View>
                     </Pressable>
-                    <Chip tone={STATUS[s.status].tone} label={STATUS[s.status].label} />
+                    {s.status !== 'active' ? (
+                      <Chip tone={STATUS[s.status].tone} label={STATUS[s.status].label} />
+                    ) : null}
                     {handle}
                   </View>
                 );
@@ -239,11 +256,18 @@ export default function AdminSponsorsScreen() {
               onChangeText={(name) => setForm({ ...form, name })}
               maxLength={80}
             />
-            <ChoiceChips
-              label="Stufe"
-              options={SPONSOR_TIERS.map((v) => ({ value: v, label: SPONSOR_TIER_LABEL[v] }))}
-              selected={[form.tier]}
-              onToggle={(tier) => setForm({ ...form, tier })}
+            <TextField
+              label="Slogan (eine Zeile)"
+              value={form.slogan}
+              onChangeText={(slogan) => setForm({ ...form, slogan })}
+              maxLength={80}
+            />
+            <TextField
+              label="Text für die Detailseite"
+              value={form.description}
+              onChangeText={(description) => setForm({ ...form, description })}
+              maxLength={1000}
+              multiline
             />
             <TextField
               label="Link (https://…)"
@@ -251,12 +275,6 @@ export default function AdminSponsorsScreen() {
               onChangeText={(linkUrl) => setForm({ ...form, linkUrl })}
               maxLength={300}
               kind="url"
-            />
-            <ChoiceChips
-              label="Zuordnung"
-              options={SPONSOR_SCOPES.map((v) => ({ value: v, label: SPONSOR_SCOPE_LABEL[v] }))}
-              selected={[form.scope]}
-              onToggle={(scope) => setForm({ ...form, scope })}
             />
             <ChoiceChips
               label="Beginn"
@@ -304,17 +322,89 @@ export default function AdminSponsorsScreen() {
               />
             </View>
             <View style={{ gap: 8 }}>
-              <T variant="label">Banner (breites Bild, etwa 4:1)</T>
-              {form.banner ? <Chip tone="success" icon="image" label={form.banner.name} /> : null}
+              <T variant="label">Logo für den Dunkelmodus (optional)</T>
+              {form.logoDark ? (
+                <Chip tone="success" icon="image" label={form.logoDark.name} />
+              ) : null}
               <Button
-                label={form.banner ? 'Anderes Banner wählen' : 'Banner wählen'}
-                icon="images-outline"
+                label={form.logoDark ? 'Anderes Logo wählen' : 'Logo wählen'}
+                icon="moon-outline"
                 size="sm"
                 variant="outline"
                 style={{ alignSelf: 'flex-start' }}
-                loading={uploading === 'banner'}
-                onPress={() => void upload('banner')}
+                loading={uploading === 'logoDark'}
+                onPress={() => void upload('logoDark')}
               />
+            </View>
+
+            <View style={{ gap: 10 }}>
+              <T variant="section">Werbung in der App</T>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <T style={{ flex: 1 }}>Als Werbung anzeigen</T>
+                <Toggle
+                  label="Als Werbung anzeigen"
+                  value={form.advertise}
+                  onChange={(advertise) => setForm({ ...form, advertise })}
+                />
+              </View>
+              {form.advertise ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <T style={{ flex: 1 }}>Nicht bei Jugendspielern anzeigen</T>
+                  <Toggle
+                    label="Nicht bei Jugendspielern anzeigen"
+                    value={form.hideForYouth}
+                    onChange={(hideForYouth) => setForm({ ...form, hideForYouth })}
+                  />
+                </View>
+              ) : null}
+              <T variant="caption">
+                Auch ohne Werbung bleibt der Sponsor in der Übersicht sichtbar.
+              </T>
+              {form.advertise ? (
+                <View style={{ gap: 6 }}>
+                  <T variant="label">Vorschau</T>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 14,
+                      padding: 12,
+                      borderRadius: 22,
+                      borderWidth: 1,
+                      borderColor: colors.anstoss.cardBorder,
+                      backgroundColor: colors.anstoss.card,
+                    }}
+                  >
+                    <SponsorLogo
+                      sponsor={{
+                        id: 'preview',
+                        name: form.name || 'Name',
+                        slogan: null,
+                        description: null,
+                        linkUrl: null,
+                        logoUrl: null,
+                        logoDarkUrl: null,
+                        startsOn: null,
+                        endsOn: null,
+                      }}
+                      size={52}
+                      inner={32}
+                    />
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <T variant="overline">Unterstützt von</T>
+                      <T variant="headline" numberOfLines={1} verbatim style={{ fontSize: 21 }}>
+                        {form.name || 'Name'}
+                      </T>
+                      {form.slogan ? (
+                        <T variant="caption" numberOfLines={1} verbatim>
+                          {form.slogan}
+                        </T>
+                      ) : null}
+                    </View>
+                    <AdTag label={data.data.label} />
+                  </View>
+                </View>
+              ) : null}
             </View>
             <Button
               label="Speichern"
@@ -352,7 +442,7 @@ export default function AdminSponsorsScreen() {
 
       <Section title="Kennzeichnung">
         <Card style={{ gap: 12 }}>
-          <T variant="caption">So steht es über jedem Banner.</T>
+          <T variant="caption">So steht es in der Werbung.</T>
           <ChoiceChips
             label="Kennzeichnung"
             options={SPONSOR_LABELS.map((v) => ({ value: v, label: v }))}

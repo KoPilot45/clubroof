@@ -456,6 +456,7 @@ export const en: Record<string, string> = {
   'Als Hauptkasse festlegen': 'Set as main fund',
   'Als Nächstes': 'Next up',
   'Als PDF öffnen': 'Open as PDF',
+  'Als Werbung anzeigen': 'Show as advertising',
   'Alte Herren': 'Veterans',
   'Ältere Termine laden': 'Load older events',
   Altersklasse: 'Age group',
@@ -559,6 +560,8 @@ export const en: Record<string, string> = {
   'Artikel pflegt die Vereinsverwaltung.': 'The club administration maintains articles.',
   'Artikel schreiben': 'Write article',
   'auch mehrere auf einmal': 'several at once, too',
+  'Auch ohne Werbung bleibt der Sponsor in der Übersicht sichtbar.':
+    'Even without advertising the sponsor stays visible in the overview.',
   'Audit-Log einsehen': 'View audit log',
   'Auf der Startseite und unter „Verein → News“. Dringende Meldungen stehen oben und erreichen dich auch per Push. Mit „Gefällt mir“ und Kommentaren kannst du reagieren.':
     'On the home page and under “Club → News”. Urgent messages appear at the top and also reach you by push. You can react with “Like” and comments.',
@@ -1576,6 +1579,7 @@ export const en: Record<string, string> = {
     'These companies support our club. Thank you! We do not track who looks at which page.',
   'Diese Woche': 'This week',
   'Diese Woche stehen keine Termine an.': 'No events this week.',
+  'Diesen Sponsor gibt es nicht mehr.': 'This sponsor no longer exists.',
   'Diesen Termin darfst du nicht absagen.': 'You may not cancel this event.',
   'Diesen Termin darfst du nicht ändern.': 'You may not change this event.',
   'Diesen und {0} folgende': 'This and {0} following',
@@ -2487,6 +2491,7 @@ export const en: Record<string, string> = {
   'Keine vergangenen Termine für diese Auswahl.': 'No past events for this selection.',
   'Keine vergangenen Termine.': 'No past events.',
   'Keine Vermerke.': 'No notes.',
+  'keine Werbung': 'no advertising',
   'Keine Zuordnungen gefunden.': 'No assignments found.',
   Keiner: 'None',
   'Keiner Mannschaft zugeordnet.': 'Not assigned to a team.',
@@ -2597,14 +2602,13 @@ export const en: Record<string, string> = {
   'Logo auswählen': 'Choose logo',
   'Logo entfernen': 'Remove logo',
   'Logo fehlt': 'Logo missing',
+  'Logo für den Dunkelmodus (optional)': 'Logo for dark mode (optional)',
   'Logo hochladen': 'Upload logo',
   'Logo und Darstellung änderst du später unter Verwaltung → Verein & Design.':
     'You change the logo and appearance later under Administration → Club & design.',
   'Logo wählen': 'Choose logo',
   'Logo, Darstellung und alles Weitere änderst du später unter Verwaltung → Verein & Design.':
     'You can change the logo, appearance and everything else later under Administration → Club & design.',
-  'Logos und Banner mit Kennzeichnung, Seite „Unsere Sponsoren“':
-    'Logos and banners with labeling, “Our sponsors” page',
   'Los geht’s': 'Let’s go',
   Löschen: 'Delete',
   'Löschen kann, wer die Übung angelegt hat.':
@@ -2873,10 +2877,12 @@ export const en: Record<string, string> = {
   'Nicht alle Personen gehören zur Mannschaft.': 'Not all persons belong to the team.',
   'Nicht ändern': "Don't change",
   'Nicht angemeldet.': 'Not logged in.',
+  'Nicht bei Jugendspielern anzeigen': 'Do not show to youth players',
   'Nicht eintragen': 'Do not enter',
   'Nicht gefunden': 'Not found',
   'Nicht gesendet.': 'Not sent.',
   'Nicht gespeichert.': 'Not saved.',
+  'nicht Jugend': 'not youth',
   'Nicht mehr anheften': 'Unpin',
   'Nicht verfügbar': 'Unavailable',
   'Nicht verwenden': 'Do not use',
@@ -3312,6 +3318,7 @@ export const en: Record<string, string> = {
   'Sieht nur die eigene Mannschaft – beim Bezahlen im persönlichen Konto.':
     'Only visible to your own team – when paying in the personal account.',
   Sitzung: 'Meeting',
+  'Slogan (eine Zeile)': 'Slogan (one line)',
   So: 'Sun',
   'So funktioniert die App. Tippe auf eine Frage, um die Antwort zu lesen – oder suche nach einem Stichwort. Fragen zum Verein selbst beantworten dir die Ansprechpartner.':
     'This is how the app works. Tap a question to read the answer – or search for a keyword. Questions about the club itself are answered by your contacts.',
@@ -3319,6 +3326,7 @@ export const en: Record<string, string> = {
   'So kannst du bezahlen': 'How you can pay',
   'So sieht ein normaler Text in dieser Größe aus.':
     'This is what normal text looks like at this size.',
+  'So steht es in der Werbung.': 'This is how it appears in the advertising.',
   'So steht es über jedem Banner.': 'This is what appears above each banner.',
   'So wenig wie nötig: Gründe für Absagen und Abwesenheiten sehen nur das Trainerteam und du. Kontaktdaten sehen nur die Personen, die du freigibst. Eltern sehen die Daten ihrer Kinder. Trainingsbeteiligung und Kassenstand sieht die eigene Mannschaft.':
     "As few people as necessary: only the coaching staff and you can see reasons for declines and absences. Only the people you approve can see contact details. Parents see their children's data. Your own team can see training participation and the team fund balance.",
@@ -3579,6 +3587,7 @@ export const en: Record<string, string> = {
   'Termine, News und Abwesenheiten sind immer dabei. Wähle, was eure Mannschaften zusätzlich brauchen.':
     'Events, news and absences are always included. Choose what your teams additionally need.',
   Testspiel: 'Friendly',
+  'Text für die Detailseite': 'Text for the detail page',
   Thema: 'Topic',
   'Thema eröffnen': 'Open a topic',
   Themen: 'Topics',
@@ -3673,6 +3682,7 @@ export const en: Record<string, string> = {
   'Über Clubroof': 'About Clubroof',
   'Über das Schild-Symbol oben rechts oder „Mehr → Verwaltung“. Mit „Beenden“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.':
     'Via the shield icon at the top right or “More → Administration”. Tap “Exit” to return to the normal app. At the bottom you switch between overview, members, teams, festivals and news.',
+  'Über den Sponsor': 'About the sponsor',
   'Über diese Anfrage wurde bereits entschieden.':
     'A decision has already been made on this request.',
   'Über diese Auslage ist schon entschieden.': 'A decision has already been made on this claim.',
@@ -3814,6 +3824,7 @@ export const en: Record<string, string> = {
     'Under More you set when you get push notifications. Urgent items always arrive.',
   'Unter Team, Verein und Mehr findest du die Funktionen als Kacheln. Die kleine Zeile darunter zeigt, was für dich wichtig ist.':
     'Under Team, Club and More you find the features as tiles. The small line below shows what matters to you.',
+  'Unterstützt von': 'Supported by',
   Untertitel: 'Subtitle',
   Unverändert: 'Unchanged',
   'Update-Center ({0})': 'Update centre ({0})',
@@ -4015,6 +4026,8 @@ export const en: Record<string, string> = {
   'Was ist die 2-Faktor-Anmeldung?': 'What is two-factor login?',
   'Was ist die Absagefrist?': 'What is the cancellation deadline?',
   'Was ist die Kassenübersicht?': 'What is the treasury overview?',
+  'Was ist die Zeile „Unterstützt von … Anzeige“ und wo sehe ich alle Sponsoren?':
+    'What is the “Supported by … Advertisement” strip and where do I see all sponsors?',
   'Was ist kaputt?': 'What is broken?',
   'Was ist mit „Ich habe bezahlt“-Meldungen?': "What about “I've paid” reports?",
   'Was ist mit Übungsleiter- und Ehrenamtspauschale?':
@@ -4070,6 +4083,8 @@ export const en: Record<string, string> = {
   'Wenige, moderierte Diskussionsthemen': 'A few moderated discussion topics',
   'Wenn dein Verein das Sponsoren-Modul nutzt, erscheinen auf der Startseite, am Spieltag und in den Terminlisten gekennzeichnete Banner der Sponsoren. Alle Sponsoren findest du unter „Mehr → Unsere Sponsoren“. Die App wertet nicht aus, wer was ansieht oder antippt; Kinder und Jugendliche unter 18 sehen keine Banner.':
     'If your club uses the sponsors module, labeled sponsor banners appear on the home screen, on match day and in appointment lists. You can find all sponsors under “More → Our sponsors”. The app does not track who views or taps what; children and young people under 18 see no banners.',
+  'Wenn dein Verein das Sponsoren-Modul nutzt, zeigt ein kleines Wischelement auf Home, im Team-Reiter und im Verein-Reiter bis zu drei Sponsoren, die der Verein als Werbung freigegeben hat. Es ist immer als „Anzeige“ gekennzeichnet und wechselt alle paar Sekunden von selbst; du kannst auch wischen. Ein Tipp öffnet die Seite des Sponsors. Alle Sponsoren findest du unter „Verein → Sponsoren“. Die App wertet nicht aus, wer was ansieht oder antippt. Manche Sponsoren stellt der Verein so ein, dass Jugendspieler sie nicht sehen.':
+    'If your club uses the sponsors module, a small swipeable strip on Home, the Team tab and the Club tab shows up to three sponsors the club has released as advertising. It is always labelled “Advertisement” and changes by itself every few seconds; you can also swipe. A tap opens the sponsor’s page. You find all sponsors under “Club → Sponsors”. The app does not track who views or taps what. The club can set some sponsors so that youth players do not see them.',
   'Wenn deine Rückmeldung (oder die deines Kindes) noch fehlt – so lange vor der Frist:':
     "If your response (or your child's) is still missing – this long before the deadline:",
   'Wenn du das nicht warst, ignoriere diese E-Mail – dein Passwort bleibt unverändert.':
@@ -4097,6 +4112,12 @@ export const en: Record<string, string> = {
   'Wer tritt bei?': 'Who is joining?',
   'Wer übernimmt?': 'Who takes it?',
   'Wer unseren Verein unterstützt': 'Who supports our club',
+  'Werbung an': 'Advertising on',
+  'Werbung in der App': 'Advertising in the app',
+  'Werbung je Sponsor als Wischelement mit Kennzeichnung, Seite „Unsere Sponsoren“':
+    'Advertising per sponsor as a swipeable strip with labelling, “Our sponsors” page',
+  'Werbung läuft für {0} von {1} Sponsoren. Die App zeigt bis zu {2} davon zufällig.':
+    'Advertising is running for {0} of {1} sponsors. The app shows up to {2} of them at random.',
   'Werde ich nachts gestört?': 'Will I be disturbed at night?',
   'Wert des Inventars': 'Value of inventory',
   Wetter: 'Weather',
@@ -4361,6 +4382,7 @@ export const en: Record<string, string> = {
   'Zur Pflicht machen': 'Make required',
   'Zur Startseite': 'Go to home',
   'Zur Umfrage': 'Go to poll',
+  'Zur Webseite': 'Visit website',
   zurück: 'back',
   Zurück: 'Back',
   'Zurück zur Anmeldung': 'Back to sign-in',

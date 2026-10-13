@@ -236,6 +236,7 @@ function Navigator() {
                 name="sponsors"
                 options={{ headerShown: true, title: 'Unsere Sponsoren' }}
               />
+              <Stack.Screen name="sponsor/[id]" options={{ headerShown: true, title: 'Sponsor' }} />
               <Stack.Screen
                 name="expense-claims"
                 options={{ headerShown: true, title: 'Auslage einreichen' }}
