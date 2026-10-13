@@ -259,7 +259,7 @@ function AddPerson({
     enabled: term.length >= 2,
   });
   return (
-    <Section title="Person aus der Vereinsliste hinzufügen">
+    <Section title="Aus Vereinsliste">
       <Card style={{ gap: 10 }}>
         <ChoiceChips options={FUNCTIONS} selected={[fn]} onToggle={setFn} />
         <TextField
@@ -343,7 +343,7 @@ function ProfileEditor({
     }
   };
   return (
-    <Section title="Treffpunkt-Regeln und Profil">
+    <Section title="Treffpunkt & Profil">
       <Card style={{ gap: 12 }}>
         <T variant="caption">
           Aus diesen Regeln berechnet die App bei jedem neuen Spiel und Training die Treffzeit. Beim

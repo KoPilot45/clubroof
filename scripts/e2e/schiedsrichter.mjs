@@ -40,7 +40,7 @@ const ok = (cond, msg) => {
   ok((await page.getByText(/SV Browser – FC Test/).count()) === 0, 'Einsatz gelöscht');
 
   await goto('/termine');
-  await text(page, 'Meine Schiedsrichter-Einsätze', { exact: true }).waitFor({ timeout: 20_000 });
+  await text(page, 'Schiedsrichter', { exact: true }).waitFor({ timeout: 20_000 });
   ok(true, 'Einsatz erscheint im Termine-Tab');
 }
 

@@ -43,7 +43,7 @@ function Form({
   const [autoReminder, setAutoReminder] = useState(settings.autoReminder);
   return (
     <Screen edges={[]}>
-      <Section title="Bezahlinfos für die Mannschaft">
+      <Section title="Bezahlinfos">
         <Card style={{ gap: 12 }}>
           <TextField
             label="IBAN"
@@ -77,7 +77,7 @@ function Form({
           </Card>
         </Section>
       ) : null}
-      <Section title="Sichtbarkeit und Erinnerungen">
+      <Section title="Sichtbarkeit">
         <Card>
           <ListRow
             first

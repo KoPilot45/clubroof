@@ -12,7 +12,7 @@ const files = [];
 for (const [path, wait, name] of [
   ['/club-cash', 'Gesamtbestand aller Konten', 'uebersicht'],
   ['/club-cash/new?kind=expense', 'Art der Buchung', 'buchen'],
-  ['/club-cash/manage', 'Wer darf die Kasse einsehen?', 'einrichtung'],
+  ['/club-cash/manage', 'Einsicht', 'einrichtung'],
 ]) {
   await goto(path);
   await text(page, wait).waitFor({ timeout: 20_000 });

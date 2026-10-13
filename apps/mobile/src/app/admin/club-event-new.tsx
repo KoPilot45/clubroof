@@ -197,7 +197,7 @@ export default function NewClubEventScreen() {
         </Card>
       </Section>
 
-      <Section title="Helferschichten (optional)">
+      <Section title="Helfer (optional)">
         <Card style={{ gap: 12 }}>
           {shifts.map((x, i) => {
             const set = (patch: Partial<Shift>) =>

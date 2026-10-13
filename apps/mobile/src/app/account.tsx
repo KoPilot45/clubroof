@@ -71,7 +71,7 @@ export default function AccountScreen() {
       <FontSizeSection />
       <VibrationSection />
       <AppLockSection />
-      <Section title="Benachrichtigungen & Kalender">
+      <Section title="Hinweise & Kalender">
         <Card>
           <ListRow
             first

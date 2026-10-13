@@ -483,6 +483,7 @@ export function Section({
           />
           <T
             variant="section"
+            numberOfLines={1}
             style={{ flexShrink: 1, fontSize: 22, lineHeight: 25 }}
             accessibilityRole="header"
           >
@@ -495,7 +496,12 @@ export function Section({
             hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             accessibilityRole="link"
           >
-            <T variant="caption" color={colors.primaryText} style={{ fontWeight: '700' }}>
+            <T
+              variant="caption"
+              color={colors.primaryText}
+              numberOfLines={1}
+              style={{ fontWeight: '700', flexShrink: 0 }}
+            >
               {`${t(action)} ›`}
             </T>
           </Pressable>

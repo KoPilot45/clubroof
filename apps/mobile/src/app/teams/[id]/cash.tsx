@@ -208,7 +208,7 @@ export default function CashScreen() {
           })}
 
           {c.members ? (
-            <Section title="Offene Beträge in der Mannschaft">
+            <Section title="Offene Beträge">
               <Card>
                 {open.length === 0 ? (
                   <Empty icon="checkmark-circle-outline" text="Alle Konten sind ausgeglichen." />
