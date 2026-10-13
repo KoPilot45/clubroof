@@ -1,7 +1,7 @@
 /**
  * Kopf aller Unterseiten (Paket NV): dieselbe Kopfzeile wie in den Tabs (Wappen, Bereichsname, Suche,
  * Benachrichtigungen) und darunter der Pfad als Pillen (Entwurf N2): runder Zurück-Knopf, vorige Stufen
- * antippbar, letzte Stufe gefüllt. Ab vier Stufen steht hinter der ersten Stufe „…“ mit der Liste der übrigen.
+ * antippbar, letzte Stufe gefüllt. Ab vier Stufen steht zwischen erster und letzter Stufe „…“ mit der Liste der übrigen; Stufen sind höchstens 14 Zeichen lang.
  */
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -10,7 +10,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader, HeaderButton } from '@/components/app-header';
 import { ListRow, Sheet, T } from '@/components/ui';
-import { breadcrumbsFor, collapseCrumbs, TAB_LABELS, type Crumb } from '@/lib/breadcrumbs';
+import {
+  breadcrumbsFor,
+  collapseCrumbs,
+  shortCrumb,
+  TAB_LABELS,
+  type Crumb,
+} from '@/lib/breadcrumbs';
 import { t } from '@/lib/i18n';
 import { useSession } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -114,7 +120,7 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
             }}
           >
             <T variant="label" numberOfLines={1} style={{ maxWidth: 160 }}>
-              {label}
+              {shortCrumb(label)}
             </T>
           </View>
         </Pressable>,

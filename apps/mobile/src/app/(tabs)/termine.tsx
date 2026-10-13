@@ -209,11 +209,7 @@ export default function EventsTab() {
       <SponsorBannerCard placement="events" />
 
       {(duties.data ?? []).length > 0 ? (
-        <Section
-          title="Meine Schiedsrichter-Einsätze"
-          action="Alle"
-          onAction={() => router.push('/referees')}
-        >
+        <Section title="Schiedsrichter" action="Alle" onAction={() => router.push('/referees')}>
           <Card>
             {duties.data!.slice(0, 3).map((d, i) => (
               <DutyRow key={d.id} duty={d} first={i === 0} />

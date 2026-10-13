@@ -228,7 +228,7 @@ export default function NotificationSettingsScreen() {
         </Section>
       ) : null}
 
-      <Section title="Erinnerung an Zu- und Absagen">
+      <Section title="Erinnerungen">
         <Card style={{ gap: 8 }}>
           <T variant="caption">
             Wenn deine Rückmeldung (oder die deines Kindes) noch fehlt – so lange vor der Frist:

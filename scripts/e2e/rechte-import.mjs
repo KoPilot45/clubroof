@@ -65,7 +65,7 @@ const ok = (m) => console.log(`✓ ${m}`);
   const { page, goto, login } = await b.session('trainer');
   const b1 = login.me.teams.find((t) => t.badge === 'B1');
   await goto(`/teams/${b1.id}/manage`);
-  await text(page, 'Treffpunkt-Regeln und Profil').waitFor({ timeout: 15_000 });
+  await text(page, 'Treffpunkt & Profil').waitFor({ timeout: 15_000 });
   await text(page, 'Person aus der Vereinsliste hinzufügen').waitFor({ timeout: 15_000 });
   ok('Mannschaft bearbeiten');
 

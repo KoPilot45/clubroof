@@ -247,7 +247,7 @@ export function FacilityGrid({
   onPressBooking,
   teams,
   tinted = false,
-  minColumnWidth = 84,
+  minColumnWidth,
   mode = 'default',
   bleed = false,
 }: {
@@ -262,6 +262,8 @@ export function FacilityGrid({
   bleed?: boolean;
 }) {
   const { colors, radii } = useTheme();
+  // Bis vier Spalten (Tag) teilen sich die Breite, damit keine abgeschnitten wird; sonst wird gescrollt
+  const columnMin = minColumnWidth ?? (columns.length <= 4 ? 0 : 84);
   const { from, to } = timeWindow(columns);
   const hours = Array.from({ length: to - from }, (_, i) => from + i);
   const height = (to - from) * HOUR;
@@ -276,10 +278,14 @@ export function FacilityGrid({
         overflow: 'hidden',
       }}
     >
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
         <View style={{ flexDirection: 'row', minWidth: '100%' }}>
           <View style={{ width: AXIS }}>
-            <View style={{ height: 40 }} />
+            <View style={{ height: 48 }} />
             <View style={{ height }}>
               {hours.map((h) => (
                 <T
@@ -299,13 +305,23 @@ export function FacilityGrid({
               key={c.key}
               style={{
                 flex: 1,
-                minWidth: minColumnWidth,
+                minWidth: columnMin,
                 borderLeftWidth: 1,
                 borderLeftColor: colors.border,
               }}
             >
-              <View style={{ height: 40, justifyContent: 'center', paddingHorizontal: 4 }}>
-                <T variant="label" numberOfLines={1} style={{ textAlign: 'center' }}>
+              <View style={{ height: 48, justifyContent: 'center', paddingHorizontal: 4 }}>
+                <T
+                  variant="label"
+                  numberOfLines={2}
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 11,
+                    lineHeight: 13,
+                    // Web: Silbentrennung statt Bruch mitten im Wort
+                    ...({ hyphens: 'auto', overflowWrap: 'anywhere' } as object),
+                  }}
+                >
                   {c.title}
                 </T>
                 {c.subtitle ? (

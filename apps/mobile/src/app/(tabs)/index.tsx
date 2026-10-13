@@ -79,15 +79,7 @@ export default function HomeScreen() {
 
   const first = data?.matches[0];
   return (
-    <Screen edges={[]} refreshing={home.isRefetching} onRefresh={() => home.refetch()}>
-      <WelcomeTour
-        me={me}
-        visible={tour}
-        onClose={() => {
-          setTour(false);
-          void writeFlag(tourKey, true);
-        }}
-      />
+    <Screen edges={[]} flushTop refreshing={home.isRefetching} onRefresh={() => home.refetch()}>
       <HomePoster
         header={<AppHeader overlay />}
         events={data?.matches ?? []}
@@ -101,12 +93,7 @@ export default function HomeScreen() {
       {data ? <OpenBand actions={data.actions} /> : null}
       {data ? <WeekTickets week={data.week} /> : null}
       {data ? (
-        <Section
-          roomy
-          title="Neuigkeiten"
-          action="Alle anzeigen"
-          onAction={() => router.push('/news')}
-        >
+        <Section title="Neuigkeiten" action="Alle anzeigen" onAction={() => router.push('/news')}>
           <ChoiceChips
             options={NEWS_FILTERS}
             selected={[newsFilter]}
@@ -135,6 +122,14 @@ export default function HomeScreen() {
           </Card>
         </Section>
       ) : null}
+      <WelcomeTour
+        me={me}
+        visible={tour}
+        onClose={() => {
+          setTour(false);
+          void writeFlag(tourKey, true);
+        }}
+      />
     </Screen>
   );
 }

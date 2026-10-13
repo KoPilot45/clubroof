@@ -79,7 +79,7 @@ export default function ClubCashManageScreen() {
     <Screen edges={[]}>
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
 
-      <Section title="Wer darf die Kasse einsehen?">
+      <Section title="Einsicht">
         <View style={{ gap: 10 }}>
           {CLUB_CASH_VISIBILITIES.map((v) => (
             <ChoiceCard

@@ -428,13 +428,16 @@ export default function MoreScreen() {
                 leading={<Avatar name={`${c.firstName} ${c.lastName}`} size={40} />}
                 title={`${c.firstName} ${c.lastName}`}
                 subtitle={[
+                  'Spieler',
                   ...new Set(me.teams.filter((t) => t.personId === c.id).map((t) => t.badge)),
-                  'Du verwaltest Termine, Zusagen und Abwesenheiten',
                 ].join(' · ')}
                 onPress={() => router.push(`/profile/${c.id}`)}
               />
             ))}
           </Card>
+          <T variant="caption" style={{ marginTop: 10 }}>
+            Du verwaltest Termine, Zusagen und Abwesenheiten deiner Kinder.
+          </T>
         </Section>
       ) : null}
 

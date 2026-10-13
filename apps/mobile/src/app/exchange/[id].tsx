@@ -99,7 +99,7 @@ export default function DemandScreen() {
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
 
       {d.guests.length ? (
-        <Section title="Eingetragene Gastspieler">
+        <Section title="Gastspieler">
           <Card style={{ gap: 10 }}>
             {d.guests.map((g) => (
               <View key={g.personId} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -178,7 +178,7 @@ export default function DemandScreen() {
       ) : null}
 
       {d.availability.length ? (
-        <Section title="Verfügbarkeit anderer Mannschaften">
+        <Section title="Andere Mannschaften">
           <Card style={{ gap: 8 }}>
             {d.availability.map((a) => (
               <View key={a.team.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>

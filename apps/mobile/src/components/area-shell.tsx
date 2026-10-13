@@ -245,7 +245,7 @@ function GroupHeading({
           backgroundColor: colors.tints[tint].onContainer,
         }}
       />
-      <T variant="section" accessibilityRole="header">
+      <T variant="section" style={{ fontSize: 22, lineHeight: 25 }} accessibilityRole="header">
         {title}
       </T>
     </View>
@@ -263,7 +263,7 @@ export function CategoryPage({
   return (
     <Screen edges={[]}>
       {category.groups.map((g) => (
-        <View key={g.key} style={{ gap: 18, paddingTop: 20 }}>
+        <View key={g.key} style={{ gap: 18, paddingTop: 34 }}>
           <GroupHeading title={g.title} tint={g.tint} />
           <TileGrid items={g.tiles.map((tile) => ({ ...tile, tint: g.tint }))} />
         </View>

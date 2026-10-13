@@ -62,7 +62,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'cash-overview',
         question: 'Was ist die Kassenübersicht?',
         answer:
-          'Der Vorstand sieht – wenn der Verein es in „Wer darf die Kasse einsehen?“ freigibt – unter „Verein → Vereinsleben → Kassenübersicht“ eine reine Anzeige: Kassenstand gesamt, Einnahmen und Ausgaben, die einzelnen Kassen und die Beitragsquote. Buchungen, Belege und Funktionen gibt es dort nicht; die Vereinskasse selbst führen Kassenwart und Kassenprüfer.',
+          'Der Vorstand sieht – wenn der Verein es in „Einsicht“ freigibt – unter „Verein → Vereinsleben → Kassenübersicht“ eine reine Anzeige: Kassenstand gesamt, Einnahmen und Ausgaben, die einzelnen Kassen und die Beitragsquote. Buchungen, Belege und Funktionen gibt es dort nicht; die Vereinskasse selbst führen Kassenwart und Kassenprüfer.',
         link: { label: 'Kassenübersicht', href: '/club-cash-overview' },
       },
       {
@@ -685,7 +685,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'admin-permissions',
         question: 'Wie vergebe ich einzelne Rechte an ein Mitglied?',
         answer:
-          'Im Mitglied unter „Rollen & Zusatzaufgaben → Individuelle Rechte“: Liste aller Rechte zum An- und Abwählen. Sie gelten zusätzlich zu den Rollen für den ganzen Verein, jede Änderung steht im Änderungsprotokoll. Ein Recht für nur eine Mannschaft vergibst du besser über eine Rolle mit Geltungsbereich.',
+          'Im Mitglied unter „Rollen & Aufgaben → Individuelle Rechte“: Liste aller Rechte zum An- und Abwählen. Sie gelten zusätzlich zu den Rollen für den ganzen Verein, jede Änderung steht im Änderungsprotokoll. Ein Recht für nur eine Mannschaft vergibst du besser über eine Rolle mit Geltungsbereich.',
       },
       {
         id: 'admin-schedule-import',

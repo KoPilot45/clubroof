@@ -168,7 +168,7 @@ export default function MemberScreen() {
         ) : null}
       </Section>
 
-      <Section title="Rollen & Zusatzaufgaben">
+      <Section title="Rollen & Aufgaben">
         <Card>
           {m.roles.length === 0 ? <T variant="caption">Keine Rollen vergeben.</T> : null}
           {m.roles.map((r, i) => (

@@ -41,7 +41,7 @@ export default function EquipmentHome() {
     <Screen edges={[]}>
       <TileGrid items={tiles} />
       {mine.length ? (
-        <Section roomy title="Bei dir">
+        <Section title="Bei dir">
           <Card>
             {mine.map((i, n) => (
               <ListRow

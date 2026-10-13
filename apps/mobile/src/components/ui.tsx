@@ -9,6 +9,7 @@ import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import type { StatusKey, TintKey } from '@clubroof/design-tokens';
 import {
   Children,
+  Fragment,
   createContext,
   isValidElement,
   useContext,
@@ -179,7 +180,10 @@ export function Screen({
   edges = ['top'],
   onEndReached,
   footer,
+  flushTop,
 }: {
+  /** Seite beginnt ohne Innenabstand oben (Plakat-Hero bis zum Rand, Home) */
+  flushTop?: boolean;
   /** feste untere Leiste mit dem Hauptknopf (Formulare): Verlauf nach oben, Knopf 52 hoch */
   footer?: ReactNode;
   children: ReactNode;
@@ -218,7 +222,7 @@ export function Screen({
           contentContainerStyle={{
             // Seitenrand 22 px (Stil „Anstoß“); Abschnitte bringen 12 px Luft nach oben mit (26 insgesamt)
             paddingHorizontal: 22,
-            paddingTop: spacing.md + 2,
+            paddingTop: flushTop ? 0 : spacing.md + 2,
             gap: spacing.md + 2,
             paddingBottom: spacing.xxxl + tabBarHeight,
             // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
@@ -236,13 +240,9 @@ export function Screen({
             ) : undefined
           }
         >
-          {Children.toArray(children).map((child, i) => (
-            <FadeIn
-              key={isValidElement(child) && child.key != null ? child.key : i}
-              group={pathname}
-              index={Math.min(i, 8)}
-            >
-              {child}
+          {flattenChildren(children).map((child, i) => (
+            <FadeIn key={i} group={pathname} index={Math.min(i, 8)}>
+              <ChildIndexContext.Provider value={i}>{child}</ChildIndexContext.Provider>
             </FadeIn>
           ))}
         </ScrollView>
@@ -440,25 +440,37 @@ export function HeroCard({
 /** Textfarbe weißer Knöpfe auf dem Plakat bzw. Hero-Block (dunkler Ton der Hero-Farbe). */
 const HeroToneContext = createContext<string | null>(null);
 
+/** Kinder einer Seite ohne Fragmente: jede Fläche ist ein eigenes Kind mit gleichem Abstand. */
+function flattenChildren(nodes: ReactNode): ReactNode[] {
+  return Children.toArray(nodes).flatMap((child) =>
+    isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment
+      ? flattenChildren(child.props.children)
+      : [child],
+  );
+}
+
+/** Position des Kindes in der Seite (0 = ganz oben): Abschnittsüberschrift ganz oben rückt näher heran. */
+const ChildIndexContext = createContext<number | null>(null);
+
 export function Section({
   title,
   action,
   onAction,
   children,
-  roomy,
 }: {
-  /** größere Abstände (Home, Verein): 48 davor, 18 danach, Überschrift 22 px */
-  roomy?: boolean;
   title: string;
   action?: string;
   onAction?: () => void;
   children: ReactNode;
 }) {
   const { colors } = useTheme();
+  const first = useContext(ChildIndexContext) === 0;
   // Abschnittsüberschrift (Stil „Anstoß“): Akzentlinie 4 × 18, 12 px Abstand zum Inhalt; die Seite
   // lässt 14 px Abstand, Abschnitte ergänzen oben 12 → 26 px wie im Entwurf.
   return (
-    <View style={{ gap: roomy ? 18 : 12, paddingTop: roomy ? 34 : 12 }}>
+    // Eine einzige Abschnittsüberschrift für die ganze App: 48 davor (14 Seitenabstand + 34), 18 danach,
+    // Überschrift 22 px; steht sie ganz oben unter Kopfzeile oder Hero: 32 davor
+    <View style={{ gap: 18, paddingTop: first ? 18 : 34 }}>
       <View style={styles.rowBetween}>
         <View style={styles.sectionTitle}>
           <View
@@ -471,7 +483,8 @@ export function Section({
           />
           <T
             variant="section"
-            style={roomy ? { flexShrink: 1, fontSize: 22, lineHeight: 25 } : { flexShrink: 1 }}
+            numberOfLines={1}
+            style={{ flexShrink: 1, fontSize: 22, lineHeight: 25 }}
             accessibilityRole="header"
           >
             {title}
@@ -483,13 +496,18 @@ export function Section({
             hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             accessibilityRole="link"
           >
-            <T variant="caption" color={colors.primaryText} style={{ fontWeight: '700' }}>
+            <T
+              variant="caption"
+              color={colors.primaryText}
+              numberOfLines={1}
+              style={{ fontWeight: '700', flexShrink: 0 }}
+            >
               {`${t(action)} ›`}
             </T>
           </Pressable>
         ) : null}
       </View>
-      {children}
+      <ChildIndexContext.Provider value={null}>{children}</ChildIndexContext.Provider>
     </View>
   );
 }
@@ -1531,8 +1549,12 @@ export function ErrorNotice({
 }) {
   const status = error instanceof RequestError ? error.status : null;
   const text = message ?? error?.message ?? 'Es ist ein unerwarteter Fehler aufgetreten.';
+  // Ohne umgebenden Screen (ganze Seite ersetzt): Seitenrand wie bei den Zustandskarten (22)
+  const standalone = useContext(ChildIndexContext) === null;
+  const wrap = (node: React.ReactNode) =>
+    standalone ? <View style={{ padding: 22 }}>{node}</View> : node;
   if (status === 403 || status === 404) {
-    return (
+    return wrap(
       <Notice
         tone="info"
         icon={status === 403 ? 'lock-closed' : 'search'}
@@ -1543,10 +1565,10 @@ export function ErrorNotice({
             ? { label: 'Zurück', onPress: () => router.back() }
             : { label: 'Zur Startseite', onPress: () => router.replace('/') }
         }
-      />
+      />,
     );
   }
-  return (
+  return wrap(
     <Notice
       tone="urgent"
       icon="alert"
@@ -1555,7 +1577,7 @@ export function ErrorNotice({
       action={
         onRetry ? { label: 'Erneut versuchen', onPress: onRetry, icon: 'refresh' } : undefined
       }
-    />
+    />,
   );
 }
 

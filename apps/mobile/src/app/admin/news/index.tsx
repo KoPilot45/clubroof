@@ -68,7 +68,7 @@ export default function EditorialScreen() {
             />
           ) : null}
           {o.toApprove.length ? (
-            <Section title={`Wartet auf deine Freigabe (${o.toApprove.length})`}>
+            <Section title={`Zur Freigabe (${o.toApprove.length})`}>
               <Card>
                 {o.toApprove.map((n, i) => (
                   <ListRow
@@ -82,7 +82,7 @@ export default function EditorialScreen() {
               </Card>
             </Section>
           ) : null}
-          <Section title="Meine Entwürfe und Einreichungen">
+          <Section title="Meine Entwürfe">
             {o.mine.length === 0 ? (
               <Empty icon="document-text-outline" text="Keine offenen Entwürfe." />
             ) : null}

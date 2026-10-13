@@ -31,9 +31,25 @@ import { loadFontScale } from '@/lib/font-scale';
 import { loadHaptics } from '@/lib/haptics';
 import { loadAppearance } from '@/lib/appearance';
 import { useLocale } from '@/lib/i18n';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { NO_SUB_NAV, SubNav } from '@/components/sub-nav';
 import { SubHeader } from '@/components/sub-header';
+
+/** Web: Seitenhintergrund und `theme-color` folgen dem Theme (Statusleiste, Überscroll-Bereich). */
+function useWebChrome(background: string) {
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    document.documentElement.style.backgroundColor = background;
+    document.body.style.backgroundColor = background;
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', background);
+  }, [background]);
+}
 
 function Navigator() {
   const session = useSession();
@@ -45,6 +61,7 @@ function Navigator() {
     void loadAppLock();
   }, []);
   const { colors, scheme } = useTheme();
+  useWebChrome(colors.background);
   // Untere Navigation auf Unterseiten (Paket NV); die Tabs und die Verwaltung bringen eine eigene mit
   const segments = useSegments();
   const [navHeight, setNavHeight] = useState(0);

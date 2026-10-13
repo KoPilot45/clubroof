@@ -348,7 +348,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
           ) : null}
 
           {o?.nextEvent ? (
-            <Section roomy title="Nächster Termin">
+            <Section title="Nächster Termin">
               <Card style={{ gap: 12 }}>
                 <ListRow
                   first
@@ -381,13 +381,13 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
           ) : null}
 
           {o && o.upcomingMatches.length > 0 ? (
-            <Section roomy title="Nächste Spiele">
+            <Section title="Nächste Spiele">
               <UpcomingMatches matches={o.upcomingMatches} />
             </Section>
           ) : null}
 
           {groups.map((g) => (
-            <Section roomy key={g.key} title={g.title}>
+            <Section key={g.key} title={g.title}>
               <TileGrid
                 items={withTileInfo(g.tiles, tileInfo).map((tile) => ({ ...tile, tint: g.tint }))}
               />

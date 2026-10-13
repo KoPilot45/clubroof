@@ -1,10 +1,13 @@
 import type { ClubCalendarEvent } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Pressable, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { EventRow } from '@/components/events';
 import { GridLegend } from '@/components/kind-legend';
 import { MonthCalendar, dayKey } from '@/components/month-calendar';
 import {
+  Button,
   Card,
   ChoiceChips,
   Empty,
@@ -12,11 +15,13 @@ import {
   Loading,
   Screen,
   Section,
+  Sheet,
   T,
 } from '@/components/ui';
 import { EVENT_KIND_LABELS, kindOf, type EventKind } from '@/lib/event-types';
 import { useSignedIn } from '@/lib/session';
-import { dateFormat } from '@/lib/i18n';
+import { dateFormat, t } from '@/lib/i18n';
+import { useTheme } from '@/lib/theme';
 
 const DAY = 24 * 60 * 60 * 1000;
 const dayTitle = dateFormat({
@@ -31,6 +36,8 @@ const dayTitle = dateFormat({
  */
 export default function ClubCalendarScreen() {
   const { api, me } = useSignedIn();
+  const { colors, radii } = useTheme();
+  const [filterOpen, setFilterOpen] = useState(false);
   const [view, setView] = useState<'month' | 'list'>('month');
   const [kind, setKind] = useState<EventKind | 'all'>('all');
   const [teamId, setTeamId] = useState<string>('all');
@@ -66,6 +73,7 @@ export default function ClubCalendarScreen() {
       (kind === 'all' || kindOf(c.event) === kind) &&
       (teamId === 'all' || c.event.team?.id === teamId),
   );
+  const activeFilters = (kind === 'all' ? 0 : 1) + (teamId === 'all' ? 0 : 1);
   const kinds = [...new Set(all.map((c) => kindOf(c.event)))];
   const ofDay = list.filter((c) => day && dayKey(new Date(c.event.startsAt)) === day);
   const openable = new Map(all.map((c) => [c.event.id, c.canOpen]));
@@ -75,32 +83,86 @@ export default function ClubCalendarScreen() {
 
   return (
     <Screen edges={[]} refreshing={events.isRefetching} onRefresh={() => events.refetch()}>
-      <ChoiceChips
-        options={[
-          { value: 'month', label: 'Monat', icon: 'calendar' },
-          { value: 'list', label: 'Liste', icon: 'list' },
-        ]}
-        selected={[view]}
-        onToggle={setView}
-      />
-      <ChoiceChips
-        options={[
-          { value: 'all' as const, label: 'Alle Arten' },
-          ...kinds.map((k) => ({ value: k, label: EVENT_KIND_LABELS[k] })),
-        ]}
-        selected={[kind]}
-        onToggle={setKind}
-      />
-      {teams.length > 1 ? (
-        <ChoiceChips
-          options={[
-            { value: 'all', label: 'Alle Mannschaften' },
-            ...teams.map((t) => ({ value: t.id, label: t.badge })),
-          ]}
-          selected={[teamId]}
-          onToggle={setTeamId}
-        />
-      ) : null}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View style={{ flex: 1 }}>
+          <ChoiceChips
+            options={[
+              { value: 'month', label: 'Monat', icon: 'calendar' },
+              { value: 'list', label: 'Liste', icon: 'list' },
+            ]}
+            selected={[view]}
+            onToggle={setView}
+          />
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('Filter')}
+          onPress={() => setFilterOpen(true)}
+          style={{
+            minHeight: 44,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 14,
+            borderRadius: radii.pill,
+            borderWidth: 1,
+            borderColor: activeFilters ? colors.primary : colors.anstoss.fieldBorder,
+            backgroundColor: activeFilters ? colors.primaryContainer : 'transparent',
+          }}
+        >
+          <Ionicons
+            name="options-outline"
+            size={18}
+            color={activeFilters ? colors.onPrimaryContainer : colors.onSurface}
+          />
+          <T variant="label" color={activeFilters ? colors.onPrimaryContainer : colors.onSurface}>
+            {activeFilters ? `${t('Filter')} · ${activeFilters}` : t('Filter')}
+          </T>
+        </Pressable>
+      </View>
+      <Sheet visible={filterOpen} onClose={() => setFilterOpen(false)} title={t('Filter')}>
+        <View style={{ gap: 18 }}>
+          <ChoiceChips
+            label="Arten"
+            options={[
+              { value: 'all' as const, label: 'Alle Arten' },
+              ...kinds.map((k) => ({ value: k, label: EVENT_KIND_LABELS[k] })),
+            ]}
+            selected={[kind]}
+            onToggle={setKind}
+          />
+          {teams.length > 1 ? (
+            <ChoiceChips
+              label="Mannschaften"
+              options={[
+                { value: 'all', label: 'Alle Mannschaften' },
+                ...teams.map((tm) => ({ value: tm.id, label: tm.badge })),
+              ]}
+              selected={[teamId]}
+              onToggle={setTeamId}
+            />
+          ) : null}
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Button
+                label="Zurücksetzen"
+                variant="outline"
+                disabled={!activeFilters}
+                onPress={() => {
+                  setKind('all');
+                  setTeamId('all');
+                }}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                label={list.length === 1 ? '1 Termin anzeigen' : `${list.length} Termine anzeigen`}
+                onPress={() => setFilterOpen(false)}
+              />
+            </View>
+          </View>
+        </View>
+      </Sheet>
       {events.isPending ? <Loading /> : null}
       {events.error ? <ErrorNotice error={events.error} onRetry={() => events.refetch()} /> : null}
 

@@ -178,6 +178,7 @@ export const en: Record<string, string> = {
   '{0} T + {1} V = {2}': '{0} G + {1} A = {2}',
   '{0} Termine': '{0} events',
   '{0} Termine abgesagt': '{0} events cancelled',
+  '{0} Termine anzeigen': 'Show {0} events',
   '{0} Tor': '{0} goal',
   '{0} Tore': '{0} goals',
   '{0} Tore erfasst': '{0} goals recorded',
@@ -285,6 +286,7 @@ export const en: Record<string, string> = {
   '1 Spende': '1 donation',
   '1 Tag': '1 day',
   '1 Termin abgesagt': '1 event cancelled',
+  '1 Termin anzeigen': 'Show 1 event',
   '1 Woche': '1 week',
   '1. Geltungsbereich': '1. Scope',
   '1. Öffne eine Authenticator-App (z. B. Google oder Microsoft Authenticator) und scanne den Code. 2. Gib den angezeigten 6-stelligen Code ein.':
@@ -471,6 +473,7 @@ export const en: Record<string, string> = {
   Anbieter: 'Provider',
   'Anbieter und Kontakt': 'Provider and contact',
   'Andere Datei wählen': 'Choose another file',
+  'Andere Mannschaften': 'Other teams',
   'Andere Person': 'Another person',
   'Andere Strafe': 'Other fine',
   'Anderen Beleg wählen': 'Choose another receipt',
@@ -551,6 +554,7 @@ export const en: Record<string, string> = {
   'Art (z. B. Sportgeräte)': 'Type (e.g. sports equipment)',
   'Art der Buchung': 'Type of entry',
   'Art des Spiels': 'Type of match',
+  Arten: 'Types',
   Artikel: 'Article',
   'Artikel pflegt die Vereinsverwaltung.': 'The club administration maintains articles.',
   'Artikel schreiben': 'Write article',
@@ -589,6 +593,7 @@ export const en: Record<string, string> = {
   'Aus diesen Regeln berechnet die App bei jedem neuen Spiel und Training die Treffzeit. Beim einzelnen Termin kannst du sie jederzeit überschreiben. Leer lassen = kein automatisches Treffen.':
     'From these rules the app calculates the meeting time for every new match and training. You can override it for any single event. Leave empty = no automatic meeting.',
   'Aus einer CSV-Datei': 'From a CSV file',
+  'Aus Vereinsliste': 'From club list',
   'Aus: Jede Person sieht nur das eigene Konto.': 'Off: Each person only sees their own account.',
   Ausblenden: 'Hide',
   'Ausblenden kann das Moderationsteam.': 'The moderation team can hide it.',
@@ -807,6 +812,7 @@ export const en: Record<string, string> = {
   Bewilligt: 'Approved',
   Bezahlen: 'Pay',
   'Bezahlen / Zahlung melden': 'Pay / report payment',
+  Bezahlinfos: 'Payment info',
   'Bezahlinfos & Einstellungen': 'Payment info & settings',
   'Bezahlinfos fehlen': 'Payment info missing',
   'Bezahlinfos für die Mannschaft': 'Payment info for the team',
@@ -1266,6 +1272,8 @@ export const en: Record<string, string> = {
   'Der Vermerk wird entfernt.': 'The note will be removed.',
   'Der volle Name steht auf Dokumenten, der Kurzname in der Kopfzeile und auf dem Wappen.':
     'The full name appears on documents, the short name in the header and on the crest.',
+  'Der Vorstand sieht – wenn der Verein es in „Einsicht“ freigibt – unter „Verein → Vereinsleben → Kassenübersicht“ eine reine Anzeige: Kassenstand gesamt, Einnahmen und Ausgaben, die einzelnen Kassen und die Beitragsquote. Buchungen, Belege und Funktionen gibt es dort nicht; die Vereinskasse selbst führen Kassenwart und Kassenprüfer.':
+    'If the club allows it under “Access”, the board sees a read-only display under “Club → Club life → Treasury overview”: total balance, income and expenses, the individual funds and the fee collection rate. There are no bookings, receipts or functions there; the club treasury itself is run by the treasurer and the auditors.',
   'Der Vorstand sieht – wenn der Verein es in „Wer darf die Kasse einsehen?“ freigibt – unter „Verein → Vereinsleben → Kassenübersicht“ eine reine Anzeige: Kassenstand gesamt, Einnahmen und Ausgaben, die einzelnen Kassen und die Beitragsquote. Buchungen, Belege und Funktionen gibt es dort nicht; die Vereinskasse selbst führen Kassenwart und Kassenprüfer.':
     'If the club allows it under “Who may view the treasury?”, the board sees a read-only display under “Club → Club life → Treasury overview”: total balance, income and expenses, the individual funds and the fee collection rate. There are no bookings, receipts or functions there; the club treasury itself is run by the treasurer and the auditors.',
   'Der Vorstand sieht auch Kassenbuch und Belege (ohne zu buchen)':
@@ -1641,6 +1649,8 @@ export const en: Record<string, string> = {
   'Du stehst in der Startelf.': 'You are in the starting line-up.',
   'Du verwaltest Termine, Zusagen und Abwesenheiten':
     'You manage events, confirmations and absences',
+  'Du verwaltest Termine, Zusagen und Abwesenheiten deiner Kinder.':
+    "You manage your children's events, replies and absences.",
   'Du wirst die Vereinsadministration mit allen Rechten. Wir bestätigen deine E-Mail-Adresse mit einem Code.':
     'You become the club administrator with all rights. We confirm your e-mail address with a code.',
   'Du wurdest als Gastspieler vorgemerkt': 'You have been pencilled in as a guest player',
@@ -1745,6 +1755,7 @@ export const en: Record<string, string> = {
   'Einsätze tragen aktive Schiedsrichter des Vereins ein.':
     'Active referees of the club enter assignments.',
   Einschalten: 'Switch on',
+  Einsicht: 'Access',
   Einstellungen: 'Settings',
   'Einstellungen öffnen': 'Open settings',
   'Einteilen kann der Schiedsrichterobmann.': 'The referee coordinator can make assignments.',
@@ -2139,6 +2150,7 @@ export const en: Record<string, string> = {
   'Heißt die Mannschaft im Spielplan anders, trage die Schreibweisen ein – getrennt mit Semikolon. So ordnet der Spielplan-Import Spiele richtig zu.':
     'If the team is named differently in the fixture list, enter the spellings separated by semicolons. This lets the fixture import assign matches correctly.',
   Helfer: 'Helpers',
+  'Helfer (optional)': 'Helpers (optional)',
   'Helfer & Aufgaben': 'Helpers & tasks',
   'Helfer gesucht': 'Helpers wanted',
   'Helfer komplett': 'Helpers complete',
@@ -2171,6 +2183,7 @@ export const en: Record<string, string> = {
   'Hinweis an die Person (optional)': 'Note to the person (optional)',
   'Hinweis für das Trainerteam (optional)': 'Note for the coaching staff (optional)',
   'Hinweis: {0}': 'Note: {0}',
+  'Hinweise & Kalender': 'Notices & calendar',
   Hinzufügen: 'Add',
   'Hinzugefügt – weitere Person möglich': 'Added – another person possible',
   Hochladen: 'Upload',
@@ -2205,6 +2218,8 @@ export const en: Record<string, string> = {
   'Im Kalender siehst du, was danach kommt.': 'The calendar shows what comes after.',
   'Im Kalender zeigt jedes Feld die Termine des Tages als Kürzel der Mannschaft: kräftig grün sind Spiele, hellblau Training, hellorange mit gestricheltem Rand Vereinstermine; abgesagte Termine sind rot umrandet und durchgestrichen. „+2“ heißt: zwei weitere Termine. Tippe auf einen Tag, um seine Termine unter dem Kalender zu sehen; „Heute“ springt zum heutigen Tag.':
     'In the calendar each cell shows the day’s events as the team’s abbreviation: strong green are matches, light blue training, light orange with a dashed border club events; cancelled events have a red outline and are struck through. “+2” means two more events. Tap a day to see its events below the calendar; “Today” jumps to today.',
+  'Im Mitglied unter „Rollen & Aufgaben → Individuelle Rechte“: Liste aller Rechte zum An- und Abwählen. Sie gelten zusätzlich zu den Rollen für den ganzen Verein, jede Änderung steht im Änderungsprotokoll. Ein Recht für nur eine Mannschaft vergibst du besser über eine Rolle mit Geltungsbereich.':
+    'In the member under “Roles & duties → Individual permissions”: a list of all permissions to tick or untick. They apply in addition to the roles for the whole club, every change is in the change log. A permission for just one team is better granted through a role with a scope.',
   'Im Mitglied unter „Rollen & Zusatzaufgaben → Individuelle Rechte“: Liste aller Rechte zum An- und Abwählen. Sie gelten zusätzlich zu den Rollen für den ganzen Verein, jede Änderung steht im Änderungsprotokoll. Ein Recht für nur eine Mannschaft vergibst du besser über eine Rolle mit Geltungsbereich.':
     'In the member under “Roles & extra duties → Individual permissions”: a list of all permissions to tick or untick. They apply in addition to the roles for the whole club, every change is in the change log. A permission for just one team is better granted through a role with a scope.',
   'im Plan': 'on plan',
@@ -2656,6 +2671,7 @@ export const en: Record<string, string> = {
   'Meine Auslagen': 'My claims',
   'Meine Einsätze': 'My assignments',
   'Meine Einsätze und Vereins-Soll': 'My assignments and club quota',
+  'Meine Entwürfe': 'My drafts',
   'Meine Entwürfe und Einreichungen': 'My drafts and submissions',
   'Meine Kinder': 'My children',
   'Meine Mannschaft': 'My team',
@@ -2820,6 +2836,7 @@ export const en: Record<string, string> = {
   'Neuer Link': 'New link',
   'Neuer Mitfahrer': 'New passenger',
   'Neuer Name': 'New name',
+  'Neuer Schiedsrichter': 'New referee',
   'Neuer Termin für {0}': 'New event for {0}',
   'Neuer Termin: {0}': 'New event: {0}',
   'Neuer Verein (optional)': 'New club (optional)',
@@ -3152,6 +3169,7 @@ export const en: Record<string, string> = {
   'Rolle öffnen': 'Open role',
   'Rolle vergeben': 'Role assigned',
   'Rolle vergeben: {0} ({1}) an {2}': 'Role assigned: {0} ({1}) to {2}',
+  Rollen: 'Roles',
   'Rollen & Aufgaben': 'Roles & tasks',
   'Rollen & Rechte': 'Roles & rights',
   'Rollen & Zusatzaufgaben': 'Roles & additional duties',
@@ -3279,6 +3297,7 @@ export const en: Record<string, string> = {
   Senioren: 'Seniors',
   Sicherheit: 'Security',
   'Sichtbar für': 'Visible to',
+  Sichtbarkeit: 'Visibility',
   'Sichtbarkeit meiner Kontaktdaten': 'Visibility of my contact details',
   'Sichtbarkeit und Erinnerungen': 'Visibility and reminders',
   Sieg: 'Win',
@@ -3457,6 +3476,7 @@ export const en: Record<string, string> = {
     'Appears large in the home poster and replaces the crest without a logo.',
   'Stelle eine Beitrittsanfrage. Das Trainerteam gibt sie frei.':
     'Submit a join request. The coaching staff will approve it.',
+  Steuerangaben: 'Tax details',
   Steuerdaten: 'Tax data',
   'Steuerlicher Bereich': 'Tax area',
   Steuernummer: 'Tax number',
@@ -3627,6 +3647,7 @@ export const en: Record<string, string> = {
   Treffpunkt: 'Meeting point',
   'Treffpunkt (leer = Standard der Mannschaft)': 'Meeting point (empty = team default)',
   'Treffpunkt {0} Uhr': 'Meeting point {0}',
+  'Treffpunkt & Profil': 'Meeting point & profile',
   'Treffpunkt und Treffzeit': 'Meeting point and time',
   'Treffpunkt vorher': 'Meeting point beforehand',
   'Treffpunkt wählen': 'Choose meeting point',
@@ -4326,6 +4347,7 @@ export const en: Record<string, string> = {
   'Zuordnung prüfen – oder als passiv führen': 'Check assignment – or mark as inactive',
   'Zur Anmeldung': 'To sign-in',
   'Zur App': 'To the app',
+  'Zur Freigabe ({0})': 'To approve ({0})',
   'Zur Freigabe einreichen': 'Submit for approval',
   'Zur Mannschaft': 'To the team',
   'Zur Pflicht machen': 'Make required',

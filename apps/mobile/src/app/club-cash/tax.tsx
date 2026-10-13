@@ -113,7 +113,7 @@ export default function TaxInfoScreen() {
         />
       )}
 
-      <Section title="Angaben zur Steuerbegünstigung">
+      <Section title="Steuerangaben">
         {!admin ? (
           <Card style={{ gap: 6 }}>
             <T>

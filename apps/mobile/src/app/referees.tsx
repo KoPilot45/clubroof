@@ -499,7 +499,7 @@ function ClubSoll({
         </Card>
       </Section>
 
-      <Section title="Schiedsrichter hinzufügen">
+      <Section title="Neuer Schiedsrichter">
         <Card style={{ gap: 12 }}>
           {picked ? (
             <>

@@ -353,7 +353,7 @@ export function OpenBand({ actions }: { actions: ActionItem[] }) {
   const [poll, setPoll] = useState<ActionItem | null>(null);
   if (actions.length === 0)
     return (
-      <Section roomy title="Offen">
+      <Section title="Offen">
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <IconTile name="checkmark-done" tone="success" />
@@ -369,7 +369,7 @@ export function OpenBand({ actions }: { actions: ActionItem[] }) {
     .filter((a) => a.dueAt)
     .sort((a, b) => Date.parse(a.dueAt!) - Date.parse(b.dueAt!))[0];
   return (
-    <Section roomy title="Offen">
+    <Section title="Offen">
       <Swipe width={width}>
         {actions.map((a) => {
           const isUrgent = a.id === urgent?.id;
@@ -526,7 +526,7 @@ export function QuickAccess({
   const [editing, setEditing] = useState(false);
   const links = quickLinksFor(me);
   return (
-    <Section title="Schnellzugriff" roomy>
+    <Section title="Schnellzugriff">
       <TileGrid
         items={[
           ...links.map((l) => {
@@ -847,13 +847,13 @@ export function HomePoster({
   club: string;
   hasTeam: boolean;
 }) {
-  const { colors, spacing, isDark } = useTheme();
+  const { colors, isDark } = useTheme();
   const [width, setWidth] = useState(0);
   const [index, setIndex] = useState(0);
   const slides = events.slice(0, 3);
   const current = Math.min(index, Math.max(0, slides.length - 1));
   return (
-    <HeroCard poster style={{ marginHorizontal: -22, marginTop: -(spacing.md + 2) }}>
+    <HeroCard poster style={{ marginHorizontal: -22 }}>
       <View style={{ minHeight: 450 }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
         {header}
         {width > 0 ? (
@@ -1053,12 +1053,7 @@ const weekColor = (e: EventSummary, colors: ReturnType<typeof useTheme>['colors'
 export function WeekTickets({ week }: { week: EventSummary[] }) {
   const { colors } = useTheme();
   return (
-    <Section
-      roomy
-      title="Diese Woche"
-      action="Alle anzeigen"
-      onAction={() => router.push('/termine')}
-    >
+    <Section title="Diese Woche" action="Alle anzeigen" onAction={() => router.push('/termine')}>
       {week.length === 0 ? (
         <Empty
           icon="calendar-outline"
@@ -1208,7 +1203,7 @@ export function BirthdayCard({ birthdays }: { birthdays: Birthday[] }) {
   if (birthdays.length === 0) return null;
   const today = birthdays.some((b) => b.inDays === 0);
   return (
-    <Section roomy title={today ? 'Heute Geburtstag' : 'Bald Geburtstag'}>
+    <Section title={today ? 'Heute Geburtstag' : 'Bald Geburtstag'}>
       <Card list>
         {birthdays.map((b, i) => (
           <ListRow
