@@ -1375,6 +1375,7 @@ export const en: Record<string, string> = {
   "Du spielst bis {0} zusätzlich in {1}.": "You also play in {1} until {0}.",
   "Du stehst in der Startelf.": "You are in the starting line-up.",
   "Du verwaltest Termine, Zusagen und Abwesenheiten": "You manage events, confirmations and absences",
+  "Du verwaltest Termine, Zusagen und Abwesenheiten deiner Kinder.": "You manage your children's events, replies and absences.",
   "Du wirst die Vereinsadministration mit allen Rechten. Wir bestätigen deine E-Mail-Adresse mit einem Code.": "You become the club administrator with all rights. We confirm your e-mail address with a code.",
   "Du wurdest als Gastspieler vorgemerkt": "You have been pencilled in as a guest player",
   "Dublette": "Duplicate",
