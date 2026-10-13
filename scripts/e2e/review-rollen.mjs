@@ -10,18 +10,41 @@ for (const who of roles) {
   const out = {
     who,
     teams: (me.teams ?? []).map((t) => `${t.badge}:${t.role ?? t.function ?? ''}`),
-    roles: (me.roles ?? me.assignments ?? []).map((r) => r.roleName ?? r.name ?? JSON.stringify(r)).slice(0, 8),
-    flags: { canAdminister: me.canAdminister, admin: me.admin, news: me.news, clubCash: me.clubCash, children: (me.children ?? []).length },
+    roles: (me.roles ?? me.assignments ?? [])
+      .map((r) => r.roleName ?? r.name ?? JSON.stringify(r))
+      .slice(0, 8),
+    flags: {
+      canAdminister: me.canAdminister,
+      admin: me.admin,
+      news: me.news,
+      clubCash: me.clubCash,
+      children: (me.children ?? []).length,
+    },
     pages: {},
   };
-  for (const [name, path] of [['home', '/'], ['team', '/team'], ['termine', '/termine'], ['verein', '/verein'], ['mehr', '/mehr']]) {
-    await goto(path); await page.waitForTimeout(2200);
-    const lines = (await page.innerText('body')).split('\n').map((s) => s.trim()).filter((s) => s && s.length < 60);
+  for (const [name, path] of [
+    ['home', '/'],
+    ['team', '/team'],
+    ['termine', '/termine'],
+    ['verein', '/verein'],
+    ['mehr', '/mehr'],
+  ]) {
+    await goto(path);
+    await page.waitForTimeout(2200);
+    const lines = (await page.innerText('body'))
+      .split('\n')
+      .map((s) => s.trim())
+      .filter((s) => s && s.length < 60);
     out.pages[name] = lines;
   }
   // Admin-Zugang prüfen
-  await goto('/admin'); await page.waitForTimeout(1800);
-  out.adminPage = (await page.innerText('body')).split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 6);
+  await goto('/admin');
+  await page.waitForTimeout(1800);
+  out.adminPage = (await page.innerText('body'))
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 6);
   writeFileSync(`.check/rollen/${who}.json`, JSON.stringify(out, null, 1));
   console.log(who, 'ok');
 }
