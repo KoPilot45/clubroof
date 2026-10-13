@@ -9,6 +9,7 @@ import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import type { StatusKey, TintKey } from '@clubroof/design-tokens';
 import {
   Children,
+  Fragment,
   createContext,
   isValidElement,
   useContext,
@@ -239,13 +240,9 @@ export function Screen({
             ) : undefined
           }
         >
-          {Children.toArray(children).map((child, i) => (
-            <FadeIn
-              key={isValidElement(child) && child.key != null ? child.key : i}
-              group={pathname}
-              index={Math.min(i, 8)}
-            >
-              {child}
+          {flattenChildren(children).map((child, i) => (
+            <FadeIn key={i} group={pathname} index={Math.min(i, 8)}>
+              <ChildIndexContext.Provider value={i}>{child}</ChildIndexContext.Provider>
             </FadeIn>
           ))}
         </ScrollView>
@@ -443,25 +440,37 @@ export function HeroCard({
 /** Textfarbe weißer Knöpfe auf dem Plakat bzw. Hero-Block (dunkler Ton der Hero-Farbe). */
 const HeroToneContext = createContext<string | null>(null);
 
+/** Kinder einer Seite ohne Fragmente: jede Fläche ist ein eigenes Kind mit gleichem Abstand. */
+function flattenChildren(nodes: ReactNode): ReactNode[] {
+  return Children.toArray(nodes).flatMap((child) =>
+    isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment
+      ? flattenChildren(child.props.children)
+      : [child],
+  );
+}
+
+/** Position des Kindes in der Seite (0 = ganz oben): Abschnittsüberschrift ganz oben rückt näher heran. */
+const ChildIndexContext = createContext<number | null>(null);
+
 export function Section({
   title,
   action,
   onAction,
   children,
-  roomy,
 }: {
-  /** größere Abstände (Home, Verein): 48 davor, 18 danach, Überschrift 22 px */
-  roomy?: boolean;
   title: string;
   action?: string;
   onAction?: () => void;
   children: ReactNode;
 }) {
   const { colors } = useTheme();
+  const first = useContext(ChildIndexContext) === 0;
   // Abschnittsüberschrift (Stil „Anstoß“): Akzentlinie 4 × 18, 12 px Abstand zum Inhalt; die Seite
   // lässt 14 px Abstand, Abschnitte ergänzen oben 12 → 26 px wie im Entwurf.
   return (
-    <View style={{ gap: roomy ? 18 : 12, paddingTop: roomy ? 34 : 12 }}>
+    // Eine einzige Abschnittsüberschrift für die ganze App: 48 davor (14 Seitenabstand + 34), 18 danach,
+    // Überschrift 22 px; steht sie ganz oben unter Kopfzeile oder Hero: 32 davor
+    <View style={{ gap: 18, paddingTop: first ? 18 : 34 }}>
       <View style={styles.rowBetween}>
         <View style={styles.sectionTitle}>
           <View
@@ -474,7 +483,7 @@ export function Section({
           />
           <T
             variant="section"
-            style={roomy ? { flexShrink: 1, fontSize: 22, lineHeight: 25 } : { flexShrink: 1 }}
+            style={{ flexShrink: 1, fontSize: 22, lineHeight: 25 }}
             accessibilityRole="header"
           >
             {title}
@@ -492,7 +501,7 @@ export function Section({
           </Pressable>
         ) : null}
       </View>
-      {children}
+      <ChildIndexContext.Provider value={null}>{children}</ChildIndexContext.Provider>
     </View>
   );
 }

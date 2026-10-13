@@ -208,7 +208,7 @@ export default function CashScreen() {
           })}
 
           {c.members ? (
-            <Section roomy title="Offene Beträge in der Mannschaft">
+            <Section title="Offene Beträge in der Mannschaft">
               <Card>
                 {open.length === 0 ? (
                   <Empty icon="checkmark-circle-outline" text="Alle Konten sind ausgeglichen." />
@@ -236,7 +236,6 @@ export default function CashScreen() {
 
           {c.entries ? (
             <Section
-              roomy
               title="Letzte Buchungen"
               action="Alle anzeigen"
               onAction={() => router.push(`/teams/${id}/cash-entries`)}
