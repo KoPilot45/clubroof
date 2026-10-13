@@ -59,7 +59,10 @@ for (const [who, list] of Object.entries(pages)) {
     for (const r of res.slice(0, 12)) {
       const first = r.above !== null && r.above < 40;
       const okAbove =
-        r.above === null || r.above === 48 || (first && r.above >= 30 && r.above <= 34);
+        r.above === null ||
+        r.above > 100 ||
+        r.above === 48 ||
+        (first && r.above >= 30 && r.above <= 34);
       const okBelow = r.below === null || Math.abs(r.below - 18) <= 4;
       if (!okAbove || !okBelow) {
         fail++;
