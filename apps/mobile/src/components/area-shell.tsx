@@ -4,12 +4,13 @@
  */
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState, type ReactNode } from 'react';
-import { Keyboard, Platform, Pressable, View } from 'react-native';
+import type { ReactNode } from 'react';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/app-text';
 import { Breadcrumbs } from '@/components/sub-header';
-import { GradientFill, Screen, T, TileGrid, shadowStyle, type IconName } from '@/components/ui';
+import { FloatingNav } from '@/components/tab-bar';
+import { GradientFill, Screen, T, TileGrid, type IconName } from '@/components/ui';
 import { breadcrumbsFor } from '@/lib/breadcrumbs';
 import type { AreaCategory } from '@/lib/areas';
 import { t } from '@/lib/i18n';
@@ -137,7 +138,16 @@ export type AreaTab = {
   onPress: () => void;
 };
 
-/** Untere Leiste mit beschrifteten Reitern (Symbol über der Beschriftung), aktiver Reiter in der Bereichsfarbe. */
+/** Aktive Pille der Bereichs-Navigation: solide Bereichsfarbe, Schrift darauf mit ausreichendem Kontrast. */
+const AREA_ACCENT: Record<AreaTone, { dark: [string, string]; light: [string, string] }> = {
+  violet: { dark: ['#7C4DE0', '#FFFFFF'], light: ['#6D3FD1', '#FFFFFF'] },
+  blue: { dark: ['#4C8DFF', '#06142E'], light: ['#2563D6', '#FFFFFF'] },
+};
+
+/**
+ * Untere Leiste von Verwaltung und Vereinskasse: dieselbe schwebende Pille wie in der übrigen App (Paket AP);
+ * der aktive Reiter zeigt Symbol und Text in der Bereichsfarbe, die übrigen nur ein Symbol.
+ */
 export function AreaTabBar({
   tone,
   items,
@@ -147,82 +157,14 @@ export function AreaTabBar({
   items: AreaTab[];
   onHeight: (height: number) => void;
 }) {
-  const { colors, sizes, isDark, elevation } = useTheme();
-  const insets = useSafeAreaInsets();
-  const [keyboard, setKeyboard] = useState(false);
-  const bottom = Math.max(insets.bottom, 12) + 10;
-  const height = 64;
-  const c = colors.tints[tone];
-  useEffect(() => {
-    onHeight(height + bottom);
-  }, [onHeight, bottom]);
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboard(true));
-    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboard(false));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
-  if (keyboard) return null;
+  const { isDark } = useTheme();
+  const [fill, on] = AREA_ACCENT[tone][isDark ? 'dark' : 'light'];
   return (
-    <View
-      pointerEvents="box-none"
-      style={{ position: 'absolute', left: 12, right: 12, bottom, alignItems: 'center' }}
-    >
-      <View
-        accessibilityRole="tablist"
-        style={{
-          width: '100%',
-          maxWidth: 520,
-          height,
-          borderRadius: 32,
-          padding: 6,
-          flexDirection: 'row',
-          gap: 4,
-          backgroundColor: colors.anstoss.tabBar,
-          borderWidth: 1,
-          borderColor: colors.anstoss.tabBarBorder,
-          ...(isDark ? null : shadowStyle(elevation.floating)),
-        }}
-      >
-        {items.map((item) => (
-          <Pressable
-            key={item.key}
-            accessibilityRole="tab"
-            accessibilityLabel={item.label}
-            aria-selected={item.active}
-            onPress={item.onPress}
-            style={{
-              flex: 1,
-              minHeight: sizes.touchTarget,
-              borderRadius: 26,
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 2,
-              backgroundColor: item.active ? c.container : 'transparent',
-            }}
-          >
-            <Ionicons
-              name={item.icon}
-              size={22}
-              color={item.active ? c.onContainer : colors.onSurfaceMuted}
-            />
-            <Text
-              numberOfLines={1}
-              style={{
-                fontSize: 11,
-                fontWeight: item.active ? '800' : '600',
-                color: item.active ? c.onContainer : colors.onSurfaceMuted,
-              }}
-            >
-              {item.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-    </View>
+    <FloatingNav
+      accent={{ fill, on }}
+      onHeight={onHeight}
+      items={items.map((i) => ({ ...i, iconActive: i.icon }))}
+    />
   );
 }
 

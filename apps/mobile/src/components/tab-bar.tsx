@@ -68,8 +68,11 @@ function NavDot({ item, children }: { item: NavItem; children: React.ReactNode }
 export function FloatingNav({
   items,
   onHeight,
+  accent,
 }: {
   items: NavItem[];
+  /** abweichende Farbe der aktiven Pille (Verwaltung violett, Vereinskasse blau) */
+  accent?: { fill: string; on: string };
   /** meldet Höhe samt Abstand zum unteren Rand (damit Seiten Platz lassen) */
   onHeight?: (height: number) => void;
 }) {
@@ -134,18 +137,18 @@ export function FloatingNav({
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 6,
-                backgroundColor: item.active ? colors.primary : 'transparent',
+                backgroundColor: item.active ? (accent?.fill ?? colors.primary) : 'transparent',
               }}
             >
               <Ionicons
                 name={item.active ? item.iconActive : item.icon}
                 size={22}
-                color={item.active ? colors.onPrimary : colors.anstoss.textTertiary}
+                color={item.active ? (accent?.on ?? colors.onPrimary) : colors.anstoss.textTertiary}
               />
               {item.active ? (
                 <Text
                   numberOfLines={1}
-                  style={{ fontSize: 14, fontWeight: '700', color: colors.onPrimary }}
+                  style={{ fontSize: 14, fontWeight: '700', color: accent?.on ?? colors.onPrimary }}
                 >
                   {item.label}
                 </Text>

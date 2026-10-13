@@ -2,7 +2,7 @@ import type { HomeResponse, TileInfo } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Animated, View } from 'react-native';
+import { View, type Animated } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AppHeader } from '@/components/app-header';
 import {

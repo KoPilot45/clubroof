@@ -23,6 +23,7 @@ import {
   View,
   useWindowDimensions,
   type NativeScrollEvent,
+  type ScrollViewProps,
   type NativeSyntheticEvent,
 } from 'react-native';
 import { EventRow, ResponseControls } from '@/components/events';
@@ -74,7 +75,52 @@ export function useCardWidth(max: number, peek = 60, gutter = 20) {
   return Math.min(max, Math.max(240, width - gutter - peek));
 }
 
-/** Querliste, die über den Seitenrand hinausläuft und an Karten einrastet. */
+/**
+ * Waagerechte Leiste, die über den Seitenrand hinausläuft; solange sie nach rechts weitergeht, sitzt ganz
+ * rechts am Bildschirm ein dezenter Pfeil (Paket AP). `bleed` = Seitenrand der Seite, der aufgehoben wird.
+ */
+export function EdgeScroll({
+  bleed,
+  children,
+  onOffset,
+  ...rest
+}: ScrollViewProps & { bleed: number; onOffset?: (x: number) => void }) {
+  const [more, setMore] = useState(true);
+  const box = useRef({ view: 0, content: 0, offset: 0 });
+  const update = () => {
+    const { view, content, offset } = box.current;
+    setMore(content > 0 && view > 0 && offset + view < content - 12);
+  };
+  return (
+    <View style={{ marginHorizontal: -bleed }}>
+      <ScrollView
+        {...rest}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        scrollEventThrottle={32}
+        onLayout={(e) => {
+          box.current.view = e.nativeEvent.layout.width;
+          update();
+        }}
+        onContentSizeChange={(content) => {
+          box.current.content = content;
+          update();
+        }}
+        onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          const x = e.nativeEvent.contentOffset.x;
+          box.current.offset = x;
+          update();
+          onOffset?.(x);
+        }}
+      >
+        {children}
+      </ScrollView>
+      <EdgeHint visible={more} />
+    </View>
+  );
+}
+
+/** Querliste aus einrastenden Karten (Breite `width`). */
 export function Swipe({
   width,
   children,
@@ -84,39 +130,16 @@ export function Swipe({
   children: React.ReactNode;
   onIndex?: (i: number) => void;
 }) {
-  // Pfeil am rechten Bildschirmrand, solange die Leiste weiter nach rechts geht
-  const [more, setMore] = useState(true);
-  const [box, setBox] = useState({ view: 0, content: 0 });
-  const update = (offset: number, view = box.view, content = box.content) =>
-    setMore(content > 0 && view > 0 && offset + view < content - 12);
   return (
-    <View style={{ marginHorizontal: -20 }}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={width + CARD_GAP}
-        decelerationRate="fast"
-        contentContainerStyle={{ paddingHorizontal: 20, gap: CARD_GAP, paddingVertical: 6 }}
-        scrollEventThrottle={32}
-        onLayout={(e) => {
-          const view = e.nativeEvent.layout.width;
-          setBox((b) => ({ ...b, view }));
-          update(0, view);
-        }}
-        onContentSizeChange={(content) => {
-          setBox((b) => ({ ...b, content }));
-          update(0, undefined, content);
-        }}
-        onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
-          const x = e.nativeEvent.contentOffset.x;
-          update(x);
-          onIndex?.(Math.round(x / (width + CARD_GAP)));
-        }}
-      >
-        {children}
-      </ScrollView>
-      <EdgeHint visible={more} />
-    </View>
+    <EdgeScroll
+      bleed={20}
+      snapToInterval={width + CARD_GAP}
+      decelerationRate="fast"
+      contentContainerStyle={{ paddingHorizontal: 20, gap: CARD_GAP, paddingVertical: 6 }}
+      onOffset={onIndex ? (x) => onIndex(Math.round(x / (width + CARD_GAP))) : undefined}
+    >
+      {children}
+    </EdgeScroll>
   );
 }
 
@@ -1149,12 +1172,7 @@ export function WeekTickets({ week }: { week: EventSummary[] }) {
           hint="Im Kalender siehst du, was danach kommt."
         />
       ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ marginHorizontal: -22 }}
-          contentContainerStyle={{ paddingHorizontal: 22, gap: 10 }}
-        >
+        <EdgeScroll bleed={22} contentContainerStyle={{ paddingHorizontal: 22, gap: 10 }}>
           {week.map((e) => {
             const r = e.myResponses[0];
             const cancelled = e.status === 'cancelled';
@@ -1189,7 +1207,7 @@ export function WeekTickets({ week }: { week: EventSummary[] }) {
               />
             );
           })}
-        </ScrollView>
+        </EdgeScroll>
       )}
     </Section>
   );
@@ -1207,12 +1225,7 @@ export function NewsCards({ items }: { items: NewsItem[] }) {
       />
     );
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={{ marginHorizontal: -22 }}
-      contentContainerStyle={{ paddingHorizontal: 22, gap: 12 }}
-    >
+    <EdgeScroll bleed={22} contentContainerStyle={{ paddingHorizontal: 22, gap: 12 }}>
       {items.map((n) => {
         const [from, to] =
           n.priority === 'urgent'
@@ -1281,7 +1294,7 @@ export function NewsCards({ items }: { items: NewsItem[] }) {
           </PressScale>
         );
       })}
-    </ScrollView>
+    </EdgeScroll>
   );
 }
 
