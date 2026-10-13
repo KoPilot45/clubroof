@@ -278,7 +278,11 @@ export function FacilityGrid({
         overflow: 'hidden',
       }}
     >
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
         <View style={{ flexDirection: 'row', minWidth: '100%' }}>
           <View style={{ width: AXIS }}>
             <View style={{ height: 48 }} />
@@ -310,7 +314,13 @@ export function FacilityGrid({
                 <T
                   variant="label"
                   numberOfLines={2}
-                  style={{ textAlign: 'center', fontSize: 12, lineHeight: 14 }}
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 11,
+                    lineHeight: 13,
+                    // Web: Silbentrennung statt Bruch mitten im Wort
+                    ...({ hyphens: 'auto', overflowWrap: 'anywhere' } as object),
+                  }}
                 >
                   {c.title}
                 </T>
