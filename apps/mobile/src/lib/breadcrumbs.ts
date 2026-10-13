@@ -33,7 +33,7 @@ const under = (s: TabKey, label: string, href: Href): Rule => section(s, () => [
 const teamCash = (p: Params): Crumb[] => [{ label: 'Kasse', href: `/teams/${id(p)}/cash` }];
 const teamCashAdmin = (p: Params): Crumb[] => [
   ...teamCash(p),
-  { label: 'Kassenverwaltung', href: `/teams/${id(p)}/cash-admin` },
+  { label: 'Verwaltung', href: `/teams/${id(p)}/cash-admin` },
 ];
 const admin = (...more: Crumb[]) =>
   section('verein', () => [{ label: 'Verwaltung', href: '/admin' }, ...more]);
@@ -104,9 +104,9 @@ const RULES: Record<string, Rule> = {
   'exchange/new-demand': under('verein', 'Gastspieler', '/exchange'),
   'exchange/new-offer': under('verein', 'Gastspieler', '/exchange'),
   'equipment/index': section('verein'),
-  'equipment/rooms': under('verein', 'Anlage & Material', '/equipment'),
-  'equipment/items': under('verein', 'Anlage & Material', '/equipment'),
-  'equipment/damages': under('verein', 'Anlage & Material', '/equipment'),
+  'equipment/rooms': under('verein', 'Anlage', '/equipment'),
+  'equipment/items': under('verein', 'Anlage', '/equipment'),
+  'equipment/damages': under('verein', 'Anlage', '/equipment'),
   'facilities/index': section('verein'),
   'facilities/block-new': under('verein', 'Platzbelegung', '/facilities'),
   'schedule-import': section('verein'),
@@ -152,9 +152,9 @@ const RULES: Record<string, Rule> = {
   'admin/member-permissions': admin({ label: 'Mitglieder', href: '/admin/members' }),
   'admin/import': admin({ label: 'Mitglieder', href: '/admin/members' }),
   'admin/club-events': admin(),
-  'admin/club-event-new': admin({ label: 'Veranstaltungen', href: '/admin/club-events' }),
+  'admin/club-event-new': admin({ label: 'Events', href: '/admin/club-events' }),
   'admin/roles': admin(),
-  'admin/role/[key]': admin({ label: 'Rollen & Aufgaben', href: '/admin/roles' }),
+  'admin/role/[key]': admin({ label: 'Rollen', href: '/admin/roles' }),
   'admin/audit': admin(),
   'admin/news/index': admin(),
   'admin/news/new': admin({ label: 'News-Redaktion', href: '/admin/news' }),
@@ -162,10 +162,10 @@ const RULES: Record<string, Rule> = {
   'admin/club': admin(),
   'admin/modules': admin(),
   'admin/teams': admin(),
-  'admin/unit/[id]': admin({ label: 'Mannschaften & Saison', href: '/admin/teams' }),
-  'admin/team/[id]': admin({ label: 'Mannschaften & Saison', href: '/admin/teams' }),
+  'admin/unit/[id]': admin({ label: 'Mannschaften', href: '/admin/teams' }),
+  'admin/team/[id]': admin({ label: 'Mannschaften', href: '/admin/teams' }),
   'admin/transfers': admin(),
-  'admin/transfer-new': admin({ label: 'Spielerbewegungen', href: '/admin/transfers' }),
+  'admin/transfer-new': admin({ label: 'Wechsel', href: '/admin/transfers' }),
   'admin/invites': admin(),
   'admin/sponsors': admin(),
   'admin/departments': admin(),
@@ -187,12 +187,17 @@ export function breadcrumbsFor(
   };
 }
 
-/** Ab vier Stufen: erste und letzte beiden, dazwischen eine Sammelstufe „…“ (Liste der ausgelassenen). */
+/** Längste Stufe in der Pfadzeile (Zeichen); die letzte Stufe ist davon ausgenommen. */
+export const CRUMB_MAX = 14;
+export const shortCrumb = (label: string) =>
+  label.length > CRUMB_MAX ? `${label.slice(0, CRUMB_MAX - 1).trimEnd()}…` : label;
+
+/** Ab vier Stufen: erste und letzte Stufe, dazwischen eine Sammelstufe „…“ (Liste der ausgelassenen). */
 export function collapseCrumbs(crumbs: Crumb[]): { shown: Crumb[]; hidden: Crumb[] } {
   if (crumbs.length < 4) return { shown: crumbs, hidden: [] };
   return {
-    shown: [crumbs[0]!, ...crumbs.slice(-2)],
-    hidden: crumbs.slice(1, -2),
+    shown: [crumbs[0]!, crumbs[crumbs.length - 1]!],
+    hidden: crumbs.slice(1, -1),
   };
 }
 
