@@ -10,7 +10,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader, HeaderButton } from '@/components/app-header';
 import { ListRow, Sheet, T } from '@/components/ui';
-import { breadcrumbsFor, collapseCrumbs, shortCrumb, TAB_LABELS, type Crumb } from '@/lib/breadcrumbs';
+import {
+  breadcrumbsFor,
+  collapseCrumbs,
+  shortCrumb,
+  TAB_LABELS,
+  type Crumb,
+} from '@/lib/breadcrumbs';
 import { t } from '@/lib/i18n';
 import { useSession } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
