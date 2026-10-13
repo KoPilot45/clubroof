@@ -1549,8 +1549,12 @@ export function ErrorNotice({
 }) {
   const status = error instanceof RequestError ? error.status : null;
   const text = message ?? error?.message ?? 'Es ist ein unerwarteter Fehler aufgetreten.';
+  // Ohne umgebenden Screen (ganze Seite ersetzt): Seitenrand wie bei den Zustandskarten (22)
+  const standalone = useContext(ChildIndexContext) === null;
+  const wrap = (node: React.ReactNode) =>
+    standalone ? <View style={{ padding: 22 }}>{node}</View> : node;
   if (status === 403 || status === 404) {
-    return (
+    return wrap(
       <Notice
         tone="info"
         icon={status === 403 ? 'lock-closed' : 'search'}
@@ -1561,10 +1565,10 @@ export function ErrorNotice({
             ? { label: 'Zurück', onPress: () => router.back() }
             : { label: 'Zur Startseite', onPress: () => router.replace('/') }
         }
-      />
+      />,
     );
   }
-  return (
+  return wrap(
     <Notice
       tone="urgent"
       icon="alert"
@@ -1573,7 +1577,7 @@ export function ErrorNotice({
       action={
         onRetry ? { label: 'Erneut versuchen', onPress: onRetry, icon: 'refresh' } : undefined
       }
-    />
+    />,
   );
 }
 
