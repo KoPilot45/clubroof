@@ -530,6 +530,7 @@ export function QuickAccess({
             key: 'add',
             label: 'Hinzufügen',
             icon: 'add' as const,
+            add: true,
             onPress: () => setEditing(true),
           },
         ]}

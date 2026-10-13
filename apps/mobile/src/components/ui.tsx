@@ -1647,6 +1647,8 @@ export type TileItem = {
   figure?: string;
   /** Funktion folgt in einem späteren Paket */
   soon?: boolean;
+  /** „Hinzufügen“-Kachel: gestrichelter Umriss in der Vereinsfarbe statt Fläche (Paket AP) */
+  add?: boolean;
   /** Längerer Hinweis nur für Screenreader (unter der Kachel steht er nicht mehr) */
   hint?: string;
   /** Ton des Hinweises (immer zusammen mit dem Text, nie Farbe allein) */
@@ -1712,61 +1714,99 @@ function LargeTileGrid({ items }: { items: TileItem[] }) {
               minHeight: 124,
               padding: 16,
               borderRadius: 24,
-              justifyContent: 'space-between',
-              backgroundColor: colors.anstoss.card,
-              borderWidth: 1,
-              borderColor: colors.anstoss.cardBorder,
+              justifyContent: item.add ? 'center' : 'space-between',
+              alignItems: item.add ? 'center' : undefined,
+              ...(item.add
+                ? {
+                    backgroundColor: 'transparent',
+                    borderWidth: 1.5,
+                    borderStyle: 'dashed' as const,
+                    borderColor: withAlpha(colors.primary, 0.7),
+                  }
+                : {
+                    backgroundColor: colors.anstoss.card,
+                    borderWidth: 1,
+                    borderColor: colors.anstoss.cardBorder,
+                  }),
               opacity: item.soon ? 0.55 : 1,
             }}
           >
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <View
-                style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 19,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: colors.tints[tint].container,
-                }}
-              >
-                <Ionicons
-                  name={outlineIcon(item.icon)}
-                  size={34}
-                  color={colors.tints[tint].onContainer}
-                />
-              </View>
-              {showBadge ? (
+            {item.add ? (
+              <View style={{ alignItems: 'center', gap: 10 }}>
                 <View
                   style={{
-                    alignSelf: 'flex-start',
-                    minWidth: 24,
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    borderRadius: 10,
+                    width: 60,
+                    height: 60,
+                    borderRadius: 30,
                     alignItems: 'center',
-                    backgroundColor: accent,
+                    justifyContent: 'center',
+                    backgroundColor: withAlpha(colors.primary, 0.14),
                   }}
                 >
+                  <Ionicons name="add" size={34} color={colors.primaryText} />
+                </View>
+                <Text
+                  verbatim
+                  style={{ fontSize: 14, fontWeight: '700', color: colors.primaryText }}
+                >
+                  {t(item.label)}
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View
+                    style={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: 19,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: colors.tints[tint].container,
+                    }}
+                  >
+                    <Ionicons
+                      name={outlineIcon(item.icon)}
+                      size={34}
+                      color={colors.tints[tint].onContainer}
+                    />
+                  </View>
+                  {showBadge ? (
+                    <View
+                      style={{
+                        alignSelf: 'flex-start',
+                        minWidth: 24,
+                        paddingHorizontal: 8,
+                        paddingVertical: 2,
+                        borderRadius: 10,
+                        alignItems: 'center',
+                        backgroundColor: accent,
+                      }}
+                    >
+                      <Text
+                        verbatim
+                        style={{ fontSize: 12, fontWeight: '800', color: colors.background }}
+                      >
+                        {value}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+                <View>
                   <Text
                     verbatim
-                    style={{ fontSize: 12, fontWeight: '800', color: colors.background }}
+                    style={{ fontSize: 14, fontWeight: '700', color: colors.onSurface }}
                   >
-                    {value}
+                    {softBreaks(t(item.label))}
                   </Text>
+                  {item.soon ? (
+                    <Text style={{ fontSize: 12, color: colors.anstoss.textTertiary }}>
+                      Bald verfügbar
+                    </Text>
+                  ) : null}
                 </View>
-              ) : null}
-            </View>
-            <View>
-              <Text verbatim style={{ fontSize: 14, fontWeight: '700', color: colors.onSurface }}>
-                {softBreaks(t(item.label))}
-              </Text>
-              {item.soon ? (
-                <Text style={{ fontSize: 12, color: colors.anstoss.textTertiary }}>
-                  Bald verfügbar
-                </Text>
-              ) : null}
-            </View>
+              </>
+            )}
           </PressScale>
         );
       })}
