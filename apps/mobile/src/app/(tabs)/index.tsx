@@ -79,15 +79,7 @@ export default function HomeScreen() {
 
   const first = data?.matches[0];
   return (
-    <Screen edges={[]} refreshing={home.isRefetching} onRefresh={() => home.refetch()}>
-      <WelcomeTour
-        me={me}
-        visible={tour}
-        onClose={() => {
-          setTour(false);
-          void writeFlag(tourKey, true);
-        }}
-      />
+    <Screen edges={[]} flushTop refreshing={home.isRefetching} onRefresh={() => home.refetch()}>
       <HomePoster
         header={<AppHeader overlay />}
         events={data?.matches ?? []}
@@ -135,6 +127,14 @@ export default function HomeScreen() {
           </Card>
         </Section>
       ) : null}
+      <WelcomeTour
+        me={me}
+        visible={tour}
+        onClose={() => {
+          setTour(false);
+          void writeFlag(tourKey, true);
+        }}
+      />
     </Screen>
   );
 }

@@ -847,13 +847,13 @@ export function HomePoster({
   club: string;
   hasTeam: boolean;
 }) {
-  const { colors, spacing, isDark } = useTheme();
+  const { colors, isDark } = useTheme();
   const [width, setWidth] = useState(0);
   const [index, setIndex] = useState(0);
   const slides = events.slice(0, 3);
   const current = Math.min(index, Math.max(0, slides.length - 1));
   return (
-    <HeroCard poster style={{ marginHorizontal: -22, marginTop: -(spacing.md + 2) }}>
+    <HeroCard poster style={{ marginHorizontal: -22 }}>
       <View style={{ minHeight: 450 }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
         {header}
         {width > 0 ? (

@@ -179,7 +179,10 @@ export function Screen({
   edges = ['top'],
   onEndReached,
   footer,
+  flushTop,
 }: {
+  /** Seite beginnt ohne Innenabstand oben (Plakat-Hero bis zum Rand, Home) */
+  flushTop?: boolean;
   /** feste untere Leiste mit dem Hauptknopf (Formulare): Verlauf nach oben, Knopf 52 hoch */
   footer?: ReactNode;
   children: ReactNode;
@@ -218,7 +221,7 @@ export function Screen({
           contentContainerStyle={{
             // Seitenrand 22 px (Stil „Anstoß“); Abschnitte bringen 12 px Luft nach oben mit (26 insgesamt)
             paddingHorizontal: 22,
-            paddingTop: spacing.md + 2,
+            paddingTop: flushTop ? 0 : spacing.md + 2,
             gap: spacing.md + 2,
             paddingBottom: spacing.xxxl + tabBarHeight,
             // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
