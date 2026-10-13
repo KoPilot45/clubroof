@@ -125,9 +125,9 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         id: 'sponsors',
-        question: 'Was sind die Banner „Anzeige“ und wo sehe ich alle Sponsoren?',
+        question: 'Was ist die Zeile „Unterstützt von … Anzeige“ und wo sehe ich alle Sponsoren?',
         answer:
-          'Wenn dein Verein das Sponsoren-Modul nutzt, erscheinen auf der Startseite, am Spieltag und in den Terminlisten gekennzeichnete Banner der Sponsoren. Alle Sponsoren findest du unter „Mehr → Unsere Sponsoren“. Die App wertet nicht aus, wer was ansieht oder antippt; Kinder und Jugendliche unter 18 sehen keine Banner.',
+          'Wenn dein Verein das Sponsoren-Modul nutzt, zeigt ein kleines Wischelement auf Home, im Team-Reiter und im Verein-Reiter bis zu drei Sponsoren, die der Verein als Werbung freigegeben hat. Es ist immer als „Anzeige“ gekennzeichnet und wechselt alle paar Sekunden von selbst; du kannst auch wischen. Ein Tipp öffnet die Seite des Sponsors. Alle Sponsoren findest du unter „Verein → Sponsoren“. Die App wertet nicht aus, wer was ansieht oder antippt. Manche Sponsoren stellt der Verein so ein, dass Jugendspieler sie nicht sehen.',
         link: { label: 'Unsere Sponsoren', href: '/sponsors' },
       },
       {

@@ -159,6 +159,7 @@
   "September",
   "September 2026",
   "Spende {0}",
+  "Sponsor",
   "Sponsor (optional)",
   "Status",
   "Status;Noch nicht abgeschlossen",
@@ -295,6 +296,7 @@
   "rgba(255,255,255,0.18)",
   "rgba(255,255,255,0.22)",
   "rgba(255,255,255,0.4)",
+  "rgba(255,255,255,0.82)",
   "rgba(255,255,255,0.85)",
   "rgba({0},{1},{2},{3})",
   "role:{0}",
@@ -356,6 +358,5 @@
   "{0}und{1}",
   "{1} Beanstandungen",
   "{1} min{2}",
-  "– Freibetrag überschritten",
-  "rgba(255,255,255,0.82)"
+  "– Freibetrag überschritten"
 ]

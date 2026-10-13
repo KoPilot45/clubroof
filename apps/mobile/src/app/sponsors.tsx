@@ -1,32 +1,19 @@
-import {
-  SPONSOR_TIERS,
-  SPONSOR_TIER_LABEL,
-  SPONSOR_TIER_PLURAL,
-  type SponsorPage,
-} from '@clubroof/core';
+import type { SponsorPage } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
-import { Image, View } from 'react-native';
-import { openSponsor } from '@/components/sponsor-banner';
-import {
-  Card,
-  Chip,
-  Crest,
-  Empty,
-  ErrorNotice,
-  ListRow,
-  Loading,
-  Screen,
-  Section,
-  T,
-} from '@/components/ui';
-import { clubInitials } from '@/lib/format';
+import { router } from 'expo-router';
+import { Pressable, View } from 'react-native';
+import { SponsorLogo } from '@/components/sponsor-ads';
+import { Card, Empty, ErrorNotice, Loading, Screen, T } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
-import { mediaUri } from '@/lib/upload';
-import { t } from '@/lib/i18n';
+import { useTheme } from '@/lib/theme';
 
-/** „Unsere Sponsoren“: laufende Sponsoren nach Stufe – ohne Auswertung, nicht für Minderjährige. */
+/**
+ * „Unsere Sponsoren“ (SP2): alle laufenden Sponsoren in zwei Spalten mit Logo, Name und Slogan, auch die ohne
+ * Werbung. Antippen öffnet die Detailseite. Ohne Auswertung.
+ */
 export default function SponsorsScreen() {
   const { api } = useSignedIn();
+  const { colors } = useTheme();
   const page = useQuery({ queryKey: ['sponsors'], queryFn: () => api<SponsorPage>('/sponsors') });
   const p = page.data;
   return (
@@ -43,48 +30,47 @@ export default function SponsorsScreen() {
             <Card>
               <Empty icon="heart-outline" text="Hier gibt es gerade nichts anzuzeigen." />
             </Card>
-          ) : null}
-          {SPONSOR_TIERS.map((tier) => {
-            const list = p.sponsors.filter((x) => x.tier === tier);
-            if (list.length === 0) return null;
-            return (
-              <Section key={tier} title={SPONSOR_TIER_PLURAL[tier]}>
-                <Card>
-                  {list.map((x, i) => {
-                    const logo = mediaUri(x.logoUrl);
-                    return (
-                      <ListRow
-                        key={x.id}
-                        first={i === 0}
-                        leading={
-                          logo ? (
-                            <Image
-                              source={{ uri: logo }}
-                              accessibilityIgnoresInvertColors
-                              resizeMode="contain"
-                              style={{ width: 48, height: 48, borderRadius: 10 }}
-                            />
-                          ) : (
-                            <View style={{ width: 48, alignItems: 'center' }}>
-                              <Crest initials={clubInitials(x.name)} size={40} />
-                            </View>
-                          )
-                        }
-                        title={x.name}
-                        subtitle={t(SPONSOR_TIER_LABEL[x.tier])}
-                        trailing={
-                          x.linkUrl ? (
-                            <Chip tone="neutral" icon="open-outline" label="Webseite" />
-                          ) : null
-                        }
-                        onPress={x.linkUrl ? () => openSponsor(x) : undefined}
-                      />
-                    );
-                  })}
-                </Card>
-              </Section>
-            );
-          })}
+          ) : (
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                rowGap: 14,
+              }}
+            >
+              {p.sponsors.map((x) => (
+                <Pressable
+                  key={x.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={x.name}
+                  onPress={() => router.push(`/sponsor/${x.id}`)}
+                  style={{
+                    width: '47.9%',
+                    minHeight: 150,
+                    padding: 16,
+                    gap: 12,
+                    borderRadius: 24,
+                    backgroundColor: colors.anstoss.card,
+                    borderWidth: 1,
+                    borderColor: colors.anstoss.cardBorder,
+                  }}
+                >
+                  <SponsorLogo sponsor={x} size={56} inner={36} />
+                  <View style={{ gap: 2 }}>
+                    <T variant="headline" numberOfLines={2} verbatim style={{ fontSize: 20 }}>
+                      {x.name}
+                    </T>
+                    {x.slogan ? (
+                      <T variant="caption" numberOfLines={2} verbatim>
+                        {x.slogan}
+                      </T>
+                    ) : null}
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          )}
         </>
       ) : null}
     </Screen>

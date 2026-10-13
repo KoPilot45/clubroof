@@ -4,6 +4,11 @@ import { router } from 'expo-router';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { ClubNewsTicker } from '@/components/club-news-ticker';
+import {
+  SponsorAdContainer,
+  useHasSponsorAds,
+  useRefreshSponsorAds,
+} from '@/components/sponsor-ads';
 import type { TintKey } from '@clubroof/design-tokens';
 import { adminFunctionTiles } from '@/lib/admin-tiles';
 import { canSeeCashOverview } from '@/lib/areas';
@@ -31,6 +36,8 @@ export default function ClubScreen() {
   const { api, me } = useSignedIn();
   const tileInfo = useTileInfo('club');
   const has = (module: string) => me.clubModules.includes(module);
+  const hasAds = useHasSponsorAds();
+  const refreshAds = useRefreshSponsorAds();
   const news = useQuery({ queryKey: ['news'], queryFn: () => api<NewsItem[]>('/news') });
   const events = useQuery({ queryKey: ['events'], queryFn: () => api<EventSummary[]>('/events') });
   const polls = useQuery({
@@ -239,6 +246,7 @@ export default function ClubScreen() {
       header={<AppHeader title="Verein" subtitle="Dein Vereinsleben" />}
       refreshing={news.isRefetching}
       onRefresh={() => {
+        refreshAds();
         void news.refetch();
         void events.refetch();
         void polls.refetch();
@@ -250,6 +258,7 @@ export default function ClubScreen() {
 
       {news.data && news.data.length > 0 ? <ClubNewsTicker items={news.data} /> : null}
       {news.isPending ? <Loading /> : null}
+      {hasAds ? <SponsorAdContainer /> : null}
 
       {groups.map((g) => {
         const items = shown

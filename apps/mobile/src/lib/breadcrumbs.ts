@@ -92,6 +92,7 @@ const RULES: Record<string, Rule> = {
   'club-calendar': section('verein'),
   'club-schedule': section('verein'),
   sponsors: section('verein'),
+  'sponsor/[id]': under('verein', 'Sponsoren', '/sponsors'),
   'club-cash-overview': section('verein'),
   contacts: section('verein'),
   'forum/index': section('verein'),

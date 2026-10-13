@@ -14,7 +14,11 @@ import {
   QuickAccess,
   WeekTickets,
 } from '@/components/home';
-import { SponsorBannerCard } from '@/components/sponsor-banner';
+import {
+  SponsorAdContainer,
+  useHasSponsorAds,
+  useRefreshSponsorAds,
+} from '@/components/sponsor-ads';
 import { Card, ChoiceChips, Chip, ErrorNotice, Loading, Screen, Section, T } from '@/components/ui';
 import { WelcomeTour } from '@/components/welcome-tour';
 import { readFlag, writeFlag } from '@/lib/flags';
@@ -37,6 +41,8 @@ export default function HomeScreen() {
   const { api, me, refresh } = useSignedIn();
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const data = home.data;
+  const hasAds = useHasSponsorAds();
+  const refreshAds = useRefreshSponsorAds();
   // Willkommens-Tour beim ersten Start auf diesem Gerät
   const tourKey = `tour.${me.user.id}`;
   const [tour, setTour] = useState(false);
@@ -81,7 +87,15 @@ export default function HomeScreen() {
 
   const first = data?.matches[0];
   return (
-    <Screen edges={[]} flushTop refreshing={home.isRefetching} onRefresh={() => home.refetch()}>
+    <Screen
+      edges={[]}
+      flushTop
+      refreshing={home.isRefetching}
+      onRefresh={() => {
+        refreshAds();
+        void home.refetch();
+      }}
+    >
       <HomePoster
         header={<AppHeader overlay />}
         events={data?.matches ?? []}
@@ -106,11 +120,10 @@ export default function HomeScreen() {
           <NewsCards items={news} />
         </Section>
       ) : null}
+      {hasAds ? <SponsorAdContainer /> : null}
       {data ? <BirthdayCard birthdays={data.birthdays} /> : null}
 
       <QuickAccess me={me} info={quickInfo} onSaved={refresh} />
-
-      <SponsorBannerCard placement="home" />
 
       {data?.clubOverview && me.teams.length > 0 ? (
         <Section title="Verein im Überblick">
