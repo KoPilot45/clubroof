@@ -358,40 +358,59 @@ async function loadActions(db: Db, actor: Actor, now: Date): Promise<ActionItem[
 async function loadClubOverview(db: Db, actor: Actor, now: Date): Promise<ClubOverview | null> {
   if (!actorCan(actor, 'club.overview.read')) return null;
   const clubId = actor.club.id;
-  const [[teams], [members], [approvals], [nextEvent]] = await Promise.all([
-    db
-      .select({ n: count() })
-      .from(s.teams)
-      .innerJoin(s.seasons, eq(s.seasons.id, s.teams.seasonId))
-      .where(and(eq(s.teams.clubId, clubId), eq(s.seasons.isCurrent, true))),
-    db
-      .select({ n: count() })
-      .from(s.persons)
-      .where(and(eq(s.persons.clubId, clubId), eq(s.persons.membershipStatus, 'active'))),
-    db
-      .select({ n: count() })
-      .from(s.announcements)
-      .where(
-        and(eq(s.announcements.clubId, clubId), eq(s.announcements.status, 'pending_approval')),
-      ),
-    db
-      .select({ id: s.events.id, title: s.events.title, startsAt: s.events.startsAt })
-      .from(s.events)
-      .where(
-        and(
-          eq(s.events.clubId, clubId),
-          isNull(s.events.teamId),
-          eq(s.events.type, 'club_event'),
-          eq(s.events.status, 'scheduled'),
-          gt(s.events.startsAt, now),
+  const [[teams], [members], [approvals], [nextEvent], [departments], [matchesWeek]] =
+    await Promise.all([
+      db
+        .select({ n: count() })
+        .from(s.teams)
+        .innerJoin(s.seasons, eq(s.seasons.id, s.teams.seasonId))
+        .where(and(eq(s.teams.clubId, clubId), eq(s.seasons.isCurrent, true))),
+      db
+        .select({ n: count() })
+        .from(s.persons)
+        .where(and(eq(s.persons.clubId, clubId), eq(s.persons.membershipStatus, 'active'))),
+      db
+        .select({ n: count() })
+        .from(s.announcements)
+        .where(
+          and(eq(s.announcements.clubId, clubId), eq(s.announcements.status, 'pending_approval')),
         ),
-      )
-      .orderBy(asc(s.events.startsAt))
-      .limit(1),
-  ]);
+      db
+        .select({ id: s.events.id, title: s.events.title, startsAt: s.events.startsAt })
+        .from(s.events)
+        .where(
+          and(
+            eq(s.events.clubId, clubId),
+            isNull(s.events.teamId),
+            eq(s.events.type, 'club_event'),
+            eq(s.events.status, 'scheduled'),
+            gt(s.events.startsAt, now),
+          ),
+        )
+        .orderBy(asc(s.events.startsAt))
+        .limit(1),
+      db
+        .select({ n: count() })
+        .from(s.orgUnits)
+        .where(and(eq(s.orgUnits.clubId, clubId), isNull(s.orgUnits.parentId))),
+      db
+        .select({ n: count() })
+        .from(s.events)
+        .where(
+          and(
+            eq(s.events.clubId, clubId),
+            eq(s.events.type, 'match'),
+            eq(s.events.status, 'scheduled'),
+            gt(s.events.startsAt, now),
+            lte(s.events.startsAt, new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)),
+          ),
+        ),
+    ]);
   return {
     teams: teams?.n ?? 0,
     members: members?.n ?? 0,
+    departments: departments?.n ?? 0,
+    matchesThisWeek: matchesWeek?.n ?? 0,
     pendingApprovals: actorCan(actor, 'news.publish') ? (approvals?.n ?? 0) : null,
     nextClubEvent: nextEvent
       ? { id: nextEvent.id, title: nextEvent.title, startsAt: nextEvent.startsAt.toISOString() }

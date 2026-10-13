@@ -335,6 +335,10 @@ export type ActionItem = {
 export type ClubOverview = {
   teams: number;
   members: number;
+  /** Abteilungen des Vereins (oberste Ebene der Bereiche) */
+  departments: number;
+  /** Spiele aller Mannschaften in den nächsten 7 Tagen */
+  matchesThisWeek: number;
   /** Nur für Personen, die News freigeben dürfen; sonst null */
   pendingApprovals: number | null;
   nextClubEvent: { id: string; title: string; startsAt: string } | null;
@@ -2247,6 +2251,8 @@ export function participationLevel(percent: number | null, sessions: number): Pa
 export type AreaAccess = {
   /** Bereiche, die die Person sehen darf (Filter erscheint ab zwei) */
   areas: AreaKey[];
+  /** Abgespeckte Variante für Mitglieder ohne Mannschaft: ohne Trainingsbeteiligung, Zusagen und Kaderverfügbarkeit */
+  lite?: boolean;
 };
 
 export type AreaTeamCard = {
@@ -2274,6 +2280,8 @@ export type AreaOverview = {
   /** Gewählter Bereich; „all“ = alle Bereiche, auf die die Person Zugriff hat */
   area: AreaKey | 'all';
   areas: AreaKey[];
+  /** Abgespeckte Variante (siehe `AreaAccess.lite`) */
+  lite: boolean;
   summary: {
     teams: number;
     players: number;

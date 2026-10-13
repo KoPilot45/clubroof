@@ -5,6 +5,7 @@
 import type {
   ActionItem,
   Birthday,
+  ClubOverview,
   EventSummary,
   MeResponse,
   NewsItem,
@@ -105,32 +106,16 @@ export function Swipe({
 
 // ── Spiele zum Wischen ────────────────────────────────────────────────────────
 
-export function MatchCarousel({
-  matches,
-  club,
-  hasTeam,
-}: {
-  matches: EventSummary[];
-  club: string;
-  /** Person gehört zu mindestens einer Mannschaft */
-  hasTeam: boolean;
-}) {
+export function MatchCarousel({ matches, club }: { matches: EventSummary[]; club: string }) {
   const width = useCardWidth(306);
   const [index, setIndex] = useState(0);
   const { colors } = useTheme();
   if (matches.length === 0)
-    return hasTeam ? (
+    return (
       <Empty
         icon="football-outline"
         text="Kein Spiel in Sicht"
         hint="Neue Spiele erscheinen hier, sobald sie angesetzt sind."
-      />
-    ) : (
-      <Empty
-        icon="people-outline"
-        text="Noch keine Mannschaft"
-        hint="Sobald du einer Mannschaft zugeordnet bist, siehst du hier das nächste Spiel."
-        action={{ label: 'Alle Mannschaften ansehen', onPress: () => router.push('/club-teams') }}
       />
     );
   const current = Math.min(index, matches.length - 1);
@@ -708,11 +693,15 @@ function PosterSlide({
   club,
   hasTeam,
   width,
+  clubName,
+  overview,
 }: {
   event: EventSummary | undefined;
   club: string;
   hasTeam: boolean;
   width: number;
+  clubName: string;
+  overview: ClubOverview | null;
 }) {
   const { colors } = useTheme();
   const days = event ? daysUntil(event.startsAt) : 0;
@@ -812,19 +801,46 @@ function PosterSlide({
           <T color={soft}>Neue Spiele erscheinen hier, sobald sie angesetzt sind.</T>
         </View>
       ) : (
+        // Ohne Mannschaft und ohne Termin: kleine Vereinsübersicht (Entscheidung Vorstand 14.10.)
         <View style={{ gap: 12, alignItems: 'flex-start' }}>
+          <T variant="overline" color={soft}>
+            Dein Verein
+          </T>
           <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
-            Noch keine Mannschaft
+            {clubName}
           </T>
-          <T color={soft}>
-            Sobald du einer Mannschaft zugeordnet bist, siehst du hier das nächste Spiel.
-          </T>
+          {overview ? (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14, alignSelf: 'stretch' }}>
+              {(
+                [
+                  ['Mitglieder', overview.members],
+                  ['Abteilungen', overview.departments],
+                  ['Mannschaften', overview.teams],
+                  ['Spiele diese Woche', overview.matchesThisWeek],
+                ] as [string, number][]
+              ).map(([label, value]) => (
+                <View key={label} style={{ minWidth: '40%', flexGrow: 1 }}>
+                  <T variant="figure" color={on} style={{ fontSize: 34, lineHeight: 36 }}>
+                    {value}
+                  </T>
+                  <T variant="caption" color={soft}>
+                    {label}
+                  </T>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <T color={soft}>Schau dich im Verein um: Mannschaften, Termine und Neuigkeiten.</T>
+          )}
           <Button
             label="Alle Mannschaften ansehen"
             variant="heroOutline"
             size="sm"
             onPress={() => router.push('/club-teams')}
           />
+          <T variant="caption" color={soft}>
+            Du bist keiner Mannschaft zugeordnet.
+          </T>
         </View>
       )}
     </View>
@@ -834,18 +850,22 @@ function PosterSlide({
 /**
  * Blickfang der Startseite: großes Plakat; nach links wischen zeigt die nächsten drei Spiele
  * (Pager-Punkte und „Spiel 1 von 3 · wischen“ unten). Darüber die Kopfzeile.
- * Ohne Spiel steht hier der Hinweis „Kein Spiel in Sicht“ bzw. „Noch keine Mannschaft“.
+ * Ohne Spiel steht hier „Kein Spiel in Sicht“, ohne Mannschaft die kleine Vereinsübersicht.
  */
 export function HomePoster({
   header,
   events,
   club,
   hasTeam,
+  clubName,
+  overview,
 }: {
   header: React.ReactNode;
   events: EventSummary[];
   club: string;
   hasTeam: boolean;
+  clubName: string;
+  overview: ClubOverview | null;
 }) {
   const { colors, isDark } = useTheme();
   const [width, setWidth] = useState(0);
@@ -872,6 +892,8 @@ export function HomePoster({
                 club={club}
                 hasTeam={hasTeam}
                 width={width}
+                clubName={clubName}
+                overview={overview}
               />
             ))}
           </ScrollView>
