@@ -16,13 +16,14 @@ import type { TintKey } from '@clubroof/design-tokens';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,
   View,
   useWindowDimensions,
   type NativeScrollEvent,
+  type ScrollViewProps,
   type NativeSyntheticEvent,
 } from 'react-native';
 import { EventRow, ResponseControls } from '@/components/events';
@@ -33,6 +34,7 @@ import {
   ChoiceChips,
   Chip,
   Crest,
+  EdgeHint,
   Empty,
   GradientFill,
   HeroCard,
@@ -73,7 +75,52 @@ export function useCardWidth(max: number, peek = 60, gutter = 20) {
   return Math.min(max, Math.max(240, width - gutter - peek));
 }
 
-/** Querliste, die über den Seitenrand hinausläuft und an Karten einrastet. */
+/**
+ * Waagerechte Leiste, die über den Seitenrand hinausläuft; solange sie nach rechts weitergeht, sitzt ganz
+ * rechts am Bildschirm ein dezenter Pfeil (Paket AP). `bleed` = Seitenrand der Seite, der aufgehoben wird.
+ */
+export function EdgeScroll({
+  bleed,
+  children,
+  onOffset,
+  ...rest
+}: ScrollViewProps & { bleed: number; onOffset?: (x: number) => void }) {
+  const [more, setMore] = useState(true);
+  const box = useRef({ view: 0, content: 0, offset: 0 });
+  const update = () => {
+    const { view, content, offset } = box.current;
+    setMore(content > 0 && view > 0 && offset + view < content - 12);
+  };
+  return (
+    <View style={{ marginHorizontal: -bleed }}>
+      <ScrollView
+        {...rest}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        scrollEventThrottle={32}
+        onLayout={(e) => {
+          box.current.view = e.nativeEvent.layout.width;
+          update();
+        }}
+        onContentSizeChange={(content) => {
+          box.current.content = content;
+          update();
+        }}
+        onScroll={(e: NativeSyntheticEvent<NativeScrollEvent>) => {
+          const x = e.nativeEvent.contentOffset.x;
+          box.current.offset = x;
+          update();
+          onOffset?.(x);
+        }}
+      >
+        {children}
+      </ScrollView>
+      <EdgeHint visible={more} />
+    </View>
+  );
+}
+
+/** Querliste aus einrastenden Karten (Breite `width`). */
 export function Swipe({
   width,
   children,
@@ -84,23 +131,15 @@ export function Swipe({
   onIndex?: (i: number) => void;
 }) {
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
+    <EdgeScroll
+      bleed={20}
       snapToInterval={width + CARD_GAP}
       decelerationRate="fast"
-      style={{ marginHorizontal: -20 }}
       contentContainerStyle={{ paddingHorizontal: 20, gap: CARD_GAP, paddingVertical: 6 }}
-      scrollEventThrottle={32}
-      onScroll={
-        onIndex
-          ? (e: NativeSyntheticEvent<NativeScrollEvent>) =>
-              onIndex(Math.round(e.nativeEvent.contentOffset.x / (width + CARD_GAP)))
-          : undefined
-      }
+      onOffset={onIndex ? (x) => onIndex(Math.round(x / (width + CARD_GAP))) : undefined}
     >
       {children}
-    </ScrollView>
+    </EdgeScroll>
   );
 }
 
@@ -530,6 +569,7 @@ export function QuickAccess({
             key: 'add',
             label: 'Hinzufügen',
             icon: 'add' as const,
+            add: true,
             onPress: () => setEditing(true),
           },
         ]}
@@ -867,27 +907,61 @@ export function HomePoster({
   clubName: string;
   overview: ClubOverview | null;
 }) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const [width, setWidth] = useState(0);
-  const [index, setIndex] = useState(0);
+  const [raw, setRaw] = useState(1);
+  const scroller = useRef<ScrollView>(null);
+  const dragging = useRef(false);
   const slides = events.slice(0, 3);
-  const current = Math.min(index, Math.max(0, slides.length - 1));
+  const n = slides.length;
+  const loop = n > 1;
+  // Endlosschleife: letzte Karte vor die erste, erste hinter die letzte setzen; am Rand unsichtbar springen
+  const items = loop
+    ? [slides[n - 1]!, ...slides, slides[0]!]
+    : slides.length
+      ? slides
+      : [undefined];
+  const current = loop ? (((raw - 1) % n) + n) % n : 0;
+  useEffect(() => {
+    if (loop && width > 0) scroller.current?.scrollTo({ x: width, animated: false });
+  }, [loop, width, n]);
+  const settle = (x: number) => {
+    if (!loop || width <= 0) return;
+    const i = Math.round(x / width);
+    if (i === 0) scroller.current?.scrollTo({ x: n * width, animated: false });
+    else if (i === n + 1) scroller.current?.scrollTo({ x: width, animated: false });
+  };
+  const next = () => scroller.current?.scrollTo({ x: (raw + 1) * width, animated: true });
   return (
     <HeroCard poster style={{ marginHorizontal: -22 }}>
       <View style={{ minHeight: 450 }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
         {header}
         {width > 0 ? (
           <ScrollView
+            ref={scroller}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            scrollEnabled={slides.length > 1}
+            scrollEnabled={loop}
             scrollEventThrottle={32}
-            onScroll={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
+            onScrollBeginDrag={() => {
+              dragging.current = true;
+            }}
+            onScroll={(e) => {
+              const x = e.nativeEvent.contentOffset.x;
+              setRaw(Math.round(x / width));
+              // Pfeil oder Programm: am Rand der Klone sofort springen (beim Ziehen erst nach dem Loslassen)
+              if (!dragging.current) settle(x);
+            }}
+            onScrollEndDrag={(e) => {
+              dragging.current = false;
+              settle(e.nativeEvent.contentOffset.x);
+            }}
+            onMomentumScrollEnd={(e) => settle(e.nativeEvent.contentOffset.x)}
           >
-            {(slides.length ? slides : [undefined]).map((ev, i) => (
+            {items.map((ev, i) => (
               <PosterSlide
-                key={ev?.id ?? `leer${i}`}
+                key={`${ev?.id ?? 'leer'}-${i}`}
                 event={ev}
                 club={club}
                 hasTeam={hasTeam}
@@ -898,19 +972,19 @@ export function HomePoster({
             ))}
           </ScrollView>
         ) : null}
-        {slides.length > 1 ? (
-          <View
-            style={{
-              position: 'absolute',
-              left: 22,
-              right: 22,
-              bottom: 18,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-            }}
-          >
-            <View style={{ flexDirection: 'row', gap: 6 }}>
+        {loop ? (
+          <>
+            <View
+              style={{
+                position: 'absolute',
+                left: 22,
+                right: 22,
+                bottom: 18,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
               {slides.map((ev, i) => (
                 <View
                   key={ev.id}
@@ -924,13 +998,28 @@ export function HomePoster({
                 />
               ))}
             </View>
-            <T
-              variant="caption"
-              color={isDark ? colors.anstoss.textTertiary : colors.onSurfaceMuted}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('Nächstes Spiel')}
+              onPress={next}
+              style={{
+                position: 'absolute',
+                right: 10,
+                top: '56%',
+                marginTop: -22,
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0,0,0,0.28)',
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.16)',
+              }}
             >
-              {t(`Spiel ${current + 1} von ${slides.length} · wischen`)}
-            </T>
-          </View>
+              <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
+            </Pressable>
+          </>
         ) : null}
       </View>
     </HeroCard>
@@ -1083,12 +1172,7 @@ export function WeekTickets({ week }: { week: EventSummary[] }) {
           hint="Im Kalender siehst du, was danach kommt."
         />
       ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ marginHorizontal: -22 }}
-          contentContainerStyle={{ paddingHorizontal: 22, gap: 10 }}
-        >
+        <EdgeScroll bleed={22} contentContainerStyle={{ paddingHorizontal: 22, gap: 10 }}>
           {week.map((e) => {
             const r = e.myResponses[0];
             const cancelled = e.status === 'cancelled';
@@ -1123,7 +1207,7 @@ export function WeekTickets({ week }: { week: EventSummary[] }) {
               />
             );
           })}
-        </ScrollView>
+        </EdgeScroll>
       )}
     </Section>
   );
@@ -1141,12 +1225,7 @@ export function NewsCards({ items }: { items: NewsItem[] }) {
       />
     );
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={{ marginHorizontal: -22 }}
-      contentContainerStyle={{ paddingHorizontal: 22, gap: 12 }}
-    >
+    <EdgeScroll bleed={22} contentContainerStyle={{ paddingHorizontal: 22, gap: 12 }}>
       {items.map((n) => {
         const [from, to] =
           n.priority === 'urgent'
@@ -1215,7 +1294,7 @@ export function NewsCards({ items }: { items: NewsItem[] }) {
           </PressScale>
         );
       })}
-    </ScrollView>
+    </EdgeScroll>
   );
 }
 

@@ -13,6 +13,10 @@ import { Crest, shadowStyle, T, type IconName } from './ui';
 import { Text } from './app-text';
 import { t } from '@/lib/i18n';
 
+/** Schriftfarben auf dem grünen Plakat der Startseite: in beiden Modi weiß (Untergrund bestimmt die Farbe). */
+const ON_POSTER = '#FFFFFF';
+const ON_POSTER_SOFT = 'rgba(255,255,255,0.82)';
+
 /** Runder Knopf der Kopfzeile (46 pt): hell mit Schatten, dunkel mit Rahmen. */
 export function HeaderButton({
   icon,
@@ -38,17 +42,17 @@ export function HeaderButton({
         width: sizes.headerButton,
         height: sizes.headerButton,
         borderRadius: sizes.headerButton / 2,
-        backgroundColor: glass ? 'rgba(255,255,255,0.12)' : colors.surfaceRaised,
+        backgroundColor: glass ? 'rgba(0,0,0,0.28)' : colors.surfaceRaised,
         alignItems: 'center',
         justifyContent: 'center',
         ...(glass
-          ? null
+          ? { borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)' }
           : isDark
             ? { borderWidth: 1, borderColor: colors.border }
             : shadowStyle(elevation.control)),
       }}
     >
-      <Ionicons name={icon} size={22} color={colors.onSurface} />
+      <Ionicons name={icon} size={22} color={glass ? '#FFFFFF' : colors.onSurface} />
       {count && count > 0 ? (
         <View
           style={{
@@ -61,7 +65,7 @@ export function HeaderButton({
             borderRadius: 10,
             backgroundColor: colors.status.urgent.solid,
             borderWidth: 2,
-            borderColor: colors.background,
+            borderColor: glass ? 'rgba(0,0,0,0.35)' : colors.background,
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -102,7 +106,7 @@ export function AppHeader({
 }) {
   const { me, api } = useSignedIn();
   const insets = useSafeAreaInsets();
-  const { colors, spacing, sizes, isDark, elevation } = useTheme();
+  const { colors, spacing, sizes } = useTheme();
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const unread = home.data?.unreadNotifications ?? 0;
   const greeting = title ?? `Hallo, ${me.person.firstName}`;
@@ -130,35 +134,28 @@ export function AppHeader({
         backgroundColor: overlay ? 'transparent' : colors.background,
       }}
     >
+      {/* Wappen ohne Kreis, etwas größer als zuvor (Paket AP) */}
       <View
         style={{
-          width: sizes.logo,
-          height: sizes.logo,
-          borderRadius: sizes.logo / 2,
-          overflow: 'hidden',
-          backgroundColor: overlay ? 'rgba(255,255,255,0.12)' : colors.surfaceRaised,
+          width: sizes.logo + 4,
+          height: sizes.logo + 4,
           alignItems: 'center',
           justifyContent: 'center',
-          ...(overlay
-            ? null
-            : isDark
-              ? { borderWidth: 1, borderColor: colors.border }
-              : shadowStyle(elevation.control)),
         }}
       >
         {me.club.logoUrl ? (
           <Image
             source={{ uri: mediaUri(me.club.logoUrl)! }}
             accessibilityLabel={t('Vereinslogo')}
-            style={{ width: 32, height: 32 }}
+            style={{ width: sizes.logo + 4, height: sizes.logo + 4 }}
             resizeMode="contain"
           />
         ) : (
-          <Crest initials={me.club.shortCode} size={30} />
+          <Crest initials={me.club.shortCode} size={sizes.logo} />
         )}
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
-        <T variant="caption" numberOfLines={1}>
+        <T variant="caption" numberOfLines={1} color={overlay ? ON_POSTER_SOFT : undefined}>
           {subtitle ?? formatLongDate(new Date().toISOString())}
         </T>
         <Animated.View
@@ -171,6 +168,7 @@ export function AppHeader({
             variant="headline"
             numberOfLines={2}
             accessibilityRole="header"
+            color={overlay ? ON_POSTER : undefined}
             style={overlay ? { fontSize: 26, lineHeight: 28 } : { fontSize: 32, lineHeight: 36 }}
           >
             {greeting}

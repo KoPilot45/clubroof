@@ -2,7 +2,8 @@ import type { HomeResponse, TileInfo } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { View, type Animated } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { AppHeader } from '@/components/app-header';
 import {
   BirthdayCard,
@@ -20,6 +21,7 @@ import { readFlag, writeFlag } from '@/lib/flags';
 import { cashTeamId } from '@/lib/quick-links';
 import { useSignedIn } from '@/lib/session';
 import { useTileInfo } from '@/lib/tile-info';
+import { useScrollY } from '@/lib/motion';
 import { useTheme } from '@/lib/theme';
 import type { TintKey } from '@clubroof/design-tokens';
 
@@ -124,6 +126,7 @@ export default function HomeScreen() {
           </Card>
         </Section>
       ) : null}
+      <PosterStatusBar />
       <WelcomeTour
         me={me}
         visible={tour}
@@ -158,4 +161,21 @@ function KeyFigure({ label, value, tint }: { label: string; value: number; tint:
       </T>
     </View>
   );
+}
+
+/**
+ * Statusleiste (Uhrzeit, Akku) über dem grünen Plakat: im hellen Modus weiß, solange das Plakat oben steht,
+ * danach wieder dunkel. Rendert nichts.
+ */
+function PosterStatusBar() {
+  const { scheme } = useTheme();
+  const scrollY = useScrollY();
+  const [past, setPast] = useState(false);
+  useEffect(() => {
+    if (!scrollY) return;
+    const id = (scrollY as Animated.Value).addListener(({ value }) => setPast(value > 300));
+    return () => (scrollY as Animated.Value).removeListener(id);
+  }, [scrollY]);
+  if (scheme === 'dark') return null;
+  return <StatusBar style={past ? 'dark' : 'light'} />;
 }

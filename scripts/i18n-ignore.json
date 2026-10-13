@@ -356,5 +356,6 @@
   "{0}und{1}",
   "{1} Beanstandungen",
   "{1} min{2}",
-  "– Freibetrag überschritten"
+  "– Freibetrag überschritten",
+  "rgba(255,255,255,0.82)"
 ]
