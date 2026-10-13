@@ -231,9 +231,16 @@ export function adminCategories(me: MeResponse): AreaCategory[] {
   return cats.filter((c) => c.groups.length > 0);
 }
 
-/** Wer die Admin-Verwaltung öffnen darf: Verwaltungsrolle oder einzelne Verwaltungsrechte. */
+/**
+ * Wer die Admin-Verwaltung öffnen darf: Verwaltungsrolle oder einzelne Verwaltungsrechte. Das Recht
+ * „News schreiben“ gehört nicht dazu – die Redaktion erreicht man unter Verein → Verwaltung.
+ */
 export const canOpenAdmin = (me: MeResponse) =>
-  me.canAdminister || Object.values(me.admin).some(Boolean) || me.news.write || me.news.publish;
+  me.canAdminister || Object.values(me.admin).some(Boolean);
+
+/** Redaktion (News schreiben/veröffentlichen) darf `/admin/news…` auch ohne Verwaltungsrecht öffnen. */
+export const canOpenAdminPath = (me: MeResponse, path: string) =>
+  canOpenAdmin(me) || ((me.news.write || me.news.publish) && path.startsWith('/admin/news'));
 
 /** Wer die Vereinskasse als eigenen Bereich öffnen darf. */
 export const canOpenClubCash = (me: MeResponse) => me.clubCash?.viewer === 'treasury';

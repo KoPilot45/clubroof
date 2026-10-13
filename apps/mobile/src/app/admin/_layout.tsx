@@ -2,8 +2,9 @@ import { Stack, router, usePathname } from 'expo-router';
 import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import { useState } from 'react';
 import { View } from 'react-native';
+import { NoAccessRedirect } from '@/components/area-guard';
 import { AreaHeader, AreaTabBar } from '@/components/area-shell';
-import { adminCategories } from '@/lib/areas';
+import { adminCategories, canOpenAdminPath } from '@/lib/areas';
 import { t, useLocale } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -54,6 +55,8 @@ export default function AdminLayout() {
       : segment === 'area'
         ? (path.split('/')[3] ?? '')
         : (CATEGORY_OF[segment] ?? '');
+  // Ohne Verwaltungsrecht: zurück zu Mehr statt einer leeren Seite mit Fehlermeldung
+  if (!canOpenAdminPath(me, path)) return <NoAccessRedirect area="admin" />;
   const items = [
     {
       key: 'overview',
