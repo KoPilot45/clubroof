@@ -954,6 +954,9 @@ export const en: Record<string, string> = {
   'CSV-Datei wählen': 'Choose CSV file',
   'CSV-Import': 'CSV import',
   'Dabei: {0}': 'In: {0}',
+  'Dafür fehlt dir die Berechtigung (Vereinskasse).':
+    "You don't have permission for the club treasury.",
+  'Dafür fehlt dir die Berechtigung (Verwaltung).': "You don't have permission for administration.",
   'Dafür fehlt dir die Berechtigung.': "You don't have permission for that.",
   'Dafür hast du keine Rechte.': 'You do not have the rights for this.',
   'Damit würde der Freibetrag ({0} {1} im Jahr {2}) überschritten: bisher {3}, mit dieser Zahlung {4}. Bitte steuerlich klären oder die Zahlung bewusst trotzdem buchen.':
@@ -1303,6 +1306,8 @@ export const en: Record<string, string> = {
     'The section has teams and cannot be deleted.',
   'Die Abteilungsübersicht sehen nur Leitung und Vorstand.':
     'Only management and the board see the area overview.',
+  'Die Abteilungsübersicht sehen nur Leitung, Vorstand und Vereinsmitglieder.':
+    'Only management, the board and club members can see the department overview.',
   'Die Abwesenheit': 'The absence',
   'Die Abwesenheit konnte nicht gespeichert werden.': 'The absence could not be saved.',
   'Die Änderung hat nicht geklappt.': "The change didn't work.",
@@ -1600,6 +1605,7 @@ export const en: Record<string, string> = {
     'You decide in your profile who may see your contact details. Coaches only see the data of their team.',
   'Du bist eingetragen': "You're signed up",
   'Du bist im Kader (Bank).': 'You are in the squad (bench).',
+  'Du bist keiner Mannschaft zugeordnet.': 'You are not assigned to a team.',
   'Du bist noch keiner Mannschaft zugeordnet.': 'You are not yet assigned to a team.',
   'Du bist offline': 'You are offline',
   'Du darfst nur einzelne Kassen prüfen.': 'You may only audit individual funds.',
@@ -3244,6 +3250,8 @@ export const en: Record<string, string> = {
   'Schaden melden': 'Report damage',
   'Schalte ein, was deine Mannschaft nutzt. Ausgeschaltete Funktionen verschwinden für alle in der Mannschaft. Was der Verein oder die Abteilung ausgeschaltet hat, bleibt aus.':
     'Turn on what your team uses. Features that are turned off disappear for everyone on the team. Anything the club or section has turned off stays off.',
+  'Schau dich im Verein um: Mannschaften, Termine und Neuigkeiten.':
+    'Look around the club: teams, events and news.',
   'Schicht „{0}“ liegt nicht bei der Veranstaltung.': 'Shift “{0}” is not within the event.',
   'Schicht „{0}“: Ende vor Beginn.': 'Shift “{0}”: end before start.',
   'Schicht {0}': 'Shift {0}',

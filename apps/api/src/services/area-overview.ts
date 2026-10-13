@@ -23,17 +23,26 @@ import { forbidden } from '../errors';
 const DAY = 24 * 60 * 60 * 1000;
 
 /** Rollen mit Blick auf die Bereiche; Vorstand, Sportliche Leitung und Admin gelten für den ganzen Verein. */
-const CLUB_WIDE = new Set(['fulladmin', 'board', 'sports_director']);
+const CLUB_WIDE = new Set(['fulladmin', 'board', 'sports_director', 'club_treasurer']);
 const AREA_ROLES = new Set([...CLUB_WIDE, 'youth_director']);
 
 export const areaOf = (kind: string): AreaKey =>
   kind === 'women' ? 'women' : kind === 'youth' ? 'youth' : 'seniors';
 
+/**
+ * Abgespeckte Variante (Entscheidung Vorstand 14.10.): Mitglieder ohne Mannschaft und ohne Leitungsrolle sehen
+ * Mannschaften mit Name, Spielerzahl, Trainern und nächstem Spiel – ohne Trainingsbeteiligung, Zusagen und
+ * Kaderverfügbarkeit.
+ */
+const isLite = (actor: Actor) =>
+  actor.grants.every((g) => !AREA_ROLES.has(g.key)) && actor.teamIds.length === 0;
+
 /** Bereiche (Organisationseinheiten), die die Person sehen darf; null ohne Zugriff. */
 async function allowedUnits(db: Db, actor: Actor) {
   const grants = actor.grants.filter((g) => AREA_ROLES.has(g.key));
-  if (grants.length === 0) return null;
+  if (grants.length === 0 && !isLite(actor)) return null;
   const units = await db.select().from(s.orgUnits).where(eq(s.orgUnits.clubId, actor.club.id));
+  if (grants.length === 0) return units.length ? units : null;
   const wide = grants.some((g) => CLUB_WIDE.has(g.key) && g.scopeType === 'club');
   const direct = new Set(
     grants.filter((g) => g.scopeType === 'org_unit' && g.scopeId).map((g) => g.scopeId!),
@@ -53,7 +62,7 @@ export async function areaAccess(db: Db, actor: Actor): Promise<AreaAccess | nul
   if (!units) return null;
   const kinds = new Set(units.map((u) => areaOf(u.kind)));
   const areas = AREA_KEYS.filter((a) => kinds.has(a));
-  return areas.length ? { areas } : null;
+  return areas.length ? { areas, ...(isLite(actor) ? { lite: true } : {}) } : null;
 }
 
 /** Sortierung nach Altersklasse: Jugend A → G, Senioren 1. → 2. … → Alte Herren. */
@@ -78,7 +87,9 @@ export async function getAreaOverview(
   now: Date,
 ): Promise<AreaOverview> {
   const units = await allowedUnits(db, actor);
-  if (!units) throw forbidden('Die Abteilungsübersicht sehen nur Leitung und Vorstand.');
+  if (!units)
+    throw forbidden('Die Abteilungsübersicht sehen nur Leitung, Vorstand und Vereinsmitglieder.');
+  const lite = isLite(actor);
   const areas = AREA_KEYS.filter((a) => units.some((u) => areaOf(u.kind) === a));
   const area = areaParam !== 'all' && areas.includes(areaParam) ? areaParam : 'all';
   const unitArea = new Map(units.map((u) => [u.id, areaOf(u.kind)]));
@@ -107,6 +118,7 @@ export async function getAreaOverview(
     return {
       area,
       areas,
+      lite,
       summary: { teams: 0, players: 0, coaches: 0, matchesThisWeek: 0, trainingAverage: null },
       record: area === 'all' ? { won: 0, drawn: 0, lost: 0 } : null,
       teams: [],
@@ -273,17 +285,23 @@ export async function getAreaOverview(
       badge: team.badge,
       name: team.name,
       area: unitArea.get(team.orgUnitId)!,
-      squad: { total: players.length, available: players.length - absent.size },
+      // Abgespeckt: keine Kaderverfügbarkeit, keine Trainingsbeteiligung, keine Zusagen
+      squad: {
+        total: players.length,
+        available: lite ? players.length : players.length - absent.size,
+      },
       coaches: coaches.map((c) => `${c.firstName} ${c.lastName}`),
-      participation: { percent, sessions, level: participationLevel(percent, sessions) },
+      participation: lite
+        ? { percent: null, sessions: 0, level: 'none' }
+        : { percent, sessions, level: participationLevel(percent, sessions) },
       nextMatch: next
         ? {
             startsAt: next.startsAt.toISOString(),
             isHome: next.isHome,
             opponent: next.opponent,
-            yes: count(['yes']),
-            no: count(['no']),
-            open: count(['maybe', 'pending']),
+            yes: lite ? 0 : count(['yes']),
+            no: lite ? 0 : count(['no']),
+            open: lite ? 0 : count(['maybe', 'pending']),
           }
         : null,
     };
@@ -298,13 +316,14 @@ export async function getAreaOverview(
   return {
     area,
     areas,
+    lite,
     summary: {
       teams: cards.length,
       players: cards.reduce((n, c) => n + c.squad.total, 0),
       coaches: new Set(members.filter((m) => m.function === 'coach').map((m) => m.personId)).size,
       matchesThisWeek: matchesWeek.length,
       trainingAverage:
-        area === 'all' && withData.length
+        !lite && area === 'all' && withData.length
           ? Math.round(
               withData.reduce((n, c) => n + (c.participation.percent ?? 0), 0) / withData.length,
             )

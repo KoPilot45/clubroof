@@ -284,6 +284,8 @@ describe.skipIf(!url)('API', () => {
       const home = await get<HomeResponse>('/home', token);
       expect(home.clubOverview).toMatchObject({ teams: 11, pendingApprovals: 1 });
       expect(home.clubOverview!.members).toBeGreaterThan(300);
+      expect(home.clubOverview!.departments).toBeGreaterThan(0);
+      expect(home.clubOverview!.matchesThisWeek).toBeGreaterThanOrEqual(0);
       expect(home.actions.some((a) => a.kind === 'approval')).toBe(true);
     });
 
@@ -769,8 +771,8 @@ describe.skipIf(!url)('API', () => {
   });
 
   describe('Abteilungsübersicht (Leitung und Vorstand)', () => {
-    it('ist nur für Vorstand, Leitung und Admin freigegeben', async () => {
-      for (const who of ['spieler', 'trainer', 'eltern', 'kasse', 'mitglied'] as const) {
+    it('ist für Vorstand, Leitung, Admin und Kassenwart freigegeben, für Mitglieder ohne Mannschaft abgespeckt', async () => {
+      for (const who of ['spieler', 'trainer', 'eltern'] as const) {
         const user = await login(who);
         expect(user.me.areaOverview).toBeNull();
         const res = await app.inject({
@@ -782,6 +784,30 @@ describe.skipIf(!url)('API', () => {
       }
       const board = await login('vorstand');
       expect(board.me.areaOverview!.areas).toEqual(['seniors', 'women', 'youth']);
+      // Kassenwart (Verein): gleiche Ansicht wie der Vorstand
+      const cash = await login('kasse');
+      expect(cash.me.areaOverview).toEqual({ areas: ['seniors', 'women', 'youth'] });
+      const cashAll = await get<AreaOverview>('/club/areas', cash.token);
+      expect(cashAll.lite).toBe(false);
+      expect(cashAll.teams.some((t) => t.nextMatch && t.nextMatch.yes + t.nextMatch.no > 0)).toBe(
+        true,
+      );
+    });
+
+    it('Vereinsmitglied ohne Mannschaft sieht die abgespeckte Variante', async () => {
+      const member = await login('mitglied');
+      expect(member.me.teams).toHaveLength(0);
+      expect(member.me.areaOverview).toMatchObject({ lite: true });
+      const all = await get<AreaOverview>('/club/areas', member.token);
+      expect(all.lite).toBe(true);
+      expect(all.teams.length).toBeGreaterThan(0);
+      expect(all.summary.trainingAverage).toBeNull();
+      for (const t of all.teams) {
+        // keine Trainingsbeteiligung, keine Kaderverfügbarkeit, keine Zusagen
+        expect(t.participation).toEqual({ percent: null, sessions: 0, level: 'none' });
+        expect(t.squad.available).toBe(t.squad.total);
+        if (t.nextMatch) expect(t.nextMatch).toMatchObject({ yes: 0, no: 0, open: 0 });
+      }
     });
 
     it('zeigt Mannschaften nach Altersklasse sortiert mit Kader, Trainerteam und Ampel', async () => {

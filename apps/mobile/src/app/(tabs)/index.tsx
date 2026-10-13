@@ -85,6 +85,8 @@ export default function HomeScreen() {
         events={data?.matches ?? []}
         club={me.club.shortName}
         hasTeam={me.teams.length > 0}
+        clubName={me.club.name}
+        overview={data?.clubOverview ?? null}
       />
       {home.isPending ? <Loading variant="page" /> : null}
       {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}
@@ -108,7 +110,7 @@ export default function HomeScreen() {
 
       <SponsorBannerCard placement="home" />
 
-      {data?.clubOverview ? (
+      {data?.clubOverview && me.teams.length > 0 ? (
         <Section title="Verein im Überblick">
           <Card style={{ gap: 12 }}>
             <View style={{ alignItems: 'flex-start' }}>

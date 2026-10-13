@@ -507,9 +507,16 @@ export function Section({
           </Pressable>
         ) : null}
       </View>
-      <ChildIndexContext.Provider value={null}>{children}</ChildIndexContext.Provider>
+      <ChildIndexContext.Provider value={null}>
+        <Stack>{children}</Stack>
+      </ChildIndexContext.Provider>
     </View>
   );
+}
+
+/** Stapel von Karten und Zeilen: 14 px Abstand, wie im Kachelraster (Regel RS). */
+export function Stack({ children, gap = 14 }: { children: ReactNode; gap?: number }) {
+  return <View style={{ gap }}>{children}</View>;
 }
 
 /**

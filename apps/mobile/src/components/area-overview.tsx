@@ -76,7 +76,7 @@ function Bar({ parts }: { parts: { value: number; color: string }[] }) {
   );
 }
 
-function TeamCard({ card }: { card: AreaTeamCard }) {
+function TeamCard({ card, lite }: { card: AreaTeamCard; lite: boolean }) {
   const { colors } = useTheme();
   const { participation: p, nextMatch: m, squad } = card;
   const tone =
@@ -101,7 +101,11 @@ function TeamCard({ card }: { card: AreaTeamCard }) {
           {card.name}
         </T>
       </View>
-      <T variant="caption">{t(`Kader: ${squad.available} von ${squad.total} verfügbar`)}</T>
+      <T variant="caption">
+        {lite
+          ? t(`${squad.total} Spieler`)
+          : t(`Kader: ${squad.available} von ${squad.total} verfügbar`)}
+      </T>
       <T variant="caption">
         {card.coaches.length ? (
           <>
@@ -115,36 +119,38 @@ function TeamCard({ card }: { card: AreaTeamCard }) {
         )}
       </T>
 
-      <View style={{ gap: 6 }}>
-        <View
-          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-        >
-          <T variant="label">Trainingsbeteiligung</T>
-          <Chip
-            tone={tone}
-            label={
-              p.percent !== null && p.level !== 'none'
-                ? `${p.percent} % · ${t(LEVEL_WORD[p.level])}`
-                : t(LEVEL_WORD.none)
+      {lite ? null : (
+        <View style={{ gap: 6 }}>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            <T variant="label">Trainingsbeteiligung</T>
+            <Chip
+              tone={tone}
+              label={
+                p.percent !== null && p.level !== 'none'
+                  ? `${p.percent} % · ${t(LEVEL_WORD[p.level])}`
+                  : t(LEVEL_WORD.none)
+              }
+            />
+          </View>
+          <Bar
+            parts={
+              p.level === 'none' || p.percent === null
+                ? [{ value: 1, color: colors.border }]
+                : [
+                    { value: p.percent, color: solid },
+                    { value: 100 - p.percent, color: colors.border },
+                  ]
             }
           />
+          <T variant="caption">
+            {p.sessions > 0
+              ? t(`${p.sessions} erfasste Einheiten in 4 Wochen`)
+              : t('Keine erfasste Einheit in 4 Wochen')}
+          </T>
         </View>
-        <Bar
-          parts={
-            p.level === 'none' || p.percent === null
-              ? [{ value: 1, color: colors.border }]
-              : [
-                  { value: p.percent, color: solid },
-                  { value: 100 - p.percent, color: colors.border },
-                ]
-          }
-        />
-        <T variant="caption">
-          {p.sessions > 0
-            ? t(`${p.sessions} erfasste Einheiten in 4 Wochen`)
-            : t('Keine erfasste Einheit in 4 Wochen')}
-        </T>
-      </View>
+      )}
 
       <View style={{ gap: 6 }}>
         <T variant="label">Nächstes Spiel</T>
@@ -153,14 +159,20 @@ function TeamCard({ card }: { card: AreaTeamCard }) {
             <T variant="caption" verbatim>
               {`${whenFormat.format(new Date(m.startsAt))} · ${formatShortDate(clubDayMinutes(m.startsAt).day)} · ${t(m.isHome ? 'Heim' : 'Auswärts')} · ${m.opponent}`}
             </T>
-            <Bar
-              parts={[
-                { value: m.yes, color: colors.status.success.solid },
-                { value: m.no, color: colors.status.urgent.solid },
-                { value: m.open, color: colors.onSurfaceMuted },
-              ]}
-            />
-            <T variant="caption">{t(`${m.yes} zugesagt · ${m.no} abgesagt · ${m.open} offen`)}</T>
+            {lite ? null : (
+              <>
+                <Bar
+                  parts={[
+                    { value: m.yes, color: colors.status.success.solid },
+                    { value: m.no, color: colors.status.urgent.solid },
+                    { value: m.open, color: colors.onSurfaceMuted },
+                  ]}
+                />
+                <T variant="caption">
+                  {t(`${m.yes} zugesagt · ${m.no} abgesagt · ${m.open} offen`)}
+                </T>
+              </>
+            )}
           </>
         ) : (
           <T variant="caption">Kein Spiel geplant</T>
@@ -251,7 +263,7 @@ export function AreaOverviewScreen({ switcher }: { switcher?: ReactNode }) {
             <Empty icon="shirt-outline" text="Keine Mannschaften in der Abteilung." />
           ) : null}
           {o.teams.map((card) => (
-            <TeamCard key={card.id} card={card} />
+            <TeamCard key={card.id} card={card} lite={o.lite} />
           ))}
         </>
       ) : null}
