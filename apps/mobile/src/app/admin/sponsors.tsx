@@ -7,6 +7,7 @@ import {
   type UploadedImage,
 } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { ReorderList } from '@/components/reorder';
@@ -22,6 +23,7 @@ import {
   Loading,
   Screen,
   Section,
+  Sheet,
   T,
   TextField,
   Toggle,
@@ -194,7 +196,7 @@ export default function AdminSponsorsScreen() {
 
   return (
     <Screen edges={[]}>
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+      {error && !form ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       <T variant="caption">
         {t(
           `Werbung läuft für ${data.data.advertising} von ${list.length} Sponsoren. Die App zeigt bis zu ${SPONSOR_AD_MAX} davon zufällig.`,
@@ -234,6 +236,19 @@ export default function AdminSponsorsScreen() {
                     {s.status !== 'active' ? (
                       <Chip tone={STATUS[s.status].tone} label={STATUS[s.status].label} />
                     ) : null}
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`${t('Bearbeiten')}: ${s.name}`}
+                      onPress={() => edit(s)}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Ionicons name="create-outline" size={22} color={colors.primaryText} />
+                    </Pressable>
                     {handle}
                   </View>
                 );
@@ -242,14 +257,18 @@ export default function AdminSponsorsScreen() {
           )}
         </Card>
         <T variant="caption">Ziehe die Einträge am Griff, um die Reihenfolge zu ändern.</T>
-        {!form ? (
-          <Button label="Sponsor anlegen" icon="add" onPress={() => setForm(empty())} />
-        ) : null}
+        <Button label="Sponsor anlegen" icon="add" onPress={() => setForm(empty())} />
       </Section>
 
-      {form ? (
-        <Section title={form.id ? 'Sponsor bearbeiten' : 'Sponsor anlegen'}>
-          <Card style={{ gap: 12 }}>
+      {/* Bearbeiten in einem Fenster statt unter der Liste */}
+      <Sheet
+        visible={!!form}
+        onClose={() => setForm(null)}
+        title={form?.id ? 'Sponsor bearbeiten' : 'Sponsor anlegen'}
+      >
+        {form ? (
+          <>
+            {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
             <TextField
               label="Name"
               value={form.name}
@@ -436,9 +455,9 @@ export default function AdminSponsorsScreen() {
                 />
               ) : null}
             </View>
-          </Card>
-        </Section>
-      ) : null}
+          </>
+        ) : null}
+      </Sheet>
 
       <Section title="Kennzeichnung">
         <Card style={{ gap: 12 }}>
