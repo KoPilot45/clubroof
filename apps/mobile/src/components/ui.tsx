@@ -2531,6 +2531,49 @@ export function Ticket({
   );
 }
 
+/**
+ * Weicher Rand mit kleinem Pfeil ganz rechts am Bildschirm: zeigt, dass eine Leiste nach rechts weitergeht
+ * (Paket AP). Liegt über der Leiste, fängt keine Berührungen ab.
+ */
+export function EdgeHint({ visible }: { visible: boolean }) {
+  const { colors } = useTheme();
+  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  if (!visible) return null;
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: 52,
+        justifyContent: 'center',
+        alignItems: 'flex-end',
+        paddingRight: 4,
+      }}
+    >
+      <Svg
+        style={StyleSheet.absoluteFill}
+        width="100%"
+        height="100%"
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        <Defs>
+          <LinearGradient id={id} x1="0" y1="0" x2="1" y2="0">
+            <Stop offset="0" stopColor={colors.background} stopOpacity={0} />
+            <Stop offset="0.75" stopColor={colors.background} stopOpacity={0.92} />
+            <Stop offset="1" stopColor={colors.background} stopOpacity={0.92} />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
+      </Svg>
+      <Ionicons name="chevron-forward" size={20} color={colors.onSurfaceMuted} />
+    </View>
+  );
+}
+
 /** Linearer Farbverlauf als Hintergrund (diagonal 135° wie im Entwurf), füllt den Elternbereich. */
 export function GradientFill({
   from,
