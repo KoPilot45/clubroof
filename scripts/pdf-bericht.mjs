@@ -18,6 +18,44 @@ const rolle = ({ kicker, titel, intro, farbe, funktionen, bilder, nr }) => `<sec
 <ul class=feat>${funktionen.map(feat).join('')}</ul>
 <div class=row>${bilder.map(([n, u]) => phone(n, u)).join('')}</div><div class=nr>${nr}</div></section>`;
 
+
+const phone2 = (n, rolle, punkte) => `<div class=pv><figure><img src="${n}.png"></figure><h3>${rolle}</h3><ul>${punkte.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
+const ansicht = ({ nr, kicker, titel, intro, farbe = '#2fe27a', a, b }) => `<section style="--c:${farbe}">
+<div class=kopf><small>${kicker}</small><h2>${titel}</h2><p class=lead>${intro}</p></div>
+<div class=duo>${phone2(...a)}${phone2(...b)}</div><div class=nr>${nr}</div></section>`;
+const ANSICHTEN = [
+  ['Home', 'Dein Tag auf einen Blick', 'Die Startseite zeigt je Rolle etwas anderes: das nächste Spiel, was offen ist und was diese Woche ansteht.', [
+    ['m-home-spieler', 'Spieler', ['Plakat mit Countdown, Gegner, Ort und Anstoß – bis zu drei Spiele zum Wischen', 'Offene Aufgaben, z. B. Zusage oder Trikots waschen', 'Meine Woche mit allen Terminen']],
+    ['m-home-trainer', 'Trainer', ['Nächstes Spiel der betreuten Mannschaften', 'Offene Aufgaben wie „Anwesenheit erfassen“', 'Die Woche über alle Mannschaften']],
+    ['m-home-vorstand', 'Vorstand', ['Der Verein in Zahlen: Mitglieder, Abteilungen, Mannschaften', 'Offen: News freigeben, Helfer gesucht', 'Spiele der Woche im ganzen Verein']],
+    ['m-home-eltern', 'Eltern', ['Nächstes Spiel der Kinder – mit Antwortstand je Kind', 'Zusagen im Namen der Kinder direkt auf der Startseite', 'Spiele über alle Kinder in einer Woche']]]],
+  ['Team', 'Mannschaft und Kader', 'Der Team-Bereich zeigt die eigene Mannschaft – für den Vorstand den ganzen Verein.', [
+    ['m-team-spieler', 'Spieler', ['Kader mit Kennzahlen, Bilanz und Trainingsquote', 'Nächster Termin mit Zu- und Absage-Übersicht', 'Kacheln für Termine, Kader und Statistik']],
+    ['m-team-trainer', 'Trainer', ['Mehrere Mannschaften per Reiter umschalten', 'Kaderstatus: wer ist verfügbar, wer fehlt', 'Verwaltung (Kader, Termine, Kasse) nur mit Rechten']],
+    ['m-team-vorstand', 'Vorstand', ['Abteilungsübersicht: alle Mannschaften auf einen Blick', 'Spielerzahlen, Trainingsbeteiligung, Bilanz der Saison', 'Filter nach Senioren, Frauen und Jugend']],
+    ['m-team-eltern', 'Eltern', ['Die Mannschaften der Kinder (hier E- und F-Jugend)', 'Kader, Bilanz und nächster Termin je Mannschaft', 'Auch als Co-Trainer: zusätzliche Verwaltungsfunktionen']]]],
+  ['Termine', 'Training, Spiele, Veranstaltungen', 'Alle Termine als Liste, Woche und Kalender – gefiltert nach Spielen, Training und Verein.', [
+    ['m-termine-spieler', 'Spieler', ['Nächster Termin groß, darunter die Woche und der Kalender', 'Eigene Antwort („Zugesagt“) direkt in der Liste', 'Filter: Alle, Spiele, Training, Verein']],
+    ['m-termine-trainer', 'Trainer', ['Termine aller betreuten Mannschaften', 'Rückmeldungen und Anwesenheit im Termin', 'Termine anlegen, verschieben, absagen']],
+    ['m-termine-vorstand', 'Vorstand', ['Vereinstermine wie Vorstandssitzung und Arbeitseinsatz', 'Der Kalender des ganzen Vereins', 'Veranstaltungen planen und Helfer einteilen']],
+    ['m-termine-eltern', 'Eltern', ['Termine der Kinder, farblich nach Kind getrennt', 'Filter pro Kind: „Leon“, „Mia“', 'Zu- und Absage im Namen des Kindes']]]],
+  ['Verein', 'Neuigkeiten, Veranstaltungen, Vereinsleben', 'Der Vereinsbereich ist für alle gleich aufgebaut; welche Kacheln darunter erscheinen, hängt von der Rolle ab.', [
+    ['m-verein-spieler', 'Spieler', ['Nächster Vereinstermin als Blickfang', 'Dringende Meldungen, z. B. Platzsperrung', 'Sponsoren, Veranstaltungen, News, Umfragen']],
+    ['m-verein-trainer', 'Trainer', ['Dieselben Neuigkeiten und Veranstaltungen', 'Zusätzlich: Verwaltungsfunktionen für die eigene Mannschaft', 'Spielerbedarf melden und Spieler anbieten']],
+    ['m-verein-vorstand', 'Vorstand', ['Neuigkeiten und Veranstaltungen des Vereins', 'Zusätzlich: Kategorie „Verwaltung“ mit allen Funktionen der Rolle', 'News schreiben, freigeben, Veranstaltung planen']],
+    ['m-verein-eltern', 'Eltern', ['Neuigkeiten, Umfragen und Helferschichten', 'Helfer bei Turnieren und Festen eintragen', 'Ansprechpartner und Dokumente des Vereins']]]],
+  ['Mehr', 'Profil, Einstellungen und Hilfe', 'Hier liegt alles Persönliche – und je nach Rolle der Zugang zu Verwaltung und Kasse.', [
+    ['m-mehr-spieler', 'Spieler', ['Profil mit Statistik, Position und Rückennummer', 'Abwesenheiten melden, Benachrichtigungen, Kalender-Abo', 'Meine Mannschaften und Einstellungen']],
+    ['m-mehr-trainer', 'Trainer', ['Profil mit Rollen (Trainer B1, Trainer C1)', 'Abwesenheiten, Benachrichtigungen, Schiedsrichter-Einsätze', 'Meine Mannschaften mit Schnellzugriff']],
+    ['m-mehr-vorstand', 'Vorstand', ['Violette Kachel „Admin-Verwaltung“ mit Mitgliedern, Sport, Inhalten, Verein', 'Persönliche Einstellungen wie bei allen', 'Vereinskasse nur für Kassenwart und Admin']],
+    ['m-mehr-eltern', 'Eltern', ['„Meine Kinder“: Profile und Verwaltung der Kinder', 'Abwesenheiten für die Kinder melden', 'Benachrichtigungen, Kalender-Abo für die Familie']]]],
+];
+const ansichtSeiten = ANSICHTEN.map(([n, t, i, p], k) => [
+  ansicht({ nr: `0${k + 1}a`, kicker: `Ansicht ${k + 1} von 5 · ${n} (1/2)`, titel: `${n}: ${t}`, intro: i, a: p[0], b: p[1] }),
+  ansicht({ nr: `0${k + 1}b`, kicker: `Ansicht ${k + 1} von 5 · ${n} (2/2)`, titel: `${n}: ${t}`, intro: i, farbe: '#46b8ff', a: p[2], b: p[3] }),
+].join('')).join('\n');
+const duoSeite = ({ nr, kicker, titel, intro, farbe, a, b }) => ansicht({ nr, kicker, titel, intro, farbe, a, b });
+
 const html = `<!doctype html><meta charset=utf-8><style>
 @font-face{font-family:'Saira Condensed';font-weight:700;src:url('file://${SAIRA}700Bold/SairaCondensed_700Bold.ttf')}
 @font-face{font-family:'Saira Condensed';font-weight:800;src:url('file://${SAIRA}800ExtraBold/SairaCondensed_800ExtraBold.ttf')}
@@ -66,6 +104,12 @@ figcaption{font-size:8pt;color:#8fa496;text-align:center;margin-top:2.2mm}
 .schritte div{background:#0b1410aa;border:1px solid #2f5a40;border-radius:4mm;padding:5mm}
 .schritte b{font-family:'Saira Condensed';font-size:30pt;color:#2fe27a;display:block;line-height:1}
 .schritte span{font-size:9.5pt;line-height:1.45;color:#cfe2d4;display:block;margin-top:2mm}
+
+.duo{position:absolute;left:14mm;right:14mm;top:62mm;display:flex;gap:10mm;justify-content:center}
+.pv{width:82mm}.pv figure{width:82mm}
+.pv h3{margin-top:4mm;color:var(--c);font-size:20pt}
+.pv ul{margin:1.5mm 0 0;padding-left:4mm;font-size:8.8pt;line-height:1.45;color:#b9c8bd}
+.pv li{margin-bottom:.8mm}
 </style>
 
 <section class=cover><small>Die Vereins-App</small><h1>Club-<br>roof</h1>
@@ -105,90 +149,16 @@ ${[
 <p class=lead style="font-size:8.5pt;color:#8fa496;margin-top:5mm">Vereinfachte Darstellung der Standardrollen. Rechte lassen sich pro Person und Mannschaft feiner einstellen; das Vorstandsamt „Kassenwart“ ist eine Zusatzaufgabe.</p>
 </section>
 
-${rolle({ nr: '01', kicker: 'Für Spielerinnen und Spieler', titel: 'Immer wissen, wann und wo', farbe: '#2fe27a',
-  intro: 'Das Wichtigste auf dem Handy: Wann ist das nächste Spiel, wo ist Treffpunkt, wer ist dabei – und mit zwei Taps ist die Antwort gegeben.',
-  funktionen: [
-    ['Nächstes Spiel im Blick', 'Plakat mit Countdown, Gegner, Ort und Anstoß – mehrere Spiele zum Wischen.'],
-    ['Zusagen oder absagen', 'Zusage, unsicher, absagen – mit Frist, Countdown und „Rückgängig“.'],
-    ['Treffpunkt und Route', 'Treffpunkt, Spielort, Ansprechperson und Button zur Navigation.'],
-    ['Abwesenheiten melden', 'Urlaub, verletzt, krank: einmal eintragen, die Zusagen laufen automatisch mit.'],
-    ['Termine im eigenen Kalender', 'Persönlicher Abo-Link für Google, Apple oder Outlook – Änderungen kommen von allein.'],
-    ['Meine Woche und Fahrgemeinschaften', 'Alle Termine der nächsten sieben Tage; bei Auswärtsspielen Fahrten anbieten oder mitfahren.'],
-    ['Umfragen und News', 'Kurz abstimmen, Neuigkeiten des Vereins und der Mannschaft lesen.'],
-    ['Eigenes Profil und Statistik', 'Position, Rückennummer, Einsätze, Tore und Vorlagen der Saison.'],
-  ], bilder: [['sp-home', 'Start mit nächstem Spiel'], ['sp-spiel', 'Spiel mit Zu-/Absage und Route'], ['sp-abwesenheit', 'Abwesenheit melden']] })}
+${ansichtSeiten}
+${duoSeite({ nr: 'A', kicker: 'Verwaltung', titel: 'Admin-Verwaltung', farbe: '#b58cff',
+  intro: 'Die Verwaltung ist eine „App in der App“ mit eigenem violettem Kopfband und eigener Navigation. Sie erscheint nur mit Verwaltungsrechten.',
+  a: ['vo-admin', 'Übersicht', ['Aktive Mitglieder, Passive, Mannschaften', 'Aufgaben „Für dich“: Freigaben, Mitglieder ohne Mannschaft', 'Letzte Änderungen im Verein']],
+  b: ['vo-mitglieder', 'Mitglieder', ['Suchen und filtern: Aktiv, Passiv, ohne Mannschaft', 'Mitglieder anlegen, importieren, zuordnen', 'Rollen und Rechte je Person vergeben']] })}
 
-${rolle({ nr: '02', kicker: 'Für Trainerinnen und Trainer', titel: 'Der Kader im Griff – ohne Nachfragen', farbe: '#46b8ff',
-  intro: 'Wer kommt, wer fehlt, wer ist unsicher? Das Trainerteam sieht es live – und organisiert Training, Spiele und Mannschaftskasse an einem Ort.',
-  funktionen: [
-    ['Team-Cockpit', 'Kaderstatus, Bilanz, Trainingsquote und nächster Termin direkt beim Start.'],
-    ['Zu- und Absagen im Überblick', 'Gruppiert nach Antwort; Trainer können nach Fristablauf korrigieren. Gründe sehen nur Verantwortliche.'],
-    ['Termine anlegen', 'Training, Spiel, Serientermine; Konfliktwarnung bei Platzbelegung; Treffpunkt und Ort.'],
-    ['Aufstellung und Spielbericht', 'Startelf und Bank, Tore, Vorlagen und Karten – die Statistik entsteht automatisch.'],
-    ['Anwesenheit abhaken', 'Nach dem Training erfassen, wer da war – Grundlage für die Trainingsquote.'],
-    ['Kader pflegen', 'Spieler, Trainerteam, Rückennummern, Positionen; Co-Trainer mit eigenen Rechten.'],
-    ['Spielerbedarf und Gastspieler', 'Fehlen Spieler, fragt das Team bei anderen Mannschaften an – ohne Telefonkette.'],
-    ['Mannschaftskasse', 'Strafen, Getränke, Einzahlungen, Saldo und Bericht als Excel oder PDF.'],
-  ], bilder: [['tr-team', 'Team-Cockpit'], ['tr-termin', 'Termin mit Verwaltung'], ['tr-aufstellung', 'Aufstellung']] })}
-
-${rolle({ nr: '03', kicker: 'Für Trainer – Ergänzung', titel: 'Kasse, Berichte und Bedarf', farbe: '#46b8ff',
-  intro: 'Die Mannschaftskasse ersetzt die Strichliste: Strafen und Getränke werden gebucht, Einzahlungen erfasst und der Stand ist für alle Beteiligten nachvollziehbar.',
-  funktionen: [
-    ['Strafenkatalog', 'Eigene Strafen mit Beträgen je Mannschaft.'],
-    ['Buchungen und Saldo', 'Einnahmen, Ausgaben und aktueller Kassenstand auf einen Blick.'],
-    ['Berichte', 'Kassenbericht als Excel oder PDF für den Abschluss.'],
-    ['Spielbericht', 'Ergebnis und Ereignisse mit wenigen Taps erfassen.'],
-    ['Spielerbedarf melden', '„2–3 Spieler, Abwehr“ – andere Mannschaften sehen es und bieten Spieler an.'],
-    ['Kapazität anbieten', 'Wer Spieler übrig hat, meldet es mit einem Tap.'],
-  ], bilder: [['tr-kasse', 'Mannschaftskasse'], ['tr-bericht', 'Spielbericht'], ['tr-spielerbedarf', 'Spielerbedarf']] })}
-
-${rolle({ nr: '04', kicker: 'Für Eltern', titel: 'Die Kinder im Blick', farbe: '#ffb84a',
-  intro: 'Eltern sehen die Termine aller Kinder an einem Ort und antworten in deren Namen – egal, in wie vielen Mannschaften sie spielen.',
-  funktionen: [
-    ['Alle Kinder, eine Übersicht', 'Nächste Spiele und Termine über alle Kinder, auch bei mehreren Mannschaften.'],
-    ['Zu- und Absagen für die Kinder', 'Mit Frist, optionalem Grund und Erinnerung.'],
-    ['Abwesenheiten melden', 'Urlaub, Krankheit oder Schule – für alle Termine oder einzelne Mannschaften.'],
-    ['Treffpunkt, Ort, Route', 'Alle Infos zum Spiel in einer Karte, Route auf Knopfdruck.'],
-    ['Kalender abonnieren', 'Die Termine der Kinder erscheinen automatisch im Familienkalender.'],
-    ['Helfen und mitfahren', 'Fahrgemeinschaften, Helferschichten bei Turnieren und Vereinsfesten.'],
-    ['Neuigkeiten und Umfragen', 'Elternabend, Trikotabstimmung, Mannschaftsnews – gezielt für die eigene Mannschaft.'],
-    ['Datenschutz', 'Kontaktdaten und Gründe sind nur für Berechtigte sichtbar.'],
-  ], bilder: [['el-home', 'Start der Eltern'], ['el-abwesenheit', 'Abwesenheit für ein Kind'], ['el-kalender', 'Kalender abonnieren']] })}
-
-${rolle({ nr: '05', kicker: 'Für den Vorstand', titel: 'Den ganzen Verein überblicken', farbe: '#b58cff',
-  intro: 'Mitglieder, Mannschaften, Veranstaltungen und Neuigkeiten – der Vorstand sieht den Verein im Überblick und verwaltet ihn in einem eigenen Bereich, auch bequem im Browser.',
-  funktionen: [
-    ['Verein im Überblick', 'Mitglieder, Mannschaften, offene Freigaben und das nächste Event zum Start.'],
-    ['Mitglieder verwalten', 'Suchen, filtern, anlegen; Ein- und Austritte, Aktiv/Passiv, Mannschaftszuordnung, CSV-Import.'],
-    ['Mannschaften und Saison', 'Mannschaften anlegen, Saisonwechsel vorbereiten, Spielerwechsel und Leihe.'],
-    ['Rollen und Rechte', 'Rechtepakete vergeben – für Vorstand, Abteilungsleitung, Trainer, Kassenwart und mehr.'],
-    ['News, Umfragen, Freigaben', 'Schreiben, einreichen, freigeben; Lesebestätigung und gezielte Zielgruppen.'],
-    ['Veranstaltungen und Helfer', 'Feste und Versammlungen planen, Helferschichten mit Kapazität.'],
-    ['Platzbelegung und Sperrungen', 'Stundenplan je Platz, Konfliktwarnung, Sperrungen mit automatischer Information.'],
-    ['Module nach Bedarf', 'Forum, Trainingsplanung, Fundbüro, Sponsoren und mehr lassen sich zuschalten.'],
-  ], bilder: [['vo-home', 'Start des Vorstands'], ['vo-mitglieder', 'Mitgliederverwaltung'], ['vo-events', 'Veranstaltungen']] })}
-
-${rolle({ nr: '06', kicker: 'Für Admin und Vorstand', titel: 'Einrichten, steuern, nachvollziehen', farbe: '#b58cff',
-  intro: 'Der Verwaltungsmodus ist eine „App in der App“ mit eigener Navigation und violettem Kopfband. Er ist nur mit Verwaltungsrechten erreichbar.',
-  funktionen: [
-    ['Rollen und Aufgaben', 'Fulladmin, Vorstand, Abteilungsleitung, Trainer – Rechte genau einstellbar.'],
-    ['Module und Update-Center', 'Neue Funktionen sind zunächst aus; der Verein schaltet sie ein, wenn er sie braucht.'],
-    ['Abteilungen und Mannschaften', 'Struktur des Vereins, Saisonplanung, Teilnahme-Modelle je Mannschaft.'],
-    ['Einladungen', 'Mitglieder per Code oder QR-Code einladen und der Mannschaft zuordnen.'],
-    ['Vereinsfarbe, Wappen, Sprache', 'Auftritt anpassen: zehn Farben, Wappen, Deutsch oder Englisch.'],
-    ['Änderungsprotokoll', 'Wer hat wann was geändert – für Vorstand und Admin nachvollziehbar.'],
-  ], bilder: [['ad-rollen', 'Rollen und Aufgaben'], ['ad-module', 'Module und Update-Center'], ['ad-teams', 'Mannschaften und Saison']] })}
-
-${rolle({ nr: '07', kicker: 'Für Kassenwart und Vorstand', titel: 'Vereinskasse – sauber getrennt', farbe: '#46b8ff',
-  intro: 'Die Vereinskasse ist ein eigener Bereich, getrennt von den Mannschaftskassen. Kassenwart und Kassenprüfer sehen, was sie brauchen – und niemand sonst.',
-  funktionen: [
-    ['Konten und Bestand', 'Girokonto, Barkasse, Tagesgeld – Gesamtbestand und Verlauf auf einen Blick.'],
-    ['Buchungen und Kategorien', 'Kassenbuch mit Kategorien und Kostenstellen für ideellen Bereich, Vermögensverwaltung und mehr.'],
-    ['Mitgliedsbeiträge', 'Beitragsarten, Sollstellung, Erinnerungen, Kontoauszug-Import.'],
-    ['Haushaltsplan', 'Planung je Jahr und Kategorie, Vergleich mit den tatsächlichen Zahlen.'],
-    ['Auslagen und Erstattungen', 'Mitglieder reichen Belege ein, der Kassenwart prüft und erstattet.'],
-    ['Abschluss und Prüfung', 'Jahresabschluss, Kassenprüfung durch eigene Rolle, Spenden.'],
-  ], bilder: [['ka-kasse', 'Konten und Bestand'], ['ka-beitraege', 'Mitgliedsbeiträge'], ['ka-abschluss', 'Jahresabschluss']] })}
+${duoSeite({ nr: 'K', kicker: 'Kasse', titel: 'Vereinskasse', farbe: '#46b8ff',
+  intro: 'Die Vereinskasse ist ein eigener Bereich mit blauem Kopfband – getrennt von den Mannschaftskassen und nur für Kassenwart, Prüfer und Admin.',
+  a: ['ka-kasse', 'Übersicht', ['Gesamtbestand aller Konten: Giro, Bar, Tagesgeld', 'Einnahmen und Ausgaben nach Bereich', 'Buchungen, Planung und Prüfung per Reiter']],
+  b: ['ka-beitraege', 'Mitgliedsbeiträge', ['Offene und überfällige Beiträge auf einen Blick', 'Sollstellung erzeugen, Erinnerungen senden', 'Kontoauszug importieren, Beitragsarten pflegen']] })}
 
 <section><div class=kopf><small>Für alle</small><h2>Gut gemacht, bis ins Detail</h2>
 <p class=lead>Clubroof soll sich anfühlen wie eine gute Vereins-App: schnell, übersichtlich und so selbstverständlich, dass man sie nicht erklären muss.</p></div>
@@ -206,7 +176,7 @@ ${rolle({ nr: '07', kicker: 'Für Kassenwart und Vorstand', titel: 'Vereinskasse
   ['Hilfe und Einführung', 'Willkommens-Tour je Aufgabe, Hilfe in der App, Einrichtungs-Assistent.'],
   ['Web-Verwaltung', 'Vorstand und Kassenwart arbeiten bequem am Rechner.'],
 ].map(feat).join('')}</ul>
-<div class=row style="bottom:12mm"><style>.p2 figure{width:44mm}</style><div class=p2 style="display:flex;gap:7mm">${phone('hell-team', 'Hell: Team')}${phone('hell-verein', 'Hell: Verein')}${phone('login', 'Anmeldung mit Vereinsbezug')}</div></div></section>
+</section>
 
 <section class=ende><div class=kopf><small>Nächster Schritt</small><h1 style="font-size:56pt">So kommt Clubroof<br>in Ihren Verein</h1></div>
 <p class=claim>Wir richten Clubroof mit Ihrem Wappen und Ihrer Vereinsfarbe ein, übernehmen Ihre Mitglieder per Import und führen Trainer und Vorstand in die wichtigsten Abläufe ein.</p>
