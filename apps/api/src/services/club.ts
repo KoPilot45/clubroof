@@ -69,6 +69,7 @@ export async function listDocuments(
     sizeBytes: d.sizeBytes,
     createdAt: d.createdAt.toISOString(),
     source: { type: d.scopeType, label: labels.label(d.scopeType, d.scopeId) },
+    scopeId: d.scopeId,
     canDelete: manage(d),
     canEdit: manage(d),
     editedAt: d.editedAt?.toISOString() ?? null,

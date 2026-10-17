@@ -1,7 +1,8 @@
 import { ABSENCE_KINDS, type Absence, type AbsenceKind } from '@clubroof/core';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { useLeaveGuard } from '@/components/edited';
 import { Button, Card, ChoiceChips, Chip, DateStepper, Screen, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { todayIso } from '@/lib/format';
@@ -12,6 +13,8 @@ import { t } from '@/lib/i18n';
 
 export default function NewAbsenceScreen() {
   const { api, me } = useSignedIn();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const editing = !!id;
   const queryClient = useQueryClient();
   const today = todayIso();
   const [personId, setPersonId] = useState(me.person.id);
@@ -23,6 +26,27 @@ export default function NewAbsenceScreen() {
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  // Bearbeiten: dasselbe Formular, vorausgefüllt mit der bestehenden Abwesenheit
+  const list = useQuery({
+    queryKey: ['absences'],
+    queryFn: () => api<Absence[]>('/absences'),
+    enabled: editing,
+  });
+  const existing = list.data?.find((a) => a.id === id);
+  const [loaded, setLoaded] = useState(!editing);
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    if (!existing || loaded) return;
+    setPersonId(existing.personId);
+    setKind(existing.kind);
+    setStartsOn(existing.startsOn);
+    setEndsOn(existing.endsOn);
+    setScope(existing.teams.length ? 'selected' : 'all');
+    setTeamIds(existing.teams.map((t) => t.id));
+    setNote(existing.note ?? '');
+    setLoaded(true);
+  }, [existing, loaded]);
+
   const personTeams = useMemo(
     () => me.teams.filter((t) => t.personId === personId && t.functions.includes('player')),
     [me.teams, personId],
@@ -30,10 +54,10 @@ export default function NewAbsenceScreen() {
 
   const save = useMutation({
     mutationFn: () =>
-      api<Absence>('/absences', {
-        method: 'POST',
+      api<Absence>(editing ? `/absences/${id}` : '/absences', {
+        method: editing ? 'PATCH' : 'POST',
         body: {
-          personId,
+          ...(editing ? {} : { personId }),
           kind,
           startsOn,
           endsOn,
@@ -42,6 +66,8 @@ export default function NewAbsenceScreen() {
         },
       }),
     onSuccess: () => {
+      allowLeave();
+      setSaved(true);
       for (const key of ['absences', 'home', 'events', 'event']) {
         void queryClient.invalidateQueries({ queryKey: [key] });
       }
@@ -54,6 +80,17 @@ export default function NewAbsenceScreen() {
   });
 
   const invalid = scope === 'selected' && teamIds.length === 0;
+  const dirty =
+    editing &&
+    loaded &&
+    !saved &&
+    !!existing &&
+    (kind !== existing.kind ||
+      startsOn !== existing.startsOn ||
+      endsOn !== existing.endsOn ||
+      note !== (existing.note ?? '') ||
+      (scope === 'selected' ? teamIds.join() : '') !== existing.teams.map((t) => t.id).join());
+  const { guard, allowLeave } = useLeaveGuard(dirty, () => save.mutate());
 
   return (
     <Screen
@@ -62,7 +99,7 @@ export default function NewAbsenceScreen() {
         <>
           {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
           <Button
-            label="Abwesenheit speichern"
+            label={editing ? 'Änderungen speichern' : 'Abwesenheit speichern'}
             icon="checkmark"
             disabled={invalid}
             loading={save.isPending}
@@ -71,7 +108,8 @@ export default function NewAbsenceScreen() {
         </>
       }
     >
-      {me.managedPersons.length > 1 ? (
+      {guard}
+      {me.managedPersons.length > 1 && !editing ? (
         <Card>
           <ChoiceChips
             label="Für wen?"
@@ -105,7 +143,7 @@ export default function NewAbsenceScreen() {
         <DateStepper
           label="Von"
           value={startsOn}
-          min={today}
+          min={editing ? undefined : today}
           onChange={(v) => {
             setStartsOn(v);
             if (endsOn < v) setEndsOn(v);

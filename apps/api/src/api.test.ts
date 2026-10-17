@@ -1364,6 +1364,230 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Nachträglich bearbeiten (BE, Stufe 1)', () => {
+    it('Umfragen: Ersteller ändern Frage und Frist, Antworten nur ohne Stimmen, beendete nicht', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.create.polls.find((t) => t.label.startsWith('B1'))!;
+      const created = await send<PollDetail>('POST', '/polls', coach.token, {
+        question: 'Wohin geht die Mannschaftsfahrt?',
+        options: ['Berlin', 'Hamburg'],
+        closesAt: '2026-12-15T12:00:00Z',
+        resultVisibility: 'always',
+        scopeType: 'team',
+        scopeId: b1.id,
+      });
+      const id = created.body.id;
+      expect(created.body).toMatchObject({ canEdit: true, optionsLocked: false, editedAt: null });
+
+      // Fremde ändern nichts; Frage und Antworten vor der ersten Stimme änderbar
+      expect(
+        (await send('PATCH', `/polls/${id}`, player.token, { question: 'Ich ändere das' })).status,
+      ).toBe(403);
+      const changed = await send<PollDetail>('PATCH', `/polls/${id}`, coach.token, {
+        question: 'Wohin soll die Mannschaftsfahrt gehen?',
+        options: ['Berlin', 'Hamburg', 'Köln'],
+        closesAt: '2026-12-20T12:00:00Z',
+      });
+      expect(changed.status, JSON.stringify(changed.body)).toBe(200);
+      expect(changed.body.options.map((o) => o.label)).toEqual(['Berlin', 'Hamburg', 'Köln']);
+      expect(changed.body.editedAt).not.toBeNull();
+      // Die Friständerung benachrichtigt, wer noch nicht abgestimmt hat
+      const playerNotes = await get<{ title: string }[]>('/notifications', player.token);
+      expect(playerNotes.some((n) => n.title === 'Frist der Umfrage geändert')).toBe(true);
+
+      // Nach der ersten Stimme: Antworten gesperrt, Frage und Frist weiter änderbar
+      await send('PUT', `/polls/${id}/vote`, player.token, {
+        optionId: changed.body.options[0]!.id,
+      });
+      const locked = await send<{ error: string }>('PATCH', `/polls/${id}`, coach.token, {
+        options: ['A', 'B'],
+      });
+      expect(locked.status).toBe(409);
+      const same = await send<PollDetail>('PATCH', `/polls/${id}`, coach.token, {
+        options: ['Berlin', 'Hamburg', 'Köln'],
+        description: 'Abstimmung bis zum 20.12.',
+      });
+      expect(same.status).toBe(200);
+      expect(same.body).toMatchObject({
+        optionsLocked: true,
+        description: 'Abstimmung bis zum 20.12.',
+      });
+      expect(
+        (await send('PATCH', `/polls/${id}`, coach.token, { closesAt: '2020-01-01T00:00:00Z' }))
+          .status,
+      ).toBe(400);
+
+      // Beendete Umfragen lassen sich nicht mehr ändern
+      await send('POST', `/polls/${id}/close`, coach.token);
+      expect(
+        (await send('PATCH', `/polls/${id}`, coach.token, { question: 'Zu spät?' })).status,
+      ).toBe(409);
+    });
+
+    it('Dokumente: Titel, Kategorie und Sichtbarkeit ändern; Fremde nicht', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.create.documents.find((d) => d.label.startsWith('B1'))!;
+      const up = await send<{ id: string }>('POST', '/documents', coach.token, {
+        title: 'Hallenzeiten',
+        category: 'other',
+        scopeType: 'team',
+        scopeId: b1.id,
+        fileName: 'hallenzeiten.pdf',
+        dataBase64: Buffer.from('%PDF-1.4\n%%EOF\n').toString('base64'),
+      });
+      expect(up.status).toBe(201);
+      const id = up.body.id;
+      expect(
+        (await send('PATCH', `/documents/${id}`, player.token, { title: 'Gehackt' })).status,
+      ).toBe(404);
+      // Das Trainerteam darf den Bereich nicht auf „ganzer Verein“ ausweiten
+      expect(
+        (await send('PATCH', `/documents/${id}`, coach.token, { scopeType: 'club' })).status,
+      ).toBe(403);
+      expect(
+        (
+          await send('PATCH', `/documents/${id}`, coach.token, {
+            title: 'Hallenzeiten Winter',
+            category: 'forms',
+          })
+        ).status,
+      ).toBe(204);
+      const list = await get<DocumentItem[]>(`/documents?teamId=${b1.id}`, coach.token);
+      const doc = list.find((d) => d.id === id)!;
+      expect(doc).toMatchObject({ title: 'Hallenzeiten Winter', category: 'forms', canEdit: true });
+      expect(doc.editedAt).not.toBeNull();
+      const asPlayer = await get<DocumentItem[]>(`/documents?teamId=${b1.id}`, player.token);
+      expect(asPlayer.find((d) => d.id === id)).toMatchObject({ canEdit: false });
+      await send('DELETE', `/documents/${id}`, coach.token);
+    });
+
+    it('Vereinsveranstaltung mit Helferschichten: Schichten ändern, Plätze nicht unter die Angemeldeten, Zeit informiert Helfer', async () => {
+      const board = await login('vorstand');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const at = (time: string) => new Date(`2026-12-12T${time}:00+01:00`).toISOString();
+      const created = await send<EventPlanning>('POST', '/admin/club-events', board.token, {
+        type: 'club_event',
+        title: 'Weihnachtsfeier',
+        startsAt: at('15:00'),
+        endsAt: at('21:00'),
+        locationText: 'Vereinsheim',
+        shifts: [
+          { title: 'Aufbau', startsAt: at('13:00'), endsAt: at('15:00'), capacity: 2 },
+          { title: 'Küche', startsAt: at('15:00'), endsAt: at('19:00'), capacity: 3 },
+        ],
+      });
+      const id = created.body.upcoming.find((e) => e.title === 'Weihnachtsfeier')!.id;
+      expect((await send('GET', `/admin/club-events/${id}`, coach.token)).status).toBe(403);
+      const form = await get<ClubEventForm>(`/admin/club-events/${id}`, board.token);
+      expect(form).toMatchObject({
+        title: 'Weihnachtsfeier',
+        editedAt: null,
+        locationText: 'Vereinsheim',
+      });
+      expect(form.shifts.map((x) => x.title)).toEqual(['Aufbau', 'Küche']);
+
+      // Ein Helfer trägt sich in „Küche“ ein
+      const kitchen = form.shifts.find((x) => x.title === 'Küche')!;
+      expect((await send('PUT', `/shifts/${kitchen.id}/signup`, player.token)).status).toBe(200);
+      const keep = form.shifts.map(({ signedUp: _signedUp, ...x }) => x);
+      // Schicht mit Angemeldeten lässt sich nicht entfernen
+      const removeUsed = await send('PATCH', `/admin/club-events/${id}`, board.token, {
+        shifts: keep.filter((x) => x.id !== kitchen.id),
+      });
+      expect(removeUsed.status).toBe(409);
+
+      // Fremde dürfen nicht ändern; Berechtigte: Zeit, Schichten ergänzen und entfernen
+      expect(
+        (await send('PATCH', `/admin/club-events/${id}`, coach.token, { title: 'Gehackt' })).status,
+      ).toBe(403);
+      const edited = await send<ClubEventForm>('PATCH', `/admin/club-events/${id}`, board.token, {
+        title: 'Weihnachtsfeier 2026',
+        startsAt: at('16:00'),
+        endsAt: at('22:00'),
+        shifts: [
+          ...keep
+            .filter((x) => x.title === 'Küche')
+            .map((x) => ({ ...x, capacity: 4, startsAt: at('16:00'), endsAt: at('20:00') })),
+          { title: 'Abbau', startsAt: at('21:00'), endsAt: at('23:00'), capacity: 3 },
+        ],
+      });
+      expect(edited.status, JSON.stringify(edited.body)).toBe(200);
+      expect(edited.body.title).toBe('Weihnachtsfeier 2026');
+      expect(edited.body.editedAt).not.toBeNull();
+      expect(edited.body.shifts.map((x) => `${x.title} ${x.signedUp}/${x.capacity}`)).toEqual([
+        'Küche 1/4',
+        'Abbau 0/3',
+      ]);
+      const notes = await get<NotificationItem[]>('/notifications', player.token);
+      expect(notes.some((n) => n.title === 'Geändert: Weihnachtsfeier 2026')).toBe(true);
+      const detail = await get<EventDetail>(`/events/${id}`, board.token);
+      expect(detail).toMatchObject({ canEditClubEvent: true });
+      expect(detail.editedAt).not.toBeNull();
+      expect((await get<EventDetail>(`/events/${id}`, player.token)).canEditClubEvent).toBe(false);
+      await send('POST', `/events/${id}/cancel`, board.token, { reason: 'Test beendet' });
+    });
+
+    it('Abwesenheiten: Zeitraum ändern berechnet die automatischen Absagen neu', async () => {
+      const { token, me } = await login('spieler');
+      const events = await get<EventSummary[]>('/events', token);
+      const match = events.find((e) => e.team?.badge === 'B1' && e.type === 'match')!;
+      const day = match.startsAt.slice(0, 10);
+      const created = await send<Absence>('POST', '/absences', token, {
+        personId: me.person.id,
+        kind: 'vacation',
+        startsOn: day,
+        endsOn: day,
+      });
+      expect(created.status).toBe(201);
+      const id = created.body.id;
+      expect(created.body.editedAt).toBeNull();
+      expect((await get<EventDetail>(`/events/${match.id}`, token)).myResponses[0]).toMatchObject({
+        status: 'no',
+      });
+
+      // Fremde dürfen nichts ändern
+      const other = await login('eltern');
+      expect((await send('PATCH', `/absences/${id}`, other.token, { note: 'fremd' })).status).toBe(
+        404,
+      );
+
+      // Grund ändern: Absage bleibt, Grund folgt
+      const sick = await send<Absence>('PATCH', `/absences/${id}`, token, {
+        kind: 'illness',
+        note: 'Grippe',
+      });
+      expect(sick.status, JSON.stringify(sick.body)).toBe(200);
+      expect(sick.body).toMatchObject({ kind: 'illness', note: 'Grippe' });
+      expect(sick.body.editedAt).not.toBeNull();
+      expect((await get<EventDetail>(`/events/${match.id}`, token)).myResponses[0]).toMatchObject({
+        status: 'no',
+        reason: 'Abwesend: Krankheit',
+      });
+
+      // Zeitraum verschieben: das Spiel ist nicht mehr betroffen und wird wieder offen
+      const later = new Date(Date.parse(`${day}T00:00:00Z`) + 400 * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
+      const moved = await send<Absence>('PATCH', `/absences/${id}`, token, {
+        startsOn: later,
+        endsOn: later,
+      });
+      expect(moved.status).toBe(200);
+      expect(moved.body.affectedEvents).toBe(0);
+      expect((await get<EventDetail>(`/events/${match.id}`, token)).myResponses[0]).toMatchObject({
+        status: 'pending',
+        reason: null,
+      });
+      expect(
+        (await send('PATCH', `/absences/${id}`, token, { startsOn: later, endsOn: day })).status,
+      ).toBe(400);
+      await send('DELETE', `/absences/${id}`, token);
+    });
+  });
+
   describe('Umfragen', () => {
     it('Ergebnisse erst nach eigener Stimme sichtbar (Regel „nach Abstimmung“)', async () => {
       const { token } = await login('spieler');
@@ -6761,230 +6985,6 @@ describe.skipIf(!url)('API', () => {
       expect(audit.some((a) => a.label.startsWith('Vereinskasse: Konto angelegt'))).toBe(true);
     });
   });
-  describe('Nachträglich bearbeiten (BE, Stufe 1)', () => {
-    it('Umfragen: Ersteller ändern Frage und Frist, Antworten nur ohne Stimmen, beendete nicht', async () => {
-      const coach = await login('trainer');
-      const player = await login('spieler');
-      const b1 = coach.me.create.polls.find((t) => t.label.startsWith('B1'))!;
-      const created = await send<PollDetail>('POST', '/polls', coach.token, {
-        question: 'Wohin geht die Mannschaftsfahrt?',
-        options: ['Berlin', 'Hamburg'],
-        closesAt: '2026-12-15T12:00:00Z',
-        resultVisibility: 'always',
-        scopeType: 'team',
-        scopeId: b1.id,
-      });
-      const id = created.body.id;
-      expect(created.body).toMatchObject({ canEdit: true, optionsLocked: false, editedAt: null });
-
-      // Fremde ändern nichts; Frage und Antworten vor der ersten Stimme änderbar
-      expect(
-        (await send('PATCH', `/polls/${id}`, player.token, { question: 'Ich ändere das' })).status,
-      ).toBe(403);
-      const changed = await send<PollDetail>('PATCH', `/polls/${id}`, coach.token, {
-        question: 'Wohin soll die Mannschaftsfahrt gehen?',
-        options: ['Berlin', 'Hamburg', 'Köln'],
-        closesAt: '2026-12-20T12:00:00Z',
-      });
-      expect(changed.status, JSON.stringify(changed.body)).toBe(200);
-      expect(changed.body.options.map((o) => o.label)).toEqual(['Berlin', 'Hamburg', 'Köln']);
-      expect(changed.body.editedAt).not.toBeNull();
-      // Die Friständerung benachrichtigt, wer noch nicht abgestimmt hat
-      const playerNotes = await get<{ title: string }[]>('/notifications', player.token);
-      expect(playerNotes.some((n) => n.title === 'Frist der Umfrage geändert')).toBe(true);
-
-      // Nach der ersten Stimme: Antworten gesperrt, Frage und Frist weiter änderbar
-      await send('PUT', `/polls/${id}/vote`, player.token, {
-        optionId: changed.body.options[0]!.id,
-      });
-      const locked = await send<{ error: string }>('PATCH', `/polls/${id}`, coach.token, {
-        options: ['A', 'B'],
-      });
-      expect(locked.status).toBe(409);
-      const same = await send<PollDetail>('PATCH', `/polls/${id}`, coach.token, {
-        options: ['Berlin', 'Hamburg', 'Köln'],
-        description: 'Abstimmung bis zum 20.12.',
-      });
-      expect(same.status).toBe(200);
-      expect(same.body).toMatchObject({
-        optionsLocked: true,
-        description: 'Abstimmung bis zum 20.12.',
-      });
-      expect(
-        (await send('PATCH', `/polls/${id}`, coach.token, { closesAt: '2020-01-01T00:00:00Z' }))
-          .status,
-      ).toBe(400);
-
-      // Beendete Umfragen lassen sich nicht mehr ändern
-      await send('POST', `/polls/${id}/close`, coach.token);
-      expect(
-        (await send('PATCH', `/polls/${id}`, coach.token, { question: 'Zu spät?' })).status,
-      ).toBe(409);
-    });
-
-    it('Dokumente: Titel, Kategorie und Sichtbarkeit ändern; Fremde nicht', async () => {
-      const coach = await login('trainer');
-      const player = await login('spieler');
-      const b1 = coach.me.create.documents.find((d) => d.label.startsWith('B1'))!;
-      const up = await send<{ id: string }>('POST', '/documents', coach.token, {
-        title: 'Hallenzeiten',
-        category: 'other',
-        scopeType: 'team',
-        scopeId: b1.id,
-        fileName: 'hallenzeiten.pdf',
-        dataBase64: Buffer.from('%PDF-1.4\n%%EOF\n').toString('base64'),
-      });
-      expect(up.status).toBe(201);
-      const id = up.body.id;
-      expect(
-        (await send('PATCH', `/documents/${id}`, player.token, { title: 'Gehackt' })).status,
-      ).toBe(404);
-      // Das Trainerteam darf den Bereich nicht auf „ganzer Verein“ ausweiten
-      expect(
-        (await send('PATCH', `/documents/${id}`, coach.token, { scopeType: 'club' })).status,
-      ).toBe(403);
-      expect(
-        (
-          await send('PATCH', `/documents/${id}`, coach.token, {
-            title: 'Hallenzeiten Winter',
-            category: 'forms',
-          })
-        ).status,
-      ).toBe(204);
-      const list = await get<DocumentItem[]>(`/documents?teamId=${b1.id}`, coach.token);
-      const doc = list.find((d) => d.id === id)!;
-      expect(doc).toMatchObject({ title: 'Hallenzeiten Winter', category: 'forms', canEdit: true });
-      expect(doc.editedAt).not.toBeNull();
-      const asPlayer = await get<DocumentItem[]>(`/documents?teamId=${b1.id}`, player.token);
-      expect(asPlayer.find((d) => d.id === id)).toMatchObject({ canEdit: false });
-      await send('DELETE', `/documents/${id}`, coach.token);
-    });
-
-    it('Vereinsveranstaltung mit Helferschichten: Schichten ändern, Plätze nicht unter die Angemeldeten, Zeit informiert Helfer', async () => {
-      const board = await login('vorstand');
-      const coach = await login('trainer');
-      const player = await login('spieler');
-      const at = (time: string) => new Date(`2026-12-12T${time}:00+01:00`).toISOString();
-      const created = await send<EventPlanning>('POST', '/admin/club-events', board.token, {
-        type: 'club_event',
-        title: 'Weihnachtsfeier',
-        startsAt: at('15:00'),
-        endsAt: at('21:00'),
-        locationText: 'Vereinsheim',
-        shifts: [
-          { title: 'Aufbau', startsAt: at('13:00'), endsAt: at('15:00'), capacity: 2 },
-          { title: 'Küche', startsAt: at('15:00'), endsAt: at('19:00'), capacity: 3 },
-        ],
-      });
-      const id = created.body.upcoming.find((e) => e.title === 'Weihnachtsfeier')!.id;
-      expect((await send('GET', `/admin/club-events/${id}`, coach.token)).status).toBe(403);
-      const form = await get<ClubEventForm>(`/admin/club-events/${id}`, board.token);
-      expect(form).toMatchObject({
-        title: 'Weihnachtsfeier',
-        editedAt: null,
-        locationText: 'Vereinsheim',
-      });
-      expect(form.shifts.map((x) => x.title)).toEqual(['Aufbau', 'Küche']);
-
-      // Ein Helfer trägt sich in „Küche“ ein
-      const kitchen = form.shifts.find((x) => x.title === 'Küche')!;
-      expect((await send('PUT', `/shifts/${kitchen.id}/signup`, player.token)).status).toBe(200);
-      const keep = form.shifts.map(({ signedUp: _signedUp, ...x }) => x);
-      // Schicht mit Angemeldeten lässt sich nicht entfernen
-      const removeUsed = await send('PATCH', `/admin/club-events/${id}`, board.token, {
-        shifts: keep.filter((x) => x.id !== kitchen.id),
-      });
-      expect(removeUsed.status).toBe(409);
-
-      // Fremde dürfen nicht ändern; Berechtigte: Zeit, Schichten ergänzen und entfernen
-      expect(
-        (await send('PATCH', `/admin/club-events/${id}`, coach.token, { title: 'Gehackt' })).status,
-      ).toBe(403);
-      const edited = await send<ClubEventForm>('PATCH', `/admin/club-events/${id}`, board.token, {
-        title: 'Weihnachtsfeier 2026',
-        startsAt: at('16:00'),
-        endsAt: at('22:00'),
-        shifts: [
-          ...keep
-            .filter((x) => x.title === 'Küche')
-            .map((x) => ({ ...x, capacity: 4, startsAt: at('16:00'), endsAt: at('20:00') })),
-          { title: 'Abbau', startsAt: at('21:00'), endsAt: at('23:00'), capacity: 3 },
-        ],
-      });
-      expect(edited.status, JSON.stringify(edited.body)).toBe(200);
-      expect(edited.body.title).toBe('Weihnachtsfeier 2026');
-      expect(edited.body.editedAt).not.toBeNull();
-      expect(edited.body.shifts.map((x) => `${x.title} ${x.signedUp}/${x.capacity}`)).toEqual([
-        'Küche 1/4',
-        'Abbau 0/3',
-      ]);
-      const notes = await get<NotificationItem[]>('/notifications', player.token);
-      expect(notes.some((n) => n.title === 'Geändert: Weihnachtsfeier 2026')).toBe(true);
-      const detail = await get<EventDetail>(`/events/${id}`, board.token);
-      expect(detail).toMatchObject({ canEditClubEvent: true });
-      expect(detail.editedAt).not.toBeNull();
-      expect((await get<EventDetail>(`/events/${id}`, player.token)).canEditClubEvent).toBe(false);
-      await send('POST', `/events/${id}/cancel`, board.token, { reason: 'Test beendet' });
-    });
-
-    it('Abwesenheiten: Zeitraum ändern berechnet die automatischen Absagen neu', async () => {
-      const { token, me } = await login('spieler');
-      const events = await get<EventSummary[]>('/events', token);
-      const match = events.find((e) => e.team?.badge === 'B1' && e.type === 'match')!;
-      const day = match.startsAt.slice(0, 10);
-      const created = await send<Absence>('POST', '/absences', token, {
-        personId: me.person.id,
-        kind: 'vacation',
-        startsOn: day,
-        endsOn: day,
-      });
-      expect(created.status).toBe(201);
-      const id = created.body.id;
-      expect(created.body.editedAt).toBeNull();
-      expect((await get<EventDetail>(`/events/${match.id}`, token)).myResponses[0]).toMatchObject({
-        status: 'no',
-      });
-
-      // Fremde dürfen nichts ändern
-      const other = await login('eltern');
-      expect((await send('PATCH', `/absences/${id}`, other.token, { note: 'fremd' })).status).toBe(
-        404,
-      );
-
-      // Grund ändern: Absage bleibt, Grund folgt
-      const sick = await send<Absence>('PATCH', `/absences/${id}`, token, {
-        kind: 'illness',
-        note: 'Grippe',
-      });
-      expect(sick.status, JSON.stringify(sick.body)).toBe(200);
-      expect(sick.body).toMatchObject({ kind: 'illness', note: 'Grippe' });
-      expect(sick.body.editedAt).not.toBeNull();
-      expect((await get<EventDetail>(`/events/${match.id}`, token)).myResponses[0]).toMatchObject({
-        status: 'no',
-        reason: 'Abwesend: Krankheit',
-      });
-
-      // Zeitraum verschieben: das Spiel ist nicht mehr betroffen und wird wieder offen
-      const later = new Date(Date.parse(`${day}T00:00:00Z`) + 400 * 86_400_000)
-        .toISOString()
-        .slice(0, 10);
-      const moved = await send<Absence>('PATCH', `/absences/${id}`, token, {
-        startsOn: later,
-        endsOn: later,
-      });
-      expect(moved.status).toBe(200);
-      expect(moved.body.affectedEvents).toBe(0);
-      expect((await get<EventDetail>(`/events/${match.id}`, token)).myResponses[0]).toMatchObject({
-        status: 'pending',
-        reason: null,
-      });
-      expect(
-        (await send('PATCH', `/absences/${id}`, token, { startsOn: later, endsOn: day })).status,
-      ).toBe(400);
-      await send('DELETE', `/absences/${id}`, token);
-    });
-  });
-
   describe('Vereinskasse: Statistik (ST)', () => {
     async function treasurer() {
       const admin = await login('admin');

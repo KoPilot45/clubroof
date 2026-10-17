@@ -31,6 +31,7 @@ import { TrainingPlanSection } from '@/components/training-plan';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { t } from '@/lib/i18n';
+import { EditedNote } from '@/components/edited';
 import { EventHero } from '@/components/event-hero';
 
 const ORDER: Participant['status'][] = ['yes', 'maybe', 'pending', 'no'];
@@ -459,6 +460,7 @@ export default function EventScreen() {
       {e ? (
         <>
           <EventHero event={e} clubShortName={me.club.shortName} past={past} />
+          <EditedNote at={e.editedAt} />
           {e.description ? (
             <Card>
               <T verbatim>{e.description}</T>
@@ -547,6 +549,17 @@ export default function EventScreen() {
               ) : null}
               <ResponseControls event={e} variant="segment" />
             </Section>
+          ) : null}
+
+          {e.canEditClubEvent && !past ? (
+            <Card>
+              <Button
+                label="Veranstaltung bearbeiten"
+                variant="outline"
+                icon="create-outline"
+                onPress={() => router.push(`/admin/club-event-new?id=${e.id}`)}
+              />
+            </Card>
           ) : null}
 
           {e.canManage && e.status === 'scheduled' && new Date(e.startsAt) > new Date() ? (

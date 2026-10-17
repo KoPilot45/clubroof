@@ -410,6 +410,7 @@ export const en: Record<string, string> = {
   Abwesend: 'Absent',
   'Abwesend: {0}': 'Absent: {0}',
   Abwesenheit: 'Absence',
+  'Abwesenheit bearbeiten': 'Edit absence',
   'Abwesenheit eintragen': 'Enter absence',
   'Abwesenheit löschen': 'Delete absence',
   'Abwesenheit melden': 'Report absence',
@@ -524,6 +525,7 @@ export const en: Record<string, string> = {
   'Änderung speichern und informieren': 'Save change and notify',
   'Änderungen dieser Bedingungen werden rechtzeitig in der App bekannt gegeben.':
     'Changes to these terms will be announced in the app in good time.',
+  'Änderungen speichern': 'Save changes',
   'Änderungen speichern?': 'Save changes?',
   'Änderungen veröffentlichen': 'Publish changes',
   Änderungsprotokoll: 'Change log',
@@ -1369,6 +1371,7 @@ export const en: Record<string, string> = {
   'Die Abwesenheit konnte nicht gespeichert werden.': 'The absence could not be saved.',
   'Die Änderung hat nicht geklappt.': "The change didn't work.",
   'Die Änderung konnte nicht gespeichert werden.': 'The change could not be saved.',
+  'Die Änderungen konnten nicht gespeichert werden.': 'The changes could not be saved.',
   'Die Anfrage': 'The request',
   'Die Anmeldung ist abgelaufen. Bitte erneut anmelden.':
     'Your login has expired. Please log in again.',
@@ -1687,6 +1690,8 @@ export const en: Record<string, string> = {
   'Du gehörst ab heute zu {0}.': 'You belong to {0} from today.',
   'Du hast {0} Guthaben': 'You have {0} credit',
   'Du hast {0} offen': 'You owe {0}',
+  'Du hast Änderungen vorgenommen, die noch nicht gespeichert sind.':
+    'You have made changes that have not been saved yet.',
   'du hast angefordert, dein Passwort für die Vereins-App zurückzusetzen. Öffne diesen Link':
     'you have requested to reset your password for the club app. Open this link',
   'Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung und Datenübertragbarkeit. Wende dich dazu an deinen Verein oder an den Support.':
@@ -2430,6 +2435,8 @@ export const en: Record<string, string> = {
     'Yes. Under “More → Account & settings → Language” choose Deutsch, English or “Automatic” (your device language). Your choice applies on all your devices, including push notifications. Texts that coaches or the board write themselves (e.g. news) stay in the author’s language.',
   'Ja. Unter „Mehr → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Yes. Under “More → Account & settings” you set the font size (Normal, Large, Extra large) and can lock the app with Face ID, fingerprint or device code. Without internet the app shows the most recently loaded events, news and squad; a notice appears at the top. Replies and changes are only possible with a connection.',
+  'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch). Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
+    'Yes. What you created can be edited later – via “Edit” in the “…” menu or the button in the detail view: polls (question, description and deadline; the answers only as long as nobody has voted), events with helper shifts, absences and documents (title, type and visibility – the file stays; to replace it, delete it and upload again). The form is the same as when creating, just pre-filled. Changed content carries the note “edited” with the time. We tell the people involved about important changes such as time, place or deadline. Cash bookings are not edited: you correct mistakes by cancelling and booking again – so everything stays traceable.',
   Jahr: 'Year',
   'Jahr {0} abschließen': 'Close year {0}',
   'Jahr wieder öffnen': 'Reopen year',
@@ -2507,6 +2514,8 @@ export const en: Record<string, string> = {
   'Kann ich die Schrift vergrößern, die App sperren oder sie ohne Netz nutzen?':
     'Can I enlarge the text, lock the app or use it without a network?',
   'Kann ich die Sprache der App ändern?': 'Can I change the app language?',
+  'Kann ich etwas nachträglich ändern, das ich angelegt habe?':
+    'Can I change something I created afterwards?',
   'Kann ich ohne Internet zu- oder absagen?': 'Can I confirm or decline without internet?',
   'Kann nicht': "Can't",
   'Karte {0} von {1}': 'Card {0} of {1}',
@@ -3419,6 +3428,7 @@ export const en: Record<string, string> = {
   'Schicht „{0}“: Es haben sich schon {1} Helfer eingetragen, die Zahl der Plätze kann nicht darunter sinken.':
     'Shift “{0}”: {1} helpers have already signed up, so the number of places cannot go below that.',
   'Schicht {0}': 'Shift {0}',
+  'Schicht entfernen': 'Remove shift',
   'Schicht hinzufügen': 'Add shift',
   'Schichten und Aufgaben rund um Veranstaltungen': 'Shifts and tasks around events',
   Schiedsrichter: 'Referees',
@@ -3448,6 +3458,8 @@ export const en: Record<string, string> = {
   'Schlüssel zurück: {0}': 'Key returned: {0}',
   Schnellzugriff: 'Quick access',
   'Schnellzugriff anpassen': 'Customise quick access',
+  'Schon eingetragen: {0}. Diese Schicht bleibt bestehen.':
+    'Already signed up: {0}. This shift stays.',
   'Schreibweisen im DFBnet (durch Komma getrennt)': 'Spellings in DFBnet (comma-separated)',
   Schriftgröße: 'Font size',
   'Schritt {0} von {1}': 'Step {0} of {1}',
@@ -3888,6 +3900,7 @@ export const en: Record<string, string> = {
   'Umbuchung zwischen Konten': 'Transfer between accounts',
   Umfrage: 'Poll',
   'Umfrage beantworten': 'Answer poll',
+  'Umfrage bearbeiten': 'Edit poll',
   'Umfrage erstellen': 'Create poll',
   'Umfrage jetzt beenden': 'End poll now',
   'Umfrage starten': 'Start poll',
@@ -4009,6 +4022,7 @@ export const en: Record<string, string> = {
     'useTheme must be used within ThemeProvider.',
   Veranstaltung: 'Event',
   'Veranstaltung anlegen': 'Create event',
+  'Veranstaltung bearbeiten': 'Edit event',
   'Veranstaltung planen': 'Plan event',
   Veranstaltungen: 'Events',
   'Veranstaltungen (sportlich)': 'Events (sporting)',
@@ -4286,6 +4300,8 @@ export const en: Record<string, string> = {
   'Wer tritt bei?': 'Who is joining?',
   'Wer übernimmt?': 'Who takes it?',
   'Wer unseren Verein unterstützt': 'Who supports our club',
+  'Wer zugesagt hat oder als Helfer eingetragen ist, erfährt von geänderter Zeit oder geändertem Ort.':
+    'Anyone who accepted or signed up as a helper will be told about a changed time or location.',
   'Werbung an': 'Advertising on',
   'Werbung in der App': 'Advertising in the app',
   'Werbung je Sponsor als Wischelement mit Kennzeichnung, Seite „Unsere Sponsoren“':

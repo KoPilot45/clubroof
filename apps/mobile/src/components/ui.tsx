@@ -1969,7 +1969,10 @@ export function TextField({
   accent,
   hint,
   letterSpacing,
+  editable = true,
 }: {
+  /** gesperrt (z. B. Antworten einer Umfrage nach der ersten Stimme) */
+  editable?: boolean;
   /** Laufweite in px (z. B. Kürzel) */
   letterSpacing?: number;
   label: string;
@@ -2006,6 +2009,7 @@ export function TextField({
           placeholderTextColor={colors.anstoss.placeholder}
           maxLength={maxLength}
           multiline={multiline}
+          editable={editable}
           secureTextEntry={secret && !shown}
           autoCapitalize={kind === 'text' ? 'sentences' : 'none'}
           autoCorrect={kind === 'text'}

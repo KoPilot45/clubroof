@@ -1,4 +1,5 @@
 import type { DocumentCategory, DocumentItem } from '@clubroof/core';
+import { EditedNote } from '@/components/edited';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -103,6 +104,15 @@ export default function DocumentsScreen() {
                   title={d.title}
                   actions={[
                     { label: 'Öffnen', icon: 'open-outline', onPress: () => open(d) },
+                    ...(d.canEdit
+                      ? [
+                          {
+                            label: 'Bearbeiten',
+                            icon: 'create-outline' as const,
+                            onPress: () => router.push(`/documents-upload?id=${d.id}`),
+                          },
+                        ]
+                      : []),
                     ...(d.canDelete
                       ? [
                           {
@@ -133,6 +143,7 @@ export default function DocumentsScreen() {
                     tone="neutral"
                     label={`${formatBytes(d.sizeBytes)} · ${formatShortDate(d.createdAt.slice(0, 10))}`}
                   />
+                  <EditedNote at={d.editedAt} />
                 </View>
               }
             />

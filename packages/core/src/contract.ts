@@ -899,6 +899,8 @@ export type DocumentItem = {
   sizeBytes: number;
   createdAt: string;
   source: { type: ScopeType; label: string };
+  /** Bereich, für den das Dokument sichtbar ist (Mannschaft, Abteilung; null = ganzer Verein) */
+  scopeId: string | null;
   /** Ich darf dieses Dokument löschen */
   canDelete: boolean;
   /** Ich darf Titel, Kategorie und Sichtbarkeit ändern */
