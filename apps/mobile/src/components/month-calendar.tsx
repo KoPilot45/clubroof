@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 import { T } from '@/components/ui';
 import { kindOf } from '@/lib/event-types';
 import { formatShortDate } from '@/lib/format';
+import { useTeamColorOf } from '@/lib/team-colors';
 import { useTheme } from '@/lib/theme';
 import { dateFormat, t } from '@/lib/i18n';
 
@@ -39,6 +40,7 @@ export function MonthCalendar({
   onToday?: () => void;
 }) {
   const { colors, sizes } = useTheme();
+  const teamColorOf = useTeamColorOf();
   // Runde Monatsknöpfe (44) wie die Kopfzeilenknöpfe
   const navButton = {
     width: sizes.touchTarget,
@@ -171,9 +173,8 @@ export function MonthCalendar({
                           ? colors.status.urgent.solid
                           : colorOf
                             ? colorOf(e)
-                            : e.team === null
-                              ? colors.primaryText
-                              : colors.onSurfaceMuted,
+                            : (teamColorOf(e.team?.id) ??
+                              (e.team === null ? colors.primaryText : colors.onSurfaceMuted)),
                       ),
                     ),
                   ]
