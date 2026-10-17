@@ -18,6 +18,8 @@ import {
   type ExchangeTeamRef,
   type PlayerDemand,
   type PlayerOffer,
+  type UpdateDemandInput,
+  type UpdateOfferInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, eq, gt, gte, inArray, isNull, lt, lte, ne, or, sql } from 'drizzle-orm';
@@ -129,6 +131,7 @@ async function loadDemands(db: Db, actor: Actor, teams: TeamRow[], now: Date, on
       note: r.demand.note,
       status: fulfilled ? 'fulfilled' : 'open',
       createdAt: r.demand.createdAt.toISOString(),
+      editedAt: r.demand.editedAt?.toISOString() ?? null,
       mine: isMine,
       canNominate: !fulfilled && mine.some((t) => t.id !== r.team.id),
     };
@@ -161,6 +164,7 @@ export async function getOverview(db: Db, actor: Actor, now: Date): Promise<Exch
     count: offer.count,
     note: offer.note,
     mine: mine.some((t) => t.id === team.id),
+    editedAt: offer.editedAt?.toISOString() ?? null,
   }));
 
   return {
@@ -457,6 +461,67 @@ export async function createDemand(
   return getDemand(db, actor, created!.id, now);
 }
 
+/**
+ * Spielerbedarf nachträglich ändern (Paket BE): Anzahl (nicht unter den schon Nominierten), Positionen und Hinweis.
+ * Wer schon nominiert ist, erfährt von geänderten Positionen oder einem neuen Hinweis.
+ */
+export async function updateDemand(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdateDemandInput,
+  now: Date,
+): Promise<DemandDetail> {
+  const teams = await currentTeams(db, actor);
+  const mine = requireExchange(actor, teams);
+  const [row] = await db
+    .select()
+    .from(s.playerDemands)
+    .where(and(eq(s.playerDemands.id, id), eq(s.playerDemands.clubId, actor.club.id)));
+  if (!row || !mine.some((t) => t.id === row.teamId)) throw notFound('Der Bedarf');
+  if (row.status !== 'open')
+    throw new HttpError(409, 'closed', 'Dieser Bedarf ist nicht mehr offen.');
+  const guests = await db
+    .select({ personId: s.eventParticipants.personId })
+    .from(s.eventParticipants)
+    .where(eq(s.eventParticipants.demandId, id));
+  if (input.count !== undefined && input.count < guests.length)
+    throw new HttpError(
+      409,
+      'count',
+      `Es sind schon ${guests.length} Spieler nominiert, die Anzahl kann nicht darunter sinken.`,
+    );
+  const note = input.note === undefined ? row.note : input.note?.trim() || null;
+  const positions = input.positions ?? row.positions;
+  await db
+    .update(s.playerDemands)
+    .set({ count: input.count ?? row.count, positions, note, editedAt: now })
+    .where(eq(s.playerDemands.id, id));
+  const changed =
+    positions.join('|') !== row.positions.join('|') ||
+    (input.note !== undefined && note !== row.note);
+  if (changed && guests.length) {
+    await notify(
+      db,
+      actor,
+      await recipientsFor(
+        db,
+        guests.map((g) => g.personId),
+        actor.user.id,
+      ),
+      {
+        level: 'info',
+        topic: 'exchange',
+        title: 'Spielerbedarf geändert',
+        body: 'Positionen oder Hinweis zu deinem Gastspieleinsatz wurden angepasst.',
+        link: '/notifications',
+      },
+      now,
+    );
+  }
+  return getDemand(db, actor, id, now);
+}
+
 export async function cancelDemand(db: Db, actor: Actor, id: string, now: Date): Promise<void> {
   const teams = await currentTeams(db, actor);
   const mine = requireExchange(actor, teams);
@@ -687,6 +752,36 @@ export async function createOffer(
     createdByPersonId: actor.person.id,
     createdAt: now,
   });
+  return getOverview(db, actor, now);
+}
+
+/** Angebot nachträglich ändern (Paket BE): Anzahl, Tag und Hinweis. */
+export async function updateOffer(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdateOfferInput,
+  now: Date,
+): Promise<ExchangeOverview> {
+  const teams = await currentTeams(db, actor);
+  const mine = requireExchange(actor, teams);
+  const [offer] = await db
+    .select()
+    .from(s.playerOffers)
+    .where(and(eq(s.playerOffers.id, id), eq(s.playerOffers.clubId, actor.club.id)));
+  if (!offer || !mine.some((t) => t.id === offer.teamId)) throw notFound('Das Angebot');
+  const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
+  if (input.day !== undefined && input.day < today)
+    throw new HttpError(400, 'in_past', 'Der Tag liegt in der Vergangenheit.');
+  await db
+    .update(s.playerOffers)
+    .set({
+      count: input.count ?? offer.count,
+      day: input.day ?? offer.day,
+      note: input.note === undefined ? offer.note : input.note?.trim() || null,
+      editedAt: now,
+    })
+    .where(eq(s.playerOffers.id, id));
   return getOverview(db, actor, now);
 }
 

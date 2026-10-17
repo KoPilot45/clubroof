@@ -1,7 +1,10 @@
 import type { CommentEntity, CommentItem } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { EditedNote } from '@/components/edited';
+import { EditSheet } from '@/components/edit-sheet';
+import { useConfirmDelete } from '@/lib/confirm';
 import { Avatar, Button, Card, Chip, Section, T, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
@@ -14,6 +17,8 @@ export function CommentThread({ type, id }: { type: CommentEntity; id: string })
   const { colors, radii } = useTheme();
   const queryClient = useQueryClient();
   const [text, setText] = useState('');
+  const [editing, setEditing] = useState<CommentItem | null>(null);
+  const confirmDelete = useConfirmDelete();
   const key = ['comments', type, id];
   const comments = useQuery({
     queryKey: key,
@@ -26,6 +31,16 @@ export function CommentThread({ type, id }: { type: CommentEntity; id: string })
       queryClient.setQueryData(key, data);
       setText('');
     },
+  });
+  // Eigenen Kommentar ändern oder löschen; Moderation löscht fremde (Rechte prüft der Server)
+  const change = async (c: CommentItem, body: string) =>
+    queryClient.setQueryData(
+      key,
+      await api<CommentItem[]>(`/comments/${c.id}`, { method: 'PATCH', body: { body } }),
+    );
+  const remove = useMutation({
+    mutationFn: (c: CommentItem) => api<CommentItem[]>(`/comments/${c.id}`, { method: 'DELETE' }),
+    onSuccess: (data) => queryClient.setQueryData(key, data),
   });
   if (!comments.data) return null;
   return (
@@ -55,6 +70,34 @@ export function CommentThread({ type, id }: { type: CommentEntity; id: string })
               </T>
             </View>
             <T>{c.body}</T>
+            <EditedNote at={c.editedAt} />
+            {c.canEdit || c.canDelete ? (
+              <View style={{ flexDirection: 'row', gap: 16 }}>
+                {c.canEdit ? (
+                  <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setEditing(c)}>
+                    <T variant="caption" color={colors.primaryText} style={{ fontWeight: '700' }}>
+                      Bearbeiten
+                    </T>
+                  </Pressable>
+                ) : null}
+                {c.canDelete ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    hitSlop={8}
+                    onPress={() =>
+                      confirmDelete({
+                        name: c.body.slice(0, 40),
+                        onConfirm: () => remove.mutate(c),
+                      })
+                    }
+                  >
+                    <T variant="caption" style={{ fontWeight: '700' }}>
+                      Löschen
+                    </T>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
           </View>
         ))}
         <TextField
@@ -79,6 +122,21 @@ export function CommentThread({ type, id }: { type: CommentEntity; id: string })
           onPress={() => post.mutate()}
         />
       </Card>
+      <EditSheet
+        visible={!!editing}
+        onClose={() => setEditing(null)}
+        title="Kommentar bearbeiten"
+        fields={[
+          {
+            key: 'body',
+            label: 'Kommentar',
+            value: editing?.body ?? '',
+            maxLength: 1000,
+            multiline: true,
+          },
+        ]}
+        onSave={(v) => change(editing!, v.body!.trim())}
+      />
     </Section>
   );
 }

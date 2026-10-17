@@ -9,6 +9,7 @@ import {
   type Exercise,
   type ExerciseCategory,
   type SaveTrainingPlanInput,
+  type UpdateExerciseInput,
   type TrainingPlan,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
@@ -48,6 +49,8 @@ export async function listExercises(db: Db, actor: Actor): Promise<Exercise[]> {
     description: e.description,
     createdBy: firstName ? `${firstName} ${lastName}` : null,
     canDelete: admin || e.createdByPersonId === actor.person.id,
+    canEdit: admin || e.createdByPersonId === actor.person.id,
+    editedAt: e.editedAt?.toISOString() ?? null,
   }));
 }
 
@@ -69,6 +72,35 @@ export async function createExercise(
     createdByPersonId: actor.person.id,
     createdAt: now,
   });
+  return listExercises(db, actor);
+}
+
+/** Übung nachträglich ändern (Paket BE): wer sie angelegt hat oder die Administration. */
+export async function updateExercise(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdateExerciseInput,
+  now: Date,
+): Promise<Exercise[]> {
+  const list = await listExercises(db, actor);
+  const exercise = list.find((e) => e.id === id);
+  if (!exercise) throw notFound('Die Übung');
+  if (!exercise.canEdit) throw forbidden('Ändern kann, wer die Übung angelegt hat.');
+  await db
+    .update(s.exercises)
+    .set({
+      ...(input.title !== undefined ? { title: input.title.trim() } : {}),
+      ...(input.category !== undefined ? { category: input.category } : {}),
+      ...(input.durationMinutes !== undefined ? { durationMinutes: input.durationMinutes } : {}),
+      ...(input.players !== undefined ? { players: input.players?.trim() || null } : {}),
+      ...(input.material !== undefined ? { material: input.material?.trim() || null } : {}),
+      ...(input.description !== undefined
+        ? { description: input.description?.trim() || null }
+        : {}),
+      editedAt: now,
+    })
+    .where(eq(s.exercises.id, id));
   return listExercises(db, actor);
 }
 

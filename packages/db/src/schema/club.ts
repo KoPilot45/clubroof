@@ -132,6 +132,8 @@ export const facilityBlocks = pgTable(
     endsAt: timestamp({ withTimezone: true }).notNull(),
     reason: text().notNull(),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.clubId, t.startsAt), index().on(t.facilityId)],
 );

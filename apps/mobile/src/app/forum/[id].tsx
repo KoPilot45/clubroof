@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { EditedNote } from '@/components/edited';
+import { EditSheet } from '@/components/edit-sheet';
 import {
   Button,
   Card,
@@ -26,6 +28,9 @@ export default function ForumTopicScreen() {
   const { colors, radii } = useTheme();
   const queryClient = useQueryClient();
   const [text, setText] = useState('');
+  const [editing, setEditing] = useState<{ kind: 'topic' } | { kind: 'post'; id: string } | null>(
+    null,
+  );
   const key = ['forum', id];
   const topic = useQuery({ queryKey: key, queryFn: () => api<ForumTopicDetail>(`/forum/${id}`) });
   const act = useMutation({
@@ -44,6 +49,7 @@ export default function ForumTopicScreen() {
       <Card style={{ gap: 8 }}>
         <T variant="title">{t.title}</T>
         <T>{t.body}</T>
+        <EditedNote at={t.editedAt} />
         <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
           {t.author ? <Chip tone="neutral" label={`von ${t.author}`} /> : null}
           {t.open ? (
@@ -55,6 +61,14 @@ export default function ForumTopicScreen() {
             <Chip tone="archived" icon="lock-closed" label="Geschlossen" />
           )}
         </View>
+        {t.canEdit ? (
+          <Button
+            label="Bearbeiten"
+            icon="create-outline"
+            variant="outline"
+            onPress={() => setEditing({ kind: 'topic' })}
+          />
+        ) : null}
         {t.canModerate ? (
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <Button
@@ -103,8 +117,19 @@ export default function ForumTopicScreen() {
                 <T>{p.body}</T>
               </View>
             ) : null}
+            <EditedNote at={p.editedAt} />
             {p.reported ? <Chip tone="action" icon="flag" label="Gemeldet" /> : null}
             <View style={{ flexDirection: 'row', gap: 16 }}>
+              {p.canEdit ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setEditing({ kind: 'post', id: p.id })}
+                >
+                  <T variant="caption" color={colors.primaryText}>
+                    Bearbeiten
+                  </T>
+                </Pressable>
+              ) : null}
               {!p.mine && !p.hidden ? (
                 <Pressable
                   accessibilityRole="button"
@@ -168,6 +193,40 @@ export default function ForumTopicScreen() {
       ) : (
         <T variant="caption">Das Thema ist geschlossen – Antworten sind nicht mehr möglich.</T>
       )}
+      <EditSheet
+        visible={editing !== null}
+        onClose={() => setEditing(null)}
+        title={editing?.kind === 'post' ? 'Antwort bearbeiten' : 'Thema bearbeiten'}
+        fields={
+          editing?.kind === 'post'
+            ? [
+                {
+                  key: 'body',
+                  label: 'Deine Antwort',
+                  value: t.posts.find((p) => p.id === editing.id)?.body ?? '',
+                  maxLength: 2000,
+                  multiline: true,
+                },
+              ]
+            : [
+                { key: 'title', label: 'Titel', value: t.title, maxLength: 200 },
+                {
+                  key: 'body',
+                  label: 'Beschreibung',
+                  value: t.body,
+                  maxLength: 2000,
+                  multiline: true,
+                },
+              ]
+        }
+        onSave={(v) =>
+          act.mutateAsync(
+            editing?.kind === 'post'
+              ? { path: `/forum/posts/${editing.id}`, method: 'PATCH', body: { body: v.body } }
+              : { path: `/forum/${id}`, method: 'PATCH', body: { title: v.title, body: v.body } },
+          )
+        }
+      />
     </Screen>
   );
 }

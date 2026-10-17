@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { PanResponder, View } from 'react-native';
+import { EditedNote } from '@/components/edited';
 import { FacilityGrid, TeamLegend, teamColors, type GridColumn } from '@/components/facility-grid';
 import {
   Button,
@@ -209,6 +210,7 @@ export default function FacilitiesScreen() {
               {sel.cancelled ? <Chip tone="neutral" label="Abgesagt" /> : null}
               {sel.conflict ? <Chip tone="action" icon="warning" label="Überschneidung" /> : null}
             </View>
+            <EditedNote at={sel.editedAt} />
             <T variant="body" verbatim>
               {`${selected?.place ?? ''} · ${formatTime(sel.startsAt)}–${formatTime(sel.endsAt)}`}
             </T>
@@ -229,6 +231,29 @@ export default function FacilitiesScreen() {
                 onPress={() => {
                   setSelected(null);
                   router.push('/facilities/block-new');
+                }}
+              />
+            ) : null}
+            {o?.canManage && sel.kind === 'block' ? (
+              <Button
+                label="Sperrung bearbeiten"
+                icon="create-outline"
+                variant="outline"
+                onPress={() => {
+                  const facilityId = o.facilities.find((f) =>
+                    f.bookings.some((b) => b.id === sel.id),
+                  )?.facility.id;
+                  setSelected(null);
+                  router.push({
+                    pathname: '/facilities/block-new',
+                    params: {
+                      id: sel.id,
+                      facilityId,
+                      startsAt: sel.startsAt,
+                      endsAt: sel.endsAt,
+                      reason: sel.title,
+                    },
+                  });
                 }}
               />
             ) : null}

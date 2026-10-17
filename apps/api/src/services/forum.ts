@@ -12,6 +12,7 @@ import {
   type ForumPost,
   type ForumTopicDetail,
   type ForumTopicSummary,
+  type UpdateForumTopicInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, desc, eq, max } from 'drizzle-orm';
@@ -103,6 +104,8 @@ export async function getTopic(
     hidden: !!post.hiddenAt,
     reported: mod && !!post.reportedAt,
     createdAt: post.createdAt.toISOString(),
+    editedAt: post.editedAt?.toISOString() ?? null,
+    canEdit: post.authorUserId === actor.user.id && !post.hiddenAt && entry.summary.open,
   }));
   return {
     ...entry.summary,
@@ -110,6 +113,8 @@ export async function getTopic(
     posts,
     canPost: entry.summary.open,
     canModerate: mod,
+    canEdit: entry.topic.authorPersonId === actor.person.id && entry.summary.open,
+    editedAt: entry.topic.editedAt?.toISOString() ?? null,
   };
 }
 
@@ -240,4 +245,60 @@ export async function closeTopic(
     })
     .where(eq(s.forumTopics.id, id));
   return getTopic(db, actor, id, now);
+}
+
+/** Titel und Text eines Themas ändern: nur der Ersteller, solange das Thema offen ist (Paket BE). */
+export async function updateTopic(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdateForumTopicInput,
+  now: Date,
+): Promise<ForumTopicDetail> {
+  const topic = await getTopic(db, actor, id, now);
+  if (!topic.canEdit) {
+    if (!topic.open) throw new HttpError(409, 'closed', 'Das Thema ist geschlossen.');
+    throw forbidden('Dieses Thema kannst du nicht ändern.');
+  }
+  await db
+    .update(s.forumTopics)
+    .set({
+      ...(input.title !== undefined ? { title: input.title.trim() } : {}),
+      ...(input.body !== undefined ? { body: input.body.trim() } : {}),
+      editedAt: now,
+    })
+    .where(eq(s.forumTopics.id, id));
+  await db.insert(s.auditLog).values({
+    clubId: actor.club.id,
+    actorUserId: actor.user.id,
+    action: 'forum.topic.update',
+    entityType: 'forum_topic',
+    entityId: id,
+    data: { label: `Forum-Thema geändert: ${input.title?.trim() ?? topic.title}` },
+    createdAt: now,
+  });
+  return getTopic(db, actor, id, now);
+}
+
+/** Eigenen Beitrag ändern, solange das Thema offen und der Beitrag nicht ausgeblendet ist (Paket BE). */
+export async function updatePost(
+  db: Db,
+  actor: Actor,
+  id: string,
+  body: string,
+  now: Date,
+): Promise<ForumTopicDetail> {
+  requireForum(actor);
+  const post = await loadPost(db, actor, id);
+  if (post.authorUserId !== actor.user.id)
+    throw forbidden('Diesen Beitrag kannst du nicht ändern.');
+  const topic = await getTopic(db, actor, post.topicId, now);
+  if (!topic.open) throw new HttpError(409, 'closed', 'Das Thema ist geschlossen.');
+  if (post.hiddenAt)
+    throw new HttpError(409, 'hidden', 'Ein ausgeblendeter Beitrag lässt sich nicht ändern.');
+  await db
+    .update(s.forumPosts)
+    .set({ body: body.trim(), editedAt: now })
+    .where(eq(s.forumPosts.id, id));
+  return getTopic(db, actor, post.topicId, now);
 }

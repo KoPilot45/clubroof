@@ -1,7 +1,7 @@
 import type { FacilityOccupancy } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { createBlock, deleteBlock, getOccupancy } from '../services/facilities';
+import { createBlock, deleteBlock, getOccupancy, updateBlock } from '../services/facilities';
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const isoDateTime = z.iso.datetime({ offset: true });
@@ -33,6 +33,24 @@ export const facilityRoutes: FastifyPluginAsyncZod = async (app) => {
       reply.code(201);
       return createBlock(app.db, request.actor!, request.body, app.now());
     },
+  );
+
+  app.patch(
+    '/facilities/blocks/:id',
+    {
+      schema: {
+        params: z.object({ id: z.uuid() }),
+        body: z.object({
+          facilityId: z.uuid().optional(),
+          startsAt: isoDateTime.optional(),
+          endsAt: isoDateTime.optional(),
+          reason: z.string().trim().min(2).max(160).optional(),
+          cancelEvents: z.boolean().optional(),
+        }),
+      },
+    },
+    async (request): Promise<FacilityOccupancy> =>
+      updateBlock(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
 
   app.delete(

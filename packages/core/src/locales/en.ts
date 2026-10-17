@@ -349,6 +349,7 @@ export const en: Record<string, string> = {
   '5. Änderungen': '5. Changes',
   '6 Std.': '6 hrs',
   '60 Min.': '60 min',
+  '60 Tage': '60 days',
   '8 Wochen': '8 weeks',
   '90 Min.': '90 min',
   '90 Tage': '90 days',
@@ -522,6 +523,8 @@ export const en: Record<string, string> = {
   'Anderes Bild': 'Different image',
   'Anderes Foto': 'Different photo',
   'Anderes Logo wählen': 'Choose another logo',
+  'Ändern kann, wer den Aushang erstellt hat.': 'Only the author can change the notice.',
+  'Ändern kann, wer die Übung angelegt hat.': 'Only the author can change the exercise.',
   'Änderung speichern und informieren': 'Save change and notify',
   'Änderungen dieser Bedingungen werden rechtzeitig in der App bekannt gegeben.':
     'Changes to these terms will be announced in the app in good time.',
@@ -539,6 +542,7 @@ export const en: Record<string, string> = {
   'Anfragen ({0})': 'Requests ({0})',
   'Anfragen warten': 'requests waiting',
   'Angaben zur Steuerbegünstigung': 'Details on tax exemption',
+  'Angebot bearbeiten': 'Edit offer',
   'Angebot speichern': 'Save offer',
   'Angebot zurückziehen': 'Withdraw offer',
   Angebote: 'Offers',
@@ -571,6 +575,7 @@ export const en: Record<string, string> = {
   'Antippen: als bezahlt buchen': 'Tap to book as paid',
   Antwort: 'Reply',
   'Antwort {0}': 'Answer {0}',
+  'Antwort bearbeiten': 'Edit reply',
   'Antwort fehlt: {0}': 'Reply missing: {0}',
   'Antwort hinzufügen': 'Add answer',
   'Antwort steht aus': 'Awaiting response',
@@ -663,10 +668,12 @@ export const en: Record<string, string> = {
   'Ausgetretene Mitglieder können nicht eingeladen werden.': 'Former members cannot be invited.',
   Ausgewählt: 'Selected',
   'Ausgewertet: {0} – {1}': 'Evaluated: {0} – {1}',
+  'Aushang bearbeiten': 'Edit notice',
   'Aushang erstellen': 'Create notice',
   'Aushänge verschwinden nach 30 Tagen (Fundsachen nach 60). Telefonnummern werden nicht angezeigt – Rückfragen laufen über die App.':
     'Notices disappear after 30 days (found items after 60). Phone numbers are not shown – questions go through the app.',
   Aushängen: 'Post notice',
+  'Aushängen für': 'Keep posted for',
   'Auslage einreichen': 'Submit expense claim',
   'Auslage mit Beleg': 'Expense with receipt',
   Auslagen: 'Expense claims',
@@ -716,6 +723,7 @@ export const en: Record<string, string> = {
   Beanstandet: 'Objected',
   Beantragt: 'Applied for',
   Bearbeiten: 'Edit',
+  'Bedarf bearbeiten': 'Edit request',
   'Bedarf melden': 'Report a need',
   'Bedarf und Angebote zwischen Mannschaften': 'Needs and offers between teams',
   'Bedarf zurückziehen': 'Withdraw request',
@@ -1269,6 +1277,7 @@ export const en: Record<string, string> = {
   'Der Kassenbericht': 'The team fund report',
   'Der Kassenwart bucht Einnahmen, Ausgaben und Einzahlungen und pflegt den Strafenkatalog – gemeinsam mit dem Trainerteam. Infrage kommen Mitglieder mit eigenem Login und Eltern.':
     'The treasurer books income, expenses and payments and maintains the fine catalogue – together with the coaching staff. Members with their own login and parents are eligible.',
+  'Der Kommentar': 'The comment',
   'Der letzte Fulladmin kann nicht austreten.': 'The last full admin cannot leave.',
   'Der Link ist abgelaufen oder ungültig.': 'The link has expired or is invalid.',
   'Der Link ist abgelaufen oder wurde bereits verwendet.':
@@ -1650,10 +1659,14 @@ export const en: Record<string, string> = {
   'Diese Veranstaltung darfst du nicht ändern.': 'You may not change this event.',
   'Diese Woche': 'This week',
   'Diese Woche stehen keine Termine an.': 'No events this week.',
+  'Diesen Beitrag kannst du nicht ändern.': 'You cannot change this post.',
+  'Diesen Kommentar kannst du nicht ändern.': 'You cannot change this comment.',
+  'Diesen Kommentar kannst du nicht löschen.': 'You cannot delete this comment.',
   'Diesen Sponsor gibt es nicht mehr.': 'This sponsor no longer exists.',
   'Diesen Termin darfst du nicht absagen.': 'You may not cancel this event.',
   'Diesen Termin darfst du nicht ändern.': 'You may not change this event.',
   'Diesen und {0} folgende': 'This and {0} following',
+  'Dieser Bedarf ist nicht mehr offen.': 'This request is no longer open.',
   'Dieser Link ist eine Mannschafts-Einladung.': 'This link is a team invitation.',
   'Dieser Link ist eine persönliche Einladung.': 'This link is a personal invitation.',
   'Dieser Schritt ist nicht möglich.': 'This step is not possible.',
@@ -1664,6 +1677,7 @@ export const en: Record<string, string> = {
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'This grant is also in the team fund and cannot be cancelled here.',
   'Dieses Passwort ist zu leicht zu erraten.': 'This password is too easy to guess.',
+  'Dieses Thema kannst du nicht ändern.': 'You cannot change this topic.',
   'Dir zugeteilte Mannschaftsaufgaben': 'Team tasks assigned to you',
   Do: 'Thu',
   'Dokument geändert: {0}': 'Document changed: {0}',
@@ -1763,6 +1777,8 @@ export const en: Record<string, string> = {
   'Eigentor des Gegners': "Opponent's own goal",
   'Ein abgeschlossenes Jahr öffnet nur die Administration.':
     'Only the administration reopens a closed year.',
+  'Ein ausgeblendeter Beitrag lässt sich nicht ändern.': 'A hidden post cannot be changed.',
+  'Ein erledigter Aushang lässt sich nicht ändern.': 'A completed notice cannot be changed.',
   'Ein Getränk mehr': 'One more drink',
   'Ein Getränk weniger': 'One fewer drink',
   'Ein Jahr kann erst nach seinem Ende abgeschlossen werden.':
@@ -1971,6 +1987,8 @@ export const en: Record<string, string> = {
     '{0} samples are still open. Please check or object to all of them.',
   'Es sind nur noch {0} offen. Zu viel Gezahltes bitte als eigene Einnahme buchen.':
     'Only {0} is still open. Please book any excess as a separate income entry.',
+  'Es sind schon {0} Spieler nominiert, die Anzahl kann nicht darunter sinken.':
+    '{0} players are already nominated, so the number cannot go below that.',
   'Es werden {0} von {1} Zeilen angezeigt.': 'Showing {0} of {1} rows.',
   'Es werden {0} wöchentliche Termine angelegt.': '{0} weekly events will be created.',
   'Es werden keine Rückennummern angezeigt.': 'No shirt numbers are shown.',
@@ -2015,6 +2033,7 @@ export const en: Record<string, string> = {
   Formular: 'Form',
   Formulare: 'Forms',
   'Forum-Moderation': 'Forum moderation',
+  'Forum-Thema geändert: {0}': 'Forum topic changed: {0}',
   'Forum: Beitrag gemeldet': 'Forum: post reported',
   'Forumsthemen erstellen und moderieren': 'Create and moderate forum topics',
   'Foto ändern': 'Change photo',
@@ -2435,6 +2454,8 @@ export const en: Record<string, string> = {
     'Yes. Under “More → Account & settings → Language” choose Deutsch, English or “Automatic” (your device language). Your choice applies on all your devices, including push notifications. Texts that coaches or the board write themselves (e.g. news) stay in the author’s language.',
   'Ja. Unter „Mehr → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Yes. Under “More → Account & settings” you set the font size (Normal, Large, Extra large) and can lock the app with Face ID, fingerprint or device code. Without internet the app shows the most recently loaded events, news and squad; a notice appears at the top. Replies and changes are only possible with a connection.',
+  'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch), außerdem Forum-Themen und eigene Antworten, Kommentare (auch löschen), Übungen, Aushänge im Fundbüro und Marktplatz, Spielerbedarf und Angebote der Spielerbörse (die Anzahl nicht unter die schon eingetragenen Spieler) sowie Platzsperrungen. Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
+    'Yes. What you created can be edited later – via “Edit” in the “…” menu or the button in the detail view: polls (question, description and deadline; the answers only as long as nobody has voted yet), events with helper shifts, absences and documents (title, type and visibility – the file stays; to replace it, delete it and upload it again), as well as forum topics and your own replies, comments (also delete), exercises, notices in the lost-and-found and marketplace, player requests and offers of the player exchange (the number not below the players already entered) and facility closures. The form is the same as when creating, just pre-filled. Edited content carries the note “edited” with the time. We tell those involved about important changes such as time, place or deadline. Cash bookings are not changed: you correct mistakes by reversing and booking again – so everything stays traceable.',
   'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch). Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
     'Yes. What you created can be edited later – via “Edit” in the “…” menu or the button in the detail view: polls (question, description and deadline; the answers only as long as nobody has voted), events with helper shifts, absences and documents (title, type and visibility – the file stays; to replace it, delete it and upload again). The form is the same as when creating, just pre-filled. Changed content carries the note “edited” with the time. We tell the people involved about important changes such as time, place or deadline. Cash bookings are not edited: you correct mistakes by cancelling and booking again – so everything stays traceable.',
   Jahr: 'Year',
@@ -2638,6 +2659,8 @@ export const en: Record<string, string> = {
   Klassisch: 'Classic',
   Kommend: 'Upcoming',
   Kommentar: 'Comment',
+  'Kommentar bearbeiten': 'Edit comment',
+  'Kommentar gelöscht': 'Comment deleted',
   'Kommentar: {0}': 'Comment: {0}',
   'Kommentare ({0})': 'Comments ({0})',
   Kommunikation: 'Communication',
@@ -3273,6 +3296,8 @@ export const en: Record<string, string> = {
   'Pokal-, Liga- und Testspiele werden erkannt (Spalte „Spielklasse“). Treffzeit und Treffpunkt kommen aus den Regeln der Mannschaft. Vergangene und abgesetzte Spiele werden übersprungen.':
     "Cup, league and friendly matches are recognised (column “Division”). Meeting time and place come from the team's rules. Past and postponed matches are skipped.",
   'Positionen (optional)': 'Positions (optional)',
+  'Positionen oder Hinweis zu deinem Gastspieleinsatz wurden angepasst.':
+    'Positions or note for your guest appearance have been adjusted.',
   'Preis (oder „zu verschenken“)': 'Price (or “free to a good home”)',
   'Preis je Getränk in €': 'Price per drink in €',
   Priorität: 'Priority',
@@ -3546,6 +3571,8 @@ export const en: Record<string, string> = {
   Sperre: 'Suspension',
   'Sperrung anlegen': 'Create block',
   'Sperrung aufheben': 'Lift closure',
+  'Sperrung bearbeiten': 'Edit closure',
+  'Sperrungen dürfen nur Platzverantwortliche ändern.': 'Only facility managers may change blocks.',
   'Sperrungen dürfen nur Platzverantwortliche anlegen.': 'Only groundskeepers may create closures.',
   'Sperrungen dürfen nur Platzverantwortliche aufheben.': 'Only groundskeepers may lift closures.',
   Spiel: 'Match',
@@ -3586,6 +3613,7 @@ export const en: Record<string, string> = {
   Spielerbedarf: 'Player needs',
   'Spielerbedarf {0}': 'Player request {0}',
   'Spielerbedarf / Gastspielerbörse': 'Player needs / guest player exchange',
+  'Spielerbedarf geändert': 'Player request changed',
   'Spielerbedarf melden und Angebote abgeben': 'Report player needs and make offers',
   'Spielerbedarf: {0} sucht {1} Spieler': 'Players needed: {0} is looking for {1} players',
   Spielerbewegungen: 'Player movements',
@@ -3768,6 +3796,7 @@ export const en: Record<string, string> = {
   Testspiel: 'Friendly',
   'Text für die Detailseite': 'Text for the detail page',
   Thema: 'Topic',
+  'Thema bearbeiten': 'Edit topic',
   'Thema eröffnen': 'Open a topic',
   Themen: 'Topics',
   'Themen eröffnen Verantwortliche im Verein.':
@@ -3889,6 +3918,7 @@ export const en: Record<string, string> = {
   Üblich: 'Common',
   'Übung anlegen': 'Create exercise',
   'Übung aus der Bibliothek': 'Exercise from the library',
+  'Übung bearbeiten': 'Edit exercise',
   Übungen: 'Exercises',
   'Übungen, Schwerpunkte, Trainingsbibliothek': 'Exercises, focus areas, training library',
   Übungsleiterpauschale: 'Trainer allowance',

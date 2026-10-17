@@ -4,6 +4,7 @@ import { z } from 'zod';
 import {
   createExercise,
   deleteExercise,
+  updateExercise,
   getTrainingPlan,
   listExercises,
   saveTrainingPlan,
@@ -37,6 +38,25 @@ export const trainingRoutes: FastifyPluginAsyncZod = async (app) => {
       reply.code(201);
       return createExercise(app.db, request.actor!, request.body, app.now());
     },
+  );
+
+  app.patch(
+    '/exercises/:id',
+    {
+      schema: {
+        params: id,
+        body: z.object({
+          title: z.string().trim().min(2).max(80).optional(),
+          category: z.enum(EXERCISE_CATEGORIES).optional(),
+          durationMinutes: z.number().int().min(1).max(120).optional(),
+          players: z.string().trim().max(40).nullish(),
+          material: z.string().trim().max(200).nullish(),
+          description: z.string().trim().max(2000).nullish(),
+        }),
+      },
+    },
+    async (request): Promise<Exercise[]> =>
+      updateExercise(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
 
   app.delete('/exercises/:id', { schema: { params: id } }, async (request): Promise<Exercise[]> =>

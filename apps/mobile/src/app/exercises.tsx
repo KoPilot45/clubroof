@@ -29,6 +29,7 @@ import { CATEGORY_LABELS } from '@/lib/training';
 import { dateFormat, t } from '@/lib/i18n';
 import { useMarkSeen } from '@/lib/tile-info';
 import { useConfirmDelete } from '@/lib/confirm';
+import { EditedNote } from '@/components/edited';
 
 const categories = EXERCISE_CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }));
 
@@ -127,11 +128,16 @@ export default function ExercisesScreen() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<ExerciseCategory | 'all'>('all');
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Exercise | null>(null);
   /** Übung, die gerade einem Training hinzugefügt wird */
   const [adding, setAdding] = useState<string | null>(null);
   const list = useQuery({ queryKey: ['exercises'], queryFn: () => api<Exercise[]>('/exercises') });
   const change = useMutation({
-    mutationFn: (v: { method: 'POST' | 'DELETE'; id?: string; body?: CreateExerciseInput }) =>
+    mutationFn: (v: {
+      method: 'POST' | 'PATCH' | 'DELETE';
+      id?: string;
+      body?: CreateExerciseInput;
+    }) =>
       api<Exercise[]>(v.id ? `/exercises/${v.id}` : '/exercises', {
         method: v.method,
         body: v.body,
@@ -139,6 +145,7 @@ export default function ExercisesScreen() {
     onSuccess: (data) => {
       queryClient.setQueryData(['exercises'], data);
       setCreating(false);
+      setEditing(null);
     },
   });
   if (list.isPending) return <Loading />;
@@ -146,7 +153,15 @@ export default function ExercisesScreen() {
   const shown = list.data.filter((e) => filter === 'all' || e.category === filter);
   return (
     <Screen edges={[]} refreshing={list.isRefetching} onRefresh={() => list.refetch()}>
-      {creating ? (
+      {editing ? (
+        <NewExercise
+          key={editing.id}
+          initial={editing}
+          busy={change.isPending}
+          onCancel={() => setEditing(null)}
+          onSave={(body) => change.mutate({ method: 'PATCH', id: editing.id, body })}
+        />
+      ) : creating ? (
         <NewExercise
           busy={change.isPending}
           onCancel={() => setCreating(false)}
@@ -174,76 +189,98 @@ export default function ExercisesScreen() {
           <Empty icon="library-outline" text="Keine Übungen in dieser Kategorie." />
         </Card>
       ) : null}
-      {shown.map((e) => (
-        <Card key={e.id} style={{ gap: 6 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
-            <T variant="label" style={{ fontWeight: '700', flex: 1 }}>
-              {e.title}
-            </T>
-            <Chip tone="neutral" label={`${e.durationMinutes} min`} />
-          </View>
-          <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-            <Chip tone="info" label={CATEGORY_LABELS[e.category]} />
-            {e.players ? <Chip tone="neutral" icon="people-outline" label={e.players} /> : null}
-            {e.material ? <Chip tone="neutral" icon="cube-outline" label={e.material} /> : null}
-          </View>
-          {e.description ? <T variant="caption">{e.description}</T> : null}
-          <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <T variant="caption">{e.createdBy ? `von ${e.createdBy}` : ''}</T>
-            <View style={{ flexDirection: 'row', gap: 6 }}>
-              <Button
-                label="Zum Training"
-                icon="add"
-                variant="tonal"
-                size="sm"
-                onPress={() => setAdding(adding === e.id ? null : e.id)}
-              />
-              {e.canDelete ? (
-                <MoreMenu
-                  title={e.title}
-                  actions={[
-                    {
-                      label: 'Löschen',
-                      icon: 'trash-outline',
-                      danger: true,
-                      onPress: () =>
-                        confirmDelete({
-                          name: e.title,
-                          onConfirm: () => change.mutate({ method: 'DELETE', id: e.id }),
-                        }),
-                    },
-                  ]}
-                />
-              ) : null}
+      {shown
+        .filter((e) => e.id !== editing?.id)
+        .map((e) => (
+          <Card key={e.id} style={{ gap: 6 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
+              <T variant="label" style={{ fontWeight: '700', flex: 1 }}>
+                {e.title}
+              </T>
+              <Chip tone="neutral" label={`${e.durationMinutes} min`} />
             </View>
-          </View>
-          {adding === e.id ? <AddToTraining exercise={e} onDone={() => setAdding(null)} /> : null}
-        </Card>
-      ))}
+            <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+              <Chip tone="info" label={CATEGORY_LABELS[e.category]} />
+              {e.players ? <Chip tone="neutral" icon="people-outline" label={e.players} /> : null}
+              {e.material ? <Chip tone="neutral" icon="cube-outline" label={e.material} /> : null}
+            </View>
+            {e.description ? <T variant="caption">{e.description}</T> : null}
+            <EditedNote at={e.editedAt} />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <T variant="caption">{e.createdBy ? `von ${e.createdBy}` : ''}</T>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
+                <Button
+                  label="Zum Training"
+                  icon="add"
+                  variant="tonal"
+                  size="sm"
+                  onPress={() => setAdding(adding === e.id ? null : e.id)}
+                />
+                {e.canDelete || e.canEdit ? (
+                  <MoreMenu
+                    title={e.title}
+                    actions={[
+                      ...(e.canEdit
+                        ? [
+                            {
+                              label: 'Bearbeiten',
+                              icon: 'create-outline' as const,
+                              onPress: () => setEditing(e),
+                            },
+                          ]
+                        : []),
+                      ...(e.canDelete
+                        ? [
+                            {
+                              label: 'Löschen',
+                              icon: 'trash-outline' as const,
+                              danger: true,
+                              onPress: () =>
+                                confirmDelete({
+                                  name: e.title,
+                                  onConfirm: () => change.mutate({ method: 'DELETE', id: e.id }),
+                                }),
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
+                ) : null}
+              </View>
+            </View>
+            {adding === e.id ? <AddToTraining exercise={e} onDone={() => setAdding(null)} /> : null}
+          </Card>
+        ))}
     </Screen>
   );
 }
 
 function NewExercise({
+  initial,
   busy,
   onSave,
   onCancel,
 }: {
+  initial?: Exercise;
   busy: boolean;
   onSave: (body: CreateExerciseInput) => void;
   onCancel: () => void;
 }) {
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<ExerciseCategory>('technique');
-  const [minutes, setMinutes] = useState('15');
-  const [players, setPlayers] = useState('');
-  const [material, setMaterial] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState(initial?.title ?? '');
+  const [category, setCategory] = useState<ExerciseCategory>(initial?.category ?? 'technique');
+  const [minutes, setMinutes] = useState(String(initial?.durationMinutes ?? 15));
+  const [players, setPlayers] = useState(initial?.players ?? '');
+  const [material, setMaterial] = useState(initial?.material ?? '');
+  const [description, setDescription] = useState(initial?.description ?? '');
   return (
     <Card style={{ gap: 12 }}>
-      <T variant="section">Neue Übung</T>
+      <T variant="section">{initial ? 'Übung bearbeiten' : 'Neue Übung'}</T>
       <TextField label="Name" value={title} onChangeText={setTitle} maxLength={80} />
       <ChoiceChips options={categories} selected={[category]} onToggle={setCategory} />
       <ChoiceChips
@@ -276,7 +313,7 @@ function NewExercise({
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <Button label="Abbrechen" variant="outline" style={{ flex: 1 }} onPress={onCancel} />
         <Button
-          label="Speichern"
+          label={initial ? 'Änderungen speichern' : 'Speichern'}
           style={{ flex: 1 }}
           loading={busy}
           disabled={title.trim().length < 2}

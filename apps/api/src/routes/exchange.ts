@@ -9,6 +9,8 @@ import {
   getDemand,
   getOverview,
   nominate,
+  updateDemand,
+  updateOffer,
   withdrawNomination,
 } from '../services/exchange';
 
@@ -45,6 +47,22 @@ export const exchangeRoutes: FastifyPluginAsyncZod = async (app) => {
       reply.code(201);
       return createDemand(app.db, request.actor!, request.body, app.now());
     },
+  );
+
+  app.patch(
+    '/exchange/demands/:id',
+    {
+      schema: {
+        params: id,
+        body: z.object({
+          count: z.number().int().min(1).max(10).optional(),
+          positions: z.array(z.string().max(40)).max(8).optional(),
+          note: z.string().trim().max(300).nullish(),
+        }),
+      },
+    },
+    async (request): Promise<DemandDetail> =>
+      updateDemand(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
 
   app.delete('/exchange/demands/:id', { schema: { params: id } }, async (request, reply) => {
@@ -93,6 +111,25 @@ export const exchangeRoutes: FastifyPluginAsyncZod = async (app) => {
       reply.code(201);
       return createOffer(app.db, request.actor!, request.body, app.now());
     },
+  );
+
+  app.patch(
+    '/exchange/offers/:id',
+    {
+      schema: {
+        params: id,
+        body: z.object({
+          count: z.number().int().min(1).max(20).optional(),
+          day: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/)
+            .optional(),
+          note: z.string().trim().max(300).nullish(),
+        }),
+      },
+    },
+    async (request): Promise<ExchangeOverview> =>
+      updateOffer(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
 
   app.delete(
