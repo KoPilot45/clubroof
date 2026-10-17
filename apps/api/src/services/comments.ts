@@ -3,15 +3,19 @@
  * Austausch der Beteiligten an genau einem Vorgang. Wer den Vorgang sehen darf, darf kommentieren;
  * die übrigen Beteiligten und alle, die schon kommentiert haben, werden benachrichtigt.
  */
-import type { CommentEntity, CommentItem } from '@clubroof/core';
+import { can, type CommentEntity, type CommentItem } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, eq } from 'drizzle-orm';
 import type { Actor } from '../actor';
+import { forbidden, notFound } from '../errors';
 import { boardDiscussion } from './board';
 import { notify } from './event-admin';
 import { newsDiscussion } from './editorial';
 import { demandDiscussion } from './exchange';
 import { resolveMediaUrl } from '../storage/media-links';
+
+/** Moderation: wer News freigeben darf, löscht fremde Kommentare. */
+const canModerate = (actor: Actor) => can(actor.grants, 'news.publish', {});
 
 async function discussion(db: Db, actor: Actor, type: CommentEntity, id: string, now: Date) {
   if (type === 'news') return newsDiscussion(db, actor, id);
@@ -54,6 +58,9 @@ export async function listComments(
     avatarUrl: resolveMediaUrl(actor.links, r.avatar),
     body: r.comment.body,
     createdAt: r.comment.createdAt.toISOString(),
+    editedAt: r.comment.editedAt?.toISOString() ?? null,
+    canEdit: r.comment.authorUserId === actor.user.id,
+    canDelete: r.comment.authorUserId === actor.user.id || canModerate(actor),
   }));
 }
 
@@ -91,4 +98,58 @@ export async function addComment(
     now,
   );
   return listComments(db, actor, type, id, now);
+}
+
+async function loadComment(db: Db, actor: Actor, id: string) {
+  const [comment] = await db
+    .select()
+    .from(s.comments)
+    .where(and(eq(s.comments.id, id), eq(s.comments.clubId, actor.club.id)));
+  if (!comment) throw notFound('Der Kommentar');
+  return comment;
+}
+
+/** Eigenen Kommentar ändern (Paket BE): nur wer ihn geschrieben hat und den Vorgang noch sehen darf. */
+export async function updateComment(
+  db: Db,
+  actor: Actor,
+  id: string,
+  body: string,
+  now: Date,
+): Promise<CommentItem[]> {
+  const comment = await loadComment(db, actor, id);
+  const type = comment.entityType as CommentEntity;
+  await discussion(db, actor, type, comment.entityId, now);
+  if (comment.authorUserId !== actor.user.id)
+    throw forbidden('Diesen Kommentar kannst du nicht ändern.');
+  await db
+    .update(s.comments)
+    .set({ body: body.trim(), editedAt: now })
+    .where(eq(s.comments.id, id));
+  return listComments(db, actor, type, comment.entityId, now);
+}
+
+/** Kommentar löschen: der eigene oder – als Moderation – jeder (Paket BE). */
+export async function deleteComment(
+  db: Db,
+  actor: Actor,
+  id: string,
+  now: Date,
+): Promise<CommentItem[]> {
+  const comment = await loadComment(db, actor, id);
+  const type = comment.entityType as CommentEntity;
+  await discussion(db, actor, type, comment.entityId, now);
+  if (comment.authorUserId !== actor.user.id && !canModerate(actor))
+    throw forbidden('Diesen Kommentar kannst du nicht löschen.');
+  await db.delete(s.comments).where(eq(s.comments.id, id));
+  await db.insert(s.auditLog).values({
+    clubId: actor.club.id,
+    actorUserId: actor.user.id,
+    action: 'comment.delete',
+    entityType: 'comment',
+    entityId: id,
+    data: { label: 'Kommentar gelöscht', own: comment.authorUserId === actor.user.id },
+    createdAt: now,
+  });
+  return listComments(db, actor, type, comment.entityId, now);
 }

@@ -11,6 +11,7 @@ import {
   type CreateFacilityBlockInput,
   type FacilityBooking,
   type FacilityOccupancy,
+  type UpdateFacilityBlockInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, eq, gt, inArray, lt, ne } from 'drizzle-orm';
@@ -115,6 +116,7 @@ export async function getOccupancy(
             endsAt: e.toISOString(),
             cancelled: r.event.status === 'cancelled',
             conflict: false,
+            editedAt: null,
             _s: r.event.startsAt,
             _e: e,
           };
@@ -126,6 +128,7 @@ export async function getOccupancy(
           id: b.id,
           kind: 'block' as const,
           title: b.reason,
+          editedAt: b.editedAt?.toISOString() ?? null,
           teamBadge: null,
           eventType: null,
           startsAt: b.startsAt.toISOString(),
@@ -207,63 +210,38 @@ export async function assertFacilityFree(
   }
 }
 
-export async function createBlock(
+/** Anstehende Termine auf dem Platz, die in den gesperrten Zeitraum fallen. */
+async function eventsInBlock(db: Db, facilityId: string, startsAt: Date, endsAt: Date, now: Date) {
+  return db
+    .select({ event: s.events, badge: s.teams.badge })
+    .from(s.events)
+    .leftJoin(s.teams, eq(s.teams.id, s.events.teamId))
+    .where(
+      and(
+        eq(s.events.facilityId, facilityId),
+        eq(s.events.status, 'scheduled'),
+        gt(s.events.startsAt, now),
+        lt(s.events.startsAt, endsAt),
+        gt(s.events.startsAt, new Date(startsAt.getTime() - 12 * 3_600_000)),
+      ),
+    )
+    .then((rows) => rows.filter((r) => eventEnd(r.event) > startsAt));
+}
+
+/** Betroffene Termine absagen (Grund: Platz gesperrt) und die Beteiligten informieren. */
+async function cancelAffected(
   db: Db,
   actor: Actor,
-  input: CreateFacilityBlockInput,
+  facilityName: string,
+  reason: string,
+  affected: Awaited<ReturnType<typeof eventsInBlock>>,
   now: Date,
-): Promise<FacilityOccupancy> {
-  requireModule(actor);
-  if (!actorCan(actor, 'facilities.manage'))
-    throw forbidden('Sperrungen dürfen nur Platzverantwortliche anlegen.');
-  const startsAt = new Date(input.startsAt);
-  const endsAt = new Date(input.endsAt);
-  if (endsAt <= startsAt)
-    throw new HttpError(400, 'invalid_range', 'Das Ende muss nach dem Beginn liegen.');
-  if (endsAt < now) throw new HttpError(400, 'in_past', 'Der Zeitraum liegt in der Vergangenheit.');
-  const [facility] = await db
-    .select()
-    .from(s.facilities)
-    .where(and(eq(s.facilities.id, input.facilityId), eq(s.facilities.clubId, actor.club.id)));
-  if (!facility) throw notFound('Der Platz');
-  const reason = input.reason.trim();
-
-  const affected = input.cancelEvents
-    ? await db
-        .select({ event: s.events, badge: s.teams.badge })
-        .from(s.events)
-        .leftJoin(s.teams, eq(s.teams.id, s.events.teamId))
-        .where(
-          and(
-            eq(s.events.facilityId, facility.id),
-            eq(s.events.status, 'scheduled'),
-            gt(s.events.startsAt, now),
-            lt(s.events.startsAt, endsAt),
-            gt(s.events.startsAt, new Date(startsAt.getTime() - 12 * 3_600_000)),
-          ),
-        )
-        .then((rows) => rows.filter((r) => eventEnd(r.event) > startsAt))
-    : [];
-
-  const [block] = await db
-    .insert(s.facilityBlocks)
-    .values({ clubId: actor.club.id, facilityId: facility.id, startsAt, endsAt, reason })
-    .returning({ id: s.facilityBlocks.id });
-  await db.insert(s.auditLog).values({
-    clubId: actor.club.id,
-    actorUserId: actor.user.id,
-    action: 'facility.blocked',
-    entityType: 'facility_block',
-    entityId: block!.id,
-    data: { facility: facility.name, reason, cancelled: affected.length },
-    createdAt: now,
-  });
-
+) {
   if (affected.length > 0) {
     const ids = affected.map((r) => r.event.id);
     await db
       .update(s.events)
-      .set({ status: 'cancelled', cancelledReason: `${facility.name} gesperrt (${reason})` })
+      .set({ status: 'cancelled', cancelledReason: `${facilityName} gesperrt (${reason})` })
       .where(inArray(s.events.id, ids));
     const participants = await db
       .select({ eventId: s.eventParticipants.eventId, personId: s.eventParticipants.personId })
@@ -289,14 +267,113 @@ export async function createBlock(
           topic: 'events',
           teamId: r.event.teamId,
           title: `Abgesagt: ${r.event.title}`,
-          body: `${r.badge ? `${r.badge} · ` : ''}${when.format(r.event.startsAt)} Uhr – ${facility.name} gesperrt (${reason})`,
+          body: `${r.badge ? `${r.badge} · ` : ''}${when.format(r.event.startsAt)} Uhr – ${facilityName} gesperrt (${reason})`,
           link: `/events/${r.event.id}`,
         },
         now,
       );
     }
   }
+}
 
+export async function createBlock(
+  db: Db,
+  actor: Actor,
+  input: CreateFacilityBlockInput,
+  now: Date,
+): Promise<FacilityOccupancy> {
+  requireModule(actor);
+  if (!actorCan(actor, 'facilities.manage'))
+    throw forbidden('Sperrungen dürfen nur Platzverantwortliche anlegen.');
+  const startsAt = new Date(input.startsAt);
+  const endsAt = new Date(input.endsAt);
+  if (endsAt <= startsAt)
+    throw new HttpError(400, 'invalid_range', 'Das Ende muss nach dem Beginn liegen.');
+  if (endsAt < now) throw new HttpError(400, 'in_past', 'Der Zeitraum liegt in der Vergangenheit.');
+  const [facility] = await db
+    .select()
+    .from(s.facilities)
+    .where(and(eq(s.facilities.id, input.facilityId), eq(s.facilities.clubId, actor.club.id)));
+  if (!facility) throw notFound('Der Platz');
+  const reason = input.reason.trim();
+
+  const affected = input.cancelEvents
+    ? await eventsInBlock(db, facility.id, startsAt, endsAt, now)
+    : [];
+
+  const [block] = await db
+    .insert(s.facilityBlocks)
+    .values({ clubId: actor.club.id, facilityId: facility.id, startsAt, endsAt, reason })
+    .returning({ id: s.facilityBlocks.id });
+  await db.insert(s.auditLog).values({
+    clubId: actor.club.id,
+    actorUserId: actor.user.id,
+    action: 'facility.blocked',
+    entityType: 'facility_block',
+    entityId: block!.id,
+    data: { facility: facility.name, reason, cancelled: affected.length },
+    createdAt: now,
+  });
+
+  await cancelAffected(db, actor, facility.name, reason, affected, now);
+
+  const day = toIsoDate(calendarDayOf(startsAt, actor.club.timezone));
+  const lastDay = toIsoDate(calendarDayOf(new Date(endsAt.getTime() - 1), actor.club.timezone));
+  return getOccupancy(db, actor, day, lastDay);
+}
+
+/**
+ * Sperrung nachträglich ändern (Paket BE): Platz, Zeitraum und Grund. Betroffene Termine werden neu geprüft und auf
+ * Wunsch wie beim Anlegen abgesagt; bereits abgesagte Termine bleiben abgesagt.
+ */
+export async function updateBlock(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdateFacilityBlockInput,
+  now: Date,
+): Promise<FacilityOccupancy> {
+  requireModule(actor);
+  if (!actorCan(actor, 'facilities.manage'))
+    throw forbidden('Sperrungen dürfen nur Platzverantwortliche ändern.');
+  const [block] = await db
+    .select()
+    .from(s.facilityBlocks)
+    .where(and(eq(s.facilityBlocks.id, id), eq(s.facilityBlocks.clubId, actor.club.id)));
+  if (!block) throw notFound('Die Sperrung');
+  const startsAt = input.startsAt ? new Date(input.startsAt) : block.startsAt;
+  const endsAt = input.endsAt ? new Date(input.endsAt) : block.endsAt;
+  if (endsAt <= startsAt)
+    throw new HttpError(400, 'invalid_range', 'Das Ende muss nach dem Beginn liegen.');
+  if (endsAt < now) throw new HttpError(400, 'in_past', 'Der Zeitraum liegt in der Vergangenheit.');
+  const [facility] = await db
+    .select()
+    .from(s.facilities)
+    .where(
+      and(
+        eq(s.facilities.id, input.facilityId ?? block.facilityId),
+        eq(s.facilities.clubId, actor.club.id),
+      ),
+    );
+  if (!facility) throw notFound('Der Platz');
+  const reason = input.reason?.trim() || block.reason;
+  const affected = input.cancelEvents
+    ? await eventsInBlock(db, facility.id, startsAt, endsAt, now)
+    : [];
+  await db
+    .update(s.facilityBlocks)
+    .set({ facilityId: facility.id, startsAt, endsAt, reason, editedAt: now })
+    .where(eq(s.facilityBlocks.id, id));
+  await db.insert(s.auditLog).values({
+    clubId: actor.club.id,
+    actorUserId: actor.user.id,
+    action: 'facility.block.updated',
+    entityType: 'facility_block',
+    entityId: id,
+    data: { facility: facility.name, reason, cancelled: affected.length },
+    createdAt: now,
+  });
+  await cancelAffected(db, actor, facility.name, reason, affected, now);
   const day = toIsoDate(calendarDayOf(startsAt, actor.club.timezone));
   const lastDay = toIsoDate(calendarDayOf(new Date(endsAt.getTime() - 1), actor.club.timezone));
   return getOccupancy(db, actor, day, lastDay);

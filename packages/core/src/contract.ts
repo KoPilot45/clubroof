@@ -1078,6 +1078,8 @@ export type PlayerDemand = {
   mine: boolean;
   /** Ich kann aus einer meiner Mannschaften Spieler abstellen */
   canNominate: boolean;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
 };
 
 export type PlayerOffer = {
@@ -1087,6 +1089,8 @@ export type PlayerOffer = {
   count: number;
   note: string | null;
   mine: boolean;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
 };
 
 export type ExchangeOverview = {
@@ -1129,6 +1133,12 @@ export type CreateDemandInput = {
   note?: string | null;
 };
 
+/** Spielerbedarf nachträglich ändern (Paket BE): Anzahl (nicht unter den schon Nominierten), Positionen, Hinweis. */
+export type UpdateDemandInput = { count?: number; positions?: string[]; note?: string | null };
+
+/** Angebot nachträglich ändern (Paket BE): Anzahl, Tag und Hinweis. */
+export type UpdateOfferInput = { count?: number; day?: string; note?: string | null };
+
 export type CreateOfferInput = { teamId: string; day: string; count: number; note?: string | null };
 
 export type ApiError = { error: string; message: string };
@@ -1147,6 +1157,8 @@ export type FacilityBooking = {
   cancelled: boolean;
   /** Überschneidet sich mit einer anderen Belegung oder Sperrung */
   conflict: boolean;
+  /** Sperrung nachträglich geändert (ISO), sonst null */
+  editedAt: string | null;
 };
 
 export type FacilityOccupancy = {
@@ -1157,6 +1169,9 @@ export type FacilityOccupancy = {
   conflicts: number;
   canManage: boolean;
 };
+
+/** Sperrung nachträglich ändern (Paket BE): Platz, Zeitraum und Grund; betroffene Termine auf Wunsch absagen. */
+export type UpdateFacilityBlockInput = Partial<CreateFacilityBlockInput>;
 
 export type CreateFacilityBlockInput = {
   facilityId: string;
@@ -1969,6 +1984,12 @@ export type CommentItem = {
   avatarUrl: string | null;
   body: string;
   createdAt: string;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
+  /** Ich darf diesen Kommentar ändern (eigener) */
+  canEdit: boolean;
+  /** Ich darf ihn löschen (eigener oder als Moderation) */
+  canDelete: boolean;
 };
 
 // ── Veranstaltungen planen ───────────────────────────────────────────────
@@ -2078,7 +2099,14 @@ export type Exercise = {
   description: string | null;
   createdBy: string | null;
   canDelete: boolean;
+  /** Ich darf die Übung ändern (wer sie angelegt hat, oder die Administration) */
+  canEdit: boolean;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
 };
+
+/** Übung nachträglich ändern (Paket BE): Name, Beschreibung, Material und die übrigen Angaben. */
+export type UpdateExerciseInput = Partial<CreateExerciseInput>;
 
 export type CreateExerciseInput = {
   title: string;
@@ -2152,6 +2180,10 @@ export type ForumPost = {
   /** Gemeldet – nur für das Moderationsteam */
   reported: boolean;
   createdAt: string;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
+  /** Ich darf diesen Beitrag ändern (eigener, solange Thema offen und nicht ausgeblendet) */
+  canEdit: boolean;
 };
 
 export type ForumTopicDetail = ForumTopicSummary & {
@@ -2159,7 +2191,13 @@ export type ForumTopicDetail = ForumTopicSummary & {
   posts: ForumPost[];
   canPost: boolean;
   canModerate: boolean;
+  /** Ich darf Titel und Text ändern (Ersteller, solange das Thema offen ist) */
+  canEdit: boolean;
+  editedAt: string | null;
 };
+
+/** Thema nachträglich ändern (Paket BE): Titel und Text durch den Ersteller; Schließen und Anheften bleiben Moderation. */
+export type UpdateForumTopicInput = { title?: string; body?: string };
 
 export type CreateForumTopicInput = { title: string; body: string; days: number };
 
@@ -2181,12 +2219,25 @@ export type BoardItem = {
   expiresAt: string;
   done: boolean;
   canClose: boolean;
+  /** Ich darf den Aushang ändern (wer ihn erstellt hat oder die Moderation, solange er nicht erledigt ist) */
+  canEdit: boolean;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
 };
 
 export type BoardOverview = {
   /** Nach aktivierten Modulen: Fundbüro (found, lost) und/oder Marktplatz (offer, search) */
   kinds: BoardKind[];
   items: BoardItem[];
+};
+
+/** Aushang nachträglich ändern (Paket BE): Text, Foto (null = entfernen) und Ablauf (neue Dauer ab heute in Tagen). */
+export type UpdateBoardItemInput = {
+  title?: string;
+  description?: string | null;
+  detail?: string | null;
+  imageId?: string | null;
+  days?: number;
 };
 
 export type CreateBoardItemInput = {

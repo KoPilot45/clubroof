@@ -522,6 +522,8 @@ export const en: Record<string, string> = {
   'Anderes Bild': 'Different image',
   'Anderes Foto': 'Different photo',
   'Anderes Logo wählen': 'Choose another logo',
+  'Ändern kann, wer den Aushang erstellt hat.': 'Only the author can change the notice.',
+  'Ändern kann, wer die Übung angelegt hat.': 'Only the author can change the exercise.',
   'Änderung speichern und informieren': 'Save change and notify',
   'Änderungen dieser Bedingungen werden rechtzeitig in der App bekannt gegeben.':
     'Changes to these terms will be announced in the app in good time.',
@@ -1269,6 +1271,7 @@ export const en: Record<string, string> = {
   'Der Kassenbericht': 'The team fund report',
   'Der Kassenwart bucht Einnahmen, Ausgaben und Einzahlungen und pflegt den Strafenkatalog – gemeinsam mit dem Trainerteam. Infrage kommen Mitglieder mit eigenem Login und Eltern.':
     'The treasurer books income, expenses and payments and maintains the fine catalogue – together with the coaching staff. Members with their own login and parents are eligible.',
+  'Der Kommentar': 'The comment',
   'Der letzte Fulladmin kann nicht austreten.': 'The last full admin cannot leave.',
   'Der Link ist abgelaufen oder ungültig.': 'The link has expired or is invalid.',
   'Der Link ist abgelaufen oder wurde bereits verwendet.':
@@ -1650,10 +1653,14 @@ export const en: Record<string, string> = {
   'Diese Veranstaltung darfst du nicht ändern.': 'You may not change this event.',
   'Diese Woche': 'This week',
   'Diese Woche stehen keine Termine an.': 'No events this week.',
+  'Diesen Beitrag kannst du nicht ändern.': 'You cannot change this post.',
+  'Diesen Kommentar kannst du nicht ändern.': 'You cannot change this comment.',
+  'Diesen Kommentar kannst du nicht löschen.': 'You cannot delete this comment.',
   'Diesen Sponsor gibt es nicht mehr.': 'This sponsor no longer exists.',
   'Diesen Termin darfst du nicht absagen.': 'You may not cancel this event.',
   'Diesen Termin darfst du nicht ändern.': 'You may not change this event.',
   'Diesen und {0} folgende': 'This and {0} following',
+  'Dieser Bedarf ist nicht mehr offen.': 'This request is no longer open.',
   'Dieser Link ist eine Mannschafts-Einladung.': 'This link is a team invitation.',
   'Dieser Link ist eine persönliche Einladung.': 'This link is a personal invitation.',
   'Dieser Schritt ist nicht möglich.': 'This step is not possible.',
@@ -1664,6 +1671,7 @@ export const en: Record<string, string> = {
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'This grant is also in the team fund and cannot be cancelled here.',
   'Dieses Passwort ist zu leicht zu erraten.': 'This password is too easy to guess.',
+  'Dieses Thema kannst du nicht ändern.': 'You cannot change this topic.',
   'Dir zugeteilte Mannschaftsaufgaben': 'Team tasks assigned to you',
   Do: 'Thu',
   'Dokument geändert: {0}': 'Document changed: {0}',
@@ -1763,6 +1771,8 @@ export const en: Record<string, string> = {
   'Eigentor des Gegners': "Opponent's own goal",
   'Ein abgeschlossenes Jahr öffnet nur die Administration.':
     'Only the administration reopens a closed year.',
+  'Ein ausgeblendeter Beitrag lässt sich nicht ändern.': 'A hidden post cannot be changed.',
+  'Ein erledigter Aushang lässt sich nicht ändern.': 'A completed notice cannot be changed.',
   'Ein Getränk mehr': 'One more drink',
   'Ein Getränk weniger': 'One fewer drink',
   'Ein Jahr kann erst nach seinem Ende abgeschlossen werden.':
@@ -1971,6 +1981,8 @@ export const en: Record<string, string> = {
     '{0} samples are still open. Please check or object to all of them.',
   'Es sind nur noch {0} offen. Zu viel Gezahltes bitte als eigene Einnahme buchen.':
     'Only {0} is still open. Please book any excess as a separate income entry.',
+  'Es sind schon {0} Spieler nominiert, die Anzahl kann nicht darunter sinken.':
+    '{0} players are already nominated, so the number cannot go below that.',
   'Es werden {0} von {1} Zeilen angezeigt.': 'Showing {0} of {1} rows.',
   'Es werden {0} wöchentliche Termine angelegt.': '{0} weekly events will be created.',
   'Es werden keine Rückennummern angezeigt.': 'No shirt numbers are shown.',
@@ -2015,6 +2027,7 @@ export const en: Record<string, string> = {
   Formular: 'Form',
   Formulare: 'Forms',
   'Forum-Moderation': 'Forum moderation',
+  'Forum-Thema geändert: {0}': 'Forum topic changed: {0}',
   'Forum: Beitrag gemeldet': 'Forum: post reported',
   'Forumsthemen erstellen und moderieren': 'Create and moderate forum topics',
   'Foto ändern': 'Change photo',
@@ -2638,6 +2651,7 @@ export const en: Record<string, string> = {
   Klassisch: 'Classic',
   Kommend: 'Upcoming',
   Kommentar: 'Comment',
+  'Kommentar gelöscht': 'Comment deleted',
   'Kommentar: {0}': 'Comment: {0}',
   'Kommentare ({0})': 'Comments ({0})',
   Kommunikation: 'Communication',
@@ -3273,6 +3287,8 @@ export const en: Record<string, string> = {
   'Pokal-, Liga- und Testspiele werden erkannt (Spalte „Spielklasse“). Treffzeit und Treffpunkt kommen aus den Regeln der Mannschaft. Vergangene und abgesetzte Spiele werden übersprungen.':
     "Cup, league and friendly matches are recognised (column “Division”). Meeting time and place come from the team's rules. Past and postponed matches are skipped.",
   'Positionen (optional)': 'Positions (optional)',
+  'Positionen oder Hinweis zu deinem Gastspieleinsatz wurden angepasst.':
+    'Positions or note for your guest appearance have been adjusted.',
   'Preis (oder „zu verschenken“)': 'Price (or “free to a good home”)',
   'Preis je Getränk in €': 'Price per drink in €',
   Priorität: 'Priority',
@@ -3546,6 +3562,7 @@ export const en: Record<string, string> = {
   Sperre: 'Suspension',
   'Sperrung anlegen': 'Create block',
   'Sperrung aufheben': 'Lift closure',
+  'Sperrungen dürfen nur Platzverantwortliche ändern.': 'Only facility managers may change blocks.',
   'Sperrungen dürfen nur Platzverantwortliche anlegen.': 'Only groundskeepers may create closures.',
   'Sperrungen dürfen nur Platzverantwortliche aufheben.': 'Only groundskeepers may lift closures.',
   Spiel: 'Match',
@@ -3586,6 +3603,7 @@ export const en: Record<string, string> = {
   Spielerbedarf: 'Player needs',
   'Spielerbedarf {0}': 'Player request {0}',
   'Spielerbedarf / Gastspielerbörse': 'Player needs / guest player exchange',
+  'Spielerbedarf geändert': 'Player request changed',
   'Spielerbedarf melden und Angebote abgeben': 'Report player needs and make offers',
   'Spielerbedarf: {0} sucht {1} Spieler': 'Players needed: {0} is looking for {1} players',
   Spielerbewegungen: 'Player movements',

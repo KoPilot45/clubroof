@@ -2605,6 +2605,21 @@ describe.skipIf(!url)('API', () => {
         count: 1,
       });
       expect(again.status).toBe(409);
+      // BE Stufe 2: Bedarf nachträglich ändern – nur die eigene Mannschaft
+      const changedDemand = await send<DemandDetail>(
+        'PATCH',
+        `/exchange/demands/${created.body.id}`,
+        coach.token,
+        { count: 2, positions: ['Torwart', 'Abwehr'], note: 'Bitte pünktlich' },
+      );
+      expect(changedDemand.status, JSON.stringify(changedDemand.body)).toBe(200);
+      expect(changedDemand.body).toMatchObject({ count: 2, note: 'Bitte pünktlich' });
+      expect(changedDemand.body.editedAt).not.toBeNull();
+      const stranger = await login('spieler');
+      expect(
+        (await send('PATCH', `/exchange/demands/${created.body.id}`, stranger.token, { count: 3 }))
+          .status,
+      ).toBeGreaterThanOrEqual(403);
       const other = name(overview, 'A1');
       const foreign = await send('POST', '/exchange/demands', coach.token, {
         teamId: other.team.id,
@@ -2633,6 +2648,23 @@ describe.skipIf(!url)('API', () => {
         count: 1,
       });
       expect(past.status).toBe(400);
+      // BE Stufe 2: Angebot nachträglich ändern (Anzahl, Hinweis, Tag)
+      const changedOffer = await send<ExchangeOverview>(
+        'PATCH',
+        `/exchange/offers/${mine.id}`,
+        coach.token,
+        { count: 3, note: 'Auch Torwart', day: '2026-10-13' },
+      );
+      expect(changedOffer.status).toBe(200);
+      expect(changedOffer.body.offers.find((o) => o.id === mine.id)).toMatchObject({
+        count: 3,
+        day: '2026-10-13',
+        note: 'Auch Torwart',
+      });
+      expect(
+        (await send('PATCH', `/exchange/offers/${mine.id}`, coach.token, { day: '2026-10-01' }))
+          .status,
+      ).toBe(400);
       const del = await send<ExchangeOverview>(
         'DELETE',
         `/exchange/offers/${mine.id}`,
@@ -2741,6 +2773,24 @@ describe.skipIf(!url)('API', () => {
       const f = created.body.facilities.find((x) => x.facility.id === facility.facility.id)!;
       expect(f.bookings.find((b) => b.id === event.id)?.cancelled).toBe(true);
       const block = f.bookings.find((b) => b.kind === 'block' && b.title === 'Wasserschaden')!;
+
+      // BE Stufe 2: Sperrung nachträglich ändern – nur Platzverantwortliche
+      expect(
+        (await send('PATCH', `/facilities/blocks/${block.id}`, coach.token, { reason: 'Test' }))
+          .status,
+      ).toBe(403);
+      const edited = await send<FacilityOccupancy>(
+        'PATCH',
+        `/facilities/blocks/${block.id}`,
+        admin.token,
+        { reason: 'Wasserschaden behoben bis Montag' },
+      );
+      expect(edited.status, JSON.stringify(edited.body)).toBe(200);
+      const editedBlock = edited.body.facilities
+        .find((x) => x.facility.id === facility.facility.id)!
+        .bookings.find((b) => b.id === block.id)!;
+      expect(editedBlock).toMatchObject({ title: 'Wasserschaden behoben bis Montag' });
+      expect(editedBlock.editedAt).not.toBeNull();
 
       const removed = await send('DELETE', `/facilities/blocks/${block.id}`, admin.token);
       expect(removed.status).toBe(204);
@@ -5907,6 +5957,22 @@ describe.skipIf(!url)('API', () => {
       expect(added.status).toBe(201);
       const pendel = added.body.find((e) => e.title === 'Kopfballpendel')!;
       expect(pendel.canDelete).toBe(true);
+      // BE Stufe 2: Übung nachträglich ändern (wer sie angelegt hat, oder die Administration)
+      expect(pendel.canEdit).toBe(true);
+      const updated = await send<Exercise[]>('PATCH', `/exercises/${pendel.id}`, coach.token, {
+        title: 'Kopfballpendel (Variante)',
+        durationMinutes: 15,
+        description: 'Zu zweit, abwechselnd.',
+      });
+      expect(updated.status, JSON.stringify(updated.body)).toBe(200);
+      expect(updated.body.find((e) => e.id === pendel.id)).toMatchObject({
+        title: 'Kopfballpendel (Variante)',
+        durationMinutes: 15,
+      });
+      expect(updated.body.find((e) => e.id === pendel.id)!.editedAt).not.toBeNull();
+      expect(
+        (await send('PATCH', `/exercises/${pendel.id}`, player.token, { title: 'Fremd' })).status,
+      ).toBe(403);
 
       const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
       const week = (await get<TeamOverview>(`/teams/${b1.id}`, coach.token)).trainingWeek;
@@ -6042,6 +6108,110 @@ describe.skipIf(!url)('API', () => {
         mine: true,
         canClose: true,
       });
+    });
+
+    it('Nachträglich bearbeiten (BE, Stufe 2): Forum-Thema und -Beitrag, Kommentar, Aushang', async () => {
+      const board = await login('vorstand');
+      const player = await login('spieler');
+      const parent = await login('eltern');
+      // Thema: Titel und Text nur der Ersteller; Beitrag: nur der Verfasser, solange das Thema offen ist
+      const topic = await send<ForumTopicDetail>('POST', '/forum', board.token, {
+        title: 'Hallenzeiten im Winter',
+        body: 'Wer kann Montag 18 Uhr?',
+        days: 14,
+      });
+      const tid = topic.body.id;
+      expect(topic.body).toMatchObject({ canEdit: true, editedAt: null });
+      expect(
+        (await send('PATCH', `/forum/${tid}`, player.token, { title: 'Gehackt' })).status,
+      ).toBe(403);
+      const retitled = await send<ForumTopicDetail>('PATCH', `/forum/${tid}`, board.token, {
+        title: 'Hallenzeiten im Winter (neu)',
+        body: 'Wer kann Montag 18:30 Uhr?',
+      });
+      expect(retitled.status, JSON.stringify(retitled.body)).toBe(200);
+      expect(retitled.body).toMatchObject({
+        title: 'Hallenzeiten im Winter (neu)',
+        body: 'Wer kann Montag 18:30 Uhr?',
+      });
+      expect(retitled.body.editedAt).not.toBeNull();
+      const replied = await send<ForumTopicDetail>('POST', `/forum/${tid}/posts`, player.token, {
+        body: 'Passt mir.',
+      });
+      const post = replied.body.posts.at(-1)!;
+      expect(post).toMatchObject({ mine: true, canEdit: true });
+      expect(
+        (await send('PATCH', `/forum/posts/${post.id}`, board.token, { body: 'Fremd' })).status,
+      ).toBe(403);
+      const editedPost = await send<ForumTopicDetail>(
+        'PATCH',
+        `/forum/posts/${post.id}`,
+        player.token,
+        { body: 'Passt mir, 18:30 Uhr ist gut.' },
+      );
+      expect(editedPost.status).toBe(200);
+      expect(editedPost.body.posts.at(-1)).toMatchObject({ body: 'Passt mir, 18:30 Uhr ist gut.' });
+      expect(editedPost.body.posts.at(-1)!.editedAt).not.toBeNull();
+      await send('PATCH', `/forum/${tid}`, board.token, { closed: true });
+      expect(
+        (await send('PATCH', `/forum/posts/${post.id}`, player.token, { body: 'Zu spät' })).status,
+      ).toBe(409);
+
+      // Aushang und Kommentare
+      const lost = await send<BoardOverview>('POST', '/board', player.token, {
+        kind: 'lost',
+        title: 'Schwarze Mütze',
+        detail: 'Platz 2',
+      });
+      const item = lost.body.items.find((i) => i.title === 'Schwarze Mütze')!;
+      expect(item).toMatchObject({ canEdit: true, editedAt: null });
+      expect(
+        (await send('PATCH', `/board/${item.id}`, parent.token, { title: 'Fremd' })).status,
+      ).toBe(403);
+      const editedItem = await send<BoardOverview>('PATCH', `/board/${item.id}`, player.token, {
+        title: 'Schwarze Wintermütze',
+        detail: 'Kabine 3',
+        days: 14,
+      });
+      expect(editedItem.status, JSON.stringify(editedItem.body)).toBe(200);
+      const after = editedItem.body.items.find((i) => i.id === item.id)!;
+      expect(after).toMatchObject({ title: 'Schwarze Wintermütze', detail: 'Kabine 3' });
+      expect(after.editedAt).not.toBeNull();
+
+      const commented = await send<CommentItem[]>(
+        'POST',
+        `/comments/board/${item.id}`,
+        parent.token,
+        {
+          body: 'Habe sie gesehen.',
+        },
+      );
+      const comment = commented.body.at(-1)!;
+      expect(comment).toMatchObject({ mine: true, canEdit: true, canDelete: true });
+      const asOwner = await get<CommentItem[]>(`/comments/board/${item.id}`, player.token);
+      expect(asOwner.at(-1)).toMatchObject({ canEdit: false, canDelete: false });
+      expect(
+        (await send('PATCH', `/comments/${comment.id}`, player.token, { body: 'Fremd' })).status,
+      ).toBe(403);
+      expect((await send('DELETE', `/comments/${comment.id}`, player.token)).status).toBe(403);
+      const changedComment = await send<CommentItem[]>(
+        'PATCH',
+        `/comments/${comment.id}`,
+        parent.token,
+        { body: 'Habe sie in Kabine 2 gesehen.' },
+      );
+      expect(changedComment.body.at(-1)).toMatchObject({ body: 'Habe sie in Kabine 2 gesehen.' });
+      expect(changedComment.body.at(-1)!.editedAt).not.toBeNull();
+      // Moderation (News freigeben) löscht fremde Kommentare, Verfasser den eigenen
+      const asBoard = await get<CommentItem[]>(`/comments/board/${item.id}`, board.token);
+      expect(asBoard.at(-1)!.canDelete).toBe(true);
+      expect((await send('DELETE', `/comments/${comment.id}`, board.token)).status).toBe(200);
+      const own = await send<CommentItem[]>('POST', `/comments/board/${item.id}`, parent.token, {
+        body: 'Noch eine Frage',
+      });
+      expect((await send('DELETE', `/comments/${own.body.at(-1)!.id}`, parent.token)).status).toBe(
+        200,
+      );
     });
 
     it('Vereinswissen: alle lesen, die Verwaltung schreibt', async () => {

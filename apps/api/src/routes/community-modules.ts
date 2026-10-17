@@ -8,11 +8,13 @@ import {
 } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { closeBoardItem, createBoardItem, getBoard } from '../services/board';
+import { closeBoardItem, createBoardItem, getBoard, updateBoardItem } from '../services/board';
 import {
   addPost,
   closeTopic,
   createTopic,
+  updatePost,
+  updateTopic,
   getForum,
   getTopic,
   moderatePost,
@@ -59,11 +61,31 @@ export const communityModuleRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         params: id,
-        body: z.object({ closed: z.boolean().optional(), pinned: z.boolean().optional() }),
+        body: z.object({
+          closed: z.boolean().optional(),
+          pinned: z.boolean().optional(),
+          title: z.string().trim().min(3).max(100).optional(),
+          body: z.string().trim().min(1).max(2000).optional(),
+        }),
       },
     },
+    async (request): Promise<ForumTopicDetail> => {
+      const { title, body, ...moderation } = request.body;
+      const id = request.params.id;
+      let detail: ForumTopicDetail | null = null;
+      // Titel und Text ändert der Ersteller, Schließen und Anheften das Moderationsteam
+      if (title !== undefined || body !== undefined)
+        detail = await updateTopic(app.db, request.actor!, id, { title, body }, app.now());
+      if (moderation.closed !== undefined || moderation.pinned !== undefined)
+        detail = await closeTopic(app.db, request.actor!, id, moderation, app.now());
+      return detail ?? getTopic(app.db, request.actor!, id, app.now());
+    },
+  );
+  app.patch(
+    '/forum/posts/:id',
+    { schema: { params: id, body: z.object({ body: z.string().trim().min(1).max(2000) }) } },
     async (request): Promise<ForumTopicDetail> =>
-      closeTopic(app.db, request.actor!, request.params.id, request.body, app.now()),
+      updatePost(app.db, request.actor!, request.params.id, request.body.body, app.now()),
   );
   app.post(
     '/forum/:id/posts',
@@ -107,6 +129,23 @@ export const communityModuleRoutes: FastifyPluginAsyncZod = async (app) => {
       reply.code(201);
       return createBoardItem(app.db, request.actor!, request.body, app.now());
     },
+  );
+  app.patch(
+    '/board/:id',
+    {
+      schema: {
+        params: id,
+        body: z.object({
+          title: z.string().trim().min(3).max(80).optional(),
+          description: z.string().trim().max(1000).nullish(),
+          detail: z.string().trim().max(80).nullish(),
+          imageId: z.uuid().nullish(),
+          days: z.union([z.literal(7), z.literal(14), z.literal(30), z.literal(60)]).optional(),
+        }),
+      },
+    },
+    async (request): Promise<BoardOverview> =>
+      updateBoardItem(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
   app.post('/board/:id/done', { schema: { params: id } }, async (request): Promise<BoardOverview> =>
     closeBoardItem(app.db, request.actor!, request.params.id, app.now()),

@@ -2,11 +2,17 @@
  * Fundbüro und Marktplatz (optionale Module): Aushänge mit Ablaufdatum. Rückfragen laufen über
  * Kommentare am Aushang (öffentlich für Mitglieder) – Kontaktdaten werden nicht angezeigt.
  */
-import type { BoardItem, BoardKind, BoardOverview, CreateBoardItemInput } from '@clubroof/core';
+import type {
+  BoardItem,
+  BoardKind,
+  BoardOverview,
+  CreateBoardItemInput,
+  UpdateBoardItemInput,
+} from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, desc, eq, gt, inArray, isNull, or } from 'drizzle-orm';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
-import { forbidden, notFound } from '../errors';
+import { HttpError, forbidden, notFound } from '../errors';
 import { resolveMediaUrl } from '../storage/media-links';
 import { mediaReference } from './uploads';
 
@@ -55,6 +61,8 @@ export async function getBoard(db: Db, actor: Actor, now: Date): Promise<BoardOv
     expiresAt: item.expiresAt.toISOString(),
     done: !!item.doneAt,
     canClose: !item.doneAt && mayClose(actor, item),
+    canEdit: !item.doneAt && mayClose(actor, item),
+    editedAt: item.editedAt?.toISOString() ?? null,
   }));
   return { kinds, items };
 }
@@ -79,6 +87,46 @@ export async function createBoardItem(
     expiresAt: new Date(now.getTime() + DAYS[input.kind] * 24 * 3_600_000),
     createdAt: now,
   });
+  return getBoard(db, actor, now);
+}
+
+/** Aushang nachträglich ändern (Paket BE): Text, Foto und Ablauf; wer ihn erstellt hat oder die Moderation. */
+export async function updateBoardItem(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdateBoardItemInput,
+  now: Date,
+): Promise<BoardOverview> {
+  const [row] = await db
+    .select()
+    .from(s.boardItems)
+    .where(and(eq(s.boardItems.id, id), eq(s.boardItems.clubId, actor.club.id)));
+  if (!row || !kindsFor(actor).includes(row.kind as BoardKind)) throw notFound('Der Aushang');
+  if (!mayClose(actor, row)) throw forbidden('Ändern kann, wer den Aushang erstellt hat.');
+  if (row.doneAt)
+    throw new HttpError(409, 'done', 'Ein erledigter Aushang lässt sich nicht ändern.');
+  await db
+    .update(s.boardItems)
+    .set({
+      ...(input.title !== undefined ? { title: input.title.trim() } : {}),
+      ...(input.description !== undefined
+        ? { description: input.description?.trim() || null }
+        : {}),
+      ...(input.detail !== undefined ? { detail: input.detail?.trim() || null } : {}),
+      ...(input.imageId !== undefined
+        ? {
+            imageUrl: input.imageId
+              ? await mediaReference(db, actor, input.imageId, 'board')
+              : null,
+          }
+        : {}),
+      ...(input.days !== undefined
+        ? { expiresAt: new Date(now.getTime() + input.days * 24 * 3_600_000) }
+        : {}),
+      editedAt: now,
+    })
+    .where(eq(s.boardItems.id, id));
   return getBoard(db, actor, now);
 }
 
