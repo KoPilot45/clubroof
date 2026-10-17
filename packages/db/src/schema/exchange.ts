@@ -1,4 +1,13 @@
-import { date, index, integer, pgTable, smallint, text, uuid } from 'drizzle-orm/pg-core';
+import {
+  date,
+  index,
+  integer,
+  pgTable,
+  smallint,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { clubs } from './club';
 import { events } from './events';
 import { persons } from './people';
@@ -30,6 +39,8 @@ export const playerDemands = pgTable(
     createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.clubId, t.status), index().on(t.eventId)],
 );
@@ -51,6 +62,8 @@ export const playerOffers = pgTable(
     status: offerStatusEnum().notNull().default('open'),
     createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.clubId, t.day)],
 );

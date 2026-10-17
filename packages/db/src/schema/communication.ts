@@ -249,6 +249,8 @@ export const comments = pgTable(
     authorUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
     body: text().notNull(),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.entityType, t.entityId, t.createdAt)],
 );
@@ -282,6 +284,8 @@ export const forumTopics = pgTable(
     closedAt: timestamp({ withTimezone: true }),
     pinned: boolean().notNull().default(false),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.clubId, t.createdAt)],
 );
@@ -303,6 +307,8 @@ export const forumPosts = pgTable(
     hiddenByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     reportedAt: timestamp({ withTimezone: true }),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.topicId, t.createdAt)],
 );
@@ -327,6 +333,8 @@ export const boardItems = pgTable(
     expiresAt: timestamp({ withTimezone: true }).notNull(),
     doneAt: timestamp({ withTimezone: true }),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.clubId, t.kind, t.createdAt)],
 );
