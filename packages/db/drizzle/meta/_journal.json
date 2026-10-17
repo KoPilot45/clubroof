@@ -358,6 +358,13 @@
       "when": 1791887414111,
       "tag": "0050_sponsors_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1792219754251,
+      "tag": "0051_lineup_planner",
+      "breakpoints": true
     }
   ]
 }

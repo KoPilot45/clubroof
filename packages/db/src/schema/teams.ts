@@ -46,6 +46,8 @@ export const teams = pgTable(
     template: teamTemplateEnum().notNull(),
     participationMode: participationModeEnum().notNull(),
     sortOrder: integer().notNull().default(0),
+    /** Aufstellung für Spieler und Eltern sichtbar (Paket AUF); Standard aus, das Trainerteam schaltet ein */
+    lineupVisible: boolean().notNull().default(false),
     /** Treffen vor Spielbeginn / vor Trainingsbeginn in Minuten (leer = kein automatisches Treffen) */
     matchMeetingMinutes: integer().default(60),
     trainingMeetingMinutes: integer().default(15),

@@ -10,8 +10,10 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { clubs, facilities, orgUnits } from './club';
 import { persons } from './people';
 import { playerDemands } from './exchange';
@@ -68,6 +70,9 @@ export const events = pgTable(
     importBatchId: uuid(),
     /** Trainerteam hat nach dem Termin die tatsächliche Anwesenheit erfasst */
     attendanceRecordedAt: timestamp({ withTimezone: true }),
+    /** Aufstellungsplaner (Paket AUF): Spielform 7/9/11 und Formation (Schlüssel wie „4-4-2“) des Spiels */
+    lineupSize: smallint(),
+    lineupFormation: text(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -118,9 +123,16 @@ export const matchLineups = pgTable(
     position: text(),
     /** Rückennummer für dieses Spiel (bei „je Spiel“ oder abweichend von der festen Nummer) */
     jerseyNumber: smallint(),
+    /** Startelf: Index der Position in der Formation (hinten nach vorn, 0 = Torwart); Bank: leer */
+    slot: smallint(),
     createdAt: createdAt(),
   },
-  (t) => [index().on(t.clubId), unique().on(t.eventId, t.personId)],
+  (t) => [
+    index().on(t.clubId),
+    unique().on(t.eventId, t.personId),
+    // je Spiel jeder Slot höchstens einmal
+    uniqueIndex().on(t.eventId, t.slot).where(sql`${t.slot} is not null`),
+  ],
 );
 
 /** Ereignisse im Spielbericht: Tore (mit Vorlage), Karten. */
