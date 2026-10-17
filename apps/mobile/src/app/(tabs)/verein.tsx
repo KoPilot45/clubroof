@@ -1,6 +1,5 @@
 import type { EventSummary, HelperEvent, NewsItem, PollSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
-import { Fragment } from 'react';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
@@ -260,6 +259,14 @@ export default function ClubScreen() {
 
       {news.data && news.data.length > 0 ? <ClubNewsTicker items={news.data} /> : null}
       {news.isPending ? <Loading /> : null}
+      {has('helpers') &&
+      (helpers.data ?? []).some(
+        (h) => h.openSpots > 0 && new Date(h.event.startsAt) > new Date(),
+      ) ? (
+        <Section title="Helfer gesucht">
+          <HelperStrip items={helpers.data ?? []} />
+        </Section>
+      ) : null}
       {hasAds ? <SponsorAdContainer /> : null}
 
       {groups.map((g) => {
@@ -268,20 +275,9 @@ export default function ClubScreen() {
           .map((t) => ({ ...t, tint: g.tint }));
         if (items.length === 0) return null;
         return (
-          <Fragment key={g.key}>
-            <Section title={g.title}>
-              <TileGrid items={items} />
-            </Section>
-            {g.key === 'events' &&
-            has('helpers') &&
-            (helpers.data ?? []).some(
-              (h) => h.openSpots > 0 && new Date(h.event.startsAt) > new Date(),
-            ) ? (
-              <Section title="Helfer gesucht">
-                <HelperStrip items={helpers.data ?? []} />
-              </Section>
-            ) : null}
-          </Fragment>
+          <Section key={g.key} title={g.title}>
+            <TileGrid items={items} />
+          </Section>
         );
       })}
 

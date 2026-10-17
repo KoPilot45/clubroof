@@ -236,7 +236,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'helpers-strip',
         question: 'Wo finde ich offene Helferdienste?',
         answer:
-          'Im Reiter „Verein“ unter den Kacheln „Veranstaltungen“ steht „Helfer gesucht“: Wische durch die Karten, tippe eine an und trage dich in der Helfer-Ansicht in eine Schicht ein. Gibt es keine offenen Schichten, fehlt der Abschnitt.',
+          'Im Reiter „Verein“ zwischen Newsticker und Sponsoren steht „Helfer gesucht“: Wische durch die Karten, tippe eine an und trage dich in der Helfer-Ansicht in eine Schicht ein. Gibt es keine offenen Schichten, fehlt der Abschnitt.',
       },
       {
         id: 'deadline',
