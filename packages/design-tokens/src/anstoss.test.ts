@@ -52,6 +52,15 @@ describe.each(KEYS)('Anstoß-Kontrast %s', (key) => {
     expect(contrastRatio(fg, back)).toBeGreaterThanOrEqual(MIN_CONTRAST.text);
   });
 
+  it.each(['income', 'expense', 'aqua', 'yellow'] as const)(
+    'Diagrammfarbe %s hebt sich von der Kartenfläche ab (≥ 3 : 1)',
+    (name) => {
+      expect(contrastRatio(t.anstoss.chart[name], t.surface)).toBeGreaterThanOrEqual(
+        MIN_CONTRAST.largeTextOrUi,
+      );
+    },
+  );
+
   it('Platzhalter bleibt als Bedienelement erkennbar (≥ 3 : 1)', () => {
     expect(contrastRatio(t.anstoss.placeholder, bg)).toBeGreaterThanOrEqual(
       MIN_CONTRAST.largeTextOrUi,

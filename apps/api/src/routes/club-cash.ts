@@ -6,10 +6,12 @@ import {
   CLUB_COST_CENTER_KINDS,
   type ClubCash,
   type ClubCashEntry,
+  type ClubCashStats,
 } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { createFund, updateFund } from '../services/club-funds';
+import { getClubCashStats } from '../services/club-stats';
 import {
   applyCategoryTemplate,
   cancelEntry,
@@ -41,6 +43,22 @@ export const clubCashRoutes: FastifyPluginAsyncZod = async (app) => {
     '/club-cash',
     { schema: { querystring: z.object({ fundId: z.uuid().optional() }) } },
     async (request): Promise<ClubCash> => overview(request, request.query.fundId ?? null),
+  );
+
+  app.get(
+    '/club-cash/stats',
+    {
+      schema: {
+        querystring: z.object({
+          from: day.optional(),
+          to: day.optional(),
+          interval: z.enum(['month', 'quarter']).optional(),
+          fundId: z.uuid().optional(),
+        }),
+      },
+    },
+    async (request): Promise<ClubCashStats> =>
+      getClubCashStats(app.db, request.actor!, request.query, app.now()),
   );
 
   app.get(
