@@ -270,10 +270,7 @@ export default function ClubScreen() {
           <Section key={g.key} title={g.title}>
             <TileGrid items={items} />
             {g.key === 'events' && has('helpers') && openSpots > 0 ? (
-              <>
-                <T variant="section">Helfer gesucht</T>
-                <HelperStrip items={helpers.data ?? []} />
-              </>
+              <HelperStrip items={helpers.data ?? []} />
             ) : null}
           </Section>
         );

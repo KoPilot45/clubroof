@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Linking, Pressable, View } from 'react-native';
 import { AttendanceBar } from '@/components/team';
 import { Chip, HeroCard, T, TeamBadge } from '@/components/ui';
-import { formatDay, formatTime } from '@/lib/format';
+import { formatLongDate, formatTime } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { EVENT_TYPE_LABELS, MATCH_KIND_LABELS } from '@/lib/labels';
 import { useTheme } from '@/lib/theme';
@@ -27,7 +27,6 @@ export function EventHero({
   const cancelled = e.status === 'cancelled';
   const match = e.match;
   const strike = cancelled ? ('line-through' as const) : ('none' as const);
-  const timeRange = `${formatTime(e.startsAt)}${e.endsAt ? `–${formatTime(e.endsAt)}` : ''} Uhr`;
 
   const ours = `${clubShortName}${e.team ? ` ${e.team.badge}` : ''}`;
   const [home, away] = match
@@ -95,18 +94,31 @@ export function EventHero({
           </View>
         </View>
       ) : (
-        <T
-          variant="figure"
-          color={on}
-          style={{ fontSize: 46, lineHeight: 48, textDecorationLine: strike }}
-          verbatim
-        >
-          {e.title}
-        </T>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
+          <T
+            variant="figure"
+            color={on}
+            numberOfLines={2}
+            style={{ flex: 1, fontSize: 30, lineHeight: 34, textDecorationLine: strike }}
+            verbatim
+          >
+            {e.title}
+          </T>
+          <T
+            variant="figure"
+            color={on}
+            style={{ fontSize: 38, lineHeight: 36, textDecorationLine: strike }}
+            verbatim
+          >
+            {formatTime(e.startsAt)}
+          </T>
+        </View>
       )}
 
       <T color={soft} style={{ fontSize: 14, textAlign: match ? 'center' : 'left' }} verbatim>
-        {[formatDay(e.startsAt), match && !played ? null : timeRange].filter(Boolean).join(' · ')}
+        {[formatLongDate(e.startsAt), e.endsAt ? t(`bis ${formatTime(e.endsAt)} Uhr`) : null]
+          .filter(Boolean)
+          .join(' · ')}
       </T>
       {e.cancelledReason ? (
         <T color={on} style={{ fontWeight: '700', textAlign: match ? 'center' : 'left' }}>

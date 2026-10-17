@@ -190,6 +190,7 @@ export const en: Record<string, string> = {
   '{0} Uhr{1}': '{0}{1}',
   '{0} umbenennen': 'Rename {0}',
   '{0} ungelesen': '{0} unread',
+  '{0} Unsicher': '{0} unsure',
   '{0} unverändert': '{0} unchanged',
   '{0} verfügbar': '{0} available',
   '{0} verlässt {1} ({2})': '{0} leaves {1} ({2})',
@@ -278,9 +279,11 @@ export const en: Record<string, string> = {
   '• Spielplan-Import aus dem DFBnet\n• Spiel-Tags Liga, Pokal und Testspiel\n• Wiederholen von Terminen bis zu einem Datum':
     '• Fixture import from DFBnet\n• Match tags league, cup and friendly\n• Repeat events until a date',
   '+ {0} weitere': '+ {0} more',
+  '1 Absage': '1 no',
   '1 Auslage wartet': '1 claim waiting',
   '1 Buchung': '1 booking',
   '1 Gerät für Push angemeldet.': '1 device registered for push.',
+  '1 Helfer fehlt': '1 helper needed',
   '1 Konto': '1 account',
   '1 Mannschaft': '1 team',
   '1 Monat': '1 month',
@@ -290,6 +293,7 @@ export const en: Record<string, string> = {
   '1 Termin abgesagt': '1 event cancelled',
   '1 Termin anzeigen': 'Show 1 event',
   '1 Woche': '1 week',
+  '1 Zusage': '1 yes',
   '1. Geltungsbereich': '1. Scope',
   '1. Öffne eine Authenticator-App (z. B. Google oder Microsoft Authenticator) und scanne den Code. 2. Gib den angezeigten 6-stelligen Code ein.':
     '1. Open an authenticator app (e.g. Google or Microsoft Authenticator) and scan the code. 2. Enter the 6-digit code shown.',
@@ -424,6 +428,7 @@ export const en: Record<string, string> = {
   'Alle anzeigen ({0})': 'Show all ({0})',
   'Alle Arten': 'All types',
   'Alle Buchungen': 'All entries',
+  'Alle Einsätze anzeigen': 'Show all assignments',
   'Alle erinnern': 'Remind all',
   'Alle Forderungen sind schon erzeugt.': 'All claims have already been created.',
   'Alle gelesen': 'Mark all as read',
@@ -847,6 +852,7 @@ export const en: Record<string, string> = {
   Bis: 'Until',
   'Bis (einschließlich)': 'Until (inclusive)',
   'bis {0}': 'until {0}',
+  'bis {0} Uhr': 'until {0}',
   'Bis dahin laufen Buchungen über die Hauptkasse.':
     'Until then, bookings go through the main fund.',
   'Bis Datum': 'Until date',
@@ -1399,6 +1405,8 @@ export const en: Record<string, string> = {
     'The deadline for confirmations and cancellations has passed. Please contact your coaching staff.',
   'Die Frist gilt getrennt für Training und Spiele, in Stunden vor Beginn. Ohne Frist ist die Antwort bis zum Termin möglich.':
     'The deadline applies separately to training and matches, in hours before the start. Without a deadline, responses are possible until the event.',
+  'Die Frist ist am {0}, {1} Uhr abgelaufen. Bei Änderungen wende dich an dein Trainerteam.':
+    'The deadline passed on {0}, {1}. For changes, please contact your coaching staff.',
   'Die ganze Woche frei': 'Free all week',
   'Die Gastspielerbörse ist für den Verein nicht aktiviert.':
     'The guest player exchange is not activated for the club.',
@@ -1966,6 +1974,7 @@ export const en: Record<string, string> = {
   'Freiwillige gesucht': 'Volunteers wanted',
   Freizeit: 'Recreational',
   'Frist {0} Uhr': 'Deadline {0}',
+  'Frist abgelaufen': 'Deadline passed',
   'Frist festlegen': 'Set deadline',
   'Frist für den Verwendungsnachweis': 'Deadline for proof of use',
   'Frist für den Verwendungsnachweis setzen': 'Set deadline for proof of use',
@@ -2262,6 +2271,10 @@ export const en: Record<string, string> = {
     'In the “Team” tab there is a bar with your teams at the top (swipe sideways). The number shows what is open: missing responses for the next event and open tasks. The active team is green; the app remembers the one you chose last.',
   'Im Reiter „Termine“ schaltest du oben auf „Vergangen“ oder öffnest das „Archiv“. Dort stehen alle vergangenen Termine, die neuesten zuerst, nach Wochen und Monaten gruppiert; beim Scrollen werden ältere nachgeladen. Filtere nach Zeitraum (letzte 7 Tage, Monat, Saison oder eigener Zeitraum), Mannschaft und Art. Spiele zeigen das Ergebnis, Trainings die Anwesenheit („14 von 20 da“). Ob du auch siehst, wer da war, stellt dein Trainerteam pro Mannschaft ein.':
     'In the “Events” tab, switch to “Past” at the top or open the “Archive”. It lists all past events, newest first, grouped by weeks and months; older ones load as you scroll. Filter by period (last 7 days, month, season or custom period), team and type. Matches show the result, training sessions the attendance (“14 of 20 there”). Whether you also see who was there is set per team by your coaching staff.',
+  'Im Reiter „Verein“ unter den Kacheln „Veranstaltungen“ steht „Helfer gesucht“: Wische durch die Karten, tippe eine an und trage dich in der Helfer-Ansicht in eine Schicht ein. Gibt es keine offenen Schichten, fehlt der Abschnitt.':
+    'In the “Club” tab, below the “Events” tiles, you will find “Helpers wanted”: swipe through the cards, tap one and sign up for a shift on the helper page. If there are no open shifts, the section is hidden.',
+  'Im Spiel- und Trainingstermin zeigt ein bunter Balken mit der Zahl der Zusagen, Unsicheren, Absagen und offenen Antworten; auf der Startseite steht er auch unter dem nächsten Spiel. Das Trainerteam sieht ihn immer. Ob Spieler und Eltern Zahlen und Namen sehen, stellt das Trainerteam unter „Mannschaft bearbeiten“ ein; ist es aus, siehst du nur deine eigene Antwort und die deiner Kinder.':
+    "In match and training events, a colourful bar shows the number of yes, unsure, no and open responses; on the home screen it also appears under the next match. The coaching staff always sees it. Whether players and parents see numbers and names is set by the coaching staff under “Edit team”; when it is off, you only see your own response and your children's.",
   'Im Spieltermin: „Aufstellung erstellen“ (Startelf und Bank). Der Entwurf ist nur für das Trainerteam sichtbar; erst „Veröffentlichen“ benachrichtigt die Nominierten. Nach dem Spiel trägst du Ergebnis, Tore, Vorlagen und Karten im Spielbericht ein – erst dann zählen sie in der Statistik.':
     'In the match event: “Create line-up” (starting XI and bench). The draft is only visible to the coaching staff; only “Publish” notifies the selected players. After the match, enter the result, goals, assists and cards in the match report – only then do they count in the statistics.',
   'Im Spieltermin: „Aufstellung erstellen“. Der Planer zeigt ein Spielfeld: Wähle oben 7er, 9er oder 11er und eine Formation, ziehe dann Spieler aus der Kaderleiste auf eine Position oder auf die Bank (oder tippe zuerst den Spieler und dann den Platz an). Ziehst du einen Spieler auf einen besetzten Platz, tauschen beide; zurück in die Kaderleiste nimmt ihn aus der Aufstellung. Die Punkte und Balken zeigen die Trainingsbeteiligung der letzten vier Wochen – nur das Trainerteam sieht sie. „Entwurf speichern“ ist nur für das Trainerteam sichtbar; „Veröffentlichen“ benachrichtigt die Nominierten. Ob Spieler und Eltern die veröffentlichte Aufstellung sehen, stellst du unter „Mannschaft bearbeiten“ ein. Nach dem Spiel trägst du Ergebnis, Tore, Vorlagen und Karten im Spielbericht ein – erst dann zählen sie in der Statistik.':
@@ -2358,6 +2371,8 @@ export const en: Record<string, string> = {
   'Jede Kasse hat eigene Konten, Beiträge und Auswertung. Ohne Zuordnung läuft eine Abteilung über die Hauptkasse. Der Jahresabschluss gilt immer für den ganzen Verein.':
     'Each fund has its own accounts, fees and reports. A department without an assigned fund runs through the main fund. The annual statement always covers the whole club.',
   'Jede Leitung sieht nur Daten ihrer Abteilung': "Each lead sees only their division's data",
+  'Jede Mannschaft legt fest, bis wann Zu- und Absagen möglich sind. Der Countdown steht am Termin („Frist: Noch 2 Tage“). Danach bleibt deine Antwort sichtbar (Schloss „Frist abgelaufen“), ändern kann sie nur dein Trainerteam.':
+    'Each team sets how long responses are possible. The countdown is shown on the event (“Deadline: 2 days left”). After that your response stays visible (lock “Deadline passed”), and only your coaching staff can change it.',
   'Jede Mannschaft legt fest, bis wann Zu- und Absagen möglich sind. Der Countdown steht am Termin („Frist: Noch 2 Tage“). Danach wende dich an dein Trainerteam – es kann die Rückmeldung für dich ändern.':
     'Each team sets how long you can confirm or decline. The countdown is shown on the event (“Deadline: 2 days left”). After that, contact your coaching staff – they can change your response for you.',
   'Jede Person sagt zu oder ab – der Trainer sieht, wer noch fehlt':
@@ -2415,6 +2430,7 @@ export const en: Record<string, string> = {
   'Kann ich die Sprache der App ändern?': 'Can I change the app language?',
   'Kann ich ohne Internet zu- oder absagen?': 'Can I confirm or decline without internet?',
   'Kann nicht': "Can't",
+  'Karte {0} von {1}': 'Card {0} of {1}',
   Karten: 'Cards',
   'Karten und Listen': 'Cards and lists',
   'Karten-Link': 'Map link',
@@ -3020,6 +3036,8 @@ export const en: Record<string, string> = {
   'Nur Anzahl': 'Count only',
   'Nur App': 'App only',
   'Nur ausgewählte': 'Selected only',
+  'Nur das Trainerteam sieht Zahlen und Namen; Spieler und Eltern sehen nur die eigene Antwort.':
+    'Only the coaching staff sees numbers and names; players and parents see only their own response.',
   'Nur das Trainerteam sieht, wer da war.': 'Only the coaching staff sees who was there.',
   'Nur der Fahrer kann das Angebot zurückziehen.': 'Only the driver can withdraw the offer.',
   'Nur die Startelf hat Plätze.': 'Only the starting line-up has positions.',
@@ -3453,6 +3471,8 @@ export const en: Record<string, string> = {
   'Spieler suchen': 'Search players',
   'Spieler und Eltern lädst du später per E-Mail oder mit einem Mannschafts-Link bzw. QR-Code ein. Neue Anfragen gibst du frei, bevor jemand die App nutzen kann.':
     'You invite players and parents later by email or with a team link or QR code. You approve new requests before anyone can use the app.',
+  'Spieler und Eltern sehen, wie viele zu- und abgesagt haben und wer.':
+    'Players and parents see how many accepted or declined, and who.',
   'Spieler{0}': 'Player{0}',
   Spielerbedarf: 'Player needs',
   'Spielerbedarf {0}': 'Player request {0}',
@@ -4160,6 +4180,7 @@ export const en: Record<string, string> = {
   'Wer sieht meine Daten?': 'Who can see my data?',
   'Wer sieht was von dir': 'Who sees what of you',
   'Wer sieht was?': 'Who sees what?',
+  'Wer sieht, wie viele zu- und abgesagt haben?': 'Who can see how many accepted or declined?',
   'Wer spielt in der Mannschaft?': 'Who plays in the team?',
   'Wer trainiert die Mannschaft?': 'Who coaches the team?',
   'Wer tritt bei?': 'Who is joining?',
@@ -4278,6 +4299,7 @@ export const en: Record<string, string> = {
   'Wo finde ich die Funktionen?': 'Where do I find the features?',
   'Wo finde ich die Verwaltung und die Vereinskasse?':
     'Where do I find the administration and the club cash?',
+  'Wo finde ich offene Helferdienste?': 'Where do I find open helper shifts?',
   'Wo finde ich Satzung, Formulare und Pläne?':
     'Where do I find the constitution, forms and plans?',
   'Wo finde ich was?': 'Where do I find what?',
@@ -4398,7 +4420,9 @@ export const en: Record<string, string> = {
   'Zu welcher Abteilung gehört sie?': 'Which division does it belong to?',
   'zu wenig Daten': 'not enough data',
   'Zu wenige Zusagen': 'Too few confirmations',
+  'Zu- und Absagen': 'Responses',
   'Zu- und Absagen der Mannschaft einsehen': "View the team's confirmations and declines",
+  'Zu- und Absagen für Spieler und Eltern sichtbar': 'Responses visible to players and parents',
   'Zu- und Absagen mit einem Tipp': 'Confirm or decline with one tap',
   'Zu- und Absagen stellvertretend korrigieren':
     'Correct confirmations and declines on behalf of others',
