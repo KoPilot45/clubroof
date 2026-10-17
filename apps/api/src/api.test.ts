@@ -1305,6 +1305,18 @@ describe.skipIf(!url)('API', () => {
 
       const during = await get<EventDetail>(`/events/${match.id}`, token);
       expect(during.myResponses[0]).toMatchObject({ status: 'no', reason: 'Abwesend: Urlaub' });
+      // Kader-Pop-up (KP): Abwesende stehen getrennt von den Absagen; Art und Ende sieht nur das Trainerteam
+      const coach = await login('trainer');
+      const asCoach = await get<EventDetail>(`/events/${match.id}`, coach.token);
+      expect(asCoach.participants.find((p) => p.personId === me.person.id)).toMatchObject({
+        absent: true,
+        absence: { kind: 'vacation', endsOn: day },
+      });
+      const asPlayer = during.participants.find((p) => p.personId === me.person.id);
+      expect(asPlayer).toMatchObject({ absent: true, absence: null });
+      expect(asCoach.participants.filter((p) => !p.absent).every((p) => p.absence === null)).toBe(
+        true,
+      );
       const list = await get<Absence[]>('/absences', token);
       expect(list.some((a) => a.id === created.body.id)).toBe(true);
 

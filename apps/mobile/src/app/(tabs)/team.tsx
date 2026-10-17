@@ -11,7 +11,7 @@ import {
   useHasSponsorAds,
   useRefreshSponsorAds,
 } from '@/components/sponsor-ads';
-import { AttendanceBar, ResultRow, TeamBand, UpcomingMatches } from '@/components/team';
+import { ResultRow, TeamBand, UpcomingMatches } from '@/components/team';
 import {
   Button,
   Card,
@@ -32,6 +32,7 @@ import { formatDateTile, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS, TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
+import { AttendanceOverview } from '@/components/squad-sheet';
 import { useTeamColorOf } from '@/lib/team-colors';
 import { useTheme } from '@/lib/theme';
 import type { TintKey } from '@clubroof/design-tokens';
@@ -385,9 +386,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                   }
                 />
                 <T variant="caption">{PARTICIPATION_LABELS[team.participationMode]}</T>
-                {o.nextEvent.counts ? (
-                  <AttendanceBar counts={o.nextEvent.counts} absent={o.squad?.absent} />
-                ) : null}
+                <AttendanceOverview event={o.nextEvent} counts={o.nextEvent.counts} />
               </Card>
             </Section>
           ) : null}

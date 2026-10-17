@@ -231,6 +231,12 @@ export type Participant = {
   avatarUrl: string | null;
   /** Tatsächlich anwesend laut Trainerteam; null = (noch) nicht erfasst */
   attended: boolean | null;
+  /** Fällt über eine eingetragene Abwesenheit aus (zählt in der Kurzübersicht als Absage, im Kader eigene Gruppe) */
+  absent: boolean;
+  /** Art und Ende der Abwesenheit – nur für das Trainerteam (Datensparsamkeit) */
+  absence: { kind: AbsenceKind; endsOn: string } | null;
+  /** Rückennummer der Saison (nur bei aktivem Modul „Rückennummern“) */
+  jerseyNumber: number | null;
 };
 
 export type EventDetail = EventSummary & {

@@ -1418,6 +1418,7 @@ export const en: Record<string, string> = {
     'The main fund cannot be deactivated. First set another fund as the main fund.',
   'Die Hauptkasse nimmt Buchungen ohne Abteilungsbezug auf und kann nicht stillgelegt werden. Lege eine andere Kasse als Hauptkasse fest, um zu wechseln.':
     'The main fund takes bookings without a department and cannot be deactivated. Set another fund as the main fund to switch.',
+  'Die Kaderliste ist für dich nicht freigegeben.': 'The squad list is not shared with you.',
   'Die Kasse': 'The fund',
   'Die Kasse bestätigt den Eingang – erst dann ist dein Konto ausgeglichen.':
     'The team fund confirms receipt – only then is your account balanced.',
@@ -2277,6 +2278,8 @@ export const en: Record<string, string> = {
     'In the “Club” tab, between the news ticker and the sponsors, you will find “Helpers wanted”: swipe through the cards, tap one and sign up for a shift on the helper page. If there are no open shifts, the section is hidden.',
   'Im Spiel- und Trainingstermin zeigt ein bunter Balken mit der Zahl der Zusagen, Unsicheren, Absagen und offenen Antworten; auf der Startseite steht er auch unter dem nächsten Spiel. Das Trainerteam sieht ihn immer. Ob Spieler und Eltern Zahlen und Namen sehen, stellt das Trainerteam unter „Mannschaft bearbeiten“ ein; ist es aus, siehst du nur deine eigene Antwort und die deiner Kinder.':
     "In match and training events, a colourful bar shows the number of yes, unsure, no and open responses; on the home screen it also appears under the next match. The coaching staff always sees it. Whether players and parents see numbers and names is set by the coaching staff under “Edit team”; when it is off, you only see your own response and your children's.",
+  'Im Spiel- und Trainingstermin zeigt ein bunter Balken mit der Zahl der Zusagen, Unsicheren, Absagen und offenen Antworten; auf der Startseite steht er auch unter dem nächsten Spiel. Das Trainerteam sieht ihn immer. Ob Spieler und Eltern Zahlen und Namen sehen, stellt das Trainerteam unter „Mannschaft bearbeiten“ ein; ist es aus, siehst du nur deine eigene Antwort und die deiner Kinder. Tippe auf den Balken (oder „Kader ›“), um die vollständige Kaderliste als Fenster zu öffnen: Zusagen, Unsicher, Offen, Absagen und ganz unten Abwesend (längere Ausfälle). Gründe und das Ende einer Abwesenheit sieht nur das Trainerteam.':
+    "In match and training events, a colourful bar shows the number of yes, unsure, no and open responses; on the home screen it also appears under the next match. The coaching staff always sees it. Whether players and parents see numbers and names is set by the coaching staff under “Edit team”; when it is off, you only see your own response and your children's. Tap the bar (or “Squad ›”) to open the full squad list as a sheet: yes, unsure, open, no and, at the bottom, absent (longer absences). Only the coaching staff sees reasons and the end of an absence.",
   'Im Spieltermin: „Aufstellung erstellen“ (Startelf und Bank). Der Entwurf ist nur für das Trainerteam sichtbar; erst „Veröffentlichen“ benachrichtigt die Nominierten. Nach dem Spiel trägst du Ergebnis, Tore, Vorlagen und Karten im Spielbericht ein – erst dann zählen sie in der Statistik.':
     'In the match event: “Create line-up” (starting XI and bench). The draft is only visible to the coaching staff; only “Publish” notifies the selected players. After the match, enter the result, goals, assists and cards in the match report – only then do they count in the statistics.',
   'Im Spieltermin: „Aufstellung erstellen“. Der Planer zeigt ein Spielfeld: Wähle oben 7er, 9er oder 11er und eine Formation, ziehe dann Spieler aus der Kaderleiste auf eine Position oder auf die Bank (oder tippe zuerst den Spieler und dann den Platz an). Ziehst du einen Spieler auf einen besetzten Platz, tauschen beide; zurück in die Kaderleiste nimmt ihn aus der Aufstellung. Die Punkte und Balken zeigen die Trainingsbeteiligung der letzten vier Wochen – nur das Trainerteam sieht sie. „Entwurf speichern“ ist nur für das Trainerteam sichtbar; „Veröffentlichen“ benachrichtigt die Nominierten. Ob Spieler und Eltern die veröffentlichte Aufstellung sehen, stellst du unter „Mannschaft bearbeiten“ ein. Nach dem Spiel trägst du Ergebnis, Tore, Vorlagen und Karten im Spielbericht ein – erst dann zählen sie in der Statistik.':
@@ -2407,8 +2410,10 @@ export const en: Record<string, string> = {
   Kabinenplan: 'Changing room schedule',
   'Kacheln anpassen': 'Customise tiles',
   Kader: 'Squad',
+  'Kader ›': 'Squad ›',
   'Kader ({0} Spieler)': 'Squad ({0} players)',
   'Kader & Aufstellung': 'Squad & line-up',
+  'Kader anzeigen': 'Show squad',
   'Kader im Detail': 'Squad in detail',
   'Kader verwalten': 'Manage squad',
   'Kader-Statistik': 'Squad statistics',
@@ -4447,6 +4452,7 @@ export const en: Record<string, string> = {
     'To correct, reverse the entry and record it again. Reversals remain visible.',
   'Zum Scannen braucht Clubroof Zugriff auf die Kamera. Das Bild wird nicht gespeichert.':
     'To scan, Clubroof needs access to the camera. The image is not stored.',
+  'Zum Spiel': 'To the match',
   'Zum Team-Bereich': 'To the team area',
   'Zum Training': 'To training',
   'Zum Trainingsplan hinzugefügt': 'Added to the training plan',

@@ -11,6 +11,7 @@
   "apps/mobile/src/components/app-header.tsx": 6,
   "apps/mobile/src/components/area-overview.tsx": 1,
   "apps/mobile/src/components/area-shell.tsx": 11,
+  "apps/mobile/src/components/attendance-bar.tsx": 1,
   "apps/mobile/src/components/brand-header.tsx": 8,
   "apps/mobile/src/components/event-hero.tsx": 5,
   "apps/mobile/src/components/events.tsx": 2,
@@ -20,7 +21,7 @@
   "apps/mobile/src/components/match.tsx": 3,
   "apps/mobile/src/components/qr-scanner.tsx": 1,
   "apps/mobile/src/components/sponsor-ads.tsx": 2,
-  "apps/mobile/src/components/team.tsx": 6,
+  "apps/mobile/src/components/team.tsx": 5,
   "apps/mobile/src/components/ui.tsx": 12,
   "apps/mobile/src/components/welcome-tour.tsx": 1,
   "apps/mobile/src/lib/team-colors.ts": 10

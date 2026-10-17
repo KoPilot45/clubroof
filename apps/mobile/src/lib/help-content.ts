@@ -230,7 +230,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'responses-overview',
         question: 'Wer sieht, wie viele zu- und abgesagt haben?',
         answer:
-          'Im Spiel- und Trainingstermin zeigt ein bunter Balken mit der Zahl der Zusagen, Unsicheren, Absagen und offenen Antworten; auf der Startseite steht er auch unter dem nächsten Spiel. Das Trainerteam sieht ihn immer. Ob Spieler und Eltern Zahlen und Namen sehen, stellt das Trainerteam unter „Mannschaft bearbeiten“ ein; ist es aus, siehst du nur deine eigene Antwort und die deiner Kinder.',
+          'Im Spiel- und Trainingstermin zeigt ein bunter Balken mit der Zahl der Zusagen, Unsicheren, Absagen und offenen Antworten; auf der Startseite steht er auch unter dem nächsten Spiel. Das Trainerteam sieht ihn immer. Ob Spieler und Eltern Zahlen und Namen sehen, stellt das Trainerteam unter „Mannschaft bearbeiten“ ein; ist es aus, siehst du nur deine eigene Antwort und die deiner Kinder. Tippe auf den Balken (oder „Kader ›“), um die vollständige Kaderliste als Fenster zu öffnen: Zusagen, Unsicher, Offen, Absagen und ganz unten Abwesend (längere Ausfälle). Gründe und das Ende einer Abwesenheit sieht nur das Trainerteam.',
       },
       {
         id: 'helpers-strip',
