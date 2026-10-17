@@ -27,7 +27,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { EventRow, ResponseControls } from '@/components/events';
-import { AttendanceBar } from '@/components/team';
+import { AttendanceOverview } from '@/components/squad-sheet';
 import { useTeamColorOf } from '@/lib/team-colors';
 import { Text } from '@/components/app-text';
 import {
@@ -759,30 +759,44 @@ function PosterSlide({
           onPress={() => router.push(`/events/${event.id}`)}
           style={{ gap: 6 }}
         >
-          <View
-            style={{
-              alignSelf: 'flex-start',
-              backgroundColor: colors.primary,
-              borderRadius: 999,
-              paddingVertical: 5,
-              paddingHorizontal: 12,
-            }}
-          >
-            <Text
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View
               style={{
-                fontSize: 11.5,
-                fontWeight: '800',
-                letterSpacing: 1.4,
-                color: colors.onPrimary,
-                textTransform: 'uppercase',
+                flexShrink: 1,
+                backgroundColor: colors.primary,
+                borderRadius: 999,
+                paddingVertical: 5,
+                paddingHorizontal: 12,
               }}
             >
-              {[
-                t(event.type === 'tournament' ? 'Nächstes Spielfest' : 'Nächstes Spiel'),
-                event.team?.name,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontSize: 11.5,
+                  fontWeight: '800',
+                  letterSpacing: 1,
+                  color: colors.onPrimary,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {[
+                  t(event.type === 'tournament' ? 'Nächstes Spielfest' : 'Nächstes Spiel'),
+                  event.team?.name,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Text>
+            </View>
+            <View style={{ flex: 1 }} />
+            <Text
+              style={{
+                fontSize: 12.5,
+                fontWeight: '800',
+                color: colors.anstoss.posterAccent,
+                flexShrink: 0,
+              }}
+            >
+              {`${t('Zum Spiel')} ›`}
             </Text>
           </View>
           {days > 0 ? (
@@ -834,9 +848,9 @@ function PosterSlide({
               .filter(Boolean)
               .join(' · ')}
           </T>
-          {event.counts && event.status === 'scheduled' ? (
+          {event.status === 'scheduled' ? (
             <View style={{ marginTop: 6 }}>
-              <AttendanceBar counts={event.counts} hero compact />
+              <AttendanceOverview event={event} counts={event.counts} hero compact />
             </View>
           ) : null}
         </Pressable>
@@ -982,6 +996,7 @@ export function HomePoster({
         {loop ? (
           <>
             <View
+              pointerEvents="none"
               style={{
                 position: 'absolute',
                 left: 22,

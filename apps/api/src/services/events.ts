@@ -38,7 +38,7 @@ import {
   sql,
   type SQL,
 } from 'drizzle-orm';
-import { actorCan, isFullAdmin, type Actor } from '../actor';
+import { actorCan, isFullAdmin, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { coachUsers, digestAt } from '../notify/coaches';
 import { deliver } from '../notify/deliver';
@@ -399,6 +399,22 @@ export async function getEventDetail(
       .where(eq(s.eventParticipants.eventId, eventId))
       .orderBy(asc(s.persons.lastName), asc(s.persons.firstName));
 
+    // Rückennummern der Saison (Modul „Rückennummern“), nur aktuelle Mitgliedschaften der Mannschaft
+    const numbers = new Map<string, number>();
+    if (row.team && moduleEnabled(actor, 'jersey_numbers', row.team)) {
+      const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
+      const memberships = await db
+        .select({ personId: s.teamMemberships.personId, n: s.teamMemberships.jerseyNumber })
+        .from(s.teamMemberships)
+        .where(
+          and(
+            eq(s.teamMemberships.teamId, row.team.id),
+            or(isNull(s.teamMemberships.validTo), gte(s.teamMemberships.validTo, today)),
+          ),
+        );
+      for (const m of memberships) if (m.n !== null) numbers.set(m.personId, m.n);
+    }
+
     participants = rows.map((p) => ({
       personId: p.personId,
       name: `${p.firstName} ${p.lastName}`,
@@ -414,6 +430,7 @@ export async function getEventDetail(
           ? p.attended === true
           : null,
       // Wer ausfällt, steht im Kader getrennt von den Absagen; Art und Ende nur für das Trainerteam
+      jerseyNumber: numbers.get(p.personId) ?? null,
       absent: p.status === 'no' && p.absenceId !== null,
       absence:
         mayReadReasons && p.status === 'no' && p.absenceId !== null && p.absenceKind && p.absenceEnd

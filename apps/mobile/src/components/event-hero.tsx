@@ -1,7 +1,7 @@
 import type { EventDetail } from '@clubroof/core';
 import { Ionicons } from '@expo/vector-icons';
 import { Linking, Pressable, View } from 'react-native';
-import { AttendanceBar } from '@/components/team';
+import { AttendanceOverview } from '@/components/squad-sheet';
 import { Chip, HeroCard, T, TeamBadge } from '@/components/ui';
 import { formatLongDate, formatTime } from '@/lib/format';
 import { t } from '@/lib/i18n';
@@ -177,10 +177,36 @@ export function EventHero({
             backgroundColor: 'rgba(0,0,0,0.25)',
           }}
         >
-          <T variant="overline" color={on}>
-            Zu- und Absagen
-          </T>
-          <AttendanceBar counts={e.counts!} hero />
+          <AttendanceOverview
+            event={e}
+            counts={e.counts}
+            hero
+            link={false}
+            inEventScreen
+            renderTitleLink={(open) => (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <T variant="overline" color={on}>
+                  Zu- und Absagen
+                </T>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('Kader anzeigen')}
+                  hitSlop={12}
+                  onPress={open}
+                >
+                  <T style={{ fontWeight: '800', fontSize: 13 }} color={on}>
+                    Kader ›
+                  </T>
+                </Pressable>
+              </View>
+            )}
+          />
         </View>
       ) : null}
 

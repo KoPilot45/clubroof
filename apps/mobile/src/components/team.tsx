@@ -14,6 +14,7 @@ import { formatDateTile, formatDay, formatTime } from '@/lib/format';
 import { MATCH_KIND_LABELS } from '@/lib/labels';
 import { useTheme } from '@/lib/theme';
 import { Card, Chip, DateTile, HeroCard, HeroPill, ListRow, Stat, T } from './ui';
+import { AttendanceOverview } from './squad-sheet';
 import { Swipe, useCardWidth } from './home';
 import { Counted, GrowRow } from '@/lib/motion';
 
@@ -23,8 +24,11 @@ export function SquadStatusCard({ squad }: { squad: SquadStatus }) {
     <View style={{ flexDirection: 'row' }}>
       <Stat value={squad.players} label="Spieler" color={colors.onSurface} />
       <Stat value={squad.available} label="verfügbar" color={colors.status.success.onContainer} />
-      <Stat value={squad.declined} label="abgesagt" color={colors.status.urgent.onContainer} />
-      <Stat value={squad.absent} label="abwesend" color={colors.status.info.onContainer} />
+      <Stat
+        value={squad.declined + squad.absent}
+        label="abgesagt"
+        color={colors.status.urgent.onContainer}
+      />
       <Stat value={squad.pending} label="offen" color={colors.onSurfaceMuted} />
     </View>
   );
@@ -199,98 +203,6 @@ export function TeamBand({
 }
 
 /**
- * Balken der Rückmeldungen zu einem Termin mit Legende „12 Zusagen · 1 Unsicher · 2 Absagen · 6 offen“ (Zahl davor,
- * bei einer Person im Singular; Punkt + Text, nie nur Farbe). Die Beschriftung kommt nur von hier.
- * `hero`: auf dunklem Untergrund (offen = Weiß 28 %); `compact`: Balken 8 px und eine Legendenzeile (Home-Plakat).
- */
-export function AttendanceBar({
-  counts,
-  absent,
-  hero,
-  compact,
-}: {
-  counts: AttendanceCounts;
-  absent?: number;
-  hero?: boolean;
-  compact?: boolean;
-}) {
-  const { colors } = useTheme();
-  const track = hero ? 'rgba(255,255,255,0.28)' : colors.border;
-  const text = hero ? colors.hero.onHero : undefined;
-  const parts = [
-    {
-      key: 'yes',
-      n: counts.yes,
-      color: colors.status.success.solid,
-      label: counts.yes === 1 ? t('1 Zusage') : t(`${counts.yes} Zusagen`),
-    },
-    {
-      key: 'maybe',
-      n: counts.maybe,
-      color: colors.status.action.solid,
-      label: t(`${counts.maybe} Unsicher`),
-    },
-    {
-      key: 'no',
-      n: counts.no,
-      color: colors.status.urgent.solid,
-      label: counts.no === 1 ? t('1 Absage') : t(`${counts.no} Absagen`),
-    },
-    { key: 'pending', n: counts.pending, color: track, label: t(`${counts.pending} offen`) },
-  ];
-  const total = parts.reduce((sum, p) => sum + p.n, 0);
-  const caption = compact ? { fontSize: 11.5, lineHeight: 15 } : null;
-  return (
-    <View
-      accessible
-      accessibilityLabel={parts.map((p) => p.label).join(', ')}
-      style={{ gap: compact ? 6 : 8 }}
-    >
-      <View
-        aria-hidden
-        style={{
-          height: compact ? 8 : 10,
-          borderRadius: compact ? 4 : 5,
-          overflow: 'hidden',
-          backgroundColor: track,
-        }}
-      >
-        <GrowRow style={{ flexDirection: 'row', height: '100%' }}>
-          {total > 0
-            ? parts
-                .filter((p) => p.n > 0)
-                .map((p) => <View key={p.key} style={{ flex: p.n, backgroundColor: p.color }} />)
-            : null}
-        </GrowRow>
-      </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 12, rowGap: 2 }}>
-        {parts.map((p) => (
-          <View key={p.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: p.color }} />
-            <T variant="caption" color={text} verbatim style={caption}>
-              {p.label}
-            </T>
-          </View>
-        ))}
-        {absent ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-            <View
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: colors.status.info.solid,
-              }}
-            />
-            <T variant="caption" color={text} style={caption}>{`${absent} abwesend`}</T>
-          </View>
-        ) : null}
-      </View>
-    </View>
-  );
-}
-
-/**
  * Trainerteam: die nächsten Spiele zum Wischen, je Karte der Zu-/Absage-Balken mit
  * zugesagt / unsicher / abgesagt / offen / abwesend – die Kaderplanung auf einen Blick.
  */
@@ -320,7 +232,7 @@ export function UpcomingMatches({
                   .filter(Boolean)
                   .join(' · ')}
               />
-              {event.counts ? <AttendanceBar counts={event.counts} absent={squad.absent} /> : null}
+              <AttendanceOverview event={event} counts={event.counts} />
             </Card>
           );
         })}

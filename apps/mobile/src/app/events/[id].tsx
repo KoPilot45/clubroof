@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, View } from 'react-native';
 import { AnswerButtons, AttendanceChip, ResponseControls, useRespond } from '@/components/events';
-import { AttendanceBar } from '@/components/team';
+import { AttendanceBar } from '@/components/attendance-bar';
 import { ShiftRow } from '@/components/helpers';
 import { RequestError } from '@/lib/api';
 import {

@@ -235,6 +235,8 @@ export type Participant = {
   absent: boolean;
   /** Art und Ende der Abwesenheit – nur für das Trainerteam (Datensparsamkeit) */
   absence: { kind: AbsenceKind; endsOn: string } | null;
+  /** Rückennummer der Saison (nur bei aktivem Modul „Rückennummern“) */
+  jerseyNumber: number | null;
 };
 
 export type EventDetail = EventSummary & {
