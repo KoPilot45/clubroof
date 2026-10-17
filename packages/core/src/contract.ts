@@ -410,7 +410,12 @@ export type Absence = {
   note: string | null;
   /** Anzahl der Termine, für die dadurch automatisch abgesagt wurde */
   affectedEvents: number;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
 };
+
+/** Abwesenheit nachträglich ändern (Paket BE); die Person selbst bleibt gleich. */
+export type UpdateAbsenceInput = Partial<Omit<CreateAbsenceInput, 'personId'>>;
 
 export type CreateAbsenceInput = {
   personId: string;
@@ -430,6 +435,8 @@ export type PollSummary = {
   votes: number;
   /** Gewählte Option, falls bereits abgestimmt */
   myOptionId: string | null;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
 };
 
 export type PollDetail = PollSummary & {
@@ -441,7 +448,16 @@ export type PollDetail = PollSummary & {
   options: { id: string; label: string; votes: number | null }[];
   /** Ich darf die Umfrage vorzeitig beenden */
   canClose: boolean;
+  /** Ich darf die Umfrage ändern (Ersteller oder Berechtigte, nur solange sie offen ist) */
+  canEdit: boolean;
+  /** Antworten lassen sich nicht mehr ändern, weil schon abgestimmt wurde */
+  optionsLocked: boolean;
 };
+
+/** Umfrage nachträglich ändern (Paket BE): Optionen nur, solange keine Stimme abgegeben ist. */
+export type UpdatePollInput = Partial<
+  Pick<CreatePollInput, 'question' | 'description' | 'closesAt' | 'resultVisibility' | 'options'>
+>;
 
 export type TeamPermissions = {
   manageEvents: boolean;
@@ -881,6 +897,18 @@ export type DocumentItem = {
   source: { type: ScopeType; label: string };
   /** Ich darf dieses Dokument löschen */
   canDelete: boolean;
+  /** Ich darf Titel, Kategorie und Sichtbarkeit ändern */
+  canEdit: boolean;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
+};
+
+/** Dokument nachträglich ändern (Paket BE); die Datei selbst bleibt – austauschen heißt löschen und neu hochladen. */
+export type UpdateDocumentInput = {
+  title?: string;
+  category?: DocumentCategory;
+  scopeType?: ScopeType;
+  scopeId?: string | null;
 };
 
 export type UploadTarget = { type: ScopeType; id: string | null; label: string };

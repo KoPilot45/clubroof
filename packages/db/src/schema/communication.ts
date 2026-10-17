@@ -69,6 +69,8 @@ export const polls = pgTable(
     resultVisibility: pollResultVisibilityEnum().notNull().default('after_vote'),
     createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.clubId)],
 );

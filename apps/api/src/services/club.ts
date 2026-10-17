@@ -50,6 +50,16 @@ export async function listDocuments(
     )
     .orderBy(desc(s.documents.createdAt));
   const labels = await scopeLabels(db, actor.club.id);
+  const manage = (d: (typeof rows)[number]) =>
+    can(
+      actor.grants,
+      'documents.manage',
+      d.scopeType === 'team'
+        ? { teamId: d.scopeId, orgUnitId: labels.teamOrgUnit(d.scopeId) }
+        : d.scopeType === 'org_unit'
+          ? { orgUnitId: d.scopeId }
+          : {},
+    );
   return rows.map((d) => ({
     id: d.id,
     title: d.title,
@@ -59,15 +69,9 @@ export async function listDocuments(
     sizeBytes: d.sizeBytes,
     createdAt: d.createdAt.toISOString(),
     source: { type: d.scopeType, label: labels.label(d.scopeType, d.scopeId) },
-    canDelete: can(
-      actor.grants,
-      'documents.manage',
-      d.scopeType === 'team'
-        ? { teamId: d.scopeId, orgUnitId: labels.teamOrgUnit(d.scopeId) }
-        : d.scopeType === 'org_unit'
-          ? { orgUnitId: d.scopeId }
-          : {},
-    ),
+    canDelete: manage(d),
+    canEdit: manage(d),
+    editedAt: d.editedAt?.toISOString() ?? null,
   }));
 }
 

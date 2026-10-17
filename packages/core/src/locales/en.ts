@@ -1636,6 +1636,7 @@ export const en: Record<string, string> = {
   'Diese Seite gibt es nicht.': 'This page does not exist.',
   'Diese Strafen gelten in deiner Mannschaft. Festgelegt werden sie vom Trainerteam und der Kasse.':
     'These fines apply on your team. They are set by the coaching staff and the team fund.',
+  'Diese Umfrage kannst du nicht ändern.': 'You cannot change this poll.',
   'Diese Umfrage kannst du nicht beenden.': 'You cannot close this poll.',
   'Diese Unternehmen unterstützen unseren Verein. Danke! Wir werten nicht aus, wer sich welche Seite ansieht.':
     'These companies support our club. Thank you! We do not track who looks at which page.',
@@ -1657,6 +1658,7 @@ export const en: Record<string, string> = {
   'Dieses Passwort ist zu leicht zu erraten.': 'This password is too easy to guess.',
   'Dir zugeteilte Mannschaftsaufgaben': 'Team tasks assigned to you',
   Do: 'Thu',
+  'Dokument geändert: {0}': 'Document changed: {0}',
   'Dokument gelöscht: {0}': 'Document deleted: {0}',
   'Dokument hochgeladen: {0}': 'Document uploaded: {0}',
   'Dokument hochladen': 'Upload document',
@@ -1769,6 +1771,7 @@ export const en: Record<string, string> = {
   'Eine Ausgabe liegt über dem Plan': 'One expense is over plan',
   'Eine ausgewählte Mannschaft gehört nicht zu dieser Person.':
     'A selected team does not belong to this person.',
+  'Eine beendete Umfrage lässt sich nicht mehr ändern.': 'A closed poll can no longer be changed.',
   'Eine gemeinsame Abteilung': 'One shared division',
   'Eine Kasse mit diesem Namen gibt es schon.': 'A fund with this name already exists.',
   'Eine Leihe braucht ein Enddatum in der Zukunft.': 'A loan needs an end date in the future.',
@@ -1959,6 +1962,8 @@ export const en: Record<string, string> = {
   'Es werden {0} wöchentliche Termine angelegt.': '{0} weekly events will be created.',
   'Es werden keine Rückennummern angezeigt.': 'No shirt numbers are shown.',
   'Es wird nur dieser eine Termin angelegt.': 'Only this one event will be created.',
+  'Es wurde schon abgestimmt: Die Antworten lassen sich nicht mehr ändern.':
+    'Votes have already been cast: the answers can no longer be changed.',
   'Eure Vereinsfarbe': 'Your club color',
   'Expo antwortet mit {0}': 'Expo responded with {0}',
   Exportieren: 'Export',
@@ -2024,6 +2029,7 @@ export const en: Record<string, string> = {
   Freizeit: 'Recreational',
   'Frist {0} Uhr': 'Deadline {0}',
   'Frist abgelaufen': 'Deadline passed',
+  'Frist der Umfrage geändert': 'Poll deadline changed',
   'Frist festlegen': 'Set deadline',
   'Frist für den Verwendungsnachweis': 'Deadline for proof of use',
   'Frist für den Verwendungsnachweis setzen': 'Set deadline for proof of use',
@@ -2090,6 +2096,8 @@ export const en: Record<string, string> = {
     'No more changes are possible for this shift.',
   'Für diese Spende wurde schon die Zuwendungsbestätigung {0} ausgestellt. Sie kann nicht storniert werden.':
     'A donation receipt {0} has already been issued for this donation. It cannot be cancelled.',
+  'Für diesen Bereich darfst du keine Dokumente verwalten.':
+    'You may not manage documents for this area.',
   'Für diesen Tag eintragen': 'Enter for this day',
   'Für diesen Termin gibt es bereits einen offenen Bedarf.':
     'There is already an open request for this event.',

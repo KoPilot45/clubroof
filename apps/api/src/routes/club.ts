@@ -37,7 +37,13 @@ import { getClubTeamPage } from '../services/teams';
 import { getAreaOverview } from '../services/area-overview';
 import { listHelperEvents, setAttendance, signUp, withdraw } from '../services/helpers';
 import { placeholderPdf } from '../storage/files';
-import { deleteDocument, setClubLogo, uploadDocument, uploadImage } from '../services/uploads';
+import {
+  deleteDocument,
+  setClubLogo,
+  updateDocument,
+  uploadDocument,
+  uploadImage,
+} from '../services/uploads';
 
 const LINK_VALIDITY_MS = 10 * 60 * 1000;
 
@@ -127,6 +133,25 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
     async (request, reply) => {
       reply.code(201);
       return uploadDocument(app.db, app.storage, request.actor!, request.body, app.now());
+    },
+  );
+
+  app.patch(
+    '/documents/:id',
+    {
+      schema: {
+        params: z.object({ id: z.uuid() }),
+        body: z.object({
+          title: z.string().trim().min(2).max(120).optional(),
+          category: z.enum(['regulations', 'forms', 'training_plans', 'other']).optional(),
+          scopeType: z.enum(SCOPE_TYPES).optional(),
+          scopeId: z.uuid().nullish(),
+        }),
+      },
+    },
+    async (request, reply) => {
+      await updateDocument(app.db, request.actor!, request.params.id, request.body, app.now());
+      return reply.code(204).send();
     },
   );
 

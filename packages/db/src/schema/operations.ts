@@ -247,6 +247,8 @@ export const documents = pgTable(
     storageKey: text().notNull(),
     uploadedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.clubId)],
 );

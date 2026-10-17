@@ -211,6 +211,8 @@ export const absences = pgTable(
     note: text(),
     createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.clubId), index().on(t.personId, t.startsOn)],
 );
