@@ -21,6 +21,7 @@ import {
   Section,
   T,
   TextField,
+  Toggle,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
@@ -312,6 +313,7 @@ function ProfileEditor({
   const [aliases, setAliases] = useState(profile.importAliases.join(', '));
   const [position, setPosition] = useState(profile.leaguePosition?.toString() ?? '');
   const [visibility, setVisibility] = useState<AttendanceVisibility>(profile.attendanceVisibility);
+  const [lineupVisible, setLineupVisible] = useState(profile.lineupVisible);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const digits = (v: string) => v.replace(/\D/g, '').slice(0, 3);
@@ -327,6 +329,7 @@ function ProfileEditor({
           defaultMeetingPoint: point.trim() || null,
           leaguePosition: position ? Number(position) : null,
           attendanceVisibility: visibility,
+          lineupVisible,
           importAliases: aliases
             .split(',')
             .map((a) => a.trim())
@@ -400,6 +403,19 @@ function ProfileEditor({
             : visibility === 'count'
               ? 'Spieler sehen nur die Anzahl („14 von 20 da“), nicht wer gefehlt hat.'
               : 'Alle in der Mannschaft sehen, wer da war und wer gefehlt hat.'}
+        </T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <T style={{ flex: 1, fontWeight: '600' }}>Aufstellung für Spieler und Eltern sichtbar</T>
+          <Toggle
+            label="Aufstellung für Spieler und Eltern sichtbar"
+            value={lineupVisible}
+            onChange={setLineupVisible}
+          />
+        </View>
+        <T variant="caption">
+          {lineupVisible
+            ? 'Nach dem Veröffentlichen sichtbar für Trainerteam, Spieler und Eltern'
+            : 'Nach dem Veröffentlichen sichtbar nur für das Trainerteam'}
         </T>
         {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
         <Button label="Speichern" icon="checkmark" loading={busy} onPress={() => void save()} />

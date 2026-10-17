@@ -69,6 +69,16 @@ export function playerFromCandidate(c: {
   };
 }
 
+/** Initialen für Scheiben ohne Rückennummer. */
+export const initials = (name: string) =>
+  name
+    .split(' ')
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
 export function useLevelColor() {
   const { colors } = useTheme();
   return (level: AttendanceLevel) =>
@@ -104,6 +114,7 @@ export function Disc({
   label,
   ring,
   mine,
+  text,
 }: {
   size: number;
   number?: number | null;
@@ -112,6 +123,8 @@ export function Disc({
   ring?: 'select' | 'over';
   /** eigene Scheibe in der Spieleransicht in Akzentfarbe */
   mine?: boolean;
+  /** Ersatz für die Nummer (z. B. Initialen), wenn der Spieler keine hat */
+  text?: string;
 }) {
   const { colors } = useTheme();
   const empty = label !== undefined;
@@ -151,7 +164,7 @@ export function Disc({
           lineHeight: Math.round(size * 0.5),
         }}
       >
-        {empty ? label : number != null ? String(number) : '–'}
+        {empty ? label : number != null ? String(number) : (text ?? '–')}
       </T>
     </View>
   );
@@ -222,7 +235,7 @@ export function Pitch({
   hoverId,
   onSlot,
   readOnly,
-  mineId,
+  mineIds,
   showDots,
 }: {
   formation: Formation;
@@ -234,8 +247,8 @@ export function Pitch({
   hoverId?: string | null;
   onSlot?: (index: number) => void;
   readOnly?: boolean;
-  /** eigene Person (Spieleransicht) */
-  mineId?: string | null;
+  /** eigene Personen (Spieleransicht: ich und meine Kinder) */
+  mineIds?: string[];
   showDots?: boolean;
 }) {
   const { colors } = useTheme();
@@ -367,7 +380,7 @@ export function Pitch({
                     over={hoverId === `s:${index}`}
                     onPress={onSlot}
                     readOnly={readOnly}
-                    mine={!!mineId && player?.id === mineId}
+                    mine={!!player && !!mineIds?.includes(player.id)}
                     showDot={showDots}
                   />
                 );
@@ -410,7 +423,13 @@ function Slot({
     <View style={{ alignItems: 'center', gap: 4, minWidth: disc + 8 }}>
       <View style={{ transform: [{ scale: over && !reduce ? 1.12 : 1 }] }}>
         {player ? (
-          <Disc size={disc} number={player.number} ring={ring} mine={mine} />
+          <Disc
+            size={disc}
+            number={player.number}
+            text={initials(player.name)}
+            ring={ring}
+            mine={mine}
+          />
         ) : (
           <Disc size={disc} label={label} ring={ring} />
         )}
