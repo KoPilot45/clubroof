@@ -1,5 +1,6 @@
 import type { EventSummary, HelperEvent, NewsItem, PollSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
+import { Fragment } from 'react';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
@@ -267,12 +268,20 @@ export default function ClubScreen() {
           .map((t) => ({ ...t, tint: g.tint }));
         if (items.length === 0) return null;
         return (
-          <Section key={g.key} title={g.title}>
-            <TileGrid items={items} />
-            {g.key === 'events' && has('helpers') && openSpots > 0 ? (
-              <HelperStrip items={helpers.data ?? []} />
+          <Fragment key={g.key}>
+            <Section title={g.title}>
+              <TileGrid items={items} />
+            </Section>
+            {g.key === 'events' &&
+            has('helpers') &&
+            (helpers.data ?? []).some(
+              (h) => h.openSpots > 0 && new Date(h.event.startsAt) > new Date(),
+            ) ? (
+              <Section title="Helfer gesucht">
+                <HelperStrip items={helpers.data ?? []} />
+              </Section>
             ) : null}
-          </Section>
+          </Fragment>
         );
       })}
 

@@ -38,7 +38,6 @@ export function HelperStrip({ items }: { items: HelperEvent[] }) {
   const tint = colors.anstoss.categories.team;
   return (
     <>
-      <T variant="section">Helfer gesucht</T>
       <View
         style={{ gap: 10, marginHorizontal: -SIDE }}
         onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
