@@ -37,6 +37,7 @@ import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, gt, gte, inArray, isNull, or } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
+import { resolveMediaUrl } from '../storage/media-links';
 
 type TeamRow = typeof s.teams.$inferSelect;
 
@@ -399,6 +400,7 @@ export async function listMembers(
             ]),
           ],
           hasAccount: p.userId !== null,
+          avatarUrl: resolveMediaUrl(actor.links, p.avatarUrl, now),
         } satisfies MemberListItem,
       };
     })
@@ -506,6 +508,7 @@ export async function getMember(
     memberSince: person.memberSince,
     status: person.membershipStatus,
     hasAccount: person.userId !== null,
+    avatarUrl: resolveMediaUrl(actor.links, person.avatarUrl, now),
     guardians: guardians.map((g) => ({ id: g.id, name: name(g) })),
     children: children.map((c) => ({ id: c.id, name: name(c) })),
     memberships: [

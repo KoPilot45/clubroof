@@ -92,7 +92,10 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       colorMode: actor.club.colorMode,
       timezone: actor.club.timezone,
     },
-    managedPersons: actor.managed,
+    managedPersons: actor.managed.map((m) => ({
+      ...m,
+      avatarUrl: resolveMediaUrl(actor.links, m.avatarUrl),
+    })),
     teams: [...teams.values()],
     roles: actor.grants.map((g) => ({
       key: g.key,

@@ -58,14 +58,26 @@ export async function loadActor(
   if (!club) throw forbidden('Dein Konto ist keinem Verein zugeordnet.');
 
   const children = await db
-    .select({ id: s.persons.id, firstName: s.persons.firstName, lastName: s.persons.lastName })
+    .select({
+      id: s.persons.id,
+      firstName: s.persons.firstName,
+      lastName: s.persons.lastName,
+      avatarUrl: s.persons.avatarUrl,
+    })
     .from(s.guardianships)
     .innerJoin(s.persons, eq(s.persons.id, s.guardianships.childPersonId))
     .where(eq(s.guardianships.guardianPersonId, person.id))
     .orderBy(s.persons.birthDate);
 
   const managed: ManagedPerson[] = [
-    { id: person.id, firstName: person.firstName, lastName: person.lastName, relation: 'self' },
+    {
+      id: person.id,
+      firstName: person.firstName,
+      lastName: person.lastName,
+      relation: 'self',
+      // Medienverweis; `me.ts` macht daraus den signierten Link
+      avatarUrl: person.avatarUrl,
+    },
     ...children.map((c) => ({ ...c, relation: 'child' as const })),
   ];
   const managedIds = managed.map((m) => m.id);

@@ -39,6 +39,7 @@ export type ManagedPerson = {
   firstName: string;
   lastName: string;
   relation: 'self' | 'child';
+  avatarUrl: string | null;
 };
 
 export type MyTeam = {
@@ -222,6 +223,7 @@ export type Participant = {
   /** Nur für Berechtigte sichtbar (Datensparsamkeit) */
   reason: string | null;
   guestFromTeam: string | null;
+  avatarUrl: string | null;
   /** Tatsächlich anwesend laut Trainerteam; null = (noch) nicht erfasst */
   attended: boolean | null;
 };
@@ -1096,6 +1098,7 @@ export type MemberListItem = {
   teams: { badge: string; function: TeamFunction }[];
   roles: string[];
   hasAccount: boolean;
+  avatarUrl: string | null;
 };
 
 export type MemberRoleAssignment = {
@@ -1119,6 +1122,7 @@ export type MemberDetail = {
   memberSince: string | null;
   status: MembershipStatus;
   hasAccount: boolean;
+  avatarUrl: string | null;
   guardians: { id: string; name: string }[];
   children: { id: string; name: string }[];
   memberships: {
@@ -1811,6 +1815,7 @@ export type CommentItem = {
   id: string;
   author: string;
   mine: boolean;
+  avatarUrl: string | null;
   body: string;
   createdAt: string;
 };
@@ -2179,7 +2184,7 @@ export type SearchResponse = {
     type: string;
     teamBadge: string | null;
   }[];
-  members: { personId: string; name: string; teamBadges: string[] }[];
+  members: { personId: string; name: string; teamBadges: string[]; avatarUrl: string | null }[];
   news: { id: string; title: string; publishedAt: string; source: string }[];
   teams: { id: string; name: string; badge: string; league: string | null }[];
 };

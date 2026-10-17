@@ -11,6 +11,7 @@ import { boardDiscussion } from './board';
 import { notify } from './event-admin';
 import { newsDiscussion } from './editorial';
 import { demandDiscussion } from './exchange';
+import { resolveMediaUrl } from '../storage/media-links';
 
 async function discussion(db: Db, actor: Actor, type: CommentEntity, id: string, now: Date) {
   if (type === 'news') return newsDiscussion(db, actor, id);
@@ -20,7 +21,12 @@ async function discussion(db: Db, actor: Actor, type: CommentEntity, id: string,
 
 async function rows(db: Db, actor: Actor, type: CommentEntity, id: string) {
   return db
-    .select({ comment: s.comments, firstName: s.persons.firstName, lastName: s.persons.lastName })
+    .select({
+      comment: s.comments,
+      firstName: s.persons.firstName,
+      lastName: s.persons.lastName,
+      avatar: s.persons.avatarUrl,
+    })
     .from(s.comments)
     .leftJoin(s.persons, eq(s.persons.id, s.comments.authorPersonId))
     .where(
@@ -45,6 +51,7 @@ export async function listComments(
     id: r.comment.id,
     author: r.firstName ? `${r.firstName} ${r.lastName}` : 'Ehemaliges Mitglied',
     mine: r.comment.authorUserId === actor.user.id,
+    avatarUrl: resolveMediaUrl(actor.links, r.avatar),
     body: r.comment.body,
     createdAt: r.comment.createdAt.toISOString(),
   }));

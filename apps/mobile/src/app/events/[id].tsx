@@ -120,7 +120,7 @@ function ParticipantRow({
     <View>
       <ListRow
         first={first}
-        leading={<Avatar name={p.name} size={42} />}
+        leading={<Avatar name={p.name} size={42} uri={p.avatarUrl} />}
         title={p.name}
         subtitle={subtitle}
         trailing={

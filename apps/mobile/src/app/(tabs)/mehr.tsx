@@ -425,7 +425,9 @@ export default function MoreScreen() {
               <ListRow
                 key={c.id}
                 first={i === 0}
-                leading={<Avatar name={`${c.firstName} ${c.lastName}`} size={40} />}
+                leading={
+                  <Avatar name={`${c.firstName} ${c.lastName}`} size={40} uri={c.avatarUrl} />
+                }
                 title={`${c.firstName} ${c.lastName}`}
                 subtitle={[
                   'Spieler',

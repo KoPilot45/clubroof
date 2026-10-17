@@ -165,7 +165,9 @@ export default function MembersScreen() {
               <ListRow
                 key={m.id}
                 first={i === 0}
-                leading={<Avatar name={`${m.firstName} ${m.lastName}`} size={42} />}
+                leading={
+                  <Avatar name={`${m.firstName} ${m.lastName}`} size={42} uri={m.avatarUrl} />
+                }
                 title={`${m.lastName}, ${m.firstName}`}
                 subtitle={sub || undefined}
                 trailing={
