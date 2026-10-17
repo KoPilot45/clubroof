@@ -10,7 +10,7 @@ import {
   type Formation,
   type LineupAttendance,
 } from '@clubroof/core';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -481,6 +481,8 @@ export function Strip({
       style={{
         borderRadius: 16,
         borderWidth: 2,
+        // der Ring beim Ziehen liegt außen und schiebt das Layout nicht
+        margin: -2,
         borderColor: over ? colors.primary : 'transparent',
       }}
     >
@@ -491,7 +493,7 @@ export function Strip({
         horizontal
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={32}
-        contentContainerStyle={{ gap, paddingVertical: 2, paddingRight: 28 }}
+        contentContainerStyle={{ gap, paddingRight: 28 }}
         onLayout={(e) => {
           box.current.view = e.nativeEvent.layout.width;
           update();
@@ -647,8 +649,8 @@ export function SquadCard({
       style={{
         width: 88,
         borderRadius: 16,
-        paddingTop: 8,
-        paddingBottom: 7,
+        paddingTop: 6,
+        paddingBottom: 6,
         paddingHorizontal: 6,
         alignItems: 'center',
         gap: 3,
@@ -675,7 +677,7 @@ export function SquadCard({
           {player.abbr}
         </Text>
       ) : null}
-      <Disc size={38} number={player.number} />
+      <Disc size={34} number={player.number} />
       <Text
         numberOfLines={1}
         verbatim
@@ -685,7 +687,7 @@ export function SquadCard({
       </Text>
       {player.attendance ? (
         <>
-          <AttendanceBars attendance={player.attendance} />
+          <AttendanceBars attendance={player.attendance} height={12} />
           <Text verbatim style={{ fontSize: 10, fontWeight: '700', color: colors.onSurfaceMuted }}>
             {percentText(player)}
           </Text>
@@ -747,18 +749,4 @@ export function Ghost({ drag }: { drag: DragData }) {
       <NamePlate name={drag.name} />
     </View>
   );
-}
-
-/** Scrollt die aktive Formation in die Mitte der Chip-Leiste. */
-export function useScrollToActive(activeIndex: number, deps: unknown[]) {
-  const ref = useRef<ScrollView>(null);
-  const x = useRef<number[]>([]);
-  const width = useRef(0);
-  useEffect(() => {
-    const left = x.current[activeIndex];
-    if (left === undefined) return;
-    ref.current?.scrollTo({ x: Math.max(0, left - width.current / 2 + 40), animated: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeIndex, ...deps]);
-  return { ref, x, width };
 }

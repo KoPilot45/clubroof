@@ -44,6 +44,12 @@ type Dnd = {
 const DndContext = createContext<Dnd | null>(null);
 const useDnd = () => useContext(DndContext);
 
+/** Fläche unter der Ziehfigur und ob gerade gezogen wird (für Hervorhebungen). */
+export function useDndState() {
+  const dnd = useDnd();
+  return { hover: dnd?.hover ?? null, dragging: dnd?.dragging ?? null };
+}
+
 const measure = (ref: View | null): Promise<Rect | null> =>
   new Promise((resolve) => {
     if (!ref?.measureInWindow) return resolve(null);
@@ -154,7 +160,6 @@ export function DndProvider({
         })();
       },
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [hover, dragging, refresh],
   );
 
@@ -215,7 +220,6 @@ export function DropZone({
     dnd?.registerZone(id, ref.current);
     return () => dnd?.registerZone(id, null);
     // nur bei Änderung der Id
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
   const over = dnd?.hover === id;
   return (
@@ -237,7 +241,6 @@ export function useStrip(id: string) {
         scroller.current?.scrollTo({ x: Math.max(0, offset.current + dx), animated: false }),
     });
     return () => dnd?.registerStrip(id, null, { scrollBy: () => undefined });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
   return { view, scroller, offset };
 }

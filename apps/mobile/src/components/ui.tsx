@@ -181,7 +181,10 @@ export function Screen({
   onEndReached,
   footer,
   flushTop,
+  scrollRef,
 }: {
+  /** Zugriff auf die Scrollfläche (z. B. nach oben springen) */
+  scrollRef?: React.Ref<ScrollView>;
   /** Seite beginnt ohne Innenabstand oben (Plakat-Hero bis zum Rand, Home) */
   flushTop?: boolean;
   /** feste untere Leiste mit dem Hauptknopf (Formulare): Verlauf nach oben, Knopf 52 hoch */
@@ -204,6 +207,7 @@ export function Screen({
       <SafeAreaView edges={edges} style={{ flex: 1, backgroundColor: colors.background }}>
         {header}
         <ScrollView
+          ref={scrollRef}
           style={{ backgroundColor: colors.background }}
           scrollEventThrottle={header || onEndReached ? 16 : undefined}
           onScroll={
@@ -326,7 +330,10 @@ export function HeroCard({
   poster,
   background,
   palette,
+  compact,
 }: {
+  /** kleinerer Innenabstand und Radius 20 (Bühne des Aufstellungsplaners) */
+  compact?: boolean;
   /** eigene Farben statt der Vereinsfarbe (z. B. Orange für Veranstaltungen); `to` färbt auch die weißen Knöpfe */
   palette?: { from: string; to: string };
   children: ReactNode;
@@ -350,7 +357,7 @@ export function HeroCard({
   const gradientId = useId().replace(/[^a-zA-Z0-9]/g, '');
   // Hintergrund bekommt die gemessene Größe: wächst die Karte (z. B. nach dem Laden), wächst er mit
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-  const radius = poster ? 0 : radii.xxl;
+  const radius = poster ? 0 : compact ? 20 : radii.xxl;
   const outer: ViewStyle = { borderRadius: radius };
   const body = (
     <View
@@ -360,8 +367,8 @@ export function HeroCard({
         borderRadius: radius,
         // Plakat: der Körper läuft 150 px über das Layout hinaus und blendet hinter den Folgeelementen aus
         overflow: poster ? 'visible' : 'hidden',
-        padding: poster ? 0 : 18,
-        gap: poster ? 0 : 12,
+        padding: poster ? 0 : compact ? 8 : 18,
+        gap: poster ? 0 : compact ? 2 : 12,
         // Kartenkante im Hero-Block: 1 px Aufhellung
         borderWidth: poster ? 0 : 1,
         borderColor: 'rgba(255,255,255,0.08)',
