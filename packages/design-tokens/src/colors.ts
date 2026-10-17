@@ -141,6 +141,8 @@ export type AnstossRoles = {
   amberGradient: readonly [string, string];
   /** Hero in den eigenen Bereichen (Verwaltung, Vereinskasse) */
   areaHeroes: Record<'admin' | 'cash', { from: string; to: string }>;
+  /** Diagrammfarben (Paket ST): Einnahmen Blau, Ausgaben Orange, weitere Reihen Aqua und Gelb – feste Reihenfolge */
+  chart: { income: string; expense: string; aqua: string; yellow: string };
   /** Spielfeld des Aufstellungsplaners (Paket AUF): zwei Rasenstreifen, Linien (in beiden Darstellungen gleich) */
   pitch: { grass: string; grassAlt: string; line: string };
 };
@@ -548,6 +550,7 @@ export function anstossTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
       amberUrgent: amber,
       amberGradient: AMBER_URGENT.gradient,
       areaHeroes: AREA_HEROES,
+      chart: ANSTOSS_CHART_DARK,
       pitch: PITCH,
     },
   };
@@ -566,6 +569,25 @@ export const ANSTOSS_CATEGORIES_LIGHT: Record<AnstossCategory, string> = {
   events: '#A84B00',
   news: '#B4156B',
 };
+
+/** Diagrammfarben dunkel (gegen die Kartenfläche `#171F1A` geprüft: Kontrast ≥ 4 : 1, Farbfehlsichtigkeit). */
+export const ANSTOSS_CHART_DARK = {
+  income: '#3987E5',
+  expense: '#D95926',
+  aqua: '#199E70',
+  yellow: '#C98500',
+} as const;
+
+/** Diagrammfarben hell: Referenzwerte, wo nötig abgedunkelt, damit Flächen auf Weiß mindestens 3 : 1 erreichen. */
+function anstossChartLight() {
+  const WHITE = '#FFFFFF';
+  return {
+    income: darkenFor('#2A78D6', WHITE, 3),
+    expense: darkenFor('#EB6834', WHITE, 3),
+    aqua: darkenFor('#1BAF7A', WHITE, 3),
+    yellow: darkenFor('#EDA100', WHITE, 3),
+  };
+}
 
 /** Dunkelt eine Farbe ab, bis sie auf `on` mindestens `min` : 1 erreicht. */
 function darkenFor(hex: string, on: string, min: number): string {
@@ -662,6 +684,7 @@ export function anstossLightTheme(key: ClubColorKey): ThemeColors {
       amberUrgent: amber,
       amberGradient: AMBER_URGENT.gradient,
       areaHeroes: AREA_HEROES,
+      chart: anstossChartLight(),
       pitch: PITCH,
     },
   };

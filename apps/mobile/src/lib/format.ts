@@ -17,6 +17,8 @@ const longDate = dateFormat({
   timeZone: TZ,
 });
 const euro = numberFormat({ style: 'currency', currency: 'EUR' });
+const thousands = numberFormat({ minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const percent = numberFormat({ maximumFractionDigits: 0 });
 
 const tileWeekday = dateFormat({ weekday: 'short', timeZone: TZ });
 const tileDay = dateFormat({ day: 'numeric', timeZone: TZ });
@@ -29,6 +31,12 @@ export const formatDay = (iso: string) => weekdayDate.format(new Date(iso));
 export const formatTime = (iso: string) => time.format(new Date(iso));
 export const formatLongDate = (iso: string) => longDate.format(new Date(iso));
 export const formatEuro = (cents: number) => euro.format(cents / 100);
+/** Kurzform für Diagrammachsen: ab 1.000 € „2,0 T€“, sonst ganze Euro („850 €“). */
+export const formatEuroShort = (cents: number) =>
+  Math.abs(cents) >= 100_000
+    ? `${thousands.format(cents / 100_000)} T€`
+    : `${percent.format(cents / 100)} €`;
+export const formatPercent = (value: number) => `${percent.format(value)} %`;
 
 /** „vor 2 Std.“, „vor 3 Tagen“ */
 export function formatAgo(iso: string, now = new Date()): string {
