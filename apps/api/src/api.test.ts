@@ -6332,6 +6332,29 @@ describe.skipIf(!url)('API', () => {
         location: 'Materialraum',
       });
       expect(added.status).toBe(201);
+      // Nachträglich bearbeiten (BE, Stufe 3): nur Platzverantwortliche
+      const stangen = added.body.items.find((i) => i.name === 'Stangen')!;
+      expect(
+        (await send('PATCH', `/equipment/${stangen.id}`, coach.token, { quantity: 10 })).status,
+      ).toBe(403);
+      const edited = await send<EquipmentOverview>(
+        'PATCH',
+        `/equipment/${stangen.id}`,
+        admin.token,
+        {
+          name: 'Slalomstangen',
+          quantity: 10,
+          note: '2 verbogen',
+        },
+      );
+      expect(edited.status).toBe(200);
+      expect(edited.body.items.find((i) => i.id === stangen.id)).toMatchObject({
+        name: 'Slalomstangen',
+        quantity: 10,
+        location: 'Materialraum',
+        note: '2 verbogen',
+        editedAt: expect.any(String),
+      });
     });
 
     it('Schadensmeldung: jeder meldet, Platzverantwortliche bearbeiten, Meldende erfahren es', async () => {
@@ -6426,6 +6449,34 @@ describe.skipIf(!url)('API', () => {
         coach.token,
       );
       expect(range.map((d) => d.id)).toEqual([duty.id]);
+
+      // Nachträglich bearbeiten (BE, Stufe 3): nur der Schiedsrichter selbst; die Abwesenheit folgt dem Tag
+      expect(
+        (await send('PATCH', `/referees/duties/${duty.id}`, admin.token, { title: 'x y' })).status,
+      ).toBe(403);
+      const moved = await send<RefereeDutyResult>(
+        'PATCH',
+        `/referees/duties/${duty.id}`,
+        coach.token,
+        {
+          title: 'FC Test – SV Beispiel, U15',
+          startsAt: new Date(Date.parse(training.startsAt) + 3 * 86_400_000).toISOString(),
+          durationMinutes: 120,
+        },
+      );
+      expect(moved.status).toBe(200);
+      const changed = moved.body.overview.mine.find((d) => d.id === duty.id)!;
+      expect(changed).toMatchObject({
+        title: 'FC Test – SV Beispiel, U15',
+        absence: true,
+        location: 'Sportplatz Test',
+        editedAt: expect.any(String),
+      });
+      expect(Date.parse(changed.endsAt) - Date.parse(changed.startsAt)).toBe(120 * 60_000);
+      const movedAbsences = (await get<Absence[]>('/absences', coach.token)).filter((a) =>
+        a.note?.startsWith('Schiedsrichtereinsatz'),
+      );
+      expect(movedAbsences).toHaveLength(1);
 
       // Löschen nimmt die Abwesenheit zurück; fremde Einsätze löscht niemand
       expect((await send('DELETE', `/referees/duties/${duty.id}`, admin.token)).status).toBe(403);

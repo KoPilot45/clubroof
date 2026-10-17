@@ -116,6 +116,28 @@ const b = await launch();
   ok(true, 'Aushang bearbeitet, „bearbeitet“ erscheint');
   await api(`/board/${item.id}/done`, login.token, { method: 'POST' }).catch(() => undefined);
 }
+// Stufe 3: Ausrüstung bearbeiten
+{
+  const { page, goto, login } = await b.session('admin');
+  await api('/equipment', login.token, {
+    method: 'POST',
+    body: JSON.stringify({
+      kind: 'material',
+      name: 'Hütchenset',
+      quantity: 20,
+      location: 'Geräteraum',
+    }),
+  });
+  await goto('/equipment/items');
+  await button(page, 'Bearbeiten').first().click({ timeout: 20_000 });
+  await page.getByLabel('Zustand / Hinweis (optional)').last().fill('3 Stück fehlen');
+  await button(page, 'Änderungen speichern').click();
+  await text(page, /3 Stück fehlen/).waitFor({ timeout: 15_000 });
+  await text(page, /bearbeitet · /)
+    .first()
+    .waitFor({ timeout: 10_000 });
+  ok(true, 'Ausrüstung bearbeitet (Zustand), „bearbeitet“ erscheint');
+}
 
 console.log(
   b.errors.length ? `✗ Konsolenfehler:\n${b.errors.join('\n')}` : '✓ keine Konsolenfehler',

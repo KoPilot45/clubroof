@@ -377,6 +377,8 @@ export const equipmentItems = pgTable(
     holderPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     handedOutAt: timestamp({ withTimezone: true }),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.clubId, t.kind), index().on(t.holderPersonId)],
 );
@@ -439,6 +441,8 @@ export const refereeDuties = pgTable(
     /** Automatisch eingetragene Abwesenheit (wird mit dem Einsatz entfernt) */
     absenceId: uuid().references(() => absences.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.personId, t.startsAt), index().on(t.clubId)],
 );

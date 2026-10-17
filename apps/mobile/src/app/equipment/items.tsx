@@ -1,7 +1,9 @@
-import type { EquipmentItem, EquipmentOverview } from '@clubroof/core';
+import type { EquipmentItem, EquipmentOverview, UpdateEquipmentInput } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
+import { EditSheet } from '@/components/edit-sheet';
+import { EditedNote } from '@/components/edited';
 import {
   Button,
   Card,
@@ -25,17 +27,22 @@ export default function EquipmentItemsScreen() {
   const queryClient = useQueryClient();
   const [giving, setGiving] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<EquipmentItem | null>(null);
   const list = useQuery({
     queryKey: ['equipment'],
     queryFn: () => api<EquipmentOverview>('/equipment'),
   });
   const change = useMutation({
-    mutationFn: (v: { path: string; method: 'POST' | 'PUT' | 'DELETE'; body?: unknown }) =>
-      api<EquipmentOverview>(v.path, { method: v.method, body: v.body }),
+    mutationFn: (v: {
+      path: string;
+      method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+      body?: unknown;
+    }) => api<EquipmentOverview>(v.path, { method: v.method, body: v.body }),
     onSuccess: (data) => {
       queryClient.setQueryData(['equipment'], data);
       setGiving(null);
       setCreating(false);
+      setEditing(null);
     },
   });
   if (list.isPending) return <Loading />;
@@ -81,11 +88,13 @@ export default function EquipmentItemsScreen() {
               <T variant="caption">
                 {[
                   item.location,
+                  item.note,
                   item.handedOutAt ? `ausgegeben ${formatAgo(item.handedOutAt)}` : null,
                 ]
                   .filter(Boolean)
                   .join(' · ')}
               </T>
+              <EditedNote at={item.editedAt} />
               {giving === item.id ? (
                 <HandOver
                   item={item}
@@ -100,6 +109,12 @@ export default function EquipmentItemsScreen() {
                 />
               ) : (
                 <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <Button
+                    label="Bearbeiten"
+                    icon="create-outline"
+                    variant="outline"
+                    onPress={() => setEditing(item)}
+                  />
                   {item.holder ? (
                     <Button
                       label="Zurückgenommen"
@@ -129,6 +144,34 @@ export default function EquipmentItemsScreen() {
           ))}
         </Section>
       ))}
+      <EditSheet
+        visible={editing !== null}
+        onClose={() => setEditing(null)}
+        title={editing?.kind === 'key' ? 'Schlüssel bearbeiten' : 'Material bearbeiten'}
+        fields={[
+          { key: 'name', label: 'Bezeichnung', value: editing?.name ?? '', maxLength: 80 },
+          { key: 'quantity', label: 'Anzahl', value: String(editing?.quantity ?? 1), maxLength: 3 },
+          { key: 'location', label: 'Lagerort', value: editing?.location ?? '', maxLength: 80 },
+          {
+            key: 'note',
+            label: 'Zustand / Hinweis (optional)',
+            value: editing?.note ?? '',
+            maxLength: 300,
+          },
+        ]}
+        onSave={async (v) =>
+          change.mutateAsync({
+            path: `/equipment/${editing!.id}`,
+            method: 'PATCH',
+            body: {
+              name: v.name!.trim(),
+              quantity: Number(v.quantity),
+              location: v.location!.trim() || null,
+              note: v.note!.trim() || null,
+            } satisfies UpdateEquipmentInput,
+          })
+        }
+      />
     </Screen>
   );
 }

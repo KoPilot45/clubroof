@@ -4,6 +4,7 @@ import {
   type ClubCash,
   type ClubFeeAssignment,
   type ClubFeeInterval,
+  type ClubFeeType,
   type ClubFees,
 } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -54,6 +55,7 @@ export default function FeeSetupScreen() {
   const [interval, setInterval] = useState<ClubFeeInterval>('quarterly');
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [fundId, setFundId] = useState<string | null>(null);
+  const [editing, setEditing] = useState<ClubFeeType | null>(null);
   // Zuordnen
   const [search, setSearch] = useState('');
   const [person, setPerson] = useState<Candidate | null>(null);
@@ -77,14 +79,26 @@ export default function FeeSetupScreen() {
 
   const addType = useMutation({
     mutationFn: () =>
-      api('/club-cash/fees/types', {
-        method: 'POST',
-        body: { name: name.trim(), amountCents: parseEuro(amount), interval, categoryId, fundId },
-      }),
+      editing
+        ? api(`/club-cash/fees/types/${editing.id}`, {
+            method: 'PATCH',
+            body: { name: name.trim(), amountCents: parseEuro(amount), categoryId, fundId },
+          })
+        : api('/club-cash/fees/types', {
+            method: 'POST',
+            body: {
+              name: name.trim(),
+              amountCents: parseEuro(amount),
+              interval,
+              categoryId,
+              fundId,
+            },
+          }),
     onSuccess: () => {
       setError(null);
       setName('');
       setAmount('');
+      setEditing(null);
       refresh();
     },
     onError: fail,
@@ -158,20 +172,44 @@ export default function FeeSetupScreen() {
                 .filter(Boolean)
                 .join(' · ')}
               trailing={
-                <Button
-                  label={x.archived ? 'Aktivieren' : 'Archivieren'}
-                  size="sm"
-                  variant="tonal"
-                  onPress={() => archive.mutate({ id: x.id, archived: !x.archived })}
-                />
+                <View style={{ flexDirection: 'row', gap: 6 }}>
+                  {x.archived ? null : (
+                    <Button
+                      label="Bearbeiten"
+                      size="sm"
+                      variant="outline"
+                      onPress={() => {
+                        setEditing(x);
+                        setName(x.name);
+                        setAmount((x.amountCents / 100).toFixed(2).replace('.', ','));
+                        setInterval(x.interval);
+                        setCategoryId(x.categoryId);
+                        setFundId(x.fundId);
+                      }}
+                    />
+                  )}
+                  <Button
+                    label={x.archived ? 'Aktivieren' : 'Archivieren'}
+                    size="sm"
+                    variant="tonal"
+                    onPress={() => archive.mutate({ id: x.id, archived: !x.archived })}
+                  />
+                </View>
               }
             />
           ))}
         </Card>
         <Card style={{ gap: 12 }}>
           <T variant="label" style={{ fontWeight: '700' }}>
-            Beitragsart anlegen
+            {editing ? 'Beitragsart bearbeiten' : 'Beitragsart anlegen'}
           </T>
+          {editing ? (
+            <Chip
+              tone="info"
+              icon="information-circle"
+              label="Ein geänderter Betrag gilt für künftige Beiträge; bereits erzeugte Forderungen bleiben unverändert. Der Rhythmus lässt sich nicht ändern."
+            />
+          ) : null}
           <TextField
             label="Name"
             value={name}
@@ -185,15 +223,17 @@ export default function FeeSetupScreen() {
             onChangeText={setAmount}
             placeholder={t('0,00')}
           />
-          <ChoiceChips
-            label="Rhythmus"
-            options={CLUB_FEE_INTERVALS.map((v) => ({
-              value: v,
-              label: CLUB_FEE_INTERVAL_LABEL[v],
-            }))}
-            selected={[interval]}
-            onToggle={setInterval}
-          />
+          {editing ? null : (
+            <ChoiceChips
+              label="Rhythmus"
+              options={CLUB_FEE_INTERVALS.map((v) => ({
+                value: v,
+                label: CLUB_FEE_INTERVAL_LABEL[v],
+              }))}
+              selected={[interval]}
+              onToggle={setInterval}
+            />
+          )}
           {incomeCategories.length > 0 ? (
             <ChoiceChips
               label="Einnahmekategorie (optional)"
@@ -214,12 +254,23 @@ export default function FeeSetupScreen() {
             />
           ) : null}
           <Button
-            label="Beitragsart anlegen"
-            icon="add"
+            label={editing ? 'Änderungen speichern' : 'Beitragsart anlegen'}
+            icon={editing ? 'checkmark' : 'add'}
             disabled={name.trim().length < 2 || !parseEuro(amount)}
             loading={addType.isPending}
             onPress={() => addType.mutate()}
           />
+          {editing ? (
+            <Button
+              label="Abbrechen"
+              variant="outline"
+              onPress={() => {
+                setEditing(null);
+                setName('');
+                setAmount('');
+              }}
+            />
+          ) : null}
         </Card>
       </Section>
 

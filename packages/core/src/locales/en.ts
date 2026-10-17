@@ -793,6 +793,7 @@ export const en: Record<string, string> = {
   'Beiträge: Zahlung {0} von {1} ({2})': 'Fees: payment {0} from {1} ({2})',
   Beitragsart: 'Fee type',
   'Beitragsart anlegen': 'Create fee type',
+  'Beitragsart bearbeiten': 'Edit fee type',
   Beitragsarten: 'Fee types',
   'Beitragsarten & Mitglieder': 'Fee types & members',
   'Beitragsarten und Mitglieder': 'Fee types and members',
@@ -935,6 +936,8 @@ export const en: Record<string, string> = {
     'Please enter a maps link (https://…) or coordinates such as 50.1234, 8.5678.',
   'Bitte gib Betrag und Beschreibung an.': 'Please enter an amount and description.',
   'Bitte gib den Gegner an.': 'Please enter the opponent.',
+  'Bitte gib den Zielbetrag als Betrag in Euro an.':
+    'Please enter the target as an amount in euros.',
   'Bitte gib E-Mail-Adresse und Passwort ein.': 'Please enter your email address and password.',
   'Bitte gib eine Beschreibung ein.': 'Please enter a description.',
   'Bitte gib eine gültige IBAN an.': 'Please enter a valid IBAN.',
@@ -1779,6 +1782,8 @@ export const en: Record<string, string> = {
     'Only the administration reopens a closed year.',
   'Ein ausgeblendeter Beitrag lässt sich nicht ändern.': 'A hidden post cannot be changed.',
   'Ein erledigter Aushang lässt sich nicht ändern.': 'A completed notice cannot be changed.',
+  'Ein geänderter Betrag gilt für künftige Beiträge; bereits erzeugte Forderungen bleiben unverändert. Der Rhythmus lässt sich nicht ändern.':
+    'A changed amount applies to future fees; dues already created stay unchanged. The interval cannot be changed.',
   'Ein Getränk mehr': 'One more drink',
   'Ein Getränk weniger': 'One fewer drink',
   'Ein Jahr kann erst nach seinem Ende abgeschlossen werden.':
@@ -1857,6 +1862,7 @@ export const en: Record<string, string> = {
   'Einrichtungs-Demo abgeschlossen': 'Setup demo completed',
   'Einrichtungs-Demos (ohne Funktion)': 'Setup demos (no function)',
   Einrichtungscode: 'Setup code',
+  'Einsatz bearbeiten': 'Edit assignment',
   'Einsatz eintragen': 'Enter assignment',
   'Einsatz gespeichert – keine Überschneidung': 'Assignment saved – no overlap',
   'Einsatz löschen': 'Delete assignment',
@@ -1865,6 +1871,7 @@ export const en: Record<string, string> = {
   'Einsätze {0}': 'Assignments {0}',
   'Einsätze {0} von {1}': 'Assignments {0} of {1}',
   'Einsätze als Gastspieler und Spielerbedarf': 'Guest player appearances and player needs',
+  'Einsätze ändert nur der Schiedsrichter selbst.': 'Only the referee can change assignments.',
   'Einsätze löscht nur der Schiedsrichter selbst.':
     'Only the referee themselves deletes assignments.',
   'Einsätze tragen aktive Schiedsrichter des Vereins ein.':
@@ -2454,6 +2461,8 @@ export const en: Record<string, string> = {
     'Yes. Under “More → Account & settings → Language” choose Deutsch, English or “Automatic” (your device language). Your choice applies on all your devices, including push notifications. Texts that coaches or the board write themselves (e.g. news) stay in the author’s language.',
   'Ja. Unter „Mehr → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Yes. Under “More → Account & settings” you set the font size (Normal, Large, Extra large) and can lock the app with Face ID, fingerprint or device code. Without internet the app shows the most recently loaded events, news and squad; a notice appears at the top. Replies and changes are only possible with a connection.',
+  'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch), außerdem Forum-Themen und eigene Antworten, Kommentare (auch löschen), Übungen, Aushänge im Fundbüro und Marktplatz, Spielerbedarf und Angebote der Spielerbörse (die Anzahl nicht unter die schon eingetragenen Spieler) Platzsperrungen, Beitragsarten und Rücklagen der Vereinskasse (ein geänderter Betrag einer Beitragsart gilt für künftige Beiträge), Ausrüstung (Bezeichnung, Anzahl, Lagerort, Zustand) und deine Schiedsrichter-Einsätze. Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
+    'Yes. What you created can be edited later – via “Edit” in the “…” menu or the button in the detail view: polls (question, description and deadline; the answers only as long as nobody has voted yet), events with helper shifts, absences and documents (title, type and visibility – the file stays; to replace it, delete it and upload it again), as well as forum topics and your own replies, comments (also delete), exercises, notices in the lost-and-found and marketplace, player requests and offers of the player exchange (the number not below the players already entered), facility closures, fee types and reserves of the club cash (a changed amount of a fee type applies to future fees), equipment (name, quantity, location, condition) and your referee assignments. The form is the same as when creating, just pre-filled. Edited content carries the note “edited” with the time. We tell those involved about important changes such as time, place or deadline. Cash bookings are not changed: you correct mistakes by reversing and booking again – so everything stays traceable.',
   'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch), außerdem Forum-Themen und eigene Antworten, Kommentare (auch löschen), Übungen, Aushänge im Fundbüro und Marktplatz, Spielerbedarf und Angebote der Spielerbörse (die Anzahl nicht unter die schon eingetragenen Spieler) sowie Platzsperrungen. Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
     'Yes. What you created can be edited later – via “Edit” in the “…” menu or the button in the detail view: polls (question, description and deadline; the answers only as long as nobody has voted yet), events with helper shifts, absences and documents (title, type and visibility – the file stays; to replace it, delete it and upload it again), as well as forum topics and your own replies, comments (also delete), exercises, notices in the lost-and-found and marketplace, player requests and offers of the player exchange (the number not below the players already entered) and facility closures. The form is the same as when creating, just pre-filled. Edited content carries the note “edited” with the time. We tell those involved about important changes such as time, place or deadline. Cash bookings are not changed: you correct mistakes by reversing and booking again – so everything stays traceable.',
   'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch). Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
@@ -2827,6 +2836,8 @@ export const en: Record<string, string> = {
   'Material (mit Komma trennen)': 'Equipment (separate with commas)',
   'Material & Schlüssel': 'Equipment & keys',
   'Material ausgegeben: {0}': 'Equipment handed out: {0}',
+  'Material bearbeiten': 'Edit equipment',
+  'Material geändert: {0}': 'Equipment changed: {0}',
   'Material und Schlüssel verwalten die Platzverantwortlichen.':
     'Groundskeepers manage equipment and keys.',
   'Material zurück: {0}': 'Equipment returned: {0}',
@@ -3402,6 +3413,7 @@ export const en: Record<string, string> = {
   'Rücklage anlegen': 'Create reserve',
   'Rücklage aufgelöst: {0}': 'Reserve dissolved: {0}',
   'Rücklage auflösen': 'Dissolve reserve',
+  'Rücklage bearbeiten': 'Edit reserve',
   'Rücklage geändert: {0}': 'Reserve changed: {0}',
   Rücklagen: 'Reserves',
   Rückmeldung: 'Feedback',
@@ -3480,6 +3492,8 @@ export const en: Record<string, string> = {
   Schließen: 'Close',
   Schlüssel: 'Keys',
   'Schlüssel ausgegeben: {0}': 'Key handed out: {0}',
+  'Schlüssel bearbeiten': 'Edit key',
+  'Schlüssel geändert: {0}': 'Key changed: {0}',
   'Schlüssel zurück: {0}': 'Key returned: {0}',
   Schnellzugriff: 'Quick access',
   'Schnellzugriff anpassen': 'Customise quick access',
@@ -4645,6 +4659,7 @@ export const en: Record<string, string> = {
   'Zuschüsse & Sponsoren': 'Grants & sponsors',
   'Zuschüsse: Unter „Vereinskasse → Buchung → Zuschüsse“ legst du Förderungen mit Geber, Betrag und Frist für den Verwendungsnachweis an und führst sie von „Geplant“ über „Beantragt“ und „Bewilligt“ bis zum Eingang (Buchung als Einnahme); überfällige Nachweise sind rot. Sponsoren: Beim Buchen einer Einnahme wählst du den Sponsor; unter „Sponsoren“ siehst du die Einnahmen je Sponsor und Jahr. Mannschaftszuschuss: Ausgabe der Vereinskasse und Einnahme der Mannschaftskasse in einem Schritt. Inventar: Unter „Planung → Inventar“ erfasst du Anschaffungen mit Wert und Standort; Gegenstände werden mit Grund ausgesondert, nicht gelöscht.':
     'Grants: under “Club treasury → Booking → Grants” you create funding with grantor, amount and deadline for the proof of use and move it from “Planned” through “Applied for” and “Approved” to receipt (booked as income); overdue proofs are red. Sponsors: when booking income you choose the sponsor; under “Sponsors” you see the income per sponsor and year. Team fund grant: expense of the club treasury and income of the team fund in one step. Inventory: under “Planning → Inventory” you record purchases with value and location; items are disposed of with a reason, not deleted.',
+  'Zustand / Hinweis (optional)': 'Condition / note (optional)',
   'Zuwendungsbestätigungen haben gesetzliche Pflichtangaben und Formulierungen. Lass die Vorlage von deiner Steuerberatung oder deinem Verband prüfen, bevor du sie freigibst. Die App ersetzt keine Steuerberatung.':
     'Donation receipts have statutory mandatory details and wording. Have the template reviewed by your tax adviser or association before you release it. The app does not replace tax advice.',
   'Zuwendungsbestätigungen noch nicht freigegeben': 'Donation receipts not yet released',

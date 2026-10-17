@@ -12,6 +12,7 @@ import {
   assignChangingRoom,
   createItem,
   deleteItem,
+  updateItem,
   getChangingRooms,
   getDamages,
   getEquipment,
@@ -24,6 +25,7 @@ import {
   addReferee,
   createDuty,
   deleteDuty,
+  updateDuty,
   getReferees,
   listOwnDuties,
   searchRefereeCandidates,
@@ -77,6 +79,22 @@ export const operationRoutes: FastifyPluginAsyncZod = async (app) => {
       reply.code(201);
       return createItem(app.db, request.actor!, request.body, app.now());
     },
+  );
+  app.patch(
+    '/equipment/:id',
+    {
+      schema: {
+        params: id,
+        body: z.object({
+          name: z.string().trim().min(2).max(80).optional(),
+          quantity: z.number().int().min(1).max(999).optional(),
+          location: z.string().trim().max(80).nullish(),
+          note: z.string().trim().max(300).nullish(),
+        }),
+      },
+    },
+    async (request): Promise<EquipmentOverview> =>
+      updateItem(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
   app.put(
     '/equipment/:id/holder',
@@ -218,6 +236,22 @@ export const operationRoutes: FastifyPluginAsyncZod = async (app) => {
       reply.code(201);
       return createDuty(app.db, request.actor!, request.body, app.now());
     },
+  );
+  app.patch(
+    '/referees/duties/:id',
+    {
+      schema: {
+        params: id,
+        body: z.object({
+          title: z.string().trim().min(2).max(120).optional(),
+          startsAt: z.iso.datetime({ offset: true }).optional(),
+          durationMinutes: z.number().int().min(30).max(600).optional(),
+          location: z.string().trim().max(120).nullish(),
+        }),
+      },
+    },
+    async (request): Promise<RefereeDutyResult> =>
+      updateDuty(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
   app.delete(
     '/referees/duties/:id',

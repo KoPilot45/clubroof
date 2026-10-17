@@ -13,6 +13,7 @@ import {
   type RefereeCollision,
   type RefereeDuty,
   type RefereeDutyInput,
+  type UpdateRefereeDutyInput,
   type RefereeDutyResult,
   type RefereeLicenseStatus,
   type RefereeOverview,
@@ -65,6 +66,7 @@ const toDuty = (d: typeof s.refereeDuties.$inferSelect): RefereeDuty => ({
   endsAt: d.endsAt.toISOString(),
   location: d.location,
   absence: d.absenceId !== null,
+  editedAt: d.editedAt?.toISOString() ?? null,
 });
 
 async function settingsOf(db: Db, clubId: string): Promise<RefereeSettings> {
@@ -361,6 +363,68 @@ export async function createDuty(
     createdAt: now,
   });
   return { overview: await getReferees(db, actor, now), collisions };
+}
+
+export async function updateDuty(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdateRefereeDutyInput,
+  now: Date,
+): Promise<RefereeDutyResult> {
+  requireModule(actor);
+  const [duty] = await db
+    .select()
+    .from(s.refereeDuties)
+    .where(and(eq(s.refereeDuties.id, id), eq(s.refereeDuties.clubId, actor.club.id)));
+  if (!duty) throw notFound('Der Einsatz');
+  if (duty.personId !== actor.person.id)
+    throw forbidden('Einsätze ändert nur der Schiedsrichter selbst.');
+  const title = input.title?.trim() ?? duty.title;
+  const start = input.startsAt ? new Date(input.startsAt) : duty.startsAt;
+  const minutes = input.durationMinutes
+    ? Math.min(Math.max(input.durationMinutes, 30), 600)
+    : Math.round((duty.endsAt.getTime() - duty.startsAt.getTime()) / 60_000);
+  const end = new Date(start.getTime() + minutes * 60_000);
+  const oldDay = toIsoDate(calendarDayOf(duty.startsAt, actor.club.timezone));
+  const day = toIsoDate(calendarDayOf(start, actor.club.timezone));
+  // Die automatische Abwesenheit folgt dem Einsatz: anderer Tag → alte zurücknehmen, neue eintragen
+  let absenceId = duty.absenceId;
+  if (duty.absenceId && day !== oldDay) {
+    await deleteAbsence(db, actor, duty.absenceId, now);
+    absenceId = null;
+    if (day >= todayOf(actor, now)) {
+      absenceId = (
+        await createAbsence(
+          db,
+          actor,
+          {
+            personId: actor.person.id,
+            kind: 'other',
+            startsOn: day,
+            endsOn: day,
+            note: `Schiedsrichtereinsatz: ${title}`,
+          },
+          now,
+        )
+      ).id;
+    }
+  }
+  await db
+    .update(s.refereeDuties)
+    .set({
+      title,
+      startsAt: start,
+      endsAt: end,
+      location: input.location === undefined ? duty.location : input.location?.trim() || null,
+      absenceId,
+      editedAt: now,
+    })
+    .where(eq(s.refereeDuties.id, id));
+  return {
+    overview: await getReferees(db, actor, now),
+    collisions: await collisionsFor(db, actor, start, end),
+  };
 }
 
 export async function deleteDuty(
