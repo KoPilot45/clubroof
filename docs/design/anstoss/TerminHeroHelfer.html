@@ -59,6 +59,12 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
 .lt { font-size: 12px; color: var(--fg3); }
 .st { font: 700 12.5px var(--body); border-radius: 99px; padding: 5px 12px; }
 .st.ok { color: var(--accent); background: rgba(46,219,107,.13); } .st.un { color: var(--bad); background: rgba(255,90,90,.16); } .st.off { color: var(--fg2); background: rgba(255,255,255,.1); }
+.hero.poster { padding: 22px 20px 18px; gap: 8px; }
+.poster .tag { align-self: flex-start; background: var(--accent); color: var(--on-accent); font: 800 11px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; padding: 6px 12px; border-radius: 99px; }
+.poster .big { font: 800 72px/.95 var(--display); } .poster .big small { font: 700 26px var(--display); letter-spacing: .06em; margin-left: 6px; }
+.poster .ttl { font: 800 26px/1.05 var(--display); } .poster .ttl em { font-style: normal; color: var(--accent); }
+.resp.slim { background: none; padding: 0; gap: 6px; margin-top: 4px; }
+.resp.slim .rb { height: 8px; background: rgba(255,255,255,.2); }
 .cancel .z, .cancel .t { text-decoration: line-through; opacity: .75; }
 .why { text-align: center; font-weight: 700; font-size: 13px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 14px 16px; }
@@ -107,7 +113,7 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
         <div class="chips"><span class="chip b">B1</span><span class="chip">Spiel</span></div>
         <div class="score"><div class="t">VfR Sonnenberg</div><div class="z">15:00</div><div class="t">SV Grün-Weiß B1</div></div>
         <div class="line">Samstag, 17. Oktober · bis 16:35 Uhr</div>
-        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Sportplatz Sonnenberg</b><small>Treffpunkt 13:30 · Parkplatz Vereinsheim · Fahrgemeinschaften</small></div><span class="route">Route ›</span></div><div class="resp"><div class="rl">Zu- und Absagen</div><div class="rb"><i style="flex:12;background:#2EDB6B"></i><i style="flex:1;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:6;background:rgba(255,255,255,.28)"></i></div><div class="rg"><span><i style="background:#2EDB6B"></i>12 zugesagt</span><span><i style="background:#FFB020"></i>1 unsicher</span><span><i style="background:#FF6B6B"></i>2 abgesagt</span><span><i style="background:rgba(255,255,255,.4)"></i>6 offen</span></div></div>
+        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Sportplatz Sonnenberg</b><small>Treffpunkt 13:30 · Parkplatz Vereinsheim · Fahrgemeinschaften</small></div><span class="route">Route ›</span></div><div class="resp"><div class="rl">Zu- und Absagen</div><div class="rb"><i style="flex:12;background:#2EDB6B"></i><i style="flex:1;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:6;background:rgba(255,255,255,.28)"></i></div><div class="rg"><span><i style="background:#2EDB6B"></i>12 Zusagen</span><span><i style="background:#FFB020"></i>1 Unsicher</span><span><i style="background:#FF6B6B"></i>2 Absagen</span><span><i style="background:rgba(255,255,255,.4)"></i>6 offen</span></div></div>
       </div>
       <h3 class="sec" style="margin-top:6px">Deine Antwort</h3>
       <div class="seg3"><span class="on">Zugesagt</span><span>Unsicher</span><span>Absagen</span></div>
@@ -119,7 +125,7 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
         <div class="chips"><span class="chip b">B1</span><span class="chip">Training</span></div>
         <div class="score single"><div class="t">Training</div><div class="z">18:00</div></div>
         <div class="line" style="text-align:left">Dienstag, 20. Oktober · bis 19:30 Uhr</div>
-        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Kunstrasen (Platz 2)</b><small>Treffpunkt 17:45 · Kabine Vereinsheim</small></div><span class="route">Route ›</span></div><div class="resp"><div class="rl">Zu- und Absagen</div><div class="rb"><i style="flex:9;background:#2EDB6B"></i><i style="flex:0;background:#FFB020"></i><i style="flex:1;background:#FF6B6B"></i><i style="flex:3;background:rgba(255,255,255,.28)"></i></div><div class="rg"><span><i style="background:#2EDB6B"></i>9 zugesagt</span><span><i style="background:#FFB020"></i>0 unsicher</span><span><i style="background:#FF6B6B"></i>1 abgesagt</span><span><i style="background:rgba(255,255,255,.4)"></i>3 offen</span></div></div>
+        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Kunstrasen (Platz 2)</b><small>Treffpunkt 17:45 · Kabine Vereinsheim</small></div><span class="route">Route ›</span></div><div class="resp"><div class="rl">Zu- und Absagen</div><div class="rb"><i style="flex:9;background:#2EDB6B"></i><i style="flex:0;background:#FFB020"></i><i style="flex:1;background:#FF6B6B"></i><i style="flex:3;background:rgba(255,255,255,.28)"></i></div><div class="rg"><span><i style="background:#2EDB6B"></i>9 Zusagen</span><span><i style="background:#FFB020"></i>0 Unsicher</span><span><i style="background:#FF6B6B"></i>1 Absage</span><span><i style="background:rgba(255,255,255,.4)"></i>3 offen</span></div></div>
       </div>
       <div class="cap">Training: Titel links, Beginn rechts, gleiche Karte, auch hier mit dem Balken. Vereinstermine zeigen ihn nicht. Abgesagte Termine auch nicht.</div>
     </div>
@@ -169,6 +175,20 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
       </div>
       <div class="dots"><i class="on"></i><i></i><i></i></div>
       <div class="cap">Die Übersicht bleibt kompakt. Alle Details (Schichten, Zeiten, Eintragen) stehen nach dem Antippen auf der Helfer-Detailseite der Veranstaltung. Ohne offene Schichten erscheint der Abschnitt nicht.</div>
+    </div>
+  
+    <h2 style="margin-top:28px">Startseite</h2>
+    <p>Dieselbe Übersicht im Plakat für die nächsten Spiele, je Spiel mit den eigenen Zahlen (Wischen wechselt das Spiel).</p>
+    <div class="phone" id="p6">
+      <div class="hero poster">
+        <span class="tag">Nächstes Spiel · B-Jugend</span>
+        <div class="big">4<small>TAGE</small></div>
+        <div class="ttl">SV Grün-Weiß B1 <em>vs.</em> VfR Sonnenberg</div>
+        <div class="line" style="text-align:left">Sa., 17.10. · 15:00 Uhr · Sportplatz Sonnenberg</div>
+        <div class="resp slim"><div class="rb"><i style="flex:12;background:#2EDB6B"></i><i style="flex:1;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:6;background:rgba(255,255,255,.28)"></i></div><div class="rg"><span><i style="background:#2EDB6B"></i>12 Zusagen</span><span><i style="background:#FFB020"></i>1 Unsicher</span><span><i style="background:#FF6B6B"></i>2 Absagen</span><span><i style="background:rgba(255,255,255,.4)"></i>6 offen</span></div></div>
+        <div class="dots" style="justify-content:flex-start;margin-top:2px"><i class="on"></i><i></i><i></i></div>
+      </div>
+      <div class="cap">Kompakte Variante ohne eigene Fläche: Balken (8 px) und eine Zeile Legende direkt unter Datum und Ort. Gleiche Regel wie im Termin-Detail: nur mit Freigabe des Trainers, das Trainerteam sieht sie immer.</div>
     </div>
   </section>
 </div>
