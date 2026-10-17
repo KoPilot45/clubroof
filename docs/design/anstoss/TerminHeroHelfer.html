@@ -1,0 +1,195 @@
+<title>Termin-Hero und Helfer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Saira+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Layout: zwei Handy-Bildschirme nebeneinander (Termin-Detail mit einem Hero in drei Fällen, Vereinsseite mit Helfer-Wischleiste); bei schmalem Fenster untereinander. Dunkel, Vereinsfarbe Grün (Vorgabe Design Anstoß). */
+:root {
+  --bg: #0B120E; --page: #070C09; --fg: #F2F7F3; --fg2: #C5D6CB; --fg3: #9FB5A6; --fg4: #6F8277;
+  --surface: rgba(255,255,255,.06); --line: rgba(255,255,255,.09); --line2: rgba(255,255,255,.14);
+  --accent: #2EDB6B; --on-accent: #06210F; --p1: #1E7A44; --p2: #0F3D24;
+  --warn: #FFB020; --bad: #FF8A8A; --info: #5AA9FF;
+  --display: 'Saira Condensed','Arial Narrow',sans-serif; --body: 'Open Sans',system-ui,sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.4 var(--body); padding-block: 24px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing: .02em; margin: 0 0 6px; text-wrap: balance; }
+.intro { color: var(--fg3); max-width: 62ch; margin: 0 0 24px; }
+.board { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+.col { flex: 1 1 360px; min-width: 0; max-width: 460px; }
+.col > h2 { font: 700 13px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 4px; }
+.col > p { color: var(--fg3); font-size: 12.5px; margin: 0 0 12px; }
+.phone { width: 100%; max-width: 390px; background: var(--bg); border: 1px solid var(--line2); border-radius: 34px; padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.cap { font-size: 11px; color: var(--fg4); margin: 2px 4px; }
+.bar { display: flex; align-items: center; gap: 10px; }
+.bar .crumb { display: flex; gap: 6px; font-size: 12px; font-weight: 600; color: var(--fg2); }
+.bar .crumb span { background: var(--surface); border-radius: 99px; padding: 5px 11px; }
+.bar .crumb .on { background: var(--accent); color: var(--on-accent); }
+.back { width: 34px; height: 34px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; font-size: 15px; }
+
+/* Hero (Waben per Skript) */
+.hero { position: relative; isolation: isolate; border-radius: 28px; padding: 18px; background: radial-gradient(120% 120% at 90% 0%, var(--p1) 0%, var(--p2) 60%, var(--bg) 130%); border: 1px solid rgba(255,255,255,.08); overflow: hidden; display: flex; flex-direction: column; gap: 10px; }
+.hero .waben { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+.over { font: 700 11px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; text-align: center; opacity: .95; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: center; }
+.chip { font: 700 11px/1 var(--body); padding: 5px 9px; border-radius: 99px; background: rgba(255,255,255,.14); }
+.chip.b { background: rgba(0,0,0,.35); font-family: var(--display); font-size: 13px; letter-spacing: .04em; }
+.chip.urgent { background: rgba(255,90,90,.2); color: var(--bad); }
+.chip.arch { background: rgba(255,255,255,.1); color: var(--fg2); }
+.score { display: flex; align-items: center; gap: 10px; }
+.score .t { flex: 1; min-width: 0; text-align: center; font: 700 19px/1.05 var(--display); text-transform: none; }
+.score .z { font: 800 40px/1 var(--display); }
+.score.single .t { text-align: left; font-size: 30px; line-height: 1.02; text-transform: none; }
+.score.single .z { font-size: 38px; }
+.line { text-align: center; font-size: 12px; color: rgba(255,255,255,.88); }
+.loc { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: rgba(0,0,0,.25); }
+.loc .pin { width: 20px; height: 20px; flex: none; }
+.loc b { display: block; font-size: 14px; }
+.loc small { color: rgba(255,255,255,.8); font-size: 11.5px; }
+.loc .route { font-weight: 800; font-size: 13px; color: var(--accent); margin-left: auto; white-space: nowrap; }
+.inv { font-size: 11px; color: rgba(255,255,255,.8); text-align: center; }
+.resp { background: rgba(0,0,0,.25); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.rl { font: 700 11px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.8); }
+.rb { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,.2); }
+.rg { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 11.5px; color: rgba(255,255,255,.9); }
+.rg span { display: inline-flex; align-items: center; gap: 5px; } .rg i { width: 8px; height: 8px; border-radius: 4px; display: inline-block; }
+.lock { display: flex; flex-direction: column; gap: 8px; }
+.lrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lk { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--fg3); }
+.lt { font-size: 12px; color: var(--fg3); }
+.st { font: 700 12.5px var(--body); border-radius: 99px; padding: 5px 12px; }
+.st.ok { color: var(--accent); background: rgba(46,219,107,.13); } .st.un { color: var(--bad); background: rgba(255,90,90,.16); } .st.off { color: var(--fg2); background: rgba(255,255,255,.1); }
+.cancel .z, .cancel .t { text-decoration: line-through; opacity: .75; }
+.why { text-align: center; font-weight: 700; font-size: 13px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 14px 16px; }
+.card h3 { margin: 0 0 4px; font: 700 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--fg3); }
+.sec { display: flex; align-items: center; gap: 9px; margin: 14px 0 0; font: 700 21px/1 var(--display); text-transform: uppercase; letter-spacing: .04em; }
+.sec::before { content: ""; width: 4px; height: 18px; border-radius: 2px; background: var(--accent); }
+.sec a { margin-left: auto; font: 700 12px var(--body); text-transform: none; letter-spacing: 0; color: var(--accent); text-decoration: none; }
+.seg3 { display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 4px; gap: 4px; }
+.seg3 span { flex: 1; text-align: center; padding: 10px 4px; border-radius: 12px; font-weight: 700; font-size: 13px; color: var(--fg2); }
+.seg3 .on { background: var(--accent); color: var(--on-accent); }
+
+/* Verein: Kacheln-Andeutung + Helfer-Wischleiste */
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 14px; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between; }
+.tile i { width: 44px; height: 44px; border-radius: 15px; background: rgba(255,176,32,.15); display: block; }
+.tile b { font-size: 13px; }
+.swipe { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -16px; padding: 4px 16px 6px; }
+.swipe::-webkit-scrollbar { display: none; }
+.hc { flex: none; width: 82%; scroll-snap-align: start; scroll-margin-left: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 14px; display: flex; gap: 12px; align-items: center; }
+.date { width: 48px; height: 52px; border-radius: 14px; background: rgba(255,176,32,.16); display: grid; place-items: center; text-align: center; flex: none; color: var(--warn); }
+.date small { display: block; font: 700 10px var(--display); letter-spacing: .12em; text-transform: uppercase; }
+.date b { display: block; font: 800 23px/1 var(--display); }
+.hc .body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.hc h4 { margin: 0; font: 700 19px/1.05 var(--display); }
+.meta { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; font-size: 12px; }
+.when.soon { color: var(--warn); font-weight: 700; } .when.later { color: var(--fg3); }
+.miss { color: var(--fg2); } .miss b { font: 800 17px/1 var(--display); color: var(--fg); margin-right: 2px; }
+.chev { color: var(--fg4); font-size: 20px; flex: none; }
+.dots { display: flex; justify-content: center; gap: 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--fg4); }
+.dots i.on { width: 22px; background: var(--accent); }
+</style>
+
+<h1>Termin-Hero und Helfer</h1>
+<p class="intro">Entwurf für zwei Überarbeitungen: ein einziger kompakter Hero auf der Termin-Detailseite und eine Wischleiste „Helfer gesucht“ auf der Vereinsseite. Namen, Zeiten und Zahlen sind erfunden.</p>
+
+<div class="board">
+  <section class="col">
+    <h2>Termin-Detail</h2>
+    <p>Ein Hero statt zwei. Die kompakte Anzeigetafel bleibt, Ort, Treffpunkt und Route wandern in dieselbe Karte. Gleicher Aufbau für Spiele, Training und Vereinstermine.</p>
+
+    <div class="phone" id="p1">
+      <div class="bar"><div class="back">‹</div><div class="crumb"><span>Termine</span><span class="on">Termin</span></div></div>
+      <div class="hero">
+        <div class="over">Bezirksliga · Liga</div>
+        <div class="chips"><span class="chip b">B1</span><span class="chip">Spiel</span></div>
+        <div class="score"><div class="t">VfR Sonnenberg</div><div class="z">15:00</div><div class="t">SV Grün-Weiß B1</div></div>
+        <div class="line">Samstag, 17. Oktober · bis 16:35 Uhr</div>
+        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Sportplatz Sonnenberg</b><small>Treffpunkt 13:30 · Parkplatz Vereinsheim · Fahrgemeinschaften</small></div><span class="route">Route ›</span></div><div class="resp"><div class="rl">Zu- und Absagen</div><div class="rb"><i style="flex:12;background:#2EDB6B"></i><i style="flex:1;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:6;background:rgba(255,255,255,.28)"></i></div><div class="rg"><span><i style="background:#2EDB6B"></i>12 zugesagt</span><span><i style="background:#FFB020"></i>1 unsicher</span><span><i style="background:#FF6B6B"></i>2 abgesagt</span><span><i style="background:rgba(255,255,255,.4)"></i>6 offen</span></div></div>
+      </div>
+      <h3 class="sec" style="margin-top:6px">Deine Antwort</h3>
+      <div class="seg3"><span class="on">Zugesagt</span><span>Unsicher</span><span>Absagen</span></div>
+      <div class="cap">Spiel: Anzeigetafel mit Anstoßzeit, nach dem Spiel mit Ergebnis (2 : 1). Der bunte Balken „Zu- und Absagen“ erscheint für Spieler und Eltern nur, wenn der Trainer ihn in den Mannschaftseinstellungen freigegeben hat; das Trainerteam sieht ihn immer.</div>
+    </div>
+
+    <div class="phone" id="p2" style="margin-top:20px">
+      <div class="hero">
+        <div class="chips"><span class="chip b">B1</span><span class="chip">Training</span></div>
+        <div class="score single"><div class="t">Training</div><div class="z">18:00</div></div>
+        <div class="line" style="text-align:left">Dienstag, 20. Oktober · bis 19:30 Uhr</div>
+        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Kunstrasen (Platz 2)</b><small>Treffpunkt 17:45 · Kabine Vereinsheim</small></div><span class="route">Route ›</span></div><div class="resp"><div class="rl">Zu- und Absagen</div><div class="rb"><i style="flex:9;background:#2EDB6B"></i><i style="flex:0;background:#FFB020"></i><i style="flex:1;background:#FF6B6B"></i><i style="flex:3;background:rgba(255,255,255,.28)"></i></div><div class="rg"><span><i style="background:#2EDB6B"></i>9 zugesagt</span><span><i style="background:#FFB020"></i>0 unsicher</span><span><i style="background:#FF6B6B"></i>1 abgesagt</span><span><i style="background:rgba(255,255,255,.4)"></i>3 offen</span></div></div>
+      </div>
+      <div class="cap">Training: Titel links, Beginn rechts, gleiche Karte, auch hier mit dem Balken. Vereinstermine zeigen ihn nicht. Abgesagte Termine auch nicht.</div>
+    </div>
+
+    <div class="phone" id="p3" style="margin-top:20px">
+      <div class="hero cancel">
+        <div class="chips"><span class="chip b">B1</span><span class="chip">Training</span><span class="chip urgent">Abgesagt</span></div>
+        <div class="score single cancel"><div class="t">Training</div><div class="z">18:00</div></div>
+        <div class="line" style="text-align:left">Donnerstag, 15. Oktober · bis 19:30 Uhr</div>
+        <div class="why" style="text-align:left">Kunstrasen gesperrt (Platzpflege)</div>
+        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Kunstrasen (Platz 2)</b><small>Treffpunkt 17:45 · Kabine Vereinsheim</small></div></div>
+      </div>
+      <div class="card"><h3>Beschreibung</h3>Bitte Trainingsjacken mitbringen.</div>
+      <div class="cap">Abgesagt: Chip „Abgesagt“, Beginn durchgestrichen, Grund direkt darunter. Eine längere Beschreibung steht darunter in einer eigenen Karte, damit der Hero kompakt bleibt.</div>
+    </div>
+
+    <div class="phone" id="p5" style="margin-top:20px">
+      <h3 class="sec" style="margin-top:2px">Deine Antwort</h3>
+      <div class="card lock">
+        <div class="lrow"><span class="st ok">Zugesagt</span><span class="lk"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>Frist abgelaufen</span></div>
+        <div class="lt">Antwortfrist endete am Freitag, 16. Oktober, 15:00 Uhr. Änderungen laufen über dein Trainerteam.</div>
+      </div>
+      <div class="card lock">
+        <div class="lrow"><span class="st un">Abgesagt · Grund: krank</span><span class="lk"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>Frist abgelaufen</span></div>
+      </div>
+      <div class="card lock">
+        <div class="lrow"><span class="st off">Keine Antwort</span><span class="lk"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>Frist abgelaufen</span></div>
+      </div>
+      <div class="cap">Nach Ablauf der Frist bleibt die eigene Antwort sichtbar, nur nicht mehr änderbar (mit Grund, bei Kindern je Kind). Vor Fristablauf bleiben die drei Antwortknöpfe.</div>
+    </div>
+  </section>
+
+  <section class="col">
+    <h2>Vereinsseite</h2>
+    <p>Neuer Abschnitt „Helfer gesucht“ unter den Veranstaltungs-Kacheln: kompakte Karten mit Datum, Titel, „in X Tagen“ und „X Helfer fehlen“, von Hand durchzuwischen.</p>
+
+    <div class="phone" id="p4">
+      <div class="tiles">
+        <div class="tile"><i></i><b>Veranstaltungen</b></div>
+        <div class="tile"><i></i><b>Spielplan</b></div>
+      </div>
+      <h3 class="sec">Helfer gesucht <a href="#p4">Alle anzeigen ›</a></h3>
+      <div class="swipe" tabindex="0" aria-label="Helfer gesucht, seitlich wischen">
+        <div class="hc"><div class="date"><div><small>Sa</small><b>24</b></div></div><div class="body"><h4>Arbeitseinsatz Platzpflege</h4><div class="meta"><span class="when soon">in 8 Tagen</span><span class="miss"><b>8</b> Helfer fehlen</span></div></div><span class="chev">›</span></div>
+        <div class="hc"><div class="date"><div><small>Fr</small><b>06</b></div></div><div class="body"><h4>Jahreshauptversammlung</h4><div class="meta"><span class="when later">in 20 Tagen</span><span class="miss"><b>2</b> Helfer fehlen</span></div></div><span class="chev">›</span></div>
+        <div class="hc"><div class="date"><div><small>Sa</small><b>21</b></div></div><div class="body"><h4>Jugend-Hallenturnier</h4><div class="meta"><span class="when later">in 35 Tagen</span><span class="miss"><b>12</b> Helfer fehlen</span></div></div><span class="chev">›</span></div>
+      </div>
+      <div class="dots"><i class="on"></i><i></i><i></i></div>
+      <div class="cap">Die Übersicht bleibt kompakt. Alle Details (Schichten, Zeiten, Eintragen) stehen nach dem Antippen auf der Helfer-Detailseite der Veranstaltung. Ohne offene Schichten erscheint der Abschnitt nicht.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+// Waben wie in der App (components/honeycomb.tsx): Sechsecke R 26, weiß 2 px, Deckkraft .18, oben rechts am deutlichsten
+function waben(el, k) {
+  const w = el.offsetWidth, h = el.offsetHeight, R = 26, polys = [];
+  const cols = Math.ceil(w / (1.5 * R)) + 2, rows = Math.ceil(h / (2 * 0.866 * R)) + 2;
+  for (let i = -1; i < cols; i++) for (let j = -1; j < rows; j++) {
+    const cx = -19 + 1.5 * R * i, cy = -22.5 + 2 * 0.866 * R * j + (i % 2 ? 0.866 * R : 0);
+    const pts = [[cx + R, cy], [cx + R / 2, cy + .866 * R], [cx - R / 2, cy + .866 * R], [cx - R, cy], [cx - R / 2, cy - .866 * R], [cx + R / 2, cy - .866 * R]];
+    polys.push(`<polygon points="${pts.map(([x, y]) => x.toFixed(1) + ',' + y.toFixed(1)).join(' ')}" fill="none" stroke="#fff" stroke-width="2"/>`);
+  }
+  el.querySelector('.waben')?.remove();
+  el.insertAdjacentHTML('afterbegin', `<svg class="waben" width="${w}" height="${h}" aria-hidden="true"><defs><radialGradient id="g${k}" cx="1" cy="0" r=".9" gradientTransform="scale(1 ${(w / h).toFixed(3)})"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#fff" stop-opacity=".35"/><stop offset=".78" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="m${k}"><rect width="${w}" height="${h}" fill="url(#g${k})"/></mask></defs><g mask="url(#m${k})" opacity=".18">${polys.join('')}</g></svg>`);
+}
+const heros = [...document.querySelectorAll('.hero')];
+const paint = () => heros.forEach((el, i) => waben(el, i));
+paint(); new ResizeObserver(paint).observe(document.body);
+// Pager-Punkte der Wischleiste
+const sw = document.querySelector('.swipe'), dots = [...document.querySelectorAll('.dots i')];
+sw.addEventListener('scroll', () => { const i = Math.round(sw.scrollLeft / (sw.firstElementChild.offsetWidth + 12)); dots.forEach((d, k) => d.classList.toggle('on', k === i)); }, { passive: true });
+</script>
