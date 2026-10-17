@@ -560,7 +560,7 @@ function hexAlpha(hex: string, alpha: number): string {
 
 /** Kategoriefarben im hellen Stil: dunkel genug für Symbol und Zahl auf Pastellgrund (≥ 4,5 : 1). */
 export const ANSTOSS_CATEGORIES_LIGHT: Record<AnstossCategory, string> = {
-  team: '#1F7A3D',
+  team: '#1A7237',
   club: '#1F5FB8',
   admin: '#6B46C1',
   events: '#A84B00',
@@ -648,7 +648,7 @@ export function anstossLightTheme(key: ClubColorKey): ThemeColors {
       cardBorder: '#E2E8E4',
       fieldBorder: '#D5DDD7',
       divider: '#E8EDEA',
-      textTertiary: '#667569',
+      textTertiary: '#566759',
       placeholder: '#7C8A81',
       sheet: WHITE,
       sheetBorder: '#E2E8E4',

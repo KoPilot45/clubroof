@@ -31,6 +31,8 @@ Nicht jedes Mal neu zusammensetzen – diese Skripte nutzen:
 pnpm check                     # Lint + Typprüfung + alle Tests (vor jedem Commit), knappe Ausgabe
 pnpm check --grep="Kasse"      # nur passende API-Tests – schnell beim Entwickeln
 pnpm check --only=a11y         # antippbare Elemente ohne Text/accessibilityLabel (Teil von pnpm check)
+pnpm check --only=farben       # neue feste Farben außerhalb des Themes (Teil von pnpm check; Basis scripts/farben-basis.json)
+SCHEME=light pnpm browser-check scripts/e2e/hell-kontrast.mjs --no-build   # Kontrast aller Routen (ohne SCHEME dunkel)
 pnpm check --routes            # nach neuen Bildschirmen: typisierte Routen neu erzeugen, dann prüfen
 pnpm browser-check             # Web-Export bauen, API + Web starten, Start/Anmeldung prüfen
 pnpm browser-check scripts/e2e/beispiel.mjs --no-build   # eigene Browserprüfung (Vorlage: beispiel.mjs)
@@ -75,6 +77,7 @@ pnpm browser-check --reset     # vorher Demodaten neu laden
   - Eintrag in der Hilfe (`apps/mobile/src/lib/help-content.ts`).
 - Zwischenüberschriften: `<Section title=…>` bzw. `<T variant="section">` (Saira Condensed, Großbuchstaben, Akzentlinie in Vereinsfarbe) – keine eigenen Überschriftenstile.
 - Große Zahlen: `<T variant="figure">`; Titel in Kopfzeilen: `variant="headline"` (Saira Condensed). Alle anderen Texte laufen in Open Sans (`T` bzw. `Text` aus `components/app-text.tsx`); bei eingebundenen Schriften nie `fontWeight` voraussetzen.
+- **Neue Oberflächen immer in beiden Darstellungen prüfen** (hell: `SCHEME=light`, dunkel: ohne), Kontrast mit `scripts/e2e/hell-kontrast.mjs`; feste Farben nur auf Hero, Plakat, Kopfband, Spielfeld und Marke (`pnpm check` meldet neue).
 - Farben nur aus dem Theme (`useTheme`): `primary` als Fläche, `primaryText` für Text/Icons, Statusfarben mit Beschriftung. **Eine Blickfang-Fläche pro Bildschirm** (wichtigste Zahl/Aussage, Verlauf `hero`, Text `onHero`); weitere Hervorhebungen mit `primaryContainer` oder Pastell (`tints`, Text `onContainer`), Dringendes als Statusfläche (siehe `docs/FARBKONZEPT.md`, `docs/DESIGNSYSTEM.md`).
 - Schemaänderung → Migration erzeugen **und** Seed anpassen; `pnpm db:reset` muss laufen.
 - Kleine, thematisch getrennte Commits; Push auf den Entwicklungsbranch.
