@@ -13,8 +13,9 @@ Paket **TH** (`docs/PAKETE.md`, Zeile TH) hat zwei kleine Überarbeitungen: **(A
 
 ## Aufgaben (jeweils eigener Commit, `pnpm check`)
 1. **EventHero** (neuer Baustein): Spiel, Nicht-Spiel, abgesagt, vergangen, mit Ortszeile und „Route ›“ in derselben Karte; Beschreibung als eigene Karte darunter; „Eingeladen“ als kleine Zeile im Hero; `Scoreboard` entfernen, wenn nicht mehr benutzt. Waben über den vorhandenen Baustein.
-2. **Helfer-Wischleiste** auf der Vereinsseite unter den Kacheln „Veranstaltungen“: Karten, Einrasten, Pager-Punkte, kein Auto-Wechsel, Abschnitt nur bei offenen Schichten und aktivem Modul. Daten aus `GET /helpers`, kein neuer Endpunkt.
-3. **Aufräumen:** Hilfe, `docs/FUNKTIONEN.md`, Übersetzungen, Browserprüfung `scripts/e2e/termin-hero.mjs`.
+2. **Zu- und Absagen im Hero** (Spiel und Training): `AttendanceBar` in dunkler Fläche unter der Ortszeile; neue Mannschaftseinstellung `responsesVisible` (Standard an, Schalter in „Mannschaft bearbeiten“), Server liefert Zahlen/Namensgruppen an Spieler und Eltern nur bei „an“, Trainerteam immer; Test in `api.test.ts`. Offener Punkt: Namensliste mit dem Schalter verbergen (Vorschlag: ja) – vor Umsetzung bestätigen lassen.
+3. **Helfer-Wischleiste** auf der Vereinsseite unter den Kacheln „Veranstaltungen": **kompakte** Karten (Datum, Titel, „in n Tagen“, „n Helfer fehlen“), Einrasten, Pager-Punkte, kein Auto-Wechsel, Antippen öffnet die Helfer-Detailseite der Veranstaltung (`/helpers?event=<id>`); Abschnitt nur bei offenen Schichten und aktivem Modul. Daten aus `GET /helpers`, kein neuer Endpunkt.
+4. **Aufräumen:** Hilfe, `docs/FUNKTIONEN.md`, Übersetzungen, Browserprüfung `scripts/e2e/termin-hero.mjs`.
 
 ## Abnahme
 Termin-Detail für Spiel, Training, abgesagten Termin und Vereinstermin mit genau einem Hero; Vereinsseite mit 0, 1 und mehreren offenen Veranstaltungen; Abstände und Maße aus den App-Bausteinen (Hero Radius 28, Innenabstand 18). Bilder neben den Entwurf legen, Abweichungen benennen; am Ende kurze Liste erledigt / bewusst abweichend / offen.

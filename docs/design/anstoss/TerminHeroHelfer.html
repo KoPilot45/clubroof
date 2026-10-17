@@ -48,6 +48,11 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
 .loc small { color: rgba(255,255,255,.8); font-size: 11.5px; }
 .loc .route { font-weight: 800; font-size: 13px; color: var(--accent); margin-left: auto; white-space: nowrap; }
 .inv { font-size: 11px; color: rgba(255,255,255,.8); text-align: center; }
+.resp { background: rgba(0,0,0,.25); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.rl { font: 700 11px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.8); }
+.rb { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,.2); }
+.rg { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 11.5px; color: rgba(255,255,255,.9); }
+.rg span { display: inline-flex; align-items: center; gap: 5px; } .rg i { width: 8px; height: 8px; border-radius: 4px; display: inline-block; }
 .cancel .z, .cancel .t { text-decoration: line-through; opacity: .75; }
 .why { text-align: center; font-weight: 700; font-size: 13px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 14px 16px; }
@@ -66,21 +71,16 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
 .tile b { font-size: 13px; }
 .swipe { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -16px; padding: 4px 16px 6px; }
 .swipe::-webkit-scrollbar { display: none; }
-.hc { flex: none; width: 78%; scroll-snap-align: start; scroll-margin-left: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-.hc .top { display: flex; gap: 12px; align-items: center; }
-.date { width: 46px; height: 50px; border-radius: 14px; background: rgba(255,176,32,.16); display: grid; place-items: center; text-align: center; flex: none; color: var(--warn); }
+.hc { flex: none; width: 82%; scroll-snap-align: start; scroll-margin-left: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 14px; display: flex; gap: 12px; align-items: center; }
+.date { width: 48px; height: 52px; border-radius: 14px; background: rgba(255,176,32,.16); display: grid; place-items: center; text-align: center; flex: none; color: var(--warn); }
 .date small { display: block; font: 700 10px var(--display); letter-spacing: .12em; text-transform: uppercase; }
-.date b { display: block; font: 800 22px/1 var(--display); }
+.date b { display: block; font: 800 23px/1 var(--display); }
+.hc .body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 5px; }
 .hc h4 { margin: 0; font: 700 19px/1.05 var(--display); }
-.hc .sub { font-size: 11.5px; color: var(--fg3); }
-.need { display: flex; align-items: baseline; gap: 6px; }
-.need b { font: 800 34px/1 var(--display); color: var(--warn); }
-.need span { font-size: 12px; color: var(--fg2); }
-.shifts { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--fg2); }
-.shifts div { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 5px; }
-.shifts em { font-style: normal; color: var(--warn); font-weight: 700; }
-.hc .go { margin-top: 2px; text-align: center; background: var(--accent); color: var(--on-accent); font-weight: 700; padding: 9px; border-radius: 12px; font-size: 13px; }
-.chip.soon { background: rgba(255,176,32,.18); color: var(--warn); }
+.meta { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; font-size: 12px; }
+.when.soon { color: var(--warn); font-weight: 700; } .when.later { color: var(--fg3); }
+.miss { color: var(--fg2); } .miss b { font: 800 17px/1 var(--display); color: var(--fg); margin-right: 2px; }
+.chev { color: var(--fg4); font-size: 20px; flex: none; }
 .dots { display: flex; justify-content: center; gap: 6px; }
 .dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--fg4); }
 .dots i.on { width: 22px; background: var(--accent); }
@@ -101,11 +101,11 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
         <div class="chips"><span class="chip b">B1</span><span class="chip">Spiel</span></div>
         <div class="score"><div class="t">VfR Sonnenberg</div><div class="z">15:00</div><div class="t">SV Grün-Weiß B1</div></div>
         <div class="line">Samstag, 17. Oktober · bis 16:35 Uhr</div>
-        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Sportplatz Sonnenberg</b><small>Treffpunkt 13:30 · Parkplatz Vereinsheim · Fahrgemeinschaften</small></div><span class="route">Route ›</span></div>
+        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Sportplatz Sonnenberg</b><small>Treffpunkt 13:30 · Parkplatz Vereinsheim · Fahrgemeinschaften</small></div><span class="route">Route ›</span></div><div class="resp"><div class="rl">Zu- und Absagen</div><div class="rb"><i style="flex:12;background:#2EDB6B"></i><i style="flex:1;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:6;background:rgba(255,255,255,.28)"></i></div><div class="rg"><span><i style="background:#2EDB6B"></i>12 zugesagt</span><span><i style="background:#FFB020"></i>1 unsicher</span><span><i style="background:#FF6B6B"></i>2 abgesagt</span><span><i style="background:rgba(255,255,255,.4)"></i>6 offen</span></div></div>
       </div>
       <h3 class="sec" style="margin-top:6px">Deine Antwort</h3>
       <div class="seg3"><span class="on">Zugesagt</span><span>Unsicher</span><span>Absagen</span></div>
-      <div class="cap">Spiel: Anzeigetafel mit Anstoßzeit, nach dem Spiel mit Ergebnis (2 : 1).</div>
+      <div class="cap">Spiel: Anzeigetafel mit Anstoßzeit, nach dem Spiel mit Ergebnis (2 : 1). Der bunte Balken „Zu- und Absagen“ erscheint für Spieler und Eltern nur, wenn der Trainer ihn in den Mannschaftseinstellungen freigegeben hat; das Trainerteam sieht ihn immer.</div>
     </div>
 
     <div class="phone" id="p2" style="margin-top:20px">
@@ -113,9 +113,9 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
         <div class="chips"><span class="chip b">B1</span><span class="chip">Training</span></div>
         <div class="score single"><div class="t">Training</div><div class="z">18:00</div></div>
         <div class="line" style="text-align:left">Dienstag, 20. Oktober · bis 19:30 Uhr</div>
-        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Kunstrasen (Platz 2)</b><small>Treffpunkt 17:45 · Kabine Vereinsheim</small></div><span class="route">Route ›</span></div>
+        <div class="loc"><svg class="pin" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><b>Kunstrasen (Platz 2)</b><small>Treffpunkt 17:45 · Kabine Vereinsheim</small></div><span class="route">Route ›</span></div><div class="resp"><div class="rl">Zu- und Absagen</div><div class="rb"><i style="flex:9;background:#2EDB6B"></i><i style="flex:0;background:#FFB020"></i><i style="flex:1;background:#FF6B6B"></i><i style="flex:3;background:rgba(255,255,255,.28)"></i></div><div class="rg"><span><i style="background:#2EDB6B"></i>9 zugesagt</span><span><i style="background:#FFB020"></i>0 unsicher</span><span><i style="background:#FF6B6B"></i>1 abgesagt</span><span><i style="background:rgba(255,255,255,.4)"></i>3 offen</span></div></div>
       </div>
-      <div class="cap">Training und Vereinstermin: Titel links, Beginn rechts, gleiche Karte.</div>
+      <div class="cap">Training: Titel links, Beginn rechts, gleiche Karte, auch hier mit dem Balken. Vereinstermine zeigen ihn nicht. Abgesagte Termine auch nicht.</div>
     </div>
 
     <div class="phone" id="p3" style="margin-top:20px">
@@ -133,7 +133,7 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
 
   <section class="col">
     <h2>Vereinsseite</h2>
-    <p>Neuer Abschnitt „Helfer gesucht“ unter den Veranstaltungs-Kacheln: je Veranstaltung mit offenen Schichten eine Karte, von Hand durchzuwischen, ohne automatischen Wechsel.</p>
+    <p>Neuer Abschnitt „Helfer gesucht“ unter den Veranstaltungs-Kacheln: kompakte Karten mit Datum, Titel, „in X Tagen“ und „X Helfer fehlen“, von Hand durchzuwischen.</p>
 
     <div class="phone" id="p4">
       <div class="tiles">
@@ -142,22 +142,12 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
       </div>
       <h3 class="sec">Helfer gesucht <a href="#p4">Alle anzeigen ›</a></h3>
       <div class="swipe" tabindex="0" aria-label="Helfer gesucht, seitlich wischen">
-        <div class="hc"><div class="top"><div class="date"><div><small>Sa</small><b>24</b></div></div><div><h4>Arbeitseinsatz Platzpflege</h4><div class="sub">Vereinsheim · 09:00 Uhr</div></div></div>
-          <span class="chip soon" style="align-self:flex-start">In 8 Tagen</span>
-          <div class="need"><b>8</b><span>Helfer fehlen</span></div>
-          <div class="shifts"><div><span>Rasen mähen</span><em>3 frei</em></div><div><span>Linien ziehen</span><em>2 frei</em></div></div>
-          <div class="go">Eintragen</div></div>
-        <div class="hc"><div class="top"><div class="date"><div><small>Fr</small><b>06</b></div></div><div><h4>Jahreshauptversammlung</h4><div class="sub">Vereinsheim · 19:00 Uhr</div></div></div>
-          <div class="need"><b>2</b><span>Helfer fehlen</span></div>
-          <div class="shifts"><div><span>Aufbau 17:30</span><em>1 frei</em></div><div><span>Bewirtung</span><em>1 frei</em></div></div>
-          <div class="go">Eintragen</div></div>
-        <div class="hc"><div class="top"><div class="date"><div><small>Sa</small><b>21</b></div></div><div><h4>Jugend-Hallenturnier</h4><div class="sub">Sporthalle Musterstadt · 09:00 Uhr</div></div></div>
-          <div class="need"><b>12</b><span>Helfer fehlen</span></div>
-          <div class="shifts"><div><span>Kuchenstand</span><em>4 frei</em></div><div><span>Aufbau 07:30</span><em>3 frei</em></div></div>
-          <div class="go">Eintragen</div></div>
+        <div class="hc"><div class="date"><div><small>Sa</small><b>24</b></div></div><div class="body"><h4>Arbeitseinsatz Platzpflege</h4><div class="meta"><span class="when soon">in 8 Tagen</span><span class="miss"><b>8</b> Helfer fehlen</span></div></div><span class="chev">›</span></div>
+        <div class="hc"><div class="date"><div><small>Fr</small><b>06</b></div></div><div class="body"><h4>Jahreshauptversammlung</h4><div class="meta"><span class="when later">in 20 Tagen</span><span class="miss"><b>2</b> Helfer fehlen</span></div></div><span class="chev">›</span></div>
+        <div class="hc"><div class="date"><div><small>Sa</small><b>21</b></div></div><div class="body"><h4>Jugend-Hallenturnier</h4><div class="meta"><span class="when later">in 35 Tagen</span><span class="miss"><b>12</b> Helfer fehlen</span></div></div><span class="chev">›</span></div>
       </div>
       <div class="dots"><i class="on"></i><i></i><i></i></div>
-      <div class="cap">Antippen der Karte öffnet „Helfer gesucht“ mit allen Schichten der Veranstaltung. „Eintragen“ führt direkt dorthin. Gibt es keine offenen Schichten, erscheint der Abschnitt nicht.</div>
+      <div class="cap">Die Übersicht bleibt kompakt. Alle Details (Schichten, Zeiten, Eintragen) stehen nach dem Antippen auf der Helfer-Detailseite der Veranstaltung. Ohne offene Schichten erscheint der Abschnitt nicht.</div>
     </div>
   </section>
 </div>
