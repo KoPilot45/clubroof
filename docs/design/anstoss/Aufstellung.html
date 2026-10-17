@@ -1,0 +1,427 @@
+<title>Aufstellungsplaner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Saira+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Layout: eine Handy-Spalte im Stil „Anstoß“ – Kopfband, Spiel-Plakat, Spielfeld als Blickfang, darunter Bank, Kader mit Trainingsbeteiligung, Einstellung.
+   Dunkel mit Vereinsfarbe Grün; bewusst nur dunkel (Vorgabe Design Anstoß). */
+:root {
+  --bg: #0B120E;
+  --fg: #F2F7F3;
+  --fg2: #C5D6CB;
+  --fg3: #9FB5A6;
+  --fg4: #6F8277;
+  --surface: rgba(255, 255, 255, .06);
+  --line: rgba(255, 255, 255, .09);
+  --line2: rgba(255, 255, 255, .14);
+  --accent: #2EDB6B;
+  --on-accent: #06210F;
+  --p1: #1E7A44;
+  --p2: #0F3D24;
+  --warn: #FFB020;
+  --bad: #FF8A8A;
+  --sheet: #16211A;
+  --pitch-a: #12391F;
+  --pitch-b: #0F3219;
+  --display: 'Saira Condensed', 'Arial Narrow', sans-serif;
+  --body: 'Open Sans', system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.4; padding-block: 0 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); -webkit-tap-highlight-color: transparent; }
+body.dragging { cursor: grabbing; user-select: none; -webkit-user-select: none; }
+.app { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; padding-bottom: 8px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Kopfband */
+.top { display: flex; align-items: center; gap: 12px; padding-top: 14px; }
+.back { width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; flex: none; }
+.back svg { width: 18px; height: 18px; }
+.top small { display: block; color: var(--fg3); font-size: 11px; }
+.top h1 { margin: 0; font: 700 26px/1 var(--display); letter-spacing: .01em; }
+.crumbs { display: flex; gap: 8px; align-items: center; font-size: 12px; font-weight: 600; color: var(--fg2); flex-wrap: wrap; }
+.crumbs span { background: var(--surface); border-radius: 99px; padding: 5px 11px; }
+.crumbs .on { background: var(--accent); color: var(--on-accent); }
+
+/* Spiel-Plakat */
+.hero { border-radius: 22px; padding: 16px 18px 16px; background: radial-gradient(120% 120% at 90% 0%, var(--p1) 0%, var(--p2) 60%, var(--bg) 130%); border: 1px solid rgba(255, 255, 255, .08); position: relative; overflow: hidden; }
+.hero::before { content: ""; position: absolute; inset: 0; opacity: .5; background-image: radial-gradient(circle at 50% 50%, transparent 0 11px, rgba(255, 255, 255, .06) 11px 12px, transparent 12px); background-size: 28px 24px; pointer-events: none; mask-image: linear-gradient(120deg, transparent 20%, #000 90%); -webkit-mask-image: linear-gradient(120deg, transparent 20%, #000 90%); }
+.eyebrow { font: 700 11px/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: #fff; opacity: .92; }
+.match { font: 800 25px/1.05 var(--display); margin: 8px 0 3px; position: relative; }
+.match em { font-style: normal; color: var(--accent); }
+.when { font-size: 12px; color: var(--fg2); position: relative; }
+.figs { display: flex; gap: 26px; margin-top: 14px; position: relative; }
+.fig b { display: block; font: 800 46px/.95 var(--display); }
+.fig b i { font-style: normal; font-size: 22px; color: var(--fg2); font-weight: 700; }
+.fig span { font-size: 11px; color: var(--fg2); }
+.bar { height: 6px; border-radius: 9px; background: rgba(255, 255, 255, .14); margin-top: 6px; overflow: hidden; width: 120px; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 9px; transition: width .35s ease-out; }
+
+/* Zwischenüberschrift */
+.sec { display: flex; align-items: center; gap: 9px; margin: 0 0 10px; font: 700 20px/1 var(--display); text-transform: uppercase; letter-spacing: .04em; }
+.sec::before { content: ""; width: 3px; height: 18px; border-radius: 3px; background: var(--accent); }
+.sec small { margin-left: auto; font: 600 12px var(--body); text-transform: none; letter-spacing: 0; color: var(--fg3); }
+
+/* Spielform + Formation */
+.seg { display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px; gap: 4px; }
+.seg button { flex: 1; border: 0; background: transparent; padding: 9px 4px; border-radius: 10px; font-weight: 700; font-size: 13px; color: var(--fg2); cursor: pointer; transition: background .15s, color .15s; }
+.seg button small { display: block; font-weight: 600; font-size: 10px; opacity: .75; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.chips { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; border: 1px solid var(--line2); background: var(--surface); border-radius: 99px; padding: 8px 15px; font: 700 17px/1 var(--display); letter-spacing: .03em; cursor: pointer; color: var(--fg2); }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: rgba(46, 219, 107, .12); }
+
+/* Spielfeld */
+.pitch { position: relative; border-radius: 24px; aspect-ratio: 390 / 500; overflow: hidden; border: 1px solid var(--line2); background: repeating-linear-gradient(180deg, var(--pitch-a) 0 12.5%, var(--pitch-b) 12.5% 25%); box-shadow: 0 18px 40px rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(255, 255, 255, .04); }
+.pitch .ln { position: absolute; border: 2px solid rgba(255, 255, 255, .2); pointer-events: none; }
+.ln.out { inset: 10px; border-radius: 6px; }
+.ln.mid { left: 10px; right: 10px; top: 50%; height: 0; border-width: 2px 0 0; }
+.ln.circ { width: 92px; height: 92px; border-radius: 50%; left: calc(50% - 46px); top: calc(50% - 46px); }
+.ln.boxT { left: 25%; right: 25%; top: 10px; height: 15%; border-top: 0; }
+.ln.boxB { left: 25%; right: 25%; bottom: 10px; height: 15%; border-bottom: 0; }
+.ln.sixT { left: 38%; right: 38%; top: 10px; height: 6%; border-top: 0; }
+.ln.sixB { left: 38%; right: 38%; bottom: 10px; height: 6%; border-bottom: 0; }
+.pitch .tag { position: absolute; left: 50%; transform: translateX(-50%); font: 700 10px/1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: rgba(255, 255, 255, .38); pointer-events: none; }
+.tag.t { top: 18px; } .tag.b { bottom: 18px; }
+.rows { position: absolute; inset: 34px 8px 34px; display: flex; flex-direction: column; justify-content: space-around; }
+.row { display: flex; justify-content: space-around; align-items: flex-start; }
+.slot { width: 25%; max-width: 78px; display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; touch-action: none; user-select: none; -webkit-user-select: none; }
+.disc { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; font: 800 21px/1 var(--display); background: #fff; color: #0B120E; box-shadow: 0 5px 12px rgba(0, 0, 0, .45), 0 0 0 3px rgba(255, 255, 255, .15); transition: transform .15s ease-out, box-shadow .15s; }
+.slot[data-drag] { cursor: grab; }
+.slot[data-drag]:hover .disc { transform: scale(1.06); }
+.slot.empty .disc { background: rgba(0, 0, 0, .22); color: rgba(255, 255, 255, .55); border: 2px dashed rgba(255, 255, 255, .4); box-shadow: none; font: 700 13px/1 var(--display); letter-spacing: .08em; }
+.nm { font: 700 11px/1.1 var(--body); background: rgba(6, 14, 9, .78); border-radius: 6px; padding: 3px 7px; max-width: 78px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+.slot.empty .nm { visibility: hidden; }
+.pdot { position: absolute; top: -2px; right: calc(50% - 31px); width: 13px; height: 13px; border-radius: 50%; border: 2px solid #0e1a12; }
+.over .disc, .over.benchslot { box-shadow: 0 0 0 4px var(--accent), 0 0 24px rgba(46, 219, 107, .55); transform: scale(1.12); }
+.sel .disc { box-shadow: 0 0 0 4px var(--warn), 0 0 22px rgba(255, 176, 32, .5); }
+.guide { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--fg3); margin-top: 10px; align-items: center; }
+.guide i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+.hint { background: rgba(255, 176, 32, .14); color: var(--warn); border-radius: 12px; padding: 9px 12px; font-size: 12px; font-weight: 600; display: none; margin-top: 10px; }
+.hint.on { display: block; }
+
+/* Bank */
+.bench { display: flex; gap: 8px; flex-wrap: wrap; }
+.benchslot { width: calc((100% - 8px * 3) / 4); min-height: 72px; border-radius: 16px; background: var(--surface); border: 1px dashed var(--line2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 2px; touch-action: none; position: relative; transition: transform .15s; }
+.benchslot[data-drag] { border-style: solid; border-color: var(--line); cursor: grab; }
+.benchslot .disc { width: 38px; height: 38px; font-size: 17px; }
+.benchslot .nm { background: none; padding: 0; font-size: 10.5px; color: var(--fg2); max-width: 74px; }
+.benchslot .plus { color: var(--fg4); font: 700 12px var(--display); letter-spacing: .1em; }
+.benchslot.sel { border-color: var(--warn); }
+.benchslot .pdot { right: 10px; top: 6px; border-color: #1b2a21; }
+
+/* Kader */
+.tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.tools .seg { flex: 1; }
+.tools .seg button { padding: 7px 4px; font-size: 12px; }
+.pool { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 6px 4px; transition: box-shadow .15s; }
+.pool.over { box-shadow: 0 0 0 3px var(--accent); }
+.pr { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 14px; position: relative; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.pr + .pr::before { content: ""; position: absolute; left: 62px; right: 10px; top: 0; height: 1px; background: var(--line); }
+.pr[data-drag] { cursor: grab; }
+.pr[data-drag]:hover { background: rgba(255, 255, 255, .04); }
+.grip { width: 22px; height: 34px; display: grid; place-items: center; color: var(--fg4); touch-action: none; flex: none; }
+.grip svg { width: 14px; height: 14px; }
+.pr .disc { width: 36px; height: 36px; font-size: 16px; flex: none; box-shadow: none; }
+.who { min-width: 0; flex: 1; }
+.who b { display: block; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.who span { font-size: 11.5px; color: var(--fg3); display: flex; align-items: center; gap: 6px; min-width: 0; }
+.who span em { font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.st { font-size: 10.5px; font-weight: 700; border-radius: 99px; padding: 2px 8px; flex: none; }
+.st.ok { color: var(--accent); background: rgba(46, 219, 107, .13); }
+.st.un { color: var(--warn); background: rgba(255, 176, 32, .16); }
+.st.out { color: var(--bad); background: rgba(255, 90, 90, .16); }
+.att { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: none; }
+.att .bars { display: flex; align-items: flex-end; gap: 3px; height: 20px; }
+.att .bars i { width: 6px; border-radius: 2px; background: var(--fg4); min-height: 3px; }
+.att .bars.g i { background: var(--accent); } .att .bars.a i { background: var(--warn); } .att .bars.r i { background: #FF6B6B; }
+.att small { font-size: 10.5px; font-weight: 700; color: var(--fg2); white-space: nowrap; }
+.pr.sel { background: rgba(255, 176, 32, .12); box-shadow: inset 0 0 0 2px var(--warn); }
+.pr.na { opacity: .5; }
+.group { font: 700 11px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--fg3); padding: 12px 12px 4px; }
+.empty-pool { padding: 18px; text-align: center; color: var(--fg3); font-size: 12.5px; }
+
+/* Einstellung */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 14px 16px; }
+.setting { display: flex; gap: 14px; align-items: center; }
+.setting p { margin: 0; font-size: 12px; color: var(--fg3); }
+.setting b { display: block; font-size: 14px; margin-bottom: 2px; }
+.sw { width: 52px; height: 30px; border-radius: 99px; background: rgba(255, 255, 255, .16); border: 0; position: relative; flex: none; cursor: pointer; transition: background .2s; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.sw[aria-checked="true"] { background: var(--accent); }
+.sw[aria-checked="true"]::after { transform: translateX(22px); }
+.ctx { font-size: 11px; color: var(--fg3); margin: 0 0 8px; letter-spacing: .02em; }
+
+/* Untere Leiste */
+.dock { position: sticky; bottom: 0; margin: 0 -4px; padding: 12px 4px calc(10px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgba(11, 18, 14, 0), var(--bg) 28%); z-index: 5; }
+.dock .box { background: rgba(30, 42, 34, .9); border: 1px solid rgba(255, 255, 255, .1); border-radius: 22px; padding: 10px; display: flex; gap: 10px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.btn { flex: 1; border-radius: 14px; border: 0; padding: 13px 10px; font-weight: 700; font-size: 14px; cursor: pointer; }
+.btn.sec2 { background: rgba(255, 255, 255, .09); color: var(--fg); flex: .8; }
+.btn.pri { background: var(--accent); color: var(--on-accent); }
+.btn:active { transform: scale(.97); }
+.vis { text-align: center; font-size: 11px; color: var(--fg3); margin: 8px 0 0; }
+.toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); background: var(--sheet); border: 1px solid var(--line2); border-radius: 14px; padding: 11px 16px; font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 30; max-width: min(92vw, 400px); text-align: center; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* Ziehfigur */
+.ghost { position: fixed; z-index: 50; pointer-events: none; transform: translate(-50%, -62%) scale(1.15); filter: drop-shadow(0 14px 18px rgba(0, 0, 0, .55)); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ghost .disc { box-shadow: 0 0 0 3px var(--accent); width: 54px; height: 54px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (min-width: 560px) { .app { margin-top: 12px; } }
+</style>
+
+<div class="app" id="app">
+  <header class="top">
+    <button class="back" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="crumbs"><span>Termine</span><span>›</span><span class="on">Aufstellung</span></div>
+  </header>
+
+  <section class="hero" aria-label="Spiel">
+    <div class="eyebrow">B-Jugend · Bezirksliga</div>
+    <div class="match">VfR Sonnenberg – <em>SV Grün-Weiß B1</em></div>
+    <div class="when">Sa., 17.10. · 15:00 Uhr · Sportplatz Sonnenberg · Auswärts</div>
+    <div class="figs">
+      <div class="fig"><b><span id="nStart">9</span><i>/<span id="nStartMax">11</span></i></b><span>Startelf</span><div class="bar"><i id="barStart"></i></div></div>
+      <div class="fig"><b><span id="nBench">2</span><i>/<span id="nBenchMax">7</span></i></b><span>Bank</span><div class="bar"><i id="barBench"></i></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Spielform</h2>
+    <div class="seg" id="sizes" role="group" aria-label="Spielform"></div>
+    <div class="chips" id="forms" role="group" aria-label="Formation"></div>
+  </section>
+
+  <section>
+    <h2 class="sec">Spielfeld <small>Ziehen oder antippen</small></h2>
+    <div class="pitch" id="pitch">
+      <div class="ln out"></div><div class="ln mid"></div><div class="ln circ"></div>
+      <div class="ln boxT"></div><div class="ln boxB"></div><div class="ln sixT"></div><div class="ln sixB"></div>
+      <div class="tag t">Angriff</div><div class="tag b">Tor</div>
+      <div class="rows" id="rows"></div>
+    </div>
+    <div class="hint" id="hint"></div>
+    <div class="guide" aria-label="Legende"><span>Punkt am Spieler: Trainingsbeteiligung der letzten 4 Wochen</span><span><i style="background:var(--accent)"></i>ab 75 %</span><span><i style="background:var(--warn)"></i>50–74 %</span><span><i style="background:#FF6B6B"></i>unter 50 %</span></div>
+  </section>
+
+  <section>
+    <h2 class="sec">Bank <small id="benchInfo"></small></h2>
+    <div class="bench" id="bench"></div>
+  </section>
+
+  <section>
+    <h2 class="sec">Kader <small id="poolInfo"></small></h2>
+    <div class="tools">
+      <div class="seg" id="sorts" role="group" aria-label="Sortierung"></div>
+    </div>
+    <div class="pool" id="pool" data-drop="pool"></div>
+  </section>
+
+  <section>
+    <h2 class="sec">Einstellung</h2>
+    <div class="card">
+      <p class="ctx">Mannschaftseinstellungen · B-Jugend</p>
+      <div class="setting">
+        <div><b>Aufstellung für Spieler und Eltern sichtbar</b><p id="visText"></p></div>
+        <button class="sw" id="vis" role="switch" aria-checked="false" aria-label="Aufstellung für Spieler und Eltern sichtbar"></button>
+      </div>
+    </div>
+  </section>
+
+  <div class="dock">
+    <div class="box">
+      <button class="btn sec2" id="save">Entwurf speichern</button>
+      <button class="btn pri" id="publish">Veröffentlichen</button>
+    </div>
+    <p class="vis" id="visHint"></p>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ---- Daten (Beispielkader B-Jugend, erfunden) ----
+const W = [3, 3, 2, 3]; // Trainings je Woche der letzten 4 Wochen
+const mk = (id, name, nr, pos, att, status = 'ok', why = '') => ({ id, name, last: name.split(' ').slice(-1)[0], nr, pos, att, status, why });
+const PL = [
+  mk(1, 'Jonas Keller', 1, 'Torwart', [3, 3, 2, 3]),
+  mk(12, 'Elias Roth', 12, 'Torwart', [2, 3, 1, 2]),
+  mk(3, 'Janne Hauke', 3, 'Linker Verteidiger', [3, 2, 2, 3]),
+  mk(2, 'Gerrit Hanniske', 2, 'Innenverteidiger', [3, 3, 2, 3]),
+  mk(4, 'Juan Buchholz', 4, 'Innenverteidiger', [2, 3, 2, 2]),
+  mk(5, 'Angelo Dreier', 5, 'Rechter Verteidiger', [3, 3, 2, 2]),
+  mk(15, 'Ben Schulte', 15, 'Innenverteidiger', [1, 2, 1, 2]),
+  mk(18, 'Luca Brandes', 18, 'Linker Verteidiger', [2, 1, 2, 1]),
+  mk(6, 'William Schuermann', 6, 'Zentrales Mittelfeld', [3, 3, 2, 3]),
+  mk(8, 'Cem Heinrich', 8, 'Zentrales Mittelfeld', [3, 2, 2, 2]),
+  mk(16, 'Paul Neumann', 16, 'Zentrales Mittelfeld', [2, 2, 1, 2]),
+  mk(19, 'Emil Sauer', 19, 'Zentrales Mittelfeld', [3, 3, 2, 3], 'un'),
+  mk(7, 'Gabriel Belz', 7, 'Offensives Mittelfeld', [3, 3, 2, 3]),
+  mk(10, 'Leon Vogt', 10, 'Offensives Mittelfeld', [2, 3, 2, 3]),
+  mk(11, 'Finn Albers', 11, 'Linksaußen', [3, 2, 2, 2]),
+  mk(14, 'Mats Peters', 14, 'Rechtsaußen', [2, 3, 1, 2]),
+  mk(9, 'Noah Krämer', 9, 'Stürmer', [3, 3, 2, 3]),
+  mk(17, 'Tim Fricke', 17, 'Stürmer', [2, 1, 1, 2]),
+  mk(20, 'Anton Wulf', 20, 'Innenverteidiger', [3, 2, 2, 3], 'out', 'Urlaub'),
+  mk(21, 'Henri Maas', 21, 'Stürmer', [3, 3, 2, 3], 'out', 'Verletzt'),
+];
+const byId = Object.fromEntries(PL.map((p) => [p.id, p]));
+const SIZES = {
+  7: { label: '7er', sub: '6 + Torwart', bench: 4, forms: { '2-3-1': [['TW'], ['IV', 'IV'], ['LM', 'ZM', 'RM'], ['ST']], '3-2-1': [['TW'], ['IV', 'IV', 'IV'], ['ZM', 'ZM'], ['ST']], '2-2-2': [['TW'], ['IV', 'IV'], ['ZM', 'ZM'], ['ST', 'ST']] } },
+  9: { label: '9er', sub: '8 + Torwart', bench: 5, forms: { '3-3-2': [['TW'], ['IV', 'IV', 'IV'], ['LM', 'ZM', 'RM'], ['ST', 'ST']], '3-2-3': [['TW'], ['IV', 'IV', 'IV'], ['ZM', 'ZM'], ['LA', 'ST', 'RA']], '2-4-2': [['TW'], ['IV', 'IV'], ['LM', 'ZM', 'ZM', 'RM'], ['ST', 'ST']] } },
+  11: { label: '11er', sub: '10 + Torwart', bench: 7, forms: { '4-4-2': [['TW'], ['LV', 'IV', 'IV', 'RV'], ['LM', 'ZM', 'ZM', 'RM'], ['ST', 'ST']], '4-3-3': [['TW'], ['LV', 'IV', 'IV', 'RV'], ['ZM', 'ZM', 'ZM'], ['LA', 'ST', 'RA']], '3-5-2': [['TW'], ['IV', 'IV', 'IV'], ['LM', 'ZM', 'ZM', 'ZM', 'RM'], ['ST', 'ST']], '4-2-3-1': [['TW'], ['LV', 'IV', 'IV', 'RV'], ['ZM', 'ZM'], ['LA', 'OM', 'RA'], ['ST']] } },
+};
+
+// ---- Zustand ----
+let size = 11, form = '4-4-2', sort = 'att';
+let S = [1, 3, 2, 4, 5, 11, 6, null, 14, 9, null]; // Startelf in Slot-Reihenfolge
+let B = [12, 15, null, null, null, null, null];     // Bank
+let sel = null;                                       // { src, pid }
+let visible = false;
+
+const flat = () => SIZES[size].forms[form].flat();
+const placed = () => new Set([...S, ...B].filter(Boolean));
+const pct = (p) => { const a = p.att.reduce((x, y) => x + y, 0), t = W.reduce((x, y) => x + y, 0); return Math.round(a / t * 100); };
+const tone = (p) => { const v = pct(p); return v >= 75 ? 'g' : v >= 50 ? 'a' : 'r'; };
+const toneCol = { g: 'var(--accent)', a: 'var(--warn)', r: '#FF6B6B' };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function setSizeForm(ns, nf) {
+  const carry = S.filter(Boolean), carryB = B.filter(Boolean);
+  size = ns; form = nf;
+  const slots = flat().length;
+  S = Array(slots).fill(null); B = Array(SIZES[size].bench).fill(null);
+  carry.forEach((id, i) => { if (i < slots) S[i] = id; });
+  const overflow = carry.slice(slots).concat(carryB);
+  let bi = 0; overflow.forEach((id) => { if (bi < B.length) B[bi++] = id; });
+  sel = null;
+}
+
+// ---- Verschieben (jeder Spieler höchstens einmal) ----
+const get = (k) => { if (k === 'p' || k === 'pool') return null; const [t, i] = k.split(':'); return (t === 's' ? S : B)[+i]; };
+const put = (k, v) => { if (k === 'p' || k === 'pool') return; const [t, i] = k.split(':'); (t === 's' ? S : B)[+i] = v; };
+function move(src, dst, pid) {
+  if (src === dst) return;
+  const here = src === 'p' ? pid : get(src);
+  if (!here) return;
+  if (dst === 'pool') { put(src, null); return; }
+  const other = get(dst);
+  put(dst, here);
+  if (src !== 'p') put(src, other || null);
+}
+
+// ---- Darstellung ----
+function disc(p) { return `<div class="disc">${p.nr}</div>`; }
+function render() {
+  const f = SIZES[size].forms[form];
+  $('sizes').innerHTML = Object.entries(SIZES).map(([k, v]) => `<button aria-pressed="${+k === size}" data-size="${k}">${v.label}<small>${v.sub}</small></button>`).join('');
+  $('forms').innerHTML = Object.keys(SIZES[size].forms).map((k) => `<button class="chip" aria-pressed="${k === form}" data-form="${k}">${k}</button>`).join('');
+  // Reihen von hinten nach vorn in Slot-Reihenfolge; Anzeige vorn oben
+  const starts = []; let acc = 0; f.forEach((r) => { starts.push(acc); acc += r.length; });
+  $('rows').innerHTML = f.map((row, ri) => ({ row, ri })).reverse().map(({ row, ri }) => `<div class="row">${row.map((lab, ci) => {
+    const i = starts[ri] + ci, pid = S[i], p = pid ? byId[pid] : null;
+    const isSel = sel && sel.src === 's:' + i;
+    if (!p) return `<div class="slot empty" data-drop="s:${i}"><div class="disc">${lab}</div><span class="nm">–</span></div>`;
+    return `<div class="slot${isSel ? ' sel' : ''}" data-drop="s:${i}" data-drag="s:${i}" data-pid="${pid}"><div class="disc">${p.nr}</div><i class="pdot" style="background:${toneCol[tone(p)]}"></i><span class="nm">${esc(p.last)}</span></div>`;
+  }).join('')}</div>`).join('');
+
+  $('bench').innerHTML = B.map((pid, i) => {
+    const p = pid ? byId[pid] : null;
+    if (!p) return `<div class="benchslot" data-drop="b:${i}"><span class="plus">FREI</span></div>`;
+    return `<div class="benchslot${sel && sel.src === 'b:' + i ? ' sel' : ''}" data-drop="b:${i}" data-drag="b:${i}" data-pid="${pid}">${disc(p)}<i class="pdot" style="background:${toneCol[tone(p)]}"></i><span class="nm">${esc(p.last)}</span></div>`;
+  }).join('');
+
+  const used = placed();
+  const avail = PL.filter((p) => p.status !== 'out' && !used.has(p.id));
+  const out = PL.filter((p) => p.status === 'out');
+  avail.sort(sort === 'att' ? (a, b) => pct(b) - pct(a) || a.nr - b.nr : (a, b) => a.nr - b.nr);
+  const row = (p, na) => {
+    const t = tone(p);
+    const isSel = sel && sel.src === 'p' && sel.pid === p.id;
+    const st = p.status === 'ok' ? '<span class="st ok">Zugesagt</span>' : p.status === 'un' ? '<span class="st un">Unsicher</span>' : `<span class="st out">${p.why}</span>`;
+    return `<div class="pr${na ? ' na' : ''}${isSel ? ' sel' : ''}" ${na ? '' : `data-drag="p" data-pid="${p.id}" data-handle="1"`}>
+      <span class="grip" aria-hidden="true"><svg viewBox="0 0 14 14" fill="currentColor"><circle cx="4" cy="3" r="1.4"/><circle cx="10" cy="3" r="1.4"/><circle cx="4" cy="7" r="1.4"/><circle cx="10" cy="7" r="1.4"/><circle cx="4" cy="11" r="1.4"/><circle cx="10" cy="11" r="1.4"/></svg></span>
+      ${disc(p)}
+      <div class="who"><b>${esc(p.name)}</b><span><em>${p.pos}</em>${st}</span></div>
+      <div class="att" title="Trainings der letzten 4 Wochen"><div class="bars ${t}">${p.att.map((a, i) => `<i style="height:${Math.max(3, Math.round(a / W[i] * 20))}px"></i>`).join('')}</div><small>${p.att.reduce((x, y) => x + y, 0)}/${W.reduce((x, y) => x + y, 0)} · ${pct(p)} %</small></div>
+    </div>`;
+  };
+  $('pool').innerHTML = (avail.length ? avail.map((p) => row(p, false)).join('') : '<div class="empty-pool">Alle verfügbaren Spieler sind eingeplant. Ziehe einen Spieler hierher, um ihn aus der Aufstellung zu nehmen.</div>')
+    + `<div class="group">Nicht verfügbar</div>` + out.map((p) => row(p, true)).join('');
+  $('sorts').innerHTML = [['att', 'Nach Beteiligung'], ['nr', 'Nach Nummer']].map(([k, l]) => `<button aria-pressed="${sort === k}" data-sort="${k}">${l}</button>`).join('');
+  $('poolInfo').textContent = `${avail.length} verfügbar · ${out.length} nicht verfügbar`;
+
+  const ns = S.filter(Boolean).length, nb = B.filter(Boolean).length;
+  $('nStart').textContent = ns; $('nStartMax').textContent = S.length;
+  $('nBench').textContent = nb; $('nBenchMax').textContent = B.length;
+  $('barStart').style.width = ns / S.length * 100 + '%';
+  $('barBench').style.width = nb / B.length * 100 + '%';
+  $('benchInfo').textContent = `${nb} von ${B.length}`;
+  const h = $('hint');
+  if (sel) { const p = byId[sel.pid]; h.textContent = `${p.name} gewählt. Tippe auf eine Position oder einen Bankplatz.`; h.classList.add('on'); } else h.classList.remove('on');
+  $('vis').setAttribute('aria-checked', visible);
+  $('visText').textContent = visible ? 'An: Spieler und Eltern sehen die Aufstellung nach dem Veröffentlichen.' : 'Aus: Nur das Trainerteam sieht die Aufstellung.';
+  $('visHint').textContent = visible ? 'Nach dem Veröffentlichen sichtbar für Trainerteam, Spieler und Eltern' : 'Nach dem Veröffentlichen sichtbar nur für das Trainerteam';
+}
+
+// ---- Ziehen und Tippen (Zeiger-Ereignisse: Maus, Finger, Stift) ----
+let drag = null, ghost = null, lastOver = null;
+document.addEventListener('pointerdown', (e) => {
+  const el = e.target.closest('[data-drag]');
+  if (!el || e.button > 0) return;
+  const touchNoGrip = e.pointerType === 'touch' && el.dataset.handle && !e.target.closest('.grip');
+  drag = { src: el.dataset.drag, pid: +el.dataset.pid, x: e.clientX, y: e.clientY, on: false, el, canDrag: !touchNoGrip };
+});
+document.addEventListener('pointermove', (e) => {
+  if (!drag || !drag.canDrag) return;
+  if (!drag.on) {
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
+    drag.on = true; document.body.classList.add('dragging');
+    const p = byId[drag.pid];
+    ghost = document.createElement('div'); ghost.className = 'ghost';
+    ghost.innerHTML = `<div class="disc">${p.nr}</div><span class="nm">${esc(p.last)}</span>`;
+    document.body.appendChild(ghost);
+    drag.el.style.opacity = '.35';
+  }
+  ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px';
+  const t = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-drop]');
+  if (t !== lastOver) { lastOver?.classList.remove('over'); t?.classList.add('over'); lastOver = t; }
+  if (e.pointerType !== 'mouse') e.preventDefault?.();
+}, { passive: false });
+function end(e, cancel) {
+  if (!drag) return;
+  const d = drag; drag = null;
+  document.body.classList.remove('dragging');
+  if (d.on) {
+    const target = cancel ? null : document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-drop]');
+    ghost?.remove(); ghost = null; lastOver?.classList.remove('over'); lastOver = null; d.el.style.opacity = '';
+    if (target) { move(d.src, target.dataset.drop, d.pid); sel = null; }
+    render();
+  } else if (!cancel) tap(d);
+}
+document.addEventListener('pointerup', (e) => end(e, false));
+document.addEventListener('pointercancel', (e) => end(e, true));
+
+function tap(d) { // Antippen: erst Spieler wählen, dann Platz antippen
+  if (sel && sel.src === d.src && sel.pid === d.pid) { sel = null; render(); return; }
+  if (sel && d.src !== 'p') { move(sel.src, d.src, sel.pid); sel = null; render(); return; }
+  sel = { src: d.src, pid: d.pid }; render();
+}
+document.addEventListener('click', (e) => {
+  const empty = e.target.closest('.slot.empty, .benchslot:not([data-drag])');
+  if (empty && sel) { move(sel.src, empty.dataset.drop, sel.pid); sel = null; render(); return; }
+  const s = e.target.closest('[data-size]'); if (s) { const n = +s.dataset.size; setSizeForm(n, Object.keys(SIZES[n].forms)[0]); render(); return; }
+  const f = e.target.closest('[data-form]'); if (f) { setSizeForm(size, f.dataset.form); render(); return; }
+  const o = e.target.closest('[data-sort]'); if (o) { sort = o.dataset.sort; render(); }
+});
+$('vis').addEventListener('click', () => { visible = !visible; render(); });
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2600); }
+$('save').addEventListener('click', () => toast('Entwurf gespeichert. Nur das Trainerteam sieht ihn.'));
+$('publish').addEventListener('click', () => {
+  const n = S.filter(Boolean).length;
+  toast(n < S.length ? `Noch ${S.length - n} Position${S.length - n > 1 ? 'en' : ''} frei. Veröffentlichen ist trotzdem möglich.` : (visible ? 'Veröffentlicht. Nominierte, Spieler und Eltern sehen die Aufstellung.' : 'Veröffentlicht. Die Nominierten werden benachrichtigt.'));
+});
+render();
+</script>
