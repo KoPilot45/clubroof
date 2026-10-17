@@ -19,6 +19,7 @@ import type {
   TeamTemplate,
   TransferKind,
 } from './domain';
+import type { ClubCashArea, ClubCashDirection } from './club-cash';
 import type { LineupSize } from './lineup';
 import type { ScopeType } from './scopes';
 
@@ -707,10 +708,72 @@ export type CashStats = {
     amountCents: number;
     openCents: number;
   }[];
+  /** Zahlungsmoral je Person (vergebene Forderungen insgesamt, davon noch offen) – nur für Berechtigte */
+  moral: { personId: string; name: string; chargedCents: number; openCents: number }[];
   /** Summe aller offenen Beträge der persönlichen Konten */
   openCents: number;
   /** Anteil der vergebenen Forderungen, der schon bezahlt ist (0–100) */
   paidRate: number | null;
+};
+
+/** Zeitraum-Auflösung der Kassen-Statistik: Monate oder Quartale. */
+export const CLUB_STATS_INTERVALS = ['month', 'quarter'] as const;
+export type ClubStatsInterval = (typeof CLUB_STATS_INTERVALS)[number];
+
+/**
+ * Auswertungen der Vereinskasse (Paket ST), serverseitig berechnet und nur aggregiert geliefert. Beträge in Cent.
+ * Periodenschlüssel sind `JJJJ-MM` (Monat) bzw. `JJJJ-Qn` (Quartal); `previous…` ist dieselbe Periode ein Jahr früher.
+ */
+export type ClubCashStats = {
+  from: string;
+  to: string;
+  interval: ClubStatsInterval;
+  fundId: string | null;
+  /** Kassenstand am Ende jeder Periode (alle sichtbaren Konten, ohne Stornierte) */
+  balance: { key: string; cents: number; previousCents: number }[];
+  /** Einnahmen und Ausgaben je Periode (ohne Umbuchungen) */
+  flows: {
+    key: string;
+    incomeCents: number;
+    expenseCents: number;
+    previousIncomeCents: number;
+    previousExpenseCents: number;
+  }[];
+  /** Einnahmen und Ausgaben je steuerlichem Bereich im Zeitraum */
+  areas: { area: ClubCashArea; incomeCents: number; expenseCents: number }[];
+  /** Haushaltsplan gegen Ist je Kategorie für das Jahr des Zeitraumendes; null ohne Plan */
+  plan: {
+    year: number;
+    lines: {
+      categoryId: string;
+      name: string;
+      direction: ClubCashDirection;
+      area: ClubCashArea;
+      plannedCents: number;
+      actualCents: number;
+    }[];
+  } | null;
+  /** Beiträge mit Fälligkeit im Zeitraum; null, wenn die Kasse nur für Abteilungen sichtbar ist */
+  fees: {
+    dueCents: number;
+    paidCents: number;
+    openCents: number;
+    overdueCents: number;
+    overdueCount: number;
+    /** Zahlungseingang je Periode (nach Zahldatum) */
+    received: { key: string; cents: number }[];
+  } | null;
+  /** Ausgaben je Abteilung (Kostenstellen der Art „Abteilung“) im Zeitraum */
+  departments: { id: string; name: string; expenseCents: number }[];
+  /** Rücklagen mit Ziel */
+  reserves: { id: string; name: string; balanceCents: number; targetCents: number | null }[];
+  totals: {
+    balanceCents: number;
+    previousBalanceCents: number;
+    incomeCents: number;
+    expenseCents: number;
+    previousExpenseCents: number;
+  };
 };
 
 export type CashBookingKind = 'income' | 'expense' | 'fine' | 'drinks' | 'payment';

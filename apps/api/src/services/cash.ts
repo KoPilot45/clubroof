@@ -478,7 +478,7 @@ export async function getCashStats(
   // Persönliche Konten über alle Zeit (offene Beträge verfallen nicht mit der Saison)
   const personal = new Map<
     string,
-    { name: string; count: number; amountCents: number; balance: number }
+    { name: string; count: number; amountCents: number; balance: number; charged: number }
   >();
   for (const r of rows) {
     if (!r.tx.personId) continue;
@@ -487,8 +487,10 @@ export async function getCashStats(
       count: 0,
       amountCents: 0,
       balance: 0,
+      charged: 0,
     };
     p.balance += personalDelta(r.tx);
+    if (r.tx.isCharge) p.charged += r.tx.amountCents;
     if (r.tx.isCharge && r.tx.category === 'strafe' && r.tx.bookedOn >= start) {
       p.count += 1;
       p.amountCents += r.tx.amountCents;
@@ -522,6 +524,21 @@ export async function getCashStats(
         openCents: Math.max(0, -p.balance),
       }))
       .sort((a, b) => b.amountCents - a.amountCents || a.name.localeCompare(b.name)),
+    moral: [...personal.entries()]
+      .filter(
+        ([personId]) =>
+          cashSettings(account).showMemberBalances ||
+          permissions.manageCash ||
+          actor.managedIds.includes(personId),
+      )
+      .map(([personId, p]) => ({
+        personId,
+        name: p.name,
+        chargedCents: p.charged,
+        openCents: Math.max(0, -p.balance),
+      }))
+      .filter((p) => p.chargedCents > 0)
+      .sort((a, b) => b.openCents - a.openCents || a.name.localeCompare(b.name)),
     openCents,
     paidRate: charged ? Math.round(((charged - openCents) / charged) * 100) : null,
   };

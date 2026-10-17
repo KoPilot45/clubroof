@@ -8,6 +8,7 @@ import type {
   AdminOverview,
   AuditEntry,
   ClubCash,
+  ClubCashStats,
   ClubCashAccount,
   ClubAuditDetail,
   ClubAudits,
@@ -1896,6 +1897,10 @@ describe.skipIf(!url)('API', () => {
       expect(stats.fines.length).toBeGreaterThan(0);
       expect(stats.finesByPerson.some((p) => p.personId === player.me.person.id)).toBe(true);
       expect(stats.openCents).toBeGreaterThan(0);
+      // Zahlungsmoral (ST): je Person vergebene Forderungen und noch offener Betrag; offen höchstens die Forderungen
+      expect(stats.moral.length).toBeGreaterThan(0);
+      expect(stats.moral.every((p) => p.openCents <= p.chargedCents)).toBe(true);
+      expect(stats.moral.reduce((sum, p) => sum + p.openCents, 0)).toBe(stats.openCents);
       expect(
         (await send('GET', `/teams/${b1}/cash/stats`, (await login('eltern')).token)).status,
       ).toBe(404);
@@ -6737,6 +6742,78 @@ describe.skipIf(!url)('API', () => {
       expect(audit.some((a) => a.label.startsWith('Vereinskasse: Konto angelegt'))).toBe(true);
     });
   });
+  describe('Vereinskasse: Statistik (ST)', () => {
+    async function treasurer() {
+      const admin = await login('admin');
+      const parent = await login('eltern');
+      if (!parent.me.roles.some((r) => r.name === 'Kassenwart (Verein)')) {
+        await send('POST', `/admin/members/${parent.me.person.id}/roles`, admin.token, {
+          roleKey: 'club_treasurer',
+          scopeType: 'club',
+        });
+      }
+      return login('eltern');
+    }
+
+    it('liefert Verlauf mit Vorjahr, Bereiche, Plan gegen Ist und Beiträge – Rechte serverseitig', async () => {
+      const kasse = await treasurer();
+      const cash = await get<ClubCash>('/club-cash', kasse.token);
+      const stats = await get<ClubCashStats>(
+        '/club-cash/stats?from=2026-01-01&to=2026-12-31',
+        kasse.token,
+      );
+      expect(stats.interval).toBe('month');
+      expect(stats.balance).toHaveLength(12);
+      expect(stats.flows.map((f) => f.key)[0]).toBe('2026-01');
+      // Bestand am Zeitraumende = Kassenstand der Übersicht; Summen der Monate = Summen des Zeitraums
+      expect(stats.totals.balanceCents).toBe(cash.totalBalanceCents);
+      expect(stats.balance.at(-1)!.cents).toBe(stats.totals.balanceCents);
+      expect(stats.flows.reduce((sum, f) => sum + f.incomeCents, 0)).toBe(stats.totals.incomeCents);
+      expect(stats.flows.reduce((sum, f) => sum + f.expenseCents, 0)).toBe(
+        stats.totals.expenseCents,
+      );
+      expect(stats.areas.find((a) => a.area === 'ideal')!.incomeCents).toBe(420000);
+      expect(stats.totals.incomeCents).toBeGreaterThan(0);
+      // Vorjahr: gleicher Verlauf ein Jahr früher (Demodaten haben dort keine Buchungen, nur den Anfangsbestand)
+      expect(stats.totals.previousExpenseCents).toBe(0);
+
+      // Quartale
+      const quarters = await get<ClubCashStats>(
+        '/club-cash/stats?from=2026-01-01&to=2026-12-31&interval=quarter',
+        kasse.token,
+      );
+      expect(quarters.balance.map((b) => b.key)).toEqual([
+        '2026-Q1',
+        '2026-Q2',
+        '2026-Q3',
+        '2026-Q4',
+      ]);
+      expect(quarters.totals.incomeCents).toBe(stats.totals.incomeCents);
+
+      // Beiträge nur für die Kassenführung des ganzen Vereins
+      expect(stats.fees).not.toBeNull();
+      expect(stats.fees!.dueCents).toBe(stats.fees!.paidCents + stats.fees!.openCents);
+
+      // Rechte: ohne Kassenrecht 403, ungültiger Zeitraum 400, fremde Kasse 403
+      for (const who of ['spieler', 'trainer']) {
+        const denied = await send('GET', '/club-cash/stats', (await login(who)).token);
+        expect(denied.status, who).toBe(403);
+      }
+      expect(
+        (await send('GET', '/club-cash/stats?from=2026-12-31&to=2026-01-01', kasse.token)).status,
+      ).toBe(400);
+      expect(
+        (
+          await send(
+            'GET',
+            '/club-cash/stats?fundId=00000000-0000-4000-8000-000000000000',
+            kasse.token,
+          )
+        ).status,
+      ).toBe(403);
+    });
+  });
+
   describe('Vereinskasse: Beiträge (K2)', () => {
     async function treasurer() {
       const admin = await login('admin');
