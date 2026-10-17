@@ -3501,6 +3501,213 @@ describe.skipIf(!url)('API', () => {
       );
     });
 
+    it('Aufstellungsplaner: Formation und Slots speichern, Regeln prüfen', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const next = (await get<EventSummary[]>('/events', coach.token)).find(
+        (e) =>
+          e.team?.id === b1.id &&
+          e.type === 'match' &&
+          e.status === 'scheduled' &&
+          new Date(e.startsAt) > NOW,
+      )!;
+      const url = `/events/${next.id}/lineup`;
+      const sheet = await get<MatchSheet>(`/events/${next.id}/match`, coach.token);
+      // Seed: Entwurf im 4-3-3 für das nächste Spiel, Spielform 11er vorgeschlagen (U17)
+      expect(sheet.lineup).toMatchObject({ published: false, size: 11, formation: '4-3-3' });
+      expect(sheet.suggestedSize).toBe(11);
+      expect(sheet.lineup!.entries.filter((e) => e.slot !== null)).toHaveLength(11);
+      const ok = sheet.candidates!.filter((c) => c.status !== 'no');
+      const starters = ok.slice(0, 11);
+      const bench = ok.slice(11, 14);
+      const entries = (slotOf: (i: number) => number) => [
+        ...starters.map((c, i) => ({ personId: c.personId, role: 'starter', slot: slotOf(i) })),
+        ...bench.map((c) => ({ personId: c.personId, role: 'substitute' })),
+      ];
+      const save = (body: object) => send<MatchSheet>('PUT', url, coach.token, body);
+
+      const saved = await save({
+        size: 11,
+        formation: '4-4-2',
+        entries: entries((i) => i),
+        publish: false,
+      });
+      expect(saved.status).toBe(200);
+      expect(saved.body.lineup).toMatchObject({ size: 11, formation: '4-4-2' });
+      const slots = saved.body.lineup!.entries.filter((e) => e.role === 'starter');
+      expect(slots.map((e) => e.slot)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      // Position folgt dem Kürzel der Formation (4-4-2: TW, LV, IV, IV, RV, LM, ZM, ZM, RM, ST, ST)
+      expect(slots.map((e) => e.position)).toEqual([
+        'TW',
+        'LV',
+        'IV',
+        'IV',
+        'RV',
+        'LM',
+        'ZM',
+        'ZM',
+        'RM',
+        'ST',
+        'ST',
+      ]);
+      expect(saved.body.lineup!.entries.filter((e) => e.role === 'substitute')).toHaveLength(3);
+
+      // Regeln: Formation passt zur Spielform, Slots im Bereich und einmalig, Bank ohne Slot
+      expect(
+        (await save({ size: 7, formation: '4-4-2', entries: [], publish: false })).status,
+      ).toBe(400);
+      expect((await save({ size: 11, entries: [], publish: false })).status).toBe(400);
+      expect((await save({ formation: '4-4-2', entries: [], publish: false })).status).toBe(400);
+      expect(
+        (
+          await save({
+            size: 11,
+            formation: '4-4-2',
+            entries: entries((i) => (i === 10 ? 0 : i)),
+            publish: false,
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await save({
+            size: 11,
+            formation: '4-4-2',
+            entries: entries((i) => (i === 10 ? 11 : i)),
+            publish: false,
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await save({
+            size: 11,
+            formation: '4-4-2',
+            entries: starters.map((c) => ({ personId: c.personId, role: 'starter' })),
+            publish: false,
+          })
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await save({
+            size: 11,
+            formation: '4-4-2',
+            entries: [{ personId: bench[0]!.personId, role: 'substitute', slot: 3 }],
+            publish: false,
+          })
+        ).status,
+      ).toBe(400);
+      // 7er: höchstens sieben in der Startelf; nie derselbe Spieler zweimal
+      expect(
+        (await save({ size: 7, formation: '2-3-1', entries: entries((i) => i), publish: false }))
+          .status,
+      ).toBe(400);
+      const dup = await save({
+        size: 11,
+        formation: '4-4-2',
+        entries: [...entries((i) => i), { personId: starters[0]!.personId, role: 'substitute' }],
+        publish: false,
+      });
+      expect(dup.status).toBe(400);
+      // Bank beliebig lang (nur der Kader begrenzt)
+      const bigBench = await save({
+        size: 9,
+        formation: '3-3-2',
+        entries: [
+          ...ok.slice(0, 9).map((c, i) => ({ personId: c.personId, role: 'starter', slot: i })),
+          ...ok.slice(9).map((c) => ({ personId: c.personId, role: 'substitute' })),
+        ],
+        publish: false,
+      });
+      expect(bigBench.status).toBe(200);
+      expect(bigBench.body.lineup).toMatchObject({ size: 9, formation: '3-3-2' });
+      // Ohne Formation (ältere Aufstellung) bleibt alles gültig, Slots nicht
+      expect((await save({ entries: entries((i) => i), publish: false })).status).toBe(400);
+      const legacy = await save({
+        entries: starters.map((c) => ({ personId: c.personId, role: 'starter' })),
+        publish: false,
+      });
+      expect(legacy.status).toBe(200);
+      expect(legacy.body.lineup).toMatchObject({ size: null, formation: null });
+    });
+
+    it('Aufstellungsplaner: Sichtbarkeit für Spieler und Eltern steuert das Trainerteam', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const parent = await login('eltern');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      // vergangenes Spiel mit veröffentlichter Aufstellung (Seed, 4-4-2)
+      const past = (await get<TeamStats>(`/teams/${b1.id}/stats`, coach.token)).results[0]!;
+      const url = `/events/${past.eventId}/match`;
+      const visible = (on: boolean) =>
+        send('PUT', `/teams/${b1.id}/profile`, coach.token, { lineupVisible: on });
+
+      try {
+        expect((await visible(false)).status).toBe(200);
+        // veröffentlicht, aber Teameinstellung aus: Spieler sehen nichts, das Trainerteam schon
+        expect((await get<MatchSheet>(url, player.token)).lineup).toBeNull();
+        const coachView = await get<MatchSheet>(url, coach.token);
+        expect(coachView.lineup).toMatchObject({ published: true, size: 11, formation: '4-4-2' });
+        expect(coachView.lineupVisible).toBe(false);
+
+        expect((await visible(true)).status).toBe(200);
+        const forPlayer = await get<MatchSheet>(url, player.token);
+        expect(forPlayer.lineup).toMatchObject({ published: true, size: 11, formation: '4-4-2' });
+        expect(forPlayer.lineup!.entries.some((e) => e.slot !== null)).toBe(true);
+        expect(forPlayer.lineupVisible).toBeNull();
+        expect(forPlayer.candidates).toBeNull();
+        // nie Beteiligung oder Gründe für Spieler und Eltern
+        const raw = await app.inject({
+          method: 'GET',
+          url,
+          headers: { authorization: `Bearer ${player.token}` },
+        });
+        expect(raw.body).not.toMatch(/attendance|weeks|reason/i);
+        // Eltern ohne Kind in der Mannschaft sehen das Spiel gar nicht
+        expect((await send('GET', url, parent.token)).status).toBe(404);
+      } finally {
+        await visible(true);
+      }
+    });
+
+    it('Aufstellungsplaner: Beteiligung der letzten vier Wochen nur für das Trainerteam', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const next = (await get<EventSummary[]>('/events', coach.token)).find(
+        (e) =>
+          e.team?.id === b1.id &&
+          e.type === 'match' &&
+          e.status === 'scheduled' &&
+          new Date(e.startsAt) > NOW,
+      )!;
+      const sheet = await get<MatchSheet>(`/events/${next.id}/match`, coach.token);
+      for (const c of sheet.candidates!) {
+        expect(c.attendance.weeks).toHaveLength(4);
+        const total = c.attendance.weeks.reduce((n, w) => n + w.total, 0);
+        const attended = c.attendance.weeks.reduce((n, w) => n + w.attended, 0);
+        expect(attended).toBeLessThanOrEqual(total);
+        expect(c.attendance.percent).toBe(total ? Math.round((attended / total) * 100) : null);
+      }
+      // Die Trainings der B-Jugend sind erfasst: alle drei Farbstufen kommen vor
+      const percents = sheet.candidates!.map((c) => c.attendance.percent);
+      expect(percents.some((p) => p !== null && p >= 75)).toBe(true);
+      expect(percents.some((p) => p !== null && p >= 50 && p < 75)).toBe(true);
+      expect(percents.some((p) => p !== null && p < 50)).toBe(true);
+      // Mannschaft ohne erfasste Trainings: kein Training im Fenster → null
+      const e1 = (await login('eltern')).me.teams.find((t) => t.badge === 'E1')!;
+      const parent = await login('eltern');
+      const e1Match = (await get<EventSummary[]>('/events', parent.token)).find(
+        (e) => e.team?.id === e1.id && e.type === 'match' && e.status === 'scheduled',
+      )!;
+      const e1Sheet = await get<MatchSheet>(`/events/${e1Match.id}/match`, parent.token);
+      if (e1Sheet.candidates) {
+        expect(e1Sheet.candidates.every((c) => c.attendance.percent === null)).toBe(true);
+        // Standard: Mannschaften zeigen die Aufstellung nicht an Spieler und Eltern
+        expect(e1Sheet.lineupVisible).toBe(false);
+      }
+    });
+
     it('Aufstellung: Entwurf nur fürs Trainerteam, Veröffentlichen benachrichtigt', async () => {
       const coach = await login('trainer');
       const player = await login('spieler');

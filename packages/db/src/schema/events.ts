@@ -131,7 +131,9 @@ export const matchLineups = pgTable(
     index().on(t.clubId),
     unique().on(t.eventId, t.personId),
     // je Spiel jeder Slot höchstens einmal
-    uniqueIndex().on(t.eventId, t.slot).where(sql`${t.slot} is not null`),
+    uniqueIndex()
+      .on(t.eventId, t.slot)
+      .where(sql`${t.slot} is not null`),
   ],
 );
 

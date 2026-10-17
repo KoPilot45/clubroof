@@ -114,6 +114,18 @@ export function defaultLineupSize(ageGroup: string | null | undefined): LineupSi
   return age <= 11 ? 7 : age <= 13 ? 9 : 11;
 }
 
+/** Kürzel der Hauptposition eines Spielers (Spielerprofil) für die Kaderkarten. */
+export const PLAYER_POSITION_ABBR: Record<string, string> = {
+  Torwart: 'TW',
+  Innenverteidigung: 'IV',
+  Außenverteidigung: 'AV',
+  'Defensives Mittelfeld': 'DM',
+  'Zentrales Mittelfeld': 'ZM',
+  'Offensives Mittelfeld': 'OM',
+  Außenbahn: 'AB',
+  Sturm: 'ST',
+};
+
 /** Ausgeschriebene Positionen für Listen („LV“ → „Linker Verteidiger“). */
 export const POSITION_NAMES: Record<string, string> = {
   TW: 'Torwart',

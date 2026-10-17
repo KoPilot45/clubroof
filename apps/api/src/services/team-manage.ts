@@ -60,6 +60,7 @@ export function profileOf(
     importAliases: team.importAliases,
     leaguePosition: team.leaguePosition,
     attendanceVisibility: toAttendanceVisibility(team.attendanceVisibility),
+    lineupVisible: team.lineupVisible,
   };
 }
 
@@ -340,6 +341,7 @@ export async function updateTeamProfile(
   if (input.defaultMeetingPoint !== undefined)
     patch.defaultMeetingPoint = input.defaultMeetingPoint?.trim() || null;
   if (input.leaguePosition !== undefined) patch.leaguePosition = input.leaguePosition;
+  if (input.lineupVisible !== undefined) patch.lineupVisible = input.lineupVisible;
   if (input.attendanceVisibility !== undefined)
     patch.attendanceVisibility = input.attendanceVisibility;
   if (input.importAliases !== undefined)

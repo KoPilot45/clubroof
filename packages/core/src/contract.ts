@@ -19,6 +19,7 @@ import type {
   TeamTemplate,
   TransferKind,
 } from './domain';
+import type { LineupSize } from './lineup';
 import type { ScopeType } from './scopes';
 
 export type ClubInfo = {
@@ -1177,6 +1178,8 @@ export type TeamProfile = {
   trainingDeadlineHours: number | null;
   /** Antwortfrist für Spiele in Stunden vor Beginn */
   matchDeadlineHours: number | null;
+  /** Aufstellung für Spieler und Eltern sichtbar (Paket AUF, Standard aus) */
+  lineupVisible: boolean;
 };
 
 export type TeamManageMember = {
@@ -1397,6 +1400,15 @@ export type LineupEntry = {
   jerseyNumber: number | null;
   /** Gastspieler aus einer anderen Mannschaft (Badge) */
   guestFrom: string | null;
+  /** Startelf: Platz in der Formation (hinten nach vorn, 0 = Torwart); Bank: null (Paket AUF) */
+  slot: number | null;
+};
+
+/** Trainingsbeteiligung der letzten vier Wochen (älteste Woche zuerst); nur für das Trainerteam. */
+export type LineupAttendance = {
+  weeks: { attended: number; total: number }[];
+  /** null: im Fenster gab es kein Training */
+  percent: number | null;
 };
 
 export type LineupCandidate = {
@@ -1406,6 +1418,9 @@ export type LineupCandidate = {
   position: string | null;
   jerseyNumber: number | null;
   guestFrom: string | null;
+  /** Grund einer Absage (z. B. Abwesenheit, Verletzt), nur für das Trainerteam */
+  reason: string | null;
+  attendance: LineupAttendance;
 };
 
 export type MatchIncident = {
@@ -1425,8 +1440,21 @@ export type MatchSheet = {
   goalsFor: number | null;
   goalsAgainst: number | null;
   jerseyMode: JerseyMode | null;
-  /** null: noch nicht veröffentlicht (für Spieler unsichtbar) */
-  lineup: { published: boolean; entries: LineupEntry[] } | null;
+  team: { id: string; name: string; badge: string };
+  /** Spielform, die der Planer vorschlägt (nach Altersklasse der Mannschaft) */
+  suggestedSize: LineupSize;
+  /** Aufstellung für Spieler und Eltern sichtbar (Teameinstellung, nur für das Trainerteam mitgeliefert) */
+  lineupVisible: boolean | null;
+  /**
+   * null: nicht sichtbar – noch nicht veröffentlicht oder die Mannschaft zeigt sie Spielern und Eltern nicht.
+   * `size`/`formation` fehlen bei älteren Aufstellungen ohne Planer.
+   */
+  lineup: {
+    published: boolean;
+    size: LineupSize | null;
+    formation: string | null;
+    entries: LineupEntry[];
+  } | null;
   /** Nur für das Trainerteam: alle möglichen Spieler mit Zu-/Absage */
   candidates: LineupCandidate[] | null;
   report: { completed: boolean; incidents: MatchIncident[] } | null;
@@ -1434,10 +1462,15 @@ export type MatchSheet = {
 };
 
 export type SaveLineupInput = {
+  /** Spielform und Formation (Schlüssel); beide zusammen oder beide weglassen (ältere Aufstellung) */
+  size?: LineupSize;
+  formation?: string;
   entries: {
     personId: string;
     role: LineupRole;
     position?: string | null;
+    /** Startelf: Slot der Formation; Bank: weglassen */
+    slot?: number | null;
     jerseyNumber?: number | null;
   }[];
   publish: boolean;
