@@ -22,6 +22,8 @@ Trainingsbeteiligung der letzten 4 Wochen). Alle Entscheidungen des Vorstands st
 6. **Ansicht für Spieler/Eltern** (schreibgeschützt, ohne Beteiligung) und Schalter „Aufstellung für Spieler und Eltern sichtbar“ in „Mannschaft bearbeiten“.
 7. **Aufräumen:** Hilfe (`help-content.ts`), `docs/FUNKTIONEN.md`, Übersetzungen, Browserprüfung `scripts/e2e/aufstellung.mjs`.
 
+**Abstände:** Die Abstände, Radien und Überschriften des Entwurfs sind nicht maßgeblich; es gelten die App-Bausteine (`Section`, Hero 28, Seitenrand). Nur die Bühne (Spielkarte bis Buttons) ist bewusst kompakt, damit bei 390 × 844 Spielfeld, Bank und Kaderleiste zusammen sichtbar bleiben. Details in der Paketzeile.
+
 ## Abnahme
 Planer in 7er, 9er und 11er mit mindestens drei Formationen je Form; Spielfeld, Bank und Kaderleiste gleichzeitig sichtbar bei 390 × 844; Bank wächst und hat immer einen freien Platz; kein Spieler doppelt; Tausch und Zurücknehmen funktionieren; Spieler/Eltern sehen die Aufstellung nur bei veröffentlicht + Schalter an und ohne Beteiligungswerte.
 Bilder neben den Entwurf legen, Abweichungen benennen. **Touch am Gerät prüfen** (Wischen der Leisten vs. Ziehen), Ergebnis ehrlich berichten; am Ende kurze Liste erledigt / bewusst abweichend / offen.
