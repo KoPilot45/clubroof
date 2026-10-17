@@ -10,9 +10,18 @@ async function snap(who, path, name, { h = 844, act, wait = 2600 } = {}) {
   if (act) await act(s.page, s);
   await s.page.waitForTimeout(900);
   await s.page.screenshot({ path: `.check/pdf/r-${name}.png` });
-  console.log(name, '|', (await s.page.innerText('body')).split('\n').filter(Boolean).slice(0, 5).join(' | '));
+  console.log(
+    name,
+    '|',
+    (await s.page.innerText('body')).split('\n').filter(Boolean).slice(0, 5).join(' | '),
+  );
 }
-const tap = (t, o = {}) => async (p) => { await p.getByText(t, o).filter({ visible: true }).first().click(); await p.waitForTimeout(2200); };
+const tap =
+  (t, o = {}) =>
+  async (p) => {
+    await p.getByText(t, o).filter({ visible: true }).first().click();
+    await p.waitForTimeout(2200);
+  };
 // Ids ermitteln
 const tr = (cache.trainer = await b.session('trainer'));
 const T = tr.login.token;
@@ -20,11 +29,22 @@ const teamId = (badge) => tr.login.me.teams.find((t) => t.badge === badge).id;
 const now = Date.now();
 const all = await api('/events?scope=upcoming', T);
 const ok = (e) => new Date(e.startsAt).getTime() > now && e.status === 'scheduled';
-const game = all.find((e) => e.type === 'match' && ok(e) && e.team?.badge === 'C1') ?? all.find((e) => e.type === 'match' && ok(e));
-const train = all.find((e) => e.type === 'training' && ok(e) && e.team?.badge === 'B1') ?? all.find((e) => e.type === 'training' && ok(e));
+const game =
+  all.find((e) => e.type === 'match' && ok(e) && e.team?.badge === 'C1') ??
+  all.find((e) => e.type === 'match' && ok(e));
+const train =
+  all.find((e) => e.type === 'training' && ok(e) && e.team?.badge === 'B1') ??
+  all.find((e) => e.type === 'training' && ok(e));
 const pastAll = await api('/events?scope=past', T);
-const played = [...(pastAll ?? []), ...all].find((e) => e.type === 'match' && new Date(e.startsAt).getTime() < now && e.status !== 'cancelled');
-const sp = (await api('/events?scope=upcoming', cache.spieler?.login.token ?? (cache.spieler = await b.session('spieler')).login.token)).find((e) => e.type === 'match' && ok(e));
+const played = [...(pastAll ?? []), ...all].find(
+  (e) => e.type === 'match' && new Date(e.startsAt).getTime() < now && e.status !== 'cancelled',
+);
+const sp = (
+  await api(
+    '/events?scope=upcoming',
+    cache.spieler?.login.token ?? (cache.spieler = await b.session('spieler')).login.token,
+  )
+).find((e) => e.type === 'match' && ok(e));
 console.log('game', game?.id, 'train', train?.id, 'played', played?.id, 'sp', sp?.id);
 // Spieler
 await snap('spieler', '/', 'sp-home');

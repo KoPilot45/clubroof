@@ -44,6 +44,7 @@ import { coachUsers, digestAt } from '../notify/coaches';
 import { deliver } from '../notify/deliver';
 import { carpoolFor } from './carpool';
 import { OPEN_EVENT_TYPES, attendanceFor, shiftsFor } from './helpers';
+import { resolveMediaUrl } from '../storage/media-links';
 
 /** Wie lange Trainer Rückmeldungen nach Terminbeginn noch korrigieren dürfen. */
 const OVERRIDE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
@@ -367,6 +368,7 @@ export async function getEventDetail(
         reason: s.eventParticipants.reason,
         guestFromTeam: guestTeams.badge,
         attended: s.eventParticipants.attended,
+        avatar: s.persons.avatarUrl,
       })
       .from(s.eventParticipants)
       .innerJoin(s.persons, eq(s.persons.id, s.eventParticipants.personId))
@@ -382,6 +384,7 @@ export async function getEventDetail(
       // Gründe (z. B. Verletzung) sehen nur Verantwortliche und die Person selbst.
       reason: mayReadReasons || actor.managedIds.includes(p.personId) ? p.reason : null,
       guestFromTeam: p.guestFromTeam,
+      avatarUrl: resolveMediaUrl(actor.links, p.avatar, now),
       // Wer da war, sehen Spieler nur, wenn die Mannschaft es namentlich freigibt
       attended:
         row.event.attendanceRecordedAt && (mayReadAttendance || namedVisible)

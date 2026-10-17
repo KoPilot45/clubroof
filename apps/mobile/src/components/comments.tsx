@@ -2,7 +2,7 @@ import type { CommentEntity, CommentItem } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Button, Card, Chip, Section, T, TextField } from '@/components/ui';
+import { Avatar, Button, Card, Chip, Section, T, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
@@ -48,9 +48,12 @@ export function CommentThread({ type, id }: { type: CommentEntity; id: string })
               backgroundColor: c.mine ? colors.primaryContainer : colors.background,
             }}
           >
-            <T variant="caption" style={{ fontWeight: '700' }}>
-              {c.mine ? 'Du' : c.author} · {formatAgo(c.createdAt)}
-            </T>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Avatar name={c.author} size={24} uri={c.avatarUrl} />
+              <T variant="caption" style={{ fontWeight: '700', flexShrink: 1 }}>
+                {c.mine ? 'Du' : c.author} · {formatAgo(c.createdAt)}
+              </T>
+            </View>
             <T>{c.body}</T>
           </View>
         ))}

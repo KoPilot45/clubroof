@@ -111,7 +111,7 @@ export default function SearchScreen() {
                 key={m.personId}
                 first={i === 0}
                 onPress={() => router.push(`/profile/${m.personId}`)}
-                leading={<Avatar name={m.name} size={40} />}
+                leading={<Avatar name={m.name} size={40} uri={m.avatarUrl} />}
                 title={m.name}
                 subtitle={m.teamBadges.join(' · ') || undefined}
               />

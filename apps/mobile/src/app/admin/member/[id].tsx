@@ -79,7 +79,7 @@ export default function MemberScreen() {
   return (
     <Screen edges={[]} refreshing={member.isRefetching} onRefresh={() => member.refetch()}>
       <Card style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-        <Avatar name={`${m.firstName} ${m.lastName}`} size={56} />
+        <Avatar name={`${m.firstName} ${m.lastName}`} size={56} uri={m.avatarUrl} />
         <View style={{ flex: 1, gap: 4 }}>
           <T variant="heading">
             {m.firstName} {m.lastName}

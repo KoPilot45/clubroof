@@ -4,7 +4,8 @@ const b = await launch();
 const cache = {};
 async function snap(who, path, name) {
   const s = (cache[who] ??= await b.session(who));
-  await s.goto(path); await s.page.waitForTimeout(3000);
+  await s.goto(path);
+  await s.page.waitForTimeout(3000);
   await s.page.screenshot({ path: `.check/pdf/r-${name}.png` });
 }
 await snap('vorstand', '/', 'vo-home');

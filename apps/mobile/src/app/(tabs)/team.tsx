@@ -36,6 +36,7 @@ import { useTheme } from '@/lib/theme';
 import type { TintKey } from '@clubroof/design-tokens';
 import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 import { readSetting, writeSetting } from '@/lib/flags';
+import { hapticSelect } from '@/lib/haptics';
 import { t } from '@/lib/i18n';
 
 const PARTICIPATION_LABELS = {
@@ -514,7 +515,10 @@ function TeamSwitcher({
             accessibilityRole="tab"
             accessibilityLabel={open ? t(`${teamTitle(tm)}, ${open} offen`) : teamTitle(tm)}
             aria-selected={active}
-            onPress={() => onSelect(tm.id)}
+            onPress={() => {
+              if (!active) hapticSelect();
+              onSelect(tm.id);
+            }}
             style={{
               minHeight: 44,
               flexDirection: 'row',

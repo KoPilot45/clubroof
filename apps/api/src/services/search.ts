@@ -8,6 +8,7 @@ import { and, desc, eq, gte, ilike, inArray, isNull, lte, ne, or } from 'drizzle
 import { actorCan, type Actor } from '../actor';
 import { fetchEventRows } from './events';
 import { myEventsCondition, scopeLabels, scopeVisible } from './home';
+import { resolveMediaUrl } from '../storage/media-links';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -61,6 +62,7 @@ async function searchMembers(db: Db, actor: Actor, term: string, now: Date) {
       id: s.persons.id,
       firstName: s.persons.firstName,
       lastName: s.persons.lastName,
+      avatarUrl: s.persons.avatarUrl,
     })
     .from(s.persons)
     .where(
@@ -109,6 +111,7 @@ async function searchMembers(db: Db, actor: Actor, term: string, now: Date) {
             personId: c.id,
             name: `${c.firstName} ${c.lastName}`,
             teamBadges: teams.map((t) => t.badge),
+            avatarUrl: resolveMediaUrl(actor.links, c.avatarUrl, now),
           }
         : null;
     })

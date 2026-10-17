@@ -26,6 +26,7 @@ const MEMBERS: MemberListItem[] = NAMES.map((n, i) => {
     teams: [],
     roles: [],
     hasAccount: false,
+    avatarUrl: null,
   };
 });
 
