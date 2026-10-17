@@ -1,7 +1,7 @@
 import type { PollDetail } from '@clubroof/core';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Button, Card, Chip, ErrorNotice, Loading, Screen, T, TeamBadge } from '@/components/ui';
@@ -9,6 +9,7 @@ import { RequestError } from '@/lib/api';
 import { formatLongDate, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { EditedNote } from '@/components/edited';
 import { PollStatus } from '@/components/polls';
 import { GrowBar } from '@/lib/motion';
 
@@ -75,6 +76,7 @@ export default function PollScreen() {
               {p.createdBy ? ` · Erstellt von ${p.createdBy}` : ''}
             </T>
             {p.description ? <T>{p.description}</T> : null}
+            <EditedNote at={p.editedAt} />
           </View>
 
           <Card style={{ gap: 8 }}>
@@ -147,6 +149,14 @@ export default function PollScreen() {
               {p.isOpen ? ' Du kannst deine Stimme bis zum Ende ändern.' : ''}
             </T>
           </Card>
+          {p.canEdit ? (
+            <Button
+              label="Umfrage bearbeiten"
+              variant="outline"
+              icon="create-outline"
+              onPress={() => router.push(`/polls/new?id=${p.id}`)}
+            />
+          ) : null}
           {p.canClose ? (
             <Button
               label="Umfrage jetzt beenden"

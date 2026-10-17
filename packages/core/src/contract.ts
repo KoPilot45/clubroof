@@ -246,6 +246,10 @@ export type EventDetail = EventSummary & {
   /** Teilnehmerliste; leer, wenn der Nutzer sie nicht sehen darf */
   participants: Participant[];
   canManage: boolean;
+  /** Vereinsveranstaltung: Ich darf sie bearbeiten (Ersteller oder Berechtigte für den Bereich) */
+  canEditClubEvent: boolean;
+  /** Zeitpunkt der letzten nachträglichen Änderung einer Vereinsveranstaltung (ISO), sonst null */
+  editedAt: string | null;
   /** Trainer dürfen Zu-/Absagen anderer korrigieren */
   canOverride: boolean;
   /** Ablaufplan (Vereinsveranstaltungen) */
@@ -410,7 +414,12 @@ export type Absence = {
   note: string | null;
   /** Anzahl der Termine, für die dadurch automatisch abgesagt wurde */
   affectedEvents: number;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
 };
+
+/** Abwesenheit nachträglich ändern (Paket BE); die Person selbst bleibt gleich. */
+export type UpdateAbsenceInput = Partial<Omit<CreateAbsenceInput, 'personId'>>;
 
 export type CreateAbsenceInput = {
   personId: string;
@@ -430,6 +439,8 @@ export type PollSummary = {
   votes: number;
   /** Gewählte Option, falls bereits abgestimmt */
   myOptionId: string | null;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
 };
 
 export type PollDetail = PollSummary & {
@@ -441,7 +452,16 @@ export type PollDetail = PollSummary & {
   options: { id: string; label: string; votes: number | null }[];
   /** Ich darf die Umfrage vorzeitig beenden */
   canClose: boolean;
+  /** Ich darf die Umfrage ändern (Ersteller oder Berechtigte, nur solange sie offen ist) */
+  canEdit: boolean;
+  /** Antworten lassen sich nicht mehr ändern, weil schon abgestimmt wurde */
+  optionsLocked: boolean;
 };
+
+/** Umfrage nachträglich ändern (Paket BE): Optionen nur, solange keine Stimme abgegeben ist. */
+export type UpdatePollInput = Partial<
+  Pick<CreatePollInput, 'question' | 'description' | 'closesAt' | 'resultVisibility' | 'options'>
+>;
 
 export type TeamPermissions = {
   manageEvents: boolean;
@@ -879,8 +899,22 @@ export type DocumentItem = {
   sizeBytes: number;
   createdAt: string;
   source: { type: ScopeType; label: string };
+  /** Bereich, für den das Dokument sichtbar ist (Mannschaft, Abteilung; null = ganzer Verein) */
+  scopeId: string | null;
   /** Ich darf dieses Dokument löschen */
   canDelete: boolean;
+  /** Ich darf Titel, Kategorie und Sichtbarkeit ändern */
+  canEdit: boolean;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
+};
+
+/** Dokument nachträglich ändern (Paket BE); die Datei selbst bleibt – austauschen heißt löschen und neu hochladen. */
+export type UpdateDocumentInput = {
+  title?: string;
+  category?: DocumentCategory;
+  scopeType?: ScopeType;
+  scopeId?: string | null;
 };
 
 export type UploadTarget = { type: ScopeType; id: string | null; label: string };
@@ -1976,6 +2010,40 @@ export type CreateClubEventInput = {
   program?: { time: string; title: string }[];
   shifts?: { title: string; startsAt: string; endsAt: string; capacity: number }[];
   allowConflict?: boolean;
+};
+
+/** Schicht beim Bearbeiten einer Vereinsveranstaltung: mit `id` ändern, ohne `id` neu anlegen; fehlende werden entfernt. */
+export type ClubEventShiftInput = {
+  id?: string;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  capacity: number;
+};
+
+/** Vereinsveranstaltung nachträglich ändern (Paket BE): Art und Bereich bleiben, alles andere ist änderbar. */
+export type UpdateClubEventInput = Partial<
+  Omit<CreateClubEventInput, 'type' | 'orgUnitId' | 'shifts'>
+> & { shifts?: ClubEventShiftInput[] };
+
+/** Vereinsveranstaltung zum Bearbeiten (vorausgefülltes Formular). */
+export type ClubEventForm = {
+  id: string;
+  type: ClubEventType;
+  title: string;
+  description: string | null;
+  startsAt: string;
+  endsAt: string;
+  orgUnitId: string | null;
+  teamIds: string[];
+  personIds: string[];
+  facilityId: string | null;
+  locationText: string | null;
+  locationUrl: string | null;
+  program: { time: string; title: string }[];
+  /** Schichten mit Zahl der Angemeldeten (Kapazität darf nicht darunter sinken) */
+  shifts: (ClubEventShiftInput & { id: string; signedUp: number })[];
+  editedAt: string | null;
 };
 
 // ── Kalenderexport ───────────────────────────────────────────────────────

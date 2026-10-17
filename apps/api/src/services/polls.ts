@@ -2,7 +2,13 @@
  * Umfragen (Konzept §11): eine Frage, eine Stimme je Person, Frist und Regeln, wann
  * Ergebnisse sichtbar sind („immer“, „nach eigener Stimme“, „nach Fristende“).
  */
-import { can, type CreatePollInput, type PollDetail, type PollSummary } from '@clubroof/core';
+import {
+  can,
+  type CreatePollInput,
+  type PollDetail,
+  type PollSummary,
+  type UpdatePollInput,
+} from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, count, desc, eq, gt, inArray, isNull, or } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
@@ -60,6 +66,7 @@ async function summaries(
     isOpen: isOpen(p, now),
     votes: Number(counts.find((c) => c.pollId === p.id)?.n ?? 0),
     myOptionId: mine.find((m) => m.pollId === p.id)?.optionId ?? null,
+    editedAt: p.editedAt?.toISOString() ?? null,
   }));
 }
 
@@ -145,6 +152,8 @@ export async function getPoll(db: Db, actor: Actor, id: string, now: Date): Prom
       votes: visible ? Number(optionCounts.find((c) => c.optionId === o.id)?.n ?? 0) : null,
     })),
     canClose: isOpen(poll, now) && (await mayManage(db, actor, poll)),
+    canEdit: isOpen(poll, now) && (await mayManage(db, actor, poll)),
+    optionsLocked: summary!.votes > 0,
   };
 }
 
@@ -216,6 +225,116 @@ export async function createPoll(
     },
     now,
   );
+  return getPoll(db, actor, id, now);
+}
+
+/**
+ * Umfrage nachträglich ändern (Paket BE): Frage, Beschreibung, Frist und Sichtbarkeit der Ergebnisse, solange sie offen
+ * ist; die Antworten nur, solange noch keine Stimme abgegeben ist. Wer eine geänderte Frist noch nicht beachten konnte
+ * (nicht abgestimmt), wird benachrichtigt.
+ */
+export async function updatePoll(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdatePollInput,
+  now: Date,
+): Promise<PollDetail> {
+  const poll = await loadVisible(db, actor, id);
+  if (!(await mayManage(db, actor, poll))) throw forbidden('Diese Umfrage kannst du nicht ändern.');
+  if (!isOpen(poll, now))
+    throw new HttpError(409, 'closed', 'Eine beendete Umfrage lässt sich nicht mehr ändern.');
+
+  const patch: Partial<typeof s.polls.$inferInsert> = {};
+  if (input.question !== undefined) patch.question = input.question.trim();
+  if (input.description !== undefined) patch.description = input.description?.trim() || null;
+  if (input.resultVisibility !== undefined) patch.resultVisibility = input.resultVisibility;
+  let closeChanged = false;
+  if (input.closesAt !== undefined) {
+    const closesAt = input.closesAt ? new Date(input.closesAt) : null;
+    if (closesAt && closesAt <= now)
+      throw new HttpError(400, 'in_past', 'Das Ende der Umfrage liegt in der Vergangenheit.');
+    closeChanged = (closesAt?.getTime() ?? null) !== (poll.closesAt?.getTime() ?? null);
+    patch.closesAt = closesAt;
+  }
+
+  let newOptions: string[] | null = null;
+  if (input.options !== undefined) {
+    const cleaned = [...new Set(input.options.map((o) => o.trim()).filter(Boolean))];
+    if (cleaned.length < 2)
+      throw new HttpError(
+        400,
+        'options',
+        'Bitte mindestens zwei unterschiedliche Antworten angeben.',
+      );
+    const current = await db
+      .select({ label: s.pollOptions.label })
+      .from(s.pollOptions)
+      .where(eq(s.pollOptions.pollId, id))
+      .orderBy(s.pollOptions.sortOrder);
+    const same =
+      current.length === cleaned.length && current.every((o, i) => o.label === cleaned[i]);
+    if (!same) {
+      const [voteRow] = await db
+        .select({ n: count() })
+        .from(s.pollVotes)
+        .where(eq(s.pollVotes.pollId, id));
+      if (Number(voteRow?.n ?? 0) > 0)
+        throw new HttpError(
+          409,
+          'voted',
+          'Es wurde schon abgestimmt: Die Antworten lassen sich nicht mehr ändern.',
+        );
+      newOptions = cleaned;
+    }
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(s.polls)
+      .set({ ...patch, editedAt: now })
+      .where(eq(s.polls.id, id));
+    if (newOptions) {
+      await tx.delete(s.pollOptions).where(eq(s.pollOptions.pollId, id));
+      await tx
+        .insert(s.pollOptions)
+        .values(newOptions.map((label, i) => ({ pollId: id, label, sortOrder: i })));
+    }
+    await tx.insert(s.auditLog).values({
+      clubId: actor.club.id,
+      actorUserId: actor.user.id,
+      action: 'poll.update',
+      entityType: 'poll',
+      entityId: id,
+      data: { label: patch.question ?? poll.question, fields: Object.keys(input) },
+      createdAt: now,
+    });
+  });
+
+  if (closeChanged) {
+    const ctx = await loadScopeContext(db, actor);
+    const recipients = await usersInScope(db, actor, ctx, poll.scopeType, poll.scopeId, now);
+    const voters = await db
+      .select({ userId: s.persons.userId })
+      .from(s.pollVotes)
+      .innerJoin(s.persons, eq(s.persons.id, s.pollVotes.personId))
+      .where(eq(s.pollVotes.pollId, id));
+    const voted = new Set(voters.map((v) => v.userId));
+    await notify(
+      db,
+      actor,
+      recipients.filter((u) => !voted.has(u)),
+      {
+        level: 'action',
+        topic: 'polls',
+        teamId: poll.scopeType === 'team' ? poll.scopeId : null,
+        title: 'Frist der Umfrage geändert',
+        body: patch.question ?? poll.question,
+        link: `/polls/${id}`,
+      },
+      now,
+    );
+  }
   return getPoll(db, actor, id, now);
 }
 

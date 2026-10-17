@@ -8,9 +8,9 @@ import {
 } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { createAbsence, deleteAbsence, listAbsences } from '../services/absences';
+import { createAbsence, deleteAbsence, listAbsences, updateAbsence } from '../services/absences';
 import { getNews, setLike } from '../services/news';
-import { closePoll, createPoll, getPoll, listPolls, vote } from '../services/polls';
+import { closePoll, createPoll, getPoll, listPolls, updatePoll, vote } from '../services/polls';
 
 const isoDate = z.iso.date();
 
@@ -69,6 +69,24 @@ export const communityRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
+  app.patch(
+    '/polls/:id',
+    {
+      schema: {
+        params: z.object({ id: z.uuid() }),
+        body: z.object({
+          question: z.string().trim().min(3).max(200).optional(),
+          description: z.string().trim().max(1000).nullish(),
+          options: z.array(z.string().trim().min(1).max(100)).min(2).max(10).optional(),
+          closesAt: z.iso.datetime({ offset: true }).nullish(),
+          resultVisibility: z.enum(['always', 'after_vote', 'after_close']).optional(),
+        }),
+      },
+    },
+    async (request): Promise<PollDetail> =>
+      updatePoll(app.db, request.actor!, request.params.id, request.body, app.now()),
+  );
+
   app.post(
     '/polls/:id/close',
     { schema: { params: z.object({ id: z.uuid() }) } },
@@ -118,6 +136,24 @@ export const communityRoutes: FastifyPluginAsyncZod = async (app) => {
       const absence = await createAbsence(app.db, request.actor!, request.body, app.now());
       return reply.status(201).send(absence);
     },
+  );
+
+  app.patch(
+    '/absences/:id',
+    {
+      schema: {
+        params: z.object({ id: z.uuid() }),
+        body: z.object({
+          kind: z.enum(ABSENCE_KINDS).optional(),
+          startsOn: isoDate.optional(),
+          endsOn: isoDate.optional(),
+          teamIds: z.array(z.uuid()).max(20).nullish(),
+          note: z.string().trim().max(200).nullish(),
+        }),
+      },
+    },
+    async (request): Promise<Absence> =>
+      updateAbsence(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
 
   app.delete(

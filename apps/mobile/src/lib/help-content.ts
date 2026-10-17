@@ -239,6 +239,12 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Im Reiter „Verein“ zwischen Newsticker und Sponsoren steht „Helfer gesucht“: Wische durch die Karten, tippe eine an und trage dich in der Helfer-Ansicht in eine Schicht ein. Gibt es keine offenen Schichten, fehlt der Abschnitt.',
       },
       {
+        id: 'edit-content',
+        question: 'Kann ich etwas nachträglich ändern, das ich angelegt habe?',
+        answer:
+          'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch). Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.',
+      },
+      {
         id: 'deadline',
         question: 'Was ist die Absagefrist?',
         answer:

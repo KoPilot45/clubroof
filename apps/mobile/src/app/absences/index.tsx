@@ -17,6 +17,7 @@ import {
 import { ABSENCE_ICONS, ABSENCE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { useConfirmDelete } from '@/lib/confirm';
+import { EditedNote } from '@/components/edited';
 import { dateFormat } from '@/lib/i18n';
 
 const dateFmt = dateFormat({
@@ -72,6 +73,13 @@ function AbsenceCard({ absence, showPerson }: { absence: Absence; showPerson: bo
         />
       </View>
       {absence.note ? <T variant="caption">„{absence.note}“</T> : null}
+      <EditedNote at={absence.editedAt} />
+      <Button
+        label="Abwesenheit bearbeiten"
+        variant="outline"
+        icon="create-outline"
+        onPress={() => router.push(`/absences/new?id=${absence.id}`)}
+      />
       <Button
         label="Abwesenheit löschen"
         variant="outline"

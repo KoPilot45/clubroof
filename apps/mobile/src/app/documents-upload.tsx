@@ -1,7 +1,8 @@
-import type { DocumentCategory } from '@clubroof/core';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { DocumentCategory, DocumentItem } from '@clubroof/core';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { EditedNote, useLeaveGuard } from '@/components/edited';
 import { Button, Card, ChoiceChips, Chip, Screen, T, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatBytes } from '@/lib/format';
@@ -20,7 +21,8 @@ const key = (t: { type: string; id: string | null }) => `${t.type}:${t.id ?? ''}
 export default function UploadDocumentScreen() {
   const { api, me } = useSignedIn();
   const queryClient = useQueryClient();
-  const { teamId } = useLocalSearchParams<{ teamId?: string }>();
+  const { teamId, id } = useLocalSearchParams<{ teamId?: string; id?: string }>();
+  const editing = !!id;
   const targets = me.create.documents;
   const preset = targets.find((t) => t.type === 'team' && t.id === teamId) ?? targets[0];
   const [file, setFile] = useState<PickedFile | null>(null);
@@ -29,6 +31,23 @@ export default function UploadDocumentScreen() {
   const [scope, setScope] = useState(preset ? key(preset) : '');
   const [error, setError] = useState<string | null>(null);
   const target = targets.find((t) => key(t) === scope);
+
+  // Bearbeiten: Titel, Art und Sichtbarkeit; die Datei bleibt (austauschen = löschen und neu hochladen)
+  const list = useQuery({
+    queryKey: ['documents', 'edit'],
+    queryFn: () => api<DocumentItem[]>('/documents'),
+    enabled: editing,
+  });
+  const existing = list.data?.find((d) => d.id === id);
+  const [loaded, setLoaded] = useState(!editing);
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    if (!existing || loaded) return;
+    setTitle(existing.title);
+    setCategory(existing.category);
+    setScope(key({ type: existing.source.type, id: existing.scopeId }));
+    setLoaded(true);
+  }, [existing, loaded]);
 
   const choose = async () => {
     setError(null);
@@ -41,6 +60,41 @@ export default function UploadDocumentScreen() {
       setError('Die Datei konnte nicht gelesen werden.');
     }
   };
+
+  const change = useMutation({
+    mutationFn: () =>
+      api<void>(`/documents/${id}`, {
+        method: 'PATCH',
+        body: {
+          title: title.trim(),
+          category,
+          ...(target &&
+          existing &&
+          key(target) !== key({ type: existing.source.type, id: existing.scopeId })
+            ? { scopeType: target.type, scopeId: target.id }
+            : {}),
+        },
+      }),
+    onSuccess: () => {
+      allowLeave();
+      setSaved(true);
+      void queryClient.invalidateQueries({ queryKey: ['documents'] });
+      router.back();
+    },
+    onError: (e) =>
+      setError(
+        e instanceof RequestError ? e.message : 'Die Änderungen konnten nicht gespeichert werden.',
+      ),
+  });
+  const dirty =
+    editing &&
+    loaded &&
+    !saved &&
+    !!existing &&
+    (title !== existing.title ||
+      category !== existing.category ||
+      scope !== key({ type: existing.source.type, id: existing.scopeId }));
+  const { guard, allowLeave } = useLeaveGuard(dirty, () => change.mutate());
 
   const upload = useMutation({
     mutationFn: () =>
@@ -65,7 +119,8 @@ export default function UploadDocumentScreen() {
 
   return (
     <Screen edges={[]}>
-      <Card style={{ gap: 10 }}>
+      {guard}
+      <Card style={{ gap: 10, display: editing ? 'none' : 'flex' }}>
         <Button
           label={file ? 'Andere Datei wählen' : 'Datei auswählen'}
           variant="outline"
@@ -96,14 +151,25 @@ export default function UploadDocumentScreen() {
           onToggle={setScope}
         />
       </Card>
+      {editing ? <EditedNote at={existing?.editedAt} /> : null}
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      <Button
-        label="Hochladen"
-        icon="cloud-upload"
-        disabled={!file || title.trim().length < 2 || !target}
-        loading={upload.isPending}
-        onPress={() => upload.mutate()}
-      />
+      {editing ? (
+        <Button
+          label="Änderungen speichern"
+          icon="checkmark"
+          disabled={title.trim().length < 2 || !target}
+          loading={change.isPending}
+          onPress={() => change.mutate()}
+        />
+      ) : (
+        <Button
+          label="Hochladen"
+          icon="cloud-upload"
+          disabled={!file || title.trim().length < 2 || !target}
+          loading={upload.isPending}
+          onPress={() => upload.mutate()}
+        />
+      )}
     </Screen>
   );
 }

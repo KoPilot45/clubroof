@@ -9,6 +9,7 @@ import { randomUUID } from 'node:crypto';
 import {
   can,
   scopesWith,
+  type UpdateDocumentInput,
   type UploadDocumentInput,
   type UploadImageInput,
   type UploadedImage,
@@ -179,6 +180,56 @@ export async function uploadDocument(
     now,
   );
   return { id };
+}
+
+/** Dokument nachträglich ändern (Paket BE): Titel, Kategorie, Sichtbarkeit. Die Datei selbst bleibt. */
+export async function updateDocument(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdateDocumentInput,
+  now: Date,
+): Promise<void> {
+  const [doc] = await db
+    .select()
+    .from(s.documents)
+    .where(and(eq(s.documents.id, id), eq(s.documents.clubId, actor.club.id)));
+  if (!doc) throw notFound('Das Dokument');
+  const ctx = await loadScopeContext(db, actor);
+  const target = targetOf(ctx, doc.scopeType, doc.scopeId);
+  const allowed = target
+    ? can(actor.grants, 'documents.manage', target)
+    : actorCan(actor, 'documents.manage');
+  if (!allowed) throw notFound('Das Dokument');
+  const patch: Partial<typeof s.documents.$inferInsert> = {};
+  if (input.title !== undefined) patch.title = input.title.trim();
+  if (input.category !== undefined) patch.category = input.category;
+  // Sichtbarkeit ändern: dafür braucht es das Recht auch im neuen Bereich
+  if (input.scopeType !== undefined) {
+    const { scopeId } = requireScope(
+      actor,
+      ctx,
+      'documents.manage',
+      input.scopeType,
+      input.scopeId,
+      'Für diesen Bereich darfst du keine Dokumente verwalten.',
+    );
+    patch.scopeType = input.scopeType;
+    patch.scopeId = scopeId;
+  }
+  await db
+    .update(s.documents)
+    .set({ ...patch, editedAt: now })
+    .where(eq(s.documents.id, id));
+  await audit(
+    db,
+    actor,
+    'document.updated',
+    'document',
+    id,
+    `Dokument geändert: ${patch.title ?? doc.title}`,
+    now,
+  );
 }
 
 export async function deleteDocument(

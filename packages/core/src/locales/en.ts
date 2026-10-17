@@ -109,6 +109,7 @@ export const en: Record<string, string> = {
   '{0} Filter aktiv': '{0} filters active',
   '{0} frei': '{0} free',
   '{0} geändert': '{0} changed',
+  '{0} geändert: {1}': '{0} changed: {1}',
   '{0} geänderte Spiele': '{0} changed matches',
   '{0} gefällt das': '{0} like this',
   '{0} gegen {1}, {2}': '{0} versus {1}, {2}',
@@ -409,6 +410,7 @@ export const en: Record<string, string> = {
   Abwesend: 'Absent',
   'Abwesend: {0}': 'Absent: {0}',
   Abwesenheit: 'Absence',
+  'Abwesenheit bearbeiten': 'Edit absence',
   'Abwesenheit eintragen': 'Enter absence',
   'Abwesenheit löschen': 'Delete absence',
   'Abwesenheit melden': 'Report absence',
@@ -523,6 +525,7 @@ export const en: Record<string, string> = {
   'Änderung speichern und informieren': 'Save change and notify',
   'Änderungen dieser Bedingungen werden rechtzeitig in der App bekannt gegeben.':
     'Changes to these terms will be announced in the app in good time.',
+  'Änderungen speichern': 'Save changes',
   'Änderungen speichern?': 'Save changes?',
   'Änderungen veröffentlichen': 'Publish changes',
   Änderungsprotokoll: 'Change log',
@@ -1278,6 +1281,7 @@ export const en: Record<string, string> = {
   'Der Name steht in Terminen und Listen, das Kürzel auf den Kacheln.':
     'The name appears in events and lists, the abbreviation on the tiles.',
   'Der neue Beginn liegt in der Vergangenheit.': 'The new start is in the past.',
+  'Der Ort wurde geändert.': 'The location has changed.',
   'Der Planbetrag darf nicht negativ sein.': 'The planned amount must not be negative.',
   'Der Platz': 'The pitch',
   'Der Platz ist gesperrt: {0}. Bitte wähle einen anderen Platz oder Zeitpunkt.':
@@ -1367,6 +1371,7 @@ export const en: Record<string, string> = {
   'Die Abwesenheit konnte nicht gespeichert werden.': 'The absence could not be saved.',
   'Die Änderung hat nicht geklappt.': "The change didn't work.",
   'Die Änderung konnte nicht gespeichert werden.': 'The change could not be saved.',
+  'Die Änderungen konnten nicht gespeichert werden.': 'The changes could not be saved.',
   'Die Anfrage': 'The request',
   'Die Anmeldung ist abgelaufen. Bitte erneut anmelden.':
     'Your login has expired. Please log in again.',
@@ -1565,6 +1570,7 @@ export const en: Record<string, string> = {
   'Die Umfrage konnte nicht erstellt werden.': 'The poll could not be created.',
   'Die Veranstaltung': 'The event',
   'Die Veranstaltung liegt in der Vergangenheit.': 'The event is in the past.',
+  'Die Veranstaltung wurde nicht gefunden.': 'The event was not found.',
   'Die Vereinseinstellungen ändert die Vereinsadministration.':
     'Club administration changes the club settings.',
   'Die Vereinskasse führt der Kassenwart (Verein).':
@@ -1586,6 +1592,7 @@ export const en: Record<string, string> = {
     "Other players' figures are only visible to the team.",
   'Die Zeile „{0}“ wird aus dem Haushaltsplan entfernt.':
     'The line “{0}” will be removed from the budget.',
+  'Die Zeit wurde geändert.': 'The time has changed.',
   'Die Zugehörigkeit zu „{0}“ wird beendet.': 'Membership of “{0}” will end.',
   'Die Zuordnung': 'The assignment',
   'Die Zuwendungsbestätigung': 'The donation receipt',
@@ -1636,9 +1643,11 @@ export const en: Record<string, string> = {
   'Diese Seite gibt es nicht.': 'This page does not exist.',
   'Diese Strafen gelten in deiner Mannschaft. Festgelegt werden sie vom Trainerteam und der Kasse.':
     'These fines apply on your team. They are set by the coaching staff and the team fund.',
+  'Diese Umfrage kannst du nicht ändern.': 'You cannot change this poll.',
   'Diese Umfrage kannst du nicht beenden.': 'You cannot close this poll.',
   'Diese Unternehmen unterstützen unseren Verein. Danke! Wir werten nicht aus, wer sich welche Seite ansieht.':
     'These companies support our club. Thank you! We do not track who looks at which page.',
+  'Diese Veranstaltung darfst du nicht ändern.': 'You may not change this event.',
   'Diese Woche': 'This week',
   'Diese Woche stehen keine Termine an.': 'No events this week.',
   'Diesen Sponsor gibt es nicht mehr.': 'This sponsor no longer exists.',
@@ -1657,6 +1666,7 @@ export const en: Record<string, string> = {
   'Dieses Passwort ist zu leicht zu erraten.': 'This password is too easy to guess.',
   'Dir zugeteilte Mannschaftsaufgaben': 'Team tasks assigned to you',
   Do: 'Thu',
+  'Dokument geändert: {0}': 'Document changed: {0}',
   'Dokument gelöscht: {0}': 'Document deleted: {0}',
   'Dokument hochgeladen: {0}': 'Document uploaded: {0}',
   'Dokument hochladen': 'Upload document',
@@ -1680,6 +1690,8 @@ export const en: Record<string, string> = {
   'Du gehörst ab heute zu {0}.': 'You belong to {0} from today.',
   'Du hast {0} Guthaben': 'You have {0} credit',
   'Du hast {0} offen': 'You owe {0}',
+  'Du hast Änderungen vorgenommen, die noch nicht gespeichert sind.':
+    'You have made changes that have not been saved yet.',
   'du hast angefordert, dein Passwort für die Vereins-App zurückzusetzen. Öffne diesen Link':
     'you have requested to reset your password for the club app. Open this link',
   'Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung und Datenübertragbarkeit. Wende dich dazu an deinen Verein oder an den Support.':
@@ -1765,10 +1777,12 @@ export const en: Record<string, string> = {
     'An extra layer of protection: after the password the app asks for a code – from an authenticator app or by email (6 digits, valid for 10 minutes, single use). You set it up under “More → Account & settings”. It is mandatory only for the administrator account, if the club requires it.',
   'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code aus einer Authenticator-App ab. Du richtest ihn unter „Mehr → Konto & Einstellungen“ ein. Wer Verwaltungsrechte hat, muss ihn nutzen, wenn der Verein es verlangt.':
     'Extra protection: after your password, the app asks for a code from an authenticator app. You set it up under “More → Account & settings”. Anyone with administration rights must use it if the club requires it.',
+  'Eine abgesagte Veranstaltung lässt sich nicht ändern.': 'A cancelled event cannot be changed.',
   'Eine Abwesenheit darf höchstens ein Jahr dauern.': 'An absence may last one year at most.',
   'Eine Ausgabe liegt über dem Plan': 'One expense is over plan',
   'Eine ausgewählte Mannschaft gehört nicht zu dieser Person.':
     'A selected team does not belong to this person.',
+  'Eine beendete Umfrage lässt sich nicht mehr ändern.': 'A closed poll can no longer be changed.',
   'Eine gemeinsame Abteilung': 'One shared division',
   'Eine Kasse mit diesem Namen gibt es schon.': 'A fund with this name already exists.',
   'Eine Leihe braucht ein Enddatum in der Zukunft.': 'A loan needs an end date in the future.',
@@ -1777,6 +1791,8 @@ export const en: Record<string, string> = {
     'A series may have at most {0} events (about a year).',
   'Eine stillgelegte Kasse kann nicht Hauptkasse sein.':
     'A deactivated fund cannot be the main fund.',
+  'Eine vergangene Veranstaltung lässt sich nicht mehr ändern.':
+    'A past event can no longer be changed.',
   Eingang: 'Received',
   'Eingang auf Konto': 'Received on account',
   'Eingang buchen': 'Book receipt',
@@ -1959,6 +1975,8 @@ export const en: Record<string, string> = {
   'Es werden {0} wöchentliche Termine angelegt.': '{0} weekly events will be created.',
   'Es werden keine Rückennummern angezeigt.': 'No shirt numbers are shown.',
   'Es wird nur dieser eine Termin angelegt.': 'Only this one event will be created.',
+  'Es wurde schon abgestimmt: Die Antworten lassen sich nicht mehr ändern.':
+    'Votes have already been cast: the answers can no longer be changed.',
   'Eure Vereinsfarbe': 'Your club color',
   'Expo antwortet mit {0}': 'Expo responded with {0}',
   Exportieren: 'Export',
@@ -2024,6 +2042,7 @@ export const en: Record<string, string> = {
   Freizeit: 'Recreational',
   'Frist {0} Uhr': 'Deadline {0}',
   'Frist abgelaufen': 'Deadline passed',
+  'Frist der Umfrage geändert': 'Poll deadline changed',
   'Frist festlegen': 'Set deadline',
   'Frist für den Verwendungsnachweis': 'Deadline for proof of use',
   'Frist für den Verwendungsnachweis setzen': 'Set deadline for proof of use',
@@ -2090,6 +2109,8 @@ export const en: Record<string, string> = {
     'No more changes are possible for this shift.',
   'Für diese Spende wurde schon die Zuwendungsbestätigung {0} ausgestellt. Sie kann nicht storniert werden.':
     'A donation receipt {0} has already been issued for this donation. It cannot be cancelled.',
+  'Für diesen Bereich darfst du keine Dokumente verwalten.':
+    'You may not manage documents for this area.',
   'Für diesen Tag eintragen': 'Enter for this day',
   'Für diesen Termin gibt es bereits einen offenen Bedarf.':
     'There is already an open request for this event.',
@@ -2414,6 +2435,8 @@ export const en: Record<string, string> = {
     'Yes. Under “More → Account & settings → Language” choose Deutsch, English or “Automatic” (your device language). Your choice applies on all your devices, including push notifications. Texts that coaches or the board write themselves (e.g. news) stay in the author’s language.',
   'Ja. Unter „Mehr → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Yes. Under “More → Account & settings” you set the font size (Normal, Large, Extra large) and can lock the app with Face ID, fingerprint or device code. Without internet the app shows the most recently loaded events, news and squad; a notice appears at the top. Replies and changes are only possible with a connection.',
+  'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch). Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
+    'Yes. What you created can be edited later – via “Edit” in the “…” menu or the button in the detail view: polls (question, description and deadline; the answers only as long as nobody has voted), events with helper shifts, absences and documents (title, type and visibility – the file stays; to replace it, delete it and upload again). The form is the same as when creating, just pre-filled. Changed content carries the note “edited” with the time. We tell the people involved about important changes such as time, place or deadline. Cash bookings are not edited: you correct mistakes by cancelling and booking again – so everything stays traceable.',
   Jahr: 'Year',
   'Jahr {0} abschließen': 'Close year {0}',
   'Jahr wieder öffnen': 'Reopen year',
@@ -2491,6 +2514,8 @@ export const en: Record<string, string> = {
   'Kann ich die Schrift vergrößern, die App sperren oder sie ohne Netz nutzen?':
     'Can I enlarge the text, lock the app or use it without a network?',
   'Kann ich die Sprache der App ändern?': 'Can I change the app language?',
+  'Kann ich etwas nachträglich ändern, das ich angelegt habe?':
+    'Can I change something I created afterwards?',
   'Kann ich ohne Internet zu- oder absagen?': 'Can I confirm or decline without internet?',
   'Kann nicht': "Can't",
   'Karte {0} von {1}': 'Card {0} of {1}',
@@ -3396,9 +3421,14 @@ export const en: Record<string, string> = {
     'Turn on what your team uses. Features that are turned off disappear for everyone on the team. Anything the club or section has turned off stays off.',
   'Schau dich im Verein um: Mannschaften, Termine und Neuigkeiten.':
     'Look around the club: teams, events and news.',
+  'Schicht „{0}“ kann nicht entfernt werden: Es haben sich schon Helfer eingetragen.':
+    'Shift “{0}” cannot be removed: helpers have already signed up.',
   'Schicht „{0}“ liegt nicht bei der Veranstaltung.': 'Shift “{0}” is not within the event.',
   'Schicht „{0}“: Ende vor Beginn.': 'Shift “{0}”: end before start.',
+  'Schicht „{0}“: Es haben sich schon {1} Helfer eingetragen, die Zahl der Plätze kann nicht darunter sinken.':
+    'Shift “{0}”: {1} helpers have already signed up, so the number of places cannot go below that.',
   'Schicht {0}': 'Shift {0}',
+  'Schicht entfernen': 'Remove shift',
   'Schicht hinzufügen': 'Add shift',
   'Schichten und Aufgaben rund um Veranstaltungen': 'Shifts and tasks around events',
   Schiedsrichter: 'Referees',
@@ -3428,6 +3458,8 @@ export const en: Record<string, string> = {
   'Schlüssel zurück: {0}': 'Key returned: {0}',
   Schnellzugriff: 'Quick access',
   'Schnellzugriff anpassen': 'Customise quick access',
+  'Schon eingetragen: {0}. Diese Schicht bleibt bestehen.':
+    'Already signed up: {0}. This shift stays.',
   'Schreibweisen im DFBnet (durch Komma getrennt)': 'Spellings in DFBnet (comma-separated)',
   Schriftgröße: 'Font size',
   'Schritt {0} von {1}': 'Step {0} of {1}',
@@ -3868,6 +3900,7 @@ export const en: Record<string, string> = {
   'Umbuchung zwischen Konten': 'Transfer between accounts',
   Umfrage: 'Poll',
   'Umfrage beantworten': 'Answer poll',
+  'Umfrage bearbeiten': 'Edit poll',
   'Umfrage erstellen': 'Create poll',
   'Umfrage jetzt beenden': 'End poll now',
   'Umfrage starten': 'Start poll',
@@ -3894,6 +3927,7 @@ export const en: Record<string, string> = {
   'Unbekannte Mannschaft.': 'Unknown team.',
   'Unbekannte Person.': 'Unknown person.',
   'Unbekannte Rolle.': 'Unknown role.',
+  'Unbekannte Schicht.': 'Unknown shift.',
   'Unbekannte Stufe.': 'Unknown tier.',
   'Unbekannte Zuordnung.': 'Unknown assignment.',
   'Unbekannter Fehler': 'Unknown error',
@@ -3988,6 +4022,7 @@ export const en: Record<string, string> = {
     'useTheme must be used within ThemeProvider.',
   Veranstaltung: 'Event',
   'Veranstaltung anlegen': 'Create event',
+  'Veranstaltung bearbeiten': 'Edit event',
   'Veranstaltung planen': 'Plan event',
   Veranstaltungen: 'Events',
   'Veranstaltungen (sportlich)': 'Events (sporting)',
@@ -4265,6 +4300,8 @@ export const en: Record<string, string> = {
   'Wer tritt bei?': 'Who is joining?',
   'Wer übernimmt?': 'Who takes it?',
   'Wer unseren Verein unterstützt': 'Who supports our club',
+  'Wer zugesagt hat oder als Helfer eingetragen ist, erfährt von geänderter Zeit oder geändertem Ort.':
+    'Anyone who accepted or signed up as a helper will be told about a changed time or location.',
   'Werbung an': 'Advertising on',
   'Werbung in der App': 'Advertising in the app',
   'Werbung je Sponsor als Wischelement mit Kennzeichnung, Seite „Unsere Sponsoren“':

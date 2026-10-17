@@ -64,6 +64,8 @@ export const events = pgTable(
     /** Gezielt eingeladene Mannschaften und Personen einer Vereinsveranstaltung (leer = nach Bereich) */
     audience: jsonb().$type<{ teamIds: string[]; personIds: string[] }>(),
     contactPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    /** Zeitpunkt der letzten nachträglichen Änderung einer Vereinsveranstaltung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
     cancelledReason: text(),
     /** Herkunft Spielplan-Import: DFBnet-Spielkennung (je Mannschaft eindeutig) und Importlauf */
     sourceKey: text(),
@@ -211,6 +213,8 @@ export const absences = pgTable(
     note: text(),
     createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     createdAt: createdAt(),
+    /** Zeitpunkt der letzten nachträglichen Änderung (Paket BE) */
+    editedAt: timestamp({ withTimezone: true }),
   },
   (t) => [index().on(t.clubId), index().on(t.personId, t.startsOn)],
 );

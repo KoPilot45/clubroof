@@ -11,6 +11,7 @@ import {
   type Absence,
   type AbsenceKind,
   type CreateAbsenceInput,
+  type UpdateAbsenceInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, eq, gt, gte, inArray, ne, sql } from 'drizzle-orm';
@@ -73,7 +74,151 @@ async function toAbsences(
     teams: (a.teamIds ?? []).map((id) => teams.find((t) => t.id === id)).filter((t) => !!t),
     note: a.note,
     affectedEvents: Number(affected.find((x) => x.absenceId === a.id)?.n ?? 0),
+    editedAt: a.editedAt?.toISOString() ?? null,
   }));
+}
+
+type AbsenceRow = typeof s.absences.$inferSelect;
+
+/** Betroffene, noch anstehende Termine automatisch absagen. Bewusste Absagen bleiben unverändert. */
+async function applyAbsence(tx: Db, actor: Actor, absence: AbsenceRow, now: Date) {
+  const eventDay = sql`(${s.events.startsAt} at time zone ${actor.club.timezone})::date`;
+  const teamIds = absence.teamIds?.length ? absence.teamIds : null;
+  const affected = await tx
+    .select({ id: s.eventParticipants.id })
+    .from(s.eventParticipants)
+    .innerJoin(s.events, eq(s.events.id, s.eventParticipants.eventId))
+    .where(
+      and(
+        eq(s.eventParticipants.personId, absence.personId),
+        ne(s.eventParticipants.role, 'coach'),
+        ne(s.eventParticipants.status, 'no'),
+        gt(s.events.startsAt, now),
+        sql`${eventDay} between ${absence.startsOn}::date and ${absence.endsOn}::date`,
+        teamIds ? inArray(s.events.teamId, teamIds) : undefined,
+      ),
+    );
+  if (affected.length > 0) {
+    await tx
+      .update(s.eventParticipants)
+      .set({
+        status: 'no',
+        reason: absenceReason(absence.kind),
+        absenceId: absence.id,
+        respondedAt: now,
+        respondedByPersonId: actor.person.id,
+      })
+      .where(
+        inArray(
+          s.eventParticipants.id,
+          affected.map((a) => a.id),
+        ),
+      );
+  }
+}
+
+/** Automatische Absagen einer Abwesenheit zurücknehmen: bei automatischer Zusage auf „zugesagt“, sonst „offen“. */
+async function releaseAbsence(tx: Db, id: string, now: Date) {
+  const rows = await tx
+    .select({ id: s.eventParticipants.id, mode: s.teams.participationMode })
+    .from(s.eventParticipants)
+    .innerJoin(s.events, eq(s.events.id, s.eventParticipants.eventId))
+    .innerJoin(s.teams, eq(s.teams.id, s.events.teamId))
+    .where(and(eq(s.eventParticipants.absenceId, id), gt(s.events.startsAt, now)));
+  const autoYes = rows.filter((r) => r.mode !== 'active_response').map((r) => r.id);
+  const pending = rows.filter((r) => r.mode === 'active_response').map((r) => r.id);
+  const reset = { reason: null, absenceId: null, respondedAt: null, respondedByPersonId: null };
+  if (autoYes.length) {
+    await tx
+      .update(s.eventParticipants)
+      .set({ ...reset, status: 'yes' })
+      .where(inArray(s.eventParticipants.id, autoYes));
+  }
+  if (pending.length) {
+    await tx
+      .update(s.eventParticipants)
+      .set({ ...reset, status: 'pending' })
+      .where(inArray(s.eventParticipants.id, pending));
+  }
+}
+
+/**
+ * Abwesenheit nachträglich ändern (Paket BE): Zeitraum, Grund, Mannschaftsauswahl und Notiz. Die automatischen Absagen
+ * werden zurückgenommen und für den neuen Zeitraum neu berechnet – wie beim Löschen und Anlegen. Ändern dürfen die
+ * Person selbst und ihre Eltern.
+ */
+export async function updateAbsence(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdateAbsenceInput,
+  now: Date,
+): Promise<Absence> {
+  const [absence] = await db
+    .select()
+    .from(s.absences)
+    .where(and(eq(s.absences.id, id), eq(s.absences.clubId, actor.club.id)));
+  if (!absence || !actor.managedIds.includes(absence.personId)) throw notFound('Die Abwesenheit');
+
+  const kind = input.kind ?? absence.kind;
+  if (!ABSENCE_KINDS.includes(kind))
+    throw new HttpError(400, 'invalid_kind', 'Unbekannter Grund der Abwesenheit.');
+  const startsOn = input.startsOn ?? absence.startsOn;
+  const endsOn = input.endsOn ?? absence.endsOn;
+  const start = fromIsoDate(startsOn);
+  const end = fromIsoDate(endsOn);
+  if (end < start)
+    throw new HttpError(400, 'invalid_range', 'Das Ende darf nicht vor dem Beginn liegen.');
+  if ((end.getTime() - start.getTime()) / 86_400_000 > MAX_DAYS)
+    throw new HttpError(400, 'invalid_range', 'Eine Abwesenheit darf höchstens ein Jahr dauern.');
+  if (end < calendarDayOf(now, actor.club.timezone))
+    throw new HttpError(
+      400,
+      'in_past',
+      'Abwesenheiten in der Vergangenheit können nicht eingetragen werden.',
+    );
+  const personTeams = actor.memberships
+    .filter((m) => m.personId === absence.personId)
+    .map((m) => m.teamId);
+  const teamIds =
+    input.teamIds === undefined ? absence.teamIds : input.teamIds?.length ? input.teamIds : null;
+  if (teamIds && teamIds.some((t) => !personTeams.includes(t)))
+    throw new HttpError(
+      400,
+      'invalid_team',
+      'Eine ausgewählte Mannschaft gehört nicht zu dieser Person.',
+    );
+
+  return db.transaction(async (tx) => {
+    await releaseAbsence(tx as unknown as Db, id, now);
+    const [updated] = await tx
+      .update(s.absences)
+      .set({
+        kind,
+        startsOn,
+        endsOn,
+        teamIds,
+        note: input.note === undefined ? absence.note : input.note?.trim() || null,
+        editedAt: now,
+      })
+      .where(eq(s.absences.id, id))
+      .returning();
+    await applyAbsence(tx as unknown as Db, actor, updated!, now);
+    await tx.insert(s.auditLog).values({
+      clubId: actor.club.id,
+      actorUserId: actor.user.id,
+      action: 'absence.update',
+      entityType: 'absence',
+      entityId: id,
+      data: { label: absenceReason(kind), fields: Object.keys(input) },
+      createdAt: now,
+    });
+    const person = actor.managed.find((m) => m.id === absence.personId)!;
+    const [result] = await toAbsences(tx as unknown as Db, [
+      { absence: updated!, firstName: person.firstName, lastName: person.lastName },
+    ]);
+    return result!;
+  });
 }
 
 export async function createAbsence(
@@ -132,39 +277,7 @@ export async function createAbsence(
       })
       .returning();
 
-    // Betroffene, noch anstehende Termine automatisch absagen. Bewusste Absagen bleiben unverändert.
-    const eventDay = sql`(${s.events.startsAt} at time zone ${actor.club.timezone})::date`;
-    const affected = await tx
-      .select({ id: s.eventParticipants.id })
-      .from(s.eventParticipants)
-      .innerJoin(s.events, eq(s.events.id, s.eventParticipants.eventId))
-      .where(
-        and(
-          eq(s.eventParticipants.personId, input.personId),
-          ne(s.eventParticipants.role, 'coach'),
-          ne(s.eventParticipants.status, 'no'),
-          gt(s.events.startsAt, now),
-          sql`${eventDay} between ${input.startsOn}::date and ${input.endsOn}::date`,
-          teamIds ? inArray(s.events.teamId, teamIds) : undefined,
-        ),
-      );
-    if (affected.length > 0) {
-      await tx
-        .update(s.eventParticipants)
-        .set({
-          status: 'no',
-          reason: absenceReason(input.kind),
-          absenceId: absence!.id,
-          respondedAt: now,
-          respondedByPersonId: actor.person.id,
-        })
-        .where(
-          inArray(
-            s.eventParticipants.id,
-            affected.map((a) => a.id),
-          ),
-        );
-    }
+    await applyAbsence(tx as unknown as Db, actor, absence!, now);
 
     const person = actor.managed.find((m) => m.id === input.personId)!;
     const [result] = await toAbsences(tx as unknown as Db, [
@@ -198,28 +311,7 @@ export async function deleteAbsence(db: Db, actor: Actor, id: string, now: Date)
   }
 
   await db.transaction(async (tx) => {
-    const rows = await tx
-      .select({ id: s.eventParticipants.id, mode: s.teams.participationMode })
-      .from(s.eventParticipants)
-      .innerJoin(s.events, eq(s.events.id, s.eventParticipants.eventId))
-      .innerJoin(s.teams, eq(s.teams.id, s.events.teamId))
-      .where(and(eq(s.eventParticipants.absenceId, id), gt(s.events.startsAt, now)));
-
-    const autoYes = rows.filter((r) => r.mode !== 'active_response').map((r) => r.id);
-    const pending = rows.filter((r) => r.mode === 'active_response').map((r) => r.id);
-    const reset = { reason: null, absenceId: null, respondedAt: null, respondedByPersonId: null };
-    if (autoYes.length) {
-      await tx
-        .update(s.eventParticipants)
-        .set({ ...reset, status: 'yes' })
-        .where(inArray(s.eventParticipants.id, autoYes));
-    }
-    if (pending.length) {
-      await tx
-        .update(s.eventParticipants)
-        .set({ ...reset, status: 'pending' })
-        .where(inArray(s.eventParticipants.id, pending));
-    }
+    await releaseAbsence(tx as unknown as Db, id, now);
     await tx.delete(s.absences).where(eq(s.absences.id, id));
   });
 }
