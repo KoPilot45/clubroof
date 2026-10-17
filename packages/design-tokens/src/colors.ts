@@ -141,7 +141,12 @@ export type AnstossRoles = {
   amberGradient: readonly [string, string];
   /** Hero in den eigenen Bereichen (Verwaltung, Vereinskasse) */
   areaHeroes: Record<'admin' | 'cash', { from: string; to: string }>;
+  /** Spielfeld des Aufstellungsplaners (Paket AUF): zwei Rasenstreifen, Linien (in beiden Darstellungen gleich) */
+  pitch: { grass: string; grassAlt: string; line: string };
 };
+
+/** Rasen und Linien des Spielfelds im Aufstellungsplaner; weiße Linien bei 20 % Deckkraft */
+const PITCH = { grass: '#12391F', grassAlt: '#0F3219', line: 'rgba(255,255,255,0.2)' };
 
 export type ThemeColors = ClubColorRoles &
   NeutralColorRoles & {
@@ -543,6 +548,7 @@ export function anstossTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
       amberUrgent: amber,
       amberGradient: AMBER_URGENT.gradient,
       areaHeroes: AREA_HEROES,
+      pitch: PITCH,
     },
   };
 }
@@ -656,6 +662,7 @@ export function anstossLightTheme(key: ClubColorKey): ThemeColors {
       amberUrgent: amber,
       amberGradient: AMBER_URGENT.gradient,
       areaHeroes: AREA_HEROES,
+      pitch: PITCH,
     },
   };
 }
