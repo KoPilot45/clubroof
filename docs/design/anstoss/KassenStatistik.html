@@ -1,0 +1,258 @@
+<title>Kassen-Statistik</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Saira+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Layout: Handy-Bildschirme nebeneinander – Vereinskasse (Übersicht neu, Statistik: Verlauf, Plan gegen Ist, Beiträge und Abteilungen) und Mannschaftskasse. Dunkel im Stil „Anstoß“. Diagrammfarben: Blau = Einnahmen, Orange = Ausgaben (Kategoriefarben, per Skript gegen die Kartenfläche geprüft). */
+:root {
+  --bg: #0B120E; --page: #070C09; --card: #171F1A; --fg: #F2F7F3; --fg2: #C5D6CB; --fg3: #9FB5A6; --fg4: #6F8277;
+  --line: rgba(255,255,255,.09); --line2: rgba(255,255,255,.14); --grid: rgba(255,255,255,.08);
+  --accent: #2EDB6B; --on-accent: #06210F; --sheet: #16211A;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --muted: #6F8277;
+  --good: #2EDB6B; --warn: #FFB020; --bad: #FF6B6B;
+  --display: 'Saira Condensed','Arial Narrow',sans-serif; --body: 'Open Sans',system-ui,sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.4 var(--body); padding-block: 24px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing: .02em; margin: 0 0 6px; text-wrap: balance; }
+.intro { color: var(--fg3); max-width: 72ch; margin: 0 0 26px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 32px 24px; align-items: start; }
+.item > h2 { font: 700 13px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--s1); margin: 0 0 4px; filter: brightness(1.5); }
+.item > p { color: var(--fg3); font-size: 12.5px; margin: 0 0 10px; min-height: 2.8em; max-width: 360px; }
+.phone { width: 100%; max-width: 360px; background: var(--bg); border: 1px solid var(--line2); border-radius: 34px; overflow: hidden; display: flex; flex-direction: column; }
+.band { background: linear-gradient(180deg,#1C4FA3,#143A7A); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+.band.team { background: none; border-bottom: 1px solid var(--line); }
+.band b { font: 800 22px/1 var(--display); letter-spacing: .02em; }
+.band span { font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,.35); border-radius: 99px; padding: 6px 12px; }
+.pad { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+.hero { position: relative; isolation: isolate; border-radius: 28px; padding: 18px; overflow: hidden; background: radial-gradient(120% 120% at 90% 0%, #1F55D6 0%, #0B2A6B 62%, var(--bg) 130%); border: 1px solid rgba(255,255,255,.08); }
+.hero.green { background: radial-gradient(120% 120% at 90% 0%, #1E7A44 0%, #0F3D24 60%, var(--bg) 130%); }
+.hero .waben { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+.over { font: 700 11px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; opacity: .9; }
+.big { font: 800 52px/1 var(--display); margin: 8px 0 2px; }
+.delta { font-size: 12px; color: #BFE9CF; display: flex; align-items: center; gap: 6px; }
+.sec { margin: 4px 0 -4px; display: flex; align-items: center; gap: 9px; font: 700 20px/1 var(--display); text-transform: uppercase; letter-spacing: .04em; }
+.sec::before { content: ""; width: 4px; height: 18px; border-radius: 2px; background: var(--accent); }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.kpi small { font-size: 10.5px; color: var(--fg3); white-space: nowrap; } .kpi b { font: 800 21px/1 var(--display); white-space: nowrap; }
+.kpi .sub { font-size: 10.5px; color: var(--fg3); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 14px; position: relative; }
+.card h3 { margin: 0; font: 700 17px/1.1 var(--display); letter-spacing: .03em; text-transform: uppercase; }
+.card .take { font-size: 12px; color: var(--fg2); margin: 3px 0 10px; }
+.card .take b { color: var(--fg); }
+.legend { display: flex; gap: 14px; font-size: 11.5px; color: var(--fg2); margin: 0 0 6px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 12px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; } .legend i.sq { height: 10px; width: 10px; border-radius: 3px; }
+.tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg,#000 calc(100% - 28px),transparent); mask-image: linear-gradient(90deg,#000 calc(100% - 28px),transparent); padding-right: 28px; }
+.tabs span { flex: none; padding: 8px 14px; border-radius: 99px; background: var(--card); border: 1px solid var(--line2); font: 700 15px/1 var(--display); letter-spacing: .03em; color: var(--fg2); white-space: nowrap; }
+.tabs span.on { background: rgba(46,219,107,.12); border-color: var(--accent); color: var(--accent); }
+.seg { display: flex; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 3px; gap: 3px; }
+.seg span { flex: 1; text-align: center; padding: 7px 4px; border-radius: 11px; font-weight: 700; font-size: 12.5px; color: var(--fg2); }
+.seg span.on { background: var(--accent); color: var(--on-accent); }
+.toggle { float: right; margin: 0 0 6px 8px; font: 700 11px var(--body); color: var(--fg3); border: 1px solid var(--line2); background: none; border-radius: 99px; padding: 5px 10px; cursor: pointer; }
+.chart { position: relative; touch-action: pan-y; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.chart text { fill: var(--fg3); font: 10px var(--body); }
+.tip { pointer-events: none; background: rgba(255,255,255,.06); border: 1px solid var(--line2); border-radius: 10px; padding: 6px 10px; font-size: 11px; color: var(--fg2); display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; min-height: 34px; margin-bottom: 6px; }
+.tip b { color: var(--fg); font: 800 15px var(--display); }
+.tip .r { display: inline-flex; align-items: center; gap: 6px; } .tip .r i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; } .tip .r em { font-style: normal; color: var(--fg); font-weight: 700; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; } .tbl th, .tbl td { text-align: right; padding: 5px 4px; border-bottom: 1px solid var(--line); } .tbl th:first-child, .tbl td:first-child { text-align: left; } .tbl th { color: var(--fg3); font-weight: 600; }
+
+/* Balken-Listen */
+.rows { display: flex; flex-direction: column; gap: 12px; }
+.rw .top { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; gap: 8px; } .rw .top b { font-weight: 600; } .rw .top span { color: var(--fg2); font-size: 11.5px; white-space: nowrap; }
+.subl { font-size: 11.5px; color: var(--fg3); margin-top: 1px; }
+.track { position: relative; height: 10px; border-radius: 5px; background: rgba(255,255,255,.1); margin-top: 6px; overflow: visible; }
+.fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0 4px 4px 0; background: var(--s1); }
+.plan { position: absolute; top: -4px; bottom: -4px; width: 2px; background: #fff; border-radius: 1px; }
+.chipv { font: 700 10.5px var(--body); padding: 2px 8px; border-radius: 99px; margin-left: 6px; } .chipv.ok { color: var(--good); background: rgba(46,219,107,.13); } .chipv.over { color: var(--warn); background: rgba(255,176,32,.16); }
+.stack { display: flex; gap: 2px; height: 14px; } .stack i { display: block; min-width: 4px; } .stack i:first-child { border-radius: 4px 0 0 4px; } .stack i:last-child { border-radius: 0 4px 4px 0; }
+.lg { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 10px; font-size: 12px; color: var(--fg2); }
+.lg div { display: flex; align-items: center; gap: 8px; } .lg i { width: 10px; height: 10px; border-radius: 3px; flex: none; } .lg b { margin-left: auto; color: var(--fg); font-weight: 700; } .lg small { color: var(--fg3); min-width: 36px; text-align: right; }
+.rank .rw .fill { background: var(--muted); } .rank .rw.top1 .fill { background: var(--accent); } .rank .rw.top1 .top b { color: var(--accent); }
+.spark { height: 26px; width: 100%; }
+.cap { font-size: 11px; color: var(--fg4); margin: 8px 2px 0; max-width: 360px; }
+.more { background: rgba(255,255,255,.08); text-align: center; border-radius: 14px; padding: 11px; font-weight: 700; font-size: 13px; }
+</style>
+
+<h1>Kassen-Statistik</h1>
+<p class="intro">Erste Entwürfe für die Auswertungen in Vereinskasse und Mannschaftskasse. Die Diagramme sind echt bedienbar: Über die Linien fahren oder tippen zeigt die Werte, „Als Tabelle“ schaltet die Darstellung um. Alle Zahlen und Namen sind erfunden. Blau steht für Einnahmen, Orange für Ausgaben.</p>
+
+<div class="grid">
+
+<section class="item"><h2>1 · Vereinskasse: Übersicht neu</h2><p>Hero mit Verlauf, drei Kennzahl-Kacheln, Einnahmen und Ausgaben je Bereich als Balken, Einstieg in die Statistik.</p>
+<div class="phone"><div class="band"><b>Vereinskasse</b><span>Beenden</span></div><div class="pad">
+  <div class="hero"><div class="over">Gesamtbestand aller Konten</div><div class="big">18.582,20 €</div><div class="delta">▲ 2.682 € seit Jahresbeginn</div><svg id="heroSpark" class="spark" style="margin-top:8px"></svg></div>
+  <div class="kpis">
+    <div class="kpi"><small>Ausgaben 2026</small><b>9.140 €</b><svg id="k1" class="spark"></svg><span class="sub">Vorjahr 9.020 €</span></div>
+    <div class="kpi"><small>Beitragseingang</small><b>68 %</b><div class="track" style="height:8px"><div class="fill" style="width:68%;background:var(--s1)"></div></div><span class="sub">24 überfällig</span></div>
+    <div class="kpi"><small>Rücklagen</small><b>5.000 €</b><svg id="k3" class="spark"></svg><span class="sub">Ziel 8.000 €</span></div>
+  </div>
+  <h3 class="sec">Einnahmen und Ausgaben</h3>
+  <div class="card"><div class="legend"><span><i class="sq" style="background:var(--s1)"></i>Einnahmen</span><span><i class="sq" style="background:var(--s2)"></i>Ausgaben</span></div><div class="rows" id="bereiche"></div></div>
+  <div class="more">Alle Auswertungen ›</div>
+</div></div><div class="cap">Heute stehen dort Zeilen mit Zahlen. Die Diagramme ersetzen sie, die Zahlen bleiben in der Liste und im Tooltip.</div></section>
+
+<section class="item"><h2>2 · Statistik: Verlauf</h2><p>Eigene Seite mit Themen und Zeitraum. Bestand mit Vorjahr (gestrichelt) und Einnahmen/Ausgaben je Monat.</p>
+<div class="phone"><div class="band"><b>Vereinskasse</b><span>Beenden</span></div><div class="pad">
+  <div class="tabs"><span class="on">Überblick</span><span>Einnahmen &amp; Ausgaben</span><span>Plan gegen Ist</span><span>Beiträge</span><span>Abteilungen</span></div>
+  <div class="seg"><span>Monat</span><span>Quartal</span><span class="on">Jahr</span><span>Saison</span></div>
+  <div class="card"><h3>Bestand im Verlauf</h3><div class="take">Der Bestand liegt <b>2.0 T€ über dem Vorjahr</b>. Höchster Stand im Oktober.</div>
+    <button class="toggle" data-t="c1">Als Tabelle</button>
+    <div class="legend"><span><i style="background:var(--s1)"></i>2026</span><span><i style="background:var(--fg4)"></i>Vorjahr</span></div><div class="chart" id="c1"></div></div>
+  <div class="card"><h3>Einnahmen und Ausgaben je Monat</h3><div class="take">Im Oktober <b>+580 €</b> Überschuss, im Februar und März Verlust durch Platzmiete.</div>
+    <button class="toggle" data-t="c2">Als Tabelle</button>
+    <div class="legend"><span><i class="sq" style="background:var(--s1)"></i>Einnahmen</span><span><i class="sq" style="background:var(--s2)"></i>Ausgaben</span></div><div class="chart" id="c2"></div></div>
+</div></div><div class="cap">Zeitraum und Thema gelten für alle Karten darunter. Hover oder Tippen zeigt die Werte; „Als Tabelle“ bietet dieselben Zahlen ohne Grafik.</div></section>
+
+<section class="item"><h2>3 · Statistik: Plan gegen Ist</h2><p>Je Kategorie ein Balken mit Markierung für den Plan. Abweichungen mit Text und Zeichen, nie nur mit Farbe.</p>
+<div class="phone"><div class="band"><b>Vereinskasse</b><span>Beenden</span></div><div class="pad">
+  <div class="tabs"><span>Überblick</span><span>Einnahmen &amp; Ausgaben</span><span class="on">Plan gegen Ist</span><span>Beiträge</span><span>Abteilungen</span></div>
+  <div class="seg"><span>Monat</span><span>Quartal</span><span class="on">Jahr</span><span>Saison</span></div>
+  <div class="card"><h3>Ausgaben 2026</h3><div class="take"><b>76 % des Plans</b> verbraucht, 9.140 € von 12.000 €. Eine Kategorie liegt über dem Plan.</div>
+    <div class="legend"><span><i class="sq" style="background:var(--s1)"></i>Ist</span><span><i class="sq" style="background:#fff;width:3px"></i>Plan</span></div><div class="rows" id="plan"></div></div>
+</div></div><div class="cap">Die Balken laufen bis 120 % des Plans, die weiße Marke liegt immer bei 100 %.</div></section>
+
+<section class="item"><h2>4 · Statistik: Beiträge und Abteilungen</h2><p>Beitragsstatus als gestapelter Balken, Eingang je Monat, Ausgaben je Abteilung mit Kosten je Mitglied.</p>
+<div class="phone"><div class="band"><b>Vereinskasse</b><span>Beenden</span></div><div class="pad">
+  <div class="tabs"><span>Überblick</span><span>Einnahmen &amp; Ausgaben</span><span>Plan gegen Ist</span><span class="on">Beiträge</span><span>Abteilungen</span></div>
+  <div class="card"><h3>Beiträge 2026</h3><div class="take"><b>68 % eingegangen</b>, 3.390 € offen und 2.470 € überfällig bei 24 Mitgliedern.</div>
+    <div class="stack"><i style="flex:68;background:var(--s1)"></i><i style="flex:18;background:var(--warn)"></i><i style="flex:14;background:var(--bad)"></i></div>
+    <div class="lg"><div><i style="background:var(--s1)"></i>Bezahlt<b>12.540 €</b><small>68 %</small></div><div><i style="background:var(--warn)"></i>Offen, noch nicht fällig<b>3.390 €</b><small>18 %</small></div><div><i style="background:var(--bad)"></i>Überfällig<b>2.470 €</b><small>14 %</small></div></div></div>
+  <div class="card"><h3>Beitragseingang je Monat</h3><div class="take">Die Eingänge häufen sich <b>zum Quartalsbeginn</b>.</div><div class="chart" id="c3"></div></div>
+  <div class="card"><h3>Ausgaben je Abteilung</h3><div class="take">Die Jugend kostet <b>41 € je Mitglied</b>, die Alten Herren 62 €.</div><div class="rows" id="abt"></div></div>
+</div></div><div class="cap">Status mit Farbe und Text. Beim Beitragsstatus gelten die Statusfarben der App (Erfolg, Warnung, Fehler).</div></section>
+
+<section class="item"><h2>5 · Mannschaftskasse: Statistik</h2><p>Kassenstand-Verlauf, Strafen-Rangliste (der Spitzenreiter hervorgehoben) und Zahlungsmoral. Nur für das Trainerteam und die Kassenverantwortlichen.</p>
+<div class="phone"><div class="band team"><b>Statistik</b><span>B-Jugend</span></div><div class="pad">
+  <div class="hero green"><div class="over">Aktueller Kassenstand</div><div class="big">512,35 €</div><div class="delta">▲ 92 € in den letzten 30 Tagen</div></div>
+  <div class="card"><h3>Kassenstand seit Saisonbeginn</h3><div class="take">Seit März <b>+392 €</b>. Größter Sprung im Mai durch die Turnierumlage.</div><button class="toggle" data-t="c4">Als Tabelle</button><div class="chart" id="c4"></div></div>
+  <div class="card rank"><h3>Strafen je Person</h3><div class="take"><b>Gerrit Hanniske</b> führt mit 42,50 €, zusammen 187 € in der Saison.</div><div class="rows" id="strafen"></div></div>
+  <div class="card"><h3>Zahlungsmoral</h3><div class="take"><b>14 von 18</b> haben ihren Beitrag vollständig bezahlt.</div><div class="rows" id="moral"></div></div>
+</div></div><div class="cap">Personenbezogene Auswertungen sehen nur Berechtigte. Die Mannschaft selbst könnte optional nur Kassenstand und Verlauf sehen.</div></section>
+
+</div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const eur = (v) => v.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €';
+const eur2 = (v) => v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+const T = (v) => (v / 1000).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' T€';
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const M = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt'];
+const E = [3400, 2100, 1600, 3200, 2400, 1500, 2800, 2000, 2500, 2100];
+const A = [2900, 2800, 2400, 1900, 3100, 600, 2400, 1400, 1900, 1520];
+const bestand = (() => { let b = 15900; return E.map((e, i) => (b += e - A[i])); })();
+const vorjahr = [14200, 14600, 14400, 15000, 15100, 15300, 15200, 15800, 16100, 16600];
+
+// ---- Liniendiagramm mit Fadenkreuz-Tooltip ----
+function lineChart(host, { labels, series, fmt, ticks, h = 170, at }) {
+  const w = host.clientWidth || 300, L = 40, R = 12, Tp = 10, B = 22, iw = w - L - R, ih = h - Tp - B;
+  const min = ticks[0], max = ticks[ticks.length - 1];
+  const x = (i) => L + (i / (labels.length - 1)) * iw, y = (v) => Tp + ih - ((v - min) / (max - min)) * ih;
+  const path = (vals) => vals.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+  const s0 = series[0];
+  let g = ticks.map((t) => `<line x1="${L}" x2="${w - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)" stroke-width="1"/><text x="${L - 6}" y="${y(t) + 3}" text-anchor="end">${fmt(t)}</text>`).join('');
+  g += labels.map((l, i) => (i % 2 === 0 || i === labels.length - 1 ? `<text x="${x(i)}" y="${h - 6}" text-anchor="middle">${l}</text>` : '')).join('');
+  g += `<path d="${path(s0.vals)}L${x(labels.length - 1)},${y(min)}L${x(0)},${y(min)}Z" fill="${s0.color}" opacity=".1"/>`;
+  [...series].reverse().forEach((s) => { g += `<path d="${path(s.vals)}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"${s.dash ? ' stroke-dasharray="4 4"' : ''}/>`; });
+  const last = labels.length - 1;
+  g += `<circle cx="${x(last)}" cy="${y(s0.vals[last])}" r="4" fill="${s0.color}" stroke="var(--card)" stroke-width="2"/>`;
+  host.innerHTML = `<svg viewBox="0 0 ${w} ${h}" height="${h}" role="img" aria-label="Liniendiagramm">${g}<g id="xh"></g><rect x="${L}" y="${Tp}" width="${iw}" height="${ih}" fill="transparent" id="hit"/></svg>`;
+  host.insertAdjacentHTML('afterbegin', '<div class="tip"></div>');
+  const svg = host.querySelector('svg'), tip = host.querySelector('.tip'), xh = host.querySelector('#xh');
+  const show = (i) => {
+    xh.innerHTML = `<line x1="${x(i)}" x2="${x(i)}" y1="${Tp}" y2="${Tp + ih}" stroke="var(--fg3)" stroke-width="1"/>` + series.map((s) => `<circle cx="${x(i)}" cy="${y(s.vals[i])}" r="4" fill="${s.color}" stroke="var(--card)" stroke-width="2"/>`).join('');
+    tip.innerHTML = `<b>${labels[i]}</b>` + series.map((s) => `<span class="r"><i style="background:${s.color}"></i>${s.name} <em>${fmt === T ? eur(s.vals[i]) : eur2(s.vals[i])}</em></span>`).join('');
+  };
+  const move = (e) => { const r = svg.getBoundingClientRect(); const px = ((e.clientX - r.left) / r.width) * w; show(Math.max(0, Math.min(last, Math.round(((px - L) / iw) * last)))); };
+  host.querySelector('#hit').addEventListener('pointermove', move); host.querySelector('#hit').addEventListener('pointerdown', move);
+  host.querySelector('#hit').addEventListener('pointerleave', () => show(at ?? last));
+  show(at ?? last);
+}
+// ---- Säulen (gruppiert) ----
+function colChart(host, { labels, series, ticks, h = 170, at }) {
+  const w = host.clientWidth || 300, L = 36, R = 6, Tp = 10, B = 22, iw = w - L - R, ih = h - Tp - B, n = labels.length, slot = iw / n;
+  const max = ticks[ticks.length - 1], y = (v) => Tp + ih - (v / max) * ih, bw = Math.min(10, (slot - 6) / series.length - 2);
+  let g = ticks.map((t) => `<line x1="${L}" x2="${w - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)"/><text x="${L - 6}" y="${y(t) + 3}" text-anchor="end">${T(t)}</text>`).join('');
+  labels.forEach((l, i) => {
+    const cx = L + slot * i + slot / 2, tot = series.length * bw + (series.length - 1) * 2;
+    g += `<text x="${cx}" y="${h - 6}" text-anchor="middle">${l}</text>`;
+    series.forEach((s, k) => {
+      const bx = cx - tot / 2 + k * (bw + 2), by = y(s.vals[i]), bh = Tp + ih - by;
+      g += `<path class="bar b${i}" d="M${bx},${Tp + ih}V${by + 4}Q${bx},${by} ${bx + 4},${by}H${bx + bw - 4}Q${bx + bw},${by} ${bx + bw},${by + 4}V${Tp + ih}Z" fill="${s.color}"/>`;
+    });
+    g += `<rect x="${L + slot * i}" y="${Tp}" width="${slot}" height="${ih}" fill="transparent" data-i="${i}" class="hz"/>`;
+  });
+  host.innerHTML = `<svg viewBox="0 0 ${w} ${h}" height="${h}" role="img" aria-label="Säulendiagramm">${g}</svg>`;
+  host.insertAdjacentHTML('afterbegin', '<div class="tip"></div>');
+  const tip = host.querySelector('.tip');
+  const show = (i) => {
+    host.querySelectorAll('.bar').forEach((b) => (b.style.opacity = b.classList.contains('b' + i) ? 1 : .45));
+    const cx = L + slot * i + slot / 2;
+    tip.innerHTML = `<b>${labels[i]}</b>` + series.map((s) => `<span class="r"><i style="background:${s.color}"></i>${s.name} <em>${eur(s.vals[i])}</em></span>`).join('') + (series.length === 2 ? `<span class="r">Saldo <em>${series[0].vals[i] - series[1].vals[i] >= 0 ? '+' : '−'}${eur(Math.abs(series[0].vals[i] - series[1].vals[i]))}</em></span>` : '');
+  };
+  host.querySelectorAll('.hz').forEach((r) => { r.addEventListener('pointermove', () => show(+r.dataset.i)); r.addEventListener('pointerdown', () => show(+r.dataset.i)); });
+  host.addEventListener('pointerleave', () => show(at ?? n - 1));
+  show(at ?? n - 1);
+}
+function tableOf(host, labels, series, f) {
+  host.innerHTML = `<table class="tbl"><tr><th></th>${series.map((s) => `<th>${s.name}</th>`).join('')}</tr>${labels.map((l, i) => `<tr><td>${l}</td>${series.map((s) => `<td>${f(s.vals[i])}</td>`).join('')}</tr>`).join('')}</table>`;
+}
+const charts = {};
+function make(id, kind, cfg) { charts[id] = { kind, cfg, table: false }; draw(id); }
+function draw(id) {
+  const c = charts[id], host = document.getElementById(id);
+  if (c.table) return tableOf(host, c.cfg.labels, c.cfg.series, c.cfg.f || eur);
+  (c.kind === 'line' ? lineChart : colChart)(host, c.cfg);
+}
+document.querySelectorAll('.toggle').forEach((b) => b.addEventListener('click', () => { const c = charts[b.dataset.t]; c.table = !c.table; b.textContent = c.table ? 'Als Diagramm' : 'Als Tabelle'; draw(b.dataset.t); }));
+
+// ---- Sparklines ----
+function spark(id, vals, color, w = 300, h = 26, fill) {
+  const el = document.getElementById(id); w = el.clientWidth || w;
+  const mn = Math.min(...vals), mx = Math.max(...vals), x = (i) => 3 + (i / (vals.length - 1)) * (w - 8), y = (v) => 4 + (h - 8) * (1 - (v - mn) / (mx - mn || 1));
+  el.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  el.innerHTML = `<path d="${vals.map((v, i) => `${i ? 'L' : 'M'}${x(i)},${y(v)}`).join('')}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="${fill ? 1 : .8}"/><circle cx="${x(vals.length - 1)}" cy="${y(vals[vals.length - 1])}" r="3.5" fill="${color}" stroke="${fill ? '#143A7A' : 'var(--card)'}" stroke-width="2"/>`;
+}
+spark('heroSpark', bestand, '#fff', 300, 34, true);
+spark('k1', A.map((a, i) => A.slice(0, i + 1).reduce((x, y) => x + y, 0)), css('--s2'));
+spark('k3', [3000, 3200, 3200, 3800, 4000, 4000, 4400, 4600, 4800, 5000], css('--s1'));
+
+// ---- Balken-Zeilen ----
+const rowsBereiche = [['Ideeller Bereich', 12400, 6800], ['Wirtschaftlicher Geschäftsbetrieb', 4600, 2900], ['Zweckbetrieb', 3200, 2700], ['Vermögensverwaltung', 400, 100]];
+$('#bereiche').innerHTML = rowsBereiche.map(([n, e, a]) => `<div class="rw" title="${n}: Einnahmen ${eur(e)}, Ausgaben ${eur(a)}"><div class="top"><b>${n}</b><span>${eur(e - a)} Saldo</span></div><div class="track" style="height:8px"><div class="fill" style="width:${e / 124}%;background:var(--s1)"></div></div><div class="track" style="height:8px;margin-top:4px"><div class="fill" style="width:${a / 124}%;background:var(--s2)"></div></div><div class="top" style="margin-top:4px"><span>Einnahmen ${eur(e)}</span><span>Ausgaben ${eur(a)}</span></div></div>`).join('');
+const plan = [['Platzmiete und Hallengebühren', 5200, 4100], ['Trainer und Übungsleiter', 4800, 3500], ['Sportgeräte und Material', 2000, 2350], ['Veranstaltungen', 1500, 1180], ['Verwaltung', 1200, 640]];
+$('#plan').innerHTML = plan.map(([n, p, i]) => { const pct = Math.round(i / p * 100), over = i > p; return `<div class="rw"><div class="top"><b>${n}</b><span class="chipv ${over ? 'over' : 'ok'}" style="margin:0">${over ? '▲ +' + (pct - 100) + ' %' : pct + ' %'}</span></div><div class="subl">${eur(i)} von ${eur(p)}</div><div class="track"><div class="fill" style="width:${Math.min(pct, 120) / 1.2}%;background:${over ? 'var(--s2)' : 'var(--s1)'}"></div><div class="plan" style="left:${100 / 1.2}%"></div></div></div>`; }).join('');
+const abt = [['Fußball Senioren', 11200, 38], ['Jugend', 8100, 41], ['Frauen und Mädchen', 2900, 36], ['Alte Herren', 1400, 62]];
+$('#abt').innerHTML = abt.map(([n, v, pm]) => `<div class="rw"><div class="top"><b>${n}</b><span>${eur(v)} · ${pm} € je Mitglied</span></div><div class="track"><div class="fill" style="width:${v / 112}%;background:var(--s1)"></div></div></div>`).join('');
+const str = [['Gerrit Hanniske', 42.5], ['Janne Hauke', 35], ['Gabriel Belz', 28.5], ['Angelo Dreier', 22], ['Cem Heinrich', 17.5], ['Juan Buchholz', 12]];
+$('#strafen').innerHTML = str.map(([n, v], i) => `<div class="rw${i ? '' : ' top1'}"><div class="top"><b>${n}</b><span>${eur2(v)}</span></div><div class="track" style="height:8px"><div class="fill" style="width:${v / 42.5 * 100}%"></div></div></div>`).join('');
+const mor = [['Chantal Feuerbach', 100, ''], ['Gerrit Hanniske', 100, ''], ['Janne Hauke', 75, 'offen 12,50 €'], ['Angelo Dreier', 50, 'offen 25,00 €'], ['Tim Fricke', 25, 'offen 37,50 € · überfällig']];
+$('#moral').innerHTML = mor.map(([n, p, o]) => `<div class="rw"><div class="top"><b>${n}</b>${p < 50 ? '<span class="chipv over" style="margin:0">▲ überfällig</span>' : ''}</div><div class="subl">${o || 'bezahlt'}</div><div class="track" style="height:8px"><div class="fill" style="width:${p}%;background:${p === 100 ? 'var(--s1)' : p >= 50 ? 'var(--s1)' : 'var(--warn)'}"></div></div></div>`).join('');
+
+// ---- Diagramme ----
+const s1 = css('--s1'), s2 = css('--s2'), fg4 = css('--fg4');
+requestAnimationFrame(() => {
+  make('c1', 'line', { labels: M, series: [{ name: '2026', color: s1, vals: bestand }, { name: 'Vorjahr', color: fg4, vals: vorjahr, dash: true }], fmt: T, ticks: [12000, 14000, 16000, 18000, 20000], f: eur });
+  make('c2', 'col', { labels: M, series: [{ name: 'Einnahmen', color: s1, vals: E }, { name: 'Ausgaben', color: s2, vals: A }], ticks: [0, 1000, 2000, 3000, 4000], at: 2 });
+  make('c3', 'col', { labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt'], series: [{ name: 'Eingang', color: s1, vals: [2800, 400, 300, 2700, 500, 400, 2600, 380, 350, 1900] }], ticks: [0, 1000, 2000, 3000] });
+  make('c4', 'line', { labels: ['Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt'], series: [{ name: 'Kassenstand', color: css('--accent'), vals: [120, 210, 180, 340, 300, 420, 380, 512] }], fmt: (v) => v + ' €', ticks: [0, 150, 300, 450, 600], f: eur2 });
+});
+
+// Waben wie in der App
+function waben(el, k) {
+  const w = el.offsetWidth, h = el.offsetHeight, R = 26, polys = [];
+  const cols = Math.ceil(w / (1.5 * R)) + 2, rows = Math.ceil(h / (2 * .866 * R)) + 2;
+  for (let i = -1; i < cols; i++) for (let j = -1; j < rows; j++) {
+    const cx = -19 + 1.5 * R * i, cy = -22.5 + 2 * .866 * R * j + (i % 2 ? .866 * R : 0);
+    const p = [[cx + R, cy], [cx + R / 2, cy + .866 * R], [cx - R / 2, cy + .866 * R], [cx - R, cy], [cx - R / 2, cy - .866 * R], [cx + R / 2, cy - .866 * R]];
+    polys.push(`<polygon points="${p.map(([a, b]) => a.toFixed(1) + ',' + b.toFixed(1)).join(' ')}" fill="none" stroke="#fff" stroke-width="2"/>`);
+  }
+  el.querySelector('.waben')?.remove();
+  el.insertAdjacentHTML('afterbegin', `<svg class="waben" width="${w}" height="${h}" aria-hidden="true"><defs><radialGradient id="g${k}" cx="1" cy="0" r=".9" gradientTransform="scale(1 ${(w / h).toFixed(3)})"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#fff" stop-opacity=".35"/><stop offset=".78" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="m${k}"><rect width="${w}" height="${h}" fill="url(#g${k})"/></mask></defs><g mask="url(#m${k})" opacity=".18">${polys.join('')}</g></svg>`);
+}
+const heros = [...document.querySelectorAll('.hero')];
+const paint = () => heros.forEach((el, i) => waben(el, i));
+paint(); new ResizeObserver(() => { paint(); Object.keys(charts).forEach(draw); }).observe(document.body);
+</script>
