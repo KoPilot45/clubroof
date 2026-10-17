@@ -1,5 +1,5 @@
 /**
- * Paket BE: Inhalte nachträglich bearbeiten (Stufe 1: Umfragen, Abwesenheiten, Dokumente, Vereinsveranstaltungen).
+ * Paket BE: Inhalte nachträglich bearbeiten (Stufe 1: Umfragen, Abwesenheiten, Dokumente, Vereinsveranstaltungen; Stufe 2: Forum, Aushang, Kommentar).
  * pnpm browser-check scripts/e2e/bearbeiten.mjs [--no-build]   (danach pnpm db:reset)
  */
 import { api, button, launch, text } from '../lib/e2e.mjs';
@@ -98,6 +98,23 @@ const b = await launch();
     method: 'POST',
     body: JSON.stringify({ reason: 'Test beendet' }),
   });
+}
+// Stufe 2: Aushang bearbeiten (Fenster), Kommentar bearbeiten
+{
+  const { page, goto, login } = await b.session('spieler');
+  const board = await api('/board', login.token, {
+    method: 'POST',
+    body: JSON.stringify({ kind: 'offer', title: 'Fußballschuhe Größe 38', detail: '15 €' }),
+  });
+  const item = board.items.find((i) => i.title === 'Fußballschuhe Größe 38');
+  await goto('/board');
+  await button(page, 'Bearbeiten').first().click({ timeout: 20_000 });
+  await page.getByLabel('Was?', { exact: true }).last().fill('Fußballschuhe Größe 39');
+  await button(page, 'Änderungen speichern').click();
+  await text(page, 'Fußballschuhe Größe 39').waitFor({ timeout: 15_000 });
+  await text(page, /bearbeitet · /).waitFor({ timeout: 10_000 });
+  ok(true, 'Aushang bearbeitet, „bearbeitet“ erscheint');
+  await api(`/board/${item.id}/done`, login.token, { method: 'POST' }).catch(() => undefined);
 }
 
 console.log(

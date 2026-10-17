@@ -3,12 +3,15 @@ import type {
   BoardKind,
   BoardOverview,
   CreateBoardItemInput,
+  UpdateBoardItemInput,
   UploadedImage,
 } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { CommentThread } from '@/components/comments';
+import { EditSheet } from '@/components/edit-sheet';
+import { EditedNote } from '@/components/edited';
 import {
   Button,
   Card,
@@ -44,6 +47,8 @@ export default function BoardScreen() {
   const [filter, setFilter] = useState<'all' | 'lostfound' | 'market'>('all');
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
+  const [editing, setEditing] = useState<BoardItem | null>(null);
+  const [days, setDays] = useState('keep');
   const board = useQuery({ queryKey: ['board'], queryFn: () => api<BoardOverview>('/board') });
   const change = useMutation({
     mutationFn: (v: { path: string; body?: unknown }) =>
@@ -107,11 +112,61 @@ export default function BoardScreen() {
             item={item}
             onClose={() => change.mutate({ path: `/board/${item.id}/done` })}
             onToggle={() => setOpen(open === item.id ? null : item.id)}
+            onEdit={() => {
+              setDays('keep');
+              setEditing(item);
+            }}
             expanded={open === item.id}
           />
           {open === item.id ? <CommentThread type="board" id={item.id} /> : null}
         </View>
       ))}
+      <EditSheet
+        visible={editing !== null}
+        onClose={() => setEditing(null)}
+        title="Aushang bearbeiten"
+        fields={[
+          { key: 'title', label: 'Was?', value: editing?.title ?? '', maxLength: 80 },
+          {
+            key: 'detail',
+            label: editing ? KIND[editing.kind].detail : '',
+            value: editing?.detail ?? '',
+            maxLength: 80,
+          },
+          {
+            key: 'description',
+            label: 'Beschreibung (optional)',
+            value: editing?.description ?? '',
+            maxLength: 1000,
+            multiline: true,
+          },
+        ]}
+        onSave={async (v) => {
+          const data = await api<BoardOverview>(`/board/${editing!.id}`, {
+            method: 'PATCH',
+            body: {
+              title: v.title!.trim(),
+              detail: v.detail!.trim() || null,
+              description: v.description!.trim() || null,
+              ...(days === 'keep' ? {} : { days: Number(days) }),
+            } satisfies UpdateBoardItemInput,
+          });
+          queryClient.setQueryData(['board'], data);
+        }}
+      >
+        <ChoiceChips
+          label="Aushängen für"
+          options={[
+            { value: 'keep', label: 'Unverändert' },
+            { value: '7', label: '1 Woche' },
+            { value: '14', label: '2 Wochen' },
+            { value: '30', label: '30 Tage' },
+            { value: '60', label: '60 Tage' },
+          ]}
+          selected={[days]}
+          onToggle={setDays}
+        />
+      </EditSheet>
     </Screen>
   );
 }
@@ -120,11 +175,13 @@ function ItemCard({
   item,
   onClose,
   onToggle,
+  onEdit,
   expanded,
 }: {
   item: BoardItem;
   onClose: () => void;
   onToggle: () => void;
+  onEdit: () => void;
   expanded: boolean;
 }) {
   return (
@@ -150,6 +207,7 @@ function ItemCard({
       </View>
       {item.description ? <T>{item.description}</T> : null}
       <T variant="caption">{`${item.mine ? 'Dein Aushang' : (item.author ?? 'Verein')} · ${formatAgo(item.createdAt)}`}</T>
+      <EditedNote at={item.editedAt} />
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <Button
           label={expanded ? 'Rückfragen ausblenden' : 'Rückfragen'}
@@ -158,6 +216,9 @@ function ItemCard({
           style={{ flex: 1 }}
           onPress={onToggle}
         />
+        {item.canEdit && !item.done ? (
+          <Button label="Bearbeiten" icon="create-outline" variant="outline" onPress={onEdit} />
+        ) : null}
         {item.canClose ? (
           <Button label="Erledigt" icon="checkmark" style={{ flex: 1 }} onPress={onClose} />
         ) : null}

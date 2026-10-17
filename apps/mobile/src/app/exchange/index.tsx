@@ -1,10 +1,14 @@
-import type { ExchangeOverview, PlayerDemand } from '@clubroof/core';
-import { useQuery } from '@tanstack/react-query';
+import type { ExchangeOverview, PlayerDemand, UpdateOfferInput } from '@clubroof/core';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { EditSheet } from '@/components/edit-sheet';
+import { EditedNote } from '@/components/edited';
 import {
   Button,
   Card,
+  ChoiceChips,
   Chip,
   Empty,
   ErrorNotice,
@@ -14,7 +18,7 @@ import {
   T,
   TeamBadge,
 } from '@/components/ui';
-import { formatDay, formatTime, formatShortDate, plural } from '@/lib/format';
+import { formatDay, formatTime, formatShortDate, plural, todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 
 function DemandCard({ demand }: { demand: PlayerDemand }) {
@@ -58,11 +62,20 @@ function DemandCard({ demand }: { demand: PlayerDemand }) {
 
 export default function ExchangeScreen() {
   const { api } = useSignedIn();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState<string | null>(null);
+  const [day, setDay] = useState('');
   const overview = useQuery({
     queryKey: ['exchange'],
     queryFn: () => api<ExchangeOverview>('/exchange'),
   });
   const o = overview.data;
+  const offer = o?.offers.find((x) => x.id === editing);
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(`${todayIso()}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + i);
+    return d.toISOString().slice(0, 10);
+  });
   const open = (o?.demands ?? []).filter((d) => d.status === 'open');
   const done = (o?.demands ?? []).filter((d) => d.status !== 'open');
   return (
@@ -116,8 +129,19 @@ export default function ExchangeScreen() {
                         {plural(offer.count, 'Spieler', 'Spieler')} am {formatShortDate(offer.day)}
                       </T>
                       {offer.note ? <T variant="caption">{offer.note}</T> : null}
+                      <EditedNote at={offer.editedAt} />
                     </View>
-                    {offer.mine ? <Chip tone="neutral" label="Mein Angebot" /> : null}
+                    {offer.mine ? (
+                      <Button
+                        label="Bearbeiten"
+                        size="sm"
+                        variant="outline"
+                        onPress={() => {
+                          setDay(offer.day);
+                          setEditing(offer.id);
+                        }}
+                      />
+                    ) : null}
                   </View>
                 ))}
               </Card>
@@ -132,6 +156,36 @@ export default function ExchangeScreen() {
           ) : null}
         </>
       ) : null}
+      <EditSheet
+        visible={!!offer}
+        onClose={() => setEditing(null)}
+        title="Angebot bearbeiten"
+        fields={[
+          { key: 'count', label: 'Anzahl Spieler', value: String(offer?.count ?? 1), maxLength: 2 },
+          { key: 'note', label: 'Hinweis (optional)', value: offer?.note ?? '', maxLength: 300 },
+        ]}
+        onSave={async (v) => {
+          const data = await api<ExchangeOverview>(`/exchange/offers/${editing}`, {
+            method: 'PATCH',
+            body: {
+              count: Number(v.count),
+              day,
+              note: v.note!.trim() || null,
+            } satisfies UpdateOfferInput,
+          });
+          queryClient.setQueryData(['exchange'], data);
+        }}
+      >
+        <ChoiceChips
+          label="Tag"
+          options={(days.includes(day) || !day ? days : [day, ...days]).map((d) => ({
+            value: d,
+            label: formatShortDate(d),
+          }))}
+          selected={[day]}
+          onToggle={setDay}
+        />
+      </EditSheet>
     </Screen>
   );
 }

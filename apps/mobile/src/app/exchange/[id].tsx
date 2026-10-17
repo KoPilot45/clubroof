@@ -1,4 +1,4 @@
-import type { DemandDetail } from '@clubroof/core';
+import type { DemandDetail, UpdateDemandInput } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -6,6 +6,7 @@ import { View } from 'react-native';
 import {
   Button,
   Card,
+  ChoiceChips,
   Chip,
   ErrorNotice,
   Loading,
@@ -15,10 +16,14 @@ import {
   TeamBadge,
 } from '@/components/ui';
 import { CommentThread } from '@/components/comments';
+import { EditSheet } from '@/components/edit-sheet';
+import { EditedNote } from '@/components/edited';
 import { RequestError } from '@/lib/api';
 import { formatDay, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useConfirmDelete } from '@/lib/confirm';
+
+const POSITIONS = ['Torwart', 'Abwehr', 'Innenverteidigung', 'Außenbahn', 'Mittelfeld', 'Sturm'];
 
 const STATE_LABEL = {
   available: null,
@@ -33,6 +38,8 @@ export default function DemandScreen() {
   const { api } = useSignedIn();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [positions, setPositions] = useState<string[]>([]);
   const demand = useQuery({
     queryKey: ['exchange', 'demand', id],
     queryFn: () => api<DemandDetail>(`/exchange/demands/${id}`),
@@ -90,6 +97,7 @@ export default function DemandScreen() {
           {d.count} Spieler gesucht{d.positions.length ? ` (${d.positions.join(', ')})` : ''}
         </T>
         {d.note ? <T variant="caption">„{d.note}“</T> : null}
+        <EditedNote at={d.editedAt} />
         {open > 0 ? (
           <Chip tone="action" label={`Noch ${open} offen`} />
         ) : (
@@ -201,6 +209,17 @@ export default function DemandScreen() {
 
       {d.mine ? (
         <Button
+          label="Bedarf bearbeiten"
+          variant="outline"
+          icon="create-outline"
+          onPress={() => {
+            setPositions(d.positions);
+            setEditing(true);
+          }}
+        />
+      ) : null}
+      {d.mine ? (
+        <Button
           label="Bedarf zurückziehen"
           variant="danger"
           icon="trash"
@@ -217,6 +236,36 @@ export default function DemandScreen() {
         />
       ) : null}
       <CommentThread type="demand" id={d.id} />
+      <EditSheet
+        visible={editing}
+        onClose={() => setEditing(false)}
+        title="Bedarf bearbeiten"
+        fields={[
+          { key: 'count', label: 'Anzahl Spieler', value: String(d.count), maxLength: 2 },
+          { key: 'note', label: 'Hinweis (optional)', value: d.note ?? '', maxLength: 300 },
+        ]}
+        onSave={async (v) =>
+          done(
+            await api<DemandDetail>(`/exchange/demands/${id}`, {
+              method: 'PATCH',
+              body: {
+                count: Number(v.count),
+                positions,
+                note: v.note!.trim() || null,
+              } satisfies UpdateDemandInput,
+            }),
+          )
+        }
+      >
+        <ChoiceChips
+          label="Positionen (optional)"
+          options={POSITIONS.map((p) => ({ value: p, label: p }))}
+          selected={positions}
+          onToggle={(p) =>
+            setPositions((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]))
+          }
+        />
+      </EditSheet>
     </Screen>
   );
 }
