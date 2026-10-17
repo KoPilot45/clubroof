@@ -179,7 +179,11 @@ export type EventSummary = {
   } | null;
   /** Ende der regulären Zu-/Absagefrist */
   deadline: string | null;
-  counts: AttendanceCounts;
+  /**
+   * Zu- und Absagen der Mannschaft; null, wenn die Mannschaft die Übersicht Spielern und Eltern nicht zeigt
+   * (Trainerteam bekommt sie immer) und bei Terminen ohne Mannschaft.
+   */
+  counts: AttendanceCounts | null;
   myResponses: MyResponse[];
   /**
    * Erfasste Anwesenheit eines vergangenen Termins („14 von 20 da“); null, solange sie nicht erfasst ist
@@ -1180,6 +1184,8 @@ export type TeamProfile = {
   matchDeadlineHours: number | null;
   /** Aufstellung für Spieler und Eltern sichtbar (Paket AUF, Standard aus) */
   lineupVisible: boolean;
+  /** Zu- und Absage-Übersicht für Spieler und Eltern sichtbar (Paket TH, Standard an) */
+  responsesVisible: boolean;
 };
 
 export type TeamManageMember = {
@@ -1833,7 +1839,7 @@ export type MyTeamCard = {
     title: string;
     type: string;
     startsAt: string;
-    counts: AttendanceCounts;
+    counts: AttendanceCounts | null;
   } | null;
   /** Abwesend heute (Urlaub, Verletzung …) */
   absentToday: number;

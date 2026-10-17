@@ -126,7 +126,7 @@ export async function getTileInfo(
       const missing = next.myResponses.some((r) => r.canRespond && r.status === 'pending');
       fig('events', shortDay(next.startsAt), missing ? 'action' : undefined);
       if (missing) put('events', { hint: `Antwort fehlt: ${when(next.startsAt)}`, tone: 'action' });
-      else if (overview.permissions.manageEvents)
+      else if (overview.permissions.manageEvents && next.counts)
         put('events', {
           hint: `${next.counts.yes} von ${overview.squad?.players ?? next.counts.yes} zugesagt`,
           tone: 'info',

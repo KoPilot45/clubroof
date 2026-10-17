@@ -948,6 +948,53 @@ describe.skipIf(!url)('API', () => {
       )!;
     }
 
+    it('Zu- und Absage-Übersicht: Trainerteam immer, Spieler und Eltern nur mit Freigabe der Mannschaft (TH)', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const nextB1 = async (token: string) =>
+        (await get<EventSummary[]>('/events', token)).find(
+          (e) => e.team?.id === b1.id && e.type === 'training' && e.status === 'scheduled',
+        )!;
+      const profile = (on: boolean) =>
+        send('PUT', `/teams/${b1.id}/profile`, coach.token, { responsesVisible: on });
+      try {
+        // Standard: an (bestehende Mannschaften ändern sich nicht)
+        const open = await get<EventDetail>(
+          `/events/${(await nextB1(coach.token)).id}`,
+          player.token,
+        );
+        expect(open.counts).not.toBeNull();
+        expect(open.participants.length).toBeGreaterThan(5);
+
+        expect((await profile(false)).status).toBe(200);
+        const training = await nextB1(coach.token);
+        // Trainerteam bekommt Zahlen und Teilnehmerliste immer
+        expect((await nextB1(coach.token)).counts).not.toBeNull();
+        const forCoach = await get<EventDetail>(`/events/${training.id}`, coach.token);
+        expect(forCoach.counts).not.toBeNull();
+        expect(forCoach.participants.length).toBeGreaterThan(5);
+        // Spieler: weder Zahlen noch Teilnehmerliste, die eigene Antwort bleibt
+        const hiddenList = await nextB1(player.token);
+        expect(hiddenList.counts).toBeNull();
+        expect(hiddenList.myResponses[0]).toMatchObject({ personId: player.me.person.id });
+        const hidden = await get<EventDetail>(`/events/${training.id}`, player.token);
+        expect(hidden.counts).toBeNull();
+        expect(hidden.participants).toEqual([]);
+        expect(hidden.myResponses[0]!.status).toBeDefined();
+        // auch auf den anderen Wegen: Teamübersicht, Terminliste, Home
+        const overview = await get<TeamOverview>(`/teams/${b1.id}`, player.token);
+        expect(overview.nextEvent?.counts ?? null).toBeNull();
+        expect(overview.squad).toBeNull();
+        const home = await get<HomeResponse>('/home', player.token);
+        expect(
+          home.week.concat(home.matches).every((e) => e.team?.id !== b1.id || e.counts === null),
+        ).toBe(true);
+      } finally {
+        await profile(true);
+      }
+    });
+
     it('Spieler sagt für das nächste Training zu', async () => {
       const { token, me } = await login('spieler');
       const training = await nextB1Training(token);
@@ -962,8 +1009,8 @@ describe.skipIf(!url)('API', () => {
       expect(res.statusCode).toBe(200);
       const updated: EventSummary = res.json();
       expect(updated.myResponses[0]!.status).toBe('yes');
-      expect(updated.counts.yes).toBe(training.counts.yes + 1);
-      expect(updated.counts.pending).toBe(training.counts.pending - 1);
+      expect(updated.counts!.yes).toBe(training.counts!.yes + 1);
+      expect(updated.counts!.pending).toBe(training.counts!.pending - 1);
     });
 
     it('niemand antwortet für fremde Personen', async () => {
@@ -1856,7 +1903,7 @@ describe.skipIf(!url)('API', () => {
       expect(created.status, JSON.stringify(created.body)).toBe(201);
       const event = created.body;
       expect(event.title).toBe('Training');
-      expect(event.counts.pending).toBeGreaterThan(10);
+      expect(event.counts!.pending).toBeGreaterThan(10);
       // Die am Folgetag kranke Spielerin bzw. der Spieler ist automatisch abgesagt
       expect(
         event.participants.some((p) => p.status === 'no' && p.reason === 'Abwesend: Krankheit'),
@@ -5319,7 +5366,7 @@ describe.skipIf(!url)('API', () => {
       expect(cards.map((c) => c.team.badge)).toEqual(['2.', 'B1', 'C1']);
       const b1 = cards.find((c) => c.team.badge === 'B1')!;
       expect(b1.openTasks).toBeGreaterThanOrEqual(2);
-      expect(b1.nextEvent!.counts.yes + b1.nextEvent!.counts.pending).toBeGreaterThan(0);
+      expect(b1.nextEvent!.counts!.yes + b1.nextEvent!.counts!.pending).toBeGreaterThan(0);
       const player = await get<MyTeamCard[]>('/my-teams', (await login('spieler')).token);
       expect(player.map((c) => c.team.badge)).toEqual(['B1']);
       // Wer in keiner Mannschaft ist, hat keine Karten
@@ -6191,11 +6238,11 @@ describe.skipIf(!url)('API', () => {
         });
       const yes = await put('yes');
       expect(yes.body.myResponses[0]?.status).toBe('yes');
-      expect(yes.body.counts.yes).toBe(target!.counts.yes + 1);
+      expect(yes.body.counts!.yes).toBe(target!.counts!.yes + 1);
       const undone = await put('pending');
       expect(undone.status).toBe(200);
       expect(undone.body.myResponses[0]?.status).toBe('pending');
-      expect(undone.body.counts.yes).toBe(target!.counts.yes);
+      expect(undone.body.counts!.yes).toBe(target!.counts!.yes);
       expect((await put('kaputt')).status).toBe(400);
     });
   });

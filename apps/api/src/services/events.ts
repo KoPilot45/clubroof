@@ -67,6 +67,7 @@ export async function fetchEventRows(
         orgUnitId: s.teams.orgUnitId,
         participationMode: s.teams.participationMode,
         attendanceVisibility: s.teams.attendanceVisibility,
+        responsesVisible: s.teams.responsesVisible,
       },
       facilityName: s.facilities.name,
       match: s.matchDetails,
@@ -82,6 +83,19 @@ export async function fetchEventRows(
 
 function isTeamMember(actor: Actor, teamId: string | null): boolean {
   return teamId !== null && actor.teamIds.includes(teamId);
+}
+
+/**
+ * Zu- und Absage-Übersicht (Zahlen, Teilnehmerliste): das Trainerteam immer, Spieler und Eltern nur, wenn die
+ * Mannschaft sie freigibt (`responsesVisible`). Der Server liefert sie sonst nicht aus.
+ */
+function mayOverview(actor: Actor, row: EventRow): boolean {
+  return (
+    row.team !== null &&
+    (row.team.responsesVisible ||
+      actorCan(actor, 'attendance.read', row.team) ||
+      canOverride(actor, row))
+  );
 }
 
 /** Saisons des Vereins, neueste zuerst (für die Zeitraum-Auswahl im Archiv). */
@@ -212,8 +226,10 @@ export async function summarizeEvents(
 
   return rows.map((row) => {
     const { event } = row;
-    const counts: AttendanceCounts = { yes: 0, no: 0, maybe: 0, pending: 0 };
-    for (const c of countRows) if (c.eventId === event.id) counts[c.status] = Number(c.n);
+    const allCounts: AttendanceCounts = { yes: 0, no: 0, maybe: 0, pending: 0 };
+    for (const c of countRows) if (c.eventId === event.id) allCounts[c.status] = Number(c.n);
+    // Ohne Mannschaft (Vereinstermin) gibt es keine Übersicht; sonst nach Freigabe der Mannschaft
+    const counts = row.team ? (mayOverview(actor, row) ? allCounts : null) : allCounts;
 
     const rule = rules.find((r) => r.teamId === event.teamId && r.eventType === event.type);
     const deadline = responseDeadline(event.startsAt, toDeadlineRule(rule), actor.club.timezone);
@@ -351,7 +367,10 @@ export async function getEventDetail(
     row.team !== null &&
     (actorCan(actor, 'absences.read', row.team) ||
       actorCan(actor, 'attendance.override', row.team));
-  const seesList = row.team !== null && (isTeamMember(actor, row.team.id) || mayReadAttendance);
+  // Teilnehmerliste: Mitglieder der Mannschaft nur mit freigegebener Übersicht, das Trainerteam immer
+  const seesList =
+    row.team !== null &&
+    (mayReadAttendance || (isTeamMember(actor, row.team.id) && mayOverview(actor, row)));
   const namedVisible =
     row.team !== null && toAttendanceVisibility(row.team.attendanceVisibility) === 'named';
 
