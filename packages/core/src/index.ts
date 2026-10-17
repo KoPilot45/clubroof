@@ -14,4 +14,6 @@ export * from './notifications';
 export * from './i18n';
 export * from './map-location';
 export * from './club-cash';
+export * from './lineup';
+export * from './lineup-board';
 export * from './sponsors';

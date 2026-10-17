@@ -83,7 +83,10 @@ function Navigator() {
   }
 
   const signedIn = session.status === 'signedIn';
-  const showNav = signedIn && !NO_SUB_NAV.has(segments[0] ?? '');
+  const showNav =
+    signedIn &&
+    !NO_SUB_NAV.has(segments[0] ?? '') &&
+    !(segments[0] === 'match' && (segments as string[])[2] === 'lineup');
   return (
     <ConfirmProvider>
       <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -310,7 +313,8 @@ function Navigator() {
               />
               <Stack.Screen
                 name="match/[id]/lineup"
-                options={{ headerShown: true, title: 'Aufstellung' }}
+                // Planer ohne Kopfzeile und untere Navigation: Spielfeld, Bank und Kaderleiste sollen zugleich sichtbar sein
+                options={{ headerShown: false, title: 'Aufstellung' }}
               />
               <Stack.Screen
                 name="match/[id]/report"

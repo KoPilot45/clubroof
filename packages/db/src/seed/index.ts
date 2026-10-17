@@ -13,6 +13,7 @@ import {
   MODULES,
   SYSTEM_ROLES,
   CLUB_CASH_CATEGORY_TEMPLATE,
+  FORMATIONS,
   addDays,
   addMinutes,
   at,
@@ -20,6 +21,8 @@ import {
   startOfIsoWeek,
   toIsoDate,
   calendarDayOf,
+  defaultLineupSize,
+  formationLabels,
   todayIn,
   topicInfo,
   type AttendanceStatus,
@@ -416,6 +419,8 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
           name: t.name,
           badge: t.badge,
           ageGroup: t.ageGroup,
+          // Demo: Aufstellung der B-Jugend ist für Spieler und Eltern sichtbar, alle anderen Mannschaften zeigen sie nicht
+          lineupVisible: t.key === 'b1',
           league: t.league,
           leaguePosition: t.leaguePosition ?? null,
           template: t.template,
@@ -983,6 +988,8 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     const nextFjTournament = nextEventOf('fj', 'tournament');
     const nextH1Match = nextEventOf('h1', 'match');
 
+    // Trefferquote je Zusage nach Reihenfolge im Kader: niedrig, mittel, gut, gut
+    const ATTENDANCE_RATE = [38, 72, 100, 100];
     const recordedTrainings = new Set(
       events
         .filter((e) => e.teamId === teamIds.b1 && e.type === 'training' && e.startsAt < now)
@@ -1079,9 +1086,10 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
           respondedAt,
           respondedByPersonId: respondedAt ? (guardianOf.get(personId) ?? personId) : null,
           absenceId: absence?.id ?? null,
-          // B1: Anwesenheit vergangener Trainings erfasst – ab und zu fehlt jemand trotz Zusage
+          // B1: Anwesenheit vergangener Trainings erfasst; Beteiligung je Spieler unterschiedlich, damit im
+          // Aufstellungsplaner alle drei Farbstufen vorkommen (gut ≥ 75 %, mittel 50–74 %, niedrig < 50 %)
           attended: recordedTrainings.has(event.id)
-            ? status === 'yes' && faker.number.int(100) > 8
+            ? status === 'yes' && faker.number.int(100) < ATTENDANCE_RATE[ordered.indexOf(m) % 4]!
             : null,
         });
       }
@@ -1239,6 +1247,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
 
     // ── Aufstellungen und Spielberichte vergangener Spiele ────────────────────────────────
     const lineups: Insert<typeof s.matchLineups>[] = [];
+    const plannedMatches: { eventId: string; size: number; formation: string }[] = [];
     const incidents: Insert<typeof s.matchIncidents>[] = [];
     const jerseyOf = new Map<string, number | null>();
     for (const team of TEAMS) {
@@ -1254,12 +1263,19 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
           .map((p) => p.personId),
       );
       const squad = available.slice(0, 16);
+      // Aufstellungsplaner: Spielform nach Altersklasse, erste Formation der Spielform, Slots hinten nach vorn
+      const lineupSize = defaultLineupSize(team.ageGroup);
+      const formation = FORMATIONS[lineupSize][0]!;
+      const labels = formationLabels(formation);
+      plannedMatches.push({ eventId: md.eventId, size: lineupSize, formation: formation.key });
       squad.forEach((personId, i) =>
         lineups.push({
           clubId,
           eventId: md.eventId,
           personId,
-          role: i < 11 ? 'starter' : 'substitute',
+          role: i < lineupSize ? 'starter' : 'substitute',
+          position: i < lineupSize ? labels[i]! : null,
+          slot: i < lineupSize ? i : null,
           jerseyNumber: jerseyOf.get(`${team.key}:${personId}`) ?? null,
         }),
       );
@@ -1296,7 +1312,44 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
         });
       }
     }
+    // Entwurf im 4-3-3 für das nächste Spiel der B-Jugend (noch nicht veröffentlicht)
+    if (nextB1Match) {
+      const draftFormation = FORMATIONS[11].find((f) => f.key === '4-3-3')!;
+      const draftLabels = formationLabels(draftFormation);
+      const ready = participants
+        .filter((p) => p.eventId === nextB1Match.id && p.role === 'player' && p.status !== 'no')
+        .map((p) => p.personId)
+        .slice(0, 14);
+      plannedMatches.push({ eventId: nextB1Match.id as string, size: 11, formation: '4-3-3' });
+      ready.forEach((personId, i) =>
+        lineups.push({
+          clubId,
+          eventId: nextB1Match.id as string,
+          personId,
+          role: i < 11 ? 'starter' : 'substitute',
+          position: i < 11 ? draftLabels[i]! : null,
+          slot: i < 11 ? i : null,
+          jerseyNumber: jerseyOf.get(`b1:${personId}`) ?? null,
+        }),
+      );
+    }
     await insertChunked(tx, s.matchLineups, lineups);
+    const plannedGroups = new Map<string, typeof plannedMatches>();
+    for (const m of plannedMatches) {
+      const key = `${m.size}|${m.formation}`;
+      plannedGroups.set(key, [...(plannedGroups.get(key) ?? []), m]);
+    }
+    for (const group of plannedGroups.values()) {
+      await tx
+        .update(s.events)
+        .set({ lineupSize: group[0]!.size, lineupFormation: group[0]!.formation })
+        .where(
+          inArray(
+            s.events.id,
+            group.map((m) => m.eventId),
+          ),
+        );
+    }
     await insertChunked(tx, s.matchIncidents, incidents);
 
     // ── News ──────────────────────────────────────────────────────────────────────────────

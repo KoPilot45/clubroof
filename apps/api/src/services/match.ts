@@ -8,11 +8,17 @@
  *    abgeschlossener Bericht zählt in der Statistik; die Anzahl der Tore muss zum Ergebnis passen.
  */
 import {
+  attendancePercent,
   calendarDayOf,
+  defaultLineupSize,
+  findFormation,
+  formationLabels,
+  isLineupSize,
   resolveModule,
   toIsoDate,
   type JerseyMode,
   type JerseySettings,
+  type LineupAttendance,
   type LineupCandidate,
   type LineupEntry,
   type MatchIncident,
@@ -21,7 +27,7 @@ import {
   type SaveReportInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, eq, gte, inArray, isNull, or } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, isNotNull, isNull, lt, or } from 'drizzle-orm';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { notify, recipientsFor } from './event-admin';
@@ -68,8 +74,77 @@ async function loadMatch(db: Db, actor: Actor, eventId: string) {
   };
 }
 
-/** Spieler der Mannschaft und Gastspieler dieses Spiels mit ihrer Zu-/Absage. */
-async function candidatesFor(db: Db, eventId: string): Promise<LineupCandidate[]> {
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Trainingsbeteiligung der letzten vier Wochen (4 × 7 Tage bis jetzt, älteste Woche zuerst): je Woche besuchte
+ * und stattgefundene Trainings (mit erfasster Anwesenheit) der Mannschaft des Spielers – bei Gastspielern der
+ * Stammmannschaft. Wird hier berechnet und nur dem Trainerteam geliefert.
+ */
+async function attendanceFor(
+  db: Db,
+  people: { personId: string; teamId: string | null }[],
+  now: Date,
+): Promise<Map<string, LineupAttendance>> {
+  const from = new Date(now.getTime() - 28 * DAY_MS);
+  const teamIds = [...new Set(people.map((p) => p.teamId).filter((t): t is string => !!t))];
+  const result = new Map<string, LineupAttendance>();
+  const empty = (): LineupAttendance => ({
+    weeks: Array.from({ length: 4 }, () => ({ attended: 0, total: 0 })),
+    percent: null,
+  });
+  if (teamIds.length === 0) {
+    for (const p of people) result.set(p.personId, empty());
+    return result;
+  }
+  const trainings = await db
+    .select({ id: s.events.id, teamId: s.events.teamId, startsAt: s.events.startsAt })
+    .from(s.events)
+    .where(
+      and(
+        inArray(s.events.teamId, teamIds),
+        eq(s.events.type, 'training'),
+        eq(s.events.status, 'scheduled'),
+        isNotNull(s.events.attendanceRecordedAt),
+        gte(s.events.startsAt, from),
+        lt(s.events.startsAt, now),
+      ),
+    );
+  const present = trainings.length
+    ? await db
+        .select({ eventId: s.eventParticipants.eventId, personId: s.eventParticipants.personId })
+        .from(s.eventParticipants)
+        .where(
+          and(
+            inArray(
+              s.eventParticipants.eventId,
+              trainings.map((t) => t.id),
+            ),
+            inArray(
+              s.eventParticipants.personId,
+              people.map((p) => p.personId),
+            ),
+            eq(s.eventParticipants.attended, true),
+          ),
+        )
+    : [];
+  const weekOf = (d: Date) =>
+    Math.min(3, Math.floor((d.getTime() - from.getTime()) / (7 * DAY_MS)));
+  for (const p of people) {
+    const own = empty();
+    for (const t of trainings.filter((x) => x.teamId === p.teamId)) {
+      const w = own.weeks[weekOf(t.startsAt)]!;
+      w.total += 1;
+      if (present.some((x) => x.eventId === t.id && x.personId === p.personId)) w.attended += 1;
+    }
+    own.percent = attendancePercent(own.weeks);
+    result.set(p.personId, own);
+  }
+  return result;
+}
+
+/** Spieler der Mannschaft und Gastspieler dieses Spiels mit ihrer Zu-/Absage und Beteiligung. */
+async function candidatesFor(db: Db, eventId: string, now: Date): Promise<LineupCandidate[]> {
   const guestTeams = s.teams;
   const rows = await db
     .select({
@@ -78,8 +153,10 @@ async function candidatesFor(db: Db, eventId: string): Promise<LineupCandidate[]
       lastName: s.persons.lastName,
       position: s.persons.position,
       status: s.eventParticipants.status,
+      reason: s.eventParticipants.reason,
       role: s.eventParticipants.role,
       guestFrom: guestTeams.badge,
+      guestFromTeamId: s.eventParticipants.guestFromTeamId,
       teamId: s.events.teamId,
     })
     .from(s.eventParticipants)
@@ -100,6 +177,14 @@ async function candidatesFor(db: Db, eventId: string): Promise<LineupCandidate[]
         .from(s.teamMemberships)
         .where(eq(s.teamMemberships.teamId, teamId))
     : [];
+  const attendance = await attendanceFor(
+    db,
+    rows.map((r) => ({
+      personId: r.personId,
+      teamId: r.role === 'guest_player' ? r.guestFromTeamId : r.teamId,
+    })),
+    now,
+  );
   return rows.map((r) => ({
     personId: r.personId,
     name: `${r.firstName} ${r.lastName}`,
@@ -107,13 +192,20 @@ async function candidatesFor(db: Db, eventId: string): Promise<LineupCandidate[]
     position: r.position,
     jerseyNumber: jerseys.find((j) => j.personId === r.personId)?.jersey ?? null,
     guestFrom: r.role === 'guest_player' ? (r.guestFrom ?? 'Gast') : null,
+    reason: r.status === 'no' ? r.reason : null,
+    attendance: attendance.get(r.personId)!,
   }));
 }
 
-export async function getMatchSheet(db: Db, actor: Actor, eventId: string): Promise<MatchSheet> {
+export async function getMatchSheet(
+  db: Db,
+  actor: Actor,
+  eventId: string,
+  now: Date = new Date(),
+): Promise<MatchSheet> {
   const m = await loadMatch(db, actor, eventId);
   const manager = m.canLineup || m.canReport;
-  const candidates = await candidatesFor(db, eventId);
+  const candidates = await candidatesFor(db, eventId, now);
   const [lineupRows, incidentRows] = await Promise.all([
     db.select().from(s.matchLineups).where(eq(s.matchLineups.eventId, eventId)),
     db
@@ -152,11 +244,13 @@ export async function getMatchSheet(db: Db, actor: Actor, eventId: string): Prom
         position: l.position,
         jerseyNumber: l.jerseyNumber ?? c?.jerseyNumber ?? null,
         guestFrom: c?.guestFrom ?? null,
+        slot: l.slot,
       };
     })
     .sort(
       (a, b) =>
         Number(a.role !== 'starter') - Number(b.role !== 'starter') ||
+        (a.slot ?? 99) - (b.slot ?? 99) ||
         (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99) ||
         a.name.localeCompare(b.name),
     );
@@ -178,7 +272,19 @@ export async function getMatchSheet(db: Db, actor: Actor, eventId: string): Prom
     goalsFor: m.match.goalsFor,
     goalsAgainst: m.match.goalsAgainst,
     jerseyMode: jerseyModeOf(actor, m.team),
-    lineup: published || manager ? { published, entries } : null,
+    team: { id: m.team.id, name: m.team.name, badge: m.team.badge },
+    suggestedSize: defaultLineupSize(m.team.ageGroup),
+    lineupVisible: m.canLineup ? m.team.lineupVisible : null,
+    // Trainerteam immer; Spieler und Eltern nur bei veröffentlichter Aufstellung und eingeschalteter Teameinstellung
+    lineup:
+      manager || (published && (m.team.lineupVisible || actorCan(actor, 'attendance.read', m.team)))
+        ? {
+            published,
+            size: isLineupSize(m.event.lineupSize) ? m.event.lineupSize : null,
+            formation: m.event.lineupFormation,
+            entries,
+          }
+        : null,
     candidates: m.canLineup ? candidates : null,
     report: completed || m.canReport ? { completed, incidents } : null,
     can: { editLineup: m.canLineup, editReport: m.canReport },
@@ -204,7 +310,37 @@ export async function saveLineup(
   if (input.entries.filter((e) => e.role === 'starter').length > 11)
     throw new HttpError(400, 'too_many_starters', 'In der Startelf stehen höchstens 11 Spieler.');
 
-  const candidates = await candidatesFor(db, eventId);
+  // Planer (Paket AUF): Spielform und Formation gehören zusammen; jeder Slot und jede Person höchstens einmal
+  if ((input.size === undefined) !== (input.formation === undefined))
+    throw new HttpError(400, 'formation', 'Spielform und Formation gehören zusammen.');
+  const formation = input.size !== undefined ? findFormation(input.size, input.formation) : null;
+  if (input.size !== undefined && !formation)
+    throw new HttpError(400, 'formation', 'Diese Formation gibt es in der Spielform nicht.');
+  const labels = formation ? formationLabels(formation) : null;
+  if (labels) {
+    const starters = input.entries.filter((e) => e.role === 'starter');
+    if (starters.length > labels.length)
+      throw new HttpError(
+        400,
+        'too_many_starters',
+        `In der Startelf stehen höchstens ${labels.length} Spieler.`,
+      );
+    const slots = starters.map((e) => e.slot);
+    if (slots.some((x) => x === null || x === undefined || x < 0 || x >= labels.length))
+      throw new HttpError(
+        400,
+        'slot',
+        'Jeder Spieler der Startelf braucht einen Platz der Formation.',
+      );
+    if (new Set(slots).size !== slots.length)
+      throw new HttpError(400, 'slot_duplicate', 'Ein Platz der Formation ist doppelt besetzt.');
+    if (input.entries.some((e) => e.role !== 'starter' && e.slot != null))
+      throw new HttpError(400, 'slot', 'Nur die Startelf hat Plätze.');
+  } else if (input.entries.some((e) => e.slot != null)) {
+    throw new HttpError(400, 'slot', 'Plätze gibt es nur mit einer Formation.');
+  }
+
+  const candidates = await candidatesFor(db, eventId, now);
   for (const e of input.entries) {
     const c = candidates.find((x) => x.personId === e.personId);
     if (!c) throw new HttpError(400, 'not_in_team', 'Nur Spieler der Mannschaft oder Gastspieler.');
@@ -231,11 +367,16 @@ export async function saveLineup(
           eventId,
           personId: e.personId,
           role: e.role,
-          position: e.position?.trim() || null,
+          position: labels && e.slot != null ? labels[e.slot]! : e.position?.trim() || null,
+          slot: labels ? (e.slot ?? null) : null,
           jerseyNumber: jerseyMode ? (e.jerseyNumber ?? null) : null,
         })),
       );
     }
+    await tx
+      .update(s.events)
+      .set({ lineupSize: input.size ?? null, lineupFormation: formation?.key ?? null })
+      .where(eq(s.events.id, eventId));
     if (input.publish && !wasPublished) {
       await tx
         .update(s.matchDetails)
@@ -248,25 +389,37 @@ export async function saveLineup(
   if (input.publish) {
     const previously = new Set(wasPublished ? before.map((b) => b.personId) : []);
     const fresh = input.entries.filter((e) => !previously.has(e.personId));
-    for (const role of ['starter', 'substitute'] as const) {
-      const people = fresh.filter((e) => e.role === role).map((e) => e.personId);
+    // Zeigt die Mannschaft die Aufstellung nicht an Spieler und Eltern, steht nur „nominiert“ in der Nachricht
+    const groups: { people: string[]; body: string }[] = m.team.lineupVisible
+      ? [
+          {
+            people: fresh.filter((e) => e.role === 'starter').map((e) => e.personId),
+            body: 'Du stehst in der Startelf.',
+          },
+          {
+            people: fresh.filter((e) => e.role === 'substitute').map((e) => e.personId),
+            body: 'Du bist im Kader (Bank).',
+          },
+        ]
+      : [{ people: fresh.map((e) => e.personId), body: 'Du bist nominiert.' }];
+    for (const group of groups) {
       await notify(
         db,
         actor,
-        await recipientsFor(db, people, actor.user.id),
+        await recipientsFor(db, group.people, actor.user.id),
         {
           level: 'important',
           topic: 'matches',
           teamId: m.event.teamId,
           title: `Nominiert: ${m.event.title}`,
-          body: role === 'starter' ? 'Du stehst in der Startelf.' : 'Du bist im Kader (Bank).',
+          body: group.body,
           link: `/events/${eventId}`,
         },
         now,
       );
     }
   }
-  return getMatchSheet(db, actor, eventId);
+  return getMatchSheet(db, actor, eventId, now);
 }
 
 export async function saveReport(
@@ -287,7 +440,7 @@ export async function saveReport(
     .select({ personId: s.matchLineups.personId })
     .from(s.matchLineups)
     .where(eq(s.matchLineups.eventId, eventId));
-  const candidates = await candidatesFor(db, eventId);
+  const candidates = await candidatesFor(db, eventId, now);
   // Mit Aufstellung zählen nur Spieler im Kader, sonst alle Spieler und Gastspieler des Spiels
   const allowed = new Set(
     lineup.length ? lineup.map((l) => l.personId) : candidates.map((c) => c.personId),
@@ -369,7 +522,7 @@ export async function saveReport(
       now,
     );
   }
-  return getMatchSheet(db, actor, eventId);
+  return getMatchSheet(db, actor, eventId, now);
 }
 
 // ── Rückennummern ─────────────────────────────────────────────────────────────

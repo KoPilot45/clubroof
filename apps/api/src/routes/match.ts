@@ -1,6 +1,7 @@
 import {
   JERSEY_MODES,
   LINEUP_ROLES,
+  LINEUP_SIZES,
   MATCH_INCIDENT_KINDS,
   TRANSFER_KINDS,
   type JerseySettings,
@@ -24,7 +25,7 @@ export const matchRoutes: FastifyPluginAsyncZod = async (app) => {
     '/events/:eventId/match',
     { schema: { params: eventParams } },
     async (request): Promise<MatchSheet> =>
-      getMatchSheet(app.db, request.actor!, request.params.eventId),
+      getMatchSheet(app.db, request.actor!, request.params.eventId, app.now()),
   );
 
   app.put(
@@ -33,12 +34,23 @@ export const matchRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: {
         params: eventParams,
         body: z.object({
+          size: z
+            .union(
+              LINEUP_SIZES.map((n) => z.literal(n)) as [
+                z.ZodLiteral<7>,
+                z.ZodLiteral<9>,
+                z.ZodLiteral<11>,
+              ],
+            )
+            .optional(),
+          formation: z.string().trim().max(30).optional(),
           entries: z
             .array(
               z.object({
                 personId: z.uuid(),
                 role: z.enum(LINEUP_ROLES),
                 position: z.string().trim().max(30).nullish(),
+                slot: z.number().int().min(0).max(10).nullish(),
                 jerseyNumber: jersey,
               }),
             )

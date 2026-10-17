@@ -1,4 +1,5 @@
 import type { EventDetail, LineupEntry, MatchIncident, MatchSheet } from '@clubroof/core';
+import { LineupView } from '@/components/lineup/lineup-view';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -133,8 +134,18 @@ export function MatchSection({ event }: { event: EventDetail }) {
             {!m.lineup || m.lineup.entries.length === 0 ? (
               <T variant="caption">Noch keine Aufstellung.</T>
             ) : null}
-            <LineupList title={`Startelf (${starters.length})`} entries={starters} />
-            <LineupList title={`Bank (${bench.length})`} entries={bench} />
+            {m.lineup?.size && m.lineup.formation ? (
+              <LineupView
+                size={m.lineup.size}
+                formation={m.lineup.formation}
+                entries={m.lineup.entries}
+              />
+            ) : (
+              <>
+                <LineupList title={`Startelf (${starters.length})`} entries={starters} />
+                <LineupList title={`Bank (${bench.length})`} entries={bench} />
+              </>
+            )}
             {m.can.editLineup && scheduled && !started ? (
               <Button
                 label={
