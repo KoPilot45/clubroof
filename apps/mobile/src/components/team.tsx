@@ -1,12 +1,10 @@
 import type {
-  AttendanceCounts,
   EventSummary,
   MatchResult,
   SquadComposition,
   SquadStatus,
   TeamHighlights,
 } from '@clubroof/core';
-import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -16,7 +14,7 @@ import { useTheme } from '@/lib/theme';
 import { Card, Chip, DateTile, HeroCard, HeroPill, ListRow, Stat, T } from './ui';
 import { AttendanceOverview } from './squad-sheet';
 import { Swipe, useCardWidth } from './home';
-import { Counted, GrowRow } from '@/lib/motion';
+import { Counted } from '@/lib/motion';
 
 export function SquadStatusCard({ squad }: { squad: SquadStatus }) {
   const { colors } = useTheme();
@@ -218,7 +216,7 @@ export function UpcomingMatches({
   return (
     <View style={{ gap: 8 }}>
       <Swipe width={width} onIndex={setIndex}>
-        {matches.map(({ event, squad }) => {
+        {matches.map(({ event }) => {
           const kind = event.match ? MATCH_KIND_LABELS[event.match.kind] : null;
           const where = event.match ? (event.match.isHome ? 'Heimspiel' : 'Auswärts') : null;
           return (
