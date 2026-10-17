@@ -384,7 +384,9 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                   }
                 />
                 <T variant="caption">{PARTICIPATION_LABELS[team.participationMode]}</T>
-                <AttendanceBar counts={o.nextEvent.counts} absent={o.squad?.absent} />
+                {o.nextEvent.counts ? (
+                  <AttendanceBar counts={o.nextEvent.counts} absent={o.squad?.absent} />
+                ) : null}
               </Card>
             </Section>
           ) : null}
@@ -437,7 +439,9 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                         : [
                             formatTime(e.startsAt),
                             e.location,
-                            `${e.counts.yes} von ${e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending} zugesagt`,
+                            e.counts
+                              ? `${e.counts.yes} von ${e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending} zugesagt`
+                              : null,
                           ]
                             .filter(Boolean)
                             .join(' · ')
@@ -507,7 +511,7 @@ function TeamSwitcher({
       {teams.map((tm) => {
         const active = tm.id === activeId;
         const card = cards.find((c) => c.team.id === tm.id);
-        const open = card ? (card.nextEvent?.counts.pending ?? 0) + card.openTasks : 0;
+        const open = card ? (card.nextEvent?.counts?.pending ?? 0) + card.openTasks : 0;
         const fg = active ? colors.onPrimary : colors.onSurface;
         return (
           <Pressable
