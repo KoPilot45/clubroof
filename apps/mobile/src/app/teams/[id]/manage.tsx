@@ -314,6 +314,7 @@ function ProfileEditor({
   const [position, setPosition] = useState(profile.leaguePosition?.toString() ?? '');
   const [visibility, setVisibility] = useState<AttendanceVisibility>(profile.attendanceVisibility);
   const [lineupVisible, setLineupVisible] = useState(profile.lineupVisible);
+  const [responsesVisible, setResponsesVisible] = useState(profile.responsesVisible);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const digits = (v: string) => v.replace(/\D/g, '').slice(0, 3);
@@ -330,6 +331,7 @@ function ProfileEditor({
           leaguePosition: position ? Number(position) : null,
           attendanceVisibility: visibility,
           lineupVisible,
+          responsesVisible,
           importAliases: aliases
             .split(',')
             .map((a) => a.trim())
@@ -416,6 +418,21 @@ function ProfileEditor({
           {lineupVisible
             ? 'Nach dem Veröffentlichen sichtbar für Trainerteam, Spieler und Eltern'
             : 'Nach dem Veröffentlichen sichtbar nur für das Trainerteam'}
+        </T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <T style={{ flex: 1, fontWeight: '600' }}>
+            Zu- und Absagen für Spieler und Eltern sichtbar
+          </T>
+          <Toggle
+            label="Zu- und Absagen für Spieler und Eltern sichtbar"
+            value={responsesVisible}
+            onChange={setResponsesVisible}
+          />
+        </View>
+        <T variant="caption">
+          {responsesVisible
+            ? 'Spieler und Eltern sehen, wie viele zu- und abgesagt haben und wer.'
+            : 'Nur das Trainerteam sieht Zahlen und Namen; Spieler und Eltern sehen nur die eigene Antwort.'}
         </T>
         {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
         <Button label="Speichern" icon="checkmark" loading={busy} onPress={() => void save()} />

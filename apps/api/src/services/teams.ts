@@ -262,7 +262,8 @@ export async function getTeamOverview(
       resolveModule(actor.modules, 'team_cash', { teamId: team.id, orgUnitId: team.orgUnitId })
         .config.fines === true,
     nextEvent: nextEvent ?? null,
-    squad: nextEvent ? await squadStatus(db, nextEvent.id) : null,
+    // Verfügbarkeit des Kaders folgt der Freigabe der Zu- und Absage-Übersicht (ohne Freigabe nur Trainerteam)
+    squad: nextEvent?.counts ? await squadStatus(db, nextEvent.id) : null,
     composition,
     upcomingMatches,
     lastResults,

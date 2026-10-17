@@ -227,10 +227,22 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Öffne den Termin (Home, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ kannst du einen Grund wählen oder schreiben – das ist freiwillig; bei „Unsicher“ bitten wir um eine kurze Begründung. Den Grund sehen nur das Trainerteam und du selbst.',
       },
       {
+        id: 'responses-overview',
+        question: 'Wer sieht, wie viele zu- und abgesagt haben?',
+        answer:
+          'Im Spiel- und Trainingstermin zeigt ein bunter Balken mit der Zahl der Zusagen, Unsicheren, Absagen und offenen Antworten; auf der Startseite steht er auch unter dem nächsten Spiel. Das Trainerteam sieht ihn immer. Ob Spieler und Eltern Zahlen und Namen sehen, stellt das Trainerteam unter „Mannschaft bearbeiten“ ein; ist es aus, siehst du nur deine eigene Antwort und die deiner Kinder.',
+      },
+      {
+        id: 'helpers-strip',
+        question: 'Wo finde ich offene Helferdienste?',
+        answer:
+          'Im Reiter „Verein“ unter den Kacheln „Veranstaltungen“ steht „Helfer gesucht“: Wische durch die Karten, tippe eine an und trage dich in der Helfer-Ansicht in eine Schicht ein. Gibt es keine offenen Schichten, fehlt der Abschnitt.',
+      },
+      {
         id: 'deadline',
         question: 'Was ist die Absagefrist?',
         answer:
-          'Jede Mannschaft legt fest, bis wann Zu- und Absagen möglich sind. Der Countdown steht am Termin („Frist: Noch 2 Tage“). Danach wende dich an dein Trainerteam – es kann die Rückmeldung für dich ändern.',
+          'Jede Mannschaft legt fest, bis wann Zu- und Absagen möglich sind. Der Countdown steht am Termin („Frist: Noch 2 Tage“). Danach bleibt deine Antwort sichtbar (Schloss „Frist abgelaufen“), ändern kann sie nur dein Trainerteam.',
       },
       {
         id: 'absence',

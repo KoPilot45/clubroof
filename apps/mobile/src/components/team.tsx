@@ -6,6 +6,7 @@ import type {
   SquadStatus,
   TeamHighlights,
 } from '@clubroof/core';
+import { t } from '@/lib/i18n';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -197,25 +198,61 @@ export function TeamBand({
   );
 }
 
-/** Balken der Rückmeldungen zu einem Termin mit Legende (zugesagt, unsicher, abgesagt, offen). */
-export function AttendanceBar({ counts, absent }: { counts: AttendanceCounts; absent?: number }) {
+/**
+ * Balken der Rückmeldungen zu einem Termin mit Legende „12 Zusagen · 1 Unsicher · 2 Absagen · 6 offen“ (Zahl davor,
+ * bei einer Person im Singular; Punkt + Text, nie nur Farbe). Die Beschriftung kommt nur von hier.
+ * `hero`: auf dunklem Untergrund (offen = Weiß 28 %); `compact`: Balken 8 px und eine Legendenzeile (Home-Plakat).
+ */
+export function AttendanceBar({
+  counts,
+  absent,
+  hero,
+  compact,
+}: {
+  counts: AttendanceCounts;
+  absent?: number;
+  hero?: boolean;
+  compact?: boolean;
+}) {
   const { colors } = useTheme();
+  const track = hero ? 'rgba(255,255,255,0.28)' : colors.border;
+  const text = hero ? colors.hero.onHero : undefined;
   const parts = [
-    { key: 'yes', n: counts.yes, color: colors.status.success.solid, label: 'zugesagt' },
-    { key: 'maybe', n: counts.maybe, color: colors.status.action.solid, label: 'unsicher' },
-    { key: 'no', n: counts.no, color: colors.status.urgent.solid, label: 'abgesagt' },
-    { key: 'pending', n: counts.pending, color: colors.border, label: 'offen' },
+    {
+      key: 'yes',
+      n: counts.yes,
+      color: colors.status.success.solid,
+      label: counts.yes === 1 ? t('1 Zusage') : t(`${counts.yes} Zusagen`),
+    },
+    {
+      key: 'maybe',
+      n: counts.maybe,
+      color: colors.status.action.solid,
+      label: t(`${counts.maybe} Unsicher`),
+    },
+    {
+      key: 'no',
+      n: counts.no,
+      color: colors.status.urgent.solid,
+      label: counts.no === 1 ? t('1 Absage') : t(`${counts.no} Absagen`),
+    },
+    { key: 'pending', n: counts.pending, color: track, label: t(`${counts.pending} offen`) },
   ];
   const total = parts.reduce((sum, p) => sum + p.n, 0);
+  const caption = compact ? { fontSize: 11.5, lineHeight: 15 } : null;
   return (
-    <View style={{ gap: 8 }}>
+    <View
+      accessible
+      accessibilityLabel={parts.map((p) => p.label).join(', ')}
+      style={{ gap: compact ? 6 : 8 }}
+    >
       <View
         aria-hidden
         style={{
-          height: 10,
-          borderRadius: 5,
+          height: compact ? 8 : 10,
+          borderRadius: compact ? 4 : 5,
           overflow: 'hidden',
-          backgroundColor: colors.border,
+          backgroundColor: track,
         }}
       >
         <GrowRow style={{ flexDirection: 'row', height: '100%' }}>
@@ -226,11 +263,13 @@ export function AttendanceBar({ counts, absent }: { counts: AttendanceCounts; ab
             : null}
         </GrowRow>
       </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 14, rowGap: 2 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 12, rowGap: 2 }}>
         {parts.map((p) => (
           <View key={p.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: p.color }} />
-            <T variant="caption">{`${p.n} ${p.label}`}</T>
+            <T variant="caption" color={text} verbatim style={caption}>
+              {p.label}
+            </T>
           </View>
         ))}
         {absent ? (
@@ -243,7 +282,7 @@ export function AttendanceBar({ counts, absent }: { counts: AttendanceCounts; ab
                 backgroundColor: colors.status.info.solid,
               }}
             />
-            <T variant="caption">{`${absent} abwesend`}</T>
+            <T variant="caption" color={text} style={caption}>{`${absent} abwesend`}</T>
           </View>
         ) : null}
       </View>
@@ -281,7 +320,7 @@ export function UpcomingMatches({
                   .filter(Boolean)
                   .join(' · ')}
               />
-              <AttendanceBar counts={event.counts} absent={squad.absent} />
+              {event.counts ? <AttendanceBar counts={event.counts} absent={squad.absent} /> : null}
             </Card>
           );
         })}

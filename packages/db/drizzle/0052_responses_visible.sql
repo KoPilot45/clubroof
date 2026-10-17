@@ -1,0 +1,1 @@
+ALTER TABLE "teams" ADD COLUMN "responses_visible" boolean DEFAULT true NOT NULL;
