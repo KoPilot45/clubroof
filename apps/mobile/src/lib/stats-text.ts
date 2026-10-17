@@ -86,3 +86,15 @@ export function planChip(planned: number, actual: number): { label: string; over
     ? { label: `▲ +${pct - 100} %`, over: true }
     : { label: `${pct} %`, over: false };
 }
+
+/** Rücklagen: wie viele ihr Ziel erreicht haben. */
+export function reservesSentence(s: ClubCashStats): string | null {
+  const withGoal = s.reserves.filter((r) => r.targetCents);
+  if (withGoal.length === 0) return null;
+  const done = withGoal.filter((r) => r.balanceCents >= r.targetCents!).length;
+  return done === 0
+    ? t('Noch keine Rücklage hat ihr Ziel erreicht.')
+    : done === 1
+      ? t(`1 von ${withGoal.length} Rücklagen hat ihr Ziel erreicht.`)
+      : t(`${done} von ${withGoal.length} Rücklagen haben ihr Ziel erreicht.`);
+}

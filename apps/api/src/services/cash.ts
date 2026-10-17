@@ -84,6 +84,8 @@ export function cashSettings(account: { settings: AccountSettings } | null): Cas
     drinkPriceCents: v.drinkPriceCents ?? null,
     showMemberBalances: v.showMemberBalances !== false,
     autoReminder: v.autoReminder === true,
+    savingsGoalName: v.savingsGoalName ?? null,
+    savingsGoalCents: v.savingsGoalCents ?? null,
   };
 }
 
@@ -475,6 +477,32 @@ export async function getCashStats(
     fines.set(tx.description, f);
   }
 
+  // Woher das Geld kommt: Forderungen nach Art und echte Einnahmen (ohne Einzahlungen, die nur Forderungen ausgleichen)
+  const sourceMap = new Map<string, number>();
+  for (const { tx } of seasonRows) {
+    if (tx.isCharge || (tx.direction === 'income' && tx.category !== 'einzahlung'))
+      sourceMap.set(tx.category, (sourceMap.get(tx.category) ?? 0) + tx.amountCents);
+  }
+
+  // Getränke je Person in der Saison
+  const drinks = new Map<string, { name: string; count: number; amountCents: number }>();
+  for (const r of seasonRows) {
+    if (!r.tx.isCharge || r.tx.category !== 'getraenke' || !r.tx.personId) continue;
+    const d = drinks.get(r.tx.personId) ?? {
+      name: `${r.firstName} ${r.lastName}`,
+      count: 0,
+      amountCents: 0,
+    };
+    d.count += 1;
+    d.amountCents += r.tx.amountCents;
+    drinks.set(r.tx.personId, d);
+  }
+  const mayShowPerson = (personId: string) =>
+    cashSettings(account).showMemberBalances ||
+    permissions.manageCash ||
+    actor.managedIds.includes(personId);
+  const settings = cashSettings(account);
+
   // Persönliche Konten über alle Zeit (offene Beträge verfallen nicht mit der Saison)
   const personal = new Map<
     string,
@@ -539,6 +567,22 @@ export async function getCashStats(
       }))
       .filter((p) => p.chargedCents > 0)
       .sort((a, b) => b.openCents - a.openCents || a.name.localeCompare(b.name)),
+    sources: [...sourceMap.entries()]
+      .map(([category, cents]) => ({ category, cents }))
+      .filter((x) => x.cents > 0)
+      .sort((a, b) => b.cents - a.cents),
+    drinksByPerson: [...drinks.entries()]
+      .filter(([personId]) => mayShowPerson(personId))
+      .map(([personId, d]) => ({ personId, ...d }))
+      .sort((a, b) => b.amountCents - a.amountCents || a.name.localeCompare(b.name)),
+    goal:
+      settings.savingsGoalName && settings.savingsGoalCents
+        ? {
+            name: settings.savingsGoalName,
+            targetCents: settings.savingsGoalCents,
+            balanceCents: months.at(-1)?.balanceCents ?? 0,
+          }
+        : null,
     openCents,
     paidRate: charged ? Math.round(((charged - openCents) / charged) * 100) : null,
   };

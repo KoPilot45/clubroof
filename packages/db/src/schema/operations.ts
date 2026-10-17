@@ -79,6 +79,9 @@ export const cashAccounts = pgTable(
         drinkPriceCents?: number | null;
         showMemberBalances?: boolean;
         autoReminder?: boolean;
+        /** Sparziel der Mannschaft (z. B. Mannschaftsfahrt), Paket ST */
+        savingsGoalName?: string | null;
+        savingsGoalCents?: number | null;
       }>()
       .notNull()
       .default({}),

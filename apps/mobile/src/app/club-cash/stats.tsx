@@ -8,7 +8,7 @@ import { BarRows, ChartCard, ColumnChart, LineChart, StackBar } from '@/componen
 import { Card, Empty, ErrorNotice, Loading, Screen, Segment, T } from '@/components/ui';
 import { useFundFilter } from '@/lib/fund-filter';
 import { readSetting, writeSetting } from '@/lib/flags';
-import { formatEuro, formatEuroShort, todayIso } from '@/lib/format';
+import { formatEuro, formatEuroShort, formatPercent, todayIso } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import {
@@ -20,6 +20,7 @@ import {
   periodLabel,
   planChip,
   planSentence,
+  reservesSentence,
 } from '@/lib/stats-text';
 import { useTheme } from '@/lib/theme';
 import type { ClubCash } from '@clubroof/core';
@@ -227,51 +228,94 @@ export default function ClubCashStatsScreen() {
           ) : null}
 
           {topic === 'plan' ? (
-            d.plan ? (
-              <ChartCard
-                title="Plan gegen Ist"
-                sentence={planSentence(d)}
-                table={{
-                  head: [t('Kategorie'), t('Plan'), t('Ist'), t('Anteil')],
-                  rows: d.plan.lines.map((l) => [
-                    l.name,
-                    formatEuro(l.plannedCents),
-                    formatEuro(l.actualCents),
-                    planChip(l.plannedCents, l.actualCents).label,
-                  ]),
-                }}
-              >
-                <BarRows
-                  max={120}
-                  rows={d.plan.lines
-                    .filter((l) => l.plannedCents > 0)
-                    .map((l) => {
-                      const chip = planChip(l.plannedCents, l.actualCents);
-                      return {
-                        key: l.categoryId,
-                        label: l.name,
-                        value: Math.min(120, (l.actualCents / l.plannedCents) * 100),
-                        mark: 100,
-                        color: l.direction === 'expense' && chip.over ? c.expense : c.income,
-                        valueLabel: t(
-                          `${formatEuro(l.actualCents)} von ${formatEuro(l.plannedCents)}`,
-                        ),
-                        chip: {
-                          label: chip.label,
-                          tone: l.direction === 'expense' && chip.over ? 'action' : 'neutral',
-                        },
-                      } as const;
-                    })}
-                />
-              </ChartCard>
-            ) : (
-              <Card>
-                <Empty
-                  icon="clipboard-outline"
-                  text="Für dieses Jahr gibt es keinen Haushaltsplan."
-                />
-              </Card>
-            )
+            <>
+              {d.plan ? (
+                <ChartCard
+                  title="Plan gegen Ist"
+                  sentence={planSentence(d)}
+                  table={{
+                    head: [t('Kategorie'), t('Plan'), t('Ist'), t('Anteil')],
+                    rows: d.plan.lines.map((l) => [
+                      l.name,
+                      formatEuro(l.plannedCents),
+                      formatEuro(l.actualCents),
+                      planChip(l.plannedCents, l.actualCents).label,
+                    ]),
+                  }}
+                >
+                  <BarRows
+                    max={120}
+                    rows={d.plan.lines
+                      .filter((l) => l.plannedCents > 0)
+                      .map((l) => {
+                        const chip = planChip(l.plannedCents, l.actualCents);
+                        return {
+                          key: l.categoryId,
+                          label: l.name,
+                          value: Math.min(120, (l.actualCents / l.plannedCents) * 100),
+                          mark: 100,
+                          color: l.direction === 'expense' && chip.over ? c.expense : c.income,
+                          valueLabel: t(
+                            `${formatEuro(l.actualCents)} von ${formatEuro(l.plannedCents)}`,
+                          ),
+                          chip: {
+                            label: chip.label,
+                            tone: l.direction === 'expense' && chip.over ? 'action' : 'neutral',
+                          },
+                        } as const;
+                      })}
+                  />
+                </ChartCard>
+              ) : (
+                <Card>
+                  <Empty
+                    icon="clipboard-outline"
+                    text="Für dieses Jahr gibt es keinen Haushaltsplan."
+                  />
+                </Card>
+              )}
+              {d.reserves.length ? (
+                <ChartCard
+                  title="Rücklagen"
+                  sentence={reservesSentence(d)}
+                  table={{
+                    head: [t('Rücklage'), t('Stand'), t('Ziel')],
+                    rows: d.reserves.map((r) => [
+                      r.name,
+                      formatEuro(r.balanceCents),
+                      r.targetCents ? formatEuro(r.targetCents) : '–',
+                    ]),
+                  }}
+                >
+                  <BarRows
+                    rows={d.reserves.map((r) => ({
+                      key: r.id,
+                      label: r.name,
+                      value: r.targetCents
+                        ? Math.min(120, (Math.max(0, r.balanceCents) / r.targetCents) * 100)
+                        : 0,
+                      mark: r.targetCents ? 100 : undefined,
+                      color: c.aqua,
+                      valueLabel: r.targetCents
+                        ? t(`${formatEuro(r.balanceCents)} von ${formatEuro(r.targetCents)}`)
+                        : t(`${formatEuro(r.balanceCents)}, ohne Ziel`),
+                      chip: r.targetCents
+                        ? {
+                            label: formatPercent(
+                              (Math.max(0, r.balanceCents) / r.targetCents) * 100,
+                            ),
+                            tone:
+                              r.balanceCents >= r.targetCents
+                                ? ('success' as const)
+                                : ('neutral' as const),
+                          }
+                        : undefined,
+                    }))}
+                    max={120}
+                  />
+                </ChartCard>
+              ) : null}
+            </>
           ) : null}
 
           {topic === 'fees' && d.fees ? (

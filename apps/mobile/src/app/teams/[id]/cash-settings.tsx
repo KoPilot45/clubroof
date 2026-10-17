@@ -39,6 +39,10 @@ function Form({
   const [price, setPrice] = useState(
     settings.drinkPriceCents ? centsToInput(settings.drinkPriceCents) : '',
   );
+  const [goalName, setGoalName] = useState(settings.savingsGoalName ?? '');
+  const [goalAmount, setGoalAmount] = useState(
+    settings.savingsGoalCents ? centsToInput(settings.savingsGoalCents) : '',
+  );
   const [showBalances, setShowBalances] = useState(settings.showMemberBalances);
   const [autoReminder, setAutoReminder] = useState(settings.autoReminder);
   return (
@@ -77,6 +81,26 @@ function Form({
           </Card>
         </Section>
       ) : null}
+      <Section title="Sparziel">
+        <Card style={{ gap: 12 }}>
+          <TextField
+            label="Wofür sparen wir?"
+            value={goalName}
+            onChangeText={setGoalName}
+            placeholder={t('z. B. Mannschaftsfahrt')}
+            maxLength={60}
+          />
+          <TextField
+            label="Zielbetrag in €"
+            value={goalAmount}
+            onChangeText={setGoalAmount}
+            placeholder={t('1.500')}
+          />
+          <T variant="caption">
+            Erscheint als Zielbalken in der Kassenstatistik. Leer lassen, wenn es kein Ziel gibt.
+          </T>
+        </Card>
+      </Section>
       <Section title="Sichtbarkeit">
         <Card>
           <ListRow
@@ -114,6 +138,8 @@ function Form({
               accountHolder: holder.trim() || null,
               paypalLink: paypal.trim() || null,
               ...(drinks ? { drinkPriceCents: parseEuro(price) } : {}),
+              savingsGoalName: goalName.trim() && parseEuro(goalAmount) ? goalName.trim() : null,
+              savingsGoalCents: goalName.trim() ? parseEuro(goalAmount) : null,
               showMemberBalances: showBalances,
               autoReminder,
             },

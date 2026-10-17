@@ -3,13 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import { HorizontalBars } from '@/components/cash-charts';
-import { BarRows, ChartCard, ColumnChart, LineChart } from '@/components/charts';
+import { BarRows, ChartCard, ColumnChart, LineChart, StackBar } from '@/components/charts';
 import { Card, Empty, ErrorNotice, Loading, Screen, Section, Stat, T } from '@/components/ui';
 import { cashCategory } from '@/lib/cash';
-import { formatEuro } from '@/lib/format';
+import { formatEuro, formatPercent } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { periodLabel } from '@/lib/stats-text';
 import { useTheme } from '@/lib/theme';
+import type { StackSegment } from '@/components/charts';
 import { useSignedIn } from '@/lib/session';
 
 /** Kassenstatistik der Saison – für die ganze Mannschaft. */
@@ -99,6 +100,60 @@ export default function CashStatsScreen() {
             </>
           ) : null}
 
+          {d.goal ? (
+            <ChartCard
+              title="Sparziel"
+              sentence={t(
+                `${d.goal.name}: ${formatEuro(d.goal.balanceCents)} von ${formatEuro(d.goal.targetCents)} – ${formatPercent(Math.min(100, (d.goal.balanceCents / d.goal.targetCents) * 100))} erreicht.`,
+              )}
+              table={{
+                head: [t('Ziel'), t('Stand'), t('Fehlt')],
+                rows: [
+                  [
+                    d.goal.name,
+                    formatEuro(d.goal.balanceCents),
+                    formatEuro(Math.max(0, d.goal.targetCents - d.goal.balanceCents)),
+                  ],
+                ],
+              }}
+            >
+              <BarRows
+                max={d.goal.targetCents}
+                rows={[
+                  {
+                    key: 'goal',
+                    label: d.goal.name,
+                    value: Math.max(0, d.goal.balanceCents),
+                    mark: d.goal.targetCents,
+                    color: colors.anstoss.chart.aqua,
+                    valueLabel: t(
+                      `${formatEuro(d.goal.balanceCents)} von ${formatEuro(d.goal.targetCents)}`,
+                    ),
+                    chip: {
+                      label: formatPercent(
+                        Math.min(100, (d.goal.balanceCents / d.goal.targetCents) * 100),
+                      ),
+                      tone: d.goal.balanceCents >= d.goal.targetCents ? 'success' : 'neutral',
+                    },
+                  },
+                ]}
+              />
+            </ChartCard>
+          ) : null}
+
+          {d.sources.length ? (
+            <ChartCard
+              title="Woher das Geld kommt"
+              sentence={sourcesSentence(d.sources)}
+              table={{
+                head: [t('Art'), t('Betrag')],
+                rows: d.sources.map((x) => [cashCategory(x.category).label, formatEuro(x.cents)]),
+              }}
+            >
+              <StackBar segments={sourceSegments(d.sources, colors)} />
+            </ChartCard>
+          ) : null}
+
           <Section title="Nach Kategorie">
             <Card>
               {d.categories.length === 0 ? (
@@ -122,18 +177,26 @@ export default function CashStatsScreen() {
           </Section>
 
           {d.fines.length ? (
-            <Section title="Strafen nach Art">
-              <Card>
-                <HorizontalBars
-                  rows={d.fines.map((f) => ({
-                    key: f.name,
-                    label: f.name,
-                    value: f.count,
-                    valueLabel: `${f.count}× · ${formatEuro(f.amountCents)}`,
-                  }))}
-                />
-              </Card>
-            </Section>
+            <ChartCard
+              title="Strafen nach Art"
+              sentence={t(
+                `${d.fines[0]!.name} wurde am häufigsten vergeben (${d.fines[0]!.count}×).`,
+              )}
+              table={{
+                head: [t('Art'), t('Anzahl'), t('Summe')],
+                rows: d.fines.map((f) => [f.name, String(f.count), formatEuro(f.amountCents)]),
+              }}
+            >
+              <BarRows
+                rows={d.fines.map((f, i) => ({
+                  key: f.name,
+                  label: f.name,
+                  value: f.count,
+                  color: i === 0 ? colors.primary : colors.anstoss.textTertiary,
+                  valueLabel: `${f.count}× · ${formatEuro(f.amountCents)}`,
+                }))}
+              />
+            </ChartCard>
           ) : null}
 
           {d.finesByPerson.length ? (
@@ -159,6 +222,33 @@ export default function CashStatsScreen() {
                   valueLabel: t(
                     `${p.count} ${p.count === 1 ? 'Strafe' : 'Strafen'} · ${formatEuro(p.amountCents)}`,
                   ),
+                }))}
+              />
+            </ChartCard>
+          ) : null}
+
+          {d.drinksByPerson.length ? (
+            <ChartCard
+              title="Getränke je Person"
+              sentence={t(
+                `${d.drinksByPerson[0]!.name} hat mit ${d.drinksByPerson[0]!.count} Getränken am meisten.`,
+              )}
+              table={{
+                head: [t('Person'), t('Getränke'), t('Summe')],
+                rows: d.drinksByPerson.map((p) => [
+                  p.name,
+                  String(p.count),
+                  formatEuro(p.amountCents),
+                ]),
+              }}
+            >
+              <BarRows
+                rows={d.drinksByPerson.map((p, i) => ({
+                  key: p.personId,
+                  label: p.name,
+                  value: p.amountCents,
+                  color: i === 0 ? colors.anstoss.chart.aqua : colors.anstoss.textTertiary,
+                  valueLabel: `${p.count}× · ${formatEuro(p.amountCents)}`,
                 }))}
               />
             </ChartCard>
@@ -228,4 +318,45 @@ function balanceSentence(d: CashStats): string | null {
     : t(
         `Seit ${periodLabel(first.month, true)} ist die Kasse um ${formatEuro(-diff)} geschrumpft.`,
       );
+}
+
+/** Aussage zur Herkunft: größte Quelle mit Anteil. */
+function sourcesSentence(list: CashStats['sources']): string | null {
+  const total = list.reduce((sum, x) => sum + x.cents, 0);
+  const top = list[0];
+  if (!top || total === 0) return null;
+  return t(
+    `Am meisten kommt aus ${cashCategory(top.category).label} (${formatPercent((top.cents / total) * 100)}).`,
+  );
+}
+
+/** Farbe folgt der Sache (feste Reihenfolge); mehr als vier Quellen werden zu „Sonstige“ gefaltet. */
+function sourceSegments(
+  list: CashStats['sources'],
+  colors: ReturnType<typeof useTheme>['colors'],
+): StackSegment[] {
+  const c = colors.anstoss.chart;
+  const FIXED: Record<string, string> = {
+    strafe: c.expense,
+    getraenke: c.aqua,
+    umlage: c.yellow,
+    beitrag: c.income,
+  };
+  const known = list.filter((x) => FIXED[x.category]);
+  const rest = list.filter((x) => !FIXED[x.category]);
+  const segments: StackSegment[] = known.map((x) => ({
+    key: x.category,
+    label: cashCategory(x.category).label,
+    color: FIXED[x.category]!,
+    cents: x.cents,
+  }));
+  const other = rest.reduce((sum, x) => sum + x.cents, 0);
+  if (other > 0)
+    segments.push({
+      key: 'other',
+      label: t('Sonstige'),
+      color: colors.anstoss.textTertiary,
+      cents: other,
+    });
+  return segments;
 }
