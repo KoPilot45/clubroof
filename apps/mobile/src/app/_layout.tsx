@@ -86,7 +86,7 @@ function Navigator() {
   const showNav =
     signedIn &&
     !NO_SUB_NAV.has(segments[0] ?? '') &&
-    !(segments[0] === 'match' && segments[2] === 'lineup');
+    !(segments[0] === 'match' && (segments as string[])[2] === 'lineup');
   return (
     <ConfirmProvider>
       <View style={{ flex: 1, backgroundColor: colors.background }}>
