@@ -91,6 +91,10 @@ describe.each(CLUB_COLOR_KEYS)('Anstoß hell, Kontrast %s', (key) => {
     ['Text auf Fläche', t.onSurface, t.surface],
     ['Text sekundär auf Fläche', t.onSurfaceMuted, t.surface],
     ['Text tertiär auf Fläche', t.anstoss.textTertiary, t.surface],
+    ['Text tertiär auf Hintergrund', t.anstoss.textTertiary, bg],
+    ['Text tertiär auf grauer Fläche', t.anstoss.textTertiary, t.surfaceVariant],
+    ['Text tertiär auf dringender Fläche', t.anstoss.textTertiary, t.status.urgent.container],
+    ['Text tertiär auf Primärfläche', t.anstoss.textTertiary, t.primaryContainer],
     ['Akzent als Text auf Fläche', t.primaryText, t.surface],
     ['Akzent als Text auf Hintergrund', t.primaryText, bg],
     ['Text auf Akzent', t.onPrimary, t.primary],
@@ -109,6 +113,10 @@ describe.each(CLUB_COLOR_KEYS)('Anstoß hell, Kontrast %s', (key) => {
         t.tints[k].onContainer,
         t.tints[k].container,
       ],
+    ),
+    // Datumskachel: Wochentag in der Kategoriefarbe auf 15 % Deckkraft
+    ...(Object.entries(t.anstoss.categories) as [string, string][]).map(
+      ([k, c]): [string, string, string] => [`Datumskachel ${k}`, c, blend(c, '#FFFFFF', 0.15)],
     ),
   ];
   it.each(cases)('%s ≥ 4,5 : 1', (_label, fg, back) => {
