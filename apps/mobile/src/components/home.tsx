@@ -28,6 +28,7 @@ import {
 } from 'react-native';
 import { EventRow, ResponseControls } from '@/components/events';
 import { AttendanceBar } from '@/components/team';
+import { useTeamColorOf } from '@/lib/team-colors';
 import { Text } from '@/components/app-text';
 import {
   Button,
@@ -1044,6 +1045,7 @@ const STATUS_WORD: Record<string, string> = {
 /** Pro Person (ich, meine Kinder) eine Karte mit dem Stand der Rückmeldung zum nächsten Spiel. */
 export function PersonStatusCards({ event }: { event: EventSummary }) {
   const { colors } = useTheme();
+  const teamColorOf = useTeamColorOf();
   const list = event.myResponses;
   if (list.length === 0 || (list.length === 1 && list[0]!.relation === 'self')) return null;
   const open = event.deadline && new Date(event.deadline) > new Date();
@@ -1106,9 +1108,21 @@ export function PersonStatusCards({ event }: { event: EventSummary }) {
                   {r.firstName}
                 </Text>
                 {event.team ? (
-                  <T variant="caption" verbatim style={{ fontSize: 11.5 }}>
-                    {event.team.badge}
-                  </T>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    {teamColorOf(event.team.id) ? (
+                      <View
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: teamColorOf(event.team.id)!,
+                        }}
+                      />
+                    ) : null}
+                    <T variant="caption" verbatim style={{ fontSize: 11.5 }}>
+                      {event.team.badge}
+                    </T>
+                  </View>
                 ) : null}
               </View>
             </View>

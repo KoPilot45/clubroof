@@ -32,6 +32,7 @@ import { formatDateTile, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS, TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
+import { useTeamColorOf } from '@/lib/team-colors';
 import { useTheme } from '@/lib/theme';
 import type { TintKey } from '@clubroof/design-tokens';
 import { useTileInfo, withTileInfo } from '@/lib/tile-info';
@@ -500,6 +501,7 @@ function TeamSwitcher({
   onSelect: (id: string) => void;
 }) {
   const { colors, radii } = useTheme();
+  const teamColorOf = useTeamColorOf();
   return (
     <ScrollView
       horizontal
@@ -536,6 +538,18 @@ function TeamSwitcher({
               backgroundColor: active ? colors.primary : colors.surfaceRaised,
             }}
           >
+            {teamColorOf(tm.id) ? (
+              <View
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: 5,
+                  backgroundColor: teamColorOf(tm.id)!,
+                  borderWidth: 1,
+                  borderColor: active ? colors.onPrimary : colors.border,
+                }}
+              />
+            ) : null}
             <T variant="label" color={fg} style={{ fontWeight: '800' }} verbatim>
               {tm.badge}
             </T>
