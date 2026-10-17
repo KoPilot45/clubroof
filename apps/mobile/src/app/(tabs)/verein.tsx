@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
+import { HelperStrip } from '@/components/helper-strip';
 import { ClubNewsTicker } from '@/components/club-news-ticker';
 import {
   SponsorAdContainer,
@@ -268,6 +269,12 @@ export default function ClubScreen() {
         return (
           <Section key={g.key} title={g.title}>
             <TileGrid items={items} />
+            {g.key === 'events' && has('helpers') && openSpots > 0 ? (
+              <>
+                <T variant="section">Helfer gesucht</T>
+                <HelperStrip items={helpers.data ?? []} />
+              </>
+            ) : null}
           </Section>
         );
       })}

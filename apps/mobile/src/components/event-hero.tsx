@@ -47,7 +47,8 @@ export function EventHero({
         .filter(Boolean)
         .join(' · ')
     : null;
-  const showBar = !!e.counts && !!e.team && !cancelled && (e.type === 'match' || e.type === 'training');
+  const showBar =
+    !!e.counts && !!e.team && !cancelled && (e.type === 'match' || e.type === 'training');
 
   return (
     <HeroCard style={{ gap: 12 }}>
@@ -104,14 +105,8 @@ export function EventHero({
         </T>
       )}
 
-      <T
-        color={soft}
-        style={{ fontSize: 14, textAlign: match ? 'center' : 'left' }}
-        verbatim
-      >
-        {[formatDay(e.startsAt), match && !played ? null : timeRange]
-          .filter(Boolean)
-          .join(' · ')}
+      <T color={soft} style={{ fontSize: 14, textAlign: match ? 'center' : 'left' }} verbatim>
+        {[formatDay(e.startsAt), match && !played ? null : timeRange].filter(Boolean).join(' · ')}
       </T>
       {e.cancelledReason ? (
         <T color={on} style={{ fontWeight: '700', textAlign: match ? 'center' : 'left' }}>
@@ -137,7 +132,10 @@ export function EventHero({
             </T>
             {e.meetingAt || e.meetingPoint ? (
               <T variant="caption" color="rgba(255,255,255,0.8)" verbatim>
-                {[e.meetingAt ? `${t('Treffpunkt')} ${formatTime(e.meetingAt)}` : null, e.meetingPoint]
+                {[
+                  e.meetingAt ? `${t('Treffpunkt')} ${formatTime(e.meetingAt)}` : null,
+                  e.meetingPoint,
+                ]
                   .filter(Boolean)
                   .join(' · ')}
               </T>
