@@ -395,6 +395,8 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
           drinkPriceCents: z.number().int().min(1).max(10_000).nullish(),
           showMemberBalances: z.boolean().optional(),
           autoReminder: z.boolean().optional(),
+          savingsGoalName: z.string().trim().max(60).nullish(),
+          savingsGoalCents: z.number().int().min(100).max(100_000_000).nullish(),
         }),
       },
     },

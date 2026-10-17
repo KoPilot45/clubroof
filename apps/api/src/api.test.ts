@@ -1897,6 +1897,24 @@ describe.skipIf(!url)('API', () => {
       expect(stats.fines.length).toBeGreaterThan(0);
       expect(stats.finesByPerson.some((p) => p.personId === player.me.person.id)).toBe(true);
       expect(stats.openCents).toBeGreaterThan(0);
+      // Stufe 2: Herkunft des Geldes, Getränke je Person, Sparziel
+      expect(stats.sources.length).toBeGreaterThan(0);
+      expect(stats.sources.every((x) => x.cents > 0)).toBe(true);
+      expect(stats.goal).toBeNull();
+      const coach = await login('trainer');
+      const goalSet = await send('PUT', `/teams/${b1}/cash/settings`, coach.token, {
+        savingsGoalName: 'Mannschaftsfahrt',
+        savingsGoalCents: 150000,
+      });
+      expect(goalSet.status).toBe(200);
+      const withGoal = await get<CashStats>(`/teams/${b1}/cash/stats`, player.token);
+      expect(withGoal.goal).toMatchObject({ name: 'Mannschaftsfahrt', targetCents: 150000 });
+      expect(withGoal.goal!.balanceCents).toBe(cash.balanceCents);
+      await send('PUT', `/teams/${b1}/cash/settings`, coach.token, {
+        savingsGoalName: null,
+        savingsGoalCents: null,
+      });
+      expect((await get<CashStats>(`/teams/${b1}/cash/stats`, player.token)).goal).toBeNull();
       // Zahlungsmoral (ST): je Person vergebene Forderungen und noch offener Betrag; offen höchstens die Forderungen
       expect(stats.moral.length).toBeGreaterThan(0);
       expect(stats.moral.every((p) => p.openCents <= p.chargedCents)).toBe(true);

@@ -637,6 +637,9 @@ export type CashSettings = {
   showMemberBalances: boolean;
   /** Am Monatsanfang automatisch an offene Beträge erinnern */
   autoReminder: boolean;
+  /** Sparziel der Mannschaft (Name und Betrag), z. B. „Mannschaftsfahrt“ */
+  savingsGoalName: string | null;
+  savingsGoalCents: number | null;
 };
 
 export type PaymentNotice = {
@@ -708,6 +711,12 @@ export type CashStats = {
     amountCents: number;
     openCents: number;
   }[];
+  /** Woher das Geld kommt: Forderungen (Strafen, Getränke, Umlagen, Beiträge) und Einnahmen nach Art, Saison */
+  sources: { category: string; cents: number }[];
+  /** Getränke je Person in der Saison – nur für Berechtigte */
+  drinksByPerson: { personId: string; name: string; count: number; amountCents: number }[];
+  /** Sparziel mit aktuellem Kassenstand; null ohne Ziel */
+  goal: { name: string; targetCents: number; balanceCents: number } | null;
   /** Zahlungsmoral je Person (vergebene Forderungen insgesamt, davon noch offen) – nur für Berechtigte */
   moral: { personId: string; name: string; chargedCents: number; openCents: number }[];
   /** Summe aller offenen Beträge der persönlichen Konten */

@@ -222,6 +222,8 @@ export async function updateCashSettings(
     drinkPriceCents: number | null;
     showMemberBalances: boolean;
     autoReminder: boolean;
+    savingsGoalName: string | null;
+    savingsGoalCents: number | null;
   }>,
   now: Date,
 ): Promise<TeamCash> {
@@ -237,6 +239,8 @@ export async function updateCashSettings(
         drinkPriceCents: input.drinkPriceCents,
         showMemberBalances: input.showMemberBalances,
         autoReminder: input.autoReminder,
+        savingsGoalName: clean(input.savingsGoalName),
+        savingsGoalCents: input.savingsGoalCents,
       }).filter(([, v]) => v !== undefined),
     ),
   };
