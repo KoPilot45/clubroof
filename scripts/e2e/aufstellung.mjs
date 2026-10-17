@@ -123,7 +123,10 @@ check((await counter()) === '7/7', '7er: sieben in der Startelf, der Rest wander
 await page.screenshot({ path: `${out}/auf-7er.png` });
 await page.getByText('9er', { exact: true }).first().click();
 await page.waitForTimeout(600);
-check((await counter()) === '7/9', '9er: neun Plätze, die sieben Spieler bleiben in der Reihenfolge');
+check(
+  (await counter()) === '7/9',
+  '9er: neun Plätze, die sieben Spieler bleiben in der Reihenfolge',
+);
 await page.getByText('11er', { exact: true }).first().click();
 await page.waitForTimeout(600);
 
@@ -156,5 +159,69 @@ check(
 );
 await page.screenshot({ path: `${out}/auf-gespeichert.png` });
 
+// 8b. Verlassen mit ungespeicherten Änderungen fragt nach (Speichern / Verwerfen / Bleiben)
+await page.getByText('7er', { exact: true }).first().click();
+await page.waitForTimeout(400);
+await page.getByRole('button', { name: 'Zurück' }).first().click();
+await page.waitForTimeout(800);
+check(
+  (await page.getByText('Änderungen speichern?').count()) > 0,
+  'Dialog beim Verlassen mit ungespeicherten Änderungen',
+);
+await page.screenshot({ path: `${out}/auf-verlassen.png` });
+await page.getByText('Bleiben', { exact: true }).first().click();
+await page.waitForTimeout(400);
+await page.getByText('11er', { exact: true }).first().click();
+await page.waitForTimeout(400);
+
+// 9. Kader im Detail und Einstellung: unterhalb der Bühne mit den App-Abständen
+await page.mouse.move(195, 400);
+await page.mouse.wheel(0, 1500);
+await page.waitForTimeout(800);
+await page.screenshot({ path: `${out}/auf-detail.png` });
+check(
+  (await page.getByText('Kader im Detail').count()) > 0,
+  'Abschnitt „Kader im Detail“ vorhanden',
+);
+check(
+  (await page.getByText('Aufstellung für Spieler und Eltern sichtbar').count()) > 0,
+  'Abschnitt „Einstellung“ mit Schalter',
+);
+
+// 10. Veröffentlichen und Ansicht für Spieler: Spielfeld ohne Beteiligung, eigene Scheibe in Akzent
+await api(`/teams/${b1.id}/profile`, coach.token, {
+  method: 'PUT',
+  body: JSON.stringify({ lineupVisible: true }),
+});
+await api(`/events/${next.id}/lineup`, coach.token, {
+  method: 'PUT',
+  body: JSON.stringify({
+    publish: true,
+    size: saved.lineup.size,
+    formation: saved.lineup.formation,
+    entries: saved.lineup.entries.map((e) => ({
+      personId: e.personId,
+      role: e.role,
+      ...(e.slot !== null ? { slot: e.slot } : {}),
+    })),
+  }),
+});
+const ps = await b.session('spieler', { height: 844 });
+await ps.goto(`/events/${next.id}`);
+await ps.page.waitForTimeout(3000);
+await ps.page.evaluate(() => {
+  for (const el of document.querySelectorAll('*'))
+    if (el.textContent === 'Aufstellung') el.scrollIntoView({ block: 'start' });
+});
+await ps.page.waitForTimeout(600);
+await ps.page.screenshot({ path: `${out}/auf-spieler.png` });
+check(
+  (await ps.page.getByText(/4-4-2 · 11er/).count()) > 0,
+  'Spieler sehen die veröffentlichte Aufstellung mit Formation',
+);
+check(
+  (await ps.page.getByText(/Trainingsbeteiligung|Beteiligung/).count()) === 0,
+  'Spieler sehen keine Beteiligung',
+);
 await b.close();
 process.exit(fail ? 1 : 0);
