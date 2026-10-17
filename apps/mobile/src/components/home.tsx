@@ -27,6 +27,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { EventRow, ResponseControls } from '@/components/events';
+import { AttendanceBar } from '@/components/team';
 import { Text } from '@/components/app-text';
 import {
   Button,
@@ -832,6 +833,11 @@ function PosterSlide({
               .filter(Boolean)
               .join(' · ')}
           </T>
+          {event.counts && event.status === 'scheduled' ? (
+            <View style={{ marginTop: 6 }}>
+              <AttendanceBar counts={event.counts} hero compact />
+            </View>
+          ) : null}
         </Pressable>
       ) : hasTeam ? (
         <View style={{ gap: 8 }}>

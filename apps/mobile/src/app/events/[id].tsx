@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Linking, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { AnswerButtons, AttendanceChip, ResponseControls, useRespond } from '@/components/events';
 import { AttendanceBar } from '@/components/team';
 import { ShiftRow } from '@/components/helpers';
@@ -15,7 +15,6 @@ import {
   ChoiceChips,
   Chip,
   ErrorNotice,
-  HeroCard,
   IconTile,
   ListRow,
   Loading,
@@ -23,18 +22,16 @@ import {
   Section,
   Sheet,
   T,
-  TeamBadge,
   TextField,
 } from '@/components/ui';
-import { formatDay, formatRemaining, formatShortDate, formatTime } from '@/lib/format';
-import { EVENT_TYPE_LABELS } from '@/lib/labels';
+import { formatRemaining, formatShortDate } from '@/lib/format';
 import { CarpoolSection } from '@/components/carpool';
 import { MatchSection } from '@/components/match';
 import { TrainingPlanSection } from '@/components/training-plan';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { t } from '@/lib/i18n';
-import { Scoreboard } from '@/components/scoreboard';
+import { EventHero } from '@/components/event-hero';
 
 const ORDER: Participant['status'][] = ['yes', 'maybe', 'pending', 'no'];
 const GROUP_LABELS: Record<Participant['status'], string> = {
@@ -461,99 +458,12 @@ export default function EventScreen() {
       {query.error ? <ErrorNotice error={query.error} onRetry={() => query.refetch()} /> : null}
       {e ? (
         <>
-          {e.match ? <Scoreboard event={e} clubShortName={me.club.shortName} /> : null}
-          <HeroCard>
-            <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-              {e.team ? <TeamBadge badge={e.team.badge} /> : <Chip tone="info" label="Verein" />}
-              <Chip tone="neutral" label={EVENT_TYPE_LABELS[e.type]} />
-              {e.status === 'cancelled' ? (
-                <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
-              ) : null}
-              {past ? (
-                <Chip tone="archived" icon="time-outline" label="Vergangener Termin" />
-              ) : null}
-            </View>
-            <T
-              variant="figure"
-              color={colors.hero.onHero}
-              style={{
-                fontSize: 46,
-                lineHeight: 48,
-                textDecorationLine: e.status === 'cancelled' ? 'line-through' : 'none',
-              }}
-              verbatim
-            >
-              {e.title}
-            </T>
-            <T color="rgba(255,255,255,0.88)" style={{ fontSize: 14 }}>
-              {[
-                formatDay(e.startsAt),
-                `${formatTime(e.startsAt)}${e.endsAt ? `–${formatTime(e.endsAt)}` : ''} Uhr`,
-              ].join(' · ')}
-            </T>
-            {e.cancelledReason ? (
-              <T color={colors.hero.onHero} style={{ fontWeight: '700' }}>
-                {e.cancelledReason}
-              </T>
-            ) : null}
-            {e.description ? <T color="rgba(255,255,255,0.88)">{e.description}</T> : null}
-            {e.invited ? (
-              <T variant="caption" color="rgba(255,255,255,0.8)">
-                {t(
-                  `Eingeladen: ${[
-                    ...e.invited.teams,
-                    e.invited.persons
-                      ? `${e.invited.persons} ${e.invited.persons === 1 ? 'Person' : 'Personen'}`
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}`,
-                )}
-              </T>
-            ) : null}
-            {e.location ? (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: 14,
-                  borderRadius: 16,
-                  backgroundColor: 'rgba(0,0,0,0.25)',
-                }}
-              >
-                <Ionicons name="location-outline" size={20} color={colors.hero.onHero} />
-                <View style={{ flex: 1 }}>
-                  <T style={{ fontWeight: '700', fontSize: 15 }} color={colors.hero.onHero}>
-                    {e.location}
-                  </T>
-                  {e.meetingAt || e.meetingPoint || e.match?.competition ? (
-                    <T variant="caption" color="rgba(255,255,255,0.8)">
-                      {[
-                        e.meetingAt ? `${t('Treffpunkt')} ${formatTime(e.meetingAt)}` : null,
-                        e.meetingPoint,
-                        e.match?.competition,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </T>
-                  ) : null}
-                </View>
-                {e.routeUrl ? (
-                  <Pressable
-                    accessibilityRole="link"
-                    accessibilityLabel={t('Route')}
-                    hitSlop={10}
-                    onPress={() => void Linking.openURL(e.routeUrl!)}
-                  >
-                    <T style={{ fontWeight: '800', fontSize: 13 }} color={colors.primaryText}>
-                      Route ›
-                    </T>
-                  </Pressable>
-                ) : null}
-              </View>
-            ) : null}
-          </HeroCard>
+          <EventHero event={e} clubShortName={me.club.shortName} past={past} />
+          {e.description ? (
+            <Card>
+              <T verbatim>{e.description}</T>
+            </Card>
+          ) : null}
 
           {e.lastChange && e.status === 'scheduled' ? (
             <Card style={{ gap: 6 }}>
@@ -624,7 +534,7 @@ export default function EventScreen() {
             </Section>
           ) : null}
 
-          {e.myResponses.length > 0 && !past ? (
+          {e.myResponses.length > 0 ? (
             <Section title="Deine Antwort">
               {e.deadline && new Date(e.deadline) > new Date() ? (
                 <T
@@ -655,7 +565,7 @@ export default function EventScreen() {
             <PresenceCard presence={e.presence} />
           ) : null}
 
-          {e.team ? (
+          {e.team && (e.participants.length > 0 || e.canOverride) ? (
             <Section title="Teilnahme">
               <View style={{ gap: 10 }}>
                 <ParticipantGroups

@@ -759,7 +759,7 @@ export function ResponseControls({
     <View style={{ gap: 12 }}>
       {event.myResponses.map((r) => (
         <View key={r.personId} style={{ gap: 8 }}>
-          {event.myResponses.length > 1 || r.relation === 'child' ? (
+          {event.myResponses.length > 1 || r.relation === 'child' || !r.canRespond ? (
             <View
               style={{
                 flexDirection: 'row',
@@ -778,11 +778,22 @@ export function ResponseControls({
           ) : null}
 
           {!r.canRespond ? (
-            <T variant="caption" color={tone === 'hero' ? colors.hero.onHero : undefined}>
-              {event.status === 'cancelled'
-                ? 'Der Termin wurde abgesagt.'
-                : 'Rückmeldung nicht mehr möglich. Bei Änderungen wende dich an dein Trainerteam.'}
-            </T>
+            <View style={{ gap: 6 }}>
+              {event.status === 'cancelled' ? null : (
+                <View style={{ flexDirection: 'row' }}>
+                  <Chip tone="neutral" icon="lock-closed" label="Frist abgelaufen" />
+                </View>
+              )}
+              <T variant="caption" color={tone === 'hero' ? colors.hero.onHero : undefined}>
+                {event.status === 'cancelled'
+                  ? 'Der Termin wurde abgesagt.'
+                  : event.deadline
+                    ? t(
+                        `Die Frist ist am ${formatDay(event.deadline)}, ${formatTime(event.deadline)} Uhr abgelaufen. Bei Änderungen wende dich an dein Trainerteam.`,
+                      )
+                    : 'Rückmeldung nicht mehr möglich. Bei Änderungen wende dich an dein Trainerteam.'}
+              </T>
+            </View>
           ) : pending?.personId === r.personId && tone !== 'hero' ? (
             reasonPanel(r)
           ) : (
