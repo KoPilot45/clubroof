@@ -29,6 +29,7 @@ import { formatEuro, parseEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { t } from '@/lib/i18n';
+import { Counted } from '@/lib/motion';
 
 const STATUS = [
   { value: 'open', label: 'Offen' },
@@ -117,7 +118,7 @@ export default function ClubFeesScreen() {
               Offene Beiträge
             </T>
             <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 44 }}>
-              {formatEuro(f.summary.openCents)}
+              <Counted value={f.summary.openCents} format={formatEuro} />
             </T>
             <T variant="label" color={colors.hero.onHero}>
               {t(

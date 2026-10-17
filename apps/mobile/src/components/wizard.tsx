@@ -12,6 +12,7 @@ import { Button, Chip, IconTile, T, shadowStyle, type IconName } from '@/compone
 import { readSetting, writeSetting } from '@/lib/flags';
 import { t } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme';
+import { GrowBar } from '@/lib/motion';
 
 export function WizardShell({
   title,
@@ -100,13 +101,9 @@ export function WizardShell({
                       backgroundColor: colors.border,
                     }}
                   >
-                    <View
-                      style={{
-                        width: `${Math.max(percent, 4)}%`,
-                        height: '100%',
-                        borderRadius: 4,
-                        backgroundColor: colors.primary,
-                      }}
+                    <GrowBar
+                      percent={Math.max(percent, 4)}
+                      style={{ height: '100%', borderRadius: 4, backgroundColor: colors.primary }}
                     />
                   </View>
                 </View>

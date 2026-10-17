@@ -1,6 +1,7 @@
 import type { ClubBudgetStatus } from '@clubroof/core';
 import { View } from 'react-native';
 import { useTheme } from '@/lib/theme';
+import { GrowBar } from '@/lib/motion';
 
 /** Fortschrittsbalken Ist gegen Plan; Farbe folgt dem Status, der Status steht zusätzlich als Text daneben. */
 export function BudgetBar({
@@ -27,7 +28,7 @@ export function BudgetBar({
       accessibilityValue={{ min: 0, max: 100, now: Math.round(ratio * 100) }}
       style={{ height: 8, borderRadius: 4, backgroundColor: colors.border, overflow: 'hidden' }}
     >
-      <View style={{ width: `${ratio * 100}%`, height: 8, backgroundColor: fill }} />
+      <GrowBar percent={ratio * 100} style={{ height: 8, backgroundColor: fill }} />
     </View>
   );
 }

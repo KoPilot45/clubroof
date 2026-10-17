@@ -7,6 +7,7 @@ import { formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { Button, Chip, T } from './ui';
+import { GrowBar } from '@/lib/motion';
 
 /** Eine Helferschicht mit Fortschritt und Ein-/Austragen (Mappe S. 14). */
 export function ShiftRow({ shift, first }: { shift: HelperShift; first?: boolean }) {
@@ -58,7 +59,7 @@ export function ShiftRow({ shift, first }: { shift: HelperShift; first?: boolean
           overflow: 'hidden',
         }}
       >
-        <View style={{ width: `${share}%`, height: '100%', backgroundColor: colors.primaryText }} />
+        <GrowBar percent={share} style={{ height: '100%', backgroundColor: colors.primaryText }} />
       </View>
       {shift.helpers && shift.helpers.length > 0 ? (
         <T variant="caption">{shift.helpers.join(', ')}</T>

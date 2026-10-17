@@ -26,6 +26,7 @@ import { formatEuro, parseEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { Counted } from '@/lib/motion';
 
 /**
  * Spenden und Zuwendungsbestätigungen (Paket K4). Die Bestätigung gibt es erst, wenn die Steuerdaten
@@ -162,7 +163,7 @@ export default function DonationsScreen() {
           {`${t('Spenden')} ${year}`}
         </T>
         <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 40 }}>
-          {formatEuro(d.totalCents)}
+          <Counted value={d.totalCents} format={formatEuro} />
         </T>
         <T variant="caption" color={colors.hero.onHero}>
           {d.donations.filter((x) => !x.cancelled).length === 1

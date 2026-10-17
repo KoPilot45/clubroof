@@ -58,7 +58,7 @@ import {
   formatTime,
 } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
-import { PressScale, useCountUp } from '@/lib/motion';
+import { Counted, PressScale, useCountUp } from '@/lib/motion';
 import { t } from '@/lib/i18n';
 import { ReorderList } from '@/components/reorder';
 import { openLink } from '@/lib/links';
@@ -861,7 +861,7 @@ function PosterSlide({
               ).map(([label, value]) => (
                 <View key={label} style={{ minWidth: '40%', flexGrow: 1 }}>
                   <T variant="figure" color={on} style={{ fontSize: 34, lineHeight: 36 }}>
-                    {value}
+                    <Counted value={value} />
                   </T>
                   <T variant="caption" color={soft}>
                     {label}

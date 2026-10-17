@@ -10,6 +10,7 @@ import { formatLongDate, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { PollStatus } from '@/components/polls';
+import { GrowBar } from '@/lib/motion';
 
 const VISIBILITY_HINT = {
   always: 'Die Ergebnisse sind für alle sichtbar.',
@@ -127,12 +128,9 @@ export default function PollScreen() {
                         overflow: 'hidden',
                       }}
                     >
-                      <View
-                        style={{
-                          width: `${share}%`,
-                          height: '100%',
-                          backgroundColor: colors.primaryText,
-                        }}
+                      <GrowBar
+                        percent={share}
+                        style={{ height: '100%', backgroundColor: colors.primaryText }}
                       />
                     </View>
                   ) : null}

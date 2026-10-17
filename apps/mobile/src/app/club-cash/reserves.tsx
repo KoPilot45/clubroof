@@ -25,6 +25,7 @@ import { formatEuro, parseEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { Counted } from '@/lib/motion';
 
 /**
  * Rücklagen (Paket K3): zweckgebundene Töpfe innerhalb einer Kasse. Gebunden werden kann nur der freie
@@ -139,7 +140,7 @@ export default function ReservesScreen() {
           Gebundene Rücklagen
         </T>
         <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 40 }}>
-          {formatEuro(reserved)}
+          <Counted value={reserved} format={formatEuro} />
         </T>
         <T variant="caption" color={colors.hero.onHero}>
           Teil des Kassenbestands, der für einen Zweck zurückgelegt ist.

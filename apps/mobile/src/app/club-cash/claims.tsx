@@ -26,6 +26,7 @@ import { formatEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { Counted } from '@/lib/motion';
 
 const TONE = {
   submitted: 'action',
@@ -182,7 +183,7 @@ export default function ClaimsAdminScreen() {
           Offene Auslagen
         </T>
         <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 40 }}>
-          {formatEuro(d.openCents)}
+          <Counted value={d.openCents} format={formatEuro} />
         </T>
         <T variant="caption" color={colors.hero.onHero}>
           {d.openCount === 1 ? t('1 Auslage wartet') : t(`${d.openCount} Auslagen warten`)}
