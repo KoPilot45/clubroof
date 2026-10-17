@@ -3,6 +3,7 @@ import {
   TEAM_FUNCTIONS,
   type AdminOverview,
   type AuditEntry,
+  type ClubEventForm,
   type EventPlanning,
   type MemberDetail,
   type MemberImportResult,
@@ -25,7 +26,12 @@ import {
   setIndividualPermissions,
   updateMember,
 } from '../services/admin';
-import { createClubEvent, getEventPlanning } from '../services/club-events';
+import {
+  createClubEvent,
+  getClubEventForm,
+  getEventPlanning,
+  updateClubEvent,
+} from '../services/club-events';
 import { decodeText } from '../services/csv';
 import { importMembers } from '../services/member-import';
 
@@ -124,6 +130,57 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       reply.code(201);
       return createClubEvent(app.db, request.actor!, request.body, app.now());
     },
+  );
+
+  app.get(
+    '/admin/club-events/:id',
+    { schema: { params: z.object({ id: z.uuid() }) } },
+    async (request): Promise<ClubEventForm> =>
+      getClubEventForm(app.db, request.actor!, request.params.id),
+  );
+
+  app.patch(
+    '/admin/club-events/:id',
+    {
+      schema: {
+        params: z.object({ id: z.uuid() }),
+        body: z.object({
+          title: z.string().trim().min(3).max(100).optional(),
+          description: z.string().trim().max(2000).nullish(),
+          startsAt: z.iso.datetime({ offset: true }).optional(),
+          endsAt: z.iso.datetime({ offset: true }).optional(),
+          teamIds: z.array(z.uuid()).max(60).optional(),
+          personIds: z.array(z.uuid()).max(200).optional(),
+          facilityId: z.uuid().nullish(),
+          locationText: z.string().trim().max(120).nullish(),
+          locationUrl: z.string().trim().max(400).nullish(),
+          program: z
+            .array(
+              z.object({
+                time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+                title: z.string().trim().min(1).max(80),
+              }),
+            )
+            .max(20)
+            .optional(),
+          shifts: z
+            .array(
+              z.object({
+                id: z.uuid().optional(),
+                title: z.string().trim().min(2).max(60),
+                startsAt: z.iso.datetime({ offset: true }),
+                endsAt: z.iso.datetime({ offset: true }),
+                capacity: z.number().int().min(1).max(50),
+              }),
+            )
+            .max(20)
+            .optional(),
+          allowConflict: z.boolean().optional(),
+        }),
+      },
+    },
+    async (request): Promise<ClubEventForm> =>
+      updateClubEvent(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
 
   app.get('/admin/audit', async (request): Promise<AuditEntry[]> =>

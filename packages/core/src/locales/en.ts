@@ -109,6 +109,7 @@ export const en: Record<string, string> = {
   '{0} Filter aktiv': '{0} filters active',
   '{0} frei': '{0} free',
   '{0} geändert': '{0} changed',
+  '{0} geändert: {1}': '{0} changed: {1}',
   '{0} geänderte Spiele': '{0} changed matches',
   '{0} gefällt das': '{0} like this',
   '{0} gegen {1}, {2}': '{0} versus {1}, {2}',
@@ -1278,6 +1279,7 @@ export const en: Record<string, string> = {
   'Der Name steht in Terminen und Listen, das Kürzel auf den Kacheln.':
     'The name appears in events and lists, the abbreviation on the tiles.',
   'Der neue Beginn liegt in der Vergangenheit.': 'The new start is in the past.',
+  'Der Ort wurde geändert.': 'The location has changed.',
   'Der Planbetrag darf nicht negativ sein.': 'The planned amount must not be negative.',
   'Der Platz': 'The pitch',
   'Der Platz ist gesperrt: {0}. Bitte wähle einen anderen Platz oder Zeitpunkt.':
@@ -1565,6 +1567,7 @@ export const en: Record<string, string> = {
   'Die Umfrage konnte nicht erstellt werden.': 'The poll could not be created.',
   'Die Veranstaltung': 'The event',
   'Die Veranstaltung liegt in der Vergangenheit.': 'The event is in the past.',
+  'Die Veranstaltung wurde nicht gefunden.': 'The event was not found.',
   'Die Vereinseinstellungen ändert die Vereinsadministration.':
     'Club administration changes the club settings.',
   'Die Vereinskasse führt der Kassenwart (Verein).':
@@ -1586,6 +1589,7 @@ export const en: Record<string, string> = {
     "Other players' figures are only visible to the team.",
   'Die Zeile „{0}“ wird aus dem Haushaltsplan entfernt.':
     'The line “{0}” will be removed from the budget.',
+  'Die Zeit wurde geändert.': 'The time has changed.',
   'Die Zugehörigkeit zu „{0}“ wird beendet.': 'Membership of “{0}” will end.',
   'Die Zuordnung': 'The assignment',
   'Die Zuwendungsbestätigung': 'The donation receipt',
@@ -1640,6 +1644,7 @@ export const en: Record<string, string> = {
   'Diese Umfrage kannst du nicht beenden.': 'You cannot close this poll.',
   'Diese Unternehmen unterstützen unseren Verein. Danke! Wir werten nicht aus, wer sich welche Seite ansieht.':
     'These companies support our club. Thank you! We do not track who looks at which page.',
+  'Diese Veranstaltung darfst du nicht ändern.': 'You may not change this event.',
   'Diese Woche': 'This week',
   'Diese Woche stehen keine Termine an.': 'No events this week.',
   'Diesen Sponsor gibt es nicht mehr.': 'This sponsor no longer exists.',
@@ -1767,6 +1772,7 @@ export const en: Record<string, string> = {
     'An extra layer of protection: after the password the app asks for a code – from an authenticator app or by email (6 digits, valid for 10 minutes, single use). You set it up under “More → Account & settings”. It is mandatory only for the administrator account, if the club requires it.',
   'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code aus einer Authenticator-App ab. Du richtest ihn unter „Mehr → Konto & Einstellungen“ ein. Wer Verwaltungsrechte hat, muss ihn nutzen, wenn der Verein es verlangt.':
     'Extra protection: after your password, the app asks for a code from an authenticator app. You set it up under “More → Account & settings”. Anyone with administration rights must use it if the club requires it.',
+  'Eine abgesagte Veranstaltung lässt sich nicht ändern.': 'A cancelled event cannot be changed.',
   'Eine Abwesenheit darf höchstens ein Jahr dauern.': 'An absence may last one year at most.',
   'Eine Ausgabe liegt über dem Plan': 'One expense is over plan',
   'Eine ausgewählte Mannschaft gehört nicht zu dieser Person.':
@@ -1780,6 +1786,8 @@ export const en: Record<string, string> = {
     'A series may have at most {0} events (about a year).',
   'Eine stillgelegte Kasse kann nicht Hauptkasse sein.':
     'A deactivated fund cannot be the main fund.',
+  'Eine vergangene Veranstaltung lässt sich nicht mehr ändern.':
+    'A past event can no longer be changed.',
   Eingang: 'Received',
   'Eingang auf Konto': 'Received on account',
   'Eingang buchen': 'Book receipt',
@@ -3404,8 +3412,12 @@ export const en: Record<string, string> = {
     'Turn on what your team uses. Features that are turned off disappear for everyone on the team. Anything the club or section has turned off stays off.',
   'Schau dich im Verein um: Mannschaften, Termine und Neuigkeiten.':
     'Look around the club: teams, events and news.',
+  'Schicht „{0}“ kann nicht entfernt werden: Es haben sich schon Helfer eingetragen.':
+    'Shift “{0}” cannot be removed: helpers have already signed up.',
   'Schicht „{0}“ liegt nicht bei der Veranstaltung.': 'Shift “{0}” is not within the event.',
   'Schicht „{0}“: Ende vor Beginn.': 'Shift “{0}”: end before start.',
+  'Schicht „{0}“: Es haben sich schon {1} Helfer eingetragen, die Zahl der Plätze kann nicht darunter sinken.':
+    'Shift “{0}”: {1} helpers have already signed up, so the number of places cannot go below that.',
   'Schicht {0}': 'Shift {0}',
   'Schicht hinzufügen': 'Add shift',
   'Schichten und Aufgaben rund um Veranstaltungen': 'Shifts and tasks around events',
@@ -3902,6 +3914,7 @@ export const en: Record<string, string> = {
   'Unbekannte Mannschaft.': 'Unknown team.',
   'Unbekannte Person.': 'Unknown person.',
   'Unbekannte Rolle.': 'Unknown role.',
+  'Unbekannte Schicht.': 'Unknown shift.',
   'Unbekannte Stufe.': 'Unknown tier.',
   'Unbekannte Zuordnung.': 'Unknown assignment.',
   'Unbekannter Fehler': 'Unknown error',

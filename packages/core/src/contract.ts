@@ -246,6 +246,10 @@ export type EventDetail = EventSummary & {
   /** Teilnehmerliste; leer, wenn der Nutzer sie nicht sehen darf */
   participants: Participant[];
   canManage: boolean;
+  /** Vereinsveranstaltung: Ich darf sie bearbeiten (Ersteller oder Berechtigte für den Bereich) */
+  canEditClubEvent: boolean;
+  /** Zeitpunkt der letzten nachträglichen Änderung einer Vereinsveranstaltung (ISO), sonst null */
+  editedAt: string | null;
   /** Trainer dürfen Zu-/Absagen anderer korrigieren */
   canOverride: boolean;
   /** Ablaufplan (Vereinsveranstaltungen) */
@@ -2004,6 +2008,40 @@ export type CreateClubEventInput = {
   program?: { time: string; title: string }[];
   shifts?: { title: string; startsAt: string; endsAt: string; capacity: number }[];
   allowConflict?: boolean;
+};
+
+/** Schicht beim Bearbeiten einer Vereinsveranstaltung: mit `id` ändern, ohne `id` neu anlegen; fehlende werden entfernt. */
+export type ClubEventShiftInput = {
+  id?: string;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  capacity: number;
+};
+
+/** Vereinsveranstaltung nachträglich ändern (Paket BE): Art und Bereich bleiben, alles andere ist änderbar. */
+export type UpdateClubEventInput = Partial<
+  Omit<CreateClubEventInput, 'type' | 'orgUnitId' | 'shifts'>
+> & { shifts?: ClubEventShiftInput[] };
+
+/** Vereinsveranstaltung zum Bearbeiten (vorausgefülltes Formular). */
+export type ClubEventForm = {
+  id: string;
+  type: ClubEventType;
+  title: string;
+  description: string | null;
+  startsAt: string;
+  endsAt: string;
+  orgUnitId: string | null;
+  teamIds: string[];
+  personIds: string[];
+  facilityId: string | null;
+  locationText: string | null;
+  locationUrl: string | null;
+  program: { time: string; title: string }[];
+  /** Schichten mit Zahl der Angemeldeten (Kapazität darf nicht darunter sinken) */
+  shifts: (ClubEventShiftInput & { id: string; signedUp: number })[];
+  editedAt: string | null;
 };
 
 // ── Kalenderexport ───────────────────────────────────────────────────────

@@ -3,6 +3,7 @@
  * die Teilnehmerliste einsehen und für wen zu- oder absagen darf.
  */
 import {
+  can,
   calendarDayOf,
   isResponseOpen,
   toIsoDate,
@@ -466,6 +467,17 @@ export async function getEventDetail(
     contactPerson,
     participants,
     canManage: row.team !== null && actorCan(actor, 'events.manage', row.team),
+    canEditClubEvent:
+      row.team === null &&
+      ['club_event', 'meeting', 'work_assignment'].includes(row.event.type) &&
+      row.event.status === 'scheduled' &&
+      (row.event.contactPersonId === actor.person.id ||
+        can(
+          actor.grants,
+          'events.manage',
+          row.event.orgUnitId ? { orgUnitId: row.event.orgUnitId } : {},
+        )),
+    editedAt: row.event.editedAt?.toISOString() ?? null,
     canOverride: canOverride(actor, row),
     program: row.event.program ?? [],
     carpool: await carpoolFor(db, actor, row, now),

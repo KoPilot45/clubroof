@@ -9,6 +9,7 @@ import type {
   AuditEntry,
   ClubCash,
   ClubCashStats,
+  ClubEventForm,
   ClubCashAccount,
   ClubAuditDetail,
   ClubAudits,
@@ -6857,6 +6858,73 @@ describe.skipIf(!url)('API', () => {
       const asPlayer = await get<DocumentItem[]>(`/documents?teamId=${b1.id}`, player.token);
       expect(asPlayer.find((d) => d.id === id)).toMatchObject({ canEdit: false });
       await send('DELETE', `/documents/${id}`, coach.token);
+    });
+
+    it('Vereinsveranstaltung mit Helferschichten: Schichten ändern, Plätze nicht unter die Angemeldeten, Zeit informiert Helfer', async () => {
+      const board = await login('vorstand');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const at = (time: string) => new Date(`2026-12-12T${time}:00+01:00`).toISOString();
+      const created = await send<EventPlanning>('POST', '/admin/club-events', board.token, {
+        type: 'club_event',
+        title: 'Weihnachtsfeier',
+        startsAt: at('15:00'),
+        endsAt: at('21:00'),
+        locationText: 'Vereinsheim',
+        shifts: [
+          { title: 'Aufbau', startsAt: at('13:00'), endsAt: at('15:00'), capacity: 2 },
+          { title: 'Küche', startsAt: at('15:00'), endsAt: at('19:00'), capacity: 3 },
+        ],
+      });
+      const id = created.body.upcoming.find((e) => e.title === 'Weihnachtsfeier')!.id;
+      expect((await send('GET', `/admin/club-events/${id}`, coach.token)).status).toBe(403);
+      const form = await get<ClubEventForm>(`/admin/club-events/${id}`, board.token);
+      expect(form).toMatchObject({
+        title: 'Weihnachtsfeier',
+        editedAt: null,
+        locationText: 'Vereinsheim',
+      });
+      expect(form.shifts.map((x) => x.title)).toEqual(['Aufbau', 'Küche']);
+
+      // Ein Helfer trägt sich in „Küche“ ein
+      const kitchen = form.shifts.find((x) => x.title === 'Küche')!;
+      expect((await send('PUT', `/shifts/${kitchen.id}/signup`, player.token)).status).toBe(200);
+      const keep = form.shifts.map(({ signedUp: _signedUp, ...x }) => x);
+      // Schicht mit Angemeldeten lässt sich nicht entfernen
+      const removeUsed = await send('PATCH', `/admin/club-events/${id}`, board.token, {
+        shifts: keep.filter((x) => x.id !== kitchen.id),
+      });
+      expect(removeUsed.status).toBe(409);
+
+      // Fremde dürfen nicht ändern; Berechtigte: Zeit, Schichten ergänzen und entfernen
+      expect(
+        (await send('PATCH', `/admin/club-events/${id}`, coach.token, { title: 'Gehackt' })).status,
+      ).toBe(403);
+      const edited = await send<ClubEventForm>('PATCH', `/admin/club-events/${id}`, board.token, {
+        title: 'Weihnachtsfeier 2026',
+        startsAt: at('16:00'),
+        endsAt: at('22:00'),
+        shifts: [
+          ...keep
+            .filter((x) => x.title === 'Küche')
+            .map((x) => ({ ...x, capacity: 4, startsAt: at('16:00'), endsAt: at('20:00') })),
+          { title: 'Abbau', startsAt: at('21:00'), endsAt: at('23:00'), capacity: 3 },
+        ],
+      });
+      expect(edited.status, JSON.stringify(edited.body)).toBe(200);
+      expect(edited.body.title).toBe('Weihnachtsfeier 2026');
+      expect(edited.body.editedAt).not.toBeNull();
+      expect(edited.body.shifts.map((x) => `${x.title} ${x.signedUp}/${x.capacity}`)).toEqual([
+        'Küche 1/4',
+        'Abbau 0/3',
+      ]);
+      const notes = await get<NotificationItem[]>('/notifications', player.token);
+      expect(notes.some((n) => n.title === 'Geändert: Weihnachtsfeier 2026')).toBe(true);
+      const detail = await get<EventDetail>(`/events/${id}`, board.token);
+      expect(detail).toMatchObject({ canEditClubEvent: true });
+      expect(detail.editedAt).not.toBeNull();
+      expect((await get<EventDetail>(`/events/${id}`, player.token)).canEditClubEvent).toBe(false);
+      await send('POST', `/events/${id}/cancel`, board.token, { reason: 'Test beendet' });
     });
 
     it('Abwesenheiten: Zeitraum ändern berechnet die automatischen Absagen neu', async () => {
