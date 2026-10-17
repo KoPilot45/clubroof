@@ -15,6 +15,7 @@ import {
   type DamageStatus,
   type EquipmentItem,
   type EquipmentOverview,
+  type UpdateEquipmentInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, gte, ilike, inArray, lt, ne, or } from 'drizzle-orm';
@@ -156,6 +157,7 @@ const toItem = (r: Awaited<ReturnType<typeof itemRows>>[number]): EquipmentItem 
         }
       : null,
   handedOutAt: r.item.handedOutAt?.toISOString() ?? null,
+  editedAt: r.item.editedAt?.toISOString() ?? null,
 });
 
 export async function getEquipment(db: Db, actor: Actor): Promise<EquipmentOverview> {
@@ -239,6 +241,37 @@ export async function handOver(
     data: {
       label: `${item.kind === 'key' ? 'Schlüssel' : 'Material'} ${personId ? 'ausgegeben' : 'zurück'}: ${item.name}`,
     },
+    createdAt: now,
+  });
+  return getEquipment(db, actor);
+}
+
+export async function updateItem(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: UpdateEquipmentInput,
+  now: Date,
+) {
+  requireManage(actor);
+  const [item] = await db
+    .select()
+    .from(s.equipmentItems)
+    .where(and(eq(s.equipmentItems.id, id), eq(s.equipmentItems.clubId, actor.club.id)));
+  if (!item) throw notFound('Der Gegenstand');
+  const patch: Partial<typeof s.equipmentItems.$inferInsert> = { editedAt: now };
+  if (input.name !== undefined) patch.name = input.name.trim();
+  if (input.quantity !== undefined) patch.quantity = input.quantity;
+  if (input.location !== undefined) patch.location = input.location?.trim() || null;
+  if (input.note !== undefined) patch.note = input.note?.trim() || null;
+  await db.update(s.equipmentItems).set(patch).where(eq(s.equipmentItems.id, id));
+  await db.insert(s.auditLog).values({
+    clubId: actor.club.id,
+    actorUserId: actor.user.id,
+    action: 'equipment.updated',
+    entityType: 'equipment',
+    entityId: id,
+    data: { label: `${item.kind === 'key' ? 'Schlüssel' : 'Material'} geändert: ${item.name}` },
     createdAt: now,
   });
   return getEquipment(db, actor);

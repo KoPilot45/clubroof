@@ -2293,6 +2293,16 @@ export type EquipmentItem = {
   note: string | null;
   holder: { personId: string; name: string } | null;
   handedOutAt: string | null;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
+};
+
+/** Ausrüstung nachträglich ändern (Paket BE): Bezeichnung, Anzahl, Lagerort, Hinweis (z. B. Zustand). */
+export type UpdateEquipmentInput = {
+  name?: string;
+  quantity?: number;
+  location?: string | null;
+  note?: string | null;
 };
 
 export type EquipmentOverview = {
@@ -2338,6 +2348,8 @@ export type RefereeDuty = {
   location: string | null;
   /** Abwesenheit wurde automatisch eingetragen */
   absence: boolean;
+  /** Zeitpunkt der letzten nachträglichen Änderung (ISO), sonst null */
+  editedAt: string | null;
 };
 
 /** Überschneidung eines Einsatzes mit einem eigenen Termin (Spiel, Training …). */
@@ -2388,6 +2400,9 @@ export type RefereeDutyInput = {
   /** Abwesenheit für diesen Tag automatisch eintragen */
   createAbsence?: boolean;
 };
+
+/** Einsatz nachträglich ändern (Paket BE): Titel, Beginn, Dauer, Ort; die automatische Abwesenheit folgt dem Tag. */
+export type UpdateRefereeDutyInput = Partial<Omit<RefereeDutyInput, 'createAbsence'>>;
 
 export type RefereeDutyResult = { overview: RefereeOverview; collisions: RefereeCollision[] };
 
