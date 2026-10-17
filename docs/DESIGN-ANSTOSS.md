@@ -16,6 +16,7 @@ die **Bewegung** (Tempo, Gedrückt-Zustand, Reiter); seine Farben sind der alte 
 | Vereinsfarben | `DarkHomeBlau`, `DarkHomeRot`, `DarkK4` (Gelb, helle Farbe) |
 | Plakat-Kürzel | `DarkBg3` (3 Zeichen), `DarkK2` (2), `DarkK3` (4); Rückfall ohne Kürzel `DarkBg1` (Rasenstreifen) |
 | Unterseiten | `DarkU1` Liste/Filter · `DarkU2` Detail · `DarkU3` Formular · `DarkU4` Zeitwalze · `DarkU5` Kasse · `DarkU6` Personenliste · `DarkU7` Auswertung · `DarkU8` Lesetext · `DarkU9` Verwaltung · `DarkU10` Vereinskasse · `DarkU11` Verein & Design · `DarkU12` Zustände · `DarkU13`–`U15` Aufgaben, „…“-Menü, Löschen-Rückfrage · `DarkU16` Dokumente |
+| Aufstellung (Paket AUF) | `Aufstellung` (klickbar, Drag & Drop, 7er/9er/11er, Wischleisten) |
 | Anmeldung, Einrichtung | `DarkLogin1`, `DarkLogin2`, `DarkSetup1`–`DarkSetup5` |
 
 ## Farben (Vereinsfarbe Grün; Werte je Vereinsfarbe siehe unten)
