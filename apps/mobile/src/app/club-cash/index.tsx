@@ -3,10 +3,11 @@ import {
   CLUB_CASH_AREA_LABEL,
   type ClubCash,
   type ClubCashEntry,
+  type ClubCashStats,
 } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import {
   Button,
   Card,
@@ -23,8 +24,9 @@ import {
   type IconName,
 } from '@/components/ui';
 import { FundSwitcher } from '@/components/fund-switcher';
+import { Sparkline } from '@/components/charts';
 import { useFundFilter } from '@/lib/fund-filter';
-import { formatEuro } from '@/lib/format';
+import { formatEuro, formatEuroShort, formatPercent, todayIso } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { t } from '@/lib/i18n';
@@ -89,6 +91,157 @@ export function EntryRow({
   );
 }
 
+/** Zwei dünne Balken je Steuerbereich: Einnahmen (Blau) und Ausgaben (Orange) mit Saldo. */
+function AreaPairs({ areas }: { areas: ClubCash['areaTotals'] }) {
+  const { colors } = useTheme();
+  const c = colors.anstoss.chart;
+  const top = Math.max(1, ...areas.flatMap((a) => [a.incomeCents, a.expenseCents]));
+  const bar = (cents: number, color: string) => (
+    <View
+      style={{
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: colors.anstoss.overlay,
+        overflow: 'hidden',
+      }}
+    >
+      <View
+        style={{
+          height: '100%',
+          width: `${(cents / top) * 100}%`,
+          borderRadius: 5,
+          backgroundColor: color,
+        }}
+      />
+    </View>
+  );
+  return (
+    <>
+      {areas.map((a) => (
+        <View
+          key={a.area}
+          accessible
+          accessibilityLabel={`${CLUB_CASH_AREA_LABEL[a.area]}: ${t('Einnahmen')} ${formatEuro(a.incomeCents)}, ${t('Ausgaben')} ${formatEuro(a.expenseCents)}`}
+          style={{ gap: 4 }}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <T variant="label" style={{ fontWeight: '700' }}>
+              {CLUB_CASH_AREA_LABEL[a.area]}
+            </T>
+            <T variant="caption">{`${t('Saldo')} ${formatEuro(a.incomeCents - a.expenseCents)}`}</T>
+          </View>
+          {bar(a.incomeCents, c.income)}
+          <T variant="caption">{`${t('Einnahmen')} ${formatEuro(a.incomeCents)}`}</T>
+          {bar(a.expenseCents, c.expense)}
+          <T variant="caption">{`${t('Ausgaben')} ${formatEuro(a.expenseCents)}`}</T>
+        </View>
+      ))}
+    </>
+  );
+}
+
+/** Drei Kennzahlen unter dem Hero: Ausgaben mit Vorjahr, Beitragseingang als Meter, Rücklagen mit Ziel. */
+function KeyFigures({ st, year }: { st: ClubCashStats; year: number }) {
+  const { colors } = useTheme();
+  const c = colors.anstoss.chart;
+  const rate = st.fees && st.fees.dueCents ? (st.fees.paidCents / st.fees.dueCents) * 100 : null;
+  const reserved = st.reserves.reduce((sum, r) => sum + r.balanceCents, 0);
+  const target = st.reserves.reduce((sum, r) => sum + (r.targetCents ?? 0), 0);
+  const meter = (percent: number, color: string) => (
+    <View
+      style={{
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: colors.anstoss.overlay,
+        overflow: 'hidden',
+      }}
+    >
+      <View
+        style={{
+          height: '100%',
+          width: `${Math.max(0, Math.min(100, percent))}%`,
+          borderRadius: 3,
+          backgroundColor: color,
+        }}
+      />
+    </View>
+  );
+  const tile = (
+    key: string,
+    value: string,
+    label: string,
+    sub: string,
+    bar: React.ReactNode,
+    onPress: () => void,
+  ) => (
+    <Pressable
+      key={key}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${value}, ${sub}`}
+      onPress={onPress}
+      style={{
+        flex: 1,
+        gap: 4,
+        padding: 12,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: colors.border,
+        backgroundColor: colors.surface,
+      }}
+    >
+      <T variant="caption" numberOfLines={2} style={{ minHeight: 30 }}>
+        {label}
+      </T>
+      <T variant="figure" style={{ fontSize: 22, lineHeight: 26 }} numberOfLines={1} verbatim>
+        {value}
+      </T>
+      {bar}
+      <T variant="caption" numberOfLines={2} style={{ fontSize: 11 }} verbatim>
+        {sub}
+      </T>
+    </Pressable>
+  );
+  return (
+    <View style={{ flexDirection: 'row', gap: 10 }}>
+      {tile(
+        'exp',
+        formatEuroShort(st.totals.expenseCents),
+        t('Ausgaben'),
+        t(`${year}, Vorjahr ${formatEuroShort(st.totals.previousExpenseCents)}`),
+        meter(
+          st.totals.previousExpenseCents
+            ? (st.totals.expenseCents / st.totals.previousExpenseCents) * 100
+            : st.totals.expenseCents
+              ? 100
+              : 0,
+          c.expense,
+        ),
+        () => router.push('/club-cash/stats?topic=flows'),
+      )}
+      {rate !== null
+        ? tile(
+            'fees',
+            formatPercent(rate),
+            t('Beitragseingang'),
+            st.fees!.overdueCount
+              ? t(`${st.fees!.overdueCount} überfällig`)
+              : t('nichts überfällig'),
+            meter(rate, colors.status.success.solid),
+            () => router.push('/club-cash/stats?topic=fees'),
+          )
+        : null}
+      {tile(
+        'res',
+        formatEuroShort(reserved),
+        t('Rücklagen'),
+        target ? t(`Ziel ${formatEuroShort(target)}`) : t('ohne Ziel'),
+        meter(target ? (reserved / target) * 100 : 0, c.aqua),
+        () => router.push('/club-cash/reserves'),
+      )}
+    </View>
+  );
+}
+
 /** Vereinskasse (Paket K1): Gesamtbestand, Konten, Summen je Abteilung, letzte Buchungen. */
 export default function ClubCashScreen() {
   const { api } = useSignedIn();
@@ -98,7 +251,16 @@ export default function ClubCashScreen() {
     queryKey: ['club-cash', 'overview', fundId ?? 'all'],
     queryFn: () => api<ClubCash>(fundId ? `/club-cash?fundId=${fundId}` : '/club-cash'),
   });
+  const year = todayIso().slice(0, 4);
+  const stats = useQuery({
+    queryKey: ['club-cash', 'stats', fundId ?? 'all', `${year}-01-01`, 'overview'],
+    queryFn: () =>
+      api<ClubCashStats>(
+        `/club-cash/stats?from=${year}-01-01&to=${todayIso()}&interval=month${fundId ? `&fundId=${fundId}` : ''}`,
+      ),
+  });
   const c = cash.data;
+  const st = stats.data;
   const fund = c?.funds.find((f) => f.id === c.fundId);
   const full = c?.level === 'full';
 
@@ -116,12 +278,21 @@ export default function ClubCashScreen() {
             <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 64, lineHeight: 68 }}>
               <Counted value={c.totalBalanceCents} format={formatEuro} />
             </T>
+            {st && st.balance.length > 1 ? (
+              <Sparkline
+                values={st.balance.map((b) => b.cents)}
+                color={colors.hero.onHero}
+                ring={colors.hero.to}
+              />
+            ) : null}
             {!full ? (
               <T variant="caption" color={colors.hero.onHero}>
                 Du siehst Kontostände und Summen, keine einzelnen Buchungen.
               </T>
             ) : null}
           </HeroCard>
+
+          {st ? <KeyFigures st={st} year={c.year} /> : null}
 
           {!fund && c.funds.filter((f) => !f.archived).length > 1 ? (
             <Section title="Kassen">
@@ -172,18 +343,15 @@ export default function ClubCashScreen() {
           </Section>
 
           <Section title={`${t('Einnahmen und Ausgaben')} ${c.year}`}>
-            <Card style={{ gap: 10 }}>
-              {c.areaTotals.map((a) => (
-                <View key={a.area} style={{ gap: 2 }}>
-                  <T variant="label" style={{ fontWeight: '700' }}>
-                    {CLUB_CASH_AREA_LABEL[a.area]}
-                  </T>
-                  <T variant="caption">
-                    {`${t('Einnahmen')} ${formatEuro(a.incomeCents)} · ${t('Ausgaben')} ${formatEuro(a.expenseCents)}`}
-                  </T>
-                </View>
-              ))}
+            <Card style={{ gap: 14 }}>
+              <AreaPairs areas={c.areaTotals} />
             </Card>
+            <Button
+              label="Alle Auswertungen ›"
+              variant="outline"
+              icon="stats-chart-outline"
+              onPress={() => router.push('/club-cash/stats')}
+            />
           </Section>
 
           {full ? (

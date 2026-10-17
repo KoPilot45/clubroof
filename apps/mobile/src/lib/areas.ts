@@ -296,7 +296,13 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
       label: 'Beiträge',
       icon: 'people',
       groups: groups([
-        ['Mitglieder', [['fees', 'Beitragsübersicht', 'people', '/club-cash/fees', true]]],
+        [
+          'Mitglieder',
+          [
+            ['fees', 'Beitragsübersicht', 'people', '/club-cash/fees', true],
+            ['fee-stats', 'Beitragsstatistik', 'stats-chart', '/club-cash/stats?topic=fees', true],
+          ],
+        ],
         [
           'Einrichtung',
           [['fee-setup', 'Beitragsarten', 'options', '/club-cash/fee-setup', manage]],
@@ -326,6 +332,7 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
           [
             ['budget', 'Haushaltsplan', 'clipboard', '/club-cash/budget?mode=plan', true],
             ['actual', 'Soll-Ist', 'git-compare', '/club-cash/budget?mode=actual', true],
+            ['plan-stats', 'Plan gegen Ist', 'stats-chart', '/club-cash/stats?topic=plan', true],
           ],
         ],
         [

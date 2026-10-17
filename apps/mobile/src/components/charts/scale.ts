@@ -39,7 +39,6 @@ export function useGrow(deps: unknown[] = []): number {
     return () => {
       if (raf.current !== null) cancelAnimationFrame(raf.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduce, ...deps]);
   return p;
 }

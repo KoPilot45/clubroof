@@ -96,7 +96,12 @@ export async function getClubCashStats(
         })
         .from(s.clubCashAccounts)
         .where(
-          and(eq(s.clubCashAccounts.clubId, clubId), inArray(s.clubCashAccounts.fundId, fundIds)),
+          and(
+            eq(s.clubCashAccounts.clubId, clubId),
+            inArray(s.clubCashAccounts.fundId, fundIds),
+            // wie der Gesamtbestand der Übersicht: stillgelegte Konten zählen nicht mit
+            isNull(s.clubCashAccounts.archivedAt),
+          ),
         )
     : [];
   const accountIds = accounts.map((a) => a.id).concat(NO_ID);

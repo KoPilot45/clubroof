@@ -571,6 +571,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { label: 'Haushaltsplan', href: '/club-cash/budget?mode=plan' },
       },
       {
+        id: 'club-stats',
+        question: 'Wo finde ich die Auswertungen der Vereinskasse?',
+        answer:
+          'In der Vereinskasse unter „Übersicht“ mit dem Knopf „Alle Auswertungen ›“ (auch über „Beitragsstatistik“ und „Plan gegen Ist“ in den Reitern Beiträge und Planung). Oben wählst du ein Thema (Überblick, Einnahmen & Ausgaben, Plan gegen Ist, Beiträge, Abteilungen) und einen Zeitraum (Monat, Quartal, Jahr, Saison); er gilt für alle Karten. Fahre oder tippe über ein Diagramm, dann stehen die genauen Werte in der Zeile darüber. „Als Tabelle“ zeigt dieselben Zahlen ohne Grafik. Jede Karte nennt die wichtigste Aussage in einem Satz.',
+        link: { label: 'Auswertungen', href: '/club-cash/stats' },
+      },
+      {
         id: 'club-audit',
         question: 'Wie läuft die Kassenprüfung?',
         answer:
