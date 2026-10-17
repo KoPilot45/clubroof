@@ -388,9 +388,13 @@ export async function getEventDetail(
         guestFromTeam: guestTeams.badge,
         attended: s.eventParticipants.attended,
         avatar: s.persons.avatarUrl,
+        absenceId: s.eventParticipants.absenceId,
+        absenceKind: s.absences.kind,
+        absenceEnd: s.absences.endsOn,
       })
       .from(s.eventParticipants)
       .innerJoin(s.persons, eq(s.persons.id, s.eventParticipants.personId))
+      .leftJoin(s.absences, eq(s.absences.id, s.eventParticipants.absenceId))
       .leftJoin(guestTeams, eq(guestTeams.id, s.eventParticipants.guestFromTeamId))
       .where(eq(s.eventParticipants.eventId, eventId))
       .orderBy(asc(s.persons.lastName), asc(s.persons.firstName));
@@ -408,6 +412,12 @@ export async function getEventDetail(
       attended:
         row.event.attendanceRecordedAt && (mayReadAttendance || namedVisible)
           ? p.attended === true
+          : null,
+      // Wer ausfällt, steht im Kader getrennt von den Absagen; Art und Ende nur für das Trainerteam
+      absent: p.status === 'no' && p.absenceId !== null,
+      absence:
+        mayReadReasons && p.status === 'no' && p.absenceId !== null && p.absenceKind && p.absenceEnd
+          ? { kind: p.absenceKind, endsOn: p.absenceEnd }
           : null,
     }));
   }
