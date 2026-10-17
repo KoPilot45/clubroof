@@ -7,6 +7,8 @@ import {
   type RefereeLicenseStatus,
   type RefereeOverview,
 } from '@clubroof/core';
+import { calendarDayOf, toIsoDate } from '@clubroof/core';
+import { EditedNote } from '@/components/edited';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -198,22 +200,24 @@ function DutySection({
   const [absence, setAbsence] = useState(false);
   const [collisions, setCollisions] = useState<RefereeCollision[] | null>(null);
   const [open, setOpen] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const create = useMutation({
     mutationFn: () =>
-      api<RefereeDutyResult>('/referees/duties', {
-        method: 'POST',
+      api<RefereeDutyResult>(editingId ? `/referees/duties/${editingId}` : '/referees/duties', {
+        method: editingId ? 'PATCH' : 'POST',
         body: {
           title: title.trim(),
           startsAt: at(fromIsoDate(date), time, timezone).toISOString(),
           durationMinutes: Number(minutes),
           location: location.trim() || null,
-          createAbsence: absence,
+          ...(editingId ? {} : { createAbsence: absence }),
         },
       }),
     onSuccess: (r) => {
       setCollisions(r.collisions);
       setAdding(false);
+      setEditingId(null);
       setTitle('');
       setLocation('');
       setAbsence(false);
@@ -246,9 +250,25 @@ function DutySection({
       />
       {open === d.id ? (
         <View style={{ paddingBottom: 8 }}>
+          <EditedNote at={d.editedAt} />
           <MoreMenu
             title={d.title}
             actions={[
+              {
+                label: 'Einsatz bearbeiten',
+                icon: 'create-outline',
+                onPress: () => {
+                  setEditingId(d.id);
+                  setTitle(d.title);
+                  setLocation(d.location ?? '');
+                  setDate(toIsoDate(calendarDayOf(new Date(d.startsAt), timezone)));
+                  setTime(formatTime(d.startsAt));
+                  setMinutes(
+                    String(Math.round((Date.parse(d.endsAt) - Date.parse(d.startsAt)) / 60_000)),
+                  );
+                  setAdding(true);
+                },
+              },
               {
                 label: 'Einsatz löschen',
                 icon: 'trash-outline',
@@ -309,22 +329,36 @@ function DutySection({
               selected={[minutes]}
               onToggle={setMinutes}
             />
-            <ChoiceChips
-              label="Abwesenheit"
-              options={[
-                { value: 'no', label: 'Nicht eintragen' },
-                { value: 'yes', label: 'Für diesen Tag eintragen' },
-              ]}
-              selected={[absence ? 'yes' : 'no']}
-              onToggle={(v) => setAbsence(v === 'yes')}
-            />
+            {editingId ? null : (
+              <ChoiceChips
+                label="Abwesenheit"
+                options={[
+                  { value: 'no', label: 'Nicht eintragen' },
+                  { value: 'yes', label: 'Für diesen Tag eintragen' },
+                ]}
+                selected={[absence ? 'yes' : 'no']}
+                onToggle={(v) => setAbsence(v === 'yes')}
+              />
+            )}
             <Button
-              label="Einsatz speichern"
+              label={editingId ? 'Änderungen speichern' : 'Einsatz speichern'}
               icon="checkmark"
               disabled={title.trim().length < 2}
               loading={create.isPending}
               onPress={() => create.mutate()}
             />
+            {editingId ? (
+              <Button
+                label="Abbrechen"
+                variant="outline"
+                onPress={() => {
+                  setAdding(false);
+                  setEditingId(null);
+                  setTitle('');
+                  setLocation('');
+                }}
+              />
+            ) : null}
           </Card>
         ) : (
           <Button label="Einsatz eintragen" icon="add" onPress={() => setAdding(true)} />

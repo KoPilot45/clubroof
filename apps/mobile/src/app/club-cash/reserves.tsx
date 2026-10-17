@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { BudgetBar } from '@/components/budget-bar';
+import { EditSheet } from '@/components/edit-sheet';
 import {
   Button,
   Card,
@@ -41,6 +42,7 @@ export default function ReservesScreen() {
   });
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
+  const [editing, setEditing] = useState<ClubReserve | null>(null);
   const [amount, setAmount] = useState('');
   const [bookedOn, setBookedOn] = useState(() => new Date().toISOString().slice(0, 10));
   const [name, setName] = useState('');
@@ -127,6 +129,7 @@ export default function ReservesScreen() {
           archiving={archive.isPending}
           onMove={(kind) => move.mutate({ id: r.id, kind })}
           onArchive={() => archive.mutate(r.id)}
+          onEdit={() => setEditing(r)}
         />
       ) : null}
     </View>
@@ -204,6 +207,37 @@ export default function ReservesScreen() {
           </Card>
         </Section>
       ) : null}
+      <EditSheet
+        visible={editing !== null}
+        onClose={() => setEditing(null)}
+        title="Rücklage bearbeiten"
+        fields={[
+          { key: 'name', label: 'Name', value: editing?.name ?? '', maxLength: 60 },
+          {
+            key: 'target',
+            label: 'Zielbetrag in € (optional)',
+            value: editing?.targetCents
+              ? (editing.targetCents / 100).toFixed(2).replace('.', ',')
+              : '',
+          },
+          { key: 'note', label: 'Hinweis (optional)', value: editing?.note ?? '', maxLength: 200 },
+        ]}
+        onSave={async (v) => {
+          const targetCents = v.target!.trim() ? parseEuro(v.target!) : null;
+          if (v.target!.trim() && targetCents === null)
+            throw new RequestError(
+              400,
+              'invalid_amount',
+              'Bitte gib den Zielbetrag als Betrag in Euro an.',
+            );
+          done(
+            await api<ClubReserves>(`/club-cash/reserves/${editing!.id}`, {
+              method: 'PATCH',
+              body: { name: v.name!.trim(), targetCents, note: v.note!.trim() || null },
+            }),
+          );
+        }}
+      />
     </Screen>
   );
 }
@@ -220,6 +254,7 @@ function ReserveDetail({
   archiving,
   onMove,
   onArchive,
+  onEdit,
 }: {
   r: ClubReserve;
   canManage: boolean;
@@ -231,6 +266,7 @@ function ReserveDetail({
   archiving: boolean;
   onMove: (kind: 'allocate' | 'release') => void;
   onArchive: () => void;
+  onEdit: () => void;
 }) {
   const { api } = useSignedIn();
   const moves = useQuery({
@@ -262,6 +298,14 @@ function ReserveDetail({
               onPress={() => onMove('release')}
             />
           </View>
+          <Button
+            label="Bearbeiten"
+            icon="create-outline"
+            variant="outline"
+            size="sm"
+            style={{ alignSelf: 'flex-start' }}
+            onPress={onEdit}
+          />
           <Button
             label="Rücklage auflösen"
             variant="danger"
