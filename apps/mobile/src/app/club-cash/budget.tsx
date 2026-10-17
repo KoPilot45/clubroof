@@ -33,6 +33,7 @@ import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { useConfirmDelete } from '@/lib/confirm';
+import { Counted } from '@/lib/motion';
 
 const STATUS_LABEL: Record<ClubBudgetStatus, string> = {
   ok: 'im Plan',
@@ -229,7 +230,7 @@ export default function BudgetScreen() {
           {`${t('Ausgaben')} ${year}`}
         </T>
         <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 40 }}>
-          {formatEuro(b.totals.actualExpenseCents)}
+          <Counted value={b.totals.actualExpenseCents} format={formatEuro} />
         </T>
         <T variant="caption" color={colors.hero.onHero}>
           {heroPct === null

@@ -120,6 +120,15 @@ export function useCountUp(target: number, duration = 900): number {
   return shown;
 }
 
+/**
+ * Zahl in einem Text, die beim ersten Anzeigen hochzählt (Kennzahlen in Blickflächen). `format` macht aus dem
+ * laufenden Wert den Text, z. B. `formatEuro` für Cent-Beträge; ohne Bewegung steht sofort der Endwert.
+ */
+export function Counted({ value, format }: { value: number; format?: (n: number) => string }) {
+  const n = useCountUp(value);
+  return <>{format ? format(n) : String(n)}</>;
+}
+
 const seen = new Set<string>();
 
 /** Blendet Inhalt ein (350 ms, Abstand 70 ms je Element) – nur beim ersten Laden eines Bildschirms. */
@@ -180,6 +189,41 @@ export function useBarFill(target: number): Animated.Value {
     }).start();
   }, [target, reduce, value]);
   return value;
+}
+
+/** Füllbalken: die Füllung wächst beim ersten Anzeigen auf `percent` (0–100) Prozent der Breite. */
+export function GrowBar({ percent, style }: { percent: number; style?: StyleProp<ViewStyle> }) {
+  const grow = useBarFill(1);
+  const target = `${Math.max(0, Math.min(100, percent))}%`;
+  return (
+    <Animated.View
+      style={[
+        style,
+        { width: grow.interpolate({ inputRange: [0, 1], outputRange: ['0%', target] }) },
+      ]}
+    />
+  );
+}
+
+/** Balken aus Abschnitten (flex): die ganze Reihe wächst beim ersten Anzeigen von links auf volle Breite. */
+export function GrowRow({
+  children,
+  style,
+}: {
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const grow = useBarFill(1);
+  return (
+    <Animated.View
+      style={[
+        style,
+        { width: grow.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) },
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
 }
 
 /** Scroll-Position des umgebenden Bildschirms (für die schrumpfende Kopfzeile). */

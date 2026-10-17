@@ -36,6 +36,7 @@ import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { useConfirmDelete } from '@/lib/confirm';
 import { t } from '@/lib/i18n';
+import { Counted } from '@/lib/motion';
 
 const LICENSE = {
   none: { label: 'Keine Lizenzangabe', tone: 'neutral' },
@@ -415,7 +416,7 @@ function ClubSoll({
           Schiedsrichter-Soll
         </T>
         <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 44 }}>
-          {soll > 0 ? `${club.active} / ${soll}` : String(club.active)}
+          <Counted value={club.active} format={(n) => (soll > 0 ? `${n} / ${soll}` : String(n))} />
         </T>
         <T variant="label" color={colors.hero.onHero}>
           {soll === 0

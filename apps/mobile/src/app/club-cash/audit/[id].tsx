@@ -22,6 +22,7 @@ import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { useConfirmDelete } from '@/lib/confirm';
+import { Counted } from '@/lib/motion';
 
 const KIND_LABEL: Record<ClubAuditFinding['kind'], string> = {
   pending: 'Offen',
@@ -217,7 +218,11 @@ export default function AuditDetailScreen() {
           {`${t('Prüfung')} ${d.year} · ${d.fundName}`}
         </T>
         <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 40 }}>
-          {d.pending > 0 ? t(`${d.pending} offen`) : t(`${d.checked} geprüft`)}
+          {d.pending > 0 ? (
+            <Counted value={d.pending} format={(n) => t(`${n} offen`)} />
+          ) : (
+            <Counted value={d.checked} format={(n) => t(`${n} geprüft`)} />
+          )}
         </T>
         <T variant="caption" color={colors.hero.onHero}>
           {[

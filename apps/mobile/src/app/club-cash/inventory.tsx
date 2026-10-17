@@ -22,6 +22,7 @@ import { formatEuro, parseEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { Counted } from '@/lib/motion';
 
 /** Inventar (Paket K5): Anschaffungen mit Wert und Standort, Aussonderung mit Grund (nichts wird gelöscht). */
 export default function InventoryScreen() {
@@ -141,7 +142,7 @@ export default function InventoryScreen() {
           Wert des Inventars
         </T>
         <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 40 }}>
-          {formatEuro(d.totalCostCents)}
+          <Counted value={d.totalCostCents} format={formatEuro} />
         </T>
         <T variant="caption" color={colors.hero.onHero}>
           {t(`${present.length} Positionen (Anschaffungswerte)`)}

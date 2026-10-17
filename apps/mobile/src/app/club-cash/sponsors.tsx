@@ -21,6 +21,7 @@ import { formatEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { Counted } from '@/lib/motion';
 
 /** Sponsoren-Einnahmen (Paket K5): Einnahmen im Kassenbuch, die einem Sponsor zugeordnet sind, je Jahr. */
 export default function SponsorIncomeScreen() {
@@ -48,7 +49,7 @@ export default function SponsorIncomeScreen() {
           {`${t('Sponsoren-Einnahmen')} ${year}`}
         </T>
         <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 40 }}>
-          {formatEuro(d.total)}
+          <Counted value={d.total} format={formatEuro} />
         </T>
       </HeroCard>
       <Section title="Je Sponsor">

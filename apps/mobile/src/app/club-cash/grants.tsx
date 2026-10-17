@@ -22,6 +22,7 @@ import { formatEuro, parseEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { Counted } from '@/lib/motion';
 
 const TONE = {
   planned: 'neutral',
@@ -194,7 +195,7 @@ export default function GrantsScreen() {
           Erwartete Zuschüsse
         </T>
         <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 40 }}>
-          {formatEuro(d.expectedCents)}
+          <Counted value={d.expectedCents} format={formatEuro} />
         </T>
         <T variant="caption" color={colors.hero.onHero}>
           {`${t('Bereits eingegangen')} ${formatEuro(d.receivedCents)}`}

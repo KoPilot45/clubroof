@@ -6,6 +6,7 @@ import { Card, ChoiceChips, DateStepper, T } from '@/components/ui';
 import { toGermanDate } from '@/lib/dates';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { GrowBar } from '@/lib/motion';
 
 const localIso = (d = new Date()) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -86,8 +87,9 @@ export function RateBar({ value }: { value: number | null }) {
         overflow: 'hidden',
       }}
     >
-      <View
-        style={{ width: `${value ?? 0}%`, height: '100%', backgroundColor: colors.primaryText }}
+      <GrowBar
+        percent={value ?? 0}
+        style={{ height: '100%', backgroundColor: colors.primaryText }}
       />
     </View>
   );

@@ -22,6 +22,7 @@ import { formatEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { Counted } from '@/lib/motion';
 
 const signed = (cents: number) =>
   `${cents > 0 ? '+' : cents < 0 ? '−' : ''}${formatEuro(Math.abs(cents))}`;
@@ -111,7 +112,7 @@ export default function ClosingScreen() {
               {`${t('Jahresergebnis')} ${year}`}
             </T>
             <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 40 }}>
-              {signed(result)}
+              <Counted value={result} format={signed} />
             </T>
             <T variant="caption" color={colors.hero.onHero}>
               {`${t('Einnahmen')} ${formatEuro(d.incomeCents)} · ${t('Ausgaben')} ${formatEuro(d.expenseCents)} · ${t('Vorjahr')} ${signed(previousResult)}`}

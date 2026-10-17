@@ -29,6 +29,7 @@ import { formatShortDate, clubDayMinutes } from '@/lib/format';
 import { dateFormat, t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { Counted, GrowRow } from '@/lib/motion';
 
 const LEVEL_WORD: Record<ParticipationLevel, string> = {
   good: 'gut',
@@ -45,7 +46,7 @@ function Figure({ value, label }: { value: string | number; label: string }) {
   return (
     <View style={{ flex: 1, minWidth: 70 }}>
       <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 28, lineHeight: 32 }}>
-        {value}
+        {typeof value === 'number' ? <Counted value={value} /> : value}
       </T>
       <T variant="caption" color={colors.hero.onHero}>
         {label}
@@ -63,15 +64,16 @@ function Bar({ parts }: { parts: { value: number; color: string }[] }) {
         height: 8,
         borderRadius: 4,
         overflow: 'hidden',
-        flexDirection: 'row',
         backgroundColor: colors.border,
       }}
     >
-      {total > 0
-        ? parts
-            .filter((p) => p.value > 0)
-            .map((p, i) => <View key={i} style={{ flex: p.value, backgroundColor: p.color }} />)
-        : null}
+      <GrowRow style={{ flexDirection: 'row', height: '100%' }}>
+        {total > 0
+          ? parts
+              .filter((p) => p.value > 0)
+              .map((p, i) => <View key={i} style={{ flex: p.value, backgroundColor: p.color }} />)
+          : null}
+      </GrowRow>
     </View>
   );
 }
@@ -224,7 +226,7 @@ export function AreaOverviewScreen({ switcher }: { switcher?: ReactNode }) {
                 : AREA_LABELS[o.area]}
             </T>
             <T variant="figure" color={on} style={{ fontSize: 44, lineHeight: 50 }}>
-              {o.summary.teams}
+              <Counted value={o.summary.teams} />
             </T>
             <T variant="label" color={on} style={{ fontWeight: '400' }}>
               Mannschaften

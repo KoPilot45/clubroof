@@ -14,6 +14,7 @@ import { MATCH_KIND_LABELS } from '@/lib/labels';
 import { useTheme } from '@/lib/theme';
 import { Card, Chip, DateTile, HeroCard, HeroPill, ListRow, Stat, T } from './ui';
 import { Swipe, useCardWidth } from './home';
+import { Counted, GrowRow } from '@/lib/motion';
 
 export function SquadStatusCard({ squad }: { squad: SquadStatus }) {
   const { colors } = useTheme();
@@ -153,7 +154,7 @@ export function TeamBand({
       </T>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10 }}>
         <T variant="figure" color={on} style={{ fontSize: 92, lineHeight: 92 }}>
-          {squad ? squad.players : record}
+          {squad ? <Counted value={squad.players} /> : record}
         </T>
         {squad ? (
           <T color={on} style={{ fontSize: 14, flexShrink: 1 }}>
@@ -211,18 +212,19 @@ export function AttendanceBar({ counts, absent }: { counts: AttendanceCounts; ab
       <View
         aria-hidden
         style={{
-          flexDirection: 'row',
           height: 10,
           borderRadius: 5,
           overflow: 'hidden',
           backgroundColor: colors.border,
         }}
       >
-        {total > 0
-          ? parts
-              .filter((p) => p.n > 0)
-              .map((p) => <View key={p.key} style={{ flex: p.n, backgroundColor: p.color }} />)
-          : null}
+        <GrowRow style={{ flexDirection: 'row', height: '100%' }}>
+          {total > 0
+            ? parts
+                .filter((p) => p.n > 0)
+                .map((p) => <View key={p.key} style={{ flex: p.n, backgroundColor: p.color }} />)
+            : null}
+        </GrowRow>
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 14, rowGap: 2 }}>
         {parts.map((p) => (

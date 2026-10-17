@@ -25,7 +25,7 @@ import { readFlag, writeFlag } from '@/lib/flags';
 import { cashTeamId } from '@/lib/quick-links';
 import { useSignedIn } from '@/lib/session';
 import { useTileInfo } from '@/lib/tile-info';
-import { useScrollY } from '@/lib/motion';
+import { Counted, useScrollY } from '@/lib/motion';
 import { useTheme } from '@/lib/theme';
 import type { TintKey } from '@clubroof/design-tokens';
 
@@ -167,7 +167,7 @@ function KeyFigure({ label, value, tint }: { label: string; value: number; tint:
       }}
     >
       <T variant="figure" color={colors.tints[tint].onContainer}>
-        {value}
+        <Counted value={value} />
       </T>
       <T variant="caption" color={colors.tints[tint].onContainer}>
         {label}

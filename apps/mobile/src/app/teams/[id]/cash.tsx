@@ -21,6 +21,7 @@ import {
 import { formatEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { Counted } from '@/lib/motion';
 
 /** Saldo als Fläche: offen = Aktionsfarbe, Guthaben = Erfolgsfarbe, ausgeglichen = neutral. */
 function SaldoBlock({ balanceCents }: { balanceCents: number }) {
@@ -42,7 +43,7 @@ function SaldoBlock({ balanceCents }: { balanceCents: number }) {
         Saldo
       </T>
       <T variant="figure" color={fg} style={{ fontSize: 32 }}>
-        {formatEuro(balanceCents)}
+        <Counted value={balanceCents} format={formatEuro} />
       </T>
       <T variant="label" color={fg}>
         {balanceCents < 0 ? 'Offen' : balanceCents > 0 ? 'Guthaben' : 'Ausgeglichen'}
@@ -139,7 +140,7 @@ export default function CashScreen() {
                 color={colors.hero.onHero}
                 style={{ fontSize: 72, lineHeight: 76 }}
               >
-                {formatEuro(c.balanceCents)}
+                <Counted value={c.balanceCents} format={formatEuro} />
               </T>
               <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
                 <HeroPill label={`Einnahmen ${formatEuro(c.incomeCents ?? 0)}`} />

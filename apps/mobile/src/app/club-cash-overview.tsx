@@ -23,6 +23,7 @@ import { formatEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { Counted } from '@/lib/motion';
 
 /**
  * Kassenübersicht für den Vorstand (Paket K6): reine Anzeige – Kassenstand, Einnahmen und Ausgaben,
@@ -61,7 +62,7 @@ export default function ClubCashOverviewScreen() {
               Kassenstand gesamt
             </T>
             <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 44 }}>
-              {formatEuro(c.totalBalanceCents)}
+              <Counted value={c.totalBalanceCents} format={formatEuro} />
             </T>
             <T variant="caption" color={colors.hero.onHero}>
               Nur zur Ansicht – ohne Buchungen und Belege.

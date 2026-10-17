@@ -10,6 +10,7 @@ import { formatEuro } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
 import { T } from './ui';
 import { dateFormat, t } from '@/lib/i18n';
+import { GrowBar } from '@/lib/motion';
 
 const MONTH = dateFormat({ month: 'short', timeZone: 'UTC' });
 const monthLabel = (m: string) => MONTH.format(new Date(`${m}-01T00:00:00Z`)).replace('.', '');
@@ -169,13 +170,9 @@ export function HorizontalBars({
               overflow: 'hidden',
             }}
           >
-            <View
-              style={{
-                width: `${Math.max(2, (r.value / max) * 100)}%`,
-                height: '100%',
-                borderRadius: 4,
-                backgroundColor: colors.primary,
-              }}
+            <GrowBar
+              percent={Math.max(2, (r.value / max) * 100)}
+              style={{ height: '100%', borderRadius: 4, backgroundColor: colors.primary }}
             />
           </View>
         </View>

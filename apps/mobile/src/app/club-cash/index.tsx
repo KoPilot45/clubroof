@@ -28,6 +28,7 @@ import { formatEuro } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { t } from '@/lib/i18n';
+import { Counted } from '@/lib/motion';
 
 const KIND_ICON: Record<ClubCash['accounts'][number]['kind'], IconName> = {
   bank: 'business',
@@ -113,7 +114,7 @@ export default function ClubCashScreen() {
               {fund ? `${t('Bestand der Kasse')} ${fund.name}` : 'Gesamtbestand aller Konten'}
             </T>
             <T variant="figure" color={colors.hero.onHero} style={{ fontSize: 64, lineHeight: 68 }}>
-              {formatEuro(c.totalBalanceCents)}
+              <Counted value={c.totalBalanceCents} format={formatEuro} />
             </T>
             {!full ? (
               <T variant="caption" color={colors.hero.onHero}>

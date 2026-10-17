@@ -7,6 +7,7 @@ import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { useTileInfo } from '@/lib/tile-info';
+import { Counted } from '@/lib/motion';
 
 /** Wohin eine Aufgabe in „Für dich“ führt (Schlüssel der Kachel-Infos der Verwaltung). */
 const TASK_TARGETS: Record<string, Href> = {
@@ -52,7 +53,7 @@ export default function AdminOverviewScreen() {
               Aktive Mitglieder
             </T>
             <T variant="figure" color={on} style={{ fontSize: 72, lineHeight: 74 }}>
-              {o.members.active}
+              <Counted value={o.members.active} />
             </T>
             <View style={{ flexDirection: 'row', gap: 16, marginTop: 4 }}>
               {[
@@ -62,7 +63,7 @@ export default function AdminOverviewScreen() {
               ].map(([value, label]) => (
                 <View key={String(label)} style={{ flex: 1 }}>
                   <T variant="figure" color={on} style={{ fontSize: 28, lineHeight: 32 }}>
-                    {value as number}
+                    <Counted value={value as number} />
                   </T>
                   <T variant="caption" color={on}>
                     {label as string}
