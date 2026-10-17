@@ -23,7 +23,7 @@
   --sheet: #16211A;
   --pitch-a: #12391F;
   --pitch-b: #0F3219;
-  --pitchH: clamp(260px, calc(100svh - 570px), 460px);
+  --pitchH: clamp(250px, calc(100svh - 550px), 460px);
   --display: 'Saira Condensed', 'Arial Narrow', sans-serif;
   --body: 'Open Sans', system-ui, sans-serif;
   color-scheme: dark;
@@ -31,26 +31,24 @@
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.4; padding-block: 0 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); -webkit-tap-highlight-color: transparent; }
 body.dragging { cursor: grabbing; user-select: none; -webkit-user-select: none; }
-.app { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; padding-bottom: 8px; }
+.app { max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; padding-block: 12px 8px; }
 button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Kopfband */
 .top { display: flex; align-items: center; gap: 10px; padding-top: 12px; }
-.back { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; flex: none; }
+.back { width: 36px; height: 36px; border-radius: 50%; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .14); display: grid; place-items: center; flex: none; color: var(--fg); cursor: pointer; }
 .back svg { width: 16px; height: 16px; }
-h1 { margin: 0; font: 800 18px/1 var(--display); letter-spacing: .01em; text-transform: uppercase; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.acts { display: flex; gap: 6px; flex: none; }
 
 /* Spiel-Plakat (kompakt) */
 .hero { border-radius: 20px; padding: 10px 14px; background: radial-gradient(120% 140% at 90% 0%, var(--p1) 0%, var(--p2) 60%, var(--bg) 130%); border: 1px solid rgba(255, 255, 255, .08); position: relative; overflow: hidden; display: flex; gap: 12px; align-items: center; }
 .hero::before { content: ""; position: absolute; inset: 0; opacity: .5; background-image: radial-gradient(circle at 50% 50%, transparent 0 11px, rgba(255, 255, 255, .06) 11px 12px, transparent 12px); background-size: 28px 24px; pointer-events: none; mask-image: linear-gradient(120deg, transparent 20%, #000 90%); -webkit-mask-image: linear-gradient(120deg, transparent 20%, #000 90%); }
 .hero > * { position: relative; }
 .hl { flex: 1; min-width: 0; }
-.eyebrow { font: 700 10.5px/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: #fff; opacity: .92; }
-.match { font: 800 21px/1.05 var(--display); margin: 5px 0 2px; }
+.eyebrow { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 700 10.5px/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: #fff; opacity: .92; }
+.match { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font: 800 20px/1.05 var(--display); margin: 5px 0 2px; }
 .match em { font-style: normal; color: var(--accent); }
-.when { font-size: 11px; color: var(--fg2); }
+.when { font-size: 11px; color: var(--fg2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .figs { display: flex; gap: 16px; flex: none; }
 .fig b { display: block; font: 800 34px/.95 var(--display); }
 .fig b i { font-style: normal; font-size: 17px; color: var(--fg2); font-weight: 700; }
@@ -63,8 +61,8 @@ h1 { margin: 0; font: 800 18px/1 var(--display); letter-spacing: .01em; text-tra
 
 /* Spielform + Formation */
 .seg { display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px; gap: 4px; }
-.seg button { flex: 1; border: 0; background: transparent; padding: 6px 4px; border-radius: 10px; font-weight: 700; font-size: 13px; color: var(--fg2); cursor: pointer; transition: background .15s, color .15s; }
-.seg button small { display: block; font-weight: 600; font-size: 10px; opacity: .75; }
+.seg button { white-space: nowrap; flex: 1; border: 0; background: transparent; padding: 8px 4px; border-radius: 10px; font-weight: 700; font-size: 14px; color: var(--fg2); cursor: pointer; transition: background .15s, color .15s; }
+.seg button small { font-weight: 600; font-size: 10.5px; opacity: .75; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
 .chips { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding: 2px 28px 2px 0; scrollbar-width: none; scroll-snap-type: x proximity; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); }
 .chips::-webkit-scrollbar { display: none; }
@@ -105,10 +103,9 @@ h1 { margin: 0; font: 800 18px/1 var(--display); letter-spacing: .01em; text-tra
 .stage { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: var(--bg); padding: 8px 0 6px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 10px 14px -10px var(--bg); }
 .lab { display: flex; align-items: baseline; gap: 8px; font: 700 13px/1 var(--display); text-transform: uppercase; letter-spacing: .14em; color: var(--fg2); margin: 0 2px 5px; }
 .lab::before { content: ""; width: 3px; height: 11px; border-radius: 3px; background: var(--accent); align-self: center; }
-.lab small { font: 600 11px var(--body); letter-spacing: 0; text-transform: none; color: var(--fg3); }
-.lab .sorts { margin-left: auto; display: flex; gap: 4px; }
-.lab .sorts button { border: 1px solid var(--line2); background: transparent; border-radius: 99px; padding: 4px 9px; font: 600 11px var(--body); letter-spacing: 0; text-transform: none; color: var(--fg3); cursor: pointer; }
-.lab .sorts button[aria-pressed="true"] { background: rgba(46, 219, 107, .14); border-color: var(--accent); color: var(--accent); }
+.lab small { white-space: nowrap; font: 600 11px var(--body); letter-spacing: 0; text-transform: none; color: var(--fg3); }
+.lab .sorts { margin-left: auto; }
+.lab .sorts button { padding: 4px 9px; font-size: 11px; letter-spacing: 0; text-transform: none; }
 .strip { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 2px 4px; touch-action: pan-x; border-radius: 16px; transition: box-shadow .15s; }
 .strip::-webkit-scrollbar { display: none; }
 .strip.over { box-shadow: 0 0 0 3px var(--accent); }
@@ -142,9 +139,38 @@ h1 { margin: 0; font: 800 18px/1 var(--display); letter-spacing: .01em; text-tra
 .st.un { color: var(--warn); background: rgba(255, 176, 32, .16); }
 .st.out { color: var(--bad); background: rgba(255, 90, 90, .16); }
 .guide { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--fg3); margin: 0 2px; align-items: center; }
+h2.sec small { margin-left: auto; font: 600 12px var(--body); text-transform: none; letter-spacing: 0; color: var(--fg3); }
 .guide i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
 .hint { background: rgba(255, 176, 32, .14); color: var(--warn); border-radius: 12px; padding: 7px 12px; font-size: 12px; font-weight: 600; display: none; }
 .hint.on { display: block; }
+
+/* Kader im Detail */
+.tools { display: flex; margin: 10px 0; }
+.sorts { display: flex; gap: 4px; }
+.sorts button { white-space: nowrap; border: 1px solid var(--line2); background: transparent; border-radius: 99px; padding: 5px 12px; font: 600 12px var(--body); color: var(--fg3); cursor: pointer; }
+.sorts button[aria-pressed="true"] { background: rgba(46, 219, 107, .14); border-color: var(--accent); color: var(--accent); }
+.list { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 6px 4px; }
+.pr { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 14px; position: relative; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.pr + .pr::before { content: ""; position: absolute; left: 62px; right: 10px; top: 0; height: 1px; background: var(--line); }
+.pr[data-drag] { cursor: grab; }
+.pr[data-drag]:hover { background: rgba(255, 255, 255, .04); }
+.grip { width: 22px; height: 34px; display: grid; place-items: center; color: var(--fg4); touch-action: none; flex: none; }
+.grip svg { width: 14px; height: 14px; }
+.pr .disc { width: 36px; height: 36px; font-size: 16px; flex: none; box-shadow: none; }
+.who { min-width: 0; flex: 1; }
+.who b { display: block; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.who span { font-size: 11.5px; color: var(--fg3); display: flex; align-items: center; gap: 6px; min-width: 0; }
+.who span em { font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.who .st { flex: none; }
+.st.in { color: var(--fg2); background: rgba(255, 255, 255, .1); }
+.att { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: none; }
+.att .bars { display: flex; align-items: flex-end; gap: 3px; height: 20px; }
+.att .bars i { width: 6px; border-radius: 2px; background: var(--fg4); min-height: 3px; }
+.att .bars.g i { background: var(--accent); } .att .bars.a i { background: var(--warn); } .att .bars.r i { background: #FF6B6B; }
+.att small { font-size: 10.5px; font-weight: 700; color: var(--fg2); white-space: nowrap; }
+.pr.sel { background: rgba(255, 176, 32, .12); box-shadow: inset 0 0 0 2px var(--warn); }
+.pr.na { opacity: .5; }
+.group { font: 700 11px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--fg3); padding: 12px 12px 4px; }
 
 /* Einstellung */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 14px 16px; }
@@ -158,9 +184,9 @@ h1 { margin: 0; font: 800 18px/1 var(--display); letter-spacing: .01em; text-tra
 .ctx { font-size: 11px; color: var(--fg3); margin: 0 0 8px; letter-spacing: .02em; }
 
 /* Untere Leiste */
-.btn { border-radius: 12px; border: 0; padding: 9px 12px; font-weight: 700; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
-.btn.ico { padding: 9px; display: grid; place-items: center; }
-.btn.sec2 { background: rgba(255, 255, 255, .09); color: var(--fg); }
+.acts { display: flex; gap: 8px; }
+.btn { flex: 1; border-radius: 13px; border: 0; padding: 11px 10px; font-weight: 700; font-size: 13.5px; cursor: pointer; white-space: nowrap; }
+.btn.sec2 { background: rgba(255, 255, 255, .09); color: var(--fg); flex: .85; }
 .btn.pri { background: var(--accent); color: var(--on-accent); }
 .btn:active { transform: scale(.97); }
 .vis { text-align: center; font-size: 11.5px; color: var(--fg3); margin: 0; }
@@ -179,18 +205,14 @@ h1 { margin: 0; font: 800 18px/1 var(--display); letter-spacing: .01em; text-tra
 </style>
 
 <div class="app" id="app">
-  <header class="top">
-    <button class="back" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <h1>Aufstellung</h1>
-    <div class="acts"><button class="btn sec2 ico" id="save" aria-label="Entwurf speichern" title="Entwurf speichern"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h7V3M8 21v-7h8v7"/></svg></button><button class="btn pri" id="publish">Veröffentlichen</button></div>
-  </header>
 
   <div class="editor">
     <section class="hero" aria-label="Spiel">
+      <button class="back" aria-label="Zurück"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <div class="hl">
-        <div class="eyebrow">B-Jugend · Auswärts</div>
+        <div class="eyebrow">Aufstellung · B-Jugend</div>
         <div class="match"><em>@</em> VfR Sonnenberg</div>
-        <div class="when">Sa., 17.10. · 15:00 Uhr</div>
+        <div class="when">Sa., 17.10. · 15:00 Uhr · Auswärts</div>
       </div>
       <div class="figs">
         <div class="fig"><b><span id="nStart">9</span><i>/<span id="nStartMax">11</span></i></b><span>Startelf</span></div>
@@ -219,10 +241,20 @@ h1 { margin: 0; font: 800 18px/1 var(--display); letter-spacing: .01em; text-tra
           <span class="sorts" id="sorts" role="group" aria-label="Sortierung"></span></div>
         <div class="rail" id="pool" data-drop="pool"></div>
       </div>
+      <div class="acts">
+        <button class="btn sec2" id="save">Entwurf speichern</button>
+        <button class="btn pri" id="publish">Veröffentlichen</button>
+      </div>
     </div>
+
+    <section aria-label="Gesamter Kader">
+      <h2 class="sec">Kader im Detail <small id="listInfo"></small></h2>
+      <div class="guide" aria-label="Legende"><span>Trainingsbeteiligung der letzten 4 Wochen</span><span><i style="background:var(--accent)"></i>ab 75 %</span><span><i style="background:var(--warn)"></i>50–74 %</span><span><i style="background:#FF6B6B"></i>unter 50 %</span></div>
+      <div class="tools"><span class="sorts" id="sorts2" role="group" aria-label="Sortierung"></span></div>
+      <div class="list" id="list"></div>
+    </section>
   </div>
 
-  <div class="guide" aria-label="Legende"><span>Punkt und Balken: Trainingsbeteiligung der letzten 4 Wochen</span><span><i style="background:var(--accent)"></i>ab 75 %</span><span><i style="background:var(--warn)"></i>50–74 %</span><span><i style="background:#FF6B6B"></i>unter 50 %</span></div>
 
   <section>
     <h2 class="sec">Einstellung</h2>
@@ -338,7 +370,7 @@ function move(src, dst, pid) {
 // ---- Darstellung ----
 function render() {
   const keepScroll = { forms: $('forms').scrollLeft, pool: $('pool').scrollLeft, bench: $('bench').scrollLeft };
-  $('sizes').innerHTML = Object.entries(SIZES).map(([k, v]) => `<button aria-pressed="${+k === size}" data-size="${k}">${v.label}<small>${v.sub}</small></button>`).join('');
+  $('sizes').innerHTML = Object.entries(SIZES).map(([k, v]) => `<button aria-pressed="${+k === size}" data-size="${k}" title="${v.sub}">${v.label}</button>`).join('');
   $('forms').innerHTML = SIZES[size].forms.map((f, i) => `<button class="chip" aria-pressed="${i === fi}" data-form="${i}">${f.name}</button>`).join('');
   $('pitch').className = 'pitch r' + rowsNow().length;
   const rows = rowsNow(), starts = []; let acc = 0; rows.forEach((r) => { starts.push(acc); acc += r.length; });
@@ -367,7 +399,24 @@ function render() {
       <small>${pct(p)} %</small>${st}</div>`;
   };
   $('pool').innerHTML = (avail.length ? avail.map((p) => card(p, false)).join('') : '<div class="empty-rail">Alle verfügbaren Spieler sind eingeplant. Ziehe einen Spieler hierher, um ihn aus der Aufstellung zu nehmen.</div>') + out.map((p) => card(p, true)).join('');
-  $('sorts').innerHTML = [['att', 'Beteiligung'], ['nr', 'Nummer']].map(([k, l]) => `<button aria-pressed="${sort === k}" data-sort="${k}">${l}</button>`).join('');
+  const sortBtns = [['att', 'Beteiligung'], ['nr', 'Nummer']].map(([k, l]) => `<button aria-pressed="${sort === k}" data-sort="${k}">${l}</button>`).join('');
+  $('sorts').innerHTML = sortBtns; $('sorts2').innerHTML = sortBtns;
+  const where = new Map(); S.forEach((id, i) => id && where.set(id, 'Startelf')); B.forEach((id) => id && where.set(id, 'Bank'));
+  const all = PL.filter((p) => p.status !== 'out').slice().sort(sort === 'att' ? (a, b) => pct(b) - pct(a) || a.nr - b.nr : (a, b) => a.nr - b.nr);
+  const prow = (p, na) => {
+    const loc = where.get(p.id);
+    const isSel = sel && sel.src === 'p' && sel.pid === p.id;
+    const chip = p.status === 'out' ? `<span class="st out">${p.why}</span>` : loc ? `<span class="st in">${loc}</span>` : p.status === 'un' ? '<span class="st un">Unsicher</span>' : '<span class="st ok">Zugesagt</span>';
+    const dim = na || !!loc;
+    return `<div class="pr${dim ? ' na' : ''}${isSel ? ' sel' : ''}" ${dim ? '' : `data-drag="p" data-pid="${p.id}" data-handle="1"`}>
+      <span class="grip" aria-hidden="true"><svg viewBox="0 0 14 14" fill="currentColor"><circle cx="4" cy="3" r="1.4"/><circle cx="10" cy="3" r="1.4"/><circle cx="4" cy="7" r="1.4"/><circle cx="10" cy="7" r="1.4"/><circle cx="4" cy="11" r="1.4"/><circle cx="10" cy="11" r="1.4"/></svg></span>
+      <div class="disc">${p.nr}</div>
+      <div class="who"><b>${esc(p.name)}</b><span><em>${p.pos}</em>${chip}</span></div>
+      <div class="att"><div class="bars ${tone(p)}">${p.att.map((a, i) => `<i style="height:${Math.max(3, Math.round(a / W[i] * 20))}px"></i>`).join('')}</div><small>${p.att.reduce((x, y) => x + y, 0)}/${W.reduce((x, y) => x + y, 0)} · ${pct(p)} %</small></div>
+    </div>`;
+  };
+  $('list').innerHTML = all.map((p) => prow(p, false)).join('') + '<div class="group">Nicht verfügbar</div>' + out.map((p) => prow(p, true)).join('');
+  $('listInfo').textContent = `${all.length} verfügbar · ${out.length} nicht verfügbar`;
   $('poolInfo').textContent = `${avail.length} verfügbar`;
 
   const ns = S.filter(Boolean).length, nb = B.filter(Boolean).length;
@@ -387,10 +436,10 @@ let drag = null, ghost = null, lastOver = null;
 document.addEventListener('pointerdown', (e) => {
   const el = e.target.closest('[data-drag]');
   if (!el || e.button > 0) return;
-  drag = { src: el.dataset.drag, pid: +el.dataset.pid, x: e.clientX, y: e.clientY, on: false, el, strip: !!el.closest('.strip, .rail'), touch: e.pointerType !== 'mouse' };
+  drag = { src: el.dataset.drag, pid: +el.dataset.pid, x: e.clientX, y: e.clientY, on: false, el, strip: !!el.closest('.strip, .rail'), touch: e.pointerType !== 'mouse', canDrag: !(e.pointerType !== 'mouse' && el.dataset.handle && !e.target.closest('.grip')) };
 });
 document.addEventListener('pointermove', (e) => {
-  if (!drag) return;
+  if (!drag || !drag.canDrag) return;
   if (!drag.on) {
     const dx = Math.abs(e.clientX - drag.x), dy = Math.abs(e.clientY - drag.y);
     if (drag.strip && drag.touch) {
@@ -422,6 +471,7 @@ function end(e, cancel) {
     render();
   } else if (!cancel) tap(d);
 }
+document.addEventListener('selectstart', (e) => { if (drag) e.preventDefault(); });
 document.addEventListener('pointerup', (e) => end(e, false));
 document.addEventListener('pointercancel', (e) => end(e, true));
 
