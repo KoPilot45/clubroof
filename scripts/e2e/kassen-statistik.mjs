@@ -10,6 +10,10 @@ const ok = (cond, label) => {
   if (!cond) fail++;
 };
 const b = await launch();
+// Rücklagen-Karte nur, wenn der Demoverein Rücklagen hat
+const kasseLogin = await loginAs('kasse');
+const clubStats = await api('/club-cash/stats', kasseLogin.token);
+const reservesHeading = clubStats.reserves?.length ? 'Rücklagen' : null;
 
 // Kassenwart: Übersicht → Statistik, Themen, Anzeigezeile, Tabelle, Zeitraum, Direktlinks
 {
@@ -38,7 +42,7 @@ const b = await launch();
   await page.waitForTimeout(1000);
   for (const [chip, heading] of [
     ['Einnahmen & Ausgaben', 'Einnahmen und Ausgaben je Bereich'],
-    ['Plan gegen Ist', null],
+    ['Plan gegen Ist', reservesHeading],
     ['Beiträge', 'Beitragsstatus'],
     ['Abteilungen', null],
   ]) {
@@ -75,6 +79,10 @@ const b = await launch();
   await goto(`/teams/${team.id}/cash-stats`);
   await text(page, 'Kassenstand seit Saisonbeginn', { exact: true }).waitFor({ timeout: 20_000 });
   ok(true, 'Mannschaftskasse: Kassenstand-Verlauf');
+  if (stats.sources?.length) {
+    await text(page, 'Woher das Geld kommt', { exact: true }).waitFor({ timeout: 5_000 });
+    ok(true, 'Mannschaftskasse: Woher das Geld kommt');
+  }
   if (stats.moral?.length) {
     await text(page, 'Zahlungsmoral', { exact: true }).waitFor({ timeout: 5_000 });
     ok(true, 'Mannschaftskasse: Zahlungsmoral');
