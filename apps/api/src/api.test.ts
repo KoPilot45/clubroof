@@ -3025,6 +3025,22 @@ describe.skipIf(!url)('API', () => {
       expect(roster.find((r) => r.personId === player.me.person.id)!.avatarUrl).toMatch(
         /^\/files\//,
       );
+      // Foto auch in Mitgliederliste (Verwaltung), Suche und Detail
+      const admin = await login('admin');
+      const member = (await get<MemberListItem[]>('/admin/members', admin.token)).find(
+        (m) => m.id === player.me.person.id,
+      );
+      expect(member?.avatarUrl).toMatch(/^\/files\//);
+      const found = await get<SearchResponse>(
+        `/search?q=${encodeURIComponent(player.me.person.lastName)}`,
+        coach.token,
+      );
+      expect(found.members.find((m) => m.personId === player.me.person.id)?.avatarUrl).toMatch(
+        /^\/files\//,
+      );
+      expect(
+        (await get<MemberDetail>(`/admin/members/${player.me.person.id}`, admin.token)).avatarUrl,
+      ).toMatch(/^\/files\//);
       // Fremdes Profil und falscher Bildzweck
       expect(
         (

@@ -20,7 +20,7 @@ import {
   EVENT_TYPE_LABELS,
   MATCH_KIND_LABELS,
 } from '@/lib/labels';
-import { hapticError, hapticSuccess } from '@/lib/haptics';
+import { hapticSelect } from '@/lib/haptics';
 import { PressScale } from '@/lib/motion';
 import { useTeamColor } from '@/lib/team-colors';
 import { Text } from '@/components/app-text';
@@ -468,9 +468,7 @@ export function useRespond(eventId: string, queueTitle?: string) {
         throw e;
       }
     },
-    onError: hapticError,
     onSuccess: () => {
-      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['home'] });
       void queryClient.invalidateQueries({ queryKey: ['events'] });
       void queryClient.invalidateQueries({ queryKey: ['event', eventId] });
@@ -523,7 +521,10 @@ export function AnswerButtons({
         accessibilityState={{ selected: chosen, busy: busy === key }}
         accessibilityLabel={t(label)}
         disabled={busy !== null}
-        onPress={onPress}
+        onPress={() => {
+          hapticSelect();
+          onPress();
+        }}
         style={{
           flex: 1,
           minHeight: 52,

@@ -7,54 +7,279 @@ import { createRequire } from 'node:module';
 import { readdirSync, writeFileSync } from 'node:fs';
 const { chromium } = createRequire(import.meta.url)('/opt/node-tools/node_modules/playwright');
 const pnpm = process.cwd() + '/node_modules/.pnpm/';
-const dir = (p) => pnpm + readdirSync(pnpm).find((d) => d.startsWith(p)) + '/node_modules/@expo-google-fonts/';
+const dir = (p) =>
+  pnpm + readdirSync(pnpm).find((d) => d.startsWith(p)) + '/node_modules/@expo-google-fonts/';
 const SAIRA = dir('@expo-google-fonts+saira-condensed') + 'saira-condensed/';
 const SANS = dir('@expo-google-fonts+open-sans') + 'open-sans/';
 
 const phone = (n, u) => `<figure><img src="${n}.png"><figcaption>${u}</figcaption></figure>`;
 const feat = ([t, d]) => `<li><b>${t}</b><span>${d}</span></li>`;
-const rolle = ({ kicker, titel, intro, farbe, funktionen, bilder, nr }) => `<section style="--c:${farbe}">
+const rolle = ({
+  kicker,
+  titel,
+  intro,
+  farbe,
+  funktionen,
+  bilder,
+  nr,
+}) => `<section style="--c:${farbe}">
 <div class=kopf><small>${kicker}</small><h2>${titel}</h2><p class=lead>${intro}</p></div>
 <ul class=feat>${funktionen.map(feat).join('')}</ul>
 <div class=row>${bilder.map(([n, u]) => phone(n, u)).join('')}</div><div class=nr>${nr}</div></section>`;
 
-
-const phone2 = (n, rolle, punkte) => `<div class=pv><figure><img src="${n}.png"></figure><h3>${rolle}</h3><ul>${punkte.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
-const ansicht = ({ nr, kicker, titel, intro, farbe = '#2fe27a', a, b }) => `<section style="--c:${farbe}">
+const phone2 = (n, rolle, punkte) =>
+  `<div class=pv><figure><img src="${n}.png"></figure><h3>${rolle}</h3><ul>${punkte.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
+const ansicht = ({
+  nr,
+  kicker,
+  titel,
+  intro,
+  farbe = '#2fe27a',
+  a,
+  b,
+}) => `<section style="--c:${farbe}">
 <div class=kopf><small>${kicker}</small><h2>${titel}</h2><p class=lead>${intro}</p></div>
 <div class=duo>${phone2(...a)}${phone2(...b)}</div><div class=nr>${nr}</div></section>`;
 const ANSICHTEN = [
-  ['Home', 'Dein Tag auf einen Blick', 'Die Startseite zeigt je Rolle etwas anderes: das nächste Spiel, was offen ist und was diese Woche ansteht.', [
-    ['m-home-spieler', 'Spieler', ['Plakat mit Countdown, Gegner, Ort und Anstoß – bis zu drei Spiele zum Wischen', 'Offene Aufgaben, z. B. Zusage oder Trikots waschen', 'Meine Woche mit allen Terminen']],
-    ['m-home-trainer', 'Trainer', ['Nächstes Spiel der betreuten Mannschaften', 'Offene Aufgaben wie „Anwesenheit erfassen“', 'Die Woche über alle Mannschaften']],
-    ['m-home-vorstand', 'Vorstand', ['Der Verein in Zahlen: Mitglieder, Abteilungen, Mannschaften', 'Offen: News freigeben, Helfer gesucht', 'Spiele der Woche im ganzen Verein']],
-    ['m-home-eltern', 'Eltern', ['Nächstes Spiel der Kinder – mit Antwortstand je Kind', 'Zusagen im Namen der Kinder direkt auf der Startseite', 'Spiele über alle Kinder in einer Woche']]]],
-  ['Team', 'Mannschaft und Kader', 'Der Team-Bereich zeigt die eigene Mannschaft – für den Vorstand den ganzen Verein.', [
-    ['m-team-spieler', 'Spieler', ['Kader mit Kennzahlen, Bilanz und Trainingsquote', 'Nächster Termin mit Zu- und Absage-Übersicht', 'Kacheln für Termine, Kader und Statistik']],
-    ['m-team-trainer', 'Trainer', ['Mehrere Mannschaften per Reiter umschalten', 'Kaderstatus: wer ist verfügbar, wer fehlt', 'Verwaltung (Kader, Termine, Kasse) nur mit Rechten']],
-    ['m-team-vorstand', 'Vorstand', ['Abteilungsübersicht: alle Mannschaften auf einen Blick', 'Spielerzahlen, Trainingsbeteiligung, Bilanz der Saison', 'Filter nach Senioren, Frauen und Jugend']],
-    ['m-team-eltern', 'Eltern', ['Die Mannschaften der Kinder (hier E- und F-Jugend)', 'Kader, Bilanz und nächster Termin je Mannschaft', 'Auch als Co-Trainer: zusätzliche Verwaltungsfunktionen']]]],
-  ['Termine', 'Training, Spiele, Veranstaltungen', 'Alle Termine als Liste, Woche und Kalender – gefiltert nach Spielen, Training und Verein.', [
-    ['m-termine-spieler', 'Spieler', ['Nächster Termin groß, darunter die Woche und der Kalender', 'Eigene Antwort („Zugesagt“) direkt in der Liste', 'Filter: Alle, Spiele, Training, Verein']],
-    ['m-termine-trainer', 'Trainer', ['Termine aller betreuten Mannschaften', 'Rückmeldungen und Anwesenheit im Termin', 'Termine anlegen, verschieben, absagen']],
-    ['m-termine-vorstand', 'Vorstand', ['Vereinstermine wie Vorstandssitzung und Arbeitseinsatz', 'Der Kalender des ganzen Vereins', 'Veranstaltungen planen und Helfer einteilen']],
-    ['m-termine-eltern', 'Eltern', ['Termine der Kinder, farblich nach Kind getrennt', 'Filter pro Kind: „Leon“, „Mia“', 'Zu- und Absage im Namen des Kindes']]]],
-  ['Verein', 'Neuigkeiten, Veranstaltungen, Vereinsleben', 'Der Vereinsbereich ist für alle gleich aufgebaut; welche Kacheln darunter erscheinen, hängt von der Rolle ab.', [
-    ['m-verein-spieler', 'Spieler', ['Nächster Vereinstermin als Blickfang', 'Dringende Meldungen, z. B. Platzsperrung', 'Sponsoren, Veranstaltungen, News, Umfragen']],
-    ['m-verein-trainer', 'Trainer', ['Dieselben Neuigkeiten und Veranstaltungen', 'Zusätzlich: Verwaltungsfunktionen für die eigene Mannschaft', 'Spielerbedarf melden und Spieler anbieten']],
-    ['m-verein-vorstand', 'Vorstand', ['Neuigkeiten und Veranstaltungen des Vereins', 'Zusätzlich: Kategorie „Verwaltung“ mit allen Funktionen der Rolle', 'News schreiben, freigeben, Veranstaltung planen']],
-    ['m-verein-eltern', 'Eltern', ['Neuigkeiten, Umfragen und Helferschichten', 'Helfer bei Turnieren und Festen eintragen', 'Ansprechpartner und Dokumente des Vereins']]]],
-  ['Mehr', 'Profil, Einstellungen und Hilfe', 'Hier liegt alles Persönliche – und je nach Rolle der Zugang zu Verwaltung und Kasse.', [
-    ['m-mehr-spieler', 'Spieler', ['Profil mit Statistik, Position und Rückennummer', 'Abwesenheiten melden, Benachrichtigungen, Kalender-Abo', 'Meine Mannschaften und Einstellungen']],
-    ['m-mehr-trainer', 'Trainer', ['Profil mit Rollen (Trainer B1, Trainer C1)', 'Abwesenheiten, Benachrichtigungen, Schiedsrichter-Einsätze', 'Meine Mannschaften mit Schnellzugriff']],
-    ['m-mehr-vorstand', 'Vorstand', ['Violette Kachel „Admin-Verwaltung“ mit Mitgliedern, Sport, Inhalten, Verein', 'Persönliche Einstellungen wie bei allen', 'Vereinskasse nur für Kassenwart und Admin']],
-    ['m-mehr-eltern', 'Eltern', ['„Meine Kinder“: Profile und Verwaltung der Kinder', 'Abwesenheiten für die Kinder melden', 'Benachrichtigungen, Kalender-Abo für die Familie']]]],
+  [
+    'Home',
+    'Dein Tag auf einen Blick',
+    'Die Startseite zeigt je Rolle etwas anderes: das nächste Spiel, was offen ist und was diese Woche ansteht.',
+    [
+      [
+        'm-home-spieler',
+        'Spieler',
+        [
+          'Plakat mit Countdown, Gegner, Ort und Anstoß – bis zu drei Spiele zum Wischen',
+          'Offene Aufgaben, z. B. Zusage oder Trikots waschen',
+          'Meine Woche mit allen Terminen',
+        ],
+      ],
+      [
+        'm-home-trainer',
+        'Trainer',
+        [
+          'Nächstes Spiel der betreuten Mannschaften',
+          'Offene Aufgaben wie „Anwesenheit erfassen“',
+          'Die Woche über alle Mannschaften',
+        ],
+      ],
+      [
+        'm-home-vorstand',
+        'Vorstand',
+        [
+          'Der Verein in Zahlen: Mitglieder, Abteilungen, Mannschaften',
+          'Offen: News freigeben, Helfer gesucht',
+          'Spiele der Woche im ganzen Verein',
+        ],
+      ],
+      [
+        'm-home-eltern',
+        'Eltern',
+        [
+          'Nächstes Spiel der Kinder – mit Antwortstand je Kind',
+          'Zusagen im Namen der Kinder direkt auf der Startseite',
+          'Spiele über alle Kinder in einer Woche',
+        ],
+      ],
+    ],
+  ],
+  [
+    'Team',
+    'Mannschaft und Kader',
+    'Der Team-Bereich zeigt die eigene Mannschaft – für den Vorstand den ganzen Verein.',
+    [
+      [
+        'm-team-spieler',
+        'Spieler',
+        [
+          'Kader mit Kennzahlen, Bilanz und Trainingsquote',
+          'Nächster Termin mit Zu- und Absage-Übersicht',
+          'Kacheln für Termine, Kader und Statistik',
+        ],
+      ],
+      [
+        'm-team-trainer',
+        'Trainer',
+        [
+          'Mehrere Mannschaften per Reiter umschalten',
+          'Kaderstatus: wer ist verfügbar, wer fehlt',
+          'Verwaltung (Kader, Termine, Kasse) nur mit Rechten',
+        ],
+      ],
+      [
+        'm-team-vorstand',
+        'Vorstand',
+        [
+          'Abteilungsübersicht: alle Mannschaften auf einen Blick',
+          'Spielerzahlen, Trainingsbeteiligung, Bilanz der Saison',
+          'Filter nach Senioren, Frauen und Jugend',
+        ],
+      ],
+      [
+        'm-team-eltern',
+        'Eltern',
+        [
+          'Die Mannschaften der Kinder (hier E- und F-Jugend)',
+          'Kader, Bilanz und nächster Termin je Mannschaft',
+          'Auch als Co-Trainer: zusätzliche Verwaltungsfunktionen',
+        ],
+      ],
+    ],
+  ],
+  [
+    'Termine',
+    'Training, Spiele, Veranstaltungen',
+    'Alle Termine als Liste, Woche und Kalender – gefiltert nach Spielen, Training und Verein.',
+    [
+      [
+        'm-termine-spieler',
+        'Spieler',
+        [
+          'Nächster Termin groß, darunter die Woche und der Kalender',
+          'Eigene Antwort („Zugesagt“) direkt in der Liste',
+          'Filter: Alle, Spiele, Training, Verein',
+        ],
+      ],
+      [
+        'm-termine-trainer',
+        'Trainer',
+        [
+          'Termine aller betreuten Mannschaften',
+          'Rückmeldungen und Anwesenheit im Termin',
+          'Termine anlegen, verschieben, absagen',
+        ],
+      ],
+      [
+        'm-termine-vorstand',
+        'Vorstand',
+        [
+          'Vereinstermine wie Vorstandssitzung und Arbeitseinsatz',
+          'Der Kalender des ganzen Vereins',
+          'Veranstaltungen planen und Helfer einteilen',
+        ],
+      ],
+      [
+        'm-termine-eltern',
+        'Eltern',
+        [
+          'Termine der Kinder, farblich nach Kind getrennt',
+          'Filter pro Kind: „Leon“, „Mia“',
+          'Zu- und Absage im Namen des Kindes',
+        ],
+      ],
+    ],
+  ],
+  [
+    'Verein',
+    'Neuigkeiten, Veranstaltungen, Vereinsleben',
+    'Der Vereinsbereich ist für alle gleich aufgebaut; welche Kacheln darunter erscheinen, hängt von der Rolle ab.',
+    [
+      [
+        'm-verein-spieler',
+        'Spieler',
+        [
+          'Nächster Vereinstermin als Blickfang',
+          'Dringende Meldungen, z. B. Platzsperrung',
+          'Sponsoren, Veranstaltungen, News, Umfragen',
+        ],
+      ],
+      [
+        'm-verein-trainer',
+        'Trainer',
+        [
+          'Dieselben Neuigkeiten und Veranstaltungen',
+          'Zusätzlich: Verwaltungsfunktionen für die eigene Mannschaft',
+          'Spielerbedarf melden und Spieler anbieten',
+        ],
+      ],
+      [
+        'm-verein-vorstand',
+        'Vorstand',
+        [
+          'Neuigkeiten und Veranstaltungen des Vereins',
+          'Zusätzlich: Kategorie „Verwaltung“ mit allen Funktionen der Rolle',
+          'News schreiben, freigeben, Veranstaltung planen',
+        ],
+      ],
+      [
+        'm-verein-eltern',
+        'Eltern',
+        [
+          'Neuigkeiten, Umfragen und Helferschichten',
+          'Helfer bei Turnieren und Festen eintragen',
+          'Ansprechpartner und Dokumente des Vereins',
+        ],
+      ],
+    ],
+  ],
+  [
+    'Mehr',
+    'Profil, Einstellungen und Hilfe',
+    'Hier liegt alles Persönliche – und je nach Rolle der Zugang zu Verwaltung und Kasse.',
+    [
+      [
+        'm-mehr-spieler',
+        'Spieler',
+        [
+          'Profil mit Statistik, Position und Rückennummer',
+          'Abwesenheiten melden, Benachrichtigungen, Kalender-Abo',
+          'Meine Mannschaften und Einstellungen',
+        ],
+      ],
+      [
+        'm-mehr-trainer',
+        'Trainer',
+        [
+          'Profil mit Rollen (Trainer B1, Trainer C1)',
+          'Abwesenheiten, Benachrichtigungen, Schiedsrichter-Einsätze',
+          'Meine Mannschaften mit Schnellzugriff',
+        ],
+      ],
+      [
+        'm-mehr-vorstand',
+        'Vorstand',
+        [
+          'Violette Kachel „Admin-Verwaltung“ mit Mitgliedern, Sport, Inhalten, Verein',
+          'Persönliche Einstellungen wie bei allen',
+          'Vereinskasse nur für Kassenwart und Admin',
+        ],
+      ],
+      [
+        'm-mehr-eltern',
+        'Eltern',
+        [
+          '„Meine Kinder“: Profile und Verwaltung der Kinder',
+          'Abwesenheiten für die Kinder melden',
+          'Benachrichtigungen, Kalender-Abo für die Familie',
+        ],
+      ],
+    ],
+  ],
 ];
-const ansichtSeiten = ANSICHTEN.map(([n, t, i, p], k) => [
-  ansicht({ nr: `0${k + 1}a`, kicker: `Ansicht ${k + 1} von 5 · ${n} (1/2)`, titel: `${n}: ${t}`, intro: i, a: p[0], b: p[1] }),
-  ansicht({ nr: `0${k + 1}b`, kicker: `Ansicht ${k + 1} von 5 · ${n} (2/2)`, titel: `${n}: ${t}`, intro: i, farbe: '#46b8ff', a: p[2], b: p[3] }),
-].join('')).join('\n');
-const duoSeite = ({ nr, kicker, titel, intro, farbe, a, b }) => ansicht({ nr, kicker, titel, intro, farbe, a, b });
+const ansichtSeiten = ANSICHTEN.map(([n, t, i, p], k) =>
+  [
+    ansicht({
+      nr: `0${k + 1}a`,
+      kicker: `Ansicht ${k + 1} von 5 · ${n} (1/2)`,
+      titel: `${n}: ${t}`,
+      intro: i,
+      a: p[0],
+      b: p[1],
+    }),
+    ansicht({
+      nr: `0${k + 1}b`,
+      kicker: `Ansicht ${k + 1} von 5 · ${n} (2/2)`,
+      titel: `${n}: ${t}`,
+      intro: i,
+      farbe: '#46b8ff',
+      a: p[2],
+      b: p[3],
+    }),
+  ].join(''),
+).join('\n');
+const duoSeite = ({ nr, kicker, titel, intro, farbe, a, b }) =>
+  ansicht({ nr, kicker, titel, intro, farbe, a, b });
 
 const html = `<!doctype html><meta charset=utf-8><style>
 @font-face{font-family:'Saira Condensed';font-weight:700;src:url('file://${SAIRA}700Bold/SairaCondensed_700Bold.ttf')}
@@ -145,37 +370,112 @@ ${[
   ['Mitglieder und Mannschaften verwalten', 'n n n j n j'],
   ['Vereinskasse, Beiträge, Haushalt', 'n n n n j j'],
   ['Rollen, Rechte und Module einrichten', 'n n n n n j'],
-].map(([t, v]) => `<tr><td>${t}</td>${v.split(' ').map((x) => `<td class=${x}>${x === 'j' ? '●' : '–'}</td>`).join('')}</tr>`).join('')}</table>
+]
+  .map(
+    ([t, v]) =>
+      `<tr><td>${t}</td>${v
+        .split(' ')
+        .map((x) => `<td class=${x}>${x === 'j' ? '●' : '–'}</td>`)
+        .join('')}</tr>`,
+  )
+  .join('')}</table>
 <p class=lead style="font-size:8.5pt;color:#8fa496;margin-top:5mm">Vereinfachte Darstellung der Standardrollen. Rechte lassen sich pro Person und Mannschaft feiner einstellen; das Vorstandsamt „Kassenwart“ ist eine Zusatzaufgabe.</p>
 </section>
 
 ${ansichtSeiten}
-${duoSeite({ nr: 'A', kicker: 'Verwaltung', titel: 'Admin-Verwaltung', farbe: '#b58cff',
-  intro: 'Die Verwaltung ist eine „App in der App“ mit eigenem violettem Kopfband und eigener Navigation. Sie erscheint nur mit Verwaltungsrechten.',
-  a: ['vo-admin', 'Übersicht', ['Aktive Mitglieder, Passive, Mannschaften', 'Aufgaben „Für dich“: Freigaben, Mitglieder ohne Mannschaft', 'Letzte Änderungen im Verein']],
-  b: ['vo-mitglieder', 'Mitglieder', ['Suchen und filtern: Aktiv, Passiv, ohne Mannschaft', 'Mitglieder anlegen, importieren, zuordnen', 'Rollen und Rechte je Person vergeben']] })}
+${duoSeite({
+  nr: 'A',
+  kicker: 'Verwaltung',
+  titel: 'Admin-Verwaltung',
+  farbe: '#b58cff',
+  intro:
+    'Die Verwaltung ist eine „App in der App“ mit eigenem violettem Kopfband und eigener Navigation. Sie erscheint nur mit Verwaltungsrechten.',
+  a: [
+    'vo-admin',
+    'Übersicht',
+    [
+      'Aktive Mitglieder, Passive, Mannschaften',
+      'Aufgaben „Für dich“: Freigaben, Mitglieder ohne Mannschaft',
+      'Letzte Änderungen im Verein',
+    ],
+  ],
+  b: [
+    'vo-mitglieder',
+    'Mitglieder',
+    [
+      'Suchen und filtern: Aktiv, Passiv, ohne Mannschaft',
+      'Mitglieder anlegen, importieren, zuordnen',
+      'Rollen und Rechte je Person vergeben',
+    ],
+  ],
+})}
 
-${duoSeite({ nr: 'K', kicker: 'Kasse', titel: 'Vereinskasse', farbe: '#46b8ff',
-  intro: 'Die Vereinskasse ist ein eigener Bereich mit blauem Kopfband – getrennt von den Mannschaftskassen und nur für Kassenwart, Prüfer und Admin.',
-  a: ['ka-kasse', 'Übersicht', ['Gesamtbestand aller Konten: Giro, Bar, Tagesgeld', 'Einnahmen und Ausgaben nach Bereich', 'Buchungen, Planung und Prüfung per Reiter']],
-  b: ['ka-beitraege', 'Mitgliedsbeiträge', ['Offene und überfällige Beiträge auf einen Blick', 'Sollstellung erzeugen, Erinnerungen senden', 'Kontoauszug importieren, Beitragsarten pflegen']] })}
+${duoSeite({
+  nr: 'K',
+  kicker: 'Kasse',
+  titel: 'Vereinskasse',
+  farbe: '#46b8ff',
+  intro:
+    'Die Vereinskasse ist ein eigener Bereich mit blauem Kopfband – getrennt von den Mannschaftskassen und nur für Kassenwart, Prüfer und Admin.',
+  a: [
+    'ka-kasse',
+    'Übersicht',
+    [
+      'Gesamtbestand aller Konten: Giro, Bar, Tagesgeld',
+      'Einnahmen und Ausgaben nach Bereich',
+      'Buchungen, Planung und Prüfung per Reiter',
+    ],
+  ],
+  b: [
+    'ka-beitraege',
+    'Mitgliedsbeiträge',
+    [
+      'Offene und überfällige Beiträge auf einen Blick',
+      'Sollstellung erzeugen, Erinnerungen senden',
+      'Kontoauszug importieren, Beitragsarten pflegen',
+    ],
+  ],
+})}
 
 <section><div class=kopf><small>Für alle</small><h2>Gut gemacht, bis ins Detail</h2>
 <p class=lead>Clubroof soll sich anfühlen wie eine gute Vereins-App: schnell, übersichtlich und so selbstverständlich, dass man sie nicht erklären muss.</p></div>
 <ul class=feat>${[
-  ['Dein Verein, deine Farbe', 'Wappen und Vereinsfarbe prägen die ganze App – zehn Farben zur Auswahl.'],
-  ['Hell, dunkel oder automatisch', 'Beide Stile sind durchgestaltet und folgen auf Wunsch dem Gerät.'],
-  ['Klare Typografie', 'Kräftige Überschriften und gut lesbarer Text – Schriftgröße in drei Stufen.'],
-  ['Barrierearm', 'Beschriftungen für Bildschirmleser, große Touchflächen, Statusfarben immer mit Text.'],
+  [
+    'Dein Verein, deine Farbe',
+    'Wappen und Vereinsfarbe prägen die ganze App – zehn Farben zur Auswahl.',
+  ],
+  [
+    'Hell, dunkel oder automatisch',
+    'Beide Stile sind durchgestaltet und folgen auf Wunsch dem Gerät.',
+  ],
+  [
+    'Klare Typografie',
+    'Kräftige Überschriften und gut lesbarer Text – Schriftgröße in drei Stufen.',
+  ],
+  [
+    'Barrierearm',
+    'Beschriftungen für Bildschirmleser, große Touchflächen, Statusfarben immer mit Text.',
+  ],
   ['Offline-Lesen', 'Zusagen werden auf dem Gerät gemerkt und bei Verbindung gesendet.'],
   ['App-Sperre', 'Optional mit Face ID oder Fingerabdruck.'],
   ['Zwei Sprachen', 'Deutsch und Englisch, weitere vorbereitet.'],
   ['Suche', 'Termine, Mitglieder, News und Mannschaften in einem Suchfeld.'],
-  ['Benachrichtigungen mit Maß', 'Dringendes oben, Ruhezeiten, Einstellungen je Thema und Mannschaft.'],
-  ['Datenschutz von Anfang an', 'Rechte serverseitig, Datensparsamkeit, Sichtbarkeit der Kontaktdaten einstellbar.'],
-  ['Hilfe und Einführung', 'Willkommens-Tour je Aufgabe, Hilfe in der App, Einrichtungs-Assistent.'],
+  [
+    'Benachrichtigungen mit Maß',
+    'Dringendes oben, Ruhezeiten, Einstellungen je Thema und Mannschaft.',
+  ],
+  [
+    'Datenschutz von Anfang an',
+    'Rechte serverseitig, Datensparsamkeit, Sichtbarkeit der Kontaktdaten einstellbar.',
+  ],
+  [
+    'Hilfe und Einführung',
+    'Willkommens-Tour je Aufgabe, Hilfe in der App, Einrichtungs-Assistent.',
+  ],
   ['Web-Verwaltung', 'Vorstand und Kassenwart arbeiten bequem am Rechner.'],
-].map(feat).join('')}</ul>
+]
+  .map(feat)
+  .join('')}</ul>
 </section>
 
 <section class=ende><div class=kopf><small>Nächster Schritt</small><h1 style="font-size:56pt">So kommt Clubroof<br>in Ihren Verein</h1></div>
@@ -189,5 +489,9 @@ const b = await chromium.launch();
 const p = await b.newPage();
 await p.goto('file://' + process.cwd() + '/.check/pdf/vorstellung.html');
 await p.waitForTimeout(1500);
-await p.pdf({ path: 'docs/Clubroof-Vorstellung.pdf', preferCSSPageSize: true, printBackground: true });
+await p.pdf({
+  path: 'docs/Clubroof-Vorstellung.pdf',
+  preferCSSPageSize: true,
+  printBackground: true,
+});
 await b.close();

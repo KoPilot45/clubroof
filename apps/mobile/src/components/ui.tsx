@@ -536,6 +536,10 @@ export function Sheet({
 }) {
   const { colors, radii, spacing } = useTheme();
   const { height } = useWindowDimensions();
+  // leiser Impuls beim Öffnen eines Auswahlfensters
+  useEffect(() => {
+    if (visible) hapticSelect();
+  }, [visible]);
   return (
     <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: colors.anstoss.scrim }}>
@@ -2189,6 +2193,8 @@ function Wheel({
   const ref = useRef<ScrollView>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const index = Math.max(0, values.indexOf(value));
+  // Impuls je Schritt, wenn die Walze an einer Zeile einrastet
+  const tick = useRef(index);
   useEffect(() => {
     // Startposition ohne Animation (nach dem Aufbau des Fensters)
     const id = setTimeout(
@@ -2237,6 +2243,11 @@ function Wheel({
         scrollEventThrottle={16}
         onScroll={(e) => {
           const y = e.nativeEvent.contentOffset.y;
+          const row = Math.min(values.length - 1, Math.max(0, Math.round(y / WHEEL_ITEM)));
+          if (row !== tick.current) {
+            tick.current = row;
+            hapticSelect();
+          }
           if (timer.current) clearTimeout(timer.current);
           timer.current = setTimeout(() => settle(y), 140);
         }}

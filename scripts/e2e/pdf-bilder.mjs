@@ -13,7 +13,10 @@ async function snap(who, path, name, { scheme, act, h = 844, full = false } = {}
   if (act) await act(page);
   await page.waitForTimeout(900);
   await page.screenshot({ path: `.check/pdf/${name}.png`, fullPage: full });
-  console.log(name, (await page.innerText('body')).split('\n').filter(Boolean).slice(0, 4).join(' | '));
+  console.log(
+    name,
+    (await page.innerText('body')).split('\n').filter(Boolean).slice(0, 4).join(' | '),
+  );
 }
 const click = (t) => async (p) => {
   await p.getByText(t, { exact: false }).filter({ visible: true }).first().click();
@@ -34,12 +37,15 @@ await snap('trainer', '/club-calendar', 'vereinskalender');
 await snap('trainer', '/sponsors', 'sponsoren');
 await snap('trainer', '/board', 'brett');
 await snap('trainer', '/help', 'hilfe');
-await snap('trainer', '/termine', 'termin-detail', { act: async (p) => {
-  const l = p.locator('a[href*="/events/"]').filter({ visible: true }).first();
-  await l.click();
-}});
+await snap('trainer', '/termine', 'termin-detail', {
+  act: async (p) => {
+    const l = p.locator('a[href*="/events/"]').filter({ visible: true }).first();
+    await l.click();
+  },
+});
 const a = await b.anonymous();
-await a.goto('/login'); await a.page.waitForTimeout(2500);
+await a.goto('/login');
+await a.page.waitForTimeout(2500);
 await a.page.screenshot({ path: '.check/pdf/login.png' });
 console.log(b.errors.slice(0, 3));
 await b.close();

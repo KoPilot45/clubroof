@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   OpenSans_400Regular,
   OpenSans_600SemiBold,
@@ -28,7 +28,8 @@ import { fontState } from '@/lib/fonts';
 import { AppLockGate } from '@/components/app-lock-gate';
 import { loadAppLock } from '@/lib/app-lock';
 import { loadFontScale } from '@/lib/font-scale';
-import { loadHaptics } from '@/lib/haptics';
+import { hapticError, hapticSuccess, loadHaptics } from '@/lib/haptics';
+import { useReduceMotion } from '@/lib/motion';
 import { loadAppearance } from '@/lib/appearance';
 import { useLocale } from '@/lib/i18n';
 import { Platform, View } from 'react-native';
@@ -61,6 +62,7 @@ function Navigator() {
     void loadAppLock();
   }, []);
   const { colors, scheme } = useTheme();
+  const reduceMotion = useReduceMotion();
   useWebChrome(colors.background);
   // Untere Navigation auf Unterseiten (Paket NV); die Tabs und die Verwaltung bringen eine eigene mit
   const segments = useSegments();
@@ -90,6 +92,9 @@ function Navigator() {
           <Stack
             screenOptions={{
               headerShown: false,
+              // sanfte Seitenübergänge (280 ms); „Bewegung reduzieren“ schaltet sie ab
+              animation: reduceMotion ? 'none' : 'slide_from_right',
+              animationDuration: 280,
               // Kopfzeile mit Pfad wie in den Tabs (Paket NV); öffentliche Seiten bekommen eine einfache
               header: (p) => <SubHeader route={p.route} options={p.options} />,
               contentStyle: { backgroundColor: colors.background },
@@ -418,6 +423,16 @@ export default function RootLayout() {
     () =>
       new QueryClient({
         defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
+        // Speichern und Fehler: Erfolgs- bzw. Fehler-Impuls an zentraler Stelle (abschaltbar in den Einstellungen);
+        // `meta: { silent: true }` schaltet einzelne Aktionen stumm
+        mutationCache: new MutationCache({
+          onSuccess: (_d, _v, _c, mutation) => {
+            if (!mutation.meta?.silent) hapticSuccess();
+          },
+          onError: (_e, _v, _c, mutation) => {
+            if (!mutation.meta?.silent) hapticError();
+          },
+        }),
       }),
   );
   return (
