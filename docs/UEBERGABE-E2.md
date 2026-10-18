@@ -15,14 +15,15 @@ Paket **E2** (`docs/PAKETE.md`, Zeile E2) baut die Einrichtungsassistenten aus P
 ## Stufe 1 (jeweils eigener Commit)
 1. **Bausteine** in `components/wizard.tsx`: `WhyBox`, `OptionCard`, `HoursStepper`, `DateRangeField`, `RuleList`, `SummaryList`, `ModeChoice`, `MoreSettings`, `LaterHint`; Erklärtexte aus einer Stelle; Schnellstart und Ausführlich.
 2. **Mannschaftsassistent:** neue und geänderte Schritte nach der Paketzeile (nur zwei Teilnahme-Modelle, „Automatisch zugesagt“ empfohlen, Fristen mit − und + und 24/48 vorbelegt, Training mit Zeitraum per Kalender, Kader, Funktionen und Sichtbarkeit, Spielplan, Information, Fertig mit Einladungstext).
-3. **Platzbelegung:** Warnung erst ab drei überlappenden Terminen auf einem Platz, in der ganzen App und in den Tests.
+3. **Platzbelegung:** Warnung erst ab drei überlappenden Terminen auf einem Platz (feste Grenze, nur Hinweis, „Trotzdem anlegen“ bleibt), Hinweis „andere Mannschaft trainiert parallel“ bleibt; in der ganzen App und in den Tests.
+4. **„Nur Abwesenheiten“ entfernen:** `absences_only` aus Domain, Datenbank-Enum, Verträgen, „Mannschaft bearbeiten“, Hilfe und `docs/FUNKTIONEN.md`; Migration der Mannschaften auf `auto_accept`; Seed und Tests anpassen.
 
 ## Stufe 2
-4. **Vereinsassistent erweitert** nach der Paketzeile; „Kasse nutzen“ ist nur ein Schalter.
+5. **Vereinsassistent erweitert** nach der Paketzeile; „Kasse nutzen“ ist nur ein Schalter.
 
 ## Stufe 3
-5. **Kassen-Assistent** (Verein, 14 Schritte) und **Mannschaftskasse einrichten** (kurz), Start aus leerer Kasse, „Nächste Schritte“ und Admin-Übersicht.
-6. **Demo-Button „Kasse einrichten“** auf der Anmeldeseite (`app/demo/cash.tsx`), `scripts/e2e/einrichtungs-demos.mjs` für alle drei Assistenten.
+6. **Kassen-Assistent** (Verein, 14 Schritte) und **Mannschaftskasse einrichten** (kurz), Start aus leerer Kasse, „Nächste Schritte“ und Admin-Übersicht.
+7. **Demo-Button „Kasse einrichten“** auf der Anmeldeseite (`app/demo/cash.tsx`), `scripts/e2e/einrichtungs-demos.mjs` für alle drei Assistenten.
 
 ## Abnahme
-Alle drei Assistenten im Schnellstart und ausführlich durchlaufen (Browserprüfung); Zusammenfassung mit „Ändern“; Demo-Modus ohne gespeicherte Daten; Platzwarnung erst ab drei Gruppen; Bilder neben die Entwürfe, Abweichungen benennen; am Ende kurze Liste erledigt / bewusst abweichend / offen. **Offen:** (a) Modell „Nur Abwesenheiten“ in Bestandsmannschaften, (b) Parallelnutzung je Platz einstellbar? Beides vor dem Start bestätigen lassen.
+Alle drei Assistenten im Schnellstart und ausführlich durchlaufen (Browserprüfung); Zusammenfassung mit „Ändern“; Demo-Modus ohne gespeicherte Daten; Platzwarnung erst ab drei Gruppen; Bilder neben die Entwürfe, Abweichungen benennen; am Ende kurze Liste erledigt / bewusst abweichend / offen. **Entschieden:** (a) „Nur Abwesenheiten“ entfällt überall (Migration auf `auto_accept`), (b) Platzwarnung feste Grenze ab drei Terminen, nur Hinweis, nicht einstellbar. Es gibt keine offenen Punkte.
