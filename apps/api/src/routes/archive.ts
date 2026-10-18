@@ -41,6 +41,7 @@ export const archiveRoutes: FastifyPluginAsyncZod = async (auth) => {
         body: z.object({
           mode: z.enum(['due', 'all']),
           kind: z.enum(ARCHIVE_KINDS).optional(),
+          teamId: z.uuid().optional(),
         }),
       },
     },

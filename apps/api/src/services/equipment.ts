@@ -22,6 +22,7 @@ import { and, asc, desc, eq, gte, ilike, inArray, lt, ne, or } from 'drizzle-orm
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { resolveMediaUrl } from '../storage/media-links';
+import { archiveItem } from './archive';
 import { notify, recipientsFor } from './event-admin';
 import { mediaReference } from './uploads';
 
@@ -277,11 +278,36 @@ export async function updateItem(
   return getEquipment(db, actor);
 }
 
-export async function deleteItem(db: Db, actor: Actor, id: string) {
+/** Löschen heißt archivieren (Paket AR): ausgemustertes Material liegt danach im Archiv. */
+export async function deleteItem(db: Db, actor: Actor, id: string, now: Date) {
   requireManage(actor);
-  await db
-    .delete(s.equipmentItems)
+  const [item] = await db
+    .select()
+    .from(s.equipmentItems)
     .where(and(eq(s.equipmentItems.id, id), eq(s.equipmentItems.clubId, actor.club.id)));
+  if (item) {
+    await archiveItem(
+      db,
+      actor,
+      'equipment',
+      {
+        originalId: item.id,
+        label: item.name,
+        detail: item.kind === 'key' ? 'Schlüssel' : 'Material',
+        payload: {
+          kind: item.kind,
+          name: item.name,
+          quantity: item.quantity,
+          location: item.location,
+          note: item.note,
+          createdAt: item.createdAt.toISOString(),
+          editedAt: item.editedAt?.toISOString() ?? null,
+        },
+      },
+      now,
+    );
+    await db.delete(s.equipmentItems).where(eq(s.equipmentItems.id, id));
+  }
   return getEquipment(db, actor);
 }
 

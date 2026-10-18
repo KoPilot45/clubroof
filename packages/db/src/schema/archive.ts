@@ -1,6 +1,7 @@
 import { index, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { clubs } from './club';
 import { users } from './people';
+import { teams } from './teams';
 import { createdAt, id } from './_shared';
 
 /**
@@ -17,6 +18,8 @@ export const archiveEntries = pgTable(
     /** wiki | exercise | … (siehe ARCHIVE_KINDS) */
     kind: text().notNull(),
     /** Ursprüngliche ID des Eintrags (wird beim Wiederherstellen wieder verwendet) */
+    /** Mannschaft (Team-Archiv); leer = Vereinsarchiv */
+    teamId: uuid().references(() => teams.id, { onDelete: 'cascade' }),
     originalId: uuid().notNull(),
     label: text().notNull(),
     detail: text(),

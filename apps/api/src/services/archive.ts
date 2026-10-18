@@ -16,7 +16,8 @@ import {
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, inArray } from 'drizzle-orm';
-import { actorCan, type Actor } from '../actor';
+import { can } from '@clubroof/core';
+import { type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 
 type Payload = Record<string, unknown>;
@@ -92,6 +93,98 @@ const HANDLERS: Record<ArchiveKind, Handler> = {
       });
     },
   },
+  task: {
+    nameOf: (p) => String(p.title),
+    // Aufgaben dürfen gleich heißen
+    taken: async () => false,
+    restore: async (db, clubId, originalId, p, name) => {
+      const personExists = async (id: unknown) =>
+        typeof id === 'string' &&
+        (await db.select({ id: s.persons.id }).from(s.persons).where(eq(s.persons.id, id))).length >
+          0;
+      const eventExists = async (id: unknown) =>
+        typeof id === 'string' &&
+        (await db.select({ id: s.events.id }).from(s.events).where(eq(s.events.id, id))).length > 0;
+      await db.insert(s.teamTasks).values({
+        id: originalId,
+        clubId,
+        teamId: String(p.teamId),
+        eventId: (await eventExists(p.eventId)) ? (p.eventId as string) : null,
+        title: name,
+        note: (p.note as string | null) ?? null,
+        dueOn: (p.dueOn as string | null) ?? null,
+        assigneePersonId: (await personExists(p.assigneePersonId))
+          ? (p.assigneePersonId as string)
+          : null,
+        createdByPersonId: (await personExists(p.createdByPersonId))
+          ? (p.createdByPersonId as string)
+          : null,
+        doneAt: p.doneAt ? date(p.doneAt) : null,
+        doneByPersonId: (await personExists(p.doneByPersonId))
+          ? (p.doneByPersonId as string)
+          : null,
+        createdAt: date(p.createdAt),
+      });
+    },
+  },
+  sponsor: {
+    nameOf: (p) => String(p.name),
+    taken: async (db, clubId, _p, name) => {
+      const rows = await db
+        .select({ id: s.sponsors.id })
+        .from(s.sponsors)
+        .where(and(eq(s.sponsors.clubId, clubId), eq(s.sponsors.name, name)));
+      return rows.length > 0;
+    },
+    restore: async (db, clubId, originalId, p, name) => {
+      await db.insert(s.sponsors).values({
+        id: originalId,
+        clubId,
+        name,
+        slogan: (p.slogan as string | null) ?? null,
+        description: (p.description as string | null) ?? null,
+        linkUrl: (p.linkUrl as string | null) ?? null,
+        logoRef: (p.logoRef as string | null) ?? null,
+        logoDarkRef: (p.logoDarkRef as string | null) ?? null,
+        // Wiederhergestellte Sponsoren erscheinen erst wieder als Werbung, wenn die Verwaltung es einschaltet
+        advertise: false,
+        hideForYouth: Boolean(p.hideForYouth),
+        startsOn: (p.startsOn as string | null) ?? null,
+        endsOn: (p.endsOn as string | null) ?? null,
+        sortOrder: Number(p.sortOrder ?? 0),
+        createdAt: date(p.createdAt),
+      });
+    },
+  },
+  equipment: {
+    nameOf: (p) => String(p.name),
+    taken: async (db, clubId, p, name) => {
+      const rows = await db
+        .select({ id: s.equipmentItems.id })
+        .from(s.equipmentItems)
+        .where(
+          and(
+            eq(s.equipmentItems.clubId, clubId),
+            eq(s.equipmentItems.kind, String(p.kind)),
+            eq(s.equipmentItems.name, name),
+          ),
+        );
+      return rows.length > 0;
+    },
+    restore: async (db, clubId, originalId, p, name) => {
+      await db.insert(s.equipmentItems).values({
+        id: originalId,
+        clubId,
+        kind: String(p.kind),
+        name,
+        quantity: Number(p.quantity ?? 1),
+        location: (p.location as string | null) ?? null,
+        note: (p.note as string | null) ?? null,
+        createdAt: date(p.createdAt),
+        editedAt: p.editedAt ? date(p.editedAt) : null,
+      });
+    },
+  },
 };
 
 const addYears = (d: Date, years: number) => {
@@ -107,10 +200,12 @@ export async function archiveItem(
   kind: ArchiveKind,
   item: Archived,
   now: Date,
+  teamId: string | null = null,
   retainUntil: Date | null = null,
 ): Promise<void> {
   await db.insert(s.archiveEntries).values({
     clubId: actor.club.id,
+    teamId,
     kind,
     originalId: item.originalId,
     label: item.label,
@@ -122,9 +217,15 @@ export async function archiveItem(
   });
 }
 
-const canRead = (actor: Actor) => actorCan(actor, 'archive.read');
-const canRestore = (actor: Actor) => actorCan(actor, 'archive.restore');
-const canPurge = (actor: Actor) => actorCan(actor, 'archive.purge');
+type Scope = { teamId: string | null; orgUnitId: string | null };
+const target = (row: Scope) => (row.teamId ? { teamId: row.teamId, orgUnitId: row.orgUnitId } : {});
+/** Rechte je Eintrag: Vereinseinträge brauchen das Recht im ganzen Verein, Mannschaftseinträge für die Mannschaft. */
+const mayRead = (actor: Actor, row: Scope) => can(actor.grants, 'archive.read', target(row));
+const mayRestore = (actor: Actor, row: Scope) => can(actor.grants, 'archive.restore', target(row));
+const mayPurge = (actor: Actor, row: Scope) => can(actor.grants, 'archive.purge', target(row));
+/** Wer überhaupt irgendwo ins Archiv schauen darf (Verein, Bereich oder Mannschaft) */
+const mayReadAny = (actor: Actor) =>
+  actor.grants.some((g) => g.permissions.includes('archive.read'));
 
 async function audit(
   db: Db,
@@ -145,32 +246,53 @@ async function audit(
   });
 }
 
-export async function getArchive(db: Db, actor: Actor, now: Date): Promise<ArchiveOverview> {
-  if (!canRead(actor)) throw forbidden('Das Archiv sehen nur Berechtigte.');
+export async function getArchive(
+  db: Db,
+  actor: Actor,
+  now: Date,
+  teamId?: string,
+): Promise<ArchiveOverview> {
+  if (!mayReadAny(actor)) throw forbidden('Das Archiv sehen nur Berechtigte.');
   const rows = await db
-    .select({ e: s.archiveEntries, by: s.users.displayName })
+    .select({
+      e: s.archiveEntries,
+      by: s.users.displayName,
+      teamName: s.teams.name,
+      orgUnitId: s.teams.orgUnitId,
+    })
     .from(s.archiveEntries)
     .leftJoin(s.users, eq(s.users.id, s.archiveEntries.archivedByUserId))
-    .where(eq(s.archiveEntries.clubId, actor.club.id))
+    .leftJoin(s.teams, eq(s.teams.id, s.archiveEntries.teamId))
+    .where(
+      and(
+        eq(s.archiveEntries.clubId, actor.club.id),
+        teamId ? eq(s.archiveEntries.teamId, teamId) : undefined,
+      ),
+    )
     .orderBy(desc(s.archiveEntries.archivedAt));
-  const restore = canRestore(actor);
-  const purge = canPurge(actor);
   const entries: ArchiveEntry[] = rows
-    .filter((r) => (ARCHIVE_KINDS as readonly string[]).includes(r.e.kind))
+    .filter(
+      (r) =>
+        (ARCHIVE_KINDS as readonly string[]).includes(r.e.kind) &&
+        mayRead(actor, { teamId: r.e.teamId, orgUnitId: r.orgUnitId }),
+    )
     .map((r) => {
       const kind = r.e.kind as ArchiveKind;
+      const scope = { teamId: r.e.teamId, orgUnitId: r.orgUnitId };
       const locked = r.e.retainUntil && r.e.retainUntil > now ? r.e.retainUntil : null;
       return {
         id: r.e.id,
         kind,
         label: r.e.label,
         detail: r.e.detail,
+        teamId: r.e.teamId,
+        teamName: r.teamName,
         archivedAt: r.e.archivedAt.toISOString(),
         archivedBy: r.by,
         dueAt: addYears(r.e.archivedAt, ARCHIVE_RETENTION_YEARS[kind]).toISOString(),
         lockedUntil: locked?.toISOString() ?? null,
-        canRestore: restore,
-        canPurge: purge && !locked,
+        canRestore: mayRestore(actor, scope),
+        canPurge: mayPurge(actor, scope) && !locked,
       };
     });
   return {
@@ -188,13 +310,18 @@ export async function getArchive(db: Db, actor: Actor, now: Date): Promise<Archi
 }
 
 async function load(db: Db, actor: Actor, id: string) {
-  const [row] = await db
-    .select()
+  const [found] = await db
+    .select({ row: s.archiveEntries, orgUnitId: s.teams.orgUnitId })
     .from(s.archiveEntries)
+    .leftJoin(s.teams, eq(s.teams.id, s.archiveEntries.teamId))
     .where(and(eq(s.archiveEntries.id, id), eq(s.archiveEntries.clubId, actor.club.id)));
-  if (!row || !(ARCHIVE_KINDS as readonly string[]).includes(row.kind))
+  if (
+    !found ||
+    !(ARCHIVE_KINDS as readonly string[]).includes(found.row.kind) ||
+    !mayRead(actor, { teamId: found.row.teamId, orgUnitId: found.orgUnitId })
+  )
     throw notFound('Der archivierte Eintrag');
-  return row;
+  return { ...found.row, orgUnitId: found.orgUnitId };
 }
 
 /** Wiederherstellen; ist der Name inzwischen vergeben, fragt der Server nach (409), statt selbst umzubenennen. */
@@ -205,8 +332,8 @@ export async function restoreEntry(
   input: RestoreArchiveInput,
   now: Date,
 ): Promise<ArchiveOverview> {
-  if (!canRestore(actor)) throw forbidden('Wiederherstellen dürfen nur Berechtigte.');
   const row = await load(db, actor, id);
+  if (!mayRestore(actor, row)) throw forbidden('Wiederherstellen dürfen nur Berechtigte.');
   const handler = HANDLERS[row.kind as ArchiveKind];
   const name = input.newName?.trim() || handler.nameOf(row.payload);
   if (await handler.taken(db, actor.club.id, row.payload, name))
@@ -227,7 +354,7 @@ export async function restoreEntry(
     `Archiv: wiederhergestellt: ${name}`,
     now,
   );
-  return getArchive(db, actor, now);
+  return getArchive(db, actor, now, row.teamId ?? undefined);
 }
 
 /** Einen Eintrag endgültig löschen (nur Berechtigte, nicht während der Aufbewahrungsfrist). */
@@ -237,8 +364,8 @@ export async function purgeEntry(
   id: string,
   now: Date,
 ): Promise<ArchiveOverview> {
-  if (!canPurge(actor)) throw forbidden('Endgültig löschen dürfen nur Berechtigte.');
   const row = await load(db, actor, id);
+  if (!mayPurge(actor, row)) throw forbidden('Endgültig löschen dürfen nur Berechtigte.');
   if (row.retainUntil && row.retainUntil > now)
     throw new HttpError(409, 'retention', 'Die gesetzliche Aufbewahrungsfrist läuft noch.');
   await db.delete(s.archiveEntries).where(eq(s.archiveEntries.id, id));
@@ -250,28 +377,40 @@ export async function purgeEntry(
     `Archiv: endgültig gelöscht: ${row.label}`,
     now,
   );
-  return getArchive(db, actor, now);
+  return getArchive(db, actor, now, row.teamId ?? undefined);
 }
 
-/** Bereinigen (nur Fälliges) oder Archiv leeren (alles ohne laufende Frist), optional je Art. */
+/** Alle Einträge, die der Nutzer sehen darf (optional je Art oder Mannschaft). */
+async function readable(db: Db, actor: Actor, kind?: ArchiveKind, teamId?: string) {
+  const rows = await db
+    .select({ row: s.archiveEntries, orgUnitId: s.teams.orgUnitId })
+    .from(s.archiveEntries)
+    .leftJoin(s.teams, eq(s.teams.id, s.archiveEntries.teamId))
+    .where(
+      and(
+        eq(s.archiveEntries.clubId, actor.club.id),
+        kind ? eq(s.archiveEntries.kind, kind) : undefined,
+        teamId ? eq(s.archiveEntries.teamId, teamId) : undefined,
+      ),
+    )
+    .orderBy(asc(s.archiveEntries.archivedAt));
+  return rows
+    .filter((r) => mayRead(actor, { teamId: r.row.teamId, orgUnitId: r.orgUnitId }))
+    .map((r) => ({ ...r.row, orgUnitId: r.orgUnitId }));
+}
+
+/** Bereinigen (nur Fälliges) oder Archiv leeren (alles ohne laufende Frist), optional je Art oder Mannschaft. */
 export async function purgeArchive(
   db: Db,
   actor: Actor,
   input: PurgeArchiveInput,
   now: Date,
 ): Promise<PurgeArchiveResult> {
-  if (!canPurge(actor)) throw forbidden('Endgültig löschen dürfen nur Berechtigte.');
-  const rows = await db
-    .select()
-    .from(s.archiveEntries)
-    .where(
-      and(
-        eq(s.archiveEntries.clubId, actor.club.id),
-        input.kind ? eq(s.archiveEntries.kind, input.kind) : undefined,
-      ),
-    )
-    .orderBy(asc(s.archiveEntries.archivedAt));
-  const unlocked = rows.filter((r) => !(r.retainUntil && r.retainUntil > now));
+  if (!actor.grants.some((g) => g.permissions.includes('archive.purge')))
+    throw forbidden('Endgültig löschen dürfen nur Berechtigte.');
+  const rows = await readable(db, actor, input.kind, input.teamId);
+  const allowed = rows.filter((r) => mayPurge(actor, r));
+  const unlocked = allowed.filter((r) => !(r.retainUntil && r.retainUntil > now));
   const doomed = unlocked.filter(
     (r) =>
       input.mode === 'all' ||
@@ -296,19 +435,15 @@ export async function purgeArchive(
   );
   return {
     deleted: doomed.length,
-    kept: rows.length - unlocked.length,
-    overview: await getArchive(db, actor, now),
+    kept: allowed.length - unlocked.length,
+    overview: await getArchive(db, actor, now, input.teamId),
   };
 }
 
-/** Gesamtexport (Datenübergabe): alle archivierten Einträge mit Inhalt. */
-export async function exportArchive(db: Db, actor: Actor, now: Date) {
-  if (!canRead(actor)) throw forbidden('Das Archiv sehen nur Berechtigte.');
-  const rows = await db
-    .select()
-    .from(s.archiveEntries)
-    .where(eq(s.archiveEntries.clubId, actor.club.id))
-    .orderBy(asc(s.archiveEntries.archivedAt));
+/** Gesamtexport (Datenübergabe): alle archivierten Einträge, die der Nutzer sehen darf, mit Inhalt. */
+export async function exportArchive(db: Db, actor: Actor, now: Date, teamId?: string) {
+  if (!mayReadAny(actor)) throw forbidden('Das Archiv sehen nur Berechtigte.');
+  const rows = await readable(db, actor, undefined, teamId);
   await audit(
     db,
     actor,
@@ -323,6 +458,7 @@ export async function exportArchive(db: Db, actor: Actor, now: Date) {
     entries: rows.map((r) => ({
       kind: r.kind,
       label: r.label,
+      teamId: r.teamId,
       archivedAt: r.archivedAt.toISOString(),
       retainUntil: r.retainUntil?.toISOString() ?? null,
       data: r.payload,
