@@ -51,7 +51,9 @@ import Svg, {
   Text as SvgText,
 } from 'react-native-svg';
 import { FIGURE_FONT, HEADING_FONT, inputFont } from '@/lib/fonts';
+import { CONTENT_MAX, DESKTOP_CONTENT_MAX, useIsDesktop } from '@/lib/layout';
 import { useTheme } from '@/lib/theme';
+import { webState } from '@/lib/web-state';
 import { Text } from './app-text';
 import { CalendarSheet } from './calendar-picker';
 import { Honeycomb } from './honeycomb';
@@ -200,6 +202,7 @@ export function Screen({
   const { colors, spacing } = useTheme();
   // In den Tabs liegt die schwebende Leiste über dem Inhalt: unten Platz dafür lassen
   const tabBarHeight = useContext(BottomTabBarHeightContext) ?? 0;
+  const desktop = useIsDesktop();
   const scrollY = useRef(new Animated.Value(0)).current;
   const pathname = usePathname();
   return (
@@ -225,13 +228,13 @@ export function Screen({
           }
           contentContainerStyle={{
             // Seitenrand 22 px (Stil „Anstoß“); Abschnitte bringen 12 px Luft nach oben mit (26 insgesamt)
-            paddingHorizontal: 22,
+            paddingHorizontal: desktop ? 28 : 22,
             paddingTop: flushTop ? 0 : spacing.md + 2,
             gap: spacing.md + 2,
             paddingBottom: spacing.xxxl + tabBarHeight,
             // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
             width: '100%',
-            maxWidth: 960,
+            maxWidth: desktop ? DESKTOP_CONTENT_MAX : CONTENT_MAX,
             alignSelf: 'center',
           }}
           refreshControl={
@@ -543,13 +546,26 @@ export function Sheet({
 }) {
   const { colors, radii, spacing } = useTheme();
   const { height } = useWindowDimensions();
+  // Desktop-Ansicht (Paket DT): zentrierter Dialog statt Fenster von unten; Esc schließt (Modal → onRequestClose)
+  const desktop = useIsDesktop();
   // leiser Impuls beim Öffnen eines Auswahlfensters
   useEffect(() => {
     if (visible) hapticSelect();
   }, [visible]);
   return (
-    <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: colors.anstoss.scrim }}>
+    <Modal
+      transparent
+      visible={visible}
+      animationType={desktop ? 'fade' : 'slide'}
+      onRequestClose={onClose}
+    >
+      <View
+        style={{
+          flex: 1,
+          justifyContent: desktop ? 'center' : 'flex-end',
+          backgroundColor: colors.anstoss.scrim,
+        }}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('Schließen')}
@@ -565,22 +581,48 @@ export function Sheet({
             maxHeight: height * 0.85,
             borderTopLeftRadius: radii.xxl,
             borderTopRightRadius: radii.xxl,
+            ...(desktop
+              ? { borderBottomLeftRadius: radii.xxl, borderBottomRightRadius: radii.xxl }
+              : null),
             backgroundColor: colors.anstoss.sheet,
             borderTopWidth: 1,
             borderColor: colors.anstoss.sheetBorder,
+            ...(desktop ? { borderWidth: 1 } : null),
           }}
         >
-          <View
-            style={{
-              alignSelf: 'center',
-              width: 44,
-              height: 5,
-              borderRadius: 3,
-              marginTop: 10,
-              backgroundColor: colors.anstoss.textTertiary,
-              opacity: 0.5,
-            }}
-          />
+          {desktop ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('Schließen')}
+              onPress={onClose}
+              style={(state) => ({
+                position: 'absolute',
+                top: 14,
+                right: 14,
+                zIndex: 2,
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: webState(state).hovered ? colors.anstoss.overlay : 'transparent',
+              })}
+            >
+              <Ionicons name="close" size={22} color={colors.onSurface} />
+            </Pressable>
+          ) : (
+            <View
+              style={{
+                alignSelf: 'center',
+                width: 44,
+                height: 5,
+                borderRadius: 3,
+                marginTop: 10,
+                backgroundColor: colors.anstoss.textTertiary,
+                opacity: 0.5,
+              }}
+            />
+          )}
           <ScrollView
             contentContainerStyle={{
               paddingHorizontal: 24,

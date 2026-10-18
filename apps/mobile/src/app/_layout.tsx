@@ -32,8 +32,10 @@ import { hapticError, hapticSuccess, loadHaptics } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/motion';
 import { loadAppearance } from '@/lib/appearance';
 import { useLocale } from '@/lib/i18n';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import { NO_SUB_NAV, SubNav } from '@/components/sub-nav';
+import { Sidebar } from '@/components/sidebar';
+import { useIsDesktop } from '@/lib/layout';
 import { SubHeader } from '@/components/sub-header';
 
 /** Web: Seitenhintergrund und `theme-color` folgen dem Theme (Statusleiste, Überscroll-Bereich). */
@@ -63,6 +65,7 @@ function Navigator() {
   }, []);
   const { colors, scheme } = useTheme();
   const reduceMotion = useReduceMotion();
+  const desktop = useIsDesktop();
   useWebChrome(colors.background);
   // Untere Navigation auf Unterseiten (Paket NV); die Tabs und die Verwaltung bringen eine eigene mit
   const segments = useSegments();
@@ -83,321 +86,345 @@ function Navigator() {
   }
 
   const signedIn = session.status === 'signedIn';
+  // Ab 1100 px: feste Seitenleiste statt schwebender Leiste (Paket DT)
+  const showSidebar = signedIn && desktop && !PUBLIC_ROUTES.has(segments[0] ?? '');
   const showNav =
     signedIn &&
+    !showSidebar &&
     !NO_SUB_NAV.has(segments[0] ?? '') &&
     !(segments[0] === 'match' && (segments as string[])[2] === 'lineup');
   return (
     <ConfirmProvider>
-      <FadeIn style={{ flex: 1, backgroundColor: colors.background }}>
+      <FadeIn
+        style={{
+          flex: 1,
+          flexDirection: showSidebar ? 'row' : 'column',
+          backgroundColor: colors.background,
+        }}
+      >
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-        <BottomTabBarHeightContext.Provider value={showNav ? navHeight : 0}>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              // sanfte Seitenübergänge (280 ms); „Bewegung reduzieren“ schaltet sie ab
-              animation: reduceMotion ? 'none' : 'slide_from_right',
-              animationDuration: 280,
-              // Kopfzeile mit Pfad wie in den Tabs (Paket NV); öffentliche Seiten bekommen eine einfache
-              header: (p) => <SubHeader route={p.route} options={p.options} />,
-              contentStyle: { backgroundColor: colors.background },
-            }}
-          >
-            <Stack.Protected guard={signedIn}>
-              <Stack.Screen name="(tabs)" />
+        {showSidebar ? <Sidebar /> : null}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <BottomTabBarHeightContext.Provider value={showNav ? navHeight : 0}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                // sanfte Seitenübergänge (280 ms); „Bewegung reduzieren“ schaltet sie ab
+                animation: reduceMotion ? 'none' : 'slide_from_right',
+                animationDuration: 280,
+                // Kopfzeile mit Pfad wie in den Tabs (Paket NV); öffentliche Seiten bekommen eine einfache
+                header: (p) => <SubHeader route={p.route} options={p.options} />,
+                contentStyle: { backgroundColor: colors.background },
+              }}
+            >
+              <Stack.Protected guard={signedIn}>
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen
+                  name="events/index"
+                  options={{ headerShown: true, title: 'Alle Termine' }}
+                />
+                <Stack.Screen name="events/[id]" options={{ headerShown: true, title: 'Termin' }} />
+                <Stack.Screen
+                  name="events/archive"
+                  options={{ headerShown: true, title: 'Archiv' }}
+                />
+                <Stack.Screen
+                  name="notifications"
+                  options={{ headerShown: true, title: 'Benachrichtigungen' }}
+                />
+                {/* Verwaltungsmodus mit eigener Navigation (app/admin/_layout.tsx) */}
+                <Stack.Screen name="admin" />
+                <Stack.Screen name="bausteine" />
+                <Stack.Screen
+                  name="training-plan/[id]"
+                  options={{ headerShown: true, title: 'Trainingsplan' }}
+                />
+                <Stack.Screen name="exercises" options={{ headerShown: true, title: 'Übungen' }} />
+                <Stack.Screen name="forum/index" options={{ headerShown: true, title: 'Forum' }} />
+                <Stack.Screen name="forum/[id]" options={{ headerShown: true, title: 'Thema' }} />
+                <Stack.Screen
+                  name="board"
+                  options={{ headerShown: true, title: 'Fundbüro & Marktplatz' }}
+                />
+                <Stack.Screen
+                  name="wiki/index"
+                  options={{ headerShown: true, title: 'Vereinswissen' }}
+                />
+                <Stack.Screen name="wiki/[id]" options={{ headerShown: true, title: 'Artikel' }} />
+                <Stack.Screen
+                  name="equipment/index"
+                  options={{ headerShown: true, title: 'Anlage & Material' }}
+                />
+                <Stack.Screen
+                  name="equipment/rooms"
+                  options={{ headerShown: true, title: 'Kabinenplan' }}
+                />
+                <Stack.Screen
+                  name="equipment/items"
+                  options={{ headerShown: true, title: 'Material & Schlüssel' }}
+                />
+                <Stack.Screen
+                  name="equipment/damages"
+                  options={{ headerShown: true, title: 'Schäden' }}
+                />
+                <Stack.Screen
+                  name="referees"
+                  options={{ headerShown: true, title: 'Schiedsrichter' }}
+                />
+                <Stack.Screen name="calendar" options={{ headerShown: true, title: 'Kalender' }} />
+                <Stack.Screen
+                  name="notification-settings"
+                  options={{ headerShown: true, title: 'Benachrichtigungen einstellen' }}
+                />
+                <Stack.Screen
+                  name="news/index"
+                  options={{ headerShown: true, title: 'Vereinsnews' }}
+                />
+                <Stack.Screen name="news/[id]" options={{ headerShown: true, title: 'News' }} />
+                <Stack.Screen
+                  name="polls/index"
+                  options={{ headerShown: true, title: 'Umfragen' }}
+                />
+                <Stack.Screen name="polls/[id]" options={{ headerShown: true, title: 'Umfrage' }} />
+                <Stack.Screen
+                  name="absences/index"
+                  options={{ headerShown: true, title: 'Abwesenheiten' }}
+                />
+                <Stack.Screen
+                  name="absences/new"
+                  options={{ headerShown: true, title: 'Abwesenheit eintragen' }}
+                />
+                <Stack.Screen
+                  name="profile/[id]"
+                  options={{ headerShown: true, title: 'Profil' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-admin"
+                  options={{ headerShown: true, title: 'Kassenverwaltung' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-payments"
+                  options={{ headerShown: true, title: 'Einzahlungen' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-pay"
+                  options={{ headerShown: true, title: 'Bezahlen' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-drinks"
+                  options={{ headerShown: true, title: 'Getränke-Strichliste' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-levy"
+                  options={{ headerShown: true, title: 'Umlage' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-fees"
+                  options={{ headerShown: true, title: 'Beiträge' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-entries"
+                  options={{ headerShown: true, title: 'Buchungen' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-treasurers"
+                  options={{ headerShown: true, title: 'Kassenwart' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-settings"
+                  options={{ headerShown: true, title: 'Bezahlinfos & Einstellungen' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-closings"
+                  options={{ headerShown: true, title: 'Kassenprüfung' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/fines"
+                  options={{ headerShown: true, title: 'Strafenkatalog' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-stats"
+                  options={{ headerShown: true, title: 'Kassenstatistik' }}
+                />
+                <Stack.Screen
+                  name="club-team/[id]"
+                  options={{ headerShown: true, title: 'Mannschaft' }}
+                />
+                <Stack.Screen
+                  name="helpers"
+                  options={{ headerShown: true, title: 'Helfer gesucht' }}
+                />
+                <Stack.Screen
+                  name="documents"
+                  options={{ headerShown: true, title: 'Dokumente' }}
+                />
+                <Stack.Screen name="search" options={{ headerShown: true, title: 'Suche' }} />
+                <Stack.Screen
+                  name="club-teams"
+                  options={{ headerShown: true, title: 'Mannschaften' }}
+                />
+                <Stack.Screen
+                  name="sponsors"
+                  options={{ headerShown: true, title: 'Unsere Sponsoren' }}
+                />
+                <Stack.Screen
+                  name="sponsor/[id]"
+                  options={{ headerShown: true, title: 'Sponsor' }}
+                />
+                <Stack.Screen
+                  name="expense-claims"
+                  options={{ headerShown: true, title: 'Auslage einreichen' }}
+                />
+                <Stack.Screen
+                  name="club-cash-overview"
+                  options={{ headerShown: true, title: 'Kassenübersicht' }}
+                />
+                <Stack.Screen
+                  name="club-schedule"
+                  options={{ headerShown: true, title: 'Spielplan' }}
+                />
+                <Stack.Screen
+                  name="contacts"
+                  options={{ headerShown: true, title: 'Ansprechpartner' }}
+                />
+                {/* Vereinskasse als eigener Bereich mit Kopfband und Reitern (app/club-cash/_layout.tsx) */}
+                <Stack.Screen name="club-cash" />
+                <Stack.Screen
+                  name="help"
+                  options={{ headerShown: true, title: 'Hilfe & Anleitung' }}
+                />
+                <Stack.Screen
+                  name="about/privacy"
+                  options={{ headerShown: true, title: 'Privatsphäre-Einstellungen' }}
+                />
+                <Stack.Screen
+                  name="club-calendar"
+                  options={{ headerShown: true, title: 'Vereinskalender' }}
+                />
+                <Stack.Screen
+                  name="club-events"
+                  options={{ headerShown: true, title: 'Veranstaltungen' }}
+                />
+                <Stack.Screen
+                  name="exchange/index"
+                  options={{ headerShown: true, title: 'Gastspieler' }}
+                />
+                <Stack.Screen
+                  name="exchange/[id]"
+                  options={{ headerShown: true, title: 'Spielerbedarf' }}
+                />
+                <Stack.Screen
+                  name="exchange/new-demand"
+                  options={{ headerShown: true, title: 'Bedarf melden' }}
+                />
+                <Stack.Screen
+                  name="exchange/new-offer"
+                  options={{ headerShown: true, title: 'Spieler anbieten' }}
+                />
+                <Stack.Screen
+                  name="facilities/index"
+                  options={{ headerShown: true, title: 'Platzbelegung' }}
+                />
+                <Stack.Screen
+                  name="facilities/block-new"
+                  options={{ headerShown: true, title: 'Sperrung anlegen' }}
+                />
+                <Stack.Screen
+                  name="documents-upload"
+                  options={{ headerShown: true, title: 'Dokument hochladen' }}
+                />
+                <Stack.Screen
+                  name="polls/new"
+                  options={{ headerShown: true, title: 'Umfrage erstellen' }}
+                />
+                <Stack.Screen
+                  name="match/[id]/lineup"
+                  // Planer ohne Kopfzeile und untere Navigation: Spielfeld, Bank und Kaderleiste sollen zugleich sichtbar sein
+                  options={{ headerShown: false, title: 'Aufstellung' }}
+                />
+                <Stack.Screen
+                  name="match/[id]/report"
+                  options={{ headerShown: true, title: 'Spielbericht' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/roster"
+                  options={{ headerShown: true, title: 'Kader' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/stats/index"
+                  options={{ headerShown: true, title: 'Statistik' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/stats/[kind]"
+                  options={{ headerShown: true, title: 'Statistik' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash"
+                  options={{ headerShown: true, title: 'Mannschaftskasse' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/cash-new"
+                  options={{ headerShown: true, title: 'Buchung erfassen' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/event-new"
+                  options={{ headerShown: true, title: 'Termin anlegen' }}
+                />
+                <Stack.Screen
+                  name="event-edit/[id]"
+                  options={{ headerShown: true, title: 'Termin bearbeiten' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/modules"
+                  options={{ headerShown: true, title: 'Funktionen der Mannschaft' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/tasks"
+                  options={{ headerShown: true, title: 'Aufgaben' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/archive"
+                  options={{ headerShown: true, title: 'Archiv' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/manage"
+                  options={{ headerShown: true, title: 'Mannschaft bearbeiten' }}
+                />
+                <Stack.Screen
+                  name="schedule-import"
+                  options={{ headerShown: true, title: 'Spielplan importieren' }}
+                />
+                <Stack.Screen
+                  name="teams/[id]/jerseys"
+                  options={{ headerShown: true, title: 'Rückennummern' }}
+                />
+                <Stack.Screen
+                  name="account"
+                  options={{ headerShown: true, title: 'Konto & Einstellungen' }}
+                />
+              </Stack.Protected>
+              <Stack.Protected guard={!signedIn}>
+                <Stack.Screen name="login" />
+                <Stack.Screen name="forgot" />
+                <Stack.Screen name="setup" />
+                <Stack.Screen name="demo/club" />
+                <Stack.Screen name="demo/team" />
+              </Stack.Protected>
+              {/* Öffentliche Links aus E-Mails – mit und ohne Anmeldung erreichbar */}
+              <Stack.Screen name="join/[token]" />
               <Stack.Screen
-                name="events/index"
-                options={{ headerShown: true, title: 'Alle Termine' }}
-              />
-              <Stack.Screen name="events/[id]" options={{ headerShown: true, title: 'Termin' }} />
-              <Stack.Screen
-                name="events/archive"
-                options={{ headerShown: true, title: 'Archiv' }}
+                name="join-code"
+                options={{ headerShown: true, title: 'Einladungscode' }}
               />
               <Stack.Screen
-                name="notifications"
-                options={{ headerShown: true, title: 'Benachrichtigungen' }}
+                name="about/[page]"
+                options={{ headerShown: true, title: 'Über Clubroof' }}
               />
-              {/* Verwaltungsmodus mit eigener Navigation (app/admin/_layout.tsx) */}
-              <Stack.Screen name="admin" />
-              <Stack.Screen name="bausteine" />
-              <Stack.Screen
-                name="training-plan/[id]"
-                options={{ headerShown: true, title: 'Trainingsplan' }}
-              />
-              <Stack.Screen name="exercises" options={{ headerShown: true, title: 'Übungen' }} />
-              <Stack.Screen name="forum/index" options={{ headerShown: true, title: 'Forum' }} />
-              <Stack.Screen name="forum/[id]" options={{ headerShown: true, title: 'Thema' }} />
-              <Stack.Screen
-                name="board"
-                options={{ headerShown: true, title: 'Fundbüro & Marktplatz' }}
-              />
-              <Stack.Screen
-                name="wiki/index"
-                options={{ headerShown: true, title: 'Vereinswissen' }}
-              />
-              <Stack.Screen name="wiki/[id]" options={{ headerShown: true, title: 'Artikel' }} />
-              <Stack.Screen
-                name="equipment/index"
-                options={{ headerShown: true, title: 'Anlage & Material' }}
-              />
-              <Stack.Screen
-                name="equipment/rooms"
-                options={{ headerShown: true, title: 'Kabinenplan' }}
-              />
-              <Stack.Screen
-                name="equipment/items"
-                options={{ headerShown: true, title: 'Material & Schlüssel' }}
-              />
-              <Stack.Screen
-                name="equipment/damages"
-                options={{ headerShown: true, title: 'Schäden' }}
-              />
-              <Stack.Screen
-                name="referees"
-                options={{ headerShown: true, title: 'Schiedsrichter' }}
-              />
-              <Stack.Screen name="calendar" options={{ headerShown: true, title: 'Kalender' }} />
-              <Stack.Screen
-                name="notification-settings"
-                options={{ headerShown: true, title: 'Benachrichtigungen einstellen' }}
-              />
-              <Stack.Screen
-                name="news/index"
-                options={{ headerShown: true, title: 'Vereinsnews' }}
-              />
-              <Stack.Screen name="news/[id]" options={{ headerShown: true, title: 'News' }} />
-              <Stack.Screen name="polls/index" options={{ headerShown: true, title: 'Umfragen' }} />
-              <Stack.Screen name="polls/[id]" options={{ headerShown: true, title: 'Umfrage' }} />
-              <Stack.Screen
-                name="absences/index"
-                options={{ headerShown: true, title: 'Abwesenheiten' }}
-              />
-              <Stack.Screen
-                name="absences/new"
-                options={{ headerShown: true, title: 'Abwesenheit eintragen' }}
-              />
-              <Stack.Screen name="profile/[id]" options={{ headerShown: true, title: 'Profil' }} />
-              <Stack.Screen
-                name="teams/[id]/cash-admin"
-                options={{ headerShown: true, title: 'Kassenverwaltung' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-payments"
-                options={{ headerShown: true, title: 'Einzahlungen' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-pay"
-                options={{ headerShown: true, title: 'Bezahlen' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-drinks"
-                options={{ headerShown: true, title: 'Getränke-Strichliste' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-levy"
-                options={{ headerShown: true, title: 'Umlage' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-fees"
-                options={{ headerShown: true, title: 'Beiträge' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-entries"
-                options={{ headerShown: true, title: 'Buchungen' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-treasurers"
-                options={{ headerShown: true, title: 'Kassenwart' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-settings"
-                options={{ headerShown: true, title: 'Bezahlinfos & Einstellungen' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-closings"
-                options={{ headerShown: true, title: 'Kassenprüfung' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/fines"
-                options={{ headerShown: true, title: 'Strafenkatalog' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-stats"
-                options={{ headerShown: true, title: 'Kassenstatistik' }}
-              />
-              <Stack.Screen
-                name="club-team/[id]"
-                options={{ headerShown: true, title: 'Mannschaft' }}
-              />
-              <Stack.Screen
-                name="helpers"
-                options={{ headerShown: true, title: 'Helfer gesucht' }}
-              />
-              <Stack.Screen name="documents" options={{ headerShown: true, title: 'Dokumente' }} />
-              <Stack.Screen name="search" options={{ headerShown: true, title: 'Suche' }} />
-              <Stack.Screen
-                name="club-teams"
-                options={{ headerShown: true, title: 'Mannschaften' }}
-              />
-              <Stack.Screen
-                name="sponsors"
-                options={{ headerShown: true, title: 'Unsere Sponsoren' }}
-              />
-              <Stack.Screen name="sponsor/[id]" options={{ headerShown: true, title: 'Sponsor' }} />
-              <Stack.Screen
-                name="expense-claims"
-                options={{ headerShown: true, title: 'Auslage einreichen' }}
-              />
-              <Stack.Screen
-                name="club-cash-overview"
-                options={{ headerShown: true, title: 'Kassenübersicht' }}
-              />
-              <Stack.Screen
-                name="club-schedule"
-                options={{ headerShown: true, title: 'Spielplan' }}
-              />
-              <Stack.Screen
-                name="contacts"
-                options={{ headerShown: true, title: 'Ansprechpartner' }}
-              />
-              {/* Vereinskasse als eigener Bereich mit Kopfband und Reitern (app/club-cash/_layout.tsx) */}
-              <Stack.Screen name="club-cash" />
-              <Stack.Screen
-                name="help"
-                options={{ headerShown: true, title: 'Hilfe & Anleitung' }}
-              />
-              <Stack.Screen
-                name="about/privacy"
-                options={{ headerShown: true, title: 'Privatsphäre-Einstellungen' }}
-              />
-              <Stack.Screen
-                name="club-calendar"
-                options={{ headerShown: true, title: 'Vereinskalender' }}
-              />
-              <Stack.Screen
-                name="club-events"
-                options={{ headerShown: true, title: 'Veranstaltungen' }}
-              />
-              <Stack.Screen
-                name="exchange/index"
-                options={{ headerShown: true, title: 'Gastspieler' }}
-              />
-              <Stack.Screen
-                name="exchange/[id]"
-                options={{ headerShown: true, title: 'Spielerbedarf' }}
-              />
-              <Stack.Screen
-                name="exchange/new-demand"
-                options={{ headerShown: true, title: 'Bedarf melden' }}
-              />
-              <Stack.Screen
-                name="exchange/new-offer"
-                options={{ headerShown: true, title: 'Spieler anbieten' }}
-              />
-              <Stack.Screen
-                name="facilities/index"
-                options={{ headerShown: true, title: 'Platzbelegung' }}
-              />
-              <Stack.Screen
-                name="facilities/block-new"
-                options={{ headerShown: true, title: 'Sperrung anlegen' }}
-              />
-              <Stack.Screen
-                name="documents-upload"
-                options={{ headerShown: true, title: 'Dokument hochladen' }}
-              />
-              <Stack.Screen
-                name="polls/new"
-                options={{ headerShown: true, title: 'Umfrage erstellen' }}
-              />
-              <Stack.Screen
-                name="match/[id]/lineup"
-                // Planer ohne Kopfzeile und untere Navigation: Spielfeld, Bank und Kaderleiste sollen zugleich sichtbar sein
-                options={{ headerShown: false, title: 'Aufstellung' }}
-              />
-              <Stack.Screen
-                name="match/[id]/report"
-                options={{ headerShown: true, title: 'Spielbericht' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/roster"
-                options={{ headerShown: true, title: 'Kader' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/stats/index"
-                options={{ headerShown: true, title: 'Statistik' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/stats/[kind]"
-                options={{ headerShown: true, title: 'Statistik' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash"
-                options={{ headerShown: true, title: 'Mannschaftskasse' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/cash-new"
-                options={{ headerShown: true, title: 'Buchung erfassen' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/event-new"
-                options={{ headerShown: true, title: 'Termin anlegen' }}
-              />
-              <Stack.Screen
-                name="event-edit/[id]"
-                options={{ headerShown: true, title: 'Termin bearbeiten' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/modules"
-                options={{ headerShown: true, title: 'Funktionen der Mannschaft' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/tasks"
-                options={{ headerShown: true, title: 'Aufgaben' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/archive"
-                options={{ headerShown: true, title: 'Archiv' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/manage"
-                options={{ headerShown: true, title: 'Mannschaft bearbeiten' }}
-              />
-              <Stack.Screen
-                name="schedule-import"
-                options={{ headerShown: true, title: 'Spielplan importieren' }}
-              />
-              <Stack.Screen
-                name="teams/[id]/jerseys"
-                options={{ headerShown: true, title: 'Rückennummern' }}
-              />
-              <Stack.Screen
-                name="account"
-                options={{ headerShown: true, title: 'Konto & Einstellungen' }}
-              />
-            </Stack.Protected>
-            <Stack.Protected guard={!signedIn}>
-              <Stack.Screen name="login" />
-              <Stack.Screen name="forgot" />
-              <Stack.Screen name="setup" />
-              <Stack.Screen name="demo/club" />
-              <Stack.Screen name="demo/team" />
-            </Stack.Protected>
-            {/* Öffentliche Links aus E-Mails – mit und ohne Anmeldung erreichbar */}
-            <Stack.Screen name="join/[token]" />
-            <Stack.Screen
-              name="join-code"
-              options={{ headerShown: true, title: 'Einladungscode' }}
-            />
-            <Stack.Screen
-              name="about/[page]"
-              options={{ headerShown: true, title: 'Über Clubroof' }}
-            />
-            <Stack.Screen name="reset/[token]" />
-          </Stack>
-        </BottomTabBarHeightContext.Provider>
-        {showNav ? <SubNav routeName={segments.join('/')} onHeight={setNavHeight} /> : null}
+              <Stack.Screen name="reset/[token]" />
+            </Stack>
+          </BottomTabBarHeightContext.Provider>
+          {showNav ? <SubNav routeName={segments.join('/')} onHeight={setNavHeight} /> : null}
+        </View>
       </FadeIn>
     </ConfirmProvider>
   );
@@ -425,6 +452,9 @@ function ClubTheme({ children }: { children: React.ReactNode }) {
     <ThemeProvider clubColor={club?.colorTheme ?? brand?.colorTheme}>{children}</ThemeProvider>
   );
 }
+
+/** Seiten ohne Seitenleiste (Anmeldung, Einrichtung, öffentliche Links) */
+const PUBLIC_ROUTES = new Set(['login', 'forgot', 'setup', 'demo', 'join', 'join-code', 'reset']);
 
 export default function RootLayout() {
   const [queryClient] = useState(
