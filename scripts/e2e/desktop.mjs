@@ -231,6 +231,25 @@ for (const s of sizes) {
   await b.shot(page, `dt2-assistent-1440-${scheme}`, false);
 }
 
+// DT2 Stufe 4: Kassenbuch als Tabelle, Antippen einer Zeile zeigt die Einzelheiten darunter
+{
+  const { page, goto } = await b.session('kasse', { width: 1440, height: 900 });
+  await goto('/club-cash/entries');
+  await page.waitForTimeout(3500);
+  ok((await page.getByRole('table').count()) > 0, 'Kassenbuch: Tabelle statt Liste');
+  await page.getByRole('row').nth(1).click();
+  await page.waitForTimeout(800);
+  ok(
+    (await page.getByText('Gebucht von').filter({ visible: true }).count()) > 0 ||
+      (await page.getByText('Buchung stornieren').filter({ visible: true }).count()) > 0 ||
+      (await page.getByText('Storniert').filter({ visible: true }).count()) > 0 ||
+      (await page.getByText('Beleg ansehen').filter({ visible: true }).count()) > 0 ||
+      (await page.getByText(/€/).filter({ visible: true }).count()) > 3,
+    'Kassenbuch: Zeile zeigt Einzelheiten',
+  );
+  await b.shot(page, `dt2-kassenbuch-1440-${scheme}`, false);
+}
+
 // Fenster: Desktop zentriert, Handy von unten (Kader-Fenster über den Anwesenheitsbalken)
 for (const w of [1440, 390]) {
   const { page, goto, login } = await b.session('trainer', { width: w, height: 900 });
