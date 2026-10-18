@@ -159,7 +159,7 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
     '/documents/:id',
     { schema: { params: z.object({ id: z.uuid() }) } },
     async (request, reply) => {
-      await deleteDocument(app.db, app.storage, request.actor!, request.params.id, app.now());
+      await deleteDocument(app.db, request.actor!, request.params.id, app.now());
       return reply.code(204).send();
     },
   );

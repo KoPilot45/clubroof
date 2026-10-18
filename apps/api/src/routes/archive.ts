@@ -46,13 +46,13 @@ export const archiveRoutes: FastifyPluginAsyncZod = async (auth) => {
       },
     },
     async (request): Promise<PurgeArchiveResult> =>
-      purgeArchive(app.db, request.actor!, request.body, app.now()),
+      purgeArchive(app.db, app.storage, request.actor!, request.body, app.now()),
   );
 
   auth.delete(
     '/archive/:id',
     { schema: { params: id } },
     async (request): Promise<ArchiveOverview> =>
-      purgeEntry(app.db, request.actor!, request.params.id, app.now()),
+      purgeEntry(app.db, app.storage, request.actor!, request.params.id, app.now()),
   );
 };

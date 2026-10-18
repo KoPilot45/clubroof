@@ -15,10 +15,11 @@ import {
   type RestoreArchiveInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { can } from '@clubroof/core';
 import { type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
+import type { FileStorage } from '../storage/files';
 
 type Payload = Record<string, unknown>;
 type Archived = { originalId: string; label: string; detail: string | null; payload: Payload };
@@ -35,6 +36,8 @@ type Handler = {
     payload: Payload,
     name: string,
   ) => Promise<void>;
+  /** Beim endgültigen Löschen: zugehörige Dateien entfernen (Dokumente behalten ihre Datei bis dahin) */
+  purge?: (storage: FileStorage, payload: Payload) => Promise<void>;
 };
 
 const date = (v: unknown) => new Date(String(v));
@@ -154,6 +157,44 @@ const HANDLERS: Record<ArchiveKind, Handler> = {
         sortOrder: Number(p.sortOrder ?? 0),
         createdAt: date(p.createdAt),
       });
+    },
+  },
+  document: {
+    nameOf: (p) => String(p.title),
+    taken: async (db, clubId, p, name) => {
+      const rows = await db
+        .select({ id: s.documents.id })
+        .from(s.documents)
+        .where(
+          and(
+            eq(s.documents.clubId, clubId),
+            eq(s.documents.scopeType, p.scopeType as 'club' | 'org_unit' | 'team'),
+            p.scopeId ? eq(s.documents.scopeId, String(p.scopeId)) : isNull(s.documents.scopeId),
+            eq(s.documents.title, name),
+          ),
+        );
+      return rows.length > 0;
+    },
+    restore: async (db, clubId, originalId, p, name) => {
+      await db.insert(s.documents).values({
+        id: originalId,
+        clubId,
+        scopeType: p.scopeType as 'club' | 'org_unit' | 'team',
+        scopeId: (p.scopeId as string | null) ?? null,
+        category: p.category as (typeof s.documents.$inferInsert)['category'],
+        title: name,
+        fileName: String(p.fileName),
+        mimeType: String(p.mimeType),
+        sizeBytes: Number(p.sizeBytes),
+        storageKey: String(p.storageKey),
+        uploadedByPersonId: (p.uploadedByPersonId as string | null) ?? null,
+        createdAt: date(p.createdAt),
+        editedAt: p.editedAt ? date(p.editedAt) : null,
+      });
+    },
+    purge: async (storage, p) => {
+      const key = String(p.storageKey);
+      if (!key.startsWith('demo/')) await storage.remove(key);
     },
   },
   equipment: {
@@ -360,6 +401,7 @@ export async function restoreEntry(
 /** Einen Eintrag endgültig löschen (nur Berechtigte, nicht während der Aufbewahrungsfrist). */
 export async function purgeEntry(
   db: Db,
+  storage: FileStorage,
   actor: Actor,
   id: string,
   now: Date,
@@ -368,6 +410,7 @@ export async function purgeEntry(
   if (!mayPurge(actor, row)) throw forbidden('Endgültig löschen dürfen nur Berechtigte.');
   if (row.retainUntil && row.retainUntil > now)
     throw new HttpError(409, 'retention', 'Die gesetzliche Aufbewahrungsfrist läuft noch.');
+  await HANDLERS[row.kind as ArchiveKind].purge?.(storage, row.payload);
   await db.delete(s.archiveEntries).where(eq(s.archiveEntries.id, id));
   await audit(
     db,
@@ -402,6 +445,7 @@ async function readable(db: Db, actor: Actor, kind?: ArchiveKind, teamId?: strin
 /** Bereinigen (nur Fälliges) oder Archiv leeren (alles ohne laufende Frist), optional je Art oder Mannschaft. */
 export async function purgeArchive(
   db: Db,
+  storage: FileStorage,
   actor: Actor,
   input: PurgeArchiveInput,
   now: Date,
@@ -416,6 +460,7 @@ export async function purgeArchive(
       input.mode === 'all' ||
       addYears(r.archivedAt, ARCHIVE_RETENTION_YEARS[r.kind as ArchiveKind] ?? 0) <= now,
   );
+  for (const r of doomed) await HANDLERS[r.kind as ArchiveKind].purge?.(storage, r.payload);
   if (doomed.length)
     await db.delete(s.archiveEntries).where(
       inArray(

@@ -122,6 +122,7 @@ export default function DocumentsScreen() {
                             onPress: () =>
                               confirmDelete({
                                 name: d.title,
+                                archive: true,
                                 onConfirm: () => remove.mutate(d.id),
                               }),
                           },

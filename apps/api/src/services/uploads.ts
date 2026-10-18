@@ -21,6 +21,7 @@ import { HttpError, forbidden, notFound } from '../errors';
 import type { FileStorage } from '../storage/files';
 import { mediaRef, resolveMediaUrl } from '../storage/media-links';
 import { checkUpload } from '../storage/uploads';
+import { archiveItem } from './archive';
 import { newsPermissions } from './editorial';
 import { loadScopeContext, requireScope, targetOf } from './scopes';
 
@@ -232,13 +233,7 @@ export async function updateDocument(
   );
 }
 
-export async function deleteDocument(
-  db: Db,
-  storage: FileStorage,
-  actor: Actor,
-  id: string,
-  now: Date,
-): Promise<void> {
+export async function deleteDocument(db: Db, actor: Actor, id: string, now: Date): Promise<void> {
   const [doc] = await db
     .select()
     .from(s.documents)
@@ -251,8 +246,33 @@ export async function deleteDocument(
     ? can(actor.grants, 'documents.manage', target)
     : actorCan(actor, 'documents.manage');
   if (!allowed) throw notFound('Das Dokument');
+  // Löschen heißt archivieren (Paket AR): die Datei bleibt im Speicher, bis das Archiv bereinigt wird
+  await archiveItem(
+    db,
+    actor,
+    'document',
+    {
+      originalId: doc.id,
+      label: doc.title,
+      detail: doc.fileName,
+      payload: {
+        scopeType: doc.scopeType,
+        scopeId: doc.scopeId,
+        category: doc.category,
+        title: doc.title,
+        fileName: doc.fileName,
+        mimeType: doc.mimeType,
+        sizeBytes: doc.sizeBytes,
+        storageKey: doc.storageKey,
+        uploadedByPersonId: doc.uploadedByPersonId,
+        createdAt: doc.createdAt.toISOString(),
+        editedAt: doc.editedAt?.toISOString() ?? null,
+      },
+    },
+    now,
+    doc.scopeType === 'team' ? doc.scopeId : null,
+  );
   await db.delete(s.documents).where(eq(s.documents.id, id));
-  if (!doc.storageKey.startsWith('demo/')) await storage.remove(doc.storageKey);
   await audit(
     db,
     actor,
