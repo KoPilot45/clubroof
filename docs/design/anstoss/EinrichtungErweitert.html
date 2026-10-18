@@ -1,0 +1,229 @@
+<title>Einrichtungsassistenten</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Saira+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Layout: drei Reihen mit je drei Handy-Schritten (Verein einrichten, Mannschaft anlegen, Kasse einrichten). Jeder Schritt hat denselben Aufbau: Fortschritt, Frage, „Warum wir das fragen“, Auswahl mit Beispiel, „Später änderbar“, fester Weiter-Knopf. Farben je Assistent: Clubroof-Blau (Verein), Vereinsfarbe Grün (Mannschaft), Kassen-Blau (Kasse). */
+:root {
+  --page: #070C09; --fg: #F2F7F3; --fg2: #C5D6CB; --fg3: #9FB5A6; --fg4: #6F8277;
+  --display: 'Saira Condensed','Arial Narrow',sans-serif; --body: 'Open Sans',system-ui,sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.4 var(--body); padding-block: 24px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing: .02em; margin: 0 0 6px; text-wrap: balance; }
+.intro { color: var(--fg3); max-width: 74ch; margin: 0 0 26px; }
+.row { margin-bottom: 36px; }
+.row > h2 { font: 800 22px/1 var(--display); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 4px; }
+.row > p { color: var(--fg3); font-size: 12.5px; margin: 0 0 14px; max-width: 80ch; }
+.steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; align-items: start; }
+.cap { font-size: 11px; color: var(--fg4); margin: 8px 2px 0; max-width: 340px; }
+
+/* Themen je Assistent */
+.t-club { --bg: #070B14; --card: rgba(255,255,255,.06); --line: rgba(255,255,255,.11); --acc: #4DC3FF; --on: #04162E; --btn: linear-gradient(90deg,#002AFA,#00C3FF); --btnfg: #fff; --tint: rgba(77,195,255,.13); }
+.t-team { --bg: #0B120E; --card: rgba(255,255,255,.06); --line: rgba(255,255,255,.09); --acc: #2EDB6B; --on: #06210F; --btn: #2EDB6B; --btnfg: #06210F; --tint: rgba(46,219,107,.13); }
+.t-cash { --bg: #0B120E; --card: rgba(255,255,255,.06); --line: rgba(255,255,255,.09); --acc: #5AA9FF; --on: #04162E; --btn: #5AA9FF; --btnfg: #04162E; --tint: rgba(90,169,255,.14); }
+.phone { width: 100%; max-width: 340px; background: var(--bg); border: 1px solid rgba(255,255,255,.14); border-radius: 34px; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+.cashband { margin: -14px -16px 0; padding: 13px 16px; background: linear-gradient(180deg,#1C4FA3,#143A7A); font: 800 20px/1 var(--display); border-radius: 34px 34px 0 0; }
+.top { display: flex; align-items: center; gap: 10px; }
+.back { width: 32px; height: 32px; border-radius: 50%; background: var(--card); border: 1px solid var(--line); display: grid; place-items: center; flex: none; }
+.prog { flex: 1; }
+.prog small { display: block; font-size: 11px; color: var(--fg3); margin-bottom: 5px; }
+.bar { height: 5px; border-radius: 3px; background: rgba(255,255,255,.12); overflow: hidden; } .bar i { display: block; height: 100%; background: var(--acc); border-radius: 3px; }
+h3.q { margin: 4px 0 0; font: 800 28px/1.02 var(--display); letter-spacing: .01em; text-wrap: balance; }
+.why { background: var(--tint); border-radius: 14px; padding: 10px 12px; font-size: 12px; color: var(--fg2); display: flex; gap: 9px; }
+.why b { color: var(--fg); display: block; font: 700 11px/1 var(--display); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px; }
+.why svg { flex: none; margin-top: 1px; color: var(--acc); }
+.opt { background: var(--card); border: 1.5px solid var(--line); border-radius: 18px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; }
+.opt.on { border-color: var(--acc); background: var(--tint); }
+.opt .rad { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); flex: none; margin-top: 2px; position: relative; }
+.opt.on .rad { border-color: var(--acc); } .opt.on .rad::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--acc); }
+.opt b { display: flex; align-items: center; gap: 8px; font-size: 14px; flex-wrap: wrap; } .opt p { margin: 3px 0 0; font-size: 12px; color: var(--fg3); }
+.rec { font: 700 10px var(--body); background: var(--acc); color: var(--on); border-radius: 99px; padding: 2px 8px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; } .chip { padding: 8px 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--card); font: 700 15px/1 var(--display); letter-spacing: .03em; color: var(--fg2); } .chip.on { border-color: var(--acc); background: var(--tint); color: var(--acc); }
+.lab { font: 700 11px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--fg3); margin: 2px 0 -4px; }
+.list { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 2px 0; }
+.li { display: flex; align-items: center; gap: 11px; padding: 10px 14px; position: relative; font-size: 13px; }
+.li + .li::before { content: ""; position: absolute; left: 14px; right: 14px; top: 0; height: 1px; background: var(--line); }
+.li .ic { width: 34px; height: 34px; border-radius: 11px; background: var(--tint); color: var(--acc); display: grid; place-items: center; font-size: 15px; flex: none; }
+.li .tx { flex: 1; min-width: 0; } .li .tx b { display: block; font-size: 13.5px; } .li .tx span { display: block; font-size: 11.5px; color: var(--fg3); }
+.li .rt { font-size: 12px; color: var(--fg2); white-space: nowrap; } .li a { color: var(--acc); font-weight: 700; font-size: 12px; text-decoration: none; }
+.sw { width: 44px; height: 26px; border-radius: 13px; background: rgba(255,255,255,.16); position: relative; flex: none; } .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; } .sw.on { background: var(--acc); } .sw.on::after { transform: translateX(18px); }
+.sw.lock { opacity: .55; }
+.new { font: 700 10px var(--body); border: 1px solid var(--acc); color: var(--acc); border-radius: 99px; padding: 1px 7px; margin-left: 6px; }
+.later { font-size: 11px; color: var(--fg4); display: flex; gap: 6px; align-items: center; }
+.more { font-size: 12.5px; font-weight: 700; color: var(--acc); }
+.prev { background: var(--card); border: 1px dashed rgba(255,255,255,.2); border-radius: 16px; padding: 10px 12px; }
+.prev small { display: block; font: 700 10px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--fg3); margin-bottom: 7px; }
+.mini { display: flex; background: rgba(255,255,255,.07); border-radius: 12px; padding: 3px; gap: 3px; } .mini span { flex: 1; text-align: center; padding: 7px 4px; border-radius: 9px; font: 700 12px var(--body); color: var(--fg2); } .mini span.on { background: var(--acc); color: var(--on); }
+.foot { margin-top: 4px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.cta { width: 100%; text-align: center; background: var(--btn); color: var(--btnfg); font-weight: 700; font-size: 15px; padding: 14px; border-radius: 16px; }
+.skip { font-size: 12.5px; color: var(--fg3); }
+.warn { background: rgba(255,176,32,.14); color: #FFB020; border-radius: 12px; padding: 9px 12px; font-size: 12px; display: flex; gap: 8px; }
+.stack { display: flex; gap: 2px; height: 14px; } .stack i { display: block; } .stack i:first-child { border-radius: 4px 0 0 4px; } .stack i:last-child { border-radius: 0 4px 4px 0; }
+.lg { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--fg2); margin-top: 8px; } .lg i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; }
+.sw-col { width: 22px; height: 22px; border-radius: 7px; flex: none; }
+.msg { background: #1b2620; border-radius: 16px 16px 16px 4px; padding: 11px 13px; font-size: 12.5px; color: var(--fg2); line-height: 1.45; }
+.msg u { color: var(--acc); text-decoration: none; font-weight: 700; }
+.btn2 { display: flex; gap: 8px; } .btn2 span { flex: 1; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 13px; padding: 10px 6px; font-weight: 700; font-size: 12.5px; }
+.err { background: rgba(255,90,90,.12); color: #FF8A8A; border-radius: 12px; padding: 9px 12px; font-size: 12px; }
+.logo { font: 800 26px/1 var(--display); letter-spacing: .02em; display: flex; align-items: center; gap: 8px; } .logo i { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg,#002AFA,#00C3FF); display: inline-block; }
+</style>
+
+<h1>Einrichtungsassistenten</h1>
+<p class="intro">Jeweils drei beispielhafte Schritte der drei Assistenten: Verein einrichten, Mannschaft anlegen, Kasse einrichten. Jeder Schritt folgt demselben Muster: Frage, „Warum wir das fragen“, Auswahl mit Beispiel und Empfehlung, „Später änderbar“ und ein fester Weiter-Knopf. Alle Namen, Beträge und Zahlen sind erfunden.</p>
+
+<section class="row"><h2>Verein einrichten</h2><p>Einmaliger Assistent in den Clubroof-Farben (noch keine Vereinsfarbe). Neu: Wahl zwischen Schnellstart und ausführlich, die Funktion „Kasse nutzen“ (die Kasse wird danach in einem eigenen Assistenten eingerichtet) und eine Zusammenfassung zum Prüfen.</p>
+<div class="steps">
+
+<div><div class="phone t-club">
+  <div class="top"><div class="back">‹</div><div class="prog"><small>Willkommen</small><div class="bar"><i style="width:4%"></i></div></div></div>
+  <div class="logo"><i></i>Clubroof</div>
+  <h3 class="q">Schön, dass du da bist.</h3>
+  <div class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>So läuft es ab</b>In ein paar Minuten richtest du deinen Verein ein. Du kannst jederzeit unterbrechen, wir merken uns deinen Stand. Alles lässt sich später ändern.</div></div>
+  <div class="lab">Wie möchtest du starten?</div>
+  <div class="opt on"><span class="rad"></span><div><b>Schnellstart <span class="rec">Empfohlen</span></b><p>Ca. 5 Minuten. Wir setzen sinnvolle Einstellungen, du änderst nur, was nicht passt.</p></div></div>
+  <div class="opt"><span class="rad"></span><div><b>Ausführlich</b><p>Ca. 15 Minuten. Du entscheidest jeden Schritt selbst, mit Erklärungen.</p></div></div>
+  <div class="lab">Das solltest du bereithalten</div>
+  <div class="list"><div class="li"><div class="ic">▣</div><div class="tx"><b>Vereinslogo</b><span>PNG oder JPG, gern quadratisch</span></div></div><div class="li"><div class="ic">≡</div><div class="tx"><b>Mitgliederliste</b><span>als Tabelle (CSV), zum Importieren</span></div></div><div class="li"><div class="ic">⌂</div><div class="tx"><b>Plätze und Kabinen</b><span>Namen und Untergrund</span></div></div></div>
+  <div class="foot"><div class="cta">Los geht’s</div></div>
+</div><div class="cap">Schritt 1 · Willkommen mit Wahl des Weges und Checkliste zum Bereitlegen.</div></div>
+
+<div><div class="phone t-club">
+  <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 8 von 12 · 67 %</small><div class="bar"><i style="width:67%"></i></div></div></div>
+  <h3 class="q">Wofür nutzt ihr Clubroof im Verein?</h3>
+  <div class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>Warum wir das fragen</b>Du wählst nur, was ihr braucht. Alles andere bleibt ausgeblendet, damit die App übersichtlich bleibt.</div></div>
+  <div class="list">
+    <div class="li"><div class="ic">▤</div><div class="tx"><b>News und Umfragen</b><span>Z. B. „Platz am Donnerstag gesperrt“</span></div><div class="sw on"></div></div>
+    <div class="li"><div class="ic">★</div><div class="tx"><b>Veranstaltungen und Helfer</b><span>Hallenturnier mit Helferschichten</span></div><div class="sw on"></div></div>
+    <div class="li"><div class="ic">▭</div><div class="tx"><b>Dokumente</b><span>Satzung, Formulare, Ordnungen</span></div><div class="sw on"></div></div>
+    <div class="li"><div class="ic">⌂</div><div class="tx"><b>Platzbelegung</b><span>Wer trainiert wann auf welchem Platz</span></div><div class="sw on"></div></div>
+    <div class="li"><div class="ic">€</div><div class="tx"><b>Kasse nutzen<span class="new">Neu</span></b><span>Beiträge, Konten, Haushaltsplan. Die Einrichtung folgt danach in einem eigenen Assistenten (ca. 10 Min.).</span></div><div class="sw on"></div></div>
+    <div class="li"><div class="ic">☆</div><div class="tx"><b>Sponsoren</b><span>Eure Partner mit Logo</span></div><div class="sw"></div></div>
+  </div>
+  <div class="later">ⓘ Später änderbar: Verwaltung → Funktionen</div>
+  <div class="foot"><div class="cta">Weiter</div><div class="skip">Überspringen</div></div>
+</div><div class="cap">Schritt 8 · Funktionen mit Beispiel je Zeile. „Kasse nutzen“ ist nur der Schalter, die Einrichtung läuft separat.</div></div>
+
+<div><div class="phone t-club">
+  <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 12 von 12 · 100 %</small><div class="bar"><i style="width:100%"></i></div></div></div>
+  <h3 class="q">Euer Verein ist bereit.</h3>
+  <div class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>Kurz prüfen</b>Hier siehst du alle Entscheidungen. Mit „Ändern“ gehst du direkt zum Schritt zurück.</div></div>
+  <div class="list">
+    <div class="li"><div class="tx"><b>SV Grün-Weiß Musterstadt 1920 e.V.</b><span>Kürzel SGW · Musterstadt</span></div><a>Ändern</a></div>
+    <div class="li"><div class="sw-col" style="background:#2EDB6B"></div><div class="tx"><b>Vereinsfarbe Grün</b><span>Logo hochgeladen</span></div><a>Ändern</a></div>
+    <div class="li"><div class="tx"><b>2 Bereiche</b><span>Senioren, Jugend (getrennt)</span></div><a>Ändern</a></div>
+    <div class="li"><div class="tx"><b>2 Anlagen, 4 Plätze</b><span>Sportplatz, Sporthalle</span></div><a>Ändern</a></div>
+    <div class="li"><div class="tx"><b>6 Funktionen aktiv</b><span>darunter Kasse</span></div><a>Ändern</a></div>
+  </div>
+  <div class="lab">Nächste Schritte</div>
+  <div class="list">
+    <div class="li"><div class="ic">€</div><div class="tx"><b>Kasse einrichten</b><span>Ca. 10 Minuten</span></div><div class="rt">›</div></div>
+    <div class="li"><div class="ic">⚑</div><div class="tx"><b>Erste Mannschaft anlegen</b><span>Ca. 8 Minuten</span></div><div class="rt">›</div></div>
+    <div class="li"><div class="ic">≡</div><div class="tx"><b>Mitglieder importieren</b><span>Tabelle hochladen oder einladen</span></div><div class="rt">›</div></div>
+  </div>
+  <div class="foot"><div class="cta">Zur Startseite</div><div class="skip">Die Schritte findest du jederzeit in der Verwaltung</div></div>
+</div><div class="cap">Schritt 12 · Zusammenfassung mit „Ändern“ und die „Nächste Schritte“-Liste, darunter die Kasse.</div></div>
+
+</div></section>
+
+<section class="row"><h2>Mannschaft anlegen</h2><p>In der Vereinsfarbe. Neu: erklärende Auswahl mit Empfehlung nach Altersklasse und Vorschau, wöchentliche Trainingstermine mit Konfliktprüfung, ein fertiger Einladungstext zum Weiterschicken.</p>
+<div class="steps">
+
+<div><div class="phone t-team">
+  <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 5 von 12 · 42 %</small><div class="bar"><i style="width:42%"></i></div></div></div>
+  <h3 class="q">Wie melden sich die Spieler an?</h3>
+  <div class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>Warum wir das fragen</b>So weißt du vor jedem Termin, wer kommt, und musst nicht nachfragen.</div></div>
+  <div class="opt on"><span class="rad"></span><div><b>Aktive Antwort <span class="rec">Empfohlen für Jugend</span></b><p>Jeder antwortet vor jedem Termin. Du siehst sofort, wer kommt.</p></div></div>
+  <div class="opt"><span class="rad"></span><div><b>Automatisch zugesagt</b><p>Alle gelten als zugesagt, bis jemand absagt. Gut für feste Gruppen.</p></div></div>
+  <div class="opt"><span class="rad"></span><div><b>Nur Abwesenheiten</b><p>Spieler tragen nur Urlaub oder Verletzung ein. Wenig Aufwand für Alte Herren.</p></div></div>
+  <div class="lab">Antwortfrist</div>
+  <div class="chips"><span class="chip">Training 24 Std.</span><span class="chip on">Spiele 48 Std.</span><span class="chip">Eigene</span></div>
+  <div class="prev"><small>So sieht es für Spieler aus</small><div class="mini"><span class="on">Zugesagt</span><span>Unsicher</span><span>Absagen</span></div><div style="font-size:11px;color:var(--fg3);margin-top:6px">Frist: noch 1 Tag. Danach kannst nur noch du als Trainer ändern.</div></div>
+  <div class="more">Mehr einstellen ›</div>
+  <div class="later">ⓘ Später änderbar: Mannschaft → Mannschaft bearbeiten</div>
+  <div class="foot"><div class="cta">Weiter</div><div class="skip">Überspringen</div></div>
+</div><div class="cap">Schritt 5 · Teilnahme-Modelle mit Beispiel, Empfehlung nach Altersklasse, Frist und Vorschau. „Mehr einstellen“ klappt Erinnerung und Pflicht-Grund auf.</div></div>
+
+<div><div class="phone t-team">
+  <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 9 von 12 · 75 %</small><div class="bar"><i style="width:75%"></i></div></div></div>
+  <h3 class="q">Wann trainiert ihr?</h3>
+  <div class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>Warum wir das fragen</b>Wir legen die wöchentlichen Termine für die ganze Saison an. Doppelbelegungen auf dem Platz prüfen wir automatisch.</div></div>
+  <div class="list">
+    <div class="li"><div class="ic">Di</div><div class="tx"><b>18:00–19:30 Uhr</b><span>Kunstrasen (Platz 2) · Treffpunkt 17:45</span></div><a>Ändern</a></div>
+    <div class="li"><div class="ic">Do</div><div class="tx"><b>18:00–19:30 Uhr</b><span>Rasenplatz (Platz 1) · Treffpunkt 17:45</span></div><a>Ändern</a></div>
+  </div>
+  <div class="err">Do 18:00 · Rasenplatz (Platz 1) ist durch A1 belegt. Anderen Platz wählen oder trotzdem anlegen.</div>
+  <div class="more">+ Termin hinzufügen</div>
+  <div class="lab">Zeitraum</div>
+  <div class="list"><div class="li"><div class="tx"><b>Saison 2026/27</b><span>bis 30.06.2027 · 62 Termine</span></div><a>Ändern</a></div><div class="li"><div class="tx"><b>Ferien aussetzen</b><span>Weihnachten und Sommerpause</span></div><div class="sw on"></div></div></div>
+  <div class="later">ⓘ Später änderbar: Termine → Termin anlegen oder Serie bearbeiten</div>
+  <div class="foot"><div class="cta">Weiter</div><div class="skip">Später anlegen</div></div>
+</div><div class="cap">Schritt 9 · Wöchentliche Trainingstermine mit Konfliktprüfung gegen die Platzbelegung.</div></div>
+
+<div><div class="phone t-team">
+  <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 12 von 12 · 100 %</small><div class="bar"><i style="width:100%"></i></div></div></div>
+  <h3 class="q">Die B-Jugend ist angelegt.</h3>
+  <div class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>Jetzt fehlen nur noch die Spieler</b>Schick den Einladungstext an die Gruppe. Wer auf den Link tippt, landet direkt in der Mannschaft.</div></div>
+  <div class="lab">Einladungstext</div>
+  <div class="msg">Hallo zusammen, ab sofort läuft die B-Jugend über Clubroof: Termine, Zu- und Absagen und alle Infos an einem Ort. Hier einsteigen: <u>clubroof.example/join/AB12CD</u> (oder QR-Code scannen).</div>
+  <div class="btn2"><span>Text kopieren</span><span>QR zeigen</span><span>Teilen</span></div>
+  <div class="lab">Aufgaben</div>
+  <div class="list">
+    <div class="li"><div class="ic">✓</div><div class="tx"><b>Training angelegt</b><span>2 wöchentliche Termine</span></div></div>
+    <div class="li"><div class="ic">○</div><div class="tx"><b>Kader einladen</b><span>Spieler und Eltern</span></div><div class="rt">›</div></div>
+    <div class="li"><div class="ic">○</div><div class="tx"><b>Spielplan importieren</b><span>Aus dem DFBnet oder als Tabelle</span></div><div class="rt">›</div></div>
+  </div>
+  <div class="foot"><div class="cta">Zur Mannschaft</div></div>
+</div><div class="cap">Schritt 12 · Fertig mit fertigem Einladungstext (kopieren, QR, teilen) und Aufgabenliste.</div></div>
+
+</div></section>
+
+<section class="row"><h2>Kasse einrichten</h2><p>Eigener Assistent in der Vereinskasse (Kopfband Blau), startet aus „Nächste Schritte“ oder beim ersten Öffnen der Kasse. Gleiches Muster, Zahlen und Begriffe aus der Vereinswelt.</p>
+<div class="steps">
+
+<div><div class="phone t-cash">
+  <div class="cashband">Vereinskasse einrichten</div>
+  <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 4 von 14 · 29 %</small><div class="bar"><i style="width:29%"></i></div></div></div>
+  <h3 class="q">Ist euer Verein gemeinnützig?</h3>
+  <div class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>Warum wir das fragen</b>Dann trennt die Kasse die vier Steuerbereiche. Das erleichtert Steuererklärung und Jahresabschluss.</div></div>
+  <div class="opt on"><span class="rad"></span><div><b>Ja <span class="rec">Die meisten Sportvereine</span></b><p>Wir legen diese Bereiche an:</p><div style="font-size:11.5px;color:var(--fg2);margin-top:6px;display:grid;gap:3px"><span>• Ideeller Bereich (Beiträge, Spenden)</span><span>• Vermögensverwaltung (Zinsen, Vermietung)</span><span>• Zweckbetrieb (z. B. Sportveranstaltungen)</span><span>• Wirtschaftlicher Geschäftsbetrieb (z. B. Vereinsfest)</span></div></div></div>
+  <div class="opt"><span class="rad"></span><div><b>Nein oder weiß ich nicht</b><p>Einfache Kategorien ohne Steuerbereiche. Lässt sich später ändern.</p></div></div>
+  <div class="later">ⓘ Tipp: Im Freistellungsbescheid steht, ob ihr gemeinnützig seid.</div>
+  <div class="foot"><div class="cta">Weiter</div><div class="skip">Überspringen</div></div>
+</div><div class="cap">Schritt 4 · Gemeinnützigkeit erklärt, mit Vorschau auf die vier Bereiche.</div></div>
+
+<div><div class="phone t-cash">
+  <div class="cashband">Vereinskasse einrichten</div>
+  <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 7 von 14 · 50 %</small><div class="bar"><i style="width:50%"></i></div></div></div>
+  <h3 class="q">Welche Beiträge gibt es?</h3>
+  <div class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>Warum wir das fragen</b>Aus den Beitragsarten erzeugen wir die Beiträge und erinnern bei Rückständen. Die Beträge findest du in eurer Beitragsordnung.</div></div>
+  <div class="list">
+    <div class="li"><div class="tx"><b>Erwachsene</b><span>jährlich · fällig am 1. Januar</span></div><div class="rt">120,00 €</div><a>✎</a></div>
+    <div class="li"><div class="tx"><b>Jugend bis 17</b><span>jährlich · fällig am 1. Januar</span></div><div class="rt">72,00 €</div><a>✎</a></div>
+    <div class="li"><div class="tx"><b>Familie</b><span>jährlich · fällig am 1. Januar</span></div><div class="rt">200,00 €</div><a>✎</a></div>
+    <div class="li"><div class="tx"><b>Passiv</b><span>jährlich · fällig am 1. Januar</span></div><div class="rt">36,00 €</div><a>✎</a></div>
+  </div>
+  <div class="more">+ Beitragsart hinzufügen</div>
+  <div class="lab">Zahlweise der Beiträge</div>
+  <div class="chips"><span class="chip on">Jährlich</span><span class="chip">Halbjährlich</span><span class="chip">Vierteljährlich</span><span class="chip">Monatlich</span></div>
+  <div class="later">ⓘ Die Zahlweise lässt sich je Beitragsart ändern. Später: Beiträge → Beitragsarten</div>
+  <div class="foot"><div class="cta">Weiter</div><div class="skip">Überspringen</div></div>
+</div><div class="cap">Schritt 7 · Vorlage mit vier Beitragsarten zum Anpassen, Rhythmus und Fälligkeit.</div></div>
+
+<div><div class="phone t-cash">
+  <div class="cashband">Vereinskasse einrichten</div>
+  <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 8 von 14 · 57 %</small><div class="bar"><i style="width:57%"></i></div></div></div>
+  <h3 class="q">Wer zahlt welchen Beitrag?</h3>
+  <div class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>Warum wir das fragen</b>Mit Regeln musst du nicht jedes Mitglied einzeln einordnen. Einzelne Ausnahmen setzt du später per Hand.</div></div>
+  <div class="list">
+    <div class="li"><div class="tx"><b>Unter 18 Jahren</b><span>→ Jugend bis 17</span></div><div class="rt">112</div></div>
+    <div class="li"><div class="tx"><b>Status „passiv“</b><span>→ Passiv</span></div><div class="rt">6</div></div>
+    <div class="li"><div class="tx"><b>Alle anderen</b><span>→ Erwachsene</span></div><div class="rt">170</div></div>
+  </div>
+  <div class="prev"><small>Vorschau: 288 Mitglieder</small><div class="stack"><i style="flex:112;background:#3987e5"></i><i style="flex:6;background:#c98500"></i><i style="flex:170;background:#199e70"></i></div><div class="lg"><span><i style="background:#3987e5"></i>Jugend 112</span><span><i style="background:#c98500"></i>Passiv 6</span><span><i style="background:#199e70"></i>Erwachsene 170</span></div></div>
+  <div class="warn">⚠ Bei 26 Mitgliedern fehlt das Geburtsdatum. Sie werden als Erwachsene eingeordnet. Bitte prüfen.</div>
+  <div class="later">ⓘ Später änderbar: Beiträge → Mitglieder und Beitragsarten</div>
+  <div class="foot"><div class="cta">Weiter</div><div class="skip">Später zuordnen</div></div>
+</div><div class="cap">Schritt 8 · Zuordnung per Regeln mit Vorschau und Hinweis auf fehlende Geburtsdaten.</div></div>
+
+</div></section>
