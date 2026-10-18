@@ -68,6 +68,10 @@ import type {
   RefereeDutyResult,
   RefereeOverview,
   MemberImportResult,
+  ImportAreasResponse,
+  ImportPreview,
+  ImportRunInfo,
+  ImportTemplateFile,
   InviteLink,
   InviteOverview,
   JoinInfo,
@@ -112,6 +116,7 @@ import type {
   PollSummary,
 } from '@clubroof/core';
 import { participationLevel } from '@clubroof/core';
+import { writeXlsx } from './services/table-file';
 import { createDb, schema as s } from '@clubroof/db';
 import { eq, inArray } from 'drizzle-orm';
 import { runMigrations } from '@clubroof/db/migrate';
@@ -9138,6 +9143,294 @@ describe.skipIf(!url)('API', () => {
       )!;
       expect((await send('DELETE', `/archive/${again.id}`, admin.token)).status).toBe(200);
       expect(await app.storage.read(key)).toBeNull();
+    });
+  });
+
+  describe('Import-Assistent (IM)', () => {
+    const b64 = (text: string) => Buffer.from(text, 'utf8').toString('base64');
+    const file = (text: string, name = 'import.csv') => ({ name, dataBase64: b64(text) });
+
+    it('zeigt je Rolle die erlaubten Bereiche', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const a = await send<ImportAreasResponse>('GET', '/import/areas', admin.token);
+      expect(a.body.areas.map((x) => x.area)).toEqual(['members', 'roster']);
+      const c = await send<ImportAreasResponse>('GET', '/import/areas', coach.token);
+      expect(c.body.areas.map((x) => x.area)).toEqual(['roster']);
+      expect(c.body.teams.map((t) => t.badge)).toContain('B1');
+      expect(c.body.teams.length).toBeLessThan(a.body.teams.length);
+      const p = await send<ImportAreasResponse>('GET', '/import/areas', player.token);
+      expect(p.body.areas).toEqual([]);
+    });
+
+    it('liefert Vorlagen als Excel und CSV, die der Assistent wieder lesen kann', async () => {
+      const admin = await login('admin');
+      const xlsx = await send<ImportTemplateFile>(
+        'GET',
+        '/import/template/members?format=xlsx',
+        admin.token,
+      );
+      expect(xlsx.body.name).toBe('clubroof-members-vorlage.xlsx');
+      const preview = await send<ImportPreview>('POST', '/import/preview', admin.token, {
+        area: 'members',
+        file: { name: xlsx.body.name, dataBase64: xlsx.body.dataBase64 },
+      });
+      expect(preview.status).toBe(200);
+      expect(preview.body.sheets).toEqual(['Vorlage', 'Erklärung']);
+      expect(preview.body.header[0]).toBe('Vorname');
+      expect(preview.body.missingRequired).toEqual([]);
+      expect(preview.body.rows[0]!.values.firstName).toBe('Max');
+      const csv = await send<ImportTemplateFile>(
+        'GET',
+        '/import/template/roster?format=csv',
+        admin.token,
+      );
+      expect(Buffer.from(csv.body.dataBase64, 'base64').toString('utf8')).toContain('Position');
+    });
+
+    it('prüft Zeilen, ordnet Spalten zu und beachtet das Verhalten bei Dubletten', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const csv = [
+        'Vorname;Nachname;Geb.;Mail;Verein-Nr',
+        'Ida;Importa;03.04.2010;ida.importa@example.org;9001',
+        'Ida;Importa;03.04.2010;;',
+        'Daniel;Schäfer;14.03.1986;;',
+        'Kai;Fehler;31.02.2010;kein-mail;',
+      ].join('\n');
+      expect(
+        (await send('POST', '/import/preview', coach.token, { area: 'members', file: file(csv) }))
+          .status,
+      ).toBe(403);
+
+      const auto = await send<ImportPreview>('POST', '/import/preview', admin.token, {
+        area: 'members',
+        file: file(csv),
+      });
+      // „Geb.“ und „Verein-Nr“ kennt die automatische Zuordnung nicht
+      expect(auto.body.mapping).toEqual(['firstName', 'lastName', null, 'email', null]);
+
+      const mapped = await send<ImportPreview>('POST', '/import/preview', admin.token, {
+        area: 'members',
+        file: file(csv),
+        mapping: ['firstName', 'lastName', 'birthDate', 'email', 'memberNumber'],
+      });
+      expect(mapped.body.rows.map((r) => r.status)).toEqual([
+        'new',
+        'duplicate',
+        'duplicate',
+        'error',
+      ]);
+      expect(mapped.body.rows[1]!.match).toBe('weiter oben in der Datei');
+      expect(mapped.body.rows[3]!.errors.join(' ')).toContain('Geburtsdatum');
+      expect(mapped.body.summary).toMatchObject({ new: 1, duplicate: 2, error: 1 });
+
+      const update = await send<ImportPreview>('POST', '/import/preview', admin.token, {
+        area: 'members',
+        file: file(csv),
+        mapping: ['firstName', 'lastName', 'birthDate', 'email', 'memberNumber'],
+        duplicates: 'update',
+      });
+      expect(update.body.rows[2]!.status).toBe('update');
+
+      // Korrigierte Werte und Abwahl wirken auf die Prüfung
+      const fixed = await send<ImportPreview>('POST', '/import/preview', admin.token, {
+        area: 'members',
+        file: file(csv),
+        mapping: ['firstName', 'lastName', 'birthDate', 'email', 'memberNumber'],
+        edits: { '5': { birthDate: '01.02.2010', email: 'kai@example.org' } },
+        excluded: [3],
+      });
+      expect(fixed.body.rows[3]!.status).toBe('new');
+      expect(fixed.body.summary.excluded).toBe(1);
+
+      // Doppelt zugeordnetes Feld wird abgelehnt
+      const twice = await send<{ error: string }>('POST', '/import/preview', admin.token, {
+        area: 'members',
+        file: file(csv),
+        mapping: ['firstName', 'firstName', null, null, null],
+      });
+      expect(twice.status).toBe(400);
+      expect(twice.body.error).toBe('import_mapping');
+    });
+
+    it('übernimmt Mitglieder aus Excel mit Elternzuordnung und macht den Lauf rückgängig', async () => {
+      const admin = await login('admin');
+      const sheet = writeXlsx([
+        { name: 'Notizen', rows: [['egal']] },
+        {
+          name: 'Mitglieder',
+          rows: [
+            [
+              'Vorname',
+              'Nachname',
+              'Geburtsdatum',
+              'E-Mail',
+              'Mannschaft',
+              'Rückennummer',
+              'Elternteil von',
+            ],
+            ['Oskar', 'Excel', '12.06.2012', '', 'B1', '88', ''],
+            ['Olga', 'Excel', '02.02.1985', 'olga.excel@example.org', '', '', 'Oskar Excel'],
+          ],
+        },
+      ]);
+      const req = {
+        area: 'members',
+        file: { name: 'verein.xlsx', dataBase64: Buffer.from(sheet).toString('base64') },
+        sheet: 'Mitglieder',
+      };
+      const before = (await send<MemberListItem[]>('GET', '/admin/members', admin.token)).body
+        .length;
+      const preview = await send<ImportPreview>('POST', '/import/preview', admin.token, req);
+      expect(preview.body.summary).toMatchObject({ new: 2, error: 0 });
+      expect(preview.body.sheet).toBe('Mitglieder');
+
+      const done = await send<ImportPreview>('POST', '/import/commit', admin.token, req);
+      expect(done.status).toBe(200);
+      expect(done.body.run).toMatchObject({ created: 2, updated: 0 });
+      const list = await send<MemberListItem[]>('GET', '/admin/members', admin.token);
+      expect(list.body.length).toBe(before + 2);
+      const olga = list.body.find((m) => m.lastName === 'Excel' && m.firstName === 'Olga')!;
+      const detail = await send<MemberDetail>('GET', `/admin/members/${olga.id}`, admin.token);
+      expect(detail.body.children?.map((c) => c.name) ?? []).toContain('Oskar Excel');
+
+      // Zweiter Versuch: alles Dubletten, nichts zu übernehmen
+      const again = await send<{ error: string }>('POST', '/import/commit', admin.token, req);
+      expect(again.status).toBe(400);
+      expect(again.body.error).toBe('import_nothing');
+
+      const runs = await send<ImportRunInfo[]>('GET', '/import/runs', admin.token);
+      const run = runs.body.find((r) => r.id === done.body.run!.id)!;
+      expect(run).toMatchObject({ area: 'members', canUndo: true, undone: false });
+      expect(run.summary.created).toBe(2);
+
+      expect((await send('POST', `/import/runs/${run.id}/undo`, admin.token)).status).toBe(200);
+      const after = await send<MemberListItem[]>('GET', '/admin/members', admin.token);
+      expect(after.body.length).toBe(before);
+      const twice = await send<{ error: string }>(
+        'POST',
+        `/import/runs/${run.id}/undo`,
+        admin.token,
+      );
+      expect(twice.status).toBe(409);
+      expect(twice.body.error).toBe('undone');
+    });
+
+    it('bricht bei fehlenden Pflichtfeldern, Fehlerzeilen und unbekanntem Kind ab', async () => {
+      const admin = await login('admin');
+      const noName = await send<ImportPreview>('POST', '/import/preview', admin.token, {
+        area: 'members',
+        file: file('Telefon\n0170 1\n'),
+      });
+      expect(noName.body.missingRequired).toEqual(['Vorname', 'Nachname']);
+      expect(noName.body.rows[0]!.status).toBe('error');
+      const refused = await send<{ error: string }>('POST', '/import/commit', admin.token, {
+        area: 'members',
+        file: file('Telefon\n0170 1\n'),
+      });
+      expect(refused.status).toBe(400);
+
+      const members = (await send<MemberListItem[]>('GET', '/admin/members', admin.token)).body
+        .length;
+      const lost = await send<{ error: string }>('POST', '/import/commit', admin.token, {
+        area: 'members',
+        file: file('Vorname;Nachname;Elternteil von\nPia;Papa;Niemand Unbekannt\n'),
+      });
+      expect(lost.status).toBe(400);
+      expect(lost.body.error).toBe('import_parent');
+      // alles oder nichts: auch die Person selbst wurde nicht angelegt
+      expect((await send<MemberListItem[]>('GET', '/admin/members', admin.token)).body.length).toBe(
+        members,
+      );
+    });
+
+    it('importiert den Kader der eigenen Mannschaft, gleicht mit der Vereinsliste ab und prüft Nummern', async () => {
+      const coach = await login('trainer');
+      const admin = await login('admin');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const areas = await send<ImportAreasResponse>('GET', '/import/areas', admin.token);
+      const other = areas.body.teams.find((t) => !coach.me.teams.some((c) => c.id === t.id))!;
+      const csv = [
+        'Vorname;Nachname;Geburtsdatum;Rückennummer;Position',
+        'Daniel;Schäfer;14.03.1986;;',
+        'Neu;Unbekannt;01.01.2011;55;Sturm',
+      ].join('\n');
+      // Fremde Mannschaft: kein Recht
+      expect(
+        (
+          await send('POST', '/import/preview', coach.token, {
+            area: 'roster',
+            teamId: other.id,
+            file: file(csv),
+          })
+        ).status,
+      ).toBe(403);
+      const preview = await send<ImportPreview>('POST', '/import/preview', coach.token, {
+        area: 'roster',
+        teamId: b1.id,
+        file: file(csv),
+      });
+      expect(preview.status).toBe(200);
+      // Vorhandene Person wird aufgenommen, neue legt nur die Mitgliederverwaltung an
+      expect(preview.body.rows[0]!.status).toBe('update');
+      expect(preview.body.rows[0]!.match).toContain('Daniel Schäfer');
+      expect(preview.body.rows[1]!.status).toBe('error');
+      expect(preview.body.rows[1]!.errors.join(' ')).toContain('Vereinsliste');
+
+      const asAdmin = await send<ImportPreview>('POST', '/import/preview', admin.token, {
+        area: 'roster',
+        teamId: b1.id,
+        file: file(csv),
+      });
+      expect(asAdmin.body.rows.map((r) => r.status)).toEqual(['update', 'new']);
+
+      // Nummer doppelt in der Datei und im Kader
+      const clash = await send<ImportPreview>('POST', '/import/preview', admin.token, {
+        area: 'roster',
+        teamId: b1.id,
+        file: file(
+          'Vorname;Nachname;Geburtsdatum;Rückennummer\nA;Eins;01.01.2011;44\nB;Zwei;01.01.2011;44\n',
+        ),
+      });
+      expect(clash.body.rows[0]!.status).toBe('new');
+      expect(clash.body.rows[1]!.errors.join(' ')).toContain('schon vergeben');
+
+      const done = await send<ImportPreview>('POST', '/import/commit', admin.token, {
+        area: 'roster',
+        teamId: b1.id,
+        file: file(csv),
+      });
+      expect(done.body.run).toMatchObject({ created: 1, updated: 1 });
+      const team = await send<unknown>('GET', `/teams/${b1.id}/roster`, admin.token);
+      expect(JSON.stringify(team.body)).toContain('Unbekannt');
+      expect(
+        (await send('POST', `/import/runs/${done.body.run!.id}/undo`, admin.token)).status,
+      ).toBe(200);
+      const undone = await send<unknown>('GET', `/teams/${b1.id}/roster`, admin.token);
+      expect(JSON.stringify(undone.body)).not.toContain('Unbekannt');
+    });
+
+    it('lässt Rückgängig nur 24 Stunden lang zu und nur mit Recht für den Bereich', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const done = await send<ImportPreview>('POST', '/import/commit', admin.token, {
+        area: 'members',
+        file: file('Vorname;Nachname\nZeit;Abgelaufen\n'),
+      });
+      const id = done.body.run!.id;
+      // Der Trainer sieht den Mitglieder-Import weder in der Liste noch kann er ihn zurücknehmen
+      const seen = await send<ImportRunInfo[]>('GET', '/import/runs', coach.token);
+      expect(seen.body.some((r) => r.id === id)).toBe(false);
+      expect((await send('POST', `/import/runs/${id}/undo`, coach.token)).status).toBe(404);
+      await db
+        .update(s.importRuns)
+        .set({ createdAt: new Date(app.now().getTime() - 25 * 3600_000) })
+        .where(eq(s.importRuns.id, id));
+      const late = await send<{ error: string }>('POST', `/import/runs/${id}/undo`, admin.token);
+      expect(late.status).toBe(409);
+      expect(late.body.error).toBe('undo_expired');
     });
   });
 });
