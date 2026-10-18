@@ -4,7 +4,7 @@ import { t } from '@/lib/i18n';
 
 /**
  * Löschen fragt immer nach (Stil „Anstoß“, Vorlage U15): „Wirklich löschen?“ mit dem Namen des Eintrags.
- * Der Text sagt, was wirklich geschieht – solange es kein Archiv gibt (Paket AR), wird endgültig gelöscht.
+ * Der Text sagt, was wirklich geschieht: Archivierbare Einträge (`archive`) wandern ins Archiv, alle anderen werden endgültig gelöscht.
  */
 export type DeleteRequest = {
   /** Name des Eintrags, wie ihn die Person kennt */
@@ -15,6 +15,8 @@ export type DeleteRequest = {
   confirmLabel?: string;
   /** Überschrift, Standard „Wirklich löschen?“ */
   title?: string;
+  /** Der Eintrag wandert ins Archiv (Paket AR): anderer Standardtext, Überschrift und Knopf */
+  archive?: boolean;
   onConfirm: () => void | Promise<unknown>;
 };
 
@@ -34,14 +36,21 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
       <Dialog
         visible={!!request}
         onClose={close}
-        title={request?.title ?? t('Wirklich löschen?')}
+        title={
+          request?.title ??
+          (request?.archive ? t('Ins Archiv verschieben?') : t('Wirklich löschen?'))
+        }
         text={
           request?.text ??
           (request
-            ? t(`„${request.name}“ wird gelöscht. Das lässt sich nicht rückgängig machen.`)
+            ? request.archive
+              ? t(
+                  `„${request.name}“ wird ins Archiv verschoben und lässt sich dort wiederherstellen.`,
+                )
+              : t(`„${request.name}“ wird gelöscht. Das lässt sich nicht rückgängig machen.`)
             : '')
         }
-        confirmLabel={request?.confirmLabel ?? t('Löschen')}
+        confirmLabel={request?.confirmLabel ?? (request?.archive ? t('Archivieren') : t('Löschen'))}
         loading={busy}
         onConfirm={() => {
           if (!request) return;

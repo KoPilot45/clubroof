@@ -140,7 +140,8 @@ export default function WikiPageScreen() {
                 label: 'Löschen',
                 icon: 'trash-outline',
                 danger: true,
-                onPress: () => confirmDelete({ name: p.title, onConfirm: () => remove.mutate() }),
+                onPress: () =>
+                  confirmDelete({ name: p.title, archive: true, onConfirm: () => remove.mutate() }),
               },
             ]}
           />

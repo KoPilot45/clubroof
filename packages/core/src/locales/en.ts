@@ -13,8 +13,12 @@ export const en: Record<string, string> = {
   '„{0}“ ist im Verein ausgeschaltet.': '“{0}” is turned off in the club.',
   '„{0}“ ist im Verein nicht aktiviert.': '“{0}” is not activated in the club.',
   '„{0}“ ist in der Abteilung ausgeschaltet.': '“{0}” is turned off in the department.',
+  '„{0}“ wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.':
+    '“{0}” will be permanently deleted. This cannot be undone.',
   '„{0}“ wird gelöscht. Das lässt sich nicht rückgängig machen.':
     '“{0}” will be deleted. This cannot be undone.',
+  '„{0}“ wird ins Archiv verschoben und lässt sich dort wiederherstellen.':
+    '“{0}” will be moved to the archive and can be restored from there.',
   '„Anlage & Material“ ist im Verein nicht aktiviert.':
     '“Facility & equipment” is not activated in the club.',
   '„Mannschaft bearbeiten → Spielplan importieren“: CSV-Datei aus dem DFBnet wählen, Vorschau prüfen (neu, geändert, unverändert, übersprungen) und übernehmen. Die Mannschaft bekommt eine Sammelmeldung. Ein erneuter Import aktualisiert Verlegungen, statt Spiele doppelt anzulegen. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.':
@@ -71,6 +75,7 @@ export const en: Record<string, string> = {
   '{0} anrufen': 'Call {0}',
   '{0} Antwort': '{0} reply',
   '{0} Antworten': '{0} replies',
+  '{0} archivierte Einträge älter als {1} Jahre': '{0} archived entries older than {1} years',
   '{0} Aufgabe': '{0} task',
   '{0} Aufgaben': '{0} tasks',
   '{0} Ausgaben liegen über dem Plan': '{0} expenses are over plan',
@@ -93,6 +98,11 @@ export const en: Record<string, string> = {
   '{0} Dubletten': '{0} duplicates',
   '{0} Dubletten und {1} fehlerhafte Zeilen wurden übersprungen.':
     '{0} duplicates and {1} faulty rows were skipped.',
+  '{0} Einträge endgültig gelöscht, {1} bleiben wegen laufender Aufbewahrungsfrist.':
+    '{0} entries permanently deleted, {1} remain because the retention period is still running.',
+  '{0} Einträge endgültig gelöscht.': '{0} entries permanently deleted.',
+  '{0} Einträge werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.':
+    '{0} entries will be permanently deleted. This cannot be undone.',
   '{0} Einzahlungen buchen ({1})': 'Book {0} payments ({1})',
   '{0} erfasste Einheiten in 4 Wochen': '{0} recorded sessions in 4 weeks',
   '{0} erhöhen': 'Increase {0}',
@@ -443,6 +453,8 @@ export const en: Record<string, string> = {
   'Aktuelles Vereinslogo': 'Current club logo',
   alle: 'all',
   Alle: 'All',
+  'Alle {0} archivierten Einträge werden endgültig gelöscht (Einträge mit laufender Aufbewahrungsfrist bleiben). Das lässt sich nicht rückgängig machen.':
+    'All {0} archived entries will be permanently deleted (entries with a running retention period stay). This cannot be undone.',
   'Alle an offene Beträge erinnern': 'Remind everyone of outstanding amounts',
   'Alle anzeigen': 'Show all',
   'Alle anzeigen ›': 'Show all ›',
@@ -597,7 +609,23 @@ export const en: Record<string, string> = {
   'Arbeit noch unklar': 'Work still unclear',
   Arbeitseinsatz: 'Work party',
   Archiv: 'Archive',
+  'Archiv exportieren': 'Export archive',
+  'Archiv gelöschter Einträge einsehen und exportieren':
+    'View and export the archive of deleted entries',
+  'Archiv leeren': 'Empty archive',
+  'Archiv leeren?': 'Empty archive?',
+  'Archiv: bereinigt: {0} Einträge endgültig gelöscht':
+    'Archive: cleaned up: {0} entries permanently deleted',
+  'Archiv: endgültig gelöscht: {0}': 'Archive: permanently deleted: {0}',
+  'Archiv: exportiert ({0} Einträge)': 'Archive: exported ({0} entries)',
+  'Archiv: geleert: {0} Einträge endgültig gelöscht':
+    'Archive: emptied: {0} entries permanently deleted',
+  'Archiv: wiederhergestellt: {0}': 'Archive: restored: {0}',
   Archivieren: 'Archive',
+  'Archivierte Einträge': 'Archived entries',
+  'Archivierte Einträge endgültig löschen (bereinigen, Archiv leeren)':
+    'Permanently delete archived entries (clean up, empty archive)',
+  'Archivierte Einträge wiederherstellen': 'Restore archived entries',
   Art: 'Type',
   'Art (z. B. Sportgeräte)': 'Type (e.g. sports equipment)',
   'Art der Buchung': 'Type of entry',
@@ -620,6 +648,7 @@ export const en: Record<string, string> = {
     'On every sub-page you see your path at the top, for example “Team › Cash › Fine catalogue”. Tap an earlier level to go back there, or the round arrow to go back one step. On long paths “…” stands for the skipped levels; tapping it shows them as a list. The bottom bar stays visible and the current section is highlighted.',
   'Auf Konto': 'To account',
   'auf später verschoben': 'postponed',
+  'Aufbewahrung bis': 'Retention until',
   Aufgabe: 'Task',
   'Aufgabe anlegen': 'Create task',
   'Aufgabe: {0}': 'Duty: {0}',
@@ -827,6 +856,7 @@ export const en: Record<string, string> = {
   Bereich: 'Section',
   Bereiche: 'Sections',
   Bereinigen: 'Clean up',
+  'Bereinigen?': 'Clean up?',
   'Bereite die nächste Saison vor: Alle Mannschaften werden mit Modulen, Fristen, Trainerteams und Zusatzaufgaben (z. B. Kassenwart) übernommen. Die laufende Saison bleibt unverändert, bis du die neue startest.':
     'Prepare the next season: all teams are carried over with modules, deadlines, coaching staff and additional duties (e.g. treasurer). The current season stays unchanged until you start the new one.',
   'Bereits eingegangen': 'Already received',
@@ -1041,6 +1071,8 @@ export const en: Record<string, string> = {
   'Das Angebot': 'The offer',
   'Das Angebot konnte nicht gespeichert werden.': 'The offer could not be saved.',
   'Das Angebot von {0} wird entfernt.': 'The offer from {0} will be removed.',
+  'Das Archiv ist leer.': 'The archive is empty.',
+  'Das Archiv sehen nur Berechtigte.': 'Only authorised people can see the archive.',
   'Das Audit-Log ist dem Vorstand vorbehalten.': 'The audit log is reserved for the board.',
   'Das betrifft nur neue Anmeldungen – dein jetziges Gerät bleibt angemeldet. Du richtest sie später unter Mehr › Konto & Einstellungen ein.':
     'This only affects new sign-ins – your current device stays signed in. You can set it up later under More › Account & settings.',
@@ -1152,6 +1184,7 @@ export const en: Record<string, string> = {
   'Daten, Foto und Auswertung': 'Details, photo and statistics',
   Datenschutz: 'Privacy',
   Datenschutzerklärung: 'Privacy policy',
+  'Datenübergabe und Leeren': 'Data handover and emptying',
   Datum: 'Date',
   'Datum bitte als TT.MM.JJJJ': 'Please enter the date as DD.MM.YYYY',
   'Datum des Bescheids': 'Date of the notice',
@@ -1236,6 +1269,7 @@ export const en: Record<string, string> = {
   'Den Trainingsplan bearbeitet das Trainerteam.': 'The coaching staff edits the training plan.',
   'Der Anfangsbestand ist gesperrt, sobald auf dem Konto gebucht wurde.':
     'The opening balance is locked once the account has entries.',
+  'Der archivierte Eintrag': 'The archived entry',
   'Der Artikel': 'The article',
   'Der Aushang': 'The notice',
   'Der Bedarf': 'The request',
@@ -1270,6 +1304,8 @@ export const en: Record<string, string> = {
   'Der Einrichtungscode konnte nicht geprüft werden.': 'The setup code could not be checked.',
   'Der Einrichtungscode stimmt nicht.': 'The setup code is incorrect.',
   'Der Einsatz': 'The assignment',
+  'Der Export des Archivs steht in der Web-Verwaltung bereit.':
+    'The archive export is available in the web administration.',
   'Der Gegenstand': 'The item',
   'Der Import': 'The import',
   'Der Import wurde schon rückgängig gemacht.': 'The import has already been undone.',
@@ -1290,6 +1326,9 @@ export const en: Record<string, string> = {
   'Der Link ist geheim. Wurde er weitergegeben, erzeuge einfach einen neuen.':
     'The link is secret. If it has been passed on, simply generate a new one.',
   'Der Link muss mit https:// beginnen.': 'The link must start with https://.',
+  'Der Name ist inzwischen vergeben. Bitte wähle einen neuen Namen für den wiederhergestellten Eintrag.':
+    'The name is taken in the meantime. Please choose a new name for the restored entry.',
+  'Der Name ist inzwischen vergeben. Neuer Name': 'The name is taken in the meantime. New name',
   'Der Name steht in Terminen und Listen, das Kürzel auf den Kacheln.':
     'The name appears in events and lists, the abbreviation on the tiles.',
   'Der neue Beginn liegt in der Vergangenheit.': 'The new start is in the past.',
@@ -1466,6 +1505,8 @@ export const en: Record<string, string> = {
     'The guest player exchange is for coaching staff and sporting management.',
   'Die gemeldete Zahlung über {0} ist noch nicht angekommen. Bitte wende dich an die Kasse.':
     'The reported payment of {0} has not arrived yet. Please contact the team fund.',
+  'Die gesetzliche Aufbewahrungsfrist läuft noch.':
+    'The statutory retention period is still running.',
   'Die Hauptkasse kann nicht stillgelegt werden. Lege zuerst eine andere Kasse als Hauptkasse fest.':
     'The main fund cannot be deactivated. First set another fund as the main fund.',
   'Die Hauptkasse nimmt Buchungen ohne Abteilungsbezug auf und kann nicht stillgelegt werden. Lege eine andere Kasse als Hauptkasse fest, um zu wechseln.':
@@ -1911,6 +1952,8 @@ export const en: Record<string, string> = {
   'Empfehlung für das Administrationskonto': 'Recommendation for the administration account',
   Empfohlen: 'Recommended',
   Ende: 'End',
+  'Endgültig löschen': 'Delete permanently',
+  'Endgültig löschen dürfen nur Berechtigte.': 'Only authorised people can delete permanently.',
   'Engagiert im Verein ohne Amt oder Mannschaft: Vereinsüberblick, Veranstaltungen, News verfassen (zur Freigabe), keine Verwaltungsrechte':
     'Involved in the club without office or team: club overview, events, write news (for approval), no administration rights',
   Entfernen: 'Remove',
@@ -2200,6 +2243,10 @@ export const en: Record<string, string> = {
   'Geldbewegung + {1}': 'Money movement + {1}',
   'Geldbewegung − {1}': 'Money movement − {1}',
   Gelesen: 'Read',
+  'Gelöschte Einträge liegen hier und lassen sich wiederherstellen. Endgültig gelöscht wird nie automatisch, sondern nur auf deinen Anstoß.':
+    'Deleted entries are kept here and can be restored. Nothing is ever deleted permanently on its own, only when you ask for it.',
+  'Gelöschte Wissensartikel und Übungen landen im Archiv. Die Administration öffnet es unter „Verwaltung → Abo & Kontrolle → Archiv“: Dort stellst du einen Eintrag mit „Wiederherstellen“ wieder her. Ist sein Name inzwischen vergeben, fragt dich die App nach einem neuen Namen. Endgültig gelöscht wird nie automatisch: „Bereinigen“ entfernt, was älter als die Standardfrist ist (derzeit 2 Jahre), „Archiv leeren“ löscht alles; beides nur auf deinen Anstoß und mit Bestätigung. „Archiv exportieren“ speichert alle archivierten Einträge als Datei.':
+    'Deleted knowledge articles and exercises end up in the archive. Administrators open it under “Administration → Plan & control → Archive”: there you bring an entry back with “Restore”. If its name has been taken in the meantime, the app asks you for a new name. Nothing is ever deleted permanently on its own: “Clean up” removes what is older than the standard period (currently 2 years), “Empty archive” deletes everything; both only when you ask for it and after confirmation. “Export archive” saves all archived entries as a file.',
   Gemeldet: 'Reported',
   'Gemeldet: {0} ({1}) – wartet auf Bestätigung': 'Reported: {0} ({1}) – awaiting confirmation',
   Genehmigen: 'Approve',
@@ -2442,6 +2489,7 @@ export const en: Record<string, string> = {
   Inhalte: 'Content',
   Innenverteidiger: 'Centre back',
   Innenverteidigung: 'Centre-back',
+  'Ins Archiv verschieben?': 'Move to archive?',
   Inventar: 'Inventory',
   Ist: 'Actual',
   'Ist schon im Verein oder weiter oben in der Datei – wird übersprungen.':
@@ -4428,6 +4476,9 @@ export const en: Record<string, string> = {
   'Wieder aufnehmen': 'Reinstate',
   'Wieder einblenden': 'Show again',
   'Wieder öffnen': 'Reopen',
+  'Wiederhergestellt.': 'Restored.',
+  Wiederherstellen: 'Restore',
+  'Wiederherstellen dürfen nur Berechtigte.': 'Only authorised people can restore entries.',
   Wiederholen: 'Repeat',
   'Wiederholen bis einschließlich': 'Repeat until (inclusive)',
   'Willkommen bei {0}': 'Welcome to {0}',
@@ -4454,12 +4505,14 @@ export const en: Record<string, string> = {
   'Wische oder tippe auf die Pfeile, um andere Wochen zu sehen.':
     'Swipe or tap the arrows to see other weeks.',
   'Wischen wechselt die Woche.': 'Swipe to change the week.',
+  Wissensartikel: 'Knowledge articles',
   'Wo finde ich AGB, Datenschutz, Impressum und Support?':
     'Where do I find terms, privacy policy, legal notice and support?',
   'Wo finde ich die Auswertungen der Vereinskasse?': 'Where do I find the club cash reports?',
   'Wo finde ich die Funktionen?': 'Where do I find the features?',
   'Wo finde ich die Verwaltung und die Vereinskasse?':
     'Where do I find the administration and the club cash?',
+  'Wo finde ich gelöschte Einträge?': 'Where do I find deleted entries?',
   'Wo finde ich offene Helferdienste?': 'Where do I find open helper shifts?',
   'Wo finde ich Satzung, Formulare und Pläne?':
     'Where do I find the constitution, forms and plans?',

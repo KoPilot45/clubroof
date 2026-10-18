@@ -247,7 +247,7 @@ export async function purgeEntry(
     actor,
     'archive.purged',
     row.originalId,
-    `Archiv: endgültig gelöscht (${row.kind})`,
+    `Archiv: endgültig gelöscht: ${row.label}`,
     now,
   );
   return getArchive(db, actor, now);
@@ -289,7 +289,9 @@ export async function purgeArchive(
     actor,
     'archive.purged',
     null,
-    `Archiv: ${input.mode === 'all' ? 'geleert' : 'bereinigt'}${input.kind ? ` (${input.kind})` : ''}: ${doomed.length} Einträge endgültig gelöscht`,
+    input.mode === 'all'
+      ? `Archiv: geleert: ${doomed.length} Einträge endgültig gelöscht`
+      : `Archiv: bereinigt: ${doomed.length} Einträge endgültig gelöscht`,
     now,
   );
   return {

@@ -2906,6 +2906,7 @@ describe.skipIf(!url)('API', () => {
         manageMembers: false,
         manageRoles: false,
         readAudit: true,
+        readArchive: false,
         manageModules: false,
         manageTeams: false,
         planSeason: false,
@@ -6242,103 +6243,6 @@ describe.skipIf(!url)('API', () => {
       expect(edited.body.updatedBy).toBe('Daniel Schäfer');
       expect((await send('DELETE', `/wiki/${created.body.id}`, admin.token)).status).toBe(204);
     });
-
-    it('Archiv (AR, Stufe 1): Löschen archiviert, Wiederherstellen mit Namenskonflikt, Bereinigen auf Anstoß', async () => {
-      const admin = await login('admin');
-      const coach = await login('trainer');
-      const player = await login('spieler');
-      // Wissensartikel löschen → liegt im Archiv, nicht mehr in der Liste
-      const wiki = await send<WikiPage>('POST', '/wiki', admin.token, {
-        title: 'Platzordnung',
-        category: 'Anlage',
-        body: 'Keine Stollenschuhe in der Halle.',
-      });
-      expect((await send('DELETE', `/wiki/${wiki.body.id}`, admin.token)).status).toBe(204);
-      expect(
-        (await get<WikiOverview>('/wiki', admin.token)).pages.some((p) => p.id === wiki.body.id),
-      ).toBe(false);
-      // Übung: das Trainerteam löscht seine eigene Übung
-      const made = await send<Exercise[]>('POST', '/exercises', coach.token, {
-        title: 'Torschuss im Kreis',
-        category: 'finishing',
-        durationMinutes: 15,
-      });
-      const ex = made.body.find((e) => e.title === 'Torschuss im Kreis')!;
-      expect((await send('DELETE', `/exercises/${ex.id}`, coach.token)).status).toBe(200);
-
-      // Archiv sehen nur Berechtigte
-      expect((await send('GET', '/archive', player.token)).status).toBe(403);
-      expect((await send('GET', '/archive', coach.token)).status).toBe(403);
-      const archive = await get<ArchiveOverview>('/archive', admin.token);
-      const wikiEntry = archive.entries.find((e) => e.label === 'Platzordnung')!;
-      const exEntry = archive.entries.find((e) => e.label === 'Torschuss im Kreis')!;
-      expect(wikiEntry).toMatchObject({
-        kind: 'wiki',
-        detail: 'Anlage',
-        canRestore: true,
-        canPurge: true,
-      });
-      expect(exEntry.kind).toBe('exercise');
-      expect(archive.kinds.find((k) => k.kind === 'wiki')!.count).toBeGreaterThanOrEqual(1);
-
-      // Wiederherstellen ohne Berechtigung → 403
-      expect((await send('POST', `/archive/${wikiEntry.id}/restore`, coach.token, {})).status).toBe(
-        403,
-      );
-
-      // Namenskonflikt: der Name ist inzwischen vergeben → Rückfrage (409), nichts wird selbst umbenannt
-      await send('POST', '/wiki', admin.token, {
-        title: 'Platzordnung',
-        category: 'Anlage',
-        body: 'neu',
-      });
-      const conflict = await send<{ error: string; message: string }>(
-        'POST',
-        `/archive/${wikiEntry.id}/restore`,
-        admin.token,
-        {},
-      );
-      expect(conflict.status).toBe(409);
-      expect(conflict.body.error).toBe('name_conflict');
-      const renamed = await send<ArchiveOverview>(
-        'POST',
-        `/archive/${wikiEntry.id}/restore`,
-        admin.token,
-        {
-          newName: 'Platzordnung (alt)',
-        },
-      );
-      expect(renamed.status).toBe(200);
-      const pages = (await get<WikiOverview>('/wiki', admin.token)).pages;
-      expect(pages.some((p) => p.title === 'Platzordnung (alt)')).toBe(true);
-      expect(renamed.body.entries.some((e) => e.id === wikiEntry.id)).toBe(false);
-
-      // Übung ohne Konflikt wiederherstellen: wieder in der Liste, mit alter ID
-      expect((await send('POST', `/archive/${exEntry.id}/restore`, admin.token, {})).status).toBe(
-        200,
-      );
-      expect((await get<Exercise[]>('/exercises', coach.token)).some((e) => e.id === ex.id)).toBe(
-        true,
-      );
-
-      // Bereinigen: frisch Archiviertes ist nicht fällig; „Archiv leeren“ löscht es endgültig und steht im Protokoll
-      await send('DELETE', `/exercises/${ex.id}`, coach.token);
-      const due = await send<PurgeArchiveResult>('POST', '/archive/purge', admin.token, {
-        mode: 'due',
-      });
-      expect(due.body.deleted).toBe(0);
-      expect((await send('POST', '/archive/purge', coach.token, { mode: 'all' })).status).toBe(403);
-      const exported = await get<{ entries: { kind: string; label: string; data: unknown }[] }>(
-        '/archive/export',
-        admin.token,
-      );
-      expect(exported.entries.some((e) => e.label === 'Torschuss im Kreis')).toBe(true);
-      const emptied = await send<PurgeArchiveResult>('POST', '/archive/purge', admin.token, {
-        mode: 'all',
-      });
-      expect(emptied.body.deleted).toBeGreaterThanOrEqual(1);
-      expect(emptied.body.overview.entries).toHaveLength(0);
-    });
   });
 
   describe('Anlage & Material und Schiedsrichter', () => {
@@ -8984,6 +8888,103 @@ describe.skipIf(!url)('API', () => {
       expect(labels.some((l) => l.startsWith('Zuschuss Sportstättenförderung: 1.500,00'))).toBe(
         true,
       );
+    });
+
+    it('Archiv (AR, Stufe 1): Löschen archiviert, Wiederherstellen mit Namenskonflikt, Bereinigen auf Anstoß', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      // Wissensartikel löschen → liegt im Archiv, nicht mehr in der Liste
+      const wiki = await send<WikiPage>('POST', '/wiki', admin.token, {
+        title: 'Platzordnung',
+        category: 'Anlage',
+        body: 'Keine Stollenschuhe in der Halle.',
+      });
+      expect((await send('DELETE', `/wiki/${wiki.body.id}`, admin.token)).status).toBe(204);
+      expect(
+        (await get<WikiOverview>('/wiki', admin.token)).pages.some((p) => p.id === wiki.body.id),
+      ).toBe(false);
+      // Übung: das Trainerteam löscht seine eigene Übung
+      const made = await send<Exercise[]>('POST', '/exercises', coach.token, {
+        title: 'Torschuss im Kreis',
+        category: 'finishing',
+        durationMinutes: 15,
+      });
+      const ex = made.body.find((e) => e.title === 'Torschuss im Kreis')!;
+      expect((await send('DELETE', `/exercises/${ex.id}`, coach.token)).status).toBe(200);
+
+      // Archiv sehen nur Berechtigte
+      expect((await send('GET', '/archive', player.token)).status).toBe(403);
+      expect((await send('GET', '/archive', coach.token)).status).toBe(403);
+      const archive = await get<ArchiveOverview>('/archive', admin.token);
+      const wikiEntry = archive.entries.find((e) => e.label === 'Platzordnung')!;
+      const exEntry = archive.entries.find((e) => e.label === 'Torschuss im Kreis')!;
+      expect(wikiEntry).toMatchObject({
+        kind: 'wiki',
+        detail: 'Anlage',
+        canRestore: true,
+        canPurge: true,
+      });
+      expect(exEntry.kind).toBe('exercise');
+      expect(archive.kinds.find((k) => k.kind === 'wiki')!.count).toBeGreaterThanOrEqual(1);
+
+      // Wiederherstellen ohne Berechtigung → 403
+      expect((await send('POST', `/archive/${wikiEntry.id}/restore`, coach.token, {})).status).toBe(
+        403,
+      );
+
+      // Namenskonflikt: der Name ist inzwischen vergeben → Rückfrage (409), nichts wird selbst umbenannt
+      await send('POST', '/wiki', admin.token, {
+        title: 'Platzordnung',
+        category: 'Anlage',
+        body: 'neu',
+      });
+      const conflict = await send<{ error: string; message: string }>(
+        'POST',
+        `/archive/${wikiEntry.id}/restore`,
+        admin.token,
+        {},
+      );
+      expect(conflict.status).toBe(409);
+      expect(conflict.body.error).toBe('name_conflict');
+      const renamed = await send<ArchiveOverview>(
+        'POST',
+        `/archive/${wikiEntry.id}/restore`,
+        admin.token,
+        {
+          newName: 'Platzordnung (alt)',
+        },
+      );
+      expect(renamed.status).toBe(200);
+      const pages = (await get<WikiOverview>('/wiki', admin.token)).pages;
+      expect(pages.some((p) => p.title === 'Platzordnung (alt)')).toBe(true);
+      expect(renamed.body.entries.some((e) => e.id === wikiEntry.id)).toBe(false);
+
+      // Übung ohne Konflikt wiederherstellen: wieder in der Liste, mit alter ID
+      expect((await send('POST', `/archive/${exEntry.id}/restore`, admin.token, {})).status).toBe(
+        200,
+      );
+      expect((await get<Exercise[]>('/exercises', coach.token)).some((e) => e.id === ex.id)).toBe(
+        true,
+      );
+
+      // Bereinigen: frisch Archiviertes ist nicht fällig; „Archiv leeren“ löscht es endgültig und steht im Protokoll
+      await send('DELETE', `/exercises/${ex.id}`, coach.token);
+      const due = await send<PurgeArchiveResult>('POST', '/archive/purge', admin.token, {
+        mode: 'due',
+      });
+      expect(due.body.deleted).toBe(0);
+      expect((await send('POST', '/archive/purge', coach.token, { mode: 'all' })).status).toBe(403);
+      const exported = await get<{ entries: { kind: string; label: string; data: unknown }[] }>(
+        '/archive/export',
+        admin.token,
+      );
+      expect(exported.entries.some((e) => e.label === 'Torschuss im Kreis')).toBe(true);
+      const emptied = await send<PurgeArchiveResult>('POST', '/archive/purge', admin.token, {
+        mode: 'all',
+      });
+      expect(emptied.body.deleted).toBeGreaterThanOrEqual(1);
+      expect(emptied.body.overview.entries).toHaveLength(0);
     });
   });
 });

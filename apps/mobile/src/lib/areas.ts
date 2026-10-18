@@ -223,6 +223,7 @@ export function adminCategories(me: MeResponse): AreaCategory[] {
           [
             ['plan', 'Plan & Abo', 'card', null, club],
             ['audit', 'Änderungsprotokoll', 'list', '/admin/audit', a.readAudit],
+            ['archive', 'Archiv', 'archive', '/admin/archive', a.readArchive],
           ],
         ],
       ]),

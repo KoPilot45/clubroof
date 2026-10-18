@@ -116,6 +116,12 @@ export function adminFunctionTiles(me: MeResponse): TileItem[] {
       icon: 'list',
       onPress: () => router.push('/admin/audit'),
     },
+    a.readArchive && {
+      key: 'archive',
+      label: 'Archiv',
+      icon: 'archive-outline',
+      onPress: () => router.push('/admin/archive'),
+    },
   ];
   return tiles.filter((t): t is TileItem => !!t);
 }

@@ -63,6 +63,7 @@ export function adminPermissions(actor: Actor): AdminPermissions {
     manageMembers: actorCan(actor, 'members.manage'),
     manageRoles: actorCan(actor, 'club.roles.manage'),
     readAudit: actorCan(actor, 'club.audit.read'),
+    readArchive: actorCan(actor, 'archive.read'),
     manageModules: actorCan(actor, 'club.modules.manage'),
     manageTeams: (() => {
       const t = scopesWith(actor.grants, 'teams.manage');
@@ -262,6 +263,7 @@ export async function getAdminOverview(db: Db, actor: Actor, now: Date): Promise
     !can.readMembers &&
     !can.manageRoles &&
     !can.readAudit &&
+    !can.readArchive &&
     !can.manageModules &&
     !can.manageTeams &&
     !can.planSeason &&
