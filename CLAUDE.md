@@ -32,6 +32,7 @@ pnpm check                     # Lint + Typprüfung + alle Tests (vor jedem Comm
 pnpm check --grep="Kasse"      # nur passende API-Tests – schnell beim Entwickeln
 pnpm check --only=a11y         # antippbare Elemente ohne Text/accessibilityLabel (Teil von pnpm check)
 pnpm check --only=farben       # neue feste Farben außerhalb des Themes (Teil von pnpm check; Basis scripts/farben-basis.json)
+pnpm check --only=vorlagen     # jede Route hat eine Desktop-Vorlage (docs/DESKTOP-VORLAGEN.md, Teil von pnpm check; neue Route → `apps/mobile/src/lib/desktop-templates.json` ergänzen, dann `node scripts/desktop-vorlagen.mjs --write`)
 SCHEME=light pnpm browser-check scripts/e2e/hell-kontrast.mjs --no-build   # Kontrast aller Routen (ohne SCHEME dunkel)
 pnpm check --routes            # nach neuen Bildschirmen: typisierte Routen neu erzeugen, dann prüfen
 pnpm browser-check             # Web-Export bauen, API + Web starten, Start/Anmeldung prüfen
