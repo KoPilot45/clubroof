@@ -18,6 +18,8 @@ import {
   Sheet,
   T,
 } from '@/components/ui';
+import { Cell, DataTable } from '@/components/data-table';
+import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { t } from '@/lib/i18n';
 
@@ -27,6 +29,7 @@ type RoleFilter = string;
 
 export default function MembersScreen() {
   const { api } = useSignedIn();
+  const desktop = useIsDesktop();
   const params = useLocalSearchParams<{ withoutTeam?: string }>();
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>(params.withoutTeam ? 'withoutTeam' : 'active');
@@ -148,7 +151,79 @@ export default function MembersScreen() {
       {members.data && list.length === 0 ? (
         <Empty icon="people-outline" text="Keine passenden Mitglieder." />
       ) : null}
-      {list.length ? (
+      {list.length && desktop ? (
+        <DataTable
+          rows={list}
+          rowKey={(m) => m.id}
+          exportName="mitglieder"
+          onRowPress={(m) => router.push(`/admin/member/${m.id}`)}
+          defaultSort={{ key: 'name', dir: 'asc' }}
+          selectable
+          columns={[
+            {
+              key: 'name',
+              label: 'Name',
+              flex: 2,
+              sort: (a, b) =>
+                `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`),
+              csv: (m) => `${m.lastName}, ${m.firstName}`,
+              render: (m) => (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <Avatar name={`${m.firstName} ${m.lastName}`} size={32} uri={m.avatarUrl} />
+                  <Cell>{`${m.lastName}, ${m.firstName}`}</Cell>
+                </View>
+              ),
+            },
+            {
+              key: 'nr',
+              label: 'Nr.',
+              width: 90,
+              sort: (a, b) =>
+                (a.memberNumber ?? '').localeCompare(b.memberNumber ?? '', 'de', { numeric: true }),
+              csv: (m) => m.memberNumber ?? '',
+              render: (m) => <Cell muted>{m.memberNumber ?? '–'}</Cell>,
+            },
+            {
+              key: 'teams',
+              label: 'Mannschaften',
+              flex: 1.5,
+              sort: (a, b) => a.teams.length - b.teams.length,
+              csv: (m) =>
+                m.teams
+                  .map((t) => (t.function === 'player' ? t.badge : `${t.badge} (Trainerteam)`))
+                  .join(', '),
+              render: (m) => (
+                <Cell>
+                  {m.teams
+                    .map((t) => (t.function === 'player' ? t.badge : `${t.badge} · Trainerteam`))
+                    .join(', ') || '–'}
+                </Cell>
+              ),
+            },
+            {
+              key: 'roles',
+              label: 'Rollen',
+              flex: 1.5,
+              sort: (a, b) => a.roles.length - b.roles.length,
+              csv: (m) => m.roles.join(', '),
+              render: (m) =>
+                m.roles.length ? (
+                  <Chip tone="primary" label={m.roles.join(', ')} />
+                ) : (
+                  <Cell muted>–</Cell>
+                ),
+            },
+            {
+              key: 'app',
+              label: 'App',
+              width: 110,
+              sort: (a, b) => Number(a.hasAccount) - Number(b.hasAccount),
+              csv: (m) => (m.hasAccount ? 'ja' : 'nein'),
+              render: (m) => <Cell muted={m.hasAccount}>{m.hasAccount ? 'ja' : 'ohne App'}</Cell>,
+            },
+          ]}
+        />
+      ) : list.length ? (
         <Card list>
           {list.map((m, i) => {
             const tag = m.roles[0] ?? (!m.hasAccount ? 'ohne App' : null);

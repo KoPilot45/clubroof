@@ -8,6 +8,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Platform, View } from 'react-native';
+import { Cell, DataTable } from '@/components/data-table';
 import { EditSheet } from '@/components/edit-sheet';
 import {
   Button,
@@ -26,6 +27,7 @@ import { RequestError } from '@/lib/api';
 import { useConfirmDelete } from '@/lib/confirm';
 import { formatDay } from '@/lib/format';
 import { t } from '@/lib/i18n';
+import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 
 /** Das Archiv als Datei speichern (Datenübergabe); im Browser, in der App steht der Export in der Web-Verwaltung. */
@@ -46,6 +48,7 @@ export function ArchiveView({ teamId }: { teamId?: string }) {
   const { api } = useSignedIn();
   const confirmDelete = useConfirmDelete();
   const queryClient = useQueryClient();
+  const desktop = useIsDesktop();
   const [filter, setFilter] = useState<ArchiveKind | 'all'>('all');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -119,6 +122,42 @@ export function ArchiveView({ teamId }: { teamId?: string }) {
     onError: fail,
   });
 
+  // Sammelaktionen der Tabelle (Desktop): nacheinander, damit Namenskonflikte einzeln gemeldet werden können
+  const bulkRestore = async (rows: ArchiveEntry[]) => {
+    let ok = 0;
+    let conflicts = 0;
+    for (const e of rows) {
+      try {
+        await api<ArchiveOverview>(`/archive/${e.id}/restore`, { method: 'POST', body: {} });
+        ok++;
+      } catch (err) {
+        if (err instanceof RequestError && err.code === 'name_conflict') conflicts++;
+        else setError(err instanceof RequestError ? err.message : t('Das hat nicht geklappt.'));
+      }
+    }
+    setMessage(
+      conflicts > 0
+        ? t(
+            `${ok} wiederhergestellt, ${conflicts} brauchen einen neuen Namen (einzeln wiederherstellen).`,
+          )
+        : t(`${ok} wiederhergestellt.`),
+    );
+    await queryClient.invalidateQueries({ queryKey: key });
+    for (const k of ['wiki', 'exercises', 'tasks', 'equipment', 'sponsors', 'team'])
+      void queryClient.invalidateQueries({ queryKey: [k] });
+  };
+  const bulkPurge = async (rows: ArchiveEntry[]) => {
+    for (const e of rows) {
+      try {
+        await api<ArchiveOverview>(`/archive/${e.id}`, { method: 'DELETE' });
+      } catch (err) {
+        setError(err instanceof RequestError ? err.message : t('Das hat nicht geklappt.'));
+      }
+    }
+    setMessage(t(`${rows.length} Einträge endgültig gelöscht.`));
+    await queryClient.invalidateQueries({ queryKey: key });
+  };
+
   if (data.isPending) return <Loading />;
   if (data.error || !data.data)
     return <ErrorNotice error={data.error} onRetry={() => data.refetch()} />;
@@ -177,62 +216,155 @@ export function ArchiveView({ teamId }: { teamId?: string }) {
         </Card>
       ) : null}
       <Section title="Archivierte Einträge">
-        <Card>
-          {shown.length === 0 ? <Empty icon="archive-outline" text="Das Archiv ist leer." /> : null}
-          {shown.map((e, i) => (
-            <View key={e.id}>
-              <ListRow
-                first={i === 0}
-                title={e.label}
-                subtitle={[
-                  t(ARCHIVE_KIND_LABEL[e.kind]),
-                  e.teamName,
-                  e.detail,
-                  `${t('archiviert')} ${formatDay(e.archivedAt)}`,
-                  e.archivedBy,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              />
-              <View style={{ flexDirection: 'row', gap: 8, paddingBottom: 10, flexWrap: 'wrap' }}>
-                {e.canRestore ? (
-                  <Button
-                    label="Wiederherstellen"
-                    icon="arrow-undo"
-                    size="sm"
-                    variant="tonal"
-                    loading={restore.isPending && restore.variables?.id === e.id}
-                    onPress={() => restore.mutate({ id: e.id })}
-                  />
-                ) : null}
-                {e.canPurge ? (
-                  <Button
-                    label="Endgültig löschen"
-                    icon="trash-outline"
-                    size="sm"
-                    variant="outline"
-                    onPress={() =>
-                      confirmDelete({
-                        name: e.label,
-                        text: t(
-                          `„${e.label}“ wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.`,
-                        ),
-                        onConfirm: () => purgeOne.mutateAsync(e.id),
-                      })
-                    }
-                  />
-                ) : null}
-                {e.lockedUntil ? (
-                  <Chip
-                    tone="info"
-                    icon="lock-closed"
-                    label={`${t('Aufbewahrung bis')} ${formatDay(e.lockedUntil)}`}
-                  />
-                ) : null}
+        {desktop && shown.length > 0 ? (
+          <DataTable
+            rows={shown}
+            rowKey={(e) => e.id}
+            exportName="archiv"
+            defaultSort={{ key: 'at', dir: 'desc' }}
+            bulkActions={[
+              {
+                label: 'Wiederherstellen',
+                icon: 'arrow-undo',
+                onPress: (rows) => void bulkRestore(rows.filter((e) => e.canRestore)),
+              },
+              {
+                label: 'Endgültig löschen',
+                icon: 'trash-outline',
+                onPress: (rows) => {
+                  const doomed = rows.filter((e) => e.canPurge);
+                  if (doomed.length === 0) return;
+                  confirmDelete({
+                    title: 'Endgültig löschen?',
+                    confirmLabel: 'Endgültig löschen',
+                    name: String(doomed.length),
+                    text: t(
+                      `${doomed.length} Einträge werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.`,
+                    ),
+                    onConfirm: () => bulkPurge(doomed),
+                  });
+                },
+              },
+            ]}
+            columns={[
+              {
+                key: 'label',
+                label: 'Name',
+                flex: 2,
+                sort: (a, b) => a.label.localeCompare(b.label),
+                csv: (e) => e.label,
+                render: (e) => <Cell>{e.label}</Cell>,
+              },
+              {
+                key: 'kind',
+                label: 'Art',
+                width: 150,
+                sort: (a, b) => a.kind.localeCompare(b.kind),
+                csv: (e) => ARCHIVE_KIND_LABEL[e.kind],
+                render: (e) => <Cell muted>{t(ARCHIVE_KIND_LABEL[e.kind])}</Cell>,
+              },
+              {
+                key: 'team',
+                label: 'Mannschaft',
+                width: 130,
+                sort: (a, b) => (a.teamName ?? '').localeCompare(b.teamName ?? ''),
+                csv: (e) => e.teamName ?? '',
+                render: (e) => <Cell muted>{e.teamName ?? '–'}</Cell>,
+              },
+              {
+                key: 'at',
+                label: 'Archiviert',
+                width: 120,
+                sort: (a, b) => a.archivedAt.localeCompare(b.archivedAt),
+                csv: (e) => e.archivedAt,
+                render: (e) => <Cell muted>{formatDay(e.archivedAt)}</Cell>,
+              },
+              {
+                key: 'by',
+                label: 'Von',
+                width: 150,
+                csv: (e) => e.archivedBy ?? '',
+                render: (e) => <Cell muted>{e.archivedBy ?? '–'}</Cell>,
+              },
+              {
+                key: 'status',
+                label: 'Aufbewahrung',
+                width: 170,
+                sort: (a, b) => (a.lockedUntil ?? '').localeCompare(b.lockedUntil ?? ''),
+                csv: (e) => e.lockedUntil ?? '',
+                render: (e) =>
+                  e.lockedUntil ? (
+                    <Chip
+                      tone="info"
+                      icon="lock-closed"
+                      label={`${t('bis')} ${formatDay(e.lockedUntil)}`}
+                    />
+                  ) : (
+                    <Cell muted>–</Cell>
+                  ),
+              },
+            ]}
+          />
+        ) : (
+          <Card>
+            {shown.length === 0 ? (
+              <Empty icon="archive-outline" text="Das Archiv ist leer." />
+            ) : null}
+            {shown.map((e, i) => (
+              <View key={e.id}>
+                <ListRow
+                  first={i === 0}
+                  title={e.label}
+                  subtitle={[
+                    t(ARCHIVE_KIND_LABEL[e.kind]),
+                    e.teamName,
+                    e.detail,
+                    `${t('archiviert')} ${formatDay(e.archivedAt)}`,
+                    e.archivedBy,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                />
+                <View style={{ flexDirection: 'row', gap: 8, paddingBottom: 10, flexWrap: 'wrap' }}>
+                  {e.canRestore ? (
+                    <Button
+                      label="Wiederherstellen"
+                      icon="arrow-undo"
+                      size="sm"
+                      variant="tonal"
+                      loading={restore.isPending && restore.variables?.id === e.id}
+                      onPress={() => restore.mutate({ id: e.id })}
+                    />
+                  ) : null}
+                  {e.canPurge ? (
+                    <Button
+                      label="Endgültig löschen"
+                      icon="trash-outline"
+                      size="sm"
+                      variant="outline"
+                      onPress={() =>
+                        confirmDelete({
+                          name: e.label,
+                          text: t(
+                            `„${e.label}“ wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.`,
+                          ),
+                          onConfirm: () => purgeOne.mutateAsync(e.id),
+                        })
+                      }
+                    />
+                  ) : null}
+                  {e.lockedUntil ? (
+                    <Chip
+                      tone="info"
+                      icon="lock-closed"
+                      label={`${t('Aufbewahrung bis')} ${formatDay(e.lockedUntil)}`}
+                    />
+                  ) : null}
+                </View>
               </View>
-            </View>
-          ))}
-        </Card>
+            ))}
+          </Card>
+        )}
       </Section>
       <Section title="Datenübergabe und Leeren">
         <Card style={{ gap: 10 }}>

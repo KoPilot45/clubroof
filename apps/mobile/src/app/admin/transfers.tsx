@@ -13,6 +13,8 @@ import {
   T,
 } from '@/components/ui';
 import { toGermanDate } from '@/lib/dates';
+import { Cell, DataTable } from '@/components/data-table';
+import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 
 const KIND = {
@@ -30,6 +32,7 @@ function route(t: TransferItem) {
 
 export default function TransfersScreen() {
   const { api } = useSignedIn();
+  const desktop = useIsDesktop();
   const overview = useQuery({
     queryKey: ['admin', 'transfers'],
     queryFn: () => api<TransferOverview>('/admin/transfers'),
@@ -51,7 +54,63 @@ export default function TransfersScreen() {
       {o && o.items.length === 0 ? (
         <Empty icon="swap-horizontal-outline" text="Noch keine Spielerbewegungen." />
       ) : null}
-      {o?.items.length ? (
+      {o?.items.length && desktop ? (
+        <DataTable
+          rows={o.items}
+          rowKey={(t) => t.id}
+          exportName="spielerbewegungen"
+          onRowPress={(t) => router.push(`/admin/member/${t.person.id}`)}
+          defaultSort={{ key: 'from', dir: 'desc' }}
+          columns={[
+            {
+              key: 'person',
+              label: 'Person',
+              flex: 2,
+              sort: (a, b) => a.person.name.localeCompare(b.person.name),
+              csv: (t) => t.person.name,
+              render: (t) => <Cell>{t.person.name}</Cell>,
+            },
+            {
+              key: 'kind',
+              label: 'Art',
+              width: 130,
+              sort: (a, b) => KIND[a.kind].label.localeCompare(KIND[b.kind].label),
+              csv: (t) => KIND[t.kind].label,
+              render: (t) => <Chip tone={KIND[t.kind].tone} label={KIND[t.kind].label} />,
+            },
+            {
+              key: 'route',
+              label: 'Von → nach',
+              flex: 1.5,
+              csv: (t) => route(t),
+              render: (t) => <Cell>{route(t) || '–'}</Cell>,
+            },
+            {
+              key: 'from',
+              label: 'Ab',
+              width: 110,
+              sort: (a, b) => a.startsOn.localeCompare(b.startsOn),
+              csv: (t) => toGermanDate(t.startsOn),
+              render: (t) => <Cell muted>{toGermanDate(t.startsOn)}</Cell>,
+            },
+            {
+              key: 'to',
+              label: 'Bis',
+              width: 110,
+              sort: (a, b) => (a.endsOn ?? '9999').localeCompare(b.endsOn ?? '9999'),
+              csv: (t) => (t.endsOn ? toGermanDate(t.endsOn) : ''),
+              render: (t) => <Cell muted>{t.endsOn ? toGermanDate(t.endsOn) : '–'}</Cell>,
+            },
+            {
+              key: 'note',
+              label: 'Hinweis',
+              flex: 1.5,
+              csv: (t) => t.note ?? '',
+              render: (t) => <Cell muted>{t.note ?? '–'}</Cell>,
+            },
+          ]}
+        />
+      ) : o?.items.length ? (
         <Card>
           {o.items.map((t, i) => (
             <ListRow

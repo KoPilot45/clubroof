@@ -52,7 +52,7 @@
   "admin/archive": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "admin/area/[key]": {
     "t": "D",
@@ -62,7 +62,7 @@
   "admin/audit": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "admin/club": {
     "t": "B",
@@ -122,7 +122,7 @@
   "admin/members": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "admin/modules": {
     "t": "B",
@@ -152,7 +152,7 @@
   "admin/roles": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "admin/sponsors": {
     "t": "C",
@@ -172,7 +172,7 @@
   "admin/teams": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "admin/transfer-new": {
     "t": "B",
@@ -182,7 +182,7 @@
   "admin/transfers": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "admin/unit/[id]": {
     "t": "A",
@@ -582,7 +582,7 @@
   "teams/[id]/archive": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "teams/[id]/cash": {
     "t": "D",
@@ -677,7 +677,7 @@
   "teams/[id]/roster": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "teams/[id]/stats/[kind]": {
     "t": "F",

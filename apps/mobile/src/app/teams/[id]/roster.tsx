@@ -15,7 +15,9 @@ import {
   T,
   HEADING_FONT,
 } from '@/components/ui';
+import { RosterTable } from '@/components/roster-table';
 import { formatShortDate } from '@/lib/format';
+import { useIsDesktop } from '@/lib/layout';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -93,6 +95,7 @@ function Row({ entry, first }: { entry: RosterEntry; first: boolean }) {
 export default function RosterScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { api } = useSignedIn();
+  const desktop = useIsDesktop();
   const roster = useQuery({
     queryKey: ['roster', id],
     queryFn: () => api<RosterEntry[]>(`/teams/${id}/roster`),
@@ -132,11 +135,15 @@ export default function RosterScreen() {
             </Card>
           </Section>
           <Section title="Spieler">
-            <Card>
-              {players.map((r, i) => (
-                <Row key={r.personId} entry={r} first={i === 0} />
-              ))}
-            </Card>
+            {desktop ? (
+              <RosterTable teamId={id} />
+            ) : (
+              <Card>
+                {players.map((r, i) => (
+                  <Row key={r.personId} entry={r} first={i === 0} />
+                ))}
+              </Card>
+            )}
           </Section>
         </>
       ) : null}

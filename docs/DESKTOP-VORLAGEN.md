@@ -29,9 +29,9 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `absences/index` | A | Breite | Liste bzw. Detailseite |
 | `absences/new` | B | Breite | Formular |
 | `account` | B | Breite | Formular |
-| `admin/archive` | C | Breite | Tabelle mit Filterleiste |
+| `admin/archive` | C | fertig | Tabelle mit Filterleiste |
 | `admin/area/[key]` | D | fertig | Kachelraster / Übersicht |
-| `admin/audit` | C | Breite | Tabelle mit Filterleiste |
+| `admin/audit` | C | fertig | Tabelle mit Filterleiste |
 | `admin/club` | B | Breite | Formular |
 | `admin/club-event-new` | B | Breite | Formular |
 | `admin/club-events` | C | Breite | Tabelle mit Filterleiste |
@@ -43,19 +43,19 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `admin/member-new` | B | Breite | Formular |
 | `admin/member-permissions` | B | Breite | Formular |
 | `admin/member/[id]` | A | Breite | Liste bzw. Detailseite |
-| `admin/members` | C | Breite | Tabelle mit Filterleiste |
+| `admin/members` | C | fertig | Tabelle mit Filterleiste |
 | `admin/modules` | B | Breite | Formular |
 | `admin/news/[id]` | A | Breite | Liste bzw. Detailseite |
 | `admin/news/index` | A | Breite | Liste bzw. Detailseite |
 | `admin/news/new` | B | Breite | Formular |
 | `admin/role/[key]` | A | Breite | Liste bzw. Detailseite |
-| `admin/roles` | C | Breite | Tabelle mit Filterleiste |
+| `admin/roles` | C | fertig | Tabelle mit Filterleiste |
 | `admin/sponsors` | C | Breite | Tabelle mit Filterleiste |
 | `admin/team-new` | E | Breite | Assistent |
 | `admin/team/[id]` | A | Breite | Liste bzw. Detailseite |
-| `admin/teams` | C | Breite | Tabelle mit Filterleiste |
+| `admin/teams` | C | fertig | Tabelle mit Filterleiste |
 | `admin/transfer-new` | B | Breite | Formular |
-| `admin/transfers` | C | Breite | Tabelle mit Filterleiste |
+| `admin/transfers` | C | fertig | Tabelle mit Filterleiste |
 | `admin/unit/[id]` | A | Breite | Liste bzw. Detailseite |
 | `bausteine` | D | Breite | Kachelraster / Übersicht |
 | `board` | A | Breite | Liste bzw. Detailseite |
@@ -135,7 +135,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `setup` | E | Breite | Assistent |
 | `sponsor/[id]` | A | Breite | Liste bzw. Detailseite |
 | `sponsors` | A | Breite | Liste bzw. Detailseite |
-| `teams/[id]/archive` | C | Breite | Tabelle mit Filterleiste |
+| `teams/[id]/archive` | C | fertig | Tabelle mit Filterleiste |
 | `teams/[id]/cash` | D | Breite | Kachelraster / Übersicht |
 | `teams/[id]/cash-admin` | D | Breite | Kachelraster / Übersicht |
 | `teams/[id]/cash-closings` | C | Breite | Tabelle mit Filterleiste |
@@ -154,7 +154,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `teams/[id]/jerseys` | C | Breite | Tabelle mit Filterleiste |
 | `teams/[id]/manage` | B | Breite | Formular |
 | `teams/[id]/modules` | B | Breite | Formular |
-| `teams/[id]/roster` | C | Breite | Tabelle mit Filterleiste |
+| `teams/[id]/roster` | C | fertig | Tabelle mit Filterleiste |
 | `teams/[id]/stats/[kind]` | F | Breite | Bericht / Diagramme |
 | `teams/[id]/stats/index` | F | Breite | Bericht / Diagramme |
 | `teams/[id]/tasks` | C | Breite | Tabelle mit Filterleiste |

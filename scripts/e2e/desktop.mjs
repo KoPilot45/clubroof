@@ -175,6 +175,41 @@ for (const s of sizes) {
   await b.shot(page, `dt-kasse-stats-1440-${scheme}`, false);
 }
 
+// DT2 Stufe 2: Tabellen (Mitglieder): Sortierung, Tastatur, Auswahl und Export
+{
+  const { page, goto } = await b.session('admin', { width: 1440, height: 900 });
+  await goto('/admin/members');
+  await page.waitForTimeout(3500);
+  ok((await page.getByRole('table').count()) > 0, 'Mitglieder: Tabelle statt Liste');
+  const first = async () => (await page.getByRole('row').nth(1).innerText()).split('\n')[0];
+  const before = await first();
+  await page.getByRole('columnheader', { name: /Nr\./ }).click();
+  await page.waitForTimeout(500);
+  await page.getByRole('columnheader', { name: /Nr\./ }).click();
+  await page.waitForTimeout(500);
+  ok((await first()) !== before, 'Mitglieder: Klick auf die Spalte sortiert');
+  await page.getByRole('table').focus();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(1500);
+  ok(page.url().includes('/admin/member/'), 'Mitglieder: Pfeiltasten und Enter öffnen die Person');
+  await goto('/admin/members');
+  await page.waitForTimeout(3000);
+  await page.getByRole('checkbox', { name: 'Zeile auswählen' }).first().click();
+  ok(
+    (await page.getByText('Auswahl exportieren').filter({ visible: true }).count()) > 0,
+    'Mitglieder: Auswahl lässt sich exportieren',
+  );
+  await b.shot(page, `dt2-mitglieder-1440-${scheme}`, false);
+  await goto('/admin/audit');
+  await page.waitForTimeout(3000);
+  ok((await page.getByRole('table').count()) > 0, 'Änderungsprotokoll: Tabelle');
+  await goto('/admin/teams');
+  await page.waitForTimeout(3000);
+  ok((await page.getByRole('table').count()) > 0, 'Mannschaften: Tabelle');
+}
+
 // Fenster: Desktop zentriert, Handy von unten (Kader-Fenster über den Anwesenheitsbalken)
 for (const w of [1440, 390]) {
   const { page, goto, login } = await b.session('trainer', { width: w, height: 900 });
