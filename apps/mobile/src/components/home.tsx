@@ -753,107 +753,109 @@ function PosterSlide({
   return (
     <View style={{ width, paddingHorizontal: 22, paddingTop: 38, gap: 10 }}>
       {event ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={event.title}
-          onPress={() => router.push(`/events/${event.id}`)}
-          style={{ gap: 6 }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <View
-              style={{
-                flexShrink: 1,
-                backgroundColor: colors.primary,
-                borderRadius: 999,
-                paddingVertical: 5,
-                paddingHorizontal: 12,
-              }}
-            >
-              <Text
-                numberOfLines={1}
+        <View style={{ gap: 6 }}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={event.title}
+            onPress={() => router.push(`/events/${event.id}`)}
+            style={{ gap: 6 }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View
                 style={{
-                  fontSize: 11.5,
-                  fontWeight: '800',
-                  letterSpacing: 1,
-                  color: colors.onPrimary,
-                  textTransform: 'uppercase',
+                  flexShrink: 1,
+                  backgroundColor: colors.primary,
+                  borderRadius: 999,
+                  paddingVertical: 5,
+                  paddingHorizontal: 12,
                 }}
               >
-                {[
-                  t(event.type === 'tournament' ? 'Nächstes Spielfest' : 'Nächstes Spiel'),
-                  event.team?.name,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontSize: 11.5,
+                    fontWeight: '800',
+                    letterSpacing: 1,
+                    color: colors.onPrimary,
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {[
+                    t(event.type === 'tournament' ? 'Nächstes Spielfest' : 'Nächstes Spiel'),
+                    event.team?.name,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }} />
+              <Text
+                style={{
+                  fontSize: 12.5,
+                  fontWeight: '800',
+                  color: colors.anstoss.posterAccent,
+                  flexShrink: 0,
+                }}
+              >
+                {`${t('Zum Spiel')} ›`}
               </Text>
             </View>
-            <View style={{ flex: 1 }} />
-            <Text
-              style={{
-                fontSize: 12.5,
-                fontWeight: '800',
-                color: colors.anstoss.posterAccent,
-                flexShrink: 0,
-              }}
-            >
-              {`${t('Zum Spiel')} ›`}
-            </Text>
-          </View>
-          {days > 0 ? (
-            <T
-              variant="figure"
-              color={on}
-              style={{ fontSize: 108, lineHeight: 103, letterSpacing: -1 }}
-            >
-              {counted}
-              <T variant="headline" color={on} style={{ fontSize: 32, letterSpacing: 2 }}>
-                {` ${t(days === 1 ? 'Tag' : 'Tage').toUpperCase()}`}
+            {days > 0 ? (
+              <T
+                variant="figure"
+                color={on}
+                style={{ fontSize: 108, lineHeight: 103, letterSpacing: -1 }}
+              >
+                {counted}
+                <T variant="headline" color={on} style={{ fontSize: 32, letterSpacing: 2 }}>
+                  {` ${t(days === 1 ? 'Tag' : 'Tage').toUpperCase()}`}
+                </T>
               </T>
-            </T>
-          ) : (
-            <T variant="figure" color={on} style={{ fontSize: 84, lineHeight: 88 }}>
-              {t('Heute').toUpperCase()}
-            </T>
-          )}
-          {event.match ? (
-            <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
-              {`${club}${event.team ? ` ${event.team.badge}` : ''}\n`}
-              <T variant="headline" color={colors.anstoss.posterAccent} style={{ fontSize: 32 }}>
-                vs.
+            ) : (
+              <T variant="figure" color={on} style={{ fontSize: 84, lineHeight: 88 }}>
+                {t('Heute').toUpperCase()}
               </T>
-              {` ${event.match.opponentName}`}
+            )}
+            {event.match ? (
+              <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
+                {`${club}${event.team ? ` ${event.team.badge}` : ''}\n`}
+                <T variant="headline" color={colors.anstoss.posterAccent} style={{ fontSize: 32 }}>
+                  vs.
+                </T>
+                {` ${event.match.opponentName}`}
+              </T>
+            ) : (
+              <T
+                variant="headline"
+                color={on}
+                numberOfLines={3}
+                style={{ fontSize: 32, lineHeight: 34 }}
+              >
+                {event.title}
+              </T>
+            )}
+            <T color={soft} style={{ fontSize: 13.5, lineHeight: 20, marginTop: 4 }}>
+              {[
+                formatDay(event.startsAt),
+                `${formatTime(event.startsAt)} ${t('Uhr')}`,
+                event.location,
+                event.match
+                  ? [
+                      event.match.isHome ? t('Heimspiel') : t('Auswärts'),
+                      t(MATCH_KIND_LABELS[event.match.kind]),
+                    ].join(' · ')
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </T>
-          ) : (
-            <T
-              variant="headline"
-              color={on}
-              numberOfLines={3}
-              style={{ fontSize: 32, lineHeight: 34 }}
-            >
-              {event.title}
-            </T>
-          )}
-          <T color={soft} style={{ fontSize: 13.5, lineHeight: 20, marginTop: 4 }}>
-            {[
-              formatDay(event.startsAt),
-              `${formatTime(event.startsAt)} ${t('Uhr')}`,
-              event.location,
-              event.match
-                ? [
-                    event.match.isHome ? t('Heimspiel') : t('Auswärts'),
-                    t(MATCH_KIND_LABELS[event.match.kind]),
-                  ].join(' · ')
-                : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          </T>
+          </Pressable>
           {event.status === 'scheduled' ? (
             <View style={{ marginTop: 6 }}>
               <AttendanceOverview event={event} counts={event.counts} hero compact />
             </View>
           ) : null}
-        </Pressable>
+        </View>
       ) : hasTeam ? (
         <View style={{ gap: 8 }}>
           <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
