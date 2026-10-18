@@ -1,0 +1,114 @@
+<title>Ladescreen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Saira+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Layout: vier Handy-Bildschirme nebeneinander – A Wabenplakat (ruhig), B Wabenwelle (animiert), C hell, D ohne Verein (Clubroof-Farben). Alle Animationen laufen live und schalten sich bei „Bewegung reduzieren“ ab. */
+:root {
+  --page: #070C09; --fg: #F2F7F3; --fg2: #C5D6CB; --fg3: #9FB5A6; --fg4: #6F8277;
+  --display: 'Saira Condensed','Arial Narrow',sans-serif; --body: 'Open Sans',system-ui,sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.4 var(--body); padding-block: 24px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing: .02em; margin: 0 0 6px; }
+.intro { color: var(--fg3); max-width: 74ch; margin: 0 0 26px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 28px 22px; align-items: start; }
+.item > h2 { font: 700 13px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: #6fe19b; margin: 0 0 4px; }
+.item > p { color: var(--fg3); font-size: 12.5px; margin: 0 0 10px; min-height: 4.4em; max-width: 300px; }
+
+/* Bildschirm */
+.scr { position: relative; isolation: isolate; width: 100%; max-width: 300px; aspect-ratio: 9 / 19; border-radius: 34px; overflow: hidden; border: 1px solid rgba(255,255,255,.14); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.scr .bg, .scr .cells { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.club { --p1: #1E7A44; --p2: #0F3D24; --base: #0B120E; background: radial-gradient(120% 90% at 85% 0%, var(--p1) 0%, var(--p2) 48%, var(--base) 100%); color: #fff; }
+.light { --p1: #1E7A44; --p2: #2E9A5C; --base: #F2F5F3; background: linear-gradient(180deg, var(--p1) 0%, var(--p2) 38%, #BFE2CC 58%, var(--base) 82%); color: #fff; }
+.cr { background: radial-gradient(110% 80% at 80% 5%, #0B3BFF 0%, #061A7A 46%, #070B14 100%); color: #fff; }
+.mid { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: -30px; padding: 0 22px; }
+.crest { position: relative; width: 104px; height: 104px; display: grid; place-items: center; }
+.crest .disc { width: 84px; height: 84px; border-radius: 50%; background: #fff; display: grid; place-items: center; font: 800 25px/1 var(--display); color: #0F3D24; letter-spacing: .02em; box-shadow: 0 10px 28px rgba(0,0,0,.35); animation: breathe 2.8s ease-in-out infinite; }
+.light .crest .disc { box-shadow: 0 10px 26px rgba(15,61,36,.28); }
+.crest svg { position: absolute; inset: 0; width: 104px; height: 104px; overflow: visible; }
+.crest .ring { fill: none; stroke: rgba(255,255,255,.22); stroke-width: 2; }
+.crest .run { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 46 254; animation: run 2.2s linear infinite; }
+.light .crest .ring { stroke: rgba(15,61,36,.22); } .light .crest .run { stroke: #1E7A44; }
+.name { font: 800 30px/1 var(--display); letter-spacing: .02em; }
+.sub { font-size: 12px; opacity: .8; }
+.light .name, .light .sub, .light .low { color: #0F1A14; } .light .mid { margin-top: 0; }
+.low { position: absolute; left: 0; right: 0; bottom: 26px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,255,255,.7); }
+.low b { font: 700 12px var(--display); letter-spacing: .2em; text-transform: uppercase; display: flex; align-items: center; gap: 6px; } .low b i { width: 14px; height: 14px; border-radius: 4px; background: linear-gradient(135deg,#002AFA,#00C3FF); display: inline-block; }
+.dots { display: flex; gap: 6px; } .dots i { width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: .3; animation: dot 1.4s ease-in-out infinite; } .dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
+.light .dots i { background: #1E7A44; }
+.cr .crest .disc { background: transparent; box-shadow: none; animation: breathe 2.8s ease-in-out infinite; }
+.logo { width: 76px; height: 76px; border-radius: 22px; background: linear-gradient(135deg,#002AFA,#00C3FF); display: grid; place-items: center; box-shadow: 0 12px 30px rgba(0,60,255,.45); }
+.logo svg { width: 42px; height: 42px; }
+.cap { font-size: 11px; color: var(--fg4); margin: 8px 2px 0; max-width: 300px; }
+
+@keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+@keyframes run { to { stroke-dashoffset: -300; } }
+@keyframes dot { 0%,100% { opacity: .25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+@keyframes cell { 0%,100% { opacity: var(--lo, .08); } 50% { opacity: var(--hi, .55); } }
+.cells polygon { fill: none; stroke: #fff; stroke-width: 2; opacity: var(--lo, .08); animation: cell 2.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
+@media (prefers-reduced-motion: reduce) { .crest .disc, .crest .run, .dots i, .cells polygon { animation: none !important; } .cells polygon { opacity: var(--st, .18) !important; } }
+</style>
+
+<h1>Ladescreen</h1>
+<p class="intro">Heute zeigt der Ladebildschirm nur eine einfarbige Fläche mit Wappen und Namen. Die Entwürfe greifen die Waben auf, geben dem Wappen einen laufenden Ring und zeigen unten, dass etwas passiert. Alle Namen sind erfunden; die Animationen laufen live.</p>
+
+<div class="grid">
+
+<section class="item"><h2>A · Wabenplakat</h2><p>Ruhig. Verlauf der Vereinsfarbe wie im Hero, Waben oben rechts, ein heller Ring läuft um das Wappen.</p>
+<div class="scr club" id="sA"><svg class="cells" id="cA"></svg>
+  <div class="mid"><div class="crest"><svg viewBox="0 0 104 104"><circle class="ring" cx="52" cy="52" r="50"/><circle class="run" cx="52" cy="52" r="50" transform="rotate(-90 52 52)" pathLength="300"/></svg><div class="disc">SGW</div></div>
+    <div class="name">SV Grün-Weiß<br>Musterstadt</div><div class="sub">Dein Verein unter einem Dach</div></div>
+  <div class="low"><div class="dots"><i></i><i></i><i></i></div>Wird geladen</div></div>
+<div class="cap">Waben wie im Hero (R 26, weiß, oben rechts am deutlichsten). Ring und Punkte zeigen den Fortschritt, ohne Prozentzahl.</div></section>
+
+<section class="item"><h2>B · Wabenwelle</h2><p>Lebendiger. Von der Mitte laufen Wellen über die Waben, das Wappen sitzt im Zentrum.</p>
+<div class="scr club" id="sB" style="background: radial-gradient(90% 70% at 50% 40%, var(--p1) 0%, var(--p2) 55%, var(--base) 100%)"><svg class="cells" id="cB"></svg>
+  <div class="mid"><div class="crest"><svg viewBox="0 0 104 104"><circle class="ring" cx="52" cy="52" r="50"/><circle class="run" cx="52" cy="52" r="50" transform="rotate(-90 52 52)" pathLength="300"/></svg><div class="disc">SGW</div></div>
+    <div class="name">SV Grün-Weiß<br>Musterstadt</div></div>
+  <div class="low"><b><i></i>Clubroof</b></div></div>
+<div class="cap">Die Wellen gehen vom Wappen nach außen (Verzögerung nach Abstand, 2,6 s). Unten das Clubroof-Zeichen als stille Marke.</div></section>
+
+<section class="item"><h2>C · Hell</h2><p>Der helle Stil: farbiger Kopf mit Waben, weicher Auslauf in den hellen Hintergrund, Wappen mit Schatten.</p>
+<div class="scr light" id="sC"><svg class="cells" id="cC"></svg>
+  <div class="mid" style="margin-top:46px"><div class="crest"><svg viewBox="0 0 104 104"><circle class="ring" cx="52" cy="52" r="50" style="stroke:rgba(255,255,255,.4)"/><circle class="run" cx="52" cy="52" r="50" transform="rotate(-90 52 52)" pathLength="300" style="stroke:#fff"/></svg><div class="disc">SGW</div></div>
+    <div class="name" style="color:#fff">SV Grün-Weiß<br>Musterstadt</div><div class="sub" style="color:#0F1A14;margin-top:40px">Dein Verein unter einem Dach</div></div>
+  <div class="low"><div class="dots"><i></i><i></i><i></i></div>Wird geladen</div></div>
+<div class="cap">Gleiche Regel wie im Hero hell: Auslauf über die unteren Zweidrittel, Text im Verlauf bleibt weiß, darunter dunkel.</div></section>
+
+<section class="item"><h2>D · Ohne Verein (Clubroof)</h2><p>Erster Start oder noch kein Verein: Clubroof-Blau mit Wabenwelle und Logo.</p>
+<div class="scr cr" id="sD"><svg class="cells" id="cD"></svg>
+  <div class="mid"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg></div>
+    <div class="name">Clubroof</div><div class="sub">Dein Verein unter einem Dach</div></div>
+  <div class="low"><div class="dots"><i></i><i></i><i></i></div>Wird geladen</div></div>
+<div class="cap">Verlauf wie Login und Einrichtung (#002AFA → #00C3FF). Das Logo hier nur als Platzhalter für das Clubroof-Zeichen.</div></section>
+
+</div>
+
+<script>
+// Waben wie in der App (components/honeycomb.tsx), hier mit Wellen
+function cells(svg, { mode, lo = .08, hi = .55, st = .18 }) {
+  const w = svg.parentElement.clientWidth, h = svg.parentElement.clientHeight, R = 26;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  const cx0 = w / 2, cy0 = h * .42, out = [];
+  const cols = Math.ceil(w / (1.5 * R)) + 2, rows = Math.ceil(h / (2 * .866 * R)) + 2;
+  for (let i = -1; i < cols; i++) for (let j = -1; j < rows; j++) {
+    const cx = -19 + 1.5 * R * i, cy = -22.5 + 2 * .866 * R * j + (i % 2 ? .866 * R : 0);
+    const p = [[cx + R, cy], [cx + R / 2, cy + .866 * R], [cx - R / 2, cy + .866 * R], [cx - R, cy], [cx - R / 2, cy - .866 * R], [cx + R / 2, cy - .866 * R]];
+    let base, d;
+    if (mode === 'corner') { const dist = Math.hypot(w - cx, cy) / Math.hypot(w, h); base = Math.max(0, 1 - dist * 2.5); d = dist * 2.2; }
+    else if (mode === 'center') { const dist = Math.hypot(cx - cx0, cy - cy0) / Math.hypot(w, h); base = Math.max(0, 1 - dist * 2.1); d = dist * 5; }
+    else { base = 0; d = 0; }
+    if (base <= 0.02) continue;
+    out.push(`<polygon points="${p.map(([a, b]) => a.toFixed(1) + ',' + b.toFixed(1)).join(' ')}" style="--lo:${(lo * base).toFixed(3)};--hi:${(hi * base).toFixed(3)};--st:${(st * base).toFixed(3)};--d:${d.toFixed(2)}s"/>`);
+  }
+  svg.innerHTML = out.join('');
+}
+const go = () => {
+  cells(document.getElementById('cA'), { mode: 'corner', lo: .16, hi: .3, st: .2 });
+  cells(document.getElementById('cB'), { mode: 'center', lo: .05, hi: .36, st: .14 });
+  cells(document.getElementById('cC'), { mode: 'corner', lo: .16, hi: .3, st: .2 });
+  cells(document.getElementById('cD'), { mode: 'center', lo: .05, hi: .4, st: .15 });
+};
+go(); new ResizeObserver(go).observe(document.body);
+</script>
