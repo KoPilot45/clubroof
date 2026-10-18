@@ -12,6 +12,7 @@ Paket **DT2** (`docs/PAKETE.md`, Zeile DT2) überträgt die Desktop-Ansicht auf 
 3. Alle Bildschirme unter `apps/mobile/src/app` auflisten und einer Vorlage A–F zuordnen (Tabelle in `docs/DESKTOP-VORLAGEN.md` anlegen und beim Umsetzen abhaken).
 
 ## Aufgaben (jeweils eigener Commit, `pnpm check`)
+0. **Vollständigkeit zuerst:** Prüfskript `scripts/desktop-vorlagen.mjs` anlegen (alle Routen müssen in `docs/DESKTOP-VORLAGEN.md` stehen, sonst Fehler in `pnpm check`) und Browserprüfung aller Routen bei 1440 px (Überlauf, abgeschnitten, ungenutzte Breite). Nicht genannte Seiten nach Auffangregel zuordnen (Liste A/C, Formular B, Kacheln D, Statistik F, Detail A).
 1. **Vorlagen** A Liste+Detail, B Formular, C Tabelle mit Filterleiste, D Kachelraster, E Assistent, F Berichte als Bausteine; Zuordnungstabelle.
 2. **Admin-Listen und Kader** (C): Sortierung, Filter, Tastatur, Mehrfachauswahl, Export aus der Tabelle.
 3. **Formulare** (B) und **Assistenten** (E, inkl. Setup, Import, Kasse).
@@ -21,4 +22,4 @@ Paket **DT2** (`docs/PAKETE.md`, Zeile DT2) überträgt die Desktop-Ansicht auf 
 Nur Layout, keine neuen Daten oder Rechte. Hell/dunkel, `hell-kontrast.mjs`, Übersetzungen, Hilfe.
 
 ## Abnahme
-Bilder 1440 und 1100 px je Vorlage (zusammengefasst), Vorher/Nachher unter 1100 px, Zuordnungstabelle vollständig abgehakt; kurze Liste erledigt / abweichend / offen.
+Bilder 1440 und 1100 px je Vorlage (zusammengefasst), Vorher/Nachher unter 1100 px, Zuordnungstabelle vollständig (Prüfskript grün, keine Route ohne Eintrag), Bericht der Browserprüfung aller Routen; kurze Liste erledigt / abweichend / offen.
