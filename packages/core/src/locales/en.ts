@@ -2325,6 +2325,7 @@ export const en: Record<string, string> = {
   Hartplatz: 'Hard court',
   'Häufige Fragen und Rundgang': 'Frequently asked questions and tour',
   Hauptkasse: 'Main fund',
+  Hauptnavigation: 'Main navigation',
   Hauptsponsor: 'Main sponsor',
   Hauptsponsoren: 'Main sponsors',
   Haushalt: 'Budget',

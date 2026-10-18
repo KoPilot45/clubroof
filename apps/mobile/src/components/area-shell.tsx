@@ -139,7 +139,7 @@ export type AreaTab = {
 };
 
 /** Aktive Pille der Bereichs-Navigation: solide Bereichsfarbe, Schrift darauf mit ausreichendem Kontrast. */
-const AREA_ACCENT: Record<AreaTone, { dark: [string, string]; light: [string, string] }> = {
+export const AREA_ACCENT: Record<AreaTone, { dark: [string, string]; light: [string, string] }> = {
   violet: { dark: ['#7C4DE0', '#FFFFFF'], light: ['#6D3FD1', '#FFFFFF'] },
   blue: { dark: ['#4C8DFF', '#06142E'], light: ['#2563D6', '#FFFFFF'] },
 };
