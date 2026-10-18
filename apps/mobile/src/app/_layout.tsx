@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
-import { BrandSplash } from '@/components/brand-splash';
+import { BrandSplash, FadeIn } from '@/components/brand-splash';
 import { setBrand, useBrand } from '@/lib/brand';
 import { readSetting, writeSetting } from '@/lib/flags';
 import { OfflineBanner } from '@/components/offline-banner';
@@ -89,7 +89,7 @@ function Navigator() {
     !(segments[0] === 'match' && (segments as string[])[2] === 'lineup');
   return (
     <ConfirmProvider>
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <FadeIn style={{ flex: 1, backgroundColor: colors.background }}>
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
         <BottomTabBarHeightContext.Provider value={showNav ? navHeight : 0}>
           <Stack
@@ -398,7 +398,7 @@ function Navigator() {
           </Stack>
         </BottomTabBarHeightContext.Provider>
         {showNav ? <SubNav routeName={segments.join('/')} onHeight={setNavHeight} /> : null}
-      </View>
+      </FadeIn>
     </ConfirmProvider>
   );
 }

@@ -30,6 +30,16 @@
       "expo-router",
       "expo-secure-store",
       "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#F2F5F3",
+          "dark": { "backgroundColor": "#0B120E" }
+        }
+      ],
       "expo-notifications",
       [
         "expo-camera",

@@ -20,14 +20,17 @@ export const CLUBROOF_CYAN = '#00C3FF';
 export function GradientHeader({
   children,
   style,
+  containerStyle,
 }: {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
+  /** z. B. `{ flex: 1 }`, wenn der Verlauf den ganzen Bildschirm füllt (Ladebildschirm) */
+  containerStyle?: StyleProp<ViewStyle>;
 }) {
   const { colors } = useTheme();
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
   return (
-    <View style={{ overflow: 'hidden' }}>
+    <View style={[{ overflow: 'hidden' }, containerStyle]}>
       <Svg
         style={StyleSheet.absoluteFill}
         width="100%"

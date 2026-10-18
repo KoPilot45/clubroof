@@ -1219,6 +1219,7 @@ export const en: Record<string, string> = {
     'Your coaching staff has withdrawn the nomination.',
   'Dein Verein': 'Your club',
   'Dein Verein ist eingerichtet': 'Your club is set up',
+  'Dein Verein unter einem Dach': 'Your club under one roof',
   'Dein Verein unter einem Dach.': 'Your club under one roof.',
   'Dein Vereinsleben': 'Your club life',
   'Dein Vorname': 'Your first name',
@@ -4496,6 +4497,7 @@ export const en: Record<string, string> = {
     'We have emailed you a 6-digit code. It is valid for 10 minutes.',
   'Wir schicken dir einen Link, mit dem du ein neues Passwort festlegst.':
     "We'll send you a link to set a new password.",
+  'Wird geladen': 'Loading',
   'Wird gesendet': 'Sending',
   'Wird nach dem Einreichen von Vorstand bzw. Leitung freigegeben':
     'Will be approved by the board or management after submission',
