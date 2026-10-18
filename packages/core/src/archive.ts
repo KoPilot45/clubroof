@@ -3,7 +3,7 @@
  * ansehen und wiederherstellen; endgültig gelöscht wird nur auf Anstoß (Bereinigen, Archiv leeren), nie automatisch.
  */
 
-export const ARCHIVE_KINDS = ['wiki', 'exercise', 'task', 'sponsor', 'equipment'] as const;
+export const ARCHIVE_KINDS = ['wiki', 'exercise', 'task', 'sponsor', 'equipment', 'document'] as const;
 export type ArchiveKind = (typeof ARCHIVE_KINDS)[number];
 
 export const ARCHIVE_KIND_LABEL: Record<ArchiveKind, string> = {
@@ -12,6 +12,7 @@ export const ARCHIVE_KIND_LABEL: Record<ArchiveKind, string> = {
   task: 'Aufgaben',
   sponsor: 'Sponsoren',
   equipment: 'Ausrüstung',
+  document: 'Dokumente',
 };
 
 /**
@@ -25,6 +26,7 @@ export const ARCHIVE_RETENTION_YEARS: Record<ArchiveKind, number> = {
   task: 2,
   sponsor: 2,
   equipment: 2,
+  document: 2,
 };
 
 export type ArchiveEntry = {

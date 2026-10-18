@@ -9088,5 +9088,61 @@ describe.skipIf(!url)('API', () => {
         ),
       ).toMatchObject({ name: 'Ersatznetze', quantity: 2 });
     });
+
+    it('Archiv (AR, Stufe 3): Dokumente behalten ihre Datei bis zum Bereinigen', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const b1 = coach.me.create.documents.find((d) => d.label.startsWith('B1'))!;
+      const up = await send<{ id: string }>('POST', '/documents', coach.token, {
+        title: 'Elternbrief Turnier',
+        category: 'other',
+        scopeType: 'team',
+        scopeId: b1.id,
+        fileName: 'elternbrief.pdf',
+        dataBase64: Buffer.from('%PDF-1.4\n%%EOF\n').toString('base64'),
+      });
+      expect(up.status).toBe(201);
+      const stored = async () => {
+        const rows = await db
+          .select({ key: s.documents.storageKey })
+          .from(s.documents)
+          .where(eq(s.documents.id, up.body.id));
+        return rows[0]?.key;
+      };
+      const key = (await stored())!;
+      expect(await app.storage.read(key)).not.toBeNull();
+
+      // Löschen: weg aus der Liste, Datei bleibt, Eintrag im Archiv der Mannschaft
+      expect((await send('DELETE', `/documents/${up.body.id}`, coach.token)).status).toBe(204);
+      expect(await stored()).toBeUndefined();
+      expect(await app.storage.read(key)).not.toBeNull();
+      const team = await get<ArchiveOverview>(`/archive?teamId=${b1.id}`, coach.token);
+      const entry = team.entries.find((e) => e.label === 'Elternbrief Turnier')!;
+      expect(entry).toMatchObject({
+        kind: 'document',
+        detail: 'elternbrief.pdf',
+        canRestore: true,
+        canPurge: false,
+      });
+
+      // Wiederherstellen: Dokument mit alter ID und derselben Datei
+      expect((await send('POST', `/archive/${entry.id}/restore`, coach.token, {})).status).toBe(
+        200,
+      );
+      expect(await stored()).toBe(key);
+      expect(
+        (await get<DocumentItem[]>(`/documents?teamId=${b1.id}`, coach.token)).some(
+          (d) => d.id === up.body.id,
+        ),
+      ).toBe(true);
+
+      // Erneut löschen und endgültig bereinigen: jetzt wird auch die Datei entfernt
+      await send('DELETE', `/documents/${up.body.id}`, coach.token);
+      const again = (await get<ArchiveOverview>('/archive', admin.token)).entries.find(
+        (e) => e.label === 'Elternbrief Turnier',
+      )!;
+      expect((await send('DELETE', `/archive/${again.id}`, admin.token)).status).toBe(200);
+      expect(await app.storage.read(key)).toBeNull();
+    });
   });
 });
