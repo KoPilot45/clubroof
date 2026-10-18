@@ -53,6 +53,7 @@ import Svg, {
 import { FIGURE_FONT, HEADING_FONT, inputFont } from '@/lib/fonts';
 import { CONTENT_MAX, DESKTOP_CONTENT_MAX, useIsDesktop } from '@/lib/layout';
 import { useTheme } from '@/lib/theme';
+import { webState } from '@/lib/web-state';
 import { Text } from './app-text';
 import { CalendarSheet } from './calendar-picker';
 import { Honeycomb } from './honeycomb';
@@ -594,7 +595,7 @@ export function Sheet({
               accessibilityRole="button"
               accessibilityLabel={t('Schließen')}
               onPress={onClose}
-              style={({ hovered }: { hovered?: boolean }) => ({
+              style={(state) => ({
                 position: 'absolute',
                 top: 14,
                 right: 14,
@@ -604,7 +605,7 @@ export function Sheet({
                 borderRadius: 18,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: hovered ? colors.anstoss.overlay : 'transparent',
+                backgroundColor: webState(state).hovered ? colors.anstoss.overlay : 'transparent',
               })}
             >
               <Ionicons name="close" size={22} color={colors.onSurface} />

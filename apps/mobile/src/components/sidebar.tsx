@@ -15,6 +15,7 @@ import { t } from '@/lib/i18n';
 import { SIDEBAR_WIDTH } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { webState } from '@/lib/web-state';
 import { mediaUri } from '@/lib/upload';
 import { Text } from './app-text';
 import { AREA_ACCENT, type AreaTone } from './area-shell';
@@ -47,17 +48,20 @@ function NavEntry({ item }: { item: Entry }) {
       accessibilityLabel={item.count ? `${item.label}, ${item.count}` : item.label}
       aria-current={item.active ? 'page' : undefined}
       onPress={item.onPress}
-      style={({ hovered, focused }: { hovered?: boolean; focused?: boolean }) => ({
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        paddingVertical: 11,
-        paddingHorizontal: 12,
-        borderRadius: 14,
-        backgroundColor: item.active ? fill : hovered ? colors.anstoss.overlay : 'transparent',
-        borderWidth: 2,
-        borderColor: focused ? colors.primaryText : 'transparent',
-      })}
+      style={(state) => {
+        const { hovered, focused } = webState(state);
+        return {
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
+          paddingVertical: 11,
+          paddingHorizontal: 12,
+          borderRadius: 14,
+          backgroundColor: item.active ? fill : hovered ? colors.anstoss.overlay : 'transparent',
+          borderWidth: 2,
+          borderColor: focused ? colors.primaryText : 'transparent',
+        };
+      }}
     >
       <Ionicons
         name={item.active && item.iconActive ? item.iconActive : item.icon}
@@ -294,13 +298,13 @@ export function Sidebar() {
         accessibilityRole="link"
         accessibilityLabel={t('Profil')}
         onPress={() => router.push('/account')}
-        style={({ hovered }: { hovered?: boolean }) => ({
+        style={(state) => ({
           flexDirection: 'row',
           alignItems: 'center',
           gap: 10,
           padding: 10,
           borderRadius: 14,
-          backgroundColor: hovered ? colors.anstoss.overlay : colors.anstoss.card,
+          backgroundColor: webState(state).hovered ? colors.anstoss.overlay : colors.anstoss.card,
         })}
       >
         <View
