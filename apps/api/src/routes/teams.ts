@@ -217,7 +217,6 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
           trainingMeetingMinutes: z.number().int().min(0).max(300).nullable().optional(),
           defaultMeetingPoint: z.string().max(120).nullable().optional(),
           importAliases: z.array(z.string().max(80)).max(10).optional(),
-          leaguePosition: z.number().int().min(1).max(40).nullable().optional(),
           attendanceVisibility: z.enum(ATTENDANCE_VISIBILITIES).optional(),
           lineupVisible: z.boolean().optional(),
           responsesVisible: z.boolean().optional(),

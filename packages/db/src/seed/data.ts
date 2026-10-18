@@ -64,8 +64,6 @@ export type TeamDef = {
   matchName: string;
   ageGroup: string | null;
   league: string;
-  /** Tabellenplatz (Demo: nur für einzelne Mannschaften gepflegt) */
-  leaguePosition?: number;
   unit: OrgUnitKey;
   template: TeamTemplate;
   mode: ParticipationMode;
@@ -186,7 +184,6 @@ export const TEAMS: TeamDef[] = [
     matchName: `${DEMO_CLUB.shortName} B1`,
     ageGroup: 'U17',
     league: 'Bezirksliga',
-    leaguePosition: 3,
     unit: 'youth',
     template: 'youth',
     mode: 'active_response',

@@ -422,7 +422,6 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
           // Demo: Aufstellung der B-Jugend ist für Spieler und Eltern sichtbar, alle anderen Mannschaften zeigen sie nicht
           lineupVisible: t.key === 'b1',
           league: t.league,
-          leaguePosition: t.leaguePosition ?? null,
           template: t.template,
           participationMode: t.mode,
           sortOrder: i,

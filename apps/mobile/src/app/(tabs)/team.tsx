@@ -360,12 +360,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
           </View>
 
           {o ? (
-            <TeamBand
-              highlights={o.highlights}
-              squad={o.squad}
-              leaguePosition={o.leaguePosition}
-              composition={o.composition}
-            />
+            <TeamBand highlights={o.highlights} squad={o.squad} composition={o.composition} />
           ) : null}
 
           {o?.nextEvent ? (

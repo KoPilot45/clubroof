@@ -269,7 +269,6 @@ export async function getTeamOverview(
     lastResults,
     trainingWeek,
     highlights: summarizeResults(allResults, rate),
-    leaguePosition: team.leaguePosition,
     topScorer,
   };
 }

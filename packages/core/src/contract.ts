@@ -526,8 +526,6 @@ export type TeamOverview = {
   lastResults: MatchResult[];
   trainingWeek: EventSummary[];
   highlights: TeamHighlights;
-  /** Tabellenplatz, falls vom Trainerteam eingetragen */
-  leaguePosition: number | null;
   /** Erfolgreichster Torschütze der Saison (aus abgeschlossenen Spielberichten), nur mit Statistik-Modul */
   topScorer: { name: string; goals: number } | null;
 };
@@ -1305,8 +1303,6 @@ export type TeamProfile = {
   defaultMeetingPoint: string | null;
   /** Weitere Schreibweisen der Mannschaft im DFBnet (für den Spielplan-Import) */
   importAliases: string[];
-  /** Tabellenplatz in der Liga (vom Trainerteam gepflegt) */
-  leaguePosition: number | null;
   /** Wer die erfasste Anwesenheit vergangener Termine sieht (Standard: nur Anzahl) */
   attendanceVisibility: AttendanceVisibility;
   /** Antwortfrist für Zu-/Absagen zum Training in Stunden vor Beginn (leer = keine feste Frist oder Wochentagsregel) */

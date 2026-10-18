@@ -335,26 +335,21 @@ describe.skipIf(!url)('API', () => {
       expect(own.composition).toEqual(c);
     });
 
-    it('Team: Tabellenplatz (Trainerteam pflegt ihn) und Torschützenkönig aus Spielberichten', async () => {
+    it('Team: Torschützenkönig aus Spielberichten; das Profil ändert nur das Trainerteam', async () => {
       const coach = await login('trainer');
       const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
       const before = await get<TeamOverview>(`/teams/${b1.id}`, coach.token);
-      expect(before.leaguePosition).toBe(3);
+      expect(before).not.toHaveProperty('leaguePosition');
       if (before.topScorer) expect(before.topScorer.goals).toBeGreaterThan(0);
-      const changed = await send<TeamProfile>('PUT', `/teams/${b1.id}/profile`, coach.token, {
-        leaguePosition: 2,
-      });
-      expect(changed.body.leaguePosition).toBe(2);
-      expect((await get<TeamOverview>(`/teams/${b1.id}`, coach.token)).leaguePosition).toBe(2);
-      expect(
-        (await send('PUT', `/teams/${b1.id}/profile`, coach.token, { leaguePosition: 0 })).status,
-      ).toBe(400);
-      // Spieler dürfen den Platz nicht ändern
+      // Spieler dürfen das Profil nicht ändern
       const player = await login('spieler');
       expect(
-        (await send('PUT', `/teams/${b1.id}/profile`, player.token, { leaguePosition: 1 })).status,
+        (
+          await send('PUT', `/teams/${b1.id}/profile`, player.token, {
+            defaultMeetingPoint: 'Vereinsheim',
+          })
+        ).status,
       ).toBe(403);
-      await send('PUT', `/teams/${b1.id}/profile`, coach.token, { leaguePosition: 3 });
     });
 
     it('Antwortfristen je Terminart (Stunden) im Mannschaftsprofil setzen und löschen', async () => {

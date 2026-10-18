@@ -3822,7 +3822,6 @@ export const en: Record<string, string> = {
   Suchen: 'Search',
   'Summe Einnahmen: {0} €   Summe Ausgaben: {1} €': 'Total income: {0} €   Total expenses: {1} €',
   'Tabelle: Platz {0}': 'Table: position {0}',
-  'Tabellenplatz in der Liga (optional)': 'League table position (optional)',
   Tag: 'Day',
   Tage: 'days',
   Taktik: 'Tactics',
