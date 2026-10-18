@@ -93,12 +93,14 @@ for (const s of sizes) {
   if (match) {
     await goto(`/match/${match.id}/lineup`);
     await page.waitForTimeout(3500);
-    const bank = await page
-      .getByText('Bank', { exact: true })
-      .filter({ visible: true })
-      .first()
-      .boundingBox();
-    ok(!!bank && bank.x > 900, 'Aufstellung: Bank und Kader rechts neben dem Spielfeld');
+    // Das Etikett „Bank“ der rechten Spalte liegt rechts neben dem Spielfeld (Spalte ab ca. x = 930)
+    const labels = page.getByText('Bank', { exact: true }).filter({ visible: true });
+    let right = false;
+    for (let i = 0; i < (await labels.count()); i++) {
+      const box = await labels.nth(i).boundingBox();
+      if (box && box.x > 940 && box.y < 120) right = true;
+    }
+    ok(right, 'Aufstellung: Bank und Kader rechts neben dem Spielfeld');
     await b.shot(page, `dt-aufstellung-1440-${scheme}`, false);
   }
 }
