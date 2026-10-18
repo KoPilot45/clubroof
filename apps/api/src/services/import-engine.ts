@@ -23,23 +23,26 @@ import {
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, desc, eq, inArray } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
 import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden } from '../errors';
 import { currentTeams, syncFutureParticipation } from './admin';
+import { AREA_HANDLERS, handlerFor, isSimpleArea } from './import-areas';
+import {
+  EMAIL,
+  field,
+  germanDate,
+  norm,
+  parseDate,
+  type AreaCtx,
+  type CheckedRow,
+  type Tx,
+} from './import-common';
 import { MAX_FILE_BYTES, MAX_IMPORT_LINES, readTableFile } from './table-file';
 
-type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 type TeamRow = typeof s.teams.$inferSelect;
 
 const UNDO_HOURS = 24;
-
-const field = (
-  key: string,
-  label: string,
-  hint: string,
-  example: string,
-  required = false,
-): ImportField => ({ key, label, required, hint, example });
 
 const MEMBER_FIELDS: ImportField[] = [
   field('firstName', 'Vorname', 'Rufname', 'Max', true),
@@ -86,7 +89,58 @@ const ROSTER_FIELDS: ImportField[] = [
   field('position', 'Position', 'frei, z. B. Torwart, Abwehr, Sturm', 'Abwehr'),
 ];
 
-/** Spaltenüberschrift (klein, ohne Sonderzeichen) → Feld; gilt für alle Bereiche, zählt nur bei vorhandenem Feld */
+/** Weitere Überschriften je Bereich (klein, ohne Sonderzeichen → Feld) neben Feldname und Schlüssel */
+const ALIASES: Partial<Record<ImportArea, Record<string, string>>> = {
+  events: {
+    datum: 'date',
+    tag: 'date',
+    beginn: 'start',
+    uhrzeit: 'start',
+    anpfiff: 'start',
+    startzeit: 'start',
+    ende: 'end',
+    endzeit: 'end',
+    art: 'type',
+    typ: 'type',
+    titel: 'title',
+    gegner: 'opponent',
+    heimauswaerts: 'home',
+    heim: 'home',
+    ort: 'place',
+    spielort: 'place',
+  },
+  sponsors: {
+    link: 'linkUrl',
+    webseite: 'linkUrl',
+    homepage: 'linkUrl',
+    von: 'startsOn',
+    laufzeitvon: 'startsOn',
+    bis: 'endsOn',
+    laufzeitbis: 'endsOn',
+    werbung: 'advertise',
+    werbunginderapp: 'advertise',
+  },
+  facilities: {
+    art: 'kind',
+    typ: 'kind',
+    kuerzel: 'shortName',
+    spielstaette: 'venue',
+    anlage: 'venue',
+  },
+  equipment: {
+    art: 'kind',
+    typ: 'kind',
+    bezeichnung: 'name',
+    gegenstand: 'name',
+    menge: 'quantity',
+    bestand: 'quantity',
+    ort: 'location',
+    lager: 'location',
+    notiz: 'note',
+  },
+};
+
+/** Spaltenüberschrift (klein, ohne Sonderzeichen) → Feld; gilt für Mitglieder und Kader, zählt nur bei vorhandenem Feld */
 const HEADERS: Record<string, string> = {
   vorname: 'firstName',
   rufname: 'firstName',
@@ -148,38 +202,11 @@ const AREAS: Record<ImportArea, Omit<ImportAreaInfo, 'area'>> = {
     needsTeam: true,
     fields: ROSTER_FIELDS,
   },
+  events: AREA_HANDLERS.events.info,
+  sponsors: AREA_HANDLERS.sponsors.info,
+  facilities: AREA_HANDLERS.facilities.info,
+  equipment: AREA_HANDLERS.equipment.info,
 };
-
-export const norm = (v: string) =>
-  v
-    .toLowerCase()
-    .replace(/ä/g, 'ae')
-    .replace(/ö/g, 'oe')
-    .replace(/ü/g, 'ue')
-    .replace(/ß/g, 'ss')
-    .replace(/[^a-z0-9]/g, '');
-
-/** TT.MM.JJJJ, TT.MM.JJ oder JJJJ-MM-TT → JJJJ-MM-TT; `null` leer, `undefined` ungültig */
-export function parseDate(value: string): string | null | undefined {
-  const v = value.trim();
-  if (!v) return null;
-  let y: number, m: number, d: number;
-  const de = /^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/.exec(v);
-  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
-  if (de) {
-    [d, m, y] = [Number(de[1]), Number(de[2]), Number(de[3])];
-    if (de[3]!.length === 2) y += y <= 30 ? 2000 : 1900;
-  } else if (iso) {
-    [y, m, d] = [Number(iso[1]), Number(iso[2]), Number(iso[3])];
-  } else return undefined;
-  const date = new Date(Date.UTC(y, m - 1, d));
-  if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d)
-    return undefined;
-  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-}
-
-const germanDate = (iso: string | null) => (iso ? iso.split('-').reverse().join('.') : '');
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // ── Rechte ──────────────────────────────────────────────────────────────────
 
@@ -187,19 +214,46 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const canRoster = (actor: Actor, team: TeamRow) =>
   actorCan(actor, 'squad.manage', team) || actorCan(actor, 'members.manage');
 
-function requireArea(actor: Actor, area: ImportArea) {
-  if (area === 'members' && !actorCan(actor, 'members.manage'))
-    throw forbidden('Mitglieder importiert nur die Mitgliederverwaltung.');
+/** Darf der Nutzer in diesem Bereich importieren (bei Bereichen mit Mannschaft: für diese Mannschaft)? */
+function canArea(actor: Actor, area: ImportArea, teams: TeamRow[], team: TeamRow | null): boolean {
+  if (area === 'members') return actorCan(actor, 'members.manage');
+  if (area === 'roster')
+    return team ? canRoster(actor, team) : teams.some((t) => canRoster(actor, t));
+  const handler = handlerFor(area);
+  if (handler.info.needsTeam)
+    return team
+      ? !!handler.allowedForTeam?.(actor, team)
+      : teams.some((t) => handler.allowedForTeam?.(actor, t));
+  return handler.allowed(actor, teams);
 }
 
+const DENIED: Record<ImportArea, string> = {
+  members: 'Mitglieder importiert nur die Mitgliederverwaltung.',
+  roster: 'Den Kader bearbeitet nur das Trainerteam der Mannschaft.',
+  events: 'Termine dürfen nur Verantwortliche der Mannschaft anlegen.',
+  sponsors: 'Sponsoren pflegt die Vereinsadministration.',
+  facilities: 'Plätze verwalten die Platzverantwortlichen.',
+  equipment: 'Material und Schlüssel verwalten die Platzverantwortlichen.',
+};
+
 export async function listImportAreas(db: Db, actor: Actor): Promise<ImportAreasResponse> {
-  const teams = (await currentTeams(db, actor)).filter((t) => canRoster(actor, t));
-  const areas = IMPORT_AREAS.filter((a) =>
-    a === 'members' ? actorCan(actor, 'members.manage') : teams.length > 0,
-  ).map((area) => ({ area, ...AREAS[area] }));
+  const all = await currentTeams(db, actor);
+  const areas: ImportAreaInfo[] = [];
+  const usable = new Set<string>();
+  for (const area of IMPORT_AREAS) {
+    if (!canArea(actor, area, all, null)) continue;
+    const info = AREAS[area];
+    if (info.needsTeam) {
+      const ids = all.filter((t) => canArea(actor, area, all, t)).map((t) => t.id);
+      ids.forEach((id) => usable.add(id));
+      areas.push({ area, ...info, teamIds: ids });
+    } else areas.push({ area, ...info });
+  }
   return {
     areas,
-    teams: teams.map((t) => ({ id: t.id, badge: t.badge, name: t.name })),
+    teams: all
+      .filter((t) => usable.has(t.id))
+      .map((t) => ({ id: t.id, badge: t.badge, name: t.name })),
     maxRows: MAX_IMPORT_LINES,
     maxBytes: MAX_FILE_BYTES,
   };
@@ -277,6 +331,8 @@ type Prepared = {
   persons: Existing[];
   memberships: Membership[];
   fixedTeam: TeamRow | null;
+  /** Einfache Bereiche (Termine, Sponsoren, Plätze, Ausrüstung): Prüfergebnis und Kontext */
+  simple: { ctx: AreaCtx; checked: CheckedRow<unknown>[]; lines: number[] } | null;
 };
 
 const keysOf = (p: {
@@ -294,6 +350,7 @@ const keysOf = (p: {
 
 /** Zuordnung der Spalten: Angabe des Nutzers oder automatisch aus den Überschriften */
 function resolveMapping(
+  area: ImportArea,
   header: string[],
   fields: ImportField[],
   given: (string | null)[] | null | undefined,
@@ -318,8 +375,10 @@ function resolveMapping(
     return mapping;
   }
   const seen = new Set<string>();
+  const byLabel = new Map(fields.map((f) => [norm(f.label), f.key]));
   return header.map((h) => {
-    const k = HEADERS[norm(h)];
+    const n = norm(h);
+    const k = byLabel.get(n) ?? ALIASES[area]?.[n] ?? HEADERS[n];
     if (!k || !keys.has(k) || seen.has(k)) return null;
     seen.add(k);
     return k;
@@ -329,20 +388,18 @@ function resolveMapping(
 async function prepare(db: Db, actor: Actor, req: ImportRequest, now: Date): Promise<Prepared> {
   const spec = AREAS[req.area];
   if (!spec) throw new HttpError(400, 'import_area', 'Diesen Bereich gibt es nicht.');
-  requireArea(actor, req.area);
   const teams = await currentTeams(db, actor);
   let fixedTeam: TeamRow | null = null;
   if (spec.needsTeam) {
     fixedTeam = teams.find((t) => t.id === req.teamId) ?? null;
     if (!fixedTeam) throw new HttpError(400, 'import_team', 'Bitte eine Mannschaft wählen.');
-    if (!canRoster(actor, fixedTeam))
-      throw forbidden('Den Kader bearbeitet nur das Trainerteam der Mannschaft.');
   }
+  if (!canArea(actor, req.area, teams, fixedTeam)) throw forbidden(DENIED[req.area]);
   const file = readTableFile(req.file.dataBase64, req.sheet);
   const header = (file.rows[0] ?? []).map((h) => h.trim());
   if (header.length === 0)
     throw new HttpError(400, 'import_empty', 'Die Datei enthält keine Kopfzeile.');
-  const mapping = resolveMapping(header, spec.fields, req.mapping);
+  const mapping = resolveMapping(req.area, header, spec.fields, req.mapping);
   const missingRequired = spec.fields
     .filter((f) => f.required && !mapping.includes(f.key))
     .map((f) => f.label);
@@ -359,6 +416,52 @@ async function prepare(db: Db, actor: Actor, req: ImportRequest, now: Date): Pro
     );
   const mode: ImportDuplicateMode = req.duplicates ?? 'skip';
   const excluded = new Set(req.excluded ?? []);
+  const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
+
+  if (isSimpleArea(req.area)) {
+    const handler = handlerFor(req.area);
+    const ctx: AreaCtx = { db, actor, req, now, today, mode, teams, team: fixedTeam };
+    const checked = await handler.check(
+      ctx,
+      body.map(({ cells, line }) => ({
+        line,
+        get: (key: string) => {
+          const edit = req.edits?.[String(line)]?.[key];
+          if (edit !== undefined) return edit.trim();
+          const i = mapping.indexOf(key);
+          return i >= 0 ? (cells[i] ?? '').trim() : '';
+        },
+      })),
+    );
+    const importRows: ImportRow[] = checked.map((c, i) => {
+      const { cells, line } = body[i]!;
+      const values: Record<string, string> = {};
+      for (const f of spec.fields) {
+        const k = mapping.indexOf(f.key);
+        values[f.key] =
+          req.edits?.[String(line)]?.[f.key] ?? (k >= 0 ? (cells[k] ?? '').trim() : '');
+      }
+      return {
+        line,
+        status: c.status,
+        values,
+        errors: c.errors,
+        warnings: c.warnings,
+        match: c.match,
+        selected: !excluded.has(line),
+      };
+    });
+    return {
+      info: buildInfo(req.area, file, header, mapping, missingRequired, importRows),
+      rows: [],
+      teams,
+      today,
+      persons: [],
+      memberships: [],
+      fixedTeam,
+      simple: { ctx, checked, lines: body.map((b) => b.line) },
+    };
+  }
 
   const persons: Existing[] = await db
     .select({
@@ -406,7 +509,6 @@ async function prepare(db: Db, actor: Actor, req: ImportRequest, now: Date): Pro
     const n = norm(v);
     return teams.find((t) => norm(t.badge) === n || norm(t.name) === n) ?? null;
   };
-  const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
   const canCreate = actorCan(actor, 'members.manage');
   // Nummern, die in dieser Datei schon vergeben wurden: Mannschaft → Nummer
   const usedNumbers = new Map<string, Set<number>>();
@@ -576,40 +678,59 @@ async function prepare(db: Db, actor: Actor, req: ImportRequest, now: Date): Pro
     };
   });
 
-  const active = rows.filter((r) => r.row.selected);
-  const count = (st: ImportRow['status']) => active.filter((r) => r.row.status === st).length;
-  // Fehlende Pflichtspalten: jede Zeile ist dann fehlerhaft
-  if (missingRequired.length)
-    for (const r of rows) {
-      r.row.status = 'error';
-      r.row.errors.unshift(`Spalte „${missingRequired.join('“, „')}“ ist nicht zugeordnet.`);
-    }
   return {
-    info: {
-      area: req.area,
-      sheet: file.sheet,
-      sheets: file.sheets,
+    info: buildInfo(
+      req.area,
+      file,
       header,
       mapping,
       missingRequired,
-      sample: file.rows.slice(1, 6),
-      rowCount: rows.length,
-      rows: rows.map((r) => r.row),
-      summary: {
-        new: count('new'),
-        update: count('update'),
-        duplicate: count('duplicate'),
-        error: count('error'),
-        excluded: rows.length - active.length,
-      },
-      run: null,
-    },
+      rows.map((r) => r.row),
+    ),
     rows,
     teams,
     today,
     persons,
     memberships,
     fixedTeam,
+    simple: null,
+  };
+}
+
+/** Vorschau aus den geprüften Zeilen: Zahlen und Pflichtspalten (fehlen sie, ist jede Zeile fehlerhaft). */
+function buildInfo(
+  area: ImportArea,
+  file: { sheet: string | null; sheets: string[]; rows: string[][] },
+  header: string[],
+  mapping: (string | null)[],
+  missingRequired: string[],
+  rows: ImportRow[],
+): ImportPreview {
+  if (missingRequired.length)
+    for (const r of rows) {
+      r.status = 'error';
+      r.errors.unshift(`Spalte „${missingRequired.join('“, „')}“ ist nicht zugeordnet.`);
+    }
+  const active = rows.filter((r) => r.selected);
+  const count = (st: ImportRow['status']) => active.filter((r) => r.status === st).length;
+  return {
+    area,
+    sheet: file.sheet,
+    sheets: file.sheets,
+    header,
+    mapping,
+    missingRequired,
+    sample: file.rows.slice(1, 6),
+    rowCount: rows.length,
+    rows,
+    summary: {
+      new: count('new'),
+      update: count('update'),
+      duplicate: count('duplicate'),
+      error: count('error'),
+      excluded: rows.length - active.length,
+    },
+    run: null,
   };
 }
 
@@ -648,6 +769,61 @@ export async function commitImport(
       'import_errors',
       'Es gibt noch fehlerhafte Zeilen. Bitte korrigieren oder abwählen.',
     );
+  if (prepared.simple) {
+    const { ctx, checked } = prepared.simple;
+    const handler = handlerFor(req.area as Exclude<ImportArea, 'members' | 'roster'>);
+    const todoSimple = checked
+      .map((c, i) => ({
+        line: info.rows[i]!.line,
+        status: c.status,
+        data: c.data,
+        ok: info.rows[i]!.selected,
+      }))
+      .filter((r) => r.ok && (r.status === 'new' || r.status === 'update'))
+      .map(({ line, status, data }) => ({ line, status, data }));
+    if (todoSimple.length === 0)
+      throw new HttpError(400, 'import_nothing', 'Es gibt nichts zu übernehmen.');
+    const runId = randomUUID();
+    const result = await handler.commit(ctx, todoSimple, runId);
+    await db.transaction(async (tx) => {
+      await tx.insert(s.importRuns).values({
+        id: runId,
+        clubId: actor.club.id,
+        area: req.area,
+        teamId: prepared.fixedTeam?.id ?? null,
+        fileName: req.file.name.slice(0, 200),
+        summary: {
+          created: result.created,
+          updated: result.updated,
+          skipped: info.summary.duplicate + info.summary.excluded,
+          errors: 0,
+        },
+        payload: result.payload,
+        createdByUserId: actor.user.id,
+        createdAt: now,
+      });
+      await tx.insert(s.auditLog).values({
+        clubId: actor.club.id,
+        actorUserId: actor.user.id,
+        action: 'import.committed',
+        entityType: 'import',
+        entityId: runId,
+        data: {
+          label: `${AREAS[req.area].label} importiert: ${result.created} neu, ${result.updated} aktualisiert`,
+        },
+        createdAt: now,
+      });
+    });
+    return {
+      ...info,
+      run: {
+        id: runId,
+        created: result.created,
+        updated: result.updated,
+        undoUntil: new Date(now.getTime() + UNDO_HOURS * 3600_000).toISOString(),
+      },
+    };
+  }
   const todo = prepared.rows.filter(
     (r) => r.row.selected && (r.row.status === 'new' || r.row.status === 'update'),
   );
@@ -840,11 +1016,15 @@ export async function commitImport(
 // ── Protokoll und Rückgängig ────────────────────────────────────────────────
 
 async function canUseRun(db: Db, actor: Actor, run: typeof s.importRuns.$inferSelect) {
-  if (run.area === 'members') return actorCan(actor, 'members.manage');
-  if (actorCan(actor, 'members.manage')) return true;
-  if (!run.teamId) return false;
-  const team = (await currentTeams(db, actor)).find((t) => t.id === run.teamId);
-  return !!team && canRoster(actor, team);
+  const area = run.area as ImportArea;
+  const teams = await currentTeams(db, actor);
+  const team = run.teamId ? (teams.find((t) => t.id === run.teamId) ?? null) : null;
+  if (AREAS[area]?.needsTeam) {
+    // Wer Mitglieder verwaltet, darf Kader-Importe immer zurücknehmen; sonst das zuständige Trainerteam
+    if (area === 'roster' && actorCan(actor, 'members.manage')) return true;
+    return !!team && canArea(actor, area, teams, team);
+  }
+  return canArea(actor, area, teams, null);
 }
 
 export async function listImportRuns(db: Db, actor: Actor, now: Date): Promise<ImportRunInfo[]> {
@@ -894,6 +1074,34 @@ export async function undoImport(db: Db, actor: Actor, runId: string, now: Date)
       'undo_expired',
       `Rückgängig geht nur ${UNDO_HOURS} Stunden nach dem Import.`,
     );
+  if (isSimpleArea(run.area)) {
+    const handler = handlerFor(run.area);
+    try {
+      await handler.undo({ db, actor, now }, run.payload);
+      await db.transaction(async (tx) => {
+        await tx.update(s.importRuns).set({ undoneAt: now }).where(eq(s.importRuns.id, run.id));
+        await tx.insert(s.auditLog).values({
+          clubId: actor.club.id,
+          actorUserId: actor.user.id,
+          action: 'import.undone',
+          entityType: 'import',
+          entityId: run.id,
+          data: {
+            label: `Import rückgängig gemacht: ${run.fileName ?? AREAS[run.area as ImportArea].label}`,
+          },
+          createdAt: now,
+        });
+      });
+    } catch (e) {
+      if (e instanceof HttpError) throw e;
+      throw new HttpError(
+        409,
+        'undo_used',
+        'Importierte Einträge werden schon verwendet. Der Import lässt sich nicht mehr rückgängig machen.',
+      );
+    }
+    return;
+  }
   const payload = run.payload as unknown as RunPayload;
   const people = payload.createdPersonIds.length
     ? await db

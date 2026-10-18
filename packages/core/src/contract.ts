@@ -1835,7 +1835,14 @@ export type MemberImportResult = {
 
 // ── Import-Assistent (Paket IM) ───────────────────────────────────────────
 
-export const IMPORT_AREAS = ['members', 'roster'] as const;
+export const IMPORT_AREAS = [
+  'members',
+  'roster',
+  'events',
+  'sponsors',
+  'facilities',
+  'equipment',
+] as const;
 export type ImportArea = (typeof IMPORT_AREAS)[number];
 
 export const IMPORT_DUPLICATE_MODES = ['skip', 'update', 'create'] as const;
@@ -1858,6 +1865,8 @@ export type ImportAreaInfo = {
   fields: ImportField[];
   /** Bereich gilt für genau eine Mannschaft (Auswahl im Assistenten) */
   needsTeam: boolean;
+  /** Nur mit `needsTeam`: Mannschaften, für die der Nutzer importieren darf */
+  teamIds?: string[];
 };
 
 export type ImportAreasResponse = {
