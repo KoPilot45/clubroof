@@ -287,6 +287,45 @@ for (const s of sizes) {
   );
 }
 
+// DT2 Stufe 4/5 Rest: Spenden als Tabelle, Termin mit Teilnahme rechts, Platzbelegung als Wochenraster
+{
+  const { page, goto, login } = await b.session('kasse', { width: 1440, height: 900 });
+  await goto('/club-cash/donations');
+  await page.waitForTimeout(3500);
+  ok(
+    (await page.getByRole('table').count()) > 0 ||
+      (await page.getByText('Noch keine Spende').filter({ visible: true }).count()) > 0,
+    'Spenden: Tabelle (oder leer)',
+  );
+  await goto('/club-cash/budget');
+  await page.waitForTimeout(3000);
+  await goto('/club-cash/closing');
+  await page.waitForTimeout(3000);
+  const t = await b.session('trainer', { width: 1440, height: 900 });
+  const b1 = t.login.me.teams.find((x) => x.badge === 'B1');
+  const ov = await api(`/teams/${b1.id}`, t.login.token);
+  const ev = ov.upcomingMatches?.[0]?.event;
+  if (ev) {
+    await t.goto(`/events/${ev.id}`);
+    await t.page.waitForTimeout(3500);
+    const tx = (
+      await t.page
+        .getByText('Teilnahme', { exact: true })
+        .filter({ visible: true })
+        .first()
+        .boundingBox()
+    )?.x;
+    ok(
+      tx !== undefined && tx > 800,
+      `Termin: Teilnahme rechts neben den Angaben (${Math.round(tx ?? 0)})`,
+    );
+    await b.shot(t.page, `dt2-termin-1440-${scheme}`, false);
+  }
+  await t.goto('/facilities');
+  await t.page.waitForTimeout(3500);
+  await b.shot(t.page, `dt2-platz-1440-${scheme}`, false);
+}
+
 // Fenster: Desktop zentriert, Handy von unten (Kader-Fenster über den Anwesenheitsbalken)
 for (const w of [1440, 390]) {
   const { page, goto, login } = await b.session('trainer', { width: w, height: 900 });

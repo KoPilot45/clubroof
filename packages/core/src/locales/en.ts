@@ -3653,6 +3653,7 @@ export const en: Record<string, string> = {
     'Donations: donation receipt {0} issued ({1})',
   Spendendatum: 'Donation date',
   Spendenquittungen: 'Donation receipts',
+  Spender: 'Donor',
   Sperre: 'Suspension',
   'Sperrung anlegen': 'Create block',
   'Sperrung aufheben': 'Lift closure',

@@ -1,3 +1,5 @@
+import { Cell, DataTable } from '@/components/data-table';
+import { useIsDesktop } from '@/lib/layout';
 import type { ClubCash, ClubDonation, ClubDonations } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -33,6 +35,7 @@ import { Counted } from '@/lib/motion';
  * vollständig sind und die Vorlage rechtlich bzw. steuerlich geprüft und freigegeben wurde.
  */
 export default function DonationsScreen() {
+  const desktop = useIsDesktop();
   const { api } = useSignedIn();
   const { colors } = useTheme();
   const queryClient = useQueryClient();
@@ -191,12 +194,85 @@ export default function DonationsScreen() {
       ) : null}
 
       <Section title="Spenden">
-        <Card>
-          {d.donations.length === 0 ? (
-            <Empty icon="heart-outline" text="Noch keine Spende in diesem Jahr." />
-          ) : null}
-          {d.donations.map(row)}
-        </Card>
+        {desktop && d.donations.length > 0 ? null : (
+          <Card>
+            {d.donations.length === 0 ? (
+              <Empty icon="heart-outline" text="Noch keine Spende in diesem Jahr." />
+            ) : null}
+            {d.donations.map(row)}
+          </Card>
+        )}
+        {desktop && d.donations.length > 0 ? (
+          <DataTable
+            rows={d.donations}
+            rowKey={(x) => x.id}
+            exportName="spenden"
+            defaultSort={{ key: 'date', dir: 'desc' }}
+            columns={[
+              {
+                key: 'date',
+                label: 'Datum',
+                width: 110,
+                sort: (x, y) => x.donatedOn.localeCompare(y.donatedOn),
+                csv: (r) => r.donatedOn,
+                render: (r) => <Cell muted>{r.donatedOn.split('-').reverse().join('.')}</Cell>,
+              },
+              {
+                key: 'donor',
+                label: 'Spender',
+                flex: 2,
+                sort: (x, y) => x.donorName.localeCompare(y.donorName),
+                csv: (r) => r.donorName,
+                render: (r) => (
+                  <Cell>{r.cancelled ? `${r.donorName} (${t('Storniert')})` : r.donorName}</Cell>
+                ),
+              },
+              {
+                key: 'receipt',
+                label: 'Bestätigung',
+                flex: 1,
+                csv: (r) => r.receiptNo ?? '',
+                render: (r) => <Cell muted>{r.receiptNo ?? t('Keine Bestätigung')}</Cell>,
+              },
+              {
+                key: 'amount',
+                label: 'Betrag',
+                width: 120,
+                align: 'right',
+                sort: (x, y) => x.amountCents - y.amountCents,
+                csv: (r) => String(r.amountCents / 100),
+                render: (r) => <Cell>{formatEuro(r.amountCents)}</Cell>,
+              },
+              {
+                key: 'action',
+                label: 'Aktion',
+                width: 230,
+                render: (r) =>
+                  d.canManage && !r.cancelled ? (
+                    r.receiptNo ? (
+                      <Button
+                        label="Bestätigung öffnen"
+                        icon="document-text-outline"
+                        size="sm"
+                        variant="tonal"
+                        onPress={() => open(r.id)}
+                      />
+                    ) : (
+                      <Button
+                        label="Bestätigung ausstellen"
+                        icon="ribbon-outline"
+                        size="sm"
+                        variant="tonal"
+                        disabled={!d.canIssue}
+                        loading={issue.isPending}
+                        onPress={() => issue.mutate(r.id)}
+                      />
+                    )
+                  ) : null,
+              },
+            ]}
+          />
+        ) : null}
       </Section>
 
       {d.canManage ? (

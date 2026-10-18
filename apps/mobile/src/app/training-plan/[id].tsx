@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import type { Exercise, SaveTrainingPlanInput, TrainingPlan } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -112,144 +113,150 @@ export default function TrainingPlanEditor() {
         ) : null}
       </Card>
 
-      <Section title={`Ablauf · ${total} von ${p.eventMinutes} min`}>
-        <Card>
-          {items.length === 0 ? <T variant="caption">Noch keine Programmpunkte.</T> : null}
-          {items.map((item, i) => (
-            <View
-              key={i}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-                paddingVertical: 8,
-                borderTopWidth: i === 0 ? 0 : 1,
-                borderTopColor: colors.border,
-              }}
-            >
-              <View style={{ flex: 1 }}>
-                <T variant="label" style={{ fontWeight: '700' }}>
-                  {item.title}
-                </T>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                  <Stepper
-                    icon="remove"
-                    label="Kürzer"
-                    onPress={() =>
-                      setItems(
-                        items.map((x, j) =>
-                          j === i ? { ...x, minutes: Math.max(1, x.minutes - 5) } : x,
-                        ),
-                      )
-                    }
-                  />
-                  <T variant="label">{`${item.minutes} min`}</T>
-                  <Stepper
-                    icon="add"
-                    label="Länger"
-                    onPress={() =>
-                      setItems(
-                        items.map((x, j) =>
-                          j === i ? { ...x, minutes: Math.min(120, x.minutes + 5) } : x,
-                        ),
-                      )
-                    }
-                  />
-                </View>
-              </View>
-              <Stepper icon="arrow-up" label="Nach oben" onPress={() => move(i, -1)} />
-              <Stepper icon="arrow-down" label="Nach unten" onPress={() => move(i, 1)} />
-              <Stepper
-                icon="trash-outline"
-                label="Entfernen"
-                onPress={() => setItems(items.filter((_, j) => j !== i))}
-              />
-            </View>
-          ))}
-        </Card>
-        {picking ? (
+      <Columns min={460} weights={[1.7, 1]} gap={24}>
+        <Section title={`Ablauf · ${total} von ${p.eventMinutes} min`}>
           <Card>
-            {(library.data ?? []).map((e, i) => (
-              <ListRow
-                key={e.id}
-                first={i === 0}
-                title={e.title}
-                subtitle={`${CATEGORY_LABELS[e.category]} · ${e.durationMinutes} min${e.material ? ` · ${e.material}` : ''}`}
-                onPress={() => {
-                  setItems([
-                    ...items,
-                    { exerciseId: e.id, title: e.title, minutes: e.durationMinutes, note: null },
-                  ]);
-                  setPicking(false);
+            {items.length === 0 ? <T variant="caption">Noch keine Programmpunkte.</T> : null}
+            {items.map((item, i) => (
+              <View
+                key={i}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  paddingVertical: 8,
+                  borderTopWidth: i === 0 ? 0 : 1,
+                  borderTopColor: colors.border,
                 }}
-              />
-            ))}
-            <Button label="Schließen" variant="outline" onPress={() => setPicking(false)} />
-          </Card>
-        ) : (
-          <View style={{ gap: 8 }}>
-            <Button
-              label="Übung aus der Bibliothek"
-              icon="library-outline"
-              variant="outline"
-              onPress={() => setPicking(true)}
-            />
-            <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
-              <View style={{ flex: 1 }}>
-                <TextField
-                  label="Eigener Programmpunkt"
-                  value={free}
-                  onChangeText={setFree}
-                  maxLength={80}
+              >
+                <View style={{ flex: 1 }}>
+                  <T variant="label" style={{ fontWeight: '700' }}>
+                    {item.title}
+                  </T>
+                  <View
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}
+                  >
+                    <Stepper
+                      icon="remove"
+                      label="Kürzer"
+                      onPress={() =>
+                        setItems(
+                          items.map((x, j) =>
+                            j === i ? { ...x, minutes: Math.max(1, x.minutes - 5) } : x,
+                          ),
+                        )
+                      }
+                    />
+                    <T variant="label">{`${item.minutes} min`}</T>
+                    <Stepper
+                      icon="add"
+                      label="Länger"
+                      onPress={() =>
+                        setItems(
+                          items.map((x, j) =>
+                            j === i ? { ...x, minutes: Math.min(120, x.minutes + 5) } : x,
+                          ),
+                        )
+                      }
+                    />
+                  </View>
+                </View>
+                <Stepper icon="arrow-up" label="Nach oben" onPress={() => move(i, -1)} />
+                <Stepper icon="arrow-down" label="Nach unten" onPress={() => move(i, 1)} />
+                <Stepper
+                  icon="trash-outline"
+                  label="Entfernen"
+                  onPress={() => setItems(items.filter((_, j) => j !== i))}
                 />
               </View>
+            ))}
+          </Card>
+          {picking ? (
+            <Card>
+              {(library.data ?? []).map((e, i) => (
+                <ListRow
+                  key={e.id}
+                  first={i === 0}
+                  title={e.title}
+                  subtitle={`${CATEGORY_LABELS[e.category]} · ${e.durationMinutes} min${e.material ? ` · ${e.material}` : ''}`}
+                  onPress={() => {
+                    setItems([
+                      ...items,
+                      { exerciseId: e.id, title: e.title, minutes: e.durationMinutes, note: null },
+                    ]);
+                    setPicking(false);
+                  }}
+                />
+              ))}
+              <Button label="Schließen" variant="outline" onPress={() => setPicking(false)} />
+            </Card>
+          ) : (
+            <View style={{ gap: 8 }}>
               <Button
-                label="Hinzufügen"
+                label="Übung aus der Bibliothek"
+                icon="library-outline"
                 variant="outline"
-                disabled={!free.trim()}
-                onPress={() => {
-                  setItems([
-                    ...items,
-                    { exerciseId: null, title: free.trim(), minutes: 10, note: null },
-                  ]);
-                  setFree('');
-                }}
+                onPress={() => setPicking(true)}
               />
+              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>
+                <View style={{ flex: 1 }}>
+                  <TextField
+                    label="Eigener Programmpunkt"
+                    value={free}
+                    onChangeText={setFree}
+                    maxLength={80}
+                  />
+                </View>
+                <Button
+                  label="Hinzufügen"
+                  variant="outline"
+                  disabled={!free.trim()}
+                  onPress={() => {
+                    setItems([
+                      ...items,
+                      { exerciseId: null, title: free.trim(), minutes: 10, note: null },
+                    ]);
+                    setFree('');
+                  }}
+                />
+              </View>
             </View>
-          </View>
-        )}
-      </Section>
+          )}
+        </Section>
 
-      <Card style={{ gap: 8 }}>
-        <TextField
-          label="Notizen fürs Trainerteam"
-          value={notes}
-          onChangeText={setNotes}
-          maxLength={2000}
-          multiline
-        />
-        {total > p.eventMinutes ? (
-          <Chip
-            tone="action"
-            icon="time-outline"
-            label={`${total - p.eventMinutes} min länger als das Training`}
+        <View style={{ gap: 18 }}>
+          <Card style={{ gap: 8 }}>
+            <TextField
+              label="Notizen fürs Trainerteam"
+              value={notes}
+              onChangeText={setNotes}
+              maxLength={2000}
+              multiline
+            />
+            {total > p.eventMinutes ? (
+              <Chip
+                tone="action"
+                icon="time-outline"
+                label={`${total - p.eventMinutes} min länger als das Training`}
+              />
+            ) : null}
+          </Card>
+          {save.error ? (
+            <Chip
+              tone="urgent"
+              icon="alert-circle"
+              label={save.error instanceof RequestError ? save.error.message : 'Nicht gespeichert.'}
+            />
+          ) : null}
+          <Button
+            label="Plan speichern"
+            icon="checkmark"
+            loading={save.isPending}
+            onPress={() => save.mutate()}
           />
-        ) : null}
-      </Card>
-      {save.error ? (
-        <Chip
-          tone="urgent"
-          icon="alert-circle"
-          label={save.error instanceof RequestError ? save.error.message : 'Nicht gespeichert.'}
-        />
-      ) : null}
-      <Button
-        label="Plan speichern"
-        icon="checkmark"
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
-      <T variant="caption">Spieler sehen den Schwerpunkt und das benötigte Material.</T>
+          <T variant="caption">Spieler sehen den Schwerpunkt und das benötigte Material.</T>
+        </View>
+      </Columns>
     </Screen>
   );
 }
