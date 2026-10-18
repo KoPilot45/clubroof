@@ -77,8 +77,11 @@ const files = {};
   await setMode(login, 'light');
   const b1 = login.me.teams.find((t) => t.badge === 'B1');
   await goto(`/team?teamId=${b1.id}`);
-  await text(page, /Tabelle: Platz 3/).waitFor({ timeout: 15_000 });
-  ok(true, 'Blickfang: Tabellenplatz sichtbar');
+  await text(page, /Kader/).first().waitFor({ timeout: 15_000 });
+  ok(
+    !(await text(page, /Tabelle: Platz|Platz \d/).isVisible()),
+    'Blickfang: kein Tabellenplatz mehr (Paket TP)',
+  );
   const overview = await api(`/teams/${b1.id}`, login.token);
   if (overview.topScorer) {
     ok(await text(page, /Top-Torschütze/).isVisible(), 'Blickfang: Top-Torschütze sichtbar');

@@ -125,27 +125,24 @@ const COMPOSITION: { key: keyof SquadComposition; label: (n: number) => string; 
 
 /**
  * Blickfang der Mannschaft: Kader (Spieler, davon verfügbar) mit Zusammensetzung nach Mannschaftsteilen
- * – ohne Kaderstatus die Bilanz –, dazu Chips für Bilanz, Tabellenplatz und Trainingsquote.
+ * – ohne Kaderstatus die Bilanz –, dazu Chips für Bilanz und Trainingsquote.
  */
 export function TeamBand({
   highlights,
   squad,
   composition,
-  leaguePosition,
 }: {
   highlights: TeamHighlights;
   squad: SquadStatus | null;
   composition?: SquadComposition;
-  leaguePosition?: number | null;
 }) {
   const { colors } = useTheme();
   const on = colors.hero.onHero;
   const record =
     highlights.played > 0 ? `${highlights.won}-${highlights.drawn}-${highlights.lost}` : null;
-  if (!squad && !record && highlights.trainingRate === null && !leaguePosition) return null;
+  if (!squad && !record && highlights.trainingRate === null) return null;
   const chips = [
     squad && record ? `Bilanz ${record}` : null,
-    leaguePosition ? `Platz ${leaguePosition}` : null,
     highlights.trainingRate !== null ? `Training ${highlights.trainingRate} %` : null,
   ].filter((c): c is string => !!c);
   const parts = composition ? COMPOSITION.filter((c) => composition[c.key] > 0) : [];

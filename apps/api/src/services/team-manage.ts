@@ -58,7 +58,6 @@ export function profileOf(
     trainingMeetingMinutes: team.trainingMeetingMinutes,
     defaultMeetingPoint: team.defaultMeetingPoint,
     importAliases: team.importAliases,
-    leaguePosition: team.leaguePosition,
     attendanceVisibility: toAttendanceVisibility(team.attendanceVisibility),
     lineupVisible: team.lineupVisible,
     responsesVisible: team.responsesVisible,
@@ -341,7 +340,6 @@ export async function updateTeamProfile(
     patch.trainingMeetingMinutes = input.trainingMeetingMinutes;
   if (input.defaultMeetingPoint !== undefined)
     patch.defaultMeetingPoint = input.defaultMeetingPoint?.trim() || null;
-  if (input.leaguePosition !== undefined) patch.leaguePosition = input.leaguePosition;
   if (input.lineupVisible !== undefined) patch.lineupVisible = input.lineupVisible;
   if (input.responsesVisible !== undefined) patch.responsesVisible = input.responsesVisible;
   if (input.attendanceVisibility !== undefined)

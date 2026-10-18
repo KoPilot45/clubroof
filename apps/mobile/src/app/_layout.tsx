@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
-import { BrandSplash } from '@/components/brand-splash';
+import { BrandSplash, FadeIn } from '@/components/brand-splash';
 import { setBrand, useBrand } from '@/lib/brand';
 import { readSetting, writeSetting } from '@/lib/flags';
 import { OfflineBanner } from '@/components/offline-banner';
@@ -32,7 +32,7 @@ import { hapticError, hapticSuccess, loadHaptics } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/motion';
 import { loadAppearance } from '@/lib/appearance';
 import { useLocale } from '@/lib/i18n';
-import { Platform, View } from 'react-native';
+import { Platform } from 'react-native';
 import { NO_SUB_NAV, SubNav } from '@/components/sub-nav';
 import { SubHeader } from '@/components/sub-header';
 
@@ -89,7 +89,7 @@ function Navigator() {
     !(segments[0] === 'match' && (segments as string[])[2] === 'lineup');
   return (
     <ConfirmProvider>
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <FadeIn style={{ flex: 1, backgroundColor: colors.background }}>
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
         <BottomTabBarHeightContext.Provider value={showNav ? navHeight : 0}>
           <Stack
@@ -398,7 +398,7 @@ function Navigator() {
           </Stack>
         </BottomTabBarHeightContext.Provider>
         {showNav ? <SubNav routeName={segments.join('/')} onHeight={setNavHeight} /> : null}
-      </View>
+      </FadeIn>
     </ConfirmProvider>
   );
 }

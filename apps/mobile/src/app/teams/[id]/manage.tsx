@@ -311,7 +311,6 @@ function ProfileEditor({
   const [training, setTraining] = useState(profile.trainingMeetingMinutes?.toString() ?? '');
   const [point, setPoint] = useState(profile.defaultMeetingPoint ?? '');
   const [aliases, setAliases] = useState(profile.importAliases.join(', '));
-  const [position, setPosition] = useState(profile.leaguePosition?.toString() ?? '');
   const [visibility, setVisibility] = useState<AttendanceVisibility>(profile.attendanceVisibility);
   const [lineupVisible, setLineupVisible] = useState(profile.lineupVisible);
   const [responsesVisible, setResponsesVisible] = useState(profile.responsesVisible);
@@ -328,7 +327,6 @@ function ProfileEditor({
           matchMeetingMinutes: match ? Number(match) : null,
           trainingMeetingMinutes: training ? Number(training) : null,
           defaultMeetingPoint: point.trim() || null,
-          leaguePosition: position ? Number(position) : null,
           attendanceVisibility: visibility,
           lineupVisible,
           responsesVisible,
@@ -375,13 +373,6 @@ function ProfileEditor({
           onChangeText={setPoint}
           placeholder="z. B. Vereinsheim"
           maxLength={120}
-        />
-        <TextField
-          label="Tabellenplatz in der Liga (optional)"
-          kind="code"
-          value={position}
-          onChangeText={(v) => setPosition(digits(v).slice(0, 2))}
-          maxLength={2}
         />
         <TextField
           label="Schreibweisen im DFBnet (durch Komma getrennt)"

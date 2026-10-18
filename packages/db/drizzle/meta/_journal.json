@@ -414,6 +414,13 @@
       "when": 1792332932528,
       "tag": "0058_archiv_team",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1792336223172,
+      "tag": "0059_league_position_entfernt",
+      "breakpoints": true
     }
   ]
 }
