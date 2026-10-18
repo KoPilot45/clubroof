@@ -3,18 +3,19 @@
  * bei Dubletten · Ergebnis mit „Rückgängig“ (24 Stunden). Die Prüfung macht der Server; die App schickt bei jedem
  * Schritt dieselben Angaben, damit nur übernommen wird, was zuletzt in der Vorschau stand.
  */
-import type {
-  ImportArea,
-  ImportAreasResponse,
-  ImportDuplicateMode,
-  ImportPreview,
-  ImportRequest,
-  ImportRow,
-  ImportRunInfo,
-  ImportTemplateFile,
+import {
+  IMPORT_AREAS,
+  type ImportArea,
+  type ImportAreasResponse,
+  type ImportDuplicateMode,
+  type ImportPreview,
+  type ImportRequest,
+  type ImportRow,
+  type ImportRunInfo,
+  type ImportTemplateFile,
 } from '@clubroof/core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +29,7 @@ import {
   Sheet,
   T,
   TextField,
+  type IconName,
 } from '@/components/ui';
 import { ChoiceCard, WizardShell } from '@/components/wizard';
 import { RequestError } from '@/lib/api';
@@ -70,6 +72,25 @@ function saveFile(file: ImportTemplateFile) {
   URL.revokeObjectURL(a.href);
 }
 
+const AREA_ICON: Record<ImportArea, IconName> = {
+  members: 'people',
+  roster: 'shirt',
+  events: 'calendar',
+  sponsors: 'ribbon',
+  facilities: 'location',
+  equipment: 'construct',
+};
+
+/** Wohin nach dem Import: die Seite, auf der die neuen Einträge stehen */
+const AREA_TARGET: Record<ImportArea, { label: string; href: string }> = {
+  members: { label: 'Zu den Mitgliedern', href: '/admin/members' },
+  roster: { label: 'Zum Team', href: '/team' },
+  events: { label: 'Zu den Terminen', href: '/termine' },
+  sponsors: { label: 'Zu den Sponsoren', href: '/admin/sponsors' },
+  facilities: { label: 'Zur Platzbelegung', href: '/facilities' },
+  equipment: { label: 'Zu Anlage & Material', href: '/equipment' },
+};
+
 const rank = (r: ImportRow) =>
   r.status === 'error' ? 0 : r.status === 'duplicate' ? 1 : r.status === 'update' ? 2 : 3;
 
@@ -81,8 +102,13 @@ export default function ImportScreen() {
     queryFn: () => api<ImportAreasResponse>('/import/areas'),
   });
   const [step, setStep] = useState(1);
-  const [area, setArea] = useState<ImportArea | null>(null);
-  const [teamId, setTeamId] = useState<string | null>(null);
+  const params = useLocalSearchParams<{ area?: string; teamId?: string }>();
+  const [area, setArea] = useState<ImportArea | null>(
+    (IMPORT_AREAS as readonly string[]).includes(params.area ?? '')
+      ? (params.area as ImportArea)
+      : null,
+  );
+  const [teamId, setTeamId] = useState<string | null>(params.teamId ?? null);
   const [file, setFile] = useState<PickedFile | null>(null);
   const [sheet, setSheet] = useState<string | null>(null);
   const [mapping, setMapping] = useState<(string | null)[] | null>(null);
@@ -233,7 +259,7 @@ export default function ImportScreen() {
         {available.map((a) => (
           <ChoiceCard
             key={a.area}
-            icon={a.area === 'members' ? 'people' : 'shirt'}
+            icon={AREA_ICON[a.area]}
             title={a.label}
             text={a.text}
             selected={area === a.area}
@@ -246,7 +272,9 @@ export default function ImportScreen() {
         {info?.needsTeam ? (
           <ChoiceChips
             label="Mannschaft"
-            options={(areas.data?.teams ?? []).map((x) => ({ value: x.id, label: x.badge }))}
+            options={(areas.data?.teams ?? [])
+              .filter((x) => !info.teamIds || info.teamIds.includes(x.id))
+              .map((x) => ({ value: x.id, label: x.badge }))}
             selected={teamId ? [teamId] : []}
             onToggle={setTeamId}
           />
@@ -694,8 +722,8 @@ function Result({
   return (
     <WizardShell
       title={undone ? 'Import rückgängig gemacht' : 'Import abgeschlossen'}
-      onNext={() => router.replace(area === 'members' ? '/admin/members' : '/team')}
-      nextLabel={area === 'members' ? 'Zu den Mitgliedern' : 'Zum Team'}
+      onNext={() => router.replace(AREA_TARGET[area].href as never)}
+      nextLabel={AREA_TARGET[area].label}
       error={error}
       hint={
         undone

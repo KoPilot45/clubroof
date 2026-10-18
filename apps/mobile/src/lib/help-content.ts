@@ -519,6 +519,12 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Unter „Verwaltung → Importieren“ den Bereich „Kader einer Mannschaft“ und deine Mannschaft wählen, Excel- oder CSV-Datei hochladen, Spalten zuordnen und die Vorschau prüfen. Vorhandene Mitglieder erkennt Clubroof an Nummer, E-Mail oder Name mit Geburtsdatum und nimmt sie in den Kader auf; neue Mitglieder legt nur die Mitgliederverwaltung an. Rückennummern werden auf Doppelte geprüft. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.',
       },
       {
+        id: 'coach-events-import',
+        question: 'Kann ich Trainings und Spiele aus einer Datei anlegen?',
+        answer:
+          'Ja: „Verwaltung → Importieren → Termine einer Mannschaft“, Mannschaft wählen und eine Excel- oder CSV-Datei mit Datum, Beginn, Art, Gegner und Platz hochladen. Die Vorschau zeigt Dubletten, belegte Plätze und Termine in der Vergangenheit. Termine werden still angelegt, die Mannschaft bekommt keine Meldung. Den DFBnet-Spielplan importierst du weiter unter „Spielplan-Import“. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.',
+      },
+      {
         id: 'coach-override',
         question: 'Wie ändere ich Zusagen anderer?',
         answer:
@@ -717,6 +723,12 @@ export const HELP_SECTIONS: HelpSection[] = [
         question: 'Wie lege ich Mitglieder an oder importiere sie?',
         answer:
           'Einzeln unter „Mitglieder → Mitglied anlegen“ oder per Import aus Excel oder CSV („Importieren“): Bereich wählen, Vorlage laden, Datei hochladen, Spalten zuordnen, Vorschau prüfen (neu, aktualisiert, Dublette, Fehler), bei Dubletten überspringen, aktualisieren oder neu anlegen. Der Import wird ganz oder gar nicht übernommen und lässt sich 24 Stunden lang rückgängig machen. Austritte beenden Mannschaftszugehörigkeiten und sperren den App-Zugang. In der Mitgliederliste filterst du nach Rolle, Trainerteam, individuellen Rechten oder fehlendem App-Zugang.',
+      },
+      {
+        id: 'admin-import-areas',
+        question: 'Was lässt sich außer Mitgliedern importieren?',
+        answer:
+          'Unter „Verwaltung → Importieren“ auch Sponsoren, Plätze und Räume (mit Spielstätte) sowie Material und Schlüssel – jeweils mit Vorlage, Spaltenzuordnung, Vorschau und Rückgängig innerhalb von 24 Stunden. Trainer importieren Kader und Termine ihrer Mannschaft.',
       },
       {
         id: 'admin-permissions',

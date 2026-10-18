@@ -86,6 +86,19 @@ ok(
 );
 ok((await members()) === before, 'Rückgängig: Mitglieder wieder wie vorher');
 
+// Trainerteam: Kader und Termine der eigenen Mannschaft, keine Verwaltungsbereiche
+{
+  const t = await b.session('trainer', { width: 1100, height: 900 });
+  await t.goto('/import');
+  await t.page.waitForTimeout(2500);
+  const radios = await t.page.getByRole('radio').count();
+  ok(radios === 2, `Trainer: nur Kader und Termine wählbar (${radios})`);
+  ok(
+    (await t.page.getByText('Termine einer Mannschaft').filter({ visible: true }).count()) > 0,
+    'Trainer: Bereich „Termine einer Mannschaft“ sichtbar',
+  );
+}
+
 console.log(
   b.errors.length ? `✗ Konsolenfehler:\n${b.errors.join('\n')}` : '✓ keine Konsolenfehler',
 );

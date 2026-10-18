@@ -115,6 +115,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `forum/index` | A | Breite | Liste bzw. Detailseite |
 | `help` | D | Breite | Kachelraster / Übersicht |
 | `helpers` | A | Breite | Liste bzw. Detailseite |
+| `import` | E | fertig | Assistent |
 | `join-code` | B | Breite | Formular |
 | `join/[token]` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `login` | S | fertig | Sonderfall mit eigenem Entwurf |

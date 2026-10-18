@@ -112,6 +112,7 @@ const RULES: Record<string, Rule> = {
   'facilities/index': section('verein'),
   'facilities/block-new': under('verein', 'Platzbelegung', '/facilities'),
   'schedule-import': section('verein'),
+  import: section('verein'),
   'club-cash/index': section('verein'),
   'club-cash/entries': under('verein', 'Vereinskasse', '/club-cash'),
   'club-cash/new': under('verein', 'Vereinskasse', '/club-cash'),

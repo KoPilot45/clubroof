@@ -2623,6 +2623,8 @@ export const en: Record<string, string> = {
   'Ja, {0} abschließen': 'Yes, close {0}',
   'Ja, mit dem Kalender-Abo: „Mehr → Kalender-Abo“, Abo-Link erstellen und im Kalender des Handys hinzufügen. Dort erscheinen deine Termine, die deiner Kinder und die Vereinstermine. Der Link ist geheim – gib ihn nicht weiter. Du kannst ihn jederzeit erneuern.':
     "Yes, with the calendar subscription: “More → Calendar subscription”, create a subscription link and add it to your phone's calendar. Your events, your children's events and the club events will appear there. The link is secret – don't share it. You can renew it at any time.",
+  'Ja: „Verwaltung → Importieren → Termine einer Mannschaft“, Mannschaft wählen und eine Excel- oder CSV-Datei mit Datum, Beginn, Art, Gegner und Platz hochladen. Die Vorschau zeigt Dubletten, belegte Plätze und Termine in der Vergangenheit. Termine werden still angelegt, die Mannschaft bekommt keine Meldung. Den DFBnet-Spielplan importierst du weiter unter „Spielplan-Import“. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.':
+    'Yes: “Administration → Import → Events of a team”, choose the team and upload an Excel or CSV file with date, start, type, opponent and pitch. The preview shows duplicates, booked pitches and events in the past. Events are created silently, the team gets no notification. You import the DFBnet fixtures under “Fixtures import”. You can undo the import within 24 hours.',
   'Ja. Bei offenen Terminen und ungelesenen Benachrichtigungen wischst du die Zeile nach links: Es erscheint „Zusagen“ bzw. „Gelesen“. Tippe darauf – oder wische ganz durch, dann passiert es sofort. Alles geht auch ohne Wischen über die Knöpfe in der Zeile.':
     'Yes. For open events and unread notifications, swipe the row to the left: “Confirm” or “Read” appears. Tap it – or swipe all the way and it happens immediately. Everything also works without swiping via the buttons in the row.',
   'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.':
@@ -2701,6 +2703,7 @@ export const en: Record<string, string> = {
   'Kader ({0} Spieler)': 'Squad ({0} players)',
   'Kader & Aufstellung': 'Squad & line-up',
   'Kader anzeigen': 'Show squad',
+  'Kader aus Datei importieren': 'Import squad from a file',
   'Kader einer Mannschaft': 'Squad of a team',
   'Kader im Detail': 'Squad in detail',
   'Kader verwalten': 'Manage squad',
@@ -2726,6 +2729,8 @@ export const en: Record<string, string> = {
   'Kann ich etwas nachträglich ändern, das ich angelegt habe?':
     'Can I change something I created afterwards?',
   'Kann ich ohne Internet zu- oder absagen?': 'Can I confirm or decline without internet?',
+  'Kann ich Trainings und Spiele aus einer Datei anlegen?':
+    'Can I create trainings and matches from a file?',
   'Kann nicht': "Can't",
   'Karte {0} von {1}': 'Card {0} of {1}',
   Karten: 'Cards',
@@ -3860,6 +3865,8 @@ export const en: Record<string, string> = {
   'Spieler sehen nur die Anzahl („14 von 20 da“), nicht wer gefehlt hat.':
     'Players only see the number (“14 of 20 there”), not who was missing.',
   'Spieler suchen': 'Search players',
+  'Spieler und Betreuer aus Excel oder CSV in die Mannschaft aufnehmen':
+    'Add players and staff from Excel or CSV to the team',
   'Spieler und Betreuer einer Mannschaft mit Nummer und Position; vorhandene Mitglieder werden aus der Vereinsliste erkannt.':
     'Players and staff of a team with number and position; existing members are recognised from the club list.',
   'Spieler und Eltern lädst du später per E-Mail oder mit einem Mannschafts-Link bzw. QR-Code ein. Neue Anfragen gibst du frei, bevor jemand die App nutzen kann.':
@@ -4048,6 +4055,7 @@ export const en: Record<string, string> = {
   'Termine {0}': 'Events {0}',
   'Termine & Teilnahme': 'Events & attendance',
   'Termine anlegen, ändern und absagen': 'Create, change and cancel events',
+  'Termine aus Datei importieren': 'Import events from a file',
   'Termine dürfen nur Verantwortliche der Mannschaft anlegen.':
     'Only those responsible for the team may create events.',
   'Termine einer Mannschaft': 'Events of a team',
@@ -4119,6 +4127,8 @@ export const en: Record<string, string> = {
   'Training Ø': 'Training avg.',
   'Training und Spiele': 'Training and matches',
   'Training vom {1}': 'Training on {1}',
+  'Training, Spiele oder Termine aus Excel oder CSV anlegen':
+    'Create training sessions, matches or events from Excel or CSV',
   'Training, Spiele, Zu-/Absagen, Fristen': 'Training, matches, confirmations/declines, deadlines',
   'Training: Treffen vor Beginn': 'Training: meet before start',
   Trainings: 'Training sessions',
@@ -4299,6 +4309,8 @@ export const en: Record<string, string> = {
     'Under “Club treasury → Booking → Allowances” you see per person and year how much of the trainer allowance or the volunteer allowance has already been paid out (progress bar, warning when almost used up). A payment that would exceed the tax-free amount is not booked silently: you get a confirmation prompt and can deliberately book it anyway after clarifying for tax purposes. Please have the tax-free amounts (from 2026: €3,300 and €960) checked for tax purposes; the app does not replace tax advice.',
   'Unter „Vereinskasse → Prüfung → Spenden“ erfasst der Kassenwart die Spende mit Name, Anschrift, Betrag und Datum; sie steht als Einnahme im Kassenbuch. Eine Zuwendungsbestätigung gibt es erst, wenn die Administration unter „Steuerdaten“ Finanzamt, Steuernummer, Bescheid, Zeitraum und Zweck eingetragen und die Vorlage freigegeben hat – nachdem sie von deiner Steuerberatung oder deinem Verband rechtlich geprüft wurde. Jede Änderung der Steuerdaten setzt die Freigabe zurück. Danach stellst du die Bestätigung mit einem Tipp aus (laufende Nummer, Betrag auch in Buchstaben) und öffnest sie als PDF. Eine Spende mit ausgestellter Bestätigung kann nicht storniert werden. Die App ersetzt keine Steuerberatung.':
     'Under “Club treasury → Audit → Donations” the treasurer records the donation with name, address, amount and date; it appears as income in the cash book. A donation receipt is only possible once the administration has entered tax office, tax number, notice, period and purpose under “Tax data” and released the template – after it has been reviewed legally by your tax adviser or association. Every change of the tax data resets the release. After that you issue the receipt with one tap (running number, amount also in words) and open it as PDF. A donation with an issued receipt cannot be cancelled. The app does not replace tax advice.',
+  'Unter „Verwaltung → Importieren“ auch Sponsoren, Plätze und Räume (mit Spielstätte) sowie Material und Schlüssel – jeweils mit Vorlage, Spaltenzuordnung, Vorschau und Rückgängig innerhalb von 24 Stunden. Trainer importieren Kader und Termine ihrer Mannschaft.':
+    'Under “Administration → Import” also sponsors, pitches and rooms (with venue) as well as material and keys – each with template, column assignment, preview and undo within 24 hours. Coaches import the squad and events of their team.',
   'Unter „Verwaltung → Importieren“ den Bereich „Kader einer Mannschaft“ und deine Mannschaft wählen, Excel- oder CSV-Datei hochladen, Spalten zuordnen und die Vorschau prüfen. Vorhandene Mitglieder erkennt Clubroof an Nummer, E-Mail oder Name mit Geburtsdatum und nimmt sie in den Kader auf; neue Mitglieder legt nur die Mitgliederverwaltung an. Rückennummern werden auf Doppelte geprüft. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.':
     'Under “Administration → Import” choose the area “Squad of a team” and your team, upload an Excel or CSV file, assign columns and check the preview. Clubroof recognises existing members by number, e-mail or name with date of birth and adds them to the squad; only member administration creates new members. Shirt numbers are checked for duplicates. You can undo the import within 24 hours.',
   'Unter „Verwaltung → Module“. Neue Funktionen erscheinen im Update-Center; du richtest sie ein, schiebst sie auf oder entscheidest dich dagegen. Einzelne Bereiche und Mannschaften lassen sich zusätzlich abweichend einstellen.':
@@ -4534,6 +4546,7 @@ export const en: Record<string, string> = {
   'Was ist mit Übungsleiter- und Ehrenamtspauschale?':
     'What about the trainer and volunteer allowances?',
   'Was kann ich als Vereinsmitglied?': 'What can I do as a club member?',
+  'Was lässt sich außer Mitgliedern importieren?': 'What else can be imported besides members?',
   'Was möchtest du importieren?': 'What would you like to import?',
   'Was passiert?': "What's happening?",
   'Was sehe ich in der Kasse?': 'What can I see in the team fund?',
@@ -4865,7 +4878,10 @@ export const en: Record<string, string> = {
   'Zielbetrag in € (optional)': 'Target amount in € (optional)',
   Zielkasse: 'Target fund',
   'Zinsen und Kapitalerträge': 'Interest and investment income',
+  'Zu Anlage & Material': 'To facilities & material',
   'Zu den Mitgliedern': 'Go to members',
+  'Zu den Sponsoren': 'To the sponsors',
+  'Zu den Terminen': 'To the events',
   'Zu einem Termin (optional)': 'Linked to an event (optional)',
   'Zu Konto & Einstellungen': 'Go to Account & settings',
   'zu kurz': 'too short',
@@ -4915,6 +4931,7 @@ export const en: Record<string, string> = {
   'Zur Freigabe einreichen': 'Submit for approval',
   'Zur Mannschaft': 'To the team',
   'Zur Pflicht machen': 'Make required',
+  'Zur Platzbelegung': 'To the pitch booking',
   'Zur Startseite': 'Go to home',
   'Zur Umfrage': 'Go to poll',
   'Zur Webseite': 'Visit website',
