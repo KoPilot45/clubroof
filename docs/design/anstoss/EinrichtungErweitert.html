@@ -62,6 +62,9 @@ h3.q { margin: 4px 0 0; font: 800 28px/1.02 var(--display); letter-spacing: .01e
 .stack { display: flex; gap: 2px; height: 14px; } .stack i { display: block; } .stack i:first-child { border-radius: 4px 0 0 4px; } .stack i:last-child { border-radius: 0 4px 4px 0; }
 .lg { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--fg2); margin-top: 8px; } .lg i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; }
 .sw-col { width: 22px; height: 22px; border-radius: 7px; flex: none; }
+.step { display: flex; align-items: center; gap: 10px; } .step b { min-width: 58px; text-align: center; font: 800 18px var(--display); letter-spacing: .02em; } .pm { width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,.1); display: grid; place-items: center; font: 700 17px var(--body); color: var(--fg); flex: none; }
+.date { display: flex; align-items: center; gap: 8px; } .date b { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.info { background: rgba(255,255,255,.06); border-radius: 12px; padding: 9px 12px; font-size: 12px; color: var(--fg2); }
 .msg { background: #1b2620; border-radius: 16px 16px 16px 4px; padding: 11px 13px; font-size: 12.5px; color: var(--fg2); line-height: 1.45; }
 .msg u { color: var(--acc); text-decoration: none; font-weight: 700; }
 .btn2 { display: flex; gap: 8px; } .btn2 span { flex: 1; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 13px; padding: 10px 6px; font-weight: 700; font-size: 12.5px; }
@@ -126,23 +129,22 @@ h3.q { margin: 4px 0 0; font: 800 28px/1.02 var(--display); letter-spacing: .01e
 
 </div></section>
 
-<section class="row"><h2>Mannschaft anlegen</h2><p>In der Vereinsfarbe. Neu: erklärende Auswahl mit Empfehlung nach Altersklasse und Vorschau, wöchentliche Trainingstermine mit Konfliktprüfung, ein fertiger Einladungstext zum Weiterschicken.</p>
+<section class="row"><h2>Mannschaft anlegen</h2><p>In der Vereinsfarbe. Neu: erklärende Auswahl mit Empfehlung und Vorschau, wöchentliche Trainingstermine mit freiem Zeitraum und einer Warnung erst ab drei Gruppen auf einem Platz, ein fertiger Einladungstext zum Weiterschicken.</p>
 <div class="steps">
 
 <div><div class="phone t-team">
   <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 5 von 12 · 42 %</small><div class="bar"><i style="width:42%"></i></div></div></div>
   <h3 class="q">Wie melden sich die Spieler an?</h3>
   <div class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><div><b>Warum wir das fragen</b>So weißt du vor jedem Termin, wer kommt, und musst nicht nachfragen.</div></div>
-  <div class="opt on"><span class="rad"></span><div><b>Aktive Antwort <span class="rec">Empfohlen für Jugend</span></b><p>Jeder antwortet vor jedem Termin. Du siehst sofort, wer kommt.</p></div></div>
-  <div class="opt"><span class="rad"></span><div><b>Automatisch zugesagt</b><p>Alle gelten als zugesagt, bis jemand absagt. Gut für feste Gruppen.</p></div></div>
-  <div class="opt"><span class="rad"></span><div><b>Nur Abwesenheiten</b><p>Spieler tragen nur Urlaub oder Verletzung ein. Wenig Aufwand für Alte Herren.</p></div></div>
-  <div class="lab">Antwortfrist</div>
-  <div class="chips"><span class="chip">Training 24 Std.</span><span class="chip on">Spiele 48 Std.</span><span class="chip">Eigene</span></div>
-  <div class="prev"><small>So sieht es für Spieler aus</small><div class="mini"><span class="on">Zugesagt</span><span>Unsicher</span><span>Absagen</span></div><div style="font-size:11px;color:var(--fg3);margin-top:6px">Frist: noch 1 Tag. Danach kannst nur noch du als Trainer ändern.</div></div>
+  <div class="opt on"><span class="rad"></span><div><b>Automatisch zugesagt <span class="rec">Empfohlen</span></b><p>Alle gelten als zugesagt, bis jemand absagt. Am wenigsten Aufwand für alle.</p></div></div>
+  <div class="opt"><span class="rad"></span><div><b>Aktive Antwort</b><p>Jeder antwortet vor jedem Termin. Du siehst sofort, wer wirklich kommt.</p></div></div>
+  <div class="lab">Frist für Zu- und Absagen</div>
+  <div class="list"><div class="li"><div class="tx"><b>Training</b><span>Stunden vor dem Termin</span></div><div class="step"><span class="pm">−</span><b>24 Std.</b><span class="pm">+</span></div></div><div class="li"><div class="tx"><b>Spiele</b><span>Stunden vor dem Anstoß</span></div><div class="step"><span class="pm">−</span><b>48 Std.</b><span class="pm">+</span></div></div></div>
+  <div class="prev"><small>So sieht es für Spieler aus</small><div class="mini"><span class="on">Zugesagt</span><span>Unsicher</span><span>Absagen</span></div><div style="font-size:11px;color:var(--fg3);margin-top:6px">Alle sind zugesagt, wer nicht kann, sagt bis 24 Std. vorher ab. Danach ändert nur noch das Trainerteam.</div></div>
   <div class="more">Mehr einstellen ›</div>
   <div class="later">ⓘ Später änderbar: Mannschaft → Mannschaft bearbeiten</div>
   <div class="foot"><div class="cta">Weiter</div><div class="skip">Überspringen</div></div>
-</div><div class="cap">Schritt 5 · Teilnahme-Modelle mit Beispiel, Empfehlung nach Altersklasse, Frist und Vorschau. „Mehr einstellen“ klappt Erinnerung und Pflicht-Grund auf.</div></div>
+</div><div class="cap">Schritt 5 · Zwei Modelle, „Automatisch zugesagt“ ist empfohlen. Die Fristen sind frei einstellbar mit − und +, 24 und 48 Std. sind vorgewählt.</div></div>
 
 <div><div class="phone t-team">
   <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 9 von 12 · 75 %</small><div class="bar"><i style="width:75%"></i></div></div></div>
@@ -152,13 +154,19 @@ h3.q { margin: 4px 0 0; font: 800 28px/1.02 var(--display); letter-spacing: .01e
     <div class="li"><div class="ic">Di</div><div class="tx"><b>18:00–19:30 Uhr</b><span>Kunstrasen (Platz 2) · Treffpunkt 17:45</span></div><a>Ändern</a></div>
     <div class="li"><div class="ic">Do</div><div class="tx"><b>18:00–19:30 Uhr</b><span>Rasenplatz (Platz 1) · Treffpunkt 17:45</span></div><a>Ändern</a></div>
   </div>
-  <div class="err">Do 18:00 · Rasenplatz (Platz 1) ist durch A1 belegt. Anderen Platz wählen oder trotzdem anlegen.</div>
+  <div class="info">ⓘ Do 18:00 · Rasenplatz (Platz 1): A1 trainiert parallel. Zwei Gruppen auf einem Platz sind in Ordnung.</div>
   <div class="more">+ Termin hinzufügen</div>
   <div class="lab">Zeitraum</div>
-  <div class="list"><div class="li"><div class="tx"><b>Saison 2026/27</b><span>bis 30.06.2027 · 62 Termine</span></div><a>Ändern</a></div><div class="li"><div class="tx"><b>Ferien aussetzen</b><span>Weihnachten und Sommerpause</span></div><div class="sw on"></div></div></div>
+  <div class="list">
+    <div class="li"><div class="tx"><b>Von</b></div><div class="date"><span class="pm">‹</span><b>▦ Mo., 03.08.2026</b><span class="pm">›</span></div></div>
+    <div class="li"><div class="tx"><b>Bis</b></div><div class="date"><span class="pm">‹</span><b>▦ Mi., 30.06.2027</b><span class="pm">›</span></div></div>
+    <div class="li"><div class="tx"><b>Ferien aussetzen</b><span>Weihnachten und Sommerpause</span></div><div class="sw on"></div></div>
+  </div>
+  <div class="chips"><span class="chip">Saison 2026/27</span><span class="chip">Bis Weihnachten</span></div>
+  <div class="rt" style="font-size:12px;color:var(--fg2)">Das ergibt 78 Trainingstermine.</div>
   <div class="later">ⓘ Später änderbar: Termine → Termin anlegen oder Serie bearbeiten</div>
   <div class="foot"><div class="cta">Weiter</div><div class="skip">Später anlegen</div></div>
-</div><div class="cap">Schritt 9 · Wöchentliche Trainingstermine mit Konfliktprüfung gegen die Platzbelegung.</div></div>
+</div><div class="cap">Schritt 9 · Von und Bis per Kalender-Datumsauswahl, Schnellwahl für Saison oder bis Weihnachten. Parallel trainierende Gruppen sind nur ein Hinweis, eine Warnung kommt erst ab drei Gruppen auf einem Platz („Do 18:00 · Platz 1: schon zwei andere Gruppen. Anderen Platz wählen oder trotzdem anlegen.“).</div></div>
 
 <div><div class="phone t-team">
   <div class="top"><div class="back">‹</div><div class="prog"><small>Schritt 12 von 12 · 100 %</small><div class="bar"><i style="width:100%"></i></div></div></div>
