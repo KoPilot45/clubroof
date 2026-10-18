@@ -100,12 +100,18 @@ function NavEntry({ item }: { item: Entry }) {
         <View
           style={{
             borderWidth: 1,
-            borderColor: colors.border,
+            borderColor: item.active ? on : colors.border,
             borderRadius: 5,
             paddingHorizontal: 6,
           }}
         >
-          <Text style={{ fontSize: 11, fontWeight: '700', color: colors.anstoss.textTertiary }}>
+          <Text
+            style={{
+              fontSize: 11,
+              fontWeight: '700',
+              color: item.active ? on : colors.anstoss.textTertiary,
+            }}
+          >
             {item.shortcut}
           </Text>
         </View>
