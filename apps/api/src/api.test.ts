@@ -7204,7 +7204,7 @@ describe.skipIf(!url)('API', () => {
 
     it('steht im Änderungsprotokoll', async () => {
       const admin = await login('admin');
-      const audit = await get<AuditEntry[]>('/admin/audit', admin.token);
+      const audit = await get<AuditEntry[]>('/admin/audit?limit=500', admin.token);
       expect(audit.some((a) => a.label.startsWith('Vereinskasse: Buchung storniert'))).toBe(true);
       expect(audit.some((a) => a.label.startsWith('Vereinskasse: Konto angelegt'))).toBe(true);
     });
@@ -7531,7 +7531,7 @@ describe.skipIf(!url)('API', () => {
 
     it('steht im Änderungsprotokoll', async () => {
       const admin = await login('admin');
-      const audit = await get<AuditEntry[]>('/admin/audit', admin.token);
+      const audit = await get<AuditEntry[]>('/admin/audit?limit=500', admin.token);
       expect(audit.some((a) => a.label.startsWith('Beiträge: Sollstellung bis'))).toBe(true);
       expect(audit.some((a) => a.label.startsWith('Beiträge: Kontoauszug importiert'))).toBe(true);
       expect(audit.some((a) => a.label.startsWith('Beiträge: Zahlung'))).toBe(true);
