@@ -1,3 +1,4 @@
+import { useIsDesktop } from '@/lib/layout';
 import type { FacilityBooking, FacilityOccupancy } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -35,6 +36,7 @@ const addDays = (iso: string, days: number) =>
   new Date(new Date(`${iso}T12:00:00Z`).getTime() + days * 86_400_000).toISOString().slice(0, 10);
 
 export default function FacilitiesScreen() {
+  const desktop = useIsDesktop();
   const confirmDelete = useConfirmDelete();
   const { api } = useSignedIn();
   const { isDark } = useTheme();
@@ -176,26 +178,39 @@ export default function FacilitiesScreen() {
             {facility.facility.name}
           </T>
           <TeamLegend colors={teams} />
-          <Section title="Montag bis Freitag">
+          {desktop ? (
             <FacilityGrid
-              columns={weekColumns.slice(0, 5)}
-              onPressBooking={pressBooking}
-              teams={teams}
-              mode="compact"
-              minColumnWidth={0}
-              bleed
-            />
-          </Section>
-          <Section title="Wochenende">
-            <FacilityGrid
-              columns={weekColumns.slice(5)}
+              columns={weekColumns}
               onPressBooking={pressBooking}
               teams={teams}
               mode="wide"
               minColumnWidth={0}
               bleed
             />
-          </Section>
+          ) : (
+            <>
+              <Section title="Montag bis Freitag">
+                <FacilityGrid
+                  columns={weekColumns.slice(0, 5)}
+                  onPressBooking={pressBooking}
+                  teams={teams}
+                  mode="compact"
+                  minColumnWidth={0}
+                  bleed
+                />
+              </Section>
+              <Section title="Wochenende">
+                <FacilityGrid
+                  columns={weekColumns.slice(5)}
+                  onPressBooking={pressBooking}
+                  teams={teams}
+                  mode="wide"
+                  minColumnWidth={0}
+                  bleed
+                />
+              </Section>
+            </>
+          )}
           <T variant="caption">Wischen wechselt die Woche.</T>
         </View>
       ) : null}

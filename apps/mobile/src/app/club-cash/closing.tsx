@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import { CLUB_CASH_AREA_LABEL, type ClubClosing, type ClubClosingLine } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -133,60 +134,64 @@ export default function ClosingScreen() {
             />
           )}
 
-          {d.areas.map((a) => (
-            <Section key={a.area} title={CLUB_CASH_AREA_LABEL[a.area]}>
+          <Columns min={420} gap={24}>
+            {d.areas.map((a) => (
+              <Section key={a.area} title={CLUB_CASH_AREA_LABEL[a.area]}>
+                <Card>
+                  {a.incomeLines.length + a.expenseLines.length === 0 ? (
+                    <T variant="caption">Keine Buchungen.</T>
+                  ) : null}
+                  {a.incomeLines.map((l, i) => lineRow('i', l, i))}
+                  {a.expenseLines.map((l, i) => lineRow('e', l, i + a.incomeLines.length))}
+                </Card>
+                <T variant="caption">
+                  {`${t('Einnahmen')} ${formatEuro(a.incomeCents)} · ${t('Ausgaben')} ${formatEuro(a.expenseCents)} · ${t('Ergebnis')} ${signed(a.incomeCents - a.expenseCents)}`}
+                </T>
+              </Section>
+            ))}
+          </Columns>
+
+          <Columns min={420} gap={24}>
+            <Section title="Bestände">
               <Card>
-                {a.incomeLines.length + a.expenseLines.length === 0 ? (
-                  <T variant="caption">Keine Buchungen.</T>
-                ) : null}
-                {a.incomeLines.map((l, i) => lineRow('i', l, i))}
-                {a.expenseLines.map((l, i) => lineRow('e', l, i + a.incomeLines.length))}
+                {d.accounts.map((a, i) => (
+                  <ListRow
+                    key={`${a.fundName}${a.name}`}
+                    first={i === 0}
+                    title={a.name}
+                    subtitle={`${a.fundName} · 01.01. ${formatEuro(a.openingCents)}`}
+                    trailing={<Chip tone="neutral" label={formatEuro(a.closingCents)} />}
+                  />
+                ))}
               </Card>
               <T variant="caption">
-                {`${t('Einnahmen')} ${formatEuro(a.incomeCents)} · ${t('Ausgaben')} ${formatEuro(a.expenseCents)} · ${t('Ergebnis')} ${signed(a.incomeCents - a.expenseCents)}`}
+                {`${t('Gesamt')} 01.01.: ${formatEuro(d.openingCents)} · 31.12.: ${formatEuro(d.closingCents)}`}
               </T>
+              {d.reserves.length ? (
+                <T variant="caption">
+                  {`${t('Davon als Rücklage gebunden')}: ${d.reserves.map((r) => `${r.name} ${formatEuro(r.balanceCents)}`).join(' · ')}`}
+                </T>
+              ) : null}
             </Section>
-          ))}
 
-          <Section title="Bestände">
-            <Card>
-              {d.accounts.map((a, i) => (
-                <ListRow
-                  key={`${a.fundName}${a.name}`}
-                  first={i === 0}
-                  title={a.name}
-                  subtitle={`${a.fundName} · 01.01. ${formatEuro(a.openingCents)}`}
-                  trailing={<Chip tone="neutral" label={formatEuro(a.closingCents)} />}
+            <Section title="Ausgabe">
+              <View style={{ gap: 10 }}>
+                <Button
+                  label="Als PDF öffnen"
+                  icon="document-text-outline"
+                  disabled={d.level !== 'full'}
+                  onPress={() => exportAs('pdf')}
                 />
-              ))}
-            </Card>
-            <T variant="caption">
-              {`${t('Gesamt')} 01.01.: ${formatEuro(d.openingCents)} · 31.12.: ${formatEuro(d.closingCents)}`}
-            </T>
-            {d.reserves.length ? (
-              <T variant="caption">
-                {`${t('Davon als Rücklage gebunden')}: ${d.reserves.map((r) => `${r.name} ${formatEuro(r.balanceCents)}`).join(' · ')}`}
-              </T>
-            ) : null}
-          </Section>
-
-          <Section title="Ausgabe">
-            <View style={{ gap: 10 }}>
-              <Button
-                label="Als PDF öffnen"
-                icon="document-text-outline"
-                disabled={d.level !== 'full'}
-                onPress={() => exportAs('pdf')}
-              />
-              <Button
-                label="Als CSV für Excel"
-                icon="download-outline"
-                variant="outline"
-                disabled={d.level !== 'full'}
-                onPress={() => exportAs('csv')}
-              />
-            </View>
-          </Section>
+                <Button
+                  label="Als CSV für Excel"
+                  icon="download-outline"
+                  variant="outline"
+                  disabled={d.level !== 'full'}
+                  onPress={() => exportAs('csv')}
+                />
+              </View>
+            </Section>
+          </Columns>
 
           {d.canManage && !d.lock ? (
             d.canClose ? (

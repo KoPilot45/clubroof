@@ -202,7 +202,7 @@
   "calendar": {
     "t": "S",
     "note": "Sonderfall mit eigenem Entwurf",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-calendar": {
     "t": "S",
@@ -237,7 +237,7 @@
   "club-cash/budget": {
     "t": "F",
     "note": "Bericht / Diagramme",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-cash/claims": {
     "t": "C",
@@ -247,12 +247,12 @@
   "club-cash/closing": {
     "t": "F",
     "note": "Bericht / Diagramme",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-cash/donations": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-cash/entries": {
     "t": "C",
@@ -402,7 +402,7 @@
   "events/[id]": {
     "t": "S",
     "note": "Sonderfall mit eigenem Entwurf",
-    "status": "Breite"
+    "status": "fertig"
   },
   "events/archive": {
     "t": "A",
@@ -452,7 +452,7 @@
   "facilities/index": {
     "t": "S",
     "note": "Sonderfall mit eigenem Entwurf",
-    "status": "Breite"
+    "status": "fertig"
   },
   "forgot": {
     "t": "S",
@@ -697,7 +697,7 @@
   "training-plan/[id]": {
     "t": "S",
     "note": "Sonderfall mit eigenem Entwurf",
-    "status": "Breite"
+    "status": "fertig"
   },
   "wiki/[id]": {
     "t": "A",

@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import {
   type ClubBudget,
   type ClubBudgetLine,
@@ -254,27 +255,29 @@ export default function BudgetScreen() {
         />
       ) : null}
 
-      <Section title="Ausgaben">
-        <Card>
-          {lines('expense').length === 0 ? (
-            <Empty icon="clipboard-outline" text="Noch keine Planzeile für Ausgaben." />
+      <Columns min={420} gap={24}>
+        <Section title="Ausgaben">
+          <Card>
+            {lines('expense').length === 0 ? (
+              <Empty icon="clipboard-outline" text="Noch keine Planzeile für Ausgaben." />
+            ) : null}
+            {lines('expense').map(row)}
+          </Card>
+        </Section>
+        <Section title="Einnahmen">
+          <Card>
+            {lines('income').length === 0 ? (
+              <Empty icon="clipboard-outline" text="Noch keine Planzeile für Einnahmen." />
+            ) : null}
+            {lines('income').map(row)}
+          </Card>
+          {b.lines.some((l) => l.direction === 'income') ? (
+            <T variant="caption">
+              {`${t('Einnahmen')} ${formatEuro(b.totals.actualIncomeCents)} ${t('von')} ${formatEuro(b.totals.plannedIncomeCents)} ${t('geplant')}`}
+            </T>
           ) : null}
-          {lines('expense').map(row)}
-        </Card>
-      </Section>
-      <Section title="Einnahmen">
-        <Card>
-          {lines('income').length === 0 ? (
-            <Empty icon="clipboard-outline" text="Noch keine Planzeile für Einnahmen." />
-          ) : null}
-          {lines('income').map(row)}
-        </Card>
-        {b.lines.some((l) => l.direction === 'income') ? (
-          <T variant="caption">
-            {`${t('Einnahmen')} ${formatEuro(b.totals.actualIncomeCents)} ${t('von')} ${formatEuro(b.totals.plannedIncomeCents)} ${t('geplant')}`}
-          </T>
-        ) : null}
-      </Section>
+        </Section>
+      </Columns>
 
       {plan && b.canManage && !b.locked && !editFund ? (
         <Card>

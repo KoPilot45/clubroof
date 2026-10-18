@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import type { EventAttendance, EventDetail, Participant } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -461,143 +462,146 @@ export default function EventScreen() {
         <>
           <EventHero event={e} clubShortName={me.club.shortName} past={past} />
           <EditedNote at={e.editedAt} />
-          {e.description ? (
-            <Card>
-              <T verbatim>{e.description}</T>
-            </Card>
-          ) : null}
-
-          {e.lastChange && e.status === 'scheduled' ? (
-            <Card style={{ gap: 6 }}>
-              <Chip tone="action" icon="swap-horizontal" label="Zuletzt geändert" />
-              {e.lastChange.items.map((c) => (
-                <T key={c.label} variant="caption">
-                  <T variant="label">{c.label}: </T>
-                  {c.from ?? '–'} → {c.to ?? '–'}
-                </T>
-              ))}
-            </Card>
-          ) : null}
-
-          {e.contactPerson ? (
-            <Card list>
-              <ListRow
-                first
-                leading={<IconTile name="person-outline" />}
-                title={e.contactPerson.name}
-                subtitle="Ansprechperson"
-              />
-            </Card>
-          ) : null}
-
-          {e.program.length > 0 ? (
-            <Section title="Programm">
-              <Card>
-                {e.program.map((item, i) => (
-                  <View
-                    key={item.time + item.title}
-                    style={{
-                      flexDirection: 'row',
-                      gap: 14,
-                      paddingVertical: 8,
-                      borderTopWidth: i === 0 ? 0 : 1,
-                      borderTopColor: colors.border,
-                    }}
-                  >
-                    <T
-                      variant="label"
-                      color={colors.primaryText}
-                      style={{ width: 48, fontWeight: '800' }}
-                    >
-                      {item.time}
-                    </T>
-                    <T style={{ flex: 1 }}>{item.title}</T>
-                  </View>
-                ))}
-              </Card>
-            </Section>
-          ) : null}
-
-          {e.attendance ? (
-            <AttendanceCard
-              eventId={e.id}
-              attendance={e.attendance}
-              open={e.status === 'scheduled' && new Date(e.startsAt) > new Date()}
-            />
-          ) : null}
-
-          {e.shifts.length > 0 ? (
-            <Section title="Helfer gesucht">
-              <Card>
-                {e.shifts.map((shift, i) => (
-                  <ShiftRow key={shift.id} shift={shift} first={i === 0} />
-                ))}
-              </Card>
-            </Section>
-          ) : null}
-
-          {e.myResponses.length > 0 ? (
-            <Section title="Deine Antwort">
-              {e.deadline && new Date(e.deadline) > new Date() ? (
-                <T
-                  variant="caption"
-                  color={colors.primaryText}
-                  style={{ fontSize: 12.5, fontWeight: '700', marginTop: -6 }}
-                >
-                  {`Frist: ${formatRemaining(e.deadline)}`}
-                </T>
+          <Columns min={460} weights={[1.7, 1]} gap={24}>
+            <View style={{ gap: 18 }}>
+              {e.description ? (
+                <Card>
+                  <T verbatim>{e.description}</T>
+                </Card>
               ) : null}
-              <ResponseControls event={e} variant="segment" />
-            </Section>
-          ) : null}
 
-          {e.canEditClubEvent && !past ? (
-            <Card>
-              <Button
-                label="Veranstaltung bearbeiten"
-                variant="outline"
-                icon="create-outline"
-                onPress={() => router.push(`/admin/club-event-new?id=${e.id}`)}
-              />
-            </Card>
-          ) : null}
+              {e.lastChange && e.status === 'scheduled' ? (
+                <Card style={{ gap: 6 }}>
+                  <Chip tone="action" icon="swap-horizontal" label="Zuletzt geändert" />
+                  {e.lastChange.items.map((c) => (
+                    <T key={c.label} variant="caption">
+                      <T variant="label">{c.label}: </T>
+                      {c.from ?? '–'} → {c.to ?? '–'}
+                    </T>
+                  ))}
+                </Card>
+              ) : null}
 
-          {e.canManage && e.status === 'scheduled' && new Date(e.startsAt) > new Date() ? (
-            <CoachActions event={e} />
-          ) : null}
+              {e.contactPerson ? (
+                <Card list>
+                  <ListRow
+                    first
+                    leading={<IconTile name="person-outline" />}
+                    title={e.contactPerson.name}
+                    subtitle="Ansprechperson"
+                  />
+                </Card>
+              ) : null}
 
-          {e.type === 'match' && e.team ? <MatchSection event={e} /> : null}
-          <TrainingPlanSection event={e} />
+              {e.program.length > 0 ? (
+                <Section title="Programm">
+                  <Card>
+                    {e.program.map((item, i) => (
+                      <View
+                        key={item.time + item.title}
+                        style={{
+                          flexDirection: 'row',
+                          gap: 14,
+                          paddingVertical: 8,
+                          borderTopWidth: i === 0 ? 0 : 1,
+                          borderTopColor: colors.border,
+                        }}
+                      >
+                        <T
+                          variant="label"
+                          color={colors.primaryText}
+                          style={{ width: 48, fontWeight: '800' }}
+                        >
+                          {item.time}
+                        </T>
+                        <T style={{ flex: 1 }}>{item.title}</T>
+                      </View>
+                    ))}
+                  </Card>
+                </Section>
+              ) : null}
 
-          {e.carpool ? <CarpoolSection event={e} /> : null}
-
-          {e.attendanceCheck &&
-          (e.attendanceCheck.canRecord || (e.canOverride && e.attendanceCheck.recordedAt)) ? (
-            <AttendanceCheckCard event={e} />
-          ) : e.presence ? (
-            <PresenceCard presence={e.presence} />
-          ) : null}
-
-          {e.team && (e.participants.length > 0 || e.canOverride) ? (
-            <Section title="Teilnahme">
-              <View style={{ gap: 10 }}>
-                <ParticipantGroups
-                  participants={e.participants}
-                  render={(p, i) => (
-                    <ParticipantRow
-                      key={p.personId}
-                      participant={p}
-                      eventId={e.id}
-                      first={i === 0}
-                      canOverride={
-                        e.canOverride && p.role !== 'coach' && e.status === 'scheduled' && !past
-                      }
-                    />
-                  )}
+              {e.attendance ? (
+                <AttendanceCard
+                  eventId={e.id}
+                  attendance={e.attendance}
+                  open={e.status === 'scheduled' && new Date(e.startsAt) > new Date()}
                 />
-              </View>
-            </Section>
-          ) : null}
+              ) : null}
+
+              {e.shifts.length > 0 ? (
+                <Section title="Helfer gesucht">
+                  <Card>
+                    {e.shifts.map((shift, i) => (
+                      <ShiftRow key={shift.id} shift={shift} first={i === 0} />
+                    ))}
+                  </Card>
+                </Section>
+              ) : null}
+
+              {e.myResponses.length > 0 ? (
+                <Section title="Deine Antwort">
+                  {e.deadline && new Date(e.deadline) > new Date() ? (
+                    <T
+                      variant="caption"
+                      color={colors.primaryText}
+                      style={{ fontSize: 12.5, fontWeight: '700', marginTop: -6 }}
+                    >
+                      {`Frist: ${formatRemaining(e.deadline)}`}
+                    </T>
+                  ) : null}
+                  <ResponseControls event={e} variant="segment" />
+                </Section>
+              ) : null}
+
+              {e.canEditClubEvent && !past ? (
+                <Card>
+                  <Button
+                    label="Veranstaltung bearbeiten"
+                    variant="outline"
+                    icon="create-outline"
+                    onPress={() => router.push(`/admin/club-event-new?id=${e.id}`)}
+                  />
+                </Card>
+              ) : null}
+
+              {e.canManage && e.status === 'scheduled' && new Date(e.startsAt) > new Date() ? (
+                <CoachActions event={e} />
+              ) : null}
+
+              {e.type === 'match' && e.team ? <MatchSection event={e} /> : null}
+              <TrainingPlanSection event={e} />
+
+              {e.carpool ? <CarpoolSection event={e} /> : null}
+
+              {e.attendanceCheck &&
+              (e.attendanceCheck.canRecord || (e.canOverride && e.attendanceCheck.recordedAt)) ? (
+                <AttendanceCheckCard event={e} />
+              ) : e.presence ? (
+                <PresenceCard presence={e.presence} />
+              ) : null}
+            </View>
+            {e.team && (e.participants.length > 0 || e.canOverride) ? (
+              <Section title="Teilnahme">
+                <View style={{ gap: 10 }}>
+                  <ParticipantGroups
+                    participants={e.participants}
+                    render={(p, i) => (
+                      <ParticipantRow
+                        key={p.personId}
+                        participant={p}
+                        eventId={e.id}
+                        first={i === 0}
+                        canOverride={
+                          e.canOverride && p.role !== 'coach' && e.status === 'scheduled' && !past
+                        }
+                      />
+                    )}
+                  />
+                </View>
+              </Section>
+            ) : null}
+          </Columns>
         </>
       ) : null}
     </Screen>

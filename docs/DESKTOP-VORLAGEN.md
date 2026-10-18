@@ -59,17 +59,17 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `admin/unit/[id]` | A | Breite | Liste bzw. Detailseite |
 | `bausteine` | D | Breite | Kachelraster / Übersicht |
 | `board` | A | Breite | Liste bzw. Detailseite |
-| `calendar` | S | Breite | Sonderfall mit eigenem Entwurf |
+| `calendar` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `club-calendar` | S | Breite | Sonderfall mit eigenem Entwurf |
 | `club-cash-overview` | D | Breite | Kachelraster / Übersicht |
 | `club-cash/allowances` | C | Breite | Tabelle mit Filterleiste |
 | `club-cash/area/[key]` | D | fertig | Kachelraster / Übersicht |
 | `club-cash/audit/[id]` | A | Breite | Liste bzw. Detailseite |
 | `club-cash/audit/index` | A | Breite | Liste bzw. Detailseite |
-| `club-cash/budget` | F | Breite | Bericht / Diagramme |
+| `club-cash/budget` | F | fertig | Bericht / Diagramme |
 | `club-cash/claims` | C | Breite | Tabelle mit Filterleiste |
-| `club-cash/closing` | F | Breite | Bericht / Diagramme |
-| `club-cash/donations` | C | Breite | Tabelle mit Filterleiste |
+| `club-cash/closing` | F | fertig | Bericht / Diagramme |
+| `club-cash/donations` | C | fertig | Tabelle mit Filterleiste |
 | `club-cash/entries` | C | fertig | Tabelle mit Filterleiste |
 | `club-cash/fee-import` | E | fertig | Assistent |
 | `club-cash/fee-setup` | B | Breite | Formular |
@@ -99,7 +99,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `equipment/items` | C | Breite | Tabelle mit Filterleiste |
 | `equipment/rooms` | C | Breite | Tabelle mit Filterleiste |
 | `event-edit/[id]` | B | Breite | Formular |
-| `events/[id]` | S | Breite | Sonderfall mit eigenem Entwurf |
+| `events/[id]` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `events/archive` | A | Breite | Liste bzw. Detailseite |
 | `events/index` | A | Breite | Liste bzw. Detailseite |
 | `exchange/[id]` | A | Breite | Liste bzw. Detailseite |
@@ -109,7 +109,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `exercises` | A | Breite | Liste bzw. Detailseite |
 | `expense-claims` | A | Breite | Liste bzw. Detailseite |
 | `facilities/block-new` | B | Breite | Formular |
-| `facilities/index` | S | Breite | Sonderfall mit eigenem Entwurf |
+| `facilities/index` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `forgot` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `forum/[id]` | A | Breite | Liste bzw. Detailseite |
 | `forum/index` | A | Breite | Liste bzw. Detailseite |
@@ -158,6 +158,6 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `teams/[id]/stats/[kind]` | F | Breite | Bericht / Diagramme |
 | `teams/[id]/stats/index` | F | Breite | Bericht / Diagramme |
 | `teams/[id]/tasks` | C | Breite | Tabelle mit Filterleiste |
-| `training-plan/[id]` | S | Breite | Sonderfall mit eigenem Entwurf |
+| `training-plan/[id]` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `wiki/[id]` | A | Breite | Liste bzw. Detailseite |
 | `wiki/index` | A | Breite | Liste bzw. Detailseite |
