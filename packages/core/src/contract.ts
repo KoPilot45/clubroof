@@ -475,6 +475,8 @@ export type TeamPermissions = {
   manageDemand: boolean;
   /** Module der Mannschaft ein- und ausschalten */
   manageModules: boolean;
+  /** Archiv der Mannschaft einsehen (Paket AR) */
+  readArchive: boolean;
 };
 
 export type MatchResult = {

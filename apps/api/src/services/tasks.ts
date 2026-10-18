@@ -15,6 +15,7 @@ import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, or } from 'drizzle-orm';
 import type { Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
+import { archiveItem } from './archive';
 import { notify, recipientsFor } from './event-admin';
 import { loadTeamForActor, requireModule, type TeamRow } from './team-access';
 
@@ -284,9 +285,34 @@ export async function updateTask(
   return listTasks(db, actor, team.id, now);
 }
 
+/** Löschen heißt archivieren (Paket AR): die Aufgabe liegt danach im Archiv der Mannschaft. */
 export async function deleteTask(db: Db, actor: Actor, id: string, now: Date) {
-  const { team, manage } = await loadTask(db, actor, id);
+  const { team, manage, task } = await loadTask(db, actor, id);
   if (!manage) throw forbidden('Aufgaben verwaltet das Trainerteam.');
+  await archiveItem(
+    db,
+    actor,
+    'task',
+    {
+      originalId: task.id,
+      label: task.title,
+      detail: task.dueOn,
+      payload: {
+        teamId: task.teamId,
+        eventId: task.eventId,
+        title: task.title,
+        note: task.note,
+        dueOn: task.dueOn,
+        assigneePersonId: task.assigneePersonId,
+        createdByPersonId: task.createdByPersonId,
+        doneAt: task.doneAt?.toISOString() ?? null,
+        doneByPersonId: task.doneByPersonId,
+        createdAt: task.createdAt.toISOString(),
+      },
+    },
+    now,
+    task.teamId,
+  );
   await db.delete(s.teamTasks).where(eq(s.teamTasks.id, id));
   return listTasks(db, actor, team.id, now);
 }

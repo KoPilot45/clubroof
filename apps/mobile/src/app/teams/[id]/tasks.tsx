@@ -140,6 +140,7 @@ export default function TasksScreen() {
                     onPress: () =>
                       confirmDelete({
                         name: task.title,
+                        archive: true,
                         onConfirm: () =>
                           run.mutate({ path: `/tasks/${task.id}`, method: 'DELETE' }),
                       }),
@@ -185,6 +186,7 @@ export default function TasksScreen() {
                         onPress: () =>
                           confirmDelete({
                             name: task.title,
+                            archive: true,
                             onConfirm: () =>
                               run.mutate({ path: `/tasks/${task.id}`, method: 'DELETE' }),
                           }),

@@ -78,7 +78,6 @@ export default function ScheduleImportScreen() {
   // Vorschau neu berechnen, wenn Spalten oder Zuordnungen geändert werden
   useEffect(() => {
     if (file) void call(false);
-    // eslint-disable-next-line
   }, [file, columns, mapping]);
 
   const choose = async () => {

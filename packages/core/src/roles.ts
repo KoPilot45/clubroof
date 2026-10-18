@@ -109,6 +109,9 @@ export const SYSTEM_ROLES: SystemRoleTemplate[] = [
       // Strafenkatalog und Kassenverwaltung gemeinsam mit dem Kassenwart (Festlegung 07.10.2026)
       'cash.fines',
       'cash.manage',
+      // Archiv der eigenen Mannschaft: ansehen und wiederherstellen (endgültig löschen nur die Administration)
+      'archive.read',
+      'archive.restore',
     ],
   },
   {

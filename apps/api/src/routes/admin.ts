@@ -183,8 +183,11 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
       updateClubEvent(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
 
-  app.get('/admin/audit', async (request): Promise<AuditEntry[]> =>
-    listAudit(app.db, request.actor!),
+  app.get(
+    '/admin/audit',
+    { schema: { querystring: z.object({ limit: z.coerce.number().int().optional() }) } },
+    async (request): Promise<AuditEntry[]> =>
+      listAudit(app.db, request.actor!, request.query.limit),
   );
 
   app.get(

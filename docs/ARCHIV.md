@@ -1,6 +1,6 @@
 # Archiv (Planung)
 
-Stand 18.10.2026 · Konzept abgestimmt; Stufe 1 umgesetzt (Grundgerüst, Wissensartikel, Übungen – siehe `FUNKTIONEN.md`). Technik: Beim Löschen wird ein Abbild des Eintrags in `archive_entries` abgelegt und der Eintrag aus seiner Tabelle entfernt; Wiederherstellen legt ihn mit der alten ID wieder an. Paket AR in `PAKETE.md`.
+Stand 18.10.2026 · Konzept abgestimmt; Stufe 1 und 2 umgesetzt (Grundgerüst, Team-Archiv, Wissensartikel, Übungen, Aufgaben, Sponsoren, Ausrüstung – siehe `FUNKTIONEN.md`). Technik: Beim Löschen wird ein Abbild des Eintrags in `archive_entries` abgelegt und der Eintrag aus seiner Tabelle entfernt; Wiederherstellen legt ihn mit der alten ID wieder an. Paket AR in `PAKETE.md`.
 
 ## Prinzip
 

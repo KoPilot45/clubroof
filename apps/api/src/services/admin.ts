@@ -323,10 +323,10 @@ export async function getAdminOverview(db: Db, actor: Actor, now: Date): Promise
   };
 }
 
-export async function listAudit(db: Db, actor: Actor): Promise<AuditEntry[]> {
+export async function listAudit(db: Db, actor: Actor, limit = 200): Promise<AuditEntry[]> {
   if (!actorCan(actor, 'club.audit.read'))
     throw forbidden('Das Audit-Log ist dem Vorstand vorbehalten.');
-  return auditEntries(db, actor, 200);
+  return auditEntries(db, actor, Math.min(Math.max(limit, 1), 500));
 }
 
 // ── Mitglieder ──────────────────────────────────────────────────────────────

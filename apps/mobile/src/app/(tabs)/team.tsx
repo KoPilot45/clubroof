@@ -271,6 +271,16 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
               },
             ]
           : []),
+        ...(perm?.readArchive
+          ? [
+              {
+                key: 'archive',
+                label: 'Archiv',
+                icon: 'archive-outline' as const,
+                onPress: () => router.push(`/teams/${team.id}/archive`),
+              },
+            ]
+          : []),
         ...(perm?.manageModules
           ? [
               {

@@ -708,6 +708,8 @@ export const en: Record<string, string> = {
   Auslagen: 'Expense claims',
   'Auslagen & Vergütungen': 'Claims & compensation',
   Auslaufen: 'Cool-down',
+  Ausmustern: 'Retire',
+  Ausrüstung: 'Equipment',
   Ausschalten: 'Turn off',
   Außenbahn: 'Wing',
   Außenverteidigung: 'Full-back',
@@ -2246,7 +2248,9 @@ export const en: Record<string, string> = {
   'Gelöschte Einträge liegen hier und lassen sich wiederherstellen. Endgültig gelöscht wird nie automatisch, sondern nur auf deinen Anstoß.':
     'Deleted entries are kept here and can be restored. Nothing is ever deleted permanently on its own, only when you ask for it.',
   'Gelöschte Wissensartikel und Übungen landen im Archiv. Die Administration öffnet es unter „Verwaltung → Abo & Kontrolle → Archiv“: Dort stellst du einen Eintrag mit „Wiederherstellen“ wieder her. Ist sein Name inzwischen vergeben, fragt dich die App nach einem neuen Namen. Endgültig gelöscht wird nie automatisch: „Bereinigen“ entfernt, was älter als die Standardfrist ist (derzeit 2 Jahre), „Archiv leeren“ löscht alles; beides nur auf deinen Anstoß und mit Bestätigung. „Archiv exportieren“ speichert alle archivierten Einträge als Datei.':
-    'Deleted knowledge articles and exercises end up in the archive. Administrators open it under “Administration → Plan & control → Archive”: there you bring an entry back with “Restore”. If its name has been taken in the meantime, the app asks you for a new name. Nothing is ever deleted permanently on its own: “Clean up” removes what is older than the standard period (currently 2 years), “Empty archive” deletes everything; both only when you ask for it and after confirmation. “Export archive” saves all archived entries as a file.',
+    'Deleted knowledge articles and exercises end up in the archive. Administrators open it under “Administration → Subscription & control → Archive”: there you bring an entry back with “Restore”. If its name has been taken in the meantime, the app asks you for a new name. Nothing is ever deleted permanently on its own: “Clean up” removes what is older than the standard period (currently 2 years), “Empty archive” deletes everything; both only when you ask for it and after confirmation. “Export archive” saves all archived entries as a file.',
+  'Gelöschte Wissensartikel, Übungen, Aufgaben, Sponsoren und ausgemustertes Material landen im Archiv. Das Trainerteam öffnet das Archiv seiner Mannschaft unter „Team → Archiv“ (gelöschte Aufgaben, wiederherstellen). Die Administration öffnet das ganze Archiv unter „Verwaltung → Abo & Kontrolle → Archiv“: Dort stellst du einen Eintrag mit „Wiederherstellen“ wieder her. Ist sein Name inzwischen vergeben, fragt dich die App nach einem neuen Namen. Endgültig gelöscht wird nie automatisch: „Bereinigen“ entfernt, was älter als die Standardfrist ist (derzeit 2 Jahre), „Archiv leeren“ löscht alles; beides nur auf deinen Anstoß und mit Bestätigung. „Archiv exportieren“ speichert alle archivierten Einträge als Datei.':
+    'Deleted knowledge articles, exercises, tasks, sponsors and retired equipment end up in the archive. The coaching staff opens the archive of their team under “Team → Archive” (deleted tasks, restore). Administrators open the whole archive under “Administration → Plan & control → Archive”: there you bring an entry back with “Restore”. If its name has been taken in the meantime, the app asks you for a new name. Nothing is ever deleted permanently on its own: “Clean up” removes what is older than the standard period (currently 2 years), “Empty archive” deletes everything; both only when you ask for it and after confirmation. “Export archive” saves all archived entries as a file.',
   Gemeldet: 'Reported',
   'Gemeldet: {0} ({1}) – wartet auf Bestätigung': 'Reported: {0} ({1}) – awaiting confirmation',
   Genehmigen: 'Approve',

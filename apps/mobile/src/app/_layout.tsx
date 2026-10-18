@@ -357,6 +357,10 @@ function Navigator() {
                 options={{ headerShown: true, title: 'Aufgaben' }}
               />
               <Stack.Screen
+                name="teams/[id]/archive"
+                options={{ headerShown: true, title: 'Archiv' }}
+              />
+              <Stack.Screen
                 name="teams/[id]/manage"
                 options={{ headerShown: true, title: 'Mannschaft bearbeiten' }}
               />

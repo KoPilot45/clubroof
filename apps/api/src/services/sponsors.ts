@@ -22,6 +22,7 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { resolveMediaUrl } from '../storage/media-links';
+import { archiveItem } from './archive';
 import { mediaReference } from './uploads';
 
 const today = (actor: Actor, now: Date) => toIsoDate(calendarDayOf(now, actor.club.timezone));
@@ -275,6 +276,30 @@ export async function deleteSponsor(
     .from(s.sponsors)
     .where(and(eq(s.sponsors.id, id), eq(s.sponsors.clubId, actor.club.id)));
   if (!row) throw notFound('Der Sponsor');
+  await archiveItem(
+    db,
+    actor,
+    'sponsor',
+    {
+      originalId: row.id,
+      label: row.name,
+      detail: row.slogan,
+      payload: {
+        name: row.name,
+        slogan: row.slogan,
+        description: row.description,
+        linkUrl: row.linkUrl,
+        logoRef: row.logoRef,
+        logoDarkRef: row.logoDarkRef,
+        hideForYouth: row.hideForYouth,
+        startsOn: row.startsOn,
+        endsOn: row.endsOn,
+        sortOrder: row.sortOrder,
+        createdAt: row.createdAt.toISOString(),
+      },
+    },
+    now,
+  );
   await db.delete(s.sponsors).where(eq(s.sponsors.id, id));
   await audit(db, actor, id, `Sponsor gelöscht: ${row.name}`, now);
   return listAdminSponsors(db, actor, now);

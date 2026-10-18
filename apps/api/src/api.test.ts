@@ -7204,7 +7204,7 @@ describe.skipIf(!url)('API', () => {
 
     it('steht im Änderungsprotokoll', async () => {
       const admin = await login('admin');
-      const audit = await get<AuditEntry[]>('/admin/audit', admin.token);
+      const audit = await get<AuditEntry[]>('/admin/audit?limit=500', admin.token);
       expect(audit.some((a) => a.label.startsWith('Vereinskasse: Buchung storniert'))).toBe(true);
       expect(audit.some((a) => a.label.startsWith('Vereinskasse: Konto angelegt'))).toBe(true);
     });
@@ -7531,7 +7531,7 @@ describe.skipIf(!url)('API', () => {
 
     it('steht im Änderungsprotokoll', async () => {
       const admin = await login('admin');
-      const audit = await get<AuditEntry[]>('/admin/audit', admin.token);
+      const audit = await get<AuditEntry[]>('/admin/audit?limit=500', admin.token);
       expect(audit.some((a) => a.label.startsWith('Beiträge: Sollstellung bis'))).toBe(true);
       expect(audit.some((a) => a.label.startsWith('Beiträge: Kontoauszug importiert'))).toBe(true);
       expect(audit.some((a) => a.label.startsWith('Beiträge: Zahlung'))).toBe(true);
@@ -8915,7 +8915,12 @@ describe.skipIf(!url)('API', () => {
 
       // Archiv sehen nur Berechtigte
       expect((await send('GET', '/archive', player.token)).status).toBe(403);
-      expect((await send('GET', '/archive', coach.token)).status).toBe(403);
+      // Das Trainerteam sieht nur das Archiv seiner Mannschaft, nicht die Vereinseinträge
+      expect(
+        (await get<ArchiveOverview>('/archive', coach.token)).entries.some(
+          (e) => e.teamId === null,
+        ),
+      ).toBe(false);
       const archive = await get<ArchiveOverview>('/archive', admin.token);
       const wikiEntry = archive.entries.find((e) => e.label === 'Platzordnung')!;
       const exEntry = archive.entries.find((e) => e.label === 'Torschuss im Kreis')!;
@@ -8928,9 +8933,9 @@ describe.skipIf(!url)('API', () => {
       expect(exEntry.kind).toBe('exercise');
       expect(archive.kinds.find((k) => k.kind === 'wiki')!.count).toBeGreaterThanOrEqual(1);
 
-      // Wiederherstellen ohne Berechtigung → 403
+      // Fremde Vereinseinträge sind für das Trainerteam unsichtbar (404)
       expect((await send('POST', `/archive/${wikiEntry.id}/restore`, coach.token, {})).status).toBe(
-        403,
+        404,
       );
 
       // Namenskonflikt: der Name ist inzwischen vergeben → Rückfrage (409), nichts wird selbst umbenannt
@@ -8985,6 +8990,103 @@ describe.skipIf(!url)('API', () => {
       });
       expect(emptied.body.deleted).toBeGreaterThanOrEqual(1);
       expect(emptied.body.overview.entries).toHaveLength(0);
+    });
+
+    it('Archiv (AR, Stufe 2): Mannschaftsarchiv für Aufgaben, Sponsoren, Ausrüstung', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+
+      // Aufgabe löschen → Archiv der Mannschaft
+      const made = await send<TeamTaskList>('POST', `/teams/${b1.id}/tasks`, coach.token, {
+        title: 'Trikots waschen',
+        dueOn: '2026-12-01',
+      });
+      expect(made.status).toBe(201);
+      const task = made.body.open.find((t) => t.title === 'Trikots waschen')!;
+      expect((await send('DELETE', `/tasks/${task.id}`, coach.token)).status).toBe(200);
+      expect(
+        (await get<TeamTaskList>(`/teams/${b1.id}/tasks`, coach.token)).open.some(
+          (t) => t.id === task.id,
+        ),
+      ).toBe(false);
+
+      // Spieler sehen kein Archiv; das Trainerteam sieht das Archiv der eigenen Mannschaft, darf wiederherstellen,
+      // aber nicht endgültig löschen
+      expect((await send('GET', `/archive?teamId=${b1.id}`, player.token)).status).toBe(403);
+      const team = await get<ArchiveOverview>(`/archive?teamId=${b1.id}`, coach.token);
+      const entry = team.entries.find((e) => e.label === 'Trikots waschen')!;
+      expect(entry).toMatchObject({
+        kind: 'task',
+        teamId: b1.id,
+        canRestore: true,
+        canPurge: false,
+      });
+      expect((await send('DELETE', `/archive/${entry.id}`, coach.token)).status).toBe(403);
+      expect(
+        (await send('POST', '/archive/purge', coach.token, { mode: 'all', teamId: b1.id })).status,
+      ).toBe(403);
+      // Die Administration sieht es ebenfalls und darf löschen
+      const all = await get<ArchiveOverview>('/archive', admin.token);
+      expect(all.entries.find((e) => e.id === entry.id)).toMatchObject({
+        canPurge: true,
+        teamName: expect.any(String),
+      });
+
+      expect((await send('POST', `/archive/${entry.id}/restore`, coach.token, {})).status).toBe(
+        200,
+      );
+      expect(
+        (await get<TeamTaskList>(`/teams/${b1.id}/tasks`, coach.token)).open.some(
+          (t) => t.id === task.id,
+        ),
+      ).toBe(true);
+
+      // Sponsor und Ausrüstung: Verwaltung löscht → Vereinsarchiv, Trainerteam sieht es nicht
+      const sponsors = await get<AdminSponsors>('/admin/sponsors', admin.token);
+      const sponsor = sponsors.sponsors[sponsors.sponsors.length - 1]!;
+      expect((await send('DELETE', `/admin/sponsors/${sponsor.id}`, admin.token)).status).toBe(200);
+      const equipment = await send<EquipmentOverview>('POST', '/equipment', admin.token, {
+        kind: 'material',
+        name: 'Ersatznetze',
+        quantity: 2,
+      });
+      const net = equipment.body.items.find((i) => i.name === 'Ersatznetze')!;
+      expect((await send('DELETE', `/equipment/${net.id}`, admin.token)).status).toBe(200);
+      const club = await get<ArchiveOverview>('/archive', admin.token);
+      const sponsorEntry = club.entries.find((e) => e.label === sponsor.name)!;
+      const netEntry = club.entries.find((e) => e.label === 'Ersatznetze')!;
+      expect([sponsorEntry.kind, netEntry.kind]).toEqual(['sponsor', 'equipment']);
+      expect(
+        (await get<ArchiveOverview>('/archive', coach.token)).entries.some(
+          (e) => e.id === sponsorEntry.id,
+        ),
+      ).toBe(false);
+      expect(
+        (await send('POST', `/archive/${sponsorEntry.id}/restore`, coach.token, {})).status,
+      ).toBe(404);
+
+      // Wiederhergestellte Sponsoren werben nicht von allein; Ausrüstung kommt mit alter Anzahl zurück
+      const back = await send<ArchiveOverview>(
+        'POST',
+        `/archive/${sponsorEntry.id}/restore`,
+        admin.token,
+        {},
+      );
+      expect(back.status).toBe(200);
+      const restored = (await get<AdminSponsors>('/admin/sponsors', admin.token)).sponsors.find(
+        (x) => x.id === sponsor.id,
+      )!;
+      expect(restored).toMatchObject({ name: sponsor.name, advertise: false });
+      expect((await send('POST', `/archive/${netEntry.id}/restore`, admin.token, {})).status).toBe(
+        200,
+      );
+      expect(
+        (await get<EquipmentOverview>('/equipment', admin.token)).items.find(
+          (i) => i.id === net.id,
+        ),
+      ).toMatchObject({ name: 'Ersatznetze', quantity: 2 });
     });
   });
 });

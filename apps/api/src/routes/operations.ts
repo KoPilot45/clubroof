@@ -106,7 +106,7 @@ export const operationRoutes: FastifyPluginAsyncZod = async (app) => {
     '/equipment/:id',
     { schema: { params: id } },
     async (request): Promise<EquipmentOverview> =>
-      deleteItem(app.db, request.actor!, request.params.id),
+      deleteItem(app.db, request.actor!, request.params.id, app.now()),
   );
   app.get(
     '/equipment/people',

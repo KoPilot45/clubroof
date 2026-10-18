@@ -19,6 +19,7 @@ export function teamPermissions(actor: Actor, team: TeamRow): TeamPermissions {
       actorCan(actor, 'teams.modules.manage', team) ||
       actorCan(actor, 'teams.manage', team) ||
       actorCan(actor, 'club.modules.manage'),
+    readArchive: actorCan(actor, 'archive.read', team),
   };
 }
 

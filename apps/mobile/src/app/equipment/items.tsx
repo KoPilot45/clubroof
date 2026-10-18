@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { EditSheet } from '@/components/edit-sheet';
 import { EditedNote } from '@/components/edited';
+import { useConfirmDelete } from '@/lib/confirm';
 import {
   Button,
   Card,
@@ -24,6 +25,7 @@ import { t } from '@/lib/i18n';
 
 export default function EquipmentItemsScreen() {
   const { api } = useSignedIn();
+  const confirmDelete = useConfirmDelete();
   const queryClient = useQueryClient();
   const [giving, setGiving] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -115,6 +117,21 @@ export default function EquipmentItemsScreen() {
                     variant="outline"
                     onPress={() => setEditing(item)}
                   />
+                  {item.holder ? null : (
+                    <Button
+                      label="Ausmustern"
+                      icon="archive-outline"
+                      variant="outline"
+                      onPress={() =>
+                        confirmDelete({
+                          name: item.name,
+                          archive: true,
+                          onConfirm: () =>
+                            change.mutateAsync({ path: `/equipment/${item.id}`, method: 'DELETE' }),
+                        })
+                      }
+                    />
+                  )}
                   {item.holder ? (
                     <Button
                       label="Zurückgenommen"

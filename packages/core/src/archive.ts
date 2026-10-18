@@ -3,12 +3,15 @@
  * ansehen und wiederherstellen; endgültig gelöscht wird nur auf Anstoß (Bereinigen, Archiv leeren), nie automatisch.
  */
 
-export const ARCHIVE_KINDS = ['wiki', 'exercise'] as const;
+export const ARCHIVE_KINDS = ['wiki', 'exercise', 'task', 'sponsor', 'equipment'] as const;
 export type ArchiveKind = (typeof ARCHIVE_KINDS)[number];
 
 export const ARCHIVE_KIND_LABEL: Record<ArchiveKind, string> = {
   wiki: 'Wissensartikel',
   exercise: 'Übungen',
+  task: 'Aufgaben',
+  sponsor: 'Sponsoren',
+  equipment: 'Ausrüstung',
 };
 
 /**
@@ -19,6 +22,9 @@ export const ARCHIVE_KIND_LABEL: Record<ArchiveKind, string> = {
 export const ARCHIVE_RETENTION_YEARS: Record<ArchiveKind, number> = {
   wiki: 2,
   exercise: 2,
+  task: 2,
+  sponsor: 2,
+  equipment: 2,
 };
 
 export type ArchiveEntry = {
@@ -28,6 +34,9 @@ export type ArchiveEntry = {
   label: string;
   /** Zusatzzeile, z. B. Kategorie */
   detail: string | null;
+  /** Mannschaft, zu der der Eintrag gehört (Team-Archiv); sonst Vereinsarchiv */
+  teamId: string | null;
+  teamName: string | null;
   archivedAt: string;
   archivedBy: string | null;
   /** Ab diesem Zeitpunkt wird der Eintrag zum Bereinigen angeboten (ISO) */
@@ -54,6 +63,8 @@ export type PurgeArchiveInput = {
   /** `due`: nur Fälliges bereinigen, `all`: Archiv leeren (Einträge mit laufender Frist bleiben) */
   mode: 'due' | 'all';
   kind?: ArchiveKind;
+  /** Nur das Archiv dieser Mannschaft */
+  teamId?: string;
 };
 
 export type PurgeArchiveResult = {
