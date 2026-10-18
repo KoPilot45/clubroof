@@ -117,6 +117,7 @@ export const en: Record<string, string> = {
   '{0} fährt zu „{1}“ bei dir mit.': '{0} is riding with you to “{1}”.',
   '{0} fährt zu „{1}“ und hat {2} Platz frei.': '{0} is driving to “{1}” and has {2} seat free.',
   '{0} fährt zu „{1}“ und hat {2} Plätze frei.': '{0} is driving to “{1}” and has {2} seats free.',
+  '{0} fehlen': '{0} missing',
   '{0} fehlerhaft': '{0} faulty',
   '{0} Filter aktiv': '{0} filters active',
   '{0} frei': '{0} free',
@@ -2153,6 +2154,7 @@ export const en: Record<string, string> = {
   'Funktionen änderst du später unter Mannschaft › Module.':
     'You can change features later under Team › Modules.',
   'Funktionen der Mannschaft': 'Team features',
+  Für: 'For',
   'für {0}': 'for {0}',
   'Für {0} darfst du keine Spielerbewegungen erfassen.':
     'You are not allowed to record player movements for {0}.',

@@ -34,7 +34,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `admin/audit` | C | fertig | Tabelle mit Filterleiste |
 | `admin/club` | B | Breite | Formular |
 | `admin/club-event-new` | B | Breite | Formular |
-| `admin/club-events` | C | Breite | Tabelle mit Filterleiste |
+| `admin/club-events` | C | fertig | Tabelle mit Filterleiste |
 | `admin/departments` | C | Breite | Tabelle mit Filterleiste |
 | `admin/funds` | C | Breite | Tabelle mit Filterleiste |
 | `admin/import` | E | fertig | Assistent |
