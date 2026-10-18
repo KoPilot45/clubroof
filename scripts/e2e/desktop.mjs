@@ -321,6 +321,14 @@ for (const s of sizes) {
     );
     await b.shot(t.page, `dt2-termin-1440-${scheme}`, false);
   }
+  const ad = await b.session('admin', { width: 1440, height: 900 });
+  await ad.goto('/admin/club-events');
+  await ad.page.waitForTimeout(3000);
+  ok(
+    (await ad.page.getByRole('table').count()) > 0 ||
+      (await ad.page.getByText('Noch keine Veranstaltungen').filter({ visible: true }).count()) > 0,
+    'Veranstaltungen: Tabelle (oder leer)',
+  );
   await t.goto('/club-calendar');
   await t.page.waitForTimeout(3000);
   await t.goto('/club-cash/claims');
