@@ -69,7 +69,8 @@ const analyse = () => {
     if (rect.width < 2 || rect.height < 2) continue;
     const cs = getComputedStyle(el);
     if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) === 0) continue;
-    let fg = parse(cs.color);
+    // SVG-Text wird mit `fill` gezeichnet, nicht mit `color`
+    let fg = parse(el instanceof SVGElement ? cs.fill : cs.color);
     if (!fg) continue;
     // Fläche dahinter: erster Vorfahre mit deckender Farbe; Verlauf/Bild → überspringen
     const layers = [];
