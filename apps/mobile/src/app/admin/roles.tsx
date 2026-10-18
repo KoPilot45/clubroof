@@ -2,6 +2,7 @@ import type { RoleCatalog } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Button, Card, Chip, ErrorNotice, ListRow, Loading, Screen, T } from '@/components/ui';
+import { Columns } from '@/components/columns';
 import { useSignedIn } from '@/lib/session';
 
 const SCOPE_HINT = { club: 'meist vereinsweit', org_unit: 'je Abteilung', team: 'je Mannschaft' };
@@ -24,50 +25,52 @@ export default function RolesScreen() {
         Rollen sind Rechtepakete. Sie werden zusätzlich zur Mannschaft vergeben – z. B. ist ein
         Spieler „Kassenwart“ seiner Mannschaft. Jede Rolle kann mehrere Personen haben.
       </T>
-      {catalog.data.roles.map((r) => (
-        <Card key={r.key} style={{ gap: 6 }}>
-          <T variant="heading">{r.name}</T>
-          {r.description ? <T variant="caption">{r.description}</T> : null}
-          <Chip
-            tone="neutral"
-            label={`${r.permissions.length} Rechte · ${SCOPE_HINT[r.defaultScope]}`}
-          />
-          {r.holders.length === 0 ? <T variant="caption">Noch niemand.</T> : null}
-          {r.holders.slice(0, PREVIEW).map((h, i) => (
-            <ListRow
-              key={h.assignmentId}
-              first={i === 0}
-              title={h.name}
-              subtitle={h.scopeLabel}
-              onPress={() => router.push(`/admin/member/${h.personId}`)}
+      <Columns min={420}>
+        {catalog.data.roles.map((r) => (
+          <Card key={r.key} style={{ gap: 6 }}>
+            <T variant="heading">{r.name}</T>
+            {r.description ? <T variant="caption">{r.description}</T> : null}
+            <Chip
+              tone="neutral"
+              label={`${r.permissions.length} Rechte · ${SCOPE_HINT[r.defaultScope]}`}
             />
-          ))}
-          <Button
-            label={
-              r.holders.length > PREVIEW
-                ? `Alle anzeigen (${r.holders.length})`
-                : r.holders.length
-                  ? 'Rolle öffnen'
-                  : 'Rolle ansehen'
-            }
-            icon="people-outline"
-            variant="outline"
-            size="sm"
-            style={{ alignSelf: 'flex-start' }}
-            onPress={() => open(r.key)}
-          />
-          {me.admin.manageRoles ? (
+            {r.holders.length === 0 ? <T variant="caption">Noch niemand.</T> : null}
+            {r.holders.slice(0, PREVIEW).map((h, i) => (
+              <ListRow
+                key={h.assignmentId}
+                first={i === 0}
+                title={h.name}
+                subtitle={h.scopeLabel}
+                onPress={() => router.push(`/admin/member/${h.personId}`)}
+              />
+            ))}
             <Button
-              label={`${r.name} hinzufügen`}
-              icon="person-add-outline"
-              variant="tonal"
+              label={
+                r.holders.length > PREVIEW
+                  ? `Alle anzeigen (${r.holders.length})`
+                  : r.holders.length
+                    ? 'Rolle öffnen'
+                    : 'Rolle ansehen'
+              }
+              icon="people-outline"
+              variant="outline"
               size="sm"
               style={{ alignSelf: 'flex-start' }}
-              onPress={() => open(r.key, true)}
+              onPress={() => open(r.key)}
             />
-          ) : null}
-        </Card>
-      ))}
+            {me.admin.manageRoles ? (
+              <Button
+                label={`${r.name} hinzufügen`}
+                icon="person-add-outline"
+                variant="tonal"
+                size="sm"
+                style={{ alignSelf: 'flex-start' }}
+                onPress={() => open(r.key, true)}
+              />
+            ) : null}
+          </Card>
+        ))}
+      </Columns>
     </Screen>
   );
 }

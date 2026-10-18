@@ -18,6 +18,9 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { toGermanDate } from '@/lib/dates';
+import { Cell, DataTable } from '@/components/data-table';
+import { t } from '@/lib/i18n';
+import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,6 +37,87 @@ function TeamList({
 }) {
   const units = [...new Map(teams.map((t) => [t.orgUnit.id, t.orgUnit])).values()];
   const { colors } = useTheme();
+  const desktop = useIsDesktop();
+  if (desktop)
+    return (
+      <>
+        <DataTable
+          rows={teams}
+          rowKey={(t) => t.id}
+          exportName="mannschaften"
+          defaultSort={{ key: 'unit', dir: 'asc' }}
+          onRowPress={(t) =>
+            editable && t.canManage ? router.push(`/admin/team/${t.id}`) : undefined
+          }
+          columns={[
+            {
+              key: 'badge',
+              label: 'Kürzel',
+              width: 90,
+              sort: (a, b) => a.badge.localeCompare(b.badge),
+              csv: (t) => t.badge,
+              render: (t) => <TeamBadge badge={t.badge} />,
+            },
+            {
+              key: 'name',
+              label: 'Mannschaft',
+              flex: 2,
+              sort: (a, b) => a.name.localeCompare(b.name),
+              csv: (t) => t.name,
+              render: (t) => <Cell>{t.name}</Cell>,
+            },
+            {
+              key: 'unit',
+              label: 'Abteilung',
+              flex: 1.2,
+              sort: (a, b) => a.orgUnit.name.localeCompare(b.orgUnit.name),
+              csv: (t) => t.orgUnit.name,
+              render: (t) => <Cell muted>{t.orgUnit.name}</Cell>,
+            },
+            {
+              key: 'players',
+              label: 'Spieler',
+              width: 90,
+              align: 'right',
+              sort: (a, b) => a.players - b.players,
+              csv: (t) => String(t.players),
+              render: (t) => <Cell>{String(t.players)}</Cell>,
+            },
+            {
+              key: 'staff',
+              label: 'Trainerteam',
+              width: 110,
+              align: 'right',
+              sort: (a, b) => a.staff - b.staff,
+              csv: (t) => String(t.staff),
+              render: (t) => <Cell>{String(t.staff)}</Cell>,
+            },
+            {
+              key: 'league',
+              label: 'Liga',
+              flex: 1,
+              sort: (a, b) => (a.league ?? '').localeCompare(b.league ?? ''),
+              csv: (t) => t.league ?? '',
+              render: (t) => <Cell muted>{t.league ?? '–'}</Cell>,
+            },
+          ]}
+        />
+        {units
+          .filter((u) => moduleUnits.includes(u.id))
+          .map((u) => (
+            <ListRow
+              key={u.id}
+              leading={
+                <Ionicons name="extension-puzzle-outline" size={20} color={colors.primaryText} />
+              }
+              title={`${t('Module für diese Abteilung')}: ${u.name}`}
+              onPress={() =>
+                router.push({ pathname: '/admin/unit/[id]', params: { id: u.id, name: u.name } })
+              }
+            />
+          ))}
+      </>
+    );
   return (
     <>
       {units.map((u) => (
