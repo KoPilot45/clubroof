@@ -1833,6 +1833,113 @@ export type MemberImportResult = {
   imported: number | null;
 };
 
+// ── Import-Assistent (Paket IM) ───────────────────────────────────────────
+
+export const IMPORT_AREAS = ['members', 'roster'] as const;
+export type ImportArea = (typeof IMPORT_AREAS)[number];
+
+export const IMPORT_DUPLICATE_MODES = ['skip', 'update', 'create'] as const;
+/** Verhalten bei Dubletten: überspringen, bestehenden Eintrag aktualisieren oder trotzdem neu anlegen */
+export type ImportDuplicateMode = (typeof IMPORT_DUPLICATE_MODES)[number];
+
+export type ImportField = {
+  key: string;
+  label: string;
+  required: boolean;
+  /** Erklärung für die Vorlage („TT.MM.JJJJ“) */
+  hint: string;
+  example: string;
+};
+
+export type ImportAreaInfo = {
+  area: ImportArea;
+  label: string;
+  text: string;
+  fields: ImportField[];
+  /** Bereich gilt für genau eine Mannschaft (Auswahl im Assistenten) */
+  needsTeam: boolean;
+};
+
+export type ImportAreasResponse = {
+  areas: ImportAreaInfo[];
+  /** Mannschaften, für die der Nutzer einen Kader importieren darf */
+  teams: { id: string; badge: string; name: string }[];
+  maxRows: number;
+  maxBytes: number;
+};
+
+/**
+ * Angaben eines Schritts im Assistenten. Vorschau und Übernahme nehmen dieselben Angaben, damit nur übernommen wird,
+ * was der Nutzer zuletzt gesehen hat.
+ */
+export type ImportRequest = {
+  area: ImportArea;
+  teamId?: string | null;
+  file: { name: string; dataBase64: string };
+  /** Blatt einer Excel-Datei; ohne Angabe das erste */
+  sheet?: string | null;
+  /** je Spalte der Datei das Feld (Schlüssel aus `ImportField`) oder `null`; ohne Angabe automatisch erkannt */
+  mapping?: (string | null)[] | null;
+  duplicates?: ImportDuplicateMode;
+  /** Zeilennummern der Datei, die nicht übernommen werden sollen */
+  excluded?: number[];
+  /** Korrigierte Werte einzelner Zeilen (Zeilennummer → Feld → Wert), vor der Prüfung angewendet */
+  edits?: Record<string, Record<string, string>>;
+};
+
+export type ImportRow = {
+  /** Zeilennummer in der Datei (Kopfzeile = 1) */
+  line: number;
+  /** new = wird angelegt, update = aktualisiert einen Eintrag, duplicate = gibt es schon (wird übersprungen), error = fehlerhaft */
+  status: 'new' | 'update' | 'duplicate' | 'error';
+  values: Record<string, string>;
+  errors: string[];
+  warnings: string[];
+  /** Bei update/duplicate: der gefundene Eintrag */
+  match: string | null;
+  /** false, wenn der Nutzer die Zeile abgewählt hat */
+  selected: boolean;
+};
+
+export type ImportPreview = {
+  area: ImportArea;
+  sheet: string | null;
+  sheets: string[];
+  /** Kopfzeile der Datei */
+  header: string[];
+  /** Zuordnung je Spalte, wie verwendet (erkannt oder vom Nutzer gesetzt) */
+  mapping: (string | null)[];
+  /** Pflichtfelder, die keiner Spalte zugeordnet sind */
+  missingRequired: string[];
+  /** erste Zeilen der Datei zur Orientierung bei der Zuordnung */
+  sample: string[][];
+  rowCount: number;
+  rows: ImportRow[];
+  summary: { new: number; update: number; duplicate: number; error: number; excluded: number };
+  /** Nur nach der Übernahme: Nummer des Importlaufs und Zahlen */
+  run: { id: string; created: number; updated: number; undoUntil: string } | null;
+};
+
+export type ImportRunInfo = {
+  id: string;
+  area: ImportArea;
+  areaLabel: string;
+  fileName: string | null;
+  createdAt: string;
+  createdByName: string | null;
+  summary: { created: number; updated: number; skipped: number; errors: number };
+  undone: boolean;
+  /** Rückgängig geht 24 Stunden lang und nur mit dem Recht für den Bereich */
+  undoUntil: string;
+  canUndo: boolean;
+};
+
+export type ImportTemplateFile = {
+  name: string;
+  contentType: string;
+  dataBase64: string;
+};
+
 /** Spalten der Importvorlage (Trennzeichen Semikolon, wie Excel in Deutschland). */
 export const MEMBER_IMPORT_TEMPLATE =
   'Vorname;Nachname;Geburtsdatum;E-Mail;Telefon;Mitgliedsnummer;Eintrittsdatum;Mannschaft;Funktion;Rückennummer\n' +

@@ -513,6 +513,12 @@ export const HELP_SECTIONS: HelpSection[] = [
           '„Mannschaft bearbeiten → Spielplan importieren“: CSV-Datei aus dem DFBnet wählen, Vorschau prüfen (neu, geändert, unverändert, übersprungen) und übernehmen. Die Mannschaft bekommt eine Sammelmeldung. Ein erneuter Import aktualisiert Verlegungen, statt Spiele doppelt anzulegen. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.',
       },
       {
+        id: 'coach-roster-import',
+        question: 'Wie importiere ich den Kader meiner Mannschaft aus einer Datei?',
+        answer:
+          'Unter „Verwaltung → Importieren“ den Bereich „Kader einer Mannschaft“ und deine Mannschaft wählen, Excel- oder CSV-Datei hochladen, Spalten zuordnen und die Vorschau prüfen. Vorhandene Mitglieder erkennt Clubroof an Nummer, E-Mail oder Name mit Geburtsdatum und nimmt sie in den Kader auf; neue Mitglieder legt nur die Mitgliederverwaltung an. Rückennummern werden auf Doppelte geprüft. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.',
+      },
+      {
         id: 'coach-override',
         question: 'Wie ändere ich Zusagen anderer?',
         answer:
@@ -710,7 +716,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'admin-members',
         question: 'Wie lege ich Mitglieder an oder importiere sie?',
         answer:
-          'Einzeln unter „Mitglieder → Mitglied anlegen“ oder per CSV-Import (Vorschau vor der Übernahme, Dubletten werden übersprungen). Austritte beenden Mannschaftszugehörigkeiten und sperren den App-Zugang. In der Mitgliederliste filterst du nach Rolle, Trainerteam, individuellen Rechten oder fehlendem App-Zugang.',
+          'Einzeln unter „Mitglieder → Mitglied anlegen“ oder per Import aus Excel oder CSV („Importieren“): Bereich wählen, Vorlage laden, Datei hochladen, Spalten zuordnen, Vorschau prüfen (neu, aktualisiert, Dublette, Fehler), bei Dubletten überspringen, aktualisieren oder neu anlegen. Der Import wird ganz oder gar nicht übernommen und lässt sich 24 Stunden lang rückgängig machen. Austritte beenden Mannschaftszugehörigkeiten und sperren den App-Zugang. In der Mitgliederliste filterst du nach Rolle, Trainerteam, individuellen Rechten oder fehlendem App-Zugang.',
       },
       {
         id: 'admin-permissions',
