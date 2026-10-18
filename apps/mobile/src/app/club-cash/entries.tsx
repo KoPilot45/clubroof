@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
-import { EntryRow } from '@/app/club-cash';
+import { EntryRow, signedAmount } from '@/app/club-cash';
+import { Cell, DataTable } from '@/components/data-table';
+import { useIsDesktop } from '@/lib/layout';
 import {
   Button,
   Card,
@@ -28,6 +30,7 @@ import { t } from '@/lib/i18n';
 export default function ClubCashEntriesScreen() {
   const params = useLocalSearchParams<{ accountId?: string; focus?: string }>();
   const { api } = useSignedIn();
+  const desktop = useIsDesktop();
   const queryClient = useQueryClient();
   const [q, setQ] = useState('');
   const [fundId, setFundId] = useFundFilter();
@@ -64,6 +67,56 @@ export default function ClubCashEntriesScreen() {
   });
 
   const c = cash.data;
+  const renderDetail = (e: ClubCashEntry) => (
+    <View style={{ gap: 8, paddingTop: 8 }}>
+      <T variant="caption">
+        {[
+          e.counterparty,
+          e.costCenterName ? `${t('Kostenstelle')}: ${e.costCenterName}` : null,
+          e.receiptNo ? `${t('Beleg')} ${e.receiptNo}` : null,
+          e.createdByName ? `${t('Gebucht von')} ${e.createdByName}` : null,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
+      </T>
+      <T variant="caption">{formatEuro(e.amountCents)}</T>
+      {e.receiptUrl ? (
+        <Button
+          label="Beleg ansehen"
+          icon="document-attach-outline"
+          variant="outline"
+          size="sm"
+          style={{ alignSelf: 'flex-start' }}
+          onPress={() => void Linking.openURL(mediaUri(e.receiptUrl)!)}
+        />
+      ) : null}
+      {e.cancelled ? (
+        <Chip
+          tone="urgent"
+          icon="close-circle"
+          label={`${t('Storniert')}: ${e.cancelled.reason}`}
+        />
+      ) : c?.canManage ? (
+        <View style={{ gap: 8 }}>
+          <TextField
+            label="Begründung für das Storno"
+            value={reason}
+            onChangeText={setReason}
+            maxLength={300}
+          />
+          {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+          <Button
+            label="Buchung stornieren"
+            icon="close-circle-outline"
+            variant="danger"
+            disabled={reason.trim().length < 3}
+            loading={cancel.isPending}
+            onPress={() => cancel.mutate(e.id)}
+          />
+        </View>
+      ) : null}
+    </View>
+  );
   return (
     <Screen edges={[]} refreshing={entries.isRefetching} onRefresh={() => entries.refetch()}>
       <Card style={{ gap: 12 }}>
@@ -118,66 +171,80 @@ export default function ClubCashEntriesScreen() {
           <Empty icon="receipt-outline" text="Keine Buchungen gefunden." />
         </Card>
       ) : null}
-      {entries.data?.map((e) => (
-        <Card key={e.id}>
-          <EntryRow
-            entry={e}
-            first
-            showFund={(c?.funds.filter((f) => !f.archived).length ?? 0) > 1}
-            onPress={() => setOpen(open === e.id ? null : e.id)}
+      {desktop && entries.data && entries.data.length > 0 ? (
+        <>
+          <DataTable
+            rows={entries.data}
+            rowKey={(e) => e.id}
+            exportName="kassenbuch"
+            defaultSort={{ key: 'date', dir: 'desc' }}
+            onRowPress={(e) => setOpen(open === e.id ? null : e.id)}
+            columns={[
+              {
+                key: 'date',
+                label: 'Datum',
+                width: 110,
+                sort: (x, y) => x.bookedOn.localeCompare(y.bookedOn),
+                csv: (r) => r.bookedOn,
+                render: (r) => <Cell muted>{r.bookedOn.split('-').reverse().join('.')}</Cell>,
+              },
+              {
+                key: 'purpose',
+                label: 'Zweck',
+                flex: 3,
+                sort: (x, y) => x.purpose.localeCompare(y.purpose),
+                csv: (r) => r.purpose,
+                render: (r) => (
+                  <Cell>{r.cancelled ? `${r.purpose} (${t('Storniert')})` : r.purpose}</Cell>
+                ),
+              },
+              {
+                key: 'account',
+                label: 'Konto',
+                flex: 2,
+                sort: (x, y) => x.accountName.localeCompare(y.accountName),
+                csv: (r) => `${r.fundName} › ${r.accountName}`,
+                render: (r) => <Cell muted>{`${r.fundName} › ${r.accountName}`}</Cell>,
+              },
+              {
+                key: 'category',
+                label: 'Kategorie',
+                flex: 2,
+                sort: (x, y) => (x.categoryName ?? '').localeCompare(y.categoryName ?? ''),
+                csv: (r) => r.categoryName ?? '',
+                render: (r) => <Cell muted>{r.categoryName ?? ''}</Cell>,
+              },
+              {
+                key: 'amount',
+                label: 'Betrag',
+                width: 130,
+                align: 'right',
+                sort: (x, y) => x.amountCents - y.amountCents,
+                csv: (r) => signedAmount(r),
+                render: (r) => <Cell>{signedAmount(r)}</Cell>,
+              },
+            ]}
           />
-          {open === e.id ? (
-            <View style={{ gap: 8, paddingTop: 8 }}>
-              <T variant="caption">
-                {[
-                  e.counterparty,
-                  e.costCenterName ? `${t('Kostenstelle')}: ${e.costCenterName}` : null,
-                  e.receiptNo ? `${t('Beleg')} ${e.receiptNo}` : null,
-                  e.createdByName ? `${t('Gebucht von')} ${e.createdByName}` : null,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </T>
-              <T variant="caption">{formatEuro(e.amountCents)}</T>
-              {e.receiptUrl ? (
-                <Button
-                  label="Beleg ansehen"
-                  icon="document-attach-outline"
-                  variant="outline"
-                  size="sm"
-                  style={{ alignSelf: 'flex-start' }}
-                  onPress={() => void Linking.openURL(mediaUri(e.receiptUrl)!)}
-                />
-              ) : null}
-              {e.cancelled ? (
-                <Chip
-                  tone="urgent"
-                  icon="close-circle"
-                  label={`${t('Storniert')}: ${e.cancelled.reason}`}
-                />
-              ) : c?.canManage ? (
-                <View style={{ gap: 8 }}>
-                  <TextField
-                    label="Begründung für das Storno"
-                    value={reason}
-                    onChangeText={setReason}
-                    maxLength={300}
-                  />
-                  {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-                  <Button
-                    label="Buchung stornieren"
-                    icon="close-circle-outline"
-                    variant="danger"
-                    disabled={reason.trim().length < 3}
-                    loading={cancel.isPending}
-                    onPress={() => cancel.mutate(e.id)}
-                  />
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-        </Card>
-      ))}
+          {entries.data
+            .filter((e) => e.id === open)
+            .map((e) => (
+              <Card key={e.id}>{renderDetail(e)}</Card>
+            ))}
+        </>
+      ) : null}
+      {desktop
+        ? null
+        : entries.data?.map((e) => (
+            <Card key={e.id}>
+              <EntryRow
+                entry={e}
+                first
+                showFund={(c?.funds.filter((f) => !f.archived).length ?? 0) > 1}
+                onPress={() => setOpen(open === e.id ? null : e.id)}
+              />
+              {open === e.id ? renderDetail(e) : null}
+            </Card>
+          ))}
     </Screen>
   );
 }

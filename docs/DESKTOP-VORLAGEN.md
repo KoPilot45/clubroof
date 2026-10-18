@@ -70,7 +70,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `club-cash/claims` | C | Breite | Tabelle mit Filterleiste |
 | `club-cash/closing` | F | Breite | Bericht / Diagramme |
 | `club-cash/donations` | C | Breite | Tabelle mit Filterleiste |
-| `club-cash/entries` | C | Breite | Tabelle mit Filterleiste |
+| `club-cash/entries` | C | fertig | Tabelle mit Filterleiste |
 | `club-cash/fee-import` | E | fertig | Assistent |
 | `club-cash/fee-setup` | B | Breite | Formular |
 | `club-cash/fees` | C | Breite | Tabelle mit Filterleiste |
