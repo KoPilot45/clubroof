@@ -92,7 +92,7 @@
   "admin/import": {
     "t": "E",
     "note": "Assistent",
-    "status": "Breite"
+    "status": "fertig"
   },
   "admin/index": {
     "t": "D",
@@ -162,7 +162,7 @@
   "admin/team-new": {
     "t": "E",
     "note": "Assistent",
-    "status": "Breite"
+    "status": "fertig"
   },
   "admin/team/[id]": {
     "t": "A",
@@ -262,7 +262,7 @@
   "club-cash/fee-import": {
     "t": "E",
     "note": "Assistent",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-cash/fee-setup": {
     "t": "B",
@@ -357,12 +357,12 @@
   "demo/club": {
     "t": "E",
     "note": "Assistent",
-    "status": "Breite"
+    "status": "fertig"
   },
   "demo/team": {
     "t": "E",
     "note": "Assistent",
-    "status": "Breite"
+    "status": "fertig"
   },
   "documents": {
     "t": "A",
@@ -557,7 +557,7 @@
   "schedule-import": {
     "t": "E",
     "note": "Assistent",
-    "status": "Breite"
+    "status": "fertig"
   },
   "search": {
     "t": "A",
@@ -567,7 +567,7 @@
   "setup": {
     "t": "E",
     "note": "Assistent",
-    "status": "Breite"
+    "status": "fertig"
   },
   "sponsor/[id]": {
     "t": "A",

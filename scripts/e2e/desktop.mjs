@@ -210,6 +210,27 @@ for (const s of sizes) {
   ok((await page.getByRole('table').count()) > 0, 'Mannschaften: Tabelle');
 }
 
+// DT2 Stufe 3: Assistent als zentrierte Spalte (höchstens 720 breit), Weiter-Knopf in derselben Spalte
+{
+  const { page, goto } = await b.session('admin', { width: 1440, height: 900 });
+  await goto('/admin/team-new');
+  await page.waitForTimeout(3000);
+  const weiter = await page
+    .getByRole('button', { name: 'Weiter' })
+    .filter({ visible: true })
+    .first()
+    .boundingBox();
+  ok(
+    !!weiter && weiter.width <= 720 && weiter.x > 300,
+    `Assistent: Inhalt zentriert und höchstens 720 breit (${Math.round(weiter?.width ?? 0)})`,
+  );
+  ok(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    'Assistent: kein waagerechtes Scrollen',
+  );
+  await b.shot(page, `dt2-assistent-1440-${scheme}`, false);
+}
+
 // Fenster: Desktop zentriert, Handy von unten (Kader-Fenster über den Anwesenheitsbalken)
 for (const w of [1440, 390]) {
   const { page, goto, login } = await b.session('trainer', { width: w, height: 900 });
