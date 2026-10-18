@@ -449,6 +449,7 @@ export default function AdminSponsorsScreen() {
                   onPress={() =>
                     confirmDelete({
                       name: form.name,
+                      archive: true,
                       onConfirm: () => remove.mutate(form.id!),
                     })
                   }

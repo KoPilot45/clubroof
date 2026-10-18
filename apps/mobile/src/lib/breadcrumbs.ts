@@ -72,6 +72,7 @@ const RULES: Record<string, Rule> = {
   'teams/[id]/cash-closings': section('team', teamCashAdmin),
   'teams/[id]/event-new': section('team'),
   'teams/[id]/tasks': section('team'),
+  'teams/[id]/archive': section('team'),
   'teams/[id]/manage': section('team'),
   'teams/[id]/modules': section('team'),
   'teams/[id]/jerseys': section('team'),
