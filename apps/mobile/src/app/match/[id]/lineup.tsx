@@ -499,66 +499,69 @@ function Stage(props: {
   const selectedPlayer = sel ? props.players.get(sel.personId) : null;
   const selSlot = sel?.src.startsWith('s:') ? Number(sel.src.slice(2)) : null;
   // Desktop-Ansicht (Paket DT): links Kopf, Spielform und Spielfeld, rechts Bank, Kader und Speichern
+  const hero = (
+    <HeroCard compact>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('Zurück')}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0,0,0,0.28)',
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.16)',
+          }}
+        >
+          <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
+        </Pressable>
+        <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
+          <T variant="overline" color={on}>
+            {`${t('Aufstellung')} · ${sheet.team.badge}`}
+          </T>
+          <T
+            variant="headline"
+            color={on}
+            numberOfLines={1}
+            verbatim
+            style={{ fontSize: 22, lineHeight: 24 }}
+          >
+            {`${sheet.isHome ? 'vs.' : '@'} ${sheet.opponentName}`}
+          </T>
+          <T variant="caption" color={on} numberOfLines={1} verbatim>
+            {`${formatDay(sheet.startsAt)} · ${formatTime(sheet.startsAt)} ${t('Uhr')}`}
+          </T>
+        </View>
+        <View style={{ flexDirection: 'row', gap: 14 }}>
+          <View style={{ alignItems: 'center' }}>
+            <T variant="figure" color={on} style={{ fontSize: 26, lineHeight: 28 }} verbatim>
+              {`${props.starters}/${board.slots.length}`}
+            </T>
+            <T variant="caption" color={on}>
+              Startelf
+            </T>
+          </View>
+          <View style={{ alignItems: 'center' }}>
+            <T variant="figure" color={on} style={{ fontSize: 26, lineHeight: 28 }} verbatim>
+              {String(props.bench)}
+            </T>
+            <T variant="caption" color={on}>
+              Bank
+            </T>
+          </View>
+        </View>
+      </View>
+    </HeroCard>
+  );
   if (desktop)
     return (
       <View style={{ flexDirection: 'row', gap: 22, paddingTop: 6, alignItems: 'flex-start' }}>
         <View style={{ flex: 1, minWidth: 0, gap: 6 }}>
-          <HeroCard compact>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('Zurück')}
-                onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(0,0,0,0.28)',
-                  borderWidth: 1,
-                  borderColor: 'rgba(255,255,255,0.16)',
-                }}
-              >
-                <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
-              </Pressable>
-              <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
-                <T variant="overline" color={on}>
-                  {`${t('Aufstellung')} · ${sheet.team.badge}`}
-                </T>
-                <T
-                  variant="headline"
-                  color={on}
-                  numberOfLines={1}
-                  verbatim
-                  style={{ fontSize: 22, lineHeight: 24 }}
-                >
-                  {`${sheet.isHome ? 'vs.' : '@'} ${sheet.opponentName}`}
-                </T>
-                <T variant="caption" color={on} numberOfLines={1} verbatim>
-                  {`${formatDay(sheet.startsAt)} · ${formatTime(sheet.startsAt)} ${t('Uhr')}`}
-                </T>
-              </View>
-              <View style={{ flexDirection: 'row', gap: 14 }}>
-                <View style={{ alignItems: 'center' }}>
-                  <T variant="figure" color={on} style={{ fontSize: 26, lineHeight: 28 }} verbatim>
-                    {`${props.starters}/${board.slots.length}`}
-                  </T>
-                  <T variant="caption" color={on}>
-                    Startelf
-                  </T>
-                </View>
-                <View style={{ alignItems: 'center' }}>
-                  <T variant="figure" color={on} style={{ fontSize: 26, lineHeight: 28 }} verbatim>
-                    {String(props.bench)}
-                  </T>
-                  <T variant="caption" color={on}>
-                    Bank
-                  </T>
-                </View>
-              </View>
-            </View>
-          </HeroCard>
+          {hero}
 
           <Segment
             options={LINEUP_SIZES.map((s) => ({ value: String(s), label: `${s}er` }))}
@@ -669,62 +672,7 @@ function Stage(props: {
     );
   return (
     <View style={{ gap: 6, paddingTop: 6 }}>
-      <HeroCard compact>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('Zurück')}
-            onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(0,0,0,0.28)',
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.16)',
-            }}
-          >
-            <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
-          </Pressable>
-          <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
-            <T variant="overline" color={on}>
-              {`${t('Aufstellung')} · ${sheet.team.badge}`}
-            </T>
-            <T
-              variant="headline"
-              color={on}
-              numberOfLines={1}
-              verbatim
-              style={{ fontSize: 22, lineHeight: 24 }}
-            >
-              {`${sheet.isHome ? 'vs.' : '@'} ${sheet.opponentName}`}
-            </T>
-            <T variant="caption" color={on} numberOfLines={1} verbatim>
-              {`${formatDay(sheet.startsAt)} · ${formatTime(sheet.startsAt)} ${t('Uhr')}`}
-            </T>
-          </View>
-          <View style={{ flexDirection: 'row', gap: 14 }}>
-            <View style={{ alignItems: 'center' }}>
-              <T variant="figure" color={on} style={{ fontSize: 26, lineHeight: 28 }} verbatim>
-                {`${props.starters}/${board.slots.length}`}
-              </T>
-              <T variant="caption" color={on}>
-                Startelf
-              </T>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <T variant="figure" color={on} style={{ fontSize: 26, lineHeight: 28 }} verbatim>
-                {String(props.bench)}
-              </T>
-              <T variant="caption" color={on}>
-                Bank
-              </T>
-            </View>
-          </View>
-        </View>
-      </HeroCard>
+      {hero}
 
       <Segment
         options={LINEUP_SIZES.map((s) => ({ value: String(s), label: `${s}er` }))}
