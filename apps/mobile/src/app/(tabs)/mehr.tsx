@@ -20,6 +20,7 @@ import {
   type TileItem,
 } from '@/components/ui';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
+import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
 import { useTileInfo } from '@/lib/tile-info';
@@ -307,171 +308,349 @@ export default function MoreScreen() {
     },
   ];
 
+  const desktop = useIsDesktop();
   return (
     <Screen header={<AppHeader title="Mehr" subtitle="Profil, Einstellungen und Hilfe" />}>
-      <HeroCard style={{ marginTop: 4 }}>
-        <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-          {me.person.avatarUrl ? (
-            <View style={{ padding: 3, borderRadius: 37, backgroundColor: colors.hero.onHero }}>
-              <Avatar name={name} size={62} uri={me.person.avatarUrl} />
-            </View>
-          ) : (
-            <View
-              accessibilityLabel={name}
-              style={{
-                width: 68,
-                height: 68,
-                borderRadius: 34,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#FFFFFF',
-              }}
-            >
-              <T
-                variant="figure"
-                color={colors.hero.to}
-                style={{ fontSize: 30, lineHeight: 34 }}
-                verbatim
-              >
-                {name
-                  .split(' ')
-                  .map((p) => p[0])
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .join('')
-                  .toUpperCase()}
-              </T>
-            </View>
-          )}
-          <View style={{ flex: 1, gap: 2 }}>
-            <T
-              variant="figure"
-              color={colors.hero.onHero}
-              numberOfLines={2}
-              style={{ fontSize: 30, lineHeight: 32 }}
-              verbatim
-            >
-              {name}
-            </T>
-            <T
-              variant="caption"
-              color="rgba(255,255,255,0.8)"
-              numberOfLines={1}
-              style={{ fontSize: 12.5 }}
-              verbatim
-            >
-              {me.user.email}
-            </T>
-            <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
-              {roleLabels.map((label) => (
-                <View
-                  key={label}
-                  style={{
-                    borderRadius: 999,
-                    paddingHorizontal: 10,
-                    paddingVertical: 3,
-                    backgroundColor: 'rgba(255,255,255,0.2)',
-                  }}
-                >
-                  <Text style={{ fontSize: 11.5, fontWeight: '800', color: colors.hero.onHero }}>
-                    {label}
-                  </Text>
+      {desktop ? (
+        <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
+          <View style={{ width: 440, gap: 18 }}>
+            <Section title="Einstellungen">
+              <MenuCard rows={settings} />
+            </Section>
+
+            <Section title="Über Clubroof">
+              <MenuCard rows={about} />
+            </Section>
+          </View>
+          <View style={{ flex: 1, minWidth: 0, gap: 18 }}>
+            <HeroCard style={{ marginTop: 4 }}>
+              <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
+                {me.person.avatarUrl ? (
+                  <View
+                    style={{ padding: 3, borderRadius: 37, backgroundColor: colors.hero.onHero }}
+                  >
+                    <Avatar name={name} size={62} uri={me.person.avatarUrl} />
+                  </View>
+                ) : (
+                  <View
+                    accessibilityLabel={name}
+                    style={{
+                      width: 68,
+                      height: 68,
+                      borderRadius: 34,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#FFFFFF',
+                    }}
+                  >
+                    <T
+                      variant="figure"
+                      color={colors.hero.to}
+                      style={{ fontSize: 30, lineHeight: 34 }}
+                      verbatim
+                    >
+                      {name
+                        .split(' ')
+                        .map((p) => p[0])
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .join('')
+                        .toUpperCase()}
+                    </T>
+                  </View>
+                )}
+                <View style={{ flex: 1, gap: 2 }}>
+                  <T
+                    variant="figure"
+                    color={colors.hero.onHero}
+                    numberOfLines={2}
+                    style={{ fontSize: 30, lineHeight: 32 }}
+                    verbatim
+                  >
+                    {name}
+                  </T>
+                  <T
+                    variant="caption"
+                    color="rgba(255,255,255,0.8)"
+                    numberOfLines={1}
+                    style={{ fontSize: 12.5 }}
+                    verbatim
+                  >
+                    {me.user.email}
+                  </T>
+                  <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                    {roleLabels.map((label) => (
+                      <View
+                        key={label}
+                        style={{
+                          borderRadius: 999,
+                          paddingHorizontal: 10,
+                          paddingVertical: 3,
+                          backgroundColor: 'rgba(255,255,255,0.2)',
+                        }}
+                      >
+                        <Text
+                          style={{ fontSize: 11.5, fontWeight: '800', color: colors.hero.onHero }}
+                        >
+                          {label}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
-              ))}
-            </View>
+              </View>
+            </HeroCard>
+
+            {/* Eigene Bereiche (Paket AV): Admin-Verwaltung (violett) und Vereinskasse (blau) */}
+            {canOpenAdmin(me) || canOpenClubCash(me) ? (
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                {canOpenAdmin(me) ? (
+                  <AreaButton
+                    tone="violet"
+                    icon="shield-checkmark"
+                    title="Admin-Verwaltung"
+                    subtitle="Mitglieder, Sport, Inhalte, Verein"
+                    badge={tileInfo?.admin?.figure}
+                    onPress={() => router.push('/admin')}
+                  />
+                ) : null}
+                {canOpenClubCash(me) ? (
+                  <AreaButton
+                    tone="blue"
+                    icon="wallet"
+                    title="Vereinskasse"
+                    subtitle="Buchung, Beiträge, Planung, Prüfung"
+                    onPress={() => router.push('/club-cash')}
+                  />
+                ) : null}
+              </View>
+            ) : null}
+
+            {me.security.twoFactorRequired ? (
+              <Notice
+                tone="action"
+                icon="shield-outline"
+                title="2-Faktor-Anmeldung erforderlich"
+                text="Der Verein verlangt sie für deine Verwaltungsrechte. Bis dahin ist die Verwaltung gesperrt."
+                action={{ label: 'Jetzt einrichten', onPress: () => router.push('/account') }}
+              />
+            ) : null}
+
+            {children.length > 0 ? (
+              <Section title="Meine Kinder">
+                <Card>
+                  {children.map((c, i) => (
+                    <ListRow
+                      key={c.id}
+                      first={i === 0}
+                      leading={
+                        <Avatar name={`${c.firstName} ${c.lastName}`} size={40} uri={c.avatarUrl} />
+                      }
+                      title={`${c.firstName} ${c.lastName}`}
+                      subtitle={[
+                        'Spieler',
+                        ...new Set(me.teams.filter((t) => t.personId === c.id).map((t) => t.badge)),
+                      ].join(' · ')}
+                      onPress={() => router.push(`/profile/${c.id}`)}
+                    />
+                  ))}
+                </Card>
+                <T variant="caption" style={{ marginTop: 10 }}>
+                  Du verwaltest Termine, Zusagen und Abwesenheiten deiner Kinder.
+                </T>
+              </Section>
+            ) : null}
+
+            <Section title="Mein Bereich">
+              <MenuCard rows={myArea} />
+            </Section>
+
+            {myTeams.length > 0 ? (
+              <Section title="Meine Mannschaften">
+                <Card>
+                  {myTeams.map((t, i) => (
+                    <ListRow
+                      key={t.id}
+                      first={i === 0}
+                      leading={<IconTile name="shirt-outline" tone="green" />}
+                      title={teamTitle(t)}
+                      subtitle={t.subtitle}
+                      onPress={() => router.push(`/team?teamId=${t.id}`)}
+                    />
+                  ))}
+                </Card>
+              </Section>
+            ) : null}
           </View>
         </View>
-      </HeroCard>
+      ) : (
+        <>
+          <HeroCard style={{ marginTop: 4 }}>
+            <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
+              {me.person.avatarUrl ? (
+                <View style={{ padding: 3, borderRadius: 37, backgroundColor: colors.hero.onHero }}>
+                  <Avatar name={name} size={62} uri={me.person.avatarUrl} />
+                </View>
+              ) : (
+                <View
+                  accessibilityLabel={name}
+                  style={{
+                    width: 68,
+                    height: 68,
+                    borderRadius: 34,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#FFFFFF',
+                  }}
+                >
+                  <T
+                    variant="figure"
+                    color={colors.hero.to}
+                    style={{ fontSize: 30, lineHeight: 34 }}
+                    verbatim
+                  >
+                    {name
+                      .split(' ')
+                      .map((p) => p[0])
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase()}
+                  </T>
+                </View>
+              )}
+              <View style={{ flex: 1, gap: 2 }}>
+                <T
+                  variant="figure"
+                  color={colors.hero.onHero}
+                  numberOfLines={2}
+                  style={{ fontSize: 30, lineHeight: 32 }}
+                  verbatim
+                >
+                  {name}
+                </T>
+                <T
+                  variant="caption"
+                  color="rgba(255,255,255,0.8)"
+                  numberOfLines={1}
+                  style={{ fontSize: 12.5 }}
+                  verbatim
+                >
+                  {me.user.email}
+                </T>
+                <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                  {roleLabels.map((label) => (
+                    <View
+                      key={label}
+                      style={{
+                        borderRadius: 999,
+                        paddingHorizontal: 10,
+                        paddingVertical: 3,
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                      }}
+                    >
+                      <Text
+                        style={{ fontSize: 11.5, fontWeight: '800', color: colors.hero.onHero }}
+                      >
+                        {label}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </View>
+          </HeroCard>
 
-      {/* Eigene Bereiche (Paket AV): Admin-Verwaltung (violett) und Vereinskasse (blau) */}
-      {canOpenAdmin(me) || canOpenClubCash(me) ? (
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          {canOpenAdmin(me) ? (
-            <AreaButton
-              tone="violet"
-              icon="shield-checkmark"
-              title="Admin-Verwaltung"
-              subtitle="Mitglieder, Sport, Inhalte, Verein"
-              badge={tileInfo?.admin?.figure}
-              onPress={() => router.push('/admin')}
+          {/* Eigene Bereiche (Paket AV): Admin-Verwaltung (violett) und Vereinskasse (blau) */}
+          {canOpenAdmin(me) || canOpenClubCash(me) ? (
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              {canOpenAdmin(me) ? (
+                <AreaButton
+                  tone="violet"
+                  icon="shield-checkmark"
+                  title="Admin-Verwaltung"
+                  subtitle="Mitglieder, Sport, Inhalte, Verein"
+                  badge={tileInfo?.admin?.figure}
+                  onPress={() => router.push('/admin')}
+                />
+              ) : null}
+              {canOpenClubCash(me) ? (
+                <AreaButton
+                  tone="blue"
+                  icon="wallet"
+                  title="Vereinskasse"
+                  subtitle="Buchung, Beiträge, Planung, Prüfung"
+                  onPress={() => router.push('/club-cash')}
+                />
+              ) : null}
+            </View>
+          ) : null}
+
+          {me.security.twoFactorRequired ? (
+            <Notice
+              tone="action"
+              icon="shield-outline"
+              title="2-Faktor-Anmeldung erforderlich"
+              text="Der Verein verlangt sie für deine Verwaltungsrechte. Bis dahin ist die Verwaltung gesperrt."
+              action={{ label: 'Jetzt einrichten', onPress: () => router.push('/account') }}
             />
           ) : null}
-          {canOpenClubCash(me) ? (
-            <AreaButton
-              tone="blue"
-              icon="wallet"
-              title="Vereinskasse"
-              subtitle="Buchung, Beiträge, Planung, Prüfung"
-              onPress={() => router.push('/club-cash')}
-            />
+
+          {children.length > 0 ? (
+            <Section title="Meine Kinder">
+              <Card>
+                {children.map((c, i) => (
+                  <ListRow
+                    key={c.id}
+                    first={i === 0}
+                    leading={
+                      <Avatar name={`${c.firstName} ${c.lastName}`} size={40} uri={c.avatarUrl} />
+                    }
+                    title={`${c.firstName} ${c.lastName}`}
+                    subtitle={[
+                      'Spieler',
+                      ...new Set(me.teams.filter((t) => t.personId === c.id).map((t) => t.badge)),
+                    ].join(' · ')}
+                    onPress={() => router.push(`/profile/${c.id}`)}
+                  />
+                ))}
+              </Card>
+              <T variant="caption" style={{ marginTop: 10 }}>
+                Du verwaltest Termine, Zusagen und Abwesenheiten deiner Kinder.
+              </T>
+            </Section>
           ) : null}
-        </View>
-      ) : null}
 
-      {me.security.twoFactorRequired ? (
-        <Notice
-          tone="action"
-          icon="shield-outline"
-          title="2-Faktor-Anmeldung erforderlich"
-          text="Der Verein verlangt sie für deine Verwaltungsrechte. Bis dahin ist die Verwaltung gesperrt."
-          action={{ label: 'Jetzt einrichten', onPress: () => router.push('/account') }}
-        />
-      ) : null}
+          <Section title="Mein Bereich">
+            <MenuCard rows={myArea} />
+          </Section>
 
-      {children.length > 0 ? (
-        <Section title="Meine Kinder">
-          <Card>
-            {children.map((c, i) => (
-              <ListRow
-                key={c.id}
-                first={i === 0}
-                leading={
-                  <Avatar name={`${c.firstName} ${c.lastName}`} size={40} uri={c.avatarUrl} />
-                }
-                title={`${c.firstName} ${c.lastName}`}
-                subtitle={[
-                  'Spieler',
-                  ...new Set(me.teams.filter((t) => t.personId === c.id).map((t) => t.badge)),
-                ].join(' · ')}
-                onPress={() => router.push(`/profile/${c.id}`)}
-              />
-            ))}
-          </Card>
-          <T variant="caption" style={{ marginTop: 10 }}>
-            Du verwaltest Termine, Zusagen und Abwesenheiten deiner Kinder.
-          </T>
-        </Section>
-      ) : null}
+          {myTeams.length > 0 ? (
+            <Section title="Meine Mannschaften">
+              <Card>
+                {myTeams.map((t, i) => (
+                  <ListRow
+                    key={t.id}
+                    first={i === 0}
+                    leading={<IconTile name="shirt-outline" tone="green" />}
+                    title={teamTitle(t)}
+                    subtitle={t.subtitle}
+                    onPress={() => router.push(`/team?teamId=${t.id}`)}
+                  />
+                ))}
+              </Card>
+            </Section>
+          ) : null}
 
-      <Section title="Mein Bereich">
-        <MenuCard rows={myArea} />
-      </Section>
+          <Section title="Einstellungen">
+            <MenuCard rows={settings} />
+          </Section>
 
-      {myTeams.length > 0 ? (
-        <Section title="Meine Mannschaften">
-          <Card>
-            {myTeams.map((t, i) => (
-              <ListRow
-                key={t.id}
-                first={i === 0}
-                leading={<IconTile name="shirt-outline" tone="green" />}
-                title={teamTitle(t)}
-                subtitle={t.subtitle}
-                onPress={() => router.push(`/team?teamId=${t.id}`)}
-              />
-            ))}
-          </Card>
-        </Section>
-      ) : null}
-
-      <Section title="Einstellungen">
-        <MenuCard rows={settings} />
-      </Section>
-
-      <Section title="Über Clubroof">
-        <MenuCard rows={about} />
-      </Section>
-
+          <Section title="Über Clubroof">
+            <MenuCard rows={about} />
+          </Section>
+        </>
+      )}
       <Button
         label="Abmelden"
         variant="danger"

@@ -1,6 +1,6 @@
 /**
  * Paket LH2: Kontrastprüfung aller Routen im Browser (Text gegen die Fläche dahinter).
- * Aufruf: SCHEME=light pnpm browser-check scripts/e2e/hell-kontrast.mjs --no-build [-- rolle,rolle]
+ * Aufruf: SCHEME=light [WIDTH=1440 HEIGHT=900] pnpm browser-check scripts/e2e/hell-kontrast.mjs --no-build [-- rolle,rolle]
  * Ausgabe: .check/kontrast-<hell|dunkel>.json und eine Zusammenfassung. Flächen mit Verlauf (Hero, Plakat,
  * Kopfbänder) und Bilder werden übersprungen – dort bleibt die Fläche in beiden Stilen farbig.
  */
@@ -126,7 +126,10 @@ const analyse = () => {
 };
 
 for (const who of roles) {
-  const { page, goto, login } = await b.session(who);
+  const { page, goto, login } = await b.session(who, {
+    width: Number(process.env.WIDTH ?? 390),
+    height: Number(process.env.HEIGHT ?? 844),
+  });
   const events = await api('/events', login.token);
   const ev = events[0];
   const team = login.me.teams?.[0];

@@ -4,7 +4,7 @@
  */
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/app-text';
@@ -13,8 +13,11 @@ import { FloatingNav } from '@/components/tab-bar';
 import { GradientFill, Screen, T, TileGrid, type IconName } from '@/components/ui';
 import { breadcrumbsFor } from '@/lib/breadcrumbs';
 import type { AreaCategory } from '@/lib/areas';
+import { Columns } from '@/components/columns';
 import { t } from '@/lib/i18n';
+import { useIsDesktop } from '@/lib/layout';
 import { useTheme } from '@/lib/theme';
+import { webState } from '@/lib/web-state';
 
 export type AreaTone = 'violet' | 'blue';
 
@@ -157,8 +160,66 @@ export function AreaTabBar({
   items: AreaTab[];
   onHeight: (height: number) => void;
 }) {
-  const { isDark } = useTheme();
+  const { colors, isDark } = useTheme();
+  const desktop = useIsDesktop();
   const [fill, on] = AREA_ACCENT[tone][isDark ? 'dark' : 'light'];
+  // Desktop (Paket DT): feste Bereichsleiste unten mit beschrifteten Reitern statt schwebender Pille
+  useEffect(() => {
+    if (desktop) onHeight(0);
+  }, [desktop, onHeight]);
+  if (desktop)
+    return (
+      <View
+        role="tablist"
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: 8,
+          paddingVertical: 10,
+          paddingHorizontal: 16,
+          borderTopWidth: 1,
+          borderTopColor: colors.anstoss.divider,
+          backgroundColor: colors.background,
+        }}
+      >
+        {items.map((i) => (
+          <Pressable
+            key={i.key}
+            accessibilityRole="tab"
+            accessibilityLabel={i.label}
+            aria-selected={i.active}
+            onPress={i.onPress}
+            style={(state) => ({
+              minHeight: 40,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              paddingHorizontal: 16,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: i.active ? fill : colors.border,
+              backgroundColor: i.active
+                ? fill
+                : webState(state).hovered
+                  ? colors.anstoss.overlay
+                  : 'transparent',
+            })}
+          >
+            <Ionicons name={i.icon} size={18} color={i.active ? on : colors.onSurface} />
+            <Text
+              style={{
+                fontSize: 13.5,
+                fontWeight: i.active ? '800' : '600',
+                color: i.active ? on : colors.onSurface,
+              }}
+            >
+              {i.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    );
   return (
     <FloatingNav
       accent={{ fill, on }}
@@ -204,12 +265,14 @@ export function CategoryPage({
 }) {
   return (
     <Screen edges={[]}>
-      {category.groups.map((g) => (
-        <View key={g.key} style={{ gap: 18, paddingTop: 34 }}>
-          <GroupHeading title={g.title} tint={g.tint} />
-          <TileGrid items={g.tiles.map((tile) => ({ ...tile, tint: g.tint }))} />
-        </View>
-      ))}
+      <Columns min={380} gap={28}>
+        {category.groups.map((g) => (
+          <View key={g.key} style={{ gap: 18, paddingTop: 34 }}>
+            <GroupHeading title={g.title} tint={g.tint} />
+            <TileGrid items={g.tiles.map((tile) => ({ ...tile, tint: g.tint }))} />
+          </View>
+        ))}
+      </Columns>
       {children}
     </Screen>
   );

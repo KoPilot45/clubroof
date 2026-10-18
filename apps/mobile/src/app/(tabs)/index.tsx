@@ -23,6 +23,7 @@ import { Card, ChoiceChips, Chip, ErrorNotice, Loading, Screen, Section, T } fro
 import { WelcomeTour } from '@/components/welcome-tour';
 import { readFlag, writeFlag } from '@/lib/flags';
 import { cashTeamId } from '@/lib/quick-links';
+import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { useTileInfo } from '@/lib/tile-info';
 import { Counted, useScrollY } from '@/lib/motion';
@@ -39,6 +40,7 @@ const NEWS_FILTERS: { value: NewsFilter; label: string }[] = [
 
 export default function HomeScreen() {
   const { api, me, refresh } = useSignedIn();
+  const desktop = useIsDesktop();
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const data = home.data;
   const hasAds = useHasSponsorAds();
@@ -107,38 +109,91 @@ export default function HomeScreen() {
       {home.isPending ? <Loading variant="page" /> : null}
       {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}
 
-      {first ? <PersonStatusCards event={first} /> : null}
-      {data ? <OpenBand actions={data.actions} /> : null}
-      {data ? <WeekTickets week={data.week} /> : null}
-      {data ? (
-        <Section title="Neuigkeiten" action="Alle anzeigen" onAction={() => router.push('/news')}>
-          <ChoiceChips
-            options={NEWS_FILTERS}
-            selected={[newsFilter]}
-            onToggle={(v) => setNewsFilter(v)}
-          />
-          <NewsCards items={news} />
-        </Section>
-      ) : null}
-      {hasAds ? <SponsorAdContainer /> : null}
-      {data ? <BirthdayCard birthdays={data.birthdays} /> : null}
+      {desktop ? (
+        <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
+          <View style={{ flex: 1.7, minWidth: 0, gap: 18 }}>
+            {first ? <PersonStatusCards event={first} /> : null}
+            {data ? <OpenBand actions={data.actions} /> : null}
+            {data ? <WeekTickets week={data.week} /> : null}
+            <QuickAccess me={me} info={quickInfo} onSaved={refresh} />
+          </View>
+          <View style={{ flex: 1, minWidth: 0, gap: 18 }}>
+            {data ? (
+              <Section
+                title="Neuigkeiten"
+                action="Alle anzeigen"
+                onAction={() => router.push('/news')}
+              >
+                <ChoiceChips
+                  options={NEWS_FILTERS}
+                  selected={[newsFilter]}
+                  onToggle={(v) => setNewsFilter(v)}
+                />
+                <NewsCards items={news} />
+              </Section>
+            ) : null}
+            {hasAds ? <SponsorAdContainer /> : null}
+            {data ? <BirthdayCard birthdays={data.birthdays} /> : null}
 
-      <QuickAccess me={me} info={quickInfo} onSaved={refresh} />
+            {data?.clubOverview && me.teams.length > 0 ? (
+              <Section title="Verein im Überblick">
+                <Card style={{ gap: 12 }}>
+                  <View style={{ alignItems: 'flex-start' }}>
+                    <Chip
+                      label={me.canAdminister ? 'Vorstand' : 'Vereinsmitglied'}
+                      tone="primary"
+                    />
+                  </View>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                    {figures.map(([label, value, tint]) => (
+                      <KeyFigure key={label} label={label} value={value} tint={tint} />
+                    ))}
+                  </View>
+                </Card>
+              </Section>
+            ) : null}
+          </View>
+        </View>
+      ) : (
+        <>
+          {first ? <PersonStatusCards event={first} /> : null}
+          {data ? <OpenBand actions={data.actions} /> : null}
+          {data ? <WeekTickets week={data.week} /> : null}
+          {data ? (
+            <Section
+              title="Neuigkeiten"
+              action="Alle anzeigen"
+              onAction={() => router.push('/news')}
+            >
+              <ChoiceChips
+                options={NEWS_FILTERS}
+                selected={[newsFilter]}
+                onToggle={(v) => setNewsFilter(v)}
+              />
+              <NewsCards items={news} />
+            </Section>
+          ) : null}
+          {hasAds ? <SponsorAdContainer /> : null}
+          {data ? <BirthdayCard birthdays={data.birthdays} /> : null}
 
-      {data?.clubOverview && me.teams.length > 0 ? (
-        <Section title="Verein im Überblick">
-          <Card style={{ gap: 12 }}>
-            <View style={{ alignItems: 'flex-start' }}>
-              <Chip label={me.canAdminister ? 'Vorstand' : 'Vereinsmitglied'} tone="primary" />
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-              {figures.map(([label, value, tint]) => (
-                <KeyFigure key={label} label={label} value={value} tint={tint} />
-              ))}
-            </View>
-          </Card>
-        </Section>
-      ) : null}
+          <QuickAccess me={me} info={quickInfo} onSaved={refresh} />
+
+          {data?.clubOverview && me.teams.length > 0 ? (
+            <Section title="Verein im Überblick">
+              <Card style={{ gap: 12 }}>
+                <View style={{ alignItems: 'flex-start' }}>
+                  <Chip label={me.canAdminister ? 'Vorstand' : 'Vereinsmitglied'} tone="primary" />
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                  {figures.map(([label, value, tint]) => (
+                    <KeyFigure key={label} label={label} value={value} tint={tint} />
+                  ))}
+                </View>
+              </Card>
+            </Section>
+          ) : null}
+        </>
+      )}
       <PosterStatusBar />
       <WelcomeTour
         me={me}
