@@ -30,6 +30,7 @@ import { formatEuro, formatEuroShort, formatPercent, todayIso } from '@/lib/form
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { t } from '@/lib/i18n';
+import { Columns } from '@/components/columns';
 import { Counted } from '@/lib/motion';
 
 const KIND_ICON: Record<ClubCash['accounts'][number]['kind'], IconName> = {
@@ -294,90 +295,92 @@ export default function ClubCashScreen() {
 
           {st ? <KeyFigures st={st} year={c.year} /> : null}
 
-          {!fund && c.funds.filter((f) => !f.archived).length > 1 ? (
-            <Section title="Kassen">
+          <Columns min={440}>
+            {!fund && c.funds.filter((f) => !f.archived).length > 1 ? (
+              <Section title="Kassen">
+                <Card>
+                  {c.funds
+                    .filter((f) => !f.archived)
+                    .map((f, i) => (
+                      <ListRow
+                        key={f.id}
+                        first={i === 0}
+                        leading={<IconTile name="wallet" tone="violet" />}
+                        title={f.name}
+                        subtitle={[
+                          f.isMain ? t('Hauptkasse') : null,
+                          f.units.map((u) => u.name).join(', ') || null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                        trailing={<Chip tone="neutral" label={formatEuro(f.balanceCents)} />}
+                        onPress={() => setFundId(f.id)}
+                      />
+                    ))}
+                </Card>
+              </Section>
+            ) : null}
+
+            <Section title="Konten">
               <Card>
-                {c.funds
-                  .filter((f) => !f.archived)
-                  .map((f, i) => (
+                {c.accounts
+                  .filter((a) => !a.archived)
+                  .map((a, i) => (
                     <ListRow
-                      key={f.id}
+                      key={a.id}
                       first={i === 0}
-                      leading={<IconTile name="wallet" tone="violet" />}
-                      title={f.name}
-                      subtitle={[
-                        f.isMain ? t('Hauptkasse') : null,
-                        f.units.map((u) => u.name).join(', ') || null,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                      trailing={<Chip tone="neutral" label={formatEuro(f.balanceCents)} />}
-                      onPress={() => setFundId(f.id)}
+                      leading={<IconTile name={KIND_ICON[a.kind]} tone="blue" />}
+                      title={a.name}
+                      subtitle={CLUB_CASH_ACCOUNT_KIND_LABEL[a.kind]}
+                      trailing={<Chip tone="neutral" label={formatEuro(a.balanceCents)} />}
+                      onPress={
+                        full ? () => router.push(`/club-cash/entries?accountId=${a.id}`) : undefined
+                      }
                     />
                   ))}
+                {c.accounts.every((a) => a.archived) ? (
+                  <Empty icon="wallet-outline" text="Noch kein Konto angelegt." />
+                ) : null}
               </Card>
             </Section>
-          ) : null}
 
-          <Section title="Konten">
-            <Card>
-              {c.accounts
-                .filter((a) => !a.archived)
-                .map((a, i) => (
-                  <ListRow
-                    key={a.id}
-                    first={i === 0}
-                    leading={<IconTile name={KIND_ICON[a.kind]} tone="blue" />}
-                    title={a.name}
-                    subtitle={CLUB_CASH_ACCOUNT_KIND_LABEL[a.kind]}
-                    trailing={<Chip tone="neutral" label={formatEuro(a.balanceCents)} />}
-                    onPress={
-                      full ? () => router.push(`/club-cash/entries?accountId=${a.id}`) : undefined
-                    }
-                  />
-                ))}
-              {c.accounts.every((a) => a.archived) ? (
-                <Empty icon="wallet-outline" text="Noch kein Konto angelegt." />
-              ) : null}
-            </Card>
-          </Section>
-
-          <Section title={`${t('Einnahmen und Ausgaben')} ${c.year}`}>
-            <Card style={{ gap: 14 }}>
-              <AreaPairs areas={c.areaTotals} />
-            </Card>
-            <Button
-              label="Alle Auswertungen ›"
-              variant="outline"
-              icon="stats-chart-outline"
-              onPress={() => router.push('/club-cash/stats')}
-            />
-          </Section>
-
-          {full ? (
-            <Section title="Letzte Buchungen">
-              <Card>
-                {c.recent.length === 0 ? (
-                  <Empty icon="receipt-outline" text="Noch keine Buchungen." />
-                ) : (
-                  c.recent.map((e, i) => (
-                    <EntryRow
-                      key={e.id}
-                      entry={e}
-                      first={i === 0}
-                      onPress={() => router.push(`/club-cash/entries?focus=${e.id}`)}
-                    />
-                  ))
-                )}
+            <Section title={`${t('Einnahmen und Ausgaben')} ${c.year}`}>
+              <Card style={{ gap: 14 }}>
+                <AreaPairs areas={c.areaTotals} />
               </Card>
               <Button
-                label="Kassenbuch öffnen"
-                icon="book-outline"
+                label="Alle Auswertungen ›"
                 variant="outline"
-                onPress={() => router.push('/club-cash/entries')}
+                icon="stats-chart-outline"
+                onPress={() => router.push('/club-cash/stats')}
               />
             </Section>
-          ) : null}
+
+            {full ? (
+              <Section title="Letzte Buchungen">
+                <Card>
+                  {c.recent.length === 0 ? (
+                    <Empty icon="receipt-outline" text="Noch keine Buchungen." />
+                  ) : (
+                    c.recent.map((e, i) => (
+                      <EntryRow
+                        key={e.id}
+                        entry={e}
+                        first={i === 0}
+                        onPress={() => router.push(`/club-cash/entries?focus=${e.id}`)}
+                      />
+                    ))
+                  )}
+                </Card>
+                <Button
+                  label="Kassenbuch öffnen"
+                  icon="book-outline"
+                  variant="outline"
+                  onPress={() => router.push('/club-cash/entries')}
+                />
+              </Section>
+            ) : null}
+          </Columns>
         </>
       ) : null}
     </Screen>

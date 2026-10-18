@@ -62,24 +62,34 @@ for (const s of sizes) {
   const { page, goto, login } = await b.session('trainer', { width: 1440, height: 900 });
   await goto('/termine');
   await page.waitForTimeout(3000);
-  const rows = page
-    .getByRole('button')
-    .filter({ hasText: /Training|Spiel/ })
-    .filter({ visible: true });
-  const listBox = await page.getByText('Alles auf einen Blick').first().boundingBox();
-  ok(!!listBox, 'Termine: Kopfzeile sichtbar');
-  // rechts steht schon der nächste Termin (Hero mit Zu-/Absage), ohne Seitenwechsel
-  const before = page.url();
-  await rows.nth(2).click();
-  await page.waitForTimeout(1500);
-  ok(page.url() === before, 'Termine: Antippen eines Termins bleibt auf der Seite (Detail rechts)');
-  const detailRight = await page
-    .locator('text=/Zusagen|Zu- und Absage|Teilnahme/')
+  // Ein Scrollbereich: Liste links, Kalender rechts daneben; Antippen eines Termins öffnet die Terminseite
+  const kalender = await page
+    .getByText('Kalender', { exact: true })
     .filter({ visible: true })
     .first()
     .boundingBox();
-  ok(!!detailRight && detailRight.x > 420, 'Termine: Termin erscheint rechts neben der Liste');
+  const woche = await page
+    .getByText(/^Woche \d|Als Nächstes/)
+    .filter({ visible: true })
+    .first()
+    .boundingBox();
+  ok(
+    !!kalender && !!woche && kalender.x > woche.x + 400,
+    'Termine: Liste links, Kalender rechts (ein Scrollbereich)',
+  );
   await b.shot(page, `dt-termine-detail-1440-${scheme}`, false);
+  const before = page.url();
+  await page
+    .getByRole('button')
+    .filter({ hasText: /Training|Spiel/ })
+    .filter({ visible: true })
+    .nth(2)
+    .click();
+  await page.waitForTimeout(1500);
+  ok(
+    page.url() !== before && page.url().includes('/events/'),
+    'Termine: Antippen öffnet die Terminseite',
+  );
 
   const b1 = login.me.teams.find((t) => t.badge === 'B1');
   await goto(`/team?teamId=${b1.id}`);
@@ -103,6 +113,66 @@ for (const s of sizes) {
     ok(right, 'Aufstellung: Bank und Kader rechts neben dem Spielfeld');
     await b.shot(page, `dt-aufstellung-1440-${scheme}`, false);
   }
+}
+
+// Stufe 3 und 4: Home, Verein und Mehr mehrspaltig, Bereiche mit fester Leiste und Spalten
+{
+  const x = async (page, label, o = {}) =>
+    (
+      await page
+        .getByText(label, { exact: true, ...o })
+        .filter({ visible: true })
+        .first()
+        .boundingBox()
+    )?.x;
+  const { page, goto } = await b.session('admin', { width: 1440, height: 900 });
+  await goto('/');
+  await page.waitForTimeout(3500);
+  const news = await x(page, 'Neuigkeiten');
+  const week = await x(page, 'Diese Woche');
+  ok(
+    news !== undefined && week !== undefined && news > week + 400,
+    'Home: Neuigkeiten rechts, Offen und Diese Woche links',
+  );
+  await b.shot(page, `dt-home2-1440-${scheme}`, false);
+
+  await goto('/verein');
+  await page.waitForTimeout(3000);
+  const groupXs = [];
+  for (const g of ['Veranstaltungen', 'Neuigkeiten', 'Vereinsleben']) {
+    const gx = await x(page, g);
+    if (gx !== undefined) groupXs.push(Math.round(gx));
+  }
+  ok(
+    new Set(groupXs).size >= 2,
+    `Verein: Kachelgruppen stehen nebeneinander (${groupXs.join(', ')})`,
+  );
+  await b.shot(page, `dt-verein2-1440-${scheme}`, false);
+
+  await goto('/mehr');
+  await page.waitForTimeout(3000);
+  const sx = await x(page, 'Einstellungen');
+  const ax = await x(page, 'Mein Bereich');
+  ok(
+    sx !== undefined && ax !== undefined && ax > sx + 300,
+    'Mehr: Einstellungen links, Profil und Bereich rechts',
+  );
+  await b.shot(page, `dt-mehr2-1440-${scheme}`, false);
+
+  await goto('/admin');
+  await page.waitForTimeout(3000);
+  ok(
+    (await page.getByRole('tab').filter({ visible: true }).count()) >= 3,
+    'Verwaltung: Bereichsleiste mit beschrifteten Reitern',
+  );
+  await b.shot(page, `dt-admin-1440-${scheme}`, false);
+
+  await goto('/club-cash');
+  await page.waitForTimeout(3500);
+  await b.shot(page, `dt-kasse-1440-${scheme}`, false);
+  await goto('/club-cash/stats');
+  await page.waitForTimeout(3500);
+  await b.shot(page, `dt-kasse-stats-1440-${scheme}`, false);
 }
 
 // Fenster: Desktop zentriert, Handy von unten (Kader-Fenster über den Anwesenheitsbalken)

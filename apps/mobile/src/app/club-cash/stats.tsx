@@ -23,6 +23,7 @@ import {
   reservesSentence,
 } from '@/lib/stats-text';
 import { useTheme } from '@/lib/theme';
+import { Columns } from '@/components/columns';
 import type { ClubCash } from '@clubroof/core';
 
 type Topic = 'overview' | 'flows' | 'plan' | 'fees' | 'departments';
@@ -142,7 +143,7 @@ export default function ClubCashStatsScreen() {
       {d ? (
         <View style={{ gap: 14, opacity: stats.isPlaceholderData ? 0.5 : 1 }}>
           {topic === 'overview' ? (
-            <>
+            <Columns min={520}>
               <ChartCard
                 title="Bestand im Verlauf"
                 sentence={balanceSentence(d)}
@@ -181,11 +182,11 @@ export default function ClubCashStatsScreen() {
                 />
               </ChartCard>
               <FlowsCard d={d} labels={labels} />
-            </>
+            </Columns>
           ) : null}
 
           {topic === 'flows' ? (
-            <>
+            <Columns min={520}>
               <FlowsCard d={d} labels={labels} />
               <ChartCard
                 title="Einnahmen und Ausgaben je Bereich"
@@ -224,11 +225,11 @@ export default function ClubCashStatsScreen() {
                   ])}
                 />
               </ChartCard>
-            </>
+            </Columns>
           ) : null}
 
           {topic === 'plan' ? (
-            <>
+            <Columns min={520}>
               {d.plan ? (
                 <ChartCard
                   title="Plan gegen Ist"
@@ -315,11 +316,11 @@ export default function ClubCashStatsScreen() {
                   />
                 </ChartCard>
               ) : null}
-            </>
+            </Columns>
           ) : null}
 
           {topic === 'fees' && d.fees ? (
-            <>
+            <Columns min={520}>
               <ChartCard
                 title="Beitragsstatus"
                 sentence={feesSentence(d)}
@@ -375,7 +376,7 @@ export default function ClubCashStatsScreen() {
                   ]}
                 />
               </ChartCard>
-            </>
+            </Columns>
           ) : null}
 
           {topic === 'departments' ? (

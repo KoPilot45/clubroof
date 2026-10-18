@@ -66,6 +66,7 @@ import { ReorderList } from '@/components/reorder';
 import { openLink } from '@/lib/links';
 import { MATCH_KIND_LABELS } from '@/lib/labels';
 import { QUICK_LINKS, defaultQuickLinks, quickLinksFor, routeOf } from '@/lib/quick-links';
+import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 
@@ -87,6 +88,7 @@ export function EdgeScroll({
   onOffset,
   ...rest
 }: ScrollViewProps & { bleed: number; onOffset?: (x: number) => void }) {
+  const desktop = useIsDesktop();
   const [more, setMore] = useState(true);
   const box = useRef({ view: 0, content: 0, offset: 0 });
   const update = () => {
@@ -94,9 +96,14 @@ export function EdgeScroll({
     setMore(content > 0 && view > 0 && offset + view < content - 12);
   };
   return (
-    <View style={{ marginHorizontal: -bleed }}>
+    // Desktop (Paket DT): in Spalten kein Ausbluten über den Seitenrand
+    <View style={{ marginHorizontal: desktop ? 0 : -bleed }}>
       <ScrollView
         {...rest}
+        contentContainerStyle={[
+          rest.contentContainerStyle,
+          desktop ? { paddingHorizontal: 0 } : null,
+        ]}
         horizontal
         showsHorizontalScrollIndicator={false}
         scrollEventThrottle={32}
@@ -931,6 +938,7 @@ export function HomePoster({
   overview: ClubOverview | null;
 }) {
   const { colors } = useTheme();
+  const desktop = useIsDesktop();
   const [width, setWidth] = useState(0);
   const [raw, setRaw] = useState(1);
   const scroller = useRef<ScrollView>(null);
@@ -956,7 +964,7 @@ export function HomePoster({
   };
   const next = () => scroller.current?.scrollTo({ x: (raw + 1) * width, animated: true });
   return (
-    <HeroCard poster style={{ marginHorizontal: -22 }}>
+    <HeroCard poster style={{ marginHorizontal: desktop ? -28 : -22 }}>
       <View style={{ minHeight: 450 }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
         {header}
         {width > 0 ? (

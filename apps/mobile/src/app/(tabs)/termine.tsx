@@ -4,8 +4,8 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
-import { EventOpenContext, EventRow, FeaturedEventCard } from '@/components/events';
-import { EventDetailView } from '@/app/events/[id]';
+import { EventRow, FeaturedEventCard } from '@/components/events';
+import { Columns } from '@/components/columns';
 import { MonthCalendar, dayKey } from '@/components/month-calendar';
 import {
   Button,
@@ -23,9 +23,7 @@ import {
 } from '@/components/ui';
 import { GridLegend } from '@/components/kind-legend';
 import { formatDateTile, formatShortDate, formatTime } from '@/lib/format';
-import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
-import { useTheme } from '@/lib/theme';
 import { dateFormat } from '@/lib/i18n';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -33,10 +31,6 @@ const DAY = 24 * 60 * 60 * 1000;
 /** Meine Termine: die nächsten drei und ein Monatskalender nach Terminart. */
 export default function EventsTab() {
   const { api, me } = useSignedIn();
-  const desktop = useIsDesktop();
-  const { colors } = useTheme();
-  // Desktop: gewählter Termin, rechts im Detailbereich (Paket DT)
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -132,7 +126,7 @@ export default function EventsTab() {
     timeZone: me.club.timezone,
   });
 
-  const body = (
+  const filters = (
     <>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <View style={{ flex: 1 }}>
@@ -166,7 +160,10 @@ export default function EventsTab() {
         tone="light"
         scroll
       />
-
+    </>
+  );
+  const listBlock = (
+    <>
       {when === 'upcoming' ? (
         <>
           {hero ? <FeaturedEventCard event={hero} /> : null}
@@ -213,7 +210,10 @@ export default function EventsTab() {
           </Card>
         </Section>
       ) : null}
-
+    </>
+  );
+  const calendarBlock = (
+    <>
       <Section title="Kalender">
         <Card style={{ gap: 10 }}>
           <MonthCalendar
@@ -260,51 +260,18 @@ export default function EventsTab() {
   };
   const header = <AppHeader title="Termine" subtitle="Alles auf einen Blick" />;
 
-  if (desktop) {
-    // Auswahl: der Termin, den die Person angetippt hat, sonst der nächste anstehende
-    const shownId = selectedId ?? hero?.id ?? filtered[0]?.id ?? null;
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
-        {header}
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-          <View
-            style={{
-              width: 420,
-              borderRightWidth: 1,
-              borderRightColor: colors.anstoss.divider,
-            }}
-          >
-            <EventOpenContext.Provider value={{ open: setSelectedId, selectedId: shownId }}>
-              <Screen
-                edges={[]}
-                refreshing={upcoming.isRefetching || monthEvents.isRefetching}
-                onRefresh={refresh}
-              >
-                {body}
-              </Screen>
-            </EventOpenContext.Provider>
-          </View>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            {shownId ? (
-              <EventDetailView key={shownId} id={shownId} />
-            ) : (
-              <Screen edges={[]}>
-                <Empty icon="calendar-outline" text="Wähle links einen Termin." />
-              </Screen>
-            )}
-          </View>
-        </View>
-      </View>
-    );
-  }
-
   return (
     <Screen
       header={header}
       refreshing={upcoming.isRefetching || monthEvents.isRefetching}
       onRefresh={refresh}
     >
-      {body}
+      {filters}
+      {/* Desktop (Paket DT): ein Scrollbereich; Liste links, Kalender und Tag rechts */}
+      <Columns min={460} weights={[1.15, 1]}>
+        <View style={{ gap: 18 }}>{listBlock}</View>
+        <View style={{ gap: 18 }}>{calendarBlock}</View>
+      </Columns>
     </Screen>
   );
 }

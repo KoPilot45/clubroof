@@ -2,6 +2,7 @@ import type { AdminOverview } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router, type Href } from 'expo-router';
 import { View } from 'react-native';
+import { Columns } from '@/components/columns';
 import { Card, ErrorNotice, HeroCard, ListRow, Loading, Screen, Section, T } from '@/components/ui';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
@@ -73,42 +74,44 @@ export default function AdminOverviewScreen() {
             </View>
           </HeroCard>
 
-          <Section title="Für dich">
-            <Card>
-              {tasks.length === 0 ? (
-                <T variant="caption">Nichts zu tun – alles erledigt.</T>
-              ) : (
-                tasks.map(([key, e], i) => (
-                  <ListRow
-                    key={key}
-                    first={i === 0}
-                    title={e.hint!}
-                    subtitle={TASK_LABELS[key]}
-                    onPress={() => router.push(TASK_TARGETS[key]!)}
-                  />
-                ))
-              )}
-            </Card>
-          </Section>
-
-          {o.recentActivity.length ? (
-            <Section
-              title="Letzte Änderungen"
-              action="Alle"
-              onAction={() => router.push('/admin/audit')}
-            >
+          <Columns min={440}>
+            <Section title="Für dich">
               <Card>
-                {o.recentActivity.map((a, i) => (
-                  <ListRow
-                    key={a.id}
-                    first={i === 0}
-                    title={a.label}
-                    subtitle={`${a.actor ?? 'System'} · ${formatAgo(a.at)}`}
-                  />
-                ))}
+                {tasks.length === 0 ? (
+                  <T variant="caption">Nichts zu tun – alles erledigt.</T>
+                ) : (
+                  tasks.map(([key, e], i) => (
+                    <ListRow
+                      key={key}
+                      first={i === 0}
+                      title={e.hint!}
+                      subtitle={TASK_LABELS[key]}
+                      onPress={() => router.push(TASK_TARGETS[key]!)}
+                    />
+                  ))
+                )}
               </Card>
             </Section>
-          ) : null}
+
+            {o.recentActivity.length ? (
+              <Section
+                title="Letzte Änderungen"
+                action="Alle"
+                onAction={() => router.push('/admin/audit')}
+              >
+                <Card>
+                  {o.recentActivity.map((a, i) => (
+                    <ListRow
+                      key={a.id}
+                      first={i === 0}
+                      title={a.label}
+                      subtitle={`${a.actor ?? 'System'} · ${formatAgo(a.at)}`}
+                    />
+                  ))}
+                </Card>
+              </Section>
+            ) : null}
+          </Columns>
         </>
       ) : null}
     </Screen>

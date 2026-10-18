@@ -1,6 +1,6 @@
 /**
  * Paket LH2: Kontrastprüfung aller Routen im Browser (Text gegen die Fläche dahinter).
- * Aufruf: SCHEME=light pnpm browser-check scripts/e2e/hell-kontrast.mjs --no-build [-- rolle,rolle]
+ * Aufruf: SCHEME=light [WIDTH=1440 HEIGHT=900] [ROLES=admin,trainer] pnpm browser-check scripts/e2e/hell-kontrast.mjs --no-build [-- rolle,rolle]
  * Ausgabe: .check/kontrast-<hell|dunkel>.json und eine Zusammenfassung. Flächen mit Verlauf (Hero, Plakat,
  * Kopfbänder) und Bilder werden übersprungen – dort bleibt die Fläche in beiden Stilen farbig.
  */
@@ -28,9 +28,11 @@ const toRoute = (f) =>
 const routes = files.map(toRoute).filter((r) => !SKIP.test(r.slice(1)));
 
 const light = process.env.SCHEME === 'light';
-const roles = (process.argv.find((a) => a.includes(',')) ?? 'trainer,eltern,kasse,admin').split(
-  ',',
-);
+const roles = (
+  process.env.ROLES ??
+  process.argv.find((a) => a.includes(',')) ??
+  'trainer,eltern,kasse,admin'
+).split(',');
 const b = await launch();
 const findings = [];
 let visited = 0;
@@ -67,7 +69,8 @@ const analyse = () => {
     if (rect.width < 2 || rect.height < 2) continue;
     const cs = getComputedStyle(el);
     if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) === 0) continue;
-    let fg = parse(cs.color);
+    // SVG-Text wird mit `fill` gezeichnet, nicht mit `color`
+    let fg = parse(el instanceof SVGElement ? cs.fill : cs.color);
     if (!fg) continue;
     // Fläche dahinter: erster Vorfahre mit deckender Farbe; Verlauf/Bild → überspringen
     const layers = [];
@@ -126,7 +129,10 @@ const analyse = () => {
 };
 
 for (const who of roles) {
-  const { page, goto, login } = await b.session(who);
+  const { page, goto, login } = await b.session(who, {
+    width: Number(process.env.WIDTH ?? 390),
+    height: Number(process.env.HEIGHT ?? 844),
+  });
   const events = await api('/events', login.token);
   const ev = events[0];
   const team = login.me.teams?.[0];

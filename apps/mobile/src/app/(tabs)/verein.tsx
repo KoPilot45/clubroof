@@ -29,11 +29,14 @@ import {
 } from '@/components/ui';
 import { formatDateTile, formatLongDate, formatTime } from '@/lib/format';
 import { EVENT_TYPE_LABELS } from '@/lib/labels';
+import { Columns } from '@/components/columns';
+import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 import { useTheme } from '@/lib/theme';
 
 export default function ClubScreen() {
+  const desktop = useIsDesktop();
   const { api, me } = useSignedIn();
   const tileInfo = useTileInfo('club');
   const has = (module: string) => me.clubModules.includes(module);
@@ -255,32 +258,68 @@ export default function ClubScreen() {
         void today.refetch();
       }}
     >
-      {highlight ? <ClubEventHero event={highlight} /> : null}
+      {desktop ? (
+        <>
+          <Columns min={420} weights={[1, 1]}>
+            {highlight ? <ClubEventHero event={highlight} /> : null}
 
-      {news.data && news.data.length > 0 ? <ClubNewsTicker items={news.data} /> : null}
-      {news.isPending ? <Loading /> : null}
-      {has('helpers') &&
-      (helpers.data ?? []).some(
-        (h) => h.openSpots > 0 && new Date(h.event.startsAt) > new Date(),
-      ) ? (
-        <Section title="Helfer gesucht">
-          <HelperStrip items={helpers.data ?? []} />
-        </Section>
-      ) : null}
-      {hasAds ? <SponsorAdContainer /> : null}
+            <View style={{ gap: 18 }}>
+              {news.data && news.data.length > 0 ? <ClubNewsTicker items={news.data} /> : null}
+              {news.isPending ? <Loading /> : null}
+              {hasAds ? <SponsorAdContainer /> : null}
+            </View>
+          </Columns>
+          {has('helpers') &&
+          (helpers.data ?? []).some(
+            (h) => h.openSpots > 0 && new Date(h.event.startsAt) > new Date(),
+          ) ? (
+            <Section title="Helfer gesucht">
+              <HelperStrip items={helpers.data ?? []} />
+            </Section>
+          ) : null}
+          <Columns min={380} gap={22}>
+            {groups.map((g) => {
+              const items = shown
+                .filter((t) => g.tiles.some((x) => x.key === t.key))
+                .map((t) => ({ ...t, tint: g.tint }));
+              if (items.length === 0) return null;
+              return (
+                <Section key={g.key} title={g.title}>
+                  <TileGrid items={items} />
+                </Section>
+              );
+            })}
+          </Columns>
+        </>
+      ) : (
+        <>
+          {highlight ? <ClubEventHero event={highlight} /> : null}
 
-      {groups.map((g) => {
-        const items = shown
-          .filter((t) => g.tiles.some((x) => x.key === t.key))
-          .map((t) => ({ ...t, tint: g.tint }));
-        if (items.length === 0) return null;
-        return (
-          <Section key={g.key} title={g.title}>
-            <TileGrid items={items} />
-          </Section>
-        );
-      })}
+          {news.data && news.data.length > 0 ? <ClubNewsTicker items={news.data} /> : null}
+          {news.isPending ? <Loading /> : null}
+          {has('helpers') &&
+          (helpers.data ?? []).some(
+            (h) => h.openSpots > 0 && new Date(h.event.startsAt) > new Date(),
+          ) ? (
+            <Section title="Helfer gesucht">
+              <HelperStrip items={helpers.data ?? []} />
+            </Section>
+          ) : null}
+          {hasAds ? <SponsorAdContainer /> : null}
 
+          {groups.map((g) => {
+            const items = shown
+              .filter((t) => g.tiles.some((x) => x.key === t.key))
+              .map((t) => ({ ...t, tint: g.tint }));
+            if (items.length === 0) return null;
+            return (
+              <Section key={g.key} title={g.title}>
+                <TileGrid items={items} />
+              </Section>
+            );
+          })}
+        </>
+      )}
       <Section
         title="Heute auf der Anlage"
         action="Kalender anzeigen"

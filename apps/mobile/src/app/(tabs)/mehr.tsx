@@ -20,6 +20,7 @@ import {
   type TileItem,
 } from '@/components/ui';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
+import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
 import { useTileInfo } from '@/lib/tile-info';
@@ -307,8 +308,20 @@ export default function MoreScreen() {
     },
   ];
 
-  return (
-    <Screen header={<AppHeader title="Mehr" subtitle="Profil, Einstellungen und Hilfe" />}>
+  const desktop = useIsDesktop();
+  const leftCol = (
+    <>
+      <Section title="Einstellungen">
+        <MenuCard rows={settings} />
+      </Section>
+
+      <Section title="Über Clubroof">
+        <MenuCard rows={about} />
+      </Section>
+    </>
+  );
+  const rightCol = (
+    <>
       <HeroCard style={{ marginTop: 4 }}>
         <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
           {me.person.avatarUrl ? (
@@ -463,15 +476,21 @@ export default function MoreScreen() {
           </Card>
         </Section>
       ) : null}
-
-      <Section title="Einstellungen">
-        <MenuCard rows={settings} />
-      </Section>
-
-      <Section title="Über Clubroof">
-        <MenuCard rows={about} />
-      </Section>
-
+    </>
+  );
+  return (
+    <Screen header={<AppHeader title="Mehr" subtitle="Profil, Einstellungen und Hilfe" />}>
+      {desktop ? (
+        <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
+          <View style={{ width: 440, gap: 18 }}>{leftCol}</View>
+          <View style={{ flex: 1, minWidth: 0, gap: 18 }}>{rightCol}</View>
+        </View>
+      ) : (
+        <>
+          {rightCol}
+          {leftCol}
+        </>
+      )}
       <Button
         label="Abmelden"
         variant="danger"
