@@ -4290,6 +4290,7 @@ export const en: Record<string, string> = {
   'Vorstand und Administration sehen immer alles. Weitere Abteilungen kannst du später ergänzen.':
     'The board and administration always see everything. You can add more departments later.',
   'Wähle ein Passwort': 'Choose a password',
+  'Wähle links einen Termin.': 'Choose an event on the left.',
   'Wähle oben eine einzelne Kasse, um deren Plan zu bearbeiten.':
     'Select a single fund above to edit its plan.',
   'Wähle, was auf deiner Startseite ganz oben erreichbar sein soll. Die Reihenfolge ergibt sich aus deiner Auswahl.':
