@@ -17,6 +17,7 @@ import { and, asc, desc, eq, inArray, lt } from 'drizzle-orm';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { loadTeamForActor } from './team-access';
+import { archiveItem } from './archive';
 
 const isCategory = (v: string): v is ExerciseCategory =>
   (EXERCISE_CATEGORIES as readonly string[]).includes(v);
@@ -104,11 +105,41 @@ export async function updateExercise(
   return listExercises(db, actor);
 }
 
-export async function deleteExercise(db: Db, actor: Actor, id: string): Promise<Exercise[]> {
+/** Löschen heißt archivieren (Paket AR): die Übung liegt danach im Archiv und lässt sich wiederherstellen. */
+export async function deleteExercise(
+  db: Db,
+  actor: Actor,
+  id: string,
+  now: Date,
+): Promise<Exercise[]> {
   const list = await listExercises(db, actor);
   const exercise = list.find((e) => e.id === id);
   if (!exercise) throw notFound('Die Übung');
   if (!exercise.canDelete) throw forbidden('Löschen kann, wer die Übung angelegt hat.');
+  const [row] = await db.select().from(s.exercises).where(eq(s.exercises.id, id));
+  if (row)
+    await archiveItem(
+      db,
+      actor,
+      'exercise',
+      {
+        originalId: row.id,
+        label: row.title,
+        detail: row.category,
+        payload: {
+          title: row.title,
+          category: row.category,
+          durationMinutes: row.durationMinutes,
+          players: row.players,
+          material: row.material,
+          description: row.description,
+          createdByPersonId: row.createdByPersonId,
+          createdAt: row.createdAt.toISOString(),
+          editedAt: row.editedAt?.toISOString() ?? null,
+        },
+      },
+      now,
+    );
   await db.delete(s.exercises).where(eq(s.exercises.id, id));
   return list.filter((e) => e.id !== id);
 }

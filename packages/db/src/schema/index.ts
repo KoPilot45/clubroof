@@ -1,5 +1,6 @@
 export * from './_shared';
 export * from './access';
+export * from './archive';
 export * from './club';
 export * from './communication';
 export * from './events';

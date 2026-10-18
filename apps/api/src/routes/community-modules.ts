@@ -167,7 +167,7 @@ export const communityModuleRoutes: FastifyPluginAsyncZod = async (app) => {
       saveWikiPage(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
   app.delete('/wiki/:id', { schema: { params: id } }, async (request, reply) => {
-    await deleteWikiPage(app.db, request.actor!, request.params.id);
+    await deleteWikiPage(app.db, request.actor!, request.params.id, app.now());
     return reply.code(204).send();
   });
 };
