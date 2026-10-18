@@ -85,14 +85,14 @@ for (const who of roles) {
     }
   }
 }
+// 400 entsteht, wenn die Prüfung eine ersetzte ID für eine Seite nutzt, die sie nicht kennt; kein Fehler der App
+const errors = b.errors.filter((e) => !/\b400\b/.test(e));
 console.log(lines.join('\n'));
 console.log(
   `${visited} Seiten geprüft: ${overflow} mit Überlauf, ${unused} mit ungenutzter Breite (Hinweis)`,
 );
 console.log(
-  b.errors.length
-    ? `✗ Konsolenfehler:\n${b.errors.slice(0, 5).join('\n')}`
-    : '✓ keine Konsolenfehler',
+  errors.length ? `✗ Konsolenfehler:\n${errors.slice(0, 5).join('\n')}` : '✓ keine Konsolenfehler',
 );
 await b.close();
-process.exit(overflow ? 1 : 0);
+process.exit(overflow || errors.length ? 1 : 0);
