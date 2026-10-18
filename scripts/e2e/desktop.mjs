@@ -270,6 +270,18 @@ for (const s of sizes) {
     `Anmeldung: Marke links, Auswahl rechts (${Math.round(logo?.x ?? 0)} / ${Math.round(field?.x ?? 0)})`,
   );
   await b.shot(page, `dt2-anmeldung-1440-${scheme}`, false);
+  await goto('/forgot');
+  await page.waitForTimeout(2500);
+  const titel = await page
+    .getByText('Passwort vergessen', { exact: true })
+    .filter({ visible: true })
+    .first()
+    .boundingBox();
+  const eingabe = await page.locator('input').filter({ visible: true }).first().boundingBox();
+  ok(
+    !!titel && !!eingabe && titel.x < 720 && eingabe.x > 720,
+    'Passwort vergessen: Titel links, Eingabe rechts',
+  );
 }
 
 // Fenster: Desktop zentriert, Handy von unten (Kader-Fenster über den Anwesenheitsbalken)

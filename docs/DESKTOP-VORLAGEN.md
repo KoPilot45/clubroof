@@ -110,16 +110,16 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `expense-claims` | A | Breite | Liste bzw. Detailseite |
 | `facilities/block-new` | B | Breite | Formular |
 | `facilities/index` | S | Breite | Sonderfall mit eigenem Entwurf |
-| `forgot` | S | Breite | Sonderfall mit eigenem Entwurf |
+| `forgot` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `forum/[id]` | A | Breite | Liste bzw. Detailseite |
 | `forum/index` | A | Breite | Liste bzw. Detailseite |
 | `help` | D | Breite | Kachelraster / Übersicht |
 | `helpers` | A | Breite | Liste bzw. Detailseite |
 | `join-code` | B | Breite | Formular |
-| `join/[token]` | S | Breite | Sonderfall mit eigenem Entwurf |
+| `join/[token]` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `login` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `match/[id]/lineup` | S | fertig | Sonderfall mit eigenem Entwurf |
-| `match/[id]/report` | S | Breite | Sonderfall mit eigenem Entwurf |
+| `match/[id]/report` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `news/[id]` | A | Breite | Liste bzw. Detailseite |
 | `news/index` | A | Breite | Liste bzw. Detailseite |
 | `notification-settings` | B | Breite | Formular |
@@ -129,7 +129,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `polls/new` | B | Breite | Formular |
 | `profile/[id]` | A | Breite | Liste bzw. Detailseite |
 | `referees` | A | Breite | Liste bzw. Detailseite |
-| `reset/[token]` | S | Breite | Sonderfall mit eigenem Entwurf |
+| `reset/[token]` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `schedule-import` | E | fertig | Assistent |
 | `search` | A | Breite | Liste bzw. Detailseite |
 | `setup` | E | fertig | Assistent |

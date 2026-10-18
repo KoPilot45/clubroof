@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GradientHeader } from '@/components/brand-header';
 import { Crest, T } from '@/components/ui';
+import { useIsDesktop } from '@/lib/layout';
 import { clubInitials } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
 import { mediaUri } from '@/lib/upload';
@@ -19,6 +21,57 @@ export function PublicShell({
   children: ReactNode;
 }) {
   const { colors, spacing } = useTheme();
+  const desktop = useIsDesktop();
+  const logo = club?.logoUrl ? (
+    <Image
+      source={{ uri: mediaUri(club.logoUrl)! }}
+      style={{ width: 64, height: 70 }}
+      resizeMode="contain"
+    />
+  ) : (
+    <Crest initials={club ? (club.shortCode ?? clubInitials(club.shortName)) : 'CR'} size={56} />
+  );
+  // Desktop (Paket DT2): links Verlauf mit Wappen und Titel, rechts das Formular
+  if (desktop)
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <GradientHeader
+            containerStyle={{ flex: 1 }}
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: spacing.md,
+              padding: spacing.xl,
+            }}
+          >
+            {logo}
+            <T
+              variant="headline"
+              color={colors.hero.onHero}
+              accessibilityRole="header"
+              style={{ fontSize: 40, lineHeight: 44, textAlign: 'center' }}
+            >
+              {title}
+            </T>
+            {subtitle ? (
+              <T color={colors.hero.onHero} style={{ textAlign: 'center', maxWidth: 420 }}>
+                {subtitle}
+              </T>
+            ) : null}
+          </GradientHeader>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ padding: 96, flexGrow: 1, justifyContent: 'center' }}
+          >
+            <View style={{ width: '100%', maxWidth: 460, alignSelf: 'center', gap: spacing.lg }}>
+              {children}
+            </View>
+          </ScrollView>
+        </View>
+      </SafeAreaView>
+    );
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <KeyboardAvoidingView
@@ -30,18 +83,7 @@ export function PublicShell({
         >
           <View style={{ width: '100%', maxWidth: 460, alignSelf: 'center', gap: spacing.lg }}>
             <View style={{ alignItems: 'center', gap: spacing.sm }}>
-              {club?.logoUrl ? (
-                <Image
-                  source={{ uri: mediaUri(club.logoUrl)! }}
-                  style={{ width: 64, height: 70 }}
-                  resizeMode="contain"
-                />
-              ) : (
-                <Crest
-                  initials={club ? (club.shortCode ?? clubInitials(club.shortName)) : 'CR'}
-                  size={56}
-                />
-              )}
+              {logo}
               <T variant="title" style={{ textAlign: 'center' }}>
                 {title}
               </T>
