@@ -444,11 +444,6 @@ function CoachActions({ event }: { event: EventDetail }) {
 
 export default function EventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  return <EventDetailView id={id} />;
-}
-
-/** Inhalt der Terminseite; auf dem Desktop steht er rechts neben der Terminliste (Paket DT). */
-export function EventDetailView({ id }: { id: string }) {
   const { api, me } = useSignedIn();
   const { colors } = useTheme();
   const query = useQuery({
