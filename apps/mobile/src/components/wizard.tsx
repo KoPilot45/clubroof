@@ -11,6 +11,7 @@ import { Text } from '@/components/app-text';
 import { Button, Chip, IconTile, T, shadowStyle, type IconName } from '@/components/ui';
 import { readSetting, writeSetting } from '@/lib/flags';
 import { t } from '@/lib/i18n';
+import { useIsDesktop } from '@/lib/layout';
 import { useTheme } from '@/lib/theme';
 import { GrowBar } from '@/lib/motion';
 
@@ -50,6 +51,16 @@ export function WizardShell({
 }) {
   const { colors, spacing, sizes, isDark, elevation } = useTheme();
   const percent = step && total ? Math.round(((step - 1) / total) * 100) : 0;
+  const desktop = useIsDesktop();
+  // Desktop (Paket DT2): links die Schrittleiste, in der Mitte die Frage, rechts der Hinweis
+  const hintBox = hint ? (
+    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+      <Ionicons name="information-circle-outline" size={18} color={colors.onSurfaceMuted} />
+      <T variant="caption" style={{ flex: 1 }}>
+        {hint}
+      </T>
+    </View>
+  ) : null;
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <KeyboardAvoidingView
@@ -57,7 +68,7 @@ export function WizardShell({
         style={{ flex: 1 }}
       >
         <View style={{ alignItems: 'center', flex: 1 }}>
-          <View style={{ width: '100%', maxWidth: 520, flex: 1 }}>
+          <View style={{ width: '100%', maxWidth: desktop ? 1040 : 520, flex: 1 }}>
             <View
               style={{
                 flexDirection: 'row',
@@ -89,7 +100,7 @@ export function WizardShell({
                 </Pressable>
               ) : null}
               {step && total ? (
-                <View style={{ flex: 1, gap: 6 }}>
+                <View style={{ flex: 1, gap: 6, maxWidth: desktop ? 420 : undefined }}>
                   <T variant="caption">{`Schritt ${step} von ${total} · ${percent} %`}</T>
                   <View
                     accessibilityRole="progressbar"
@@ -117,33 +128,40 @@ export function WizardShell({
                 paddingBottom: spacing.xl,
               }}
             >
-              {header}
-              <View style={{ gap: spacing.sm }}>
-                <T
-                  variant="headline"
-                  accessibilityRole="header"
-                  style={{ fontSize: 28, lineHeight: 34 }}
-                >
-                  {title}
-                </T>
-                {explanation ? <T color={colors.onSurfaceMuted}>{explanation}</T> : null}
-              </View>
-              {children}
-              {hint ? (
-                <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
-                  <Ionicons
-                    name="information-circle-outline"
-                    size={18}
-                    color={colors.onSurfaceMuted}
-                  />
-                  <T variant="caption" style={{ flex: 1 }}>
-                    {hint}
+              <View
+                style={{
+                  width: '100%',
+                  maxWidth: desktop ? 720 : undefined,
+                  alignSelf: 'center',
+                  gap: spacing.lg,
+                }}
+              >
+                {header}
+                <View style={{ gap: spacing.sm }}>
+                  <T
+                    variant="headline"
+                    accessibilityRole="header"
+                    style={{ fontSize: 28, lineHeight: 34 }}
+                  >
+                    {title}
                   </T>
+                  {explanation ? <T color={colors.onSurfaceMuted}>{explanation}</T> : null}
                 </View>
-              ) : null}
-              {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+                {children}
+                {hintBox}
+                {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+              </View>
             </ScrollView>
-            <View style={{ padding: spacing.xl, paddingTop: spacing.sm, gap: 4 }}>
+            <View
+              style={{
+                padding: spacing.xl,
+                paddingTop: spacing.sm,
+                gap: 4,
+                width: '100%',
+                maxWidth: desktop ? 720 : undefined,
+                alignSelf: 'center',
+              }}
+            >
               <Button
                 label={nextLabel}
                 onPress={onNext}

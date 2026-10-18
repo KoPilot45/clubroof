@@ -37,7 +37,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `admin/club-events` | C | Breite | Tabelle mit Filterleiste |
 | `admin/departments` | C | Breite | Tabelle mit Filterleiste |
 | `admin/funds` | C | Breite | Tabelle mit Filterleiste |
-| `admin/import` | E | Breite | Assistent |
+| `admin/import` | E | fertig | Assistent |
 | `admin/index` | D | fertig | Kachelraster / Übersicht |
 | `admin/invites` | C | Breite | Tabelle mit Filterleiste |
 | `admin/member-new` | B | Breite | Formular |
@@ -51,7 +51,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `admin/role/[key]` | A | Breite | Liste bzw. Detailseite |
 | `admin/roles` | C | fertig | Tabelle mit Filterleiste |
 | `admin/sponsors` | C | Breite | Tabelle mit Filterleiste |
-| `admin/team-new` | E | Breite | Assistent |
+| `admin/team-new` | E | fertig | Assistent |
 | `admin/team/[id]` | A | Breite | Liste bzw. Detailseite |
 | `admin/teams` | C | fertig | Tabelle mit Filterleiste |
 | `admin/transfer-new` | B | Breite | Formular |
@@ -71,7 +71,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `club-cash/closing` | F | Breite | Bericht / Diagramme |
 | `club-cash/donations` | C | Breite | Tabelle mit Filterleiste |
 | `club-cash/entries` | C | Breite | Tabelle mit Filterleiste |
-| `club-cash/fee-import` | E | Breite | Assistent |
+| `club-cash/fee-import` | E | fertig | Assistent |
 | `club-cash/fee-setup` | B | Breite | Formular |
 | `club-cash/fees` | C | Breite | Tabelle mit Filterleiste |
 | `club-cash/funds` | C | Breite | Tabelle mit Filterleiste |
@@ -90,8 +90,8 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `club-team/[id]` | A | Breite | Liste bzw. Detailseite |
 | `club-teams` | A | Breite | Liste bzw. Detailseite |
 | `contacts` | A | Breite | Liste bzw. Detailseite |
-| `demo/club` | E | Breite | Assistent |
-| `demo/team` | E | Breite | Assistent |
+| `demo/club` | E | fertig | Assistent |
+| `demo/team` | E | fertig | Assistent |
 | `documents` | A | Breite | Liste bzw. Detailseite |
 | `documents-upload` | B | Breite | Formular |
 | `equipment/damages` | C | Breite | Tabelle mit Filterleiste |
@@ -130,9 +130,9 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `profile/[id]` | A | Breite | Liste bzw. Detailseite |
 | `referees` | A | Breite | Liste bzw. Detailseite |
 | `reset/[token]` | S | Breite | Sonderfall mit eigenem Entwurf |
-| `schedule-import` | E | Breite | Assistent |
+| `schedule-import` | E | fertig | Assistent |
 | `search` | A | Breite | Liste bzw. Detailseite |
-| `setup` | E | Breite | Assistent |
+| `setup` | E | fertig | Assistent |
 | `sponsor/[id]` | A | Breite | Liste bzw. Detailseite |
 | `sponsors` | A | Breite | Liste bzw. Detailseite |
 | `teams/[id]/archive` | C | fertig | Tabelle mit Filterleiste |
