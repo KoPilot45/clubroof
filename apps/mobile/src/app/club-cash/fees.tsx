@@ -1,3 +1,5 @@
+import { Cell, DataTable } from '@/components/data-table';
+import { useIsDesktop } from '@/lib/layout';
 import {
   CLUB_FEE_MAX_REMINDER,
   type ClubCash,
@@ -48,6 +50,7 @@ const STATUS_LABEL = {
 
 /** Mitgliedsbeiträge (Paket K2): Rückstände, Zahlungseingang, Erinnerungen, Sollstellung. */
 export default function ClubFeesScreen() {
+  const desktop = useIsDesktop();
   const { api } = useSignedIn();
   const { colors } = useTheme();
   const queryClient = useQueryClient();
@@ -106,6 +109,22 @@ export default function ClubFeesScreen() {
   });
 
   const f = fees.data;
+  const renderActions = (d: NonNullable<typeof f>['dues'][number]) =>
+    f ? (
+      <DueActions
+        due={d}
+        cash={cash.data}
+        canManage={f.canManage}
+        today={f.today}
+        onDone={(text) => {
+          setMessage(text);
+          setError(null);
+          setOpen(null);
+          refresh();
+        }}
+        onError={setError}
+      />
+    ) : null;
   const full = f?.level === 'full';
   return (
     <Screen edges={[]} refreshing={fees.isRefetching} onRefresh={() => fees.refetch()}>
@@ -187,61 +206,114 @@ export default function ClubFeesScreen() {
                 />
               </Card>
               <Section title="Forderungen">
-                <Card>
-                  {f.dues.length === 0 ? (
-                    <Empty
-                      icon="checkmark-done-outline"
-                      text="Keine Forderungen in dieser Ansicht."
+                {desktop && f.dues.length > 0 ? (
+                  <>
+                    <DataTable
+                      rows={f.dues}
+                      rowKey={(d) => d.id}
+                      exportName="forderungen"
+                      defaultSort={{ key: 'due', dir: 'asc' }}
+                      onRowPress={(d) => setOpen(open === d.id ? null : d.id)}
+                      columns={[
+                        {
+                          key: 'person',
+                          label: 'Person',
+                          flex: 2,
+                          sort: (x, y) => x.personName.localeCompare(y.personName),
+                          csv: (r) => r.personName,
+                          render: (r) => <Cell>{r.personName}</Cell>,
+                        },
+                        {
+                          key: 'fee',
+                          label: 'Beitragsart',
+                          flex: 2,
+                          sort: (x, y) => x.feeTypeName.localeCompare(y.feeTypeName),
+                          csv: (r) => r.feeTypeName,
+                          render: (r) => <Cell muted>{r.feeTypeName}</Cell>,
+                        },
+                        {
+                          key: 'period',
+                          label: 'Zeitraum',
+                          flex: 1,
+                          csv: (r) => r.periodLabel,
+                          render: (r) => <Cell muted>{r.periodLabel}</Cell>,
+                        },
+                        {
+                          key: 'due',
+                          label: 'Fällig',
+                          width: 110,
+                          sort: (x, y) => x.dueOn.localeCompare(y.dueOn),
+                          csv: (r) => r.dueOn,
+                          render: (r) => (
+                            <Cell muted>{r.dueOn.split('-').reverse().join('.')}</Cell>
+                          ),
+                        },
+                        {
+                          key: 'open',
+                          label: 'Offen',
+                          width: 130,
+                          align: 'right',
+                          sort: (x, y) => x.openCents - y.openCents,
+                          csv: (r) => String(r.openCents / 100),
+                          render: (r) => (
+                            <Cell>
+                              {r.status === 'paid' || r.status === 'cancelled'
+                                ? STATUS_LABEL[r.status]
+                                : formatEuro(r.openCents)}
+                            </Cell>
+                          ),
+                        },
+                      ]}
                     />
-                  ) : (
-                    f.dues.map((d, i) => (
-                      <View key={d.id}>
-                        <ListRow
-                          first={i === 0}
-                          strike={d.status === 'cancelled'}
-                          title={d.personName}
-                          subtitle={t(
-                            `${d.feeTypeName} · ${d.periodLabel} · fällig ${d.dueOn
-                              .split('-')
-                              .reverse()
-                              .join('.')}`,
-                          )}
-                          trailing={
-                            <View style={{ alignItems: 'flex-end', gap: 4 }}>
-                              <Chip
-                                tone={TONE[d.status]}
-                                label={
-                                  d.status === 'paid' || d.status === 'cancelled'
-                                    ? STATUS_LABEL[d.status]
-                                    : formatEuro(d.openCents)
-                                }
-                              />
-                              {d.reminderLevel > 0 && d.status === 'overdue' ? (
-                                <T variant="caption">{t(`Stufe ${d.reminderLevel}`)}</T>
-                              ) : null}
-                            </View>
-                          }
-                          onPress={() => setOpen(open === d.id ? null : d.id)}
-                        />
-                        {open === d.id ? (
-                          <DueActions
-                            due={d}
-                            cash={cash.data}
-                            canManage={f.canManage}
-                            today={f.today}
-                            onDone={(text) => {
-                              setMessage(text);
-                              setError(null);
-                              setOpen(null);
-                              refresh();
-                            }}
-                            onError={setError}
+                    {f.dues
+                      .filter((d) => d.id === open)
+                      .map((d) => (
+                        <Card key={d.id}>{renderActions(d)}</Card>
+                      ))}
+                  </>
+                ) : (
+                  <Card>
+                    {f.dues.length === 0 ? (
+                      <Empty
+                        icon="checkmark-done-outline"
+                        text="Keine Forderungen in dieser Ansicht."
+                      />
+                    ) : (
+                      f.dues.map((d, i) => (
+                        <View key={d.id}>
+                          <ListRow
+                            first={i === 0}
+                            strike={d.status === 'cancelled'}
+                            title={d.personName}
+                            subtitle={t(
+                              `${d.feeTypeName} · ${d.periodLabel} · fällig ${d.dueOn
+                                .split('-')
+                                .reverse()
+                                .join('.')}`,
+                            )}
+                            trailing={
+                              <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                                <Chip
+                                  tone={TONE[d.status]}
+                                  label={
+                                    d.status === 'paid' || d.status === 'cancelled'
+                                      ? STATUS_LABEL[d.status]
+                                      : formatEuro(d.openCents)
+                                  }
+                                />
+                                {d.reminderLevel > 0 && d.status === 'overdue' ? (
+                                  <T variant="caption">{t(`Stufe ${d.reminderLevel}`)}</T>
+                                ) : null}
+                              </View>
+                            }
+                            onPress={() => setOpen(open === d.id ? null : d.id)}
                           />
-                        ) : null}
-                      </View>
-                    ))
-                  )}
-                </Card>
+                          {open === d.id ? renderActions(d) : null}
+                        </View>
+                      ))
+                    )}
+                  </Card>
+                )}
               </Section>
             </>
           ) : (
