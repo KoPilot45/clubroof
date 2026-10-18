@@ -33,6 +33,8 @@ import { EVENT_TYPE_LABELS, TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
 import { AttendanceOverview } from '@/components/squad-sheet';
+import { RosterTable } from '@/components/roster-table';
+import { useIsDesktop } from '@/lib/layout';
 import { useTeamColorOf } from '@/lib/team-colors';
 import { useTheme } from '@/lib/theme';
 import type { TintKey } from '@clubroof/design-tokens';
@@ -108,6 +110,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
   const team = teams.find((t) => t.id === selected) ?? teams[0];
   const has = (module: string) => team?.modules.includes(module) ?? false;
 
+  const desktop = useIsDesktop();
   const overview = useQuery({
     queryKey: ['team', team?.id],
     queryFn: () => api<TeamOverview>(`/teams/${team!.id}`),
@@ -359,130 +362,294 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
             {team.ageGroup ? <Chip tone="neutral" label={team.ageGroup} /> : null}
           </View>
 
-          {o ? (
-            <TeamBand highlights={o.highlights} squad={o.squad} composition={o.composition} />
-          ) : null}
-
-          {o?.nextEvent ? (
-            <Section title="Nächster Termin">
-              <Card style={{ gap: 12 }}>
-                <ListRow
-                  first
-                  onPress={() => router.push(`/events/${o.nextEvent!.id}`)}
-                  leading={
-                    <DateTile
-                      size="lg"
-                      muted={o.nextEvent.status === 'cancelled'}
-                      {...formatDateTile(o.nextEvent.startsAt)}
+          {desktop ? (
+            <View style={{ gap: 18 }}>
+              <View style={{ flexDirection: 'row', gap: 18, alignItems: 'flex-start' }}>
+                <View style={{ flex: 1.2, minWidth: 0 }}>
+                  {o ? (
+                    <TeamBand
+                      highlights={o.highlights}
+                      squad={o.squad}
+                      composition={o.composition}
                     />
-                  }
-                  title={o.nextEvent.title}
-                  subtitle={[
-                    formatTime(o.nextEvent.startsAt),
-                    o.nextEvent.location,
-                    EVENT_TYPE_LABELS[o.nextEvent.type],
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                  trailing={
-                    o.nextEvent.status === 'cancelled' ? (
-                      <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
-                    ) : null
-                  }
-                />
-                <T variant="caption">{PARTICIPATION_LABELS[team.participationMode]}</T>
-                <AttendanceOverview event={o.nextEvent} counts={o.nextEvent.counts} />
-              </Card>
-            </Section>
-          ) : null}
-
-          {o && o.upcomingMatches.length > 0 ? (
-            <Section title="Nächste Spiele">
-              <UpcomingMatches matches={o.upcomingMatches} />
-            </Section>
-          ) : null}
-
-          {groups.map((g) => (
-            <Section key={g.key} title={g.title}>
-              <TileGrid
-                items={withTileInfo(g.tiles, tileInfo).map((tile) => ({ ...tile, tint: g.tint }))}
-              />
-            </Section>
-          ))}
-
-          {hasAds ? <SponsorAdContainer /> : null}
-
-          {overview.isPending ? <Loading /> : null}
-          {overview.error ? (
-            <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />
-          ) : null}
-
-          {o ? (
-            <Section
-              title="Trainingswoche"
-              action="Alle Termine"
-              onAction={() => router.push(`/events?teamId=${team.id}`)}
-            >
-              <Card>
-                {o.trainingWeek.length === 0 ? (
-                  <Empty icon="fitness-outline" text="Keine Trainings in den nächsten 7 Tagen." />
-                ) : null}
-                {o.trainingWeek.map((e, i) => (
-                  <ListRow
-                    key={e.id}
-                    first={i === 0}
-                    onPress={() => router.push(`/events/${e.id}`)}
-                    leading={
-                      <DateTile {...formatDateTile(e.startsAt)} muted={e.status === 'cancelled'} />
-                    }
-                    title={e.title}
-                    subtitle={
-                      e.status === 'cancelled'
-                        ? e.cancelledReason
-                          ? `Grund: ${e.cancelledReason}`
-                          : formatTime(e.startsAt)
-                        : [
-                            formatTime(e.startsAt),
-                            e.location,
-                            e.counts
-                              ? `${e.counts.yes} von ${e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending} zugesagt`
-                              : null,
+                  ) : null}
+                </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  {o?.nextEvent ? (
+                    <Section title="Nächster Termin">
+                      <Card style={{ gap: 12 }}>
+                        <ListRow
+                          first
+                          onPress={() => router.push(`/events/${o.nextEvent!.id}`)}
+                          leading={
+                            <DateTile
+                              size="lg"
+                              muted={o.nextEvent.status === 'cancelled'}
+                              {...formatDateTile(o.nextEvent.startsAt)}
+                            />
+                          }
+                          title={o.nextEvent.title}
+                          subtitle={[
+                            formatTime(o.nextEvent.startsAt),
+                            o.nextEvent.location,
+                            EVENT_TYPE_LABELS[o.nextEvent.type],
                           ]
                             .filter(Boolean)
-                            .join(' · ')
-                    }
-                    trailing={
-                      e.status === 'cancelled' ? (
-                        <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
-                      ) : null
-                    }
-                  />
-                ))}
-              </Card>
-            </Section>
-          ) : null}
+                            .join(' · ')}
+                          trailing={
+                            o.nextEvent.status === 'cancelled' ? (
+                              <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                            ) : null
+                          }
+                        />
+                        <T variant="caption">{PARTICIPATION_LABELS[team.participationMode]}</T>
+                        <AttendanceOverview event={o.nextEvent} counts={o.nextEvent.counts} />
+                      </Card>
+                    </Section>
+                  ) : null}
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 18, alignItems: 'flex-start' }}>
+                <View style={{ flex: 1, minWidth: 0, gap: 18 }}>
+                  <Section title="Kader">
+                    <RosterTable teamId={team.id} />
+                  </Section>
+                  {o && o.upcomingMatches.length > 0 ? (
+                    <Section title="Nächste Spiele">
+                      <UpcomingMatches matches={o.upcomingMatches} />
+                    </Section>
+                  ) : null}
 
-          {o && o.lastResults.length > 0 ? (
-            <Section
-              title="Letzte Ergebnisse"
-              action="Statistik"
-              onAction={
-                has('statistics') ? () => router.push(`/teams/${team.id}/stats`) : undefined
-              }
-            >
-              <Card>
-                {o.lastResults.map((r, i) => (
-                  <ResultRow
-                    key={r.eventId}
-                    result={r}
-                    clubShortName={me.club.shortName}
-                    badge={team.badge}
-                    first={i === 0}
+                  {o ? (
+                    <Section
+                      title="Trainingswoche"
+                      action="Alle Termine"
+                      onAction={() => router.push(`/events?teamId=${team.id}`)}
+                    >
+                      <Card>
+                        {o.trainingWeek.length === 0 ? (
+                          <Empty
+                            icon="fitness-outline"
+                            text="Keine Trainings in den nächsten 7 Tagen."
+                          />
+                        ) : null}
+                        {o.trainingWeek.map((e, i) => (
+                          <ListRow
+                            key={e.id}
+                            first={i === 0}
+                            onPress={() => router.push(`/events/${e.id}`)}
+                            leading={
+                              <DateTile
+                                {...formatDateTile(e.startsAt)}
+                                muted={e.status === 'cancelled'}
+                              />
+                            }
+                            title={e.title}
+                            subtitle={
+                              e.status === 'cancelled'
+                                ? e.cancelledReason
+                                  ? `Grund: ${e.cancelledReason}`
+                                  : formatTime(e.startsAt)
+                                : [
+                                    formatTime(e.startsAt),
+                                    e.location,
+                                    e.counts
+                                      ? `${e.counts.yes} von ${e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending} zugesagt`
+                                      : null,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' · ')
+                            }
+                            trailing={
+                              e.status === 'cancelled' ? (
+                                <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                              ) : null
+                            }
+                          />
+                        ))}
+                      </Card>
+                    </Section>
+                  ) : null}
+
+                  {o && o.lastResults.length > 0 ? (
+                    <Section
+                      title="Letzte Ergebnisse"
+                      action="Statistik"
+                      onAction={
+                        has('statistics') ? () => router.push(`/teams/${team.id}/stats`) : undefined
+                      }
+                    >
+                      <Card>
+                        {o.lastResults.map((r, i) => (
+                          <ResultRow
+                            key={r.eventId}
+                            result={r}
+                            clubShortName={me.club.shortName}
+                            badge={team.badge}
+                            first={i === 0}
+                          />
+                        ))}
+                      </Card>
+                    </Section>
+                  ) : null}
+                  {overview.isPending ? <Loading /> : null}
+                  {overview.error ? (
+                    <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />
+                  ) : null}
+                </View>
+                <View style={{ width: 340, gap: 18 }}>
+                  {groups.map((g) => (
+                    <Section key={g.key} title={g.title}>
+                      <TileGrid
+                        items={withTileInfo(g.tiles, tileInfo).map((tile) => ({
+                          ...tile,
+                          tint: g.tint,
+                        }))}
+                      />
+                    </Section>
+                  ))}
+
+                  {hasAds ? <SponsorAdContainer /> : null}
+                </View>
+              </View>
+            </View>
+          ) : (
+            <>
+              {o ? (
+                <TeamBand highlights={o.highlights} squad={o.squad} composition={o.composition} />
+              ) : null}
+
+              {o?.nextEvent ? (
+                <Section title="Nächster Termin">
+                  <Card style={{ gap: 12 }}>
+                    <ListRow
+                      first
+                      onPress={() => router.push(`/events/${o.nextEvent!.id}`)}
+                      leading={
+                        <DateTile
+                          size="lg"
+                          muted={o.nextEvent.status === 'cancelled'}
+                          {...formatDateTile(o.nextEvent.startsAt)}
+                        />
+                      }
+                      title={o.nextEvent.title}
+                      subtitle={[
+                        formatTime(o.nextEvent.startsAt),
+                        o.nextEvent.location,
+                        EVENT_TYPE_LABELS[o.nextEvent.type],
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                      trailing={
+                        o.nextEvent.status === 'cancelled' ? (
+                          <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                        ) : null
+                      }
+                    />
+                    <T variant="caption">{PARTICIPATION_LABELS[team.participationMode]}</T>
+                    <AttendanceOverview event={o.nextEvent} counts={o.nextEvent.counts} />
+                  </Card>
+                </Section>
+              ) : null}
+
+              {o && o.upcomingMatches.length > 0 ? (
+                <Section title="Nächste Spiele">
+                  <UpcomingMatches matches={o.upcomingMatches} />
+                </Section>
+              ) : null}
+
+              {groups.map((g) => (
+                <Section key={g.key} title={g.title}>
+                  <TileGrid
+                    items={withTileInfo(g.tiles, tileInfo).map((tile) => ({
+                      ...tile,
+                      tint: g.tint,
+                    }))}
                   />
-                ))}
-              </Card>
-            </Section>
-          ) : null}
+                </Section>
+              ))}
+
+              {hasAds ? <SponsorAdContainer /> : null}
+
+              {overview.isPending ? <Loading /> : null}
+              {overview.error ? (
+                <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />
+              ) : null}
+
+              {o ? (
+                <Section
+                  title="Trainingswoche"
+                  action="Alle Termine"
+                  onAction={() => router.push(`/events?teamId=${team.id}`)}
+                >
+                  <Card>
+                    {o.trainingWeek.length === 0 ? (
+                      <Empty
+                        icon="fitness-outline"
+                        text="Keine Trainings in den nächsten 7 Tagen."
+                      />
+                    ) : null}
+                    {o.trainingWeek.map((e, i) => (
+                      <ListRow
+                        key={e.id}
+                        first={i === 0}
+                        onPress={() => router.push(`/events/${e.id}`)}
+                        leading={
+                          <DateTile
+                            {...formatDateTile(e.startsAt)}
+                            muted={e.status === 'cancelled'}
+                          />
+                        }
+                        title={e.title}
+                        subtitle={
+                          e.status === 'cancelled'
+                            ? e.cancelledReason
+                              ? `Grund: ${e.cancelledReason}`
+                              : formatTime(e.startsAt)
+                            : [
+                                formatTime(e.startsAt),
+                                e.location,
+                                e.counts
+                                  ? `${e.counts.yes} von ${e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending} zugesagt`
+                                  : null,
+                              ]
+                                .filter(Boolean)
+                                .join(' · ')
+                        }
+                        trailing={
+                          e.status === 'cancelled' ? (
+                            <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                          ) : null
+                        }
+                      />
+                    ))}
+                  </Card>
+                </Section>
+              ) : null}
+
+              {o && o.lastResults.length > 0 ? (
+                <Section
+                  title="Letzte Ergebnisse"
+                  action="Statistik"
+                  onAction={
+                    has('statistics') ? () => router.push(`/teams/${team.id}/stats`) : undefined
+                  }
+                >
+                  <Card>
+                    {o.lastResults.map((r, i) => (
+                      <ResultRow
+                        key={r.eventId}
+                        result={r}
+                        clubShortName={me.club.shortName}
+                        badge={team.badge}
+                        first={i === 0}
+                      />
+                    ))}
+                  </Card>
+                </Section>
+              ) : null}
+            </>
+          )}
         </>
       ) : null}
     </Screen>

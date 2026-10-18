@@ -57,6 +57,7 @@ import {
 import { RequestError } from '@/lib/api';
 import { formatDay, formatTime } from '@/lib/format';
 import { hapticSelect } from '@/lib/haptics';
+import { useIsDesktop } from '@/lib/layout';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useToast } from '@/lib/toast';
@@ -493,9 +494,179 @@ function Stage(props: {
   const toast = useToast();
   const { hover } = useDndState();
   const { sheet, board, sel } = props;
+  const desktop = useIsDesktop();
   const on = colors.hero.onHero;
   const selectedPlayer = sel ? props.players.get(sel.personId) : null;
   const selSlot = sel?.src.startsWith('s:') ? Number(sel.src.slice(2)) : null;
+  // Desktop-Ansicht (Paket DT): links Kopf, Spielform und Spielfeld, rechts Bank, Kader und Speichern
+  if (desktop)
+    return (
+      <View style={{ flexDirection: 'row', gap: 22, paddingTop: 6, alignItems: 'flex-start' }}>
+        <View style={{ flex: 1, minWidth: 0, gap: 6 }}>
+          <HeroCard compact>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('Zurück')}
+                onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(0,0,0,0.28)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255,255,255,0.16)',
+                }}
+              >
+                <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
+              </Pressable>
+              <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
+                <T variant="overline" color={on}>
+                  {`${t('Aufstellung')} · ${sheet.team.badge}`}
+                </T>
+                <T
+                  variant="headline"
+                  color={on}
+                  numberOfLines={1}
+                  verbatim
+                  style={{ fontSize: 22, lineHeight: 24 }}
+                >
+                  {`${sheet.isHome ? 'vs.' : '@'} ${sheet.opponentName}`}
+                </T>
+                <T variant="caption" color={on} numberOfLines={1} verbatim>
+                  {`${formatDay(sheet.startsAt)} · ${formatTime(sheet.startsAt)} ${t('Uhr')}`}
+                </T>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 14 }}>
+                <View style={{ alignItems: 'center' }}>
+                  <T variant="figure" color={on} style={{ fontSize: 26, lineHeight: 28 }} verbatim>
+                    {`${props.starters}/${board.slots.length}`}
+                  </T>
+                  <T variant="caption" color={on}>
+                    Startelf
+                  </T>
+                </View>
+                <View style={{ alignItems: 'center' }}>
+                  <T variant="figure" color={on} style={{ fontSize: 26, lineHeight: 28 }} verbatim>
+                    {String(props.bench)}
+                  </T>
+                  <T variant="caption" color={on}>
+                    Bank
+                  </T>
+                </View>
+              </View>
+            </View>
+          </HeroCard>
+
+          <Segment
+            options={LINEUP_SIZES.map((s) => ({ value: String(s), label: `${s}er` }))}
+            value={String(board.size)}
+            onChange={(v) => props.onSize(Number(v) as LineupSize)}
+          />
+          <FormationStrip size={board.size} active={board.formation} onPick={props.onFormation} />
+
+          <Pitch
+            formation={props.formation}
+            slots={board.slots}
+            players={props.players}
+            selectedSlot={selSlot}
+            hoverId={hover}
+            onSlot={props.onSlot}
+            showDots
+          />
+          {selectedPlayer ? (
+            <View
+              accessibilityRole="alert"
+              style={{
+                borderRadius: 12,
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                backgroundColor: withAlpha(colors.status.action.solid, 0.14),
+              }}
+            >
+              <T variant="caption" color={colors.status.action.onContainer}>
+                {t(`${selectedPlayer.name} gewählt. Tippe auf eine Position oder einen Bankplatz.`)}
+              </T>
+            </View>
+          ) : null}
+        </View>
+        <View style={{ width: 460, gap: 6 }}>
+          <StageLabel title="Bank" info={t(`${props.bench} Spieler · ein Platz bleibt frei`)} />
+          <Strip id="bench" over={hover?.startsWith('b:')}>
+            {board.bench.map((id, i) => (
+              <BenchTile
+                key={`${i}-${id ?? 'frei'}`}
+                index={i}
+                player={id ? (props.players.get(id) ?? null) : null}
+                selected={sel?.src === `b:${i}`}
+                over={hover === `b:${i}`}
+                onPress={props.onBench}
+              />
+            ))}
+          </Strip>
+
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            <StageLabel inline title="Kader" info={t(`${props.available.length} verfügbar`)} />
+            <SortSwitch sort={props.sort} onSort={props.onSort} />
+          </View>
+          <DropZone id="pool">
+            {(over) => (
+              <Strip id="rail" over={over}>
+                {props.available.length === 0 ? (
+                  <T variant="caption" style={{ paddingVertical: 14, paddingRight: 40 }}>
+                    Alle verfügbaren Spieler sind eingeplant. Ziehe einen Spieler hierher, um ihn
+                    aus der Aufstellung zu nehmen.
+                  </T>
+                ) : null}
+                {props.available.map((p) => (
+                  <SquadCard
+                    key={p.id}
+                    player={p}
+                    selected={sel?.src === 'pool' && sel.personId === p.id}
+                    onPress={() => props.onCard(p)}
+                  />
+                ))}
+                {props.unavailable.map((p) => (
+                  <SquadCard key={p.id} player={p} disabled />
+                ))}
+              </Strip>
+            )}
+          </DropZone>
+
+          {props.error ? <Chip tone="urgent" icon="alert-circle" label={props.error} /> : null}
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <Button
+              label="Entwurf speichern"
+              variant="outline"
+              style={{ flex: 0.85 }}
+              loading={props.saving === false}
+              onPress={() => props.onSave(false)}
+            />
+            <Button
+              label={props.published ? 'Änderungen veröffentlichen' : 'Veröffentlichen'}
+              icon="send"
+              style={{ flex: 1 }}
+              loading={props.saving === true}
+              disabled={props.starters === 0}
+              onPress={() => {
+                if (props.missing > 0)
+                  toast({
+                    message:
+                      props.missing === 1
+                        ? t('Noch 1 Position frei')
+                        : t(`Noch ${props.missing} Positionen frei`),
+                  });
+                props.onSave(true);
+              }}
+            />
+          </View>
+        </View>
+      </View>
+    );
   return (
     <View style={{ gap: 6, paddingTop: 6 }}>
       <HeroCard compact>

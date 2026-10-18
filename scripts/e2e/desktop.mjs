@@ -2,7 +2,7 @@
  * Paket DT, Stufe 1: Breitenstufen, feste Seitenleiste, zentrierter Dialog statt Fenster von unten, Kürzel `/`.
  * pnpm browser-check scripts/e2e/desktop.mjs [--no-build]   (SCHEME=light für den hellen Stil; Bilder in .check/shots/dt-*.png)
  */
-import { button, launch } from '../lib/e2e.mjs';
+import { api, launch } from '../lib/e2e.mjs';
 
 let fail = 0;
 const ok = (cond, label) => {
@@ -54,6 +54,52 @@ for (const s of sizes) {
     await page.getByRole('link', { name: 'Mehr', exact: true }).first().click();
     await page.waitForTimeout(1200);
     await b.shot(page, `dt-mehr-${s.width}-${scheme}`, false);
+  }
+}
+
+// Stufe 2: Termine als Liste links und Termin rechts, Team mit Kadertabelle, Aufstellungsplaner zweispaltig
+{
+  const { page, goto, login } = await b.session('trainer', { width: 1440, height: 900 });
+  await goto('/termine');
+  await page.waitForTimeout(3000);
+  const rows = page
+    .getByRole('button')
+    .filter({ hasText: /Training|Spiel/ })
+    .filter({ visible: true });
+  const listBox = await page.getByText('Alles auf einen Blick').first().boundingBox();
+  ok(!!listBox, 'Termine: Kopfzeile sichtbar');
+  // rechts steht schon der nächste Termin (Hero mit Zu-/Absage), ohne Seitenwechsel
+  const before = page.url();
+  await rows.nth(2).click();
+  await page.waitForTimeout(1500);
+  ok(page.url() === before, 'Termine: Antippen eines Termins bleibt auf der Seite (Detail rechts)');
+  const detailRight = await page
+    .locator('text=/Zusagen|Zu- und Absage|Teilnahme/')
+    .filter({ visible: true })
+    .first()
+    .boundingBox();
+  ok(!!detailRight && detailRight.x > 420, 'Termine: Termin erscheint rechts neben der Liste');
+  await b.shot(page, `dt-termine-detail-1440-${scheme}`, false);
+
+  const b1 = login.me.teams.find((t) => t.badge === 'B1');
+  await goto(`/team?teamId=${b1.id}`);
+  await page.waitForTimeout(3000);
+  const nr = await page.getByText('Nr.', { exact: true }).filter({ visible: true }).first().count();
+  ok(nr > 0, 'Team: Kadertabelle (Nr., Spieler, Position, Status) sichtbar');
+  await b.shot(page, `dt-team-tabelle-1440-${scheme}`, false);
+
+  const overview = await api(`/teams/${b1.id}`, login.token);
+  const match = overview.upcomingMatches?.[0]?.event;
+  if (match) {
+    await goto(`/match/${match.id}/lineup`);
+    await page.waitForTimeout(3500);
+    const bank = await page
+      .getByText('Bank', { exact: true })
+      .filter({ visible: true })
+      .first()
+      .boundingBox();
+    ok(!!bank && bank.x > 900, 'Aufstellung: Bank und Kader rechts neben dem Spielfeld');
+    await b.shot(page, `dt-aufstellung-1440-${scheme}`, false);
   }
 }
 

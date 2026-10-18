@@ -2,7 +2,7 @@ import type { AttendanceStatus, EventSummary, MyResponse } from '@clubroof/core'
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { RequestError } from '@/lib/api';
 import {
@@ -76,8 +76,18 @@ export function AttendanceChip({ status }: { status: AttendanceStatus }) {
 }
 
 /** Blickfang „Als Nächstes“ (Termine): der nächste Termin als Hero, Uhrzeit groß. */
+/**
+ * Desktop-Ansicht (Paket DT): Terminliste links, Termin rechts. Steht dieser Kontext, öffnen Zeilen den Termin im
+ * rechten Bereich statt eine Seite; `selectedId` markiert die gewählte Zeile.
+ */
+export const EventOpenContext = createContext<{
+  open: (id: string) => void;
+  selectedId: string | null;
+} | null>(null);
+
 export function FeaturedEventCard({ event }: { event: EventSummary }) {
   const { colors } = useTheme();
+  const opener = useContext(EventOpenContext);
   const on = colors.hero.onHero;
   const mine = event.myResponses[0];
   const multi = event.myResponses.length > 1 || mine?.relation === 'child';
@@ -91,7 +101,10 @@ export function FeaturedEventCard({ event }: { event: EventSummary }) {
         ? `In ${c.hours} Std.`
         : `In ${Math.max(1, c.minutes)} Min.`;
   return (
-    <HeroCard onPress={() => router.push(`/events/${event.id}`)} accessibilityLabel={event.title}>
+    <HeroCard
+      onPress={() => (opener ? opener.open(event.id) : router.push(`/events/${event.id}`))}
+      accessibilityLabel={event.title}
+    >
       <T variant="overline" color={on}>
         {[t('Als Nächstes'), t(left)].join(' · ')}
       </T>
@@ -181,6 +194,8 @@ export function EventRow({
   openable?: boolean;
 }) {
   const cancelled = event.status === 'cancelled';
+  const { colors } = useTheme();
+  const opener = useContext(EventOpenContext);
   const teamColor = useTeamColor(event.team?.id);
   const mine = event.myResponses[0];
   const multi = event.myResponses.length > 1 || mine?.relation === 'child';
@@ -211,7 +226,11 @@ export function EventRow({
   const row = (
     <ListRow
       first={first}
-      onPress={openable ? () => router.push(`/events/${event.id}`) : undefined}
+      onPress={
+        openable
+          ? () => (opener ? opener.open(event.id) : router.push(`/events/${event.id}`))
+          : undefined
+      }
       leading={
         <DateTile
           {...formatDateTile(event.startsAt)}
@@ -259,12 +278,18 @@ export function EventRow({
       }
     />
   );
-  return swipeable ? (
+  const shown = swipeable ? (
     <SwipeRow label="Zusagen" icon="checkmark" onAction={quick.yes}>
       {row}
     </SwipeRow>
   ) : (
     row
+  );
+  // Desktop (Paket DT): die gewählte Zeile ist hinterlegt
+  return opener?.selectedId === event.id ? (
+    <View style={{ backgroundColor: colors.anstoss.overlay, borderRadius: 14 }}>{shown}</View>
+  ) : (
+    shown
   );
 }
 
