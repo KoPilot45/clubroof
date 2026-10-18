@@ -6,8 +6,6 @@ import { api, button, del, launch, text } from '../lib/e2e.mjs';
 
 let fail = 0;
 const ok = (cond, label) => {
-  // Der erwartete 409 (Namenskonflikt) erscheint im Browser als Konsolenmeldung
-  const errors = b.errors.filter((e) => !e.includes('409'));
   console.log(`${cond ? '✓' : '✗'} ${label}`);
   if (!cond) fail++;
 };
@@ -43,6 +41,8 @@ const b = await launch();
   await text(page, 'Wiederhergestellt.').waitFor({ timeout: 15_000 });
   ok(true, 'mit neuem Namen wiederhergestellt');
 }
+// Der erwartete 409 (Namenskonflikt) erscheint im Browser als Konsolenmeldung
+const errors = b.errors.filter((e) => !e.includes('409'));
 console.log(errors.length ? `✗ Konsolenfehler:\n${errors.join('\n')}` : '✓ keine Konsolenfehler');
 await b.close();
 process.exit(fail || errors.length ? 1 : 0);
