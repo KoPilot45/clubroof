@@ -250,6 +250,28 @@ for (const s of sizes) {
   await b.shot(page, `dt2-kassenbuch-1440-${scheme}`, false);
 }
 
+// DT2 Stufe 5: Anmeldung zweigeteilt (links Verlauf mit Marke, rechts das Formular)
+{
+  const { page, goto } = await b.anonymous({ width: 1440, height: 900 });
+  await goto('/login');
+  await page.waitForTimeout(3500);
+  const logo = await page
+    .getByText('Clubroof', { exact: true })
+    .filter({ visible: true })
+    .first()
+    .boundingBox();
+  const field = await page
+    .getByText('Ich habe schon ein Konto')
+    .filter({ visible: true })
+    .first()
+    .boundingBox();
+  ok(
+    !!logo && !!field && logo.x < 720 && field.x > 720,
+    `Anmeldung: Marke links, Auswahl rechts (${Math.round(logo?.x ?? 0)} / ${Math.round(field?.x ?? 0)})`,
+  );
+  await b.shot(page, `dt2-anmeldung-1440-${scheme}`, false);
+}
+
 // Fenster: Desktop zentriert, Handy von unten (Kader-Fenster über den Anwesenheitsbalken)
 for (const w of [1440, 390]) {
   const { page, goto, login } = await b.session('trainer', { width: w, height: 900 });

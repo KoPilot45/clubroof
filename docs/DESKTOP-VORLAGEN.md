@@ -117,7 +117,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `helpers` | A | Breite | Liste bzw. Detailseite |
 | `join-code` | B | Breite | Formular |
 | `join/[token]` | S | Breite | Sonderfall mit eigenem Entwurf |
-| `login` | S | Breite | Sonderfall mit eigenem Entwurf |
+| `login` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `match/[id]/lineup` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `match/[id]/report` | S | Breite | Sonderfall mit eigenem Entwurf |
 | `news/[id]` | A | Breite | Liste bzw. Detailseite |

@@ -12,6 +12,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { LoginResponse, PublicClub, TwoFactorChallenge } from '@clubroof/core';
 import { Text } from '@/components/app-text';
+import { useIsDesktop } from '@/lib/layout';
 import { ClubroofLogo, GradientHeader, PoweredBy } from '@/components/brand-header';
 import { Button, Chip, Crest, T, TextField } from '@/components/ui';
 import { request, RequestError } from '@/lib/api';
@@ -136,11 +137,19 @@ function Login({ known }: { known: boolean }) {
   const logo = mediaUri(club?.logoUrl ?? null);
   const on = colors.hero.onHero;
   const wide = width >= 640;
+  const desktop = useIsDesktop();
+  // Desktop (Paket DT2): links der Vereinsverlauf über die ganze Höhe, rechts die Anmeldung
+  const half = desktop ? { flex: 1 } : undefined;
+  const centered = desktop ? { flex: 1, justifyContent: 'center' as const } : undefined;
 
   // ── Kopf: Vereinsverlauf (bekannt) oder Clubroof-Verlauf ─────────────────
   const header = known ? (
     <GradientHeader
-      style={{ paddingTop: insets.top + 40, paddingBottom: 48, alignItems: 'center', gap: 12 }}
+      containerStyle={half}
+      style={[
+        { paddingTop: insets.top + 40, paddingBottom: 48, alignItems: 'center', gap: 12 },
+        centered,
+      ]}
     >
       {logo ? (
         <Image
@@ -170,12 +179,16 @@ function Login({ known }: { known: boolean }) {
     </GradientHeader>
   ) : (
     <GradientHeader
-      style={{
-        paddingTop: insets.top + (view === 'start' ? 64 : 36),
-        paddingBottom: view === 'start' ? 56 : 32,
-        alignItems: 'center',
-        gap: 10,
-      }}
+      containerStyle={half}
+      style={[
+        {
+          paddingTop: insets.top + (view === 'start' ? 64 : 36),
+          paddingBottom: view === 'start' ? 56 : 32,
+          alignItems: 'center',
+          gap: 10,
+        },
+        centered,
+      ]}
     >
       <ClubroofLogo size={view === 'start' ? 96 : 64} mono />
       <T variant="headline" color="#FFFFFF" style={{ fontSize: 44, lineHeight: 46 }} verbatim>
@@ -343,15 +356,19 @@ function Login({ known }: { known: boolean }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ flexGrow: 1, flexDirection: desktop ? 'row' : 'column' }}
+        >
           {header}
           <View
             style={{
               width: '100%',
               maxWidth: wide ? 460 : 520,
-              alignSelf: 'center',
-              paddingHorizontal: spacing.xl,
-              marginTop: -8,
+              alignSelf: desktop ? 'center' : 'center',
+              ...(desktop ? { flex: 1, maxWidth: undefined, paddingVertical: spacing.xl } : null),
+              paddingHorizontal: desktop ? 96 : spacing.xl,
+              marginTop: desktop ? 0 : -8,
               gap: spacing.xl,
               paddingBottom: spacing.xl,
             }}

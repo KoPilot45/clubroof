@@ -492,7 +492,7 @@
   "login": {
     "t": "S",
     "note": "Sonderfall mit eigenem Entwurf",
-    "status": "Breite"
+    "status": "fertig"
   },
   "match/[id]/lineup": {
     "t": "S",
