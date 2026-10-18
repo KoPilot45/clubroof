@@ -1,0 +1,712 @@
+{
+  "(tabs)/index": {
+    "t": "H",
+    "note": "Hauptseite (Paket DT, umgesetzt)",
+    "status": "fertig"
+  },
+  "(tabs)/mehr": {
+    "t": "H",
+    "note": "Hauptseite (Paket DT, umgesetzt)",
+    "status": "fertig"
+  },
+  "(tabs)/team": {
+    "t": "H",
+    "note": "Hauptseite (Paket DT, umgesetzt)",
+    "status": "fertig"
+  },
+  "(tabs)/termine": {
+    "t": "H",
+    "note": "Hauptseite (Paket DT, umgesetzt)",
+    "status": "fertig"
+  },
+  "(tabs)/verein": {
+    "t": "H",
+    "note": "Hauptseite (Paket DT, umgesetzt)",
+    "status": "fertig"
+  },
+  "about/[page]": {
+    "t": "U",
+    "note": "Textseite, bewusst unverändert (lange Zeilen vermeiden, 960 px)",
+    "status": "fertig"
+  },
+  "about/privacy": {
+    "t": "U",
+    "note": "Textseite, bewusst unverändert (lange Zeilen vermeiden, 960 px)",
+    "status": "fertig"
+  },
+  "absences/index": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "absences/new": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "account": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "admin/archive": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/area/[key]": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "fertig"
+  },
+  "admin/audit": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/club": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "admin/club-event-new": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "admin/club-events": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/departments": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/funds": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/import": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "Breite"
+  },
+  "admin/index": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "fertig"
+  },
+  "admin/invites": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/member-new": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "admin/member-permissions": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "admin/member/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "admin/members": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/modules": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "admin/news/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "admin/news/index": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "admin/news/new": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "admin/role/[key]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "admin/roles": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/sponsors": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/team-new": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "Breite"
+  },
+  "admin/team/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "admin/teams": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/transfer-new": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "admin/transfers": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "admin/unit/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "bausteine": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "Breite"
+  },
+  "board": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "calendar": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "Breite"
+  },
+  "club-calendar": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "Breite"
+  },
+  "club-cash-overview": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "Breite"
+  },
+  "club-cash/allowances": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/area/[key]": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "fertig"
+  },
+  "club-cash/audit/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "club-cash/audit/index": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "club-cash/budget": {
+    "t": "F",
+    "note": "Bericht / Diagramme",
+    "status": "Breite"
+  },
+  "club-cash/claims": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/closing": {
+    "t": "F",
+    "note": "Bericht / Diagramme",
+    "status": "Breite"
+  },
+  "club-cash/donations": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/entries": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/fee-import": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "Breite"
+  },
+  "club-cash/fee-setup": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "club-cash/fees": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/funds": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/grants": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/index": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "fertig"
+  },
+  "club-cash/inventory": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/manage": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "club-cash/new": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "club-cash/reserves": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/sponsors": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/stats": {
+    "t": "F",
+    "note": "Bericht / Diagramme",
+    "status": "fertig"
+  },
+  "club-cash/tax": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-cash/team-grants": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "club-events": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "club-schedule": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "club-team/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "club-teams": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "contacts": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "demo/club": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "Breite"
+  },
+  "demo/team": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "Breite"
+  },
+  "documents": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "documents-upload": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "equipment/damages": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "equipment/index": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "Breite"
+  },
+  "equipment/items": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "equipment/rooms": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "event-edit/[id]": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "events/[id]": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "Breite"
+  },
+  "events/archive": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "events/index": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "exchange/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "exchange/index": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "exchange/new-demand": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "exchange/new-offer": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "exercises": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "expense-claims": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "facilities/block-new": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "facilities/index": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "Breite"
+  },
+  "forgot": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "Breite"
+  },
+  "forum/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "forum/index": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "help": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "Breite"
+  },
+  "helpers": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "join-code": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "join/[token]": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "Breite"
+  },
+  "login": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "Breite"
+  },
+  "match/[id]/lineup": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "fertig"
+  },
+  "match/[id]/report": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "Breite"
+  },
+  "news/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "news/index": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "notification-settings": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "notifications": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "polls/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "polls/index": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "polls/new": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "profile/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "referees": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "reset/[token]": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "Breite"
+  },
+  "schedule-import": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "Breite"
+  },
+  "search": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "setup": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "Breite"
+  },
+  "sponsor/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "sponsors": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "teams/[id]/archive": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "teams/[id]/cash": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-admin": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-closings": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-drinks": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-entries": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-fees": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-levy": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-new": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-pay": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-payments": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-settings": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-stats": {
+    "t": "F",
+    "note": "Bericht / Diagramme",
+    "status": "Breite"
+  },
+  "teams/[id]/cash-treasurers": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "teams/[id]/event-new": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "teams/[id]/fines": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "teams/[id]/jerseys": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "teams/[id]/manage": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "teams/[id]/modules": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
+  "teams/[id]/roster": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "teams/[id]/stats/[kind]": {
+    "t": "F",
+    "note": "Bericht / Diagramme",
+    "status": "Breite"
+  },
+  "teams/[id]/stats/index": {
+    "t": "F",
+    "note": "Bericht / Diagramme",
+    "status": "Breite"
+  },
+  "teams/[id]/tasks": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "Breite"
+  },
+  "training-plan/[id]": {
+    "t": "S",
+    "note": "Sonderfall mit eigenem Entwurf",
+    "status": "Breite"
+  },
+  "wiki/[id]": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  },
+  "wiki/index": {
+    "t": "A",
+    "note": "Liste bzw. Detailseite",
+    "status": "Breite"
+  }
+}

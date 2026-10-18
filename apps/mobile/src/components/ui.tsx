@@ -51,7 +51,8 @@ import Svg, {
   Text as SvgText,
 } from 'react-native-svg';
 import { FIGURE_FONT, HEADING_FONT, inputFont } from '@/lib/fonts';
-import { CONTENT_MAX, DESKTOP_CONTENT_MAX, useIsDesktop } from '@/lib/layout';
+import { TEMPLATE_WIDTH, useTemplate } from '@/lib/desktop-templates';
+import { CONTENT_MAX, useIsDesktop } from '@/lib/layout';
 import { useTheme } from '@/lib/theme';
 import { webState } from '@/lib/web-state';
 import { Text } from './app-text';
@@ -203,6 +204,8 @@ export function Screen({
   // In den Tabs liegt die schwebende Leiste über dem Inhalt: unten Platz dafür lassen
   const tabBarHeight = useContext(BottomTabBarHeightContext) ?? 0;
   const desktop = useIsDesktop();
+  // Breite des Inhalts nach Seitenvorlage (Paket DT2): Formulare schmal, Tabellen und Berichte breit
+  const contentMax = desktop ? TEMPLATE_WIDTH[useTemplate()] : CONTENT_MAX;
   const scrollY = useRef(new Animated.Value(0)).current;
   const pathname = usePathname();
   return (
@@ -234,7 +237,7 @@ export function Screen({
             paddingBottom: spacing.xxxl + tabBarHeight,
             // Auf großen Bildschirmen (Browser, Tablet) nicht über die ganze Breite ziehen
             width: '100%',
-            maxWidth: desktop ? DESKTOP_CONTENT_MAX : CONTENT_MAX,
+            maxWidth: contentMax,
             alignSelf: 'center',
           }}
           refreshControl={
@@ -263,9 +266,11 @@ export function Screen({
               backgroundColor: colors.background,
               borderTopWidth: 1,
               borderTopColor: colors.anstoss.divider,
+              alignItems: 'center',
             }}
           >
-            {footer}
+            {/* Speichern-Leiste so breit wie der Inhalt (Desktop: Formulare 720 px) */}
+            <View style={{ width: '100%', maxWidth: contentMax - 44, gap: 10 }}>{footer}</View>
           </View>
         ) : null}
       </SafeAreaView>

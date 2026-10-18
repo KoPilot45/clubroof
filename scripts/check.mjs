@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const opt = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
-const only = (opt('only') ?? 'lint,typecheck,i18n,a11y,farben,test').split(',');
+const only = (opt('only') ?? 'lint,typecheck,i18n,a11y,farben,vorlagen,test').split(',');
 const grep = opt('grep');
 
 const DATABASE_URL =
@@ -113,6 +113,8 @@ if (only.includes('typecheck')) report(await run('typecheck', 'pnpm', ['typechec
 if (only.includes('i18n')) report(await run('i18n', 'node', ['scripts/i18n.mjs', 'check']));
 if (only.includes('a11y')) report(await run('a11y', 'node', ['scripts/a11y-audit.mjs']));
 if (only.includes('farben')) report(await run('farben', 'node', ['scripts/farben-pruefung.mjs']));
+if (only.includes('vorlagen'))
+  report(await run('vorlagen', 'node', ['scripts/desktop-vorlagen.mjs']));
 if (only.includes('test')) {
   ensureDatabase();
   const r = grep
