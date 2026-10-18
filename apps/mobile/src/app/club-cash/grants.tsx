@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import { CLUB_GRANT_STATUS_LABEL, type ClubGrant, type ClubGrants } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -201,51 +202,53 @@ export default function GrantsScreen() {
           {`${t('Bereits eingegangen')} ${formatEuro(d.receivedCents)}`}
         </T>
       </HeroCard>
-      <Section title="Zuschüsse">
-        {d.grants.length === 0 ? (
-          <Card>
-            <Empty icon="ribbon-outline" text="Noch kein Zuschuss angelegt." />
-          </Card>
-        ) : null}
-        {d.grants.map(card)}
-      </Section>
-      {d.canManage ? (
-        <Section title="Zuschuss anlegen">
-          <Card style={{ gap: 12 }}>
-            <TextField label="Bezeichnung" value={name} onChangeText={setName} maxLength={100} />
-            <TextField
-              label="Geber (z. B. Stadt, Verband)"
-              value={grantor}
-              onChangeText={setGrantor}
-              maxLength={100}
-            />
-            <TextField label="Betrag in €" value={amount} onChangeText={setAmount} />
-            {deadline ? (
-              <DateStepper
-                label="Frist für den Verwendungsnachweis"
-                value={deadline}
-                onChange={setDeadline}
-              />
-            ) : (
-              <Button
-                label="Frist für den Verwendungsnachweis setzen"
-                icon="time-outline"
-                variant="outline"
-                onPress={() => setDeadline(new Date().toISOString().slice(0, 10))}
-              />
-            )}
-            <Button
-              label="Zuschuss anlegen"
-              icon="add"
-              disabled={
-                name.trim().length < 2 || grantor.trim().length < 2 || parseEuro(amount) === null
-              }
-              loading={create.isPending}
-              onPress={() => create.mutate()}
-            />
-          </Card>
+      <Columns min={420} gap={24}>
+        <Section title="Zuschüsse">
+          {d.grants.length === 0 ? (
+            <Card>
+              <Empty icon="ribbon-outline" text="Noch kein Zuschuss angelegt." />
+            </Card>
+          ) : null}
+          {d.grants.map(card)}
         </Section>
-      ) : null}
+        {d.canManage ? (
+          <Section title="Zuschuss anlegen">
+            <Card style={{ gap: 12 }}>
+              <TextField label="Bezeichnung" value={name} onChangeText={setName} maxLength={100} />
+              <TextField
+                label="Geber (z. B. Stadt, Verband)"
+                value={grantor}
+                onChangeText={setGrantor}
+                maxLength={100}
+              />
+              <TextField label="Betrag in €" value={amount} onChangeText={setAmount} />
+              {deadline ? (
+                <DateStepper
+                  label="Frist für den Verwendungsnachweis"
+                  value={deadline}
+                  onChange={setDeadline}
+                />
+              ) : (
+                <Button
+                  label="Frist für den Verwendungsnachweis setzen"
+                  icon="time-outline"
+                  variant="outline"
+                  onPress={() => setDeadline(new Date().toISOString().slice(0, 10))}
+                />
+              )}
+              <Button
+                label="Zuschuss anlegen"
+                icon="add"
+                disabled={
+                  name.trim().length < 2 || grantor.trim().length < 2 || parseEuro(amount) === null
+                }
+                loading={create.isPending}
+                onPress={() => create.mutate()}
+              />
+            </Card>
+          </Section>
+        ) : null}
+      </Columns>
     </Screen>
   );
 }

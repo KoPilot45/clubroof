@@ -60,14 +60,14 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `bausteine` | D | Breite | Kachelraster / Übersicht |
 | `board` | A | Breite | Liste bzw. Detailseite |
 | `calendar` | S | fertig | Sonderfall mit eigenem Entwurf |
-| `club-calendar` | S | Breite | Sonderfall mit eigenem Entwurf |
+| `club-calendar` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `club-cash-overview` | D | Breite | Kachelraster / Übersicht |
-| `club-cash/allowances` | C | Breite | Tabelle mit Filterleiste |
+| `club-cash/allowances` | C | fertig | Tabelle mit Filterleiste |
 | `club-cash/area/[key]` | D | fertig | Kachelraster / Übersicht |
 | `club-cash/audit/[id]` | A | Breite | Liste bzw. Detailseite |
 | `club-cash/audit/index` | A | Breite | Liste bzw. Detailseite |
 | `club-cash/budget` | F | fertig | Bericht / Diagramme |
-| `club-cash/claims` | C | Breite | Tabelle mit Filterleiste |
+| `club-cash/claims` | C | fertig | Tabelle mit Filterleiste |
 | `club-cash/closing` | F | fertig | Bericht / Diagramme |
 | `club-cash/donations` | C | fertig | Tabelle mit Filterleiste |
 | `club-cash/entries` | C | fertig | Tabelle mit Filterleiste |
@@ -75,16 +75,16 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `club-cash/fee-setup` | B | Breite | Formular |
 | `club-cash/fees` | C | fertig | Tabelle mit Filterleiste |
 | `club-cash/funds` | C | Breite | Tabelle mit Filterleiste |
-| `club-cash/grants` | C | Breite | Tabelle mit Filterleiste |
+| `club-cash/grants` | C | fertig | Tabelle mit Filterleiste |
 | `club-cash/index` | D | fertig | Kachelraster / Übersicht |
-| `club-cash/inventory` | C | Breite | Tabelle mit Filterleiste |
+| `club-cash/inventory` | C | fertig | Tabelle mit Filterleiste |
 | `club-cash/manage` | B | Breite | Formular |
 | `club-cash/new` | B | Breite | Formular |
-| `club-cash/reserves` | C | Breite | Tabelle mit Filterleiste |
+| `club-cash/reserves` | C | fertig | Tabelle mit Filterleiste |
 | `club-cash/sponsors` | C | Breite | Tabelle mit Filterleiste |
 | `club-cash/stats` | F | fertig | Bericht / Diagramme |
 | `club-cash/tax` | C | Breite | Tabelle mit Filterleiste |
-| `club-cash/team-grants` | C | Breite | Tabelle mit Filterleiste |
+| `club-cash/team-grants` | C | fertig | Tabelle mit Filterleiste |
 | `club-events` | A | Breite | Liste bzw. Detailseite |
 | `club-schedule` | A | Breite | Liste bzw. Detailseite |
 | `club-team/[id]` | A | Breite | Liste bzw. Detailseite |
@@ -138,7 +138,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `teams/[id]/archive` | C | fertig | Tabelle mit Filterleiste |
 | `teams/[id]/cash` | D | Breite | Kachelraster / Übersicht |
 | `teams/[id]/cash-admin` | D | Breite | Kachelraster / Übersicht |
-| `teams/[id]/cash-closings` | C | Breite | Tabelle mit Filterleiste |
+| `teams/[id]/cash-closings` | C | fertig | Tabelle mit Filterleiste |
 | `teams/[id]/cash-drinks` | C | Breite | Tabelle mit Filterleiste |
 | `teams/[id]/cash-entries` | C | Breite | Tabelle mit Filterleiste |
 | `teams/[id]/cash-fees` | C | Breite | Tabelle mit Filterleiste |
@@ -147,7 +147,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `teams/[id]/cash-pay` | B | Breite | Formular |
 | `teams/[id]/cash-payments` | C | Breite | Tabelle mit Filterleiste |
 | `teams/[id]/cash-settings` | B | Breite | Formular |
-| `teams/[id]/cash-stats` | F | Breite | Bericht / Diagramme |
+| `teams/[id]/cash-stats` | F | fertig | Bericht / Diagramme |
 | `teams/[id]/cash-treasurers` | C | Breite | Tabelle mit Filterleiste |
 | `teams/[id]/event-new` | B | Breite | Formular |
 | `teams/[id]/fines` | C | Breite | Tabelle mit Filterleiste |
@@ -156,7 +156,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `teams/[id]/modules` | B | Breite | Formular |
 | `teams/[id]/roster` | C | fertig | Tabelle mit Filterleiste |
 | `teams/[id]/stats/[kind]` | F | Breite | Bericht / Diagramme |
-| `teams/[id]/stats/index` | F | Breite | Bericht / Diagramme |
+| `teams/[id]/stats/index` | F | fertig | Bericht / Diagramme |
 | `teams/[id]/tasks` | C | Breite | Tabelle mit Filterleiste |
 | `training-plan/[id]` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `wiki/[id]` | A | Breite | Liste bzw. Detailseite |

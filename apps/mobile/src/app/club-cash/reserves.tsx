@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import type { ClubReserve, ClubReserveMove, ClubReserves } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -150,33 +151,35 @@ export default function ReservesScreen() {
         </T>
       </HeroCard>
 
-      <Section title="Kassen">
-        <Card>
-          {d.funds.map((f, i) => (
-            <ListRow
-              key={f.fundId}
-              first={i === 0}
-              title={f.fundName}
-              subtitle={`${t('Bestand')} ${formatEuro(f.balanceCents)} · ${t('gebunden')} ${formatEuro(f.reservedCents)}`}
-              trailing={
-                <Chip
-                  tone="success"
-                  label={`${t('frei')} ${formatEuro(f.balanceCents - f.reservedCents)}`}
-                />
-              }
-            />
-          ))}
-        </Card>
-      </Section>
+      <Columns min={420} gap={24}>
+        <Section title="Kassen">
+          <Card>
+            {d.funds.map((f, i) => (
+              <ListRow
+                key={f.fundId}
+                first={i === 0}
+                title={f.fundName}
+                subtitle={`${t('Bestand')} ${formatEuro(f.balanceCents)} · ${t('gebunden')} ${formatEuro(f.reservedCents)}`}
+                trailing={
+                  <Chip
+                    tone="success"
+                    label={`${t('frei')} ${formatEuro(f.balanceCents - f.reservedCents)}`}
+                  />
+                }
+              />
+            ))}
+          </Card>
+        </Section>
 
-      <Section title="Rücklagen">
-        <Card>
-          {active.length === 0 ? (
-            <Empty icon="lock-closed-outline" text="Noch keine Rücklage." />
-          ) : null}
-          {active.map(reserveRow)}
-        </Card>
-      </Section>
+        <Section title="Rücklagen">
+          <Card>
+            {active.length === 0 ? (
+              <Empty icon="lock-closed-outline" text="Noch keine Rücklage." />
+            ) : null}
+            {active.map(reserveRow)}
+          </Card>
+        </Section>
+      </Columns>
 
       {d.canManage ? (
         <Section title="Rücklage anlegen">

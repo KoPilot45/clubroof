@@ -207,7 +207,7 @@
   "club-calendar": {
     "t": "S",
     "note": "Sonderfall mit eigenem Entwurf",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-cash-overview": {
     "t": "D",
@@ -217,7 +217,7 @@
   "club-cash/allowances": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-cash/area/[key]": {
     "t": "D",
@@ -242,7 +242,7 @@
   "club-cash/claims": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-cash/closing": {
     "t": "F",
@@ -282,7 +282,7 @@
   "club-cash/grants": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-cash/index": {
     "t": "D",
@@ -292,7 +292,7 @@
   "club-cash/inventory": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-cash/manage": {
     "t": "B",
@@ -307,7 +307,7 @@
   "club-cash/reserves": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-cash/sponsors": {
     "t": "C",
@@ -327,7 +327,7 @@
   "club-cash/team-grants": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "club-events": {
     "t": "A",
@@ -597,7 +597,7 @@
   "teams/[id]/cash-closings": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
-    "status": "Breite"
+    "status": "fertig"
   },
   "teams/[id]/cash-drinks": {
     "t": "C",
@@ -642,7 +642,7 @@
   "teams/[id]/cash-stats": {
     "t": "F",
     "note": "Bericht / Diagramme",
-    "status": "Breite"
+    "status": "fertig"
   },
   "teams/[id]/cash-treasurers": {
     "t": "C",
@@ -687,7 +687,7 @@
   "teams/[id]/stats/index": {
     "t": "F",
     "note": "Bericht / Diagramme",
-    "status": "Breite"
+    "status": "fertig"
   },
   "teams/[id]/tasks": {
     "t": "C",

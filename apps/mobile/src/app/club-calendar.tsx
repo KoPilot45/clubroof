@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import type { ClubCalendarEvent } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -167,7 +168,7 @@ export default function ClubCalendarScreen() {
       {events.error ? <ErrorNotice error={events.error} onRetry={() => events.refetch()} /> : null}
 
       {events.data && view === 'month' ? (
-        <>
+        <Columns min={460} weights={[1.5, 1]} gap={24}>
           <Card style={{ gap: 12 }}>
             <MonthCalendar
               variant="grid"
@@ -197,7 +198,7 @@ export default function ClubCalendarScreen() {
               </Card>
             </Section>
           ) : null}
-        </>
+        </Columns>
       ) : null}
 
       {events.data && view === 'list' ? (
@@ -207,22 +208,24 @@ export default function ClubCalendarScreen() {
               <Empty icon="calendar-outline" text="Keine Termine in den nächsten 60 Tagen." />
             </Card>
           ) : null}
-          {days.map((d) => (
-            <Section key={d} title={dayTitle.format(new Date(`${d}T12:00:00`))}>
-              <Card>
-                {list
-                  .filter((c) => dayKey(new Date(c.event.startsAt)) === d)
-                  .map((c, i) => (
-                    <EventRow
-                      key={c.event.id}
-                      event={c.event}
-                      first={i === 0}
-                      openable={openable.get(c.event.id)}
-                    />
-                  ))}
-              </Card>
-            </Section>
-          ))}
+          <Columns min={460} gap={24}>
+            {days.map((d) => (
+              <Section key={d} title={dayTitle.format(new Date(`${d}T12:00:00`))}>
+                <Card>
+                  {list
+                    .filter((c) => dayKey(new Date(c.event.startsAt)) === d)
+                    .map((c, i) => (
+                      <EventRow
+                        key={c.event.id}
+                        event={c.event}
+                        first={i === 0}
+                        openable={openable.get(c.event.id)}
+                      />
+                    ))}
+                </Card>
+              </Section>
+            ))}
+          </Columns>
         </>
       ) : null}
       <T variant="caption">

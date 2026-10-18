@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import type { CashStats } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
@@ -39,8 +40,8 @@ export default function CashStatsScreen() {
             </View>
           </Card>
 
-          {d.months.length > 0 ? (
-            <>
+          <Columns min={460} gap={24}>
+            {d.months.length > 0 ? (
               <ChartCard
                 title="Kassenstand seit Saisonbeginn"
                 sentence={balanceSentence(d)}
@@ -63,6 +64,8 @@ export default function CashStatsScreen() {
                   ]}
                 />
               </ChartCard>
+            ) : null}
+            {d.months.length > 0 ? (
               <ChartCard
                 title="Einnahmen und Ausgaben je Monat"
                 legend={[
@@ -97,192 +100,192 @@ export default function CashStatsScreen() {
                   ]}
                 />
               </ChartCard>
-            </>
-          ) : null}
+            ) : null}
 
-          {d.goal ? (
-            <ChartCard
-              title="Sparziel"
-              sentence={t(
-                `${d.goal.name}: ${formatEuro(d.goal.balanceCents)} von ${formatEuro(d.goal.targetCents)} – ${formatPercent(Math.min(100, (d.goal.balanceCents / d.goal.targetCents) * 100))} erreicht.`,
-              )}
-              table={{
-                head: [t('Ziel'), t('Stand'), t('Fehlt')],
-                rows: [
-                  [
-                    d.goal.name,
-                    formatEuro(d.goal.balanceCents),
-                    formatEuro(Math.max(0, d.goal.targetCents - d.goal.balanceCents)),
+            {d.goal ? (
+              <ChartCard
+                title="Sparziel"
+                sentence={t(
+                  `${d.goal.name}: ${formatEuro(d.goal.balanceCents)} von ${formatEuro(d.goal.targetCents)} – ${formatPercent(Math.min(100, (d.goal.balanceCents / d.goal.targetCents) * 100))} erreicht.`,
+                )}
+                table={{
+                  head: [t('Ziel'), t('Stand'), t('Fehlt')],
+                  rows: [
+                    [
+                      d.goal.name,
+                      formatEuro(d.goal.balanceCents),
+                      formatEuro(Math.max(0, d.goal.targetCents - d.goal.balanceCents)),
+                    ],
                   ],
-                ],
-              }}
-            >
-              <BarRows
-                max={d.goal.targetCents}
-                rows={[
-                  {
-                    key: 'goal',
-                    label: d.goal.name,
-                    value: Math.max(0, d.goal.balanceCents),
-                    mark: d.goal.targetCents,
-                    color: colors.anstoss.chart.aqua,
-                    valueLabel: t(
-                      `${formatEuro(d.goal.balanceCents)} von ${formatEuro(d.goal.targetCents)}`,
-                    ),
-                    chip: {
-                      label: formatPercent(
-                        Math.min(100, (d.goal.balanceCents / d.goal.targetCents) * 100),
+                }}
+              >
+                <BarRows
+                  max={d.goal.targetCents}
+                  rows={[
+                    {
+                      key: 'goal',
+                      label: d.goal.name,
+                      value: Math.max(0, d.goal.balanceCents),
+                      mark: d.goal.targetCents,
+                      color: colors.anstoss.chart.aqua,
+                      valueLabel: t(
+                        `${formatEuro(d.goal.balanceCents)} von ${formatEuro(d.goal.targetCents)}`,
                       ),
-                      tone: d.goal.balanceCents >= d.goal.targetCents ? 'success' : 'neutral',
+                      chip: {
+                        label: formatPercent(
+                          Math.min(100, (d.goal.balanceCents / d.goal.targetCents) * 100),
+                        ),
+                        tone: d.goal.balanceCents >= d.goal.targetCents ? 'success' : 'neutral',
+                      },
                     },
-                  },
-                ]}
-              />
-            </ChartCard>
-          ) : null}
+                  ]}
+                />
+              </ChartCard>
+            ) : null}
 
-          {d.sources.length ? (
-            <ChartCard
-              title="Woher das Geld kommt"
-              sentence={sourcesSentence(d.sources)}
-              table={{
-                head: [t('Art'), t('Betrag')],
-                rows: d.sources.map((x) => [cashCategory(x.category).label, formatEuro(x.cents)]),
-              }}
-            >
-              <StackBar segments={sourceSegments(d.sources, colors)} />
-            </ChartCard>
-          ) : null}
+            {d.sources.length ? (
+              <ChartCard
+                title="Woher das Geld kommt"
+                sentence={sourcesSentence(d.sources)}
+                table={{
+                  head: [t('Art'), t('Betrag')],
+                  rows: d.sources.map((x) => [cashCategory(x.category).label, formatEuro(x.cents)]),
+                }}
+              >
+                <StackBar segments={sourceSegments(d.sources, colors)} />
+              </ChartCard>
+            ) : null}
 
-          <Section title="Nach Kategorie">
-            <Card>
-              {d.categories.length === 0 ? (
-                <Empty icon="receipt-outline" text="Noch keine Buchungen in dieser Saison." />
-              ) : (
-                <HorizontalBars
-                  rows={d.categories.map((c) => ({
-                    key: c.category,
-                    label: cashCategory(c.category).label,
-                    value: c.incomeCents + c.expenseCents,
-                    valueLabel:
-                      c.incomeCents && c.expenseCents
-                        ? `+${formatEuro(c.incomeCents)} / −${formatEuro(c.expenseCents)}`
-                        : c.incomeCents
-                          ? `+${formatEuro(c.incomeCents)}`
-                          : `−${formatEuro(c.expenseCents)}`,
+            <Section title="Nach Kategorie">
+              <Card>
+                {d.categories.length === 0 ? (
+                  <Empty icon="receipt-outline" text="Noch keine Buchungen in dieser Saison." />
+                ) : (
+                  <HorizontalBars
+                    rows={d.categories.map((c) => ({
+                      key: c.category,
+                      label: cashCategory(c.category).label,
+                      value: c.incomeCents + c.expenseCents,
+                      valueLabel:
+                        c.incomeCents && c.expenseCents
+                          ? `+${formatEuro(c.incomeCents)} / −${formatEuro(c.expenseCents)}`
+                          : c.incomeCents
+                            ? `+${formatEuro(c.incomeCents)}`
+                            : `−${formatEuro(c.expenseCents)}`,
+                    }))}
+                  />
+                )}
+              </Card>
+            </Section>
+
+            {d.fines.length ? (
+              <ChartCard
+                title="Strafen nach Art"
+                sentence={t(
+                  `${d.fines[0]!.name} wurde am häufigsten vergeben (${d.fines[0]!.count}×).`,
+                )}
+                table={{
+                  head: [t('Art'), t('Anzahl'), t('Summe')],
+                  rows: d.fines.map((f) => [f.name, String(f.count), formatEuro(f.amountCents)]),
+                }}
+              >
+                <BarRows
+                  rows={d.fines.map((f, i) => ({
+                    key: f.name,
+                    label: f.name,
+                    value: f.count,
+                    color: i === 0 ? colors.primary : colors.anstoss.textTertiary,
+                    valueLabel: `${f.count}× · ${formatEuro(f.amountCents)}`,
                   }))}
                 />
-              )}
-            </Card>
-          </Section>
+              </ChartCard>
+            ) : null}
 
-          {d.fines.length ? (
-            <ChartCard
-              title="Strafen nach Art"
-              sentence={t(
-                `${d.fines[0]!.name} wurde am häufigsten vergeben (${d.fines[0]!.count}×).`,
-              )}
-              table={{
-                head: [t('Art'), t('Anzahl'), t('Summe')],
-                rows: d.fines.map((f) => [f.name, String(f.count), formatEuro(f.amountCents)]),
-              }}
-            >
-              <BarRows
-                rows={d.fines.map((f, i) => ({
-                  key: f.name,
-                  label: f.name,
-                  value: f.count,
-                  color: i === 0 ? colors.primary : colors.anstoss.textTertiary,
-                  valueLabel: `${f.count}× · ${formatEuro(f.amountCents)}`,
-                }))}
-              />
-            </ChartCard>
-          ) : null}
+            {d.finesByPerson.length ? (
+              <ChartCard
+                title="Strafen je Person"
+                sentence={finesSentence(d.finesByPerson)}
+                table={{
+                  head: [t('Person'), t('Strafen'), t('Summe'), t('offen')],
+                  rows: d.finesByPerson.map((p) => [
+                    p.name,
+                    String(p.count),
+                    formatEuro(p.amountCents),
+                    formatEuro(p.openCents),
+                  ]),
+                }}
+              >
+                <BarRows
+                  rows={d.finesByPerson.map((p, i) => ({
+                    key: p.personId,
+                    label: p.name,
+                    value: p.amountCents,
+                    color: i === 0 ? colors.primary : colors.anstoss.textTertiary,
+                    valueLabel: t(
+                      `${p.count} ${p.count === 1 ? 'Strafe' : 'Strafen'} · ${formatEuro(p.amountCents)}`,
+                    ),
+                  }))}
+                />
+              </ChartCard>
+            ) : null}
 
-          {d.finesByPerson.length ? (
-            <ChartCard
-              title="Strafen je Person"
-              sentence={finesSentence(d.finesByPerson)}
-              table={{
-                head: [t('Person'), t('Strafen'), t('Summe'), t('offen')],
-                rows: d.finesByPerson.map((p) => [
-                  p.name,
-                  String(p.count),
-                  formatEuro(p.amountCents),
-                  formatEuro(p.openCents),
-                ]),
-              }}
-            >
-              <BarRows
-                rows={d.finesByPerson.map((p, i) => ({
-                  key: p.personId,
-                  label: p.name,
-                  value: p.amountCents,
-                  color: i === 0 ? colors.primary : colors.anstoss.textTertiary,
-                  valueLabel: t(
-                    `${p.count} ${p.count === 1 ? 'Strafe' : 'Strafen'} · ${formatEuro(p.amountCents)}`,
-                  ),
-                }))}
-              />
-            </ChartCard>
-          ) : null}
+            {d.drinksByPerson.length ? (
+              <ChartCard
+                title="Getränke je Person"
+                sentence={t(
+                  `${d.drinksByPerson[0]!.name} hat mit ${d.drinksByPerson[0]!.count} Getränken am meisten.`,
+                )}
+                table={{
+                  head: [t('Person'), t('Getränke'), t('Summe')],
+                  rows: d.drinksByPerson.map((p) => [
+                    p.name,
+                    String(p.count),
+                    formatEuro(p.amountCents),
+                  ]),
+                }}
+              >
+                <BarRows
+                  rows={d.drinksByPerson.map((p, i) => ({
+                    key: p.personId,
+                    label: p.name,
+                    value: p.amountCents,
+                    color: i === 0 ? colors.anstoss.chart.aqua : colors.anstoss.textTertiary,
+                    valueLabel: `${p.count}× · ${formatEuro(p.amountCents)}`,
+                  }))}
+                />
+              </ChartCard>
+            ) : null}
 
-          {d.drinksByPerson.length ? (
-            <ChartCard
-              title="Getränke je Person"
-              sentence={t(
-                `${d.drinksByPerson[0]!.name} hat mit ${d.drinksByPerson[0]!.count} Getränken am meisten.`,
-              )}
-              table={{
-                head: [t('Person'), t('Getränke'), t('Summe')],
-                rows: d.drinksByPerson.map((p) => [
-                  p.name,
-                  String(p.count),
-                  formatEuro(p.amountCents),
-                ]),
-              }}
-            >
-              <BarRows
-                rows={d.drinksByPerson.map((p, i) => ({
-                  key: p.personId,
-                  label: p.name,
-                  value: p.amountCents,
-                  color: i === 0 ? colors.anstoss.chart.aqua : colors.anstoss.textTertiary,
-                  valueLabel: `${p.count}× · ${formatEuro(p.amountCents)}`,
-                }))}
-              />
-            </ChartCard>
-          ) : null}
-
-          {d.moral.length ? (
-            <ChartCard
-              title="Zahlungsmoral"
-              sentence={moralSentence(d.moral)}
-              table={{
-                head: [t('Person'), t('Soll'), t('bezahlt'), t('offen')],
-                rows: d.moral.map((p) => [
-                  p.name,
-                  formatEuro(p.chargedCents),
-                  formatEuro(p.chargedCents - p.openCents),
-                  formatEuro(p.openCents),
-                ]),
-              }}
-            >
-              <BarRows
-                max={Math.max(1, ...d.moral.map((p) => p.chargedCents))}
-                rows={d.moral.map((p) => ({
-                  key: p.personId,
-                  label: p.name,
-                  value: p.chargedCents - p.openCents,
-                  mark: p.chargedCents,
-                  color: colors.status.success.solid,
-                  valueLabel:
-                    p.openCents > 0 ? t(`offen ${formatEuro(p.openCents)}`) : t('alles bezahlt'),
-                  chip: p.openCents > 0 ? { label: t('▲ offen'), tone: 'action' } : undefined,
-                }))}
-              />
-            </ChartCard>
-          ) : null}
+            {d.moral.length ? (
+              <ChartCard
+                title="Zahlungsmoral"
+                sentence={moralSentence(d.moral)}
+                table={{
+                  head: [t('Person'), t('Soll'), t('bezahlt'), t('offen')],
+                  rows: d.moral.map((p) => [
+                    p.name,
+                    formatEuro(p.chargedCents),
+                    formatEuro(p.chargedCents - p.openCents),
+                    formatEuro(p.openCents),
+                  ]),
+                }}
+              >
+                <BarRows
+                  max={Math.max(1, ...d.moral.map((p) => p.chargedCents))}
+                  rows={d.moral.map((p) => ({
+                    key: p.personId,
+                    label: p.name,
+                    value: p.chargedCents - p.openCents,
+                    mark: p.chargedCents,
+                    color: colors.status.success.solid,
+                    valueLabel:
+                      p.openCents > 0 ? t(`offen ${formatEuro(p.openCents)}`) : t('alles bezahlt'),
+                    chip: p.openCents > 0 ? { label: t('▲ offen'), tone: 'action' } : undefined,
+                  }))}
+                />
+              </ChartCard>
+            ) : null}
+          </Columns>
         </>
       ) : null}
     </Screen>

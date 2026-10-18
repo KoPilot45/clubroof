@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import type { TeamStats } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -44,12 +45,14 @@ export default function StatsOverview() {
     <Screen edges={[]} refreshing={season.isRefetching} onRefresh={() => season.refetch()}>
       {season.isPending ? <Loading /> : null}
       {season.error ? <ErrorNotice error={season.error} onRetry={() => season.refetch()} /> : null}
-      {d ? (
-        <HighlightsCard h={d.highlights} title="Saison-Bilanz" rateLabel="Trainingsquote" />
-      ) : null}
-      <Section title="Auswertungen">
-        <TileGrid items={tiles} />
-      </Section>
+      <Columns min={460} gap={24}>
+        {d ? (
+          <HighlightsCard h={d.highlights} title="Saison-Bilanz" rateLabel="Trainingsquote" />
+        ) : null}
+        <Section title="Auswertungen">
+          <TileGrid items={tiles} />
+        </Section>
+      </Columns>
     </Screen>
   );
 }

@@ -1,3 +1,5 @@
+import { View } from 'react-native';
+import { Columns } from '@/components/columns';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActionError, useCash, useCashAction } from '@/components/cash';
@@ -34,55 +36,59 @@ export default function CashClosingsScreen() {
         Abschluss erscheint auch im Kassenbericht. Beim Saisonwechsel geht die Kasse automatisch auf
         die neue Mannschaft über.
       </T>
-      <Card style={{ gap: 12 }}>
-        <T variant="label">Heutiger Stand: {formatEuro(cash.data?.balanceCents ?? 0)}</T>
-        <TextField
-          label="Geprüft von (optional)"
-          value={auditor}
-          onChangeText={setAuditor}
-          maxLength={80}
-        />
-        <TextField
-          label="Bemerkung (optional)"
-          value={note}
-          onChangeText={setNote}
-          maxLength={300}
-        />
-        <Button
-          label="Abschluss festhalten"
-          icon="shield-checkmark-outline"
-          loading={save.isPending}
-          onPress={() =>
-            save.mutate({
-              path: `/teams/${id}/cash/closings`,
-              method: 'POST',
-              body: { auditor: auditor.trim() || null, note: note.trim() || null },
-            })
-          }
-        />
-      </Card>
-      <ActionError error={save.error} />
-      <Section title="Bisherige Abschlüsse">
-        <Card>
-          {closings.length === 0 ? (
-            <Empty icon="shield-outline" text="Noch keine Kassenprüfung." />
-          ) : null}
-          {closings.map((cl, i) => (
-            <ListRow
-              key={cl.id}
-              first={i === 0}
-              title={`${toGermanDate(cl.closedOn)} · ${formatEuro(cl.balanceCents)}`}
-              subtitle={[
-                cl.auditor ? `geprüft von ${cl.auditor}` : null,
-                cl.openCents ? `offen ${formatEuro(cl.openCents)}` : null,
-                cl.note,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
+      <Columns min={420} gap={24}>
+        <View style={{ gap: 18 }}>
+          <Card style={{ gap: 12 }}>
+            <T variant="label">Heutiger Stand: {formatEuro(cash.data?.balanceCents ?? 0)}</T>
+            <TextField
+              label="Geprüft von (optional)"
+              value={auditor}
+              onChangeText={setAuditor}
+              maxLength={80}
             />
-          ))}
-        </Card>
-      </Section>
+            <TextField
+              label="Bemerkung (optional)"
+              value={note}
+              onChangeText={setNote}
+              maxLength={300}
+            />
+            <Button
+              label="Abschluss festhalten"
+              icon="shield-checkmark-outline"
+              loading={save.isPending}
+              onPress={() =>
+                save.mutate({
+                  path: `/teams/${id}/cash/closings`,
+                  method: 'POST',
+                  body: { auditor: auditor.trim() || null, note: note.trim() || null },
+                })
+              }
+            />
+          </Card>
+          <ActionError error={save.error} />
+        </View>
+        <Section title="Bisherige Abschlüsse">
+          <Card>
+            {closings.length === 0 ? (
+              <Empty icon="shield-outline" text="Noch keine Kassenprüfung." />
+            ) : null}
+            {closings.map((cl, i) => (
+              <ListRow
+                key={cl.id}
+                first={i === 0}
+                title={`${toGermanDate(cl.closedOn)} · ${formatEuro(cl.balanceCents)}`}
+                subtitle={[
+                  cl.auditor ? `geprüft von ${cl.auditor}` : null,
+                  cl.openCents ? `offen ${formatEuro(cl.openCents)}` : null,
+                  cl.note,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              />
+            ))}
+          </Card>
+        </Section>
+      </Columns>
     </Screen>
   );
 }
