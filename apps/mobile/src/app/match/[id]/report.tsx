@@ -1,4 +1,5 @@
 import type { MatchIncidentKind, MatchSheet, SaveReportInput } from '@clubroof/core';
+import { Columns } from '@/components/columns';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -168,82 +169,86 @@ function Editor({ sheet }: { sheet: MatchSheet }) {
         ) : null}
       </Card>
 
-      <Section title="Ereignisse">
-        <Card style={{ gap: 10 }}>
-          {incidents.length === 0 ? (
-            <T variant="caption">Noch keine Tore oder Karten erfasst.</T>
-          ) : null}
-          {incidents.map((i, idx) => (
-            <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View style={{ flex: 1 }}>
-                <IncidentRow
-                  i={{
-                    id: String(idx),
-                    kind: i.kind,
-                    minute: i.minute ?? null,
-                    person: i.personId ? { id: i.personId, name: nameOf(i.personId) ?? '?' } : null,
-                    assist: i.assistPersonId
-                      ? { id: i.assistPersonId, name: nameOf(i.assistPersonId) ?? '?' }
-                      : null,
-                  }}
+      <Columns min={420} gap={24}>
+        <Section title="Ereignisse">
+          <Card style={{ gap: 10 }}>
+            {incidents.length === 0 ? (
+              <T variant="caption">Noch keine Tore oder Karten erfasst.</T>
+            ) : null}
+            {incidents.map((i, idx) => (
+              <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{ flex: 1 }}>
+                  <IncidentRow
+                    i={{
+                      id: String(idx),
+                      kind: i.kind,
+                      minute: i.minute ?? null,
+                      person: i.personId
+                        ? { id: i.personId, name: nameOf(i.personId) ?? '?' }
+                        : null,
+                      assist: i.assistPersonId
+                        ? { id: i.assistPersonId, name: nameOf(i.assistPersonId) ?? '?' }
+                        : null,
+                    }}
+                  />
+                </View>
+                <Button
+                  label="Entfernen"
+                  variant="outline"
+                  onPress={() => setIncidents((cur) => cur.filter((_, j) => j !== idx))}
                 />
               </View>
-              <Button
-                label="Entfernen"
-                variant="outline"
-                onPress={() => setIncidents((cur) => cur.filter((_, j) => j !== idx))}
-              />
-            </View>
-          ))}
-        </Card>
-      </Section>
+            ))}
+          </Card>
+        </Section>
 
-      <Section title="Ereignis hinzufügen">
-        <Card style={{ gap: 12 }}>
-          <ChoiceChips
-            options={(Object.keys(INCIDENT_LABELS) as MatchIncidentKind[]).map((k) => ({
-              value: k,
-              label: INCIDENT_LABELS[k],
-            }))}
-            selected={[kind]}
-            onToggle={(v) => {
-              setKind(v);
-              setAssist(null);
-            }}
-          />
-          {needsPerson ? (
+        <Section title="Ereignis hinzufügen">
+          <Card style={{ gap: 12 }}>
             <ChoiceChips
-              label={isGoal ? 'Torschütze' : 'Spieler'}
-              options={squad.map((p) => ({ value: p.id, label: p.name }))}
-              selected={person ? [person] : []}
-              onToggle={setPerson}
+              options={(Object.keys(INCIDENT_LABELS) as MatchIncidentKind[]).map((k) => ({
+                value: k,
+                label: INCIDENT_LABELS[k],
+              }))}
+              selected={[kind]}
+              onToggle={(v) => {
+                setKind(v);
+                setAssist(null);
+              }}
             />
-          ) : null}
-          {isGoal && needsPerson && person ? (
-            <ChoiceChips
-              label="Vorlage (optional)"
-              options={squad
-                .filter((p) => p.id !== person)
-                .map((p) => ({ value: p.id, label: p.name }))}
-              selected={assist ? [assist] : []}
-              onToggle={(v) => setAssist((cur) => (cur === v ? null : v))}
+            {needsPerson ? (
+              <ChoiceChips
+                label={isGoal ? 'Torschütze' : 'Spieler'}
+                options={squad.map((p) => ({ value: p.id, label: p.name }))}
+                selected={person ? [person] : []}
+                onToggle={setPerson}
+              />
+            ) : null}
+            {isGoal && needsPerson && person ? (
+              <ChoiceChips
+                label="Vorlage (optional)"
+                options={squad
+                  .filter((p) => p.id !== person)
+                  .map((p) => ({ value: p.id, label: p.name }))}
+                selected={assist ? [assist] : []}
+                onToggle={(v) => setAssist((cur) => (cur === v ? null : v))}
+              />
+            ) : null}
+            <TextField
+              label="Minute (optional)"
+              value={minute}
+              onChangeText={(v) => setMinute(v.replace(/\D/g, ''))}
+              maxLength={3}
             />
-          ) : null}
-          <TextField
-            label="Minute (optional)"
-            value={minute}
-            onChangeText={(v) => setMinute(v.replace(/\D/g, ''))}
-            maxLength={3}
-          />
-          <Button
-            label="Hinzufügen"
-            icon="add"
-            variant="outline"
-            disabled={needsPerson && !person}
-            onPress={add}
-          />
-        </Card>
-      </Section>
+            <Button
+              label="Hinzufügen"
+              icon="add"
+              variant="outline"
+              disabled={needsPerson && !person}
+              onPress={add}
+            />
+          </Card>
+        </Section>
+      </Columns>
 
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       <Button
