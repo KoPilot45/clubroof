@@ -10,6 +10,9 @@ export const PERMISSIONS = {
   'club.roles.manage': 'Rollen und Rechte vergeben',
   'club.audit.read': 'Audit-Log einsehen',
   'club.overview.read': 'Vereinsmonitor und Kennzahlen einsehen',
+  'archive.read': 'Archiv gelöschter Einträge einsehen und exportieren',
+  'archive.restore': 'Archivierte Einträge wiederherstellen',
+  'archive.purge': 'Archivierte Einträge endgültig löschen (bereinigen, Archiv leeren)',
 
   // Mitglieder
   'members.read': 'Mitgliederliste einsehen',
@@ -94,6 +97,7 @@ export const PERMISSION_GROUPS: { title: string; keys: Permission[] }[] = [
     title: 'Kommunikation',
     keys: ['news.create', 'news.publish', 'polls.manage', 'forum.moderate'],
   },
+  { title: 'Archiv', keys: ['archive.read', 'archive.restore', 'archive.purge'] },
   { title: 'Finanzen', keys: ['cash.read', 'cash.manage', 'cash.fines'] },
   { title: 'Vereinsfinanzen', keys: ['clubcash.read', 'clubcash.manage', 'clubcash.audit'] },
   {

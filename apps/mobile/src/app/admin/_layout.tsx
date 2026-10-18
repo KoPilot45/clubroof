@@ -33,6 +33,7 @@ const CATEGORY_OF: Record<string, string> = {
   funds: 'verein',
   modules: 'verein',
   audit: 'verein',
+  archive: 'verein',
 };
 
 /**
@@ -105,6 +106,7 @@ export default function AdminLayout() {
           <Stack.Screen name="roles" options={{ title: 'Rollen & Aufgaben' }} />
           <Stack.Screen name="role/[key]" options={{ title: 'Rolle' }} />
           <Stack.Screen name="audit" options={{ title: 'Änderungsprotokoll' }} />
+          <Stack.Screen name="archive" options={{ title: 'Archiv' }} />
           <Stack.Screen name="news/index" options={{ title: 'News-Redaktion' }} />
           <Stack.Screen name="news/new" options={{ title: 'News schreiben' }} />
           <Stack.Screen name="news/[id]" options={{ title: 'News' }} />

@@ -244,6 +244,7 @@ export default function ExercisesScreen() {
                               onPress: () =>
                                 confirmDelete({
                                   name: e.title,
+                                  archive: true,
                                   onConfirm: () => change.mutate({ method: 'DELETE', id: e.id }),
                                 }),
                             },

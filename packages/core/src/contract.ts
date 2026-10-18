@@ -1193,6 +1193,8 @@ export type AdminPermissions = {
   manageMembers: boolean;
   manageRoles: boolean;
   readAudit: boolean;
+  /** Archiv gelöschter Einträge einsehen (Paket AR) */
+  readArchive: boolean;
   /** Module für den Verein ein- und ausschalten, Update-Center */
   manageModules: boolean;
   /** Spielerbewegungen erfassen (Wechsel, Leihe, Zu-/Abgang) */

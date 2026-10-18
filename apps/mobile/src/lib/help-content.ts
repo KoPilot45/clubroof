@@ -239,6 +239,12 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Im Reiter „Verein“ zwischen Newsticker und Sponsoren steht „Helfer gesucht“: Wische durch die Karten, tippe eine an und trage dich in der Helfer-Ansicht in eine Schicht ein. Gibt es keine offenen Schichten, fehlt der Abschnitt.',
       },
       {
+        id: 'archive',
+        question: 'Wo finde ich gelöschte Einträge?',
+        answer:
+          'Gelöschte Wissensartikel und Übungen landen im Archiv. Die Administration öffnet es unter „Verwaltung → Abo & Kontrolle → Archiv“: Dort stellst du einen Eintrag mit „Wiederherstellen“ wieder her. Ist sein Name inzwischen vergeben, fragt dich die App nach einem neuen Namen. Endgültig gelöscht wird nie automatisch: „Bereinigen“ entfernt, was älter als die Standardfrist ist (derzeit 2 Jahre), „Archiv leeren“ löscht alles; beides nur auf deinen Anstoß und mit Bestätigung. „Archiv exportieren“ speichert alle archivierten Einträge als Datei.',
+      },
+      {
         id: 'edit-content',
         question: 'Kann ich etwas nachträglich ändern, das ich angelegt habe?',
         answer:

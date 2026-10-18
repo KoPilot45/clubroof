@@ -60,7 +60,7 @@ export const trainingRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   app.delete('/exercises/:id', { schema: { params: id } }, async (request): Promise<Exercise[]> =>
-    deleteExercise(app.db, request.actor!, request.params.id),
+    deleteExercise(app.db, request.actor!, request.params.id, app.now()),
   );
 
   app.get(

@@ -7,6 +7,7 @@ import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, eq } from 'drizzle-orm';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { forbidden, notFound } from '../errors';
+import { archiveItem } from './archive';
 
 function requireWiki(actor: Actor) {
   if (!moduleEnabled(actor, 'wiki')) throw forbidden('Das Vereinswissen ist nicht aktiviert.');
@@ -88,10 +89,33 @@ export async function saveWikiPage(
   return getWikiPage(db, actor, row!.id);
 }
 
-export async function deleteWikiPage(db: Db, actor: Actor, id: string) {
+/** Löschen heißt archivieren (Paket AR): der Artikel liegt danach im Archiv und lässt sich wiederherstellen. */
+export async function deleteWikiPage(db: Db, actor: Actor, id: string, now: Date) {
   requireWiki(actor);
   if (!canEdit(actor)) throw forbidden('Artikel pflegt die Vereinsverwaltung.');
-  await db
-    .delete(s.wikiPages)
+  const [page] = await db
+    .select()
+    .from(s.wikiPages)
     .where(and(eq(s.wikiPages.id, id), eq(s.wikiPages.clubId, actor.club.id)));
+  if (!page) return;
+  await archiveItem(
+    db,
+    actor,
+    'wiki',
+    {
+      originalId: page.id,
+      label: page.title,
+      detail: page.category,
+      payload: {
+        title: page.title,
+        category: page.category,
+        body: page.body,
+        updatedByPersonId: page.updatedByPersonId,
+        createdAt: page.createdAt.toISOString(),
+        updatedAt: page.updatedAt.toISOString(),
+      },
+    },
+    now,
+  );
+  await db.delete(s.wikiPages).where(eq(s.wikiPages.id, id));
 }
