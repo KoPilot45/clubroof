@@ -242,7 +242,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'archive',
         question: 'Wo finde ich gelöschte Einträge?',
         answer:
-          'Gelöschte Wissensartikel, Übungen, Aufgaben, Sponsoren und ausgemustertes Material landen im Archiv. Das Trainerteam öffnet das Archiv seiner Mannschaft unter „Team → Archiv“ (gelöschte Aufgaben, wiederherstellen). Die Administration öffnet das ganze Archiv unter „Verwaltung → Abo & Kontrolle → Archiv“: Dort stellst du einen Eintrag mit „Wiederherstellen“ wieder her. Ist sein Name inzwischen vergeben, fragt dich die App nach einem neuen Namen. Endgültig gelöscht wird nie automatisch: „Bereinigen“ entfernt, was älter als die Standardfrist ist (derzeit 2 Jahre), „Archiv leeren“ löscht alles; beides nur auf deinen Anstoß und mit Bestätigung. „Archiv exportieren“ speichert alle archivierten Einträge als Datei.',
+          'Gelöschte Wissensartikel, Übungen, Aufgaben, Sponsoren, Dokumente und ausgemustertes Material landen im Archiv; bei Dokumenten bleibt die Datei erhalten, bis das Archiv bereinigt wird. Das Trainerteam öffnet das Archiv seiner Mannschaft unter „Team → Archiv“ (gelöschte Aufgaben und Dokumente, wiederherstellen). Die Administration öffnet das ganze Archiv unter „Verwaltung → Abo & Kontrolle → Archiv“: Dort stellst du einen Eintrag mit „Wiederherstellen“ wieder her. Ist sein Name inzwischen vergeben, fragt dich die App nach einem neuen Namen. Endgültig gelöscht wird nie automatisch: „Bereinigen“ entfernt, was älter als die Standardfrist ist (derzeit 2 Jahre), „Archiv leeren“ löscht alles; beides nur auf deinen Anstoß und mit Bestätigung. „Archiv exportieren“ speichert alle archivierten Einträge als Datei.',
       },
       {
         id: 'edit-content',
