@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import type { ClubInventory, ClubInventoryItem } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -148,17 +149,21 @@ export default function InventoryScreen() {
           {t(`${present.length} Positionen (Anschaffungswerte)`)}
         </T>
       </HeroCard>
-      <Section title="Vorhanden">
-        <Card>
-          {present.length === 0 ? <Empty icon="cube-outline" text="Noch nichts erfasst." /> : null}
-          {present.map(row)}
-        </Card>
-      </Section>
-      {gone.length ? (
-        <Section title="Ausgesondert">
-          <Card>{gone.map(row)}</Card>
+      <Columns min={420} gap={24}>
+        <Section title="Vorhanden">
+          <Card>
+            {present.length === 0 ? (
+              <Empty icon="cube-outline" text="Noch nichts erfasst." />
+            ) : null}
+            {present.map(row)}
+          </Card>
         </Section>
-      ) : null}
+        {gone.length ? (
+          <Section title="Ausgesondert">
+            <Card>{gone.map(row)}</Card>
+          </Section>
+        ) : null}
+      </Columns>
       {d.canManage ? (
         <Section title="Gegenstand aufnehmen">
           <Card style={{ gap: 12 }}>

@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import type { ClubTeamGrants } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -74,51 +75,53 @@ export default function TeamGrantsScreen() {
           Mannschaftskasse. Danach kann er nicht mehr einzeln storniert werden.
         </T>
       </Card>
-      {d.canManage ? (
-        <Section title="Zuschuss buchen">
-          <Card style={{ gap: 12 }}>
-            <ChoiceChips
-              scroll
-              label="Mannschaft"
-              selected={teamId ? [teamId] : []}
-              onToggle={setTeamId}
-              options={d.teams.map((x) => ({ value: x.id, label: x.name }))}
-            />
-            <TextField label="Betrag in €" value={amount} onChangeText={setAmount} />
-            <TextField
-              label="Verwendungszweck (optional)"
-              value={note}
-              onChangeText={setNote}
-              maxLength={120}
-            />
-            <DateStepper label="Datum" value={bookedOn} onChange={setBookedOn} />
-            {target.picker}
-            <Button
-              label="Zuschuss buchen"
-              icon="swap-horizontal"
-              disabled={!teamId || parseEuro(amount) === null || !target.ready}
-              loading={create.isPending}
-              onPress={() => create.mutate()}
-            />
+      <Columns min={420} gap={24}>
+        {d.canManage ? (
+          <Section title="Zuschuss buchen">
+            <Card style={{ gap: 12 }}>
+              <ChoiceChips
+                scroll
+                label="Mannschaft"
+                selected={teamId ? [teamId] : []}
+                onToggle={setTeamId}
+                options={d.teams.map((x) => ({ value: x.id, label: x.name }))}
+              />
+              <TextField label="Betrag in €" value={amount} onChangeText={setAmount} />
+              <TextField
+                label="Verwendungszweck (optional)"
+                value={note}
+                onChangeText={setNote}
+                maxLength={120}
+              />
+              <DateStepper label="Datum" value={bookedOn} onChange={setBookedOn} />
+              {target.picker}
+              <Button
+                label="Zuschuss buchen"
+                icon="swap-horizontal"
+                disabled={!teamId || parseEuro(amount) === null || !target.ready}
+                loading={create.isPending}
+                onPress={() => create.mutate()}
+              />
+            </Card>
+          </Section>
+        ) : null}
+        <Section title="Bisherige Zuschüsse">
+          <Card>
+            {d.grants.length === 0 ? (
+              <Empty icon="shirt-outline" text="Noch kein Zuschuss gebucht." />
+            ) : null}
+            {d.grants.map((g, i) => (
+              <ListRow
+                key={g.id}
+                first={i === 0}
+                title={g.teamName}
+                subtitle={g.bookedOn.split('-').reverse().join('.')}
+                trailing={<Chip tone="neutral" label={formatEuro(g.amountCents)} />}
+              />
+            ))}
           </Card>
         </Section>
-      ) : null}
-      <Section title="Bisherige Zuschüsse">
-        <Card>
-          {d.grants.length === 0 ? (
-            <Empty icon="shirt-outline" text="Noch kein Zuschuss gebucht." />
-          ) : null}
-          {d.grants.map((g, i) => (
-            <ListRow
-              key={g.id}
-              first={i === 0}
-              title={g.teamName}
-              subtitle={g.bookedOn.split('-').reverse().join('.')}
-              trailing={<Chip tone="neutral" label={formatEuro(g.amountCents)} />}
-            />
-          ))}
-        </Card>
-      </Section>
+      </Columns>
     </Screen>
   );
 }

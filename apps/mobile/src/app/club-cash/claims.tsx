@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import {
   CLUB_CLAIM_STATUS_LABEL,
   type ClubExpenseClaim,
@@ -189,15 +190,17 @@ export default function ClaimsAdminScreen() {
           {d.openCount === 1 ? t('1 Auslage wartet') : t(`${d.openCount} Auslagen warten`)}
         </T>
       </HeroCard>
-      <Section title="Offen">
-        {openOnes.length === 0 ? (
-          <Card>
-            <Empty icon="checkmark-done-outline" text="Nichts zu prüfen." />
-          </Card>
-        ) : null}
-        {openOnes.map(card)}
-      </Section>
-      {closed.length ? <Section title="Erledigt">{closed.map(card)}</Section> : null}
+      <Columns min={460} gap={24}>
+        <Section title="Offen">
+          {openOnes.length === 0 ? (
+            <Card>
+              <Empty icon="checkmark-done-outline" text="Nichts zu prüfen." />
+            </Card>
+          ) : null}
+          {openOnes.map(card)}
+        </Section>
+        {closed.length ? <Section title="Erledigt">{closed.map(card)}</Section> : null}
+      </Columns>
     </Screen>
   );
 }

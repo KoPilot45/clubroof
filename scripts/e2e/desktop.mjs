@@ -321,6 +321,10 @@ for (const s of sizes) {
     );
     await b.shot(t.page, `dt2-termin-1440-${scheme}`, false);
   }
+  await t.goto('/club-calendar');
+  await t.page.waitForTimeout(3000);
+  await t.goto('/club-cash/claims');
+  await t.page.waitForTimeout(500);
   await t.goto('/facilities');
   await t.page.waitForTimeout(3500);
   await b.shot(t.page, `dt2-platz-1440-${scheme}`, false);

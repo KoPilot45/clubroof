@@ -1,3 +1,4 @@
+import { Columns } from '@/components/columns';
 import {
   CLUB_ALLOWANCE_KINDS,
   CLUB_ALLOWANCE_KIND_LABEL,
@@ -111,118 +112,122 @@ export default function AllowancesScreen() {
         onToggle={(v) => setYear(Number(v))}
         options={[thisYear - 1, thisYear].map((y) => ({ value: String(y), label: String(y) }))}
       />
-      <Section title="Freibeträge">
-        <Card style={{ gap: 12 }}>
-          {d.rows.length === 0 ? (
-            <Empty icon="people-outline" text="Noch keine Auszahlung in diesem Jahr." />
-          ) : null}
-          {d.rows.map((r) => (
-            <View key={`${r.personId}${r.kind}`} style={{ gap: 6 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
-                <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
-                  {`${r.personName} · ${t(CLUB_ALLOWANCE_KIND_LABEL[r.kind])}`}
-                </T>
-                <Chip
-                  tone={r.status === 'full' ? 'urgent' : r.status === 'warn' ? 'action' : 'success'}
-                  label={
-                    r.status === 'full'
-                      ? t('ausgeschöpft')
-                      : r.status === 'warn'
-                        ? t('fast ausgeschöpft')
-                        : t('im Rahmen')
-                  }
-                />
-              </View>
-              <BudgetBar
-                planned={r.limitCents}
-                actual={r.paidCents}
-                status={r.status === 'full' ? 'over' : r.status === 'warn' ? 'warn' : 'ok'}
-              />
-              <T variant="caption">
-                {`${formatEuro(r.paidCents)} ${t('von')} ${formatEuro(r.limitCents)} · ${t('noch frei')} ${formatEuro(r.remainingCents)}`}
-              </T>
-            </View>
-          ))}
-        </Card>
-      </Section>
-
-      {d.canManage ? (
-        <Section title="Auszahlung erfassen">
+      <Columns min={420} gap={24}>
+        <Section title="Freibeträge">
           <Card style={{ gap: 12 }}>
-            {person ? (
-              <ChoiceCard
-                icon="person"
-                title={person.name}
-                text={person.memberNumber ?? undefined}
-                selected
-                onPress={() => setPerson(null)}
-              />
-            ) : (
-              <>
-                <TextField label="Person suchen" value={search} onChangeText={setSearch} />
-                {(candidates.data ?? []).map((c) => (
-                  <ChoiceCard
-                    key={c.personId}
-                    icon="person-outline"
-                    title={c.name}
-                    text={c.memberNumber ?? undefined}
-                    selected={false}
-                    onPress={() => setPerson(c)}
-                  />
-                ))}
-              </>
-            )}
-            <ChoiceChips
-              selected={[kind]}
-              onToggle={setKind}
-              options={CLUB_ALLOWANCE_KINDS.map((k) => ({
-                value: k,
-                label: t(CLUB_ALLOWANCE_KIND_LABEL[k]),
-              }))}
-            />
-            <TextField label="Betrag in €" value={amount} onChangeText={setAmount} />
-            <DateStepper label="Gezahlt am" value={paidOn} onChange={setPaidOn} />
-            {target.picker}
-            {exceeded ? (
-              <Notice
-                tone="action"
-                icon="warning"
-                title="Freibetrag würde überschritten"
-                text={exceeded}
-                action={{
-                  label: 'Trotzdem buchen',
-                  icon: 'checkmark',
-                  onPress: () => pay.mutate(true),
-                }}
-              />
+            {d.rows.length === 0 ? (
+              <Empty icon="people-outline" text="Noch keine Auszahlung in diesem Jahr." />
             ) : null}
-            <Button
-              label="Auszahlung buchen"
-              icon="cash-outline"
-              disabled={!person || parseEuro(amount) === null || !target.ready}
-              loading={pay.isPending}
-              onPress={() => pay.mutate(false)}
-            />
+            {d.rows.map((r) => (
+              <View key={`${r.personId}${r.kind}`} style={{ gap: 6 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
+                  <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
+                    {`${r.personName} · ${t(CLUB_ALLOWANCE_KIND_LABEL[r.kind])}`}
+                  </T>
+                  <Chip
+                    tone={
+                      r.status === 'full' ? 'urgent' : r.status === 'warn' ? 'action' : 'success'
+                    }
+                    label={
+                      r.status === 'full'
+                        ? t('ausgeschöpft')
+                        : r.status === 'warn'
+                          ? t('fast ausgeschöpft')
+                          : t('im Rahmen')
+                    }
+                  />
+                </View>
+                <BudgetBar
+                  planned={r.limitCents}
+                  actual={r.paidCents}
+                  status={r.status === 'full' ? 'over' : r.status === 'warn' ? 'warn' : 'ok'}
+                />
+                <T variant="caption">
+                  {`${formatEuro(r.paidCents)} ${t('von')} ${formatEuro(r.limitCents)} · ${t('noch frei')} ${formatEuro(r.remainingCents)}`}
+                </T>
+              </View>
+            ))}
           </Card>
         </Section>
-      ) : null}
 
-      <Section title="Auszahlungen">
-        <Card>
-          {d.payments.length === 0 ? (
-            <Empty icon="receipt-outline" text="Keine Auszahlungen." />
-          ) : null}
-          {d.payments.map((p, i) => (
-            <ListRow
-              key={p.id}
-              first={i === 0}
-              title={p.personName}
-              subtitle={`${p.paidOn.split('-').reverse().join('.')} · ${t(CLUB_ALLOWANCE_KIND_LABEL[p.kind])}`}
-              trailing={<Chip tone="neutral" label={formatEuro(p.amountCents)} />}
-            />
-          ))}
-        </Card>
-      </Section>
+        {d.canManage ? (
+          <Section title="Auszahlung erfassen">
+            <Card style={{ gap: 12 }}>
+              {person ? (
+                <ChoiceCard
+                  icon="person"
+                  title={person.name}
+                  text={person.memberNumber ?? undefined}
+                  selected
+                  onPress={() => setPerson(null)}
+                />
+              ) : (
+                <>
+                  <TextField label="Person suchen" value={search} onChangeText={setSearch} />
+                  {(candidates.data ?? []).map((c) => (
+                    <ChoiceCard
+                      key={c.personId}
+                      icon="person-outline"
+                      title={c.name}
+                      text={c.memberNumber ?? undefined}
+                      selected={false}
+                      onPress={() => setPerson(c)}
+                    />
+                  ))}
+                </>
+              )}
+              <ChoiceChips
+                selected={[kind]}
+                onToggle={setKind}
+                options={CLUB_ALLOWANCE_KINDS.map((k) => ({
+                  value: k,
+                  label: t(CLUB_ALLOWANCE_KIND_LABEL[k]),
+                }))}
+              />
+              <TextField label="Betrag in €" value={amount} onChangeText={setAmount} />
+              <DateStepper label="Gezahlt am" value={paidOn} onChange={setPaidOn} />
+              {target.picker}
+              {exceeded ? (
+                <Notice
+                  tone="action"
+                  icon="warning"
+                  title="Freibetrag würde überschritten"
+                  text={exceeded}
+                  action={{
+                    label: 'Trotzdem buchen',
+                    icon: 'checkmark',
+                    onPress: () => pay.mutate(true),
+                  }}
+                />
+              ) : null}
+              <Button
+                label="Auszahlung buchen"
+                icon="cash-outline"
+                disabled={!person || parseEuro(amount) === null || !target.ready}
+                loading={pay.isPending}
+                onPress={() => pay.mutate(false)}
+              />
+            </Card>
+          </Section>
+        ) : null}
+
+        <Section title="Auszahlungen">
+          <Card>
+            {d.payments.length === 0 ? (
+              <Empty icon="receipt-outline" text="Keine Auszahlungen." />
+            ) : null}
+            {d.payments.map((p, i) => (
+              <ListRow
+                key={p.id}
+                first={i === 0}
+                title={p.personName}
+                subtitle={`${p.paidOn.split('-').reverse().join('.')} · ${t(CLUB_ALLOWANCE_KIND_LABEL[p.kind])}`}
+                trailing={<Chip tone="neutral" label={formatEuro(p.amountCents)} />}
+              />
+            ))}
+          </Card>
+        </Section>
+      </Columns>
     </Screen>
   );
 }
