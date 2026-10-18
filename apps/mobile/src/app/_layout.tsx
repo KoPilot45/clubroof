@@ -32,7 +32,7 @@ import { hapticError, hapticSuccess, loadHaptics } from '@/lib/haptics';
 import { useReduceMotion } from '@/lib/motion';
 import { loadAppearance } from '@/lib/appearance';
 import { useLocale } from '@/lib/i18n';
-import { Platform, View } from 'react-native';
+import { Platform } from 'react-native';
 import { NO_SUB_NAV, SubNav } from '@/components/sub-nav';
 import { SubHeader } from '@/components/sub-header';
 
