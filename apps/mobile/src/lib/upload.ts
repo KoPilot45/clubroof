@@ -20,6 +20,14 @@ const TYPES = {
   ],
   image: ['image/png', 'image/jpeg', 'image/webp'],
   csv: ['text/csv', 'text/comma-separated-values', 'application/vnd.ms-excel', 'text/plain'],
+  /** Tabellen für den Import: CSV und Excel */
+  table: [
+    'text/csv',
+    'text/comma-separated-values',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain',
+  ],
 };
 
 /** Datei auswählen und als Base64 lesen. `null`, wenn abgebrochen. Prüfung erfolgt auf dem Server. */
