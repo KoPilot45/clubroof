@@ -16,7 +16,7 @@ Paket **DT2** (`docs/PAKETE.md`, Zeile DT2) überträgt die Desktop-Ansicht auf 
 2. **Admin-Listen und Kader** (C): Sortierung, Filter, Tastatur, Mehrfachauswahl, Export aus der Tabelle.
 3. **Formulare** (B) und **Assistenten** (E, inkl. Setup, Import, Kasse).
 4. **Kasse und Statistik** (C, F).
-5. **Sonderfälle:** zuerst Entwurf `docs/design/anstoss/DesktopSonder.html` in der Planungssitzung anfordern (Aufstellungsplaner, Kalender/Stundenplan, Spielbericht, Login, Ladescreen), dann umsetzen.
+5. **Sonderfälle:** nach dem Entwurf `docs/design/anstoss/DesktopSonder.html` (Aufstellungsplaner, Kalender/Platzbelegung, Termin-Seitenpanel, Spielbericht, Assistent, Anmeldung, Ladescreen; Internet für die Schriften nötig).
 
 Nur Layout, keine neuen Daten oder Rechte. Hell/dunkel, `hell-kontrast.mjs`, Übersetzungen, Hilfe.
 
