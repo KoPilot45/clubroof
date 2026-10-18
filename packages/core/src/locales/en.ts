@@ -2071,6 +2071,7 @@ export const en: Record<string, string> = {
   'Fahrt anbieten': 'Offer a ride',
   'Fahrt unklar': 'Transport unclear',
   Fahrtkosten: 'Travel costs',
+  Fällig: 'Due',
   'fällig {2}': 'due {2}',
   'Fällig am': 'Due on',
   'Fällige Beträge werden sofort gebucht': 'Amounts already due are booked immediately',

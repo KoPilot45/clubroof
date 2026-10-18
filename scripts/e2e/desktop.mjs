@@ -248,6 +248,9 @@ for (const s of sizes) {
     'Kassenbuch: Zeile zeigt Einzelheiten',
   );
   await b.shot(page, `dt2-kassenbuch-1440-${scheme}`, false);
+  await goto('/club-cash/fees');
+  await page.waitForTimeout(3500);
+  ok((await page.getByRole('table').count()) > 0, 'Beiträge: Forderungen als Tabelle');
 }
 
 // DT2 Stufe 5: Anmeldung zweigeteilt (links Verlauf mit Marke, rechts das Formular)
