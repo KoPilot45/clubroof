@@ -33,8 +33,10 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
 .name { font: 800 30px/1 var(--display); letter-spacing: .02em; }
 .sub { font-size: 12px; opacity: .8; }
 .light .name, .light .sub, .light .low { color: #0F1A14; } .light .mid { margin-top: 0; }
-.low { position: absolute; left: 0; right: 0; bottom: 26px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,255,255,.7); }
+.low { position: absolute; left: 0; right: 0; bottom: 22px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,255,255,.7); }
 .low b { font: 700 12px var(--display); letter-spacing: .2em; text-transform: uppercase; display: flex; align-items: center; gap: 6px; } .low b i { width: 14px; height: 14px; border-radius: 4px; background: linear-gradient(135deg,#002AFA,#00C3FF); display: inline-block; }
+.pw { margin-top: 14px; display: flex; align-items: center; gap: 7px; font-size: 10.5px; letter-spacing: .04em; opacity: .85; } .pw b { font: 700 12px var(--display); letter-spacing: .2em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; } .pw b i { width: 14px; height: 14px; border-radius: 4px; background: linear-gradient(135deg,#002AFA,#00C3FF); display: inline-block; }
+.light .pw { color: #3E4F45; }
 .dots { display: flex; gap: 6px; } .dots i { width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: .3; animation: dot 1.4s ease-in-out infinite; } .dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
 .light .dots i { background: #1E7A44; }
 .cr .crest .disc { background: transparent; box-shadow: none; animation: breathe 2.8s ease-in-out infinite; }
@@ -55,33 +57,33 @@ h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing:
 
 <div class="grid">
 
-<section class="item"><h2>A · Wabenplakat</h2><p>Ruhig. Verlauf der Vereinsfarbe wie im Hero, Waben oben rechts, ein heller Ring läuft um das Wappen.</p>
+<section class="item"><h2>A · Wabenplakat (gewählt)</h2><p>Ruhig. Verlauf der Vereinsfarbe wie im Hero, Waben oben rechts, ein heller Ring läuft um das Wappen.</p>
 <div class="scr club" id="sA"><svg class="cells" id="cA"></svg>
   <div class="mid"><div class="crest"><svg viewBox="0 0 104 104"><circle class="ring" cx="52" cy="52" r="50"/><circle class="run" cx="52" cy="52" r="50" transform="rotate(-90 52 52)" pathLength="300"/></svg><div class="disc">SGW</div></div>
     <div class="name">SV Grün-Weiß<br>Musterstadt</div><div class="sub">Dein Verein unter einem Dach</div></div>
-  <div class="low"><div class="dots"><i></i><i></i><i></i></div>Wird geladen</div></div>
-<div class="cap">Waben wie im Hero (R 26, weiß, oben rechts am deutlichsten). Ring und Punkte zeigen den Fortschritt, ohne Prozentzahl.</div></section>
+  <div class="low"><div class="dots"><i></i><i></i><i></i></div>Wird geladen<div class="pw">Powered by <b><i></i>Clubroof</b></div></div></div>
+<div class="cap">Waben wie im Hero (R 26, weiß, oben rechts am deutlichsten). Ring und Punkte zeigen den Fortschritt, ohne Prozentzahl. Unten „Powered by Clubroof“ mit dem Clubroof-Zeichen.</div></section>
 
-<section class="item"><h2>B · Wabenwelle</h2><p>Lebendiger. Von der Mitte laufen Wellen über die Waben, das Wappen sitzt im Zentrum.</p>
+<section class="item"><h2>B · Wabenwelle (nicht gewählt)</h2><p>Lebendiger. Von der Mitte laufen Wellen über die Waben, das Wappen sitzt im Zentrum.</p>
 <div class="scr club" id="sB" style="background: radial-gradient(90% 70% at 50% 40%, var(--p1) 0%, var(--p2) 55%, var(--base) 100%)"><svg class="cells" id="cB"></svg>
   <div class="mid"><div class="crest"><svg viewBox="0 0 104 104"><circle class="ring" cx="52" cy="52" r="50"/><circle class="run" cx="52" cy="52" r="50" transform="rotate(-90 52 52)" pathLength="300"/></svg><div class="disc">SGW</div></div>
     <div class="name">SV Grün-Weiß<br>Musterstadt</div></div>
   <div class="low"><b><i></i>Clubroof</b></div></div>
 <div class="cap">Die Wellen gehen vom Wappen nach außen (Verzögerung nach Abstand, 2,6 s). Unten das Clubroof-Zeichen als stille Marke.</div></section>
 
-<section class="item"><h2>C · Hell</h2><p>Der helle Stil: farbiger Kopf mit Waben, weicher Auslauf in den hellen Hintergrund, Wappen mit Schatten.</p>
+<section class="item"><h2>C · Hell</h2><p>Der helle Stil (A in hell): farbiger Kopf mit Waben, weicher Auslauf in den hellen Hintergrund, Wappen mit Schatten.</p>
 <div class="scr light" id="sC"><svg class="cells" id="cC"></svg>
   <div class="mid" style="margin-top:46px"><div class="crest"><svg viewBox="0 0 104 104"><circle class="ring" cx="52" cy="52" r="50" style="stroke:rgba(255,255,255,.4)"/><circle class="run" cx="52" cy="52" r="50" transform="rotate(-90 52 52)" pathLength="300" style="stroke:#fff"/></svg><div class="disc">SGW</div></div>
     <div class="name" style="color:#fff">SV Grün-Weiß<br>Musterstadt</div><div class="sub" style="color:#0F1A14;margin-top:40px">Dein Verein unter einem Dach</div></div>
-  <div class="low"><div class="dots"><i></i><i></i><i></i></div>Wird geladen</div></div>
+  <div class="low"><div class="dots"><i></i><i></i><i></i></div>Wird geladen<div class="pw">Powered by <b><i></i>Clubroof</b></div></div></div>
 <div class="cap">Gleiche Regel wie im Hero hell: Auslauf über die unteren Zweidrittel, Text im Verlauf bleibt weiß, darunter dunkel.</div></section>
 
-<section class="item"><h2>D · Ohne Verein (Clubroof)</h2><p>Erster Start oder noch kein Verein: Clubroof-Blau mit Wabenwelle und Logo.</p>
+<section class="item"><h2>D · Ohne Verein (Clubroof)</h2><p>Erster Start oder noch kein Verein: Clubroof-Blau mit Waben und Logo (Muster wie A).</p>
 <div class="scr cr" id="sD"><svg class="cells" id="cD"></svg>
   <div class="mid"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg></div>
     <div class="name">Clubroof</div><div class="sub">Dein Verein unter einem Dach</div></div>
   <div class="low"><div class="dots"><i></i><i></i><i></i></div>Wird geladen</div></div>
-<div class="cap">Verlauf wie Login und Einrichtung (#002AFA → #00C3FF). Das Logo hier nur als Platzhalter für das Clubroof-Zeichen.</div></section>
+<div class="cap">Ohne Verein ist Clubroof selbst die Marke, deshalb kein „Powered by“. Verlauf wie Login und Einrichtung (#002AFA → #00C3FF), Muster wie A. Das Logo ist nur ein Platzhalter.</div></section>
 
 </div>
 
@@ -108,7 +110,7 @@ const go = () => {
   cells(document.getElementById('cA'), { mode: 'corner', lo: .16, hi: .3, st: .2 });
   cells(document.getElementById('cB'), { mode: 'center', lo: .05, hi: .36, st: .14 });
   cells(document.getElementById('cC'), { mode: 'corner', lo: .16, hi: .3, st: .2 });
-  cells(document.getElementById('cD'), { mode: 'center', lo: .05, hi: .4, st: .15 });
+  cells(document.getElementById('cD'), { mode: 'corner', lo: .16, hi: .3, st: .2 });
 };
 go(); new ResizeObserver(go).observe(document.body);
 </script>
