@@ -115,13 +115,12 @@ const sidebar = (on) => `<aside class="side"><svg class="wm waben-s"></svg>
   <div class="brand"><div class="crest">SGW</div><div><b>SV Grün-Weiß<br>Musterstadt</b><small>Max Mustermann · Trainer</small></div></div>
   <nav class="nav">${NAV.map(([k, l, i]) => `<a class="${on === k ? 'on' : ''}">${IC[i]}${l}</a>`).join('')}</nav>
   <div class="sep"></div>
-  <nav class="nav"><a>${IC.home.replace('M4 11l8-7 8 7v9H4z', 'M11 4a7 7 0 100 14 7 7 0 000-14zM21 21l-4.5-4.5')}Suche<kbd style="margin-left:auto;font:700 11px var(--body);border:1px solid var(--line2);border-radius:5px;padding:0 6px;color:var(--fg3)">/</kbd></a>
-  <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17V11a6 6 0 1112 0v6l2 2H4zM10 21h4"/></svg>Mitteilungen<span class="badge">3</span></a></nav>
+  <nav class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17V11a6 6 0 1112 0v6l2 2H4zM10 21h4"/></svg>Mitteilungen<span class="badge">3</span></a></nav>
   <div class="sep"></div>
   <nav class="nav"><a class="viol">${IC.shield}Verwaltung</a><a class="blue ${on === 'kasse' ? 'on' : ''}" style="${on === 'kasse' ? 'background:#1C4FA3;color:#fff' : ''}">${IC.euro}Vereinskasse</a></nav>
   <div class="sp"></div>
   <div class="me"><div class="av">MM</div><div><b>Max Mustermann</b><small>Trainer B1, C1</small></div></div></aside>`;
-const topbar = (kicker, title, chips = '') => `<div class="top"><div><small>${kicker}</small><h2>${title}</h2></div>${chips ? `<div class="chips" style="margin-left:24px">${chips}</div>` : ''}<div class="search">Suchen …<kbd>/</kbd></div><div class="ibtn">🔔<i>3</i></div></div>`;
+const topbar = (kicker, title, chips = '') => `<div class="top"><div><small>${kicker}</small><h2>${title}</h2></div>${chips ? `<div class="chips" style="margin-left:24px">${chips}</div>` : ''}<div class="search">Suchen …<kbd>/</kbd></div></div>`;
 const bar = (c) => `<div class="rb"><i style="flex:${c[0]};background:#2EDB6B"></i><i style="flex:${c[1]};background:#FFB020"></i><i style="flex:${c[2]};background:#FF6B6B"></i><i style="flex:${c[3]};background:rgba(255,255,255,.3)"></i></div><div class="rg"><span><i class="d" style="background:#2EDB6B"></i>${c[0]} Zusagen</span><span><i class="d" style="background:#FFB020"></i>${c[1]} Unsicher</span><span><i class="d" style="background:#FF6B6B"></i>${c[2]} Absagen</span><span><i class="d" style="background:rgba(255,255,255,.4)"></i>${c[3]} offen</span><span class="more">Kader ›</span></div>`;
 const ev = (d, wd, t, s, pill) => `<div class="li"><div class="dt"><div><small>${wd}</small>${d}</div></div><div class="tx"><b>${t}</b><span>${s}</span></div>${pill || ''}</div>`;
 
