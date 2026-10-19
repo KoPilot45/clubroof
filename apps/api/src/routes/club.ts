@@ -253,20 +253,20 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
 };
 
 /** Feste Bilder der Marke und des Demovereins (öffentlich, nur diese Namen). */
-const BRAND_FILES: Record<string, string> = { 'demo-wappen.png': 'image/png' };
+const BRAND_FILE = /^demo-[a-z0-9-]{1,40}\.png$/;
 
 export const brandRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
     '/brand/:name',
     { schema: { params: z.object({ name: z.string().max(60) }) } },
     async (request, reply) => {
-      const type = BRAND_FILES[request.params.name];
-      if (!type) throw notFound('Das Bild');
+      if (!BRAND_FILE.test(request.params.name)) throw notFound('Das Bild');
       const file = await readFile(
         fileURLToPath(new URL(`../../assets/${request.params.name}`, import.meta.url)),
-      );
+      ).catch(() => null);
+      if (!file) throw notFound('Das Bild');
       return reply
-        .header('content-type', type)
+        .header('content-type', 'image/png')
         .header('cache-control', 'public, max-age=86400')
         .header('x-content-type-options', 'nosniff')
         .send(file);

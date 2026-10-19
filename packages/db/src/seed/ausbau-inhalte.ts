@@ -4,7 +4,7 @@
  */
 import { addDays, toIsoDate } from '@clubroof/core';
 import { randomUUID } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { Db } from '../client';
 import * as s from '../schema';
 
@@ -149,4 +149,31 @@ export async function seedInhalteAusbau(ctx: {
       editedAt: null,
     }),
   ]);
+  // Demo-Bilder (scripts/demo-bilder.mjs): je Sponsor ein Logo für Hell und Dunkel, News mit Titelbild
+  const logos: Record<string, string> = {
+    'Haus & Garten Müller GmbH': 'mueller',
+    'Sportshop Musterstadt': 'sportshop',
+    'Fahrschule Lindner': 'lindner',
+    'Gasthaus Zur Linde': 'linde',
+    'Bäckerei Kaiser': 'kaiser',
+    'Stadtwerke Musterstadt': 'stadtwerke',
+    'Autohaus Meyer GmbH': 'meyer',
+  };
+  for (const [name, key] of Object.entries(logos))
+    await tx
+      .update(s.sponsors)
+      .set({ logoRef: `/brand/demo-logo-${key}.png` })
+      .where(and(eq(s.sponsors.clubId, clubId), eq(s.sponsors.name, name)));
+  const covers: Record<string, string> = {
+    'Neue Flutlichtanlage offiziell eröffnet': 'flutlicht',
+    'Neue Fanschals im Vereinsheim erhältlich': 'fanschal',
+    'Anmeldung Jugend-Hallenturnier geöffnet': 'jha',
+    'B1: Trikotsponsor gefunden': 'sponsor',
+    'Danke an unsere Ehrenamtlichen!': 'ehrenamt',
+  };
+  for (const [title, key] of Object.entries(covers))
+    await tx
+      .update(s.announcements)
+      .set({ imageUrl: `/brand/demo-news-${key}.png` })
+      .where(and(eq(s.announcements.clubId, clubId), eq(s.announcements.title, title)));
 }

@@ -594,6 +594,26 @@ export async function seed(
       scopeType: 'team',
       scopeId: teamIds.h1,
     });
+    // Eigene Beispielrolle (Rollenverwaltung): Rechtepaket für Platzwart Nord, nicht Teil der Systemrollen
+    if (extended) {
+      const nordRole = randomUUID();
+      await tx.insert(s.roles).values({
+        id: nordRole,
+        clubId,
+        key: 'custom_platzwart_nord',
+        name: 'Platzwart Nord',
+        description: 'Belegung und Pflege der Sportanlage Nord, Helferpläne, Aushänge',
+        isSystem: false,
+        scopeDefault: 'club',
+        permissions: ['facilities.manage', 'helpers.manage', 'news.create'],
+      });
+      roleAssignments.push({
+        clubId,
+        personId: official.facilityManager.id,
+        roleId: nordRole,
+        scopeType: 'club',
+      });
+    }
     await tx.insert(s.roleAssignments).values(roleAssignments);
 
     // ── Module ────────────────────────────────────────────────────────────────────────────

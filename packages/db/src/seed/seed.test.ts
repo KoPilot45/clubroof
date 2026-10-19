@@ -250,5 +250,19 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
       expect(rows.some((r) => r.starts_on && r.starts_on > today)).toBe(true);
       expect(rows.some((r) => !r.ends_on || r.ends_on >= today)).toBe(true);
     });
+
+    it('Sponsoren haben Logos, News Titelbilder, die Beispielrolle Platzwart Nord ist vergeben', async () => {
+      const [a] =
+        await sql`select count(*)::int as n from sponsors where logo_ref like '/brand/demo-logo-%'`;
+      expect(a!.n).toBe(9 - 1 - 1);
+      const [b] =
+        await sql`select count(*)::int as n from announcements where image_url like '/brand/demo-news-%'`;
+      expect(b!.n).toBeGreaterThanOrEqual(4);
+      const [c] = await sql`
+        select count(*)::int as n from role_assignments ra
+        join roles r on r.id = ra.role_id
+        where r.name = 'Platzwart Nord' and r.is_system = false`;
+      expect(c!.n).toBe(1);
+    });
   });
 });

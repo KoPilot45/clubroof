@@ -1,0 +1,6 @@
+﻿Vorname;Nachname;Geburtsdatum;Mitgliedsnummer;E-Mail;Funktion;Rückennummer;Position
+Jonas;Albrecht;01.01.2013;9000;jonas.albrecht@example.org;Spieler;1;Sturm
+Noah;Otto;07.07.2013;9006;noah.otto@example.org;Spieler;7;Abwehr
+Ben;Maurer;13.01.2013;9012;ben.maurer@example.org;Spieler;13;Mittelfeld
+Finn;Keller;19.07.2013;9018;finn.keller@example.org;Spieler;1;Mittelfeld
+Marc;Hoffmann;03.04.1980;9801;marc.hoffmann@example.org;Trainer;;

@@ -127,7 +127,7 @@ import { createDb, schema as s } from '@clubroof/db';
 import { eq, inArray } from 'drizzle-orm';
 import { runMigrations } from '@clubroof/db/migrate';
 import { seed } from '@clubroof/db/seed';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -9283,6 +9283,44 @@ describe.skipIf(!url)('API', () => {
         admin.token,
       );
       expect(Buffer.from(csv.body.dataBase64, 'base64').toString('utf8')).toContain('Position');
+    });
+
+    it('die Beispieldateien in docs/demo-dateien lassen sich einlesen', async () => {
+      const admin = await login('admin');
+      const dir = new URL('../../../docs/demo-dateien/', import.meta.url);
+      const preview = async (name: string, area: string, extra: object = {}) => {
+        const data = await readFile(new URL(name, dir));
+        return send<ImportPreview>('POST', '/import/preview', admin.token, {
+          area,
+          file: { name, dataBase64: data.toString('base64') },
+          ...extra,
+        });
+      };
+      const members = await preview('mitglieder.csv', 'members');
+      expect(members.status).toBe(200);
+      expect(members.body.missingRequired).toEqual([]);
+      expect(members.body.summary.error).toBeGreaterThanOrEqual(3);
+      expect(members.body.summary.duplicate).toBeGreaterThanOrEqual(1);
+      expect(members.body.summary.new).toBeGreaterThan(15);
+      for (const [name, area] of [
+        ['beitragsarten.csv', 'fee_types'],
+        ['haushaltsplan.csv', 'budget'],
+      ] as const) {
+        const r = await preview(name, area);
+        expect(r.status, name).toBe(200);
+        expect(r.body.missingRequired, name).toEqual([]);
+        expect(
+          r.body.rows
+            .map((x) => x.errors.join('; '))
+            .filter(Boolean)
+            .join(' | '),
+          name,
+        ).toBe('');
+      }
+      const b1 = (await login('trainer')).me.teams.find((t) => t.badge === 'B1')!;
+      const roster = await preview('kader-c-jugend.csv', 'roster', { teamId: b1.id });
+      expect(roster.status).toBe(200);
+      expect(roster.body.missingRequired).toEqual([]);
     });
 
     it('prüft Zeilen, ordnet Spalten zu und beachtet das Verhalten bei Dubletten', async () => {
