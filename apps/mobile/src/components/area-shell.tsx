@@ -254,7 +254,7 @@ export function AreaTabBar({
   items: AreaTab[];
   onHeight: (height: number) => void;
 }) {
-  const { colors, isDark } = useTheme();
+  const { isDark } = useTheme();
   const desktop = useIsDesktop();
   const [fill, on] = AREA_ACCENT[tone][isDark ? 'dark' : 'light'];
   // Desktop (Paket DT): feste Bereichsleiste unten mit beschrifteten Reitern statt schwebender Pille
