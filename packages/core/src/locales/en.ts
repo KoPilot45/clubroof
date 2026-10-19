@@ -1946,8 +1946,12 @@ export const en: Record<string, string> = {
   'Diese Nachricht wartet nicht auf Freigabe.': 'This message is not awaiting approval.',
   'Diese Namen aus dem DFBnet gehören vermutlich zu eurem Verein. Wähle die passende Mannschaft – die Schreibweise wird gemerkt. Gegner mit ähnlichem Namen kannst du überspringen.':
     'These DFBnet names probably belong to your club. Choose the matching team – the spelling is remembered. You can skip opponents with a similar name.',
+  'Diese Person gehört zu einer Mannschaft, für die du nicht einladen darfst.':
+    'This person belongs to a team you are not allowed to invite for.',
   'Diese Person hat bereits einen App-Zugang.': 'This person already has app access.',
   'Diese Person hat keine besonderen Rechte.': 'This person has no special rights.',
+  'Diese Person hat Rechte, die über deine hinausgehen. Das Konto richtet die Verwaltung ein.':
+    'This person has permissions beyond your own. Administration sets up the account.',
   'Diese Prüfung gehört nicht zu deinen Kassen.': 'This audit does not belong to your funds.',
   'Diese Prüfung siehst du nicht.': 'You cannot see this audit.',
   'Diese Rechte gelten zusätzlich zu den Rollen und immer für den ganzen Verein. Für ein Recht nur in einer Mannschaft oder einer Abteilung lieber eine Rolle mit Geltungsbereich vergeben.':
@@ -1990,6 +1994,8 @@ export const en: Record<string, string> = {
   'Dieser Verein ist bereits eingerichtet.': 'This club has already been set up.',
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'This grant is also in the team fund and cannot be cancelled here.',
+  'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.':
+    'This child has their own account and cannot be linked through a join request. Member administration handles that.',
   'Dieses Passwort ist zu leicht zu erraten.': 'This password is too easy to guess.',
   'Dieses Thema kannst du nicht ändern.': 'You cannot change this topic.',
   'Dir zugeteilte Mannschaftsaufgaben': 'Team tasks assigned to you',

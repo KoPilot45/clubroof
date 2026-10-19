@@ -13,6 +13,7 @@
 import {
   calendarDayOf,
   can,
+  type Permission,
   scopesWith,
   toIsoDate,
   effectiveClubCode,
@@ -586,6 +587,59 @@ async function personToLink(db: Db, actor: Actor, personId: string) {
   return p;
 }
 
+/**
+ * Eine bestehende Person darf nur verknüpft werden, wenn die handelnde Person sie auch sonst
+ * verwalten dürfte: (1) alle aktuellen Mannschaften der Person liegen im Einladebereich und
+ * (2) die Person hat keine Rechte, die die handelnde Person selbst nicht (im selben Umfang) hat.
+ */
+async function assertMayLink(db: Db, actor: Actor, personId: string) {
+  const teams = await db
+    .select({ team: s.teams })
+    .from(s.teamMemberships)
+    .innerJoin(s.teams, eq(s.teams.id, s.teamMemberships.teamId))
+    .where(and(eq(s.teamMemberships.personId, personId), isNull(s.teamMemberships.validTo)));
+  if (teams.some((t) => !mayInvite(actor, t.team)))
+    throw new HttpError(
+      403,
+      'forbidden_person',
+      'Diese Person gehört zu einer Mannschaft, für die du nicht einladen darfst.',
+    );
+
+  const grants = await db
+    .select({
+      permissions: s.roles.permissions,
+      scopeType: s.roleAssignments.scopeType,
+      scopeId: s.roleAssignments.scopeId,
+    })
+    .from(s.roleAssignments)
+    .innerJoin(s.roles, eq(s.roles.id, s.roleAssignments.roleId))
+    .where(eq(s.roleAssignments.personId, personId));
+  const [individual] = await db
+    .select({ permissions: s.personPermissions.permissions })
+    .from(s.personPermissions)
+    .where(eq(s.personPermissions.personId, personId));
+  const exceeds = grants.some((g) =>
+    g.permissions.some((permission) => {
+      const where =
+        g.scopeType === 'team'
+          ? { teamId: g.scopeId }
+          : g.scopeType === 'org_unit'
+            ? { orgUnitId: g.scopeId }
+            : {};
+      return !can(actor.grants, permission as Permission, where);
+    }),
+  );
+  const individualExceeds = (individual?.permissions ?? []).some(
+    (permission) => !can(actor.grants, permission as Permission),
+  );
+  if (exceeds || individualExceeds)
+    throw new HttpError(
+      403,
+      'forbidden_person',
+      'Diese Person hat Rechte, die über deine hinausgehen. Das Konto richtet die Verwaltung ein.',
+    );
+}
+
 export async function approveJoin(
   db: Db,
   actor: Actor,
@@ -602,6 +656,16 @@ export async function approveJoin(
   const existingChild = input.childPersonId
     ? await personToLink(db, actor, input.childPersonId)
     : null;
+  if (existing) await assertMayLink(db, actor, existing.id);
+  if (existingChild) {
+    if (existingChild.userId)
+      throw new HttpError(
+        409,
+        'child_has_account',
+        'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.',
+      );
+    await assertMayLink(db, actor, existingChild.id);
+  }
 
   await db.transaction(async (tx) => {
     const addToTeam = async (personId: string) => {

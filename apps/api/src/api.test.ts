@@ -10239,4 +10239,102 @@ describe.skipIf(!url)('API', () => {
       await db.delete(s.absences).where(eq(s.absences.id, absence!.id));
     });
   });
+
+  describe('Pilot-Sicherheit F01: Verknüpfen bestehender Personen bei Beitrittsanfragen', () => {
+    const tokenOf = (u: string) => u.split('/join/')[1]!;
+    const pub = (method: 'GET' | 'POST', u: string, payload?: object) =>
+      app.inject({ method, url: u, ...(payload ? { payload } : {}) });
+    let n = 0;
+
+    /** Legt über den Mannschafts-Link der B-Jugend eine Anfrage eines neuen Spielers an. */
+    async function openRequest(coachToken: string, badge = 'B1') {
+      const coach = await login('trainer');
+      const team = coach.me.teams.find((t) => t.badge === badge)!;
+      const link = await send<InviteLink>('POST', `/teams/${team.id}/invite-link`, coachToken);
+      n += 1;
+      const mail = `f01.${n}@example.org`;
+      await pub('POST', `/join/${tokenOf(link.body.url)}/request`, {
+        email: mail,
+        password: PASSWORD,
+        relation: 'player',
+        firstName: `Test${n}`,
+        lastName: 'F01',
+      });
+      const pending = (await get<InviteOverview>('/invitations', coachToken)).requests;
+      return pending.find((r) => r.name === `Test${n} F01`)!;
+    }
+
+    const personRows = (query: Promise<{ id: string }[]>) => query.then((r) => r.map((x) => x.id));
+
+    it('lehnt Personen aus fremden Mannschaften ab', async () => {
+      const coach = await login('trainer');
+      const [foreign] = await personRows(sql`
+        select p.id from persons p
+        where p.user_id is null and exists (
+          select 1 from team_memberships m join teams t on t.id = m.team_id
+          where m.person_id = p.id and m.valid_to is null and t.badge = '1.')
+        and not exists (
+          select 1 from team_memberships m join teams t on t.id = m.team_id
+          where m.person_id = p.id and m.valid_to is null and t.badge in ('B1', 'C1'))
+        limit 1`);
+      const req = await openRequest(coach.token);
+      const res = await send('POST', `/join-requests/${req.id}/approve`, coach.token, {
+        personId: foreign,
+      });
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      const [row] = await sql`select user_id from persons where id = ${foreign!}`;
+      expect(row!.user_id).toBeNull();
+    });
+
+    it('lehnt Personen mit höheren Rechten ab, auch ohne andere Mannschaft', async () => {
+      const coach = await login('trainer');
+      const [privileged] = await personRows(sql`
+        select p.id from persons p
+        join role_assignments ra on ra.person_id = p.id
+        join roles r on r.id = ra.role_id
+        where p.user_id is null and r.key not in ('club_member', 'coach')
+        limit 1`);
+      expect(privileged).toBeTruthy();
+      const req = await openRequest(coach.token);
+      const res = await send('POST', `/join-requests/${req.id}/approve`, coach.token, {
+        personId: privileged,
+      });
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      const [row] = await sql`select user_id from persons where id = ${privileged!}`;
+      expect(row!.user_id).toBeNull();
+    });
+
+    it('lehnt ein bestehendes Kind mit eigenem Konto ab', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const req = await openRequest(coach.token);
+      await sql`update join_requests set relation = 'parent', child_first_name = 'X', child_last_name = 'Y'
+        where id = ${req.id}`;
+      const res = await send('POST', `/join-requests/${req.id}/approve`, coach.token, {
+        childPersonId: player.me.person.id,
+      });
+      expect(res.status).toBe(409);
+      const [g] = await sql`select count(*)::int as n from guardianships
+        where child_person_id = ${player.me.person.id}`;
+      expect(g!.n).toBe(0);
+    });
+
+    it('erlaubt die reguläre Verknüpfung einer Person der eigenen Mannschaft', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const [own] = await personRows(sql`
+        insert into persons (club_id, first_name, last_name)
+        values (${coach.me.club.id}, 'Kontolos', 'F01') returning id`);
+      await sql`insert into team_memberships (club_id, team_id, person_id, function, valid_from)
+        values (${coach.me.club.id}, ${b1.id}, ${own!}, 'player', '2026-08-01')`;
+      expect(own).toBeTruthy();
+      const req = await openRequest(coach.token);
+      const res = await send('POST', `/join-requests/${req.id}/approve`, coach.token, {
+        personId: own,
+      });
+      expect(res.status).toBe(200);
+      const [row] = await sql`select user_id from persons where id = ${own!}`;
+      expect(row!.user_id).not.toBeNull();
+    });
+  });
 });
