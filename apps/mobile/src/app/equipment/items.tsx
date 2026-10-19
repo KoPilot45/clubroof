@@ -17,6 +17,7 @@ import {
   Section,
   T,
   TextField,
+  PageAction,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
@@ -71,7 +72,9 @@ export default function EquipmentItemsScreen() {
           busy={change.isPending}
         />
       ) : (
-        <Button label="Gegenstand erfassen" icon="add" onPress={() => setCreating(true)} />
+        <PageAction>
+          <Button label="Gegenstand erfassen" icon="add" onPress={() => setCreating(true)} />
+        </PageAction>
       )}
       {groups.map((g) => (
         <Section key={g.title} title={g.title}>

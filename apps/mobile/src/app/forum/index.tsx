@@ -15,6 +15,7 @@ import {
   Screen,
   T,
   TextField,
+  PageAction,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatAgo, formatRemaining } from '@/lib/format';
@@ -103,7 +104,9 @@ export default function ForumScreen() {
             </View>
           </Card>
         ) : (
-          <Button label="Thema eröffnen" icon="add" onPress={() => setCreating(true)} />
+          <PageAction>
+            <Button label="Thema eröffnen" icon="add" onPress={() => setCreating(true)} />
+          </PageAction>
         )
       ) : null}
       <Card>

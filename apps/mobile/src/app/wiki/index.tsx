@@ -12,6 +12,7 @@ import {
   Screen,
   Section,
   SearchField,
+  PageAction,
 } from '@/components/ui';
 import { useSignedIn } from '@/lib/session';
 import { useMarkSeen } from '@/lib/tile-info';
@@ -33,7 +34,9 @@ export default function WikiScreen() {
     <Screen edges={[]} refreshing={wiki.isRefetching} onRefresh={() => wiki.refetch()}>
       <SearchField value={q} onChangeText={setQ} placeholder="z. B. Schlüssel" />
       {w.canEdit ? (
-        <Button label="Artikel schreiben" icon="add" onPress={() => router.push('/wiki/new')} />
+        <PageAction>
+          <Button label="Artikel schreiben" icon="add" onPress={() => router.push('/wiki/new')} />
+        </PageAction>
       ) : null}
       {pages.length === 0 ? (
         <Card>

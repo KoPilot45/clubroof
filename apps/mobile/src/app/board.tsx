@@ -23,6 +23,7 @@ import {
   Screen,
   T,
   TextField,
+  PageAction,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatAgo } from '@/lib/format';
@@ -79,7 +80,9 @@ export default function BoardScreen() {
           onSave={(body) => change.mutate({ path: '/board', body })}
         />
       ) : (
-        <Button label="Aushang erstellen" icon="add" onPress={() => setCreating(true)} />
+        <PageAction>
+          <Button label="Aushang erstellen" icon="add" onPress={() => setCreating(true)} />
+        </PageAction>
       )}
       {change.error ? (
         <Chip

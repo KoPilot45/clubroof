@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import Svg, { Line, Path, Text as SvgText } from 'react-native-svg';
 import { formatEuroShort } from '@/lib/format';
+import { useIsDesktop } from '@/lib/layout';
 import { useTheme } from '@/lib/theme';
 import { Readout } from './readout';
 import { extent, useGrow, usePointer } from './scale';
@@ -27,7 +28,7 @@ function column(x: number, base: number, top: number, w: number): string {
 export function ColumnChart({
   labels,
   series,
-  height = 170,
+  height: heightProp,
   format = formatEuroShort,
   readoutFormat,
 }: {
@@ -38,6 +39,10 @@ export function ColumnChart({
   readoutFormat?: (v: number) => string;
 }) {
   const { colors } = useTheme();
+  // Desktop (Paket DT3): höhere Diagramme (mind. 240 px) mit lesbarer Beschriftung (12 px)
+  const desktop = useIsDesktop();
+  const height = heightProp ?? (desktop ? 240 : 170);
+  const labelSize = desktop ? 12 : 10;
   const [width, setWidth] = useState(0);
   const [active, setActive] = useState<number | null>(null);
   const grow = useGrow([series.map((s) => s.values.join()).join('|')]);
@@ -83,7 +88,7 @@ export function ColumnChart({
                 key={`t${t}`}
                 x={PAD.left - 6}
                 y={base - (t / (max || 1)) * innerH + 4}
-                fontSize={10}
+                fontSize={labelSize}
                 textAnchor="end"
                 fill={colors.onSurfaceMuted}
               >
@@ -95,7 +100,7 @@ export function ColumnChart({
                 key={l}
                 x={PAD.left + slot * i + slot / 2}
                 y={height - 6}
-                fontSize={10}
+                fontSize={labelSize}
                 textAnchor="middle"
                 fill={colors.onSurfaceMuted}
               >
