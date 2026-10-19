@@ -670,7 +670,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'club-fees',
         question: 'Wie verwalte ich die Mitgliedsbeiträge?',
         answer:
-          'In der Vereinskasse unter „Mitgliedsbeiträge“. Lege zuerst unter „Beitragsarten & Mitglieder“ die Beitragsarten (Betrag und Rhythmus) an und ordne sie den Mitgliedern zu. Mit „Sollstellung erzeugen“ entstehen die fälligen Forderungen (nie doppelt). Zahlungen buchst du an der Forderung oder per Kontoauszug-Import (CSV): die App ordnet Eingänge per Mitgliedsnummer oder Name zu, wenn der Betrag genau passt, und zeigt alles vor dem Buchen. Bei Rückständen erinnerst du in drei Stufen selbst (Erinnerung, Mahnung, letzte Mahnung); das Mitglied bzw. die Eltern bekommen eine Benachrichtigung.',
+          'In der Vereinskasse unter „Mitgliedsbeiträge“. Lege zuerst unter „Beitragsarten & Mitglieder“ die Beitragsarten (Betrag und Rhythmus) an und ordne sie den Mitgliedern zu. Mit „Fällige Beiträge anlegen“ entstehen die fälligen Forderungen (nie doppelt). Die Auswahl zwischen offenen, überfälligen, bezahlten und stornierten Forderungen steht immer sichtbar über der Liste; Überschrift und Trefferzahl nennen denselben Umfang. Wird die Kassenbuchung einer Zahlung storniert, ist die Forderung wieder offen. Zahlungen buchst du an der Forderung oder per Kontoauszug-Import (CSV): die App ordnet Eingänge per Mitgliedsnummer oder Name zu, wenn der Betrag genau passt, und zeigt alles vor dem Buchen. Bei Rückständen erinnerst du in drei Stufen selbst (Erinnerung, Mahnung, letzte Mahnung); das Mitglied bzw. die Eltern bekommen eine Benachrichtigung.',
         link: { label: 'Mitgliedsbeiträge', href: '/club-cash/fees' },
       },
       {

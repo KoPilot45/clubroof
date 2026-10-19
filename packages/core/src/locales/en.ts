@@ -27,6 +27,8 @@ export const en: Record<string, string> = {
     '“Remind everyone” in the fees waits this many days after the due date and can attach an extra text.',
   '„Anlage & Material“ ist im Verein nicht aktiviert.':
     '“Facility & equipment” is not activated in the club.',
+  '„Fällige Beiträge anlegen“ erzeugt für alle zugeordneten Mitglieder die Forderungen, die bis heute fällig sind – nie doppelt.':
+    '“Create due fees” creates the claims that are due by today for all assigned members – never twice.',
   '„Mannschaft bearbeiten → Spielplan importieren“: CSV-Datei aus dem DFBnet wählen, Vorschau prüfen (neu, geändert, unverändert, übersprungen) und übernehmen. Die Mannschaft bekommt eine Sammelmeldung. Ein erneuter Import aktualisiert Verlegungen, statt Spiele doppelt anzulegen. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.':
     '“Edit team → Import fixtures”: choose the CSV file from DFBnet, check the preview (new, changed, unchanged, skipped) and import. The team receives a summary notification. Importing again updates rescheduled matches instead of creating them twice. You can undo the import within 24 hours.',
   '„Mehr → Einladen“: persönlich per E-Mail oder als Mannschafts-Link bzw. QR-Code zum Selbstregistrieren. Bei Links gibst du neue Anfragen frei, bevor jemand die App nutzen kann.':
@@ -1066,6 +1068,7 @@ export const en: Record<string, string> = {
   Bezahlt: 'Paid',
   'Bezahlt (€)': 'Paid (€)',
   'bezahlt {0}': 'paid {0}',
+  'Bezahlte Forderungen': 'Paid claims',
   Bezeichnung: 'Name',
   'Bezeichnung des Platzes': 'Name of the pitch',
   'Bezeichnung ist zu lang.': 'Name is too long.',
@@ -2400,6 +2403,8 @@ export const en: Record<string, string> = {
   Fällig: 'Due',
   'fällig {2}': 'due {2}',
   'Fällig am': 'Due on',
+  'Fällige Beiträge anlegen': 'Create due fees',
+  'Fällige Beiträge für das laufende Jahr anlegen': 'Create due fees for the current year',
   'Fällige Beträge werden sofort gebucht': 'Amounts already due are booked immediately',
   'Fälligkeit „{0}“ fehlt oder ist ungültig.': 'Due date “{0}” is missing or invalid.',
   'Fälligkeit festlegen': 'Set due date',
@@ -2869,6 +2874,8 @@ export const en: Record<string, string> = {
   'In der Startelf stehen höchstens {0} Spieler.': 'The starting eleven has at most {0} players.',
   'In der Startelf stehen höchstens 11 Spieler.':
     'At most 11 players can be in the starting line-up.',
+  'In der Vereinskasse unter „Mitgliedsbeiträge“. Lege zuerst unter „Beitragsarten & Mitglieder“ die Beitragsarten (Betrag und Rhythmus) an und ordne sie den Mitgliedern zu. Mit „Fällige Beiträge anlegen“ entstehen die fälligen Forderungen (nie doppelt). Die Auswahl zwischen offenen, überfälligen, bezahlten und stornierten Forderungen steht immer sichtbar über der Liste; Überschrift und Trefferzahl nennen denselben Umfang. Wird die Kassenbuchung einer Zahlung storniert, ist die Forderung wieder offen. Zahlungen buchst du an der Forderung oder per Kontoauszug-Import (CSV): die App ordnet Eingänge per Mitgliedsnummer oder Name zu, wenn der Betrag genau passt, und zeigt alles vor dem Buchen. Bei Rückständen erinnerst du in drei Stufen selbst (Erinnerung, Mahnung, letzte Mahnung); das Mitglied bzw. die Eltern bekommen eine Benachrichtigung.':
+    'In the club cash under “Membership fees”. First create the fee types (amount and interval) under “Fee types & members” and assign them to the members. “Create due fees” creates the due claims (never twice). The choice between open, overdue, paid and cancelled claims is always visible above the list; heading and count show the same scope. If the cash entry of a payment is cancelled, the claim is open again. You book payments on the claim or by bank statement import (CSV): the app matches receipts by member number or name when the amount matches exactly, and shows everything before booking. For arrears you remind in three levels yourself (reminder, dunning, final dunning); the member or parents receive a notification.',
   'In der Vereinskasse unter „Mitgliedsbeiträge“. Lege zuerst unter „Beitragsarten & Mitglieder“ die Beitragsarten (Betrag und Rhythmus) an und ordne sie den Mitgliedern zu. Mit „Sollstellung erzeugen“ entstehen die fälligen Forderungen (nie doppelt). Zahlungen buchst du an der Forderung oder per Kontoauszug-Import (CSV): die App ordnet Eingänge per Mitgliedsnummer oder Name zu, wenn der Betrag genau passt, und zeigt alles vor dem Buchen. Bei Rückständen erinnerst du in drei Stufen selbst (Erinnerung, Mahnung, letzte Mahnung); das Mitglied bzw. die Eltern bekommen eine Benachrichtigung.':
     'In the club treasury under “Membership fees”. First create the fee types (amount and interval) under “Fee types & members” and assign them to members. “Create claims” generates the due claims (never twice). You book payments on the claim or via bank statement import (CSV): the app matches entries by member number or name when the amount fits exactly, and shows everything before booking. For arrears you remind in three levels yourself (reminder, notice, final notice); the member or parents receive a notification.',
   'In der Vereinskasse unter „Planung“. Im Haushaltsplan legst du je Kasse und Jahr Planbeträge je Kategorie fest; „Soll-Ist“ zeigt mit Fortschrittsbalken, wie viel davon gebucht ist – ab 90 % wird gewarnt, über 100 % ist die Zeile rot. „Plan aus dem Vorjahr übernehmen“ spart Tipparbeit. Rücklagen sind zweckgebundene Töpfe innerhalb einer Kasse: Du kannst nur den freien Kassenbestand binden. Der Jahresabschluss zeigt die Einnahmen-Ausgaben-Rechnung nach den vier Bereichen mit Vorjahr, die Bestände und die Rücklagen; du kannst ihn als PDF oder CSV (für Excel) öffnen. Nach Jahresende schließt der Kassenwart das Jahr ab: Danach sind Buchungen, Stornos, Plan und Rücklagen dieses Jahres gesperrt, und nur die Administration kann es mit Begründung wieder öffnen. Die App führt eine einfache Einnahmen-Ausgaben-Rechnung und ersetzt keine Steuerberatung.':
@@ -3119,6 +3126,7 @@ export const en: Record<string, string> = {
   'Keine Auszahlungen.': 'No payments.',
   'Keine Benachrichtigungen.': 'No notifications.',
   'Keine Bestätigung': 'No receipt',
+  'Keine bezahlten Forderungen.': 'No paid claims.',
   'Keine Buchungen gefunden.': 'No entries found.',
   'Keine Buchungen.': 'No entries.',
   'Keine eigene Mannschaft': 'Not one of our teams',
@@ -3137,6 +3145,7 @@ export const en: Record<string, string> = {
   'Keine offenen Aufgaben.': 'No open tasks.',
   'Keine offenen Beitrittsanfragen.': 'No open join requests.',
   'Keine offenen Entwürfe.': 'No open drafts.',
+  'Keine offenen Forderungen.': 'No open claims.',
   'Keine offenen Meldungen.': 'No open reports.',
   'Keine passenden Buchungen.': 'No matching entries.',
   'Keine passenden Dokumente.': 'No matching documents.',
@@ -3146,6 +3155,7 @@ export const en: Record<string, string> = {
   'Keine Rollen vergeben.': 'No roles assigned.',
   'Keine Scorerpunkte im Zeitraum.': 'No scorer points in this period.',
   'Keine Spiele in dieser Woche': 'No matches this week',
+  'Keine stornierten Forderungen.': 'No cancelled claims.',
   'keine Termine': 'no events',
   'Keine Termine an diesem Tag.': 'No events on this day.',
   'Keine Termine in den nächsten 30 Tagen.': 'No events in the next 30 days.',
@@ -3158,6 +3168,7 @@ export const en: Record<string, string> = {
   'Keine Trainings in den nächsten 7 Tagen.': 'No training sessions in the next 7 days.',
   'Keine Trainings oder Heimspiele an diesem Tag.':
     'No training sessions or home matches on this day.',
+  'Keine überfälligen Forderungen.': 'No overdue claims.',
   'Keine Übungen in dieser Kategorie.': 'No exercises in this category.',
   'Keine Umfragen.': 'No polls.',
   'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.':
@@ -3836,6 +3847,7 @@ export const en: Record<string, string> = {
   'Offene Beträge für alle sichtbar': 'Outstanding amounts visible to everyone',
   'Offene Beträge in der Mannschaft': 'Outstanding amounts on the team',
   'Offene Beträge sichtbar': 'Outstanding amounts visible',
+  'Offene Forderungen': 'Open claims',
   'Offene Posten': 'Open items',
   'Offene Umfragen erscheinen auf der Startseite im Band „Offen“ – tippe sie an und antworte direkt – und unter „Verein → Umfragen“.':
     'Open polls appear on the home screen in the “Open” band – tap one and answer right there – and under “Club → Polls”.',
@@ -4488,6 +4500,7 @@ export const en: Record<string, string> = {
   'Storniert: {0}': 'Cancelled: {0}',
   'Stornierte anzeigen': 'Show cancelled',
   'Stornierte ausblenden': 'Hide cancelled',
+  'Stornierte Forderungen': 'Cancelled claims',
   'Stornierte zeigen': 'Show reversed',
   Storno: 'Cancellation',
   Strafe: 'Fine',
@@ -4716,6 +4729,7 @@ export const en: Record<string, string> = {
   Überblick: 'Overview',
   überfällig: 'overdue',
   Überfällig: 'Overdue',
+  'Überfällige Forderungen': 'Overdue claims',
   Übernehmen: 'Apply',
   'Übernimmt {0}': '{0} is taking it',
   Überschneidung: 'Overlap',
