@@ -48,3 +48,35 @@ Stand: 19.10.2026. **Belastbarkeit:** Recherche über Websuche; die Seiten der A
 - [BFV-Team-App im App Store](https://apps.apple.com/DE/app/id1403863269) · [BFV-Team-App für Trainer (Handout)](https://78424.coco-online.de/uploads/91871746437773-hIRnETLT/20211015handout-bfv-team-app-fur-trainer.pdf) · [Elektronischer Spielbericht ab 2020](https://kreis4.fvn.de/media/elektronischer_spielbericht-ab2020.pdf) · [TEAMPUNKT-Funktionen (DFB)](https://portal.dfbnet.org/fileadmin/content/downloads/TEAMPUNKT/190320_TEAMPUNKT_Features_final_small.pdf)
 - [SpielerPlus: Import BFV](https://support.spielerplus.de/hc/en-us/articles/37358866741137--Import-dates-from-the-Bavarian-Football-Association-into-TeamPlus) · [SpielerPlus: Kalender-URL (.ics)](https://support.spielerplus.de/hc/en-us/articles/37058387865489-Import-events-with-calendar-URL-ics-into-TeamPlus) · [SpielerPlus: Spielplan-Import Deutschland](https://support.spielerplus.de/hc/en-us/articles/27303971916561--Schedule-Import-for-German-Soccer-Teams-Easily-Import-Match-Dates-into-TeamPlus) · [handball.net: automatischer Import in SpielerPlus](https://www.handball.net/news/spielerplus-automatischer-import-spielplaene-direkt-verknuepfen)
 - [Spond: Import fotball.no](https://help.spond.com/app/en/articles/129669-import-matches-from-handball-no-and-fotball-no)
+
+## 5. Welche Exporte DFBnet bereitstellt (Recherche 19.10.2026)
+
+**Grenze:** DFBnet liegt hinter Anmeldung. Ich konnte nur öffentliche Hilfeseiten, Handbücher und Verbandsunterlagen über die Suche lesen (die Seiten selbst waren nicht abrufbar) und mich nicht anmelden. Echte Dateien und Spaltenüberschriften lassen sich nur mit einem DFBnet-Zugang prüfen (siehe Abschnitt 6).
+
+| Modul / Stelle | Export | Format | Hinweise | Quelle |
+| -------------- | ------ | ------ | -------- | ------ |
+| **Spielplan einer Staffel** (Ergebnismeldung, Spielplan) | Schaltfläche „Export“ | **CSV** (Standarddateiname `spielplan.csv`), „Drucken“ erzeugt **PDF** | Dieselben Angaben wie die Bildschirmansicht, **ohne Ergebnisse**; Spaltenüberschriften laut Hilfe „selbsterklärend“, **keine Spaltenbeschreibung veröffentlicht** | DFBnet-Onlinehilfe |
+| **Vereinsspielplan** (Sicht des Vereins) | CSV mit Zeitraumauswahl (Hilfe von 2012) | CSV | In der aktuellen Hilfe zur Vereinssicht des Staffelleiters ist CSV **nicht** möglich, nur PDF; welcher Zugang den Vereins-CSV heute noch hat, ist offen | Release-Hinweis 2012, aktuelle Hilfe |
+| **DFBnet Verein** (Vereinsverwaltung) | Mein Portal › Administration › Import/Export › Export | **CSV** (Semikolon): Adressdaten (Mitglieder, Firmen, Kontakte, Private Adressen), Mitgliederlisten, Kontenlisten | Import höchstens 1.000 Datensätze je Datei (DFB-Testseite); Feldzuordnung als Profil speicherbar; Dokumente von 2007–2021, Menüs können abweichen | DFBnet-Verein-Handbuch, DFB-Confluence |
+| **DFB-Statistik** (Mitgliederzahlen) | Drucken / Export | **PDF** oder **CSV** | Vereinsname, DFBnet-Vereinsnummer, Gesamt-Mitgliederzahl | Anleitung 2021 |
+| **Mannschaftsmeldung** | **Upload** (nicht Export) | CSV, Semikolon oder Komma: Vereinsnummer, Mannschaftsnummer, Staffelnummer, optional Schlüsselzahl | Dient dem Zuordnen von Mannschaften zur Staffel | DFBnet-FAQ Spielplanung |
+| **Spielbericht Online / elektronischer Spielbericht** | kein Datei-Export belegt | – | Bearbeitung nur durch den angesetzten Schiedsrichter mit eigenem DFBnet-Zugang, **nach** dem Spiel; Vereine melden Ergebnis, Aufstellung über Verbands-Apps | Landesverbands-Anleitungen |
+| **Vereinsmeldebogen, Spielberechtigungsliste, Pass-Online** | **kein Export belegt** | – | Vereine pflegen eigene Daten mit Vereinsnummer und Anmeldung; Download der Spielberechtigungsliste nicht gefunden | Landesverbands-Unterlagen |
+| **FUSSBALL.DE** (öffentlich) | **Widgets** (JavaScript-Einbettung); iCal für Mannschaften **nicht bestätigt** | JS-Snippet | kein JSON/REST belegt | FUSSBALL.DE-Dokumentation |
+| **BFV-Team-App** (Bayern) | iCal-Abo je Mannschaft („iCal Subscription“) | iCalendar | von SpielerPlus-Hilfe beschrieben; nur für Bayern belegt | SpielerPlus-Hilfe |
+| **DFBnet-App** | Ergebnis-Ticker, Spielbericht, Ansetzung | – | Ticker-Ergebnis kann in die Ergebnismeldung übernommen werden | App-Store |
+
+**Fazit:** Verlässlich belegt sind **CSV-Exporte** (Spielplan der Staffel, Mitglieder- und Adresslisten im Vereinsverwaltungs-Modul) und **PDF**. Es gibt **keinen belegten Export** für Ergebnisse, Spielberichte, Aufstellungen, Spielberechtigungsliste, Pässe oder Tabellen. **iCal** kommt nur aus Verbands-Apps (Bayern) bzw. ist bei FUSSBALL.DE unbestätigt. Ein **maschinenlesbarer Zugang** (API) ist nicht belegt.
+
+## 6. Was zu prüfen ist (mit DFBnet-Zugang)
+
+1. Aus dem **eigenen DFBnet-Zugang** je einen Export ziehen (anonymisieren, wo Personen drin sind): Staffel-Spielplan (CSV), Vereinsspielplan (falls vorhanden), Mitglieder- und Adressliste (DFBnet Verein), DFB-Statistik. **Spaltenüberschriften, Trennzeichen, Zeichensatz und Datumsformat** festhalten.
+2. Auf FUSSBALL.DE bzw. in der Landesverbands-App prüfen, ob für die eigene Mannschaft ein **iCal-/Kalenderlink** angeboten wird (Menü der Mannschaft).
+3. Beim Landesverband (Spielbetrieb/DFBnet-Support) nachfragen: gibt es **weitere Exporte** (Ergebnisse, Spielberechtigungsliste) und eine **Schnittstelle für Vereinssoftware**?
+4. Mit den echten Dateien den vorhandenen **Spielplan-Import** (Paket I) gegen das Original testen und die Spaltenvorbelegung festschreiben (laut `SPIELPLAN-IMPORT.md` ist das Exportformat bisher nicht verifiziert).
+
+## Weitere Quellen (Abschnitt 5)
+
+- [DFBnet-Onlinehilfe: Spielplan](https://portal.dfbnet.org/de/service/online-hilfe/meisterschaft/spielplanbearbeitung/spielplan) · [Vereinssicht des Staffelleiters](https://portal.dfbnet.org/de/service/online-hilfe/ergebnismeldung/staffelleiter/vereinssicht) · [FAQ Spielplanung](https://portal.dfbnet.org/de/service/faq/spielplanung) · [Release DFBnet Spielplanung 4.20](https://portal.dfbnet.org/fileadmin/content/downloads/freigabe/msb/121022-DFBnet-Spielplanung-4.20.pdf)
+- [Anwender-Handbuch DFBnet Verein](https://portal.dfbnet.org/fileadmin/content/downloads/handbuecher/DFBnetVerein_Handbuch-Admin.pdf) · [Import/Export DFBnet Verein (DFB-Testseite)](https://intg-confluence.dfbnet.org/pages/viewpage.action?pageId=40792081) · [CSV-Datenimport 2007](https://www.berliner-fussball.de/fileadmin/files/Dateien/Spielbetrieb/DFBnet_Vereinsverwaltung_CSV_Import_2007.pdf) · [DFB-Statistik-Anleitung 2021](https://portal.dfbnet.org/fileadmin/content/downloads/DFBnet_Verein/DFBnetVerein_Anleitung_DFB-Statistik_NEU.pdf)
+- [HFV-Info: Module für Vereine](https://epub.sub.uni-hamburg.de/epub/volltexte/2025/191227/pdf/HFV_Info_Nr.33_12.pdf) · [Spielbericht Online (SFV)](https://www.sfv-online.de/fileadmin/content/PDFs/DFBnet/Spielbericht_Online/Spielbericht_Online_Anleitung_Schiedsrichter.pdf) · [DFBnet-App](https://apps.apple.com/app/id424424865)
