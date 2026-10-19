@@ -1,6 +1,6 @@
 /**
  * Gemeinsame Bausteine der eigenen Bereiche „Admin-Verwaltung“ (violett) und „Vereinskasse“ (blau), Paket AV:
- * Kopfband mit „Beenden“, untere Leiste mit beschrifteten Reitern, Kategorien mit farbigen Untergruppen.
+ * Kopfband mit „Zur App“, untere Leiste mit beschrifteten Reitern, Kategorien mit farbigen Untergruppen.
  */
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -26,7 +26,7 @@ export const AreaTabsContext = createContext<AreaTab[]>([]);
 
 /**
  * Desktop (Paket DT3): statt Kopfband und unterer Leiste eine schlanke Zeile mit Bereichsname (Farbe nur als
- * Akzentstrich), den Unterbereichen als Reitern und „Beenden“.
+ * Akzentstrich), den Unterbereichen als Reitern und „Zur App“.
  */
 function DesktopAreaBar({ tone, title }: { tone: AreaTone; title: string }) {
   const { colors, isDark } = useTheme();
@@ -102,7 +102,9 @@ function DesktopAreaBar({ tone, title }: { tone: AreaTone; title: string }) {
         }}
       >
         <Ionicons name="close-circle-outline" size={18} color={colors.onSurface} />
-        <Text style={{ color: colors.onSurface, fontSize: 13, fontWeight: '700' }}>Beenden</Text>
+        <Text style={{ color: colors.onSurface, fontSize: 13, fontWeight: '700' }}>
+          {t('Zur App')}
+        </Text>
       </Pressable>
     </View>
   );
@@ -159,7 +161,9 @@ function AreaBand({ tone, title, subtitle }: { tone: AreaTone; title: string; su
         }}
       >
         <Ionicons name="close-circle-outline" size={20} color={c.onContainer} />
-        <Text style={{ color: c.onContainer, fontSize: 13.5, fontWeight: '800' }}>Beenden</Text>
+        <Text style={{ color: c.onContainer, fontSize: 13.5, fontWeight: '800' }}>
+          {t('Zur App')}
+        </Text>
       </Pressable>
     </View>
   );

@@ -70,8 +70,11 @@ export function CrumbLine({ parents }: { parents: Crumb[] }) {
   );
 }
 
-/** Pfad als Pillen; die letzte Stufe ist die aktuelle Seite. */
-export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
+/**
+ * Pfad als Pillen. Mit `current` (Standard) ist die letzte Stufe die aktuelle Seite; ohne steht der Seitentitel
+ * schon groß darüber und der Pfad zeigt nur die übergeordneten Stufen.
+ */
+export function Breadcrumbs({ crumbs, current = true }: { crumbs: Crumb[]; current?: boolean }) {
   const { colors, spacing, radii } = useTheme();
   const [open, setOpen] = useState(false);
   const { shown, hidden } = collapseCrumbs(crumbs);
@@ -111,7 +114,7 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
       pills.push(sep('s-more'));
     }
     const label = c.label;
-    if (i === lastIndex) {
+    if (current && i === lastIndex) {
       pills.push(
         <View
           key={`c${i}`}
@@ -278,8 +281,9 @@ export function SubHeader({ route, options, prefix = '' }: HeaderProps) {
     );
   return (
     <View style={{ paddingTop: insets.top, backgroundColor: colors.background }}>
-      <AppHeader title={TAB_LABELS[section]} />
-      <Breadcrumbs crumbs={crumbs} />
+      {/* Der konkrete Seitentitel steht vollständig groß, der Bereich klein darüber; der Pfad zeigt nur die Stufen davor */}
+      <AppHeader title={title} subtitle={t(TAB_LABELS[section])} />
+      <Breadcrumbs crumbs={crumbs.slice(0, -1)} current={false} />
     </View>
   );
 }

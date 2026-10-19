@@ -23,6 +23,7 @@ import {
   Loading,
   Screen,
   Section,
+  SidePanel,
   T,
   TextField,
 } from '@/components/ui';
@@ -284,11 +285,18 @@ export default function ClubFeesScreen() {
                         },
                       ]}
                     />
-                    {f.dues
-                      .filter((d) => d.id === open)
-                      .map((d) => (
-                        <Card key={d.id}>{renderActions(d)}</Card>
-                      ))}
+                    {(() => {
+                      const chosen = f.dues.find((d) => d.id === open);
+                      return (
+                        <SidePanel
+                          visible={!!chosen}
+                          onClose={() => setOpen(null)}
+                          title={chosen ? `${chosen.personName} · ${chosen.periodLabel}` : ''}
+                        >
+                          {chosen ? renderActions(chosen) : null}
+                        </SidePanel>
+                      );
+                    })()}
                   </>
                 ) : (
                   <Card>

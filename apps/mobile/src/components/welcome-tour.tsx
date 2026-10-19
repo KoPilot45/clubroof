@@ -127,15 +127,13 @@ export function WelcomeTour({
               />
             ))}
           </View>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            {!last ? (
-              <Button style={{ flex: 1 }} label="Überspringen" variant="outline" onPress={close} />
-            ) : null}
+          {/* untereinander statt nebeneinander: „Überspringen“ bricht sonst bei 390 px um */}
+          <View style={{ gap: 8 }}>
             <Button
-              style={{ flex: 1 }}
               label={last ? 'Los geht’s' : 'Weiter'}
               onPress={last ? close : () => setIndex(index + 1)}
             />
+            {!last ? <Button label="Überspringen" variant="outline" onPress={close} /> : null}
           </View>
         </View>
       </View>

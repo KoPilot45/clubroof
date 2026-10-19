@@ -546,6 +546,99 @@ export function Stack({ children, gap = 14 }: { children: ReactNode; gap?: numbe
  * Blatt von unten (Bestätigung, Auswahl, Grund-Feld): Hintergrund abgedunkelt, Tippen daneben schließt.
  * Inhalt scrollt, wenn er höher als 85 % des Bildschirms wird.
  */
+/**
+ * Detailbereich am Desktop (U08): Seitenpanel von rechts über der Liste mit Schließen-Knopf, Esc schließt.
+ * Liste, Suche, Filter und Scrollposition dahinter bleiben unverändert; es gibt keinen zweiten, unabhängig
+ * scrollenden Bereich neben der Liste (Entscheidung 19.10.2026). Am Handy nicht verwenden (dort klappt der Eintrag auf).
+ */
+export function SidePanel({
+  visible,
+  onClose,
+  title,
+  children,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+}) {
+  const { colors, spacing } = useTheme();
+  // Esc schließt auch dann, wenn der Fokus noch in der Liste dahinter steht
+  useEffect(() => {
+    if (!visible || Platform.OS !== 'web') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [visible, onClose]);
+  return (
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
+      <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('Schließen')}
+          style={[StyleSheet.absoluteFill, { backgroundColor: colors.anstoss.scrim }]}
+          onPress={onClose}
+        />
+        <View
+          accessibilityViewIsModal
+          accessibilityLabel={title}
+          style={{
+            width: 480,
+            maxWidth: '100%',
+            height: '100%',
+            backgroundColor: colors.anstoss.sheet,
+            borderLeftWidth: 1,
+            borderColor: colors.anstoss.sheetBorder,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              paddingHorizontal: 24,
+              paddingTop: 20,
+              paddingBottom: 8,
+            }}
+          >
+            <T variant="headline" style={{ fontSize: 24, flex: 1 }} accessibilityRole="header">
+              {title}
+            </T>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('Schließen')}
+              onPress={onClose}
+              style={(state) => ({
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: webState(state).hovered ? colors.anstoss.overlay : 'transparent',
+              })}
+            >
+              <Ionicons name="close" size={22} color={colors.onSurface} />
+            </Pressable>
+          </View>
+          <ScrollView
+            contentContainerStyle={{
+              paddingHorizontal: 24,
+              paddingTop: spacing.sm,
+              gap: spacing.md,
+              paddingBottom: spacing.xxl,
+            }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {children}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export function Sheet({
   visible,
   onClose,

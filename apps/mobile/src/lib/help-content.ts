@@ -56,7 +56,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'admin-area',
         question: 'Wo finde ich die Verwaltung und die Vereinskasse?',
         answer:
-          'Unter „Mehr“ stehen direkt unter deinem Profil zwei Zugänge: „Admin-Verwaltung“ (violett) für alle mit Verwaltungsrechten und „Vereinskasse“ (blau) für alle mit Kassenzugriff. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Beenden“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Auswertung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.',
+          'Unter „Mehr“ stehen direkt unter deinem Profil zwei Zugänge: „Admin-Verwaltung“ (violett) für alle mit Verwaltungsrechten und „Vereinskasse“ (blau) für alle mit Kassenzugriff. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Zur App“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Auswertung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.',
       },
       {
         id: 'custom-roles',
@@ -739,7 +739,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'admin-start',
         question: 'Wo ist die Verwaltung?',
         answer:
-          'Über das Schild-Symbol oben rechts oder „Mehr → Verwaltung“. Mit „Beenden“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.',
+          'Über das Schild-Symbol oben rechts oder „Mehr → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.',
       },
       {
         id: 'admin-roles',

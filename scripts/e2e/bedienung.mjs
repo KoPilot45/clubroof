@@ -110,6 +110,59 @@ for (const width of [360, 390]) {
   ok((await page.getByLabel('Vorname').inputValue()) === 'Entwurf', 'Bleiben erhält die Eingabe');
 }
 
+// ── U08: Detail erscheint sofort sichtbar als Seitenpanel (1440 × 900) ────────
+{
+  const { page, goto, login } = await b.session('kasse', { width: 1440, height: 900 });
+  const due = (await api('/club-cash/fees?status=overdue', login.token)).dues[0];
+  await goto('/club-cash/fees');
+  await text(page, due.personName, { exact: true }).click();
+  const pay = page.getByText('Zahlung buchen', { exact: true }).filter({ visible: true }).first();
+  await pay.waitFor({ timeout: 10_000 });
+  const box = await pay.boundingBox();
+  ok(
+    box && box.y < 900,
+    `Beiträge: Aktion „Zahlung buchen“ sofort sichtbar (y = ${Math.round(box?.y ?? 0)})`,
+  );
+  const panel = page.getByLabel(`${due.personName} · ${due.periodLabel}`).first();
+  ok(await panel.isVisible(), 'Beiträge: Seitenpanel nennt den Datensatz');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(500);
+  ok(!(await pay.isVisible()), 'Beiträge: Esc schließt das Panel, Liste bleibt');
+
+  const entry = (await api('/club-cash/entries', login.token))[0];
+  await goto('/club-cash/entries');
+  await text(page, entry.purpose, { exact: true }).click();
+  const entryPanel = page.getByLabel(entry.counterparty ?? entry.purpose, { exact: true }).first();
+  await entryPanel.waitFor({ timeout: 10_000 });
+  const pbox = await entryPanel.boundingBox();
+  ok(
+    pbox && pbox.y < 100 && pbox.x > 800,
+    `Kassenbuch: Seitenpanel rechts, ohne Scrollen sichtbar (x = ${Math.round(pbox?.x ?? 0)}, y = ${Math.round(pbox?.y ?? 0)})`,
+  );
+}
+
+// ── U03: Aufgabentitel vollständig, „Überspringen“ einzeilig, „Zur App“ ───────
+for (const width of [360, 390]) {
+  const { page, goto } = await b.session('trainer', { width, height: 800, tour: true });
+  await goto('/');
+  const skip = text(page, 'Überspringen', { exact: true });
+  await skip.waitFor({ timeout: 20_000 });
+  await page.waitForTimeout(800);
+  const sbox = await skip.boundingBox();
+  ok(
+    sbox && sbox.height < 30,
+    `Tour ${width} px: „Überspringen“ steht in einer Zeile (Höhe ${Math.round(sbox?.height ?? 0)})`,
+  );
+  await skip.click();
+  await goto('/absences/new');
+  const title = page.getByRole('heading', { name: 'Abwesenheit eintragen' }).first();
+  await title.waitFor({ timeout: 15_000 });
+  const tbox = await title.boundingBox();
+  ok(
+    tbox && tbox.x >= 0 && tbox.x + tbox.width <= width,
+    `Unterseite ${width} px: Titel „Abwesenheit eintragen“ vollständig sichtbar`,
+  );
+}
 // ── U10: Fensterbreite wechseln, ohne dass eine Ansicht leer wird ────────────
 {
   const { page, goto } = await b.session('trainer', { width: 1500, height: 900 });

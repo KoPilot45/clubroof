@@ -15,6 +15,7 @@ import {
   ErrorNotice,
   Loading,
   Screen,
+  SidePanel,
   T,
   TextField,
 } from '@/components/ui';
@@ -250,11 +251,18 @@ export default function ClubCashEntriesScreen() {
               },
             ]}
           />
-          {entries.data
-            .filter((e) => e.id === open)
-            .map((e) => (
-              <Card key={e.id}>{renderDetail(e)}</Card>
-            ))}
+          {(() => {
+            const chosen = entries.data.find((e) => e.id === open);
+            return (
+              <SidePanel
+                visible={!!chosen}
+                onClose={() => setOpen(null)}
+                title={chosen ? (chosen.counterparty ?? chosen.purpose) : ''}
+              >
+                {chosen ? renderDetail(chosen) : null}
+              </SidePanel>
+            );
+          })()}
         </>
       ) : null}
       {desktop
