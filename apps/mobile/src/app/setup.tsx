@@ -14,7 +14,19 @@ import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { ClubroofLogo } from '@/components/brand-header';
 import { ClubColorPicker } from '@/components/club-color';
-import { ChoiceCard, NumberStepper, WizardShell, useWizardDraft } from '@/components/wizard';
+import {
+  ChoiceCard,
+  LaterHint,
+  ModeChoice,
+  NumberStepper,
+  OptionCard,
+  RuleList,
+  SummaryList,
+  WhyBox,
+  WizardShell,
+  useWizardDraft,
+  type SetupMode,
+} from '@/components/wizard';
 import {
   Button,
   Card,
@@ -32,8 +44,105 @@ import { useSession } from '@/lib/session';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { pickFile, type PickedFile } from '@/lib/upload';
 
-/** Zahl der Schritte ohne Willkommen und Abschluss (siehe docs/PAKETE.md, Paket E). */
-const TOTAL = 12;
+type StepKey =
+  | 'welcome'
+  | 'size'
+  | 'name'
+  | 'details'
+  | 'venue'
+  | 'rooms'
+  | 'surface'
+  | 'logo'
+  | 'color'
+  | 'units'
+  | 'season'
+  | 'board'
+  | 'team-modules'
+  | 'club-modules'
+  | 'members'
+  | 'comms'
+  | 'account'
+  | 'password'
+  | 'security'
+  | 'summary';
+
+/** Ausführlich: alle Schritte (Paket E2); Schnellstart: nur das Nötigste, Empfehlungen sind vorbelegt. */
+const FULL: StepKey[] = [
+  'welcome',
+  'size',
+  'name',
+  'details',
+  'venue',
+  'rooms',
+  'surface',
+  'logo',
+  'color',
+  'units',
+  'season',
+  'board',
+  'team-modules',
+  'club-modules',
+  'members',
+  'comms',
+  'account',
+  'password',
+  'security',
+  'summary',
+];
+const QUICK: StepKey[] = [
+  'welcome',
+  'name',
+  'venue',
+  'rooms',
+  'surface',
+  'logo',
+  'color',
+  'units',
+  'account',
+  'password',
+  'security',
+  'summary',
+];
+
+/** Aufgaben im Vorstand: Rolle der App, Beschriftung und Abteilung, in der die Rolle gilt */
+const BOARD_ROLES: { key: string; role: string; label: string; unit?: 'youth' }[] = [
+  { key: 'chair', role: 'board', label: 'Vorsitzende' },
+  { key: 'youth', role: 'youth_director', label: 'Jugendleitung', unit: 'youth' },
+  { key: 'treasurer', role: 'club_treasurer', label: 'Kassenwart' },
+  { key: 'secretary', role: 'member_admin', label: 'Schriftführer' },
+  { key: 'groundskeeper', role: 'facility_manager', label: 'Platzwart' },
+  { key: 'auditor', role: 'cash_auditor', label: 'Kassenprüfer' },
+];
+type BoardEntry = { name: string; email: string };
+
+const SEASON_STARTS: { value: string; label: string; text: string }[] = [
+  { value: '7', label: 'Juli', text: '1. Juli bis 30. Juni – üblich im Fußball' },
+  { value: '8', label: 'August', text: '1. August bis 31. Juli' },
+  { value: '9', label: 'September', text: '1. September bis 31. August' },
+  { value: '1', label: 'Januar', text: 'Kalenderjahr, 1. Januar bis 31. Dezember' },
+];
+const TIMEZONES: { value: string; label: string }[] = [
+  { value: 'Europe/Berlin', label: 'Deutschland' },
+  { value: 'Europe/Vienna', label: 'Österreich' },
+  { value: 'Europe/Zurich', label: 'Schweiz' },
+];
+const VISIBILITIES: {
+  value: 'club' | 'team_and_coaches' | 'coaches_only';
+  label: string;
+  text: string;
+}[] = [
+  {
+    value: 'club',
+    label: 'Alle im Verein',
+    text: 'Name, E-Mail und Telefon sind im ganzen Verein sichtbar',
+  },
+  {
+    value: 'team_and_coaches',
+    label: 'Mannschaft und Trainer',
+    text: 'Sichtbar für die eigene Mannschaft und alle Trainer',
+  },
+  { value: 'coaches_only', label: 'Nur Trainer', text: 'Nur das Trainerteam sieht Kontaktdaten' },
+];
 
 const SURFACES: { value: PitchSurface; label: string }[] = [
   { value: 'grass', label: 'Rasen' },
@@ -124,27 +233,58 @@ const emptyVenue = (): VenueDraft => ({
 
 type Draft = {
   step: number;
+  flow: SetupMode;
+  /** Größe des Vereins vorbelegt Aufbau und Funktionen (optional) */
+  size: 'single' | 'several' | 'large' | null;
   name: string;
   shortName: string;
   /** Kürzel; leer = Vorgabe aus den Initialen des Kurznamens */
   code: string;
   venues: VenueDraft[];
   color: ClubColorKey;
+  colorMode: 'light' | 'dark' | 'system';
   orgMode: 'single' | 'split';
   modules: string[];
+  foundedYear: string;
+  street: string;
+  postalCode: string;
+  city: string;
+  clubEmail: string;
+  clubPhone: string;
+  website: string;
+  timezone: string;
+  seasonStartMonth: string;
+  board: Record<string, BoardEntry>;
+  membersPlan: 'later' | 'import' | 'invite';
+  contactVisibility: 'club' | 'team_and_coaches' | 'coaches_only';
   firstName: string;
   lastName: string;
   email: string;
 };
 const INITIAL: Draft = {
   step: 0,
+  flow: 'quick',
+  size: null,
   name: '',
   shortName: '',
   code: '',
   venues: [emptyVenue()],
   color: 'green',
+  colorMode: 'system',
   orgMode: 'split',
   modules: [...RECOMMENDED],
+  foundedYear: '',
+  street: '',
+  postalCode: '',
+  city: '',
+  clubEmail: '',
+  clubPhone: '',
+  website: '',
+  timezone: 'Europe/Berlin',
+  seasonStartMonth: '7',
+  board: {},
+  membersPlan: 'later',
+  contactVisibility: 'team_and_coaches',
   firstName: '',
   lastName: '',
   email: '',
@@ -186,7 +326,7 @@ function Wizard({ demo }: { demo?: boolean }) {
     patch,
     loaded,
     clear,
-  } = useWizardDraft<Draft>(demo ? 'setupDraftDemo' : 'setupDraft', INITIAL);
+  } = useWizardDraft<Draft>(demo ? 'setupDraftDemo2' : 'setupDraft2', INITIAL);
   // Geheimnisse und Dateien bleiben im Speicher und nie im Entwurf
   const [token, setToken] = useState(demo ? 'demo' : '');
   const [password, setPassword] = useState('');
@@ -198,12 +338,10 @@ function Wizard({ demo }: { demo?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [invited, setInvited] = useState(0);
+  /** Nach „Ändern“ in der Zusammenfassung geht es von dort aus direkt dorthin zurück */
+  const [fromSummary, setFromSummary] = useState(false);
 
-  const step = d.step;
-  const go = (n: number) => {
-    setError(null);
-    patch({ step: n });
-  };
   const venues = d.venues;
   const setVenue = (i: number, p: Partial<VenueDraft>) =>
     patch({ venues: venues.map((v, j) => (j === i ? { ...v, ...p } : v)) });
@@ -215,9 +353,22 @@ function Wizard({ demo }: { demo?: boolean }) {
       modules: d.modules.includes(key) ? d.modules.filter((k) => k !== key) : [...d.modules, key],
     });
 
-  // Schritte ohne Inhalt überspringen (keine Plätze: kein Untergrund)
-  const next = () => go(step === 3 && !hasPitches ? 5 : step + 1);
-  const back = () => go(step === 5 && !hasPitches ? 3 : step - 1);
+  // Ohne Plätze entfällt der Untergrund
+  const keys = (d.flow === 'quick' ? QUICK : FULL).filter((k) => k !== 'surface' || hasPitches);
+  const step = Math.min(d.step, keys.length - 1);
+  const key = keys[step]!;
+  const summaryAt = keys.indexOf('summary');
+  const go = (n: number) => {
+    setError(null);
+    patch({ step: n });
+  };
+  const goKey = (k: StepKey) => {
+    setFromSummary(true);
+    go(keys.indexOf(k));
+  };
+  const next = () => (fromSummary ? (setFromSummary(false), go(summaryAt)) : go(step + 1));
+  const back = () =>
+    fromSummary ? (setFromSummary(false), go(summaryAt)) : go(Math.max(0, step - 1));
 
   const call = async (fn: () => Promise<void>, fallback: string) => {
     setBusy(true);
@@ -256,6 +407,51 @@ function Wizard({ demo }: { demo?: boolean }) {
       setProof({ email: d.email.trim().toLowerCase(), value: res.proof });
     }, 'Der Code konnte nicht geprüft werden.');
 
+  /** Vorstand einladen: Person anlegen, Rolle vergeben, Einladung senden – Fehler einzelner Einträge stoppen nichts */
+  const inviteBoard = async (accessToken: string): Promise<number> => {
+    let ok = 0;
+    let youthUnit: string | null = null;
+    try {
+      const overview = await request<{ orgUnits: { id: string; name: string }[] }>('/admin/teams', {
+        token: accessToken,
+      });
+      youthUnit = overview.orgUnits.find((u) => u.name === 'Jugend')?.id ?? null;
+    } catch {
+      // Jugendleitung gilt dann im ganzen Verein
+    }
+    for (const r of BOARD_ROLES) {
+      const entry = d.board[r.key];
+      if (!entry?.name.trim() || !entry.email.includes('@')) continue;
+      const parts = entry.name.trim().split(/\s+/);
+      const lastName = parts.length > 1 ? parts.pop()! : parts[0]!;
+      const firstName = parts.length ? parts.join(' ') : '–';
+      try {
+        const person = await request<{ id: string }>('/admin/members', {
+          method: 'POST',
+          token: accessToken,
+          body: { firstName, lastName, email: entry.email.trim() },
+        });
+        await request(`/admin/members/${person.id}/roles`, {
+          method: 'POST',
+          token: accessToken,
+          body:
+            r.unit === 'youth' && youthUnit
+              ? { roleKey: r.role, scopeType: 'org_unit', scopeId: youthUnit }
+              : { roleKey: r.role, scopeType: 'club' },
+        });
+        await request('/invitations/person', {
+          method: 'POST',
+          token: accessToken,
+          body: { personId: person.id, email: entry.email.trim(), send: true },
+        });
+        ok++;
+      } catch {
+        // später unter Verwaltung › Rollen & Aufgaben nachholen
+      }
+    }
+    return ok;
+  };
+
   const finish = () =>
     call(async () => {
       if (demo) {
@@ -265,6 +461,7 @@ function Wizard({ demo }: { demo?: boolean }) {
         setDone(true);
         return;
       }
+      const text = (v: string) => v.trim() || null;
       const body: SetupInput = {
         setupToken: token.trim(),
         emailProof: proof!.value,
@@ -273,6 +470,17 @@ function Wizard({ demo }: { demo?: boolean }) {
           shortName: d.shortName.trim(),
           shortCode: d.code || defaultClubCode(d.shortName.trim()),
           colorTheme: d.color,
+          colorMode: d.colorMode,
+          foundedYear: d.foundedYear ? Number(d.foundedYear) : null,
+          street: text(d.street),
+          postalCode: text(d.postalCode),
+          city: text(d.city),
+          email: text(d.clubEmail),
+          phone: text(d.clubPhone),
+          website: text(d.website),
+          timezone: d.timezone,
+          seasonStartMonth: Number(d.seasonStartMonth),
+          defaultContactVisibility: d.contactVisibility,
         },
         orgUnits:
           d.orgMode === 'split'
@@ -318,6 +526,7 @@ function Wizard({ demo }: { demo?: boolean }) {
           // später unter Verwaltung › Verein & Design nachholen
         }
       }
+      setInvited(await inviteBoard(login.token));
       clear();
       setPassword('');
       setPassword2('');
@@ -332,7 +541,13 @@ function Wizard({ demo }: { demo?: boolean }) {
     return (
       <WizardShell
         title="Dein Verein ist eingerichtet"
-        explanation="Das Wichtigste steht. Hier sind sinnvolle nächste Schritte – alles lässt sich später in der Verwaltung ändern."
+        explanation={
+          invited > 0
+            ? t(
+                `Das Wichtigste steht, ${invited} Einladungen sind unterwegs. Hier sind sinnvolle nächste Schritte – alles lässt sich später in der Verwaltung ändern.`,
+              )
+            : 'Das Wichtigste steht. Hier sind sinnvolle nächste Schritte – alles lässt sich später in der Verwaltung ändern.'
+        }
         nextLabel={demo ? 'Verlassen' : 'Zur App'}
         onNext={() => router.replace(demo ? '/login' : '/')}
         header={
@@ -343,6 +558,15 @@ function Wizard({ demo }: { demo?: boolean }) {
       >
         {demo ? null : (
           <View style={{ gap: 10 }}>
+            {d.modules.includes('club_cash') ? (
+              <ChoiceCard
+                icon="wallet"
+                title="Vereinskasse einrichten"
+                text="Konten, Beitragsarten und Haushaltsplan"
+                selected={false}
+                onPress={() => router.replace('/club-cash')}
+              />
+            ) : null}
             <ChoiceCard
               icon="shirt"
               title="Erste Mannschaft anlegen"
@@ -353,7 +577,8 @@ function Wizard({ demo }: { demo?: boolean }) {
             <ChoiceCard
               icon="people"
               title="Mitglieder importieren"
-              text="Aus einer CSV-Datei"
+              text="Aus Excel oder CSV, mit Vorlage zum Herunterladen"
+              badge={d.membersPlan === 'import' ? 'Geplant' : undefined}
               selected={false}
               onPress={() => router.replace('/admin/import')}
             />
@@ -368,6 +593,7 @@ function Wizard({ demo }: { demo?: boolean }) {
               icon="person-add"
               title="Personen einladen"
               text="Link oder QR-Code teilen"
+              badge={d.membersPlan === 'invite' ? 'Geplant' : undefined}
               selected={false}
               onPress={() => router.replace('/admin/invites')}
             />
@@ -377,19 +603,19 @@ function Wizard({ demo }: { demo?: boolean }) {
     );
 
   const shell = {
-    step,
-    total: TOTAL,
+    step: step + 1,
+    total: keys.length,
     onBack: back,
     onNext: next,
     error,
   } as const;
 
   // ── Willkommen ───────────────────────────────────────────────────────────
-  if (step === 0)
+  if (key === 'welcome')
     return (
       <WizardShell
         title="Willkommen bei Clubroof"
-        explanation="In wenigen Minuten richtest du deinen Verein ein: Name, Anlage, Farbe, Funktionen und dein Konto. Du kannst jederzeit zurück, und alles lässt sich später in der Verwaltung ändern."
+        explanation="In wenigen Minuten richtest du deinen Verein ein. Du kannst jederzeit zurück, und alles lässt sich später in der Verwaltung ändern."
         nextLabel="Los geht’s"
         nextDisabled={token.trim().length === 0}
         busy={busy}
@@ -421,18 +647,92 @@ function Wizard({ demo }: { demo?: boolean }) {
           Den Einrichtungscode bekommst du von Clubroof, sobald die Zahlung eingegangen ist. Er gilt
           einmal.
         </T>
+        <T variant="section">Wie möchtest du vorgehen?</T>
+        <ModeChoice value={d.flow} onChange={(flow) => patch({ flow })} />
+        <T variant="section">Gut zu haben</T>
+        <RuleList
+          rules={[
+            'Logo des Vereins (quadratisches PNG)',
+            'Mitgliederliste als Excel- oder CSV-Datei',
+            'Namen der Plätze und Kabinen eurer Sportanlage',
+          ]}
+        />
       </WizardShell>
     );
 
-  // ── 1 Name ───────────────────────────────────────────────────────────────
-  if (step === 1)
+  // ── Größe (optional) ─────────────────────────────────────────────────────
+  if (key === 'size')
+    return (
+      <WizardShell
+        {...shell}
+        title="Wie groß ist euer Verein?"
+        explanation="Das belegt Aufbau und Funktionen sinnvoll vor – du kannst alles in den nächsten Schritten ändern."
+        onSkip={next}
+        onBack={() => go(0)}
+      >
+        {(
+          [
+            {
+              v: 'single' as const,
+              icon: 'person' as const,
+              title: 'Ein Team',
+              text: 'Eine Gruppe, wenige Funktionen',
+            },
+            {
+              v: 'several' as const,
+              icon: 'people' as const,
+              title: 'Mehrere Abteilungen',
+              text: 'Jugend und Senioren mit eigener Leitung',
+            },
+            {
+              v: 'large' as const,
+              icon: 'business' as const,
+              title: 'Großverein',
+              text: 'Viele Mannschaften, Kasse, Forum und Platzbelegung',
+            },
+          ] as const
+        ).map((o) => (
+          <OptionCard
+            key={o.v}
+            icon={o.icon}
+            title={o.title}
+            text={o.text}
+            recommended={o.v === 'several'}
+            selected={d.size === o.v}
+            onPress={() =>
+              patch({
+                size: o.v,
+                orgMode: o.v === 'single' ? 'single' : 'split',
+                modules:
+                  o.v === 'single'
+                    ? ['squad', 'team_cash', 'team_tasks', 'parent_access']
+                    : o.v === 'large'
+                      ? [
+                          ...RECOMMENDED,
+                          'club_cash',
+                          'forum',
+                          'facility_booking',
+                          'referees',
+                          'equipment',
+                          'sponsors',
+                        ]
+                      : [...RECOMMENDED],
+              })
+            }
+          />
+        ))}
+        <LaterHint where="Verwaltung › Module" />
+      </WizardShell>
+    );
+
+  // ── Name ─────────────────────────────────────────────────────────────────
+  if (key === 'name')
     return (
       <WizardShell
         {...shell}
         title="Wie heißt euer Verein?"
         explanation="Der volle Name steht auf Dokumenten, der Kurzname in der Kopfzeile und auf dem Wappen."
         nextDisabled={d.name.trim().length < 3 || d.shortName.trim().length < 2}
-        onBack={() => go(0)}
         hint="Das änderst du später unter Verwaltung › Verein & Design."
       >
         <TextField
@@ -460,15 +760,86 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
 
-  // ── 2 Spielstätte ────────────────────────────────────────────────────────
-  if (step === 2)
+  // ── Euer Verein ──────────────────────────────────────────────────────────
+  if (key === 'details')
+    return (
+      <WizardShell
+        {...shell}
+        title="Euer Verein"
+        explanation="Anschrift und Kontakt – sie erscheinen auf Spendenbescheinigungen und im Impressum. Alles ist freiwillig."
+        onSkip={next}
+      >
+        <View style={{ gap: 12 }}>
+          <TextField
+            label="Gründungsjahr"
+            kind="code"
+            value={d.foundedYear}
+            onChangeText={(v) => patch({ foundedYear: v.replace(/\D/g, '').slice(0, 4) })}
+            maxLength={4}
+          />
+          <TextField
+            label="Straße und Hausnummer"
+            value={d.street}
+            onChangeText={(street) => patch({ street })}
+            maxLength={120}
+          />
+          <TextField
+            label="Postleitzahl"
+            kind="code"
+            value={d.postalCode}
+            onChangeText={(v) => patch({ postalCode: v.replace(/\D/g, '').slice(0, 5) })}
+            maxLength={5}
+          />
+          <TextField
+            label="Ort"
+            value={d.city}
+            onChangeText={(city) => patch({ city })}
+            maxLength={80}
+          />
+          <TextField
+            label="Kontakt-E-Mail"
+            kind="email"
+            value={d.clubEmail}
+            onChangeText={(clubEmail) => patch({ clubEmail })}
+            maxLength={120}
+          />
+          <TextField
+            label="Telefon"
+            value={d.clubPhone}
+            onChangeText={(clubPhone) => patch({ clubPhone })}
+            maxLength={40}
+          />
+          <TextField
+            label="Webseite"
+            value={d.website}
+            onChangeText={(website) => patch({ website })}
+            maxLength={200}
+            placeholder={t('z. B. https://www.sv-gruen-weiss.example')}
+          />
+          <ChoiceChips
+            label="Land und Zeitzone"
+            options={TIMEZONES}
+            selected={[d.timezone]}
+            onToggle={(timezone) => patch({ timezone })}
+          />
+        </View>
+        <WhyBox>
+          Mit der Anschrift füllt Clubroof Spendenbescheinigungen aus; die Zeitzone bestimmt Fristen
+          und Terminzeiten.
+        </WhyBox>
+        <LaterHint where="Verwaltung › Verein & Design" />
+      </WizardShell>
+    );
+
+  // ── Spielstätte ──────────────────────────────────────────────────────────
+  if (key === 'venue')
     return (
       <WizardShell
         {...shell}
         title="Wo spielt ihr?"
         explanation="Name und Adresse der Sportanlage. Sie erscheinen bei Terminen, mit Link zur Karten-App."
         nextDisabled={!venues[0]?.name.trim()}
-        onSkip={() => go(5)}
+        onSkip={() => go(keys.indexOf('logo'))}
         hint="Du kannst weitere Anlagen ergänzen und alles später in der Verwaltung ändern."
       >
         {venues.map((v, i) => (
@@ -509,14 +880,14 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
 
-  // ── 3 Plätze und Kabinen ─────────────────────────────────────────────────
-  if (step === 3)
+  // ── Plätze und Kabinen ───────────────────────────────────────────────────
+  if (key === 'rooms')
     return (
       <WizardShell
         {...shell}
         title="Plätze und Kabinen"
         explanation="Wie viele Plätze und Kabinen gibt es je Anlage? Sie lassen sich später umbenennen."
-        onSkip={() => go(5)}
+        onSkip={() => go(keys.indexOf('logo'))}
       >
         {venues
           .filter((v) => v.name.trim())
@@ -547,8 +918,8 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
 
-  // ── 4 Untergrund ─────────────────────────────────────────────────────────
-  if (step === 4)
+  // ── Untergrund ───────────────────────────────────────────────────────────
+  if (key === 'surface')
     return (
       <WizardShell
         {...shell}
@@ -583,8 +954,8 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
 
-  // ── 5 Logo ───────────────────────────────────────────────────────────────
-  if (step === 5)
+  // ── Logo ─────────────────────────────────────────────────────────────────
+  if (key === 'logo')
     return (
       <WizardShell
         {...shell}
@@ -623,8 +994,8 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
 
-  // ── 6 Farbe ──────────────────────────────────────────────────────────────
-  if (step === 6)
+  // ── Farbe und Darstellung ────────────────────────────────────────────────
+  if (key === 'color')
     return (
       <ThemeProvider clubColor={d.color}>
         <WizardShell
@@ -635,12 +1006,24 @@ function Wizard({ demo }: { demo?: boolean }) {
         >
           <ClubColorPicker value={d.color} onChange={(c) => patch({ color: c })} />
           <ColorPreview shortName={d.shortName} code={d.code || defaultClubCode(d.shortName)} />
+          {d.flow === 'full' ? (
+            <ChoiceChips
+              label="Standard-Darstellung"
+              options={[
+                { value: 'system' as const, label: 'Wie Gerät' },
+                { value: 'light' as const, label: 'Hell' },
+                { value: 'dark' as const, label: 'Dunkel' },
+              ]}
+              selected={[d.colorMode]}
+              onToggle={(colorMode) => patch({ colorMode })}
+            />
+          ) : null}
         </WizardShell>
       </ThemeProvider>
     );
 
-  // ── 7 Bereiche ───────────────────────────────────────────────────────────
-  if (step === 7)
+  // ── Bereiche ─────────────────────────────────────────────────────────────
+  if (key === 'units')
     return (
       <WizardShell
         {...shell}
@@ -666,21 +1049,93 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
 
-  // ── 8 / 9 Wofür nutzt ihr Clubroof ───────────────────────────────────────
-  if (step === 8 || step === 9) {
-    const keys = step === 8 ? TEAM_MODULES : CLUB_MODULES;
+  // ── Saison ───────────────────────────────────────────────────────────────
+  if (key === 'season')
     return (
       <WizardShell
         {...shell}
-        title={step === 8 ? 'Wofür nutzt ihr Clubroof – in der Mannschaft?' : 'Und im Verein?'}
+        title="Wann beginnt eure Saison?"
+        explanation="Mannschaften, Beiträge und Statistiken laufen je Saison. Der Beginn legt fest, wann sie wechselt."
+      >
+        {SEASON_STARTS.map((o) => (
+          <OptionCard
+            key={o.value}
+            icon="calendar"
+            title={o.label}
+            text={o.text}
+            recommended={o.value === '7'}
+            selected={d.seasonStartMonth === o.value}
+            onPress={() => patch({ seasonStartMonth: o.value })}
+          />
+        ))}
+        <WhyBox>
+          Zum Saisonwechsel übernimmt Clubroof Mannschaften samt Kasse und Verlauf in die neue
+          Saison.
+        </WhyBox>
+        <LaterHint where="Verwaltung › Mannschaften & Saison" />
+      </WizardShell>
+    );
+
+  // ── Vorstand und Aufgaben ────────────────────────────────────────────────
+  if (key === 'board')
+    return (
+      <WizardShell
+        {...shell}
+        title="Vorstand und Aufgaben"
+        explanation="Wer soll von Anfang an dabei sein? Jede Person bekommt ihre Rolle und eine Einladung per E-Mail, sobald der Verein eingerichtet ist."
+        onSkip={next}
+      >
+        {BOARD_ROLES.map((r) => (
+          <Card key={r.key} style={{ gap: 10 }}>
+            <T variant="label" style={{ fontWeight: '700' }}>
+              {r.label}
+            </T>
+            <TextField
+              label="Name"
+              value={d.board[r.key]?.name ?? ''}
+              onChangeText={(name) =>
+                patch({ board: { ...d.board, [r.key]: { email: '', ...d.board[r.key], name } } })
+              }
+              maxLength={80}
+            />
+            <TextField
+              label="E-Mail-Adresse"
+              kind="email"
+              value={d.board[r.key]?.email ?? ''}
+              onChangeText={(email) =>
+                patch({ board: { ...d.board, [r.key]: { name: '', ...d.board[r.key], email } } })
+              }
+              maxLength={120}
+            />
+          </Card>
+        ))}
+        <WhyBox>
+          Vertretung ist wichtig: Empfohlen sind mindestens zwei Personen mit
+          Administrationsrechten. Weitere Rollen vergibst du später unter Verwaltung › Rollen &
+          Aufgaben.
+        </WhyBox>
+      </WizardShell>
+    );
+
+  // ── Wofür nutzt ihr Clubroof ─────────────────────────────────────────────
+  if (key === 'team-modules' || key === 'club-modules') {
+    const list = key === 'team-modules' ? TEAM_MODULES : CLUB_MODULES;
+    return (
+      <WizardShell
+        {...shell}
+        title={
+          key === 'team-modules'
+            ? 'Wofür nutzt ihr Clubroof – in der Mannschaft?'
+            : 'Und im Verein?'
+        }
         explanation={
-          step === 8
+          key === 'team-modules'
             ? 'Termine, News und Abwesenheiten sind immer dabei. Wähle, was eure Mannschaften zusätzlich brauchen.'
-            : 'Was soll der ganze Verein nutzen können? Empfohlenes ist vorausgewählt.'
+            : 'Was soll der ganze Verein nutzen können? Empfohlenes ist vorausgewählt. „Vereinskasse“ ist nur der Schalter – eingerichtet wird sie danach in einem eigenen Assistenten.'
         }
         hint="Funktionen aktivierst oder deaktivierst du später unter Verwaltung › Module."
       >
-        {MODULES.filter((m) => keys.includes(m.key)).map((m) => (
+        {MODULES.filter((m) => list.includes(m.key)).map((m) => (
           <ChoiceCard
             key={m.key}
             multi
@@ -696,8 +1151,74 @@ function Wizard({ demo }: { demo?: boolean }) {
     );
   }
 
-  // ── 10 Konto ─────────────────────────────────────────────────────────────
-  if (step === 10)
+  // ── Mitglieder ───────────────────────────────────────────────────────────
+  if (key === 'members')
+    return (
+      <WizardShell
+        {...shell}
+        title="Mitglieder"
+        explanation="Jetzt oder später: Wie kommen die Mitglieder in die App?"
+        onSkip={next}
+      >
+        <OptionCard
+          icon="time"
+          title="Später"
+          text="Du richtest zuerst Mannschaften ein und holst die Mitglieder danach dazu."
+          recommended
+          selected={d.membersPlan === 'later'}
+          onPress={() => patch({ membersPlan: 'later' })}
+        />
+        <OptionCard
+          icon="document-text"
+          title="Per Tabelle importieren"
+          text="Excel oder CSV mit Spaltenzuordnung, Vorschau und Dublettenprüfung – die Vorlage lädst du nach der Einrichtung herunter."
+          selected={d.membersPlan === 'import'}
+          onPress={() => patch({ membersPlan: 'import' })}
+        />
+        <OptionCard
+          icon="qr-code"
+          title="Per Code oder QR einladen"
+          text="Eltern und Spieler treten mit einem Link bei und werden von dir freigegeben."
+          selected={d.membersPlan === 'invite'}
+          onPress={() => patch({ membersPlan: 'invite' })}
+        />
+        <LaterHint where="Verwaltung › Importieren und Einladungen" />
+      </WizardShell>
+    );
+
+  // ── Kommunikation und Datenschutz ────────────────────────────────────────
+  if (key === 'comms')
+    return (
+      <WizardShell
+        {...shell}
+        title="Kommunikation und Datenschutz"
+        explanation="Wer sieht die Kontaktdaten neuer Personen? Jede Person kann das für sich ändern."
+      >
+        {VISIBILITIES.map((o) => (
+          <OptionCard
+            key={o.value}
+            icon="eye"
+            title={o.label}
+            text={o.text}
+            recommended={o.value === 'team_and_coaches'}
+            selected={d.contactVisibility === o.value}
+            onPress={() => patch({ contactVisibility: o.value })}
+          />
+        ))}
+        <T variant="section">Gut zu wissen</T>
+        <RuleList
+          rules={[
+            'News veröffentlichen Vorstand und Administration; Trainer schreiben für ihre Mannschaft.',
+            'Ruhezeiten und Erinnerungen stellt jede Person selbst unter Mehr › Benachrichtigungen ein.',
+            'Datenschutzerklärung und Impressum findest du in der App unter Mehr › Über Clubroof.',
+          ]}
+        />
+        <LaterHint where="Verwaltung › Verein & Design und Rollen & Aufgaben" />
+      </WizardShell>
+    );
+
+  // ── Konto ────────────────────────────────────────────────────────────────
+  if (key === 'account')
     return (
       <WizardShell
         {...shell}
@@ -764,8 +1285,8 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
 
-  // ── 11 Passwort ──────────────────────────────────────────────────────────
-  if (step === 11)
+  // ── Passwort ─────────────────────────────────────────────────────────────
+  if (key === 'password')
     return (
       <WizardShell
         {...shell}
@@ -812,29 +1333,96 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
 
-  // ── 12 Sicherheit ────────────────────────────────────────────────────────
+  // ── Sicherheit ───────────────────────────────────────────────────────────
+  if (key === 'security')
+    return (
+      <WizardShell
+        {...shell}
+        title="Zusätzlich absichern?"
+        explanation="Mit der Zwei-Faktor-Anmeldung braucht jede neue Anmeldung zusätzlich einen Code. Für das Administrationskonto empfehlen wir sie."
+        hint="Das betrifft nur neue Anmeldungen – dein jetziges Gerät bleibt angemeldet. Du richtest sie später unter Mehr › Konto & Einstellungen ein."
+      >
+        <Card style={{ gap: 10 }}>
+          <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+            <Ionicons name="shield-checkmark" size={28} color={colors.primaryText} />
+            <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
+              Empfehlung für das Administrationskonto
+            </T>
+          </View>
+          <T variant="caption">
+            Verwaltungsrechte schützen Daten aller Mitglieder. Ein zweiter Faktor (Authenticator-App
+            oder Code per E-Mail) verhindert, dass ein gestohlenes Passwort allein genügt.
+          </T>
+        </Card>
+      </WizardShell>
+    );
+
+  // ── Zusammenfassung ──────────────────────────────────────────────────────
+  const seasonLabel = SEASON_STARTS.find((o) => o.value === d.seasonStartMonth)?.label ?? '';
+  const boardCount = BOARD_ROLES.filter(
+    (r) => d.board[r.key]?.name.trim() && d.board[r.key]?.email.includes('@'),
+  ).length;
+  const rows: { label: string; value: string; key: StepKey }[] = [
+    {
+      label: 'Verein',
+      value: [d.name.trim(), d.shortName.trim()].filter(Boolean).join(' · '),
+      key: 'name',
+    },
+    {
+      label: 'Sportanlage',
+      value: venues
+        .filter((v) => v.name.trim())
+        .map((v) => v.name.trim())
+        .join(' · '),
+      key: 'venue',
+    },
+    {
+      label: 'Aufbau',
+      value:
+        d.orgMode === 'split' ? t('Jugend und Senioren getrennt') : t('Eine gemeinsame Abteilung'),
+      key: 'units',
+    },
+    {
+      label: 'Funktionen',
+      value: t(`${d.modules.length} gewählt`),
+      key: d.flow === 'full' ? 'team-modules' : 'units',
+    },
+    {
+      label: 'Konto',
+      value: [d.firstName.trim(), d.lastName.trim(), d.email.trim()].filter(Boolean).join(' · '),
+      key: 'account',
+    },
+  ];
+  if (d.flow === 'full')
+    rows.splice(
+      2,
+      0,
+      {
+        label: 'Anschrift',
+        value: [d.street.trim(), [d.postalCode.trim(), d.city.trim()].filter(Boolean).join(' ')]
+          .filter(Boolean)
+          .join(', '),
+        key: 'details',
+      },
+      { label: 'Saison', value: t(`Beginn im ${t(seasonLabel)}`), key: 'season' },
+      { label: 'Vorstand', value: boardCount ? t(`${boardCount} Einladungen`) : '', key: 'board' },
+    );
   return (
     <WizardShell
       {...shell}
-      title="Zusätzlich absichern?"
-      explanation="Mit der Zwei-Faktor-Anmeldung braucht jede neue Anmeldung zusätzlich einen Code. Für das Administrationskonto empfehlen wir sie."
+      title="Alles bereit?"
+      explanation="Prüfe die Angaben. Mit „Ändern“ springst du in den Schritt. Erst jetzt wird der Verein eingerichtet."
       nextLabel="Einrichtung abschließen"
       onNext={() => void finish()}
       busy={busy}
-      hint="Das betrifft nur neue Anmeldungen – dein jetziges Gerät bleibt angemeldet. Du richtest sie später unter Mehr › Konto & Einstellungen ein."
     >
-      <Card style={{ gap: 10 }}>
-        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-          <Ionicons name="shield-checkmark" size={28} color={colors.primaryText} />
-          <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
-            Empfehlung für das Administrationskonto
-          </T>
-        </View>
-        <T variant="caption">
-          Verwaltungsrechte schützen Daten aller Mitglieder. Ein zweiter Faktor (Authenticator-App
-          oder Code per E-Mail) verhindert, dass ein gestohlenes Passwort allein genügt.
-        </T>
-      </Card>
+      <SummaryList rows={rows.map((r) => ({ ...r, onEdit: () => goKey(r.key) }))} />
+      <RuleList
+        rules={[
+          'Danach bist du als Administration angemeldet und siehst sinnvolle nächste Schritte.',
+          'Alles lässt sich später in der Verwaltung ändern.',
+        ]}
+      />
     </WizardShell>
   );
 }

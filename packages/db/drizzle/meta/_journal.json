@@ -442,6 +442,13 @@
       "when": 1792394546542,
       "tag": "0062_mannschaft_antwortregeln",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1792396304276,
+      "tag": "0063_verein_kontaktdaten_standard",
+      "breakpoints": true
     }
   ]
 }

@@ -159,12 +159,73 @@ describe.skipIf(!url)('Ersteinrichtung', () => {
           },
         ],
         modules: ['polls', 'forum'],
+        club: {
+          ...input('').club,
+          foundedYear: 1920,
+          street: 'Waldweg 1',
+          postalCode: '12345',
+          city: 'Neustadt',
+          email: 'Info@FC-Neustadt.example',
+          website: 'https://fc-neustadt.example',
+          timezone: 'Europe/Vienna',
+          colorMode: 'dark',
+          seasonStartMonth: 8,
+          defaultContactVisibility: 'coaches_only',
+        },
       },
     });
     expect(ok.statusCode, ok.body).toBe(201);
     const login = ok.json<LoginResponse>();
     expect(login.me.club).toMatchObject({ name: 'FC Neustadt 1920', colorTheme: 'red' });
     expect(login.me.user.email).toBe('erika@fc-neustadt.example');
+
+    // Angaben zum Verein (E2, Stufe 2): Anschrift, Zeitzone, Darstellung, Saisonbeginn, Standard der Kontaktdaten
+    const [club] = await conn.sql`select * from clubs`;
+    expect(club).toMatchObject({
+      founded_year: 1920,
+      street: 'Waldweg 1',
+      postal_code: '12345',
+      city: 'Neustadt',
+      email: 'info@fc-neustadt.example',
+      website: 'https://fc-neustadt.example',
+      timezone: 'Europe/Vienna',
+      color_mode: 'dark',
+      default_contact_visibility: 'coaches_only',
+    });
+    const [season] = await conn.sql`select starts_on::text, ends_on::text from seasons`;
+    expect(season!.starts_on).toMatch(/-08-01$/);
+    expect(season!.ends_on).toMatch(/-07-31$/);
+    const [owner] = await conn.sql`select contact_visibility from persons`;
+    expect(owner!.contact_visibility).toBe('coaches_only');
+    // Neue Personen übernehmen den Standard des Vereins
+    const created = await app.inject({
+      method: 'POST',
+      url: '/admin/members',
+      headers: { authorization: `Bearer ${login.token}` },
+      payload: { firstName: 'Neu', lastName: 'Mitglied' },
+    });
+    expect(created.statusCode, created.body).toBe(201);
+    const [neu] =
+      await conn.sql`select contact_visibility from persons where last_name = 'Mitglied'`;
+    expect(neu!.contact_visibility).toBe('coaches_only');
+    // … und der Standard lässt sich später in der Verwaltung ändern
+    const changed = await app.inject({
+      method: 'PATCH',
+      url: '/admin/club',
+      headers: { authorization: `Bearer ${login.token}` },
+      payload: {
+        defaultContactVisibility: 'club',
+        city: 'Neustadt a. d. Aisch',
+        phone: '01234 5678',
+      },
+    });
+    expect(changed.statusCode, changed.body).toBe(200);
+    expect(changed.json()).toMatchObject({
+      defaultContactVisibility: 'club',
+      city: 'Neustadt a. d. Aisch',
+      phone: '01234 5678',
+      street: 'Waldweg 1',
+    });
 
     // Fulladmin darf verwalten; optionale Module warten im Update-Center
     const modules = await app.inject({

@@ -539,6 +539,18 @@ export async function getMember(
 
 const clean = (v: string | null | undefined) => (v === undefined ? undefined : v?.trim() || null);
 
+/** Standard-Sichtbarkeit der Kontaktdaten neuer Personen (Vereinseinstellung, Paket E2) */
+export async function defaultContactVisibility(
+  db: Db | Tx,
+  clubId: string,
+): Promise<'club' | 'team_and_coaches' | 'coaches_only'> {
+  const [club] = await db
+    .select({ v: s.clubs.defaultContactVisibility })
+    .from(s.clubs)
+    .where(eq(s.clubs.id, clubId));
+  return club?.v === 'club' || club?.v === 'coaches_only' ? club.v : 'team_and_coaches';
+}
+
 export async function createMember(
   db: Db,
   actor: Actor,
@@ -550,6 +562,7 @@ export async function createMember(
     .insert(s.persons)
     .values({
       clubId: actor.club.id,
+      contactVisibility: await defaultContactVisibility(db, actor.club.id),
       firstName: input.firstName.trim(),
       lastName: input.lastName.trim(),
       birthDate: input.birthDate ?? null,

@@ -26,7 +26,7 @@ import { and, desc, eq, inArray } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden } from '../errors';
-import { currentTeams, syncFutureParticipation } from './admin';
+import { currentTeams, defaultContactVisibility, syncFutureParticipation } from './admin';
 import { AREA_HANDLERS, handlerFor, isSimpleArea } from './import-areas';
 import {
   EMAIL,
@@ -841,6 +841,7 @@ export async function commitImport(
   const updated = { n: 0 };
   const run = await db.transaction(async (tx) => {
     // Personen dieser Datei, für „Elternteil von“ (Name oder Nummer → Person)
+    const visibility = await defaultContactVisibility(tx, actor.club.id);
     const newByName = new Map<string, string>();
     const newByNumber = new Map<string, string>();
     const parentLinks: { guardianId: string; childRef: string }[] = [];
@@ -878,6 +879,7 @@ export async function commitImport(
           .insert(s.persons)
           .values({
             clubId: actor.club.id,
+            contactVisibility: visibility,
             firstName: p.firstName,
             lastName: p.lastName,
             birthDate: p.birthDate,

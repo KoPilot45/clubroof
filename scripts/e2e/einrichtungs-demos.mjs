@@ -12,7 +12,7 @@ const { page } = a;
 const next = (label = 'Weiter') =>
   page.getByRole('button', { name: label, exact: true }).filter({ visible: true }).first().click();
 
-// ── Verein ────────────────────────────────────────────────────────────────
+// ── Verein: Schnellstart ───────────────────────────────────────────────────
 await a.goto('/demo/club');
 await text(page, 'Willkommen bei Clubroof').waitFor({ timeout: 20_000 });
 await next('Los geht’s');
@@ -33,10 +33,6 @@ await text(page, 'Eure Vereinsfarbe').waitFor();
 await next();
 await text(page, 'Wie ist euer Verein aufgebaut?').waitFor();
 await next();
-await text(page, 'Wofür nutzt ihr Clubroof – in der Mannschaft?').waitFor();
-await next();
-await text(page, 'Und im Verein?').waitFor();
-await next();
 await text(page, 'Dein Konto').waitFor();
 await page.getByLabel('Vorname').fill('Erika');
 await page.getByLabel('Nachname').fill('Muster');
@@ -51,12 +47,62 @@ await page.getByLabel('Passwort', { exact: true }).fill('ein-sicheres-passwort-1
 await page.getByLabel('Passwort wiederholen').fill('ein-sicheres-passwort-1');
 await next();
 await text(page, 'Zusätzlich absichern?').waitFor();
+await next();
+await text(page, 'Alles bereit?').waitFor();
+// „Ändern“ springt in den Schritt und danach zurück zur Zusammenfassung
+await page
+  .getByRole('button', { name: /Verein ändern/ })
+  .first()
+  .click();
+await text(page, 'Wie heißt euer Verein?').waitFor();
+await next();
+await text(page, 'Alles bereit?').waitFor();
+ok(true, 'Vereins-Demo (Schnellstart): Zusammenfassung mit „Ändern“');
 await next('Einrichtung abschließen');
 await text(page, 'Dein Verein ist eingerichtet').waitFor({ timeout: 10_000 });
-ok(true, 'Vereins-Demo: alle Schritte bis zum Abschluss');
+ok(true, 'Vereins-Demo (Schnellstart): alle Schritte bis zum Abschluss');
 await button(page, 'Verlassen').click();
 await page.waitForURL(/\/login/, { timeout: 10_000 });
 ok(page.url().includes('/login'), 'Vereins-Demo: „Verlassen“ führt zur Anmeldung');
+
+// ── Verein: ausführlich (mit den Schritten Größe, Euer Verein, Saison, Vorstand, Mitglieder, Kommunikation) ──
+await a.goto('/demo/club');
+await text(page, 'Willkommen bei Clubroof').waitFor({ timeout: 20_000 });
+await page.getByRole('radio', { name: /Ausführlich/ }).click();
+await next('Los geht’s');
+await text(page, 'Wie groß ist euer Verein?').waitFor();
+await page.getByRole('radio', { name: /Großverein/ }).click();
+await next();
+await text(page, 'Wie heißt euer Verein?').waitFor();
+await page.getByLabel('Vereinsname').fill('TSV Beispiel 1900');
+await page.getByLabel('Kurzname').fill('TSV Beispiel');
+await next();
+await text(page, 'Euer Verein').waitFor();
+await page.getByLabel('Ort').fill('Beispielstadt');
+await next();
+await text(page, 'Wo spielt ihr?').waitFor();
+await page.getByLabel('Name der Anlage', { exact: false }).first().fill('Stadion');
+// Plätze, Untergrund, Logo, Farbe, Aufbau
+for (let i = 0; i < 3; i++) await next();
+await next('Ohne Logo weiter');
+await next();
+await next();
+await text(page, 'Wann beginnt eure Saison?').waitFor();
+await next();
+await text(page, 'Vorstand und Aufgaben').waitFor();
+await next();
+await text(page, 'Wofür nutzt ihr Clubroof – in der Mannschaft?').waitFor();
+await next();
+await text(page, 'Und im Verein?').waitFor();
+await next();
+await text(page, 'Jetzt oder später')
+  .waitFor({ timeout: 2000 })
+  .catch(() => undefined);
+await next();
+await text(page, 'Kommunikation und Datenschutz').waitFor();
+await next();
+await text(page, 'Dein Konto').waitFor();
+ok(true, 'Vereins-Demo (ausführlich): neue Schritte durchlaufen');
 
 // ── Mannschaft: Schnellstart ───────────────────────────────────────────────
 await a.goto('/demo/team');
