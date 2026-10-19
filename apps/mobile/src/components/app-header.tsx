@@ -8,6 +8,7 @@ import { useReduceMotion, useScrollY } from '@/lib/motion';
 import { formatLongDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
+import { useIsCompactDesktop, useIsDesktop } from '@/lib/layout';
 import { mediaUri } from '@/lib/upload';
 import { Crest, shadowStyle, T, type IconName } from './ui';
 import { Text } from './app-text';
@@ -87,6 +88,40 @@ export function HeaderButton({
 }
 
 /**
+ * Desktop (Paket DT3): Suchfeld in der Kopfzeile statt Lupe, Kürzel `/`; Mitteilungen stehen in der Seitenleiste.
+ */
+export function SearchField({ onPress, overlay }: { onPress: () => void; overlay?: boolean }) {
+  const { colors } = useTheme();
+  const compact = useIsCompactDesktop();
+  const fg = overlay ? ON_POSTER_SOFT : colors.onSurfaceMuted;
+  return (
+    <Pressable
+      accessibilityRole="search"
+      accessibilityLabel={t('Suche')}
+      onPress={onPress}
+      style={{
+        width: compact ? 220 : 300,
+        minHeight: 40,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: overlay ? 'rgba(255,255,255,0.35)' : colors.border,
+        backgroundColor: overlay ? 'rgba(255,255,255,0.14)' : colors.surface,
+      }}
+    >
+      <Ionicons name="search-outline" size={18} color={fg} />
+      <Text style={{ flex: 1, fontSize: 14, color: fg }}>{t('Suchen …')}</Text>
+      <Text style={{ fontSize: 12, fontWeight: '700', color: fg }} verbatim>
+        /
+      </Text>
+    </Pressable>
+  );
+}
+
+/**
  * Kopfzeile aller Tabs: Vereinslogo (Kreis), darüber/darunter Untertitel und Titel bzw. Begrüßung
  * (lange Namen brechen auf höchstens zwei Zeilen um), optional Suche, Glocke mit Zähler.
  * Die Lupe öffnet die globale Suche (`/search`), sofern `onSearch` nichts anderes vorgibt.
@@ -105,6 +140,7 @@ export function AppHeader({
   onSearch?: () => void;
 }) {
   const { me, api } = useSignedIn();
+  const desktop = useIsDesktop();
   const insets = useSafeAreaInsets();
   const { colors, spacing, sizes } = useTheme();
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
@@ -175,19 +211,25 @@ export function AppHeader({
           </T>
         </Animated.View>
       </View>
-      <HeaderButton
-        glass={overlay}
-        icon="search-outline"
-        label="Suche"
-        onPress={onSearch ?? (() => router.push('/search'))}
-      />
-      <HeaderButton
-        glass={overlay}
-        icon="notifications-outline"
-        label={unread ? `Benachrichtigungen, ${unread} ungelesen` : 'Benachrichtigungen'}
-        count={unread}
-        onPress={() => router.push('/notifications')}
-      />
+      {desktop ? (
+        <SearchField onPress={onSearch ?? (() => router.push('/search'))} overlay={overlay} />
+      ) : (
+        <>
+          <HeaderButton
+            glass={overlay}
+            icon="search-outline"
+            label="Suche"
+            onPress={onSearch ?? (() => router.push('/search'))}
+          />
+          <HeaderButton
+            glass={overlay}
+            icon="notifications-outline"
+            label={unread ? `Benachrichtigungen, ${unread} ungelesen` : 'Benachrichtigungen'}
+            count={unread}
+            onPress={() => router.push('/notifications')}
+          />
+        </>
+      )}
     </View>
   );
 }

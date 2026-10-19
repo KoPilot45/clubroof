@@ -8,7 +8,8 @@ import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppHeader, HeaderButton } from '@/components/app-header';
+import { AppHeader, HeaderButton, SearchField } from '@/components/app-header';
+import { useIsDesktop } from '@/lib/layout';
 import { ListRow, Sheet, T } from '@/components/ui';
 import {
   breadcrumbsFor,
@@ -35,6 +36,38 @@ function go(href: Crumb['href']) {
 function goBack(crumbs: Crumb[]) {
   if (router.canGoBack()) router.back();
   else router.replace((crumbs[crumbs.length - 2]?.href ?? '/') as never);
+}
+
+/**
+ * Desktop (Paket DT3): Pfad als Text mit „›“ (ohne die aktuelle Seite); steht über dem Seitentitel. Ohne
+ * übergeordnete Stufe gibt es stattdessen den Zurück-Pfeil.
+ */
+export function CrumbLine({ parents }: { parents: Crumb[] }) {
+  const { colors } = useTheme();
+  return (
+    <View
+      role="navigation"
+      accessibilityLabel={t('Pfad')}
+      style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}
+    >
+      {parents.map((c, i) => (
+        <View key={`${c.label}${i}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          {i > 0 ? (
+            <Ionicons name="chevron-forward" size={12} color={colors.onSurfaceMuted} />
+          ) : null}
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={t(c.label)}
+            onPress={() => go(c.href)}
+          >
+            <T variant="caption" color={colors.primaryText} style={{ fontWeight: '700' }}>
+              {shortCrumb(c.label)}
+            </T>
+          </Pressable>
+        </View>
+      ))}
+    </View>
+  );
 }
 
 /** Pfad als Pillen; die letzte Stufe ist die aktuelle Seite. */
@@ -163,6 +196,39 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
   );
 }
 
+/** Desktop (Paket DT3): Seitenname als Titel, darüber der Pfad bzw. der Zurück-Pfeil. */
+export function PageTitle({ crumbs, title }: { crumbs: Crumb[]; title: string }) {
+  const parents = crumbs.slice(0, -1);
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingHorizontal: 28,
+        paddingTop: 16,
+        paddingBottom: 4,
+      }}
+    >
+      {parents.length === 0 ? (
+        <HeaderButton icon="arrow-back" label="Zurück" onPress={() => goBack(crumbs)} />
+      ) : null}
+      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+        {parents.length > 0 ? <CrumbLine parents={parents} /> : null}
+        <T
+          variant="headline"
+          accessibilityRole="header"
+          numberOfLines={1}
+          style={{ fontSize: 28, lineHeight: 32 }}
+        >
+          {title}
+        </T>
+      </View>
+      <SearchField onPress={() => router.push('/search')} />
+    </View>
+  );
+}
+
 /** Einfacher Kopf für öffentliche Seiten ohne Anmeldung (Einladungscode, Über Clubroof). */
 function PublicHeader({ title }: { title: string }) {
   const { colors, spacing } = useTheme();
@@ -194,6 +260,7 @@ function PublicHeader({ title }: { title: string }) {
 /** Kopf für `Stack`-Screens (`header: (p) => <SubHeader {...p} />`). */
 export function SubHeader({ route, options, prefix = '' }: HeaderProps) {
   const session = useSession();
+  const desktop = useIsDesktop();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const title = options.title ?? route.name;
@@ -203,6 +270,12 @@ export function SubHeader({ route, options, prefix = '' }: HeaderProps) {
     (route.params ?? {}) as Record<string, string>,
     title,
   );
+  if (desktop)
+    return (
+      <View style={{ paddingTop: insets.top, backgroundColor: colors.background }}>
+        <PageTitle crumbs={crumbs} title={title} />
+      </View>
+    );
   return (
     <View style={{ paddingTop: insets.top, backgroundColor: colors.background }}>
       <AppHeader title={TAB_LABELS[section]} />

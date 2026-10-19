@@ -4,11 +4,11 @@
  */
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/app-text';
-import { Breadcrumbs } from '@/components/sub-header';
+import { Breadcrumbs, PageTitle } from '@/components/sub-header';
 import { FloatingNav } from '@/components/tab-bar';
 import { GradientFill, Screen, T, TileGrid, type IconName } from '@/components/ui';
 import { breadcrumbsFor } from '@/lib/breadcrumbs';
@@ -20,6 +20,93 @@ import { useTheme } from '@/lib/theme';
 import { webState } from '@/lib/web-state';
 
 export type AreaTone = 'violet' | 'blue';
+
+/** Reiter des Bereichs für die schlanke Kopfzeile am Desktop (Paket DT3); die Layouts stellen sie bereit. */
+export const AreaTabsContext = createContext<AreaTab[]>([]);
+
+/**
+ * Desktop (Paket DT3): statt Kopfband und unterer Leiste eine schlanke Zeile mit Bereichsname (Farbe nur als
+ * Akzentstrich), den Unterbereichen als Reitern und „Beenden“.
+ */
+function DesktopAreaBar({ tone, title }: { tone: AreaTone; title: string }) {
+  const { colors, isDark } = useTheme();
+  const tabs = useContext(AreaTabsContext);
+  const [fill, on] = AREA_ACCENT[tone][isDark ? 'dark' : 'light'];
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 12,
+        paddingHorizontal: 28,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.anstoss.divider,
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View style={{ width: 4, height: 22, borderRadius: 2, backgroundColor: fill }} />
+        <T variant="headline" accessibilityRole="header" style={{ fontSize: 22, lineHeight: 26 }}>
+          {title}
+        </T>
+      </View>
+      <View role="tablist" style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+        {tabs.map((i) => (
+          <Pressable
+            key={i.key}
+            accessibilityRole="tab"
+            accessibilityLabel={i.label}
+            aria-selected={i.active}
+            onPress={i.onPress}
+            style={(state) => ({
+              minHeight: 36,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              paddingHorizontal: 12,
+              borderRadius: 18,
+              backgroundColor: i.active
+                ? fill
+                : webState(state).hovered
+                  ? colors.anstoss.overlay
+                  : 'transparent',
+            })}
+          >
+            <Ionicons name={i.icon} size={16} color={i.active ? on : colors.onSurface} />
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: i.active ? '800' : '600',
+                color: i.active ? on : colors.onSurface,
+              }}
+            >
+              {i.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t(`${title} beenden`)}
+        onPress={() => router.dismissTo('/mehr')}
+        style={{
+          minHeight: 36,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+          paddingHorizontal: 12,
+          borderRadius: 18,
+          borderWidth: 1,
+          borderColor: colors.border,
+        }}
+      >
+        <Ionicons name="close-circle-outline" size={18} color={colors.onSurface} />
+        <Text style={{ color: colors.onSurface, fontSize: 13, fontWeight: '700' }}>Beenden</Text>
+      </Pressable>
+    </View>
+  );
+}
 
 /** Kopfband des Bereichs: Farbe des Bereichs, Titel, aktuelle Seite und „Beenden“. */
 function AreaBand({ tone, title, subtitle }: { tone: AreaTone; title: string; subtitle?: string }) {
@@ -103,6 +190,7 @@ export function AreaHeader({
   prefix?: string;
 }) {
   const { colors } = useTheme();
+  const desktop = useIsDesktop();
   const title = options.title ?? route.name;
   const isRoot = roots.includes(route.name);
   const crumbs = isRoot
@@ -123,8 +211,14 @@ export function AreaHeader({
       })();
   return (
     <View style={{ backgroundColor: colors.background }}>
-      <AreaBand tone={tone} title={areaTitle} />
-      {isRoot ? null : (
+      {desktop ? (
+        <DesktopAreaBar tone={tone} title={areaTitle} />
+      ) : (
+        <AreaBand tone={tone} title={areaTitle} />
+      )}
+      {isRoot ? null : desktop ? (
+        <PageTitle crumbs={crumbs} title={title} />
+      ) : (
         <View style={{ paddingTop: 10 }}>
           <Breadcrumbs crumbs={crumbs} />
         </View>
@@ -167,59 +261,7 @@ export function AreaTabBar({
   useEffect(() => {
     if (desktop) onHeight(0);
   }, [desktop, onHeight]);
-  if (desktop)
-    return (
-      <View
-        role="tablist"
-        style={{
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          gap: 8,
-          paddingVertical: 10,
-          paddingHorizontal: 16,
-          borderTopWidth: 1,
-          borderTopColor: colors.anstoss.divider,
-          backgroundColor: colors.background,
-        }}
-      >
-        {items.map((i) => (
-          <Pressable
-            key={i.key}
-            accessibilityRole="tab"
-            accessibilityLabel={i.label}
-            aria-selected={i.active}
-            onPress={i.onPress}
-            style={(state) => ({
-              minHeight: 40,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-              paddingHorizontal: 16,
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: i.active ? fill : colors.border,
-              backgroundColor: i.active
-                ? fill
-                : webState(state).hovered
-                  ? colors.anstoss.overlay
-                  : 'transparent',
-            })}
-          >
-            <Ionicons name={i.icon} size={18} color={i.active ? on : colors.onSurface} />
-            <Text
-              style={{
-                fontSize: 13.5,
-                fontWeight: i.active ? '800' : '600',
-                color: i.active ? on : colors.onSurface,
-              }}
-            >
-              {i.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-    );
+  if (desktop) return null;
   return (
     <FloatingNav
       accent={{ fill, on }}

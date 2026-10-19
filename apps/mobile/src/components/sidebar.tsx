@@ -184,14 +184,6 @@ export function Sidebar() {
   });
   const tools: Entry[] = [
     {
-      key: 'search',
-      label: t('Suche'),
-      icon: 'search-outline',
-      active: inSearch,
-      shortcut: '/',
-      onPress: () => router.push('/search'),
-    },
-    {
       key: 'notifications',
       label: t('Mitteilungen'),
       icon: 'notifications-outline',
