@@ -449,6 +449,13 @@
       "when": 1792396304276,
       "tag": "0063_verein_kontaktdaten_standard",
       "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1792397240346,
+      "tag": "0064_kasse_gemeinnuetzig_mahnung",
+      "breakpoints": true
     }
   ]
 }

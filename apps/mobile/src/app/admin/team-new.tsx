@@ -1178,7 +1178,7 @@ function MinutesRow({
 }
 
 /** Mitglieder suchen und auswählen (noch ohne Mannschaft – gespeichert wird erst am Ende). */
-function PersonPicker({
+export function PersonPicker({
   selected,
   exclude,
   onChange,

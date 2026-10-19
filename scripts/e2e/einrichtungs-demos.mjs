@@ -1,4 +1,4 @@
-/** Einrichtungs-Demos (Verein, Mannschaft) = echte Assistenten ohne Speichern: komplett durchklicken bis „Verlassen“. */
+/** Einrichtungs-Demos (Verein, Mannschaft, Kasse) = echte Assistenten ohne Speichern: komplett durchklicken bis „Verlassen“. */
 import { button, launch, text } from '../lib/e2e.mjs';
 
 const b = await launch();
@@ -165,6 +165,64 @@ await text(page, 'Alles bereit?').waitFor();
 await next('Mannschaft anlegen');
 await text(page, 'Mannschaft angelegt').waitFor({ timeout: 10_000 });
 ok(true, 'Mannschafts-Demo (ausführlich): alle Schritte bis zum Abschluss');
+await button(page, 'Verlassen').click();
+await page.waitForURL(/\/login/, { timeout: 10_000 });
+
+// ── Kasse: Schnellstart ────────────────────────────────────────────────────
+await a.goto('/demo/cash');
+await text(page, 'Die Vereinskasse einrichten').waitFor({ timeout: 20_000 });
+await next();
+await text(page, 'Ist der Verein gemeinnützig?').waitFor();
+await page.getByText('Ja, gemeinnützig').click();
+await next();
+await text(page, 'Welche Konten und Kassen gibt es?').waitFor();
+await page.getByLabel('Anfangsbestand in €').fill('1500');
+await next();
+await text(page, 'Kategorien für Buchungen').waitFor();
+await next();
+await text(page, 'Mitgliedsbeiträge').waitFor();
+await button(page, 'Vorschläge einfügen').click();
+await next();
+await text(page, 'Wer führt die Kasse?').waitFor();
+await next();
+await text(page, 'Alles bereit?').waitFor();
+await page
+  .getByRole('button', { name: /Konten ändern/ })
+  .first()
+  .click();
+await text(page, 'Welche Konten und Kassen gibt es?').waitFor();
+await next();
+await text(page, 'Alles bereit?').waitFor();
+ok(true, 'Kassen-Demo (Schnellstart): Zusammenfassung mit „Ändern“');
+await next('Kasse einrichten');
+await text(page, 'Kasse eingerichtet').waitFor({ timeout: 10_000 });
+ok(true, 'Kassen-Demo (Schnellstart): alle Schritte bis zum Abschluss');
+await button(page, 'Verlassen').click();
+await page.waitForURL(/\/login/, { timeout: 10_000 });
+
+// ── Kasse: ausführlich ─────────────────────────────────────────────────────
+await a.goto('/demo/cash');
+await text(page, 'Die Vereinskasse einrichten').waitFor({ timeout: 20_000 });
+await page.getByText('Ausführlich', { exact: true }).first().click();
+await next();
+for (const title of [
+  'Ist der Verein gemeinnützig?',
+  'Welche Konten und Kassen gibt es?',
+  'Kategorien für Buchungen',
+  'Kostenstellen',
+  'Mitgliedsbeiträge',
+  'Wer zahlt welchen Beitrag?',
+  'Zahlungserinnerungen',
+  'Wer führt die Kasse?',
+  'Wer darf die Kasse einsehen?',
+]) {
+  await text(page, title).first().waitFor();
+  await next();
+}
+await text(page, 'Alles bereit?').waitFor();
+await next('Kasse einrichten');
+await text(page, 'Kasse eingerichtet').waitFor({ timeout: 10_000 });
+ok(true, 'Kassen-Demo (ausführlich): alle Schritte bis zum Abschluss');
 await button(page, 'Verlassen').click();
 await page.waitForURL(/\/login/, { timeout: 10_000 });
 

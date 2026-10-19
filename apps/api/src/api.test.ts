@@ -27,6 +27,7 @@ import type {
   ClubTeamGrants,
   ClubTaxInfo,
   ClubFeeAssignment,
+  ClubFeeRuleResult,
   ClubFeeImportPreview,
   ClubFees,
   ClubReserves,
@@ -7344,6 +7345,70 @@ describe.skipIf(!url)('API', () => {
       expect(reports.dues).toEqual([]);
       expect(reports.summary.openCents).toBeGreaterThan(0);
       await send('PUT', '/club-cash/visibility', admin.token, { visibility: 'treasury' });
+    });
+
+    it('Kassenassistent: Gemeinnützigkeit, Mahn-Einstellungen, Beiträge nach Regeln', async () => {
+      const { token } = await treasurer();
+      const player = await login('spieler');
+      const typ = await send<ClubFees>('POST', '/club-cash/fees/types', token, {
+        name: 'Regel-Test',
+        amountCents: 1000,
+        interval: 'yearly',
+      });
+      const typeId = typ.body.types.find((x) => x.name === 'Regel-Test')!.id;
+
+      const np = await send<ClubCash>('PUT', '/club-cash/nonprofit', token, { nonprofit: true });
+      expect(np.status).toBe(200);
+      expect(np.body.nonprofit).toBe(true);
+      expect(
+        (await send('PUT', '/club-cash/nonprofit', player.token, { nonprofit: false })).status,
+      ).toBe(403);
+
+      const rem = await send('PUT', '/club-cash/fees/reminder', token, {
+        days: 14,
+        text: 'Bitte bis Monatsende überweisen.',
+      });
+      expect(rem.status).toBe(200);
+      const fees = await send<ClubFees>('GET', '/club-cash/fees', token);
+      expect(fees.body.reminder).toEqual({ days: 14, text: 'Bitte bis Monatsende überweisen.' });
+      expect(
+        (await send('PUT', '/club-cash/fees/reminder', player.token, { days: 1, text: null }))
+          .status,
+      ).toBe(403);
+      await send('PUT', '/club-cash/fees/reminder', token, { days: 0, text: null });
+
+      // Regel „unter 1 Jahr“ trifft niemanden – Vorschau und Anlegen ändern nichts
+      const rules = [{ when: 'under_age', age: 1, feeTypeId: typeId }];
+      const preview = await send<ClubFeeRuleResult>(
+        'POST',
+        '/club-cash/fees/assign-by-rules',
+        token,
+        {
+          apply: false,
+          rules,
+        },
+      );
+      expect(preview.status).toBe(200);
+      expect(preview.body.created).toBeNull();
+      expect(preview.body.counts).toEqual([]);
+      const applied = await send<ClubFeeRuleResult>(
+        'POST',
+        '/club-cash/fees/assign-by-rules',
+        token,
+        {
+          apply: true,
+          rules,
+        },
+      );
+      expect(applied.body.created).toBe(0);
+      expect(
+        (
+          await send('POST', '/club-cash/fees/assign-by-rules', player.token, {
+            apply: false,
+            rules,
+          })
+        ).status,
+      ).toBe(403);
     });
 
     it('Beitragsart anlegen, Mitglied zuordnen, Sollstellung erzeugen (ohne Doppelte)', async () => {

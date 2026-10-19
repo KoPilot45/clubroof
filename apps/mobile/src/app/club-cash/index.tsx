@@ -341,6 +341,13 @@ export default function ClubCashScreen() {
                 {c.accounts.every((a) => a.archived) ? (
                   <Empty icon="wallet-outline" text="Noch kein Konto angelegt." />
                 ) : null}
+                {c.canManageFunds && c.accounts.every((a) => a.archived) ? (
+                  <Button
+                    label="Kasse einrichten"
+                    icon="construct"
+                    onPress={() => router.push('/club-cash/setup')}
+                  />
+                ) : null}
               </Card>
             </Section>
 

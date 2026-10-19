@@ -4,6 +4,7 @@ import {
   type ClubFeeGenerateResult,
   type ClubFeeImportPreview,
   type ClubFees,
+  type ClubFeeRuleResult,
 } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
@@ -23,6 +24,8 @@ import {
   remindAllOverdue,
   remindDue,
   updateFeeType,
+  assignByRules,
+  setReminderSettings,
 } from '../services/club-fees';
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -180,6 +183,44 @@ export const clubFeeRoutes: FastifyPluginAsyncZod = async (app) => {
     '/club-cash/fees/remind-overdue',
     async (request): Promise<{ reminded: number; withoutLogin: number }> =>
       remindAllOverdue(app.db, request.actor!, app.now()),
+  );
+
+  app.put(
+    '/club-cash/fees/reminder',
+    {
+      schema: {
+        body: z.object({
+          days: z.number().int().min(0).max(90),
+          text: z.string().max(500).nullable(),
+        }),
+      },
+    },
+    async (request): Promise<{ ok: true }> => {
+      await setReminderSettings(app.db, request.actor!, request.body, app.now());
+      return { ok: true };
+    },
+  );
+  app.post(
+    '/club-cash/fees/assign-by-rules',
+    {
+      schema: {
+        body: z.object({
+          apply: z.boolean(),
+          rules: z
+            .array(
+              z.object({
+                when: z.enum(['under_age', 'inactive', 'rest']),
+                age: z.number().int().min(1).max(99).optional(),
+                feeTypeId: z.uuid(),
+              }),
+            )
+            .min(1)
+            .max(3),
+        }),
+      },
+    },
+    async (request): Promise<ClubFeeRuleResult> =>
+      assignByRules(app.db, request.actor!, request.body, app.now()),
   );
 
   // ── CSV-Import vom Kontoauszug ───────────────────────────────────────────

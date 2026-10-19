@@ -224,6 +224,9 @@ export async function getClubCash(
     canManageFunds: actorCan(actor, 'clubcash.manage'),
     canAudit: actorCan(actor, 'clubcash.audit'),
     canChangeSettings: actorCan(actor, 'club.settings.manage'),
+    nonprofit:
+      (await db.select({ n: s.clubs.nonprofit }).from(s.clubs).where(eq(s.clubs.id, clubId)))[0]
+        ?.n ?? null,
     visibility: actor.club.clubCashVisibility as ClubCashVisibility,
     year,
     funds,
@@ -836,6 +839,43 @@ export async function setVisibility(
     'club',
     actor.club.id,
     `Vereinskasse: Einsicht geändert (${CLUB_CASH_VISIBILITY_INFO[visibility].name})`,
+    now,
+  );
+}
+
+/**
+ * Gemeinnützigkeit angeben (Kassen-Assistent): Ohne Gemeinnützigkeit genügen einfache Kategorien – alle im ideellen
+ * Bereich; mit Gemeinnützigkeit gelten die vier Steuerbereiche der Vorlage.
+ */
+export async function setNonprofit(
+  db: Db,
+  actor: Actor,
+  input: { nonprofit: boolean | null; simplifyCategories?: boolean },
+  now: Date,
+): Promise<void> {
+  requireManage(actor);
+  await db.update(s.clubs).set({ nonprofit: input.nonprofit }).where(eq(s.clubs.id, actor.club.id));
+  if (input.simplifyCategories && input.nonprofit !== true) {
+    await db
+      .update(s.clubCashCategories)
+      .set({ area: 'ideal' })
+      .where(
+        and(
+          eq(s.clubCashCategories.clubId, actor.club.id),
+          inArray(
+            s.clubCashCategories.name,
+            CLUB_CASH_CATEGORY_TEMPLATE.map((c) => c.name),
+          ),
+        ),
+      );
+  }
+  await audit(
+    db,
+    actor,
+    'clubcash.nonprofit',
+    'club',
+    actor.club.id,
+    `Vereinskasse: Gemeinnützigkeit ${input.nonprofit === null ? 'offen' : input.nonprofit ? 'ja' : 'nein'}`,
     now,
   );
 }
