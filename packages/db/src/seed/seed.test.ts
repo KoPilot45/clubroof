@@ -161,4 +161,94 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
     expect(rows).toHaveLength(7);
     for (const r of rows) expect(r.notifications, r.email).toBeGreaterThan(0);
   });
+
+  describe('Ausbau der Vereinskasse und Inhalte', () => {
+    it('hat Buchungen über mindestens 24 Monate, Einnahmen und Ausgaben', async () => {
+      const [row] = await sql`
+        select (max(booked_on) - min(booked_on))::int as days,
+          count(*) filter (where kind = 'income')::int as income,
+          count(*) filter (where kind = 'expense')::int as expense
+        from club_cash_entries where cancelled_at is null`;
+      expect(row!.days).toBeGreaterThan(24 * 30 - 20);
+      expect(row!.income).toBeGreaterThan(20);
+      expect(row!.expense).toBeGreaterThan(20);
+    });
+
+    it('Beitragsforderungen: Zahlungen übersteigen nie die Forderung, Quote ca. 70 %', async () => {
+      const over = await sql`
+        select d.id from club_fee_dues d
+        join club_fee_payments p on p.due_id = d.id
+        where d.cancelled_at is null
+        group by d.id, d.amount_cents having sum(p.amount_cents) > d.amount_cents`;
+      expect(over).toHaveLength(0);
+      const [q] = await sql`
+        select coalesce(sum(p.amount_cents), 0)::float / nullif(sum(d.amount_cents), 0) as quote
+        from club_fee_dues d
+        left join (select due_id, sum(amount_cents) as amount_cents from club_fee_payments group by 1) p
+          on p.due_id = d.id
+        where d.cancelled_at is null and d.due_on <= current_date`;
+      expect(q!.quote).toBeGreaterThan(0.4);
+      expect(q!.quote).toBeLessThan(0.97);
+    });
+
+    it('Haushaltsplan hat überzogene und unterschrittene Positionen (Soll-Ist)', async () => {
+      const rows = await sql<{ planned: number; actual: number }[]>`
+        select b.planned_cents as planned,
+          coalesce((select sum(e.amount_cents) from club_cash_entries e
+            where e.category_id = b.category_id and e.cancelled_at is null
+              and e.kind in ('income', 'expense')
+              and extract(year from e.booked_on) = b.year), 0)::int as actual
+        from club_budget_lines b
+        where b.year = extract(year from current_date)`;
+      expect(rows.length).toBeGreaterThan(5);
+      expect(rows.some((r) => r.actual > r.planned)).toBe(true);
+      expect(rows.some((r) => r.actual < r.planned)).toBe(true);
+    });
+
+    it('Rücklagen: Bewegungen ergeben positive Salden, Inventar und Steuerdaten vorhanden', async () => {
+      const neg = await sql`
+        select reserve_id from club_reserve_moves
+        group by reserve_id
+        having sum(case when kind = 'allocate' then amount_cents else -amount_cents end) < 0`;
+      expect(neg).toHaveLength(0);
+      const [r] = await sql`select count(*)::int as n from club_reserves`;
+      expect(r!.n).toBeGreaterThan(1);
+      const [i] = await sql`select count(*)::int as n from club_inventory`;
+      expect(i!.n).toBeGreaterThan(5);
+      const [t] = await sql`select count(*)::int as n from club_tax_info`;
+      expect(t!.n).toBe(1);
+    });
+
+    it('Spendenbescheinigungen sind je Jahr fortlaufend und eindeutig', async () => {
+      const rows = await sql<{ receipt_no: string }[]>`
+        select receipt_no from club_donations where receipt_no is not null order by receipt_no`;
+      expect(rows.length).toBeGreaterThan(2);
+      const nos = rows.map((r) => r.receipt_no);
+      expect(new Set(nos).size).toBe(nos.length);
+      for (const no of nos) expect(no).toMatch(/^\d{4}-\d{3}$/);
+      const byYear = new Map<string, number[]>();
+      for (const no of nos) {
+        const [y, n] = no.split('-');
+        byYear.set(y!, [...(byYear.get(y!) ?? []), Number(n)]);
+      }
+      for (const list of byYear.values()) list.forEach((n, i) => expect(n).toBe(i + 1));
+    });
+
+    it('Kassenprüfung ist vorhanden, Archiv enthält mehrere Arten', async () => {
+      const [a] = await sql`select count(*)::int as n from club_audits`;
+      expect(a!.n).toBeGreaterThan(0);
+      const kinds = await sql`select distinct kind from archive_entries`;
+      expect(kinds.length).toBeGreaterThanOrEqual(4);
+    });
+
+    it('Sponsoren decken Stufen und verschiedene Laufzeiten ab', async () => {
+      const rows = await sql<{ starts_on: string | null; ends_on: string | null }[]>`
+        select starts_on, ends_on from sponsors`;
+      expect(rows.length).toBeGreaterThanOrEqual(6);
+      const today = new Date().toISOString().slice(0, 10);
+      expect(rows.some((r) => r.ends_on && r.ends_on < today)).toBe(true);
+      expect(rows.some((r) => r.starts_on && r.starts_on > today)).toBe(true);
+      expect(rows.some((r) => !r.ends_on || r.ends_on >= today)).toBe(true);
+    });
+  });
 });
