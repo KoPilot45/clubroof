@@ -165,6 +165,7 @@ export function MatchCarousel({ matches, club }: { matches: EventSummary[]; club
   const width = useCardWidth(306);
   const [index, setIndex] = useState(0);
   const { colors } = useTheme();
+  const desktopRow = useIsDesktop();
   if (matches.length === 0)
     return (
       <Empty
@@ -174,7 +175,6 @@ export function MatchCarousel({ matches, club }: { matches: EventSummary[]; club
       />
     );
   const current = Math.min(index, matches.length - 1);
-  const desktopRow = useIsDesktop();
   return (
     <View style={{ gap: 8 }}>
       <Swipe width={width} onIndex={setIndex}>

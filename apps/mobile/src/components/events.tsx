@@ -276,8 +276,11 @@ function ReasonForm({
   onCancel,
   onSubmit,
   required = false,
+  error = null,
 }: {
   status: 'no' | 'maybe';
+  /** Ablehnung des Servers: erscheint hier im Formular, Eingaben bleiben erhalten */
+  error?: string | null;
   /** Die Mannschaft verlangt bei einer Absage einen Grund (Paket E2) */
   required?: boolean;
   loading: boolean;
@@ -287,27 +290,42 @@ function ReasonForm({
   const { colors } = useTheme();
   const [reason, setReason] = useState<string | null>(null);
   const [note, setNote] = useState('');
+  // Pflichtangaben werden vor dem Senden abgefangen und am Formular erklärt (nie nur ein stummer Knopf)
+  const [missing, setMissing] = useState<string | null>(null);
+  const problem = missing ?? error;
+  const problemChip = problem ? (
+    <View accessibilityRole="alert" accessibilityLiveRegion="assertive">
+      <Chip tone="urgent" icon="alert-circle" label={problem} />
+    </View>
+  ) : null;
   if (status === 'maybe')
     return (
       <View style={{ gap: 12 }}>
         <TextField
           label="Warum bist du unsicher?"
           value={note}
-          onChangeText={setNote}
+          onChangeText={(v) => {
+            setNote(v);
+            setMissing(null);
+          }}
           maxLength={120}
           multiline
           accent={colors.status.action.solid}
           hint="Bitte kurz begründen"
         />
+        {problemChip}
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <Button style={{ flex: 1 }} label="Abbrechen" variant="neutral" onPress={onCancel} />
           <Button
             style={{ flex: 1 }}
             label="Unsicher senden"
             variant="actionSolid"
-            disabled={note.trim().length === 0}
             loading={loading}
-            onPress={() => onSubmit(note.trim())}
+            onPress={() =>
+              note.trim().length === 0
+                ? setMissing('Bitte schreibe kurz, warum du unsicher bist.')
+                : onSubmit(note.trim())
+            }
           />
         </View>
       </View>
@@ -318,30 +336,44 @@ function ReasonForm({
         label="Warum kannst du nicht?"
         options={DECLINE_REASONS.map((d) => ({ value: d, label: d }))}
         selected={reason ? [reason] : []}
-        onToggle={(v) => setReason(v === reason ? null : v)}
+        onToggle={(v) => {
+          setReason(v === reason ? null : v);
+          setMissing(null);
+        }}
         tone="urgent"
         check
       />
       <TextField
         label={required ? 'Hinweis für das Trainerteam' : 'Hinweis für das Trainerteam (optional)'}
         value={note}
-        onChangeText={setNote}
+        onChangeText={(v) => {
+          setNote(v);
+          setMissing(null);
+        }}
         maxLength={120}
+        hint={required ? 'Wähle einen Grund oder schreibe einen kurzen Hinweis.' : undefined}
       />
+      {problemChip}
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <Button style={{ flex: 1 }} label="Abbrechen" variant="neutral" onPress={onCancel} />
         <Button
           style={{ flex: 1 }}
           label="Absage senden"
           variant="dangerSolid"
-          disabled={required && !reason && note.trim().length === 0}
           loading={loading}
-          onPress={() => onSubmit([reason, note.trim()].filter(Boolean).join(' – ') || undefined)}
+          onPress={() => {
+            if (required && !reason && note.trim().length === 0)
+              return setMissing('Wähle einen Grund oder schreibe einen kurzen Hinweis.');
+            onSubmit([reason, note.trim()].filter(Boolean).join(' – ') || undefined);
+          }}
         />
       </View>
     </View>
   );
 }
+
+const declineMessage = (e: unknown) =>
+  e instanceof RequestError ? e.message : 'Die Rückmeldung konnte nicht gespeichert werden.';
 
 /** Sofortige Zusage mit Rückmeldung (Toast, bei fehlender Verbindung gemerkt) – für ✓ und Wischen. */
 function useQuickYes(event: EventSummary, personId: string) {
@@ -402,12 +434,24 @@ function RoundRespond({ event, personId }: { event: EventSummary; personId: stri
       >
         <Ionicons name="close" size={22} color={colors.status.urgent.onContainer} />
       </Pressable>
-      <Sheet visible={declining} onClose={() => setDeclining(false)} title="Absagen">
+      <Sheet
+        visible={declining}
+        onClose={() => {
+          respond.reset();
+          setDeclining(false);
+        }}
+        title="Absagen"
+      >
         <T variant="label">{event.title}</T>
         <ReasonForm
           status="no"
+          required={event.responseRules?.declineReasonRequired}
+          error={respond.error ? declineMessage(respond.error) : null}
           loading={respond.isPending}
-          onCancel={() => setDeclining(false)}
+          onCancel={() => {
+            respond.reset();
+            setDeclining(false);
+          }}
           onSubmit={(reason) =>
             respond.mutate(
               { personId, status: 'no', reason },
@@ -706,9 +750,9 @@ export function ResponseControls({
   const [error, setError] = useState<string | null>(null);
   /** Person und Antwort, für die gerade ein Grund gewählt wird */
   const [pending, setPending] = useState<{ personId: string; status: 'no' | 'maybe' } | null>(null);
+  const toast = useToast();
   if (event.myResponses.length === 0) return null;
 
-  const toast = useToast();
   const send = (r: MyResponse, status: 'yes' | 'no' | 'maybe', declineReason?: string) => {
     setError(null);
     const previous = eff(r);
@@ -758,6 +802,7 @@ export function ResponseControls({
         status={pending.status}
         loading={busy(r, pending.status)}
         required={event.responseRules?.declineReasonRequired}
+        error={error}
         onCancel={() => setPending(null)}
         onSubmit={(text) => send(r, pending.status, text)}
       />
@@ -840,7 +885,7 @@ export function ResponseControls({
           </T>
         </View>
       ) : null}
-      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+      {error && !pending ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       {tone === 'hero' ? (
         <Sheet
           visible={!!pending}

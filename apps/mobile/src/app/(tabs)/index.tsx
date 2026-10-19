@@ -42,7 +42,8 @@ export default function HomeScreen() {
   const { api, me, refresh } = useSignedIn();
   const desktop = useIsDesktop();
   // kompakter Desktop (1100–1399 px): eine Spalte, Neuigkeiten unter „Offen“
-  const twoColumns = desktop && !useIsCompactDesktop();
+  const compactDesktop = useIsCompactDesktop();
+  const twoColumns = desktop && !compactDesktop;
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const data = home.data;
   const hasAds = useHasSponsorAds();

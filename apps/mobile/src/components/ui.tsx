@@ -209,9 +209,9 @@ export function Screen({
   const desktop = useIsDesktop();
   const compact = useIsCompactDesktop();
   // Breite des Inhalts nach Seitenvorlage (Paket DT2): Formulare schmal, Tabellen und Berichte breit
-  const contentMax = desktop
-    ? Math.max(TEMPLATE_WIDTH[useTemplate()], wide ? 1040 : 0)
-    : CONTENT_MAX;
+  // (Hooks immer in gleicher Reihenfolge aufrufen, danach auswerten – sonst leert der Breitenwechsel die Seite)
+  const template = useTemplate();
+  const contentMax = desktop ? Math.max(TEMPLATE_WIDTH[template], wide ? 1040 : 0) : CONTENT_MAX;
   const scrollY = useRef(new Animated.Value(0)).current;
   const pathname = usePathname();
   return (

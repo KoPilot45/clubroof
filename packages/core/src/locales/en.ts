@@ -1160,6 +1160,7 @@ export const en: Record<string, string> = {
     'Please check the email address and phone number.',
   'Bitte Rechtschreibung prüfen': 'Please check spelling',
   'Bitte schließe zuerst das Jahr {0} ab.': 'Please close the year {0} first.',
+  'Bitte schreibe kurz, warum du unsicher bist.': 'Please briefly say why you are unsure.',
   'Bitte trage mindestens ein Getränk ein.': 'Please enter at least one drink.',
   'Bitte Vor- und Nachname des Kindes angeben.': "Please enter the child's first and last name.",
   'Bitte wähle Abteilung oder Mannschaft.': 'Please select a section or team.',
@@ -1660,6 +1661,8 @@ export const en: Record<string, string> = {
   'Die Anmeldung ist nicht mehr möglich.': 'Registration is no longer possible.',
   'Die Anschrift steht auf Spendenbescheinigungen, Kontakt und Webseite im Impressum.':
     'The address appears on donation receipts, contact and website in the legal notice.',
+  'Die Ansicht konnte nicht angezeigt werden. Deine Daten sind nicht verloren.':
+    'The view could not be shown. Your data is not lost.',
   'Die Anwesenheit erfasst das Trainerteam.': 'The coaching staff records attendance.',
   'Die Anwesenheit lässt sich erst ab Beginn erfassen.':
     'Attendance can only be recorded from the start.',
@@ -2758,6 +2761,7 @@ export const en: Record<string, string> = {
   'Hier findest du alles, womit du selbst bestimmst, wer was von dir sieht und wie die App dich erreicht.':
     'Here you can find everything you use to decide who sees what of you and how the app reaches you.',
   'Hier gibt es gerade nichts anzuzeigen.': 'There is nothing to show here right now.',
+  'Hier ist etwas schiefgelaufen': 'Something went wrong',
   'Hier siehst du auf einen Blick, was als Nächstes ansteht: Termine, Neuigkeiten und was noch zu tun ist.':
     'Here you see at a glance what is coming up next: events, news and what still needs doing.',
   Hilfe: 'Help',
@@ -3623,6 +3627,7 @@ export const en: Record<string, string> = {
   'Neu angelegte Einträge kannst du 24 Stunden lang mit einem Tipp rückgängig machen.':
     'You can undo newly created entries with one tap for 24 hours.',
   'Neu anlegen': 'Create new',
+  'Neu laden': 'Reload',
   'Neu zuordnen (Jahrgangswechsel)': 'Reassign (age-group change)',
   'Neue Aufgabe': 'New task',
   'Neue Aufgabe: {0} ({1})': 'New role: {0} ({1})',
@@ -5111,6 +5116,7 @@ export const en: Record<string, string> = {
     'The board and administration always see everything. You can add more departments later.',
   'Vorstand und Aufgaben': 'Board and roles',
   'Wähle ein Passwort': 'Choose a password',
+  'Wähle einen Grund oder schreibe einen kurzen Hinweis.': 'Choose a reason or write a short note.',
   'Wähle links einen Termin.': 'Choose an event on the left.',
   'Wähle oben eine einzelne Kasse, um deren Plan zu bearbeiten.':
     'Select a single fund above to edit its plan.',
