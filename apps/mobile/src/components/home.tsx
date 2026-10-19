@@ -46,20 +46,11 @@ import {
   Sheet,
   shadowStyle,
   T,
-  Ticket,
   TileGrid,
   withAlpha,
   type IconName,
 } from '@/components/ui';
-import {
-  clubInitials,
-  formatAgo,
-  formatDateTile,
-  formatDay,
-  formatRemaining,
-  formatTime,
-} from '@/lib/format';
-import { EVENT_TYPE_LABELS } from '@/lib/labels';
+import { clubInitials, formatAgo, formatDay, formatRemaining, formatTime } from '@/lib/format';
 import { Counted, PressScale, useCountUp } from '@/lib/motion';
 import { t } from '@/lib/i18n';
 import { ReorderList } from '@/components/reorder';
@@ -509,7 +500,7 @@ export function WeekCard({ week, birthdays }: { week: EventSummary[]; birthdays:
     .join(' · ');
   return (
     <Section title="Deine Woche" action="Alle anzeigen" onAction={() => router.push('/termine')}>
-      <Card>
+      <View style={{ gap: 10 }}>
         {week.length === 0 ? (
           <Empty
             icon="calendar-outline"
@@ -538,7 +529,7 @@ export function WeekCard({ week, birthdays }: { week: EventSummary[]; birthdays:
             </T>
           </View>
         ) : null}
-      </Card>
+      </View>
     </Section>
   );
 }
@@ -1220,18 +1211,8 @@ export function ResponseBlock({ event }: { event: EventSummary }) {
   );
 }
 
-const weekColor = (e: EventSummary, colors: ReturnType<typeof useTheme>['colors']) => {
-  if (e.status === 'cancelled') return colors.status.urgent.solid;
-  const r = e.myResponses[0];
-  if (!r) return colors.anstoss.textTertiary;
-  if (r.status === 'yes') return colors.primary;
-  if (r.status === 'no') return colors.status.urgent.solid;
-  return colors.status.action.solid;
-};
-
-/** „Diese Woche“: Tickets zum Wischen, Farbstreifen = Stand der eigenen Rückmeldung. */
+/** „Diese Woche“: dieselbe Terminkarte wie in allen Listen (Antwort, Summenzeile, Teilnehmer). */
 export function WeekTickets({ week }: { week: EventSummary[] }) {
-  const { colors } = useTheme();
   return (
     <Section title="Diese Woche" action="Alle anzeigen" onAction={() => router.push('/termine')}>
       {week.length === 0 ? (
@@ -1241,42 +1222,11 @@ export function WeekTickets({ week }: { week: EventSummary[] }) {
           hint="Im Kalender siehst du, was danach kommt."
         />
       ) : (
-        <EdgeScroll bleed={22} contentContainerStyle={{ paddingHorizontal: 22, gap: 10 }}>
-          {week.map((e) => {
-            const r = e.myResponses[0];
-            const cancelled = e.status === 'cancelled';
-            const word =
-              r?.status === 'no'
-                ? t('abgesagt')
-                : r?.status === 'maybe'
-                  ? t('unsicher')
-                  : r?.status === 'pending'
-                    ? t('offen')
-                    : null;
-            const caption = cancelled
-              ? (e.cancelledReason ?? t('Termin abgesagt'))
-              : [
-                  e.team?.badge,
-                  r?.relation === 'child' ? r.firstName : null,
-                  word ?? formatTime(e.startsAt),
-                ]
-                  .filter(Boolean)
-                  .join(' · ');
-            const tile = formatDateTile(e.startsAt);
-            return (
-              <Ticket
-                key={e.id}
-                weekday={tile.weekday}
-                day={tile.day}
-                title={e.match ? t('Spiel') : t(EVENT_TYPE_LABELS[e.type])}
-                caption={caption}
-                color={weekColor(e, colors)}
-                struck={cancelled}
-                onPress={() => router.push(`/events/${e.id}`)}
-              />
-            );
-          })}
-        </EdgeScroll>
+        <View style={{ gap: 10 }}>
+          {week.map((e, i) => (
+            <EventRow key={e.id} event={e} first={i === 0} />
+          ))}
+        </View>
       )}
     </Section>
   );

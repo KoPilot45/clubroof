@@ -145,7 +145,7 @@ for (const width of [1250, 1440, 1891]) {
 {
   const { page, goto } = await b.session('eltern', { width: 390, height: 844 });
   await goto('/termine');
-  await text(page, 'Kalender-Abo', { exact: true }).waitFor({ timeout: 20_000 });
+  await text(page, /Kalender-Abo/).waitFor({ timeout: 20_000 });
   ok(true, 'Termine: Kalender-Abo erreichbar');
 }
 

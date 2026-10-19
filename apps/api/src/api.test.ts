@@ -10613,4 +10613,81 @@ describe.skipIf(!url)('API', () => {
       await send('DELETE', `/absences/${created.body.id}`, player.token);
     });
   });
+
+  describe('Antwort und Teilnehmer in Terminlisten', () => {
+    it('liefert je Person, ob die Antwort automatisch ist bzw. aus einer Abwesenheit folgt', async () => {
+      const player = await login('spieler');
+      const admin = await login('admin');
+      const team = player.me.teams[0]!;
+      const startsAt = '2027-02-09T17:00:00Z';
+      const created = await send<EventDetail>('POST', `/teams/${team.id}/events`, admin.token, {
+        type: 'team_event',
+        title: 'Antwort-Test',
+        startsAt,
+        endsAt: '2027-02-09T18:30:00Z',
+        meetingPoint: 'Parkplatz',
+        locationText: 'Stadtpark',
+      });
+      expect(created.status).toBe(201);
+      const find = async (token: string) =>
+        (
+          await get<EventSummary[]>(
+            `/events?from=${encodeURIComponent('2027-02-09T00:00:00Z')}&to=${encodeURIComponent('2027-02-10T00:00:00Z')}`,
+            token,
+          )
+        ).find((e) => e.title === 'Antwort-Test')!;
+      // frisch angelegt: offene Antwort, nicht automatisch, nicht abwesend
+      let mine = (await find(player.token)).myResponses[0]!;
+      expect(mine).toMatchObject({ status: 'pending', automatic: false, absent: false });
+      // bewusste Antwort: nicht automatisch
+      const ev = await find(player.token);
+      await send('PUT', `/events/${ev.id}/responses/${player.me.person.id}`, player.token, {
+        status: 'yes',
+        reason: null,
+      });
+      mine = (await find(player.token)).myResponses[0]!;
+      expect(mine).toMatchObject({ status: 'yes', automatic: false, absent: false });
+      // Abwesenheit: bewusste Antwort bleibt, nach „offen“ folgt die automatische Absage
+      await send('PUT', `/events/${ev.id}/responses/${player.me.person.id}`, player.token, {
+        status: 'pending',
+        reason: null,
+      });
+      const abs = await send<Absence>('POST', '/absences', player.token, {
+        personId: player.me.person.id,
+        kind: 'vacation',
+        startsOn: '2027-02-09',
+        endsOn: '2027-02-09',
+      });
+      mine = (await find(player.token)).myResponses[0]!;
+      expect(mine).toMatchObject({ status: 'no', absent: true });
+      await send('DELETE', `/absences/${abs.body.id}`, player.token);
+      mine = (await find(player.token)).myResponses[0]!;
+      expect(mine).toMatchObject({ status: 'pending', absent: false });
+    });
+
+    it('Teilnehmernamen und Gründe: nicht freigegeben ohne Namen, Gründe nur für das Trainerteam', async () => {
+      const player = await login('spieler');
+      const admin = await login('admin');
+      const team = player.me.teams[0]!;
+      const list = await get<EventSummary[]>('/events', player.token);
+      const ev = list.find((e) => e.team?.id === team.id && e.counts && e.status === 'scheduled')!;
+      const asPlayer = await get<EventDetail>(`/events/${ev.id}`, player.token);
+      expect(asPlayer.participants.every((p) => p.reason === null)).toBe(true);
+      await send('PUT', `/teams/${team.id}/profile`, admin.token, { responsesVisible: false });
+      try {
+        const hidden = await get<EventDetail>(`/events/${ev.id}`, player.token);
+        expect(hidden.participants).toEqual([]);
+        const summary = (await get<EventSummary[]>('/events', player.token)).find(
+          (e) => e.id === ev.id,
+        )!;
+        expect(summary.counts).toBeNull();
+        // das Trainerteam (Admin) sieht weiterhin Zahlen und Namen
+        expect(
+          (await get<EventDetail>(`/events/${ev.id}`, admin.token)).participants.length,
+        ).toBeGreaterThan(0);
+      } finally {
+        await send('PUT', `/teams/${team.id}/profile`, admin.token, { responsesVisible: true });
+      }
+    });
+  });
 });

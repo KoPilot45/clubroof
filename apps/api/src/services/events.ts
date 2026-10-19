@@ -257,6 +257,9 @@ export async function summarizeEvents(
           status: p.status,
           reason: p.reason,
           canRespond: regularOpen || overrideOpen,
+          // bewusste Antworten tragen einen Zeitstempel und keine Abwesenheits-Verknüpfung (siehe participation.ts)
+          automatic: p.respondedAt === null && p.absenceId === null && p.status !== 'pending',
+          absent: p.absenceId !== null,
         };
       })
       .sort((a, b) => Number(a.relation === 'child') - Number(b.relation === 'child'));

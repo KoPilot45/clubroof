@@ -1,3 +1,4 @@
+import { View } from 'react-native';
 import type { EventSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -83,11 +84,11 @@ export default function AllEventsScreen() {
         const inWeek = list.filter((e) => weekOf(e.startsAt) === w);
         return (
           <Section key={w} title={`Woche ${label.format(start)} – ${label.format(end)}`}>
-            <Card>
+            <View style={{ gap: 10 }}>
               {inWeek.map((e, i) => (
                 <EventRow key={e.id} event={e} first={i === 0} />
               ))}
-            </Card>
+            </View>
           </Section>
         );
       })}

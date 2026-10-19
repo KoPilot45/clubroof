@@ -190,12 +190,12 @@ export default function ClubCalendarScreen() {
           </Card>
           {day ? (
             <Section title={dayTitle.format(new Date(`${day}T12:00:00`))}>
-              <Card>
+              <View style={{ gap: 10 }}>
                 {ofDay.length === 0 ? <T variant="caption">Keine Termine an diesem Tag.</T> : null}
                 {ofDay.map((c, i) => (
                   <EventRow key={c.event.id} event={c.event} first={i === 0} openable={c.canOpen} />
                 ))}
-              </Card>
+              </View>
             </Section>
           ) : null}
         </Columns>
@@ -211,7 +211,7 @@ export default function ClubCalendarScreen() {
           <Columns min={460} gap={24}>
             {days.map((d) => (
               <Section key={d} title={dayTitle.format(new Date(`${d}T12:00:00`))}>
-                <Card>
+                <View style={{ gap: 10 }}>
                   {list
                     .filter((c) => dayKey(new Date(c.event.startsAt)) === d)
                     .map((c, i) => (
@@ -222,7 +222,7 @@ export default function ClubCalendarScreen() {
                         openable={openable.get(c.event.id)}
                       />
                     ))}
-                </Card>
+                </View>
               </Section>
             ))}
           </Columns>
