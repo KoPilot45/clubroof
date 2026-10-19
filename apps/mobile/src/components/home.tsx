@@ -937,6 +937,7 @@ export function HomePoster({
   hasTeam,
   clubName,
   overview,
+  onCurrent,
 }: {
   header: React.ReactNode;
   events: EventSummary[];
@@ -944,6 +945,8 @@ export function HomePoster({
   hasTeam: boolean;
   clubName: string;
   overview: ClubOverview | null;
+  /** meldet den sichtbaren Termin, damit Personenkarten und Rückmeldung demselben Termin folgen (U05) */
+  onCurrent?: (index: number) => void;
 }) {
   const { colors } = useTheme();
   const desktop = useIsDesktop();
@@ -961,6 +964,9 @@ export function HomePoster({
       ? slides
       : [undefined];
   const current = loop ? (((raw - 1) % n) + n) % n : 0;
+  useEffect(() => {
+    onCurrent?.(current);
+  }, [current, onCurrent]);
   useEffect(() => {
     if (loop && width > 0) scroller.current?.scrollTo({ x: width, animated: false });
   }, [loop, width, n]);
@@ -1169,9 +1175,13 @@ export function PersonStatusCards({ event }: { event: EventSummary }) {
               <Text style={{ fontSize: 12, fontWeight: '700', color: tone.text }}>
                 {STATUS_WORD[key]}
               </Text>
+              {/* jede Karte nennt Termin und Datum selbst – sie folgt dem Plakat, bleibt aber für sich lesbar */}
+              <T variant="caption" numberOfLines={1} verbatim style={{ fontSize: 12 }}>
+                {event.match ? `vs. ${event.match.opponentName}` : event.title}
+              </T>
               <T variant="caption" style={{ fontSize: 12 }}>
                 {key === 'pending' && open
-                  ? formatRemaining(event.deadline!)
+                  ? `${formatDay(event.startsAt)} · ${formatRemaining(event.deadline!)}`
                   : formatDay(event.startsAt)}
               </T>
             </View>

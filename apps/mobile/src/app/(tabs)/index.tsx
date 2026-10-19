@@ -52,6 +52,7 @@ export default function HomeScreen() {
   const tourKey = `tour.${me.user.id}`;
   const [tour, setTour] = useState(false);
   const [newsFilter, setNewsFilter] = useState<NewsFilter>('all');
+  const [slide, setSlide] = useState(0);
   useEffect(() => {
     void readFlag(tourKey).then((seen) => setTour(!seen));
   }, [tourKey]);
@@ -90,7 +91,8 @@ export default function HomeScreen() {
       ]
     : [];
 
-  const first = data?.matches[0];
+  // Plakat, Personenkarten und Rückmeldung zeigen immer denselben, aktuell sichtbaren Termin (U05)
+  const first = data?.matches[Math.min(slide, Math.max(0, (data?.matches.length ?? 1) - 1))];
   return (
     <Screen
       edges={[]}
@@ -108,6 +110,7 @@ export default function HomeScreen() {
         hasTeam={me.teams.length > 0}
         clubName={me.club.name}
         overview={data?.clubOverview ?? null}
+        onCurrent={setSlide}
       />
       {home.isPending ? <Loading variant="page" /> : null}
       {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}

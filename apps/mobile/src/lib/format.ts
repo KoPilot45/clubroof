@@ -121,6 +121,19 @@ const shortDate = dateFormat({
 export const formatShortDate = (isoDate: string) =>
   shortDate.format(new Date(`${isoDate}T00:00:00Z`));
 
+const dayMonth = dateFormat({ day: 'numeric', month: 'long', timeZone: 'UTC' });
+const dayOnly = dateFormat({ day: 'numeric', timeZone: 'UTC' });
+
+/** „20.–22. Oktober“ bzw. „29. Oktober – 2. November“ für zwei ISO-Daten (JJJJ-MM-TT) */
+export function formatDateRange(fromIso: string, toIso: string): string {
+  const a = new Date(`${fromIso}T00:00:00Z`);
+  const b = new Date(`${toIso}T00:00:00Z`);
+  if (fromIso === toIso) return dayMonth.format(a);
+  if (fromIso.slice(0, 7) === toIso.slice(0, 7))
+    return `${dayOnly.format(a)}.–${dayMonth.format(b)}`;
+  return `${dayMonth.format(a)} – ${dayMonth.format(b)}`;
+}
+
 /** Euro-Eingabe („12,50“, „12.5“, „12“) in Cent; null bei ungültiger Eingabe */
 export function parseEuro(input: string): number | null {
   const normalized = input.trim().replace(/\s|€/g, '').replace(',', '.');

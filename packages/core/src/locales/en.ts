@@ -477,6 +477,7 @@ export const en: Record<string, string> = {
   Abwesenheit: 'Absence',
   'Abwesenheit bearbeiten': 'Edit absence',
   'Abwesenheit eintragen': 'Enter absence',
+  'Abwesenheit für': 'Absence for',
   'Abwesenheit löschen': 'Delete absence',
   'Abwesenheit melden': 'Report absence',
   'Abwesenheit speichern': 'Save absence',
@@ -3448,6 +3449,7 @@ export const en: Record<string, string> = {
   Meldungen: 'Reports',
   'Meldungen kommen danach gesammelt an.': 'Notifications arrive together afterwards.',
   Mi: 'Wed',
+  mich: 'me',
   Mich: 'Me',
   'Minderjährig ohne Elternteil und ohne E-Mail – später zuordnen.':
     'Minor without parent and without e-mail – assign later.',

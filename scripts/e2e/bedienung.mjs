@@ -163,6 +163,47 @@ for (const width of [360, 390]) {
     `Unterseite ${width} px: Titel „Abwesenheit eintragen“ vollständig sichtbar`,
   );
 }
+// ── U05: Personenkarten folgen dem Plakat ────────────────────────────────────
+{
+  const { page, goto, login } = await b.session('eltern', { width: 390, height: 900 });
+  const home = await api('/home', login.token);
+  const label = (e) => (e.match ? `vs. ${e.match.opponentName}` : e.title);
+  ok(home.matches.length > 1, `Eltern-Home hat mehrere Spiele im Plakat (${home.matches.length})`);
+  await goto('/');
+  const next = page
+    .getByRole('button', { name: 'Nächstes Spiel' })
+    .filter({ visible: true })
+    .first();
+  await next.waitFor({ timeout: 20_000 });
+  for (let i = 0; i < Math.min(3, home.matches.length); i++) {
+    const e = home.matches[i];
+    await page.waitForTimeout(900);
+    const card = text(page, label(e), { exact: true });
+    ok(
+      await card.isVisible(),
+      `Plakat ${i + 1}: Personenkarten nennen denselben Termin (${label(e)})`,
+    );
+    if (i < Math.min(3, home.matches.length) - 1) await next.click();
+  }
+}
+
+// ── U06: Abwesenheit aus dem Kinderteam startet mit dem Kind ─────────────────
+{
+  const { page, goto, login } = await b.session('eltern', { width: 390, height: 900 });
+  await goto('/team');
+  await text(page, 'Abwesenheit melden', { exact: true }).click();
+  const heading = page.getByText(/^Abwesenheit für /).first();
+  await heading.waitFor({ timeout: 15_000 });
+  const label = await heading.innerText();
+  const child = login.me.managedPersons
+    .filter((p) => p.relation === 'child')
+    .map((p) => p.firstName);
+  ok(
+    child.some((name) => label === `Abwesenheit für ${name}`),
+    `Abwesenheit aus dem Team: Kind vorgewählt (${label})`,
+  );
+}
+
 // ── U10: Fensterbreite wechseln, ohne dass eine Ansicht leer wird ────────────
 {
   const { page, goto } = await b.session('trainer', { width: 1500, height: 900 });
