@@ -118,6 +118,29 @@ for (const [who, must] of [
   ok(/Leon · E1|Mia · F1/.test(await body(page)), 'Team (Eltern): Kontext „Leon · E1“ sichtbar');
 }
 
+// ── Team am Desktop: keine Überlagerung der Kachelgruppen (kompakt 1250 px und weit 1891 px) ──
+for (const width of [1250, 1440, 1891]) {
+  const { page, goto } = await b.session('trainer', { width, height: 900 });
+  await goto('/team');
+  await page
+    .getByText(/nächste spiele/i)
+    .first()
+    .waitFor({ timeout: 20_000 });
+  await page.waitForTimeout(1500);
+  const stat = await page
+    .getByRole('button', { name: /^Statistik/ })
+    .first()
+    .boundingBox();
+  const next = await page
+    .getByText(/^nächste spiele$/i)
+    .first()
+    .boundingBox();
+  ok(
+    !!stat && !!next && stat.y + stat.height <= next.y + 1,
+    `Team ${width} px: Kachelgruppen überlagern „Nächste Spiele“ nicht (Statistik unten ${Math.round((stat?.y ?? 0) + (stat?.height ?? 0))}, Überschrift ${Math.round(next?.y ?? 0)})`,
+  );
+}
+
 // ── Termine: Kalender-Abo auch von hier ──────────────────────────────────────
 {
   const { page, goto } = await b.session('eltern', { width: 390, height: 844 });

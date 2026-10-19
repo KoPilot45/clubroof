@@ -455,7 +455,9 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                 }}
               >
                 {groups[0] ? (
-                  <View style={{ flex: 1.7, minWidth: 0, width: '100%' }}>
+                  <View
+                    style={{ flex: compactDesktop ? undefined : 1.7, minWidth: 0, width: '100%' }}
+                  >
                     <Section title={groups[0].title}>
                       <TileGrid
                         items={withTileInfo(groups[0].tiles, tileInfo).map((tile) => ({
@@ -466,7 +468,14 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                     </Section>
                   </View>
                 ) : null}
-                <View style={{ flex: 1, minWidth: 0, width: '100%', gap: 18 }}>
+                <View
+                  style={{
+                    flex: compactDesktop ? undefined : 1,
+                    minWidth: 0,
+                    width: '100%',
+                    gap: 18,
+                  }}
+                >
                   {groups.slice(1).map((g) => (
                     <Section key={g.key} title={g.title}>
                       <TileGrid
