@@ -1,0 +1,160 @@
+<title>Rollen und Rechte</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Saira+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Entwurf Rollenverwaltung (Admin), dunkel im Stil „Anstoß“. Handy-Bildschirme nebeneinander, je Reiter ein Ablauf. */
+:root{--page:#070C09;--bg:#0B120E;--card:#151D18;--card2:#1B251F;--fg:#F2F7F3;--fg2:#C5D6CB;--fg3:#9FB5A6;--fg4:#6F8277;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.15);--accent:#2EDB6B;--on:#06210F;--viol:#B28CFF;--viol-bg:rgba(178,140,255,.14);--warn:#FFB020;--bad:#FF6B6B;--blue:#5AA9FF;--display:'Saira Condensed','Arial Narrow',sans-serif;--body:'Open Sans',system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--fg);font:14px/1.4 var(--body);padding:22px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+h1{font:800 30px/1 var(--display);text-transform:uppercase;letter-spacing:.02em;margin:0 0 6px}
+.intro{color:var(--fg3);max-width:84ch;margin:0 0 16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button{font:700 17px/1 var(--display);letter-spacing:.03em;padding:9px 16px;border-radius:99px;border:1px solid var(--line2);background:var(--card);color:var(--fg2);cursor:pointer}
+.tabs button[aria-pressed="true"]{border-color:var(--accent);background:rgba(46,219,107,.12);color:var(--accent)}
+.row{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.fig{display:flex;flex-direction:column;gap:8px}.fig>b{font:700 15px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--fg3)}.fig>b i{font-style:normal;color:var(--accent);margin-right:6px}
+.cap{max-width:390px;font-size:12px;color:var(--fg3)}
+.phone{width:390px;height:790px;background:var(--bg);border:1px solid var(--line2);border-radius:34px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.sb{height:26px;flex:none;display:flex;justify-content:space-between;padding:8px 22px 0;font:600 11px var(--body);color:var(--fg3)}
+.hd{flex:none;background:linear-gradient(135deg,#4B2A9E,#2A1760);padding:10px 16px 14px;display:flex;align-items:center;gap:10px}
+.hd .bk{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center}
+.hd b{font:800 22px/1 var(--display);letter-spacing:.02em}.hd small{display:block;font-size:11px;color:rgba(255,255,255,.75)}
+.hd .x{margin-left:auto;font:700 11px var(--body);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 10px}
+.body{flex:1;overflow:hidden;padding:14px 16px 0;display:flex;flex-direction:column;gap:12px;position:relative}
+.body>*{flex:none}.body:after{content:"";position:absolute;left:0;right:0;bottom:0;height:40px;background:linear-gradient(transparent,var(--bg));pointer-events:none}
+.seg{display:flex;background:rgba(255,255,255,.07);border-radius:14px;padding:3px;gap:2px}.seg span{flex:1;text-align:center;padding:8px 4px;border-radius:11px;font-weight:700;font-size:13px;color:var(--fg2);cursor:pointer}.seg span.on{background:var(--viol);color:#1c0f45}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
+.sec{display:flex;align-items:center;gap:8px;font:700 17px/1 var(--display);text-transform:uppercase;letter-spacing:.05em}.sec:before{content:"";width:4px;height:16px;border-radius:2px;background:var(--viol)}.sec a{margin-left:auto;font:700 12px var(--body);text-transform:none;letter-spacing:0;color:var(--viol)}
+.chip{display:inline-flex;align-items:center;gap:5px;font:700 11px var(--body);border-radius:99px;padding:3px 9px;background:rgba(255,255,255,.1);color:var(--fg2);white-space:nowrap}
+.chip.v{background:var(--viol-bg);color:var(--viol)}.chip.ok{background:rgba(46,219,107,.14);color:var(--accent)}.chip.w{background:rgba(255,176,32,.16);color:var(--warn)}.chip.b{background:rgba(255,90,90,.16);color:#FF8A8A}.chip.bl{background:rgba(90,169,255,.16);color:var(--blue)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:99px;font:700 14px var(--body);border:1px solid var(--line2);background:var(--card);color:var(--fg);white-space:nowrap}.btn.p{background:var(--viol);color:#1c0f45;border-color:var(--viol)}.btn.sm{padding:7px 12px;font-size:12px}.btn.g{background:var(--accent);color:var(--on);border-color:var(--accent)}
+.av{width:28px;height:28px;border-radius:50%;background:#26332b;border:2px solid var(--card);display:grid;place-items:center;font:700 10px var(--body);color:var(--fg2);margin-left:-8px}.av:first-child{margin-left:0}.avs{display:flex}
+.rl{display:flex;align-items:center;gap:12px}.rl .ic{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:var(--viol-bg);color:var(--viol);font-size:17px;flex:none}.rl b{font-size:14.5px;display:block}.rl span.s{font-size:11.5px;color:var(--fg3)}
+.alert{display:flex;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(255,176,32,.1);border:1px solid rgba(255,176,32,.35);font-size:12.5px;color:var(--fg2)}.alert b{color:var(--warn)}
+.hero{border-radius:22px;padding:14px 16px;background:radial-gradient(120% 120% at 90% 0%,#6B3FD1 0%,#2A1760 60%,var(--bg) 130%);border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden}
+.hero .big{font:800 52px/1 var(--display)}.hero small{font-size:12px;color:rgba(255,255,255,.85)}
+.inp{background:var(--bg);border:1px solid var(--line2);border-radius:12px;padding:10px 13px;font-size:14px;color:var(--fg)}.inp.f{border-color:var(--viol)}
+.lab{font:700 11px var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--fg3);margin-bottom:4px}
+.opt{display:flex;gap:10px;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--card);font-size:13px;cursor:pointer}.opt.on{border-color:var(--viol);background:var(--viol-bg)}.opt b{display:block;font-size:13.5px}.opt span{font-size:11.5px;color:var(--fg3)}.opt i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line2);flex:none;margin-top:2px}.opt.on i{border-color:var(--viol);background:radial-gradient(var(--viol) 45%,transparent 50%)}
+details{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}summary{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 14px;font-weight:700;font-size:13.5px;cursor:pointer}summary::-webkit-details-marker{display:none}summary .n{margin-left:auto;font-size:11.5px;color:var(--fg3);font-weight:600}summary:after{content:"›";color:var(--fg4);transform:rotate(90deg);font-size:18px}details[open] summary:after{transform:rotate(-90deg)}
+.pr{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--line);font-size:13px}.pr div{flex:1}.pr small{display:block;font-size:11px;color:var(--fg3)}.pr .lock{color:var(--warn);font-size:11px;font-weight:700}
+.sw{position:relative;width:42px;height:24px;flex:none}.sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1}.sw i{position:absolute;inset:0;border-radius:12px;background:rgba(255,255,255,.18);transition:.15s}.sw i:after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}.sw input:checked+i{background:var(--viol)}.sw input:checked+i:after{transform:translateX(18px)}.sw.ro i{opacity:.55}
+.mx{display:grid;grid-template-columns:92px repeat(6,minmax(0,1fr));gap:0;font-size:11px}.mx .h{font:700 9.5px var(--display);letter-spacing:.02em;text-transform:uppercase;color:var(--fg3);text-align:center;padding:4px 0;line-height:1.1}.mx .r{padding:7px 4px 7px 0;font-weight:600;font-size:12px;border-top:1px solid var(--line)}.mx .c{border-top:1px solid var(--line);display:grid;place-items:center}.d{width:12px;height:12px;border-radius:50%;border:2px solid var(--line2)}.d.f{background:var(--viol);border-color:var(--viol)}.d.h{background:linear-gradient(90deg,var(--viol) 50%,transparent 50%);border-color:var(--viol)}
+.yn{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 0;border-top:1px solid var(--line)}.yn:first-child{border-top:0}.yn i{font-style:normal;width:18px;text-align:center;font-weight:800}.yn .y{color:var(--accent)}.yn .n{color:var(--fg4)}.yn span{margin-left:auto;color:var(--fg3);font-size:11px}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card2);border-top-left-radius:26px;border-top-right-radius:26px;padding:14px 16px 20px;border-top:1px solid var(--line2);display:flex;flex-direction:column;gap:10px;z-index:3;box-shadow:0 -20px 40px rgba(0,0,0,.45)}.sheet:before{content:"";width:40px;height:4px;border-radius:2px;background:var(--line2);align-self:center}
+.dim{position:absolute;inset:0;background:rgba(3,6,4,.6);z-index:2}
+.note{font-size:12px;color:var(--fg4);margin:14px 2px 0;max-width:110ch}
+.tl{position:relative;padding-left:0}
+</style>
+
+<h1>Rollen und Rechte</h1>
+<p class="intro">Entwurf der überarbeiteten Rollenverwaltung (Admin): Übersicht mit Rollen, Personen und Matrix, eigene Rollen anlegen und bearbeiten, Rechtevorschau je Person und die Mannschaftseinstellung für Abwesenheitsgründe. Alle Namen und Zahlen sind erfunden. Aufklappbare Gruppen und Schalter sind bedienbar.</p>
+<div class="tabs" id="tabs"></div>
+<div id="view"></div>
+<p class="note">Festlegungen: keine neuen Standardrollen vorerst; Trainer sehen Abwesenheitsgründe immer, je Mannschaft legt das Trainerteam fest, ob auch die Mannschaft sie sieht; Forum-Moderation später; Rollen anlegen, ändern und vergeben nur Admins (Vorstandsmitglieder können zugleich Admin sein). Standardrollen sind schreibgeschützt, Anpassungen erfolgen an einer Kopie.</p>
+
+<script>
+const $ = (h) => h;
+const phone = (title, sub, inner, opts = {}) => `<div class="phone"><div class="sb"><span>9:41</span><span>●●● 5G</span></div>
+ <div class="hd"><div class="bk">‹</div><div><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}</div>${opts.close ? '<span class="x">Schließen</span>' : ''}</div>
+ <div class="body">${inner}</div></div>`;
+const fig = (n, t, inner, cap) => `<div class="fig"><b><i>${n}</i>${t}</b>${inner}${cap ? `<div class="cap">${cap}</div>` : ''}</div>`;
+const avs = (a) => `<div class="avs">${a.map((x) => `<div class="av">${x}</div>`).join('')}</div>`;
+const SEG = (on) => `<div class="seg">${['Rollen', 'Personen', 'Matrix'].map((s, i) => `<span class="${i === on ? 'on' : ''}">${s}</span>`).join('')}</div>`;
+const ROLES = [
+  ['Fulladmin', 'Verein', '40 Rechte', ['DS'], false, '★'],
+  ['Vorstand', 'Verein', '11 Rechte', ['SH', 'PS', 'JH'], false, '⚑'],
+  ['Sportliche Leitung', 'Verein', '10 Rechte', ['JH'], false, '⚽'],
+  ['Jugendleitung', 'Abteilung', '11 Rechte', ['MW'], false, '☺'],
+  ['Trainer', 'Mannschaft', '17 Rechte', ['TB', 'MW', 'NG', '+8'], false, '✎'],
+  ['Mannschaftskassenwart', 'Mannschaft', '3 Rechte', ['JK', 'PN'], false, '€'],
+  ['Kassenwart (Verein)', 'Verein', '2 Rechte', ['PS'], false, '€'],
+  ['Platzwart Nord', 'Verein', '4 Rechte', ['KR'], true, '▦'],
+  ['Pressewart', 'Verein', '6 Rechte', [], true, '✉'],
+];
+const roleCard = ([n, sc, r, a, custom, ic]) => `<div class="card"><div class="rl"><div class="ic">${ic}</div><div style="flex:1"><b>${n}</b><span class="s">${sc} · ${r}</span></div>${custom ? '<span class="chip v">Eigene</span>' : '<span class="chip">Standard</span>'}</div><div style="display:flex;align-items:center;margin-top:9px;gap:8px">${a.length ? avs(a) : '<span style="font-size:12px;color:var(--fg4)">Noch niemand</span>'}<span style="margin-left:auto;color:var(--viol);font-weight:700;font-size:12px">Öffnen ›</span></div></div>`;
+const groups = [
+  ['Verein und System', [['Vereinsdaten und Design verwalten', 0, 1], ['Module ein- und ausschalten', 0, 1], ['Rollen und Rechte vergeben', 0, 1, 1], ['Protokoll einsehen', 0, 0], ['Vereinsüberblick einsehen', 1, 0]]],
+  ['Mitglieder', [['Mitgliederliste ansehen', 1, 0], ['Stammdaten pflegen, Ein- und Austritte', 0, 1, 1], ['Personen einladen', 1, 0]]],
+  ['Mannschaften und Sport', [['Mannschaften anlegen und einrichten', 0, 0], ['Saisonplanung und Kadergrößen', 0, 0], ['Spielerbewegungen verwalten', 0, 0], ['Kader und Aufstellung verwalten', 1, 0], ['Spielerbedarf melden', 1, 0]]],
+  ['Termine', [['Termine anlegen und ändern', 1, 0], ['Zu- und Absagen der Mannschaft sehen', 1, 0], ['Zu- und Absagen stellvertretend ändern', 1, 0], ['Abwesenheitsgründe sehen', 1, 0, 1]]],
+  ['Kommunikation', [['News verfassen', 1, 0], ['News freigeben', 0, 0], ['Umfragen erstellen', 1, 0]]],
+  ['Mannschaftskasse', [['Kasse ansehen', 0, 0, 1], ['Buchungen erfassen', 0, 0, 1], ['Strafenkatalog pflegen', 0, 0, 1]]],
+  ['Vereinskasse', [['Vereinskasse ansehen', 0, 0, 1], ['Vereinskasse führen', 0, 0, 1], ['Vereinskasse prüfen', 0, 0, 1]]],
+  ['Betrieb', [['Platzbelegung, Material, Schlüssel', 0, 0], ['Dokumente verwalten', 1, 0], ['Helferdienste planen', 0, 0]]],
+];
+const PRE = {
+  platz: ['Vereinsüberblick einsehen', 'News verfassen', 'Platzbelegung, Material, Schlüssel', 'Helferdienste planen'],
+  trainer: ['Personen einladen', 'Kader und Aufstellung verwalten', 'Spielerbedarf melden', 'Termine anlegen und ändern', 'Zu- und Absagen der Mannschaft sehen', 'Zu- und Absagen stellvertretend ändern', 'Abwesenheitsgründe sehen', 'News verfassen', 'News freigeben', 'Umfragen erstellen', 'Dokumente verwalten', 'Kasse ansehen', 'Buchungen erfassen', 'Strafenkatalog pflegen'],
+};
+const grp = (open, preset, ro) => groups.map(([t, items], gi) => `<details ${gi < open ? 'open' : ''}><summary>${t}<span class="n"></span></summary>${items.map(([l, , , sens]) => `<div class="pr"><div>${l}${sens ? ' <span class="lock">🔒 sensibel</span>' : ''}</div><label class="sw ${ro ? 'ro' : ''}"><input type="checkbox" ${PRE[preset].includes(l) ? 'checked' : ''} ${ro ? 'disabled' : ''} onchange="cnt()"><i></i></label></div>`).join('')}</details>`).join('');
+const MATRIX = [['Fulladmin', 'ffffff'], ['Vorstand', 'hf-fhh'.replace('-', '')], ['Sportl. Leitung', 'ffhfhh'], ['Jugendleitung', 'hfhf0h'], ['Trainer', '0ffhff'], ['Kassenwart', 'oooff0']];
+const mx = (rows) => `<div class="card" style="padding:10px 10px 6px"><div class="mx"><div class="h"></div>${['Verein', 'Mitgl.', 'Sport', 'Termin', 'Kasse', 'Betrieb'].map((h) => `<div class="h">${h}</div>`).join('')}${rows.map(([n, p]) => `<div class="r">${n}</div>${[...p].slice(0, 6).map((c) => `<div class="c"><span class="d ${c === 'f' ? 'f' : c === 'h' ? 'h' : ''}"></span></div>`).join('')}`).join('')}</div><div style="display:flex;gap:14px;font-size:11px;color:var(--fg3);padding:8px 2px 4px"><span><span class="d f" style="display:inline-block;vertical-align:middle"></span> alle</span><span><span class="d h" style="display:inline-block;vertical-align:middle"></span> teilweise</span><span><span class="d" style="display:inline-block;vertical-align:middle"></span> keine</span></div></div>`;
+
+const VIEWS = {
+ uebersicht: () => `<div class="row">
+  ${fig(1, 'Rollen', phone('Rollen und Rechte', 'Verwaltung', `${SEG(0)}
+   <div class="hero"><small>Rollen im Verein</small><div class="big">9</div><small>davon 2 eigene · 23 Personen haben eine Rolle</small></div>
+   <div class="alert"><span>⚠</span><div><b>2 Hinweise</b> · Nur ein Fulladmin eingetragen · In 3 Mannschaften fehlt ein Kassenwart</div></div>
+   <div class="sec">Alle Rollen <a>+ Neue Rolle</a></div>${ROLES.slice(0, 4).map(roleCard).join('')}`), 'Schalter oben: Rollen, Personen oder Matrix. Warnungen stehen direkt unter der Zahl. Eigene Rollen sind violett markiert.')}
+  ${fig(2, 'Personen', phone('Rollen und Rechte', 'Verwaltung', `${SEG(1)}
+   <div class="inp" style="color:var(--fg4)">Name suchen …</div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip v">Alle Rollen</span><span class="chip">Trainer</span><span class="chip">Vorstand</span><span class="chip">Kasse</span><span class="chip">Ohne Rolle</span></div>
+   ${[['Daniel Schäfer', 'DS', [['Fulladmin', 'v'], ['Verein', '']]], ['Sandra Hoffmann', 'SH', [['Vorstand', 'v'], ['Verein', '']]], ['Thomas Becker', 'TB', [['Trainer', 'v'], ['1. Mannschaft', '']]], ['Michael Weber', 'MW', [['Trainer', 'v'], ['2. Mannschaft', ''], ['Jugendleitung', 'v'], ['Jugend', '']]], ['Petra Schulz', 'PS', [['Kassenwart (Verein)', 'v'], ['Verein', '']]], ['Jonas Keller', 'JK', [['Mannschaftskassenwart', 'v'], ['B1', '']]]].map(([n, i, r]) => `<div class="card" style="padding:10px 12px"><div class="rl"><div class="av" style="margin:0;width:36px;height:36px;font-size:12px">${i}</div><div style="flex:1"><b>${n}</b><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">${r.map(([t, k]) => `<span class="chip ${k}">${t}</span>`).join('')}</div></div><span style="color:var(--fg4)">›</span></div></div>`).join('')}`), 'Jede Person zeigt alle ihre Rollen mit Geltungsbereich. Filter nach Rolle. Antippen öffnet die Person (Reiter „Person und Vorschau“).')}
+  ${fig(3, 'Matrix', phone('Rollen und Rechte', 'Verwaltung', `${SEG(2)}<div class="sec">Wer darf was?</div>${mx([['Fulladmin', 'ffffff'], ['Vorstand', 'hffhfh'], ['Sportl. Leitung', 'hfffhh'], ['Jugendleitung', '0hff0h'], ['Trainer', '0hffhh'], ['Mannschaftskassenwart', '000f00'], ['Kassenwart (Verein)', '000fh0'], ['Platzwart Nord', '0000ff']])}<div class="card"><div style="font-size:12.5px;color:var(--fg2)"><b>So lesen:</b> Ein Punkt je Bereich. Antippen einer Zeile öffnet die Rolle, Antippen einer Spalte zeigt alle Rechte dieses Bereichs.</div></div>`), 'Die Matrix beantwortet „Wer darf was?“ auf einen Blick und macht Lücken und Überschneidungen sichtbar.')}
+ </div>`,
+ rolle: () => `<div class="row">
+  ${fig(1, 'Neue Rolle: Start', phone('Neue Rolle', 'Schritt 1 von 3', `<div class="lab">Name</div><div class="inp f">Platzwart Nord</div>
+   <div class="lab" style="margin-top:2px">Beschreibung (optional)</div><div class="inp" style="color:var(--fg3)">Kümmert sich um Platz 3 und 4</div>
+   <div class="lab" style="margin-top:2px">Womit starten?</div>
+   <div class="opt on"><i></i><div><b>Kopie einer vorhandenen Rolle</b><span>Rechte werden übernommen und können angepasst werden</span><div class="inp" style="margin-top:8px;padding:8px 11px">Platz-/Materialwart ▾</div></div></div>
+   <div class="opt"><i></i><div><b>Leer beginnen</b><span>Alle Rechte aus, du wählst selbst</span></div></div>
+   <div class="lab" style="margin-top:2px">Wird meist vergeben für</div>
+   <div style="display:flex;gap:8px"><span class="chip v" style="padding:7px 12px">Verein</span><span class="chip" style="padding:7px 12px">Abteilung</span><span class="chip" style="padding:7px 12px">Mannschaft</span></div>
+   <div class="btn p" style="margin-top:6px">Weiter</div>`), 'Name, Kopie oder leer, Geltungsbereich. Standardrollen werden nie verändert, sondern kopiert.')}
+  ${fig(2, 'Rechte wählen', phone('Neue Rolle', 'Schritt 2 von 3 · Platzwart Nord', `<div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px"><div style="flex:1"><b id="cnt" style="font:800 26px var(--display)">4</b> <span style="color:var(--fg3);font-size:12.5px">von <span id="tot">31</span> Rechten gewählt</span></div><span class="chip w">0 sensibel</span></div>${grp(2, 'platz')}`), 'Gruppen aufklappen, Rechte in Klartext einzeln wählen. Zähler und Hinweis zu sensiblen Rechten laufen mit. Sensible Rechte tragen 🔒 und lösen beim Aktivieren eine Warnung aus. Schalter sind bedienbar.')}
+  ${fig(3, 'Zusammenfassung', phone('Neue Rolle', 'Schritt 3 von 3', `<div class="hero"><small>Neue Rolle</small><div class="big" style="font-size:34px">Platzwart Nord</div><small>Wird meist vergeben für den ganzen Verein</small></div>
+   <div class="card"><div class="lab">Diese Rolle darf</div>${[['Platzbelegung, Material, Schlüssel verwalten', 'y'], ['Helferdienste planen', 'y'], ['News verfassen', 'y'], ['Vereinsüberblick ansehen', 'y']].map(([t, k]) => `<div class="yn"><i class="${k}">✓</i>${t}</div>`).join('')}<div class="lab" style="margin-top:8px">Diese Rolle darf nicht</div>${[['Mitglieder, Kassen und Rollen', 'n']].map(([t, k]) => `<div class="yn"><i class="${k}">✕</i>${t}</div>`).join('')}</div>
+   <div class="alert"><span>ℹ</span><div>Neue Rechte, die spätere App-Updates mitbringen, sind in dieser Rolle zunächst <b>aus</b>. Du bekommst dann einen Hinweis.</div></div>
+   <div class="btn p">Rolle anlegen</div><div class="btn">Zurück</div>`), 'Klartext statt Rechteliste: Was darf die Rolle, was nicht. Danach kann man die Rolle sofort an Personen vergeben.')}
+ </div>`,
+ detail: () => `<div class="row">
+  ${fig(1, 'Standardrolle ansehen', phone('Trainer', 'Standardrolle · Mannschaft', `<div class="card" style="display:flex;gap:10px;align-items:center"><span class="chip">🔒 Schreibgeschützt</span><span style="font-size:12px;color:var(--fg3);flex:1">Wird von Clubroof gepflegt</span></div>
+   <div style="display:flex;gap:8px"><div class="btn sm p" style="flex:1">⧉ Kopie anpassen</div><div class="btn sm" style="flex:1">+ Person</div></div>
+   <div class="sec">Personen · 11 <a>Alle ›</a></div><div class="card" style="padding:4px 12px">${[['Thomas Becker', '1. Mannschaft'], ['Michael Weber', '2. Mannschaft'], ['Nino Göbel', 'Co-Trainer 1.']].map(([n, s], i) => `<div class="rl" style="padding:8px 0;${i ? 'border-top:1px solid var(--line)' : ''}"><div class="av" style="margin:0">${n.split(' ').map((x) => x[0]).join('')}</div><div style="flex:1"><b style="font-size:13.5px">${n}</b><span class="s">${s}</span></div><span style="color:var(--fg4)">›</span></div>`).join('')}</div>
+   <div class="sec">Rechte · 14</div>${grp(1, 'trainer', true)}`), 'Standardrollen zeigen Personen und Rechte nur zum Lesen. Anpassen geht über „Kopie anpassen“.')}
+  ${fig(2, 'Eigene Rolle bearbeiten', phone('Platzwart Nord', 'Eigene Rolle · Verein', `<div class="seg"><span class="on">Rechte</span><span>Personen · 1</span><span>Verlauf</span></div>
+   <div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px"><div style="flex:1"><b style="font:800 24px var(--display)">4</b> <span style="color:var(--fg3);font-size:12.5px">Rechte aktiv</span></div><span class="chip v">Eigene</span></div>
+   <div class="alert"><span>★</span><div><b>Neues Recht verfügbar</b><br>„Sponsoren verwalten“ ist neu und in dieser Rolle noch aus.</div></div>${grp(1, 'platz')}`), 'Eigene Rollen lassen sich bearbeiten. Reiter „Verlauf“ zeigt, wer wann welche Rechte geändert hat (Protokoll).')}
+  ${fig(3, 'Rolle löschen', phone('Platzwart Nord', 'Eigene Rolle · Verein', `<div class="card"><b>1 Person hat diese Rolle</b><div class="rl" style="padding:8px 0"><div class="av" style="margin:0">KR</div><div><b style="font-size:13.5px">Klaus Richter</b><span class="s">Verein</span></div></div></div><div class="dim"></div><div class="sheet"><b style="font:800 22px var(--display);text-transform:uppercase">Rolle löschen?</b><div style="font-size:13px;color:var(--fg2)">Klaus Richter verliert die Rechte dieser Rolle. Wähle, was stattdessen gelten soll:</div><div class="opt on"><i></i><div><b>Auf andere Rolle umstellen</b><div class="inp" style="margin-top:6px;padding:8px 11px">Platz-/Materialwart ▾</div></div></div><div class="opt"><i></i><div><b>Rolle einfach entziehen</b></div></div><div class="btn" style="color:#FF8A8A;border-color:rgba(255,90,90,.45)">Ins Archiv verschieben</div><div class="btn">Abbrechen</div><div style="font-size:11px;color:var(--fg4);text-align:center">Wiederherstellen im Archiv möglich.</div></div>`), 'Löschen verschiebt ins Archiv. Vorher wird entschieden, was mit den Personen passiert.')}
+ </div>`,
+ person: () => `<div class="row">
+  ${fig(1, 'Person', phone('Michael Weber', 'Mitglied · Rollen und Rechte', `<div class="sec">Rollen</div>
+   ${[['Trainer', '2. Mannschaft', 'Standard'], ['Jugendleitung', 'Abteilung Jugend', 'Standard']].map(([r, s, t]) => `<div class="card" style="padding:10px 12px"><div class="rl"><div class="ic">✎</div><div style="flex:1"><b>${r}</b><span class="s">${s}</span></div><span class="chip">${t}</span><span style="color:var(--fg4);padding-left:6px">✕</span></div></div>`).join('')}
+   <div class="btn p">+ Rolle vergeben</div>
+   <div class="sec" style="margin-top:4px">Zusätzliche Rechte <a>Bearbeiten</a></div><div class="card"><span style="font-size:12.5px;color:var(--fg3)">Keine einzelnen Zusatzrechte.</span></div>
+   <div class="card" style="border-color:rgba(178,140,255,.4);background:var(--viol-bg)"><div class="rl"><div class="ic" style="background:rgba(178,140,255,.25)">👁</div><div style="flex:1"><b>Was darf Michael?</b><span class="s">Vorschau aller Rechte in Klartext</span></div><span style="color:var(--viol)">›</span></div></div>`), 'Alle Rollen mit Bereich, Rolle hinzufügen oder entziehen. Die Vorschau erklärt, was die Kombination bewirkt.')}
+  ${fig(2, 'Was darf diese Person?', phone('Michael Weber', 'Rechtevorschau', `<div class="seg"><span class="on">Darf</span><span>Darf nicht</span></div><div class="card">${[['2. Mannschaft', [['Kader und Aufstellung verwalten', 'Trainer'], ['Termine anlegen und ändern', 'Trainer'], ['Abwesenheitsgründe sehen', 'Trainer'], ['Mannschaftskasse führen', 'Trainer']]], ['Abteilung Jugend', [['Mannschaften anlegen', 'Jugendleitung'], ['Spielerbewegungen verwalten', 'Jugendleitung'], ['News freigeben', 'Jugendleitung']]]].map(([a, items]) => `<div class="lab" style="margin-top:6px">${a}</div>${items.map(([t, r]) => `<div class="yn"><i class="y">✓</i>${t}<span>${r}</span></div>`).join('')}`).join('')}</div><div class="alert"><span>ℹ</span><div>Rechte gelten nur im jeweiligen Bereich. Mannschaftskassen anderer Mannschaften sieht Michael nicht.</div></div>`), 'Gruppiert nach Bereich, mit Quelle der Berechtigung. Der Reiter „Darf nicht“ listet das Gegenteil.')}
+  ${fig(3, 'Rolle vergeben', phone('Michael Weber', 'Mitglied · Rollen und Rechte', `<div class="card"><b>Rollen</b></div><div class="dim"></div><div class="sheet"><b style="font:800 22px var(--display);text-transform:uppercase">Rolle vergeben</b><div class="lab">Rolle</div><div class="inp f">Kassenwart (Verein) ▾</div><div class="lab">Gilt für</div><div style="display:flex;gap:8px"><span class="chip v" style="padding:7px 12px">Ganzer Verein</span><span class="chip" style="padding:7px 12px;opacity:.4">Abteilung</span><span class="chip" style="padding:7px 12px;opacity:.4">Mannschaft</span></div><div style="font-size:11.5px;color:var(--fg3)">Diese Rolle gilt nur vereinsweit, andere Bereiche sind gesperrt.</div><div class="card" style="padding:9px 12px"><div class="lab" style="margin-bottom:2px">Danach darf Michael zusätzlich</div><div class="yn"><i class="y">✓</i>Vereinskasse ansehen und führen<span>sensibel 🔒</span></div></div><div class="btn p">Vergeben</div><div class="btn">Abbrechen</div></div>`), 'Rolle und Bereich wählen. Die App zeigt vorher, was sich ändert, und warnt bei sensiblen Rechten. Nur Admins können vergeben.')}
+ </div>`,
+ mannschaft: () => `<div class="row">
+  ${fig(1, 'Mannschaft bearbeiten', phone('B1 B-Jugend', 'Mannschaft bearbeiten', `<div class="sec">Datenschutz in der Mannschaft</div>
+   <div class="card"><div class="lab">Abwesenheitsgründe (Krankheit, Verletzung …) sehen</div>
+   <div class="opt on" style="margin-top:6px"><i></i><div><b>Nur das Trainerteam</b><span>Empfohlen. Spieler sehen nur „abwesend“ ohne Grund</span></div></div>
+   <div class="opt" style="margin-top:8px"><i></i><div><b>Das Trainerteam und die Mannschaft</b><span>Alle Mitglieder der Mannschaft sehen den Grund</span></div></div>
+   <div style="font-size:11.5px;color:var(--fg3);margin-top:10px">Das Trainerteam sieht die Gründe immer. Eltern sehen die Gründe ihres Kindes.</div></div>
+   <div class="sec" style="margin-top:4px">Weitere Sichtbarkeiten</div>
+   <div class="card" style="padding:4px 14px">${[['Zu- und Absagen für die Mannschaft sichtbar', 1], ['Aufstellung für die Mannschaft sichtbar', 0], ['Kasse für die Mannschaft sichtbar', 1]].map(([t, on], i) => `<div class="pr" style="padding:11px 0;${i ? '' : 'border-top:0'}"><div>${t}</div><label class="sw"><input type="checkbox" ${on ? 'checked' : ''}><i></i></label></div>`).join('')}</div>`), 'Neue Einstellung je Mannschaft, vom Trainerteam selbst einzustellen. Standard: nur Trainerteam. Zusammen mit den vorhandenen Sichtbarkeiten (Zu-/Absagen, Aufstellung).')}
+  ${fig(2, 'Was Spieler sehen', phone('Training Di, 20.10.', 'Teilnehmer', `<div class="seg"><span class="on">Nur Trainerteam</span><span>Mannschaft</span></div>
+   <div class="card"><div class="lab">Absagen · 2</div>${[['Anton Wulf', 'Trainer sieht: krank, Grippe', 'Spieler sehen: abwesend'], ['Paul Neumann', 'Trainer sieht: verletzt, Knie', 'Spieler sehen: abwesend']].map(([n, a, b]) => `<div class="rl" style="padding:8px 0;border-top:1px solid var(--line)"><div class="av" style="margin:0">${n.split(' ').map((x) => x[0]).join('')}</div><div style="flex:1"><b style="font-size:13.5px">${n}</b><span class="s" style="display:block">${a}</span><span class="s" style="display:block;color:var(--fg4)">${b}</span></div><span class="chip b">Absage</span></div>`).join('')}</div>
+   <div class="alert"><span>ℹ</span><div>So wirkt die Einstellung: Das Trainerteam sieht Grund und Freitext, die Mannschaft nur „abwesend“.</div></div>`), 'Vorschau der Wirkung, damit klar ist, was die Einstellung bewirkt.')}
+ </div>`,
+};
+const TITLES = { uebersicht: 'Übersicht', rolle: 'Eigene Rolle anlegen', detail: 'Rolle ansehen und bearbeiten', person: 'Person und Vorschau', mannschaft: 'Abwesenheitsgründe' };
+let cur = 'uebersicht';
+function cnt() { const v = document.getElementById('view'); const c = v.querySelector('#cnt'); const ds = v.querySelectorAll('details'); let tot = 0; ds.forEach((d, i) => { const n = d.querySelectorAll('input:checked').length; tot += n; const s = d.querySelector('.n'); if (s) s.textContent = n + ' von ' + d.querySelectorAll('input').length; }); if (c) c.textContent = tot; const t = v.querySelector('#tot'); if (t) t.textContent = v.querySelectorAll('details input').length; const sens = [...v.querySelectorAll('.pr')].filter((r) => r.querySelector('.lock') && r.querySelector('input:checked')).length; const ch = v.querySelector('.chip.w'); if (ch && c) ch.textContent = sens + ' sensibel'; }
+function render() { document.getElementById('view').innerHTML = VIEWS[cur](); cnt(); }
+document.getElementById('tabs').innerHTML = Object.keys(VIEWS).map((k) => `<button data-k="${k}" aria-pressed="${k === cur}">${TITLES[k]}</button>`).join('');
+document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; cur = b.dataset.k; document.querySelectorAll('#tabs button').forEach((x) => x.setAttribute('aria-pressed', x === b)); render(); });
+render();
+</script>

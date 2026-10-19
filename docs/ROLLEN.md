@@ -101,3 +101,11 @@ Der Admin kann in „Mitglied bearbeiten“ einzelnen Mitgliedern **individuelle
 ## 7. Umsetzungsstand (10.10.2026)
 
 Paket R ist umgesetzt: Vorstand ohne `cash.read` (Migration 0032 entfernt es auch in bestehenden Vereinen), 2-Faktor-Pflicht nur für das Administrationskonto (Fulladmin) plus „Code per E-Mail“, Co-Trainer erhalten für ihre Mannschaft die Rechte der Rolle Trainer (in `loadActor`, ohne zusätzliche Rollenvergabe), individuelle Rechte je Mitglied (Tabelle `person_permissions`, Bildschirm „Individuelle Rechte“), „Mannschaft bearbeiten“ für das Trainerteam. Paket F (Rollenfilter) ist umgesetzt. Offen: Rechte der Betreuer, Abwesenheitsgründe abstufen, Rollenvorlagen angleichen.
+
+## 8. Festlegungen vom 19.10.2026 (Planung)
+
+1. **Keine neuen Standardrollen** vorerst (Betreuer, Abteilungsleitung, Pressewart, Veranstaltungsausschuss, Spielwart, Datenschutzbeauftragter, Schriftführer bleiben Ideen).
+2. **Abwesenheitsgründe:** Das Trainerteam sieht Grund und Freitext immer. Je Mannschaft stellt das Trainerteam selbst ein, ob **nur das Trainerteam** (Standard) oder **die ganze Mannschaft** die Gründe sieht. Eltern sehen die Gründe ihres Kindes. Keine Abstufung nach Kategorie.
+3. **Forum-Moderation** (`forum.moderate`) wird hinten angestellt.
+4. **Rollen anlegen, ändern und vergeben nur Admins.** Vorstandsmitglieder können zugleich Admin sein.
+5. **Eigene Rollen je Verein** kommen: Standardrollen sind schreibgeschützt und werden nur kopiert; eigene Rollen mit Name, Beschreibung, Rechteauswahl in Klartext nach Gruppen, Geltungsbereich, sensible Rechte markiert und mit Warnung; neue Rechte aus Updates sind in eigenen Rollen zunächst aus (Hinweis); Löschen mit Umstellen der Personen und Archiv; Protokoll. Übersicht mit Rollen, Personen und Matrix, Rechtevorschau „Was darf diese Person?“. Entwurf: `docs/design/anstoss/Rollen.html`.
