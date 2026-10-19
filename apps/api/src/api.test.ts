@@ -2730,6 +2730,18 @@ describe.skipIf(!url)('API', () => {
         startsAt: taken.startsAt,
         facilityId: rasen.facility.id,
       };
+      // Zwei Gruppen parallel auf einem Platz sind üblich: nur ein Hinweis, kein Konflikt
+      const parallel = await send('POST', `/teams/${b1.id}/events`, coach.token, payload);
+      expect(parallel.status).toBe(201);
+      const parallelId = (parallel.body as { id: string }).id;
+      const range = `facilityId=${rasen.facility.id}&startsAt=${encodeURIComponent(taken.startsAt)}&endsAt=${encodeURIComponent(taken.endsAt)}`;
+      const hint = await get<{ groups: string[]; crowded: boolean }>(
+        `/facilities/parallel?${range}`,
+        coach.token,
+      );
+      expect(hint.groups.length).toBeGreaterThanOrEqual(1);
+      expect(hint.crowded).toBe(true);
+      // Erst die dritte Gruppe überschreitet die feste Grenze
       const clash = await send<{ error: string }>(
         'POST',
         `/teams/${b1.id}/events`,
@@ -2745,6 +2757,8 @@ describe.skipIf(!url)('API', () => {
       expect(forced.status).toBe(201);
       const after = await get<FacilityOccupancy>(week, coach.token);
       expect(after.conflicts).toBeGreaterThanOrEqual(2);
+      // Die Hilfsgruppe wieder entfernen, damit spätere Tests dieselben Termine sehen wie zuvor
+      await db.delete(s.events).where(eq(s.events.id, parallelId));
     });
 
     it('Platzverantwortliche sperren und heben auf, auf Wunsch mit Absage der Termine', async () => {
@@ -2871,12 +2885,22 @@ describe.skipIf(!url)('API', () => {
       const taken = occ.facilities
         .flatMap((f) => f.bookings.map((b) => ({ f, b })))
         .find(({ b }) => b.kind === 'event' && !b.cancelled)!;
+      // Mit einer zweiten Gruppe ist der Platz noch nicht überbelegt – erst mit der dritten
+      const second = await send('POST', `/teams/${b1.id}/events`, coach.token, {
+        type: 'team_event',
+        title: 'Parallel-Gruppe',
+        startsAt: taken.b.startsAt,
+        facilityId: taken.f.facility.id,
+      });
+      expect(second.status).toBe(201);
+      const secondId = (second.body as { id: string }).id;
       const clash = await send<{ error: string }>('PATCH', `/events/${target.id}`, coach.token, {
         startsAt: taken.b.startsAt,
         facilityId: taken.f.facility.id,
       });
       expect(clash.status).toBe(409);
       expect(clash.body.error).toBe('facility_conflict');
+      await db.delete(s.events).where(eq(s.events.id, secondId));
 
       const noop = await send<EventDetail>('PATCH', `/events/${target.id}`, coach.token, {
         title: 'Serien-Test',

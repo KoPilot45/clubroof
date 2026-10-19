@@ -428,6 +428,13 @@
       "when": 1792359810762,
       "tag": "0060_import_laeufe",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1792393712125,
+      "tag": "0061_teilnahme_zwei_modelle",
+      "breakpoints": true
     }
   ]
 }

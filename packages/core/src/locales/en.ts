@@ -213,6 +213,7 @@ export const en: Record<string, string> = {
   '{0} Tor': '{0} goal',
   '{0} Tore': '{0} goals',
   '{0} Tore erfasst': '{0} goals recorded',
+  '{0} trainiert parallel': '{0} trains in parallel',
   '{0} überfällig': '{0} overdue',
   '{0} übersprungen': '{0} skipped',
   '{0} Uhr': '{0}',
@@ -1402,6 +1403,8 @@ export const en: Record<string, string> = {
   'Der Platz ist gesperrt: {0}. Bitte wähle einen anderen Platz oder Zeitpunkt.':
     'The pitch is closed: {0}. Please choose another pitch or time.',
   'Der Platz ist zu dieser Zeit belegt ({0}{1}).': 'The pitch is booked at this time ({0}{1}).',
+  'Der Platz ist zu dieser Zeit schon mit mehreren Gruppen belegt ({0}).':
+    'The pitch is already booked by several groups at this time ({0}).',
   'Der Prüfbericht': 'The audit report',
   'Der Prüfbericht ist abgegeben und nicht mehr änderbar.':
     'The audit report has been submitted and can no longer be changed.',
@@ -3513,6 +3516,7 @@ export const en: Record<string, string> = {
   'Platz {0}': 'Pitch {0}',
   'Platz belegt': 'Pitch booked',
   'Platz gesperrt': 'Pitch closed',
+  'Platz gesperrt: {0}': 'Pitch blocked: {0}',
   'Platz sperren': 'Block pitch',
   'Platz- und Materialwart': 'Groundskeeper and equipment manager',
   Platzbelegung: 'Pitch bookings',
@@ -3738,6 +3742,7 @@ export const en: Record<string, string> = {
   'Schnellzugriff anpassen': 'Customise quick access',
   'Schon eingetragen: {0}. Diese Schicht bleibt bestehen.':
     'Already signed up: {0}. This shift stays.',
+  'Schon mehrere Gruppen auf dem Platz: {0}': 'Several groups already on the pitch: {0}',
   'Schreibweisen im DFBnet (durch Komma getrennt)': 'Spellings in DFBnet (comma-separated)',
   Schriftgröße: 'Font size',
   'Schritt {0} von {1}': 'Step {0} of {1}',

@@ -4,7 +4,7 @@ export const TEAM_TEMPLATES = ['performance', 'classic', 'youth', 'leisure'] as 
 export type TeamTemplate = (typeof TEAM_TEMPLATES)[number];
 
 /** Teilnahme-Modelle (Konzept §9). */
-export const PARTICIPATION_MODES = ['auto_accept', 'active_response', 'absences_only'] as const;
+export const PARTICIPATION_MODES = ['auto_accept', 'active_response'] as const;
 export type ParticipationMode = (typeof PARTICIPATION_MODES)[number];
 
 export const EVENT_TYPES = [

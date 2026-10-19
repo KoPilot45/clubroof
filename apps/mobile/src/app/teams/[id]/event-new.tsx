@@ -110,6 +110,16 @@ export default function NewEventScreen() {
   if (customMeetAt > startsAt) customMeetAt = new Date(customMeetAt.getTime() - 86_400_000);
   const meetingAt = customMeeting ? customMeetAt : null;
   const isAway = type === 'match' && home === 'away';
+  // Ruhiger Hinweis (Paket E2): wer zur selben Zeit auf dem Platz ist; erst ab drei Gruppen eine Warnung
+  const parallelFacility = !isAway && place !== 'other' ? place : null;
+  const parallel = useQuery({
+    queryKey: ['parallel', parallelFacility, startsAt.toISOString(), endsAt.toISOString()],
+    enabled: !!parallelFacility && durationMinutes <= 12 * 60,
+    queryFn: () =>
+      api<{ groups: string[]; blocked: string | null; crowded: boolean }>(
+        `/facilities/parallel?facilityId=${parallelFacility}&startsAt=${encodeURIComponent(startsAt.toISOString())}&endsAt=${encodeURIComponent(endsAt.toISOString())}`,
+      ),
+  });
   // Wiederholen: wöchentlich bis zu einem Datum (Standard: 8 Wochen)
   const until = repeatUntil ?? toIsoDate(addDays(fromIsoDate(date), 56));
   const untilValid = until >= date;
@@ -183,6 +193,25 @@ export default function NewEventScreen() {
               icon="warning"
               loading={save.isPending}
               onPress={() => save.mutate(true)}
+            />
+          ) : null}
+          {parallel.data?.blocked ? (
+            <Chip
+              tone="action"
+              icon="warning"
+              label={t(`Platz gesperrt: ${parallel.data.blocked}`)}
+            />
+          ) : parallel.data?.crowded ? (
+            <Chip
+              tone="action"
+              icon="people"
+              label={t(`Schon mehrere Gruppen auf dem Platz: ${parallel.data.groups.join(', ')}`)}
+            />
+          ) : parallel.data?.groups.length ? (
+            <Chip
+              tone="info"
+              icon="people-outline"
+              label={t(`${parallel.data.groups.join(', ')} trainiert parallel`)}
             />
           ) : null}
           {validation ? <Chip tone="action" label={validation} /> : null}

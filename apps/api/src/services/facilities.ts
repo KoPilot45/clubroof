@@ -30,6 +30,31 @@ const eventEnd = (e: Pick<EventRow, 'startsAt' | 'endsAt'>) =>
 const overlaps = (aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) =>
   aStart < bEnd && bStart < aEnd;
 
+/**
+ * Feste Grenze (Paket E2): Zwei Gruppen parallel auf einem Platz sind üblich; erst ab drei Terminen, die sich zeitlich
+ * überlappen, gilt der Platz als überbelegt. Es bleibt ein Hinweis – „Trotzdem anlegen“ geht immer.
+ */
+export const PARALLEL_LIMIT = 3;
+
+/** Höchste Zahl gleichzeitiger Termine innerhalb von [from, to). */
+export function maxConcurrent(items: { s: Date; e: Date }[], from: Date, to: Date): number {
+  const points: { t: number; d: number }[] = [];
+  for (const i of items) {
+    if (!overlaps(i.s, i.e, from, to)) continue;
+    points.push({ t: Math.max(i.s.getTime(), from.getTime()), d: 1 });
+    points.push({ t: Math.min(i.e.getTime(), to.getTime()), d: -1 });
+  }
+  // Ende vor Beginn bei gleicher Zeit: aneinander anschließende Termine überlappen nicht
+  points.sort((a, b) => a.t - b.t || a.d - b.d);
+  let now = 0;
+  let max = 0;
+  for (const p of points) {
+    now += p.d;
+    max = Math.max(max, now);
+  }
+  return max;
+}
+
 function requireModule(actor: Actor) {
   if (!moduleEnabled(actor, 'facility_booking')) {
     throw forbidden('Die Platzbelegung ist für den Verein nicht aktiviert.');
@@ -141,10 +166,20 @@ export async function getOccupancy(
     ].sort((a, b) => a._s.getTime() - b._s.getTime());
 
     const active = own.filter((b) => !b.cancelled);
+    const eventsHere = active.filter((b) => b.kind === 'event');
     for (const a of active) {
-      for (const b of active) {
-        if (a === b || (a.kind === 'block' && b.kind === 'block')) continue;
-        if (overlaps(a._s, a._e, b._s, b._e)) a.conflict = true;
+      if (a.kind === 'block') {
+        // Sperrung: gilt als Konflikt, sobald ein Termin hineinfällt
+        a.conflict = eventsHere.some((b) => overlaps(a._s, a._e, b._s, b._e));
+      } else {
+        const blocked = active.some((b) => b.kind === 'block' && overlaps(a._s, a._e, b._s, b._e));
+        a.conflict =
+          blocked ||
+          maxConcurrent(
+            eventsHere.map((b) => ({ s: b._s, e: b._e })),
+            a._s,
+            a._e,
+          ) >= PARALLEL_LIMIT;
       }
     }
     conflicts += active.filter((b) => b.conflict).length;
@@ -200,14 +235,75 @@ export async function assertFacilityFree(
       `Der Platz ist gesperrt: ${blocks[0]!.reason}. Bitte wähle einen anderen Platz oder Zeitpunkt.`,
     );
   }
-  if (clash.length > 0 && !allowConflict) {
-    const first = clash[0]!;
+  const crowded =
+    maxConcurrent(
+      [
+        ...clash.map((r) => ({ s: r.event.startsAt, e: eventEnd(r.event) })),
+        { s: startsAt, e: endsAt },
+      ],
+      startsAt,
+      endsAt,
+    ) >= PARALLEL_LIMIT;
+  if (crowded && !allowConflict) {
+    const names = clash.map((r) => r.badge ?? r.event.title).join(', ');
     throw new HttpError(
       409,
       'facility_conflict',
-      `Der Platz ist zu dieser Zeit belegt (${first.badge ? `${first.badge} · ` : ''}${first.event.title}).`,
+      `Der Platz ist zu dieser Zeit schon mit mehreren Gruppen belegt (${names}).`,
     );
   }
+}
+
+/** Ruhiger Hinweis vor dem Anlegen: welche Gruppen zur selben Zeit auf dem Platz sind und ob er gesperrt ist. */
+export async function getParallel(
+  db: Db,
+  actor: Actor,
+  facilityId: string,
+  startsAt: Date,
+  endsAt: Date,
+): Promise<{ groups: string[]; blocked: string | null; crowded: boolean }> {
+  await requireViewer(db, actor);
+  const [blocks, events] = await Promise.all([
+    db
+      .select()
+      .from(s.facilityBlocks)
+      .where(
+        and(
+          eq(s.facilityBlocks.facilityId, facilityId),
+          eq(s.facilityBlocks.clubId, actor.club.id),
+          lt(s.facilityBlocks.startsAt, endsAt),
+          gt(s.facilityBlocks.endsAt, startsAt),
+        ),
+      ),
+    db
+      .select({ event: s.events, badge: s.teams.badge })
+      .from(s.events)
+      .leftJoin(s.teams, eq(s.teams.id, s.events.teamId))
+      .where(
+        and(
+          eq(s.events.facilityId, facilityId),
+          eq(s.events.clubId, actor.club.id),
+          eq(s.events.status, 'scheduled'),
+          lt(s.events.startsAt, endsAt),
+          gt(s.events.startsAt, new Date(startsAt.getTime() - 12 * 3_600_000)),
+        ),
+      ),
+  ]);
+  const clash = events.filter((r) => eventEnd(r.event) > startsAt);
+  const crowded =
+    maxConcurrent(
+      [
+        ...clash.map((r) => ({ s: r.event.startsAt, e: eventEnd(r.event) })),
+        { s: startsAt, e: endsAt },
+      ],
+      startsAt,
+      endsAt,
+    ) >= PARALLEL_LIMIT;
+  return {
+    groups: [...new Set(clash.map((r) => r.badge ?? r.event.title))],
+    blocked: blocks[0]?.reason ?? null,
+    crowded,
+  };
 }
 
 /** Anstehende Termine auf dem Platz, die in den gesperrten Zeitraum fallen. */

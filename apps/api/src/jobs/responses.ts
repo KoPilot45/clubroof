@@ -6,7 +6,7 @@ import { DEFAULT_REMINDER_HOURS, calendarDayOf, responseDeadline, toIsoDate } fr
 import { schema as s, type Db } from '@clubroof/db';
 
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
-import { and, eq, gt, inArray, lt, ne } from 'drizzle-orm';
+import { and, eq, gt, inArray, lt } from 'drizzle-orm';
 import { coachUsers, digestAt } from '../notify/coaches';
 import { deliver } from '../notify/deliver';
 import { toDeadlineRule } from '../services/events';
@@ -28,7 +28,6 @@ async function upcoming(db: Db | Tx, club: Club, now: Date, days: number) {
         eq(s.events.status, 'scheduled'),
         gt(s.events.startsAt, now),
         lt(s.events.startsAt, new Date(now.getTime() + days * 24 * HOUR)),
-        ne(s.teams.participationMode, 'absences_only'),
       ),
     );
   if (rows.length === 0) return [];
