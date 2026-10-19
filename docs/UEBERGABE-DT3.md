@@ -8,7 +8,7 @@ Paket **DT3** (`docs/PAKETE.md`, Zeile DT3) behebt die Befunde aus dem Durchgang
 
 ## Zuerst
 1. `CLAUDE.md`; Planungsstand mergen (`git fetch origin claude/app-entwicklung-planung-183gtv`).
-2. Zeile **DT3**, außerdem DT und DT2 und `docs/DESKTOP-VORLAGEN.md` lesen. Entwürfe: `docs/design/anstoss/Desktop.html`, `DesktopSonder.html`.
+2. Zeile **DT3**, außerdem DT und DT2 und `docs/DESKTOP-VORLAGEN.md` lesen. Entwürfe: `docs/design/anstoss/Desktop.html`, `DesktopSonder.html`, für die Laptop-Breiten `DesktopLaptop.html`.
 3. Vorher-Bilder erzeugen: `SCHEME` dunkel und hell, 1440 und 1100 px, mit einem Skript neben `scripts/e2e/desktop-alle.mjs` (Admin und Trainer, Seiten je Vorlage).
 
 ## Aufgaben (jeweils eigener Commit, `pnpm check`)

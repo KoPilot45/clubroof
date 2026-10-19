@@ -1,0 +1,245 @@
+<title>Laptop-Ansicht</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Saira+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Layout: ein Browserfenster 1280 × 820 (Desktop ab 1100 px) mit fester Seitenleiste, umschaltbar zwischen den fünf Hauptseiten und der Vereinskasse-Statistik. Der Entwurf wird auf die Breite des Fensters skaliert. Dunkel im Stil „Anstoß“. */
+:root {
+  --page: #070C09; --bg: #0B120E; --side: #0E1712; --card: #151D18; --fg: #F2F7F3; --fg2: #C5D6CB; --fg3: #9FB5A6; --fg4: #6F8277;
+  --line: rgba(255,255,255,.09); --line2: rgba(255,255,255,.14); --grid: rgba(255,255,255,.08);
+  --accent: #2EDB6B; --on-accent: #06210F; --p1: #1E7A44; --p2: #0F3D24;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --warn: #FFB020; --bad: #FF6B6B; --viol: #B28CFF; --blue: #5AA9FF;
+  --display: 'Saira Condensed','Arial Narrow',sans-serif; --body: 'Open Sans',system-ui,sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.4 var(--body); padding-block: 22px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font: 800 30px/1 var(--display); text-transform: uppercase; letter-spacing: .02em; margin: 0 0 6px; }
+.intro { color: var(--fg3); max-width: 80ch; margin: 0 0 16px; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.tabs button { font: 700 17px/1 var(--display); letter-spacing: .03em; padding: 9px 16px; border-radius: 99px; border: 1px solid var(--line2); background: var(--card); color: var(--fg2); cursor: pointer; }
+.tabs button[aria-pressed="true"] { border-color: var(--accent); background: rgba(46,219,107,.12); color: var(--accent); }
+.note { font-size: 12px; color: var(--fg4); margin: 10px 2px 0; max-width: 100ch; }
+.stage { width: 100%; overflow-x: auto; }
+.holder { position: relative; }
+.win { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; background: var(--bg); border: 1px solid var(--line2); border-radius: 14px; overflow: hidden; display: flex; }
+.chrome { position: absolute; left: 0; right: 0; top: 0; height: 30px; background: #0a100c; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 7px; padding: 0 14px; z-index: 5; }
+.chrome i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.18); display: inline-block; } .chrome span { margin-left: 14px; font-size: 11px; color: var(--fg4); background: rgba(255,255,255,.05); border-radius: 6px; padding: 3px 14px; width: 360px; }
+
+/* Seitenleiste (fest, immer ausgeklappt) */
+.side { width: 208px; flex: none; margin-top: 30px; background: var(--side); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 14px 10px; gap: 4px; position: relative; overflow: hidden; }
+.side .wm { position: absolute; left: 0; top: 0; width: 100%; height: 150px; z-index: 0; pointer-events: none; }
+.brand { position: relative; display: flex; align-items: center; gap: 12px; padding: 4px 6px 16px; }
+.crest { width: 38px; height: 38px; border-radius: 50%; background: #fff; color: #0F3D24; display: grid; place-items: center; font: 800 15px var(--display); flex: none; box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+.brand b { font: 800 16px/1.05 var(--display); letter-spacing: .02em; } .brand small { display: block; color: var(--fg3); font-size: 11px; margin-top: 2px; }
+.nav { position: relative; display: flex; flex-direction: column; gap: 3px; }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; color: var(--fg2); font-weight: 600; font-size: 13px; text-decoration: none; cursor: pointer; }
+.nav a svg { width: 18px; height: 18px; flex: none; }
+.nav a:hover { background: rgba(255,255,255,.05); }
+.nav a.on { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.nav .badge { margin-left: auto; font: 700 11px var(--body); background: rgba(255,90,90,.9); color: #fff; border-radius: 99px; padding: 1px 7px; }
+.nav .badge{margin-right:-4px}
+.sep { height: 1px; background: var(--line); margin: 10px 6px; }
+.nav a.viol { color: var(--viol); } .nav a.blue { color: var(--blue); }
+.sp { flex: 1; }
+.me { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 14px; background: rgba(255,255,255,.05); position: relative; }
+.me .av { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font: 800 14px var(--display); } .me b { font-size: 13px; display: block; } .me small { color: var(--fg3); font-size: 11px; }
+
+/* Inhalt */
+.main { flex: 1; min-width: 0; margin-top: 30px; overflow: hidden; padding: 16px 22px 0; display: flex; flex-direction: column; gap: 14px; position: relative; }
+.top { display: flex; align-items: center; gap: 14px; }
+.top h2 { margin: 0; font: 800 28px/1 var(--display); letter-spacing: .01em; } .top small { display: block; font-size: 12px; color: var(--fg3); margin-bottom: 2px; }
+.search { margin-left: auto; width: 240px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px; color: var(--fg4); font-size: 13px; display: flex; justify-content: space-between; } .search kbd { font: 700 11px var(--body); border: 1px solid var(--line2); border-radius: 5px; padding: 0 6px; color: var(--fg3); }
+.ibtn { width: 38px; height: 38px; border-radius: 50%; background: var(--card); border: 1px solid var(--line); display: grid; place-items: center; position: relative; } .ibtn i { position: absolute; top: -3px; right: -3px; background: #ff5a5f; color: #fff; font: 700 10px var(--body); border-radius: 99px; padding: 1px 5px; font-style: normal; }
+.chips { display: flex; gap: 8px; } .chip { padding: 7px 14px; border-radius: 99px; border: 1px solid var(--line2); background: var(--card); font: 700 15px/1 var(--display); letter-spacing: .03em; color: var(--fg2); } .chip.on { border-color: var(--accent); background: rgba(46,219,107,.12); color: var(--accent); }
+.cols { display: grid; gap: 18px; min-height: 0; }
+.c-2-1 { grid-template-columns: minmax(0,1fr) 290px; } .c-1-1 { grid-template-columns: 1fr 1fr; } .c-3 { grid-template-columns: repeat(3, 1fr); } .c-list { grid-template-columns: 330px minmax(0,1fr); } .c-set { grid-template-columns: 240px minmax(0,1fr); } .c-team { grid-template-columns: minmax(0,1fr) 250px; }
+.col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; }
+.card h3 { margin: 0 0 8px; font: 700 17px/1 var(--display); letter-spacing: .04em; text-transform: uppercase; }
+.sec { display: flex; align-items: center; gap: 9px; font: 700 20px/1 var(--display); text-transform: uppercase; letter-spacing: .04em; } .sec::before { content: ""; width: 4px; height: 18px; border-radius: 2px; background: var(--accent); } .sec a { margin-left: auto; font: 700 12px var(--body); text-transform: none; letter-spacing: 0; color: var(--accent); }
+.hero { position: relative; isolation: isolate; border-radius: 24px; padding: 16px 20px; overflow: hidden; background: radial-gradient(120% 120% at 90% 0%, var(--p1) 0%, var(--p2) 60%, var(--bg) 130%); border: 1px solid rgba(255,255,255,.08); }
+.hero .waben { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+.hero.blue { background: radial-gradient(120% 120% at 90% 0%, #1F55D6 0%, #0B2A6B 62%, var(--bg) 130%); }
+.tag { display: inline-block; background: var(--accent); color: var(--on-accent); font: 800 11px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; padding: 6px 12px; border-radius: 99px; }
+.over { font: 700 11px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; opacity: .9; }
+.big { font: 800 68px/.95 var(--display); } .big small { font: 700 28px var(--display); letter-spacing: .06em; margin-left: 8px; }
+.ttl { font: 800 28px/1.05 var(--display); } .ttl em { font-style: normal; color: var(--accent); }
+.line { font-size: 13px; color: rgba(255,255,255,.85); }
+.arrow { position: absolute; right: 22px; top: 50%; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.2); display: grid; place-items: center; font-size: 22px; }
+.rb { display: flex; height: 9px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,.2); } .rb i { display: block; }
+.rg { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 12px; color: rgba(255,255,255,.92); margin-top: 7px; align-items: center; } .rg span { display: inline-flex; align-items: center; gap: 6px; } .rg i.d { width: 8px; height: 8px; border-radius: 4px; display: inline-block; } .rg .more { margin-left: auto; color: var(--accent); font-weight: 800; }
+.dots { display: flex; gap: 6px; margin-top: 12px; } .dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.4); } .dots i.on { width: 22px; background: var(--accent); }
+.tiles3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.mini { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; } .mini .ic { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; font-size: 17px; flex: none; } .mini b { font-size: 13.5px; display: block; } .mini span { font-size: 11.5px; color: var(--fg3); }
+.li { display: flex; align-items: center; gap: 12px; padding: 10px 2px; position: relative; font-size: 13.5px; } .li + .li::before { content: ""; position: absolute; left: 52px; right: 0; top: 0; height: 1px; background: var(--line); }
+.li .dt { width: 40px; height: 44px; border-radius: 12px; background: rgba(46,219,107,.14); color: var(--accent); display: grid; place-items: center; text-align: center; font: 800 18px/1 var(--display); flex: none; } .li .dt small { display: block; font: 700 9px var(--display); letter-spacing: .1em; }
+.li .tx { flex: 1; min-width: 0; } .li .tx b { display: block; font-weight: 600; } .li .tx span { display: block; font-size: 11.5px; color: var(--fg3); }
+.pill { font: 700 10.5px var(--body); border-radius: 99px; padding: 3px 9px; } .pill.ok { color: var(--accent); background: rgba(46,219,107,.13); } .pill.un { color: var(--warn); background: rgba(255,176,32,.16); } .pill.no { color: #FF8A8A; background: rgba(255,90,90,.16); } .pill.n { color: var(--fg2); background: rgba(255,255,255,.1); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; } th { text-align: left; font: 700 11px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--fg3); padding: 8px 10px; border-bottom: 1px solid var(--line2); } td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; } tr.sel td { background: rgba(46,219,107,.08); }
+.av2 { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.12); display: inline-grid; place-items: center; font: 700 11px var(--body); color: var(--fg2); margin-right: 10px; vertical-align: middle; }
+.nr { font: 800 16px var(--display); color: var(--fg3); }
+.bars { display: inline-flex; align-items: flex-end; gap: 3px; height: 18px; vertical-align: middle; margin-right: 8px; } .bars i { width: 6px; border-radius: 2px; background: var(--accent); }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; font-size: 13.5px; font-weight: 600; } .tile .ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; flex: none; font-size: 16px; } .tile em { margin-left: auto; font: 700 11px var(--body); font-style: normal; color: var(--warn); background: rgba(255,176,32,.16); border-radius: 99px; padding: 2px 8px; }
+.grp { font: 700 12px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--fg3); margin: 4px 2px; display: flex; align-items: center; gap: 8px; } .grp::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--accent)); }
+.tl { display: flex; flex-direction: column; gap: 8px; }
+.sw { width: 44px; height: 26px; border-radius: 13px; background: rgba(255,255,255,.16); position: relative; flex: none; } .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; } .sw.on { background: var(--accent); } .sw.on::after { transform: translateX(18px); }
+.setnav a { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 14px; color: var(--fg2); font-weight: 600; font-size: 14px; } .setnav a.on { background: rgba(255,255,255,.08); color: var(--fg); box-shadow: inset 3px 0 0 var(--accent); }
+.opt { display: flex; gap: 12px; align-items: flex-start; border: 1.5px solid var(--line); border-radius: 16px; padding: 12px 14px; background: var(--card); } .opt.on { border-color: var(--accent); background: rgba(46,219,107,.1); } .opt b { display: block; font-size: 14px; } .opt span { font-size: 12px; color: var(--fg3); }
+.rb2 { display: flex; height: 9px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,.12); } .chart { position: relative; } .chart svg { display: block; width: 100%; overflow: visible; } .chart text { fill: var(--fg3); font: 10px var(--body); }
+.tip { background: rgba(255,255,255,.06); border: 1px solid var(--line2); border-radius: 10px; padding: 5px 10px; font-size: 11px; color: var(--fg2); display: flex; gap: 4px 12px; flex-wrap: wrap; align-items: baseline; margin-bottom: 6px; } .tip b { color: var(--fg); font: 800 14px var(--display); } .tip em { font-style: normal; color: var(--fg); font-weight: 700; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; } .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; } .kpi small { color: var(--fg3); font-size: 11px; } .kpi b { display: block; font: 800 26px/1.1 var(--display); }
+.track { position: relative; height: 10px; border-radius: 5px; background: rgba(255,255,255,.1); margin-top: 5px; } .track .f { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0 4px 4px 0; } .track .pl { position: absolute; top: -4px; bottom: -4px; width: 2px; background: #fff; }
+.rw { margin-bottom: 11px; } .rw .t { display: flex; justify-content: space-between; font-size: 12.5px; } .rw .t span { color: var(--fg2); font-size: 11.5px; }
+.brand small{display:none}.brand{padding-bottom:10px}.me b{white-space:nowrap;font-size:12.5px}.me small{white-space:nowrap}.chip{white-space:nowrap}.top .search{min-width:0;flex:0 1 200px}.tiles3{gap:10px}.mini{padding:10px 12px}.mini b{font-size:13px}.tile{padding:10px 12px;font-size:13px}.sec{font-size:18px}.main:after{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(transparent,var(--bg));pointer-events:none}td,.who{white-space:nowrap}.chips{flex-wrap:nowrap}
+</style>
+
+<h1>Laptop-Ansicht</h1>
+<p class="intro">Entwurf zu Paket DT3 (Punkt 4): die fünf Hauptseiten bei Laptop-Breiten von 1100 bis 1399 px (hier 1280 × 720). Kompakte Seitenleiste, Spalten mit Mindestbreite, nichts wird abgeschnitten, Namen bleiben voll sichtbar, weniger Leerraum. Alle Namen und Zahlen sind erfunden.</p>
+<div class="tabs" id="tabs"></div>
+<div class="stage" id="stage"><div class="holder" id="holder"><div class="win" id="win"></div></div></div>
+<p class="note">Fenster 1280 × 720, kompakte Stufe: Seitenleiste 208 px, Inhalt ca. 1030 px, Fließtext 13–14 px, Abschnittsabstand 22 px. Ab 1400 px gilt der Entwurf „Desktop-Ansicht“.</p>
+
+<script>
+const IC = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4z"/></svg>',
+  team: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14c3 0 5 2 5 5"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  club: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>',
+  more: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>',
+  euro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 8.5a4 4 0 100 7M7.5 11h6M7.5 13.5h6"/></svg>',
+};
+const NAV = [['home', 'Home', 'home'], ['team', 'Team', 'team'], ['termine', 'Termine', 'cal'], ['verein', 'Verein', 'club'], ['mehr', 'Mehr', 'more']];
+const sidebar = (on) => `<aside class="side"><svg class="wm waben-s"></svg>
+  <div class="brand"><div class="crest">SGW</div><div><b>SV Grün-Weiß<br>Musterstadt</b><small>Max Mustermann · Trainer</small></div></div>
+  <nav class="nav">${NAV.map(([k, l, i]) => `<a class="${on === k ? 'on' : ''}">${IC[i]}${l}</a>`).join('')}</nav>
+  <div class="sep"></div>
+  <nav class="nav"><a>${IC.home.replace('M4 11l8-7 8 7v9H4z', 'M11 4a7 7 0 100 14 7 7 0 000-14zM21 21l-4.5-4.5')}Suche<kbd style="margin-left:auto;font:700 11px var(--body);border:1px solid var(--line2);border-radius:5px;padding:0 6px;color:var(--fg3)">/</kbd></a>
+  <a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17V11a6 6 0 1112 0v6l2 2H4zM10 21h4"/></svg>Mitteilungen<span class="badge">3</span></a></nav>
+  <div class="sep"></div>
+  <nav class="nav"><a class="viol">${IC.shield}Verwaltung</a><a class="blue ${on === 'kasse' ? 'on' : ''}" style="${on === 'kasse' ? 'background:#1C4FA3;color:#fff' : ''}">${IC.euro}Vereinskasse</a></nav>
+  <div class="sp"></div>
+  <div class="me"><div class="av">MM</div><div><b>Max Mustermann</b><small>Trainer B1, C1</small></div></div></aside>`;
+const topbar = (kicker, title, chips = '') => `<div class="top"><div><small>${kicker}</small><h2>${title}</h2></div>${chips ? `<div class="chips" style="margin-left:24px">${chips}</div>` : ''}<div class="search">Suchen …<kbd>/</kbd></div><div class="ibtn">🔔<i>3</i></div></div>`;
+const bar = (c) => `<div class="rb"><i style="flex:${c[0]};background:#2EDB6B"></i><i style="flex:${c[1]};background:#FFB020"></i><i style="flex:${c[2]};background:#FF6B6B"></i><i style="flex:${c[3]};background:rgba(255,255,255,.3)"></i></div><div class="rg"><span><i class="d" style="background:#2EDB6B"></i>${c[0]} Zusagen</span><span><i class="d" style="background:#FFB020"></i>${c[1]} Unsicher</span><span><i class="d" style="background:#FF6B6B"></i>${c[2]} Absagen</span><span><i class="d" style="background:rgba(255,255,255,.4)"></i>${c[3]} offen</span><span class="more">Kader ›</span></div>`;
+const ev = (d, wd, t, s, pill) => `<div class="li"><div class="dt"><div><small>${wd}</small>${d}</div></div><div class="tx"><b>${t}</b><span>${s}</span></div>${pill || ''}</div>`;
+
+const VIEWS = {
+home: () => sidebar('home') + `<main class="main">${topbar('Samstag, 17. Oktober', 'Hallo, Max')}
+  <div class="cols c-2-1"><div class="col">
+    <div class="hero"><span class="tag">Nächstes Spiel · C-Jugend</span><div class="big">4<small>TAGE</small></div><div class="ttl" style="margin-top:6px;padding-right:70px">SV Grün-Weiß C1 <em>vs.</em> TSV Blauen</div><div class="line" style="margin:4px 0 14px">Sa., 17.10. · 13:00 Uhr · Rasenplatz (Platz 1) · Heimspiel · Liga</div><div style="max-width:560px">${bar([12, 1, 2, 6])}</div><div class="dots"><i class="on"></i><i></i><i></i></div><div class="arrow">›</div></div>
+    <div class="sec">Offen <a>Alle anzeigen ›</a></div>
+    <div class="tiles3"><div class="mini"><div class="ic" style="background:rgba(255,176,32,.15);color:#FFB020">▤</div><div><b>Anwesenheit erfassen</b><span>C1 · Training vom Mo., 12.10.</span></div></div><div class="mini"><div class="ic" style="background:rgba(255,176,32,.15);color:#FFB020">▤</div><div><b>Anwesenheit erfassen</b><span>B1 · Training vom Mi., 07.10.</span></div></div><div class="mini"><div class="ic" style="background:rgba(90,169,255,.15);color:#5AA9FF">✓</div><div><b>Zusage offen</b><span>B1 · Spiel Sa., 17.10.</span></div></div></div>
+    <div class="sec">Diese Woche <a>Alle anzeigen ›</a></div>
+    <div class="card" style="padding:4px 16px">${ev(13, 'DI', 'Training', 'B1 · 18:00 · Kunstrasen (Platz 2)', '<span class="pill ok">Zugesagt</span>')}${ev(14, 'MI', 'Training', 'C1 · 17:30 · Rasenplatz', '<span class="pill ok">Zugesagt</span>')}${ev(17, 'SA', 'VfR Sonnenberg – SV Grün-Weiß B1', 'B1 · 15:00 · Spiel · Liga', '<span class="pill ok">Zugesagt</span>')}</div>
+  </div><div class="col">
+    <div class="card"><h3>Neuigkeiten</h3><div class="li" style="padding-top:2px"><div class="tx"><b style="color:#FF8A8A">Kunstrasen am Donnerstag gesperrt</b><span>Dringend · Verein · vor 3 Tagen</span></div></div><div class="li"><div class="tx"><b>Training am Donnerstag entfällt</b><span>B1 · Wichtig</span></div></div><div class="li"><div class="tx"><b>Einladung zur Jahreshauptversammlung</b><span>Verein · 302 Aufrufe</span></div></div></div>
+    <div class="card"><h3>Helfer gesucht</h3><div class="li" style="padding-top:2px"><div class="dt" style="background:rgba(255,176,32,.16);color:#FFB020"><div><small>SA</small>24</div></div><div class="tx"><b>Arbeitseinsatz Platzpflege</b><span style="color:#FFB020">in 8 Tagen · 8 Helfer fehlen</span></div></div><div class="li"><div class="dt" style="background:rgba(255,176,32,.16);color:#FFB020"><div><small>FR</small>06</div></div><div class="tx"><b>Jahreshauptversammlung</b><span>in 20 Tagen · 2 Helfer fehlen</span></div></div></div>
+    <div class="card" style="display:flex;gap:12px;align-items:center"><div class="crest" style="width:44px;height:44px;font-size:12px">GZL</div><div><small style="color:var(--fg3);font:700 10px var(--display);letter-spacing:.14em">UNTERSTÜTZT VON</small><b style="display:block;font:700 18px var(--display)">Gasthaus Zur Linde</b><span style="font-size:11.5px;color:var(--fg3)">Gut essen nach dem Spiel</span></div></div>
+  </div></div></main>`,
+team: () => sidebar('team') + `<main class="main">${topbar('Bezirksliga', 'B-Jugend', '<span class="chip">2. Mannschaft</span><span class="chip on">B1 B-Jugend</span><span class="chip">C1 C-Jugend</span>')}
+  <div class="cols c-team"><div class="col">
+    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:16px"><div class="hero" style="padding:18px 22px"><div class="over">Kader</div><div style="display:flex;align-items:baseline;gap:10px"><div class="big" style="font-size:72px">21</div><span style="font-size:13px;color:rgba(255,255,255,.85)">Spieler · 13 verfügbar</span></div><div class="rb" style="height:7px;margin-top:6px"><i style="flex:1;background:#FFD54F"></i><i style="flex:7;background:#fff"></i><i style="flex:9;background:#2EDB6B"></i><i style="flex:3;background:#5AA9FF"></i></div><div class="rg" style="margin-top:6px"><span>Tor 1</span><span>Abwehr 7</span><span>Mittelfeld 9</span><span>Sturm 3</span></div><div style="display:flex;gap:8px;margin-top:10px"><span class="pill n">Bilanz 2-2-2</span><span class="pill n">Training 74 %</span></div></div>
+    <div class="card"><h3>Nächster Termin</h3><div class="li" style="padding-top:0"><div class="dt"><div><small>SA</small>17</div></div><div class="tx"><b>VfR Sonnenberg – SV Grün-Weiß B1</b><span>15:00 · Sportplatz Sonnenberg · Spiel</span></div><span style="color:var(--fg3)">›</span></div><div style="margin-top:6px">${bar([12, 1, 2, 6]).replace(/rgba\(255,255,255,\.92\)/, 'var(--fg2)')}</div></div></div>
+    <div class="card" style="padding:6px 8px"><div style="display:flex;align-items:center;padding:8px 10px 0"><h3 style="margin:0">Kader</h3><span style="margin-left:auto;display:flex;gap:8px"><span class="chip on" style="font-size:13px;padding:5px 12px">Beteiligung</span><span class="chip" style="font-size:13px;padding:5px 12px">Nummer</span></span></div>
+    <table><tr><th>#</th><th>Spieler</th><th>Status</th><th>Training, 4 Wochen</th></tr>
+    ${[[1, 'Jonas Keller', 'Torwart', 'ok', 'Zugesagt', [3, 3, 2, 3], '100 %'], [7, 'Gabriel Belz', 'Offensives Mittelfeld', 'ok', 'Zugesagt', [3, 3, 2, 3], '100 %'], [9, 'Noah Krämer', 'Stürmer', 'ok', 'Zugesagt', [3, 3, 2, 3], '100 %'], [2, 'Gerrit Hanniske', 'Innenverteidiger', 'ok', 'Zugesagt', [3, 3, 2, 2], '91 %'], [19, 'Emil Sauer', 'Zentrales Mittelfeld', 'un', 'Unsicher', [3, 3, 2, 3], '100 %'], [16, 'Paul Neumann', 'Zentrales Mittelfeld', 'n', 'Offen', [2, 2, 1, 2], '64 %'], [20, 'Anton Wulf', 'Innenverteidiger', 'no', 'Urlaub', [3, 2, 2, 3], '91 %']].map(([n, name, pos, k, st, a, p], i) => `<tr class="${i === 3 ? 'sel' : ''}"><td class="nr">${n}</td><td><span class="av2">${name.split(' ').map((x) => x[0]).join('')}</span><b style="font-weight:600">${name}</b><small style="display:block;margin-left:40px;margin-top:-4px;color:var(--fg3);font-size:11px">${pos}</small></td><td><span class="pill ${k}">${st}</span></td><td><span class="bars">${a.map((v, j) => `<i style="height:${Math.max(3, Math.round(v / [3, 3, 2, 3][j] * 18))}px"></i>`).join('')}</span><b style="font-size:12px">${p}</b></td></tr>`).join('')}</table></div>
+  </div><div class="col"><div class="grp" style="--c:#2EDB6B">Spiel- und Trainingsbetrieb</div>
+    ${[['Termine', '#2EDB6B', '▦', ''], ['Aufstellung', '#2EDB6B', '◧', ''], ['Statistik', '#2EDB6B', '▥', ''], ['Übungen', '#2EDB6B', '◉', '']].map(([n, c, i, b]) => `<div class="tile"><div class="ic" style="background:${c}22;color:${c}">${i}</div>${n}</div>`).join('')}
+    <div class="grp" style="--c:#5AA9FF">Organisation</div>
+    ${[['Mannschaftskasse', '#5AA9FF', '€', '1'], ['Aufgaben', '#5AA9FF', '☑', ''], ['Umfragen', '#5AA9FF', '▤', '']].map(([n, c, i, b]) => `<div class="tile"><div class="ic" style="background:${c}22;color:${c}">${i}</div>${n}${b ? `<em>${b}</em>` : ''}</div>`).join('')}
+  </div></div></main>`,
+termine: () => sidebar('termine') + `<main class="main">${topbar('Alles auf einen Blick', 'Termine', '<span class="chip on">Kommend</span><span class="chip">Vergangen</span><span class="chip">Alle</span><span class="chip">Spiele</span><span class="chip">Training</span>')}
+  <div class="cols c-list" style="flex:1;min-height:0"><div class="col" style="overflow:hidden"><div class="sec">Woche 12.10. – 18.10.</div><div class="card" style="padding:4px 12px">${[[13, 'DI', 'Training', 'B1 · 18:00 · Kunstrasen', 'ok', 'Zugesagt'], [14, 'MI', 'Training', 'C1 · 17:30 · Rasenplatz', 'ok', 'Zugesagt'], [15, 'DO', 'Training', 'B1 · abgesagt (Platzpflege)', 'no', 'Abgesagt'], [17, 'SA', 'VfR Sonnenberg – SV Grün-Weiß B1', 'B1 · 15:00 · Spiel · Liga', 'ok', 'Zugesagt'], [18, 'SO', 'FC Rosenhügel – SV Grün-Weiß 2.', '2. · 13:00 · Spiel · Liga', 'ok', 'Zugesagt']].map((r, i) => `<div class="li" style="${i === 3 ? 'background:rgba(46,219,107,.08);margin:0 -12px;padding:10px 12px;border-radius:14px' : ''}"><div class="dt"><div><small>${r[1]}</small>${r[0]}</div></div><div class="tx"><b>${r[2]}</b><span>${r[3]}</span></div><span class="pill ${r[4]}">${r[5]}</span></div>`).join('')}</div>
+    <div class="sec" style="margin-top:6px">Woche 19.10. – 25.10.</div><div class="card" style="padding:4px 12px">${ev(20, 'DI', 'Vorstandssitzung', 'Verein · 19:30 · Vereinsheim', '')}${ev(24, 'SA', 'Arbeitseinsatz Platzpflege', 'Verein · 09:00 · 8 Helfer fehlen', '')}</div></div>
+  <div class="col"><div class="hero" style="padding:18px 24px"><div class="over" style="text-align:center">Bezirksliga · Liga</div><div style="display:flex;justify-content:center;gap:8px;margin:8px 0"><span class="pill n" style="background:rgba(0,0,0,.35)">B1</span><span class="pill n">Spiel</span></div><div style="display:flex;align-items:center;gap:14px;justify-content:center"><div class="ttl" style="font-size:26px;text-align:center;flex:1">VfR Sonnenberg</div><div class="big" style="font-size:54px">15:00</div><div class="ttl" style="font-size:26px;text-align:center;flex:1">SV Grün-Weiß B1</div></div><div class="line" style="text-align:center;margin:6px 0 12px">Samstag, 17. Oktober · bis 16:35 Uhr</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div style="background:rgba(0,0,0,.25);border-radius:14px;padding:12px 14px;font-size:13px"><b>Sportplatz Sonnenberg</b><div style="font-size:11.5px;color:rgba(255,255,255,.8)">Treffpunkt 13:30 · Parkplatz Vereinsheim · Fahrgemeinschaften</div><div style="color:var(--accent);font-weight:800;margin-top:4px">Route ›</div></div><div style="background:rgba(0,0,0,.25);border-radius:14px;padding:12px 14px"><div class="over" style="font-size:10px;margin-bottom:6px">Zu- und Absagen</div>${bar([12, 1, 2, 6])}</div></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="card"><h3>Deine Antwort</h3><div style="display:flex;gap:6px;background:rgba(255,255,255,.07);border-radius:14px;padding:3px"><span style="flex:1;text-align:center;padding:9px;border-radius:11px;background:var(--accent);color:var(--on-accent);font-weight:700">Zugesagt</span><span style="flex:1;text-align:center;padding:9px;color:var(--fg2);font-weight:600">Unsicher</span><span style="flex:1;text-align:center;padding:9px;color:var(--fg2);font-weight:600">Absagen</span></div><div style="font-size:12px;color:var(--fg3);margin-top:8px">Frist: noch 1 Tag</div></div>
+  <div class="card"><h3>Termin verwalten</h3><div style="display:grid;gap:8px"><div class="mini" style="padding:9px 12px">✎ Termin bearbeiten</div><div class="mini" style="padding:9px 12px;color:#FF8A8A;border-color:rgba(255,90,90,.4)">✕ Termin absagen</div></div></div></div></div></div></main>`,
+verein: () => sidebar('verein') + `<main class="main">${topbar('Dein Vereinsleben', 'Verein')}
+  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px"><div class="hero" style="padding:16px 20px"><div class="over">Nächster Vereinstermin</div><div style="display:flex;gap:14px;align-items:center;margin-top:8px"><div class="li" style="padding:0"><div class="dt" style="background:rgba(255,255,255,.14);color:#fff;width:46px;height:50px"><div><small>SA</small>21</div></div></div><div><div class="ttl" style="font-size:28px">Jugend-Hallenturnier</div><div class="line">Veranstaltung · Sa., 21. Nov. · 09:00 · Sporthalle</div></div></div><div style="margin-top:12px;display:inline-block;background:#fff;color:#0F3D24;font-weight:700;padding:9px 18px;border-radius:12px">Mehr erfahren</div></div>
+  <div class="card"><h3 style="color:#FF8A8A">Dringend</h3><b style="font:700 19px var(--display)">Kunstrasen am Donnerstag gesperrt</b><div style="font-size:12px;color:var(--fg3);margin-top:4px">Verein · vor 3 Tagen</div><div class="dots"><i class="on"></i><i></i><i></i></div><div style="display:flex;gap:10px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)"><div class="crest" style="width:34px;height:34px;font-size:10px">GZL</div><div><small style="color:var(--fg3);font:700 9px var(--display);letter-spacing:.14em">UNTERSTÜTZT VON · ANZEIGE</small><b style="display:block;font:700 16px var(--display)">Gasthaus Zur Linde</b></div></div></div>
+  <div class="card" style="display:none"><div class="crest">GZL</div><div><small style="color:var(--fg3);font:700 10px var(--display);letter-spacing:.14em">UNTERSTÜTZT VON · ANZEIGE</small><b style="display:block;font:700 19px var(--display)">Gasthaus Zur Linde</b><span style="font-size:11.5px;color:var(--fg3)">Gut essen nach dem Spiel</span></div></div></div>
+  <div class="sec">Helfer gesucht <a>Alle anzeigen ›</a></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">${[['SA', '24', 'Arbeitseinsatz Platzpflege', 'in 8 Tagen', '8'], ['FR', '06', 'Jahreshauptversammlung', 'in 20 Tagen', '2'], ['SA', '21', 'Jugend-Hallenturnier', 'in 35 Tagen', '12']].map(([w, d, t, n, h]) => `<div class="mini"><div class="ic" style="background:rgba(255,176,32,.16);color:#FFB020;width:48px;height:52px;font:800 20px var(--display);text-align:center;line-height:1"><div><small style="display:block;font:700 9px var(--display)">${w}</small>${d}</div></div><div><b style="font:700 18px var(--display)">${t}</b><span><span style="color:#FFB020;font-weight:700">${n}</span> · ${h} Helfer fehlen</span></div></div>`).join('')}</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+    <div class="col"><div class="grp" style="--c:#FFB020">Veranstaltungen</div>${[['Veranstaltungen', '▦', '#FFB020', '20.10.'], ['Spielplan', '◔', '#FFB020', '9'], ['Helfer gesucht', '✋', '#FFB020', '22']].map(([n, i, c, b]) => `<div class="tile"><div class="ic" style="background:${c}22;color:${c}">${i}</div>${n}<em>${b}</em></div>`).join('')}</div>
+    <div class="col"><div class="grp" style="--c:#FF7EB6">Neuigkeiten</div>${[['News', '▤', '#FF7EB6', '6'], ['Umfragen', '▥', '#FF7EB6', '1'], ['Forum', '✉', '#FF7EB6', '']].map(([n, i, c, b]) => `<div class="tile"><div class="ic" style="background:${c}22;color:${c}">${i}</div>${n}${b ? `<em style="color:#FF7EB6;background:#FF7EB622">${b}</em>` : ''}</div>`).join('')}</div>
+    <div class="col"><div class="grp" style="--c:#5AA9FF">Vereinsleben</div>${[['Mannschaften', '◉', '#5AA9FF', '11'], ['Ansprechpartner', '☎', '#5AA9FF', ''], ['Dokumente', '▭', '#5AA9FF', ''], ['Platzbelegung', '▦', '#5AA9FF', '']].map(([n, i, c, b]) => `<div class="tile"><div class="ic" style="background:${c}22;color:${c}">${i}</div>${n}${b ? `<em style="color:#5AA9FF;background:#5AA9FF22">${b}</em>` : ''}</div>`).join('')}</div>
+  </div></main>`,
+mehr: () => sidebar('mehr') + `<main class="main">${topbar('Profil, Einstellungen und Hilfe', 'Mehr')}
+  <div class="hero" style="padding:16px 24px;display:flex;align-items:center;gap:16px"><div class="crest" style="width:60px;height:60px;font-size:20px">MM</div><div><div class="ttl" style="font-size:30px">Max Mustermann</div><div class="line">trainer@sv-gruen-weiss.example</div><div style="display:flex;gap:8px;margin-top:6px"><span class="pill n" style="background:rgba(0,0,0,.35)">Trainer B1</span><span class="pill n" style="background:rgba(0,0,0,.35)">Trainer C1</span></div></div></div>
+  <div class="cols c-set" style="flex:1;min-height:0"><div class="setnav col" style="gap:3px">${['Profil und Statistik', 'Abwesenheiten', 'Benachrichtigungen', 'Darstellung', 'Sicherheit', 'Kalender-Abo', 'Meine Mannschaften', 'Hilfe und Anleitung', 'Über Clubroof'].map((n, i) => `<a class="${i === 3 ? 'on' : ''}">${n}<span style="margin-left:auto;color:var(--fg4)">›</span></a>`).join('')}</div>
+  <div class="col"><div class="card"><h3>Darstellung</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"><div class="opt"><div><b>Hell</b><span>Heller Hintergrund</span></div></div><div class="opt"><div><b>Dunkel</b><span>Dunkler Hintergrund</span></div></div><div class="opt on"><div><b>Wie das Gerät</b><span>Folgt der Systemeinstellung</span></div></div></div></div>
+  <div class="card"><h3>Schrift und Sprache</h3><div class="li" style="padding-top:0"><div class="tx"><b>Schriftgröße</b><span>Normal, Groß, Sehr groß</span></div><span class="chip on" style="font-size:13px">Normal</span></div><div class="li"><div class="tx"><b>Sprache</b><span>Deutsch</span></div><span style="color:var(--fg3)">›</span></div></div>
+  <div class="card"><h3>Komfort</h3><div class="li" style="padding-top:0"><div class="tx"><b>App-Sperre</b><span>Mit Face ID oder Fingerabdruck entsperren</span></div><div class="sw"></div></div><div class="li"><div class="tx"><b>Vibration</b><span>Rückmeldung bei Aktionen (nur Handy)</span></div><div class="sw on"></div></div></div></div></div></main>`,
+};
+const TITLES = { home: 'Home', team: 'Team', termine: 'Termine', verein: 'Verein', mehr: 'Mehr' };
+const URLS = { home: 'clubroof.example/', team: 'clubroof.example/team', termine: 'clubroof.example/termine', verein: 'clubroof.example/verein', mehr: 'clubroof.example/mehr' };
+
+// ---- Diagramme (aus der Kassen-Statistik) ----
+const M = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt'];
+const E = [3400, 2100, 1600, 3200, 2400, 1500, 2800, 2000, 2500, 2100], A = [2900, 2800, 2400, 1900, 3100, 600, 2400, 1400, 1900, 1520];
+const best = (() => { let b = 15900; return E.map((e, i) => (b += e - A[i])); })();
+const vor = [14200, 14600, 14400, 15000, 15100, 15300, 15200, 15800, 16100, 16600];
+const eur = (v) => v.toLocaleString('de-DE', { maximumFractionDigits: 0 }) + ' €', Tk = (v) => (v / 1000).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' T€';
+function line(host, labels, series, ticks, h) {
+  const w = host.clientWidth, L = 44, R = 12, Tp = 8, B = 22, iw = w - L - R, ih = h - Tp - B, mn = ticks[0], mx = ticks[ticks.length - 1], n = labels.length - 1;
+  const x = (i) => L + i / n * iw, y = (v) => Tp + ih - (v - mn) / (mx - mn) * ih, path = (v) => v.map((a, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(a).toFixed(1)}`).join('');
+  let g = ticks.map((t) => `<line x1="${L}" x2="${w - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)"/><text x="${L - 6}" y="${y(t) + 3}" text-anchor="end">${Tk(t)}</text>`).join('') + labels.map((l, i) => `<text x="${x(i)}" y="${h - 6}" text-anchor="middle">${l}</text>`).join('');
+  g += `<path d="${path(series[0].v)}L${x(n)},${y(mn)}L${x(0)},${y(mn)}Z" fill="${series[0].c}" opacity=".1"/>`;
+  [...series].reverse().forEach((s) => (g += `<path d="${path(s.v)}" fill="none" stroke="${s.c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"${s.d ? ' stroke-dasharray="4 4"' : ''}/>`));
+  g += `<circle cx="${x(n)}" cy="${y(series[0].v[n])}" r="4" fill="${series[0].c}" stroke="var(--card)" stroke-width="2"/>`;
+  host.innerHTML = `<div class="tip"><b>Okt</b><span>2026 <em>${eur(series[0].v[n])}</em></span><span>Vorjahr <em>${eur(series[1].v[n])}</em></span></div><svg viewBox="0 0 ${w} ${h}" height="${h}">${g}</svg>`;
+}
+function cols(host, labels, series, ticks, h) {
+  const w = host.clientWidth, L = 40, R = 6, Tp = 8, B = 22, iw = w - L - R, ih = h - Tp - B, n = labels.length, sl = iw / n, mx = ticks[ticks.length - 1], y = (v) => Tp + ih - v / mx * ih, bw = 12;
+  let g = ticks.map((t) => `<line x1="${L}" x2="${w - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)"/><text x="${L - 6}" y="${y(t) + 3}" text-anchor="end">${Tk(t)}</text>`).join('');
+  labels.forEach((l, i) => { const cx = L + sl * i + sl / 2; g += `<text x="${cx}" y="${h - 6}" text-anchor="middle">${l}</text>`; series.forEach((s, k) => { const bx = cx - bw - 1 + k * (bw + 2), by = y(s.v[i]); g += `<path d="M${bx},${Tp + ih}V${by + 4}Q${bx},${by} ${bx + 4},${by}H${bx + bw - 4}Q${bx + bw},${by} ${bx + bw},${by + 4}V${Tp + ih}Z" fill="${s.c}" opacity="${i === n - 1 ? 1 : .55}"/>`; }); });
+  host.innerHTML = `<div class="tip"><b>Okt</b><span>Einnahmen <em>${eur(series[0].v[n - 1])}</em></span><span>Ausgaben <em>${eur(series[1].v[n - 1])}</em></span><span>Saldo <em>+${eur(series[0].v[n - 1] - series[1].v[n - 1])}</em></span></div><svg viewBox="0 0 ${w} ${h}" height="${h}">${g}</svg>`;
+}
+
+// ---- Waben ----
+function waben(svg, mode) {
+  const w = svg.parentElement.clientWidth, h = svg.getBoundingClientRect().height / (scale || 1) || svg.parentElement.clientHeight, R = 26, out = [];
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  const cols_ = Math.ceil(w / (1.5 * R)) + 2, rows = Math.ceil(h / (2 * .866 * R)) + 2;
+  for (let i = -1; i < cols_; i++) for (let j = -1; j < rows; j++) {
+    const cx = -19 + 1.5 * R * i, cy = -22.5 + 2 * .866 * R * j + (i % 2 ? .866 * R : 0);
+    const p = [[cx + R, cy], [cx + R / 2, cy + .866 * R], [cx - R / 2, cy + .866 * R], [cx - R, cy], [cx - R / 2, cy - .866 * R], [cx + R / 2, cy - .866 * R]];
+    const dist = Math.hypot(w - cx, cy) / Math.hypot(w, h), a = Math.max(0, 1 - dist * 1.9); if (a <= .02) continue;
+    out.push(`<polygon points="${p.map(([q, r]) => q.toFixed(1) + ',' + r.toFixed(1)).join(' ')}" fill="none" stroke="#fff" stroke-width="2" opacity="${(.24 * a).toFixed(3)}"/>`);
+  }
+  svg.innerHTML = out.join('');
+}
+let scale = 1, cur = 'home';
+function render() {
+  const win = document.getElementById('win');
+  win.innerHTML = `<div class="chrome"><i></i><i></i><i></i><span>${URLS[cur]}</span></div>` + VIEWS[cur]();
+  // Waben: Heros und Seitenleiste
+  win.querySelectorAll('.hero').forEach((el) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('class', 'waben'); el.prepend(s); const w = el.offsetWidth, h = el.offsetHeight; waben2(s, w, h); });
+  const sw = win.querySelector('.waben-s'); if (sw) waben2(sw, 248, 150, true);
+  const d1 = win.querySelector('#d1'); if (d1) line(d1, M, [{ v: best, c: 'var(--s1)' }, { v: vor, c: 'var(--fg4)', d: 1 }], [12000, 14000, 16000, 18000, 20000], 170);
+  const d2 = win.querySelector('#d2'); if (d2) cols(d2, M, [{ v: E, c: 'var(--s1)' }, { v: A, c: 'var(--s2)' }], [0, 1000, 2000, 3000, 4000], 170);
+  fit();
+}
+function waben2(svg, w, h, side) {
+  const R = 26, out = []; svg.setAttribute('viewBox', `0 0 ${w} ${h}`); svg.setAttribute('width', w); svg.setAttribute('height', h);
+  const c = Math.ceil(w / (1.5 * R)) + 2, r = Math.ceil(h / (2 * .866 * R)) + 2;
+  for (let i = -1; i < c; i++) for (let j = -1; j < r; j++) {
+    const cx = -19 + 1.5 * R * i, cy = -22.5 + 2 * .866 * R * j + (i % 2 ? .866 * R : 0);
+    const p = [[cx + R, cy], [cx + R / 2, cy + .866 * R], [cx - R / 2, cy + .866 * R], [cx - R, cy], [cx - R / 2, cy - .866 * R], [cx + R / 2, cy - .866 * R]];
+    const dist = Math.hypot(w - cx, cy) / Math.hypot(w, h * (side ? 2.2 : 1)), a = Math.max(0, 1 - dist * (side ? 1.7 : 1.9)); if (a <= .02) continue;
+    out.push(`<polygon points="${p.map(([q, t]) => q.toFixed(1) + ',' + t.toFixed(1)).join(' ')}" fill="none" stroke="#fff" stroke-width="2" opacity="${((side ? .12 : .24) * a).toFixed(3)}"/>`);
+  }
+  svg.innerHTML = out.join('');
+}
+function fit() {
+  const stage = document.getElementById('stage'), win = document.getElementById('win'), holder = document.getElementById('holder');
+  scale = Math.max(.55, Math.min(1.15, stage.clientWidth / 1280));
+  win.style.transform = `scale(${scale})`; holder.style.width = 1280 * scale + 'px'; holder.style.height = 720 * scale + 'px';
+}
+document.getElementById('tabs').innerHTML = Object.keys(VIEWS).map((k) => `<button data-k="${k}" aria-pressed="${k === cur}">${TITLES[k]}</button>`).join('');
+document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; cur = b.dataset.k; document.querySelectorAll('#tabs button').forEach((x) => x.setAttribute('aria-pressed', x === b)); render(); });
+render(); new ResizeObserver(fit).observe(document.getElementById('stage'));
+</script>
