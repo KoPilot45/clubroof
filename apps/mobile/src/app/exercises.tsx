@@ -22,6 +22,7 @@ import {
   Screen,
   T,
   TextField,
+  PageAction,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { useSignedIn } from '@/lib/session';
@@ -168,7 +169,9 @@ export default function ExercisesScreen() {
           onSave={(body) => change.mutate({ method: 'POST', body })}
         />
       ) : (
-        <Button label="Übung anlegen" icon="add" onPress={() => setCreating(true)} />
+        <PageAction>
+          <Button label="Übung anlegen" icon="add" onPress={() => setCreating(true)} />
+        </PageAction>
       )}
       {change.error ? (
         <Chip

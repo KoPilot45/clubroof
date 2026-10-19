@@ -18,6 +18,7 @@ import {
   T,
   TextField,
   type IconName,
+  PageAction,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatShortDate } from '@/lib/format';
@@ -77,7 +78,9 @@ export default function TasksScreen() {
             }
           />
         ) : (
-          <Button label="Aufgabe anlegen" icon="add" onPress={() => setCreating(true)} />
+          <PageAction>
+            <Button label="Aufgabe anlegen" icon="add" onPress={() => setCreating(true)} />
+          </PageAction>
         )
       ) : null}
 

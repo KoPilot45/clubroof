@@ -31,6 +31,7 @@ import {
   T,
   TextField,
   TimeStepper,
+  PageAction,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatDateTile, formatTime, todayIso } from '@/lib/format';
@@ -361,7 +362,9 @@ function DutySection({
             ) : null}
           </Card>
         ) : (
-          <Button label="Einsatz eintragen" icon="add" onPress={() => setAdding(true)} />
+          <PageAction>
+            <Button label="Einsatz eintragen" icon="add" onPress={() => setAdding(true)} />
+          </PageAction>
         )}
         <Card>
           {upcoming.length === 0 ? (

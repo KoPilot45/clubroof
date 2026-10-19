@@ -1663,14 +1663,23 @@ export function Empty({
   action?: { label: string; onPress: () => void };
 }) {
   const { colors } = useTheme();
+  // Desktop (Paket DT3): kompakter, weniger Leerfläche
+  const desktop = useIsDesktop();
   // Leerer Zustand (Stil „Anstoß“, U12): Symbolkreis in Akzent bei 13 %, Titel in Saira, leiser Hinweis
   return (
-    <View style={{ alignItems: 'center', gap: 4, paddingVertical: 24, paddingHorizontal: 12 }}>
+    <View
+      style={{
+        alignItems: 'center',
+        gap: 4,
+        paddingVertical: desktop ? 12 : 24,
+        paddingHorizontal: 12,
+      }}
+    >
       <View
         style={{
-          width: 64,
-          height: 64,
-          borderRadius: 32,
+          width: desktop ? 48 : 64,
+          height: desktop ? 48 : 64,
+          borderRadius: desktop ? 24 : 32,
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: withAlpha(colors.primary, 0.13),
@@ -1693,6 +1702,16 @@ export function Empty({
       ) : null}
     </View>
   );
+}
+
+/**
+ * Primäraktion einer Seite („Thema eröffnen“): am Desktop als Knopf rechts oben statt Balken über die ganze
+ * Breite (Paket DT3), sonst unverändert.
+ */
+export function PageAction({ children }: { children: ReactNode }) {
+  const desktop = useIsDesktop();
+  if (!desktop) return <>{children}</>;
+  return <View style={{ alignItems: 'flex-end' }}>{children}</View>;
 }
 
 // ── Kacheln (Untermenüs in Team, Verein, Mehr) ─────────────────────────────────

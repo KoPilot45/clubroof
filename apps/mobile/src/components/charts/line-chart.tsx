@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 import { formatEuroShort } from '@/lib/format';
+import { useIsDesktop } from '@/lib/layout';
 import { useTheme } from '@/lib/theme';
 import { Readout } from './readout';
 import { extent, useGrow, usePointer } from './scale';
@@ -25,7 +26,7 @@ const PAD = { left: 44, right: 10, top: 10, bottom: 22 };
 export function LineChart({
   labels,
   series,
-  height = 170,
+  height: heightProp,
   format = formatEuroShort,
   readoutFormat,
 }: {
@@ -38,6 +39,10 @@ export function LineChart({
   readoutFormat?: (v: number) => string;
 }) {
   const { colors } = useTheme();
+  // Desktop (Paket DT3): höhere Diagramme (mind. 240 px) mit lesbarer Beschriftung (12 px)
+  const desktop = useIsDesktop();
+  const height = heightProp ?? (desktop ? 240 : 170);
+  const labelSize = desktop ? 12 : 10;
   const [width, setWidth] = useState(0);
   const [active, setActive] = useState<number | null>(null);
   const grow = useGrow([series.map((s) => s.values.join()).join('|')]);
@@ -85,7 +90,7 @@ export function LineChart({
                 key={`t${t}`}
                 x={PAD.left - 6}
                 y={y(t) + 4}
-                fontSize={10}
+                fontSize={labelSize}
                 textAnchor="end"
                 fill={colors.onSurfaceMuted}
               >
@@ -98,7 +103,7 @@ export function LineChart({
                   key={l}
                   x={x(i)}
                   y={height - 6}
-                  fontSize={10}
+                  fontSize={labelSize}
                   textAnchor="middle"
                   fill={colors.onSurfaceMuted}
                 >

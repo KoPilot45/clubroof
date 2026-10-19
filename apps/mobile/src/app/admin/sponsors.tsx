@@ -27,6 +27,7 @@ import {
   T,
   TextField,
   Toggle,
+  PageAction,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { todayIso } from '@/lib/format';
@@ -257,7 +258,9 @@ export default function AdminSponsorsScreen() {
           )}
         </Card>
         <T variant="caption">Ziehe die Einträge am Griff, um die Reihenfolge zu ändern.</T>
-        <Button label="Sponsor anlegen" icon="add" onPress={() => setForm(empty())} />
+        <PageAction>
+          <Button label="Sponsor anlegen" icon="add" onPress={() => setForm(empty())} />
+        </PageAction>
       </Section>
 
       {/* Bearbeiten in einem Fenster statt unter der Liste */}
