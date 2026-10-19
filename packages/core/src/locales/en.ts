@@ -1202,6 +1202,7 @@ export const en: Record<string, string> = {
     'The end is more than 12 hours after the start.',
   'Das Ende liegt vor dem Beginn.': 'The end is before the start.',
   'Das Ende muss nach dem Beginn liegen.': 'The end must be after the start.',
+  'Das erscheint in deinem Kalender': 'This will appear in your calendar',
   'Das Fälligkeitsdatum liegt in der Vergangenheit.': 'The due date is in the past.',
   'Das Feld rechts bekommt seine Werte aus der Spalte der Datei. Passt eine Erkennung nicht, wähle das richtige Feld.':
     'The field gets its values from the column of the file. If a detection is wrong, choose the right field.',
@@ -2978,6 +2979,7 @@ export const en: Record<string, string> = {
   'Keine Spiele in dieser Woche': 'No matches this week',
   'keine Termine': 'no events',
   'Keine Termine an diesem Tag.': 'No events on this day.',
+  'Keine Termine in den nächsten 30 Tagen.': 'No events in the next 30 days.',
   'Keine Termine in den nächsten 60 Tagen.': 'No events in the next 60 days.',
   'Keine Termine in den nächsten Wochen.': 'No events in the coming weeks.',
   'Keine Tore im Zeitraum.': 'No goals in this period.',
