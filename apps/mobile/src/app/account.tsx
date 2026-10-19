@@ -85,6 +85,12 @@ export default function AccountScreen() {
                 subtitle="Push, Ruhezeit und Themen"
                 onPress={() => router.push('/notification-settings')}
               />
+              <ListRow
+                leading={<IconTile name="download-outline" />}
+                title="Daten exportieren"
+                subtitle="Meine Daten und Exporte für dein Team"
+                onPress={() => router.push('/export')}
+              />
               {me.clubModules.includes('calendar_export') ? (
                 <ListRow
                   leading={<IconTile name="calendar-outline" />}

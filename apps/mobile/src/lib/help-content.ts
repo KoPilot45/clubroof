@@ -59,6 +59,12 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Unter „Mehr“ stehen direkt unter deinem Profil zwei Zugänge: „Admin-Verwaltung“ (violett) für alle mit Verwaltungsrechten und „Vereinskasse“ (blau) für alle mit Kassenzugriff. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Beenden“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Prüfung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.',
       },
       {
+        id: 'export-data',
+        question: 'Wie exportiere ich Daten oder meine eigenen Daten?',
+        answer:
+          'Unter „Mehr › Konto & Einstellungen › Daten exportieren“ (in der Verwaltung als Kachel „Export“) findest du alle Exporte, für die du Rechte hast: „Meine Daten“ (alles, was der Verein über dich und deine Kinder gespeichert hat), Kader, Termine und Anwesenheit deiner Mannschaft, Mitgliederliste, Kassenbuch und Beiträge sowie für die Administration der Gesamtexport als ZIP. Die Dateien kommen als Excel oder CSV und werden am besten am Computer geladen. Jeder Export steht im Protokoll des Vereins.',
+      },
+      {
         id: 'team-cash-setup',
         question: 'Wie richte ich die Mannschaftskasse ein?',
         answer:

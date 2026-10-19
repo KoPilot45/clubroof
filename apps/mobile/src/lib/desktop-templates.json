@@ -459,6 +459,11 @@
     "note": "Liste bzw. Detailseite",
     "status": "Breite"
   },
+  "export": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
   "facilities/block-new": {
     "t": "B",
     "note": "Formular",

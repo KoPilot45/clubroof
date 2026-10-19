@@ -36,6 +36,12 @@ export function adminFunctionTiles(me: MeResponse): TileItem[] {
       icon: 'document-text',
       onPress: () => router.push('/admin/import'),
     },
+    (a.manageMembers || a.readMembers) && {
+      key: 'export',
+      label: 'Export',
+      icon: 'download',
+      onPress: () => router.push('/export'),
+    },
     (a.manageRoles || a.readMembers) && {
       key: 'roles',
       label: 'Rollen & Rechte',

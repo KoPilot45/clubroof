@@ -1324,6 +1324,7 @@ export const en: Record<string, string> = {
   'DATA_ENCRYPTION_KEY fehlt – in Produktion zwingend erforderlich.':
     'DATA_ENCRYPTION_KEY is missing – mandatory in production.',
   'Datei auswählen': 'Choose file',
+  'Daten exportieren': 'Export data',
   'Daten herunterladen und Konto löschen': 'Download data and delete account',
   'Daten werden gelöscht, wenn sie nicht mehr gebraucht werden oder du es verlangst, sofern keine gesetzliche Aufbewahrungspflicht besteht.':
     'Data is deleted when it is no longer needed or when you request it, unless a legal retention obligation applies.',
@@ -1462,6 +1463,7 @@ export const en: Record<string, string> = {
   'Der Einsatz': 'The assignment',
   'Der Export des Archivs steht in der Web-Verwaltung bereit.':
     'The archive export is available in the web administration.',
+  'Der Export hat nicht geklappt.': 'The export did not work.',
   'Der Gegenstand': 'The item',
   'Der Import': 'The import',
   'Der Import ist schon rückgängig gemacht.': 'The import has already been undone.',
@@ -1855,6 +1857,8 @@ export const en: Record<string, string> = {
     'This booking belongs to a received grant and cannot be cancelled.',
   'Diese Buchung gehört zu einer erstatteten Auslage und kann nicht storniert werden.':
     'This booking belongs to a reimbursed claim and cannot be cancelled.',
+  'Diese Datei lädst du am Computer herunter (Excel oder ZIP).':
+    'Download this file on a computer (Excel or ZIP).',
   'Diese Einladung ist abgelaufen oder wurde bereits verwendet.':
     'This invitation has expired or has already been used.',
   'Diese Einladung wurde bereits verwendet.': 'This invitation has already been used.',
@@ -2293,7 +2297,9 @@ export const en: Record<string, string> = {
     'Excel or CSV with column assignment, preview and duplicate check – you download the template after the setup.',
   'Excel oder CSV mit Spielern und Betreuern': 'Excel or CSV with players and staff',
   'Expo antwortet mit {0}': 'Expo responded with {0}',
+  'Export erstellt.': 'Export created.',
   'Export: Gesamtexport des Vereins': 'Export: full club export',
+  Exporte: 'Exports',
   Exportieren: 'Export',
   Fahrdienst: 'Driving',
   'Fahrdienst, Trikotwäsche, Kuchen – wer übernimmt was':
@@ -2635,6 +2641,7 @@ export const en: Record<string, string> = {
   Hell: 'Light',
   'Hell ist voreingestellt. Die Wahl gilt auf allen deinen Geräten.':
     'Light is the default. Your choice applies on all your devices.',
+  Herunterladen: 'Download',
   heute: 'today',
   Heute: 'Today',
   'Heute 🎉': 'Today 🎉',
@@ -3117,6 +3124,8 @@ export const en: Record<string, string> = {
   Kurzname: 'Short name',
   'Kurzname (Kopfzeile, Wappen)': 'Short name (header, crest)',
   'Kurztext (optional)': 'Short text (optional)',
+  'Lade Daten als Excel- oder CSV-Datei herunter. Du siehst nur, wofür du Rechte hast; jeder Export wird im Protokoll des Vereins festgehalten.':
+    "Download data as an Excel or CSV file. You only see what you have rights for; every export is recorded in the club's log.",
   'Lade den Kontoauszug als CSV-Datei deiner Bank hoch. Erkannt werden Buchungstag, Betrag, Name und Verwendungszweck. Zugeordnet wird per Mitgliedsnummer oder Name, wenn der Betrag genau zu einer offenen Forderung passt. Du siehst alles vorher.':
     'Upload the bank statement as a CSV file from your bank. Booking date, amount, name and purpose are recognized. Entries are matched by member number or name when the amount exactly fits an open claim. You see everything beforehand.',
   'Lade den Spielplan als CSV-Datei aus dem DFBnet (Meisterschaft › Vereinsspielplan bzw. Mannschaftsspielplan › Export). Du siehst zuerst eine Vorschau – übernommen wird erst nach deiner Bestätigung. Ein erneuter Import aktualisiert bestehende Spiele, statt sie doppelt anzulegen.':
@@ -3286,6 +3295,7 @@ export const en: Record<string, string> = {
   Meine: 'My',
   'Meine Auslagen': 'My claims',
   'Meine Daten': 'My data',
+  'Meine Daten und Exporte für dein Team': 'My data and exports for your team',
   'Meine Einsätze': 'My assignments',
   'Meine Einsätze und Vereins-Soll': 'My assignments and club quota',
   'Meine Entwürfe': 'My drafts',
@@ -4612,6 +4622,8 @@ export const en: Record<string, string> = {
     'There are five sections at the bottom:\n• Home: your overview – next match, news, open tasks.\n• Team: everything about your team (squad, statistics, team fund …).\n• Events: your upcoming events and the calendar.\n• Club: news, polls, documents, volunteer shifts, teams of the club.\n• More: your profile, settings, absences and this help.',
   'Unter „Einzahlungen“ Personen anhaken, Betrag prüfen (der offene Betrag ist vorausgefüllt), Zahlungsart wählen und buchen – auch mehrere auf einmal. Schneller: In „Offene Beträge“ die Person antippen.':
     'Under “Payments” tick the people, check the amount (the outstanding amount is prefilled), choose the payment method and book – several at once if you like. Quicker: tap the person in “Outstanding amounts”.',
+  'Unter „Mehr › Konto & Einstellungen › Daten exportieren“ (in der Verwaltung als Kachel „Export“) findest du alle Exporte, für die du Rechte hast: „Meine Daten“ (alles, was der Verein über dich und deine Kinder gespeichert hat), Kader, Termine und Anwesenheit deiner Mannschaft, Mitgliederliste, Kassenbuch und Beiträge sowie für die Administration der Gesamtexport als ZIP. Die Dateien kommen als Excel oder CSV und werden am besten am Computer geladen. Jeder Export steht im Protokoll des Vereins.':
+    "Under “More › Account & settings › Export data” (in administration as the “Export” tile) you find all exports you have rights for: “My data” (everything the club has stored about you and your children), squad, events and attendance of your team, member list, cash book and fees, and for administration the full export as a ZIP. Files come as Excel or CSV and are best downloaded on a computer. Every export is recorded in the club's log.",
   'Unter „Mehr → Benachrichtigungen → Einstellungen“ wählst du je Thema: Push, nur in der App oder aus. Dort kannst du auch einzelne Mannschaften stummschalten. Dringendes (z. B. kurzfristige Absagen) kommt immer an.':
     'Under “More → Notifications → Settings” choose for each topic: push, in the app only or off. You can also mute individual teams there. Urgent items (e.g. short-notice cancellations) always get through.',
   'Unter „Mehr → Meine Kinder“ (und auf Home und Termine) siehst du Termine, Zusagen und Abwesenheiten deiner Kinder. Du sagst für sie zu oder ab, trägst Abwesenheiten ein und bekommst ihre Benachrichtigungen. Das Kind braucht dafür kein eigenes Login.':
@@ -5050,6 +5062,7 @@ export const en: Record<string, string> = {
   'Wie buche ich Einzahlungen?': 'How do I book payments?',
   'Wie erstelle ich eine Zuwendungsbestätigung (Spendenquittung)?':
     'How do I create a donation receipt?',
+  'Wie exportiere ich Daten oder meine eigenen Daten?': 'How do I export data or my own data?',
   'Wie funktionieren Auslagen und Fahrtkosten?': 'How do expense claims and mileage work?',
   'Wie funktionieren Haushaltsplan, Rücklagen und Jahresabschluss?':
     'How do the budget plan, reserves and annual statement work?',
@@ -5294,6 +5307,7 @@ export const en: Record<string, string> = {
   'Zielbetrag in € (optional)': 'Target amount in € (optional)',
   Zielkasse: 'Target fund',
   'Zinsen und Kapitalerträge': 'Interest and investment income',
+  'ZIP herunterladen': 'Download ZIP',
   'Zu Anlage & Material': 'To facilities & material',
   'Zu den Mitgliedern': 'Go to members',
   'Zu den Sponsoren': 'To the sponsors',
