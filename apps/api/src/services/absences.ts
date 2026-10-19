@@ -14,8 +14,9 @@ import {
   type UpdateAbsenceInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, count, eq, gt, gte, inArray, ne, sql } from 'drizzle-orm';
+import { and, asc, count, eq, gte, inArray } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
+import { recalcAbsenceParticipation } from './participation';
 import { HttpError, forbidden, notFound } from '../errors';
 
 const LABELS: Record<AbsenceKind, string> = {
@@ -78,73 +79,20 @@ async function toAbsences(
   }));
 }
 
-type AbsenceRow = typeof s.absences.$inferSelect;
-
-/** Betroffene, noch anstehende Termine automatisch absagen. Bewusste Absagen bleiben unverändert. */
-async function applyAbsence(tx: Db, actor: Actor, absence: AbsenceRow, now: Date) {
-  const eventDay = sql`(${s.events.startsAt} at time zone ${actor.club.timezone})::date`;
-  const teamIds = absence.teamIds?.length ? absence.teamIds : null;
-  const affected = await tx
-    .select({ id: s.eventParticipants.id })
-    .from(s.eventParticipants)
-    .innerJoin(s.events, eq(s.events.id, s.eventParticipants.eventId))
-    .where(
-      and(
-        eq(s.eventParticipants.personId, absence.personId),
-        ne(s.eventParticipants.role, 'coach'),
-        ne(s.eventParticipants.status, 'no'),
-        gt(s.events.startsAt, now),
-        sql`${eventDay} between ${absence.startsOn}::date and ${absence.endsOn}::date`,
-        teamIds ? inArray(s.events.teamId, teamIds) : undefined,
-      ),
-    );
-  if (affected.length > 0) {
-    await tx
-      .update(s.eventParticipants)
-      .set({
-        status: 'no',
-        reason: absenceReason(absence.kind),
-        absenceId: absence.id,
-        respondedAt: now,
-        respondedByPersonId: actor.person.id,
-      })
-      .where(
-        inArray(
-          s.eventParticipants.id,
-          affected.map((a) => a.id),
-        ),
-      );
-  }
-}
-
-/** Automatische Absagen einer Abwesenheit zurücknehmen: bei automatischer Zusage auf „zugesagt“, sonst „offen“. */
-async function releaseAbsence(tx: Db, id: string, now: Date) {
-  const rows = await tx
-    .select({ id: s.eventParticipants.id, mode: s.teams.participationMode })
-    .from(s.eventParticipants)
-    .innerJoin(s.events, eq(s.events.id, s.eventParticipants.eventId))
-    .innerJoin(s.teams, eq(s.teams.id, s.events.teamId))
-    .where(and(eq(s.eventParticipants.absenceId, id), gt(s.events.startsAt, now)));
-  const autoYes = rows.filter((r) => r.mode !== 'active_response').map((r) => r.id);
-  const pending = rows.filter((r) => r.mode === 'active_response').map((r) => r.id);
-  const reset = { reason: null, absenceId: null, respondedAt: null, respondedByPersonId: null };
-  if (autoYes.length) {
-    await tx
-      .update(s.eventParticipants)
-      .set({ ...reset, status: 'yes' })
-      .where(inArray(s.eventParticipants.id, autoYes));
-  }
-  if (pending.length) {
-    await tx
-      .update(s.eventParticipants)
-      .set({ ...reset, status: 'pending' })
-      .where(inArray(s.eventParticipants.id, pending));
-  }
-}
+/** Teilnahme der Person an allen anstehenden Terminen aus ihren Abwesenheiten neu ableiten (siehe `participation.ts`). */
+const recalc = (tx: Db, actor: Actor, personId: string, now: Date, ignoreAbsenceId?: string) =>
+  recalcAbsenceParticipation(tx, {
+    clubId: actor.club.id,
+    timezone: actor.club.timezone,
+    now,
+    actorPersonId: actor.person.id,
+    personId,
+    ignoreAbsenceId,
+  });
 
 /**
- * Abwesenheit nachträglich ändern (Paket BE): Zeitraum, Grund, Mannschaftsauswahl und Notiz. Die automatischen Absagen
- * werden zurückgenommen und für den neuen Zeitraum neu berechnet – wie beim Löschen und Anlegen. Ändern dürfen die
+ * Abwesenheit nachträglich ändern (Paket BE): Zeitraum, Grund, Mannschaftsauswahl und Notiz. Die abgeleitete Teilnahme
+ * wird danach aus allen Abwesenheiten der Person neu berechnet – wie beim Löschen und Anlegen. Ändern dürfen die
  * Person selbst und ihre Eltern.
  */
 export async function updateAbsence(
@@ -190,7 +138,6 @@ export async function updateAbsence(
     );
 
   return db.transaction(async (tx) => {
-    await releaseAbsence(tx as unknown as Db, id, now);
     const [updated] = await tx
       .update(s.absences)
       .set({
@@ -203,7 +150,7 @@ export async function updateAbsence(
       })
       .where(eq(s.absences.id, id))
       .returning();
-    await applyAbsence(tx as unknown as Db, actor, updated!, now);
+    await recalc(tx as unknown as Db, actor, absence.personId, now);
     await tx.insert(s.auditLog).values({
       clubId: actor.club.id,
       actorUserId: actor.user.id,
@@ -277,7 +224,7 @@ export async function createAbsence(
       })
       .returning();
 
-    await applyAbsence(tx as unknown as Db, actor, absence!, now);
+    await recalc(tx as unknown as Db, actor, input.personId, now);
 
     const person = actor.managed.find((m) => m.id === input.personId)!;
     const [result] = await toAbsences(tx as unknown as Db, [
@@ -311,7 +258,8 @@ export async function deleteAbsence(db: Db, actor: Actor, id: string, now: Date)
   }
 
   await db.transaction(async (tx) => {
-    await releaseAbsence(tx as unknown as Db, id, now);
+    // erst neu ableiten (ohne diese Abwesenheit), dann löschen: die Verknüpfung wird beim Löschen sonst auf leer gesetzt
+    await recalc(tx as unknown as Db, actor, absence.personId, now, id);
     await tx.delete(s.absences).where(eq(s.absences.id, id));
   });
 }

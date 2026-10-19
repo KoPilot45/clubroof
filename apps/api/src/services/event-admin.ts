@@ -18,6 +18,7 @@ import {
 import { schema as s, type Db } from '@clubroof/db';
 import { randomUUID } from 'node:crypto';
 import { and, asc, eq, gt, gte, inArray, isNull, lte, or } from 'drizzle-orm';
+import { recalcAbsenceParticipation } from './participation';
 import { actorCan, type Actor } from '../actor';
 import { deliver, type NotificationInput } from '../notify/deliver';
 import { HttpError, forbidden, notFound } from '../errors';
@@ -598,6 +599,17 @@ export async function updateEvent(
         data: { changes },
         createdAt: now,
       });
+    }
+    // Neuer Zeitpunkt: abgeleitete Teilnahme (Abwesenheiten) für die verschobenen Termine neu berechnen
+    for (const p of plan) {
+      if (p.startsAt.getTime() !== p.e.startsAt.getTime())
+        await recalcAbsenceParticipation(tx as unknown as Db, {
+          clubId: actor.club.id,
+          timezone: actor.club.timezone,
+          now,
+          actorPersonId: actor.person.id,
+          eventId: p.e.id,
+        });
     }
     if (match && (opponent || input.isHome !== undefined || input.matchKind)) {
       await tx
