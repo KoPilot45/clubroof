@@ -2,7 +2,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { Card, Notice, Screen, Section, T } from '@/components/ui';
 import { ABOUT_PAGES, type AboutPageKey } from '@/lib/about-content';
 
-/** Textseiten unter „Mehr → Über Clubroof“: AGB, Datenschutz, Impressum, Changelog. */
+/** Textseiten unter „Ich → Hilfe und Informationen“: AGB, Datenschutz, Impressum, Changelog. */
 export default function AboutPageScreen() {
   const { page } = useLocalSearchParams<{ page: string }>();
   const content = ABOUT_PAGES[page as AboutPageKey];

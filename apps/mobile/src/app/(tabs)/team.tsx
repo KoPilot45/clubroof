@@ -89,7 +89,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
   const [selected, setSelected] = useState(
     (me.teams.find((t) => t.functions.some((f) => f !== 'player')) ?? teams[0])?.id ?? null,
   );
-  // Aufruf mit ?teamId=… (z. B. aus „Mehr → Meine Mannschaften“) wählt die Mannschaft aus
+  // Aufruf mit ?teamId=… (z. B. aus „Ich → Meine Mannschaften“) wählt die Mannschaft aus
   const { teamId } = useLocalSearchParams<{ teamId?: string }>();
   // Zuletzt gewählte Mannschaft merken (pro Gerät); ein Aufruf mit ?teamId=… hat Vorrang
   useEffect(() => {
@@ -304,7 +304,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
           ? [
               {
                 key: 'invite',
-                label: 'Spieler einladen',
+                label: t(`Person zur ${team.badge} einladen`),
                 icon: 'person-add-outline' as const,
                 onPress: () => router.push('/admin/invites'),
               },
@@ -312,11 +312,30 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
           : []),
       ]
     : [];
+  // Gruppen nach Konzept 19.10.2026: Mannschaft, Training und Spiel, Organisation, Statistik (Übersicht steht darüber)
+  const every = [...play, ...organisation, ...admin];
+  const pick = (keys: string[]) => every.filter((t) => keys.includes(t.key));
   const groups: { key: string; title: string; tint: TintKey; tiles: TileItem[] }[] = (
     [
-      { key: 'play', title: 'Spiel- & Trainingsbetrieb', tint: 'green', tiles: play },
-      { key: 'org', title: 'Organisation', tint: 'blue', tiles: organisation },
-      { key: 'admin', title: 'Verwaltung', tint: 'violet', tiles: admin },
+      {
+        key: 'play',
+        title: 'Training und Spiel',
+        tint: 'green',
+        tiles: pick(['events', 'new', 'exercises', 'exchange', 'absence']),
+      },
+      {
+        key: 'team',
+        title: 'Mannschaft',
+        tint: 'blue',
+        tiles: pick(['roster', 'squad', 'edit', 'invite', 'archive', 'modules']),
+      },
+      {
+        key: 'org',
+        title: 'Organisation',
+        tint: 'orange',
+        tiles: pick(['tasks', 'polls', 'docs', 'cash', 'fines', 'cash-admin']),
+      },
+      { key: 'stats', title: 'Statistik', tint: 'violet', tiles: pick(['stats']) },
     ] as { key: string; title: string; tint: TintKey; tiles: TileItem[] }[]
   ).filter((g) => g.tiles.length > 0);
 
@@ -360,9 +379,13 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
           <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
             {roles.flatMap((r) =>
               r.functions.map((fn) => {
+                // Person, Mannschaft und Funktion stehen vor jeder Aktion: „C1 · Trainer“, „Leon · E1“
                 const person = me.managedPersons.find((p) => p.id === r.personId);
-                const who = person?.relation === 'child' ? ` (${person.firstName})` : '';
-                return <Chip key={r.personId + fn} label={TEAM_FUNCTION_LABELS[fn] + who} />;
+                const label =
+                  person?.relation === 'child'
+                    ? `${person.firstName} · ${team.badge}`
+                    : `${team.badge} · ${t(TEAM_FUNCTION_LABELS[fn])}`;
+                return <Chip key={r.personId + fn} label={label} />;
               }),
             )}
             {team.ageGroup ? <Chip tone="neutral" label={team.ageGroup} /> : null}
@@ -412,7 +435,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                             .join(' · ')}
                           trailing={
                             o.nextEvent.status === 'cancelled' ? (
-                              <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                              <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
                             ) : null
                           }
                         />
@@ -505,7 +528,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                           }
                           trailing={
                             e.status === 'cancelled' ? (
-                              <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                              <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
                             ) : null
                           }
                         />
@@ -571,7 +594,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                         .join(' · ')}
                       trailing={
                         o.nextEvent.status === 'cancelled' ? (
-                          <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                          <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
                         ) : null
                       }
                     />
@@ -647,7 +670,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                         }
                         trailing={
                           e.status === 'cancelled' ? (
-                            <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                            <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
                           ) : null
                         }
                       />

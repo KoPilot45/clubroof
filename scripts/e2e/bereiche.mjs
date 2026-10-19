@@ -15,15 +15,15 @@ const vis = (page, re, o = {}) => page.getByText(re, o).filter({ visible: true }
 const tab = (page, name) => page.getByRole('tab', { name, exact: true });
 const rgb = (c) => c.match(/\d+/g).slice(0, 3).map(Number);
 
-// ── Zugänge in „Mehr“ je nach Rechten ────────────────────────────────────────
+// ── Zugänge in „Verein › Meine Vereinsaufgaben“ je nach Rechten ────────────────────────────────────────
 const access = async (who) => {
   const s = await b.session(who);
-  await s.goto('/mehr');
-  await text(s.page, 'Hilfe & Anleitung').waitFor({ timeout: 20_000 });
+  await s.goto('/verein');
+  await text(s.page, 'Mannschaften').waitFor({ timeout: 20_000 });
   await s.page.waitForTimeout(1500);
   return {
     s,
-    admin: (await s.page.getByRole('button', { name: 'Admin-Verwaltung' }).count()) > 0,
+    admin: (await s.page.getByRole('button', { name: /^Verwaltung/ }).count()) > 0,
     cash: (await s.page.getByRole('button', { name: 'Vereinskasse' }).count()) > 0,
   };
 };
@@ -36,12 +36,15 @@ ok(!spieler.admin && !spieler.cash, 'Spieler: kein Zugang');
 
 // ── Admin-Verwaltung ─────────────────────────────────────────────────────────
 const page = adm.s.page;
-await page.getByRole('button', { name: 'Admin-Verwaltung' }).click();
+await page
+  .getByRole('button', { name: /^Verwaltung/ })
+  .first()
+  .click();
 await tab(page, 'Mitglieder').waitFor({ timeout: 20_000 });
 await page.waitForTimeout(1500);
 for (const name of ['Übersicht', 'Mitglieder', 'Sport', 'Inhalte', 'Verein'])
   ok((await tab(page, name).count()) === 1, `Reiter „${name}“ beschriftet`);
-ok((await button(page, /beenden$/).count()) > 0, 'Kopfband mit „Beenden“');
+ok((await button(page, /^zur app$/i).count()) > 0, 'Kopfband mit „Zur App“');
 ok(
   (await vis(page, 'Aktive Mitglieder', { exact: true }).count()) > 0,
   'Übersicht: Blickfläche Mitglieder',
@@ -51,7 +54,7 @@ ok(
   (await vis(page, 'Mitglied anlegen', { exact: true }).count()) === 0,
   'Übersicht ohne Funktionskacheln',
 );
-const band = await button(page, /beenden$/).evaluate(
+const band = await button(page, /^zur app$/i).evaluate(
   (e) => getComputedStyle(e.parentElement).backgroundColor,
 );
 const [vr, vg, vb] = rgb(band);
@@ -85,9 +88,9 @@ for (const [name, group] of [
   await text(page, group, { exact: true }).waitFor({ timeout: 8000 });
   ok(true, `${name}: Untergruppe „${group}“`);
 }
-await button(page, /beenden$/).click();
+await button(page, /^zur app$/i).click();
 await page.waitForTimeout(1500);
-ok(new URL(page.url()).pathname === '/mehr', '„Beenden“ führt zurück nach „Mehr“');
+ok(new URL(page.url()).pathname === '/verein', '„Zur App“ führt zurück nach „Verein“');
 
 // ── Vereinskasse ─────────────────────────────────────────────────────────────
 const c = kasse.s.page;
@@ -96,7 +99,7 @@ await tab(c, 'Beiträge').waitFor({ timeout: 20_000 });
 await c.waitForTimeout(1500);
 for (const name of ['Übersicht', 'Buchung', 'Beiträge', 'Planung', 'Prüfung'])
   ok((await tab(c, name).count()) === 1, `Kasse: Reiter „${name}“`);
-const cband = await button(c, /beenden$/).evaluate(
+const cband = await button(c, /^zur app$/i).evaluate(
   (e) => getComputedStyle(e.parentElement).backgroundColor,
 );
 const [cr, cg, cb] = rgb(cband);

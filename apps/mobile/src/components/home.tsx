@@ -1082,9 +1082,9 @@ export function HomePoster({
 
 const STATUS_WORD: Record<string, string> = {
   pending: 'Zusage offen',
-  yes: 'Zugesagt',
+  yes: 'Nimmt teil',
   maybe: 'Unsicher',
-  no: 'Abgesagt',
+  no: 'Nimmt nicht teil',
 };
 
 /** Pro Person (ich, meine Kinder) eine Karte mit dem Stand der Rückmeldung zum nächsten Spiel. */
@@ -1254,7 +1254,7 @@ export function WeekTickets({ week }: { week: EventSummary[] }) {
                     ? t('offen')
                     : null;
             const caption = cancelled
-              ? (e.cancelledReason ?? t('Abgesagt'))
+              ? (e.cancelledReason ?? t('Termin abgesagt'))
               : [
                   e.team?.badge,
                   r?.relation === 'child' ? r.firstName : null,

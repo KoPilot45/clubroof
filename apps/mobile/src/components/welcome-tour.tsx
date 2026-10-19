@@ -20,17 +20,17 @@ export function tourSteps(me: MeResponse): Step[] {
     {
       icon: 'checkmark-circle-outline',
       title: 'Zu- und Absagen mit einem Tipp',
-      text: 'Auf Home und unter Termine sagst du zu oder ab. Mit „Rückgängig“ nimmst du es gleich wieder zurück.',
+      text: 'Auf Start und unter Termine sagst du zu oder ab. Mit „Rückgängig“ nimmst du es gleich wieder zurück.',
     },
     {
       icon: 'grid-outline',
       title: 'Alles in Kacheln',
-      text: 'Unter Team, Verein und Mehr findest du die Funktionen als Kacheln. Die kleine Zeile darunter zeigt, was für dich wichtig ist.',
+      text: 'Unter Team und Verein findest du die Funktionen als Kacheln. Die kleine Zeile darunter zeigt, was für dich wichtig ist.',
     },
     {
       icon: 'notifications-outline',
       title: 'Benachrichtigungen',
-      text: 'Unter Mehr stellst du ein, wann du Push bekommst. Dringendes kommt immer an.',
+      text: 'Unter Ich stellst du ein, wann du Push bekommst. Dringendes kommt immer an.',
     },
   ];
   if (hasChildren)
@@ -49,12 +49,12 @@ export function tourSteps(me: MeResponse): Step[] {
     steps.push({
       icon: 'shield-checkmark-outline',
       title: 'Verwaltung',
-      text: 'Über Mehr → Verwaltung erreichst du Mitglieder, Rollen und Module.',
+      text: 'Über Verein → Meine Vereinsaufgaben → Verwaltung erreichst du Mitglieder, Rollen und Module.',
     });
   steps.push({
     icon: 'help-circle-outline',
     title: 'Hilfe jederzeit',
-    text: 'Unter Mehr → Hilfe & Anleitung findest du Antworten und kannst diese Tour wiederholen.',
+    text: 'Unter Ich → Hilfe und Informationen findest du Antworten und kannst diese Tour wiederholen.',
   });
   return steps;
 }

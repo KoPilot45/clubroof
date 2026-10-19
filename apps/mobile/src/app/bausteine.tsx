@@ -52,7 +52,7 @@ export default function Bausteine() {
             leading={<IconTile name="calendar-outline" tone="blue" />}
             title="Termine"
             subtitle="Training und Spiele"
-            trailing={<Chip label="Abgesagt" tone="urgent" icon="close-circle" />}
+            trailing={<Chip label="Termin abgesagt" tone="urgent" icon="close-circle" />}
             onPress={() => undefined}
           />
         </Card>

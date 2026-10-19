@@ -1,4 +1,4 @@
-/** Über Clubroof (Mehr): Menüpunkte, Textseiten, Privatsphäre, Changelog. */
+/** Hilfe und Informationen (Ich): Menüpunkte, Textseiten, Privatsphäre, Changelog. */
 import { launch, text } from '../lib/e2e.mjs';
 
 const b = await launch();
@@ -6,18 +6,10 @@ const { page, goto } = await b.session('spieler');
 const wait = (t, o = {}) => text(page, t, o).waitFor({ timeout: 15_000 });
 
 await goto('/mehr');
-await wait('Über Clubroof');
-for (const l of [
-  'AGB',
-  'Datenschutz',
-  'Privatsphäre-Einstellungen',
-  'Impressum',
-  'Changelog',
-  'Support',
-  'Funktion anfragen',
-])
+await wait('Hilfe und Informationen');
+for (const l of ['AGB', 'Datenschutz', 'Impressum', 'Changelog', 'Support', 'Funktion anfragen'])
   await wait(l, { exact: true });
-console.log('✓ alle sieben Menüpunkte');
+console.log('✓ alle Menüpunkte');
 
 await text(page, 'AGB', { exact: true }).click();
 await wait('1. Geltungsbereich');

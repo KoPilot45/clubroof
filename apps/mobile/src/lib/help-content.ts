@@ -1,5 +1,5 @@
 /**
- * Inhalte der Hilfe („Mehr → Hilfe & Anleitung“): kurze Anleitungen und häufige Fragen.
+ * Inhalte der Hilfe („Ich → Hilfe und Informationen“): kurze Anleitungen und häufige Fragen.
  * Abschnitte für Trainer, Kasse, Eltern und Verwaltung erscheinen nur bei passender Rolle.
  * Bei neuen Funktionen hier ergänzen (siehe CLAUDE.md).
  */
@@ -31,7 +31,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'overview',
         question: 'Wo finde ich was?',
         answer:
-          'Unten gibt es fünf Bereiche:\n• Home: dein Überblick – nächste Spiele (zum Wischen), Offenes, deine Woche, Neuigkeiten und dein Schnellzugriff.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Termine: deine nächsten Termine und der Kalender.\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften des Vereins.\n• Mehr: dein Profil, Einstellungen, Abwesenheiten und diese Hilfe.',
+          'Unten gibt es fünf Bereiche:\n• Start: dein Überblick – nächste Spiele (zum Wischen), Offenes, deine Woche, Neuigkeiten und dein Schnellzugriff.\n• Termine: deine nächsten Termine und der Kalender.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften – und, wenn du Rechte hast, deine Vereinsaufgaben (Verwaltung, Vereinskasse).\n• Ich: dein Profil, deine Familie, Einstellungen, Abwesenheiten und diese Hilfe.',
       },
       {
         id: 'area-overview',
@@ -56,7 +56,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'admin-area',
         question: 'Wo finde ich die Verwaltung und die Vereinskasse?',
         answer:
-          'Unter „Mehr“ stehen direkt unter deinem Profil zwei Zugänge: „Admin-Verwaltung“ (violett) für alle mit Verwaltungsrechten und „Vereinskasse“ (blau) für alle mit Kassenzugriff. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Zur App“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Auswertung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.',
+          'Unter „Verein“ steht in der Gruppe „Meine Vereinsaufgaben“ der Zugang zur „Verwaltung“ (für alle mit Verwaltungsrechten) und zur „Vereinskasse“ (für alle mit Kassenzugriff); am Desktop stehen beide dauerhaft in der Seitenleiste. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Zur App“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Auswertung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.',
       },
       {
         id: 'custom-roles',
@@ -74,7 +74,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'export-data',
         question: 'Wie exportiere ich Daten oder meine eigenen Daten?',
         answer:
-          'Unter „Mehr › Konto & Einstellungen › Daten exportieren“ (in der Verwaltung als Kachel „Export“) findest du alle Exporte, für die du Rechte hast: „Meine Daten“ (alles, was der Verein über dich und deine Kinder gespeichert hat), Kader, Termine und Anwesenheit deiner Mannschaft, Mitgliederliste, Kassenbuch und Beiträge sowie für die Administration der Gesamtexport als ZIP. Die Dateien kommen als Excel oder CSV und werden am besten am Computer geladen. Jeder Export steht im Protokoll des Vereins.',
+          'Unter „Ich › Konto & Einstellungen › Daten exportieren“ (in der Verwaltung als Kachel „Export“) findest du alle Exporte, für die du Rechte hast: „Meine Daten“ (alles, was der Verein über dich und deine Kinder gespeichert hat), Kader, Termine und Anwesenheit deiner Mannschaft, Mitgliederliste, Kassenbuch und Beiträge sowie für die Administration der Gesamtexport als ZIP. Die Dateien kommen als Excel oder CSV und werden am besten am Computer geladen. Jeder Export steht im Protokoll des Vereins.',
       },
       {
         id: 'team-cash-setup',
@@ -157,7 +157,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'sponsors',
         question: 'Was ist die Zeile „Unterstützt von … Anzeige“ und wo sehe ich alle Sponsoren?',
         answer:
-          'Wenn dein Verein das Sponsoren-Modul nutzt, zeigt ein kleines Wischelement auf Home, im Team-Reiter und im Verein-Reiter bis zu drei Sponsoren, die der Verein als Werbung freigegeben hat. Es ist immer als „Anzeige“ gekennzeichnet und wechselt alle paar Sekunden von selbst; du kannst auch wischen. Ein Tipp öffnet die Seite des Sponsors. Alle Sponsoren findest du unter „Verein → Sponsoren“. Die App wertet nicht aus, wer was ansieht oder antippt. Manche Sponsoren stellt der Verein so ein, dass Jugendspieler sie nicht sehen.',
+          'Wenn dein Verein das Sponsoren-Modul nutzt, zeigt ein kleines Wischelement auf Start, im Team-Reiter und im Verein-Reiter bis zu drei Sponsoren, die der Verein als Werbung freigegeben hat. Es ist immer als „Anzeige“ gekennzeichnet und wechselt alle paar Sekunden von selbst; du kannst auch wischen. Ein Tipp öffnet die Seite des Sponsors. Alle Sponsoren findest du unter „Verein → Sponsoren“. Die App wertet nicht aus, wer was ansieht oder antippt. Manche Sponsoren stellt der Verein so ein, dass Jugendspieler sie nicht sehen.',
         link: { label: 'Unsere Sponsoren', href: '/sponsors' },
       },
       {
@@ -171,21 +171,21 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'dark',
         question: 'Kann ich die App dunkel darstellen?',
         answer:
-          'Ja. Unter „Mehr → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.',
+          'Ja. Unter „Ich → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.',
         link: { label: 'Darstellung ändern', href: '/account' },
       },
       {
         id: 'comfort',
         question: 'Kann ich die Schrift vergrößern, die App sperren oder sie ohne Netz nutzen?',
         answer:
-          'Ja. Unter „Mehr → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.',
+          'Ja. Unter „Ich → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.',
         link: { label: 'Einstellungen öffnen', href: '/account' },
       },
       {
         id: 'club-code',
         question: 'Was ist das Vereinskürzel und wie ändere ich die Vibration?',
         answer:
-          'Das Kürzel (2 bis 4 Zeichen, z. B. „SGW“) steht groß im Plakat der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist. Die Vereinsadministration ändert es unter „Verwaltung → Verein & Design“, mit Vorschau. Die Vibration bei Auswahl und Bestätigung schaltest du auf dem Handy unter „Mehr → Konto & Einstellungen → Vibration“ aus; bei eingestellter „Bewegung reduzieren“ des Geräts bleiben auch die Animationen aus.',
+          'Das Kürzel (2 bis 4 Zeichen, z. B. „SGW“) steht groß im Plakat der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist. Die Vereinsadministration ändert es unter „Verwaltung → Verein & Design“, mit Vorschau. Die Vibration bei Auswahl und Bestätigung schaltest du auf dem Handy unter „Ich → Konto & Einstellungen → Vibration“ aus; bei eingestellter „Bewegung reduzieren“ des Geräts bleiben auch die Animationen aus.',
         link: { label: 'Einstellungen öffnen', href: '/account' },
       },
       {
@@ -204,7 +204,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'language',
         question: 'Kann ich die Sprache der App ändern?',
         answer:
-          'Ja. Unter „Mehr → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.',
+          'Ja. Unter „Ich → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.',
         link: { label: 'Sprache ändern', href: '/account' },
       },
       {
@@ -246,15 +246,15 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         id: 'quick-access',
-        question: 'Wie ändere ich den Schnellzugriff auf Home?',
+        question: 'Wie ändere ich den Schnellzugriff auf Start?',
         answer:
-          'Ganz unten auf Home findest du den Schnellzugriff – Abkürzungen zu Seiten, die du oft brauchst. Tippe auf „Hinzufügen“, wähle die Einträge aus und speichere. „Zurücksetzen“ stellt die Voreinstellung für deine Rolle wieder her. Die Auswahl gilt auf allen deinen Geräten.',
+          'Ganz unten auf Start findest du den Schnellzugriff – Abkürzungen zu Seiten, die du oft brauchst. Tippe auf „Hinzufügen“, wähle die Einträge aus und speichere. „Zurücksetzen“ stellt die Voreinstellung für deine Rolle wieder her. Die Auswahl gilt auf allen deinen Geräten.',
       },
       {
         id: 'respond',
         question: 'Wie sage ich zu oder ab?',
         answer:
-          'Öffne den Termin (Home, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ kannst du einen Grund wählen oder schreiben – das ist freiwillig; bei „Unsicher“ bitten wir um eine kurze Begründung. Den Grund sehen nur das Trainerteam und du selbst.',
+          'Öffne den Termin (Start, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ kannst du einen Grund wählen oder schreiben – das ist freiwillig; bei „Unsicher“ bitten wir um eine kurze Begründung. Den Grund sehen nur das Trainerteam und du selbst.',
       },
       {
         id: 'responses-overview',
@@ -304,7 +304,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'calendar',
         question: 'Kann ich alle Termine im Handy-Kalender sehen?',
         answer:
-          'Ja, mit dem Kalender-Abo: „Mehr → Kalender-Abo“, Abo-Link erstellen und im Kalender des Handys hinzufügen. Dort erscheinen deine Termine, die deiner Kinder und die Vereinstermine. Der Link ist geheim – gib ihn nicht weiter. Du kannst ihn jederzeit erneuern.',
+          'Ja, mit dem Kalender-Abo: „Ich → Einstellungen → Kalender-Abo“ (oder in Termine „Kalender-Abo“), Abo-Link erstellen und im Kalender des Handys hinzufügen. Dort erscheinen deine Termine, die deiner Kinder und die Vereinstermine. Der Link ist geheim – gib ihn nicht weiter. Du kannst ihn jederzeit erneuern.',
         link: { label: 'Kalender-Abo', href: '/calendar' },
       },
       {
@@ -435,7 +435,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'push',
         question: 'Welche Meldungen bekomme ich und wie stelle ich sie ein?',
         answer:
-          'Unter „Mehr → Benachrichtigungen → Einstellungen“ wählst du je Thema: Push, nur in der App oder aus. Dort kannst du auch einzelne Mannschaften stummschalten. Dringendes (z. B. kurzfristige Absagen) kommt immer an.',
+          'Unter „Ich → Einstellungen → Benachrichtigungen“ wählst du je Thema: Push, nur in der App oder aus. Dort kannst du auch einzelne Mannschaften stummschalten. Dringendes (z. B. kurzfristige Absagen) kommt immer an.',
         link: { label: 'Einstellungen', href: '/notification-settings' },
       },
       {
@@ -461,7 +461,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'profile',
         question: 'Wie ändere ich mein Profil und mein Foto?',
         answer:
-          'Unter „Mehr → Profil & Statistik“. Dort kannst du Foto, Position, Kontaktdaten und die Sichtbarkeit deiner Kontaktdaten ändern. Du bestimmst, wer sie sehen darf.',
+          'Unter „Ich → Ich und Familie → Profil & Statistik“. Dort kannst du Foto, Position, Kontaktdaten und die Sichtbarkeit deiner Kontaktdaten ändern. Du bestimmst, wer sie sehen darf.',
       },
       {
         id: 'who-sees',
@@ -473,14 +473,14 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: '2fa',
         question: 'Was ist die 2-Faktor-Anmeldung?',
         answer:
-          'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail (6 Stellen, 10 Minuten gültig, nur einmal nutzbar). Du richtest ihn unter „Mehr → Konto & Einstellungen“ ein. Pflicht ist er nur für das Administrationskonto, wenn der Verein es verlangt.',
+          'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail (6 Stellen, 10 Minuten gültig, nur einmal nutzbar). Du richtest ihn unter „Ich → Konto & Einstellungen“ ein. Pflicht ist er nur für das Administrationskonto, wenn der Verein es verlangt.',
         link: { label: 'Konto & Einstellungen', href: '/account' },
       },
       {
         id: 'about',
         question: 'Wo finde ich AGB, Datenschutz, Impressum und Support?',
         answer:
-          'Unter „Mehr → Über Clubroof“: AGB, Datenschutzerklärung, Privatsphäre-Einstellungen, Impressum, Neuigkeiten (Changelog) sowie Links zu Support und „Funktion anfragen“ auf der Webseite.',
+          'Unter „Ich → Hilfe und Informationen“: AGB, Datenschutzerklärung, Privatsphäre-Einstellungen, Impressum, Neuigkeiten (Changelog) sowie Links zu Support und „Funktion anfragen“ auf der Webseite.',
         link: { label: 'Privatsphäre-Einstellungen', href: '/about/privacy' },
       },
     ],
@@ -494,7 +494,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'children',
         question: 'Wie verwalte ich mein Kind?',
         answer:
-          'Unter „Mehr → Meine Kinder“ (und auf Home und Termine) siehst du Termine, Zusagen und Abwesenheiten deiner Kinder. Du sagst für sie zu oder ab, trägst Abwesenheiten ein und bekommst ihre Benachrichtigungen. Das Kind braucht dafür kein eigenes Login.',
+          'Unter „Ich → Meine Kinder“ (und auf Start und Termine) siehst du Termine, Zusagen und Abwesenheiten deiner Kinder. Du sagst für sie zu oder ab, trägst Abwesenheiten ein und bekommst ihre Benachrichtigungen. Das Kind braucht dafür kein eigenes Login.',
       },
       {
         id: 'children-pay',
@@ -570,7 +570,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'coach-attendance',
         question: 'Was bringt „Anwesenheit erfassen“?',
         answer:
-          'Nach Beginn eines Termins hakst du ab, wer wirklich da war (vorausgewählt sind die Zusagen). Danach zählt für Trainingsquote und Statistik die Anwesenheit statt der Zusage. Auf Home erinnert dich ein Hinweis an Trainings der letzten Woche.',
+          'Nach Beginn eines Termins hakst du ab, wer wirklich da war (vorausgewählt sind die Zusagen). Danach zählt für Trainingsquote und Statistik die Anwesenheit statt der Zusage. Auf Start erinnert dich ein Hinweis an Trainings der letzten Woche.',
       },
       {
         id: 'coach-plan',
@@ -588,7 +588,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'coach-invite',
         question: 'Wie lade ich neue Spieler ein?',
         answer:
-          '„Mehr → Einladen“: persönlich per E-Mail oder als Mannschafts-Link bzw. QR-Code zum Selbstregistrieren. Bei Links gibst du neue Anfragen frei, bevor jemand die App nutzen kann.',
+          '„Ich → Einstellungen → Einladen“ oder im Team „Person zur Mannschaft einladen“: persönlich per E-Mail oder als Mannschafts-Link bzw. QR-Code zum Selbstregistrieren. Bei Links gibst du neue Anfragen frei, bevor jemand die App nutzen kann.',
       },
       {
         id: 'coach-cash',
@@ -739,7 +739,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'admin-start',
         question: 'Wo ist die Verwaltung?',
         answer:
-          'Über das Schild-Symbol oben rechts oder „Mehr → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.',
+          'Über das Schild-Symbol oben rechts oder „Verein → Meine Vereinsaufgaben → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.',
       },
       {
         id: 'admin-roles',

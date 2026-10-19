@@ -10,21 +10,24 @@ const has = async (page, txt) => (await page.getByText(txt).count()) > 0;
 
 {
   const { page, goto } = await b.session('trainer', { height: 1500 });
-  await goto('/mehr');
+  await goto('/verein');
   await page.waitForTimeout(2000);
-  check(!(await has(page, 'Admin-Verwaltung')), 'Trainer: keine Admin-Karte in Mehr');
+  check(
+    (await page.getByRole('button', { name: /^Verwaltung/ }).count()) === 0,
+    'Trainer: kein Verwaltungszugang im Verein',
+  );
   await goto('/admin');
   await page.waitForTimeout(2500);
-  check(new URL(page.url()).pathname === '/mehr', 'Trainer: /admin führt auf Mehr');
+  check(new URL(page.url()).pathname === '/verein', 'Trainer: /admin führt auf Verein');
   await goto('/club-cash');
   await page.waitForTimeout(2500);
-  check(new URL(page.url()).pathname === '/mehr', 'Trainer: /club-cash führt auf Mehr');
+  check(new URL(page.url()).pathname === '/verein', 'Trainer: /club-cash führt auf Verein');
 }
 {
   const { page, goto } = await b.session('admin', { height: 1500 });
-  await goto('/mehr');
+  await goto('/verein');
   await page.waitForTimeout(2000);
-  check(await has(page, 'Admin-Verwaltung'), 'Admin: Admin-Karte in Mehr');
+  check(await has(page, 'Meine Vereinsaufgaben'), 'Admin: Vereinsaufgaben im Verein');
 }
 {
   const { page, goto } = await b.session('mitglied', { height: 1500 });

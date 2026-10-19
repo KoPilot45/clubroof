@@ -18,8 +18,8 @@ export const EVENT_TYPE_LABELS: Record<EventType, string> = {
 };
 
 export const ATTENDANCE_LABELS: Record<AttendanceStatus, string> = {
-  yes: 'Zugesagt',
-  no: 'Abgesagt',
+  yes: 'Nimmt teil',
+  no: 'Nimmt nicht teil',
   maybe: 'Unsicher',
   pending: 'Offen',
 };

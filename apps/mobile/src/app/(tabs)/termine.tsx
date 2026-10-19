@@ -139,6 +139,15 @@ export default function EventsTab() {
             onToggle={setWhen}
           />
         </View>
+        {me.clubModules.includes('calendar_export') ? (
+          <Button
+            label="Kalender-Abo"
+            icon="calendar-outline"
+            variant="outline"
+            size="sm"
+            onPress={() => router.push('/calendar')}
+          />
+        ) : null}
         <Button
           label="Archiv"
           icon="archive-outline"
@@ -150,7 +159,14 @@ export default function EventsTab() {
       <ChoiceChips
         options={[
           { value: 'all', label: 'Alle' },
-          ...children.map((c) => ({ value: 'p:' + c.id, label: c.firstName })),
+          ...children.map((c) => ({
+            value: 'p:' + c.id,
+            // „Leon · E1“: Person und Mannschaft zusammen, damit der Zusammenhang erkennbar bleibt
+            label: [
+              c.firstName,
+              ...new Set(me.teams.filter((t) => t.personId === c.id).map((t) => t.badge)),
+            ].join(' · '),
+          })),
           { value: 'match', label: 'Spiele' },
           { value: 'training', label: 'Training' },
           { value: 'club', label: 'Verein' },

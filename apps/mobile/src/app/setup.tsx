@@ -1267,8 +1267,8 @@ function Wizard({ demo }: { demo?: boolean }) {
         <RuleList
           rules={[
             'News veröffentlichen Vorstand und Administration; Trainer schreiben für ihre Mannschaft.',
-            'Ruhezeiten und Erinnerungen stellt jede Person selbst unter Mehr › Benachrichtigungen ein.',
-            'Datenschutzerklärung und Impressum findest du in der App unter Mehr › Über Clubroof.',
+            'Ruhezeiten und Erinnerungen stellt jede Person selbst unter Ich › Einstellungen › Benachrichtigungen ein.',
+            'Datenschutzerklärung und Impressum findest du in der App unter Ich › Hilfe und Informationen.',
           ]}
         />
         <LaterHint where="Verwaltung › Verein & Design und Rollen & Aufgaben" />
@@ -1398,7 +1398,7 @@ function Wizard({ demo }: { demo?: boolean }) {
         {...shell}
         title="Zusätzlich absichern?"
         explanation="Mit der Zwei-Faktor-Anmeldung braucht jede neue Anmeldung zusätzlich einen Code. Für das Administrationskonto empfehlen wir sie."
-        hint="Das betrifft nur neue Anmeldungen – dein jetziges Gerät bleibt angemeldet. Du richtest sie später unter Mehr › Konto & Einstellungen ein."
+        hint="Das betrifft nur neue Anmeldungen – dein jetziges Gerät bleibt angemeldet. Du richtest sie später unter Ich › Konto & Einstellungen ein."
       >
         <Card style={{ gap: 10 }}>
           <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>

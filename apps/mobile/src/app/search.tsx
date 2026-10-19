@@ -94,7 +94,7 @@ export default function SearchScreen() {
                 }
                 trailing={
                   e.status === 'cancelled' ? (
-                    <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                    <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
                   ) : null
                 }
               />

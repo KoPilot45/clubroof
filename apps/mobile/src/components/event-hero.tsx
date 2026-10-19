@@ -54,7 +54,7 @@ export function EventHero({
       <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
         {e.team ? <TeamBadge badge={e.team.badge} /> : <Chip tone="info" label="Verein" />}
         <Chip tone="neutral" label={EVENT_TYPE_LABELS[e.type]} />
-        {cancelled ? <Chip tone="urgent" icon="close-circle" label="Abgesagt" /> : null}
+        {cancelled ? <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" /> : null}
         {past ? <Chip tone="archived" icon="time-outline" label="Vergangener Termin" /> : null}
       </View>
 

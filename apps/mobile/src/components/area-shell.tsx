@@ -88,8 +88,8 @@ function DesktopAreaBar({ tone, title }: { tone: AreaTone; title: string }) {
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={t(`${title} beenden`)}
-        onPress={() => router.dismissTo('/mehr')}
+        accessibilityLabel={t('Zur App')}
+        onPress={() => router.dismissTo('/verein')}
         style={{
           minHeight: 36,
           flexDirection: 'row',
@@ -147,8 +147,8 @@ function AreaBand({ tone, title, subtitle }: { tone: AreaTone; title: string; su
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={t(`${title} beenden`)}
-        onPress={() => router.dismissTo('/mehr')}
+        accessibilityLabel={t('Zur App')}
+        onPress={() => router.dismissTo('/verein')}
         style={{
           minHeight: 44,
           flexDirection: 'row',
