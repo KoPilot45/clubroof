@@ -71,6 +71,7 @@ export async function fetchEventRows(
         responsesVisible: s.teams.responsesVisible,
         allowMaybe: s.teams.allowMaybe,
         declineReasonRequired: s.teams.declineReasonRequired,
+        absenceReasonsVisibleTo: s.teams.absenceReasonsVisibleTo,
       },
       facilityName: s.facilities.name,
       match: s.matchDetails,
@@ -371,7 +372,9 @@ export async function getEventDetail(
   const mayReadReasons =
     row.team !== null &&
     (actorCan(actor, 'absences.read', row.team) ||
-      actorCan(actor, 'attendance.override', row.team));
+      actorCan(actor, 'attendance.override', row.team) ||
+      // Einstellung der Mannschaft: Gründe für die ganze Mannschaft sichtbar
+      (row.team.absenceReasonsVisibleTo === 'team' && isTeamMember(actor, row.team.id)));
   // Teilnehmerliste: Mitglieder der Mannschaft nur mit freigegebener Übersicht, das Trainerteam immer
   const seesList =
     row.team !== null &&

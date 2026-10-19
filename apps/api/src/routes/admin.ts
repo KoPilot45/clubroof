@@ -8,6 +8,7 @@ import {
   type MemberDetail,
   type MemberImportResult,
   type MemberListItem,
+  type EffectivePermissions,
   type RoleCatalog,
 } from '@clubroof/core';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
@@ -34,6 +35,13 @@ import {
 } from '../services/club-events';
 import { decodeText } from '../services/csv';
 import { importMembers } from '../services/member-import';
+import {
+  createRole,
+  deleteRole,
+  effectivePermissions,
+  restoreRole,
+  updateRole,
+} from '../services/role-admin';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const memberParams = z.object({ personId: z.uuid() });
@@ -279,6 +287,66 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.get('/admin/roles', async (request): Promise<RoleCatalog> =>
     getRoleCatalog(app.db, request.actor!),
+  );
+
+  const roleBody = z.object({
+    name: z.string().trim().min(3).max(40),
+    description: z.string().trim().max(200).nullish(),
+    defaultScope: z.enum(SCOPE_TYPES),
+    permissions: z.array(z.string().max(60)).max(80),
+  });
+  const roleKey = z.object({ key: z.string().min(1).max(60) });
+
+  app.post(
+    '/admin/roles',
+    { schema: { body: roleBody } },
+    async (request, reply): Promise<RoleCatalog> => {
+      const key = await createRole(app.db, request.actor!, request.body, app.now());
+      void key;
+      reply.status(201);
+      return getRoleCatalog(app.db, request.actor!);
+    },
+  );
+  app.put(
+    '/admin/roles/:key',
+    { schema: { params: roleKey, body: roleBody } },
+    async (request): Promise<RoleCatalog> => {
+      await updateRole(app.db, request.actor!, request.params.key, request.body, app.now());
+      return getRoleCatalog(app.db, request.actor!);
+    },
+  );
+  app.delete(
+    '/admin/roles/:key',
+    {
+      schema: {
+        params: roleKey,
+        querystring: z.object({ moveTo: z.string().max(60).optional() }),
+      },
+    },
+    async (request): Promise<RoleCatalog> => {
+      await deleteRole(
+        app.db,
+        request.actor!,
+        request.params.key,
+        request.query.moveTo ?? null,
+        app.now(),
+      );
+      return getRoleCatalog(app.db, request.actor!);
+    },
+  );
+  app.post(
+    '/admin/roles/:key/restore',
+    { schema: { params: roleKey } },
+    async (request): Promise<RoleCatalog> => {
+      await restoreRole(app.db, request.actor!, request.params.key, app.now());
+      return getRoleCatalog(app.db, request.actor!);
+    },
+  );
+  app.get(
+    '/admin/members/:personId/effective-permissions',
+    { schema: { params: memberParams } },
+    async (request): Promise<EffectivePermissions> =>
+      effectivePermissions(app.db, request.actor!, request.params.personId),
   );
 
   app.post(

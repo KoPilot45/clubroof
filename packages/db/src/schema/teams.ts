@@ -67,6 +67,8 @@ export const teams = pgTable(
     allowMaybe: boolean().notNull().default(true),
     /** Willkommenstext für Eltern und Spieler (Kleidung, Regeln, Ansprechpersonen) */
     welcomeText: text(),
+    /** Wer Abwesenheitsgründe sieht: `staff` = nur Trainerteam (Standard), `team` = ganze Mannschaft */
+    absenceReasonsVisibleTo: text().notNull().default('staff'),
     /** Standard-Spielform im Aufstellungsplaner (7, 9 oder 11); leer = nach Altersklasse */
     matchFormat: smallint(),
     /** Mannschaft der Vorsaison (Saisonwechsel: Kasse, Dokumente und Verlauf gehen mit) */

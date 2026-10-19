@@ -1331,6 +1331,8 @@ export type TeamProfile = {
   allowMaybe: boolean;
   /** Willkommenstext für Eltern und Spieler */
   welcomeText: string | null;
+  /** Wer Abwesenheitsgründe sieht: nur das Trainerteam (Standard) oder die ganze Mannschaft */
+  absenceReasonsVisibleTo: 'staff' | 'team';
   /** Standard-Spielform im Aufstellungsplaner; leer = nach Altersklasse */
   matchFormat: 7 | 9 | 11 | null;
 };
@@ -1370,6 +1372,20 @@ export type SetIndividualPermissionsInput = { permissions: string[] };
 
 export type AssignRoleInput = { roleKey: string; scopeType: ScopeType; scopeId?: string | null };
 
+/** Eigene Rolle anlegen oder ändern (Paket ROLLEN-VERWALTUNG). */
+export type RoleInput = {
+  name: string;
+  description?: string | null;
+  defaultScope: ScopeType;
+  permissions: string[];
+};
+
+/** Rechtevorschau einer Person: jedes Recht mit der Quelle (Rolle und Geltungsbereich bzw. individuell). */
+export type EffectivePermissions = {
+  personName: string;
+  permissions: { key: string; label: string; sources: string[] }[];
+};
+
 export type RoleCatalog = {
   roles: {
     key: string;
@@ -1377,6 +1393,12 @@ export type RoleCatalog = {
     description: string | null;
     defaultScope: ScopeType;
     permissions: string[];
+    /** Standardrolle (schreibgeschützt, nur kopieren) oder eigene Rolle des Vereins */
+    isSystem: boolean;
+    /** Gelöscht (archiviert); lässt sich wiederherstellen */
+    archived: boolean;
+    /** Rechte aus Updates, die die eigene Rolle noch nicht kennt (zunächst aus) */
+    newPermissions: string[];
     holders: {
       /** Zuweisung (zum Entziehen) */
       assignmentId: string;

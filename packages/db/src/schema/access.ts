@@ -35,6 +35,12 @@ export const roles = pgTable(
     description: text(),
     isSystem: boolean().notNull().default(false),
     permissions: text().array().notNull(),
+    /** Standard-Geltungsbereich beim Vergeben (eigene Rollen; Standardrollen aus dem Kern) */
+    scopeDefault: scopeTypeEnum().notNull().default('club'),
+    /** Archivierte Rollen (Löschen mit Wiederherstellen, Paket ROLLEN-VERWALTUNG) */
+    archivedAt: timestamp({ withTimezone: true }),
+    /** Rechte-Stand der Rolle: neue Rechte aus Updates erkennt man daran, dass sie hier fehlen */
+    knownPermissions: text().array(),
     createdAt: createdAt(),
   },
   (t) => [unique().on(t.clubId, t.key)],

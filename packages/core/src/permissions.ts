@@ -105,3 +105,19 @@ export const PERMISSION_GROUPS: { title: string; keys: Permission[] }[] = [
     keys: ['facilities.manage', 'documents.manage', 'helpers.manage', 'referees.manage'],
   },
 ];
+
+/** Sensible Rechte (Paket ROLLEN-VERWALTUNG): Warnhinweis beim Aktivieren in eigenen Rollen. */
+export const isSensitivePermission = (p: string) =>
+  [
+    'club.roles.manage',
+    'members.manage',
+    'club.audit.read',
+    'archive.purge',
+    'absences.read',
+  ].includes(p) ||
+  p.startsWith('cash.') ||
+  p.startsWith('clubcash.');
+
+/** Rechte, die nur vereinsweit sinnvoll sind: für Abteilungs- und Mannschaftsrollen gesperrt. */
+export const isClubOnlyPermission = (p: string) =>
+  p.startsWith('club.') || p.startsWith('clubcash.') || p.startsWith('members.');
