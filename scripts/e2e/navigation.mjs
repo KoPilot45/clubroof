@@ -2,7 +2,7 @@
  * NAVIGATION-NEUORDNUNG: Start · Termine · Team · Verein · Ich – Reihenfolge, Gruppen, nichts unerreichbar.
  * pnpm browser-check scripts/e2e/navigation.mjs --no-build   (hell: SCHEME=light)
  */
-import { launch, text } from '../lib/e2e.mjs';
+import { api, launch, text } from '../lib/e2e.mjs';
 
 const b = await launch();
 let failed = false;
@@ -124,6 +124,39 @@ for (const [who, must] of [
   await goto('/termine');
   await text(page, 'Kalender-Abo', { exact: true }).waitFor({ timeout: 20_000 });
   ok(true, 'Termine: Kalender-Abo erreichbar');
+}
+
+// ── Interaktionsregeln: Aktionsknopf führt nur die Aktion aus, Bestätigung benennt den Vorgang ──
+{
+  const { page, goto, login } = await b.session('spieler', { width: 390, height: 900 });
+  const from = new Date();
+  const to = new Date(from.getTime() + 20 * 86_400_000);
+  const events = await api(
+    `/events?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
+    login.token,
+  );
+  const target = events.find((e) => e.type === 'match' && e.myResponses.some((r) => r.canRespond));
+  await api(`/events/${target.id}/responses/${login.me.person.id}`, login.token, {
+    method: 'PUT',
+    body: JSON.stringify({ status: 'pending', reason: null }),
+  });
+  await goto('/termine');
+  const yes = page.locator('button[aria-label="Zusagen"]:not([disabled])').first();
+  await yes.waitFor({ timeout: 20_000 });
+  await yes.click();
+  await text(page, 'Teilnahme bestätigt').waitFor({ timeout: 10_000 });
+  ok(
+    new URL(page.url()).pathname === '/termine',
+    'Zusagen in der Liste öffnet keine Details, Bestätigung nennt den Vorgang',
+  );
+  await text(page, 'Rückgängig', { exact: true }).click();
+  await page.waitForTimeout(800);
+  const after = await api(`/events/${target.id}`, login.token);
+  ok(after.myResponses[0].status === 'pending', 'Rückgängig stellt die vorherige Antwort her');
+  // Karte öffnet Details
+  await page.getByText(target.title).filter({ visible: true }).first().click();
+  await page.waitForURL(/\/events\//, { timeout: 10_000 });
+  ok(true, 'Karte öffnet die gemeinsamen Termindetails');
 }
 
 console.log(

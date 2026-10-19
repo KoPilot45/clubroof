@@ -42,7 +42,7 @@ const ansicht = ({
 <div class=duo>${phone2(...a)}${phone2(...b)}</div><div class=nr>${nr}</div></section>`;
 const ANSICHTEN = [
   [
-    'Home',
+    'Start',
     'Dein Tag auf einen Blick',
     'Die Startseite zeigt je Rolle etwas anderes: das nächste Spiel, was offen ist und was diese Woche ansteht.',
     [
@@ -80,49 +80,6 @@ const ANSICHTEN = [
           'Nächstes Spiel der Kinder – mit Antwortstand je Kind',
           'Zusagen im Namen der Kinder direkt auf der Startseite',
           'Spiele über alle Kinder in einer Woche',
-        ],
-      ],
-    ],
-  ],
-  [
-    'Team',
-    'Mannschaft und Kader',
-    'Der Team-Bereich zeigt die eigene Mannschaft – für den Vorstand den ganzen Verein.',
-    [
-      [
-        'm-team-spieler',
-        'Spieler',
-        [
-          'Kader mit Kennzahlen, Bilanz und Trainingsquote',
-          'Nächster Termin mit Zu- und Absage-Übersicht',
-          'Kacheln für Termine, Kader und Statistik',
-        ],
-      ],
-      [
-        'm-team-trainer',
-        'Trainer',
-        [
-          'Mehrere Mannschaften per Reiter umschalten',
-          'Kaderstatus: wer ist verfügbar, wer fehlt',
-          'Verwaltung (Kader, Termine, Kasse) nur mit Rechten',
-        ],
-      ],
-      [
-        'm-team-vorstand',
-        'Vorstand',
-        [
-          'Abteilungsübersicht: alle Mannschaften auf einen Blick',
-          'Spielerzahlen, Trainingsbeteiligung, Bilanz der Saison',
-          'Filter nach Senioren, Frauen und Jugend',
-        ],
-      ],
-      [
-        'm-team-eltern',
-        'Eltern',
-        [
-          'Die Mannschaften der Kinder (hier E- und F-Jugend)',
-          'Kader, Bilanz und nächster Termin je Mannschaft',
-          'Auch als Co-Trainer: zusätzliche Verwaltungsfunktionen',
         ],
       ],
     ],
@@ -171,6 +128,49 @@ const ANSICHTEN = [
     ],
   ],
   [
+    'Team',
+    'Mannschaft und Kader',
+    'Der Team-Bereich zeigt die eigene Mannschaft – für den Vorstand den ganzen Verein.',
+    [
+      [
+        'm-team-spieler',
+        'Spieler',
+        [
+          'Kader mit Kennzahlen, Bilanz und Trainingsquote',
+          'Nächster Termin mit Zu- und Absage-Übersicht',
+          'Kacheln für Termine, Kader und Statistik',
+        ],
+      ],
+      [
+        'm-team-trainer',
+        'Trainer',
+        [
+          'Mehrere Mannschaften per Reiter umschalten',
+          'Kaderstatus: wer ist verfügbar, wer fehlt',
+          'Verwaltung (Kader, Termine, Kasse) nur mit Rechten',
+        ],
+      ],
+      [
+        'm-team-vorstand',
+        'Vorstand',
+        [
+          'Abteilungsübersicht: alle Mannschaften auf einen Blick',
+          'Spielerzahlen, Trainingsbeteiligung, Bilanz der Saison',
+          'Filter nach Senioren, Frauen und Jugend',
+        ],
+      ],
+      [
+        'm-team-eltern',
+        'Eltern',
+        [
+          'Die Mannschaften der Kinder (hier E- und F-Jugend)',
+          'Kader, Bilanz und nächster Termin je Mannschaft',
+          'Auch als Co-Trainer: zusätzliche Verwaltungsfunktionen',
+        ],
+      ],
+    ],
+  ],
+  [
     'Verein',
     'Neuigkeiten, Veranstaltungen, Vereinsleben',
     'Der Vereinsbereich ist für alle gleich aufgebaut; welche Kacheln darunter erscheinen, hängt von der Rolle ab.',
@@ -214,9 +214,9 @@ const ANSICHTEN = [
     ],
   ],
   [
-    'Mehr',
-    'Profil, Einstellungen und Hilfe',
-    'Hier liegt alles Persönliche – und je nach Rolle der Zugang zu Verwaltung und Kasse.',
+    'Ich',
+    'Ich, Einstellungen und Hilfe',
+    'Hier liegt alles Persönliche: Profil, Familie, Einstellungen und Hilfe. Verwaltung und Kasse findest du – je nach Rolle – im Verein unter „Meine Vereinsaufgaben“.',
     [
       [
         'm-mehr-spieler',
@@ -391,7 +391,7 @@ ${duoSeite({
   intro:
     'Die Verwaltung ist eine „App in der App“ mit eigenem violettem Kopfband und eigener Navigation. Sie erscheint nur mit Verwaltungsrechten.',
   a: [
-    'vo-admin',
+    'r-vo-admin',
     'Übersicht',
     [
       'Aktive Mitglieder, Passive, Mannschaften',
@@ -400,7 +400,7 @@ ${duoSeite({
     ],
   ],
   b: [
-    'vo-mitglieder',
+    'r-vo-mitglieder',
     'Mitglieder',
     [
       'Suchen und filtern: Aktiv, Passiv, ohne Mannschaft',
@@ -418,7 +418,7 @@ ${duoSeite({
   intro:
     'Die Vereinskasse ist ein eigener Bereich mit blauem Kopfband – getrennt von den Mannschaftskassen und nur für Kassenwart, Prüfer und Admin.',
   a: [
-    'ka-kasse',
+    'r-ka-kasse',
     'Übersicht',
     [
       'Gesamtbestand aller Konten: Giro, Bar, Tagesgeld',
@@ -427,7 +427,7 @@ ${duoSeite({
     ],
   ],
   b: [
-    'ka-beitraege',
+    'r-ka-beitraege',
     'Mitgliedsbeiträge',
     [
       'Offene und überfällige Beiträge auf einen Blick',
