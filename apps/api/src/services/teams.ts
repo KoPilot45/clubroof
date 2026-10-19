@@ -403,7 +403,9 @@ export async function getRoster(
     : [];
 
   const mayReadReasons =
-    actorCan(actor, 'absences.read', team) || actorCan(actor, 'attendance.override', team);
+    actorCan(actor, 'absences.read', team) ||
+    actorCan(actor, 'attendance.override', team) ||
+    (team.absenceReasonsVisibleTo === 'team' && actor.teamIds.includes(team.id));
 
   return members.map(({ membership, person }) => {
     const absence = absences.find((a) => a.personId === person.id);

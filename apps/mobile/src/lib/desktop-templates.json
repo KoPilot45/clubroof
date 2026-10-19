@@ -104,6 +104,11 @@
     "note": "Tabelle mit Filterleiste",
     "status": "Breite"
   },
+  "admin/member-effective": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
   "admin/member-new": {
     "t": "B",
     "note": "Formular",
@@ -143,6 +148,11 @@
     "t": "B",
     "note": "Formular",
     "status": "Breite"
+  },
+  "admin/role-edit": {
+    "t": "B",
+    "note": "Formular",
+    "status": "fertig"
   },
   "admin/role/[key]": {
     "t": "A",

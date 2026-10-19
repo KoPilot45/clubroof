@@ -12,8 +12,10 @@
  * Jede Änderung wird im Audit-Log festgehalten.
  */
 import {
+  ALL_PERMISSIONS,
   SYSTEM_ROLES,
   TEAM_FUNCTIONS,
+  isClubOnlyPermission,
   addDays,
   calendarDayOf,
   isPermission,
@@ -37,6 +39,8 @@ import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, gt, gte, inArray, isNull, or } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
+import { deliver } from '../notify/deliver';
+import { usersByPerson } from '../notify/persons';
 import { resolveMediaUrl } from '../storage/media-links';
 
 type TeamRow = typeof s.teams.$inferSelect;
@@ -930,8 +934,14 @@ export async function getRoleCatalog(db: Db, actor: Actor): Promise<RoleCatalog>
       key: r.key,
       name: r.name,
       description: r.description,
-      defaultScope: SYSTEM_ROLES.find((x) => x.key === r.key)?.defaultScope ?? 'club',
+      defaultScope: SYSTEM_ROLES.find((x) => x.key === r.key)?.defaultScope ?? r.scopeDefault,
       permissions: r.permissions,
+      isSystem: r.isSystem,
+      archived: !!r.archivedAt,
+      // Neue Rechte aus Updates: eigene Rollen kennen sie nicht und haben sie zunächst aus
+      newPermissions: r.isSystem
+        ? []
+        : ALL_PERMISSIONS.filter((p) => !(r.knownPermissions ?? ALL_PERMISSIONS).includes(p)),
       holders: assignments
         .filter((a) => a.assignment.roleId === r.id)
         .map((a) => ({
@@ -973,7 +983,13 @@ export async function assignRole(
     .select()
     .from(s.roles)
     .where(and(eq(s.roles.clubId, actor.club.id), eq(s.roles.key, input.roleKey)));
-  if (!role) throw new HttpError(400, 'invalid_role', 'Unbekannte Rolle.');
+  if (!role || role.archivedAt) throw new HttpError(400, 'invalid_role', 'Unbekannte Rolle.');
+  if (!role.isSystem && input.scopeType !== 'club' && role.permissions.some(isClubOnlyPermission))
+    throw new HttpError(
+      400,
+      'club_only',
+      'Diese Rolle enthält vereinsweite Rechte und gilt nur für den ganzen Verein.',
+    );
 
   // Keine Rechteausweitung: nur Rollen vergeben, deren Rechte man selbst vereinsweit hat
   const missing = role.permissions.filter((p) => !isPermission(p) || !actorCan(actor, p));
@@ -1033,6 +1049,14 @@ export async function assignRole(
     `Rolle vergeben: ${role.name} (${label}) an ${name(person)}`,
     now,
     { personId, roleKey: role.key, scopeType: input.scopeType, scopeId },
+  );
+  await notifyRoleChange(
+    db,
+    actor,
+    person,
+    `Neue Aufgabe: ${role.name} (${label})`,
+    created!.id,
+    now,
   );
   return getMember(db, actor, personId, now);
 }
@@ -1142,5 +1166,38 @@ export async function revokeRole(
     now,
     { personId, roleKey: row.role.key },
   );
+  await notifyRoleChange(
+    db,
+    actor,
+    person,
+    `Aufgabe beendet: ${row.role.name} (${label})`,
+    assignmentId,
+    now,
+  );
   return getMember(db, actor, personId, now);
+}
+
+/** Die Person erfährt, wenn ihr eine Aufgabe zugeteilt oder entzogen wird. */
+async function notifyRoleChange(
+  db: Db,
+  actor: Actor,
+  person: PersonRow,
+  title: string,
+  entityId: string,
+  now: Date,
+) {
+  const users = (await usersByPerson(db, [person.id])).get(person.id) ?? [];
+  await deliver(
+    db,
+    actor.club,
+    users,
+    {
+      level: 'info',
+      topic: 'admin',
+      title,
+      body: `${actor.person.firstName} ${actor.person.lastName} hat deine Rollen im Verein geändert.`,
+      dedupeKey: `role-change:${entityId}`,
+    },
+    now,
+  );
 }

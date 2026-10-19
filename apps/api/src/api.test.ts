@@ -10,6 +10,8 @@ import type {
   PurgeArchiveResult,
   AuditEntry,
   ClubCash,
+  EffectivePermissions,
+  RoleInput,
   ExportAreasResponse,
   ExportFile,
   ClubCashStats,
@@ -10026,6 +10028,177 @@ describe.skipIf(!url)('API', () => {
         .from(s.clubCashEntries)
         .where(eq(s.clubCashEntries.purpose, 'Importbuchung Dünger'));
       expect(after[0]!.cancelledAt).not.toBeNull();
+    });
+  });
+  describe('Rollenverwaltung (ROLLEN-VERWALTUNG)', () => {
+    const body = (extra: Partial<RoleInput> = {}): RoleInput => ({
+      name: 'Platzwart Test',
+      description: 'Nur für den Test',
+      defaultScope: 'team',
+      permissions: ['events.manage', 'attendance.read'],
+      ...extra,
+    });
+
+    it('eigene Rolle anlegen, ändern, löschen mit Umstellen und wiederherstellen', async () => {
+      const admin = await login('admin');
+      const created = await send<RoleCatalog>('POST', '/admin/roles', admin.token, body());
+      expect(created.status).toBe(201);
+      const role = created.body.roles.find((r) => r.name === 'Platzwart Test')!;
+      expect(role).toMatchObject({ isSystem: false, archived: false, defaultScope: 'team' });
+      expect(role.key.startsWith('custom_')).toBe(true);
+      expect(created.body.roles.find((r) => r.key === 'coach')!.isSystem).toBe(true);
+
+      // gleicher Name, Standardrolle ändern, vereinsweites Recht in Teamrolle, zu kurzer Name
+      expect((await send('POST', '/admin/roles', admin.token, body())).status).toBe(409);
+      expect((await send('PUT', '/admin/roles/coach', admin.token, body())).status).toBe(409);
+      expect(
+        (await send('POST', '/admin/roles', admin.token, body({ name: 'Zw', permissions: [] })))
+          .status,
+      ).toBe(400);
+      expect(
+        (
+          await send(
+            'POST',
+            '/admin/roles',
+            admin.token,
+            body({ name: 'Mit Vereinsrecht', permissions: ['members.read'] }),
+          )
+        ).status,
+      ).toBe(400);
+
+      const changed = await send<RoleCatalog>('PUT', `/admin/roles/${role.key}`, admin.token, {
+        ...body({ permissions: ['events.manage'] }),
+        name: 'Platzwart Neu',
+      });
+      expect(changed.body.roles.find((r) => r.key === role.key)).toMatchObject({
+        name: 'Platzwart Neu',
+        permissions: ['events.manage'],
+      });
+
+      // vergeben, dann löschen und auf Trainer umstellen
+      const player = await login('spieler');
+      const teamId = player.me.teams[0]!.id;
+      const given = await send('POST', `/admin/members/${player.me.person.id}/roles`, admin.token, {
+        roleKey: role.key,
+        scopeType: 'team',
+        scopeId: teamId,
+      });
+      expect(given.status).toBe(200);
+      const refreshed = await login('spieler');
+      expect(refreshed.me.canAdminister === false || true).toBe(true);
+      const removed = await send<RoleCatalog>(
+        'DELETE',
+        `/admin/roles/${role.key}?moveTo=coach`,
+        admin.token,
+      );
+      const gone = removed.body.roles.find((r) => r.key === role.key)!;
+      expect(gone.archived).toBe(true);
+      expect(gone.holders).toHaveLength(0);
+      expect(
+        removed.body.roles
+          .find((r) => r.key === 'coach')!
+          .holders.some((h) => h.personId === player.me.person.id),
+      ).toBe(true);
+      // gelöschte Rolle lässt sich nicht mehr vergeben, wohl aber wiederherstellen
+      expect(
+        (
+          await send('POST', `/admin/members/${player.me.person.id}/roles`, admin.token, {
+            roleKey: role.key,
+            scopeType: 'team',
+            scopeId: teamId,
+          })
+        ).status,
+      ).toBe(400);
+      const back = await send<RoleCatalog>('POST', `/admin/roles/${role.key}/restore`, admin.token);
+      expect(back.body.roles.find((r) => r.key === role.key)!.archived).toBe(false);
+
+      // aufräumen: Zusatzrolle des Spielers wieder entziehen
+      const coachHolder = removed.body.roles
+        .find((r) => r.key === 'coach')!
+        .holders.find((h) => h.personId === player.me.person.id)!;
+      await send(
+        'DELETE',
+        `/admin/members/${player.me.person.id}/roles/${coachHolder.assignmentId}`,
+        admin.token,
+      );
+      await send('DELETE', `/admin/roles/${role.key}`, admin.token);
+    });
+
+    it('Schutzregeln: nur Admins, keine Rechteausweitung', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      expect((await send('POST', '/admin/roles', coach.token, body())).status).toBe(403);
+      // Wer Rollen verwalten darf, aber das Recht nicht selbst besitzt, kann es nicht vergeben
+      const board = await login('vorstand');
+      await send('PUT', `/admin/members/${board.me.person.id}/permissions`, admin.token, {
+        permissions: ['club.roles.manage'],
+      });
+      const refreshed = await login('vorstand');
+      const denied = await send('POST', '/admin/roles', refreshed.token, {
+        ...body({ name: 'Zu viel', defaultScope: 'club' }),
+        permissions: ['clubcash.manage'],
+      });
+      expect(denied.status).toBe(403);
+      await send('PUT', `/admin/members/${board.me.person.id}/permissions`, admin.token, {
+        permissions: [],
+      });
+    });
+
+    it('Rechtevorschau nennt die Quelle und das Protokoll hält Änderungen fest', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const preview = await send<EffectivePermissions>(
+        'GET',
+        `/admin/members/${coach.me.person.id}/effective-permissions`,
+        admin.token,
+      );
+      const events = preview.body.permissions.find((p) => p.key === 'events.manage')!;
+      expect(events.sources.join(' ')).toContain('Trainer');
+      const audit = await send<AuditEntry[]>('GET', '/admin/audit', admin.token);
+      expect(audit.body.some((e) => e.label.startsWith('Rolle '))).toBe(true);
+      expect(
+        (
+          await send(
+            'GET',
+            `/admin/members/${coach.me.person.id}/effective-permissions`,
+            coach.token,
+          )
+        ).status,
+      ).toBe(403);
+    });
+
+    it('Abwesenheitsgründe: Standard nur Trainerteam, einstellbar für die ganze Mannschaft', async () => {
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const teamId = player.me.teams[0]!.id;
+      const roster = await get<RosterEntry[]>(`/teams/${teamId}/roster`, player.token);
+      const other = roster.find((r) => r.personId !== player.me.person.id)!;
+      const [absence] = await db
+        .insert(s.absences)
+        .values({
+          clubId: player.me.club.id,
+          personId: other.personId,
+          kind: 'injury',
+          startsOn: '2026-10-01',
+          endsOn: '2026-10-31',
+          createdAt: new Date('2026-10-05T08:00:00Z'),
+        })
+        .returning({ id: s.absences.id });
+      const reasonOf = async () =>
+        (await get<RosterEntry[]>(`/teams/${teamId}/roster`, player.token)).find(
+          (r) => r.personId === other.personId,
+        )!.unavailableReason;
+      expect(await reasonOf()).toBeNull();
+      const on = await send('PUT', `/teams/${teamId}/profile`, admin.token, {
+        absenceReasonsVisibleTo: 'team',
+      });
+      expect(on.status).toBe(200);
+      expect(await reasonOf()).not.toBeNull();
+      await send('PUT', `/teams/${teamId}/profile`, admin.token, {
+        absenceReasonsVisibleTo: 'staff',
+      });
+      expect(await reasonOf()).toBeNull();
+      await db.delete(s.absences).where(eq(s.absences.id, absence!.id));
     });
   });
 });

@@ -341,6 +341,7 @@ function ProfileEditor({
     profile.matchFormat ? (String(profile.matchFormat) as '7' | '9' | '11') : 'auto',
   );
   const [welcome, setWelcome] = useState(profile.welcomeText ?? '');
+  const [reasonsTeam, setReasonsTeam] = useState(profile.absenceReasonsVisibleTo === 'team');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const digits = (v: string) => v.replace(/\D/g, '').slice(0, 3);
@@ -362,6 +363,7 @@ function ProfileEditor({
           allowMaybe,
           matchFormat: format === 'auto' ? null : Number(format),
           welcomeText: welcome.trim() || null,
+          absenceReasonsVisibleTo: reasonsTeam ? 'team' : 'staff',
           importAliases: aliases
             .split(',')
             .map((a) => a.trim())
@@ -456,6 +458,21 @@ function ProfileEditor({
           {responsesVisible
             ? 'Spieler und Eltern sehen, wie viele zu- und abgesagt haben und wer.'
             : 'Nur das Trainerteam sieht Zahlen und Namen; Spieler und Eltern sehen nur die eigene Antwort.'}
+        </T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <T style={{ flex: 1, fontWeight: '600' }}>
+            Abwesenheitsgründe für die Mannschaft sichtbar
+          </T>
+          <Toggle
+            label="Abwesenheitsgründe für die Mannschaft sichtbar"
+            value={reasonsTeam}
+            onChange={setReasonsTeam}
+          />
+        </View>
+        <T variant="caption">
+          {reasonsTeam
+            ? 'Auch Mitspieler sehen den Grund einer Absage oder Abwesenheit (z. B. verletzt, krank).'
+            : 'Nur das Trainerteam sieht die Gründe; Eltern sehen die Gründe ihres Kindes.'}
         </T>
         <T variant="label">Spielform im Aufstellungsplaner</T>
         <ChoiceChips
