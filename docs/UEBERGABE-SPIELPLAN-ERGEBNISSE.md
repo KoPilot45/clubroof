@@ -1,6 +1,6 @@
 # Übergabeprompt: Spielplan zum Saisonstart und Ergebnisse nach dem Spieltag (Paket SPIELPLAN-ERGEBNISSE)
 
-Zum Einfügen in die Umsetzungssitzung.
+**Status: vorgemerkt für später (19.10.2026). Nicht umsetzen, bis anonymisierte echte DFBnet-Exportdateien vorliegen und geprüft sind** (Staffel-Spielplan, Vereinsspielplan, ggf. Ergebnisliste; siehe `docs/VERBANDSANBINDUNG.md` Abschnitt 6). Danach den Prompt in die Umsetzungssitzung einfügen.
 
 ---
 

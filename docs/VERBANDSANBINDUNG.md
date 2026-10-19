@@ -1,6 +1,6 @@
 # Verbandsanbindung (FUSSBALL.DE, DFBnet, SpielPLUS): Recherche und Vorschlag
 
-Stand: 19.10.2026. **Belastbarkeit:** Recherche über Websuche; die Seiten der Anbieter selbst waren aus der Arbeitsumgebung nicht abrufbar. Zur technischen Seite der Verbandssysteme (Schnittstellen, Zulassung für Drittanbieter) fanden sich **keine öffentlichen Unterlagen**. Alles dazu ist als offen zu behandeln und beim DFB bzw. Landesverband zu klären. Eigene Vorarbeit: Spielplan-Import per CSV (`SPIELPLAN-IMPORT.md`, umgesetzt), Provider-Layer-Idee in `PLAN.md`.
+Stand: 19.10.2026. **Folgepaket SPIELPLAN-ERGEBNISSE ist für später vorgemerkt**, bis die echten Exportdateien klar sind. **Belastbarkeit:** Recherche über Websuche; die Seiten der Anbieter selbst waren aus der Arbeitsumgebung nicht abrufbar. Zur technischen Seite der Verbandssysteme (Schnittstellen, Zulassung für Drittanbieter) fanden sich **keine öffentlichen Unterlagen**. Alles dazu ist als offen zu behandeln und beim DFB bzw. Landesverband zu klären. Eigene Vorarbeit: Spielplan-Import per CSV (`SPIELPLAN-IMPORT.md`, umgesetzt), Provider-Layer-Idee in `PLAN.md`.
 
 ## 1. Wie andere Apps angebunden sind
 
