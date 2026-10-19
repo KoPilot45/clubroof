@@ -29,6 +29,8 @@ export const en: Record<string, string> = {
     '“Facility & equipment” is not activated in the club.',
   '„Fällige Beiträge anlegen“ erzeugt für alle zugeordneten Mitglieder die Forderungen, die bis heute fällig sind – nie doppelt.':
     '“Create due fees” creates the claims that are due by today for all assigned members – never twice.',
+  '„Ich → Einstellungen → Einladen“ oder im Team „Person zur Mannschaft einladen“: persönlich per E-Mail oder als Mannschafts-Link bzw. QR-Code zum Selbstregistrieren. Bei Links gibst du neue Anfragen frei, bevor jemand die App nutzen kann.':
+    '“Me → Settings → Invite” or, in the team, “Invite a person to the team”: personally by email or as a team link or QR code for self-registration. With links, you approve new requests before anyone can use the app.',
   '„Mannschaft bearbeiten → Spielplan importieren“: CSV-Datei aus dem DFBnet wählen, Vorschau prüfen (neu, geändert, unverändert, übersprungen) und übernehmen. Die Mannschaft bekommt eine Sammelmeldung. Ein erneuter Import aktualisiert Verlegungen, statt Spiele doppelt anzulegen. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.':
     '“Edit team → Import fixtures”: choose the CSV file from DFBnet, check the preview (new, changed, unchanged, skipped) and import. The team receives a summary notification. Importing again updates rescheduled matches instead of creating them twice. You can undo the import within 24 hours.',
   '„Mehr → Einladen“: persönlich per E-Mail oder als Mannschafts-Link bzw. QR-Code zum Selbstregistrieren. Bei Links gibst du neue Anfragen frei, bevor jemand die App nutzen kann.':
@@ -508,6 +510,7 @@ export const en: Record<string, string> = {
   'Aktuell werden keine Helfer gesucht.': 'No helpers are needed at the moment.',
   'Aktueller Kassenstand': 'Current fund balance',
   'Aktuelles Passwort': 'Current password',
+  'Aktuelles und Mitmachen': 'News and getting involved',
   'Aktuelles Vereinslogo': 'Current club logo',
   alle: 'all',
   Alle: 'All',
@@ -651,6 +654,7 @@ export const en: Record<string, string> = {
   Anlage: 'Facility',
   'Anlage & Material': 'Facility & equipment',
   'Anlage entfernen': 'Remove venue',
+  'Anlage und Ausstattung': 'Facility and equipment',
   'Anlagen & Plätze': 'Facilities & pitches',
   Anlegen: 'Create',
   Anmelden: 'Sign in',
@@ -751,6 +755,8 @@ export const en: Record<string, string> = {
     'On every sub-page you see your path at the top, for example “Team › Cash › Fine catalogue”. Tap an earlier level to go back there, or the round arrow to go back one step. On long paths “…” stands for the skipped levels; tapping it shows them as a list. The bottom bar stays visible and the current section is highlighted.',
   'Auf Konto': 'To account',
   'auf später verschoben': 'postponed',
+  'Auf Start und unter Termine sagst du zu oder ab. Mit „Rückgängig“ nimmst du es gleich wieder zurück.':
+    'On Start and under Events you confirm or decline. With “Undo” you take it back right away.',
   Aufbau: 'Structure',
   Aufbewahrung: 'Retention',
   'Aufbewahrung bis': 'Retention until',
@@ -1253,6 +1259,8 @@ export const en: Record<string, string> = {
   'Das Audit-Log ist dem Vorstand vorbehalten.': 'The audit log is reserved for the board.',
   'Das belegt Aufbau und Funktionen sinnvoll vor – du kannst alles in den nächsten Schritten ändern.':
     'This sensibly presets structure and features – you can change everything in the next steps.',
+  'Das betrifft nur neue Anmeldungen – dein jetziges Gerät bleibt angemeldet. Du richtest sie später unter Ich › Konto & Einstellungen ein.':
+    'This only affects new sign-ins – your current device stays signed in. You can set it up later under Me › Account & settings.',
   'Das betrifft nur neue Anmeldungen – dein jetziges Gerät bleibt angemeldet. Du richtest sie später unter Mehr › Konto & Einstellungen ein.':
     'This only affects new sign-ins – your current device stays signed in. You can set it up later under More › Account & settings.',
   'Das Bild': 'The image',
@@ -1304,6 +1312,8 @@ export const en: Record<string, string> = {
   'Das Konto ist archiviert.': 'The account is archived.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.':
     'The abbreviation “{0}” is already taken this season.',
+  'Das Kürzel (2 bis 4 Zeichen, z. B. „SGW“) steht groß im Plakat der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist. Die Vereinsadministration ändert es unter „Verwaltung → Verein & Design“, mit Vorschau. Die Vibration bei Auswahl und Bestätigung schaltest du auf dem Handy unter „Ich → Konto & Einstellungen → Vibration“ aus; bei eingestellter „Bewegung reduzieren“ des Geräts bleiben auch die Animationen aus.':
+    'The code (2 to 4 characters, e.g. “SGW”) appears large in the home poster and replaces the crest until a logo is uploaded. Club administration changes it under “Administration → Club & design”, with a preview. On your phone you can switch off vibration under “Me → Account & settings → Vibration”; with “Reduce motion” enabled on the device, animations stay off as well.',
   'Das Kürzel (2 bis 4 Zeichen, z. B. „SGW“) steht groß im Plakat der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist. Die Vereinsadministration ändert es unter „Verwaltung → Verein & Design“, mit Vorschau. Die Vibration bei Auswahl und Bestätigung schaltest du auf dem Handy unter „Mehr → Konto & Einstellungen → Vibration“ aus; bei eingestellter „Bewegung reduzieren“ des Geräts bleiben auch die Animationen aus.':
     'The code (2 to 4 characters, e.g. “SGW”) appears large in the home poster and replaces the crest until a logo is uploaded. Club administration changes it under “Administration → Club & design”, with a preview. On your phone you can switch off vibration under “More → Account & settings → Vibration”; with “Reduce motion” enabled on the device, animations stay off as well.',
   'Das Kürzel besteht aus 2 bis 4 Buchstaben oder Ziffern.':
@@ -1387,6 +1397,8 @@ export const en: Record<string, string> = {
   'Daten, Foto und Auswertung': 'Details, photo and statistics',
   Datenschutz: 'Privacy',
   Datenschutzerklärung: 'Privacy policy',
+  'Datenschutzerklärung und Impressum findest du in der App unter Ich › Hilfe und Informationen.':
+    'You find the privacy policy and legal notice in the app under Me › Help and information.',
   'Datenschutzerklärung und Impressum findest du in der App unter Mehr › Über Clubroof.':
     'You find the privacy policy and legal notice in the app under More › About Clubroof.',
   'Datenübergabe und Leeren': 'Data handover and emptying',
@@ -2129,6 +2141,8 @@ export const en: Record<string, string> = {
   'Ein Spieler steht doppelt in der Aufstellung.': 'A player appears twice in the line-up.',
   'Ein Sponsor passt nur zu einer Einnahme.': 'A sponsor only fits an income booking.',
   'Ein Team': 'One team',
+  'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail (6 Stellen, 10 Minuten gültig, nur einmal nutzbar). Du richtest ihn unter „Ich → Konto & Einstellungen“ ein. Pflicht ist er nur für das Administrationskonto, wenn der Verein es verlangt.':
+    'An extra layer of protection: after the password the app asks for a code – from an authenticator app or by email (6 digits, valid for 10 minutes, single use). You set it up under “Me → Account & settings”. It is mandatory only for the administrator account, if the club requires it.',
   'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail (6 Stellen, 10 Minuten gültig, nur einmal nutzbar). Du richtest ihn unter „Mehr → Konto & Einstellungen“ ein. Pflicht ist er nur für das Administrationskonto, wenn der Verein es verlangt.':
     'An extra layer of protection: after the password the app asks for a code – from an authenticator app or by email (6 digits, valid for 10 minutes, single use). You set it up under “More → Account & settings”. It is mandatory only for the administrator account, if the club requires it.',
   'Ein zusätzlicher Schutz: Nach dem Passwort fragt die App einen Code aus einer Authenticator-App ab. Du richtest ihn unter „Mehr → Konto & Einstellungen“ ein. Wer Verwaltungsrechte hat, muss ihn nutzen, wenn der Verein es verlangt.':
@@ -2568,6 +2582,8 @@ export const en: Record<string, string> = {
   'Fuß: {0}': 'Foot: {0}',
   'Ganz unten auf Home findest du den Schnellzugriff – Abkürzungen zu Seiten, die du oft brauchst. Tippe auf „Hinzufügen“, wähle die Einträge aus und speichere. „Zurücksetzen“ stellt die Voreinstellung für deine Rolle wieder her. Die Auswahl gilt auf allen deinen Geräten.':
     "At the bottom of Home you'll find quick access – shortcuts to pages you use often. Tap “Add”, pick the entries and save. “Reset” restores the default for your role. Your choice applies on all your devices.",
+  'Ganz unten auf Start findest du den Schnellzugriff – Abkürzungen zu Seiten, die du oft brauchst. Tippe auf „Hinzufügen“, wähle die Einträge aus und speichere. „Zurücksetzen“ stellt die Voreinstellung für deine Rolle wieder her. Die Auswahl gilt auf allen deinen Geräten.':
+    "At the bottom of Start you'll find quick access – shortcuts to pages you use often. Tap “Add”, pick the entries and save. “Reset” restores the default for your role. Your choice applies on all your devices.",
   'ganze Zahl, Standard 1': 'whole number, default 1',
   'Ganzer Verein': 'Whole club',
   Ganztägig: 'All day',
@@ -2769,6 +2785,7 @@ export const en: Record<string, string> = {
   'Hilfe & Anleitung': 'Help & guide',
   'Hilfe auf der Webseite': 'Help on the website',
   'Hilfe jederzeit': 'Help any time',
+  'Hilfe und Informationen': 'Help and information',
   'hilft beim Abgleich mit der Vereinsliste': 'helps matching with the club list',
   Himmelblau: 'Sky blue',
   'Hintergrundaufgaben fehlgeschlagen': 'Background tasks failed',
@@ -2805,6 +2822,8 @@ export const en: Record<string, string> = {
     'I use the app in the browser – do I get push notifications?',
   'Ich spiele selbst': 'I play myself',
   'Ich übernehme': "I'll take it",
+  'Ich und Familie': 'Me and family',
+  'Ich, Einstellungen und Hilfe': 'Me, settings and help',
   'Ideeller Bereich': 'Non-profit area',
   'Im „Änderungsprotokoll“ (Verwaltung): Rollenvergaben, Absagen, Modulwechsel, Kassenbuchungen und Stornos mit Person und Zeitpunkt.':
     'In the “Change log” (Administration): role assignments, cancellations, module changes, team fund entries and reversals with person and time.',
@@ -2931,6 +2950,8 @@ export const en: Record<string, string> = {
   'Ja oder Nein': 'Yes or No',
   'Ja, {0} abschließen': 'Yes, close {0}',
   'Ja, gemeinnützig': 'Yes, non-profit',
+  'Ja, mit dem Kalender-Abo: „Ich → Einstellungen → Kalender-Abo“ (oder in Termine „Kalender-Abo“), Abo-Link erstellen und im Kalender des Handys hinzufügen. Dort erscheinen deine Termine, die deiner Kinder und die Vereinstermine. Der Link ist geheim – gib ihn nicht weiter. Du kannst ihn jederzeit erneuern.':
+    'Yes, with the calendar subscription: “Me → Settings → Calendar subscription” (or “Calendar subscription” in Events), create the subscription link and add it to your phone’s calendar. Your events, your children’s events and club events appear there. The link is secret – do not share it.',
   'Ja, mit dem Kalender-Abo: „Mehr → Kalender-Abo“, Abo-Link erstellen und im Kalender des Handys hinzufügen. Dort erscheinen deine Termine, die deiner Kinder und die Vereinstermine. Der Link ist geheim – gib ihn nicht weiter. Du kannst ihn jederzeit erneuern.':
     "Yes, with the calendar subscription: “More → Calendar subscription”, create a subscription link and add it to your phone's calendar. Your events, your children's events and the club events will appear there. The link is secret – don't share it. You can renew it at any time.",
   'Ja: „Verwaltung → Importieren → Termine einer Mannschaft“, Mannschaft wählen und eine Excel- oder CSV-Datei mit Datum, Beginn, Art, Gegner und Platz hochladen. Die Vorschau zeigt Dubletten, belegte Plätze und Termine in der Vergangenheit. Termine werden still angelegt, die Mannschaft bekommt keine Meldung. Den DFBnet-Spielplan importierst du weiter unter „Spielplan-Import“. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.':
@@ -2941,6 +2962,12 @@ export const en: Record<string, string> = {
     "Yes. Your answer is kept on the device, shown immediately (“Sending”) and sent automatically as soon as you're back online. If the server rejects it – e.g. because the deadline has passed – you'll get a message.",
   'Ja. Tippe unter „Verein“ auf die Kachel „Anpassen“: Blende Kacheln aus, die du nicht brauchst, und verschiebe die wichtigen nach oben. „Zurücksetzen“ zeigt wieder alle in der Standardreihenfolge. Die Auswahl gilt auf allen deinen Geräten.':
     "Yes. Under “Club”, tap the “Customise” tile: hide tiles you don't need and move the important ones to the top. “Reset” shows all of them again in the default order. Your choice applies on all your devices.",
+  'Ja. Unter „Ich → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.':
+    'Yes. Under “Me → Account & settings → Appearance” choose Light, Dark or “Same as device”. Your choice applies on all your devices.',
+  'Ja. Unter „Ich → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.':
+    'Yes. Under “Me → Account & settings → Language” choose Deutsch, English or “Automatic” (your device language). Your choice applies on all your devices, including push notifications. Texts that coaches or the board write themselves (e.g. news) stay in the author’s language.',
+  'Ja. Unter „Ich → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
+    'Yes. Under “Me → Account & settings” you set the font size (Normal, Large, Extra large) and can lock the app with Face ID, fingerprint or device code. Without internet the app shows the most recently loaded events, news and squad; a notice appears at the top. Replies and changes are only possible with a connection.',
   'Ja. Unter „Mehr → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.':
     'Yes. Under “More → Account & settings → Appearance” choose Light, Dark or “Same as device”. Your choice applies on all your devices.',
   'Ja. Unter „Mehr → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.':
@@ -3441,6 +3468,7 @@ export const en: Record<string, string> = {
   'Meine Mannschaften': 'My teams',
   'Meine Rückmeldung': 'My response',
   'Meine Schiedsrichter-Einsätze': 'My referee assignments',
+  'Meine Vereinsaufgaben': 'My club tasks',
   'Meinen Verein einrichten': 'Set up my club',
   'meist vereinsweit': 'mostly club-wide',
   Melden: 'Report',
@@ -3498,6 +3526,7 @@ export const en: Record<string, string> = {
   'Mitglied anlegen': 'Add member',
   'Mitglied seit': 'Member since',
   'Mitglied suchen': 'Search member',
+  'Mitglied zum Verein einladen': 'Invite a member to the club',
   'Mitglied zuordnen': 'Assign member',
   Mitglieder: 'Members',
   'Mitglieder importieren': 'Import members',
@@ -3551,6 +3580,8 @@ export const en: Record<string, string> = {
   'Nach Altersklasse': 'By age group',
   'Nach Beginn eines Termins hakst du ab, wer wirklich da war (vorausgewählt sind die Zusagen). Danach zählt für Trainingsquote und Statistik die Anwesenheit statt der Zusage. Auf Home erinnert dich ein Hinweis an Trainings der letzten Woche.':
     'After an event has started, you tick off who was actually there (confirmations are preselected). From then on, attendance rather than confirmation counts for training rate and statistics. On Home, a notice reminds you of training sessions from the last week.',
+  'Nach Beginn eines Termins hakst du ab, wer wirklich da war (vorausgewählt sind die Zusagen). Danach zählt für Trainingsquote und Statistik die Anwesenheit statt der Zusage. Auf Start erinnert dich ein Hinweis an Trainings der letzten Woche.':
+    'After an event has started, you tick off who was actually there (confirmations are preselected). From then on, attendance rather than confirmation counts for training rate and statistics. On Start, a notice reminds you of training sessions from the last week.',
   'nach Beschluss der Versammlung': 'as decided by the assembly',
   'Nach dem Anlegen bekommst du einen fertigen Einladungstext zum Weiterschicken.':
     'After creating the team you get a ready-made invitation text to forward.',
@@ -3867,6 +3898,8 @@ export const en: Record<string, string> = {
     'Open the event (Home, Events or Team) and tap Yes, Maybe or No. When declining you can choose or write a reason – this is optional; when you are unsure we ask for a short reason. Only the coaching staff and you see the reason.',
   'Öffne den Termin (Home, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ und „Unsicher“ kannst du einen Grund wählen oder schreiben – das ist freiwillig. Den Grund sehen nur das Trainerteam und du selbst.':
     'Open the event (Home, Events or Team) and tap Yes, Maybe or No. For “No” and “Maybe” you can choose or write a reason – this is optional. Only the coaching staff and you can see the reason.',
+  'Öffne den Termin (Start, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ kannst du einen Grund wählen oder schreiben – das ist freiwillig; bei „Unsicher“ bitten wir um eine kurze Begründung. Den Grund sehen nur das Trainerteam und du selbst.':
+    'Open the event (Start, Events or Team) and tap Yes, Maybe or No. When declining you can choose or write a reason – this is optional; when you are unsure we ask for a short reason. Only the coaching staff and you see the reason.',
   Öffnen: 'Open',
   'ohne App': 'no app',
   'Ohne App-Zugang': 'Without app access',
@@ -3925,6 +3958,7 @@ export const en: Record<string, string> = {
   'Person aus der Vereinsliste hinzufügen': 'Add a person from the club list',
   'Person ist': 'person is',
   'Person suchen': 'Search for person',
+  'Person zur {0} einladen': 'Invite a person to {0}',
   Personen: 'people',
   'Personen einladen': 'Invite people',
   'Personen sind': 'people are',
@@ -4146,6 +4180,8 @@ export const en: Record<string, string> = {
   Rufname: 'Given name',
   Ruhezeit: 'Quiet hours',
   'Ruhezeit speichern': 'Save quiet hours',
+  'Ruhezeiten und Erinnerungen stellt jede Person selbst unter Ich › Einstellungen › Benachrichtigungen ein.':
+    'Everyone sets quiet hours and reminders themselves under Me › Settings › Notifications.',
   'Ruhezeiten und Erinnerungen stellt jede Person selbst unter Mehr › Benachrichtigungen ein.':
     'Everyone sets quiet hours and reminders themselves under More › Notifications.',
   Sa: 'Sat',
@@ -4668,6 +4704,7 @@ export const en: Record<string, string> = {
   'Training (Standard), Spiel oder Termin': 'Training (default), match or event',
   'Training {0} Std.': 'Training {0} h',
   'Training Ø': 'Training avg.',
+  'Training und Spiel': 'Training and matches',
   'Training und Spiele': 'Training and matches',
   'Training vom {1}': 'Training on {1}',
   'Training, Spiele oder Termine aus Excel oder CSV anlegen':
@@ -4726,6 +4763,8 @@ export const en: Record<string, string> = {
     'Via the shield icon at the top right or “More → Administration”. Tap “Exit” to return to the normal app. At the bottom you switch between overview, members, teams, festivals and news.',
   'Über das Schild-Symbol oben rechts oder „Mehr → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.':
     'Via the shield icon at the top right or “More → Administration”. Tap “To app” to return to the normal app. At the bottom you switch between overview, members, teams, festivals and news.',
+  'Über das Schild-Symbol oben rechts oder „Verein → Meine Vereinsaufgaben → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.':
+    'Via the shield icon at the top right or “Club → My club tasks → Administration”. Tap “To app” to return to the normal app. At the bottom you switch between overview, members, teams, festivals and news.',
   'Über den Sponsor': 'About the sponsor',
   'Über diese Anfrage wurde bereits entschieden.':
     'A decision has already been made on this request.',
@@ -4735,6 +4774,8 @@ export const en: Record<string, string> = {
   'Über Mehr → Verwaltung erreichst du Mitglieder, Rollen und Module.':
     'Under More → Administration you reach members, roles and modules.',
   'über Plan': 'over plan',
+  'Über Verein → Meine Vereinsaufgaben → Verwaltung erreichst du Mitglieder, Rollen und Module.':
+    'Under Club → My club tasks → Administration you reach members, roles and modules.',
   Überblick: 'Overview',
   überfällig: 'overdue',
   Überfällig: 'Overdue',
@@ -4815,6 +4856,7 @@ export const en: Record<string, string> = {
   'Ungültiger Push-Token': 'Invalid push token',
   'Ungültiger Speicherschlüssel.': 'Invalid storage key.',
   'Ungültiges Base32': 'Invalid Base32',
+  'Unser Verein': 'Our club',
   'unsere Mannschaft': 'our team',
   'Unsere Sponsoren': 'Our sponsors',
   unsicher: 'unsure',
@@ -4827,8 +4869,20 @@ export const en: Record<string, string> = {
     "There are five areas at the bottom:\n• Home: your overview – next matches (swipe), open items, your week, news and your quick access.\n• Team: everything about your team (squad, stats, cash …).\n• Events: your next events and the calendar.\n• Club: news, polls, documents, helper duties, the club's teams.\n• More: your profile, settings, absences and this help.",
   'Unten gibt es fünf Bereiche:\n• Home: dein Überblick – nächstes Spiel, Neuigkeiten, offene Aufgaben.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Termine: deine nächsten Termine und der Kalender.\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften des Vereins.\n• Mehr: dein Profil, Einstellungen, Abwesenheiten und diese Hilfe.':
     'There are five sections at the bottom:\n• Home: your overview – next match, news, open tasks.\n• Team: everything about your team (squad, statistics, team fund …).\n• Events: your upcoming events and the calendar.\n• Club: news, polls, documents, volunteer shifts, teams of the club.\n• More: your profile, settings, absences and this help.',
+  'Unten gibt es fünf Bereiche:\n• Start: dein Überblick – nächste Spiele (zum Wischen), Offenes, deine Woche, Neuigkeiten und dein Schnellzugriff.\n• Termine: deine nächsten Termine und der Kalender.\n• Team: alles zu deiner Mannschaft (Kader, Statistik, Kasse …).\n• Verein: News, Umfragen, Dokumente, Helferdienste, Mannschaften – und, wenn du Rechte hast, deine Vereinsaufgaben (Verwaltung, Vereinskasse).\n• Ich: dein Profil, deine Familie, Einstellungen, Abwesenheiten und diese Hilfe.':
+    'There are five areas at the bottom:\n• Start: your overview – next matches (swipe), open items, your week, news and your quick access.\n• Events: your next events and the calendar.\n• Team: everything about your team (squad, stats, cash …).\n• Club: news, polls, documents, helper duties, teams – and, if you have rights, your club tasks (administration, club cash).\n• Me: your profile, your family, settings, absences and this help.',
   'Unter „Einzahlungen“ Personen anhaken, Betrag prüfen (der offene Betrag ist vorausgefüllt), Zahlungsart wählen und buchen – auch mehrere auf einmal. Schneller: In „Offene Beträge“ die Person antippen.':
     'Under “Payments” tick the people, check the amount (the outstanding amount is prefilled), choose the payment method and book – several at once if you like. Quicker: tap the person in “Outstanding amounts”.',
+  'Unter „Ich › Konto & Einstellungen › Daten exportieren“ (in der Verwaltung als Kachel „Export“) findest du alle Exporte, für die du Rechte hast: „Meine Daten“ (alles, was der Verein über dich und deine Kinder gespeichert hat), Kader, Termine und Anwesenheit deiner Mannschaft, Mitgliederliste, Kassenbuch und Beiträge sowie für die Administration der Gesamtexport als ZIP. Die Dateien kommen als Excel oder CSV und werden am besten am Computer geladen. Jeder Export steht im Protokoll des Vereins.':
+    "Under “Me › Account & settings › Export data” (in administration as the “Export” tile) you find all exports you have rights for: “My data” (everything the club has stored about you and your children), squad, events and attendance of your team, member list, cash book and fees, and for administration the full export as a ZIP. Files come as Excel or CSV and are best downloaded on a computer. Every export is recorded in the club's log.",
+  'Unter „Ich → Einstellungen → Benachrichtigungen“ wählst du je Thema: Push, nur in der App oder aus. Dort kannst du auch einzelne Mannschaften stummschalten. Dringendes (z. B. kurzfristige Absagen) kommt immer an.':
+    'Under “Me → Settings → Notifications” choose for each topic: push, in the app only or off. You can also mute individual teams there. Urgent items (e.g. short-notice cancellations) always get through.',
+  'Unter „Ich → Hilfe und Informationen“: AGB, Datenschutzerklärung, Privatsphäre-Einstellungen, Impressum, Neuigkeiten (Changelog) sowie Links zu Support und „Funktion anfragen“ auf der Webseite.':
+    'Under “Me → Help and information”: terms, privacy policy, privacy settings, legal notice, news (changelog) and links to support and “Request a feature” on the website.',
+  'Unter „Ich → Ich und Familie → Profil & Statistik“. Dort kannst du Foto, Position, Kontaktdaten und die Sichtbarkeit deiner Kontaktdaten ändern. Du bestimmst, wer sie sehen darf.':
+    'Under “Me → Me and family → Profile & statistics”. There you can change your photo, position, contact details and the visibility of your contact details. You decide who may see them.',
+  'Unter „Ich → Meine Kinder“ (und auf Start und Termine) siehst du Termine, Zusagen und Abwesenheiten deiner Kinder. Du sagst für sie zu oder ab, trägst Abwesenheiten ein und bekommst ihre Benachrichtigungen. Das Kind braucht dafür kein eigenes Login.':
+    "Under “Me → My children” (and on Start and Events) you can see your children's events, confirmations and absences. You confirm or decline for them, enter absences and receive their notifications. The child doesn't need their own login.",
   'Unter „Mehr › Konto & Einstellungen › Daten exportieren“ (in der Verwaltung als Kachel „Export“) findest du alle Exporte, für die du Rechte hast: „Meine Daten“ (alles, was der Verein über dich und deine Kinder gespeichert hat), Kader, Termine und Anwesenheit deiner Mannschaft, Mitgliederliste, Kassenbuch und Beiträge sowie für die Administration der Gesamtexport als ZIP. Die Dateien kommen als Excel oder CSV und werden am besten am Computer geladen. Jeder Export steht im Protokoll des Vereins.':
     "Under “More › Account & settings › Export data” (in administration as the “Export” tile) you find all exports you have rights for: “My data” (everything the club has stored about you and your children), squad, events and attendance of your team, member list, cash book and fees, and for administration the full export as a ZIP. Files come as Excel or CSV and are best downloaded on a computer. Every export is recorded in the club's log.",
   'Unter „Mehr → Benachrichtigungen → Einstellungen“ wählst du je Thema: Push, nur in der App oder aus. Dort kannst du auch einzelne Mannschaften stummschalten. Dringendes (z. B. kurzfristige Absagen) kommt immer an.':
@@ -4871,6 +4925,8 @@ export const en: Record<string, string> = {
     'Under “Club → Referees”. The association assigns you to other clubs’ matches; enter the assignment there with match, place, date and start time. It appears under “Appointments” and in your calendar subscription. If it overlaps one of your appointments you get a notice; on request an absence is entered for the day. You also maintain your level and the expiry date of your license there.',
   'Unter „Verein → Spielplan“. Dort stehen alle Spiele einer Woche, nach Tagen sortiert. Mit den Pfeilen oder durch Wischen wechselst du die Woche, mit dem Filter zeigst du nur Senioren oder Jugend. Mannschaften ohne Spiel stehen unter „Spielfrei“. Tippe auf ein Spiel deiner Mannschaft, um Details und Rückmeldungen zu sehen.':
     'Under “Club → Schedule”. All matches of a week are listed there, sorted by day. Use the arrows or swipe to change the week, and the filter to show only seniors or youth. Teams without a match are listed under “No match”. Tap a match of your team to see details and responses.',
+  'Unter „Verein“ steht in der Gruppe „Meine Vereinsaufgaben“ der Zugang zur „Verwaltung“ (für alle mit Verwaltungsrechten) und zur „Vereinskasse“ (für alle mit Kassenzugriff); am Desktop stehen beide dauerhaft in der Seitenleiste. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Zur App“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Auswertung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.':
+    'Under “Club”, the group “My club tasks” gives access to “Administration” (for everyone with administration rights) and to “Club cash” (for everyone with cash access); on desktop both are always in the sidebar. Both open their own area with a coloured header band and “To app” at the top and a bar with tabs at the bottom. The administration has the tabs Overview, Members, Sports, Content and Club – you only see what you have rights for. Club cash has Overview, Booking, Fees, Planning and Evaluation. Features marked “Coming soon” follow in a later update.',
   'Unter „Vereinskasse → Buchung → Pauschalen“ siehst du je Person und Jahr, wie viel von der Übungsleiterpauschale bzw. der Ehrenamtspauschale schon ausgezahlt ist (Fortschrittsbalken, Warnung bei fast ausgeschöpft). Eine Auszahlung, die den Freibetrag überschreiten würde, bucht die App nicht stillschweigend: Du bekommst eine Rückfrage und kannst sie nach steuerlicher Klärung bewusst trotzdem buchen. Die Freibeträge (ab 2026: 3.300 € bzw. 960 €) bitte steuerlich prüfen lassen; die App ersetzt keine Steuerberatung.':
     'Under “Club treasury → Booking → Allowances” you see per person and year how much of the trainer allowance or the volunteer allowance has already been paid out (progress bar, warning when almost used up). A payment that would exceed the tax-free amount is not booked silently: you get a confirmation prompt and can deliberately book it anyway after clarifying for tax purposes. Please have the tax-free amounts (from 2026: €3,300 and €960) checked for tax purposes; the app does not replace tax advice.',
   'Unter „Vereinskasse → Buchung → Spenden“ erfasst der Kassenwart die Spende mit Name, Anschrift, Betrag und Datum; sie steht als Einnahme im Kassenbuch. Eine Zuwendungsbestätigung gibt es erst, wenn die Administration unter „Steuerdaten“ Finanzamt, Steuernummer, Bescheid, Zeitraum und Zweck eingetragen und die Vorlage freigegeben hat – nachdem sie von deiner Steuerberatung oder deinem Verband rechtlich geprüft wurde. Jede Änderung der Steuerdaten setzt die Freigabe zurück. Danach stellst du die Bestätigung mit einem Tipp aus (laufende Nummer, Betrag auch in Buchstaben) und öffnest sie als PDF. Eine Spende mit ausgestellter Bestätigung kann nicht storniert werden. Die App ersetzt keine Steuerberatung.':
@@ -4888,10 +4944,16 @@ export const en: Record<string, string> = {
   'Unter „Verwaltung → Spielplan-Import“ die CSV-Datei wählen. Namen aus dem DFBnet ordnest du einmal euren Mannschaften zu (die Schreibweise wird gemerkt), danach legt der Import alle Spiele der Mannschaften an. Spiele zwischen zwei eigenen Mannschaften erscheinen bei beiden. Pokal-, Liga- und Testspiele werden erkannt; Spiele, die nicht in der Datei stehen (z. B. Testspiele und Turniere), legen Trainer, sportliche Leitung oder Verwaltung selbst an.':
     'Under “Administration → Fixture import” choose the CSV file. You assign DFBnet names to your teams once (the spelling is remembered), then the import creates all matches of the teams. Matches between two of your own teams appear for both. Cup, league and friendly matches are recognised; matches that are not in the file (e.g. friendlies and tournaments) are created by coaches, sporting management or administration themselves.',
   'unter 50 %': 'below 50 %',
+  'Unter Ich → Hilfe und Informationen findest du Antworten und kannst diese Tour wiederholen.':
+    'Under Me → Help and information you find answers and can repeat this tour.',
+  'Unter Ich stellst du ein, wann du Push bekommst. Dringendes kommt immer an.':
+    'Under Me you set when you get push notifications. Urgent items always arrive.',
   'Unter Mehr → Hilfe & Anleitung findest du Antworten und kannst diese Tour wiederholen.':
     'Under More → Help & guide you find answers and can repeat this tour.',
   'Unter Mehr stellst du ein, wann du Push bekommst. Dringendes kommt immer an.':
     'Under More you set when you get push notifications. Urgent items always arrive.',
+  'Unter Team und Verein findest du die Funktionen als Kacheln. Die kleine Zeile darunter zeigt, was für dich wichtig ist.':
+    'Under Team and Club you find the features as tiles. The small line below shows what matters to you.',
   'Unter Team, Verein und Mehr findest du die Funktionen als Kacheln. Die kleine Zeile darunter zeigt, was für dich wichtig ist.':
     'Under Team, Club and More you find the features as tiles. The small line below shows what matters to you.',
   'Unterstützt von': 'Supported by',
@@ -5227,6 +5289,8 @@ export const en: Record<string, string> = {
     'If your club uses the sponsors module, labeled sponsor banners appear on the home screen, on match day and in appointment lists. You can find all sponsors under “More → Our sponsors”. The app does not track who views or taps what; children and young people under 18 see no banners.',
   'Wenn dein Verein das Sponsoren-Modul nutzt, zeigt ein kleines Wischelement auf Home, im Team-Reiter und im Verein-Reiter bis zu drei Sponsoren, die der Verein als Werbung freigegeben hat. Es ist immer als „Anzeige“ gekennzeichnet und wechselt alle paar Sekunden von selbst; du kannst auch wischen. Ein Tipp öffnet die Seite des Sponsors. Alle Sponsoren findest du unter „Verein → Sponsoren“. Die App wertet nicht aus, wer was ansieht oder antippt. Manche Sponsoren stellt der Verein so ein, dass Jugendspieler sie nicht sehen.':
     'If your club uses the sponsors module, a small swipeable strip on Home, the Team tab and the Club tab shows up to three sponsors the club has released as advertising. It is always labelled “Advertisement” and changes by itself every few seconds; you can also swipe. A tap opens the sponsor’s page. You find all sponsors under “Club → Sponsors”. The app does not track who views or taps what. The club can set some sponsors so that youth players do not see them.',
+  'Wenn dein Verein das Sponsoren-Modul nutzt, zeigt ein kleines Wischelement auf Start, im Team-Reiter und im Verein-Reiter bis zu drei Sponsoren, die der Verein als Werbung freigegeben hat. Es ist immer als „Anzeige“ gekennzeichnet und wechselt alle paar Sekunden von selbst; du kannst auch wischen. Ein Tipp öffnet die Seite des Sponsors. Alle Sponsoren findest du unter „Verein → Sponsoren“. Die App wertet nicht aus, wer was ansieht oder antippt. Manche Sponsoren stellt der Verein so ein, dass Jugendspieler sie nicht sehen.':
+    'If your club uses the sponsors module, a small swipeable strip on Start, the Team tab and the Club tab shows up to three sponsors the club has released as advertising. It is always labelled “Advertisement” and changes by itself every few seconds; you can also swipe. A tap opens the sponsor’s page. You find all sponsors under “Club → Sponsors”. The app does not track who views or taps what. The club can set some sponsors so that youth players do not see them.',
   'Wenn deine Rückmeldung (oder die deines Kindes) noch fehlt – so lange vor der Frist:':
     "If your response (or your child's) is still missing – this long before the deadline:",
   'Wenn du das nicht warst, ignoriere diese E-Mail – dein Passwort bleibt unverändert.':
@@ -5279,6 +5343,7 @@ export const en: Record<string, string> = {
   'Wichtige und dringende News werden beim Veröffentlichen an alle in der gewählten Abteilung gesendet.':
     'Important and urgent news is sent to everyone in the selected area when published.',
   'Wie ändere ich den Schnellzugriff auf Home?': 'How do I change the quick access on Home?',
+  'Wie ändere ich den Schnellzugriff auf Start?': 'How do I change the quick access on Start?',
   'Wie ändere ich mein Profil und mein Foto?': 'How do I change my profile and photo?',
   'Wie ändere ich Zusagen anderer?': "How do I change other people's confirmations?",
   'Wie bearbeite ich Kader, Kassenwart und Treffpunkt-Regeln?':
@@ -5392,6 +5457,7 @@ export const en: Record<string, string> = {
   'Wische oder tippe auf die Pfeile, um andere Wochen zu sehen.':
     'Swipe or tap the arrows to see other weeks.',
   'Wischen wechselt die Woche.': 'Swipe to change the week.',
+  'Wissen und Kontakte': 'Knowledge and contacts',
   Wissensartikel: 'Knowledge articles',
   'wo es liegt': 'where it is stored',
   'Wo finde ich AGB, Datenschutz, Impressum und Support?':

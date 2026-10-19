@@ -1,5 +1,5 @@
 /**
- * Verwaltungs-Kacheln der Rolle (Paket MS): im Verein-Tab als Kategorie „Verwaltung“, immer alle
+ * Verwaltungs-Kacheln der Rolle (Paket MS): im Verein-Tab als Gruppe „Meine Vereinsaufgaben“, immer alle
  * ausführbaren Funktionen ohne Einklappen. „Übersicht“ führt in den Admin-Modus mit Zahlen und
  * Protokoll. Rechte prüft weiterhin der Server; hier wird nur ein- und ausgeblendet.
  */
@@ -14,7 +14,7 @@ export function adminFunctionTiles(me: MeResponse): TileItem[] {
   const tiles: (TileItem | false)[] = [
     overview && {
       key: 'admin-overview',
-      label: 'Übersicht',
+      label: 'Verwaltung',
       icon: 'speedometer',
       onPress: () => router.push('/admin'),
     },
@@ -112,7 +112,7 @@ export function adminFunctionTiles(me: MeResponse): TileItem[] {
       },
     me.canInvite && {
       key: 'invites',
-      label: 'Einladen',
+      label: 'Mitglied zum Verein einladen',
       icon: 'person-add-outline',
       onPress: () => router.push('/admin/invites'),
     },

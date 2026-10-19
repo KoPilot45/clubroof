@@ -1,8 +1,7 @@
 import type { Absence, HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { Linking, Pressable, View } from 'react-native';
+import { Linking, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import {
   Avatar,
@@ -16,7 +15,6 @@ import {
   T,
   HeroCard,
   Notice,
-  type IconName,
   type TileItem,
 } from '@/components/ui';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
@@ -28,73 +26,6 @@ import { Text } from '@/components/app-text';
 import type { TintKey } from '@clubroof/design-tokens';
 import { useTheme } from '@/lib/theme';
 import { ABOUT_LINKS } from '@/lib/about-content';
-import { canOpenAdmin, canOpenClubCash } from '@/lib/areas';
-
-/** Hervorgehobener Zugang zu einem eigenen Bereich (Verwaltung violett, Vereinskasse blau). */
-function AreaButton({
-  tone,
-  icon,
-  title,
-  subtitle,
-  badge,
-  onPress,
-}: {
-  tone: 'violet' | 'blue';
-  icon: IconName;
-  title: string;
-  subtitle: string;
-  badge?: string;
-  onPress: () => void;
-}) {
-  const { colors } = useTheme();
-  const c = colors.tints[tone];
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      onPress={onPress}
-      style={{
-        flex: 1,
-        minHeight: 96,
-        padding: 14,
-        gap: 6,
-        borderRadius: 22,
-        backgroundColor: c.container,
-        justifyContent: 'space-between',
-      }}
-    >
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Ionicons name={icon} size={26} color={c.onContainer} />
-        {badge ? (
-          <View
-            style={{
-              minWidth: 24,
-              height: 24,
-              paddingHorizontal: 6,
-              borderRadius: 12,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: colors.status.action.container,
-            }}
-          >
-            <Text
-              verbatim
-              style={{ fontSize: 12, fontWeight: '800', color: colors.status.action.onContainer }}
-            >
-              {badge}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-      <View>
-        <Text style={{ fontSize: 16, fontWeight: '800', color: c.onContainer }}>{title}</Text>
-        <Text style={{ fontSize: 12, color: c.onContainer }} numberOfLines={2}>
-          {subtitle}
-        </Text>
-      </View>
-    </Pressable>
-  );
-}
 
 export default function MoreScreen() {
   const { me, api, signOut } = useSignedIn();
@@ -170,17 +101,6 @@ export default function MoreScreen() {
       badge: absences.data?.length,
       onPress: () => router.push('/absences'),
     },
-    {
-      key: 'notifications',
-      label: 'Benachrichtigungen',
-      subtitle: home.data?.unreadNotifications
-        ? `${home.data.unreadNotifications} ungelesen`
-        : 'Alles gelesen',
-      icon: 'notifications',
-      tint: 'pink',
-      badge: home.data?.unreadNotifications,
-      onPress: () => router.push('/notifications'),
-    },
     ...(me.referees.manage || me.referees.active
       ? [
           {
@@ -193,6 +113,19 @@ export default function MoreScreen() {
           },
         ]
       : []),
+  ]);
+  const settings: Row[] = withInfo([
+    {
+      key: 'notifications',
+      label: 'Benachrichtigungen',
+      subtitle: home.data?.unreadNotifications
+        ? `${home.data.unreadNotifications} ungelesen`
+        : 'Alles gelesen',
+      icon: 'notifications',
+      tint: 'pink',
+      badge: home.data?.unreadNotifications,
+      onPress: () => router.push('/notifications'),
+    },
     ...(me.clubModules.includes('calendar_export')
       ? [
           {
@@ -205,8 +138,6 @@ export default function MoreScreen() {
           },
         ]
       : []),
-  ]);
-  const settings: Row[] = withInfo([
     {
       key: 'settings',
       label: 'Konto & Einstellungen',
@@ -215,25 +146,13 @@ export default function MoreScreen() {
       tint: 'violet',
       onPress: () => router.push('/account'),
     },
-    ...(me.clubModules.includes('sponsors')
-      ? [
-          {
-            key: 'sponsors',
-            label: 'Unsere Sponsoren',
-            subtitle: 'Wer unseren Verein unterstützt',
-            icon: 'heart' as const,
-            tint: 'pink' as const,
-            onPress: () => router.push('/sponsors'),
-          },
-        ]
-      : []),
     {
-      key: 'help',
-      label: 'Hilfe & Anleitung',
-      subtitle: 'Häufige Fragen und Rundgang',
-      icon: 'help-circle',
-      tint: 'blue',
-      onPress: () => router.push('/help'),
+      key: 'privacy-settings',
+      label: 'Privatsphäre-Einstellungen',
+      subtitle: 'Wer sieht was von dir',
+      icon: 'eye',
+      tint: 'violet',
+      onPress: () => router.push('/about/privacy'),
     },
     ...(me.canInvite
       ? [
@@ -251,6 +170,14 @@ export default function MoreScreen() {
 
   const about: Row[] = [
     {
+      key: 'help',
+      label: 'Hilfe & Anleitung',
+      subtitle: 'Häufige Fragen und Rundgang',
+      icon: 'help-circle',
+      tint: 'blue',
+      onPress: () => router.push('/help'),
+    },
+    {
       key: 'terms',
       label: 'AGB',
       subtitle: 'Allgemeine Geschäftsbedingungen',
@@ -265,14 +192,6 @@ export default function MoreScreen() {
       icon: 'shield-checkmark',
       tint: 'green',
       onPress: () => router.push('/about/datenschutz'),
-    },
-    {
-      key: 'privacy-settings',
-      label: 'Privatsphäre-Einstellungen',
-      subtitle: 'Wer sieht was von dir',
-      icon: 'eye',
-      tint: 'violet',
-      onPress: () => router.push('/about/privacy'),
     },
     {
       key: 'imprint',
@@ -315,7 +234,7 @@ export default function MoreScreen() {
         <MenuCard rows={settings} />
       </Section>
 
-      <Section title="Über Clubroof">
+      <Section title="Hilfe und Informationen">
         <MenuCard rows={about} />
       </Section>
     </>
@@ -396,31 +315,6 @@ export default function MoreScreen() {
         </View>
       </HeroCard>
 
-      {/* Eigene Bereiche (Paket AV): Admin-Verwaltung (violett) und Vereinskasse (blau) */}
-      {canOpenAdmin(me) || canOpenClubCash(me) ? (
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          {canOpenAdmin(me) ? (
-            <AreaButton
-              tone="violet"
-              icon="shield-checkmark"
-              title="Admin-Verwaltung"
-              subtitle="Mitglieder, Sport, Inhalte, Verein"
-              badge={tileInfo?.admin?.figure}
-              onPress={() => router.push('/admin')}
-            />
-          ) : null}
-          {canOpenClubCash(me) ? (
-            <AreaButton
-              tone="blue"
-              icon="wallet"
-              title="Vereinskasse"
-              subtitle="Buchung, Beiträge, Planung, Prüfung"
-              onPress={() => router.push('/club-cash')}
-            />
-          ) : null}
-        </View>
-      ) : null}
-
       {me.security.twoFactorRequired ? (
         <Notice
           tone="action"
@@ -456,7 +350,7 @@ export default function MoreScreen() {
         </Section>
       ) : null}
 
-      <Section title="Mein Bereich">
+      <Section title="Ich und Familie">
         <MenuCard rows={myArea} />
       </Section>
 
@@ -479,7 +373,7 @@ export default function MoreScreen() {
     </>
   );
   return (
-    <Screen header={<AppHeader title="Mehr" subtitle="Profil, Einstellungen und Hilfe" />}>
+    <Screen header={<AppHeader title="Ich" subtitle="Ich, Einstellungen und Hilfe" />}>
       {desktop ? (
         <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
           {/* Desktop: links Hero, „Mein Bereich“, „Meine Mannschaften“; rechts Einstellungen und Über Clubroof */}

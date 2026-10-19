@@ -22,15 +22,15 @@ const tile = async (page, name) =>
 const spieler = await b.session('spieler');
 await spieler.goto('/team');
 await text(spieler.page, 'Kasse', { exact: true }).waitFor({ timeout: 20_000 });
-await spieler.page.waitForTimeout(2000);
+await spieler.page.waitForTimeout(4500);
 ok(/€/.test(await tile(spieler.page, 'Kasse')), 'Kasse: Kassenstand als Kennzahl');
 ok(
   /\d\d\.\d\d\./.test(await tile(spieler.page, 'Termine')),
   'Termine: Datum des nächsten (TT.MM.)',
 );
 ok(
-  /, \d+$/.test(await tile(spieler.page, 'Kader')) ||
-    /Kader, \d+/.test(await tile(spieler.page, 'Kader')),
+  /, \d+$/.test(await tile(spieler.page, 'Kader,')) ||
+    /Kader, \d+/.test(await tile(spieler.page, 'Kader,')),
   'Kader: Zahl der Spieler',
 );
 const sp = await spieler.page.evaluate(() => document.body.innerText);
@@ -56,11 +56,11 @@ ok(
   /Mitglieder, \d+/.test(await tile(admin.page, 'Mitglieder')),
   'Verwaltung (Mitglieder): Mitglieder mit Zahl',
 );
-await admin.goto('/mehr');
+await admin.goto('/verein');
 await admin.page.waitForTimeout(2500);
 ok(
-  (await admin.page.getByRole('button', { name: /^Admin-Verwaltung/ }).count()) > 0,
-  'Mehr: Zugang „Admin-Verwaltung“',
+  (await admin.page.getByRole('button', { name: /^Verwaltung/ }).count()) > 0,
+  'Verein: Zugang „Verwaltung“',
 );
 
 const me = await api('/me', spieler.login.token);

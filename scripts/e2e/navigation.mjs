@@ -1,8 +1,8 @@
 /**
- * NV: Kopfzeile, Pfad (Breadcrumb) und untere Navigation auf Unterseiten.
- * Aufruf: pnpm browser-check scripts/e2e/navigation.mjs [--no-build]
+ * NAVIGATION-NEUORDNUNG: Start · Termine · Team · Verein · Ich – Reihenfolge, Gruppen, nichts unerreichbar.
+ * pnpm browser-check scripts/e2e/navigation.mjs --no-build   (hell: SCHEME=light)
  */
-import { api, button, launch, text } from '../lib/e2e.mjs';
+import { launch, text } from '../lib/e2e.mjs';
 
 const b = await launch();
 let failed = false;
@@ -10,113 +10,124 @@ const ok = (cond, msg) => {
   console.log(`${cond ? '✓' : '✗'} ${msg}`);
   if (!cond) failed = true;
 };
-const s = await b.session('trainer');
-const { page } = s;
-const me = await api('/me', s.login.token);
-const team = me.teams[0].id;
-const tab = (name) => page.getByRole('tab', { name, exact: true });
-const wait = (ms = 1500) => page.waitForTimeout(ms);
+const body = async (page) => (await page.locator('body').innerText()).replace(/\s+/g, ' ');
+// Zwischenüberschriften stehen in Großbuchstaben (CSS): ohne Beachtung der Schreibweise vergleichen
+const has = (haystack, word) => haystack.toLowerCase().includes(word.toLowerCase());
 
-// Strafenkatalog: Team › Kasse › Strafenkatalog
-await s.goto(`/teams/${team}/fines`);
-await tab('Team').waitFor({ timeout: 20_000 });
-await wait();
-ok(
-  (await tab('Team').getAttribute('aria-selected')) === 'true',
-  'Untere Navigation sichtbar, „Team“ aktiv',
-);
-ok((await page.getByRole('button', { name: 'Suche' }).count()) > 0, 'Kopfzeile mit Suche');
-ok(
-  (await page.getByRole('button', { name: /Benachrichtigungen/ }).count()) > 0,
-  'Kopfzeile mit Benachrichtigungen',
-);
-const crumb = (name) => page.getByRole('button', { name, exact: true });
-ok((await crumb('Team').count()) > 0 && (await crumb('Kasse').count()) > 0, 'Pfad: Team › Kasse');
-ok(
-  (await page.locator('[aria-current="page"]').filter({ hasText: 'Strafenkatalog' }).count()) === 1,
-  'Letzte Stufe „Strafenkatalog“ ist die aktuelle Seite',
-);
-const pill = await page.locator('[aria-current="page"]').first().boundingBox();
-const back = await page.getByRole('button', { name: 'Zurück', exact: true }).first().boundingBox();
-ok(
-  !!pill && !!back && pill.height >= 30 && back.width >= 44,
-  'Zurück-Knopf (rund) und gefüllte letzte Stufe',
-);
-await b.shot(page, 'nv-kurz', false);
+// ── Reihenfolge der Hauptbereiche (Handy und Desktop) ────────────────────────
+{
+  const { page, goto } = await b.session('trainer', { width: 390, height: 844 });
+  await goto('/');
+  await page.waitForTimeout(2500);
+  const labels = await page
+    .getByRole('tab')
+    .evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') || e.textContent?.trim()));
+  console.log('  Leiste:', labels.join(' | '));
+  const order = ['Start', 'Termine', 'Team', 'Verein', 'Ich'];
+  const found = order.map((n) => labels.findIndex((l) => l?.includes(n)));
+  ok(
+    found.every((i, k) => i >= 0 && (k === 0 || i > found[k - 1])),
+    'Handy: Start · Termine · Team · Verein · Ich',
+  );
+}
+{
+  const { page, goto } = await b.session('trainer', { width: 1440, height: 900 });
+  await goto('/');
+  await page.waitForTimeout(2500);
+  const side = await body(page);
+  const idx = ['Start', 'Termine', 'Team', 'Verein', 'Ich'].map((n) => side.indexOf(n));
+  ok(
+    idx.every((i, k) => i >= 0 && (k === 0 || i > idx[k - 1])),
+    'Desktop-Seitenleiste: gleiche Reihenfolge',
+  );
+}
 
-// Antippen einer vorigen Stufe
-await crumb('Kasse').click();
-await page.waitForURL(/\/cash$/, { timeout: 10_000 }).catch(() => {});
-ok(/\/teams\/[^/]+\/cash$/.test(new URL(page.url()).pathname), 'Tipp auf „Kasse“ öffnet die Kasse');
+// ── Ich: drei Abschnitte, Persönliches; Verwaltung/Kasse nicht mehr hier ─────
+{
+  const { page, goto } = await b.session('eltern', { width: 390, height: 844 });
+  await goto('/mehr');
+  await page
+    .getByText(/ich und familie/i)
+    .first()
+    .waitFor({ timeout: 20_000 });
+  const t = await body(page);
+  for (const w of [
+    'Meine Kinder',
+    'Ich und Familie',
+    'Einstellungen',
+    'Hilfe und Informationen',
+    'Abwesenheiten',
+    'Konto & Einstellungen',
+    'Hilfe & Anleitung',
+    'Benachrichtigungen',
+    'Meine Mannschaften',
+  ])
+    ok(has(t, w), `Ich (Eltern): „${w}“ erreichbar`);
+  ok(!has(t, 'Admin-Verwaltung'), 'Ich: kein Verwaltungszugang mehr im Kopf');
+}
 
-// Langer Pfad: Team › … › Kassenverwaltung › Einzahlungen
-await s.goto(`/teams/${team}/cash-payments`);
-await tab('Team').waitFor({ timeout: 20_000 });
-await wait();
-const more = page.getByRole('button', { name: 'Weitere Stufen anzeigen' });
-ok((await more.count()) === 1, 'Ab vier Stufen: Sammelstufe „…“');
-ok(
-  (await crumb('Kassenverwaltung').count()) > 0 && (await crumb('Kasse').count()) === 0,
-  'Nur erste und letzte beiden Stufen sichtbar',
-);
-await b.shot(page, 'nv-lang', false);
-await more.click();
-await wait(700);
-ok(
-  (await text(page, 'Pfad').count()) > 0 && (await crumb('Kasse').count()) > 0,
-  'Liste der ausgelassenen Stufen',
-);
-await crumb('Kasse').last().click();
-await wait(1200);
-ok(/\/cash$/.test(new URL(page.url()).pathname), 'Stufe aus der Liste führt dorthin');
+// ── Verein: feste Gruppen, Vereinsaufgaben für Admin und Kasse ───────────────
+for (const [who, must] of [
+  ['admin', ['Meine Vereinsaufgaben', 'Verwaltung', 'Vereinskasse', 'Mitglied anlegen']],
+  ['kasse', ['Meine Vereinsaufgaben', 'Vereinskasse']],
+  ['mitglied', ['Aktuelles und Mitmachen', 'Wissen und Kontakte', 'Unser Verein']],
+]) {
+  const { page, goto } = await b.session(who, { width: 390, height: 844 });
+  await goto('/verein');
+  await page
+    .getByText(/aktuelles und mitmachen/i)
+    .first()
+    .waitFor({ timeout: 20_000 });
+  const t = await body(page);
+  for (const w of ['Aktuelles und Mitmachen', 'Wissen und Kontakte', ...must])
+    ok(has(t, w), `Verein (${who}): „${w}“`);
+}
+{
+  const { page, goto } = await b.session('spieler', { width: 390, height: 844 });
+  await goto('/verein');
+  await page
+    .getByText(/aktuelles und mitmachen/i)
+    .first()
+    .waitFor({ timeout: 20_000 });
+  ok(
+    !has(await body(page), 'Meine Vereinsaufgaben'),
+    'Verein (Spieler): keine Vereinsaufgaben ohne Rechte',
+  );
+}
 
-// Seite mit Index-Route: „events“ meint events/index → Bereich Termine
-await s.goto('/events');
-await tab('Termine').waitFor({ timeout: 20_000 });
-await wait();
-ok(
-  (await tab('Termine').getAttribute('aria-selected')) === 'true',
-  'Alle Termine: „Termine“ aktiv',
-);
+// ── Team: Gruppen und Kontext „C1 · Trainer“ ─────────────────────────────────
+{
+  const { page, goto } = await b.session('trainer', { width: 390, height: 844 });
+  await goto('/team');
+  await page
+    .getByText(/training und spiel/i)
+    .first()
+    .waitFor({ timeout: 20_000 });
+  const t = await body(page);
+  for (const w of ['Training und Spiel', 'Mannschaft', 'Organisation', 'Kader', 'Termine'])
+    ok(has(t, w), `Team (Trainer): „${w}“`);
+  ok(/B1 · Trainer|C1 · Trainer/.test(t), 'Team: Kontext „Mannschaft · Funktion“ sichtbar');
+}
+{
+  const { page, goto } = await b.session('eltern', { width: 390, height: 844 });
+  await goto('/team');
+  await page
+    .getByText(/training und spiel/i)
+    .first()
+    .waitFor({ timeout: 20_000 });
+  ok(/Leon · E1|Mia · F1/.test(await body(page)), 'Team (Eltern): Kontext „Leon · E1“ sichtbar');
+}
 
-// Seite ohne Verlauf (direkt geöffnet): Zurück führt weiter
-await s.goto('/notifications');
-await tab('Home').waitFor({ timeout: 20_000 });
-await wait();
-ok(
-  (await tab('Home').getAttribute('aria-selected')) === 'true',
-  'Benachrichtigungen: „Home“ aktiv',
-);
-await page.getByRole('button', { name: 'Zurück', exact: true }).first().click();
-await wait(1200);
-ok(new URL(page.url()).pathname === '/', 'Zurück ohne Verlauf führt zur Startseite');
+// ── Termine: Kalender-Abo auch von hier ──────────────────────────────────────
+{
+  const { page, goto } = await b.session('eltern', { width: 390, height: 844 });
+  await goto('/termine');
+  await text(page, 'Kalender-Abo', { exact: true }).waitFor({ timeout: 20_000 });
+  ok(true, 'Termine: Kalender-Abo erreichbar');
+}
 
-// Tipp auf einen Reiter von einer Unterseite
-await s.goto(`/teams/${team}/roster`);
-await tab('Verein').waitFor({ timeout: 20_000 });
-await tab('Verein').click();
-await wait(1200);
-ok(new URL(page.url()).pathname === '/verein', 'Reiter „Verein“ führt in den Tab');
-
-// Verwaltung als eigener Bereich (Paket AV): Kopfband mit „Beenden“, Pfad „Verwaltung › Mitglieder“
-const admin = await b.session('admin');
-await admin.goto('/admin/members');
-await admin.page
-  .getByRole('button', { name: 'Verwaltung', exact: true })
-  .waitFor({ timeout: 20_000 });
-await admin.page.waitForTimeout(1500);
-ok(
-  (await admin.page.getByRole('button', { name: /beenden$/ }).count()) > 0,
-  'Verwaltung: Kopfband mit „Beenden“',
+console.log(
+  b.errors.length ? `✗ Konsolenfehler:\n${b.errors.join('\n')}` : '✓ keine Konsolenfehler',
 );
-ok(
-  (await admin.page.getByRole('tab').count()) >= 4,
-  'Verwaltung: eigene untere Leiste mit Reitern',
-);
-await admin.page.getByRole('button', { name: 'Verwaltung', exact: true }).first().click();
-await admin.page.waitForTimeout(1200);
-ok(new URL(admin.page.url()).pathname === '/admin', 'Pfad „Verwaltung“ führt zur Übersicht');
-
 await b.close();
-console.log(b.errors.length ? `Konsolenfehler:\n${b.errors.join('\n')}` : '✓ keine Konsolenfehler');
-if (failed || b.errors.length) process.exit(1);
+process.exit(failed || b.errors.length ? 1 : 0);

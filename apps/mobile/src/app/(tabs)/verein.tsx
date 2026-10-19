@@ -12,7 +12,7 @@ import {
 } from '@/components/sponsor-ads';
 import type { TintKey } from '@clubroof/design-tokens';
 import { adminFunctionTiles } from '@/lib/admin-tiles';
-import { canSeeCashOverview } from '@/lib/areas';
+import { canOpenClubCash, canSeeCashOverview } from '@/lib/areas';
 import {
   Button,
   Card,
@@ -75,7 +75,8 @@ export default function ClubScreen() {
     queryFn: () => api<EventSummary[]>('/club/today'),
   });
 
-  // Kacheln in Kategorien (Paket MS): Veranstaltungen, Neuigkeiten, Vereinsleben, Verwaltung
+  // Kacheln in festen Gruppen (Paket NAVIGATION-NEUORDNUNG, Konzept 19.10.2026): Aktuelles und Mitmachen, Wissen und
+  // Kontakte, Anlage und Ausstattung, Unser Verein, Meine Vereinsaufgaben (nach Berechtigung)
   type Group = { key: string; title: string; tint: TintKey; tiles: TileItem[] };
   const eventTiles: TileItem[] = [
     {
@@ -232,12 +233,44 @@ export default function ClubScreen() {
         ]
       : []),
   ];
+  const pick = (keys: string[]) =>
+    [...eventTiles, ...newsTiles, ...life].filter((t) => keys.includes(t.key));
+  // Verwaltung und Vereinskasse wandern vom Kopf von „Ich“ hierher; die Kachel „Vereinskasse“ gibt es auch für Kassenleute
+  const taskTiles = adminFunctionTiles(me);
+  if (canOpenClubCash(me) && !taskTiles.some((t) => t.key === 'clubcash'))
+    taskTiles.push({
+      key: 'clubcash',
+      label: 'Vereinskasse',
+      icon: 'wallet',
+      onPress: () => router.push('/club-cash'),
+    });
   const groups: Group[] = [
-    { key: 'events', title: 'Veranstaltungen', tint: 'orange', tiles: eventTiles },
-    { key: 'news', title: 'Neuigkeiten', tint: 'pink', tiles: newsTiles },
-    { key: 'life', title: 'Vereinsleben', tint: 'blue', tiles: life },
-    // Verwaltung: alle ausführbaren Funktionen der Rolle, ohne Einklappen; ohne Rechte entfällt sie
-    { key: 'admin', title: 'Verwaltung', tint: 'violet', tiles: adminFunctionTiles(me) },
+    {
+      key: 'current',
+      title: 'Aktuelles und Mitmachen',
+      tint: 'pink',
+      tiles: pick(['news', 'polls', 'forum', 'events', 'schedule', 'helpers']),
+    },
+    {
+      key: 'knowledge',
+      title: 'Wissen und Kontakte',
+      tint: 'blue',
+      tiles: pick(['contacts', 'docs', 'wiki']),
+    },
+    {
+      key: 'facility',
+      title: 'Anlage und Ausstattung',
+      tint: 'orange',
+      tiles: pick(['pitch', 'equipment', 'board']),
+    },
+    {
+      key: 'club',
+      title: 'Unser Verein',
+      tint: 'green',
+      tiles: pick(['teams', 'sponsors', 'expense-claims', 'cash-overview']),
+    },
+    // alle ausführbaren Vereinsaufgaben der Rolle, ohne Einklappen; ohne Rechte entfällt die Gruppe
+    { key: 'admin', title: 'Meine Vereinsaufgaben', tint: 'violet', tiles: taskTiles },
   ];
   // „Kacheln anpassen“ entfällt (Paket PO): alle Kacheln der Rolle stehen in ihren Kategorien
   const shown = withTileInfo(

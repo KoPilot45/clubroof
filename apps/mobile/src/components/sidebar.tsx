@@ -23,7 +23,7 @@ import { Honeycomb } from './honeycomb';
 import { TAB_ICONS } from './tab-bar';
 import { Crest, T, type IconName } from './ui';
 
-const TABS: TabKey[] = ['index', 'team', 'termine', 'verein', 'mehr'];
+const TABS: TabKey[] = ['index', 'termine', 'team', 'verein', 'mehr'];
 
 type Entry = {
   key: string;

@@ -13,11 +13,11 @@ export default function TabLayout() {
       tabBar={(props) => (desktop ? null : <FloatingTabBar {...props} />)}
       screenOptions={{ headerShown: false, animation: 'fade' }}
     >
-      <Tabs.Screen name="index" options={{ title: t('Home') }} />
-      <Tabs.Screen name="team" options={{ title: t('Team') }} />
+      <Tabs.Screen name="index" options={{ title: t('Start') }} />
       <Tabs.Screen name="termine" options={{ title: t('Termine') }} />
+      <Tabs.Screen name="team" options={{ title: t('Team') }} />
       <Tabs.Screen name="verein" options={{ title: t('Verein') }} />
-      <Tabs.Screen name="mehr" options={{ title: t('Mehr') }} />
+      <Tabs.Screen name="mehr" options={{ title: t('Ich') }} />
     </Tabs>
   );
 }

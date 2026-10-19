@@ -58,7 +58,7 @@ export default function AdminLayout() {
       : segment === 'area'
         ? (path.split('/')[3] ?? '')
         : (CATEGORY_OF[segment] ?? '');
-  // Ohne Verwaltungsrecht: zurück zu Mehr statt einer leeren Seite mit Fehlermeldung
+  // Ohne Verwaltungsrecht: zurück zu Verein statt einer leeren Seite mit Fehlermeldung
   if (!canOpenAdminPath(me, path)) return <NoAccessRedirect area="admin" />;
   const items = [
     {

@@ -51,7 +51,7 @@ for (const s of sizes) {
     await page.getByRole('link', { name: 'Verein', exact: true }).first().click();
     await page.waitForTimeout(1200);
     await b.shot(page, `dt-verein-${s.width}-${scheme}`, false);
-    await page.getByRole('link', { name: 'Mehr', exact: true }).first().click();
+    await page.getByRole('link', { name: 'Ich', exact: true }).first().click();
     await page.waitForTimeout(1200);
     await b.shot(page, `dt-mehr-${s.width}-${scheme}`, false);
   }

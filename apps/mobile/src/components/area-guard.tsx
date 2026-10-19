@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { t } from '@/lib/i18n';
 import { useToast } from '@/lib/toast';
 
-/** Seitenwächter: ohne Recht zurück zu Mehr mit kurzem Hinweis, statt einer leeren Seite mit Fehlermeldung. */
+/** Seitenwächter: ohne Recht zurück zu Verein mit kurzem Hinweis, statt einer leeren Seite mit Fehlermeldung. */
 export function NoAccessRedirect({ area }: { area: 'admin' | 'cash' }) {
   const toast = useToast();
   useEffect(() => {
@@ -15,5 +15,5 @@ export function NoAccessRedirect({ area }: { area: 'admin' | 'cash' }) {
       ),
     });
   }, [toast, area]);
-  return <Redirect href="/mehr" />;
+  return <Redirect href="/verein" />;
 }

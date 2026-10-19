@@ -1,7 +1,7 @@
 /**
  * Pfad („Breadcrumb“) für Unterseiten (Paket NV): Bereich (Tab) › Zwischenstufen › aktuelle Seite.
  * Der Bereich und die Zwischenstufen kommen aus dieser Tabelle, die letzte Stufe ist der Titel der Seite.
- * Wer eine neue Seite anlegt, trägt sie hier ein; ohne Eintrag gilt Home › Titel.
+ * Wer eine neue Seite anlegt, trägt sie hier ein; ohne Eintrag gilt Start › Titel.
  */
 import type { Href } from 'expo-router';
 
@@ -10,11 +10,11 @@ export type Crumb = { label: string; href?: Href };
 type Params = Record<string, string | string[] | undefined>;
 
 export const TAB_LABELS: Record<TabKey, string> = {
-  index: 'Home',
+  index: 'Start',
   team: 'Team',
   termine: 'Termine',
   verein: 'Verein',
-  mehr: 'Mehr',
+  mehr: 'Ich',
 };
 export const TAB_HREFS: Record<TabKey, Href> = {
   index: '/',
@@ -39,7 +39,7 @@ const admin = (...more: Crumb[]) =>
   section('verein', () => [{ label: 'Verwaltung', href: '/admin' }, ...more]);
 
 const RULES: Record<string, Rule> = {
-  // Home
+  // Start
   notifications: section('index'),
   search: section('index'),
   // Termine

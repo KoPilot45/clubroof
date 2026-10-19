@@ -111,7 +111,7 @@ const IC = {
   shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>',
   euro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 8.5a4 4 0 100 7M7.5 11h6M7.5 13.5h6"/></svg>',
 };
-const NAV = [['home', 'Home', 'home'], ['team', 'Team', 'team'], ['termine', 'Termine', 'cal'], ['verein', 'Verein', 'club'], ['mehr', 'Mehr', 'more']];
+const NAV = [['home', 'Start', 'home'], ['termine', 'Termine', 'cal'], ['team', 'Team', 'team'], ['verein', 'Verein', 'club'], ['mehr', 'Ich', 'more']];
 const sidebar = (on) => `<aside class="side"><svg class="wm waben-s"></svg>
   <div class="brand"><div class="crest">SGW</div><div><b>SV Grün-Weiß<br>Musterstadt</b><small>Max Mustermann · Trainer</small></div></div>
   <nav class="nav">${NAV.map(([k, l, i]) => `<a class="${on === k ? 'on' : ''}">${IC[i]}${l}</a>`).join('')}</nav>
@@ -159,7 +159,7 @@ verein: () => sidebar('verein') + `<main class="main">${topbar('Dein Vereinslebe
     <div class="col"><div class="grp" style="--c:#FF7EB6">Neuigkeiten</div>${[['News', '▤', '#FF7EB6', '6'], ['Umfragen', '▥', '#FF7EB6', '1'], ['Forum', '✉', '#FF7EB6', '']].map(([n, i, c, b]) => `<div class="tile"><div class="ic" style="background:${c}22;color:${c}">${i}</div>${n}${b ? `<em style="color:#FF7EB6;background:#FF7EB622">${b}</em>` : ''}</div>`).join('')}</div>
     <div class="col"><div class="grp" style="--c:#5AA9FF">Vereinsleben</div>${[['Mannschaften', '◉', '#5AA9FF', '11'], ['Ansprechpartner', '☎', '#5AA9FF', ''], ['Dokumente', '▭', '#5AA9FF', ''], ['Platzbelegung', '▦', '#5AA9FF', '']].map(([n, i, c, b]) => `<div class="tile"><div class="ic" style="background:${c}22;color:${c}">${i}</div>${n}${b ? `<em style="color:#5AA9FF;background:#5AA9FF22">${b}</em>` : ''}</div>`).join('')}</div>
   </div></main>`,
-mehr: () => sidebar('mehr') + `<main class="main">${topbar('Profil, Einstellungen und Hilfe', 'Mehr')}
+mehr: () => sidebar('mehr') + `<main class="main">${topbar('Ich, Einstellungen und Hilfe', 'Ich')}
   <div class="cols c-1-1" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start"><div class="col">
    <div class="hero" style="padding:18px 22px;display:flex;align-items:center;gap:16px"><div class="crest" style="width:60px;height:60px;font-size:20px">MM</div><div><div class="ttl" style="font-size:30px">Max Mustermann</div><div class="line">trainer@sv-gruen-weiss.example</div><div style="display:flex;gap:8px;margin-top:6px"><span class="pill n" style="background:rgba(0,0,0,.35)">Trainer B1</span><span class="pill n" style="background:rgba(0,0,0,.35)">Trainer C1</span></div></div></div>
    <div class="grp" style="--c:var(--accent)">Mein Bereich</div><div class="card" style="padding:4px 14px">${[['☺', 'Profil und Statistik', 'Daten, Foto und Auswertung'], ['✈', 'Abwesenheiten', 'Urlaub, Verletzung, Prüfung melden'], ['🔔', 'Benachrichtigungen', '3 ungelesen'], ['⚑', 'Schiedsrichter', 'Meine Einsätze und Vereins-Soll'], ['▦', 'Kalender-Abo', 'Termine im Handykalender']].map(([i, n, s], k) => `<div class="li" style="padding:11px 2px"><div class="ic" style="width:38px;height:38px;border-radius:12px;background:rgba(46,219,107,.14);color:var(--accent);display:grid;place-items:center">${i}</div><div class="tx"><b>${n}</b><span>${s}</span></div><span style="color:var(--fg4)">›</span></div>`).join('')}</div>
@@ -175,7 +175,7 @@ kasse: () => sidebar('kasse') + `<main class="main"><div class="top"><div><small
   <div class="col"><div class="card"><h3>Einnahmen und Ausgaben je Monat</h3><div style="font-size:12px;color:var(--fg2);margin-bottom:6px">Im Oktober <b style="color:var(--fg)">+580 €</b> Überschuss.</div><div class="chart" id="d2"></div></div>
   <div class="card"><h3>Beiträge 2026</h3><div style="display:flex;gap:2px;height:14px"><i style="flex:68;background:var(--s1);border-radius:4px 0 0 4px"></i><i style="flex:18;background:var(--warn)"></i><i style="flex:14;background:var(--bad);border-radius:0 4px 4px 0"></i></div><div style="display:flex;gap:18px;font-size:12px;color:var(--fg2);margin-top:8px"><span>■ Bezahlt 12.540 €</span><span>■ Offen 3.390 €</span><span>■ Überfällig 2.470 €</span></div></div></div></div></main>`,
 };
-const TITLES = { home: 'Home', team: 'Team', termine: 'Termine', verein: 'Verein', mehr: 'Mehr', kasse: 'Vereinskasse: Statistik' };
+const TITLES = { home: 'Start', team: 'Team', termine: 'Termine', verein: 'Verein', mehr: 'Ich', kasse: 'Vereinskasse: Statistik' };
 const URLS = { home: 'clubroof.example/', team: 'clubroof.example/team', termine: 'clubroof.example/termine', verein: 'clubroof.example/verein', mehr: 'clubroof.example/mehr', kasse: 'clubroof.example/club-cash/stats' };
 
 // ---- Diagramme (aus der Kassen-Statistik) ----
