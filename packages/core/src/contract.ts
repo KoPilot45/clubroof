@@ -1785,6 +1785,17 @@ export type ClubSettings = {
   colorTheme: ClubColorKey;
   colorMode: 'light' | 'dark' | 'system';
   requireTwoFactor: boolean;
+  /** Angaben zum Verein (Anschrift für Spendenbescheinigungen, Kontakt, Webseite) */
+  foundedYear: number | null;
+  street: string | null;
+  postalCode: string | null;
+  city: string | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  timezone: string;
+  /** Wer die Kontaktdaten neuer Personen standardmäßig sieht */
+  defaultContactVisibility: 'club' | 'team_and_coaches' | 'coaches_only';
   /** Vorgabe nur einschaltbar, wenn man selbst 2-Faktor nutzt (Schutz vor Aussperren) */
   canRequireTwoFactor: boolean;
   orgUnits: { id: string; name: string; kind: OrgUnitKind; teams: number }[];
@@ -1797,6 +1808,14 @@ export type UpdateClubInput = Partial<{
   colorTheme: ClubColorKey;
   colorMode: 'light' | 'dark' | 'system';
   requireTwoFactor: boolean;
+  foundedYear: number | null;
+  street: string | null;
+  postalCode: string | null;
+  city: string | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  defaultContactVisibility: 'club' | 'team_and_coaches' | 'coaches_only';
 }>;
 
 /** Untergrund eines Platzes (Einrichtungsassistent) */
@@ -1815,7 +1834,25 @@ export type SetupInput = {
   setupToken: string;
   /** Nachweis der bestätigten E-Mail-Adresse des ersten Kontos (`POST /setup/email-code/verify`) */
   emailProof: string;
-  club: { name: string; shortName: string; shortCode?: string; colorTheme: ClubColorKey };
+  club: {
+    name: string;
+    shortName: string;
+    shortCode?: string;
+    colorTheme: ClubColorKey;
+    /** Angaben zum Verein (Paket E2, Stufe 2); alle freiwillig */
+    foundedYear?: number | null;
+    street?: string | null;
+    postalCode?: string | null;
+    city?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    website?: string | null;
+    timezone?: string;
+    colorMode?: 'light' | 'dark' | 'system';
+    /** Monat, in dem die Saison beginnt (1–12, Standard 7 = Juli) */
+    seasonStartMonth?: number;
+    defaultContactVisibility?: 'club' | 'team_and_coaches' | 'coaches_only';
+  };
   orgUnits: { name: string; kind: OrgUnitKind }[];
   venues?: SetupVenue[];
   /** Gewählte optionale Module (Schlüssel aus `MODULES`); ohne Angabe die bisherige Voreinstellung */

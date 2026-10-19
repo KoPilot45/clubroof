@@ -8,6 +8,7 @@ import { ClubColorPicker } from '@/components/club-color';
 import {
   Button,
   Card,
+  ChoiceChips,
   Chip,
   Crest,
   ErrorNotice,
@@ -212,6 +213,8 @@ function ClubForm() {
         </Card>
       </Section>
 
+      <ClubDetails settings={s} saving={save.isPending} onSave={(body) => save.mutate(body)} />
+
       <Section title="Sicherheit">
         <Card style={{ gap: 10 }}>
           <T variant="label" style={{ fontWeight: '700' }}>
@@ -249,5 +252,105 @@ function ClubForm() {
         </Card>
       </Section>
     </>
+  );
+}
+
+/** Anschrift, Kontakt und Standard der Kontaktdaten – für Spendenbescheinigungen, Impressum und neue Personen. */
+function ClubDetails({
+  settings: s,
+  saving,
+  onSave,
+}: {
+  settings: ClubSettings;
+  saving: boolean;
+  onSave: (body: UpdateClubInput) => void;
+}) {
+  const [year, setYear] = useState(s.foundedYear?.toString() ?? '');
+  const [street, setStreet] = useState(s.street ?? '');
+  const [zip, setZip] = useState(s.postalCode ?? '');
+  const [city, setCity] = useState(s.city ?? '');
+  const [email, setEmail] = useState(s.email ?? '');
+  const [phone, setPhone] = useState(s.phone ?? '');
+  const [site, setSite] = useState(s.website ?? '');
+  const [visibility, setVisibility] = useState(s.defaultContactVisibility);
+  const dirty =
+    year !== (s.foundedYear?.toString() ?? '') ||
+    street !== (s.street ?? '') ||
+    zip !== (s.postalCode ?? '') ||
+    city !== (s.city ?? '') ||
+    email !== (s.email ?? '') ||
+    phone !== (s.phone ?? '') ||
+    site !== (s.website ?? '') ||
+    visibility !== s.defaultContactVisibility;
+  return (
+    <Section title="Angaben zum Verein">
+      <Card style={{ gap: 14 }}>
+        <T variant="caption">
+          Die Anschrift steht auf Spendenbescheinigungen, Kontakt und Webseite im Impressum.
+        </T>
+        <TextField
+          label="Gründungsjahr"
+          kind="code"
+          value={year}
+          onChangeText={(v) => setYear(v.replace(/\D/g, '').slice(0, 4))}
+          maxLength={4}
+        />
+        <TextField
+          label="Straße und Hausnummer"
+          value={street}
+          onChangeText={setStreet}
+          maxLength={120}
+        />
+        <TextField
+          label="Postleitzahl"
+          kind="code"
+          value={zip}
+          onChangeText={(v) => setZip(v.replace(/\D/g, '').slice(0, 5))}
+          maxLength={5}
+        />
+        <TextField label="Ort" value={city} onChangeText={setCity} maxLength={80} />
+        <TextField
+          label="Kontakt-E-Mail"
+          kind="email"
+          value={email}
+          onChangeText={setEmail}
+          maxLength={120}
+        />
+        <TextField label="Telefon" value={phone} onChangeText={setPhone} maxLength={40} />
+        <TextField label="Webseite" value={site} onChangeText={setSite} maxLength={200} />
+        <ChoiceChips
+          label="Sichtbarkeit der Kontaktdaten neuer Personen"
+          options={[
+            { value: 'club' as const, label: 'Alle im Verein' },
+            { value: 'team_and_coaches' as const, label: 'Mannschaft und Trainer' },
+            { value: 'coaches_only' as const, label: 'Nur Trainer' },
+          ]}
+          selected={[visibility]}
+          onToggle={setVisibility}
+        />
+        <T variant="caption">
+          Das ist der Standard für neu angelegte Personen; jede Person ändert ihn für sich im
+          Profil.
+        </T>
+        <Button
+          label="Speichern"
+          icon="checkmark"
+          disabled={!dirty}
+          loading={saving}
+          onPress={() =>
+            onSave({
+              foundedYear: year ? Number(year) : null,
+              street: street.trim() || null,
+              postalCode: zip.trim() || null,
+              city: city.trim() || null,
+              email: email.trim() || null,
+              phone: phone.trim() || null,
+              website: site.trim() || null,
+              defaultContactVisibility: visibility,
+            })
+          }
+        />
+      </Card>
+    </Section>
   );
 }

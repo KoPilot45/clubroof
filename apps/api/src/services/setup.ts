@@ -149,8 +149,17 @@ export async function setupClub(
     throw new HttpError(400, 'org_units', 'Bitte mindestens eine Abteilung anlegen.');
   const passwordHash = await hashPassword(input.admin.password);
 
-  // Saison läuft vom 1. Juli bis 30. Juni
-  const year = now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+  // Saison: beginnt im gewählten Monat (Standard Juli) und dauert ein Jahr
+  const startMonth = input.club.seasonStartMonth ?? 7;
+  const year =
+    now.getUTCMonth() + 1 >= startMonth ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const endsOn =
+    startMonth === 1
+      ? `${year}-12-31`
+      : `${year + 1}-${pad(startMonth - 1)}-${pad(new Date(Date.UTC(year + 1, startMonth - 1, 0)).getUTCDate())}`;
+  const seasonName = startMonth === 1 ? String(year) : `${year}/${String(year + 1).slice(2)}`;
+  const text = (v: string | null | undefined) => v?.trim() || null;
 
   return db.transaction(async (tx) => {
     const [club] = await tx
@@ -161,14 +170,24 @@ export async function setupClub(
         shortCode: input.club.shortCode ? normalizeClubCode(input.club.shortCode) : null,
         slug: slugOf(input.club.name),
         colorTheme: input.club.colorTheme,
+        colorMode: input.club.colorMode ?? 'system',
+        timezone: input.club.timezone ?? 'Europe/Berlin',
+        foundedYear: input.club.foundedYear ?? null,
+        street: text(input.club.street),
+        postalCode: text(input.club.postalCode),
+        city: text(input.club.city),
+        email: text(input.club.email)?.toLowerCase() ?? null,
+        phone: text(input.club.phone),
+        website: text(input.club.website),
+        defaultContactVisibility: input.club.defaultContactVisibility ?? 'team_and_coaches',
       })
       .returning({ id: s.clubs.id });
     const clubId = club!.id;
     await tx.insert(s.seasons).values({
       clubId,
-      name: `${year}/${String(year + 1).slice(2)}`,
-      startsOn: `${year}-07-01`,
-      endsOn: `${year + 1}-06-30`,
+      name: seasonName,
+      startsOn: `${year}-${pad(startMonth)}-01`,
+      endsOn,
       isCurrent: true,
     });
     await tx
@@ -258,6 +277,7 @@ export async function setupClub(
         firstName: input.admin.firstName.trim(),
         lastName: input.admin.lastName.trim(),
         email,
+        contactVisibility: input.club.defaultContactVisibility ?? 'team_and_coaches',
       })
       .returning({ id: s.persons.id });
     await tx.insert(s.roleAssignments).values({

@@ -15,6 +15,9 @@ import { and, asc, count, eq } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 
+const toVisibility = (v: string): ClubSettings['defaultContactVisibility'] =>
+  v === 'club' || v === 'coaches_only' ? v : 'team_and_coaches';
+
 function requireSettings(actor: Actor) {
   if (!actorCan(actor, 'club.settings.manage'))
     throw forbidden('Die Vereinseinstellungen ändert die Vereinsadministration.');
@@ -49,6 +52,15 @@ export async function getClubSettings(db: Db, actor: Actor): Promise<ClubSetting
     colorTheme: club!.colorTheme,
     colorMode: club!.colorMode,
     requireTwoFactor: club!.requireTwoFactor,
+    foundedYear: club!.foundedYear,
+    street: club!.street,
+    postalCode: club!.postalCode,
+    city: club!.city,
+    email: club!.email,
+    phone: club!.phone,
+    website: club!.website,
+    timezone: club!.timezone,
+    defaultContactVisibility: toVisibility(club!.defaultContactVisibility),
     canRequireTwoFactor: actor.user.twoFactorEnabled === true,
     orgUnits: units.map((u) => ({
       id: u.unit.id,
@@ -89,11 +101,31 @@ export async function updateClub(
   if (input.colorTheme !== undefined) patch.colorTheme = input.colorTheme;
   if (input.colorMode !== undefined) patch.colorMode = input.colorMode;
   if (input.requireTwoFactor !== undefined) patch.requireTwoFactor = input.requireTwoFactor;
+  const text = (v: string | null | undefined) => v?.trim() || null;
+  if (input.foundedYear !== undefined) patch.foundedYear = input.foundedYear;
+  if (input.street !== undefined) patch.street = text(input.street);
+  if (input.postalCode !== undefined) patch.postalCode = text(input.postalCode);
+  if (input.city !== undefined) patch.city = text(input.city);
+  if (input.email !== undefined) patch.email = text(input.email)?.toLowerCase() ?? null;
+  if (input.phone !== undefined) patch.phone = text(input.phone);
+  if (input.website !== undefined) patch.website = text(input.website);
+  if (input.defaultContactVisibility !== undefined)
+    patch.defaultContactVisibility = input.defaultContactVisibility;
   if (Object.keys(patch).length) {
     await db.update(s.clubs).set(patch).where(eq(s.clubs.id, actor.club.id));
     const what = [
       patch.name || patch.shortName || patch.shortCode ? 'Name' : null,
       patch.colorTheme || patch.colorMode ? 'Design' : null,
+      patch.street !== undefined ||
+      patch.city !== undefined ||
+      patch.email !== undefined ||
+      patch.website !== undefined ||
+      patch.phone !== undefined ||
+      patch.postalCode !== undefined ||
+      patch.foundedYear !== undefined
+        ? 'Angaben zum Verein'
+        : null,
+      patch.defaultContactVisibility ? 'Sichtbarkeit der Kontaktdaten' : null,
       patch.requireTwoFactor !== undefined
         ? `2-Faktor-Pflicht ${patch.requireTwoFactor ? 'an' : 'aus'}`
         : null,

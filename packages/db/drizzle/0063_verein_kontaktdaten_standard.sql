@@ -1,0 +1,1 @@
+ALTER TABLE "clubs" ADD COLUMN "default_contact_visibility" text DEFAULT 'team_and_coaches' NOT NULL;
