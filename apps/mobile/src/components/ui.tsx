@@ -1739,12 +1739,17 @@ const outlineIcon = (name: IconName): IconName =>
 
 function LargeTileGrid({ items }: { items: TileItem[] }) {
   const { colors } = useTheme();
+  // Desktop (Paket DT3): 3 (kompakt) bis 4 Spalten, niedrigere Kacheln
+  const desktop = useIsDesktop();
+  const compact = useIsCompactDesktop();
+  const tileWidth = !desktop ? '47.9%' : compact ? '31.6%' : '23.6%';
   return (
     <View
       style={{
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        justifyContent: desktop ? 'flex-start' : 'space-between',
+        columnGap: desktop ? (compact ? '2.6%' : '1.8%') : 0,
         rowGap: 14,
       }}
     >
@@ -1771,8 +1776,8 @@ function LargeTileGrid({ items }: { items: TileItem[] }) {
             disabled={disabled}
             onPress={item.onPress}
             style={{
-              width: '47.9%',
-              minHeight: 124,
+              width: tileWidth,
+              minHeight: desktop ? 104 : 124,
               padding: 16,
               borderRadius: 24,
               justifyContent: item.add ? 'center' : 'space-between',

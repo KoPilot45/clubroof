@@ -1,4 +1,5 @@
 import { Cell, DataTable } from '@/components/data-table';
+import { FilterBar } from '@/components/filter-bar';
 import { useIsDesktop } from '@/lib/layout';
 import {
   CLUB_FEE_MAX_REMINDER,
@@ -191,20 +192,33 @@ export default function ClubFeesScreen() {
 
           {full ? (
             <>
-              <Card style={{ gap: 12 }}>
+              <FilterBar
+                search={
+                  <TextField
+                    label="Suchen"
+                    value={q}
+                    onChangeText={setQ}
+                    placeholder={t('Name oder Mitgliedsnummer')}
+                  />
+                }
+                active={
+                  status === 'overdue'
+                    ? []
+                    : [
+                        {
+                          label: t(STATUS.find((s) => s.value === status)?.label ?? ''),
+                          onRemove: () => setStatus('overdue'),
+                        },
+                      ]
+                }
+              >
                 <ChoiceChips
                   label="Anzeigen"
                   options={STATUS.map((s) => ({ value: s.value, label: s.label }))}
                   selected={[status]}
                   onToggle={setStatus}
                 />
-                <TextField
-                  label="Suchen"
-                  value={q}
-                  onChangeText={setQ}
-                  placeholder={t('Name oder Mitgliedsnummer')}
-                />
-              </Card>
+              </FilterBar>
               <Section title="Forderungen">
                 {desktop && f.dues.length > 0 ? (
                   <>

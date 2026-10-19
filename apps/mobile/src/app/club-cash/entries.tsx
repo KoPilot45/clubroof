@@ -19,6 +19,7 @@ import {
   TextField,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
+import { FilterBar } from '@/components/filter-bar';
 import { FundSwitcher } from '@/components/fund-switcher';
 import { useFundFilter } from '@/lib/fund-filter';
 import { mediaUri } from '@/lib/upload';
@@ -119,13 +120,37 @@ export default function ClubCashEntriesScreen() {
   );
   return (
     <Screen edges={[]} refreshing={entries.isRefetching} onRefresh={() => entries.refetch()}>
-      <Card style={{ gap: 12 }}>
-        <TextField
-          label="Suchen"
-          value={q}
-          onChangeText={setQ}
-          placeholder={t('Zweck, Gegenpartei oder Belegnummer')}
-        />
+      <FilterBar
+        search={
+          <TextField
+            label="Suchen"
+            value={q}
+            onChangeText={setQ}
+            placeholder={t('Zweck, Gegenpartei oder Belegnummer')}
+          />
+        }
+        active={[
+          ...(accountId
+            ? [
+                {
+                  label: c?.accounts.find((a) => a.id === accountId)?.name ?? t('Konto'),
+                  onRemove: () => setAccountId(null),
+                },
+              ]
+            : []),
+          ...(categoryId
+            ? [
+                {
+                  label: c?.categories.find((k) => k.id === categoryId)?.name ?? t('Kategorie'),
+                  onRemove: () => setCategoryId(null),
+                },
+              ]
+            : []),
+          ...(withCancelled
+            ? [{ label: t('Stornierte anzeigen'), onRemove: () => setWithCancelled(false) }]
+            : []),
+        ]}
+      >
         {c ? (
           <>
             <FundSwitcher
@@ -161,7 +186,7 @@ export default function ClubCashEntriesScreen() {
           style={{ alignSelf: 'flex-start' }}
           onPress={() => setWithCancelled(!withCancelled)}
         />
-      </Card>
+      </FilterBar>
       {entries.isPending ? <Loading /> : null}
       {entries.error ? (
         <ErrorNotice error={entries.error} onRetry={() => entries.refetch()} />
