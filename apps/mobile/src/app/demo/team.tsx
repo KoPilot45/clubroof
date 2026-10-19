@@ -43,7 +43,12 @@ export default function DemoTeamSetupScreen() {
       MEMBERS.filter((m) =>
         `${m.firstName} ${m.lastName}`.toLowerCase().includes(term.toLowerCase()),
       ),
-    create: async () => 'demo-team',
+    facilities: [
+      { id: 'demo-rasen', name: 'Rasenplatz 1' },
+      { id: 'demo-kunstrasen', name: 'Kunstrasen' },
+    ],
+    create: async () => ({ id: 'demo-team', trainings: 0 }),
+    invite: async () => null,
     finish: () => router.replace('/login'),
   };
   return (
