@@ -16,7 +16,7 @@ Paket **DEMODATEN-AUSBAU** (`docs/PAKETE.md`, gleichnamige Zeile) macht den Demo
 2. **Saison und Spiele:** Hin- und Rückrunde, Wettbewerbe (Liga, Pokal, Testspiel), Derby, Spielformen, Spielberichte mit Aufstellung, Toren, Karten, Wechseln; Abwesenheitsgründe; Sichtbarkeiten je Mannschaft verschieden.
 3. **Vereinskasse:** 24 Monate Buchungen, Beitragsarten und Forderungen mit offenen Posten, Haushaltsplan mit Soll-Ist, Rücklagen, Inventar, Spenden mit Bescheinigungen, Kassenprüfung, Steuerdaten.
 4. **Inhalte:** News, Umfragen, Aushänge, Wiki, **Dokumente als echte kleine PDFs**, Veranstaltungen im Jahreslauf mit Helferplänen, Sponsoren (Stufen, Laufzeiten), Archiv-Einträge.
-5. **Demo-Bilder:** per Skript im Repo erzeugen (SVG/PNG, reproduzierbar): Sponsorenlogos und -banner, News-Bilder, Wappen hell und dunkel, Mannschaftsillustrationen, Avatare.
+5. **Demo-Bilder:** per Skript im Repo erzeugen (SVG/PNG, reproduzierbar): Sponsorenlogos (je Sponsor nur **ein** Logo und ein Banner, keine getrennten Hell-/Dunkel-Fassungen), News-Bilder, ein Wappen (nur **eine** Bildvariante für Hell und Dunkel, wie ein echter Verein es hochlädt), Mannschaftsillustrationen, Avatare.
 6. **Beispieldateien** unter `docs/demo-dateien/` und in der Hilfe: Mitglieder-, Kader-, Spielplan-CSV (nachgebaut, nicht als echtes DFBnet-Format ausgeben), Beitragsarten, Haushaltsplan.
 7. **Tests und Doku:** `seed.test.ts` erweitern (Familien, Summen, Quote, Plan, Rücklagen, Inventar, Archiv, Sponsoren, Sichtbarkeiten, keine Doppelbelegung), `DEMODATEN.md`, Hilfe.
 
