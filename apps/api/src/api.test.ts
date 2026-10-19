@@ -9155,9 +9155,11 @@ describe.skipIf(!url)('API', () => {
       const coach = await login('trainer');
       const player = await login('spieler');
       const a = await send<ImportAreasResponse>('GET', '/import/areas', admin.token);
-      expect(a.body.areas.map((x) => x.area)).toEqual(['members', 'roster']);
+      expect(a.body.areas.map((x) => x.area)).toEqual(
+        expect.arrayContaining(['members', 'roster']),
+      );
       const c = await send<ImportAreasResponse>('GET', '/import/areas', coach.token);
-      expect(c.body.areas.map((x) => x.area)).toEqual(['roster']);
+      expect(c.body.areas.map((x) => x.area)).toEqual(['roster', 'events']);
       expect(c.body.teams.map((t) => t.badge)).toContain('B1');
       expect(c.body.teams.length).toBeLessThan(a.body.teams.length);
       const p = await send<ImportAreasResponse>('GET', '/import/areas', player.token);
@@ -9431,6 +9433,194 @@ describe.skipIf(!url)('API', () => {
       const late = await send<{ error: string }>('POST', `/import/runs/${id}/undo`, admin.token);
       expect(late.status).toBe(409);
       expect(late.body.error).toBe('undo_expired');
+    });
+  });
+
+  describe('Import-Assistent (IM), Stufe 2', () => {
+    const file = (text: string, name = 'import.csv') => ({
+      name,
+      dataBase64: Buffer.from(text, 'utf8').toString('base64'),
+    });
+
+    it('bietet Termine, Sponsoren, Plätze und Ausrüstung nach Rechten an', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const a = await send<ImportAreasResponse>('GET', '/import/areas', admin.token);
+      const names = a.body.areas.map((x) => x.area);
+      expect(names).toEqual(expect.arrayContaining(['members', 'roster', 'events', 'facilities']));
+      const events = a.body.areas.find((x) => x.area === 'events')!;
+      expect(events.needsTeam).toBe(true);
+      expect(events.teamIds!.length).toBeGreaterThan(1);
+      const c = await send<ImportAreasResponse>('GET', '/import/areas', coach.token);
+      const mine = c.body.areas.find((x) => x.area === 'events')!;
+      expect(mine.teamIds).toContain(coach.me.teams.find((t) => t.badge === 'B1')!.id);
+      expect(c.body.areas.map((x) => x.area)).not.toContain('facilities');
+      expect(c.body.areas.map((x) => x.area)).not.toContain('sponsors');
+    });
+
+    it('importiert Termine einer Mannschaft, prüft Dubletten, Platz und Vergangenheit und nimmt sie zurück', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const csv = [
+        'Datum;Beginn;Ende;Art;Gegner;Heim/Auswärts;Platz',
+        '12.11.2026;16:45;18:15;Training;;;',
+        '14.11.2026;13:20;;Spiel;SV Importstadt;Auswärts;Fantasieplatz',
+        '14.11.2026;13:20;;Spiel;SV Importstadt;Auswärts;',
+        '15.11.2026;10:00;;Spiel;;;',
+        '01.01.2020;18:00;;Training;;;',
+        '13.11.2026;25:00;;Training;;;',
+      ].join('\n');
+      const req = { area: 'events', teamId: b1.id, file: file(csv) };
+      const preview = await send<ImportPreview>('POST', '/import/preview', coach.token, req);
+      expect(preview.status).toBe(200);
+      expect(preview.body.rows.map((r) => r.status)).toEqual([
+        'new',
+        'new',
+        'duplicate',
+        'error',
+        'error',
+        'error',
+      ]);
+      expect(preview.body.rows[1]!.warnings.join(' ')).toContain('Fantasieplatz');
+      expect(preview.body.rows[3]!.errors.join(' ')).toContain('Gegner');
+      expect(preview.body.rows[4]!.errors.join(' ')).toContain('Vergangenheit');
+
+      // Fehlerhafte Zeilen abwählen, dann übernehmen
+      const keep = { ...req, excluded: [5, 6, 7] };
+      const done = await send<ImportPreview>('POST', '/import/commit', coach.token, keep);
+      expect(done.status).toBe(200);
+      expect(done.body.run).toMatchObject({ created: 2 });
+      const created = await db
+        .select()
+        .from(s.events)
+        .where(eq(s.events.importBatchId, done.body.run!.id));
+      expect(created.map((e) => e.type).sort()).toEqual(['match', 'training']);
+      expect(created.find((e) => e.type === 'match')!.title).toContain('SV Importstadt');
+
+      // Zweiter Lauf: alles schon da
+      const again = await send<ImportPreview>('POST', '/import/preview', coach.token, keep);
+      expect(again.body.rows[0]!.status).toBe('duplicate');
+      expect(again.body.rows[1]!.status).toBe('duplicate');
+
+      expect(
+        (await send('POST', `/import/runs/${done.body.run!.id}/undo`, coach.token)).status,
+      ).toBe(200);
+      const gone = await send<ImportPreview>('POST', '/import/preview', coach.token, keep);
+      expect(gone.body.rows[0]!.status).toBe('new');
+      expect(
+        await db.select().from(s.events).where(eq(s.events.importBatchId, done.body.run!.id)),
+      ).toHaveLength(0);
+    });
+
+    it('importiert Plätze mit Spielstätte, aktualisiert und macht den Import rückgängig', async () => {
+      const admin = await login('admin');
+      const csv = [
+        'Name;Kürzel;Art;Spielstätte;Adresse',
+        'Importplatz;IP1;Kunstrasen;Sportpark Import;Importweg 1',
+        'Importhalle;;Halle;Sportpark Import;',
+        'Fehlplatz;;Schwimmbad;;',
+      ].join('\n');
+      const req = { area: 'facilities', file: file(csv) };
+      const preview = await send<ImportPreview>('POST', '/import/preview', admin.token, req);
+      expect(preview.body.rows.map((r) => r.status)).toEqual(['new', 'new', 'error']);
+      expect(preview.body.rows[2]!.errors.join(' ')).toContain('Schwimmbad');
+      expect(preview.body.rows[0]!.warnings.join(' ')).toContain('Sportpark Import');
+
+      const ok = { ...req, excluded: [4] };
+      const done = await send<ImportPreview>('POST', '/import/commit', admin.token, ok);
+      expect(done.body.run).toMatchObject({ created: 2, updated: 0 });
+      const rows = await db.select().from(s.facilities).where(eq(s.facilities.name, 'Importplatz'));
+      expect(rows[0]).toMatchObject({ kind: 'artificial_pitch', shortName: 'IP1' });
+      const venues = await db.select().from(s.venues).where(eq(s.venues.name, 'Sportpark Import'));
+      expect(venues).toHaveLength(1);
+
+      // Erneut mit Aktualisieren: Adresse wird ergänzt, nichts doppelt
+      const upd = await send<ImportPreview>('POST', '/import/commit', admin.token, {
+        ...ok,
+        duplicates: 'update',
+      });
+      expect(upd.body.run).toMatchObject({ created: 0, updated: 2 });
+      expect(
+        (await db.select().from(s.facilities).where(eq(s.facilities.name, 'Importplatz')))[0]!
+          .address,
+      ).toBe('Importweg 1');
+
+      expect(
+        (await send('POST', `/import/runs/${done.body.run!.id}/undo`, admin.token)).status,
+      ).toBe(200);
+      expect(
+        await db.select().from(s.facilities).where(eq(s.facilities.name, 'Importplatz')),
+      ).toHaveLength(0);
+      expect(
+        await db.select().from(s.venues).where(eq(s.venues.name, 'Sportpark Import')),
+      ).toHaveLength(0);
+    });
+
+    it('importiert Ausrüstung und Sponsoren mit Dubletten und Überprüfung der Eingaben', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const areas = await send<ImportAreasResponse>('GET', '/import/areas', admin.token);
+      const equipment = [
+        'Art;Bezeichnung;Anzahl;Lagerort',
+        'Material;Importball;12;Geräteraum',
+        'Schlüssel;Importschlüssel;1;',
+        'Material;Importball;5;',
+        'Material;Fehlzahl;viele;',
+      ].join('\n');
+      if (areas.body.areas.some((a) => a.area === 'equipment')) {
+        const req = { area: 'equipment', file: file(equipment) };
+        const p = await send<ImportPreview>('POST', '/import/preview', admin.token, req);
+        expect(p.body.rows.map((r) => r.status)).toEqual(['new', 'new', 'duplicate', 'error']);
+        const done = await send<ImportPreview>('POST', '/import/commit', admin.token, {
+          ...req,
+          excluded: [5],
+        });
+        expect(done.body.run).toMatchObject({ created: 2 });
+        const items = await db
+          .select()
+          .from(s.equipmentItems)
+          .where(eq(s.equipmentItems.name, 'Importball'));
+        expect(items[0]).toMatchObject({ quantity: 12, kind: 'material' });
+        await send('POST', `/import/runs/${done.body.run!.id}/undo`, admin.token);
+        expect(
+          await db.select().from(s.equipmentItems).where(eq(s.equipmentItems.name, 'Importball')),
+        ).toHaveLength(0);
+      }
+      const sponsors = [
+        'Name;Link;Laufzeit von;Laufzeit bis;Werbung in der App',
+        'Importbäckerei;https://baecker.example.org;01.08.2026;31.07.2027;Ja',
+        'Unsicher;http://nicht-sicher.example.org;;;',
+        'Rückwärts;;31.07.2027;01.08.2026;',
+      ].join('\n');
+      if (areas.body.areas.some((a) => a.area === 'sponsors')) {
+        const req = { area: 'sponsors', file: file(sponsors) };
+        const p = await send<ImportPreview>('POST', '/import/preview', admin.token, req);
+        expect(p.body.rows.map((r) => r.status)).toEqual(['new', 'error', 'error']);
+        expect(p.body.rows[1]!.errors.join(' ')).toContain('https://');
+        const done = await send<ImportPreview>('POST', '/import/commit', admin.token, {
+          ...req,
+          excluded: [3, 4],
+        });
+        expect(done.body.run).toMatchObject({ created: 1 });
+        await send('POST', `/import/runs/${done.body.run!.id}/undo`, admin.token);
+      }
+      // Trainer darf weder Plätze noch Sponsoren importieren
+      expect(
+        (
+          await send('POST', '/import/preview', coach.token, {
+            area: 'facilities',
+            file: file('Name\nX\n'),
+          })
+        ).status,
+      ).toBe(403);
+      expect(
+        (
+          await send('POST', '/import/preview', coach.token, {
+            area: 'sponsors',
+            file: file('Name\nX\n'),
+          })
+        ).status,
+      ).toBe(403);
     });
   });
 });

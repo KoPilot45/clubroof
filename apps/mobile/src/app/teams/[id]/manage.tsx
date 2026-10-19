@@ -176,6 +176,21 @@ export default function ManageTeamScreen() {
                 subtitle="DFBnet-Datei (CSV) → alle Spiele der Mannschaft automatisch anlegen"
                 onPress={() => router.push(`/schedule-import?teamId=${id}`)}
               />
+              <ListRow
+                title="Termine aus Datei importieren"
+                subtitle="Training, Spiele oder Termine aus Excel oder CSV anlegen"
+                onPress={() => router.push(`/import?area=events&teamId=${id}`)}
+              />
+            </Card>
+          </Section>
+          <Section title="Kader">
+            <Card>
+              <ListRow
+                first
+                title="Kader aus Datei importieren"
+                subtitle="Spieler und Betreuer aus Excel oder CSV in die Mannschaft aufnehmen"
+                onPress={() => router.push(`/import?area=roster&teamId=${id}`)}
+              />
             </Card>
           </Section>
         </>

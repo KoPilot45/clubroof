@@ -479,6 +479,11 @@
     "note": "Liste bzw. Detailseite",
     "status": "Breite"
   },
+  "import": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "fertig"
+  },
   "join-code": {
     "t": "B",
     "note": "Formular",
