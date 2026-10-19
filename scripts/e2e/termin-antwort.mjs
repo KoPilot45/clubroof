@@ -130,6 +130,43 @@ try {
   if (shots) await b.shot(page, 'ta-eltern', false);
 }
 
+// Desktop: Tabelle mit Spalten, Aufklappen über die volle Breite, Tastatur
+{
+  const { page, goto, login } = await b.session('spieler', { width: 1440, height: 900 });
+  const mine = (await api(`/events?${range(25)}`, login.token)).find(
+    (e) => e.team && e.status === 'scheduled' && e.myResponses[0]?.canRespond,
+  );
+  await put(login.token, mine.id, login.me.person.id, 'pending');
+  await goto('/events');
+  await page.waitForTimeout(4000);
+  const dt = (await page.locator('body').innerText()).replace(/\s+/g, ' ');
+  ok(
+    /MEINE ANTWORT/i.test(dt) && /TEILNEHMER/i.test(dt),
+    'Desktop: Tabelle mit „Meine Antwort“ und „Teilnehmer“',
+  );
+  ok(
+    (await page.getByRole('radio', { name: 'Zusage' }).count()) > 2,
+    'Desktop: Antwortchips mit Symbol und Wort',
+  );
+  await page.getByRole('button', { name: 'Teilnehmer anzeigen' }).first().click();
+  await page.waitForTimeout(2500);
+  const ex = (await page.locator('body').innerText()).replace(/\s+/g, ' ');
+  ok(
+    /ZUSAGEN · \d+/i.test(ex) &&
+      /VIELLEICHT · \d+/i.test(ex) &&
+      /OFFEN · \d+/i.test(ex) &&
+      /ABSAGEN · \d+/i.test(ex),
+    'Desktop: vier Gruppen nebeneinander',
+  );
+  if (shots) await b.shot(page, 'ta-desktop', false);
+  // Tastatur: Fokuszeile, Taste 1 setzt die Zusage
+  const row = page.getByRole('button', { name: new RegExp(mine.title) }).first();
+  await row.focus();
+  await page.keyboard.press('1');
+  await text(page, /Teilnahme bestätigt: Zusage/).waitFor({ timeout: 10_000 });
+  ok(true, 'Desktop: Taste 1 setzt die Zusage der Fokuszeile');
+}
+
 // der Serverfehler 400 „Grund nötig“ ist hier gewollt
 const real = b.errors.filter((e) => !/status of 400/.test(e));
 console.log(real.length ? `✗ Konsolenfehler:\n${real.join('\n')}` : '✓ keine Konsolenfehler');

@@ -27,7 +27,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { EventRow, ResponseControls } from '@/components/events';
-import { AttendanceOverview } from '@/components/squad-sheet';
+import { HeroAnswer } from '@/components/event-answer';
 import { useTeamColorOf } from '@/lib/team-colors';
 import { Text } from '@/components/app-text';
 import {
@@ -856,11 +856,7 @@ function PosterSlide({
                 .join(' · ')}
             </T>
           </Pressable>
-          {event.status === 'scheduled' ? (
-            <View style={{ marginTop: 6 }}>
-              <AttendanceOverview event={event} counts={event.counts} hero compact />
-            </View>
-          ) : null}
+          <HeroAnswer event={event} />
         </View>
       ) : hasTeam ? (
         <View style={{ gap: 8 }}>
@@ -971,7 +967,10 @@ export function HomePoster({
   return (
     <HeroCard poster style={{ marginHorizontal: desktop ? -28 : -22 }}>
       <View
-        style={{ minHeight: desktop && !hasTeam ? 330 : 450, paddingBottom: loop ? 30 : 0 }}
+        style={{
+          minHeight: desktop && !hasTeam ? 330 : 400,
+          paddingBottom: slides.length > 0 ? 30 : 0,
+        }}
         onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
       >
         {header}
@@ -1011,6 +1010,24 @@ export function HomePoster({
             ))}
           </ScrollView>
         ) : null}
+        {slides[current] ? (
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={t('Spiel ansehen')}
+            onPress={() => router.push(`/events/${slides[current]!.id}`)}
+            style={{
+              position: 'absolute',
+              right: 22,
+              bottom: 0,
+              height: 30,
+              justifyContent: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 12.5, fontWeight: '800', color: colors.hero.onHero }}>
+              {`${t('Spiel ansehen')} ›`}
+            </Text>
+          </Pressable>
+        ) : null}
         {loop ? (
           <>
             {/* Punkte in eigener Zeile unter dem Inhalt: überlagern weder Legende noch Kader-Link */}
@@ -1048,8 +1065,7 @@ export function HomePoster({
               style={{
                 position: 'absolute',
                 right: 10,
-                top: '56%',
-                marginTop: -22,
+                top: 128,
                 width: 44,
                 height: 44,
                 borderRadius: 22,

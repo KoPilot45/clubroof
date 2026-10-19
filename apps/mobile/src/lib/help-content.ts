@@ -254,7 +254,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'respond',
         question: 'Wie sage ich zu oder ab?',
         answer:
-          'Öffne den Termin (Start, Termine oder Team) und tippe auf Zusagen, Unsicher oder Absagen. Bei „Absagen“ kannst du einen Grund wählen oder schreiben – das ist freiwillig; bei „Unsicher“ bitten wir um eine kurze Begründung. Den Grund sehen nur das Trainerteam und du selbst.',
+          'In jeder Terminliste (Start, Termine, Team, Kalender) und auf dem Plakat der Startseite stehen drei Knöpfe: ✓ Zusage, ? Vielleicht und ✕ Absage. Ein Tipp auf Zusage oder Vielleicht speichert sofort; die Bestätigung nennt die Person und bietet „Rückgängig“ an. Bei „Absage“ öffnet sich ein Fenster, in dem du einen Grund wählen oder schreiben kannst – ob er nötig ist, bestimmt die Mannschaft; den Grund sehen nur das Trainerteam und du selbst. Der Status steht immer auch als Text unter dem Titel („Du: Zugesagt“). Ist die Frist abgelaufen, bleibt deine Antwort sichtbar, die Knöpfe sind gesperrt, und das Trainerteam kann noch ändern. Eltern sehen die Karte je Kind mit dem Namen darüber.',
+      },
+      {
+        id: 'participants',
+        question: 'Wie sehe ich, wer zugesagt hat?',
+        answer:
+          'Unter jedem Termin zeigt ein Balken mit Zahlen den Stand. Der Pfeil rechts daneben klappt die Teilnehmerliste auf: Zusagen, Vielleicht, Offen und Absagen, ganz unten Abwesend (zählt zu den Absagen). Pro Gruppe stehen bis zu vier Namen, „Alle anzeigen“ öffnet den ganzen Kader; deine Zeile ist markiert. Gründe von Absagen sieht nur das Trainerteam, und es kann nach dem Antippen einer Person deren Antwort ändern. Gibt die Mannschaft die Liste nicht frei, steht dort ein Hinweis. Am Computer ist die Terminliste eine Tabelle: Pfeiltasten wechseln die Zeile, die Leertaste klappt auf, 1/2/3 (oder Z/V/A) setzen die Antwort.',
       },
       {
         id: 'responses-overview',

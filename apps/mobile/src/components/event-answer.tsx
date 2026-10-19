@@ -23,6 +23,7 @@ import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
+import { AttendanceBar } from './attendance-bar';
 import { ReasonForm, declineMessage, useRespond } from './events';
 import { SquadSheet } from './squad-sheet';
 import { Avatar, Button, ErrorNotice, Loading, Sheet, T, withAlpha } from './ui';
@@ -64,6 +65,7 @@ export function AnswerKnobs({
   locked,
   allowMaybe = true,
   wide,
+  dense,
   onPlate,
   onAnswer,
 }: {
@@ -72,6 +74,8 @@ export function AnswerKnobs({
   locked: boolean;
   allowMaybe?: boolean;
   wide?: boolean;
+  /** Desktop-Tabelle: flache Chips statt breiter Pillen */
+  dense?: boolean;
   /** auf dem Plakat: halbtransparent dunkel mit weißem Rand */
   onPlate?: boolean;
   onAnswer: (answer: Answer) => void;
@@ -109,13 +113,20 @@ export function AnswerKnobs({
             onPress={() => onAnswer(a)}
             style={{
               ...(wide
-                ? {
-                    flex: 1,
-                    minHeight: 44,
-                    borderRadius: 22,
-                    flexDirection: 'row' as const,
-                    paddingHorizontal: 10,
-                  }
+                ? dense
+                  ? {
+                      minHeight: 30,
+                      borderRadius: 15,
+                      flexDirection: 'row' as const,
+                      paddingHorizontal: 12,
+                    }
+                  : {
+                      flex: 1,
+                      minHeight: 44,
+                      borderRadius: 22,
+                      flexDirection: 'row' as const,
+                      paddingHorizontal: 10,
+                    }
                 : { width: 38, height: 38, borderRadius: 19 }),
               alignItems: 'center',
               justifyContent: 'center',
@@ -552,3 +563,229 @@ function CorrectionSheet({
 export function NotReleasedHint() {
   return <T variant="caption">{`🔒 ${t('Die Teilnehmer sieht nur das Trainerteam.')}`}</T>;
 }
+
+// ── Home-Plakat ─────────────────────────────────────────────────────────────
+
+/** Kurzfassung der Statuszeile für das Plakat rechts im Kopf des Antwortblocks. */
+function heroStatus(state: AnswerState, r: MyResponse): string {
+  if (state.locked && r.status !== 'pending') return `🔒 ${t('Frist abgelaufen')}`;
+  if (state.tone === 'yes' || state.tone === 'maybe' || state.tone === 'no') {
+    const mark = r.status === 'yes' ? '✓' : r.status === 'maybe' ? '?' : '✕';
+    return `${mark} ${t(STATUS_WORD[r.status])}`;
+  }
+  return state.line;
+}
+
+/**
+ * Antwortblock im Home-Plakat: „DEINE ANTWORT“ (bei Eltern „FÜR LEON · E1“), drei Knöpfe mit Symbol und Wort, Summenzeile
+ * mit Pfeil; der Pfeil klappt ein dunkles Glasfeld mit den Gruppen auf (je Gruppe Zahl und Avatar-Stapel, antippen zeigt
+ * die Namen). Trainer: „DU ALS TRAINER · automatisch eingeplant“ ohne Knöpfe.
+ */
+export function HeroAnswer({ event }: { event: EventSummary }) {
+  const { colors } = useTheme();
+  const on = colors.hero.onHero;
+  const soft = withAlpha(on, 0.82);
+  const { api } = useSignedIn();
+  const [open, setOpen] = useState(false);
+  const [openGroup, setOpenGroup] = useState<GroupKey | null>('yes');
+  const [all, setAll] = useState(false);
+  // Eltern: die Antwort gilt dem Kind (Spieler) vor der eigenen Trainerrolle, dessen Spiel das Plakat zeigt
+  const r = event.myResponses.find((x) => x.role !== 'coach') ?? event.myResponses[0];
+  const flow = useAnswerFlow(event, r ?? EMPTY_RESPONSE);
+  const query = useQuery({
+    queryKey: ['event', event.id],
+    queryFn: () => api<EventDetail>(`/events/${event.id}`),
+    enabled: open,
+  });
+  if (event.status !== 'scheduled') return null;
+  const state = r ? answerState(event, r, { past: false, queued: false }) : null;
+  const title = !r
+    ? null
+    : r.role === 'coach'
+      ? t('DU ALS TRAINER')
+      : r.relation === 'child'
+        ? t(`FÜR ${r.firstName.toUpperCase()} · ${event.team?.badge ?? ''}`)
+        : t('DEINE ANTWORT');
+  const warn = colors.status.action.solid;
+  const e = query.data;
+  const dot: Record<GroupKey, string> = {
+    yes: colors.status.success.solid,
+    maybe: colors.status.action.solid,
+    pending: withAlpha(on, 0.5),
+    no: colors.status.urgent.solid,
+    absent: colors.status.info.solid,
+  };
+  return (
+    <View style={{ gap: 8, marginTop: 6 }}>
+      {r && state ? (
+        <>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            <T variant="overline" color={soft} verbatim style={{ fontSize: 10.5 }}>
+              {title}
+            </T>
+            <T
+              variant="caption"
+              color={state.tone === 'warn' ? warn : on}
+              verbatim
+              style={{ fontSize: 12, fontWeight: '800' }}
+            >
+              {r.role === 'coach' ? `✎ ${t('automatisch eingeplant')}` : heroStatus(state, r)}
+            </T>
+          </View>
+          {state.knobs ? (
+            <AnswerKnobs
+              wide
+              onPlate
+              value={r.status}
+              needsAnswer={state.needsAnswer}
+              locked={state.locked || flow.pending}
+              allowMaybe={event.responseRules?.allowMaybe ?? true}
+              onAnswer={flow.answer}
+            />
+          ) : null}
+          {flow.sheet}
+        </>
+      ) : null}
+      {event.counts ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{ flex: 1 }}>
+            <AttendanceBar counts={event.counts} hero compact link={false} />
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t(open ? 'Teilnehmer ausblenden' : 'Teilnehmer anzeigen')}
+            accessibilityState={{ expanded: open }}
+            hitSlop={8}
+            onPress={() => setOpen(!open)}
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 14,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: withAlpha(on, 0.18),
+            }}
+          >
+            <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={16} color={on} />
+          </Pressable>
+        </View>
+      ) : null}
+      {open ? (
+        <View
+          style={{
+            borderRadius: 16,
+            padding: 12,
+            gap: 6,
+            backgroundColor: withAlpha(colors.hero.to, 0.55),
+          }}
+        >
+          {query.isPending ? <Loading /> : null}
+          {e && e.participants.length === 0 && !query.isPending ? (
+            <T variant="caption" color={soft}>
+              {`🔒 ${t('Die Teilnehmer sieht nur das Trainerteam.')}`}
+            </T>
+          ) : null}
+          {e
+            ? GROUPS.map((g) => {
+                const list = e.participants.filter((p) => groupOf(p) === g.key).sort(byJersey);
+                if (list.length === 0) return null;
+                const expanded = openGroup === g.key;
+                return (
+                  <View key={g.key} style={{ gap: 6 }}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityState={{ expanded }}
+                      accessibilityLabel={`${t(g.title)}, ${list.length}`}
+                      onPress={() => setOpenGroup(expanded ? null : g.key)}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 36 }}
+                    >
+                      <View
+                        style={{
+                          width: 9,
+                          height: 9,
+                          borderRadius: 5,
+                          backgroundColor: dot[g.key],
+                        }}
+                      />
+                      <T color={on} style={{ fontWeight: '800', fontSize: 13.5 }}>
+                        {t(g.title)}
+                      </T>
+                      <T color={soft} verbatim style={{ fontSize: 13.5 }}>
+                        {list.length}
+                      </T>
+                      <View style={{ flex: 1 }} />
+                      <View style={{ flexDirection: 'row' }}>
+                        {list.slice(0, 5).map((p, i) => (
+                          <View key={p.personId} style={{ marginLeft: i === 0 ? 0 : -7 }}>
+                            <Avatar name={p.name} size={22} uri={p.avatarUrl} />
+                          </View>
+                        ))}
+                      </View>
+                      {list.length > 5 ? (
+                        <T
+                          color={soft}
+                          verbatim
+                          style={{ fontSize: 12 }}
+                        >{`+${list.length - 5}`}</T>
+                      ) : null}
+                      <Ionicons
+                        name={expanded ? 'chevron-down' : 'chevron-forward'}
+                        size={14}
+                        color={soft}
+                      />
+                    </Pressable>
+                    {expanded ? (
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                        {list.slice(0, MAX_NAMES).map((p) => (
+                          <View
+                            key={p.personId}
+                            style={{
+                              borderRadius: 14,
+                              paddingHorizontal: 10,
+                              paddingVertical: 4,
+                              backgroundColor: withAlpha(on, 0.14),
+                            }}
+                          >
+                            <T color={on} verbatim style={{ fontSize: 12.5 }}>
+                              {p.name.split(' ').slice(-1)[0]}
+                            </T>
+                          </View>
+                        ))}
+                        {list.length > MAX_NAMES ? (
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={`${t('Alle anzeigen')} (${list.length})`}
+                            onPress={() => setAll(true)}
+                            style={{ justifyContent: 'center', minHeight: 28 }}
+                          >
+                            <T color={on} style={{ fontWeight: '800', fontSize: 12.5 }}>
+                              {`${t('Alle anzeigen')} ›`}
+                            </T>
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    ) : null}
+                  </View>
+                );
+              })
+            : null}
+          <SquadSheet eventId={event.id} visible={all} onClose={() => setAll(false)} />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+const EMPTY_RESPONSE: MyResponse = {
+  personId: '',
+  firstName: '',
+  relation: 'self',
+  role: 'player',
+  status: 'pending',
+  reason: null,
+  canRespond: false,
+  automatic: false,
+  absent: false,
+};

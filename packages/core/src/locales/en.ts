@@ -867,6 +867,7 @@ export const en: Record<string, string> = {
   'Authenticator-App einrichten': 'Set up authenticator app',
   Auto: 'car',
   Automatisch: 'Automatic',
+  'automatisch eingeplant': 'scheduled automatically',
   'Automatisch richtet sich nach der Sprache deines Geräts. Die Wahl gilt auf allen deinen Geräten.':
     'Automatic follows your device language. Your choice applies on all your devices.',
   'Automatisch zugesagt': 'Automatically confirmed',
@@ -1455,6 +1456,7 @@ export const en: Record<string, string> = {
   'Deine Anfrage bei {0}': 'Your request to {0}',
   'Deine Anmeldedaten': 'Your sign-in details',
   'Deine Antwort': 'Your reply',
+  'DEINE ANTWORT': 'YOUR ANSWER',
   'Deine Auslage wurde abgelehnt': 'Your claim was rejected',
   'Deine Auslage wurde erstattet': 'Your claim was reimbursed',
   'Deine Auslage wurde genehmigt': 'Your claim was approved',
@@ -2043,6 +2045,7 @@ export const en: Record<string, string> = {
   Dringend: 'Urgent',
   'Dringendes kommt immer an': 'Urgent messages always get through',
   Du: 'You',
+  'DU ALS TRAINER': 'YOU AS COACH',
   'Du bestimmst in deinem Profil, wer deine Kontaktdaten sehen darf. Trainer sehen nur die Daten ihrer Mannschaft.':
     'You decide in your profile who may see your contact details. Coaches only see the data of their team.',
   'Du bist eingetragen': "You're signed up",
@@ -2532,6 +2535,7 @@ export const en: Record<string, string> = {
   'Funktionen und Sichtbarkeit': 'Features and visibility',
   Für: 'For',
   'für {0}': 'for {0}',
+  'FÜR {0}': 'FOR {0}',
   'Für {0} darfst du keine Spielerbewegungen erfassen.':
     'You are not allowed to record player movements for {0}.',
   'Für {0}. Der Spieler muss noch zusagen.': 'For {0}. The player still needs to confirm.',
@@ -2938,6 +2942,8 @@ export const en: Record<string, string> = {
     'in euros, only if it differs from the fee type',
   'in Euro; Ausgaben mit Minus': 'in euros; expenses with minus',
   'in Euro; leer = Betrag der Beitragsart': 'in euros; empty = amount of the fee type',
+  'In jeder Terminliste (Start, Termine, Team, Kalender) und auf dem Plakat der Startseite stehen drei Knöpfe: ✓ Zusage, ? Vielleicht und ✕ Absage. Ein Tipp auf Zusage oder Vielleicht speichert sofort; die Bestätigung nennt die Person und bietet „Rückgängig“ an. Bei „Absage“ öffnet sich ein Fenster, in dem du einen Grund wählen oder schreiben kannst – ob er nötig ist, bestimmt die Mannschaft; den Grund sehen nur das Trainerteam und du selbst. Der Status steht immer auch als Text unter dem Titel („Du: Zugesagt“). Ist die Frist abgelaufen, bleibt deine Antwort sichtbar, die Knöpfe sind gesperrt, und das Trainerteam kann noch ändern. Eltern sehen die Karte je Kind mit dem Namen darüber.':
+    'In every event list (Start, Events, Team, calendar) and on the poster of the start page there are three buttons: ✓ Yes, ? Maybe and ✕ No. One tap on Yes or Maybe saves immediately; the confirmation names the person and offers “Undo”. For “No” a window opens where you can choose or write a reason – whether one is required is set by the team; only the coaching staff and you see the reason. The status is always also shown as text under the title (“You: Confirmed”). If the deadline has passed, your answer stays visible, the buttons are locked, and the coaching staff can still change it. Parents see the card per child with the name above it.',
   'In Ordnung': 'OK',
   'In Vorbereitung': 'In preparation',
   'In wenigen Minuten richtest du deinen Verein ein: Name, Anlage, Farbe, Funktionen und dein Konto. Du kannst jederzeit zurück, und alles lässt sich später in der Verwaltung ändern.':
@@ -3474,6 +3480,7 @@ export const en: Record<string, string> = {
   'Mein Konto': 'My account',
   'Mein Profil': 'My profile',
   Meine: 'My',
+  'Meine Antwort': 'My answer',
   'Meine Auslagen': 'My claims',
   'Meine Daten': 'My data',
   'Meine Daten und Exporte für dein Team': 'My data and exports for your team',
@@ -4394,6 +4401,7 @@ export const en: Record<string, string> = {
   Spiel: 'Match',
   'Spiel {0} von {1}': 'Match {0} of {1}',
   'Spiel abgesetzt.': 'Match postponed.',
+  'Spiel ansehen': 'View match',
   'Spiel- & Trainingsbetrieb': 'Matches & training',
   Spielbericht: 'Match report',
   'Spielbericht abschließen': 'Finalise match report',
@@ -4972,6 +4980,8 @@ export const en: Record<string, string> = {
     'Under Me → Help and information you find answers and can repeat this tour.',
   'Unter Ich stellst du ein, wann du Push bekommst. Dringendes kommt immer an.':
     'Under Me you set when you get push notifications. Urgent items always arrive.',
+  'Unter jedem Termin zeigt ein Balken mit Zahlen den Stand. Der Pfeil rechts daneben klappt die Teilnehmerliste auf: Zusagen, Vielleicht, Offen und Absagen, ganz unten Abwesend (zählt zu den Absagen). Pro Gruppe stehen bis zu vier Namen, „Alle anzeigen“ öffnet den ganzen Kader; deine Zeile ist markiert. Gründe von Absagen sieht nur das Trainerteam, und es kann nach dem Antippen einer Person deren Antwort ändern. Gibt die Mannschaft die Liste nicht frei, steht dort ein Hinweis. Am Computer ist die Terminliste eine Tabelle: Pfeiltasten wechseln die Zeile, die Leertaste klappt auf, 1/2/3 (oder Z/V/A) setzen die Antwort.':
+    "Under every event a bar with numbers shows the current state. The arrow next to it opens the participant list: Yes, Maybe, Open and No, and at the bottom Absent (counted as No). Each group shows up to four names; “Show all” opens the whole squad; your row is highlighted. Only the coaching staff see reasons for declines, and after tapping a person they can change that person's answer. If the team does not release the list, a notice appears instead. On a computer the event list is a table: arrow keys change the row, the space bar expands it, 1/2/3 (or Z/V/A) set the answer.",
   'Unter Mehr → Hilfe & Anleitung findest du Antworten und kannst diese Tour wiederholen.':
     'Under More → Help & guide you find answers and can repeat this tour.',
   'Unter Mehr stellst du ein, wann du Push bekommst. Dringendes kommt immer an.':
@@ -5423,6 +5433,7 @@ export const en: Record<string, string> = {
   'Wie schalte ich Funktionen ein oder aus?': 'How do I switch features on or off?',
   'Wie schreibe ich eine News?': 'How do I write a news post?',
   'Wie sehe ich vergangene Termine?': 'How do I see past events?',
+  'Wie sehe ich, wer zugesagt hat?': 'How do I see who has confirmed?',
   'Wie stelle ich die Aufstellung auf und führe den Spielbericht?':
     'How do I set the line-up and write the match report?',
   'Wie stelle ich eine Uhrzeit ein?': 'How do I set a time?',

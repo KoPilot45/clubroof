@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow, FeaturedEventCard } from '@/components/events';
+import { EventList } from '@/components/event-table';
 import { Columns } from '@/components/columns';
 import { MonthCalendar, dayKey } from '@/components/month-calendar';
 import {
@@ -196,13 +197,7 @@ export default function EventsTab() {
             {upcoming.data && filtered.length === 0 ? (
               <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
             ) : null}
-            {rest.length > 0 ? (
-              <View style={{ gap: 10 }}>
-                {rest.map((e, i) => (
-                  <EventRow key={e.id} event={e} first={i === 0} />
-                ))}
-              </View>
-            ) : null}
+            {rest.length > 0 ? <EventList events={rest} /> : null}
           </Section>
         </>
       ) : (
@@ -212,13 +207,7 @@ export default function EventsTab() {
           {past.data && pastList.length === 0 ? (
             <Empty icon="time-outline" text="Keine vergangenen Termine." />
           ) : null}
-          {pastList.length > 0 ? (
-            <View style={{ gap: 10 }}>
-              {pastList.map((e, i) => (
-                <EventRow key={e.id} event={e} first={i === 0} />
-              ))}
-            </View>
-          ) : null}
+          {pastList.length > 0 ? <EventList events={pastList} /> : null}
         </Section>
       )}
 
