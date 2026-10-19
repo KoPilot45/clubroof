@@ -15,7 +15,7 @@ Stand: 19.10.2026. **Belastbarkeit:** Recherche über Websuche; die Seiten der A
 
 **Schlussfolgerung:** Eine **echte, bidirektionale Anbindung** (Spielplan live, Aufstellung in den Spielbericht) haben nur Verbands-Apps (BFV). Alle Drittanbieter arbeiten mit **Datei- oder Kalender-Import**, meist einmalig. Eine öffentliche, dokumentierte API für Drittanbieter ist **nicht belegt**.
 
-## 2. Wege für Clubroof (Vorschlag in Stufen)
+## 2. Wege für Clubroof (Vorschlag in Stufen; als Paket SPIELPLAN-ERGEBNISSE geschrieben)
 
 | Stufe | Inhalt | Aufwand | Risiko |
 | ----- | ------ | ------- | ------ |
