@@ -5,6 +5,7 @@ import { T } from '@/components/ui';
 import { kindOf } from '@/lib/event-types';
 import { formatShortDate } from '@/lib/format';
 import { useTeamColorOf } from '@/lib/team-colors';
+import { useIsDesktop } from '@/lib/layout';
 import { useTheme } from '@/lib/theme';
 import { dateFormat, t } from '@/lib/i18n';
 
@@ -40,6 +41,8 @@ export function MonthCalendar({
   onToday?: () => void;
 }) {
   const { colors, sizes } = useTheme();
+  // Desktop (Paket DT3): größere Zellen
+  const cellH = useIsDesktop() ? 64 : 44;
   const teamColorOf = useTeamColorOf();
   // Runde Monatsknöpfe (44) wie die Kopfzeilenknöpfe
   const navButton = {
@@ -120,7 +123,7 @@ export function MonthCalendar({
       {Array.from({ length: cells.length / 7 }, (_, row) => (
         <View key={row} style={{ flexDirection: 'row' }}>
           {cells.slice(row * 7, row * 7 + 7).map((d, i) => {
-            if (!d) return <View key={i} style={{ flex: 1, height: 44 }} />;
+            if (!d) return <View key={i} style={{ flex: 1, height: cellH }} />;
             const k = dayKey(d);
             const list = byDay.get(k) ?? [];
             const active = k === selected;
@@ -144,7 +147,7 @@ export function MonthCalendar({
                 onPress={() => onSelect(k)}
                 style={{
                   flex: 1,
-                  height: 44,
+                  height: cellH,
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 3,
@@ -263,6 +266,7 @@ function GridCell({
   onPress: () => void;
 }) {
   const { colors, radii } = useTheme();
+  const desktop = useIsDesktop();
   // Spiele zuerst, dann Training, dann Übriges
   const rank = (e: EventSummary) => {
     const k = kindOf(e);
@@ -281,7 +285,7 @@ function GridCell({
       onPress={onPress}
       style={{
         flex: 1,
-        minHeight: 74,
+        minHeight: desktop ? 112 : 74,
         padding: 2,
         gap: 2,
         alignItems: 'center',
@@ -333,7 +337,7 @@ function GridCell({
               numberOfLines={1}
               verbatim
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: c.bold ? '800' : '600',
                 textDecorationLine: e.status === 'cancelled' ? 'line-through' : 'none',
               }}

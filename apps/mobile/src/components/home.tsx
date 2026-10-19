@@ -1155,7 +1155,7 @@ export function PersonStatusCards({ event }: { event: EventSummary }) {
                         }}
                       />
                     ) : null}
-                    <T variant="caption" verbatim style={{ fontSize: 11.5 }}>
+                    <T variant="caption" verbatim style={{ fontSize: 12 }}>
                       {event.team.badge}
                     </T>
                   </View>
@@ -1166,7 +1166,7 @@ export function PersonStatusCards({ event }: { event: EventSummary }) {
               <Text style={{ fontSize: 12, fontWeight: '700', color: tone.text }}>
                 {STATUS_WORD[key]}
               </Text>
-              <T variant="caption" style={{ fontSize: 11.5 }}>
+              <T variant="caption" style={{ fontSize: 12 }}>
                 {key === 'pending' && open
                   ? formatRemaining(event.deadline!)
                   : formatDay(event.startsAt)}

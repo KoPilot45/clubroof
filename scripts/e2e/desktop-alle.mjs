@@ -2,7 +2,7 @@
  * Paket DT2: alle Routen bei 1440 px öffnen und melden: waagerechter Überlauf (Fehler), abgeschnittene Inhalte und
  * ungenutzte leere Breite (Inhalt unter 60 % der Breite neben der Seitenleiste, außer bei den schmalen Vorlagen B, E, U).
  * Dynamische Routen ([id]) werden mit einer passenden ID aus der API geöffnet, wenn eine bekannt ist.
- *   pnpm browser-check scripts/e2e/desktop-alle.mjs --no-build   (ROLES=admin,trainer, SCHEME=light möglich)
+ *   pnpm browser-check scripts/e2e/desktop-alle.mjs --no-build   (ROLES=admin,trainer, SCHEME=light, WIDTH=1100|1280|1536|1920 möglich)
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -29,7 +29,10 @@ let unused = 0;
 let visited = 0;
 const lines = [];
 for (const who of roles) {
-  const { page, goto, login } = await b.session(who, { width: 1440, height: 900 });
+  const { page, goto, login } = await b.session(who, {
+    width: Number(process.env.WIDTH ?? 1440),
+    height: Number(process.env.HEIGHT ?? 900),
+  });
   const team = login.me.teams[0];
   const ids = {
     teamId: team?.id,
@@ -72,7 +75,9 @@ for (const who of roles) {
       return { over, used: maxX > minX ? maxX - minX : 0 };
     });
     const t = templates[route]?.t;
-    const share = m.used / (1440 - 248);
+    const share =
+      m.used /
+      (Number(process.env.WIDTH ?? 1440) - (Number(process.env.WIDTH ?? 1440) < 1400 ? 208 : 248));
     if (m.over > 2) {
       overflow++;
       lines.push(`✗ ${who} ${url}: waagerechter Überlauf um ${m.over} px`);

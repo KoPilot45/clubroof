@@ -148,7 +148,7 @@ export function T({
     // Große Zahlen (Kassenstand, Ergebnisse, Countdown): Saira Condensed ExtraBold, ca. 48 px
     figure: { fontFamily: FIGURE_FONT, fontSize: 48, fontWeight: '400', letterSpacing: 0.2 },
     overline: {
-      fontSize: 11.5,
+      fontSize: 12,
       fontWeight: '800',
       letterSpacing: 1.4,
       textTransform: 'uppercase',

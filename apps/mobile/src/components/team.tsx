@@ -179,7 +179,7 @@ export function TeamBand({
           </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             {parts.map((c) => (
-              <T key={c.key} color={on} style={{ fontSize: 11.5 }}>
+              <T key={c.key} color={on} style={{ fontSize: 12 }}>
                 {c.label(composition![c.key])}
               </T>
             ))}

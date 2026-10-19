@@ -12,6 +12,7 @@ import {
   Loading,
   Screen,
   Section,
+  PageAction,
 } from '@/components/ui';
 import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
@@ -61,11 +62,13 @@ export default function EditorialScreen() {
       {o ? (
         <>
           {o.scopes.length ? (
-            <Button
-              label="Neue News schreiben"
-              icon="create"
-              onPress={() => router.push('/admin/news/new')}
-            />
+            <PageAction>
+              <Button
+                label="Neue News schreiben"
+                icon="create"
+                onPress={() => router.push('/admin/news/new')}
+              />
+            </PageAction>
           ) : null}
           {o.toApprove.length ? (
             <Section title={`Zur Freigabe (${o.toApprove.length})`}>

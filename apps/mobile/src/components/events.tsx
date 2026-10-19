@@ -115,11 +115,7 @@ export function FeaturedEventCard({ event }: { event: EventSummary }) {
             backgroundColor: colors.primary,
           }}
         >
-          <T
-            variant="caption"
-            color={colors.onPrimary}
-            style={{ fontWeight: '800', fontSize: 11.5 }}
-          >
+          <T variant="caption" color={colors.onPrimary} style={{ fontWeight: '800', fontSize: 12 }}>
             {[event.team ? event.team.badge : 'Verein', multi && mine ? mine.firstName : null]
               .filter(Boolean)
               .join(' · ')}
@@ -134,7 +130,7 @@ export function FeaturedEventCard({ event }: { event: EventSummary }) {
               backgroundColor: 'rgba(255,255,255,0.2)',
             }}
           >
-            <T variant="caption" color={on} style={{ fontWeight: '800', fontSize: 11.5 }}>
+            <T variant="caption" color={on} style={{ fontWeight: '800', fontSize: 12 }}>
               {mine.status === 'pending' ? 'Zusage offen' : ATTENDANCE_LABELS[mine.status]}
             </T>
           </View>
