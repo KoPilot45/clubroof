@@ -33,6 +33,7 @@ import { and, asc, eq, gte, inArray, isNotNull, like, lt, sql } from 'drizzle-or
 import type { PgTable } from 'drizzle-orm/pg-core';
 import { createDb, type Db } from '../client';
 import { seedKasseAusbau } from './ausbau-kasse';
+import { seedInhalteAusbau } from './ausbau-inhalte';
 import * as s from '../schema';
 import {
   ABSENCE_REASONS_NO,
@@ -119,9 +120,22 @@ export async function removeDemoData(db: Db | Tx): Promise<void> {
   if (userIds.length) await db.delete(s.users).where(inArray(s.users.id, userIds));
 }
 
-export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSummary> {
+/**
+ * `extended` (Standard an): zusätzlich die ausgebauten Demodaten (Paket DEMODATEN-AUSBAU). Die API-Tests schalten sie
+ * aus, weil viele Fälle von einer schlanken Vereinskasse ausgehen (kein Plan, keine Prüfung, wenige Beitragsarten).
+ */
+export async function seed(
+  db: Db,
+  options: { now?: Date; extended?: boolean } = {},
+): Promise<SeedSummary> {
+  const extended = options.extended ?? true;
   const now = options.now ?? new Date();
   faker.seed(1920);
+
+  // das Protokoll der Jahreshauptversammlung gehört zum Ausbau (die API-Tests zählen die Dokumente)
+  const demoDocuments = DOCUMENTS.filter(
+    (d) => extended || d.title !== 'Protokoll Jahreshauptversammlung',
+  );
 
   return db.transaction(async (tx) => {
     await removeDemoData(tx);
@@ -2062,30 +2076,31 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
     });
 
     // ── Ausbau der Vereinskasse (Paket DEMODATEN-AUSBAU): 24 Monate, Plan, Rücklagen, Inventar, Spenden, Prüfung ──
-    await seedKasseAusbau({
-      tx,
-      clubId,
-      today,
-      fundId,
-      accounts: { giro: acc('Girokonto'), bar: acc('Barkasse'), tages: acc('Tagesgeld') },
-      categoryId: cat,
-      centerId: center,
-      treasurerId: persona.treasurer.id,
-      auditorId: persona.member.id,
-      adminId: persona.admin.id,
-      boardId: persona.board.id,
-      persons: persons.map((p) => ({
-        id: p.id,
-        firstName: p.firstName,
-        lastName: p.lastName,
-        birthDate: p.birthDate ?? null,
-        status: p.membershipStatus ?? 'active',
-      })),
-    });
+    if (extended)
+      await seedKasseAusbau({
+        tx,
+        clubId,
+        today,
+        fundId,
+        accounts: { giro: acc('Girokonto'), bar: acc('Barkasse'), tages: acc('Tagesgeld') },
+        categoryId: cat,
+        centerId: center,
+        treasurerId: persona.treasurer.id,
+        auditorId: persona.member.id,
+        adminId: persona.admin.id,
+        boardId: persona.board.id,
+        persons: persons.map((p) => ({
+          id: p.id,
+          firstName: p.firstName,
+          lastName: p.lastName,
+          birthDate: p.birthDate ?? null,
+          status: p.membershipStatus ?? 'active',
+        })),
+      });
 
     // ── Dokumente ─────────────────────────────────────────────────────────────────────────
     await tx.insert(s.documents).values(
-      DOCUMENTS.map((d, i) => ({
+      demoDocuments.map((d, i) => ({
         clubId,
         scopeType: d.team ? ('team' as const) : ('club' as const),
         scopeId: d.team ? teamIds[d.team] : null,
@@ -2537,6 +2552,16 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       },
     ]);
 
+    if (extended)
+      await seedInhalteAusbau({
+        tx,
+        clubId,
+        today,
+        adminUserId: userIds.admin,
+        b1TeamId: teamIds.b1,
+        adminPersonId: persona.admin.id,
+      });
+
     // ── Mannschaftsaufgaben (B-Jugend) ──────────────────────────────────────────────────────
     await tx.insert(s.teamTasks).values([
       {
@@ -2820,7 +2845,7 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       pollVotes: voteRows.length,
       helperShifts: shiftRows.length,
       cashTransactions: txRows.length,
-      documents: DOCUMENTS.length,
+      documents: demoDocuments.length,
       notifications: notificationRows.length,
     };
   });

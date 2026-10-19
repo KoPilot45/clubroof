@@ -36,7 +36,7 @@ import { closingCsv, closingPdf } from '../services/club-planning';
 import { getClubTeamPage } from '../services/teams';
 import { getAreaOverview } from '../services/area-overview';
 import { listHelperEvents, setAttendance, signUp, withdraw } from '../services/helpers';
-import { placeholderPdf } from '../storage/files';
+import { demoDocumentPdf } from '../storage/demo-documents';
 import {
   deleteDocument,
   setClubLogo,
@@ -383,7 +383,7 @@ export const fileRoutes: FastifyPluginAsyncZod = async (app) => {
       let mimeType = row.doc.mimeType;
       let fileName = row.doc.fileName;
       if (!data && row.doc.storageKey.startsWith('demo/')) {
-        data = placeholderPdf(row.doc.title, row.clubName);
+        data = demoDocumentPdf(row.doc.title, row.clubName);
         mimeType = 'application/pdf';
         fileName = `${row.doc.title}.pdf`;
       }

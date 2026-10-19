@@ -151,7 +151,7 @@ describe.skipIf(!url)('API', () => {
 
   beforeAll(async () => {
     await runMigrations(url);
-    await seed(db, { now: NOW });
+    await seed(db, { now: NOW, extended: false });
     app = await buildApp({
       db,
       config: loadConfig({
