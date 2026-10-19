@@ -79,6 +79,11 @@ const AREA_ICON: Record<ImportArea, IconName> = {
   sponsors: 'ribbon',
   facilities: 'location',
   equipment: 'construct',
+  fee_types: 'pricetag',
+  fee_assignments: 'people-circle',
+  fee_dues: 'receipt',
+  budget: 'stats-chart',
+  cash_entries: 'wallet',
 };
 
 /** Wohin nach dem Import: die Seite, auf der die neuen Einträge stehen */
@@ -89,6 +94,11 @@ const AREA_TARGET: Record<ImportArea, { label: string; href: string }> = {
   sponsors: { label: 'Zu den Sponsoren', href: '/admin/sponsors' },
   facilities: { label: 'Zur Platzbelegung', href: '/facilities' },
   equipment: { label: 'Zu Anlage & Material', href: '/equipment' },
+  fee_types: { label: 'Zu den Beitragsarten', href: '/club-cash/fee-setup' },
+  fee_assignments: { label: 'Zu den Beitragsarten', href: '/club-cash/fee-setup' },
+  fee_dues: { label: 'Zu den Beiträgen', href: '/club-cash/fees' },
+  budget: { label: 'Zum Haushaltsplan', href: '/club-cash/budget' },
+  cash_entries: { label: 'Zum Kassenbuch', href: '/club-cash/entries' },
 };
 
 const rank = (r: ImportRow) =>

@@ -1899,6 +1899,11 @@ export const IMPORT_AREAS = [
   'sponsors',
   'facilities',
   'equipment',
+  'fee_types',
+  'fee_assignments',
+  'fee_dues',
+  'budget',
+  'cash_entries',
 ] as const;
 export type ImportArea = (typeof IMPORT_AREAS)[number];
 

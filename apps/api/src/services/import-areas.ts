@@ -9,6 +9,7 @@ import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 import { actorCan, moduleEnabled } from '../actor';
 import { HttpError } from '../errors';
 import { createTeamEvent } from './event-admin';
+import { CASH_HANDLERS } from './import-cash';
 import { assertFacilityFree } from './facilities';
 import {
   field,
@@ -738,7 +739,7 @@ const events: AreaHandler<EventData> = {
   },
 };
 
-export const AREA_HANDLERS = { events, sponsors, facilities, equipment } as const;
+export const AREA_HANDLERS = { events, sponsors, facilities, equipment, ...CASH_HANDLERS } as const;
 export type SimpleArea = keyof typeof AREA_HANDLERS;
 export const isSimpleArea = (area: string): area is SimpleArea => area in AREA_HANDLERS;
 export const handlerFor = (area: SimpleArea): AreaHandler<unknown> =>
