@@ -1,10 +1,12 @@
 # Übergabeprompt: Demodaten – Trainingsbeteiligung für alle Mannschaften (Paket DEMODATEN-TRAININGSBETEILIGUNG)
 
-Zum Einfügen in die Umsetzungssitzung. Gemeinsam mit oder direkt nach DEMODATEN-AUSBAU umsetzen (gleicher Seed).
+Zum Einfügen in die Umsetzungssitzung. DEMODATEN-AUSBAU ist umgesetzt, dieses Paket kann sofort starten.
 
 ---
 
 Paket **DEMODATEN-TRAININGSBETEILIGUNG** (`docs/PAKETE.md`, gleichnamige Zeile): Heute wird die Anwesenheit vergangener Trainings nur für die **B-Jugend** erfasst (`recordedTrainings` filtert auf `teamIds.b1`, Trefferquote über `ATTENDANCE_RATE[ordered.indexOf(m) % 4]` in `packages/db/src/seed/index.ts`, ca. Zeilen 1026–1135). Alle anderen Mannschaften haben keine Anwesenheitsdaten, daher sind Trainingsquote, Kader-Beteiligung, Farbstufen im Aufstellungsplaner, Spielerprofile und Statistik dort leer oder unplausibel.
+
+Der Ausbau liegt in den neuen Seed-Modulen `ausbau-kasse.ts` und `ausbau-inhalte.ts`. Die Anwesenheit nach dem gleichen Muster in einem eigenen Modul `ausbau-anwesenheit.ts` umsetzen und aus `index.ts` aufrufen; die Stelle in `index.ts` (Zeilen ca. 1026–1135) ersetzen statt daneben zu ergänzen. Vor Beginn prüfen, ob die Zeilen noch stimmen.
 
 ## Aufgaben (jeweils eigener Commit, `pnpm db:reset` und `pnpm check`)
 1. **Erfassen für alle Mannschaften:** alle vergangenen, nicht abgesagten Trainings der letzten 6 Wochen mit `attended` und `attendance_recorded_at`; je Mannschaft 1–2 Trainings bewusst nicht erfasst (bei B1 und C1 mindestens eines offen).
