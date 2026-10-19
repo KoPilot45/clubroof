@@ -483,7 +483,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'team-wizard',
         question: 'Wie lege ich eine neue Mannschaft an?',
         answer:
-          'In der Verwaltung unter „Mannschaften & Saison“ führt dich der Assistent in 11 Schritten: Name, Abteilung, Altersklasse und Liga, Vorlage, Teilnahme, Trainerteam, Kader, Antwortfristen für Training und Spiele (in Stunden vor Beginn), Treffpunkt und Name im DFBnet. Erst im letzten Schritt wird die Mannschaft angelegt; bis dahin kannst du jederzeit zurück oder abbrechen.',
+          'In der Verwaltung unter „Mannschaften & Saison“ führt dich der Assistent: im Schnellstart (ca. 5 Minuten, Empfehlungen vorausgewählt) oder ausführlich (ca. 15 Minuten, jeder Schritt erklärt). Du legst Name, Abteilung, Altersklasse, Spielform und Liga fest, wählst „Automatisch zugesagt“ (empfohlen) oder „Aktive Zu-/Absage“ mit Fristen (Training 24 Std., Spiele 48 Std. vorbelegt), planst wöchentliche Trainings mit Zeitraum und Platz, wählst Trainerteam und Kader und stellst Funktionen, Sichtbarkeit und einen Willkommenstext ein. In der Zusammenfassung springst du mit „Ändern“ in jeden Schritt. Erst dort wird die Mannschaft angelegt – danach bekommst du einen fertigen Einladungstext zum Weiterschicken.',
         link: { label: 'Mannschaft anlegen', href: '/admin/team-new' },
       },
       {

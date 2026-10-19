@@ -9647,4 +9647,74 @@ describe.skipIf(!url)('API', () => {
       ).toBe(403);
     });
   });
+
+  describe('Antwortregeln der Mannschaft (E2)', () => {
+    it('erzwingt Absagegrund, kann „Unsicher“ abschalten und zeigt den Willkommenstext', async () => {
+      // Die Demodaten ändern sich im Lauf der Tests: die aktuelle Mannschaft der Spielerin nehmen, angelegt vom Admin
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const team = player.me.teams[0]!;
+      const made = await send<EventDetail>('POST', `/teams/${team.id}/events`, admin.token, {
+        type: 'team_event',
+        title: 'Antwortregel-Test',
+        startsAt: '2026-12-01T18:00:00.000Z',
+      });
+      expect(made.status).toBe(201);
+      const mine = await get<EventDetail>(`/events/${made.body.id}`, player.token);
+      const personId = mine.myResponses[0]!.personId;
+      expect(mine.responseRules).toEqual({ allowMaybe: true, declineReasonRequired: false });
+
+      const saved = await send<TeamProfile>('PUT', `/teams/${team.id}/profile`, admin.token, {
+        declineReasonRequired: true,
+        allowMaybe: false,
+        reminderHours: 6,
+        matchFormat: 9,
+        welcomeText: '  Bitte 10 Minuten früher da sein.  ',
+      });
+      expect(saved.status).toBe(200);
+      expect(saved.body).toMatchObject({
+        declineReasonRequired: true,
+        allowMaybe: false,
+        reminderHours: 6,
+        matchFormat: 9,
+        welcomeText: 'Bitte 10 Minuten früher da sein.',
+      });
+      const bad = await send('PUT', `/teams/${team.id}/profile`, admin.token, { matchFormat: 8 });
+      expect(bad.status).toBe(400);
+
+      const ask = (status: string, reason?: string) =>
+        send<{ error: string }>('PUT', `/events/${mine.id}/responses/${personId}`, player.token, {
+          status,
+          ...(reason ? { reason } : {}),
+        });
+      const maybe = await ask('maybe', 'vielleicht');
+      expect(maybe.status).toBe(400);
+      expect(maybe.body.error).toBe('maybe_off');
+      const noReason = await ask('no');
+      expect(noReason.status).toBe(400);
+      expect(noReason.body.error).toBe('reason_required');
+      expect((await ask('no', 'Krank')).status).toBe(200);
+
+      // Das Trainerteam darf stellvertretend ohne Grund eintragen
+      const proxy = await send('PUT', `/events/${mine.id}/responses/${personId}`, admin.token, {
+        status: 'maybe',
+      });
+      expect(proxy.status).toBe(200);
+
+      const overview = await get<TeamOverview>(`/teams/${team.id}`, player.token);
+      expect(overview.team.welcomeText).toBe('Bitte 10 Minuten früher da sein.');
+      const after = await get<EventDetail>(`/events/${mine.id}`, player.token);
+      expect(after.responseRules).toEqual({ allowMaybe: false, declineReasonRequired: true });
+
+      // Zurück auf die Standardwerte, damit andere Tests unverändert laufen
+      await send('PUT', `/teams/${team.id}/profile`, admin.token, {
+        declineReasonRequired: false,
+        allowMaybe: true,
+        reminderHours: null,
+        matchFormat: null,
+        welcomeText: null,
+      });
+      await send('POST', `/events/${mine.id}/cancel`, admin.token, { reason: 'Test beendet' });
+    });
+  });
 });

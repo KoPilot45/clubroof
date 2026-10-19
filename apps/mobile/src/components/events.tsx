@@ -279,8 +279,11 @@ function ReasonForm({
   loading,
   onCancel,
   onSubmit,
+  required = false,
 }: {
   status: 'no' | 'maybe';
+  /** Die Mannschaft verlangt bei einer Absage einen Grund (Paket E2) */
+  required?: boolean;
   loading: boolean;
   onCancel: () => void;
   onSubmit: (reason: string | undefined) => void;
@@ -324,7 +327,7 @@ function ReasonForm({
         check
       />
       <TextField
-        label="Hinweis für das Trainerteam (optional)"
+        label={required ? 'Hinweis für das Trainerteam' : 'Hinweis für das Trainerteam (optional)'}
         value={note}
         onChangeText={setNote}
         maxLength={120}
@@ -335,6 +338,7 @@ function ReasonForm({
           style={{ flex: 1 }}
           label="Absage senden"
           variant="dangerSolid"
+          disabled={required && !reason && note.trim().length === 0}
           loading={loading}
           onPress={() => onSubmit([reason, note.trim()].filter(Boolean).join(' – ') || undefined)}
         />
@@ -487,6 +491,7 @@ export function AnswerButtons({
   onNo,
   busy = null,
   variant = 'pills',
+  allowMaybe = true,
 }: {
   status: 'yes' | 'no' | 'maybe' | 'pending' | null;
   onYes: () => void;
@@ -497,6 +502,8 @@ export function AnswerButtons({
   tone?: 'surface' | 'hero';
   /** pills: drei Pillen (Home); segment: ein Umschalter in einem Behälter (Detailseiten) */
   variant?: 'pills' | 'segment';
+  /** false: „Unsicher“ entfällt (Einstellung der Mannschaft, Paket E2) */
+  allowMaybe?: boolean;
 }) {
   const { colors } = useTheme();
   const answered = status === 'yes' || status === 'maybe' || status === 'no';
@@ -623,13 +630,15 @@ export function AnswerButtons({
           colors.onPrimary,
           onYes,
         )}
-        {seg(
-          'maybe',
-          status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher',
-          colors.status.action.solid,
-          colors.status.action.onSolid,
-          onMaybe,
-        )}
+        {allowMaybe
+          ? seg(
+              'maybe',
+              status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher',
+              colors.status.action.solid,
+              colors.status.action.onSolid,
+              onMaybe,
+            )
+          : null}
         {seg(
           'no',
           status === 'no' ? 'Abgesagt' : 'Absagen',
@@ -652,16 +661,18 @@ export function AnswerButtons({
         colors.primaryText,
         onYes,
       )}
-      {pill(
-        'maybe',
-        status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher',
-        'help',
-        colors.status.action.solid,
-        colors.status.action.onSolid,
-        withAlpha(colors.status.action.solid, 0.16),
-        colors.status.action.onContainer,
-        onMaybe,
-      )}
+      {allowMaybe
+        ? pill(
+            'maybe',
+            status === 'maybe' ? 'Unsicher gemeldet' : 'Unsicher',
+            'help',
+            colors.status.action.solid,
+            colors.status.action.onSolid,
+            withAlpha(colors.status.action.solid, 0.16),
+            colors.status.action.onContainer,
+            onMaybe,
+          )
+        : null}
       {pill(
         'no',
         status === 'no' ? 'Abgesagt' : 'Absagen',
@@ -750,6 +761,7 @@ export function ResponseControls({
       <ReasonForm
         status={pending.status}
         loading={busy(r, pending.status)}
+        required={event.responseRules?.declineReasonRequired}
         onCancel={() => setPending(null)}
         onSubmit={(text) => send(r, pending.status, text)}
       />
@@ -800,6 +812,7 @@ export function ResponseControls({
             <AnswerButtons
               tone={tone}
               variant={variant}
+              allowMaybe={event.responseRules?.allowMaybe ?? true}
               status={eff(r)}
               busy={
                 respond.isPending && respond.variables?.personId === r.personId

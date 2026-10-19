@@ -58,19 +58,69 @@ await button(page, 'Verlassen').click();
 await page.waitForURL(/\/login/, { timeout: 10_000 });
 ok(page.url().includes('/login'), 'Vereins-Demo: „Verlassen“ führt zur Anmeldung');
 
-// ── Mannschaft ────────────────────────────────────────────────────────────
+// ── Mannschaft: Schnellstart ───────────────────────────────────────────────
 await a.goto('/demo/team');
-await text(page, 'Wie heißt die Mannschaft?').waitFor({ timeout: 20_000 });
+await text(page, 'Eine Mannschaft anlegen').waitFor({ timeout: 20_000 });
+await next();
+await text(page, 'Wie heißt die Mannschaft?').waitFor();
 await page.getByLabel('Name', { exact: true }).fill('B-Jugend II');
 await page.getByLabel('Kürzel', { exact: true }).fill('B2');
-for (let i = 0; i < 10; i++) await next();
+await next();
+// Abteilung, Altersklasse, Zusagen, Training, Trainer, Kader
+for (let i = 0; i < 6; i++) await next();
 await text(page, 'Alles bereit?').waitFor();
+// „Ändern“ springt in den Schritt und danach zurück zur Zusammenfassung
+await page
+  .getByRole('button', { name: /Mannschaft ändern/ })
+  .first()
+  .click();
+await text(page, 'Wie heißt die Mannschaft?').waitFor();
+await next();
+await text(page, 'Alles bereit?').waitFor();
+ok(true, 'Mannschafts-Demo (Schnellstart): Zusammenfassung mit „Ändern“');
 await next('Mannschaft anlegen');
 await text(page, 'Mannschaft angelegt').waitFor({ timeout: 10_000 });
-ok(true, 'Mannschafts-Demo: alle Schritte bis zum Abschluss');
+ok(true, 'Mannschafts-Demo (Schnellstart): alle Schritte bis zum Abschluss');
 await button(page, 'Verlassen').click();
 await page.waitForURL(/\/login/, { timeout: 10_000 });
 ok(page.url().includes('/login'), 'Mannschafts-Demo: „Verlassen“ führt zur Anmeldung');
+
+// ── Mannschaft: ausführlich ────────────────────────────────────────────────
+await a.goto('/demo/team');
+await text(page, 'Eine Mannschaft anlegen').waitFor({ timeout: 20_000 });
+await page.getByRole('radio', { name: /Ausführlich/ }).click();
+await next();
+await text(page, 'Wie heißt die Mannschaft?').waitFor();
+await page.getByLabel('Name', { exact: true }).fill('A-Jugend');
+await page.getByLabel('Kürzel', { exact: true }).fill('A1');
+await next();
+// Abteilung, Altersklasse, Vorlage
+for (let i = 0; i < 3; i++) await next();
+await text(page, 'Wie sagen Spieler zu und ab?').waitFor();
+ok(
+  (await page.getByText('Empfohlen').filter({ visible: true }).count()) > 0,
+  'Mannschafts-Demo: „Automatisch zugesagt“ ist als empfohlen markiert',
+);
+await next();
+// Treffpunkt, Training (mit einem Termin), Trainer, Kader, Funktionen, Spielplan, Information
+await next();
+await text(page, 'Wann trainiert die Mannschaft?').waitFor();
+await button(page, 'Trainingstermin hinzufügen').click();
+await text(page, 'Zeitraum').waitFor();
+ok(
+  (await page
+    .getByText(/\d+ Trainingstermine/)
+    .filter({ visible: true })
+    .count()) > 0,
+  'Mannschafts-Demo: Anzahl der Trainingstermine wird angezeigt',
+);
+for (let i = 0; i < 6; i++) await next();
+await text(page, 'Alles bereit?').waitFor();
+await next('Mannschaft anlegen');
+await text(page, 'Mannschaft angelegt').waitFor({ timeout: 10_000 });
+ok(true, 'Mannschafts-Demo (ausführlich): alle Schritte bis zum Abschluss');
+await button(page, 'Verlassen').click();
+await page.waitForURL(/\/login/, { timeout: 10_000 });
 
 await b.close();
 console.log(b.errors.length ? `Konsolenfehler:\n${b.errors.join('\n')}` : '✓ keine Konsolenfehler');

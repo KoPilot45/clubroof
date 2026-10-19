@@ -8,7 +8,17 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '@/components/app-text';
-import { Button, Chip, IconTile, T, shadowStyle, type IconName } from '@/components/ui';
+import {
+  Button,
+  Card,
+  ChoiceChips,
+  Chip,
+  DateStepper,
+  IconTile,
+  T,
+  shadowStyle,
+  type IconName,
+} from '@/components/ui';
 import { readSetting, writeSetting } from '@/lib/flags';
 import { t } from '@/lib/i18n';
 import { useIsDesktop } from '@/lib/layout';
@@ -336,4 +346,292 @@ export function useWizardDraft<T extends object>(key: string, initial: T) {
   const patch = (p: Partial<T>) => setState((s) => ({ ...s, ...p }));
   const clear = () => void writeSetting(key, null);
   return { state, patch, loaded, clear };
+}
+
+// ── Bausteine der erweiterten Assistenten (Paket E2) ─────────────────────────
+
+/** „Warum wir das fragen“: ein bis zwei Sätze in einem ruhigen Kasten. */
+export function WhyBox({ children }: { children: string }) {
+  const { colors, radii } = useTheme();
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        gap: 10,
+        padding: 12,
+        borderRadius: radii.lg,
+        backgroundColor: colors.primaryContainer,
+        alignItems: 'flex-start',
+      }}
+    >
+      <Ionicons name="bulb-outline" size={20} color={colors.onPrimaryContainer} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <T variant="label" color={colors.onPrimaryContainer} style={{ fontWeight: '700' }}>
+          Warum wir das fragen
+        </T>
+        <T variant="caption" color={colors.onPrimaryContainer}>
+          {children}
+        </T>
+      </View>
+    </View>
+  );
+}
+
+/** Auswahlkarte mit Empfehlung: der Chip „Empfohlen“ steht an der empfohlenen Option. */
+export function OptionCard({
+  recommended,
+  example,
+  text,
+  ...rest
+}: Omit<Parameters<typeof ChoiceCard>[0], 'badge'> & { recommended?: boolean; example?: string }) {
+  return (
+    <ChoiceCard
+      {...rest}
+      text={example ? (text ? `${text} · ${example}` : example) : text}
+      badge={recommended ? 'Empfohlen' : undefined}
+    />
+  );
+}
+
+/** Stunden mit Minus und Plus („− 24 Std. +“), z. B. für Fristen. */
+export function HoursStepper({
+  label,
+  value,
+  onChange,
+  min = 1,
+  max = 336,
+  step = 1,
+}: {
+  label: string;
+  value: number;
+  onChange: (hours: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+}) {
+  const { colors, sizes, radii } = useTheme();
+  const btn = (name: 'remove' | 'add', delta: number, off: boolean) => (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={t(name === 'add' ? `${label} erhöhen` : `${label} verringern`)}
+      disabled={off}
+      onPress={() => onChange(Math.min(max, Math.max(min, value + delta)))}
+      style={{
+        width: sizes.touchTarget + 4,
+        height: sizes.touchTarget + 4,
+        borderRadius: radii.pill,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.primaryContainer,
+        opacity: off ? 0.4 : 1,
+      }}
+    >
+      <Ionicons name={name} size={22} color={colors.onPrimaryContainer} />
+    </Pressable>
+  );
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
+        {label}
+      </T>
+      {btn('remove', -step, value <= min)}
+      <View style={{ minWidth: 72, alignItems: 'center' }}>
+        <T variant="figure" style={{ fontSize: 28 }}>
+          {value}
+        </T>
+        <T variant="caption">Std.</T>
+      </View>
+      {btn('add', step, value >= max)}
+    </View>
+  );
+}
+
+/** Von/Bis mit Kalender-Datumsauswahl und Schnellwahl (z. B. „Saison“, „Bis Weihnachten“). */
+export function DateRangeField({
+  from,
+  to,
+  onChange,
+  presets = [],
+  min,
+  max,
+}: {
+  from: string;
+  to: string;
+  onChange: (from: string, to: string) => void;
+  presets?: { label: string; from: string; to: string }[];
+  min?: string;
+  max?: string;
+}) {
+  return (
+    <View style={{ gap: 12 }}>
+      {presets.length > 0 ? (
+        <ChoiceChips
+          options={presets.map((p) => ({ value: p.label, label: p.label }))}
+          selected={presets.filter((p) => p.from === from && p.to === to).map((p) => p.label)}
+          onToggle={(label) => {
+            const p = presets.find((x) => x.label === label)!;
+            onChange(p.from, p.to);
+          }}
+        />
+      ) : null}
+      <DateStepper
+        label="Von"
+        value={from}
+        min={min}
+        max={max}
+        onChange={(v) => onChange(v, to < v ? v : to)}
+      />
+      <DateStepper
+        label="Bis"
+        value={to}
+        min={from}
+        max={max}
+        onChange={(v) => onChange(from, v)}
+      />
+    </View>
+  );
+}
+
+/** Kurze Regeln als Liste mit Haken („Was gilt dann?“). */
+export function RuleList({ rules }: { rules: string[] }) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ gap: 6 }}>
+      {rules.map((r) => (
+        <View key={r} style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+          <Ionicons name="checkmark-circle" size={18} color={colors.primaryText} />
+          <T variant="caption" style={{ flex: 1 }}>
+            {r}
+          </T>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** Zusammenfassung zum Prüfen: jede Zeile mit „Ändern“, das in den Schritt springt. */
+export function SummaryList({
+  rows,
+}: {
+  rows: { label: string; value: string; onEdit?: () => void }[];
+}) {
+  const { colors } = useTheme();
+  return (
+    <Card style={{ gap: 0, paddingVertical: 4 }}>
+      {rows.map((r, i) => (
+        <View
+          key={r.label}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            paddingVertical: 12,
+            borderTopWidth: i === 0 ? 0 : 1,
+            borderTopColor: colors.border,
+          }}
+        >
+          <View style={{ flex: 1, gap: 2 }}>
+            <T variant="caption">{r.label}</T>
+            <T style={{ fontWeight: '600' }} verbatim>
+              {r.value || '–'}
+            </T>
+          </View>
+          {r.onEdit ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t(`${r.label} ändern`)}
+              onPress={r.onEdit}
+              style={{
+                minHeight: 44,
+                minWidth: 44,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ color: colors.primaryText, fontWeight: '700', fontSize: 14 }}>
+                {t('Ändern')}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ))}
+    </Card>
+  );
+}
+
+export type SetupMode = 'quick' | 'full';
+
+/** Schnellstart (ca. 5 Minuten, Empfehlungen) oder Ausführlich (ca. 15 Minuten, jeder Schritt erklärt). */
+export function ModeChoice({
+  value,
+  onChange,
+}: {
+  value: SetupMode;
+  onChange: (mode: SetupMode) => void;
+}) {
+  return (
+    <View style={{ gap: 10 }}>
+      <ChoiceCard
+        icon="flash"
+        title="Schnellstart"
+        text="Etwa 5 Minuten: Empfehlungen sind vorausgewählt, nur das Nötigste wird gefragt."
+        badge="Empfohlen"
+        selected={value === 'quick'}
+        onPress={() => onChange('quick')}
+      />
+      <ChoiceCard
+        icon="list"
+        title="Ausführlich"
+        text="Etwa 15 Minuten: jeder Schritt mit Erklärung, alle Einstellungen."
+        selected={value === 'full'}
+        onPress={() => onChange('full')}
+      />
+    </View>
+  );
+}
+
+/** „Mehr einstellen ›“ klappt optionale Einstellungen auf. */
+export function MoreSettings({
+  children,
+  title = 'Mehr einstellen',
+}: {
+  children: ReactNode;
+  title?: string;
+}) {
+  const { colors } = useTheme();
+  const [open, setOpen] = useState(false);
+  return (
+    <View style={{ gap: 12 }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        accessibilityLabel={t(title)}
+        onPress={() => setOpen(!open)}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 }}
+      >
+        <Text style={{ color: colors.primaryText, fontWeight: '700', fontSize: 14 }}>
+          {t(title)}
+        </Text>
+        <Ionicons
+          name={open ? 'chevron-down' : 'chevron-forward'}
+          size={16}
+          color={colors.primaryText}
+        />
+      </Pressable>
+      {open ? <View style={{ gap: 14 }}>{children}</View> : null}
+    </View>
+  );
+}
+
+/** „Später änderbar unter …“ – ruhige Zeile unter dem Inhalt. */
+export function LaterHint({ where }: { where: string }) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+      <Ionicons name="time-outline" size={18} color={colors.onSurfaceMuted} />
+      <T variant="caption" style={{ flex: 1 }}>
+        {`Später änderbar unter ${where}`}
+      </T>
+    </View>
+  );
 }

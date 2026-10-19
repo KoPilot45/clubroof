@@ -273,7 +273,10 @@ export async function getMatchSheet(
     goalsAgainst: m.match.goalsAgainst,
     jerseyMode: jerseyModeOf(actor, m.team),
     team: { id: m.team.id, name: m.team.name, badge: m.team.badge },
-    suggestedSize: defaultLineupSize(m.team.ageGroup),
+    suggestedSize:
+      m.team.matchFormat === 7 || m.team.matchFormat === 9 || m.team.matchFormat === 11
+        ? m.team.matchFormat
+        : defaultLineupSize(m.team.ageGroup),
     lineupVisible: m.canLineup ? m.team.lineupVisible : null,
     // Trainerteam immer; Spieler und Eltern nur bei veröffentlichter Aufstellung und eingeschalteter Teameinstellung
     lineup:

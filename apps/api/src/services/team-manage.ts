@@ -61,6 +61,14 @@ export function profileOf(
     attendanceVisibility: toAttendanceVisibility(team.attendanceVisibility),
     lineupVisible: team.lineupVisible,
     responsesVisible: team.responsesVisible,
+    reminderHours: team.reminderHours,
+    declineReasonRequired: team.declineReasonRequired,
+    allowMaybe: team.allowMaybe,
+    welcomeText: team.welcomeText,
+    matchFormat:
+      team.matchFormat === 7 || team.matchFormat === 9 || team.matchFormat === 11
+        ? team.matchFormat
+        : null,
   };
 }
 
@@ -342,6 +350,12 @@ export async function updateTeamProfile(
     patch.defaultMeetingPoint = input.defaultMeetingPoint?.trim() || null;
   if (input.lineupVisible !== undefined) patch.lineupVisible = input.lineupVisible;
   if (input.responsesVisible !== undefined) patch.responsesVisible = input.responsesVisible;
+  if (input.reminderHours !== undefined) patch.reminderHours = input.reminderHours;
+  if (input.declineReasonRequired !== undefined)
+    patch.declineReasonRequired = input.declineReasonRequired;
+  if (input.allowMaybe !== undefined) patch.allowMaybe = input.allowMaybe;
+  if (input.welcomeText !== undefined) patch.welcomeText = input.welcomeText?.trim() || null;
+  if (input.matchFormat !== undefined) patch.matchFormat = input.matchFormat;
   if (input.attendanceVisibility !== undefined)
     patch.attendanceVisibility = input.attendanceVisibility;
   if (input.importAliases !== undefined)

@@ -59,6 +59,16 @@ export const teams = pgTable(
     importAliases: text().array().notNull().default([]),
     /** Wer die erfasste Anwesenheit vergangener Termine sieht: nur Trainerteam, nur Anzahl (Standard) oder namentlich */
     attendanceVisibility: text().notNull().default('count'),
+    /** Erinnerung an fehlende Rückmeldungen: Stunden vor der Frist (leer = Standard 24, 0 = keine); persönliche Einstellung geht vor */
+    reminderHours: integer(),
+    /** Bei einer Absage ist ein Grund Pflicht (Paket E2, Standard aus) */
+    declineReasonRequired: boolean().notNull().default(false),
+    /** „Unsicher“ als Antwort erlauben (Paket E2, Standard an) */
+    allowMaybe: boolean().notNull().default(true),
+    /** Willkommenstext für Eltern und Spieler (Kleidung, Regeln, Ansprechpersonen) */
+    welcomeText: text(),
+    /** Standard-Spielform im Aufstellungsplaner (7, 9 oder 11); leer = nach Altersklasse */
+    matchFormat: smallint(),
     /** Mannschaft der Vorsaison (Saisonwechsel: Kasse, Dokumente und Verlauf gehen mit) */
     previousTeamId: uuid(),
     createdAt: createdAt(),
