@@ -984,7 +984,7 @@ export async function assignRole(
     .from(s.roles)
     .where(and(eq(s.roles.clubId, actor.club.id), eq(s.roles.key, input.roleKey)));
   if (!role || role.archivedAt) throw new HttpError(400, 'invalid_role', 'Unbekannte Rolle.');
-  if (input.scopeType !== 'club' && role.permissions.some(isClubOnlyPermission))
+  if (!role.isSystem && input.scopeType !== 'club' && role.permissions.some(isClubOnlyPermission))
     throw new HttpError(
       400,
       'club_only',

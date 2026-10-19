@@ -10172,9 +10172,7 @@ describe.skipIf(!url)('API', () => {
       const player = await login('spieler');
       const teamId = player.me.teams[0]!.id;
       const roster = await get<RosterEntry[]>(`/teams/${teamId}/roster`, player.token);
-      const other = roster.find(
-        (r) => r.function === 'player' && r.personId !== player.me.person.id,
-      )!;
+      const other = roster.find((r) => r.personId !== player.me.person.id)!;
       const [absence] = await db
         .insert(s.absences)
         .values({
