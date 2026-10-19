@@ -380,7 +380,7 @@ export default function ClubScreen() {
               subtitle={e.location ?? EVENT_TYPE_LABELS[e.type]}
               trailing={
                 e.status === 'cancelled' ? (
-                  <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                  <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
                 ) : null
               }
             />

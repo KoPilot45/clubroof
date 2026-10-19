@@ -222,7 +222,7 @@ export default function FacilitiesScreen() {
                 <Chip tone="urgent" icon="lock-closed" label="Gesperrt" />
               ) : null}
               {sel.teamBadge ? <Chip tone="primary" label={sel.teamBadge} /> : null}
-              {sel.cancelled ? <Chip tone="neutral" label="Abgesagt" /> : null}
+              {sel.cancelled ? <Chip tone="neutral" label="Termin abgesagt" /> : null}
               {sel.conflict ? <Chip tone="action" icon="warning" label="Überschneidung" /> : null}
             </View>
             <EditedNote at={sel.editedAt} />

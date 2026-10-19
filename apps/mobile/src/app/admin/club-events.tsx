@@ -146,7 +146,9 @@ export default function ClubEventsPlanningScreen() {
                       </T>
                       <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
                         <Chip tone="neutral" label={e.scopeLabel} />
-                        {e.status === 'cancelled' ? <Chip tone="urgent" label="Abgesagt" /> : null}
+                        {e.status === 'cancelled' ? (
+                          <Chip tone="urgent" label="Termin abgesagt" />
+                        ) : null}
                         {e.shifts.length ? (
                           <Chip
                             tone={open ? 'action' : 'success'}

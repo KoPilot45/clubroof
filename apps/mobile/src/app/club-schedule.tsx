@@ -240,7 +240,7 @@ function MatchRow({ match, club }: { match: ClubScheduleMatch; club: ClubSchedul
           <Chip tone="neutral" label={m.isHome ? 'Heimspiel' : 'Auswärts'} />
           <Chip tone="neutral" label={MATCH_KIND_LABELS[m.kind]} />
           {e.status === 'cancelled' ? (
-            <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+            <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
           ) : null}
         </View>
         <View

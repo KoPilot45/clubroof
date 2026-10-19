@@ -231,7 +231,7 @@ export function EventRow({
       }
       trailing={
         cancelled ? (
-          <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+          <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
         ) : past && pastChip(event) ? (
           pastChip(event)
         ) : !mine ? null : queued && !multi ? (
@@ -390,7 +390,7 @@ function useQuickYes(event: EventSummary, personId: string) {
               data === 'queued'
                 ? { message: 'Gespeichert – wird gesendet, sobald du wieder online bist' }
                 : {
-                    message: 'Zugesagt',
+                    message: 'Teilnahme bestätigt',
                     actionLabel: 'Rückgängig',
                     onAction: () => respond.mutate({ personId, status: 'pending' }),
                   },
@@ -462,7 +462,7 @@ function RoundRespond({ event, personId }: { event: EventSummary; personId: stri
                     data === 'queued'
                       ? { message: 'Gespeichert – wird gesendet, sobald du wieder online bist' }
                       : {
-                          message: 'Abgesagt',
+                          message: 'Nimmt nicht teil',
                           actionLabel: 'Rückgängig',
                           onAction: () => respond.mutate({ personId, status: 'pending' }),
                         },
@@ -665,7 +665,7 @@ export function AnswerButtons({
       >
         {seg(
           'yes',
-          status === 'yes' ? 'Zugesagt' : 'Zusagen',
+          status === 'yes' ? 'Nimmt teil' : 'Zusagen',
           colors.primary,
           colors.onPrimary,
           onYes,
@@ -681,7 +681,7 @@ export function AnswerButtons({
           : null}
         {seg(
           'no',
-          status === 'no' ? 'Abgesagt' : 'Absagen',
+          status === 'no' ? 'Nimmt nicht teil' : 'Absagen',
           colors.status.urgent.solid,
           colors.status.urgent.onSolid,
           onNo,
@@ -693,7 +693,7 @@ export function AnswerButtons({
     <View style={{ flexDirection: 'row', gap: 10 }}>
       {pill(
         'yes',
-        status === 'yes' ? 'Zugesagt' : 'Zusagen',
+        status === 'yes' ? 'Nimmt teil' : 'Zusagen',
         'checkmark',
         colors.primary,
         colors.onPrimary,
@@ -715,7 +715,7 @@ export function AnswerButtons({
         : null}
       {pill(
         'no',
-        status === 'no' ? 'Abgesagt' : 'Absagen',
+        status === 'no' ? 'Nimmt nicht teil' : 'Absagen',
         'close',
         colors.status.urgent.solid,
         colors.status.urgent.onSolid,
@@ -766,7 +766,11 @@ export function ResponseControls({
             return;
           }
           const label = t(
-            status === 'yes' ? 'Zugesagt' : status === 'maybe' ? 'Unsicher' : 'Abgesagt',
+            status === 'yes'
+              ? 'Teilnahme bestätigt'
+              : status === 'maybe'
+                ? 'Unsicher'
+                : 'Nimmt nicht teil',
           );
           toast({
             message:

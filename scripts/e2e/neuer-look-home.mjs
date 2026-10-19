@@ -143,7 +143,7 @@ const files = {};
     await text(page, 'Warum kannst du nicht?').waitFor({ timeout: 5_000 });
     ok(true, 'Deine Woche: ✕ öffnet das Grund-Blatt');
     await button(page, 'Absage senden').click();
-    await text(page, 'Abgesagt', { exact: true }).waitFor({ timeout: 10_000 });
+    await text(page, 'Nimmt nicht teil', { exact: true }).waitFor({ timeout: 10_000 });
     const after = await api('/home', login.token);
     const changed = after.week.find((e) => e.id === open.id);
     ok(changed?.myResponses[0].status === 'no', 'Deine Woche: Absage gespeichert');

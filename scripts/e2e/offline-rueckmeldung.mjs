@@ -40,7 +40,10 @@ await text(page, /wird gesendet, sobald du wieder online bist/)
   .first()
   .waitFor({ timeout: 10_000 });
 ok(true, 'Offline: Hinweis „wird gesendet, sobald du wieder online bist“');
-ok(await button(page, 'Zugesagt').isVisible(), 'Offline: Antwort erscheint sofort als „Zugesagt“');
+ok(
+  await button(page, 'Nimmt teil').isVisible(),
+  'Offline: Antwort erscheint sofort als „Nimmt teil“',
+);
 const stored = await page.evaluate(() => localStorage.getItem('clubroof.outbox'));
 ok(!!stored && stored.includes(match.id), 'Offline: Rückmeldung auf dem Gerät gemerkt');
 const still = await api(`/home`, login.token);

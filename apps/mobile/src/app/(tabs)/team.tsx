@@ -435,7 +435,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                             .join(' · ')}
                           trailing={
                             o.nextEvent.status === 'cancelled' ? (
-                              <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                              <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
                             ) : null
                           }
                         />
@@ -528,7 +528,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                           }
                           trailing={
                             e.status === 'cancelled' ? (
-                              <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                              <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
                             ) : null
                           }
                         />
@@ -594,7 +594,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                         .join(' · ')}
                       trailing={
                         o.nextEvent.status === 'cancelled' ? (
-                          <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                          <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
                         ) : null
                       }
                     />
@@ -670,7 +670,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                         }
                         trailing={
                           e.status === 'cancelled' ? (
-                            <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                            <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
                           ) : null
                         }
                       />
