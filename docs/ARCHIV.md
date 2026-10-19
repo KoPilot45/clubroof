@@ -10,7 +10,7 @@ Stand 18.10.2026 · Konzept abgestimmt; Stufe 1 und 2 umgesetzt (Grundgerüst, T
 4. **Gleiche Bedienung überall:** Jede Liste hat einen Filter „Archiv“ im gleichen Stil.
 5. **Wiederherstellen mit Namenskonflikt:** Das System fragt nach, es ändert nichts selbstständig.
 6. **Ehemalige Mitglieder** erscheinen in Statistik und Spielberichten weiter mit Namen.
-7. **Datenübergabe:** Das gesamte Archiv ist exportierbar (Auflösung des Vereins, Kündigung, Paket P).
+7. **Datenübergabe:** Das gesamte Archiv ist exportierbar (Auflösung des Vereins, Kündigung, Paket PLAENE-UND-ABO).
 
 ## Wo es Archive gibt
 

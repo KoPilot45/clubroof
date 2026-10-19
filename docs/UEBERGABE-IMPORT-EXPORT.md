@@ -1,14 +1,14 @@
-# Übergabeprompt: Import-Assistent und Exporte (Paket IM)
+# Übergabeprompt: Import-Assistent und Exporte (Paket IMPORT-EXPORT)
 
 Zum Einfügen in die Umsetzungssitzung.
 
 ---
 
-Paket **IM** (`docs/PAKETE.md`, Zeile IM) macht aus dem vorhandenen CSV-Import einen einheitlichen Assistenten für Excel und CSV und ergänzt Exporte, darunter „Meine Daten“ für jede Person. IM3 (Kontoauszug) ist nur vermerkt, nicht umsetzen.
+Paket **IMPORT-EXPORT** (`docs/PAKETE.md`, früher „IM“) macht aus dem vorhandenen CSV-Import einen einheitlichen Assistenten für Excel und CSV und ergänzt Exporte, darunter „Meine Daten“ für jede Person. IMPORT-KONTOAUSZUG (früher IM3) ist nur vermerkt, nicht umsetzen.
 
 ## Zuerst
 1. `CLAUDE.md`; Planungsstand mergen (`git fetch origin claude/app-entwicklung-planung-183gtv`).
-2. Zeile **IM** vollständig lesen. Vorhandenes lesen: Mitglieder-Import (CSV, Vorschau, Dublettenprüfung), Spielplan-Import (Paket I), Kassenbericht-Export, Kalenderexport, `components/wizard.tsx`, Archiv (`ARCHIV.md`).
+2. Zeile **IMPORT-EXPORT** vollständig lesen. Vorhandenes lesen: Mitglieder-Import (CSV, Vorschau, Dublettenprüfung), Spielplan-Import (Paket I), Kassenbericht-Export, Kalenderexport, `components/wizard.tsx`, Archiv (`ARCHIV.md`).
 3. Excel lesen: eine geeignete Bibliothek wählen und kurz begründen (Größe, Lizenz, Betrieb im Server).
 
 ## Aufgaben (jeweils eigener Commit, `pnpm check`)

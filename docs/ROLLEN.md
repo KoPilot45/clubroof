@@ -81,7 +81,7 @@ Dokumente und Helferdienste, soweit freigegeben.
 12. Kassenprüfer-Rolle (nur lesen + Prüfvermerk), Vier-Augen-Prinzip bei Storno oder Beträgen über einer Grenze.
 13. Jugendliche mit eigenem Zugang ab einem wählbaren Alter, Eltern behalten Mitsicht; zwei Elternteile je Kind.
 14. Eigene Rollen je Verein (laut Konzept vorgesehen) und eine Rolle „Abteilungsleitung“ für Bereiche.
-15. **Mandantenbetrieb (Paket M):** Betreiber- und Support-Zugang strikt getrennt von Vereinsrechten: zeitlich begrenzt, nur mit Freigabe des Vereins, vollständig protokolliert.
+15. **Mandantenbetrieb (Paket MANDANTENBETRIEB):** Betreiber- und Support-Zugang strikt getrennt von Vereinsrechten: zeitlich begrenzt, nur mit Freigabe des Vereins, vollständig protokolliert.
 
 ## 5. Entscheidungen (10.10.2026)
 
