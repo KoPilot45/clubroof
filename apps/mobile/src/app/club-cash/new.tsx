@@ -2,6 +2,7 @@ import type { ClubCash, UploadedImage } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
+import { useLeaveGuard } from '@/components/edited';
 import {
   Button,
   Card,
@@ -107,6 +108,7 @@ export default function ClubCashNewScreen() {
             },
           }),
     onSuccess: () => {
+      allowLeave();
       void queryClient.invalidateQueries({ queryKey: ['club-cash'] });
       router.back();
     },
@@ -115,6 +117,11 @@ export default function ClubCashNewScreen() {
         e instanceof RequestError ? e.message : 'Die Buchung konnte nicht gespeichert werden.',
       ),
   });
+
+  // Begonnene Eingaben gehen beim Verlassen nicht still verloren (Speichern / Verwerfen / Bleiben)
+  const dirty =
+    [amount, purpose, counterparty, receiptNo].some((v) => v.trim() !== '') || !!receipt;
+  const { guard, allowLeave } = useLeaveGuard(dirty, () => save.mutate());
 
   if (cash.isPending) return <Loading />;
   if (!c?.canManage)
@@ -262,6 +269,7 @@ export default function ClubCashNewScreen() {
           )}
         </Card>
       ) : null}
+      {guard}
     </Screen>
   );
 }

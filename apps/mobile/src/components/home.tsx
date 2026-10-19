@@ -974,7 +974,7 @@ export function HomePoster({
   return (
     <HeroCard poster style={{ marginHorizontal: desktop ? -28 : -22 }}>
       <View
-        style={{ minHeight: desktop && !hasTeam ? 330 : 450 }}
+        style={{ minHeight: desktop && !hasTeam ? 330 : 450, paddingBottom: loop ? 30 : 0 }}
         onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
       >
         {header}
@@ -1016,13 +1016,16 @@ export function HomePoster({
         ) : null}
         {loop ? (
           <>
+            {/* Punkte in eigener Zeile unter dem Inhalt: überlagern weder Legende noch Kader-Link */}
             <View
+              testID="poster-dots"
               pointerEvents="none"
               style={{
                 position: 'absolute',
                 left: 22,
                 right: 22,
-                bottom: 18,
+                bottom: 0,
+                height: 30,
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 6,

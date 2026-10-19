@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { PaymentMethodChips } from '@/components/cash';
+import { useLeaveGuard } from '@/components/edited';
 import {
   Button,
   Card,
@@ -111,6 +112,7 @@ export default function NewBookingScreen() {
   const money = current?.value === 'income' || current?.value === 'expense';
 
   const done = (data: TeamCash) => {
+    allowLeave();
     queryClient.setQueryData(['cash', id], data);
     void queryClient.invalidateQueries({ queryKey: ['cash-stats', id] });
     router.back();
@@ -145,6 +147,13 @@ export default function NewBookingScreen() {
     onSuccess: done,
     onError,
   });
+
+  // Begonnene Eingaben gehen beim Verlassen nicht still verloren (Speichern / Verwerfen / Bleiben)
+  const dirty =
+    [amount, description, counterparty].some((v) => v.trim() !== '') ||
+    persons.length > 0 ||
+    !!receipt;
+  const { guard, allowLeave } = useLeaveGuard(dirty, () => save.mutate());
 
   if (cash.isPending || roster.isPending) return <Loading />;
   if (!current) {
@@ -355,6 +364,7 @@ export default function NewBookingScreen() {
       {validationError && (amount || fineType || persons.length) ? (
         <Chip tone="action" label={validationError} />
       ) : null}
+      {guard}
     </Screen>
   );
 }

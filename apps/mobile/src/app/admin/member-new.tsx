@@ -2,6 +2,7 @@ import type { MemberDetail } from '@clubroof/core';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { useLeaveGuard } from '@/components/edited';
 import { Button, Card, Chip, Screen, T, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { parseGermanDate } from '@/lib/dates';
@@ -19,6 +20,13 @@ export default function NewMemberScreen() {
   const [number, setNumber] = useState('');
   const [error, setError] = useState<string | null>(null);
   const birthDate = parseGermanDate(birth);
+  const invalid = !firstName.trim() || !lastName.trim() || birthDate === undefined;
+
+  // Begonnene Eingaben gehen beim Verlassen nicht still verloren; ein leeres Formular verlässt man ohne Rückfrage
+  const dirty = [firstName, lastName, birth, email, phone, number].some((v) => v.trim() !== '');
+  const { guard, allowLeave } = useLeaveGuard(dirty, () => {
+    if (!invalid) save.mutate();
+  });
 
   const save = useMutation({
     mutationFn: () =>
@@ -34,6 +42,7 @@ export default function NewMemberScreen() {
         },
       }),
     onSuccess: (m) => {
+      allowLeave();
       void queryClient.invalidateQueries({ queryKey: ['admin'] });
       router.replace(`/admin/member/${m.id}`);
     },
@@ -42,7 +51,6 @@ export default function NewMemberScreen() {
         e instanceof RequestError ? e.message : 'Das Mitglied konnte nicht angelegt werden.',
       ),
   });
-  const invalid = !firstName.trim() || !lastName.trim() || birthDate === undefined;
 
   return (
     <Screen
@@ -76,18 +84,21 @@ export default function NewMemberScreen() {
           onChangeText={setBirth}
           placeholder={t('z. B. 14.03.2011')}
           maxLength={10}
+          kind="date"
         />
         <TextField
           label="E-Mail (optional)"
           value={email}
           onChangeText={setEmail}
           maxLength={120}
+          kind="email"
         />
         <TextField
           label="Telefon (optional)"
           value={phone}
           onChangeText={setPhone}
           maxLength={30}
+          kind="phone"
         />
         <TextField
           label="Mitgliedsnummer (optional)"
@@ -96,6 +107,7 @@ export default function NewMemberScreen() {
           maxLength={30}
         />
       </Card>
+      {guard}
     </Screen>
   );
 }

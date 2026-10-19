@@ -2175,7 +2175,7 @@ export function TextField({
   maxLength?: number;
   multiline?: boolean;
   /** Steuert Tastatur, Autovervollständigung und verdeckte Eingabe */
-  kind?: 'text' | 'email' | 'password' | 'newPassword' | 'code' | 'url';
+  kind?: 'text' | 'email' | 'password' | 'newPassword' | 'code' | 'url' | 'phone' | 'date';
   onSubmit?: () => void;
   /** hebt das Feld farbig umrandet hervor (z. B. Pflichtfeld in Gelb) */
   accent?: string;
@@ -2189,7 +2189,8 @@ export function TextField({
     <View style={{ gap: 6 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <T variant="label">{label}</T>
-        {maxLength && maxLength > 10 && !secret ? (
+        {/* Zähler nur bei langen Texten oder nahe am Limit – kurze Felder bleiben ruhig */}
+        {maxLength && !secret && (maxLength >= 200 || value.length >= maxLength * 0.8) ? (
           <T variant="caption">{`${value.length} / ${maxLength}`}</T>
         ) : null}
       </View>
@@ -2213,7 +2214,11 @@ export function TextField({
                 ? 'number-pad'
                 : kind === 'url'
                   ? 'url'
-                  : 'default'
+                  : kind === 'phone'
+                    ? 'phone-pad'
+                    : kind === 'date'
+                      ? 'numbers-and-punctuation'
+                      : 'default'
           }
           autoComplete={
             kind === 'email'
@@ -2224,7 +2229,9 @@ export function TextField({
                   ? 'new-password'
                   : kind === 'code'
                     ? 'one-time-code'
-                    : undefined
+                    : kind === 'phone'
+                      ? 'tel'
+                      : undefined
           }
           onSubmitEditing={onSubmit}
           style={{
