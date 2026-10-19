@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useOffline } from '@/lib/connection';
-import { flushOutbox, loadOutbox } from '@/lib/outbox';
+import { flushOutbox, loadOutbox, useOutbox } from '@/lib/outbox';
 import { useSession } from '@/lib/session';
 import { useToast } from '@/lib/toast';
 
@@ -14,10 +14,12 @@ export function OutboxSync() {
   const offline = useOffline();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const waiting = useOutbox().length;
   const userId = session.status === 'signedIn' ? session.me.user.id : null;
   const { api } = session;
 
   const flush = () =>
+    userId &&
     flushOutbox(
       (item) =>
         api(`/events/${item.eventId}/responses/${item.personId}`, {
@@ -36,6 +38,7 @@ export function OutboxSync() {
           toast({ message: `${sent.length} Rückmeldungen gesendet` });
         }
       },
+      userId,
     );
 
   // Beim Anmelden gemerkte Rückmeldungen laden und, wenn möglich, senden
@@ -46,6 +49,12 @@ export function OutboxSync() {
     });
     // nur beim Anmelden
   }, [userId]);
+  // Serverfehler: wartende Rückmeldungen im Minutentakt erneut versuchen (begrenzt, siehe `MAX_ATTEMPTS`)
+  useEffect(() => {
+    if (!userId || offline || waiting === 0) return;
+    const timer = setInterval(() => void flush(), 60_000);
+    return () => clearInterval(timer);
+  }, [userId, offline, waiting > 0]);
   // Verbindung ist zurück
   useEffect(() => {
     if (userId && !offline) void flush();

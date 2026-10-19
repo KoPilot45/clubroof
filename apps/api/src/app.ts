@@ -107,10 +107,15 @@ export async function buildApp({
     request.sessionUser = user;
     request.actor = await loadActor(db, user, now(), links);
     // Vereinsvorgabe: Verwaltung nur mit eingerichteter 2-Faktor-Anmeldung
+    // Gesperrt sind Verwaltungsbereiche (Lesen) und jede Schreibaktion; offen bleiben nur
+    // Konto/Sicherheit (also auch die Einrichtung selbst) und die persönlichen Einstellungen.
     const path = request.url.split('?')[0]!;
+    const writes = !['GET', 'HEAD', 'OPTIONS'].includes(request.method);
+    const selfService = ['/auth/', '/me/', '/notifications/'].some((p) => path.startsWith(p));
     if (
       twoFactorMissing(request.actor) &&
-      ['/admin', '/invitations', '/join-requests', '/editorial'].some((p) => path.startsWith(p))
+      (['/admin', '/invitations', '/join-requests', '/editorial'].some((p) => path.startsWith(p)) ||
+        (writes && !selfService))
     ) {
       throw new HttpError(
         403,

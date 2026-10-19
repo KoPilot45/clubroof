@@ -1,5 +1,4 @@
 import { Cell, DataTable } from '@/components/data-table';
-import { FilterBar } from '@/components/filter-bar';
 import { useIsDesktop } from '@/lib/layout';
 import {
   CLUB_FEE_MAX_REMINDER,
@@ -24,6 +23,7 @@ import {
   Loading,
   Screen,
   Section,
+  SidePanel,
   T,
   TextField,
 } from '@/components/ui';
@@ -41,6 +41,19 @@ const STATUS = [
   { value: 'cancelled', label: 'Storniert' },
 ] as const;
 
+const SECTION_TITLE = {
+  open: 'Offene Forderungen',
+  overdue: 'Überfällige Forderungen',
+  paid: 'Bezahlte Forderungen',
+  cancelled: 'Stornierte Forderungen',
+} as const;
+const EMPTY_TEXT = {
+  open: 'Keine offenen Forderungen.',
+  overdue: 'Keine überfälligen Forderungen.',
+  paid: 'Keine bezahlten Forderungen.',
+  cancelled: 'Keine stornierten Forderungen.',
+} as const;
+
 const TONE = { open: 'info', overdue: 'urgent', paid: 'success', cancelled: 'archived' } as const;
 const STATUS_LABEL = {
   open: 'Offen',
@@ -49,7 +62,7 @@ const STATUS_LABEL = {
   cancelled: 'Storniert',
 } as const;
 
-/** Mitgliedsbeiträge (Paket K2): Rückstände, Zahlungseingang, Erinnerungen, Sollstellung. */
+/** Mitgliedsbeiträge (Paket K2): Rückstände, Zahlungseingang, Erinnerungen, fällige Beiträge anlegen. */
 export default function ClubFeesScreen() {
   const desktop = useIsDesktop();
   const { api } = useSignedIn();
@@ -154,7 +167,7 @@ export default function ClubFeesScreen() {
             <View style={{ gap: 8 }}>
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 <Button
-                  label="Sollstellung erzeugen"
+                  label="Fällige Beiträge anlegen"
                   icon="add-circle-outline"
                   style={{ flex: 1 }}
                   loading={generate.isPending}
@@ -187,39 +200,32 @@ export default function ClubFeesScreen() {
               </View>
             </View>
           ) : null}
+          {f.canManage ? (
+            <T variant="caption">
+              „Fällige Beiträge anlegen“ erzeugt für alle zugeordneten Mitglieder die Forderungen,
+              die bis heute fällig sind – nie doppelt.
+            </T>
+          ) : null}
           {message ? <Chip tone="success" icon="checkmark-circle" label={message} /> : null}
           {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
 
           {full ? (
             <>
-              <FilterBar
-                search={
-                  <TextField
-                    label="Suchen"
-                    value={q}
-                    onChangeText={setQ}
-                    placeholder={t('Name oder Mitgliedsnummer')}
-                  />
-                }
-                active={
-                  status === 'overdue'
-                    ? []
-                    : [
-                        {
-                          label: t(STATUS.find((s) => s.value === status)?.label ?? ''),
-                          onRemove: () => setStatus('overdue'),
-                        },
-                      ]
-                }
-              >
+              <Card style={{ gap: 12 }}>
                 <ChoiceChips
                   label="Anzeigen"
                   options={STATUS.map((s) => ({ value: s.value, label: s.label }))}
                   selected={[status]}
                   onToggle={setStatus}
                 />
-              </FilterBar>
-              <Section title="Forderungen">
+                <TextField
+                  label="Suchen"
+                  value={q}
+                  onChangeText={setQ}
+                  placeholder={t('Name oder Mitgliedsnummer')}
+                />
+              </Card>
+              <Section title={`${t(SECTION_TITLE[status])} (${f.dues.length})`}>
                 {desktop && f.dues.length > 0 ? (
                   <>
                     <DataTable
@@ -279,19 +285,23 @@ export default function ClubFeesScreen() {
                         },
                       ]}
                     />
-                    {f.dues
-                      .filter((d) => d.id === open)
-                      .map((d) => (
-                        <Card key={d.id}>{renderActions(d)}</Card>
-                      ))}
+                    {(() => {
+                      const chosen = f.dues.find((d) => d.id === open);
+                      return (
+                        <SidePanel
+                          visible={!!chosen}
+                          onClose={() => setOpen(null)}
+                          title={chosen ? `${chosen.personName} · ${chosen.periodLabel}` : ''}
+                        >
+                          {chosen ? renderActions(chosen) : null}
+                        </SidePanel>
+                      );
+                    })()}
                   </>
                 ) : (
                   <Card>
                     {f.dues.length === 0 ? (
-                      <Empty
-                        icon="checkmark-done-outline"
-                        text="Keine Forderungen in dieser Ansicht."
-                      />
+                      <Empty icon="checkmark-done-outline" text={EMPTY_TEXT[status]} />
                     ) : (
                       f.dues.map((d, i) => (
                         <View key={d.id}>
@@ -366,6 +376,10 @@ function DueActions({
   const [amount, setAmount] = useState(String(due.openCents / 100).replace('.', ','));
   const [paidOn, setPaidOn] = useState(today);
   const [reason, setReason] = useState('');
+  // pro Eingabe ein Schlüssel: wiederholte Anfragen (Netz, Doppeltipp) buchen nicht doppelt
+  const [paymentKey] = useState(
+    () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`,
+  );
   const fail = (e: unknown) =>
     onError(
       e instanceof RequestError ? e.message : 'Das hat nicht geklappt. Bitte versuche es erneut.',
@@ -378,6 +392,7 @@ function DueActions({
         body: {
           accountId: accountId ?? accounts[0]?.id,
           amountCents: parseEuro(amount),
+          idempotencyKey: paymentKey,
           paidOn,
         },
       }),

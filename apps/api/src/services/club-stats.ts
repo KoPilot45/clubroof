@@ -197,7 +197,7 @@ export async function getClubCashStats(
         dueOn: s.clubFeeDues.dueOn,
         amount: s.clubFeeDues.amountCents,
         cancelled: s.clubFeeDues.cancelledAt,
-        paid: sql<number>`coalesce((select sum(p.amount_cents) from club_fee_payments p where p.due_id = ${s.clubFeeDues.id}), 0)::int`,
+        paid: sql<number>`coalesce((select sum(p.amount_cents) from club_fee_payments p join club_cash_entries e on e.id = p.entry_id where p.due_id = club_fee_dues.id and e.cancelled_at is null), 0)::int`,
       })
       .from(s.clubFeeDues)
       .where(eq(s.clubFeeDues.clubId, clubId));
@@ -209,7 +209,8 @@ export async function getClubCashStats(
     const payments = await db
       .select({ paidOn: s.clubFeePayments.paidOn, cents: s.clubFeePayments.amountCents })
       .from(s.clubFeePayments)
-      .where(eq(s.clubFeePayments.clubId, clubId));
+      .innerJoin(s.clubCashEntries, eq(s.clubCashEntries.id, s.clubFeePayments.entryId))
+      .where(and(eq(s.clubFeePayments.clubId, clubId), isNull(s.clubCashEntries.cancelledAt)));
     fees = {
       dueCents: live.reduce((sum, d) => sum + d.amount, 0),
       paidCents: live.reduce((sum, d) => sum + Math.min(d.paid, d.amount), 0),

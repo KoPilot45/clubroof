@@ -209,9 +209,9 @@ export function Screen({
   const desktop = useIsDesktop();
   const compact = useIsCompactDesktop();
   // Breite des Inhalts nach Seitenvorlage (Paket DT2): Formulare schmal, Tabellen und Berichte breit
-  const contentMax = desktop
-    ? Math.max(TEMPLATE_WIDTH[useTemplate()], wide ? 1040 : 0)
-    : CONTENT_MAX;
+  // (Hooks immer in gleicher Reihenfolge aufrufen, danach auswerten – sonst leert der Breitenwechsel die Seite)
+  const template = useTemplate();
+  const contentMax = desktop ? Math.max(TEMPLATE_WIDTH[template], wide ? 1040 : 0) : CONTENT_MAX;
   const scrollY = useRef(new Animated.Value(0)).current;
   const pathname = usePathname();
   return (
@@ -546,6 +546,99 @@ export function Stack({ children, gap = 14 }: { children: ReactNode; gap?: numbe
  * Blatt von unten (Bestätigung, Auswahl, Grund-Feld): Hintergrund abgedunkelt, Tippen daneben schließt.
  * Inhalt scrollt, wenn er höher als 85 % des Bildschirms wird.
  */
+/**
+ * Detailbereich am Desktop (U08): Seitenpanel von rechts über der Liste mit Schließen-Knopf, Esc schließt.
+ * Liste, Suche, Filter und Scrollposition dahinter bleiben unverändert; es gibt keinen zweiten, unabhängig
+ * scrollenden Bereich neben der Liste (Entscheidung 19.10.2026). Am Handy nicht verwenden (dort klappt der Eintrag auf).
+ */
+export function SidePanel({
+  visible,
+  onClose,
+  title,
+  children,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+}) {
+  const { colors, spacing } = useTheme();
+  // Esc schließt auch dann, wenn der Fokus noch in der Liste dahinter steht
+  useEffect(() => {
+    if (!visible || Platform.OS !== 'web') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [visible, onClose]);
+  return (
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
+      <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('Schließen')}
+          style={[StyleSheet.absoluteFill, { backgroundColor: colors.anstoss.scrim }]}
+          onPress={onClose}
+        />
+        <View
+          accessibilityViewIsModal
+          accessibilityLabel={title}
+          style={{
+            width: 480,
+            maxWidth: '100%',
+            height: '100%',
+            backgroundColor: colors.anstoss.sheet,
+            borderLeftWidth: 1,
+            borderColor: colors.anstoss.sheetBorder,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              paddingHorizontal: 24,
+              paddingTop: 20,
+              paddingBottom: 8,
+            }}
+          >
+            <T variant="headline" style={{ fontSize: 24, flex: 1 }} accessibilityRole="header">
+              {title}
+            </T>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('Schließen')}
+              onPress={onClose}
+              style={(state) => ({
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: webState(state).hovered ? colors.anstoss.overlay : 'transparent',
+              })}
+            >
+              <Ionicons name="close" size={22} color={colors.onSurface} />
+            </Pressable>
+          </View>
+          <ScrollView
+            contentContainerStyle={{
+              paddingHorizontal: 24,
+              paddingTop: spacing.sm,
+              gap: spacing.md,
+              paddingBottom: spacing.xxl,
+            }}
+            keyboardShouldPersistTaps="handled"
+          >
+            {children}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export function Sheet({
   visible,
   onClose,
@@ -2175,7 +2268,7 @@ export function TextField({
   maxLength?: number;
   multiline?: boolean;
   /** Steuert Tastatur, Autovervollständigung und verdeckte Eingabe */
-  kind?: 'text' | 'email' | 'password' | 'newPassword' | 'code' | 'url';
+  kind?: 'text' | 'email' | 'password' | 'newPassword' | 'code' | 'url' | 'phone' | 'date';
   onSubmit?: () => void;
   /** hebt das Feld farbig umrandet hervor (z. B. Pflichtfeld in Gelb) */
   accent?: string;
@@ -2189,7 +2282,8 @@ export function TextField({
     <View style={{ gap: 6 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <T variant="label">{label}</T>
-        {maxLength && maxLength > 10 && !secret ? (
+        {/* Zähler nur bei langen Texten oder nahe am Limit – kurze Felder bleiben ruhig */}
+        {maxLength && !secret && (maxLength >= 200 || value.length >= maxLength * 0.8) ? (
           <T variant="caption">{`${value.length} / ${maxLength}`}</T>
         ) : null}
       </View>
@@ -2213,7 +2307,11 @@ export function TextField({
                 ? 'number-pad'
                 : kind === 'url'
                   ? 'url'
-                  : 'default'
+                  : kind === 'phone'
+                    ? 'phone-pad'
+                    : kind === 'date'
+                      ? 'numbers-and-punctuation'
+                      : 'default'
           }
           autoComplete={
             kind === 'email'
@@ -2224,7 +2322,9 @@ export function TextField({
                   ? 'new-password'
                   : kind === 'code'
                     ? 'one-time-code'
-                    : undefined
+                    : kind === 'phone'
+                      ? 'tel'
+                      : undefined
           }
           onSubmitEditing={onSubmit}
           style={{

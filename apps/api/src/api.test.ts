@@ -1301,6 +1301,11 @@ describe.skipIf(!url)('API', () => {
       const events = await get<EventSummary[]>('/events', token);
       const match = events.find((e) => e.team?.badge === 'B1' && e.type === 'match')!;
       expect(match.myResponses[0]!.status).toBe('yes');
+      // Eine bewusst gegebene Zusage hat Vorrang vor der Abwesenheit (F05): für diesen Test wieder offen setzen
+      await send('PUT', `/events/${match.id}/responses/${me.person.id}`, token, {
+        status: 'pending',
+        reason: null,
+      });
       const day = match.startsAt.slice(0, 10);
 
       const created = await send<Absence>('POST', '/absences', token, {
@@ -1543,6 +1548,11 @@ describe.skipIf(!url)('API', () => {
       const events = await get<EventSummary[]>('/events', token);
       const match = events.find((e) => e.team?.badge === 'B1' && e.type === 'match')!;
       const day = match.startsAt.slice(0, 10);
+      // bewusste Antworten haben Vorrang (F05): zuerst wieder offen setzen
+      await send('PUT', `/events/${match.id}/responses/${me.person.id}`, token, {
+        status: 'pending',
+        reason: null,
+      });
       const created = await send<Absence>('POST', '/absences', token, {
         personId: me.person.id,
         kind: 'vacation',
@@ -4580,6 +4590,16 @@ describe.skipIf(!url)('API', () => {
       const blocked = await send<{ error: string }>('GET', '/admin/overview', board.token);
       expect(blocked.status).toBe(403);
       expect(blocked.body.error).toBe('two_factor_required');
+      // Die Pflicht hängt nicht an einer Pfadliste: auch Schreibaktionen außerhalb von /admin sind gesperrt (F07)
+      const teamId = (await login('trainer')).me.teams[0]!.id;
+      const link = await send<{ error: string }>(
+        'POST',
+        `/teams/${teamId}/invite-link`,
+        board.token,
+      );
+      expect(link.status).toBe(403);
+      expect(link.body.error).toBe('two_factor_required');
+      expect((await send('POST', '/notifications/read-all', board.token)).status).toBeLessThan(300);
       expect((await get<LoginResponse['me']>('/me', board.token)).security.twoFactorRequired).toBe(
         true,
       );
@@ -10237,6 +10257,360 @@ describe.skipIf(!url)('API', () => {
       });
       expect(await reasonOf()).toBeNull();
       await db.delete(s.absences).where(eq(s.absences.id, absence!.id));
+    });
+  });
+
+  describe('Pilot-Sicherheit F01: Verknüpfen bestehender Personen bei Beitrittsanfragen', () => {
+    const tokenOf = (u: string) => u.split('/join/')[1]!;
+    const pub = (method: 'GET' | 'POST', u: string, payload?: object) =>
+      app.inject({ method, url: u, ...(payload ? { payload } : {}) });
+    let n = 0;
+
+    /** Legt über den Mannschafts-Link der B-Jugend eine Anfrage eines neuen Spielers an. */
+    async function openRequest(coachToken: string, badge = 'B1') {
+      const coach = await login('trainer');
+      const team = coach.me.teams.find((t) => t.badge === badge)!;
+      const link = await send<InviteLink>('POST', `/teams/${team.id}/invite-link`, coachToken);
+      n += 1;
+      const mail = `f01.${n}@example.org`;
+      await pub('POST', `/join/${tokenOf(link.body.url)}/request`, {
+        email: mail,
+        password: PASSWORD,
+        relation: 'player',
+        firstName: `Test${n}`,
+        lastName: 'F01',
+      });
+      const pending = (await get<InviteOverview>('/invitations', coachToken)).requests;
+      return pending.find((r) => r.name === `Test${n} F01`)!;
+    }
+
+    const personRows = (query: Promise<{ id: string }[]>) => query.then((r) => r.map((x) => x.id));
+
+    it('lehnt Personen aus fremden Mannschaften ab', async () => {
+      const coach = await login('trainer');
+      const [foreign] = await personRows(sql`
+        select p.id from persons p
+        where p.user_id is null and exists (
+          select 1 from team_memberships m join teams t on t.id = m.team_id
+          where m.person_id = p.id and m.valid_to is null and t.badge = '1.')
+        and not exists (
+          select 1 from team_memberships m join teams t on t.id = m.team_id
+          where m.person_id = p.id and m.valid_to is null and t.badge in ('B1', 'C1'))
+        limit 1`);
+      const req = await openRequest(coach.token);
+      const res = await send('POST', `/join-requests/${req.id}/approve`, coach.token, {
+        personId: foreign,
+      });
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      const [row] = await sql`select user_id from persons where id = ${foreign!}`;
+      expect(row!.user_id).toBeNull();
+    });
+
+    it('lehnt Personen mit höheren Rechten ab, auch ohne andere Mannschaft', async () => {
+      const coach = await login('trainer');
+      const [privileged] = await personRows(sql`
+        select p.id from persons p
+        join role_assignments ra on ra.person_id = p.id
+        join roles r on r.id = ra.role_id
+        where p.user_id is null and r.key not in ('club_member', 'coach')
+        limit 1`);
+      expect(privileged).toBeTruthy();
+      const req = await openRequest(coach.token);
+      const res = await send('POST', `/join-requests/${req.id}/approve`, coach.token, {
+        personId: privileged,
+      });
+      expect(res.status).toBeGreaterThanOrEqual(400);
+      const [row] = await sql`select user_id from persons where id = ${privileged!}`;
+      expect(row!.user_id).toBeNull();
+    });
+
+    it('lehnt ein bestehendes Kind mit eigenem Konto ab', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const req = await openRequest(coach.token);
+      await sql`update join_requests set relation = 'parent', child_first_name = 'X', child_last_name = 'Y'
+        where id = ${req.id}`;
+      const res = await send('POST', `/join-requests/${req.id}/approve`, coach.token, {
+        childPersonId: player.me.person.id,
+      });
+      expect(res.status).toBe(409);
+      const [g] = await sql`select count(*)::int as n from guardianships
+        where child_person_id = ${player.me.person.id}`;
+      expect(g!.n).toBe(0);
+    });
+
+    it('erlaubt die reguläre Verknüpfung einer Person der eigenen Mannschaft', async () => {
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const [own] = await personRows(sql`
+        insert into persons (club_id, first_name, last_name)
+        values (${coach.me.club.id}, 'Kontolos', 'F01') returning id`);
+      await sql`insert into team_memberships (club_id, team_id, person_id, function, valid_from)
+        values (${coach.me.club.id}, ${b1.id}, ${own!}, 'player', '2026-08-01')`;
+      expect(own).toBeTruthy();
+      const req = await openRequest(coach.token);
+      const res = await send('POST', `/join-requests/${req.id}/approve`, coach.token, {
+        personId: own,
+      });
+      expect(res.status).toBe(200);
+      const [row] = await sql`select user_id from persons where id = ${own!}`;
+      expect(row!.user_id).not.toBeNull();
+    });
+  });
+
+  describe('Beiträge und Kassenbuch widerspruchsfrei (F03, F04)', () => {
+    /** Beitragsart mit einer Jahresforderung für das Vereinsmitglied; liefert die Forderung. */
+    async function freshDue(name: string, amountCents = 5000) {
+      const admin = await login('admin');
+      const person = (await login('mitglied')).me.person;
+      const made = await send<ClubFees>('POST', '/club-cash/fees/types', admin.token, {
+        name,
+        amountCents,
+        interval: 'yearly',
+      });
+      expect(made.status).toBe(201);
+      const type = made.body.types.find((t) => t.name === name)!;
+      const assigned = await send('POST', '/club-cash/fees/assignments', admin.token, {
+        personId: person.id,
+        feeTypeId: type.id,
+        validFrom: '2026-01-01',
+      });
+      expect(assigned.status).toBe(201);
+      await send('POST', '/club-cash/fees/generate', admin.token, {});
+      const list = await get<ClubFees>(
+        '/club-cash/fees?status=all&q=' + person.lastName,
+        admin.token,
+      );
+      const due = list.dues.find((d) => d.feeTypeName === name)!;
+      const cash = await get<ClubCash>('/club-cash', admin.token);
+      return { admin, due, accountId: cash.accounts[0]!.id, lastName: person.lastName };
+    }
+    const pay = (
+      token: string,
+      dueId: string,
+      accountId: string,
+      amountCents: number,
+      extra = {},
+    ) =>
+      send<ClubFees>('POST', `/club-cash/fees/dues/${dueId}/payments`, token, {
+        accountId,
+        amountCents,
+        paidOn: '2026-10-05',
+        ...extra,
+      });
+    const reload = async (token: string, lastName: string, id: string) =>
+      (await get<ClubFees>('/club-cash/fees?status=all&q=' + lastName, token)).dues.find(
+        (d) => d.id === id,
+      )!;
+    const entryOf = async (token: string, name: string) =>
+      (await get<ClubCashEntry[]>(`/club-cash/entries?q=${encodeURIComponent(name)}`, token))[0]!;
+
+    it('F03: stornierte Zahlung macht die Forderung wieder offen, danach erneut zahlen', async () => {
+      const { admin, due, accountId, lastName } = await freshDue('Konsistenz Storno');
+      expect((await pay(admin.token, due.id, accountId, 5000)).status).toBe(201);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({
+        status: 'paid',
+        openCents: 0,
+      });
+      const entry = await entryOf(admin.token, 'Beitrag Konsistenz Storno');
+      const cancelled = await send('POST', `/club-cash/entries/${entry.id}/cancel`, admin.token, {
+        reason: 'Falsches Konto',
+      });
+      expect(cancelled.status).toBe(200);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({
+        paidCents: 0,
+        openCents: 5000,
+      });
+      // Korrigierte Zahlung ist möglich
+      expect((await pay(admin.token, due.id, accountId, 5000)).status).toBe(201);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({ status: 'paid' });
+    });
+
+    it('F03: Forderung lässt sich nach stornierter Zahlung stornieren, Jahressumme zählt nur aktive', async () => {
+      const { admin, due, accountId, lastName } = await freshDue('Konsistenz Jahr', 4000);
+      const before = (await get<ClubFees>('/club-cash/fees', admin.token)).summary
+        .paidThisYearCents;
+      await pay(admin.token, due.id, accountId, 4000);
+      expect((await get<ClubFees>('/club-cash/fees', admin.token)).summary.paidThisYearCents).toBe(
+        before + 4000,
+      );
+      const entry = await entryOf(admin.token, 'Beitrag Konsistenz Jahr');
+      await send('POST', `/club-cash/entries/${entry.id}/cancel`, admin.token, {
+        reason: 'Irrtum',
+      });
+      expect((await get<ClubFees>('/club-cash/fees', admin.token)).summary.paidThisYearCents).toBe(
+        before,
+      );
+      const cancelDue = await send('POST', `/club-cash/fees/dues/${due.id}/cancel`, admin.token, {
+        reason: 'Mitglied ausgetreten',
+      });
+      expect(cancelDue.status).toBe(200);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({ status: 'cancelled' });
+    });
+
+    it('F04: zwei parallele Vollzahlungen ergeben genau eine Zahlung', async () => {
+      const { admin, due, accountId, lastName } = await freshDue('Konsistenz Parallel');
+      const results = await Promise.all([
+        pay(admin.token, due.id, accountId, 5000),
+        pay(admin.token, due.id, accountId, 5000),
+      ]);
+      expect(results.map((r) => r.status).sort()).toEqual([201, 400]);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({
+        paidCents: 5000,
+        openCents: 0,
+      });
+      const rows =
+        await sql`select count(*)::int as n from club_fee_payments where due_id = ${due.id}`;
+      expect(rows[0]!.n).toBe(1);
+    });
+
+    it('F04: wiederholte Anfrage mit demselben Idempotenzschlüssel bucht nur einmal', async () => {
+      const { admin, due, accountId, lastName } = await freshDue('Konsistenz Schluessel', 6000);
+      const key = 'zahlung-test-0001';
+      const first = await pay(admin.token, due.id, accountId, 2000, { idempotencyKey: key });
+      const again = await pay(admin.token, due.id, accountId, 2000, { idempotencyKey: key });
+      expect(first.status).toBe(201);
+      expect(again.status).toBe(201);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({ paidCents: 2000 });
+      // Ein anderer Schlüssel ist eine neue Zahlung
+      await pay(admin.token, due.id, accountId, 1000, { idempotencyKey: 'zahlung-test-0002' });
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({ paidCents: 3000 });
+    });
+  });
+
+  describe('Teilnahme und Abwesenheit (F05)', () => {
+    const berlinDay = (iso: string) =>
+      new Date(iso).toLocaleDateString('sv', { timeZone: 'Europe/Berlin' });
+
+    let serial = 0;
+    /** Legt eigene Termine der B-Jugend an, damit die Tests nicht vom Zustand anderer abhängen. */
+    async function setup() {
+      const player = await login('spieler');
+      // Die Mannschaft des Spielers kann je nach vorigen Tests wechseln; der Admin darf überall Termine verwalten
+      const coach = await login('admin');
+      const b1 = player.me.teams[0]!;
+      const make = async (type: 'training' | 'team_event', startsAt: string) => {
+        serial += 1;
+        const created = await send<EventDetail>('POST', `/teams/${b1.id}/events`, coach.token, {
+          type,
+          title: `F05-Test ${serial}`,
+          startsAt,
+          endsAt: new Date(Date.parse(startsAt) + 90 * 60_000).toISOString(),
+          meetingPoint: 'Parkplatz',
+          locationText: 'Stadtpark',
+        });
+        expect(created.status, JSON.stringify(created.body)).toBe(201);
+        const list = await get<EventSummary[]>(
+          `/events?from=${encodeURIComponent(startsAt)}&to=${encodeURIComponent(new Date(Date.parse(startsAt) + 3_600_000).toISOString())}`,
+          player.token,
+        );
+        const found = list.find((e) => e.title === `F05-Test ${serial}`);
+        expect(
+          found,
+          `Termin nicht gefunden: ${JSON.stringify(player.me.teams.map((t) => t.badge))} ${list.length}`,
+        ).toBeTruthy();
+        return found!;
+      };
+      const base = Date.parse('2027-01-12T17:00:00Z') + serial * 3 * 86_400_000;
+      const first = await make('team_event', new Date(base).toISOString());
+      const second = await make('training', new Date(base + 86_400_000).toISOString());
+      return { player, coach, b1, events: [{ ...first, type: 'match' as const }, second] };
+    }
+    const response = async (token: string, eventId: string) =>
+      (await get<EventDetail>(`/events/${eventId}`, token)).myResponses[0]!;
+    const absence = (token: string, personId: string, kind: string, day: string, extra = {}) =>
+      send<Absence>('POST', '/absences', token, {
+        personId,
+        kind,
+        startsOn: day,
+        endsOn: day,
+        ...extra,
+      });
+
+    it('A und B überschneiden sich: Löschen von A lässt die Absage über B bestehen', async () => {
+      const { player, events } = await setup();
+      const match = events.find((e) => e.type === 'match')!;
+      const day = berlinDay(match.startsAt);
+      // Reste anderer Tests an diesem Tag entfernen, damit nur A und B gelten
+      await sql`delete from absences where person_id = ${player.me.person.id}`;
+      // die gespeicherte Zusage ist eine bewusste Antwort und hätte Vorrang: zuerst offen setzen
+      await send('PUT', `/events/${match.id}/responses/${player.me.person.id}`, player.token, {
+        status: 'pending',
+        reason: null,
+      });
+      const a = await absence(player.token, player.me.person.id, 'vacation', day);
+      const b = await absence(player.token, player.me.person.id, 'illness', day);
+      expect(await response(player.token, match.id)).toMatchObject({ status: 'no' });
+      expect((await send('DELETE', `/absences/${a.body.id}`, player.token)).status).toBe(204);
+      const after = await response(player.token, match.id);
+      expect(after).toMatchObject({ status: 'no', reason: 'Abwesend: Krankheit' });
+      const [row] = await sql`select absence_id from event_participants
+        where event_id = ${match.id} and person_id = ${player.me.person.id}`;
+      expect(row!.absence_id).toBe(b.body.id);
+      // Das Trainerteam (hier der Admin) sieht den Spieler weiterhin als abwesend
+      const coach = await login('admin');
+      const detail = await get<EventDetail>(`/events/${match.id}`, coach.token);
+      const mineRow = detail.participants?.find((p) => p.personId === player.me.person.id);
+      expect(mineRow?.status).toBe('no');
+      await send('DELETE', `/absences/${b.body.id}`, player.token);
+      expect(await response(player.token, match.id)).toMatchObject({ status: 'pending' });
+    });
+
+    it('manuelle Antwort hat Vorrang vor einer Abwesenheit', async () => {
+      const { player, events } = await setup();
+      const match = events.find((e) => e.type === 'match')!;
+      const day = berlinDay(match.startsAt);
+      const put = await send(
+        'PUT',
+        `/events/${match.id}/responses/${player.me.person.id}`,
+        player.token,
+        {
+          status: 'yes',
+          reason: null,
+        },
+      );
+      expect(put.status).toBe(200);
+      const created = await absence(player.token, player.me.person.id, 'vacation', day);
+      expect(await response(player.token, match.id)).toMatchObject({ status: 'yes' });
+      await send('DELETE', `/absences/${created.body.id}`, player.token);
+      expect(await response(player.token, match.id)).toMatchObject({ status: 'yes' });
+      await send('PUT', `/events/${match.id}/responses/${player.me.person.id}`, player.token, {
+        status: 'pending',
+        reason: null,
+      });
+    });
+
+    it('Termin in eine Abwesenheit hinein und wieder heraus verschieben', async () => {
+      const { player, coach, events } = await setup();
+      const training = events.find((e) => e.type === 'training')!;
+      const original = training.startsAt;
+      const shifted = new Date(Date.parse(original) + 30 * 86_400_000).toISOString();
+      const target = berlinDay(shifted);
+      const created = await absence(player.token, player.me.person.id, 'vacation', target);
+      expect(await response(player.token, training.id)).toMatchObject({ status: 'pending' });
+
+      const into = await send('PATCH', `/events/${training.id}`, coach.token, {
+        startsAt: shifted,
+        endsAt: new Date(Date.parse(training.endsAt!) + 30 * 86_400_000).toISOString(),
+        allowConflict: true,
+      });
+      expect(into.status, JSON.stringify(into.body)).toBe(200);
+      expect(await response(player.token, training.id)).toMatchObject({
+        status: 'no',
+        reason: 'Abwesend: Urlaub',
+      });
+
+      const out = await send('PATCH', `/events/${training.id}`, coach.token, {
+        startsAt: original,
+        endsAt: training.endsAt,
+        allowConflict: true,
+      });
+      expect(out.status).toBe(200);
+      expect(await response(player.token, training.id)).toMatchObject({
+        status: 'pending',
+        reason: null,
+      });
+      await send('DELETE', `/absences/${created.body.id}`, player.token);
     });
   });
 });

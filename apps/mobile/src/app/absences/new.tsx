@@ -3,26 +3,48 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useLeaveGuard } from '@/components/edited';
-import { Button, Card, ChoiceChips, Chip, DateStepper, Screen, TextField } from '@/components/ui';
+import {
+  Button,
+  Card,
+  ChoiceChips,
+  Chip,
+  DateStepper,
+  Screen,
+  T,
+  TextField,
+} from '@/components/ui';
 import { RequestError } from '@/lib/api';
-import { todayIso } from '@/lib/format';
+import { formatDateRange, todayIso } from '@/lib/format';
 import { ABSENCE_ICONS, ABSENCE_LABELS } from '@/lib/labels';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
 import { t } from '@/lib/i18n';
+import { useToast } from '@/lib/toast';
 
 export default function NewAbsenceScreen() {
   const { api, me } = useSignedIn();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const {
+    id,
+    personId: presetPerson,
+    teamId: presetTeam,
+  } = useLocalSearchParams<{ id?: string; personId?: string; teamId?: string }>();
   const editing = !!id;
   const queryClient = useQueryClient();
+  const toast = useToast();
   const today = todayIso();
-  const [personId, setPersonId] = useState(me.person.id);
+  // Kommt der Aufruf aus einer Mannschaft, ist die Person bei eindeutigem Bezug schon gewählt (U06)
+  const [personId, setPersonId] = useState(
+    presetPerson && me.managedPersons.some((p) => p.id === presetPerson)
+      ? presetPerson
+      : me.person.id,
+  );
   const [kind, setKind] = useState<AbsenceKind>('vacation');
   const [startsOn, setStartsOn] = useState(today);
   const [endsOn, setEndsOn] = useState(today);
-  const [scope, setScope] = useState<'all' | 'selected'>('all');
-  const [teamIds, setTeamIds] = useState<string[]>([]);
+  const presetScope =
+    presetTeam && me.teams.some((t) => t.id === presetTeam && t.personId === personId);
+  const [scope, setScope] = useState<'all' | 'selected'>(presetScope ? 'selected' : 'all');
+  const [teamIds, setTeamIds] = useState<string[]>(presetScope ? [presetTeam!] : []);
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +74,18 @@ export default function NewAbsenceScreen() {
     [me.teams, personId],
   );
 
+  const personName =
+    me.managedPersons.find((p) => p.id === personId)?.relation === 'self'
+      ? t('mich')
+      : (me.managedPersons.find((p) => p.id === personId)?.firstName ?? me.person.firstName);
+  const scopeText =
+    scope === 'selected' && teamIds.length
+      ? personTeams
+          .filter((x) => teamIds.includes(x.id))
+          .map((x) => teamTitle(x))
+          .join(', ')
+      : t('Alle Mannschaften');
+
   const save = useMutation({
     mutationFn: () =>
       api<Absence>(editing ? `/absences/${id}` : '/absences', {
@@ -68,6 +102,10 @@ export default function NewAbsenceScreen() {
     onSuccess: () => {
       allowLeave();
       setSaved(true);
+      // Bestätigung nennt Person und Zeitraum („Abwesenheit für Leon · 20.–22. Oktober“)
+      toast({
+        message: `${t('Abwesenheit für')} ${personName} · ${formatDateRange(startsOn, endsOn)}`,
+      });
       for (const key of ['absences', 'home', 'events', 'event']) {
         void queryClient.invalidateQueries({ queryKey: [key] });
       }
@@ -109,6 +147,11 @@ export default function NewAbsenceScreen() {
       }
     >
       {guard}
+      {/* Wer, wann, wofür – vor dem Speichern lesbar, bei mehreren Personen auch als Titel */}
+      <Card style={{ gap: 4 }}>
+        <T variant="label">{`${t('Abwesenheit für')} ${personName}`}</T>
+        <T variant="caption" verbatim>{`${formatDateRange(startsOn, endsOn)} · ${scopeText}`}</T>
+      </Card>
       {me.managedPersons.length > 1 && !editing ? (
         <Card>
           <ChoiceChips
@@ -121,6 +164,7 @@ export default function NewAbsenceScreen() {
             onToggle={(v) => {
               setPersonId(v);
               setTeamIds([]);
+              setScope('all');
             }}
           />
         </Card>

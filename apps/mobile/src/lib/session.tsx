@@ -12,13 +12,8 @@ import {
 import { request, RequestError } from './api';
 import { deviceLocale, setLocale } from './i18n';
 import { disablePush, enablePush, listenForPushTaps } from './push';
-import { clearOutbox } from './outbox';
-import {
-  clearOfflineCache,
-  persistOfflineCache,
-  readOfflineMe,
-  restoreOfflineCache,
-} from './offline-cache';
+import { resetAccountState } from './account-reset';
+import { persistOfflineCache, readOfflineMe, restoreOfflineCache } from './offline-cache';
 import { readToken, writeToken } from './token-storage';
 
 type SessionState =
@@ -76,16 +71,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const result = await request<LoginResponse | TwoFactorChallenge>('/auth/login', {
-      method: 'POST',
-      body: { email, password },
-    });
-    if ('twoFactorRequired' in result) return result;
-    await writeToken(result.token);
-    setState({ status: 'signedIn', token: result.token, me: result.me });
-    return null;
-  }, []);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const result = await request<LoginResponse | TwoFactorChallenge>('/auth/login', {
+        method: 'POST',
+        body: { email, password },
+      });
+      if ('twoFactorRequired' in result) return result;
+      // Neues Konto startet immer ohne Daten des vorherigen (Cache, Offline-Speicher, laufende Abfragen)
+      await resetAccountState(queryClient, { keepOutbox: true });
+      await writeToken(result.token);
+      setState({ status: 'signedIn', token: result.token, me: result.me });
+      return null;
+    },
+    [queryClient],
+  );
 
   // Offline-Lesen: Daten dieses Kontos laufend auf dem Gerät speichern
   const signedInMe = state.status === 'signedIn' ? state.me : null;
@@ -115,9 +115,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (token) await disablePush((path, options) => request(path, { ...options, token }));
     setState({ status: 'signedOut', token: null, me: null });
     await writeToken(null);
-    queryClient.clear();
-    await clearOfflineCache();
-    await clearOutbox();
+    await resetAccountState(queryClient, { keepOutbox: false });
     if (token) await request('/auth/logout', { method: 'POST', token }).catch(() => undefined);
   }, [state.token, queryClient]);
 
@@ -129,17 +127,23 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         if (error instanceof RequestError && error.status === 401) {
           await writeToken(null);
           setState({ status: 'signedOut', token: null, me: null });
+          // wie bei der Abmeldung: keine Daten dieses Kontos im Zwischenspeicher lassen
+          await resetAccountState(queryClient, { keepOutbox: true });
         }
         throw error;
       }
     },
-    [state.token],
+    [state.token, queryClient],
   );
 
-  const adopt = useCallback(async (result: LoginResponse) => {
-    await writeToken(result.token);
-    setState({ status: 'signedIn', token: result.token, me: result.me });
-  }, []);
+  const adopt = useCallback(
+    async (result: LoginResponse) => {
+      await resetAccountState(queryClient, { keepOutbox: true });
+      await writeToken(result.token);
+      setState({ status: 'signedIn', token: result.token, me: result.me });
+    },
+    [queryClient],
+  );
 
   const refresh = useCallback(async () => {
     if (!state.token) return;

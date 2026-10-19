@@ -1,0 +1,2 @@
+ALTER TABLE "club_fee_payments" ADD COLUMN "idempotency_key" text;--> statement-breakpoint
+ALTER TABLE "club_fee_payments" ADD CONSTRAINT "club_fee_payments_clubId_idempotencyKey_unique" UNIQUE("club_id","idempotency_key");

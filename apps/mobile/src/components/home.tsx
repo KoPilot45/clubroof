@@ -165,6 +165,7 @@ export function MatchCarousel({ matches, club }: { matches: EventSummary[]; club
   const width = useCardWidth(306);
   const [index, setIndex] = useState(0);
   const { colors } = useTheme();
+  const desktopRow = useIsDesktop();
   if (matches.length === 0)
     return (
       <Empty
@@ -174,7 +175,6 @@ export function MatchCarousel({ matches, club }: { matches: EventSummary[]; club
       />
     );
   const current = Math.min(index, matches.length - 1);
-  const desktopRow = useIsDesktop();
   return (
     <View style={{ gap: 8 }}>
       <Swipe width={width} onIndex={setIndex}>
@@ -937,6 +937,7 @@ export function HomePoster({
   hasTeam,
   clubName,
   overview,
+  onCurrent,
 }: {
   header: React.ReactNode;
   events: EventSummary[];
@@ -944,6 +945,8 @@ export function HomePoster({
   hasTeam: boolean;
   clubName: string;
   overview: ClubOverview | null;
+  /** meldet den sichtbaren Termin, damit Personenkarten und Rückmeldung demselben Termin folgen (U05) */
+  onCurrent?: (index: number) => void;
 }) {
   const { colors } = useTheme();
   const desktop = useIsDesktop();
@@ -962,6 +965,9 @@ export function HomePoster({
       : [undefined];
   const current = loop ? (((raw - 1) % n) + n) % n : 0;
   useEffect(() => {
+    onCurrent?.(current);
+  }, [current, onCurrent]);
+  useEffect(() => {
     if (loop && width > 0) scroller.current?.scrollTo({ x: width, animated: false });
   }, [loop, width, n]);
   const settle = (x: number) => {
@@ -974,7 +980,7 @@ export function HomePoster({
   return (
     <HeroCard poster style={{ marginHorizontal: desktop ? -28 : -22 }}>
       <View
-        style={{ minHeight: desktop && !hasTeam ? 330 : 450 }}
+        style={{ minHeight: desktop && !hasTeam ? 330 : 450, paddingBottom: loop ? 30 : 0 }}
         onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
       >
         {header}
@@ -1016,13 +1022,16 @@ export function HomePoster({
         ) : null}
         {loop ? (
           <>
+            {/* Punkte in eigener Zeile unter dem Inhalt: überlagern weder Legende noch Kader-Link */}
             <View
+              testID="poster-dots"
               pointerEvents="none"
               style={{
                 position: 'absolute',
                 left: 22,
                 right: 22,
-                bottom: 18,
+                bottom: 0,
+                height: 30,
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 6,
@@ -1166,9 +1175,13 @@ export function PersonStatusCards({ event }: { event: EventSummary }) {
               <Text style={{ fontSize: 12, fontWeight: '700', color: tone.text }}>
                 {STATUS_WORD[key]}
               </Text>
+              {/* jede Karte nennt Termin und Datum selbst – sie folgt dem Plakat, bleibt aber für sich lesbar */}
+              <T variant="caption" numberOfLines={1} verbatim style={{ fontSize: 12 }}>
+                {event.match ? `vs. ${event.match.opponentName}` : event.title}
+              </T>
               <T variant="caption" style={{ fontSize: 12 }}>
                 {key === 'pending' && open
-                  ? formatRemaining(event.deadline!)
+                  ? `${formatDay(event.startsAt)} · ${formatRemaining(event.deadline!)}`
                   : formatDay(event.startsAt)}
               </T>
             </View>

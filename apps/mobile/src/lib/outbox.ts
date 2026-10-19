@@ -5,7 +5,10 @@ import { clearOutboxStore, readOutboxStore, writeOutboxStore } from './outbox-st
 /**
  * Warteschlange für Zu- und Absagen: Scheitert die Rückmeldung nur, weil keine Verbindung besteht, wird sie auf dem
  * Gerät gemerkt und gesendet, sobald die App wieder online ist. Je Termin und Person gilt die letzte Antwort.
- * Vom Server abgelehnte Rückmeldungen (z. B. Frist abgelaufen) werden nicht wiederholt, sondern gemeldet.
+ * Vom Server endgültig abgelehnte Rückmeldungen (z. B. Frist abgelaufen) werden nicht wiederholt, sondern gemeldet.
+ * Vorübergehende Fehler (keine Verbindung, 408/429/5xx, abgelaufene Sitzung) behalten die Rückmeldung; bei Serverfehlern
+ * wird begrenzt oft wiederholt. Die Warteschlange gehört genau einem Konto: gesendet wird erst nach dem Laden für dieses
+ * Konto, und nie ein Eintrag eines anderen Kontos.
  */
 export type QueuedResponse = {
   eventId: string;
@@ -17,9 +20,18 @@ export type QueuedResponse = {
   /** Titel des Termins für Meldungen */
   title: string;
   queuedAt: string;
+  /** Fehlgeschlagene Versuche wegen vorübergehender Serverfehler */
+  attempts: number;
 };
 
+/** Nach so vielen Serverfehlern wird die Rückmeldung gemeldet statt weiter wiederholt. */
+export const MAX_ATTEMPTS = 10;
+const TRANSIENT = (status: number) =>
+  status === 408 || status === 425 || status === 429 || status >= 500;
+
 let items: QueuedResponse[] = [];
+/** Konto, für das `items` geladen wurden (sonst wird nichts gesendet) */
+let loadedFor: string | null = null;
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const persist = () => void writeOutboxStore(JSON.stringify(items));
@@ -39,30 +51,40 @@ export const useOutbox = (): QueuedResponse[] =>
 export const queuedFor = (list: QueuedResponse[], eventId: string, personId: string) =>
   list.find((i) => i.eventId === eventId && i.personId === personId);
 
-export function enqueueResponse(item: Omit<QueuedResponse, 'queuedAt'>) {
+export function enqueueResponse(item: Omit<QueuedResponse, 'queuedAt' | 'attempts'>) {
   items = [
     ...items.filter((i) => !(i.eventId === item.eventId && i.personId === item.personId)),
-    { ...item, queuedAt: new Date().toISOString() },
+    { ...item, queuedAt: new Date().toISOString(), attempts: 0 },
   ];
   persist();
   emit();
 }
 
+/** Arbeitsspeicher leeren (Kontowechsel, Abmeldung); die gespeicherte Datei bleibt unberührt. */
+export function resetOutboxMemory() {
+  items = [];
+  loadedFor = null;
+  emit();
+}
+
 /** Beim Anmelden: gemerkte Rückmeldungen dieses Kontos laden, fremde verwerfen. */
 export async function loadOutbox(userId: string) {
+  resetOutboxMemory();
   try {
     const raw = await readOutboxStore();
     const stored = raw ? (JSON.parse(raw) as QueuedResponse[]) : [];
-    items = stored.filter((i) => i.userId === userId);
+    items = stored
+      .filter((i) => i.userId === userId)
+      .map((i) => ({ ...i, attempts: i.attempts ?? 0 }));
   } catch {
     items = [];
   }
+  loadedFor = userId;
   emit();
 }
 
 export async function clearOutbox() {
-  items = [];
-  emit();
+  resetOutboxMemory();
   await clearOutboxStore();
 }
 
@@ -78,32 +100,52 @@ export async function flushOutbox(
     sent: QueuedResponse[];
     rejected: { item: QueuedResponse; message: string }[];
   }) => void,
+  userId: string,
 ) {
-  if (flushing || items.length === 0) return;
+  if (flushing || items.length === 0 || loadedFor !== userId) return;
   flushing = true;
   const sent: QueuedResponse[] = [];
   const rejected: { item: QueuedResponse; message: string }[] = [];
+  const remove = (item: QueuedResponse) => {
+    // Nur entfernen, wenn zwischenzeitlich keine neuere Antwort eingereiht wurde
+    items = items.filter(
+      (i) =>
+        !(
+          i.eventId === item.eventId &&
+          i.personId === item.personId &&
+          i.queuedAt === item.queuedAt
+        ),
+    );
+  };
   try {
     for (const item of [...items]) {
+      if (item.userId !== userId || loadedFor !== userId) continue; // nie mit dem Kontext eines anderen Kontos
       try {
         await send(item);
         sent.push(item);
+        remove(item);
       } catch (e) {
-        if (e instanceof RequestError && e.status === 0) break; // weiterhin offline
+        const status = e instanceof RequestError ? e.status : -1;
+        if (status === 0 || status === 401) break; // offline bzw. neu anmelden: Eintrag bleibt
+        if (TRANSIENT(status)) {
+          const attempts = item.attempts + 1;
+          if (attempts < MAX_ATTEMPTS) {
+            items = items.map((i) =>
+              i.eventId === item.eventId &&
+              i.personId === item.personId &&
+              i.queuedAt === item.queuedAt
+                ? { ...i, attempts }
+                : i,
+            );
+            break; // Server gerade nicht erreichbar genug: später erneut versuchen
+          }
+        }
         rejected.push({
           item,
           message: e instanceof RequestError ? e.message : 'Unbekannter Fehler',
         });
+        remove(item);
       }
-      // Nur entfernen, wenn zwischenzeitlich keine neuere Antwort eingereiht wurde
-      items = items.filter(
-        (i) =>
-          !(
-            i.eventId === item.eventId &&
-            i.personId === item.personId &&
-            i.queuedAt === item.queuedAt
-          ),
-      );
     }
   } finally {
     flushing = false;

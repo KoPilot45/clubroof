@@ -306,7 +306,7 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
             <ChoiceCard
               icon="receipt"
               title="Beiträge fällig stellen"
-              text="Sollstellung für das laufende Jahr erzeugen"
+              text="Fällige Beiträge für das laufende Jahr anlegen"
               selected={false}
               onPress={() => router.replace('/club-cash/fees')}
             />

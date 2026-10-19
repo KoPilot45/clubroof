@@ -334,7 +334,13 @@ export type ClubFeeAssignmentInput = {
 
 export type ClubFeeGenerateResult = { created: number; upTo: string };
 
-export type ClubFeePaymentInput = { accountId: string; amountCents: number; paidOn: string };
+export type ClubFeePaymentInput = {
+  accountId: string;
+  amountCents: number;
+  paidOn: string;
+  /** vom Gerät je Eingabe erzeugt: eine wiederholte Anfrage bucht nicht doppelt */
+  idempotencyKey?: string;
+};
 
 /** Zeile aus dem Kontoauszug mit gefundenem Beitrag (Vorschau des CSV-Imports). */
 export type ClubFeeImportRow = {

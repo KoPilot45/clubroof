@@ -154,7 +154,12 @@ export const clubFeeRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         params: idParams,
-        body: z.object({ accountId: z.uuid(), amountCents: cents, paidOn: day }),
+        body: z.object({
+          accountId: z.uuid(),
+          amountCents: cents,
+          paidOn: day,
+          idempotencyKey: z.string().min(8).max(80).optional(),
+        }),
       },
     },
     async (request, reply): Promise<ClubFees> => {

@@ -65,7 +65,12 @@ if (!flag('no-build') || !existsSync(dist)) {
 spawnSync('sh', ['-c', 'pkill -f "tsx.*src/index.ts" || true']);
 const api = spawn('npx', ['tsx', '--env-file-if-exists=../../.env', 'src/index.ts'], {
   cwd: join(root, 'apps/api'),
-  env: { ...env, PORT: String(API_PORT), JOBS_ENABLED: 'false' },
+  env: {
+    ...env,
+    PORT: String(API_PORT),
+    JOBS_ENABLED: 'false',
+    LOGIN_RATE_LIMIT: env.LOGIN_RATE_LIMIT ?? '1000',
+  },
   stdio: 'ignore',
   detached: true,
 });

@@ -27,6 +27,8 @@ export const en: Record<string, string> = {
     '“Remind everyone” in the fees waits this many days after the due date and can attach an extra text.',
   '„Anlage & Material“ ist im Verein nicht aktiviert.':
     '“Facility & equipment” is not activated in the club.',
+  '„Fällige Beiträge anlegen“ erzeugt für alle zugeordneten Mitglieder die Forderungen, die bis heute fällig sind – nie doppelt.':
+    '“Create due fees” creates the claims that are due by today for all assigned members – never twice.',
   '„Mannschaft bearbeiten → Spielplan importieren“: CSV-Datei aus dem DFBnet wählen, Vorschau prüfen (neu, geändert, unverändert, übersprungen) und übernehmen. Die Mannschaft bekommt eine Sammelmeldung. Ein erneuter Import aktualisiert Verlegungen, statt Spiele doppelt anzulegen. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.':
     '“Edit team → Import fixtures”: choose the CSV file from DFBnet, check the preview (new, changed, unchanged, skipped) and import. The team receives a summary notification. Importing again updates rescheduled matches instead of creating them twice. You can undo the import within 24 hours.',
   '„Mehr → Einladen“: persönlich per E-Mail oder als Mannschafts-Link bzw. QR-Code zum Selbstregistrieren. Bei Links gibst du neue Anfragen frei, bevor jemand die App nutzen kann.':
@@ -475,6 +477,7 @@ export const en: Record<string, string> = {
   Abwesenheit: 'Absence',
   'Abwesenheit bearbeiten': 'Edit absence',
   'Abwesenheit eintragen': 'Enter absence',
+  'Abwesenheit für': 'Absence for',
   'Abwesenheit löschen': 'Delete absence',
   'Abwesenheit melden': 'Report absence',
   'Abwesenheit speichern': 'Save absence',
@@ -1066,6 +1069,7 @@ export const en: Record<string, string> = {
   Bezahlt: 'Paid',
   'Bezahlt (€)': 'Paid (€)',
   'bezahlt {0}': 'paid {0}',
+  'Bezahlte Forderungen': 'Paid claims',
   Bezeichnung: 'Name',
   'Bezeichnung des Platzes': 'Name of the pitch',
   'Bezeichnung ist zu lang.': 'Name is too long.',
@@ -1157,6 +1161,7 @@ export const en: Record<string, string> = {
     'Please check the email address and phone number.',
   'Bitte Rechtschreibung prüfen': 'Please check spelling',
   'Bitte schließe zuerst das Jahr {0} ab.': 'Please close the year {0} first.',
+  'Bitte schreibe kurz, warum du unsicher bist.': 'Please briefly say why you are unsure.',
   'Bitte trage mindestens ein Getränk ein.': 'Please enter at least one drink.',
   'Bitte Vor- und Nachname des Kindes angeben.': "Please enter the child's first and last name.",
   'Bitte wähle Abteilung oder Mannschaft.': 'Please select a section or team.',
@@ -1657,6 +1662,8 @@ export const en: Record<string, string> = {
   'Die Anmeldung ist nicht mehr möglich.': 'Registration is no longer possible.',
   'Die Anschrift steht auf Spendenbescheinigungen, Kontakt und Webseite im Impressum.':
     'The address appears on donation receipts, contact and website in the legal notice.',
+  'Die Ansicht konnte nicht angezeigt werden. Deine Daten sind nicht verloren.':
+    'The view could not be shown. Your data is not lost.',
   'Die Anwesenheit erfasst das Trainerteam.': 'The coaching staff records attendance.',
   'Die Anwesenheit lässt sich erst ab Beginn erfassen.':
     'Attendance can only be recorded from the start.',
@@ -1946,8 +1953,12 @@ export const en: Record<string, string> = {
   'Diese Nachricht wartet nicht auf Freigabe.': 'This message is not awaiting approval.',
   'Diese Namen aus dem DFBnet gehören vermutlich zu eurem Verein. Wähle die passende Mannschaft – die Schreibweise wird gemerkt. Gegner mit ähnlichem Namen kannst du überspringen.':
     'These DFBnet names probably belong to your club. Choose the matching team – the spelling is remembered. You can skip opponents with a similar name.',
+  'Diese Person gehört zu einer Mannschaft, für die du nicht einladen darfst.':
+    'This person belongs to a team you are not allowed to invite for.',
   'Diese Person hat bereits einen App-Zugang.': 'This person already has app access.',
   'Diese Person hat keine besonderen Rechte.': 'This person has no special rights.',
+  'Diese Person hat Rechte, die über deine hinausgehen. Das Konto richtet die Verwaltung ein.':
+    'This person has permissions beyond your own. Administration sets up the account.',
   'Diese Prüfung gehört nicht zu deinen Kassen.': 'This audit does not belong to your funds.',
   'Diese Prüfung siehst du nicht.': 'You cannot see this audit.',
   'Diese Rechte gelten zusätzlich zu den Rollen und immer für den ganzen Verein. Für ein Recht nur in einer Mannschaft oder einer Abteilung lieber eine Rolle mit Geltungsbereich vergeben.':
@@ -1988,8 +1999,12 @@ export const en: Record<string, string> = {
   'Dieser Text ist ein Platzhalter und wird vor dem Start durch die geprüfte Fassung ersetzt.':
     'This text is a placeholder and will be replaced by the reviewed version before launch.',
   'Dieser Verein ist bereits eingerichtet.': 'This club has already been set up.',
+  'Dieser Vorgang gehört zu einer anderen Forderung.':
+    'This operation belongs to a different claim.',
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'This grant is also in the team fund and cannot be cancelled here.',
+  'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.':
+    'This child has their own account and cannot be linked through a join request. Member administration handles that.',
   'Dieses Passwort ist zu leicht zu erraten.': 'This password is too easy to guess.',
   'Dieses Thema kannst du nicht ändern.': 'You cannot change this topic.',
   'Dir zugeteilte Mannschaftsaufgaben': 'Team tasks assigned to you',
@@ -2392,6 +2407,8 @@ export const en: Record<string, string> = {
   Fällig: 'Due',
   'fällig {2}': 'due {2}',
   'Fällig am': 'Due on',
+  'Fällige Beiträge anlegen': 'Create due fees',
+  'Fällige Beiträge für das laufende Jahr anlegen': 'Create due fees for the current year',
   'Fällige Beträge werden sofort gebucht': 'Amounts already due are booked immediately',
   'Fälligkeit „{0}“ fehlt oder ist ungültig.': 'Due date “{0}” is missing or invalid.',
   'Fälligkeit festlegen': 'Set due date',
@@ -2745,6 +2762,7 @@ export const en: Record<string, string> = {
   'Hier findest du alles, womit du selbst bestimmst, wer was von dir sieht und wie die App dich erreicht.':
     'Here you can find everything you use to decide who sees what of you and how the app reaches you.',
   'Hier gibt es gerade nichts anzuzeigen.': 'There is nothing to show here right now.',
+  'Hier ist etwas schiefgelaufen': 'Something went wrong',
   'Hier siehst du auf einen Blick, was als Nächstes ansteht: Termine, Neuigkeiten und was noch zu tun ist.':
     'Here you see at a glance what is coming up next: events, news and what still needs doing.',
   Hilfe: 'Help',
@@ -2861,6 +2879,8 @@ export const en: Record<string, string> = {
   'In der Startelf stehen höchstens {0} Spieler.': 'The starting eleven has at most {0} players.',
   'In der Startelf stehen höchstens 11 Spieler.':
     'At most 11 players can be in the starting line-up.',
+  'In der Vereinskasse unter „Mitgliedsbeiträge“. Lege zuerst unter „Beitragsarten & Mitglieder“ die Beitragsarten (Betrag und Rhythmus) an und ordne sie den Mitgliedern zu. Mit „Fällige Beiträge anlegen“ entstehen die fälligen Forderungen (nie doppelt). Die Auswahl zwischen offenen, überfälligen, bezahlten und stornierten Forderungen steht immer sichtbar über der Liste; Überschrift und Trefferzahl nennen denselben Umfang. Wird die Kassenbuchung einer Zahlung storniert, ist die Forderung wieder offen. Zahlungen buchst du an der Forderung oder per Kontoauszug-Import (CSV): die App ordnet Eingänge per Mitgliedsnummer oder Name zu, wenn der Betrag genau passt, und zeigt alles vor dem Buchen. Bei Rückständen erinnerst du in drei Stufen selbst (Erinnerung, Mahnung, letzte Mahnung); das Mitglied bzw. die Eltern bekommen eine Benachrichtigung.':
+    'In the club cash under “Membership fees”. First create the fee types (amount and interval) under “Fee types & members” and assign them to the members. “Create due fees” creates the due claims (never twice). The choice between open, overdue, paid and cancelled claims is always visible above the list; heading and count show the same scope. If the cash entry of a payment is cancelled, the claim is open again. You book payments on the claim or by bank statement import (CSV): the app matches receipts by member number or name when the amount matches exactly, and shows everything before booking. For arrears you remind in three levels yourself (reminder, dunning, final dunning); the member or parents receive a notification.',
   'In der Vereinskasse unter „Mitgliedsbeiträge“. Lege zuerst unter „Beitragsarten & Mitglieder“ die Beitragsarten (Betrag und Rhythmus) an und ordne sie den Mitgliedern zu. Mit „Sollstellung erzeugen“ entstehen die fälligen Forderungen (nie doppelt). Zahlungen buchst du an der Forderung oder per Kontoauszug-Import (CSV): die App ordnet Eingänge per Mitgliedsnummer oder Name zu, wenn der Betrag genau passt, und zeigt alles vor dem Buchen. Bei Rückständen erinnerst du in drei Stufen selbst (Erinnerung, Mahnung, letzte Mahnung); das Mitglied bzw. die Eltern bekommen eine Benachrichtigung.':
     'In the club treasury under “Membership fees”. First create the fee types (amount and interval) under “Fee types & members” and assign them to members. “Create claims” generates the due claims (never twice). You book payments on the claim or via bank statement import (CSV): the app matches entries by member number or name when the amount fits exactly, and shows everything before booking. For arrears you remind in three levels yourself (reminder, notice, final notice); the member or parents receive a notification.',
   'In der Vereinskasse unter „Planung“. Im Haushaltsplan legst du je Kasse und Jahr Planbeträge je Kategorie fest; „Soll-Ist“ zeigt mit Fortschrittsbalken, wie viel davon gebucht ist – ab 90 % wird gewarnt, über 100 % ist die Zeile rot. „Plan aus dem Vorjahr übernehmen“ spart Tipparbeit. Rücklagen sind zweckgebundene Töpfe innerhalb einer Kasse: Du kannst nur den freien Kassenbestand binden. Der Jahresabschluss zeigt die Einnahmen-Ausgaben-Rechnung nach den vier Bereichen mit Vorjahr, die Bestände und die Rücklagen; du kannst ihn als PDF oder CSV (für Excel) öffnen. Nach Jahresende schließt der Kassenwart das Jahr ab: Danach sind Buchungen, Stornos, Plan und Rücklagen dieses Jahres gesperrt, und nur die Administration kann es mit Begründung wieder öffnen. Die App führt eine einfache Einnahmen-Ausgaben-Rechnung und ersetzt keine Steuerberatung.':
@@ -3111,6 +3131,7 @@ export const en: Record<string, string> = {
   'Keine Auszahlungen.': 'No payments.',
   'Keine Benachrichtigungen.': 'No notifications.',
   'Keine Bestätigung': 'No receipt',
+  'Keine bezahlten Forderungen.': 'No paid claims.',
   'Keine Buchungen gefunden.': 'No entries found.',
   'Keine Buchungen.': 'No entries.',
   'Keine eigene Mannschaft': 'Not one of our teams',
@@ -3129,6 +3150,7 @@ export const en: Record<string, string> = {
   'Keine offenen Aufgaben.': 'No open tasks.',
   'Keine offenen Beitrittsanfragen.': 'No open join requests.',
   'Keine offenen Entwürfe.': 'No open drafts.',
+  'Keine offenen Forderungen.': 'No open claims.',
   'Keine offenen Meldungen.': 'No open reports.',
   'Keine passenden Buchungen.': 'No matching entries.',
   'Keine passenden Dokumente.': 'No matching documents.',
@@ -3138,6 +3160,7 @@ export const en: Record<string, string> = {
   'Keine Rollen vergeben.': 'No roles assigned.',
   'Keine Scorerpunkte im Zeitraum.': 'No scorer points in this period.',
   'Keine Spiele in dieser Woche': 'No matches this week',
+  'Keine stornierten Forderungen.': 'No cancelled claims.',
   'keine Termine': 'no events',
   'Keine Termine an diesem Tag.': 'No events on this day.',
   'Keine Termine in den nächsten 30 Tagen.': 'No events in the next 30 days.',
@@ -3150,6 +3173,7 @@ export const en: Record<string, string> = {
   'Keine Trainings in den nächsten 7 Tagen.': 'No training sessions in the next 7 days.',
   'Keine Trainings oder Heimspiele an diesem Tag.':
     'No training sessions or home matches on this day.',
+  'Keine überfälligen Forderungen.': 'No overdue claims.',
   'Keine Übungen in dieser Kategorie.': 'No exercises in this category.',
   'Keine Umfragen.': 'No polls.',
   'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.':
@@ -3425,6 +3449,7 @@ export const en: Record<string, string> = {
   Meldungen: 'Reports',
   'Meldungen kommen danach gesammelt an.': 'Notifications arrive together afterwards.',
   Mi: 'Wed',
+  mich: 'me',
   Mich: 'Me',
   'Minderjährig ohne Elternteil und ohne E-Mail – später zuordnen.':
     'Minor without parent and without e-mail – assign later.',
@@ -3604,6 +3629,7 @@ export const en: Record<string, string> = {
   'Neu angelegte Einträge kannst du 24 Stunden lang mit einem Tipp rückgängig machen.':
     'You can undo newly created entries with one tap for 24 hours.',
   'Neu anlegen': 'Create new',
+  'Neu laden': 'Reload',
   'Neu zuordnen (Jahrgangswechsel)': 'Reassign (age-group change)',
   'Neue Aufgabe': 'New task',
   'Neue Aufgabe: {0} ({1})': 'New role: {0} ({1})',
@@ -3828,6 +3854,7 @@ export const en: Record<string, string> = {
   'Offene Beträge für alle sichtbar': 'Outstanding amounts visible to everyone',
   'Offene Beträge in der Mannschaft': 'Outstanding amounts on the team',
   'Offene Beträge sichtbar': 'Outstanding amounts visible',
+  'Offene Forderungen': 'Open claims',
   'Offene Posten': 'Open items',
   'Offene Umfragen erscheinen auf der Startseite im Band „Offen“ – tippe sie an und antworte direkt – und unter „Verein → Umfragen“.':
     'Open polls appear on the home screen in the “Open” band – tap one and answer right there – and under “Club → Polls”.',
@@ -4480,6 +4507,7 @@ export const en: Record<string, string> = {
   'Storniert: {0}': 'Cancelled: {0}',
   'Stornierte anzeigen': 'Show cancelled',
   'Stornierte ausblenden': 'Hide cancelled',
+  'Stornierte Forderungen': 'Cancelled claims',
   'Stornierte zeigen': 'Show reversed',
   Storno: 'Cancellation',
   Strafe: 'Fine',
@@ -4696,6 +4724,8 @@ export const en: Record<string, string> = {
   'Über Clubroof': 'About Clubroof',
   'Über das Schild-Symbol oben rechts oder „Mehr → Verwaltung“. Mit „Beenden“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.':
     'Via the shield icon at the top right or “More → Administration”. Tap “Exit” to return to the normal app. At the bottom you switch between overview, members, teams, festivals and news.',
+  'Über das Schild-Symbol oben rechts oder „Mehr → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.':
+    'Via the shield icon at the top right or “More → Administration”. Tap “To app” to return to the normal app. At the bottom you switch between overview, members, teams, festivals and news.',
   'Über den Sponsor': 'About the sponsor',
   'Über diese Anfrage wurde bereits entschieden.':
     'A decision has already been made on this request.',
@@ -4708,6 +4738,7 @@ export const en: Record<string, string> = {
   Überblick: 'Overview',
   überfällig: 'overdue',
   Überfällig: 'Overdue',
+  'Überfällige Forderungen': 'Overdue claims',
   Übernehmen: 'Apply',
   'Übernimmt {0}': '{0} is taking it',
   Überschneidung: 'Overlap',
@@ -4812,6 +4843,8 @@ export const en: Record<string, string> = {
     'Under “More”, directly below your profile, there are two entries: “Admin area” (violet) for everyone with administration rights and “Club cash” (blue) for everyone with cash access. Both open their own area with a coloured header band and “Exit” at the top and a bar with tabs at the bottom. The administration has the tabs Overview, Members, Sports, Content and Club – you only see what you have rights for. The club cash has Overview, Booking, Fees, Planning and Evaluation. Functions marked “Coming soon” follow in a later update.',
   'Unter „Mehr“ stehen direkt unter deinem Profil zwei Zugänge: „Admin-Verwaltung“ (violett) für alle mit Verwaltungsrechten und „Vereinskasse“ (blau) für alle mit Kassenzugriff. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Beenden“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Prüfung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.':
     'Under “More”, directly below your profile, there are two entries: “Admin area” (violet) for everyone with administration rights and “Club cash” (blue) for everyone with cash access. Both open their own area with a coloured header band and “Exit” at the top and a bar with tabs at the bottom. The administration has the tabs Overview, Members, Sports, Content and Club – you only see what you have rights for. The club cash has Overview, Booking, Fees, Planning and Audit. Functions marked “Coming soon” follow in a later update.',
+  'Unter „Mehr“ stehen direkt unter deinem Profil zwei Zugänge: „Admin-Verwaltung“ (violett) für alle mit Verwaltungsrechten und „Vereinskasse“ (blau) für alle mit Kassenzugriff. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Zur App“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Auswertung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.':
+    'Under “More”, directly below your profile, there are two entries: “Admin area” (violet) for everyone with administration rights and “Club cash” (blue) for everyone with cash access. Both open their own area with a coloured header band and “To app” at the top and a bar with tabs at the bottom. The administration has the tabs Overview, Members, Sports, Content and Club – you only see what you have rights for. The club cash has Overview, Booking, Fees, Planning and Evaluation. Functions marked “Coming soon” follow in a later update.',
   'Unter „Team → Aufgaben“ stehen Dinge wie Trikotwäsche, Fahrdienst oder Kuchen. Offene Aufgaben übernimmst du mit „Ich übernehme“ (Eltern auch für ihr Kind) und hakst sie ab, wenn sie erledigt sind.':
     "Under “Team → Tasks” you'll find things like washing the kit, driving or cake. Take on open tasks with “I'll do it” (parents can do so for their child too) and tick them off when they're done.",
   'Unter „Team → Funktionen“ schaltest du z. B. Statistik, Kasse oder Aufgaben für deine Mannschaft ein und aus. Was der Verein oder Abteilung ausgeschaltet hat, bleibt gesperrt.':
@@ -5089,6 +5122,7 @@ export const en: Record<string, string> = {
     'The board and administration always see everything. You can add more departments later.',
   'Vorstand und Aufgaben': 'Board and roles',
   'Wähle ein Passwort': 'Choose a password',
+  'Wähle einen Grund oder schreibe einen kurzen Hinweis.': 'Choose a reason or write a short note.',
   'Wähle links einen Termin.': 'Choose an event on the left.',
   'Wähle oben eine einzelne Kasse, um deren Plan zu bearbeiten.':
     'Select a single fund above to edit its plan.',

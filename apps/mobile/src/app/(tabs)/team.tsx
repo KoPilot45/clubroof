@@ -180,7 +180,14 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
           key: 'absence',
           label: 'Abwesenheit melden',
           icon: 'airplane',
-          onPress: () => router.push('/absences/new'),
+          // bei eindeutigem Bezug (genau eine eigene Person spielt in dieser Mannschaft) wird sie vorgewählt
+          onPress: () => {
+            const players = me.teams.filter(
+              (t) => t.id === team.id && t.functions.includes('player'),
+            );
+            const one = players.length === 1 ? players[0]!.personId : null;
+            router.push(`/absences/new?teamId=${team.id}${one ? `&personId=${one}` : ''}` as never);
+          },
         },
       ]
     : [];
