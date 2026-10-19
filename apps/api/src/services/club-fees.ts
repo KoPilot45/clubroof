@@ -81,7 +81,7 @@ async function loadDues(db: Db, clubId: string): Promise<DueRow[]> {
       first: s.persons.firstName,
       last: s.persons.lastName,
       memberNumber: s.persons.memberNumber,
-      paid: sql<number>`coalesce((select sum(p.amount_cents) from club_fee_payments p where p.due_id = ${s.clubFeeDues.id}), 0)::int`,
+      paid: sql<number>`coalesce((select sum(p.amount_cents) from club_fee_payments p join club_cash_entries e on e.id = p.entry_id where p.due_id = club_fee_dues.id and e.cancelled_at is null), 0)::int`,
     })
     .from(s.clubFeeDues)
     .innerJoin(s.clubFeeTypes, eq(s.clubFeeTypes.id, s.clubFeeDues.feeTypeId))
@@ -182,9 +182,11 @@ export async function getClubFees(
   const paidThisYear = await db
     .select({ cents: sql<number>`coalesce(sum(${s.clubFeePayments.amountCents}), 0)::int` })
     .from(s.clubFeePayments)
+    .innerJoin(s.clubCashEntries, eq(s.clubCashEntries.id, s.clubFeePayments.entryId))
     .where(
       and(
         eq(s.clubFeePayments.clubId, clubId),
+        isNull(s.clubCashEntries.cancelledAt),
         sql`${s.clubFeePayments.paidOn} >= ${`${year}-01-01`}`,
         sql`${s.clubFeePayments.paidOn} <= ${`${year}-12-31`}`,
       ),
@@ -629,6 +631,13 @@ async function feeCategoryFor(db: Db, clubId: string, categoryId: string | null)
   return fallback.id;
 }
 
+const overpayment = (open: number) =>
+  new HttpError(
+    400,
+    'overpayment',
+    `Es sind nur noch ${euro(Math.max(0, open))} offen. Zu viel Gezahltes bitte als eigene Einnahme buchen.`,
+  );
+
 async function bookPayment(
   db: Db,
   actor: Actor,
@@ -640,15 +649,31 @@ async function bookPayment(
   const r = rows[0];
   if (!r) throw notFound('Die Forderung');
   if (r.due.cancelledAt) throw new HttpError(409, 'cancelled', 'Die Forderung ist storniert.');
-  const open = r.due.amountCents - r.paid;
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0)
     throw new HttpError(400, 'invalid_amount', 'Der Betrag muss größer als 0 sein.');
-  if (input.amountCents > open)
-    throw new HttpError(
-      400,
-      'overpayment',
-      `Es sind nur noch ${euro(open)} offen. Zu viel Gezahltes bitte als eigene Einnahme buchen.`,
-    );
+  // Wiederholte Anfrage desselben Geräts: schon gebucht, nichts zu tun
+  if (input.idempotencyKey) {
+    const [same] = await db
+      .select({ dueId: s.clubFeePayments.dueId })
+      .from(s.clubFeePayments)
+      .where(
+        and(
+          eq(s.clubFeePayments.clubId, actor.club.id),
+          eq(s.clubFeePayments.idempotencyKey, input.idempotencyKey),
+        ),
+      );
+    if (same) {
+      if (same.dueId !== dueId)
+        throw new HttpError(
+          409,
+          'idempotency_conflict',
+          'Dieser Vorgang gehört zu einer anderen Forderung.',
+        );
+      return;
+    }
+  }
+  const open = r.due.amountCents - r.paid;
+  if (input.amountCents > open) throw overpayment(open);
   await assertPeriodOpen(db, actor.club.id, input.paidOn);
   const [account] = await db
     .select()
@@ -678,6 +703,15 @@ async function bookPayment(
   const categoryId = await feeCategoryFor(db, actor.club.id, type!.categoryId);
   const name = `${r.first} ${r.last}`;
   await db.transaction(async (tx) => {
+    // Forderung sperren und den Rest erst jetzt prüfen: zwei gleichzeitige Zahlungen laufen nacheinander
+    await tx.execute(sql`select 1 from club_fee_dues where id = ${dueId} for update`);
+    const [{ paid } = { paid: 0 }] = await tx.execute<{ paid: number }>(
+      sql`select coalesce(sum(p.amount_cents), 0)::int as paid
+        from club_fee_payments p join club_cash_entries e on e.id = p.entry_id
+        where p.due_id = ${dueId} and e.cancelled_at is null`,
+    );
+    const openNow = r.due.amountCents - Number(paid);
+    if (input.amountCents > openNow) throw overpayment(openNow);
     const [entry] = await tx
       .insert(s.clubCashEntries)
       .values({
@@ -699,6 +733,7 @@ async function bookPayment(
       entryId: entry!.id,
       amountCents: input.amountCents,
       paidOn: input.paidOn,
+      idempotencyKey: input.idempotencyKey ?? null,
       createdAt: now,
     });
   });

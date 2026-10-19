@@ -1992,6 +1992,8 @@ export const en: Record<string, string> = {
   'Dieser Text ist ein Platzhalter und wird vor dem Start durch die geprüfte Fassung ersetzt.':
     'This text is a placeholder and will be replaced by the reviewed version before launch.',
   'Dieser Verein ist bereits eingerichtet.': 'This club has already been set up.',
+  'Dieser Vorgang gehört zu einer anderen Forderung.':
+    'This operation belongs to a different claim.',
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'This grant is also in the team fund and cannot be cancelled here.',
   'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.':

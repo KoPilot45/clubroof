@@ -1007,9 +1007,11 @@ export const clubFeePayments = pgTable(
       .references(() => clubCashEntries.id),
     amountCents: integer().notNull(),
     paidOn: date().notNull(),
+    /** vom Gerät je Eingabe erzeugt; verhindert doppeltes Buchen bei wiederholter Anfrage */
+    idempotencyKey: text(),
     createdAt: createdAt(),
   },
-  (t) => [index().on(t.dueId)],
+  (t) => [index().on(t.dueId), unique().on(t.clubId, t.idempotencyKey)],
 );
 
 // ── Sponsoren (Paket SPO) ───────────────────────────────────────────────────

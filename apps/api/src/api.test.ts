@@ -10347,4 +10347,124 @@ describe.skipIf(!url)('API', () => {
       expect(row!.user_id).not.toBeNull();
     });
   });
+
+  describe('Beiträge und Kassenbuch widerspruchsfrei (F03, F04)', () => {
+    /** Beitragsart mit einer Jahresforderung für das Vereinsmitglied; liefert die Forderung. */
+    async function freshDue(name: string, amountCents = 5000) {
+      const admin = await login('admin');
+      const person = (await login('mitglied')).me.person;
+      const made = await send<ClubFees>('POST', '/club-cash/fees/types', admin.token, {
+        name,
+        amountCents,
+        interval: 'yearly',
+      });
+      expect(made.status).toBe(201);
+      const type = made.body.types.find((t) => t.name === name)!;
+      const assigned = await send('POST', '/club-cash/fees/assignments', admin.token, {
+        personId: person.id,
+        feeTypeId: type.id,
+        validFrom: '2026-01-01',
+      });
+      expect(assigned.status).toBe(201);
+      await send('POST', '/club-cash/fees/generate', admin.token, {});
+      const list = await get<ClubFees>(
+        '/club-cash/fees?status=all&q=' + person.lastName,
+        admin.token,
+      );
+      const due = list.dues.find((d) => d.feeTypeName === name)!;
+      const cash = await get<ClubCash>('/club-cash', admin.token);
+      return { admin, due, accountId: cash.accounts[0]!.id, lastName: person.lastName };
+    }
+    const pay = (
+      token: string,
+      dueId: string,
+      accountId: string,
+      amountCents: number,
+      extra = {},
+    ) =>
+      send<ClubFees>('POST', `/club-cash/fees/dues/${dueId}/payments`, token, {
+        accountId,
+        amountCents,
+        paidOn: '2026-10-05',
+        ...extra,
+      });
+    const reload = async (token: string, lastName: string, id: string) =>
+      (await get<ClubFees>('/club-cash/fees?status=all&q=' + lastName, token)).dues.find(
+        (d) => d.id === id,
+      )!;
+    const entryOf = async (token: string, name: string) =>
+      (await get<ClubCashEntry[]>(`/club-cash/entries?q=${encodeURIComponent(name)}`, token))[0]!;
+
+    it('F03: stornierte Zahlung macht die Forderung wieder offen, danach erneut zahlen', async () => {
+      const { admin, due, accountId, lastName } = await freshDue('Konsistenz Storno');
+      expect((await pay(admin.token, due.id, accountId, 5000)).status).toBe(201);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({
+        status: 'paid',
+        openCents: 0,
+      });
+      const entry = await entryOf(admin.token, 'Beitrag Konsistenz Storno');
+      const cancelled = await send('POST', `/club-cash/entries/${entry.id}/cancel`, admin.token, {
+        reason: 'Falsches Konto',
+      });
+      expect(cancelled.status).toBe(200);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({
+        paidCents: 0,
+        openCents: 5000,
+      });
+      // Korrigierte Zahlung ist möglich
+      expect((await pay(admin.token, due.id, accountId, 5000)).status).toBe(201);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({ status: 'paid' });
+    });
+
+    it('F03: Forderung lässt sich nach stornierter Zahlung stornieren, Jahressumme zählt nur aktive', async () => {
+      const { admin, due, accountId, lastName } = await freshDue('Konsistenz Jahr', 4000);
+      const before = (await get<ClubFees>('/club-cash/fees', admin.token)).summary
+        .paidThisYearCents;
+      await pay(admin.token, due.id, accountId, 4000);
+      expect((await get<ClubFees>('/club-cash/fees', admin.token)).summary.paidThisYearCents).toBe(
+        before + 4000,
+      );
+      const entry = await entryOf(admin.token, 'Beitrag Konsistenz Jahr');
+      await send('POST', `/club-cash/entries/${entry.id}/cancel`, admin.token, {
+        reason: 'Irrtum',
+      });
+      expect((await get<ClubFees>('/club-cash/fees', admin.token)).summary.paidThisYearCents).toBe(
+        before,
+      );
+      const cancelDue = await send('POST', `/club-cash/fees/dues/${due.id}/cancel`, admin.token, {
+        reason: 'Mitglied ausgetreten',
+      });
+      expect(cancelDue.status).toBe(200);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({ status: 'cancelled' });
+    });
+
+    it('F04: zwei parallele Vollzahlungen ergeben genau eine Zahlung', async () => {
+      const { admin, due, accountId, lastName } = await freshDue('Konsistenz Parallel');
+      const results = await Promise.all([
+        pay(admin.token, due.id, accountId, 5000),
+        pay(admin.token, due.id, accountId, 5000),
+      ]);
+      expect(results.map((r) => r.status).sort()).toEqual([201, 400]);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({
+        paidCents: 5000,
+        openCents: 0,
+      });
+      const rows =
+        await sql`select count(*)::int as n from club_fee_payments where due_id = ${due.id}`;
+      expect(rows[0]!.n).toBe(1);
+    });
+
+    it('F04: wiederholte Anfrage mit demselben Idempotenzschlüssel bucht nur einmal', async () => {
+      const { admin, due, accountId, lastName } = await freshDue('Konsistenz Schluessel', 6000);
+      const key = 'zahlung-test-0001';
+      const first = await pay(admin.token, due.id, accountId, 2000, { idempotencyKey: key });
+      const again = await pay(admin.token, due.id, accountId, 2000, { idempotencyKey: key });
+      expect(first.status).toBe(201);
+      expect(again.status).toBe(201);
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({ paidCents: 2000 });
+      // Ein anderer Schlüssel ist eine neue Zahlung
+      await pay(admin.token, due.id, accountId, 1000, { idempotencyKey: 'zahlung-test-0002' });
+      expect(await reload(admin.token, lastName, due.id)).toMatchObject({ paidCents: 3000 });
+    });
+  });
 });
