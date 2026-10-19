@@ -1,4 +1,4 @@
-/** Einrichtungs-Demos (Verein, Mannschaft, Kasse) = echte Assistenten ohne Speichern: komplett durchklicken bis „Verlassen“. */
+/** Einrichtungs-Demos (Verein, Mannschaft, Kasse, Mannschaftskasse) = echte Assistenten ohne Speichern: komplett durchklicken bis „Verlassen“. */
 import { button, launch, text } from '../lib/e2e.mjs';
 
 const b = await launch();
@@ -223,6 +223,38 @@ await text(page, 'Alles bereit?').waitFor();
 await next('Kasse einrichten');
 await text(page, 'Kasse eingerichtet').waitFor({ timeout: 10_000 });
 ok(true, 'Kassen-Demo (ausführlich): alle Schritte bis zum Abschluss');
+await button(page, 'Verlassen').click();
+await page.waitForURL(/\/login/, { timeout: 10_000 });
+
+// ── Mannschaftskasse ───────────────────────────────────────────────────────
+await a.goto('/demo/team-cash');
+await text(page, 'Die Mannschaftskasse einrichten').waitFor({ timeout: 20_000 });
+await next();
+await text(page, 'Wer führt die Kasse?').waitFor();
+await next();
+await text(page, 'Wie viel ist schon in der Kasse?').waitFor();
+await page.getByLabel('Anfangsbestand in €').fill('250');
+await next();
+await text(page, 'Strafenkatalog').first().waitFor();
+await next();
+await text(page, 'Getränkepreis').first().waitFor();
+await next();
+await text(page, 'Beitrag oder Umlage').waitFor();
+await next();
+await text(page, 'Was darf die Mannschaft sehen?').waitFor();
+await next();
+await text(page, 'Alles bereit?').waitFor();
+await page
+  .getByRole('button', { name: /Anfangsbestand ändern/ })
+  .first()
+  .click();
+await text(page, 'Wie viel ist schon in der Kasse?').waitFor();
+await next();
+await text(page, 'Alles bereit?').waitFor();
+ok(true, 'Mannschaftskasse-Demo: Zusammenfassung mit „Ändern“');
+await next('Kasse einrichten');
+await text(page, 'Mannschaftskasse eingerichtet').waitFor({ timeout: 10_000 });
+ok(true, 'Mannschaftskasse-Demo: alle Schritte bis zum Abschluss');
 await button(page, 'Verlassen').click();
 await page.waitForURL(/\/login/, { timeout: 10_000 });
 

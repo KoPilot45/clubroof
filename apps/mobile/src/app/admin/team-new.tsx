@@ -521,6 +521,15 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
               selected={false}
               onPress={() => router.replace(`/schedule-import?teamId=${created.id}`)}
             />
+            {d.modules.includes('team_cash') ? (
+              <ChoiceCard
+                icon="cash"
+                title="Mannschaftskasse einrichten"
+                text="Kassenwart, Strafenkatalog, Getränkepreis und Beitrag"
+                selected={false}
+                onPress={() => router.replace(`/teams/${created.id}/cash-setup`)}
+              />
+            ) : null}
             <ChoiceCard
               icon="calendar"
               title="Weiteren Termin anlegen"

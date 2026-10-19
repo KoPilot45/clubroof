@@ -425,6 +425,7 @@ function Login({ known }: { known: boolean }) {
                     { label: 'Vereinseinrichtung', href: '/demo/club' as const },
                     { label: 'Mannschaftseinrichtung', href: '/demo/team' as const },
                     { label: 'Kasse einrichten', href: '/demo/cash' as const },
+                    { label: 'Mannschaftskasse einrichten', href: '/demo/team-cash' as const },
                   ].map((d) => (
                     <Pressable
                       key={d.href}

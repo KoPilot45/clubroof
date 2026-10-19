@@ -130,6 +130,13 @@ export default function CashScreen() {
       {cash.error ? <ErrorNotice error={cash.error} onRetry={() => cash.refetch()} /> : null}
       {c ? (
         <>
+          {manage && (c.entries?.length ?? 0) === 0 && c.treasurers.length === 0 ? (
+            <Button
+              label="Kasse einrichten"
+              icon="construct"
+              onPress={() => router.push(`/teams/${id}/cash-setup`)}
+            />
+          ) : null}
           {c.balanceCents !== null ? (
             <HeroCard>
               <T variant="overline" color={colors.hero.onHero}>

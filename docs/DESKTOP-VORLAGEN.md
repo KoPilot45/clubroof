@@ -94,6 +94,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `demo/cash` | E | fertig | Assistent |
 | `demo/club` | E | fertig | Assistent |
 | `demo/team` | E | fertig | Assistent |
+| `demo/team-cash` | E | fertig | Assistent |
 | `documents` | A | Breite | Liste bzw. Detailseite |
 | `documents-upload` | B | Breite | Formular |
 | `equipment/damages` | C | Breite | Tabelle mit Filterleiste |
@@ -150,6 +151,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `teams/[id]/cash-pay` | B | Breite | Formular |
 | `teams/[id]/cash-payments` | C | Breite | Tabelle mit Filterleiste |
 | `teams/[id]/cash-settings` | B | Breite | Formular |
+| `teams/[id]/cash-setup` | E | fertig | Assistent |
 | `teams/[id]/cash-stats` | F | fertig | Bericht / Diagramme |
 | `teams/[id]/cash-treasurers` | C | Breite | Tabelle mit Filterleiste |
 | `teams/[id]/event-new` | B | Breite | Formular |
