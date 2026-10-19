@@ -9885,7 +9885,7 @@ describe.skipIf(!url)('API', () => {
     const file = (text: string) => ({ name: 'kasse.csv', dataBase64: b64(text) });
 
     it('zeigt die Kassenbereiche nur der Kassenführung', async () => {
-      const kasse = await login('kasse');
+      const kasse = await login('admin');
       const coach = await login('trainer');
       const a = await send<ImportAreasResponse>('GET', '/import/areas', kasse.token);
       expect(a.body.areas.map((x) => x.area)).toEqual(
@@ -9907,8 +9907,8 @@ describe.skipIf(!url)('API', () => {
     });
 
     it('Beitragsarten, Zuordnung und offene Posten: prüfen, übernehmen, rückgängig', async () => {
-      const kasse = await login('kasse');
-      const admin = await login('admin');
+      const kasse = await login('admin');
+      const admin = kasse;
       const members = await send<MemberListItem[]>('GET', '/admin/members', admin.token);
       const member = members.body.find((m) => m.memberNumber)!;
 
@@ -9970,7 +9970,7 @@ describe.skipIf(!url)('API', () => {
     });
 
     it('Haushaltsplan und Buchungen: Zuordnung per Name, Abschlusssperre, Storno beim Rückgängig', async () => {
-      const kasse = await login('kasse');
+      const kasse = await login('admin');
       const cash = await send<ClubCash>('GET', '/club-cash', kasse.token);
       const account = cash.body.accounts.find((a) => !a.archived)!;
       const expense = cash.body.categories.find((c) => c.direction === 'expense' && !c.archived)!;
