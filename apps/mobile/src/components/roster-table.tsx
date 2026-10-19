@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { formatShortDate } from '@/lib/format';
+import { useIsCompactDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { webState } from '@/lib/web-state';
@@ -22,6 +23,7 @@ export function RosterTable({ teamId }: { teamId: string }) {
     queryKey: ['roster', teamId],
     queryFn: () => api<RosterEntry[]>(`/teams/${teamId}/roster`),
   });
+  const compact = useIsCompactDesktop();
   const players = (roster.data ?? []).filter((r) => r.function === 'player');
   if (players.length === 0) return null;
   const head = (label: string, width?: number) => (
@@ -43,7 +45,7 @@ export function RosterTable({ teamId }: { teamId: string }) {
       >
         {head('Nr.', COLS.nr)}
         {head('Spieler')}
-        {head('Position', COLS.position)}
+        {compact ? null : head('Position', COLS.position)}
         {head('Status', COLS.status)}
       </View>
       {players.map((p) => (
@@ -69,7 +71,7 @@ export function RosterTable({ teamId }: { teamId: string }) {
             {p.jerseyNumber ?? '–'}
           </Text>
           <View
-            style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, minWidth: 0 }}
+            style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, minWidth: 200 }}
           >
             <Avatar name={p.name} uri={p.avatarUrl} size={32} />
             <Text
@@ -80,9 +82,11 @@ export function RosterTable({ teamId }: { teamId: string }) {
               {p.name}
             </Text>
           </View>
-          <Text style={{ width: COLS.position, fontSize: 13, color: colors.onSurfaceMuted }}>
-            {p.position ?? '–'}
-          </Text>
+          {compact ? null : (
+            <Text style={{ width: COLS.position, fontSize: 13, color: colors.onSurfaceMuted }}>
+              {p.position ?? '–'}
+            </Text>
+          )}
           <View style={{ width: COLS.status, alignItems: 'flex-start' }}>
             {p.unavailable ? (
               <Chip

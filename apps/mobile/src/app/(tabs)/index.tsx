@@ -23,7 +23,7 @@ import { Card, ChoiceChips, Chip, ErrorNotice, Loading, Screen, Section, T } fro
 import { WelcomeTour } from '@/components/welcome-tour';
 import { readFlag, writeFlag } from '@/lib/flags';
 import { cashTeamId } from '@/lib/quick-links';
-import { useIsDesktop } from '@/lib/layout';
+import { useIsCompactDesktop, useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { useTileInfo } from '@/lib/tile-info';
 import { Counted, useScrollY } from '@/lib/motion';
@@ -41,6 +41,8 @@ const NEWS_FILTERS: { value: NewsFilter; label: string }[] = [
 export default function HomeScreen() {
   const { api, me, refresh } = useSignedIn();
   const desktop = useIsDesktop();
+  // kompakter Desktop (1100–1399 px): eine Spalte, Neuigkeiten unter „Offen“
+  const twoColumns = desktop && !useIsCompactDesktop();
   const home = useQuery({ queryKey: ['home'], queryFn: () => api<HomeResponse>('/home') });
   const data = home.data;
   const hasAds = useHasSponsorAds();
@@ -109,7 +111,7 @@ export default function HomeScreen() {
       {home.isPending ? <Loading variant="page" /> : null}
       {home.error ? <ErrorNotice error={home.error} onRetry={() => home.refetch()} /> : null}
 
-      {desktop ? (
+      {twoColumns ? (
         <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
           <View style={{ flex: 1.7, minWidth: 0, gap: 18 }}>
             {first ? <PersonStatusCards event={first} /> : null}

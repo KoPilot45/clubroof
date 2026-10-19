@@ -139,6 +139,13 @@ export function Swipe({
   children: React.ReactNode;
   onIndex?: (i: number) => void;
 }) {
+  // Desktop (Paket DT3): Karten umbrechen statt am Rand abgeschnitten zu werden
+  if (useIsDesktop())
+    return (
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP, paddingVertical: 6 }}>
+        {children}
+      </View>
+    );
   return (
     <EdgeScroll
       bleed={20}
@@ -167,6 +174,7 @@ export function MatchCarousel({ matches, club }: { matches: EventSummary[]; club
       />
     );
   const current = Math.min(index, matches.length - 1);
+  const desktopRow = useIsDesktop();
   return (
     <View style={{ gap: 8 }}>
       <Swipe width={width} onIndex={setIndex}>
@@ -174,7 +182,7 @@ export function MatchCarousel({ matches, club }: { matches: EventSummary[]; club
           <MatchCard key={m.id} event={m} width={width} club={club} />
         ))}
       </Swipe>
-      {matches.length > 1 ? (
+      {matches.length > 1 && !desktopRow ? (
         <View style={{ alignItems: 'center', gap: 6 }}>
           <View style={{ flexDirection: 'row', gap: 6 }}>
             {matches.map((m, i) => (
