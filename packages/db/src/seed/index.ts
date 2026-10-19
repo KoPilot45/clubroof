@@ -32,6 +32,7 @@ import {
 import { and, asc, eq, gte, inArray, isNotNull, like, lt, sql } from 'drizzle-orm';
 import type { PgTable } from 'drizzle-orm/pg-core';
 import { createDb, type Db } from '../client';
+import { seedKasseAusbau } from './ausbau-kasse';
 import * as s from '../schema';
 import {
   ABSENCE_REASONS_NO,
@@ -2058,6 +2059,28 @@ export async function seed(db: Db, options: { now?: Date } = {}): Promise<SeedSu
       note: 'Strafen September',
       createdByPersonId: persona.player.id,
       createdAt: addMinutes(now, -180),
+    });
+
+    // ── Ausbau der Vereinskasse (Paket DEMODATEN-AUSBAU): 24 Monate, Plan, Rücklagen, Inventar, Spenden, Prüfung ──
+    await seedKasseAusbau({
+      tx,
+      clubId,
+      today,
+      fundId,
+      accounts: { giro: acc('Girokonto'), bar: acc('Barkasse'), tages: acc('Tagesgeld') },
+      categoryId: cat,
+      centerId: center,
+      treasurerId: persona.treasurer.id,
+      auditorId: persona.member.id,
+      adminId: persona.admin.id,
+      boardId: persona.board.id,
+      persons: persons.map((p) => ({
+        id: p.id,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        birthDate: p.birthDate ?? null,
+        status: p.membershipStatus ?? 'active',
+      })),
     });
 
     // ── Dokumente ─────────────────────────────────────────────────────────────────────────
