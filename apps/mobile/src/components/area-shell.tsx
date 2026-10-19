@@ -301,12 +301,16 @@ function GroupHeading({
 export function CategoryPage({
   category,
   children,
+  top,
 }: {
   category: AreaCategory;
   children?: ReactNode;
+  /** Zeile über den Gruppen (z. B. Textlink „Auswertung ansehen ›“) */
+  top?: ReactNode;
 }) {
   return (
     <Screen edges={[]}>
+      {top}
       <Columns min={380} gap={28}>
         {category.groups.map((g) => (
           <View key={g.key} style={{ gap: 18, paddingTop: 34 }}>

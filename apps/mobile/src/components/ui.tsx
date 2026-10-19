@@ -1761,19 +1761,133 @@ const outlineIcon = (name: IconName): IconName =>
     ? (`${name}-outline` as IconName)
     : name;
 
+/**
+ * Desktop (Paket NACHBESSERUNG-DESKTOP-UND-KASSE): flache Zeilenkachel – Symbol links, Name (bricht nur zwischen Wörtern),
+ * Kennzahl als Pill rechts in der Kachel. Raster `auto-fill` ab 210 px Breite.
+ */
+function DesktopTileGrid({ items }: { items: TileItem[] }) {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={
+        {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
+          gap: 12,
+        } as never
+      }
+    >
+      {items.map((item, index) => {
+        const disabled = item.soon || !item.onPress;
+        const value =
+          item.figure ?? (item.badge !== undefined && item.badge !== 0 ? String(item.badge) : null);
+        const showBadge = !item.soon && value !== null;
+        const tint = item.tint ?? TINT_ORDER[index % TINT_ORDER.length]!;
+        const urgent = item.tone === 'action' || item.tone === 'urgent';
+        const accent = urgent ? colors.status.action.solid : colors.tints[tint].onContainer;
+        return (
+          <PressScale
+            key={item.key}
+            accessibilityRole="button"
+            accessibilityState={{ disabled }}
+            accessibilityLabel={[
+              item.label,
+              showBadge ? value : null,
+              item.soon ? 'bald verfügbar' : item.hint,
+            ]
+              .filter(Boolean)
+              .join(', ')}
+            disabled={disabled}
+            onPress={item.onPress}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              minHeight: 60,
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderRadius: 18,
+              ...(item.add
+                ? {
+                    backgroundColor: 'transparent',
+                    borderWidth: 1.5,
+                    borderStyle: 'dashed' as const,
+                    borderColor: withAlpha(colors.primary, 0.7),
+                  }
+                : {
+                    backgroundColor: colors.anstoss.card,
+                    borderWidth: 1,
+                    borderColor: colors.anstoss.cardBorder,
+                  }),
+              opacity: item.soon ? 0.55 : 1,
+            }}
+          >
+            <View
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 12,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: item.add
+                  ? withAlpha(colors.primary, 0.14)
+                  : colors.tints[tint].container,
+              }}
+            >
+              <Ionicons
+                name={item.add ? 'add' : outlineIcon(item.icon)}
+                size={22}
+                color={item.add ? colors.primaryText : colors.tints[tint].onContainer}
+              />
+            </View>
+            <Text
+              verbatim
+              style={{
+                flex: 1,
+                minWidth: 0,
+                fontSize: 14,
+                fontWeight: '700',
+                color: item.add ? colors.primaryText : colors.onSurface,
+              }}
+            >
+              {t(item.label)}
+            </Text>
+            {showBadge ? (
+              <View
+                style={{
+                  paddingHorizontal: 8,
+                  paddingVertical: 2,
+                  borderRadius: 10,
+                  backgroundColor: accent,
+                }}
+              >
+                <Text
+                  verbatim
+                  style={{ fontSize: 12, fontWeight: '800', color: colors.background }}
+                >
+                  {value}
+                </Text>
+              </View>
+            ) : null}
+          </PressScale>
+        );
+      })}
+    </View>
+  );
+}
+
 function LargeTileGrid({ items }: { items: TileItem[] }) {
   const { colors } = useTheme();
-  // Desktop (Paket DT3): 3 (kompakt) bis 4 Spalten, niedrigere Kacheln
+  // Desktop: flache Zeilenkacheln im auto-fill-Raster
   const desktop = useIsDesktop();
-  const compact = useIsCompactDesktop();
-  const tileWidth = !desktop ? '47.9%' : compact ? '31.6%' : '23.6%';
+  if (desktop) return <DesktopTileGrid items={items} />;
+  const tileWidth = '47.9%';
   return (
     <View
       style={{
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: desktop ? 'flex-start' : 'space-between',
-        columnGap: desktop ? (compact ? '2.6%' : '1.8%') : 0,
+        justifyContent: 'space-between',
         rowGap: 14,
       }}
     >
@@ -1801,7 +1915,7 @@ function LargeTileGrid({ items }: { items: TileItem[] }) {
             onPress={item.onPress}
             style={{
               width: tileWidth,
-              minHeight: desktop ? 104 : 124,
+              minHeight: 124,
               padding: 16,
               borderRadius: 24,
               justifyContent: item.add ? 'center' : 'space-between',

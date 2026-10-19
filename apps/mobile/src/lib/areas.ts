@@ -249,7 +249,7 @@ export const canOpenClubCash = (me: MeResponse) => me.clubCash?.viewer === 'trea
 /** Vorstand mit freigegebener Einsicht: nur die reine Kassenübersicht (Verein → Vereinsleben). */
 export const canSeeCashOverview = (me: MeResponse) => me.clubCash?.viewer === 'board';
 
-/** Kategorien der Vereinskasse: Buchung, Beiträge, Planung, Prüfung. */
+/** Kategorien der Vereinskasse: Buchung, Beiträge, Planung, Auswertung. */
 export function cashCategories(me: MeResponse): AreaCategory[] {
   const manage = !!me.clubCash?.manage;
   const full = me.clubCash?.level === 'full';
@@ -275,11 +275,12 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
           ],
         ],
         [
-          'Zuschüsse & Sponsoren',
+          'Besondere Einnahmen',
           [
             ['grants', 'Zuschüsse', 'gift', '/club-cash/grants', full],
             ['team-grants', 'Mannschaftszuschuss', 'shirt', '/club-cash/team-grants', full],
             ['sponsors', 'Sponsoren', 'heart', '/club-cash/sponsors', full],
+            ['donations', 'Spenden', 'heart', '/club-cash/donations', full],
           ],
         ],
         ['Kassenbuch', [['entries', 'Kassenbuch', 'book', '/club-cash/entries', full]]],
@@ -297,13 +298,7 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
       label: 'Beiträge',
       icon: 'people',
       groups: groups([
-        [
-          'Mitglieder',
-          [
-            ['fees', 'Beitragsübersicht', 'people', '/club-cash/fees', true],
-            ['fee-stats', 'Beitragsstatistik', 'stats-chart', '/club-cash/stats?topic=fees', true],
-          ],
-        ],
+        ['Mitglieder', [['fees', 'Beitragsübersicht', 'people', '/club-cash/fees', true]]],
         [
           'Einrichtung',
           [
@@ -342,7 +337,6 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
           [
             ['budget', 'Haushaltsplan', 'clipboard', '/club-cash/budget?mode=plan', true],
             ['actual', 'Soll-Ist', 'git-compare', '/club-cash/budget?mode=actual', true],
-            ['plan-stats', 'Plan gegen Ist', 'stats-chart', '/club-cash/stats?topic=plan', true],
           ],
         ],
         [
@@ -356,18 +350,34 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
       ]),
     },
     {
-      key: 'pruefung',
-      label: 'Prüfung',
-      icon: 'checkmark-done',
+      key: 'auswertung',
+      label: 'Auswertung',
+      icon: 'stats-chart',
       groups: groups([
-        ['Kassenprüfung', [['audit', 'Kassenprüfung', 'search', '/club-cash/audit', true]]],
         [
-          'Spenden',
+          'Statistik',
           [
-            ['donations', 'Spenden', 'heart', '/club-cash/donations', full],
-            ['tax', 'Steuerdaten', 'document-text', '/club-cash/tax', full],
+            ['stats-overview', 'Überblick', 'speedometer', '/club-cash/stats?topic=overview', true],
+            [
+              'stats-flows',
+              'Einnahmen & Ausgaben',
+              'swap-vertical',
+              '/club-cash/stats?topic=flows',
+              true,
+            ],
+            ['stats-plan', 'Plan gegen Ist', 'git-compare', '/club-cash/stats?topic=plan', true],
+            ['stats-fees', 'Beiträge', 'people', '/club-cash/stats?topic=fees', true],
+            [
+              'stats-departments',
+              'Abteilungen',
+              'business',
+              '/club-cash/stats?topic=departments',
+              true,
+            ],
           ],
         ],
+        ['Prüfung', [['audit', 'Kassenprüfung', 'search', '/club-cash/audit', true]]],
+        ['Steuer', [['tax', 'Steuerdaten', 'document-text', '/club-cash/tax', full]]],
       ]),
     },
   ];

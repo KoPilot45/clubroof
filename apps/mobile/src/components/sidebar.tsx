@@ -267,7 +267,19 @@ export function Sidebar() {
           <Crest initials={me.club.shortCode} size={44} />
         )}
         <View style={{ flex: 1, minWidth: 0 }}>
-          <T variant="headline" numberOfLines={2} style={{ fontSize: 18, lineHeight: 19 }} verbatim>
+          {/* Name bricht auf zwei Zeilen um, die Schrift passt sich der Länge an (nie „…“) */}
+          <T
+            variant="headline"
+            numberOfLines={3}
+            style={
+              me.club.name.length <= 24
+                ? { fontSize: 18, lineHeight: 19 }
+                : me.club.name.length <= 36
+                  ? { fontSize: 15, lineHeight: 16 }
+                  : { fontSize: 13, lineHeight: 14 }
+            }
+            verbatim
+          >
             {me.club.name}
           </T>
         </View>

@@ -482,8 +482,9 @@ export default function MoreScreen() {
     <Screen header={<AppHeader title="Mehr" subtitle="Profil, Einstellungen und Hilfe" />}>
       {desktop ? (
         <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
-          <View style={{ width: 440, gap: 18 }}>{leftCol}</View>
+          {/* Desktop: links Hero, „Mein Bereich“, „Meine Mannschaften“; rechts Einstellungen und Über Clubroof */}
           <View style={{ flex: 1, minWidth: 0, gap: 18 }}>{rightCol}</View>
+          <View style={{ width: 440, gap: 18 }}>{leftCol}</View>
         </View>
       ) : (
         <>
