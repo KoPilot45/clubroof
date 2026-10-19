@@ -87,7 +87,7 @@ Dazu die Nutzerrollen **Spieler**, **Elternteil** (Eltern-Kind-Verknüpfung), **
 
 - _Automatische Zusage_ – alle gelten als dabei, Countdown bis Absagefrist (z. B. Senioren)
 - _Aktive Zu-/Absage_ – jeder muss reagieren (z. B. Jugend/Eltern)
-- _Nur Abwesenheiten_ – keine Terminreaktion, globale Abwesenheiten steuern Verfügbarkeit
+- _(entfallen mit Paket E2)_ Nur Abwesenheiten – Mannschaften mit diesem Modell wurden auf „Automatisch zugesagt“ umgestellt
 
 **Absagefristen** je Mannschaft _und_ Terminart (Training 2 h vorher, Spiel Freitag 18:00, Turnier 3 Tage);
 nach Ablauf ist reguläre Absage gesperrt, Trainer können korrigieren.

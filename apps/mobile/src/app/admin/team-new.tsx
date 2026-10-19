@@ -74,12 +74,10 @@ const INITIAL: Draft = {
 const MODE_ICON: Record<ParticipationMode, IconName> = {
   auto_accept: 'checkmark-done',
   active_response: 'hand-left',
-  absences_only: 'airplane',
 };
 const MODE_TEXT: Record<ParticipationMode, string> = {
   auto_accept: 'Alle gelten als zugesagt, bis jemand absagt – gut für feste Gruppen',
   active_response: 'Jede Person sagt zu oder ab – der Trainer sieht, wer noch fehlt',
-  absences_only: 'Nur Abwesenheiten werden gemeldet – am wenigsten Aufwand',
 };
 const TEMPLATE_ICON: Record<TeamTemplate, IconName> = {
   performance: 'trophy',

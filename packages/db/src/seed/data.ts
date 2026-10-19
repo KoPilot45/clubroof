@@ -132,7 +132,7 @@ export const TEAMS: TeamDef[] = [
     league: 'Freizeitrunde',
     unit: 'veterans',
     template: 'leisure',
-    mode: 'absences_only',
+    mode: 'auto_accept',
     gender: 'male',
     playerCount: 18,
     birthYears: [1968, 1992],

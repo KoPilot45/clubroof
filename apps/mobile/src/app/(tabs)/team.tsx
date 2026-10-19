@@ -46,7 +46,6 @@ import { t } from '@/lib/i18n';
 const PARTICIPATION_LABELS = {
   auto_accept: 'Automatische Zusage – nur Absagen nötig',
   active_response: 'Aktive Zu- und Absage',
-  absences_only: 'Nur Abwesenheiten melden',
 } as const;
 
 /**

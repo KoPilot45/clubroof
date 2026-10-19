@@ -236,9 +236,7 @@ export async function summarizeEvents(
     const deadline = responseDeadline(event.startsAt, toDeadlineRule(rule), actor.club.timezone);
 
     const regularOpen =
-      event.status === 'scheduled' &&
-      row.team?.participationMode !== 'absences_only' &&
-      isResponseOpen(now, event.startsAt, deadline);
+      event.status === 'scheduled' && isResponseOpen(now, event.startsAt, deadline);
     const overrideOpen =
       event.status === 'scheduled' &&
       canOverride(actor, row) &&
@@ -644,9 +642,7 @@ export async function respondToEvent(
 
   const [summary] = await summarizeEvents(db, actor, [row], now);
   const deadline = summary!.deadline ? new Date(summary!.deadline) : null;
-  const regularOpen =
-    row.team?.participationMode !== 'absences_only' &&
-    isResponseOpen(now, row.event.startsAt, deadline);
+  const regularOpen = isResponseOpen(now, row.event.startsAt, deadline);
   const overrideOpen =
     override && now.getTime() < row.event.startsAt.getTime() + OVERRIDE_WINDOW_MS;
 
