@@ -433,6 +433,13 @@ export const DOCUMENTS: {
     sizeBytes: 245_000,
   },
   {
+    title: 'Protokoll Jahreshauptversammlung',
+    fileName: 'Protokoll_JHV.pdf',
+    category: 'regulations',
+    mimeType: 'application/pdf',
+    sizeBytes: 156_000,
+  },
+  {
     title: 'Jugendordnung',
     fileName: 'Jugendordnung.pdf',
     category: 'regulations',

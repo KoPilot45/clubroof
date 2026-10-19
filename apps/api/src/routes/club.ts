@@ -36,7 +36,7 @@ import { closingCsv, closingPdf } from '../services/club-planning';
 import { getClubTeamPage } from '../services/teams';
 import { getAreaOverview } from '../services/area-overview';
 import { listHelperEvents, setAttendance, signUp, withdraw } from '../services/helpers';
-import { placeholderPdf } from '../storage/files';
+import { demoDocumentPdf } from '../storage/demo-documents';
 import {
   deleteDocument,
   setClubLogo,
@@ -253,20 +253,20 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
 };
 
 /** Feste Bilder der Marke und des Demovereins (öffentlich, nur diese Namen). */
-const BRAND_FILES: Record<string, string> = { 'demo-wappen.png': 'image/png' };
+const BRAND_FILE = /^demo-[a-z0-9-]{1,40}\.png$/;
 
 export const brandRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
     '/brand/:name',
     { schema: { params: z.object({ name: z.string().max(60) }) } },
     async (request, reply) => {
-      const type = BRAND_FILES[request.params.name];
-      if (!type) throw notFound('Das Bild');
+      if (!BRAND_FILE.test(request.params.name)) throw notFound('Das Bild');
       const file = await readFile(
         fileURLToPath(new URL(`../../assets/${request.params.name}`, import.meta.url)),
-      );
+      ).catch(() => null);
+      if (!file) throw notFound('Das Bild');
       return reply
-        .header('content-type', type)
+        .header('content-type', 'image/png')
         .header('cache-control', 'public, max-age=86400')
         .header('x-content-type-options', 'nosniff')
         .send(file);
@@ -383,7 +383,7 @@ export const fileRoutes: FastifyPluginAsyncZod = async (app) => {
       let mimeType = row.doc.mimeType;
       let fileName = row.doc.fileName;
       if (!data && row.doc.storageKey.startsWith('demo/')) {
-        data = placeholderPdf(row.doc.title, row.clubName);
+        data = demoDocumentPdf(row.doc.title, row.clubName);
         mimeType = 'application/pdf';
         fileName = `${row.doc.title}.pdf`;
       }

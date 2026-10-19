@@ -1,0 +1,31 @@
+﻿Vorname;Nachname;Geburtsdatum;E-Mail;Telefon;Mitgliedsnummer;Eintrittsdatum;Mannschaft;Funktion;Rückennummer;Elternteil von
+Jonas;Albrecht;01.01.2013;jonas.albrecht@example.org;0170 2000000;9000;01.08.2018;C-Jugend;Spieler;1;
+Lea;Fink;02.02.2014;lea.fink@example.org;0170 2000137;9001;01.08.2019;D-Jugend;Spieler;2;
+Finn;Keller;03.03.2011;finn.keller@example.org;0170 2000274;9002;01.08.2020;B-Jugend;Spieler;3;
+Mia;Pfeiffer;04.04.2016;mia.pfeiffer@example.org;0170 2000411;9003;01.08.2021;E-Jugend;Spieler;4;
+Luca;Engel;05.05.2002;luca.engel@example.org;0170 2000548;9004;01.08.2022;Frauen;Spieler;5;
+Emma;Jung;06.06.1998;emma.jung@example.org;0170 2000685;9005;01.08.2023;1. Mannschaft;Spieler;6;
+Noah;Otto;07.07.2013;noah.otto@example.org;0170 2000822;9006;01.08.2024;C-Jugend;Spieler;7;
+Sophie;Dietz;08.08.2014;sophie.dietz@example.org;0170 2000959;9007;01.08.2025;D-Jugend;Spieler;8;
+Elias;Iser;09.09.2011;elias.iser@example.org;0170 2001096;9008;01.08.2018;B-Jugend;Spieler;9;
+Hannah;Neumann;10.10.2016;hannah.neumann@example.org;0170 2001233;9009;01.08.2019;E-Jugend;Spieler;10;
+Paul;Conrad;11.11.2002;paul.conrad@example.org;0170 2001370;9010;01.08.2020;Frauen;Spieler;11;
+Lena;Hahn;12.12.1998;lena.hahn@example.org;0170 2001507;9011;01.08.2021;1. Mannschaft;Spieler;12;
+Ben;Maurer;13.01.2013;ben.maurer@example.org;0170 2001644;9012;01.08.2022;C-Jugend;Spieler;13;
+Marie;Brandt;14.02.2014;marie.brandt@example.org;0170 2001781;9013;01.08.2023;D-Jugend;Spieler;14;
+Leon;Gärtner;15.03.2011;leon.gaertner@example.org;0170 2001918;9014;01.08.2024;B-Jugend;Spieler;15;
+Clara;Lorenz;16.04.2016;clara.lorenz@example.org;0170 2002055;9015;01.08.2025;E-Jugend;Spieler;16;
+Jonas;Albrecht;17.05.2002;jonas.albrecht@example.org;0170 2002192;9016;01.08.2018;Frauen;Spieler;17;
+Lea;Fink;18.06.1998;lea.fink@example.org;0170 2002329;9017;01.08.2019;1. Mannschaft;Spieler;18;
+Finn;Keller;19.07.2013;finn.keller@example.org;0170 2002466;9018;01.08.2020;C-Jugend;Spieler;1;
+Mia;Pfeiffer;20.08.2014;mia.pfeiffer@example.org;0170 2002603;9019;01.08.2021;D-Jugend;Spieler;2;
+Luca;Engel;21.09.2011;luca.engel@example.org;0170 2002740;9020;01.08.2022;B-Jugend;Spieler;3;
+Emma;Jung;22.10.2016;emma.jung@example.org;0170 2002877;9021;01.08.2023;E-Jugend;Spieler;4;
+Karin;Albrecht;12.03.1982;karin.albrecht@example.org;0171 5550101;9101;;;;;Jonas Albrecht
+Stefan;Brandt;02.07.1979;stefan.brandt@example.org;0171 5550102;9102;;;;;Lea Brandt
+Jonas;Albrecht;12.05.2013;jonas.albrecht@example.org;0170 2000000;9000;01.08.2018;C-Jugend;Spieler;1;
+Mia;Brandt;31.02.2014;mia.brandt@example.org;;9777;01.08.2020;D-Jugend;Spieler;4;
+;Schulz;05.05.2012;schulz@example.org;;9778;;E-Jugend;Spieler;5;
+Tim;Vogel;10.10.2010;tim.vogel-at-example.org;;9779;;B-Jugend;Spieler;12;
+Uwe;Richter;14.06.1975;uwe.richter@example.org;0172 1112223;9780;01.08.2022;1. Mannschaft;Trainer;;
+Anna;Weber;21.09.1988;anna.weber@example.org;0172 3334445;9781;;Frauen;Betreuerin;;
