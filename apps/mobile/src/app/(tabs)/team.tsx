@@ -33,8 +33,7 @@ import { EVENT_TYPE_LABELS, TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
 import { AttendanceOverview } from '@/components/squad-sheet';
-import { RosterTable } from '@/components/roster-table';
-import { useIsDesktop } from '@/lib/layout';
+import { useIsCompactDesktop, useIsDesktop } from '@/lib/layout';
 import { useTeamColorOf } from '@/lib/team-colors';
 import { useTheme } from '@/lib/theme';
 import type { TintKey } from '@clubroof/design-tokens';
@@ -110,6 +109,7 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
   const has = (module: string) => team?.modules.includes(module) ?? false;
 
   const desktop = useIsDesktop();
+  const compactDesktop = useIsCompactDesktop();
   const overview = useQuery({
     queryKey: ['team', team?.id],
     queryFn: () => api<TeamOverview>(`/teams/${team!.id}`),
@@ -416,96 +416,28 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                   ) : null}
                 </View>
               </View>
-              <View style={{ flexDirection: 'row', gap: 18, alignItems: 'flex-start' }}>
-                <View style={{ flex: 1, minWidth: 0, gap: 18 }}>
-                  <Section title="Kader">
-                    <RosterTable teamId={team.id} />
-                  </Section>
-                  {o && o.upcomingMatches.length > 0 ? (
-                    <Section title="Nächste Spiele">
-                      <UpcomingMatches matches={o.upcomingMatches} />
+              {/* Kachelgruppen (Paket NACHBESSERUNG-DESKTOP-UND-KASSE): breite Gruppe links, schmale rechts; am Laptop untereinander */}
+              <View
+                style={{
+                  flexDirection: compactDesktop ? 'column' : 'row',
+                  gap: 18,
+                  alignItems: 'flex-start',
+                }}
+              >
+                {groups[0] ? (
+                  <View style={{ flex: 1.7, minWidth: 0, width: '100%' }}>
+                    <Section title={groups[0].title}>
+                      <TileGrid
+                        items={withTileInfo(groups[0].tiles, tileInfo).map((tile) => ({
+                          ...tile,
+                          tint: groups[0]!.tint,
+                        }))}
+                      />
                     </Section>
-                  ) : null}
-
-                  {o ? (
-                    <Section
-                      title="Trainingswoche"
-                      action="Alle Termine"
-                      onAction={() => router.push(`/events?teamId=${team.id}`)}
-                    >
-                      <Card>
-                        {o.trainingWeek.length === 0 ? (
-                          <Empty
-                            icon="fitness-outline"
-                            text="Keine Trainings in den nächsten 7 Tagen."
-                          />
-                        ) : null}
-                        {o.trainingWeek.map((e, i) => (
-                          <ListRow
-                            key={e.id}
-                            first={i === 0}
-                            onPress={() => router.push(`/events/${e.id}`)}
-                            leading={
-                              <DateTile
-                                {...formatDateTile(e.startsAt)}
-                                muted={e.status === 'cancelled'}
-                              />
-                            }
-                            title={e.title}
-                            subtitle={
-                              e.status === 'cancelled'
-                                ? e.cancelledReason
-                                  ? `Grund: ${e.cancelledReason}`
-                                  : formatTime(e.startsAt)
-                                : [
-                                    formatTime(e.startsAt),
-                                    e.location,
-                                    e.counts
-                                      ? `${e.counts.yes} von ${e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending} zugesagt`
-                                      : null,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(' · ')
-                            }
-                            trailing={
-                              e.status === 'cancelled' ? (
-                                <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
-                              ) : null
-                            }
-                          />
-                        ))}
-                      </Card>
-                    </Section>
-                  ) : null}
-
-                  {o && o.lastResults.length > 0 ? (
-                    <Section
-                      title="Letzte Ergebnisse"
-                      action="Statistik"
-                      onAction={
-                        has('statistics') ? () => router.push(`/teams/${team.id}/stats`) : undefined
-                      }
-                    >
-                      <Card>
-                        {o.lastResults.map((r, i) => (
-                          <ResultRow
-                            key={r.eventId}
-                            result={r}
-                            clubShortName={me.club.shortName}
-                            badge={team.badge}
-                            first={i === 0}
-                          />
-                        ))}
-                      </Card>
-                    </Section>
-                  ) : null}
-                  {overview.isPending ? <Loading /> : null}
-                  {overview.error ? (
-                    <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />
-                  ) : null}
-                </View>
-                <View style={{ width: 340, gap: 18 }}>
-                  {groups.map((g) => (
+                  </View>
+                ) : null}
+                <View style={{ flex: 1, minWidth: 0, width: '100%', gap: 18 }}>
+                  {groups.slice(1).map((g) => (
                     <Section key={g.key} title={g.title}>
                       <TileGrid
                         items={withTileInfo(g.tiles, tileInfo).map((tile) => ({
@@ -515,9 +447,92 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                       />
                     </Section>
                   ))}
-
-                  {hasAds ? <SponsorAdContainer /> : null}
                 </View>
+              </View>
+              <View style={{ gap: 18 }}>
+                {o && o.upcomingMatches.length > 0 ? (
+                  <Section title="Nächste Spiele">
+                    <UpcomingMatches matches={o.upcomingMatches} />
+                  </Section>
+                ) : null}
+
+                {o ? (
+                  <Section
+                    title="Trainingswoche"
+                    action="Alle Termine"
+                    onAction={() => router.push(`/events?teamId=${team.id}`)}
+                  >
+                    <Card>
+                      {o.trainingWeek.length === 0 ? (
+                        <Empty
+                          icon="fitness-outline"
+                          text="Keine Trainings in den nächsten 7 Tagen."
+                        />
+                      ) : null}
+                      {o.trainingWeek.map((e, i) => (
+                        <ListRow
+                          key={e.id}
+                          first={i === 0}
+                          onPress={() => router.push(`/events/${e.id}`)}
+                          leading={
+                            <DateTile
+                              {...formatDateTile(e.startsAt)}
+                              muted={e.status === 'cancelled'}
+                            />
+                          }
+                          title={e.title}
+                          subtitle={
+                            e.status === 'cancelled'
+                              ? e.cancelledReason
+                                ? `Grund: ${e.cancelledReason}`
+                                : formatTime(e.startsAt)
+                              : [
+                                  formatTime(e.startsAt),
+                                  e.location,
+                                  e.counts
+                                    ? `${e.counts.yes} von ${e.counts.yes + e.counts.no + e.counts.maybe + e.counts.pending} zugesagt`
+                                    : null,
+                                ]
+                                  .filter(Boolean)
+                                  .join(' · ')
+                          }
+                          trailing={
+                            e.status === 'cancelled' ? (
+                              <Chip tone="urgent" icon="close-circle" label="Abgesagt" />
+                            ) : null
+                          }
+                        />
+                      ))}
+                    </Card>
+                  </Section>
+                ) : null}
+
+                {o && o.lastResults.length > 0 ? (
+                  <Section
+                    title="Letzte Ergebnisse"
+                    action="Statistik"
+                    onAction={
+                      has('statistics') ? () => router.push(`/teams/${team.id}/stats`) : undefined
+                    }
+                  >
+                    <Card>
+                      {o.lastResults.map((r, i) => (
+                        <ResultRow
+                          key={r.eventId}
+                          result={r}
+                          clubShortName={me.club.shortName}
+                          badge={team.badge}
+                          first={i === 0}
+                        />
+                      ))}
+                    </Card>
+                  </Section>
+                ) : null}
+                {overview.isPending ? <Loading /> : null}
+                {overview.error ? (
+                  <ErrorNotice error={overview.error} onRetry={() => overview.refetch()} />
+                ) : null}
+                {hasAds ? <SponsorAdContainer /> : null}
               </View>
             </View>
           ) : (
