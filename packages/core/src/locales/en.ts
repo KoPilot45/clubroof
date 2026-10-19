@@ -116,6 +116,7 @@ export const en: Record<string, string> = {
   '{0} Einträge werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.':
     '{0} entries will be permanently deleted. This cannot be undone.',
   '{0} Einzahlungen buchen ({1})': 'Book {0} payments ({1})',
+  '{0} entfernen': 'Remove {0}',
   '{0} erfasste Einheiten in 4 Wochen': '{0} recorded sessions in 4 weeks',
   '{0} erhöhen': 'Increase {0}',
   '{0} Erinnerung verschickt': '{0} reminder sent',
@@ -4268,6 +4269,7 @@ export const en: Record<string, string> = {
   'Suche nach Terminen, Mitgliedern, News und Mannschaften.':
     'Search for events, members, news and teams.',
   Suchen: 'Search',
+  'Suchen …': 'Search …',
   'Summe Einnahmen: {0} €   Summe Ausgaben: {1} €': 'Total income: {0} €   Total expenses: {1} €',
   'Tabelle: Platz {0}': 'Table: position {0}',
   Tag: 'Day',

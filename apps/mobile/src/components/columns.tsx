@@ -5,7 +5,7 @@
  */
 import { Children, type ReactNode } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
-import { useIsDesktop } from '@/lib/layout';
+import { useIsCompactDesktop, useIsDesktop } from '@/lib/layout';
 
 export function Columns({
   children,
@@ -21,6 +21,8 @@ export function Columns({
   style?: StyleProp<ViewStyle>;
 }) {
   const desktop = useIsDesktop();
+  // kompakte Stufe (1100–1399 px): breitere Mindestspalte, damit nichts gequetscht wird
+  const basis = useIsCompactDesktop() ? Math.round(min * 1.25) : min;
   const items = Children.toArray(children);
   if (items.length === 0) return null;
   if (!desktop) return <View style={[{ gap }, style]}>{items}</View>;
@@ -31,7 +33,7 @@ export function Columns({
       {items.map((child, i) => (
         <View
           key={i}
-          style={{ flexGrow: weights?.[i] ?? 1, flexShrink: 1, flexBasis: min, minWidth: 0 }}
+          style={{ flexGrow: weights?.[i] ?? 1, flexShrink: 1, flexBasis: basis, minWidth: 0 }}
         >
           {child}
         </View>

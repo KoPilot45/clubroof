@@ -3,7 +3,7 @@ import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { NoAccessRedirect } from '@/components/area-guard';
-import { AreaHeader, AreaTabBar } from '@/components/area-shell';
+import { AreaHeader, AreaTabBar, AreaTabsContext } from '@/components/area-shell';
 import { canOpenClubCash, cashCategories } from '@/lib/areas';
 import { t, useLocale } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
@@ -70,50 +70,52 @@ export default function ClubCashLayout() {
   ];
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <BottomTabBarHeightContext.Provider value={navHeight}>
-        <Stack
-          screenOptions={{
-            headerShown: true,
-            header: (p) => (
-              <AreaHeader
-                tone="blue"
-                areaTitle="Vereinskasse"
-                rootCrumb={{ label: 'Vereinskasse', href: '/club-cash' }}
-                roots={['index', 'area/[key]']}
-                route={p.route}
-                options={p.options}
-                prefix="club-cash/"
-              />
-            ),
-            contentStyle: { backgroundColor: colors.background },
-          }}
-        >
-          <Stack.Screen name="index" options={{ title: 'Vereinskasse' }} />
-          <Stack.Screen name="area/[key]" options={{ title: 'Vereinskasse' }} />
-          <Stack.Screen name="entries" options={{ title: 'Kassenbuch' }} />
-          <Stack.Screen name="new" options={{ title: 'Buchung erfassen' }} />
-          <Stack.Screen name="fees" options={{ title: 'Mitgliedsbeiträge' }} />
-          <Stack.Screen name="fee-import" options={{ title: 'Kontoauszug importieren' }} />
-          <Stack.Screen name="fee-setup" options={{ title: 'Beitragsarten und Mitglieder' }} />
-          <Stack.Screen name="setup" options={{ title: 'Kasse einrichten' }} />
-          <Stack.Screen name="manage" options={{ title: 'Vereinskasse einrichten' }} />
-          <Stack.Screen name="funds" options={{ title: 'Kassen' }} />
-          <Stack.Screen name="budget" options={{ title: 'Haushaltsplan' }} />
-          <Stack.Screen name="reserves" options={{ title: 'Rücklagen' }} />
-          <Stack.Screen name="closing" options={{ title: 'Jahresabschluss' }} />
-          <Stack.Screen name="audit/index" options={{ title: 'Kassenprüfung' }} />
-          <Stack.Screen name="audit/[id]" options={{ title: 'Prüfung' }} />
-          <Stack.Screen name="donations" options={{ title: 'Spenden' }} />
-          <Stack.Screen name="tax" options={{ title: 'Steuerdaten' }} />
-          <Stack.Screen name="claims" options={{ title: 'Auslagen' }} />
-          <Stack.Screen name="allowances" options={{ title: 'Pauschalen' }} />
-          <Stack.Screen name="grants" options={{ title: 'Zuschüsse' }} />
-          <Stack.Screen name="team-grants" options={{ title: 'Mannschaftszuschuss' }} />
-          <Stack.Screen name="sponsors" options={{ title: 'Sponsoren-Einnahmen' }} />
-          <Stack.Screen name="inventory" options={{ title: 'Inventar' }} />
-          <Stack.Screen name="stats" options={{ title: 'Auswertungen' }} />
-        </Stack>
-      </BottomTabBarHeightContext.Provider>
+      <AreaTabsContext.Provider value={items}>
+        <BottomTabBarHeightContext.Provider value={navHeight}>
+          <Stack
+            screenOptions={{
+              headerShown: true,
+              header: (p) => (
+                <AreaHeader
+                  tone="blue"
+                  areaTitle="Vereinskasse"
+                  rootCrumb={{ label: 'Vereinskasse', href: '/club-cash' }}
+                  roots={['index', 'area/[key]']}
+                  route={p.route}
+                  options={p.options}
+                  prefix="club-cash/"
+                />
+              ),
+              contentStyle: { backgroundColor: colors.background },
+            }}
+          >
+            <Stack.Screen name="index" options={{ title: 'Vereinskasse' }} />
+            <Stack.Screen name="area/[key]" options={{ title: 'Vereinskasse' }} />
+            <Stack.Screen name="entries" options={{ title: 'Kassenbuch' }} />
+            <Stack.Screen name="new" options={{ title: 'Buchung erfassen' }} />
+            <Stack.Screen name="fees" options={{ title: 'Mitgliedsbeiträge' }} />
+            <Stack.Screen name="fee-import" options={{ title: 'Kontoauszug importieren' }} />
+            <Stack.Screen name="fee-setup" options={{ title: 'Beitragsarten und Mitglieder' }} />
+            <Stack.Screen name="setup" options={{ title: 'Kasse einrichten' }} />
+            <Stack.Screen name="manage" options={{ title: 'Vereinskasse einrichten' }} />
+            <Stack.Screen name="funds" options={{ title: 'Kassen' }} />
+            <Stack.Screen name="budget" options={{ title: 'Haushaltsplan' }} />
+            <Stack.Screen name="reserves" options={{ title: 'Rücklagen' }} />
+            <Stack.Screen name="closing" options={{ title: 'Jahresabschluss' }} />
+            <Stack.Screen name="audit/index" options={{ title: 'Kassenprüfung' }} />
+            <Stack.Screen name="audit/[id]" options={{ title: 'Prüfung' }} />
+            <Stack.Screen name="donations" options={{ title: 'Spenden' }} />
+            <Stack.Screen name="tax" options={{ title: 'Steuerdaten' }} />
+            <Stack.Screen name="claims" options={{ title: 'Auslagen' }} />
+            <Stack.Screen name="allowances" options={{ title: 'Pauschalen' }} />
+            <Stack.Screen name="grants" options={{ title: 'Zuschüsse' }} />
+            <Stack.Screen name="team-grants" options={{ title: 'Mannschaftszuschuss' }} />
+            <Stack.Screen name="sponsors" options={{ title: 'Sponsoren-Einnahmen' }} />
+            <Stack.Screen name="inventory" options={{ title: 'Inventar' }} />
+            <Stack.Screen name="stats" options={{ title: 'Auswertungen' }} />
+          </Stack>
+        </BottomTabBarHeightContext.Provider>
+      </AreaTabsContext.Provider>
       <AreaTabBar tone="blue" items={items} onHeight={setNavHeight} />
     </View>
   );

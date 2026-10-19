@@ -12,7 +12,7 @@ import { Image, Platform, Pressable, View } from 'react-native';
 import { sectionOf, TAB_HREFS, TAB_LABELS, type TabKey } from '@/lib/breadcrumbs';
 import { canOpenAdmin, canOpenClubCash } from '@/lib/areas';
 import { t } from '@/lib/i18n';
-import { SIDEBAR_WIDTH } from '@/lib/layout';
+import { SIDEBAR_WIDTH, SIDEBAR_WIDTH_COMPACT, useIsCompactDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { webState } from '@/lib/web-state';
@@ -39,6 +39,7 @@ type Entry = {
 
 function NavEntry({ item }: { item: Entry }) {
   const { colors, isDark } = useTheme();
+  const compact = useIsCompactDesktop();
   const accent = item.tone ? AREA_ACCENT[item.tone][isDark ? 'dark' : 'light'] : null;
   const fill = accent ? accent[0] : colors.primary;
   const on = accent ? accent[1] : colors.onPrimary;
@@ -72,7 +73,7 @@ function NavEntry({ item }: { item: Entry }) {
         numberOfLines={1}
         style={{
           flex: 1,
-          fontSize: 14,
+          fontSize: compact ? 13 : 14,
           fontWeight: item.active ? '700' : '600',
           color: item.active ? on : colors.onSurface,
         }}
@@ -136,6 +137,7 @@ function Separator() {
 
 export function Sidebar() {
   const { colors, isDark } = useTheme();
+  const compact = useIsCompactDesktop();
   const { me, api } = useSignedIn();
   const segments = useSegments();
   const pathname = usePathname();
@@ -182,14 +184,6 @@ export function Sidebar() {
   });
   const tools: Entry[] = [
     {
-      key: 'search',
-      label: t('Suche'),
-      icon: 'search-outline',
-      active: inSearch,
-      shortcut: '/',
-      onPress: () => router.push('/search'),
-    },
-    {
       key: 'notifications',
       label: t('Mitteilungen'),
       icon: 'notifications-outline',
@@ -235,9 +229,9 @@ export function Sidebar() {
       role="navigation"
       accessibilityLabel={t('Hauptnavigation')}
       style={{
-        width: SIDEBAR_WIDTH,
+        width: compact ? SIDEBAR_WIDTH_COMPACT : SIDEBAR_WIDTH,
         paddingVertical: 18,
-        paddingHorizontal: 14,
+        paddingHorizontal: compact ? 10 : 14,
         gap: 6,
         overflow: 'hidden',
         backgroundColor: colors.surface,

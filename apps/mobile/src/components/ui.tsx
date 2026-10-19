@@ -52,7 +52,7 @@ import Svg, {
 } from 'react-native-svg';
 import { FIGURE_FONT, HEADING_FONT, inputFont } from '@/lib/fonts';
 import { TEMPLATE_WIDTH, useTemplate } from '@/lib/desktop-templates';
-import { CONTENT_MAX, useIsDesktop } from '@/lib/layout';
+import { CONTENT_MAX, useIsCompactDesktop, useIsDesktop } from '@/lib/layout';
 import { useTheme } from '@/lib/theme';
 import { webState } from '@/lib/web-state';
 import { Text } from './app-text';
@@ -204,6 +204,7 @@ export function Screen({
   // In den Tabs liegt die schwebende Leiste über dem Inhalt: unten Platz dafür lassen
   const tabBarHeight = useContext(BottomTabBarHeightContext) ?? 0;
   const desktop = useIsDesktop();
+  const compact = useIsCompactDesktop();
   // Breite des Inhalts nach Seitenvorlage (Paket DT2): Formulare schmal, Tabellen und Berichte breit
   const contentMax = desktop ? TEMPLATE_WIDTH[useTemplate()] : CONTENT_MAX;
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -231,7 +232,7 @@ export function Screen({
           }
           contentContainerStyle={{
             // Seitenrand 22 px (Stil „Anstoß“); Abschnitte bringen 12 px Luft nach oben mit (26 insgesamt)
-            paddingHorizontal: desktop ? 28 : 22,
+            paddingHorizontal: desktop ? (compact ? 22 : 28) : 22,
             paddingTop: flushTop ? 0 : spacing.md + 2,
             gap: spacing.md + 2,
             paddingBottom: spacing.xxxl + tabBarHeight,
@@ -480,12 +481,14 @@ export function Section({
 }) {
   const { colors } = useTheme();
   const first = useContext(ChildIndexContext) === 0;
+  // Desktop (Paket DT3): 28 statt 48 px Abstand vor dem Abschnitt, ganz oben keiner zusätzlich
+  const desktop = useIsDesktop();
   // Abschnittsüberschrift (Stil „Anstoß“): Akzentlinie 4 × 18, 12 px Abstand zum Inhalt; die Seite
   // lässt 14 px Abstand, Abschnitte ergänzen oben 12 → 26 px wie im Entwurf.
   return (
     // Eine einzige Abschnittsüberschrift für die ganze App: 48 davor (14 Seitenabstand + 34), 18 danach,
     // Überschrift 22 px; steht sie ganz oben unter Kopfzeile oder Hero: 32 davor
-    <View style={{ gap: 18, paddingTop: first ? 18 : 34 }}>
+    <View style={{ gap: 18, paddingTop: first ? (desktop ? 4 : 18) : desktop ? 16 : 34 }}>
       <View style={styles.rowBetween}>
         <View style={styles.sectionTitle}>
           <View
@@ -1736,12 +1739,17 @@ const outlineIcon = (name: IconName): IconName =>
 
 function LargeTileGrid({ items }: { items: TileItem[] }) {
   const { colors } = useTheme();
+  // Desktop (Paket DT3): 3 (kompakt) bis 4 Spalten, niedrigere Kacheln
+  const desktop = useIsDesktop();
+  const compact = useIsCompactDesktop();
+  const tileWidth = !desktop ? '47.9%' : compact ? '31.6%' : '23.6%';
   return (
     <View
       style={{
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        justifyContent: desktop ? 'flex-start' : 'space-between',
+        columnGap: desktop ? (compact ? '2.6%' : '1.8%') : 0,
         rowGap: 14,
       }}
     >
@@ -1768,8 +1776,8 @@ function LargeTileGrid({ items }: { items: TileItem[] }) {
             disabled={disabled}
             onPress={item.onPress}
             style={{
-              width: '47.9%',
-              minHeight: 124,
+              width: tileWidth,
+              minHeight: desktop ? 104 : 124,
               padding: 16,
               borderRadius: 24,
               justifyContent: item.add ? 'center' : 'space-between',
