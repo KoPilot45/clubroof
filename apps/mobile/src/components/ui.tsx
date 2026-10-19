@@ -148,7 +148,7 @@ export function T({
     // Große Zahlen (Kassenstand, Ergebnisse, Countdown): Saira Condensed ExtraBold, ca. 48 px
     figure: { fontFamily: FIGURE_FONT, fontSize: 48, fontWeight: '400', letterSpacing: 0.2 },
     overline: {
-      fontSize: 11.5,
+      fontSize: 12,
       fontWeight: '800',
       letterSpacing: 1.4,
       textTransform: 'uppercase',
@@ -182,6 +182,7 @@ export function Screen({
   header,
   edges = ['top'],
   onEndReached,
+  wide,
   footer,
   flushTop,
   scrollRef,
@@ -199,6 +200,8 @@ export function Screen({
   edges?: ('top' | 'bottom')[];
   /** wird aufgerufen, wenn man nahe ans Ende der Seite scrollt (Nachladen langer Listen) */
   onEndReached?: () => void;
+  /** Formular mit zwei Spalten (Paket DT3): am Desktop bis 1040 px breit */
+  wide?: boolean;
 }) {
   const { colors, spacing } = useTheme();
   // In den Tabs liegt die schwebende Leiste über dem Inhalt: unten Platz dafür lassen
@@ -206,7 +209,9 @@ export function Screen({
   const desktop = useIsDesktop();
   const compact = useIsCompactDesktop();
   // Breite des Inhalts nach Seitenvorlage (Paket DT2): Formulare schmal, Tabellen und Berichte breit
-  const contentMax = desktop ? TEMPLATE_WIDTH[useTemplate()] : CONTENT_MAX;
+  const contentMax = desktop
+    ? Math.max(TEMPLATE_WIDTH[useTemplate()], wide ? 1040 : 0)
+    : CONTENT_MAX;
   const scrollY = useRef(new Animated.Value(0)).current;
   const pathname = usePathname();
   return (

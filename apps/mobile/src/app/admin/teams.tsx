@@ -15,6 +15,7 @@ import {
   Section,
   T,
   TeamBadge,
+  PageAction,
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { toGermanDate } from '@/lib/dates';
@@ -202,11 +203,13 @@ export default function TeamsAdminScreen() {
     <Screen edges={[]} refreshing={overview.isRefetching} onRefresh={() => overview.refetch()}>
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       {o.orgUnits.some((u) => u.canManage) ? (
-        <Button
-          label="Mannschaft anlegen"
-          icon="add-circle"
-          onPress={() => router.push('/admin/team-new')}
-        />
+        <PageAction>
+          <Button
+            label="Mannschaft anlegen"
+            icon="add-circle"
+            onPress={() => router.push('/admin/team-new')}
+          />
+        </PageAction>
       ) : null}
       <Section title={`Saison ${o.current.name} (laufend)`}>
         <TeamList

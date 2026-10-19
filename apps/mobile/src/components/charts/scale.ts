@@ -50,7 +50,14 @@ export function usePointer(width: number, count: number, onIndex: (i: number) =>
     const i = Math.round((x / width) * count - 0.5);
     onIndex(Math.max(0, Math.min(count - 1, i)));
   };
+  // Maus (Paket DT3): Wert beim Überfahren anzeigen, ohne zu klicken
+  const hover = (ev: unknown) => {
+    const e = ev as { clientX: number; pointerType?: string; currentTarget: Element };
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    set(e.clientX - e.currentTarget.getBoundingClientRect().left);
+  };
   return {
+    onPointerMove: hover,
     onStartShouldSetResponder: () => true,
     onResponderGrant: (e: { nativeEvent: { locationX: number } }) => set(e.nativeEvent.locationX),
     onResponderMove: (e: { nativeEvent: { locationX: number } }) => set(e.nativeEvent.locationX),

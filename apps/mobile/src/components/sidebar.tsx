@@ -92,7 +92,7 @@ function NavEntry({ item }: { item: Entry }) {
             justifyContent: 'center',
           }}
         >
-          <Text style={{ fontSize: 11, fontWeight: '800', color: colors.status.urgent.onSolid }}>
+          <Text style={{ fontSize: 12, fontWeight: '800', color: colors.status.urgent.onSolid }}>
             {item.count > 99 ? '99+' : item.count}
           </Text>
         </View>
@@ -108,7 +108,7 @@ function NavEntry({ item }: { item: Entry }) {
         >
           <Text
             style={{
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: '700',
               color: item.active ? on : colors.anstoss.textTertiary,
             }}
@@ -330,7 +330,7 @@ export function Sidebar() {
             {`${me.person.firstName} ${me.person.lastName}`}
           </Text>
           {roles ? (
-            <Text numberOfLines={1} style={{ fontSize: 11, color: colors.onSurfaceMuted }} verbatim>
+            <Text numberOfLines={1} style={{ fontSize: 12, color: colors.onSurfaceMuted }} verbatim>
               {roles}
             </Text>
           ) : null}

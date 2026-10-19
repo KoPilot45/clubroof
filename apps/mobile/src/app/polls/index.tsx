@@ -13,6 +13,7 @@ import {
   Loading,
   Screen,
   TeamBadge,
+  PageAction,
 } from '@/components/ui';
 import { PollStatus } from '@/components/polls';
 import { useSignedIn } from '@/lib/session';
@@ -27,12 +28,14 @@ export default function PollListScreen() {
   return (
     <Screen edges={[]} refreshing={polls.isRefetching} onRefresh={() => polls.refetch()}>
       {me.create.polls.length ? (
-        <Button
-          label="Umfrage erstellen"
-          icon="add-circle"
-          variant="outline"
-          onPress={() => router.push(teamId ? `/polls/new?teamId=${teamId}` : '/polls/new')}
-        />
+        <PageAction>
+          <Button
+            label="Umfrage erstellen"
+            icon="add-circle"
+            variant="outline"
+            onPress={() => router.push(teamId ? `/polls/new?teamId=${teamId}` : '/polls/new')}
+          />
+        </PageAction>
       ) : null}
       {polls.isPending ? <Loading /> : null}
       {polls.error ? <ErrorNotice error={polls.error} onRetry={() => polls.refetch()} /> : null}

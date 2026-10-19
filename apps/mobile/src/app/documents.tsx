@@ -19,6 +19,7 @@ import {
   SearchField,
   TeamBadge,
   type IconName,
+  PageAction,
 } from '@/components/ui';
 import { openDocument } from '@/lib/documents';
 import { formatBytes, formatShortDate } from '@/lib/format';
@@ -74,13 +75,15 @@ export default function DocumentsScreen() {
   return (
     <Screen edges={[]} refreshing={docs.isRefetching} onRefresh={() => docs.refetch()}>
       {me.create.documents.length ? (
-        <Button
-          label="Dokument hochladen"
-          variant="outline"
-          onPress={() =>
-            router.push(teamId ? `/documents-upload?teamId=${teamId}` : '/documents-upload')
-          }
-        />
+        <PageAction>
+          <Button
+            label="Dokument hochladen"
+            variant="outline"
+            onPress={() =>
+              router.push(teamId ? `/documents-upload?teamId=${teamId}` : '/documents-upload')
+            }
+          />
+        </PageAction>
       ) : null}
       <SearchField value={q} onChangeText={setQ} placeholder="z. B. Satzung, Aufnahmeantrag" />
       <ChoiceChips scroll options={CATEGORIES} selected={[category]} onToggle={setCategory} />
