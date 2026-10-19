@@ -25,6 +25,7 @@ import {
   T,
   TeamBadge,
 } from '@/components/ui';
+import { Columns } from '@/components/columns';
 import { formatShortDate, clubDayMinutes } from '@/lib/format';
 import { dateFormat, t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
@@ -264,9 +265,12 @@ export function AreaOverviewScreen({ switcher }: { switcher?: ReactNode }) {
           {o.teams.length === 0 ? (
             <Empty icon="shirt-outline" text="Keine Mannschaften in der Abteilung." />
           ) : null}
-          {o.teams.map((card) => (
-            <TeamCard key={card.id} card={card} lite={o.lite} />
-          ))}
+          {/* Desktop (Paket DT3): Mannschaftskarten als Raster mit 2–3 Spalten */}
+          <Columns min={340} gap={14}>
+            {o.teams.map((card) => (
+              <TeamCard key={card.id} card={card} lite={o.lite} />
+            ))}
+          </Columns>
         </>
       ) : null}
     </Screen>

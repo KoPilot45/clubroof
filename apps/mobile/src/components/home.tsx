@@ -973,7 +973,10 @@ export function HomePoster({
   const next = () => scroller.current?.scrollTo({ x: (raw + 1) * width, animated: true });
   return (
     <HeroCard poster style={{ marginHorizontal: desktop ? -28 : -22 }}>
-      <View style={{ minHeight: 450 }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+      <View
+        style={{ minHeight: desktop && !hasTeam ? 330 : 450 }}
+        onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      >
         {header}
         {width > 0 ? (
           <ScrollView

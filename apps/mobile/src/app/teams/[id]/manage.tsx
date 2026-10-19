@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
+import { Columns } from '@/components/columns';
 import {
   Button,
   Card,
@@ -117,7 +118,7 @@ export default function ManageTeamScreen() {
   );
 
   return (
-    <Screen edges={[]} refreshing={manage.isRefetching} onRefresh={() => manage.refetch()}>
+    <Screen edges={[]} wide refreshing={manage.isRefetching} onRefresh={() => manage.refetch()}>
       <T variant="caption">
         {`${m.team.badge} · ${m.team.name}`} – Hier pflegst du Kader und Mannschaftsprofil. Den
         Trainer einer Mannschaft und die Vereinsrollen bestimmt die Vereinsverwaltung.
@@ -160,39 +161,43 @@ export default function ManageTeamScreen() {
 
       {m.canEditProfile ? (
         <>
-          <ProfileEditor
-            profile={m.profile}
-            onSaved={() => {
-              toast({ message: 'Mannschaftsprofil gespeichert' });
-              void queryClient.invalidateQueries({ queryKey: ['team-manage', id] });
-            }}
-            teamId={id}
-          />
-          <Section title="Spielplan">
-            <Card>
-              <ListRow
-                first
-                title="Spielplan importieren"
-                subtitle="DFBnet-Datei (CSV) → alle Spiele der Mannschaft automatisch anlegen"
-                onPress={() => router.push(`/schedule-import?teamId=${id}`)}
-              />
-              <ListRow
-                title="Termine aus Datei importieren"
-                subtitle="Training, Spiele oder Termine aus Excel oder CSV anlegen"
-                onPress={() => router.push(`/import?area=events&teamId=${id}`)}
-              />
-            </Card>
-          </Section>
-          <Section title="Kader">
-            <Card>
-              <ListRow
-                first
-                title="Kader aus Datei importieren"
-                subtitle="Spieler und Betreuer aus Excel oder CSV in die Mannschaft aufnehmen"
-                onPress={() => router.push(`/import?area=roster&teamId=${id}`)}
-              />
-            </Card>
-          </Section>
+          <Columns min={460} weights={[1.3, 1]}>
+            <ProfileEditor
+              profile={m.profile}
+              onSaved={() => {
+                toast({ message: 'Mannschaftsprofil gespeichert' });
+                void queryClient.invalidateQueries({ queryKey: ['team-manage', id] });
+              }}
+              teamId={id}
+            />
+            <View style={{ gap: 18 }}>
+              <Section title="Spielplan">
+                <Card>
+                  <ListRow
+                    first
+                    title="Spielplan importieren"
+                    subtitle="DFBnet-Datei (CSV) → alle Spiele der Mannschaft automatisch anlegen"
+                    onPress={() => router.push(`/schedule-import?teamId=${id}`)}
+                  />
+                  <ListRow
+                    title="Termine aus Datei importieren"
+                    subtitle="Training, Spiele oder Termine aus Excel oder CSV anlegen"
+                    onPress={() => router.push(`/import?area=events&teamId=${id}`)}
+                  />
+                </Card>
+              </Section>
+              <Section title="Kader">
+                <Card>
+                  <ListRow
+                    first
+                    title="Kader aus Datei importieren"
+                    subtitle="Spieler und Betreuer aus Excel oder CSV in die Mannschaft aufnehmen"
+                    onPress={() => router.push(`/import?area=roster&teamId=${id}`)}
+                  />
+                </Card>
+              </Section>
+            </View>
+          </Columns>
         </>
       ) : null}
     </Screen>

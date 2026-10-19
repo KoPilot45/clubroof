@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, View } from 'react-native';
+import { Columns } from '@/components/columns';
 import { ClubColorPicker } from '@/components/club-color';
 import {
   Button,
@@ -54,7 +55,7 @@ export default function ClubSettingsScreen() {
   };
 
   return (
-    <Screen edges={[]}>
+    <Screen edges={[]} wide>
       <Section title="Vereinslogo">
         <Card style={{ alignItems: 'center', gap: 12, paddingVertical: 24 }}>
           {me.club.logoUrl ? (
@@ -149,108 +150,112 @@ function ClubForm() {
   return (
     <>
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
-      <Section title="Name & Design">
-        <Card style={{ gap: 14 }}>
-          <TextField
-            label="Vereinsname"
-            value={name}
-            onChangeText={(v) => {
-              setName(v);
-              setSaved(false);
-            }}
-            maxLength={100}
-          />
-          <TextField
-            label="Kurzname (Kopfzeile, Wappen)"
-            value={shortName}
-            onChangeText={(v) => {
-              setShortName(v);
-              setSaved(false);
-            }}
-            maxLength={40}
-          />
-          <TextField
-            label="Kürzel (2 bis 4 Zeichen)"
-            value={code}
-            onChangeText={(v) => {
-              setCode(normalizeClubCode(v));
-              setSaved(false);
-            }}
-            maxLength={4}
-            letterSpacing={3}
-            hint="Das Kürzel steht groß im Plakat auf der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist."
-          />
-          <ClubColorPicker
-            value={color}
-            onChange={(c) => {
-              setColor(c);
-              setSaved(false);
-            }}
-          />
-          <Button
-            label="Speichern"
-            icon="checkmark"
-            disabled={
-              !dirty || name.trim().length < 3 || shortName.trim().length < 2 || code.length < 2
-            }
-            loading={save.isPending}
-            onPress={() =>
-              save.mutate({
-                name: name.trim(),
-                shortName: shortName.trim(),
-                shortCode: code,
-                colorTheme: color,
-              })
-            }
-          />
-          {saved && !dirty ? (
-            <Chip
-              tone="success"
-              icon="checkmark-circle"
-              label="Gespeichert – gilt für alle Mitglieder."
-            />
-          ) : null}
-        </Card>
-      </Section>
-
-      <ClubDetails settings={s} saving={save.isPending} onSave={(body) => save.mutate(body)} />
-
-      <Section title="Sicherheit">
-        <Card style={{ gap: 10 }}>
-          <T variant="label" style={{ fontWeight: '700' }}>
-            2-Faktor-Anmeldung für die Verwaltung
-          </T>
-          <T variant="caption">
-            Wenn eingeschaltet, brauchen alle mit Verwaltungsrechten (Vorstand, Admins,
-            Jugendleitung …) die 2-Faktor-Anmeldung, bevor sie Mitgliederdaten bearbeiten können.
-          </T>
-          <Chip
-            tone={s.requireTwoFactor ? 'success' : 'neutral'}
-            icon={s.requireTwoFactor ? 'shield-checkmark' : 'shield-outline'}
-            label={s.requireTwoFactor ? 'Pflicht für die Verwaltung' : 'Freiwillig'}
-          />
-          {s.requireTwoFactor || s.canRequireTwoFactor ? (
-            <Button
-              label={s.requireTwoFactor ? 'Pflicht aufheben' : 'Zur Pflicht machen'}
-              variant="outline"
-              loading={save.isPending}
-              onPress={() => save.mutate({ requireTwoFactor: !s.requireTwoFactor })}
-            />
-          ) : (
-            <>
-              <T variant="caption">
-                Richte zuerst selbst die 2-Faktor-Anmeldung ein – so sperrst du dich nicht aus.
-              </T>
-              <Button
-                label="Zu Konto & Einstellungen"
-                variant="outline"
-                icon="key-outline"
-                onPress={() => router.push('/account')}
+      <Columns min={440}>
+        <View style={{ gap: 18 }}>
+          <Section title="Name & Design">
+            <Card style={{ gap: 14 }}>
+              <TextField
+                label="Vereinsname"
+                value={name}
+                onChangeText={(v) => {
+                  setName(v);
+                  setSaved(false);
+                }}
+                maxLength={100}
               />
-            </>
-          )}
-        </Card>
-      </Section>
+              <TextField
+                label="Kurzname (Kopfzeile, Wappen)"
+                value={shortName}
+                onChangeText={(v) => {
+                  setShortName(v);
+                  setSaved(false);
+                }}
+                maxLength={40}
+              />
+              <TextField
+                label="Kürzel (2 bis 4 Zeichen)"
+                value={code}
+                onChangeText={(v) => {
+                  setCode(normalizeClubCode(v));
+                  setSaved(false);
+                }}
+                maxLength={4}
+                letterSpacing={3}
+                hint="Das Kürzel steht groß im Plakat auf der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist."
+              />
+              <ClubColorPicker
+                value={color}
+                onChange={(c) => {
+                  setColor(c);
+                  setSaved(false);
+                }}
+              />
+              <Button
+                label="Speichern"
+                icon="checkmark"
+                disabled={
+                  !dirty || name.trim().length < 3 || shortName.trim().length < 2 || code.length < 2
+                }
+                loading={save.isPending}
+                onPress={() =>
+                  save.mutate({
+                    name: name.trim(),
+                    shortName: shortName.trim(),
+                    shortCode: code,
+                    colorTheme: color,
+                  })
+                }
+              />
+              {saved && !dirty ? (
+                <Chip
+                  tone="success"
+                  icon="checkmark-circle"
+                  label="Gespeichert – gilt für alle Mitglieder."
+                />
+              ) : null}
+            </Card>
+          </Section>
+
+          <Section title="Sicherheit">
+            <Card style={{ gap: 10 }}>
+              <T variant="label" style={{ fontWeight: '700' }}>
+                2-Faktor-Anmeldung für die Verwaltung
+              </T>
+              <T variant="caption">
+                Wenn eingeschaltet, brauchen alle mit Verwaltungsrechten (Vorstand, Admins,
+                Jugendleitung …) die 2-Faktor-Anmeldung, bevor sie Mitgliederdaten bearbeiten
+                können.
+              </T>
+              <Chip
+                tone={s.requireTwoFactor ? 'success' : 'neutral'}
+                icon={s.requireTwoFactor ? 'shield-checkmark' : 'shield-outline'}
+                label={s.requireTwoFactor ? 'Pflicht für die Verwaltung' : 'Freiwillig'}
+              />
+              {s.requireTwoFactor || s.canRequireTwoFactor ? (
+                <Button
+                  label={s.requireTwoFactor ? 'Pflicht aufheben' : 'Zur Pflicht machen'}
+                  variant="outline"
+                  loading={save.isPending}
+                  onPress={() => save.mutate({ requireTwoFactor: !s.requireTwoFactor })}
+                />
+              ) : (
+                <>
+                  <T variant="caption">
+                    Richte zuerst selbst die 2-Faktor-Anmeldung ein – so sperrst du dich nicht aus.
+                  </T>
+                  <Button
+                    label="Zu Konto & Einstellungen"
+                    variant="outline"
+                    icon="key-outline"
+                    onPress={() => router.push('/account')}
+                  />
+                </>
+              )}
+            </Card>
+          </Section>
+        </View>
+        <ClubDetails settings={s} saving={save.isPending} onSave={(body) => save.mutate(body)} />
+      </Columns>
     </>
   );
 }

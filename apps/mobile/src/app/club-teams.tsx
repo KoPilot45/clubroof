@@ -13,6 +13,7 @@ import {
   T,
   TeamBadge,
 } from '@/components/ui';
+import { Columns } from '@/components/columns';
 import { useSignedIn } from '@/lib/session';
 
 export default function ClubTeamsScreen() {
@@ -25,32 +26,34 @@ export default function ClubTeamsScreen() {
     <Screen edges={[]} refreshing={groups.isRefetching} onRefresh={() => groups.refetch()}>
       {groups.isPending ? <Loading /> : null}
       {groups.error ? <ErrorNotice error={groups.error} onRetry={() => groups.refetch()} /> : null}
-      {groups.data?.map((g) => (
-        <Section key={g.orgUnit.id} title={g.orgUnit.name}>
-          <Card>
-            {g.teams.map((t, i) => (
-              <ListRow
-                key={t.id}
-                first={i === 0}
-                leading={<TeamBadge badge={t.badge} />}
-                title={t.name}
-                subtitle={
-                  <View style={{ gap: 2 }}>
-                    <T variant="caption">
-                      {[t.ageGroup, t.league, `${t.players} Spieler`].filter(Boolean).join(' · ')}
-                    </T>
-                    {t.coaches.length > 0 ? (
-                      <T variant="caption">Trainer: {t.coaches.join(', ')}</T>
-                    ) : null}
-                  </View>
-                }
-                trailing={t.isMine ? <Chip label="Meine" /> : null}
-                onPress={() => router.push(`/club-team/${t.id}`)}
-              />
-            ))}
-          </Card>
-        </Section>
-      ))}
+      <Columns min={420}>
+        {groups.data?.map((g) => (
+          <Section key={g.orgUnit.id} title={g.orgUnit.name}>
+            <Card>
+              {g.teams.map((t, i) => (
+                <ListRow
+                  key={t.id}
+                  first={i === 0}
+                  leading={<TeamBadge badge={t.badge} />}
+                  title={t.name}
+                  subtitle={
+                    <View style={{ gap: 2 }}>
+                      <T variant="caption">
+                        {[t.ageGroup, t.league, `${t.players} Spieler`].filter(Boolean).join(' · ')}
+                      </T>
+                      {t.coaches.length > 0 ? (
+                        <T variant="caption">Trainer: {t.coaches.join(', ')}</T>
+                      ) : null}
+                    </View>
+                  }
+                  trailing={t.isMine ? <Chip label="Meine" /> : null}
+                  onPress={() => router.push(`/club-team/${t.id}`)}
+                />
+              ))}
+            </Card>
+          </Section>
+        ))}
+      </Columns>
     </Screen>
   );
 }

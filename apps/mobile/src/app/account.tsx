@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Platform, Pressable, View } from 'react-native';
+import { Columns } from '@/components/columns';
 import { SvgXml } from 'react-native-svg';
 import {
   Button,
@@ -61,104 +62,110 @@ export default function AccountScreen() {
   };
 
   return (
-    <Screen edges={[]}>
+    <Screen edges={[]} wide>
       <Card style={{ gap: 4 }}>
         <T variant="heading">{me.user.displayName}</T>
         <T variant="caption">Angemeldet als {me.user.email}</T>
       </Card>
-      <AppearanceSection />
-      <LanguageSection />
-      <FontSizeSection />
-      <VibrationSection />
-      <AppLockSection />
-      <Section title="Hinweise & Kalender">
-        <Card>
-          <ListRow
-            first
-            leading={<IconTile name="notifications-outline" />}
-            title="Benachrichtigungen einstellen"
-            subtitle="Push, Ruhezeit und Themen"
-            onPress={() => router.push('/notification-settings')}
-          />
-          {me.clubModules.includes('calendar_export') ? (
-            <ListRow
-              leading={<IconTile name="calendar-outline" />}
-              title="Kalender-Abo"
-              subtitle="Termine im Handy-Kalender"
-              onPress={() => router.push('/calendar')}
-            />
-          ) : null}
-        </Card>
-      </Section>
-      <Section title="Sicherheit">
-        <Card style={{ gap: 12 }}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ expanded: pwOpen }}
-            onPress={() => setPwOpen(!pwOpen)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 }}
-          >
-            <IconTile name="key-outline" />
-            <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
-              Passwort ändern
-            </T>
-            <Ionicons
-              name={pwOpen ? 'chevron-up' : 'chevron-down'}
-              size={18}
-              color={colors.onSurfaceMuted}
-            />
-          </Pressable>
-          {pwOpen ? (
-            <>
-              <TextField
-                label="Aktuelles Passwort"
-                kind="password"
-                value={current}
-                onChangeText={setCurrent}
-                maxLength={200}
+      <Columns min={440} weights={[1, 1]}>
+        <View style={{ gap: 18 }}>
+          <AppearanceSection />
+          <LanguageSection />
+          <FontSizeSection />
+          <VibrationSection />
+          <AppLockSection />
+        </View>
+        <View style={{ gap: 18 }}>
+          <Section title="Hinweise & Kalender">
+            <Card>
+              <ListRow
+                first
+                leading={<IconTile name="notifications-outline" />}
+                title="Benachrichtigungen einstellen"
+                subtitle="Push, Ruhezeit und Themen"
+                onPress={() => router.push('/notification-settings')}
               />
-              <TextField
-                label="Neues Passwort (mind. 10 Zeichen)"
-                kind="newPassword"
-                value={next}
-                onChangeText={setNext}
-                maxLength={200}
-              />
-              <TextField
-                label="Neues Passwort wiederholen"
-                kind="newPassword"
-                value={next2}
-                onChangeText={setNext2}
-                maxLength={200}
-              />
-              {next2 && next !== next2 ? (
-                <Chip tone="action" label="Die Passwörter stimmen nicht überein." />
+              {me.clubModules.includes('calendar_export') ? (
+                <ListRow
+                  leading={<IconTile name="calendar-outline" />}
+                  title="Kalender-Abo"
+                  subtitle="Termine im Handy-Kalender"
+                  onPress={() => router.push('/calendar')}
+                />
               ) : null}
-              {msg ? (
+            </Card>
+          </Section>
+          <Section title="Sicherheit">
+            <Card style={{ gap: 12 }}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: pwOpen }}
+                onPress={() => setPwOpen(!pwOpen)}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 }}
+              >
+                <IconTile name="key-outline" />
+                <T variant="label" style={{ flex: 1, fontWeight: '700' }}>
+                  Passwort ändern
+                </T>
+                <Ionicons
+                  name={pwOpen ? 'chevron-up' : 'chevron-down'}
+                  size={18}
+                  color={colors.onSurfaceMuted}
+                />
+              </Pressable>
+              {pwOpen ? (
+                <>
+                  <TextField
+                    label="Aktuelles Passwort"
+                    kind="password"
+                    value={current}
+                    onChangeText={setCurrent}
+                    maxLength={200}
+                  />
+                  <TextField
+                    label="Neues Passwort (mind. 10 Zeichen)"
+                    kind="newPassword"
+                    value={next}
+                    onChangeText={setNext}
+                    maxLength={200}
+                  />
+                  <TextField
+                    label="Neues Passwort wiederholen"
+                    kind="newPassword"
+                    value={next2}
+                    onChangeText={setNext2}
+                    maxLength={200}
+                  />
+                  {next2 && next !== next2 ? (
+                    <Chip tone="action" label="Die Passwörter stimmen nicht überein." />
+                  ) : null}
+                  {msg ? (
+                    <Chip
+                      tone={msg.ok ? 'success' : 'urgent'}
+                      icon={msg.ok ? 'checkmark-circle' : 'alert-circle'}
+                      label={msg.text}
+                    />
+                  ) : null}
+                  <Button
+                    label="Passwort speichern"
+                    icon="key"
+                    loading={busy}
+                    disabled={!current || next.length < 10 || next !== next2}
+                    onPress={() => void change()}
+                  />
+                </>
+              ) : msg ? (
                 <Chip
                   tone={msg.ok ? 'success' : 'urgent'}
                   icon={msg.ok ? 'checkmark-circle' : 'alert-circle'}
                   label={msg.text}
                 />
               ) : null}
-              <Button
-                label="Passwort speichern"
-                icon="key"
-                loading={busy}
-                disabled={!current || next.length < 10 || next !== next2}
-                onPress={() => void change()}
-              />
-            </>
-          ) : msg ? (
-            <Chip
-              tone={msg.ok ? 'success' : 'urgent'}
-              icon={msg.ok ? 'checkmark-circle' : 'alert-circle'}
-              label={msg.text}
-            />
-          ) : null}
-        </Card>
-      </Section>
-      <TwoFactorSection />
+            </Card>
+          </Section>
+          <TwoFactorSection />
+        </View>
+      </Columns>
       <Button
         label="Abmelden"
         variant="outline"
