@@ -4580,6 +4580,16 @@ describe.skipIf(!url)('API', () => {
       const blocked = await send<{ error: string }>('GET', '/admin/overview', board.token);
       expect(blocked.status).toBe(403);
       expect(blocked.body.error).toBe('two_factor_required');
+      // Die Pflicht hängt nicht an einer Pfadliste: auch Schreibaktionen außerhalb von /admin sind gesperrt (F07)
+      const teamId = (await login('trainer')).me.teams[0]!.id;
+      const link = await send<{ error: string }>(
+        'POST',
+        `/teams/${teamId}/invite-link`,
+        board.token,
+      );
+      expect(link.status).toBe(403);
+      expect(link.body.error).toBe('two_factor_required');
+      expect((await send('POST', '/notifications/read-all', board.token)).status).toBeLessThan(300);
       expect((await get<LoginResponse['me']>('/me', board.token)).security.twoFactorRequired).toBe(
         true,
       );
