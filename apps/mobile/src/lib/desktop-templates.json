@@ -374,6 +374,11 @@
     "note": "Assistent",
     "status": "fertig"
   },
+  "demo/team-cash": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "fertig"
+  },
   "documents": {
     "t": "A",
     "note": "Liste bzw. Detailseite",
@@ -653,6 +658,11 @@
     "t": "B",
     "note": "Formular",
     "status": "Breite"
+  },
+  "teams/[id]/cash-setup": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "fertig"
   },
   "teams/[id]/cash-stats": {
     "t": "F",

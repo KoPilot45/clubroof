@@ -235,6 +235,10 @@ function Navigator() {
                   options={{ headerShown: true, title: 'Bezahlinfos & Einstellungen' }}
                 />
                 <Stack.Screen
+                  name="teams/[id]/cash-setup"
+                  options={{ headerShown: false, title: 'Mannschaftskasse einrichten' }}
+                />
+                <Stack.Screen
                   name="teams/[id]/cash-closings"
                   options={{ headerShown: true, title: 'Kassenprüfung' }}
                 />
@@ -411,6 +415,7 @@ function Navigator() {
                 <Stack.Screen name="demo/club" />
                 <Stack.Screen name="demo/team" />
                 <Stack.Screen name="demo/cash" />
+                <Stack.Screen name="demo/team-cash" />
               </Stack.Protected>
               {/* Öffentliche Links aus E-Mails – mit und ohne Anmeldung erreichbar */}
               <Stack.Screen name="join/[token]" />
