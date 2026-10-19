@@ -2724,3 +2724,34 @@ export type AreaOverview = {
   /** Mannschaften nach Altersklasse sortiert: Jugend A → G, Senioren 1. → Alte Herren */
   teams: AreaTeamCard[];
 };
+
+// ── Exporte (Paket IMPORT-EXPORT, Stufe 3) ───────────────────────────────────
+
+export const EXPORT_AREAS = [
+  'members',
+  'roster',
+  'events',
+  'attendance',
+  'cash',
+  'fees',
+  'club',
+  'me',
+] as const;
+export type ExportArea = (typeof EXPORT_AREAS)[number];
+export const EXPORT_FORMATS = ['xlsx', 'csv'] as const;
+export type ExportFormat = (typeof EXPORT_FORMATS)[number];
+
+export type ExportAreaInfo = {
+  area: ExportArea;
+  label: string;
+  description: string;
+  /** Mannschaften, für die der Export möglich ist (nur Bereiche je Mannschaft) */
+  teams?: { id: string; badge: string; name: string }[];
+  /** Gesamtexport kommt als ZIP mit CSV-Dateien (ein Format) */
+  zip?: boolean;
+};
+
+export type ExportAreasResponse = { areas: ExportAreaInfo[] };
+
+/** Exportdatei wie die Importvorlagen: Name, Medientyp, Inhalt in Base64. */
+export type ExportFile = ImportTemplateFile;

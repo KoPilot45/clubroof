@@ -119,7 +119,12 @@ function toDue(r: DueRow, day: string): ClubFeeDue {
   };
 }
 
-export type FeeQuery = { status?: 'open' | 'overdue' | 'paid' | 'cancelled' | 'all'; q?: string };
+export type FeeQuery = {
+  status?: 'open' | 'overdue' | 'paid' | 'cancelled' | 'all';
+  q?: string;
+  /** höchstens so viele Forderungen (Standard 300; Exporte lassen mehr zu) */
+  limit?: number;
+};
 
 export async function getClubFees(
   db: Db,
@@ -203,7 +208,7 @@ export async function getClubFees(
               d.personName.toLowerCase().includes(term) ||
               (d.memberNumber ?? '').toLowerCase().includes(term),
           )
-          .slice(0, 300)
+          .slice(0, query.limit ?? 300)
       : [];
 
   return {

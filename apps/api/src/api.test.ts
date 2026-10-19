@@ -10,6 +10,8 @@ import type {
   PurgeArchiveResult,
   AuditEntry,
   ClubCash,
+  ExportAreasResponse,
+  ExportFile,
   ClubCashStats,
   ClubEventForm,
   ClubCashAccount,
@@ -117,7 +119,8 @@ import type {
   PollSummary,
 } from '@clubroof/core';
 import { participationLevel } from '@clubroof/core';
-import { writeXlsx } from './services/table-file';
+import { unzipSync } from 'fflate';
+import { readTableFile, writeXlsx } from './services/table-file';
 import { createDb, schema as s } from '@clubroof/db';
 import { eq, inArray } from 'drizzle-orm';
 import { runMigrations } from '@clubroof/db/migrate';
@@ -9780,6 +9783,101 @@ describe.skipIf(!url)('API', () => {
         welcomeText: null,
       });
       await send('POST', `/events/${mine.id}/cancel`, admin.token, { reason: 'Test beendet' });
+    });
+  });
+  describe('Exporte (IMPORT-EXPORT, Stufe 3)', () => {
+    const rowsOf = (file: ExportFile, sheet?: string) =>
+      readTableFile(file.dataBase64, sheet ?? null).rows;
+
+    it('zeigt je Rolle die erlaubten Exporte', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const a = await send<ExportAreasResponse>('GET', '/export/areas', admin.token);
+      expect(a.body.areas.map((x) => x.area)).toEqual(
+        expect.arrayContaining(['me', 'members', 'cash', 'fees', 'club', 'roster', 'events']),
+      );
+      const c = await send<ExportAreasResponse>('GET', '/export/areas', coach.token);
+      expect(c.body.areas.map((x) => x.area)).not.toContain('club');
+      expect(c.body.areas.map((x) => x.area)).toContain('attendance');
+      const p = await send<ExportAreasResponse>('GET', '/export/areas', player.token);
+      const areas = p.body.areas.map((x) => x.area);
+      expect(areas).toContain('me');
+      expect(areas).not.toEqual(expect.arrayContaining(['members']));
+      expect(areas).not.toContain('club');
+      expect(areas).not.toContain('attendance');
+    });
+
+    it('exportiert Mitglieder, Kader und Termine; Rechte stehen serverseitig', async () => {
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const members = await send<ExportFile>('GET', '/export/members?format=csv', admin.token);
+      expect(members.status).toBe(200);
+      const text = Buffer.from(members.body.dataBase64, 'base64').toString('utf8');
+      expect(text).toContain('E-Mail');
+      expect(text.split('\r\n').length).toBeGreaterThan(10);
+      expect((await send('GET', '/export/members', player.token)).status).toBe(403);
+
+      const teamId = (await login('trainer')).me.teams[0]!.id;
+      const roster = await send<ExportFile>('GET', `/export/roster?teamId=${teamId}`, admin.token);
+      expect(roster.body.name).toMatch(/\.xlsx$/);
+      expect(rowsOf(roster.body).length).toBeGreaterThan(1);
+      const events = await send<ExportFile>('GET', `/export/events?teamId=${teamId}`, admin.token);
+      expect(rowsOf(events.body).length).toBeGreaterThan(1);
+      expect((await send('GET', '/export/roster', admin.token)).status).toBe(404);
+    });
+
+    it('Anwesenheit nur mit Recht, Kasse und Beiträge nur für die Kassenführung', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const admin = await login('admin');
+      const areas = await send<ExportAreasResponse>('GET', '/export/areas', coach.token);
+      const teamId = areas.body.areas.find((a) => a.area === 'attendance')!.teams![0]!.id;
+      const att = await send<ExportFile>('GET', `/export/attendance?teamId=${teamId}`, coach.token);
+      expect(att.status).toBe(200);
+      expect([403, 404]).toContain(
+        (await send('GET', `/export/attendance?teamId=${teamId}`, player.token)).status,
+      );
+      const cash = await send<ExportFile>('GET', '/export/cash', admin.token);
+      expect(rowsOf(cash.body).length).toBeGreaterThan(1);
+      expect((await send('GET', '/export/cash', player.token)).status).toBe(403);
+      const fees = await send<ExportFile>('GET', '/export/fees', admin.token);
+      expect(fees.status).toBe(200);
+      expect((await send('GET', '/export/fees', player.token)).status).toBe(403);
+    });
+
+    it('Gesamtexport nur für die Administration, als ZIP mit CSV-Dateien', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const zip = await send<ExportFile>('GET', '/export/club', admin.token);
+      expect(zip.body.contentType).toBe('application/zip');
+      const files = Object.keys(unzipSync(Buffer.from(zip.body.dataBase64, 'base64')));
+      expect(files).toEqual(
+        expect.arrayContaining([
+          'Mitglieder.csv',
+          'Mannschaften.csv',
+          'Vereinskasse Buchungen.csv',
+        ]),
+      );
+      expect((await send('GET', '/export/club', coach.token)).status).toBe(403);
+    });
+
+    it('„Meine Daten“: eigene Daten, Eltern bekommen auch die der Kinder – und alles steht im Protokoll', async () => {
+      const parent = await login('eltern');
+      const own = await send<ExportFile>('GET', '/export/me', parent.token);
+      expect(own.status).toBe(200);
+      const persons = rowsOf(own.body, 'Stammdaten');
+      expect(persons.some((r) => r[1] === 'Ich')).toBe(true);
+      expect(persons.some((r) => r[1] === 'Kind')).toBe(true);
+      const player = await login('spieler');
+      const mine = rowsOf(
+        (await send<ExportFile>('GET', '/export/me', player.token)).body,
+        'Stammdaten',
+      );
+      expect(mine.slice(1).every((r) => r[1] === 'Ich')).toBe(true);
+      const admin = await login('admin');
+      const audit = await send<AuditEntry[]>('GET', '/admin/audit', admin.token);
+      expect(audit.body.some((e) => e.label.startsWith('Export: '))).toBe(true);
     });
   });
 });

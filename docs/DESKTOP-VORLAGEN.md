@@ -111,6 +111,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `exchange/new-offer` | B | Breite | Formular |
 | `exercises` | A | Breite | Liste bzw. Detailseite |
 | `expense-claims` | A | Breite | Liste bzw. Detailseite |
+| `export` | B | Breite | Formular |
 | `facilities/block-new` | B | Breite | Formular |
 | `facilities/index` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `forgot` | S | fertig | Sonderfall mit eigenem Entwurf |

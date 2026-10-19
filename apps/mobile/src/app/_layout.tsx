@@ -395,6 +395,7 @@ function Navigator() {
                   options={{ headerShown: true, title: 'Mannschaft bearbeiten' }}
                 />
                 <Stack.Screen name="import" options={{ headerShown: true, title: 'Importieren' }} />
+                <Stack.Screen name="export" options={{ headerShown: true, title: 'Exportieren' }} />
                 <Stack.Screen
                   name="schedule-import"
                   options={{ headerShown: true, title: 'Spielplan importieren' }}
