@@ -255,7 +255,8 @@ type Draft = {
   timezone: string;
   seasonStartMonth: string;
   board: Record<string, BoardEntry>;
-  membersPlan: 'later' | 'import' | 'invite';
+  /** Daten, die nach der Einrichtung übernommen werden sollen (Paket IMPORT-EXPORT, Stufe 5) */
+  importPlan: ('members' | 'roster' | 'events' | 'fees' | 'invite')[];
   contactVisibility: 'club' | 'team_and_coaches' | 'coaches_only';
   firstName: string;
   lastName: string;
@@ -283,7 +284,7 @@ const INITIAL: Draft = {
   timezone: 'Europe/Berlin',
   seasonStartMonth: '7',
   board: {},
-  membersPlan: 'later',
+  importPlan: [],
   contactVisibility: 'team_and_coaches',
   firstName: '',
   lastName: '',
@@ -578,14 +579,40 @@ function Wizard({ demo }: { demo?: boolean }) {
               icon="people"
               title="Mitglieder importieren"
               text="Aus Excel oder CSV, mit Vorlage zum Herunterladen"
-              badge={d.membersPlan === 'import' ? 'Geplant' : undefined}
+              badge={d.importPlan.includes('members') ? 'Geplant' : undefined}
               selected={false}
               onPress={() => router.replace('/admin/import')}
             />
             <ChoiceCard
+              icon="shirt"
+              title="Kader importieren"
+              text="Spieler und Betreuer je Mannschaft, nach dem Anlegen der Mannschaften"
+              badge={d.importPlan.includes('roster') ? 'Geplant' : undefined}
+              selected={false}
+              onPress={() => router.replace('/import?area=roster')}
+            />
+            <ChoiceCard
               icon="calendar"
-              title="Spielplan importieren"
-              text="Aus dem DFBnet"
+              title="Spielplan und Termine importieren"
+              text="Aus Excel oder CSV; DFBnet-Dateien gehen über „Spielplan importieren“"
+              badge={d.importPlan.includes('events') ? 'Geplant' : undefined}
+              selected={false}
+              onPress={() => router.replace('/import?area=events')}
+            />
+            {d.modules.includes('club_cash') ? (
+              <ChoiceCard
+                icon="wallet"
+                title="Beiträge und Buchungen importieren"
+                text="Beitragsarten, Zuordnung, offene Posten, Haushaltsplan und Buchungen"
+                badge={d.importPlan.includes('fees') ? 'Geplant' : undefined}
+                selected={false}
+                onPress={() => router.replace('/import?area=fee_types')}
+              />
+            ) : null}
+            <ChoiceCard
+              icon="cloud-download"
+              title="Spielplan aus dem DFBnet"
+              text="DFBnet-Export einlesen"
               selected={false}
               onPress={() => router.replace('/schedule-import')}
             />
@@ -593,7 +620,7 @@ function Wizard({ demo }: { demo?: boolean }) {
               icon="person-add"
               title="Personen einladen"
               text="Link oder QR-Code teilen"
-              badge={d.membersPlan === 'invite' ? 'Geplant' : undefined}
+              badge={d.importPlan.includes('invite') ? 'Geplant' : undefined}
               selected={false}
               onPress={() => router.replace('/admin/invites')}
             />
@@ -1151,40 +1178,71 @@ function Wizard({ demo }: { demo?: boolean }) {
     );
   }
 
-  // ── Mitglieder ───────────────────────────────────────────────────────────
-  if (key === 'members')
+  // ── Daten übernehmen ─────────────────────────────────────────────────────
+  if (key === 'members') {
+    const plan = (k: Draft['importPlan'][number]) =>
+      patch({
+        importPlan: d.importPlan.includes(k)
+          ? d.importPlan.filter((x) => x !== k)
+          : [...d.importPlan, k],
+      });
     return (
       <WizardShell
         {...shell}
-        title="Mitglieder"
-        explanation="Jetzt oder später: Wie kommen die Mitglieder in die App?"
+        title="Daten übernehmen"
+        explanation="Welche Daten habt ihr schon? Die Importe laufen nach der Einrichtung, jeweils mit Vorlage, Spaltenzuordnung und Vorschau. Excel-Dateien mit mehreren Blättern gehen auch – du wählst das Blatt aus."
         onSkip={next}
       >
+        <WhyBox>
+          Empfohlene Reihenfolge: zuerst die Mitglieder, dann Mannschaften und Kader, zuletzt
+          Termine und Kasse – so findet jeder Import seine Personen und Mannschaften wieder.
+        </WhyBox>
         <OptionCard
-          icon="time"
-          title="Später"
-          text="Du richtest zuerst Mannschaften ein und holst die Mitglieder danach dazu."
-          recommended
-          selected={d.membersPlan === 'later'}
-          onPress={() => patch({ membersPlan: 'later' })}
+          icon="people"
+          title="Mitglieder"
+          text="Mitgliederliste aus Excel oder CSV, mit Dublettenprüfung"
+          multi
+          selected={d.importPlan.includes('members')}
+          onPress={() => plan('members')}
         />
         <OptionCard
-          icon="document-text"
-          title="Per Tabelle importieren"
-          text="Excel oder CSV mit Spaltenzuordnung, Vorschau und Dublettenprüfung – die Vorlage lädst du nach der Einrichtung herunter."
-          selected={d.membersPlan === 'import'}
-          onPress={() => patch({ membersPlan: 'import' })}
+          icon="shirt"
+          title="Kader der Mannschaften"
+          text="Spieler und Betreuer mit Nummer und Position"
+          multi
+          selected={d.importPlan.includes('roster')}
+          onPress={() => plan('roster')}
         />
+        <OptionCard
+          icon="calendar"
+          title="Spielplan und Termine"
+          text="Trainingsplan und Spiele aus Excel, CSV oder DFBnet"
+          multi
+          selected={d.importPlan.includes('events')}
+          onPress={() => plan('events')}
+        />
+        {d.modules.includes('club_cash') ? (
+          <OptionCard
+            icon="wallet"
+            title="Beiträge und Buchungen"
+            text="Beitragsarten, Zuordnung, offene Posten, Haushaltsplan, Buchungen"
+            multi
+            selected={d.importPlan.includes('fees')}
+            onPress={() => plan('fees')}
+          />
+        ) : null}
         <OptionCard
           icon="qr-code"
           title="Per Code oder QR einladen"
           text="Eltern und Spieler treten mit einem Link bei und werden von dir freigegeben."
-          selected={d.membersPlan === 'invite'}
-          onPress={() => patch({ membersPlan: 'invite' })}
+          multi
+          selected={d.importPlan.includes('invite')}
+          onPress={() => plan('invite')}
         />
         <LaterHint where="Verwaltung › Importieren und Einladungen" />
       </WizardShell>
     );
+  }
 
   // ── Kommunikation und Datenschutz ────────────────────────────────────────
   if (key === 'comms')

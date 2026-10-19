@@ -306,7 +306,16 @@ export function cashCategories(me: MeResponse): AreaCategory[] {
         ],
         [
           'Einrichtung',
-          [['fee-setup', 'Beitragsarten', 'options', '/club-cash/fee-setup', manage]],
+          [
+            ['fee-setup', 'Beitragsarten', 'options', '/club-cash/fee-setup', manage],
+            [
+              'cash-import',
+              'Aus Datei übernehmen',
+              'document-text',
+              '/import?area=fee_types',
+              manage,
+            ],
+          ],
         ],
         [
           'Mahnwesen',

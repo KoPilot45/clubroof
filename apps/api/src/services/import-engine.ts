@@ -206,6 +206,11 @@ const AREAS: Record<ImportArea, Omit<ImportAreaInfo, 'area'>> = {
   sponsors: AREA_HANDLERS.sponsors.info,
   facilities: AREA_HANDLERS.facilities.info,
   equipment: AREA_HANDLERS.equipment.info,
+  fee_types: AREA_HANDLERS.fee_types.info,
+  fee_assignments: AREA_HANDLERS.fee_assignments.info,
+  fee_dues: AREA_HANDLERS.fee_dues.info,
+  budget: AREA_HANDLERS.budget.info,
+  cash_entries: AREA_HANDLERS.cash_entries.info,
 };
 
 // ── Rechte ──────────────────────────────────────────────────────────────────
@@ -234,6 +239,11 @@ const DENIED: Record<ImportArea, string> = {
   sponsors: 'Sponsoren pflegt die Vereinsadministration.',
   facilities: 'Plätze verwalten die Platzverantwortlichen.',
   equipment: 'Material und Schlüssel verwalten die Platzverantwortlichen.',
+  fee_types: 'Die Vereinskasse führt nur die Kassenführung.',
+  fee_assignments: 'Die Vereinskasse führt nur die Kassenführung.',
+  fee_dues: 'Die Vereinskasse führt nur die Kassenführung.',
+  budget: 'Die Vereinskasse führt nur die Kassenführung.',
+  cash_entries: 'Die Vereinskasse führt nur die Kassenführung.',
 };
 
 export async function listImportAreas(db: Db, actor: Actor): Promise<ImportAreasResponse> {

@@ -9880,4 +9880,152 @@ describe.skipIf(!url)('API', () => {
       expect(audit.body.some((e) => e.label.startsWith('Export: '))).toBe(true);
     });
   });
+  describe('Import-Assistent (IM), Stufe 4: Kasse', () => {
+    const b64 = (text: string) => Buffer.from(text, 'utf8').toString('base64');
+    const file = (text: string) => ({ name: 'kasse.csv', dataBase64: b64(text) });
+
+    it('zeigt die Kassenbereiche nur der Kassenführung', async () => {
+      const kasse = await login('admin');
+      const coach = await login('trainer');
+      const a = await send<ImportAreasResponse>('GET', '/import/areas', kasse.token);
+      expect(a.body.areas.map((x) => x.area)).toEqual(
+        expect.arrayContaining([
+          'fee_types',
+          'fee_assignments',
+          'fee_dues',
+          'budget',
+          'cash_entries',
+        ]),
+      );
+      const c = await send<ImportAreasResponse>('GET', '/import/areas', coach.token);
+      expect(c.body.areas.map((x) => x.area)).not.toContain('cash_entries');
+      const denied = await send('POST', '/import/preview', coach.token, {
+        area: 'fee_types',
+        file: file('Name;Betrag\nX;1'),
+      });
+      expect(denied.status).toBe(403);
+    });
+
+    it('Beitragsarten, Zuordnung und offene Posten: prüfen, übernehmen, rückgängig', async () => {
+      const kasse = await login('admin');
+      const admin = kasse;
+      const members = await send<MemberListItem[]>('GET', '/admin/members', admin.token);
+      const member = members.body.find((m) => m.memberNumber)!;
+
+      const types = {
+        area: 'fee_types',
+        file: file(
+          'Name;Betrag;Rhythmus\nImportbeitrag;48,00;vierteljährlich\nKaputt;abc;jährlich',
+        ),
+      };
+      const pt = await send<ImportPreview>('POST', '/import/preview', kasse.token, types);
+      expect(pt.body.rows.map((r) => r.status)).toEqual(['new', 'error']);
+      const ct = await send<ImportPreview>('POST', '/import/commit', kasse.token, {
+        ...types,
+        excluded: [3],
+      });
+      expect(ct.body.run).toMatchObject({ created: 1 });
+      const again = await send<ImportPreview>('POST', '/import/preview', kasse.token, types);
+      expect(again.body.rows[0]!.status).toBe('duplicate');
+
+      const assign = {
+        area: 'fee_assignments',
+        file: file(
+          `Mitglied;Beitragsart;Gültig ab;Abweichender Betrag\n${member.memberNumber};Importbeitrag;01.01.2026;36,00\nNiemand Unbekannt;Importbeitrag;;`,
+        ),
+      };
+      const pa = await send<ImportPreview>('POST', '/import/preview', kasse.token, assign);
+      expect(pa.body.rows.map((r) => r.status)).toEqual(['new', 'error']);
+      const ca = await send<ImportPreview>('POST', '/import/commit', kasse.token, {
+        ...assign,
+        excluded: [3],
+      });
+      expect(ca.body.run).toMatchObject({ created: 1 });
+
+      const dues = {
+        area: 'fee_dues',
+        file: file(
+          `Mitglied;Beitragsart;Fällig am;Betrag;Zeitraum\n${member.memberNumber};Importbeitrag;31.01.2026;;Jahr 2026`,
+        ),
+      };
+      const pd = await send<ImportPreview>('POST', '/import/preview', kasse.token, dues);
+      expect(pd.body.rows[0]).toMatchObject({ status: 'new' });
+      const cd = await send<ImportPreview>('POST', '/import/commit', kasse.token, dues);
+      expect(cd.body.run).toMatchObject({ created: 1 });
+      const due = await db
+        .select()
+        .from(s.clubFeeDues)
+        .where(eq(s.clubFeeDues.periodLabel, 'Jahr 2026'));
+      expect(due.at(-1)!.amountCents).toBe(3600);
+
+      for (const run of [cd, ca, ct])
+        expect(
+          (await send('POST', `/import/runs/${run.body.run!.id}/undo`, kasse.token)).status,
+        ).toBe(200);
+      const left = await db
+        .select()
+        .from(s.clubFeeTypes)
+        .where(eq(s.clubFeeTypes.name, 'Importbeitrag'));
+      expect(left).toHaveLength(0);
+    });
+
+    it('Haushaltsplan und Buchungen: Zuordnung per Name, Abschlusssperre, Storno beim Rückgängig', async () => {
+      const kasse = await login('admin');
+      const cash = await send<ClubCash>('GET', '/club-cash', kasse.token);
+      const account = cash.body.accounts.find((a) => !a.archived)!;
+      const expense = cash.body.categories.find((c) => c.direction === 'expense' && !c.archived)!;
+
+      const plan = {
+        area: 'budget',
+        file: file(`Jahr;Kategorie;Planbetrag\n2031;${expense.name};1.234,50\n2031;Gibtesnicht;5`),
+      };
+      const pp = await send<ImportPreview>('POST', '/import/preview', kasse.token, plan);
+      expect(pp.body.rows.map((r) => r.status)).toEqual(['new', 'error']);
+      const cp = await send<ImportPreview>('POST', '/import/commit', kasse.token, {
+        ...plan,
+        excluded: [3],
+      });
+      expect(cp.body.run).toMatchObject({ created: 1 });
+      const lines = await db
+        .select()
+        .from(s.clubBudgetLines)
+        .where(eq(s.clubBudgetLines.year, 2031));
+      expect(lines.map((l) => l.plannedCents)).toEqual([123450]);
+      await send('POST', `/import/runs/${cp.body.run!.id}/undo`, kasse.token);
+      expect(
+        await db.select().from(s.clubBudgetLines).where(eq(s.clubBudgetLines.year, 2031)),
+      ).toHaveLength(0);
+
+      const entries = {
+        area: 'cash_entries',
+        file: file(
+          [
+            'Datum;Konto;Betrag;Kategorie;Verwendungszweck',
+            `10.03.2031;${account.name};-80,00;${expense.name};Importbuchung Dünger`,
+            `10.03.2031;${account.name};-80,00;${expense.name};Importbuchung Dünger`,
+            `10.03.2031;Kein Konto;-5,00;${expense.name};Falsch`,
+          ].join('\n'),
+        ),
+      };
+      const pe = await send<ImportPreview>('POST', '/import/preview', kasse.token, entries);
+      expect(pe.body.rows.map((r) => r.status)).toEqual(['new', 'duplicate', 'error']);
+      const ce = await send<ImportPreview>('POST', '/import/commit', kasse.token, {
+        ...entries,
+        excluded: [3, 4],
+      });
+      expect(ce.body.run).toMatchObject({ created: 1 });
+      const booked = await db
+        .select()
+        .from(s.clubCashEntries)
+        .where(eq(s.clubCashEntries.purpose, 'Importbuchung Dünger'));
+      expect(booked).toHaveLength(1);
+      expect(booked[0]).toMatchObject({ kind: 'expense', amountCents: 8000 });
+      await send('POST', `/import/runs/${ce.body.run!.id}/undo`, kasse.token);
+      const after = await db
+        .select()
+        .from(s.clubCashEntries)
+        .where(eq(s.clubCashEntries.purpose, 'Importbuchung Dünger'));
+      expect(after[0]!.cancelledAt).not.toBeNull();
+    });
+  });
 });
