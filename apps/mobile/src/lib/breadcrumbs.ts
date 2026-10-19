@@ -159,6 +159,8 @@ const RULES: Record<string, Rule> = {
   'admin/club-event-new': admin({ label: 'Events', href: '/admin/club-events' }),
   'admin/roles': admin(),
   'admin/role/[key]': admin({ label: 'Rollen', href: '/admin/roles' }),
+  'admin/role-edit': admin({ label: 'Rollen', href: '/admin/roles' }),
+  'admin/member-effective': admin({ label: 'Mitglieder', href: '/admin/members' }),
   'admin/audit': admin(),
   'admin/news/index': admin(),
   'admin/news/new': admin({ label: 'News-Redaktion', href: '/admin/news' }),

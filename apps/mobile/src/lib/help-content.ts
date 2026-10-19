@@ -59,6 +59,18 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Unter „Mehr“ stehen direkt unter deinem Profil zwei Zugänge: „Admin-Verwaltung“ (violett) für alle mit Verwaltungsrechten und „Vereinskasse“ (blau) für alle mit Kassenzugriff. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Beenden“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Prüfung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.',
       },
       {
+        id: 'custom-roles',
+        question: 'Wie lege ich eine eigene Rolle an?',
+        answer:
+          'Nur Admins: Verwaltung › Rollen und Rechte › „Neue Rolle“. Du gibst Name, Beschreibung und den Geltungsbereich (Verein, Abteilung, Mannschaft) an und wählst die Rechte in Klartext; mit „Start als Kopie von“ übernimmst du eine vorhandene Rolle. Sensible Rechte tragen ein Schloss. Vereinsweite Rechte (Verein, Vereinskasse, Mitglieder) gibt es nur in vereinsweiten Rollen, und du kannst nur Rechte vergeben, die du selbst hast. Standardrollen sind geschützt – dort gibt es „Kopie anpassen“. Gelöschte Rollen lassen sich wiederherstellen; Personen stellst du beim Löschen auf eine andere Rolle um. In der Übersicht zeigen die Reiter Rollen, Personen und Matrix den Stand; bei einer Person zeigt „Was darf diese Person?“ jedes Recht mit seiner Quelle.',
+      },
+      {
+        id: 'absence-reasons',
+        question: 'Wer sieht Abwesenheitsgründe?',
+        answer:
+          'Das Trainerteam sieht Grund und Freitext immer, Eltern die Gründe ihres Kindes. Ob auch die Mitspieler die Gründe sehen, stellt das Trainerteam in „Mannschaft bearbeiten“ ein („Abwesenheitsgründe für die Mannschaft sichtbar“, Standard aus).',
+      },
+      {
         id: 'export-data',
         question: 'Wie exportiere ich Daten oder meine eigenen Daten?',
         answer:

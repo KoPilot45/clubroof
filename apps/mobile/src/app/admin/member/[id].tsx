@@ -197,6 +197,13 @@ export default function MemberScreen() {
             />
           ))}
         </Card>
+        <Card>
+          <ListRow
+            title="Was darf diese Person?"
+            subtitle="Alle Rechte mit der Quelle (Rolle oder individuell)"
+            onPress={() => router.push(`/admin/member-effective?id=${m.id}`)}
+          />
+        </Card>
         {m.can.manageRoles && m.status !== 'left' ? (
           <Card>
             <ListRow

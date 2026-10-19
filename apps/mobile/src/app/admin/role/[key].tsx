@@ -65,6 +65,30 @@ export default function RoleScreen() {
             label={`${role.holders.length} ${role.holders.length === 1 ? 'Person' : 'Personen'}`}
           />
         </View>
+        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+          <Chip
+            tone={role.isSystem ? 'neutral' : 'primary'}
+            label={role.isSystem ? 'Standard' : 'Eigene'}
+          />
+          {manage && role.isSystem ? (
+            <Button
+              label="Kopie anpassen"
+              icon="copy-outline"
+              size="sm"
+              variant="tonal"
+              onPress={() => router.push(`/admin/role-edit?copy=${role.key}`)}
+            />
+          ) : null}
+          {manage && !role.isSystem ? (
+            <Button
+              label="Rolle bearbeiten"
+              icon="create-outline"
+              size="sm"
+              variant="tonal"
+              onPress={() => router.push(`/admin/role-edit?key=${role.key}`)}
+            />
+          ) : null}
+        </View>
         <Button
           label={rights ? 'Rechte ausblenden' : 'Enthaltene Rechte anzeigen'}
           variant="outline"
@@ -250,6 +274,16 @@ function AddHolder({
           selected={chosen ? [key(chosen)] : []}
           onToggle={setScope}
         />
+      ) : null}
+      {person ? (
+        <T variant="caption">
+          {`Danach darf ${person.name}: ${role.permissions
+            .slice(0, 5)
+            .map((p) => t(PERMISSIONS[p as keyof typeof PERMISSIONS] ?? p))
+            .join(
+              ' · ',
+            )}${role.permissions.length > 5 ? ` … (+${role.permissions.length - 5})` : ''}`}
+        </T>
       ) : null}
       {assign.error ? (
         <Chip

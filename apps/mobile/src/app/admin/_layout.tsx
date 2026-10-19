@@ -18,6 +18,8 @@ const CATEGORY_OF: Record<string, string> = {
   import: 'mitglieder',
   roles: 'mitglieder',
   role: 'mitglieder',
+  'role-edit': 'mitglieder',
+  'member-effective': 'mitglieder',
   transfers: 'mitglieder',
   'transfer-new': 'mitglieder',
   invites: 'mitglieder',
@@ -106,6 +108,8 @@ export default function AdminLayout() {
             <Stack.Screen name="import" options={{ title: 'Mitglieder importieren' }} />
             <Stack.Screen name="roles" options={{ title: 'Rollen & Aufgaben' }} />
             <Stack.Screen name="role/[key]" options={{ title: 'Rolle' }} />
+            <Stack.Screen name="role-edit" options={{ title: 'Rolle bearbeiten' }} />
+            <Stack.Screen name="member-effective" options={{ title: 'Was darf diese Person?' }} />
             <Stack.Screen name="audit" options={{ title: 'Änderungsprotokoll' }} />
             <Stack.Screen name="archive" options={{ title: 'Archiv' }} />
             <Stack.Screen name="news/index" options={{ title: 'News-Redaktion' }} />

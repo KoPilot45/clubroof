@@ -57,10 +57,12 @@ export const en: Record<string, string> = {
   '{0} ({1} Zeilen)': '{0} ({1} rows)',
   '{0} (Assistent)': '{0} (assistant)',
   '{0} (in Vorbereitung)': '{0} (in preparation)',
+  '{0} (Kopie)': '{0} (copy)',
   '{0} (laufend)': '{0} (current)',
   '{0} (Saison {1})': '{0} (season {1})',
   '{0} (Trainerteam)': '{0} (coaching staff)',
   '{0} {1} hat bar bezahlt – bitte bestätigen.': '{0} {1} paid in cash – please confirm.',
+  '{0} {1} hat deine Rollen im Verein geändert.': '{0} {1} changed your roles in the club.',
   '{0} {1} hat per PayPal bezahlt – bitte bestätigen.': '{0} {1} paid via PayPal – please confirm.',
   '{0} {1} hat per Überweisung bezahlt – bitte bestätigen.':
     '{0} {1} paid by bank transfer – please confirm.',
@@ -169,6 +171,7 @@ export const en: Record<string, string> = {
   '{0} liegt mit {1} vorn.': '{0} leads with {1}.',
   '{0} löschen': 'Delete {0}',
   '{0} Mannschaften': '{0} teams',
+  '{0} Mannschaften haben keinen Kassenwart.': '{0} teams have no treasurer.',
   '{0} Meldung': '{0} notice',
   '{0} Meldungen': '{0} notices',
   '{0} min länger als das Training': '{0} min longer than the training',
@@ -193,13 +196,18 @@ export const en: Record<string, string> = {
   '{0} Person ist noch unsicher.': '{0} person is still unsure.',
   '{0} Personen': '{0} people',
   '{0} Personen gefällt das': '{0} people like this',
+  '{0} Personen haben diese Rolle. Stelle sie auf eine andere Rolle um oder lass sie ihnen entziehen. Gelöschte Rollen lassen sich wiederherstellen.':
+    '{0} people have this role. Move them to another role or have it taken from them. Deleted roles can be restored.',
   '{0} Personen haben noch offen.': '{0} people still owe money.',
   '{0} Personen sind noch unsicher.': '{0} people are still unsure.',
   '{0} Platz frei': '{0} spot free',
   '{0} Plätze frei': '{0} spots free',
   '{0} Positionen (Anschaffungswerte)': '{0} items (purchase values)',
   '{0} Rechte': '{0} permissions',
+  '{0} Rechte – jeweils mit der Rolle, aus der sie kommen.':
+    '{0} rights – each with the role it comes from.',
   '{0} Rechte einzeln vergeben': '{0} permissions granted individually',
+  '{0} Rollen': '{0} roles',
   '{0} Rückmeldungen gesendet': '{0} responses sent',
   '{0} Siege': '{0} wins',
   '{0} sind in der Mannschaftskasse {1} eingegangen.':
@@ -249,6 +257,7 @@ export const en: Record<string, string> = {
   '{0} von {1} frei': '{0} of {1} free',
   '{0} von {1} min': '{0} of {1} min',
   '{0} von {1} Minuten verplant': '{0} of {1} minutes planned',
+  '{0} von {1} Rechten': '{0} of {1} rights',
   '{0} von {1} Rücklagen haben ihr Ziel erreicht.':
     '{0} of {1} reserves have reached their targets.',
   '{0} von {1} Trainings': '{0} of {1} training sessions',
@@ -335,6 +344,9 @@ export const en: Record<string, string> = {
     '• Fixture import from DFBnet\n• Match tags league, cup and friendly\n• Repeat events until a date',
   '+ {0} weitere': '+ {0} more',
   '▲ offen': '▲ open',
+  '○ keine': '○ none',
+  '● alle Rechte des Bereichs': '● all rights of the area',
+  '◐ einige': '◐ some',
   '1 Absage': '1 no',
   '1 Auslage wartet': '1 claim waiting',
   '1 Beitrag ist überfällig ({0}).': '1 fee is overdue ({0}).',
@@ -470,6 +482,7 @@ export const en: Record<string, string> = {
   'Abwesenheiten in der Vergangenheit können nicht eingetragen werden.':
     'Absences in the past cannot be entered.',
   'Abwesenheitsgründe einsehen': 'View absence reasons',
+  'Abwesenheitsgründe für die Mannschaft sichtbar': 'Absence reasons visible to the team',
   'Admin-Verwaltung': 'Admin area',
   'Administration, Kassenwart und Kassenprüfer – der Standard':
     'Administration, treasurer and auditors – the default',
@@ -530,9 +543,12 @@ export const en: Record<string, string> = {
   'Alle Mannschaften des Vereins ansehen': 'View all teams in the club',
   'Alle Mannschaften gehören zusammen': 'All teams belong together',
   'Alle Meldungen': 'All notifications',
+  'Alle mit Rolle': 'All with a role',
   'Alle Module': 'All modules',
   'Alle Personen haben bereits einen App-Zugang.': 'Everyone already has app access.',
   'Alle Plätze besetzt': 'All spots taken',
+  'Alle Rechte mit der Quelle (Rolle oder individuell)':
+    'All rights with their source (role or individual)',
   'Alle Rollenträger': 'All role holders',
   'Alle Spiele der Saison auf einmal': 'All matches of the season at once',
   'Alle Termine': 'All events',
@@ -715,6 +731,8 @@ export const en: Record<string, string> = {
   'Auch Dubletten werden als neue Einträge angelegt.':
     'Duplicates are created as new entries as well.',
   'auch mehrere auf einmal': 'several at once, too',
+  'Auch Mitspieler sehen den Grund einer Absage oder Abwesenheit (z. B. verletzt, krank).':
+    'Teammates also see the reason for a decline or absence (e.g. injured, ill).',
   'Auch ohne Werbung bleibt der Sponsor in der Übersicht sichtbar.':
     'Even without advertising the sponsor stays visible in the overview.',
   'Audit-Log einsehen': 'View audit log',
@@ -735,6 +753,7 @@ export const en: Record<string, string> = {
   'Aufbewahrung bis': 'Retention until',
   Aufgabe: 'Task',
   'Aufgabe anlegen': 'Create task',
+  'Aufgabe beendet: {0} ({1})': 'Role ended: {0} ({1})',
   'Aufgabe: {0}': 'Duty: {0}',
   Aufgaben: 'Tasks',
   'Aufgaben legt das Trainerteam an.': 'The coaching staff creates tasks.',
@@ -1206,6 +1225,7 @@ export const en: Record<string, string> = {
   'Damit würdest du dich selbst aussperren.': 'You would lock yourself out.',
   'Danach bist du als Administration angemeldet und siehst sinnvolle nächste Schritte.':
     'Afterwards you are signed in as administration and see sensible next steps.',
+  'Danach darf {0}: {1}{2}': 'Afterwards {0} may: {1}{2}',
   'Danach sind Buchungen, Stornos, Plan und Rücklagen in diesem Jahr gesperrt. Öffnen kann es nur die Administration, mit Begründung.':
     'Afterwards bookings, cancellations, plan and reserves are locked for this year. Only the administration can reopen it, with a reason.',
   Darstellung: 'Appearance',
@@ -1324,6 +1344,8 @@ export const en: Record<string, string> = {
   'Das Thema ist geschlossen.': 'The topic is closed.',
   'Das Trainerteam kann die Spielform bei jeder Aufstellung wechseln.':
     'The coaching staff can change the match format for every line-up.',
+  'Das Trainerteam sieht Grund und Freitext immer, Eltern die Gründe ihres Kindes. Ob auch die Mitspieler die Gründe sehen, stellt das Trainerteam in „Mannschaft bearbeiten“ ein („Abwesenheitsgründe für die Mannschaft sichtbar“, Standard aus).':
+    "The coaching staff always sees reason and free text, parents see their child's reasons. Whether teammates also see the reasons is set by the coaching staff in “Edit team” (“Absence reasons visible to the team”, off by default).",
   'Das Trainerteam von {0} prüft deine Anfrage. Sobald sie freigegeben ist, bekommst du eine E-Mail und kannst dich anmelden.':
     'The coaching staff of {0} is reviewing your request. Once it is approved, you will receive an email and can sign in.',
   'Das Training': 'The training session',
@@ -1516,6 +1538,7 @@ export const en: Record<string, string> = {
     'The link is secret. If it has been passed on, simply generate a new one.',
   'Der Link muss mit https:// beginnen.': 'The link must start with https://.',
   'Der Name braucht 2 bis 60 Zeichen.': 'The name needs 2 to 60 characters.',
+  'Der Name braucht 3 bis 40 Zeichen.': 'The name needs 3 to 40 characters.',
   'Der Name erscheint in Mitteilungen und im Spielplan, das Kürzel auf den Kacheln der App.':
     'The name appears in messages and the fixtures, the abbreviation on the tiles of the app.',
   'Der Name fehlt.': 'The name is missing.',
@@ -1802,10 +1825,15 @@ export const en: Record<string, string> = {
     'Pitch booking is for coaching staff and groundskeepers.',
   'Die Prüfung': 'The audit',
   'Die Rechte konnten nicht gespeichert werden.': 'The permissions could not be saved.',
+  'Die Rechtevorschau sehen Vorstand und Administration.':
+    'The rights preview is for the board and administration.',
   'Die Reihenfolge passt nicht zu den Sponsoren.': 'The order does not match the sponsors.',
   'Die Rolle': 'The role',
   'Die Rolle „{0}“ wird entzogen.': 'The role “{0}” will be revoked.',
+  'Die Rolle ist gelöscht.': 'The role is deleted.',
   'Die Rolle Kassenwart': 'The treasurer role',
+  'Die Rolle wird archiviert und kann wiederhergestellt werden.':
+    'The role is archived and can be restored.',
   'Die Rollenübersicht ist für Vorstand und Administration.':
     'The role overview is for the board and administration.',
   'Die Rücklage': 'The reserve',
@@ -1915,10 +1943,13 @@ export const en: Record<string, string> = {
   'Diese Namen aus dem DFBnet gehören vermutlich zu eurem Verein. Wähle die passende Mannschaft – die Schreibweise wird gemerkt. Gegner mit ähnlichem Namen kannst du überspringen.':
     'These DFBnet names probably belong to your club. Choose the matching team – the spelling is remembered. You can skip opponents with a similar name.',
   'Diese Person hat bereits einen App-Zugang.': 'This person already has app access.',
+  'Diese Person hat keine besonderen Rechte.': 'This person has no special rights.',
   'Diese Prüfung gehört nicht zu deinen Kassen.': 'This audit does not belong to your funds.',
   'Diese Prüfung siehst du nicht.': 'You cannot see this audit.',
   'Diese Rechte gelten zusätzlich zu den Rollen und immer für den ganzen Verein. Für ein Recht nur in einer Mannschaft oder einer Abteilung lieber eine Rolle mit Geltungsbereich vergeben.':
     'These permissions apply in addition to the roles and always for the whole club. For a permission in just one team or section, assign a role with a scope instead.',
+  'Diese Rolle enthält vereinsweite Rechte und gilt nur für den ganzen Verein.':
+    'This role contains club-wide rights and only applies to the whole club.',
   'Diese Rolle gibt es nicht.': 'This role does not exist.',
   'Diese Rückennummer ist schon vergeben.': 'This shirt number is already taken.',
   'Diese Saison': 'This season',
@@ -2009,6 +2040,8 @@ export const en: Record<string, string> = {
     'You can only search for yourself or your children.',
   'Du kannst nur Rechte vergeben oder entziehen, die du selbst hast.':
     'You can only grant or withdraw permissions that you have yourself.',
+  'Du kannst nur Rechte vergeben, die du selbst hast.':
+    'You can only grant rights you have yourself.',
   'Du kannst nur Spieler deiner eigenen Mannschaften abstellen.':
     'You can only assign players from your own teams.',
   'Du kannst nur Zahlungen für dich oder deine Kinder melden.':
@@ -2051,6 +2084,7 @@ export const en: Record<string, string> = {
     'Email: kontakt@clubroof.example\nPhone: 01234 567890',
   'Ehemaliges Mitglied': 'Former member',
   Ehrenamtspauschale: 'Volunteer allowance',
+  Eigene: 'Custom',
   'Eigene Kasse anlegen': 'Create own fund',
   'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik, Dokumente, News':
     'Own team, events, squad, training, needs/offers, statistics, documents, news',
@@ -2094,6 +2128,7 @@ export const en: Record<string, string> = {
   'Eine Mannschaft anlegen': 'Create a team',
   'Eine Mannschaft ist eine Gruppe mit eigenem Kader, eigenen Terminen und eigenen Regeln – zum Beispiel „B-Jugend“ oder „1. Herren“. Alles lässt sich später ändern.':
     'A team is a group with its own squad, events and rules – for example “Under 17s” or “First team”. Everything can be changed later.',
+  'Eine Rolle mit diesem Namen gibt es schon.': 'A role with this name already exists.',
   'Eine Rückennummer ist doppelt vergeben.': 'A shirt number has been assigned twice.',
   'Eine Serie darf höchstens {0} Termine haben (etwa ein Jahr).':
     'A series may have at most {0} events (about a year).',
@@ -2307,6 +2342,8 @@ export const en: Record<string, string> = {
     'There are no adults with a login in the team yet.',
   'Es gibt noch keine Kategorien für diese Art. Lege sie unter „Einrichtung“ an.':
     'There are no categories for this type yet. Create them under “Setup”.',
+  'Es gibt nur einen Fulladmin – lege einen zweiten an.':
+    'There is only one full admin – add a second one.',
   'Es ist ein unerwarteter Fehler aufgetreten.': 'An unexpected error occurred.',
   'Es ist keine laufende Saison eingerichtet.': 'No current season is set up.',
   'Es muss immer eine Hauptkasse geben. Lege eine andere Kasse als Hauptkasse fest.':
@@ -2556,8 +2593,11 @@ export const en: Record<string, string> = {
   'Geldbewegung + {1}': 'Money movement + {1}',
   'Geldbewegung − {1}': 'Money movement − {1}',
   Gelesen: 'Read',
+  'Gelöscht – lässt sich wiederherstellen': 'Deleted – can be restored',
   'Gelöschte Einträge liegen hier und lassen sich wiederherstellen. Endgültig gelöscht wird nie automatisch, sondern nur auf deinen Anstoß.':
     'Deleted entries are kept here and can be restored. Nothing is ever deleted permanently on its own, only when you ask for it.',
+  'Gelöschte Rollen': 'Deleted roles',
+  'Gelöschte Rollen lassen sich wiederherstellen.': 'Deleted roles can be restored.',
   'Gelöschte Wissensartikel und Übungen landen im Archiv. Die Administration öffnet es unter „Verwaltung → Abo & Kontrolle → Archiv“: Dort stellst du einen Eintrag mit „Wiederherstellen“ wieder her. Ist sein Name inzwischen vergeben, fragt dich die App nach einem neuen Namen. Endgültig gelöscht wird nie automatisch: „Bereinigen“ entfernt, was älter als die Standardfrist ist (derzeit 2 Jahre), „Archiv leeren“ löscht alles; beides nur auf deinen Anstoß und mit Bestätigung. „Archiv exportieren“ speichert alle archivierten Einträge als Datei.':
     'Deleted knowledge articles and exercises end up in the archive. Administrators open it under “Administration → Subscription & control → Archive”: there you bring an entry back with “Restore”. If its name has been taken in the meantime, the app asks you for a new name. Nothing is ever deleted permanently on its own: “Clean up” removes what is older than the standard period (currently 2 years), “Empty archive” deletes everything; both only when you ask for it and after confirmation. “Export archive” saves all archived entries as a file.',
   'Gelöschte Wissensartikel, Übungen, Aufgaben, Sponsoren und ausgemustertes Material landen im Archiv. Das Trainerteam öffnet das Archiv seiner Mannschaft unter „Team → Archiv“ (gelöschte Aufgaben, wiederherstellen). Die Administration öffnet das ganze Archiv unter „Verwaltung → Abo & Kontrolle → Archiv“: Dort stellst du einen Eintrag mit „Wiederherstellen“ wieder her. Ist sein Name inzwischen vergeben, fragt dich die App nach einem neuen Namen. Endgültig gelöscht wird nie automatisch: „Bereinigen“ entfernt, was älter als die Standardfrist ist (derzeit 2 Jahre), „Archiv leeren“ löscht alles; beides nur auf deinen Anstoß und mit Bestätigung. „Archiv exportieren“ speichert alle archivierten Einträge als Datei.':
@@ -2612,6 +2652,7 @@ export const en: Record<string, string> = {
     'Enter the invitation code or paste the link from your invitation. You receive it from your club by e-mail, message or as a QR code.',
   'Gilt ab': 'Valid from',
   'Gilt für': 'Applies to',
+  'Gilt standardmäßig für': 'Applies by default to',
   Girokonto: 'Checking account',
   'Girokonto, Barkasse, PayPal … Der Anfangsbestand ist der Kontostand heute.':
     "Current account, cash box, PayPal … The opening balance is today's balance.",
@@ -3087,6 +3128,7 @@ export const en: Record<string, string> = {
   'Keine passenden Dokumente.': 'No matching documents.',
   'Keine passenden Mitglieder.': 'No matching members.',
   'Keine Plätze angelegt.': 'No pitches have been set up.',
+  'Keine Rolle': 'No role',
   'Keine Rollen vergeben.': 'No roles assigned.',
   'Keine Scorerpunkte im Zeitraum.': 'No scorer points in this period.',
   'Keine Spiele in dieser Woche': 'No matches this week',
@@ -3153,6 +3195,7 @@ export const en: Record<string, string> = {
   'Konto und Datenschutz': 'Account and privacy',
   'Kontoauszug importieren': 'Import bank statement',
   Kontoinhaber: 'Account holder',
+  'Kopie anpassen': 'Adjust a copy',
   Kopiert: 'Copied',
   'Korrektur speichern': 'Save correction',
   Korrigieren: 'Correct',
@@ -3207,6 +3250,7 @@ export const en: Record<string, string> = {
   'Laufzeit bis „{0}“ ist ungültig.': 'Term until “{0}” is invalid.',
   'Laufzeit von': 'Term from',
   'Laufzeit von „{0}“ ist ungültig.': 'Term from “{0}” is invalid.',
+  Leer: 'Empty',
   'leer = Hauptkasse': 'empty = main fund',
   'Leer = Standard (24 Stunden). Eine persönliche Einstellung der Spieler geht vor.':
     'Empty = default (24 hours). A personal setting of the players takes precedence.',
@@ -3556,6 +3600,7 @@ export const en: Record<string, string> = {
   'Neu anlegen': 'Create new',
   'Neu zuordnen (Jahrgangswechsel)': 'Reassign (age-group change)',
   'Neue Aufgabe': 'New task',
+  'Neue Aufgabe: {0} ({1})': 'New role: {0} ({1})',
   'Neue Datei importieren': 'Import a new file',
   'Neue Funktionen sind zunächst aus. Richte sie ein, wenn der Verein sie braucht.':
     'New features are off at first. Set them up when the club needs them.',
@@ -3568,6 +3613,8 @@ export const en: Record<string, string> = {
   'Neue Personen legt die Mitgliederverwaltung an; Rückennummern und Positionen ergänzt du unter Mannschaft bearbeiten.':
     'New people are created by member administration; you add shirt numbers and positions under Edit team.',
   'Neue Prüfung': 'New audit',
+  'Neue Rechte aus Updates (zunächst aus): {0}': 'New rights from updates (off for now): {0}',
+  'Neue Rolle': 'New role',
   'Neue Spiele erscheinen hier, sobald sie angesetzt sind.':
     'New matches appear here as soon as they are scheduled.',
   'Neue Strafe': 'New fine',
@@ -3589,6 +3636,7 @@ export const en: Record<string, string> = {
   'Neues Passwort': 'New password',
   'Neues Passwort (mind. 10 Zeichen)': 'New password (min. 10 characters)',
   'Neues Passwort wiederholen': 'Repeat new password',
+  'Neues Recht verfügbar ({0})': 'New right available ({0})',
   Neuigkeiten: 'News',
   'Neuigkeiten für dich': 'News for you',
   'Neuigkeiten in Clubroof': "What's new in Clubroof",
@@ -3723,9 +3771,13 @@ export const en: Record<string, string> = {
   'Nur Abwesenheiten melden': 'Report absences only',
   'Nur Abwesenheiten werden gemeldet – am wenigsten Aufwand':
     'Only absences are reported – least effort',
+  'Nur Admins: Verwaltung › Rollen und Rechte › „Neue Rolle“. Du gibst Name, Beschreibung und den Geltungsbereich (Verein, Abteilung, Mannschaft) an und wählst die Rechte in Klartext; mit „Start als Kopie von“ übernimmst du eine vorhandene Rolle. Sensible Rechte tragen ein Schloss. Vereinsweite Rechte (Verein, Vereinskasse, Mitglieder) gibt es nur in vereinsweiten Rollen, und du kannst nur Rechte vergeben, die du selbst hast. Standardrollen sind geschützt – dort gibt es „Kopie anpassen“. Gelöschte Rollen lassen sich wiederherstellen; Personen stellst du beim Löschen auf eine andere Rolle um. In der Übersicht zeigen die Reiter Rollen, Personen und Matrix den Stand; bei einer Person zeigt „Was darf diese Person?“ jedes Recht mit seiner Quelle.':
+    'Admins only: Administration › Roles and rights › “New role”. Enter name, description and the scope (club, department, team) and choose the rights in plain language; “Start as a copy of” takes over an existing role. Sensitive rights carry a lock. Club-wide rights (club, club treasury, members) exist only in club-wide roles, and you can only grant rights you have yourself. Standard roles are protected – use “Adjust a copy” there. Deleted roles can be restored; when deleting you move people to another role. In the overview the tabs Roles, People and Matrix show the current state; on a person, “What may this person do?” shows every right with its source.',
   'Nur Anzahl': 'Count only',
   'Nur App': 'App only',
   'Nur ausgewählte': 'Selected only',
+  'Nur das Trainerteam sieht die Gründe; Eltern sehen die Gründe ihres Kindes.':
+    "Only the coaching staff sees the reasons; parents see their child's reasons.",
   'Nur das Trainerteam sieht Kontaktdaten': 'Only the coaching staff sees contact details',
   'Nur das Trainerteam sieht Zahlen und Namen; Spieler und Eltern sehen nur die eigene Antwort.':
     'Only the coaching staff sees numbers and names; players and parents see only their own response.',
@@ -3735,6 +3787,8 @@ export const en: Record<string, string> = {
   'Nur diesen Termin': 'Only this event',
   'Nur eigene Mannschaften lassen sich stummschalten.': 'Only your own teams can be muted.',
   'nur eigener Stand': 'own balance only',
+  'Nur entziehen': 'Only remove',
+  'Nur für vereinsweite Rollen.': 'Only for club-wide roles.',
   'Nur genehmigte Auslagen werden erstattet.': 'Only approved claims are reimbursed.',
   'nur https://': 'https:// only',
   'Nur Kassenführung': 'Treasury management only',
@@ -3793,6 +3847,7 @@ export const en: Record<string, string> = {
   'ohne Mannschaft': 'no team',
   'Ohne Mannschaft': 'No team',
   'ohne Plan': 'no plan',
+  'Ohne Rolle': 'Without a role',
   'ohne Ziel': 'no target',
   'Ohne Zugang ({0})': 'No access ({0})',
   Oktober: 'October',
@@ -3840,6 +3895,7 @@ export const en: Record<string, string> = {
   Personen: 'people',
   'Personen einladen': 'Invite people',
   'Personen sind': 'people are',
+  'Personen umstellen auf': 'Move people to',
   Pfad: 'Path',
   Pflicht: 'Required',
   'Pflicht aufheben': 'Remove requirement',
@@ -3979,17 +4035,31 @@ export const en: Record<string, string> = {
     'Set up two-factor login yourself first before requiring it for everyone.',
   Rolle: 'Role',
   'Rolle / Aufgabe': 'Role / duty',
+  'Rolle ändern': 'Change role',
+  'Rolle angelegt: {0} ({1} Rechte)': 'Role created: {0} ({1} rights)',
+  'Rolle anlegen': 'Create role',
   'Rolle ansehen': 'View role',
+  'Rolle bearbeiten': 'Edit role',
   'Rolle entzogen': 'Role revoked',
   'Rolle entzogen: {0} ({1}) von {2}': 'Role revoked: {0} ({1}) from {2}',
+  'Rolle geändert: {0}{1}{2}': 'Role changed: {0}{1}{2}',
+  'Rolle gelöscht: {0} ({1} Vergaben entzogen)': 'Role deleted: {0} ({1} assignments removed)',
+  'Rolle gelöscht: {0} ({1} Vergaben umgestellt)': 'Role deleted: {0} ({1} assignments moved)',
+  'Rolle löschen': 'Delete role',
   'Rolle oder Aufgabe vergeben': 'Assign role or duty',
   'Rolle öffnen': 'Open role',
   'Rolle vergeben': 'Role assigned',
   'Rolle vergeben: {0} ({1}) an {2}': 'Role assigned: {0} ({1}) to {2}',
+  'Rolle wiederhergestellt: {0}': 'Role restored: {0}',
+  'Rolle wirklich löschen?': 'Really delete the role?',
   Rollen: 'Roles',
   'Rollen & Aufgaben': 'Roles & tasks',
   'Rollen & Rechte': 'Roles & rights',
   'Rollen & Zusatzaufgaben': 'Roles & additional duties',
+  'Rollen ändern nur Admins.': 'Only admins change roles.',
+  'Rollen legen und ändern nur Admins an.': 'Only admins create and change roles.',
+  'Rollen sind Rechtepakete: Sie werden zusätzlich zur Mannschaft vergeben – z. B. ist ein Spieler „Kassenwart“ seiner Mannschaft.':
+    'Roles are rights packages: they are given in addition to the team – e.g. a player can be “treasurer” of their team.',
   'Rollen sind Rechtepakete. Sie werden zusätzlich zur Mannschaft vergeben – z. B. ist ein Spieler „Kassenwart“ seiner Mannschaft. Jede Rolle kann mehrere Personen haben.':
     'Roles are permission packages. They are assigned in addition to the team – e.g. a player can be the treasurer of their team. Each role can have several people.',
   'Rollen und Aufgaben': 'Roles and duties',
@@ -4147,6 +4217,8 @@ export const en: Record<string, string> = {
   'seit dem {0}': 'since {0}',
   Senden: 'Send',
   Senioren: 'Seniors',
+  'Sensibles Recht: gibt Zugriff auf besonders geschützte Daten.':
+    'Sensitive right: gives access to especially protected data.',
   Sicherheit: 'Security',
   'Sichtbar für': 'Visible to',
   'Sichtbar für die eigene Mannschaft und alle Trainer':
@@ -4361,10 +4433,15 @@ export const en: Record<string, string> = {
   'Standard für dich: {0}': 'Default for you: {0}',
   'Standard-Darstellung': 'Default appearance',
   'Standard-Treffpunkt': 'Default meeting point',
+  'Standardrollen sind geschützt, damit Updates sie sicher mitführen können. Kopiere die Rolle und passe die Kopie an.':
+    'Standard roles are protected so that updates can maintain them safely. Copy the role and adjust the copy.',
+  'Standardrollen sind geschützt. Kopiere die Rolle und passe die Kopie an.':
+    'Standard roles are protected. Copy the role and adjust the copy.',
   'Stände sichtbar': 'Balances visible',
   'Standort (z. B. Geräteraum)': 'Location (e.g. equipment room)',
   'Stärke: {0}': 'Strength: {0}',
   'Starker Fuß': 'Stronger foot',
+  'Start als Kopie von': 'Start as a copy of',
   Startelf: 'Starting XI',
   'Startelf ({0})': 'Starting XI ({0})',
   'Startelf {0}/11': 'Starting XI {0}/11',
@@ -4684,6 +4761,7 @@ export const en: Record<string, string> = {
   'Unbekannte Rolle.': 'Unknown role.',
   'Unbekannte Schicht.': 'Unknown shift.',
   'Unbekannte Stufe.': 'Unknown tier.',
+  'Unbekannte Zielrolle.': 'Unknown target role.',
   'Unbekannte Zuordnung.': 'Unknown assignment.',
   'Unbekannter Fehler': 'Unknown error',
   'Unbekannter Geltungsbereich.': 'Unknown scope.',
@@ -4878,6 +4956,10 @@ export const en: Record<string, string> = {
     'Manage club master data, design and system settings',
   'Vereinsveranstaltungen plant der Vorstand.': 'The board plans club events.',
   Vereinswappen: 'Club crest',
+  'Vereinsweite Rechte (Verein, Vereinskasse, Mitglieder) gehören nur in vereinsweite Rollen.':
+    'Club-wide rights (club, club treasury, members) only belong in club-wide roles.',
+  'Vereinsweite Rechte gehören nur in vereinsweite Rollen.':
+    'Club-wide rights only belong in club-wide roles.',
   Vereinswissen: 'Club knowledge',
   verfügbar: 'available',
   Verfügbar: 'Available',
@@ -5019,6 +5101,7 @@ export const en: Record<string, string> = {
   'Was bringt „Anwesenheit erfassen“?': 'What does “Record attendance” do?',
   'Was darf das Trainerteam in der Kasse?': 'What can the coaching staff do in the team fund?',
   'Was darf die Mannschaft sehen?': 'What may the team see?',
+  'Was darf diese Person?': 'What may this person do?',
   'Was ist das Vereinskürzel und wie ändere ich die Vibration?':
     'What is the club code and how do I change vibration?',
   'Was ist die 2-Faktor-Anmeldung?': 'What is two-factor login?',
@@ -5121,6 +5204,7 @@ export const en: Record<string, string> = {
     'Who changed what and when – the last 200 entries.',
   'Wer hat wie viel getrunken?': 'Who had how many drinks?',
   'Wer ist dabei? ({0})': 'Who is in? ({0})',
+  'Wer sieht Abwesenheitsgründe?': 'Who sees absence reasons?',
   'Wer sieht die Kontaktdaten neuer Personen? Jede Person kann das für sich ändern.':
     'Who sees the contact details of new people? Everyone can change this for themselves.',
   'Wer sieht meine Daten?': 'Who can see my data?',
@@ -5185,6 +5269,7 @@ export const en: Record<string, string> = {
   'Wie lade ich nur bestimmte Mannschaften oder Personen zu einer Veranstaltung ein?':
     'How do I invite only certain teams or people to an event?',
   'Wie läuft die Kassenprüfung?': 'How does the treasury audit work?',
+  'Wie lege ich eine eigene Rolle an?': 'How do I create a custom role?',
   'Wie lege ich eine neue Mannschaft an?': 'How do I create a new team?',
   'Wie lege ich einen Termin an oder sage ihn ab?': 'How do I create or cancel an event?',
   'Wie lege ich Mitglieder an oder importiere sie?': 'How do I add or import members?',

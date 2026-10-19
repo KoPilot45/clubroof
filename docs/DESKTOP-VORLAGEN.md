@@ -40,6 +40,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `admin/import` | E | fertig | Assistent |
 | `admin/index` | D | fertig | Kachelraster / Übersicht |
 | `admin/invites` | C | Breite | Tabelle mit Filterleiste |
+| `admin/member-effective` | B | Breite | Formular |
 | `admin/member-new` | B | Breite | Formular |
 | `admin/member-permissions` | B | Breite | Formular |
 | `admin/member/[id]` | A | Breite | Liste bzw. Detailseite |
@@ -48,6 +49,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `admin/news/[id]` | A | Breite | Liste bzw. Detailseite |
 | `admin/news/index` | A | Breite | Liste bzw. Detailseite |
 | `admin/news/new` | B | Breite | Formular |
+| `admin/role-edit` | B | fertig | Formular |
 | `admin/role/[key]` | A | Breite | Liste bzw. Detailseite |
 | `admin/roles` | C | fertig | Tabelle mit Filterleiste |
 | `admin/sponsors` | C | Breite | Tabelle mit Filterleiste |
