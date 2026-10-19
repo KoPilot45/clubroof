@@ -69,6 +69,8 @@ export async function fetchEventRows(
         participationMode: s.teams.participationMode,
         attendanceVisibility: s.teams.attendanceVisibility,
         responsesVisible: s.teams.responsesVisible,
+        allowMaybe: s.teams.allowMaybe,
+        declineReasonRequired: s.teams.declineReasonRequired,
       },
       facilityName: s.facilities.name,
       match: s.matchDetails,
@@ -282,6 +284,10 @@ export async function summarizeEvents(
           }
         : null,
       deadline: deadline?.toISOString() ?? null,
+      responseRules: {
+        allowMaybe: row.team?.allowMaybe ?? true,
+        declineReasonRequired: row.team?.declineReasonRequired ?? false,
+      },
       counts,
       myResponses,
       presence: presenceFor(
@@ -652,6 +658,18 @@ export async function respondToEvent(
       'deadline_passed',
       'Die Frist für Zu- und Absagen ist abgelaufen. Bitte wende dich an dein Trainerteam.',
     );
+  }
+
+  // Antwortregeln der Mannschaft (Paket E2); das Trainerteam darf stellvertretend immer eintragen
+  if (isOwn && !override) {
+    if (input.status === 'maybe' && row.team && !row.team.allowMaybe)
+      throw new HttpError(
+        400,
+        'maybe_off',
+        'Diese Mannschaft kennt „Unsicher“ nicht. Bitte sage zu oder ab.',
+      );
+    if (input.status === 'no' && row.team?.declineReasonRequired && !input.reason?.trim())
+      throw new HttpError(400, 'reason_required', 'Bitte gib einen Grund für die Absage an.');
   }
 
   await db

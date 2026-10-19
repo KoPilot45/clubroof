@@ -180,6 +180,8 @@ export type EventSummary = {
   } | null;
   /** Ende der regulären Zu-/Absagefrist */
   deadline: string | null;
+  /** Antwortregeln der Mannschaft (Paket E2); ohne Mannschaft die Standardwerte */
+  responseRules: { allowMaybe: boolean; declineReasonRequired: boolean };
   /**
    * Zu- und Absagen der Mannschaft; null, wenn die Mannschaft die Übersicht Spielern und Eltern nicht zeigt
    * (Trainerteam bekommt sie immer) und bei Terminen ohne Mannschaft.
@@ -512,7 +514,15 @@ export type SquadStatus = {
 export type SquadComposition = Record<'goalkeeper' | 'defense' | 'midfield' | 'attack', number>;
 
 export type TeamOverview = {
-  team: { id: string; name: string; badge: string; league: string | null; ageGroup: string | null };
+  team: {
+    id: string;
+    name: string;
+    badge: string;
+    league: string | null;
+    ageGroup: string | null;
+    /** Willkommenstext für Eltern und Spieler (Paket E2) */
+    welcomeText?: string | null;
+  };
   permissions: TeamPermissions;
   /** Mannschaftskasse mit Strafenkatalog aktiv */
   fines: boolean;
@@ -1313,6 +1323,16 @@ export type TeamProfile = {
   lineupVisible: boolean;
   /** Zu- und Absage-Übersicht für Spieler und Eltern sichtbar (Paket TH, Standard an) */
   responsesVisible: boolean;
+  /** Erinnerung an fehlende Rückmeldungen: Stunden vor der Frist (leer = Standard 24, 0 = keine) */
+  reminderHours: number | null;
+  /** Bei einer Absage ist ein Grund Pflicht (Paket E2) */
+  declineReasonRequired: boolean;
+  /** „Unsicher“ als Antwort erlaubt (Paket E2, Standard an) */
+  allowMaybe: boolean;
+  /** Willkommenstext für Eltern und Spieler */
+  welcomeText: string | null;
+  /** Standard-Spielform im Aufstellungsplaner; leer = nach Altersklasse */
+  matchFormat: 7 | 9 | 11 | null;
 };
 
 export type TeamManageMember = {

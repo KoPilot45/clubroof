@@ -361,6 +361,14 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
             {team.ageGroup ? <Chip tone="neutral" label={team.ageGroup} /> : null}
           </View>
 
+          {o?.team.welcomeText ? (
+            <Section title="Information der Mannschaft">
+              <Card>
+                <T verbatim>{o.team.welcomeText}</T>
+              </Card>
+            </Section>
+          ) : null}
+
           {desktop ? (
             <View style={{ gap: 18 }}>
               <View style={{ flexDirection: 'row', gap: 18, alignItems: 'flex-start' }}>

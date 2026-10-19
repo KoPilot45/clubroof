@@ -329,6 +329,13 @@ function ProfileEditor({
   const [visibility, setVisibility] = useState<AttendanceVisibility>(profile.attendanceVisibility);
   const [lineupVisible, setLineupVisible] = useState(profile.lineupVisible);
   const [responsesVisible, setResponsesVisible] = useState(profile.responsesVisible);
+  const [reminder, setReminder] = useState(profile.reminderHours?.toString() ?? '');
+  const [reasonRequired, setReasonRequired] = useState(profile.declineReasonRequired);
+  const [allowMaybe, setAllowMaybe] = useState(profile.allowMaybe);
+  const [format, setFormat] = useState<'auto' | '7' | '9' | '11'>(
+    profile.matchFormat ? (String(profile.matchFormat) as '7' | '9' | '11') : 'auto',
+  );
+  const [welcome, setWelcome] = useState(profile.welcomeText ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const digits = (v: string) => v.replace(/\D/g, '').slice(0, 3);
@@ -345,6 +352,11 @@ function ProfileEditor({
           attendanceVisibility: visibility,
           lineupVisible,
           responsesVisible,
+          reminderHours: reminder === '' ? null : Number(reminder),
+          declineReasonRequired: reasonRequired,
+          allowMaybe,
+          matchFormat: format === 'auto' ? null : Number(format),
+          welcomeText: welcome.trim() || null,
           importAliases: aliases
             .split(',')
             .map((a) => a.trim())
@@ -440,6 +452,46 @@ function ProfileEditor({
             ? 'Spieler und Eltern sehen, wie viele zu- und abgesagt haben und wer.'
             : 'Nur das Trainerteam sieht Zahlen und Namen; Spieler und Eltern sehen nur die eigene Antwort.'}
         </T>
+        <T variant="label">Spielform im Aufstellungsplaner</T>
+        <ChoiceChips
+          options={[
+            { value: 'auto' as const, label: 'Nach Altersklasse' },
+            { value: '7' as const, label: '7er' },
+            { value: '9' as const, label: '9er' },
+            { value: '11' as const, label: '11er' },
+          ]}
+          selected={[format]}
+          onToggle={setFormat}
+        />
+        <T variant="label">Antworten auf Termine</T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <T style={{ flex: 1, fontWeight: '600' }}>„Unsicher“ als Antwort erlauben</T>
+          <Toggle label="Unsicher erlauben" value={allowMaybe} onChange={setAllowMaybe} />
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <T style={{ flex: 1, fontWeight: '600' }}>Bei einer Absage ist ein Grund Pflicht</T>
+          <Toggle
+            label="Grund bei Absage Pflicht"
+            value={reasonRequired}
+            onChange={setReasonRequired}
+          />
+        </View>
+        <TextField
+          label="Erinnerung vor der Frist (Stunden, 0 = keine)"
+          kind="code"
+          value={reminder}
+          onChangeText={(v) => setReminder(digits(v))}
+          maxLength={3}
+          hint="Leer = Standard (24 Stunden). Eine persönliche Einstellung der Spieler geht vor."
+        />
+        <TextField
+          label="Willkommenstext für Eltern und Spieler"
+          value={welcome}
+          onChangeText={setWelcome}
+          multiline
+          maxLength={1500}
+          hint="Zum Beispiel Kleidung, Treffpunkte, Regeln. Erscheint im Team-Tab."
+        />
         {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
         <Button label="Speichern" icon="checkmark" loading={busy} onPress={() => void save()} />
       </Card>

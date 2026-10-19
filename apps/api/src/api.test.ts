@@ -9647,4 +9647,80 @@ describe.skipIf(!url)('API', () => {
       ).toBe(403);
     });
   });
+
+  describe('Antwortregeln der Mannschaft (E2)', () => {
+    it('erzwingt Absagegrund, kann „Unsicher“ abschalten und zeigt den Willkommenstext', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const events = await get<EventSummary[]>(
+        `/events?from=${encodeURIComponent('2026-10-06T00:00:00Z')}&to=${encodeURIComponent('2027-02-01T00:00:00Z')}`,
+        player.token,
+      );
+      const mine = events.find(
+        (e) => e.team?.id === b1.id && e.myResponses.some((r) => r.canRespond),
+      )!;
+      const personId = mine.myResponses[0]!.personId;
+      expect(mine.responseRules).toEqual({ allowMaybe: true, declineReasonRequired: false });
+
+      const saved = await send<TeamProfile>('PUT', `/teams/${b1.id}/profile`, coach.token, {
+        declineReasonRequired: true,
+        allowMaybe: false,
+        reminderHours: 6,
+        matchFormat: 9,
+        welcomeText: '  Bitte 10 Minuten früher da sein.  ',
+      });
+      expect(saved.status).toBe(200);
+      expect(saved.body).toMatchObject({
+        declineReasonRequired: true,
+        allowMaybe: false,
+        reminderHours: 6,
+        matchFormat: 9,
+        welcomeText: 'Bitte 10 Minuten früher da sein.',
+      });
+      const bad = await send('PUT', `/teams/${b1.id}/profile`, coach.token, { matchFormat: 8 });
+      expect(bad.status).toBe(400);
+
+      const ask = (status: string, reason?: string) =>
+        send<{ error: string }>('PUT', `/events/${mine.id}/responses/${personId}`, player.token, {
+          status,
+          ...(reason ? { reason } : {}),
+        });
+      const maybe = await ask('maybe', 'vielleicht');
+      expect(maybe.status).toBe(400);
+      expect(maybe.body.error).toBe('maybe_off');
+      const noReason = await ask('no');
+      expect(noReason.status).toBe(400);
+      expect(noReason.body.error).toBe('reason_required');
+      expect((await ask('no', 'Krank')).status).toBe(200);
+
+      // Das Trainerteam darf stellvertretend ohne Grund eintragen
+      const proxy = await send('PUT', `/events/${mine.id}/responses/${personId}`, coach.token, {
+        status: 'maybe',
+      });
+      expect(proxy.status).toBe(200);
+
+      const overview = await get<TeamOverview>(`/teams/${b1.id}`, player.token);
+      expect(overview.team.welcomeText).toBe('Bitte 10 Minuten früher da sein.');
+      const after = (
+        await get<EventSummary[]>(
+          `/events?from=${encodeURIComponent('2026-10-06T00:00:00Z')}&to=${encodeURIComponent('2027-02-01T00:00:00Z')}`,
+          player.token,
+        )
+      ).find((e) => e.id === mine.id)!;
+      expect(after.responseRules).toEqual({ allowMaybe: false, declineReasonRequired: true });
+
+      // Zurück auf die Standardwerte, damit andere Tests unverändert laufen
+      await send('PUT', `/teams/${b1.id}/profile`, coach.token, {
+        declineReasonRequired: false,
+        allowMaybe: true,
+        reminderHours: null,
+        matchFormat: null,
+        welcomeText: null,
+      });
+      await send('PUT', `/events/${mine.id}/responses/${personId}`, coach.token, {
+        status: 'pending',
+      });
+    });
+  });
 });

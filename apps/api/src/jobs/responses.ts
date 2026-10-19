@@ -95,8 +95,9 @@ export async function sendReminders(db: Db | Tx, club: Club, now: Date): Promise
         .from(s.notificationPreferences)
         .where(inArray(s.notificationPreferences.userId, userIds))
     : [];
-  const hoursOf = (userId: string) =>
-    prefs.find((p) => p.userId === userId)?.hours ?? DEFAULT_REMINDER_HOURS;
+  // Persönliche Einstellung geht vor, dann die der Mannschaft (Paket E2), dann der Standard
+  const hoursOf = (userId: string, teamHours: number | null) =>
+    prefs.find((p) => p.userId === userId)?.hours ?? teamHours ?? DEFAULT_REMINDER_HOURS;
 
   let sent = 0;
   for (const { eventId, person } of open) {
@@ -108,7 +109,7 @@ export async function sendReminders(db: Db | Tx, club: Club, now: Date): Promise
         .map((g) => ({ userId: g.userId!, own: false })),
     ];
     for (const { userId, own } of targets) {
-      const hours = hoursOf(userId);
+      const hours = hoursOf(userId, e.team.reminderHours);
       if (hours <= 0 || now.getTime() < e.responseEnd.getTime() - hours * HOUR) continue;
       sent += await deliver(
         db,

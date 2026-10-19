@@ -255,6 +255,7 @@ export async function getTeamOverview(
       badge: team.badge,
       league: team.league,
       ageGroup: team.ageGroup,
+      welcomeText: team.welcomeText,
     },
     permissions,
     fines:

@@ -35,6 +35,7 @@ export const en: Record<string, string> = {
     '“Team → Create event”: training, match or team event, optionally as a weekly series (up to 26 weeks). In the event, use “Edit event” to change single events or “this and following”. With “Cancel event” the team is notified immediately.',
   '„Team → Termin anlegen“: Training, Spiel oder Mannschaftstermin. Spiele bekommen die Art Liga, Pokal oder Testspiel. Zum Wiederholen wählst du „Wöchentlich bis …“ und das Enddatum (bis zu etwa einem Jahr). Die Treffzeit berechnet die App aus den Regeln deiner Mannschaft; im einzelnen Termin kannst du sie überschreiben. Im Termin änderst du mit „Termin bearbeiten“ einzelne Termine oder „diesen und folgende“. Mit „Termin absagen“ wird die Mannschaft sofort benachrichtigt.':
     "“Team → Create event”: training, match or team event. Matches get a type: league, cup or friendly. To repeat, choose “Weekly until …” and the end date (up to about a year). The app calculates the meeting time from your team's rules; you can override it for a single event. In the event, “Edit event” changes single events or “this and following”. “Cancel event” notifies the team immediately.",
+  '„Unsicher“ als Antwort erlauben': 'Allow “Unsure” as a reply',
   '(Assistent)': '(Assistant)',
   '(Elfmeter)': '(penalty)',
   '(für {0})': '(for {0})',
@@ -344,6 +345,7 @@ export const en: Record<string, string> = {
   '1. Geltungsbereich': '1. Scope',
   '1. Öffne eine Authenticator-App (z. B. Google oder Microsoft Authenticator) und scanne den Code. 2. Gib den angezeigten 6-stelligen Code ein.':
     '1. Open an authenticator app (e.g. Google or Microsoft Authenticator) and scan the code. 2. Enter the 6-digit code shown.',
+  '11er': '11-a-side',
   '12 Monate': '12 months',
   '12 Wochen': '12 weeks',
   '15 Min.': '15 min',
@@ -378,9 +380,11 @@ export const en: Record<string, string> = {
   '6 Std.': '6 hrs',
   '60 Min.': '60 min',
   '60 Tage': '60 days',
+  '7er': '7-a-side',
   '8 Wochen': '8 weeks',
   '90 Min.': '90 min',
   '90 Tage': '90 days',
+  '9er': '9-a-side',
   Ab: 'From',
   'ab {2}': 'from {2}',
   'ab 75 %': 'from 75 %',
@@ -616,6 +620,7 @@ export const en: Record<string, string> = {
   'Antwort steht aus': 'Awaiting response',
   Antworten: 'Reply',
   'Antworten ({0})': 'Replies ({0})',
+  'Antworten auf Termine': 'Replies to events',
   Anwesenheit: 'Attendance',
   'Anwesenheit ändern': 'Change attendance',
   'Anwesenheit erfassen': 'Record attendance',
@@ -815,6 +820,7 @@ export const en: Record<string, string> = {
     'When you sign in we send you a 6-digit code by email (valid for 10 minutes, single use). An authenticator app is more secure – the email code is the simpler alternative.',
   'Bei dir': 'With you',
   'Bei Dubletten': 'For duplicates',
+  'Bei einer Absage ist ein Grund Pflicht': 'A reason is required when declining',
   'Bei Spielen fehlt der Gegner.': 'The opponent is missing for matches.',
   'bei Spielen Pflicht': 'required for matches',
   'Bei Terminen fehlt der Titel.': 'The title is missing for events.',
@@ -1022,6 +1028,7 @@ export const en: Record<string, string> = {
   'Bitte gib E-Mail-Adresse und Passwort ein.': 'Please enter your email address and password.',
   'Bitte gib eine Beschreibung ein.': 'Please enter a description.',
   'Bitte gib eine gültige IBAN an.': 'Please enter a valid IBAN.',
+  'Bitte gib einen Grund für die Absage an.': 'Please give a reason for declining.',
   'Bitte gib einen gültigen Betrag ein, z. B. 12,50.': 'Please enter a valid amount, e.g. 12,50.',
   'Bitte gib einen PayPal-Link wie https://paypal.me/… an.':
     'Please enter a PayPal link such as https://paypal.me/…',
@@ -1757,6 +1764,8 @@ export const en: Record<string, string> = {
   'Diese Mannschaft darfst du nicht bearbeiten.': 'You are not allowed to edit this team.',
   'Diese Mannschaft darfst du nicht einstellen.': 'You are not allowed to configure this team.',
   'Diese Mannschaft darfst du nicht löschen.': 'You are not allowed to delete this team.',
+  'Diese Mannschaft kennt „Unsicher“ nicht. Bitte sage zu oder ab.':
+    'This team does not use “Unsure”. Please accept or decline.',
   'Diese Nachricht kannst du nicht entfernen.': 'You cannot remove this message.',
   'Diese Nachricht kannst du nicht mehr bearbeiten.': 'You can no longer edit this message.',
   'Diese Nachricht wartet nicht auf Freigabe.': 'This message is not awaiting approval.',
@@ -2080,6 +2089,7 @@ export const en: Record<string, string> = {
   Erinnerung: 'reminder',
   'Erinnerung an Zu- und Absagen': 'Reminder for confirmations and declines',
   'Erinnerung Stufe {0} senden': 'Send level {0} reminder',
+  'Erinnerung vor der Frist (Stunden, 0 = keine)': 'Reminder before the deadline (hours, 0 = none)',
   'Erinnerung, Bezahlinfos und Kassenprüfung?': 'Reminders, payment details and cash audit?',
   Erinnerungen: 'reminders',
   'Erinnerungen an offene Beträge verschickst du per Knopf oder lässt sie monatlich automatisch laufen (Einstellungen). Unter „Bezahlinfos & Einstellungen“ hinterlegst du IBAN und PayPal und bestimmst, ob alle die offenen Beträge der anderen sehen. „Kassenprüfung“ hält den Stand mit Prüfer fest. Berichte gibt es als Excel und PDF.':
@@ -2410,6 +2420,7 @@ export const en: Record<string, string> = {
   'Größe 5': 'Size 5',
   Grün: 'Green',
   Grund: 'Reason',
+  'Grund bei Absage Pflicht': 'Reason required when declining',
   'Grund der Absage': 'Reason for cancellation',
   'Grund der Aussonderung': 'Reason for disposal',
   'Grund für das Storno (optional)': 'Reason for reversal (optional)',
@@ -2492,6 +2503,7 @@ export const en: Record<string, string> = {
   Hinweis: 'Note',
   'Hinweis (optional)': 'Note (optional)',
   'Hinweis an die Person (optional)': 'Note to the person (optional)',
+  'Hinweis für das Trainerteam': 'Note for the coaching staff',
   'Hinweis für das Trainerteam (optional)': 'Note for the coaching staff (optional)',
   'Hinweis: {0}': 'Note: {0}',
   'Hinweise & Kalender': 'Notices & calendar',
@@ -2613,6 +2625,7 @@ export const en: Record<string, string> = {
   'Individuelle Rechte gespeichert': 'Individual permissions saved',
   'Info für die Mannschaft': 'Info for the team',
   'Info für die Mannschaft (optional)': 'Info for the team (optional)',
+  'Information der Mannschaft': 'Team information',
   Inhalte: 'Content',
   Innenverteidiger: 'Centre back',
   Innenverteidigung: 'Centre-back',
@@ -2925,6 +2938,8 @@ export const en: Record<string, string> = {
   'Laufzeit bis „{0}“ ist ungültig.': 'Term until “{0}” is invalid.',
   'Laufzeit von': 'Term from',
   'Laufzeit von „{0}“ ist ungültig.': 'Term from “{0}” is invalid.',
+  'Leer = Standard (24 Stunden). Eine persönliche Einstellung der Spieler geht vor.':
+    'Empty = default (24 hours). A personal setting of the players takes precedence.',
   'Lege das Mitglied an und ordne es danach einer Mannschaft zu. Den App-Zugang erhält es später über eine Einladung.':
     'Create the member and then assign them to a team. They will receive app access later via an invitation.',
   'Lege Strafen und Beträge fest. Vergebene Strafen landen auf dem Konto der Person; eine spätere Änderung gilt nur für neue Strafen.':
@@ -3150,6 +3165,7 @@ export const en: Record<string, string> = {
   Morgen: 'Tomorrow',
   Nach: 'To',
   'Nach {0} sortieren': 'Sort by {0}',
+  'Nach Altersklasse': 'By age group',
   'Nach Beginn eines Termins hakst du ab, wer wirklich da war (vorausgewählt sind die Zusagen). Danach zählt für Trainingsquote und Statistik die Anwesenheit statt der Zusage. Auf Home erinnert dich ein Hinweis an Trainings der letzten Woche.':
     'After an event has started, you tick off who was actually there (confirmations are preselected). From then on, attendance rather than confirmation counts for training rate and statistics. On Home, a notice reminds you of training sessions from the last week.',
   'Nach dem Ende': 'After the end',
@@ -3894,6 +3910,7 @@ export const en: Record<string, string> = {
   'Spielerinnen und Spieler': 'Female and male players',
   Spielfest: 'Fun day',
   Spielform: 'Small-sided game',
+  'Spielform im Aufstellungsplaner': 'Match format in the line-up planner',
   'Spielform und Formation gehören zusammen.': 'Game size and formation belong together.',
   'Spielfrei: {0}': 'No match: {0}',
   Spielkennung: 'Match ID',
@@ -4265,6 +4282,7 @@ export const en: Record<string, string> = {
   'Unsere Sponsoren': 'Our sponsors',
   unsicher: 'unsure',
   Unsicher: 'Maybe',
+  'Unsicher erlauben': 'Allow unsure',
   'Unsicher gemeldet': 'Reported unsure',
   'Unsicher melden': 'Report unsure',
   'Unsicher senden': 'Send Maybe',
@@ -4732,6 +4750,7 @@ export const en: Record<string, string> = {
     'Welcome to Clubroof! Enter the setup code you chose when installing the server (SETUP_TOKEN).',
   'Willkommen, {0}!': 'Welcome, {0}!',
   'Willkommens-Tour ansehen': 'Watch the welcome tour',
+  'Willkommenstext für Eltern und Spieler': 'Welcome text for parents and players',
   'Wir fahren mit euch': 'We drive with you',
   'Wir haben dir einen 6-stelligen Code per E-Mail geschickt. Er ist 10 Minuten gültig.':
     'We have emailed you a 6-digit code. It is valid for 10 minutes.',
@@ -4917,6 +4936,8 @@ export const en: Record<string, string> = {
   'Zuletzt abgerufen {0}': 'Last accessed {0}',
   'Zuletzt geändert': 'Last changed',
   'Zuletzt veröffentlicht': 'Recently published',
+  'Zum Beispiel Kleidung, Treffpunkte, Regeln. Erscheint im Team-Tab.':
+    'For example clothing, meeting points, rules. Appears in the Team tab.',
   'Zum Kalender': 'To the calendar',
   'Zum Korrigieren stornieren und die Buchung neu erfassen. Stornos bleiben sichtbar.':
     'To correct, reverse the entry and record it again. Reversals remain visible.',
