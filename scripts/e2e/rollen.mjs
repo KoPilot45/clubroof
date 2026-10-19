@@ -30,7 +30,7 @@ ok(true, 'Personen: Filter sichtbar');
 
 await goto('/admin/role-edit');
 await page.getByLabel('Name', { exact: true }).fill('Browser-Testrolle');
-await page.getByRole('switch').first().click();
+await page.getByRole('switch', { name: 'Termine anlegen, ändern und absagen' }).click();
 await page.screenshot({ path: '.check/shots/rollen-editor.png' });
 await page.getByRole('button', { name: 'Rolle anlegen' }).click();
 await page.getByText('Browser-Testrolle').first().waitFor({ timeout: 15_000 });
