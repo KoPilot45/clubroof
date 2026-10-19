@@ -16,7 +16,10 @@ const { page, goto } = await b.session('admin', { width: 1280, height: 900 });
 await goto('/export');
 await page.getByText('Meine Daten', { exact: true }).first().waitFor({ timeout: 20_000 });
 const download = async (title) => {
-  const card = page.locator('div', { has: page.getByText(title, { exact: true }) }).last();
+  const card = page
+    .getByText(title, { exact: true })
+    .first()
+    .locator('xpath=ancestor::div[.//*[@role="button"] or .//button][1]');
   const [file] = await Promise.all([
     page.waitForEvent('download', { timeout: 20_000 }),
     card
