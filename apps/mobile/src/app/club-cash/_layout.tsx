@@ -14,6 +14,7 @@ const TAB_OF: Record<string, string> = {
   entries: 'buchung',
   new: 'buchung',
   manage: 'buchung',
+  setup: 'buchung',
   funds: 'buchung',
   budget: 'planung',
   reserves: 'planung',
@@ -94,6 +95,7 @@ export default function ClubCashLayout() {
           <Stack.Screen name="fees" options={{ title: 'Mitgliedsbeiträge' }} />
           <Stack.Screen name="fee-import" options={{ title: 'Kontoauszug importieren' }} />
           <Stack.Screen name="fee-setup" options={{ title: 'Beitragsarten und Mitglieder' }} />
+          <Stack.Screen name="setup" options={{ title: 'Kasse einrichten' }} />
           <Stack.Screen name="manage" options={{ title: 'Vereinskasse einrichten' }} />
           <Stack.Screen name="funds" options={{ title: 'Kassen' }} />
           <Stack.Screen name="budget" options={{ title: 'Haushaltsplan' }} />

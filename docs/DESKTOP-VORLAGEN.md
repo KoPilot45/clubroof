@@ -81,6 +81,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `club-cash/manage` | B | Breite | Formular |
 | `club-cash/new` | B | Breite | Formular |
 | `club-cash/reserves` | C | fertig | Tabelle mit Filterleiste |
+| `club-cash/setup` | E | fertig | Assistent |
 | `club-cash/sponsors` | C | Breite | Tabelle mit Filterleiste |
 | `club-cash/stats` | F | fertig | Bericht / Diagramme |
 | `club-cash/tax` | C | Breite | Tabelle mit Filterleiste |
@@ -90,6 +91,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `club-team/[id]` | A | Breite | Liste bzw. Detailseite |
 | `club-teams` | A | Breite | Liste bzw. Detailseite |
 | `contacts` | A | Breite | Liste bzw. Detailseite |
+| `demo/cash` | E | fertig | Assistent |
 | `demo/club` | E | fertig | Assistent |
 | `demo/team` | E | fertig | Assistent |
 | `documents` | A | Breite | Liste bzw. Detailseite |

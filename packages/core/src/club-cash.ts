@@ -177,6 +177,8 @@ export type ClubCash = {
   /** Einstellung ändern darf nur die Vereinsadministration */
   canChangeSettings: boolean;
   visibility: ClubCashVisibility;
+  /** Gemeinnützig im Sinne der Abgabenordnung; leer = noch nicht angegeben (Paket E2) */
+  nonprofit: boolean | null;
   year: number;
   /** Kassen, die der Nutzer sehen darf (bei Rechten nur für einzelne Kassen weniger als alle) */
   funds: ClubCashFund[];
@@ -295,6 +297,8 @@ export type ClubFees = {
   level: 'full' | 'reports';
   canManage: boolean;
   today: string;
+  /** Zahlungserinnerung: Tage nach Fälligkeit und eigener Text (Paket E2) */
+  reminder: { days: number; text: string | null };
   types: ClubFeeType[];
   summary: {
     /** offen insgesamt (fällig, noch nicht bezahlt) */
@@ -832,4 +836,22 @@ export type ClubTeamGrants = {
   canManage: boolean;
   teams: { id: string; name: string }[];
   grants: { id: string; teamName: string; amountCents: number; bookedOn: string }[];
+};
+
+/** Zuordnung der Beitragsarten nach Regeln (Paket E2): erste passende Regel je Mitglied. */
+export type ClubFeeRule = {
+  /** unter: jünger als `age` Jahre; inactive: Status passiv; rest: alle übrigen */
+  when: 'under_age' | 'inactive' | 'rest';
+  age?: number;
+  feeTypeId: string;
+};
+export type ClubFeeRuleResult = {
+  /** je Beitragsart: Zahl der Mitglieder, die sie bekämen (Vorschau) bzw. bekommen haben */
+  counts: { feeTypeId: string; count: number }[];
+  /** ohne Geburtsdatum greift keine Altersregel – sie fallen auf die übrigen Regeln */
+  missingBirthDate: number;
+  /** haben schon eine laufende Beitragsart und bleiben unverändert */
+  alreadyAssigned: number;
+  /** nur nach dem Zuordnen */
+  created: number | null;
 };

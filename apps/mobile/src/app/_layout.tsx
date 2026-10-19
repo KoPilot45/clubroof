@@ -410,6 +410,7 @@ function Navigator() {
                 <Stack.Screen name="setup" />
                 <Stack.Screen name="demo/club" />
                 <Stack.Screen name="demo/team" />
+                <Stack.Screen name="demo/cash" />
               </Stack.Protected>
               {/* Öffentliche Links aus E-Mails – mit und ohne Anmeldung erreichbar */}
               <Stack.Screen name="join/[token]" />

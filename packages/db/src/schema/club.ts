@@ -44,6 +44,11 @@ export const clubs = pgTable('clubs', {
   email: text(),
   phone: text(),
   website: text(),
+  /** Gemeinnützig im Sinne der Abgabenordnung? leer = weiß nicht (Paket E2, Kassen-Assistent) */
+  nonprofit: boolean(),
+  /** Zahlungserinnerung Mitgliedsbeiträge: Tage nach Fälligkeit und eigener Text */
+  feeReminderDays: integer().notNull().default(0),
+  feeReminderText: text(),
   /** Wer die Kontaktdaten neuer Personen sieht (Standard; jede Person ändert es für sich): club | team_and_coaches | coaches_only */
   defaultContactVisibility: text().notNull().default('team_and_coaches'),
   createdAt: createdAt(),

@@ -22,6 +22,7 @@ import {
   createTransfer,
   getClubCash,
   listEntries,
+  setNonprofit,
   setVisibility,
   updateAccount,
   updateCategory,
@@ -297,6 +298,21 @@ export const clubCashRoutes: FastifyPluginAsyncZod = async (app) => {
       await setVisibility(app.db, request.actor!, request.body.visibility, app.now());
       // Der Actor trägt noch den alten Wert – neu laden
       request.actor!.club = { ...request.actor!.club, clubCashVisibility: request.body.visibility };
+      return overview(request);
+    },
+  );
+  app.put(
+    '/club-cash/nonprofit',
+    {
+      schema: {
+        body: z.object({
+          nonprofit: z.boolean().nullable(),
+          simplifyCategories: z.boolean().optional(),
+        }),
+      },
+    },
+    async (request): Promise<ClubCash> => {
+      await setNonprofit(app.db, request.actor!, request.body, app.now());
       return overview(request);
     },
   );

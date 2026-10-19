@@ -59,6 +59,12 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Unter „Mehr“ stehen direkt unter deinem Profil zwei Zugänge: „Admin-Verwaltung“ (violett) für alle mit Verwaltungsrechten und „Vereinskasse“ (blau) für alle mit Kassenzugriff. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Beenden“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Prüfung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.',
       },
       {
+        id: 'cash-setup',
+        question: 'Wie richte ich die Vereinskasse ein?',
+        answer:
+          'In der leeren Vereinskasse (Übersicht, Karte „Konten“) startet „Kasse einrichten“ einen Assistenten: Gemeinnützigkeit, Konten mit Anfangsbestand, Kategorien aus einer Vorlage, Beitragsarten, Kassenwart und – im ausführlichen Weg – Zuordnungsregeln für Mitglieder (zum Beispiel „unter 18 Jahre: Jugend“), Erinnerungen und Sichtbarkeit. Angelegt wird erst in der Zusammenfassung; alles lässt sich später in der Vereinskasse ändern.',
+      },
+      {
         id: 'cash-overview',
         question: 'Was ist die Kassenübersicht?',
         answer:

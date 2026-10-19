@@ -309,6 +309,11 @@
     "note": "Tabelle mit Filterleiste",
     "status": "fertig"
   },
+  "club-cash/setup": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "fertig"
+  },
   "club-cash/sponsors": {
     "t": "C",
     "note": "Tabelle mit Filterleiste",
@@ -353,6 +358,11 @@
     "t": "A",
     "note": "Liste bzw. Detailseite",
     "status": "Breite"
+  },
+  "demo/cash": {
+    "t": "E",
+    "note": "Assistent",
+    "status": "fertig"
   },
   "demo/club": {
     "t": "E",

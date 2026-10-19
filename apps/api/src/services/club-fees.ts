@@ -15,6 +15,8 @@ import {
   type ClubFeeDueStatus,
   type ClubFeeGenerateResult,
   type ClubFeeImportCommitInput,
+  type ClubFeeRule,
+  type ClubFeeRuleResult,
   type ClubFeeImportPreview,
   type ClubFeeImportRow,
   type ClubFeeInterval,
@@ -24,7 +26,7 @@ import {
   type ClubFees,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, eq, gt, inArray, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, eq, gt, inArray, isNull, lte, ne, or, sql } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { HttpError, notFound } from '../errors';
 import { deliver } from '../notify/deliver';
@@ -168,6 +170,7 @@ export async function getClubFees(
     members: Number(counts.find((c) => c.feeTypeId === r.type.id)?.n ?? 0),
   }));
 
+  const reminder = await reminderSettings(db, clubId);
   const all = (await loadDues(db, clubId)).map((r) => toDue(r, day));
   const live = all.filter((d) => d.status === 'open' || d.status === 'overdue');
   const overdue = live.filter((d) => d.status === 'overdue');
@@ -208,6 +211,7 @@ export async function getClubFees(
     canManage: actorCan(actor, 'clubcash.manage'),
     today: day,
     types,
+    reminder,
     summary: {
       openCents: live.reduce((sum, d) => sum + d.openCents, 0),
       openCount: live.length,
@@ -787,7 +791,12 @@ export async function remindDue(
       level: level === 3 ? 'important' : 'info',
       topic: 'cash',
       title: text.title,
-      body: `${r.first} ${r.last}: ${r.due.periodLabel}, ${euro(due.openCents)} offen, fällig seit ${deLong(r.due.dueOn)}.`,
+      body: [
+        `${r.first} ${r.last}: ${r.due.periodLabel}, ${euro(due.openCents)} offen, fällig seit ${deLong(r.due.dueOn)}.`,
+        (await reminderSettings(db, actor.club.id)).text?.trim(),
+      ]
+        .filter(Boolean)
+        .join(' '),
       dedupeKey: `club-fee-reminder:${dueId}:${level}`,
     },
     now,
@@ -816,9 +825,11 @@ export async function remindAllOverdue(
 ): Promise<{ reminded: number; withoutLogin: number }> {
   requireManage(actor);
   const day = today(actor, now);
+  const minDays = (await reminderSettings(db, actor.club.id)).days;
   const rows = (await loadDues(db, actor.club.id))
     .map((r) => ({ r, due: toDue(r, day) }))
-    .filter((x) => x.due.status === 'overdue' && x.r.due.reminderLevel === 0);
+    .filter((x) => x.due.status === 'overdue' && x.r.due.reminderLevel === 0)
+    .filter((x) => daysBetween(x.r.due.dueOn, day) >= minDays);
   let reminded = 0;
   let withoutLogin = 0;
   for (const x of rows) {
@@ -1035,4 +1046,108 @@ export async function commitImport(
     now,
   );
   return { booked: input.items.length };
+}
+
+const daysBetween = (from: string, to: string) =>
+  Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
+
+/** Wie lange nach Fälligkeit „Alle erinnern“ wartet und welcher Zusatztext mitgeschickt wird. */
+export async function setReminderSettings(
+  db: Db,
+  actor: Actor,
+  input: { days: number; text: string | null },
+  now: Date,
+): Promise<void> {
+  requireManage(actor);
+  await db
+    .update(s.clubs)
+    .set({ feeReminderDays: input.days, feeReminderText: input.text?.trim() || null })
+    .where(eq(s.clubs.id, actor.club.id));
+  await audit(
+    db,
+    actor,
+    'clubfees.reminder_settings',
+    'club',
+    actor.club.id,
+    `Beiträge: Erinnerung nach ${input.days} Tagen`,
+    now,
+  );
+}
+
+/** Ordnet allen Mitgliedern ohne laufende Beitragsart nach Regeln eine zu (Vorschau oder anlegen). */
+export async function assignByRules(
+  db: Db,
+  actor: Actor,
+  input: { rules: ClubFeeRule[]; apply: boolean },
+  now: Date,
+): Promise<ClubFeeRuleResult> {
+  requireManage(actor);
+  const day = today(actor, now);
+  const people = await db
+    .select({
+      id: s.persons.id,
+      birthDate: s.persons.birthDate,
+      status: s.persons.membershipStatus,
+    })
+    .from(s.persons)
+    .where(and(eq(s.persons.clubId, actor.club.id), ne(s.persons.membershipStatus, 'left')));
+  const running = new Set(
+    (
+      await db
+        .select({ personId: s.clubFeeAssignments.personId })
+        .from(s.clubFeeAssignments)
+        .where(
+          and(eq(s.clubFeeAssignments.clubId, actor.club.id), isNull(s.clubFeeAssignments.validTo)),
+        )
+    ).map((r) => r.personId),
+  );
+  const ageOf = (birth: string) => {
+    const years = Number(day.slice(0, 4)) - Number(birth.slice(0, 4));
+    return day.slice(5) < birth.slice(5) ? years - 1 : years;
+  };
+  const under = input.rules.find((r) => r.when === 'under_age');
+  const inactive = input.rules.find((r) => r.when === 'inactive');
+  const rest = input.rules.find((r) => r.when === 'rest');
+  const plan = new Map<string, string>();
+  let missingBirthDate = 0;
+  let alreadyAssigned = 0;
+  for (const p of people) {
+    if (running.has(p.id)) {
+      alreadyAssigned += 1;
+      continue;
+    }
+    let typeId: string | undefined;
+    if (under) {
+      if (!p.birthDate) {
+        missingBirthDate += 1;
+        continue;
+      }
+      if (ageOf(p.birthDate) < (under.age ?? 18)) typeId = under.feeTypeId;
+    }
+    if (!typeId && p.status === 'inactive' && inactive) typeId = inactive.feeTypeId;
+    if (!typeId && rest) typeId = rest.feeTypeId;
+    if (typeId) plan.set(p.id, typeId);
+  }
+  const typeIds = [...new Set(plan.values())];
+  const counts = typeIds.map((feeTypeId) => ({
+    feeTypeId,
+    count: [...plan.values()].filter((x) => x === feeTypeId).length,
+  }));
+  let created: number | null = null;
+  if (input.apply) {
+    created = 0;
+    for (const [personId, feeTypeId] of plan) {
+      await createAssignment(db, actor, { personId, feeTypeId, validFrom: day }, now);
+      created += 1;
+    }
+  }
+  return { counts, missingBirthDate, alreadyAssigned, created };
+}
+
+async function reminderSettings(db: Db, clubId: string) {
+  const [row] = await db
+    .select({ days: s.clubs.feeReminderDays, text: s.clubs.feeReminderText })
+    .from(s.clubs)
+    .where(eq(s.clubs.id, clubId));
+  return { days: row?.days ?? 0, text: row?.text ?? null };
 }
