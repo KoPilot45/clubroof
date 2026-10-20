@@ -63,6 +63,94 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
     expect(outside).toHaveLength(0);
   });
 
+  it('erfasst die Trainingsanwesenheit für alle Mannschaften plausibel', async () => {
+    const teams = await sql<{ id: string; name: string }[]>`select id, name from teams`;
+    expect(teams).toHaveLength(11);
+    const ranges: Record<string, [number, number]> = {
+      Bambini: [75, 95],
+      'F-Jugend': [75, 95],
+      'E-Jugend': [75, 95],
+      'D-Jugend': [68, 88],
+      'C-Jugend': [68, 88],
+      'B-Jugend': [68, 88],
+      'A-Jugend': [68, 88],
+      Frauen: [62, 80],
+      '1. Mannschaft': [68, 82],
+      '2. Mannschaft': [52, 68],
+      'Alte Herren': [48, 63],
+    };
+    for (const team of teams) {
+      const trainings = await sql<{ id: string; recorded: boolean; recent: boolean }[]>`
+        select id, attendance_recorded_at is not null as recorded, starts_at > now() - interval '28 days' as recent
+        from events where team_id = ${team.id} and type = 'training' and status = 'scheduled' and starts_at < now()`;
+      const recorded = trainings.filter((x) => x.recorded);
+      const open = trainings.filter((x) => !x.recorded);
+      expect(recorded.filter((x) => x.recent).length, team.name).toBeGreaterThanOrEqual(4);
+      expect(open.length, `${team.name}: offene Trainings`).toBeGreaterThanOrEqual(1);
+      expect(open.length, `${team.name}: offene Trainings`).toBeLessThanOrEqual(2);
+
+      const rows = await sql<{ person_id: string; recent: boolean; attended: boolean | null }[]>`
+        select p.person_id, e.starts_at > now() - interval '28 days' as recent, p.attended
+        from event_participants p join events e on e.id = p.event_id
+        where e.team_id = ${team.id} and e.type = 'training' and e.status = 'scheduled'
+          and e.starts_at < now() and e.attendance_recorded_at is not null and p.role = 'player'`;
+      const quote = (100 * rows.filter((r) => r.attended).length) / rows.length;
+      const [min, max] = ranges[team.name]!;
+      expect(quote, `${team.name}: Quote ${quote.toFixed(0)} %`).toBeGreaterThanOrEqual(min);
+      expect(quote, `${team.name}: Quote ${quote.toFixed(0)} %`).toBeLessThanOrEqual(max);
+
+      // Farbstufen wie im Aufstellungsplaner: letzte vier Wochen, gut ≥ 75, mittel 50–74, niedrig < 50
+      const players = new Map<string, { n: number; a: number }>();
+      for (const r of rows.filter((x) => x.recent)) {
+        const v = players.get(r.person_id) ?? { n: 0, a: 0 };
+        v.n += 1;
+        if (r.attended) v.a += 1;
+        players.set(r.person_id, v);
+      }
+      const tier = (v: { n: number; a: number }) => {
+        const percent = (100 * v.a) / v.n;
+        return percent >= 75 ? 'gut' : percent >= 50 ? 'mittel' : 'niedrig';
+      };
+      const tiers = new Set([...players.values()].map(tier));
+      expect(tiers.has('gut'), `${team.name}: gut`).toBe(true);
+      expect(tiers.has('niedrig'), `${team.name}: niedrig`).toBe(true);
+      if (players.size >= 12) expect(tiers.has('mittel'), `${team.name}: mittel`).toBe(true);
+    }
+  });
+
+  it('Anwesenheit nur bei Zusage, nie bei Absage, Abwesenheit, offenen oder künftigen Terminen', async () => {
+    const wrong = await sql`
+      select p.event_id from event_participants p join events e on e.id = p.event_id
+      where p.attended is true and (p.status <> 'yes' or p.absence_id is not null
+        or e.status = 'cancelled' or e.starts_at > now() or e.attendance_recorded_at is null)`;
+    expect(wrong).toHaveLength(0);
+    const unrecordedValue = await sql`
+      select p.event_id from event_participants p join events e on e.id = p.event_id
+      where e.attendance_recorded_at is null and p.attended is not null`;
+    expect(unrecordedValue).toHaveLength(0);
+    const recordedWithoutValue = await sql`
+      select p.event_id from event_participants p join events e on e.id = p.event_id
+      where e.attendance_recorded_at is not null and e.type = 'training' and p.role = 'player' and p.attended is null`;
+    expect(recordedWithoutValue).toHaveLength(0);
+    const futureRecorded = await sql`
+      select id from events where attendance_recorded_at is not null and (starts_at > now() or status = 'cancelled')`;
+    expect(futureRecorded).toHaveLength(0);
+  });
+
+  it('Demo-Trainerin hat in B1 und C1 offene Trainings, Max Becker ist regelmäßig dabei', async () => {
+    const open = await sql<{ name: string }[]>`
+      select distinct t.name from events e join teams t on t.id = e.team_id
+      where e.type = 'training' and e.status = 'scheduled' and e.starts_at < now()
+        and e.attendance_recorded_at is null and t.name in ('B-Jugend', 'C-Jugend')`;
+    expect(open.map((o) => o.name).sort()).toEqual(['B-Jugend', 'C-Jugend']);
+    const [max] = await sql<{ a: number; n: number }[]>`
+      select count(*) filter (where p.attended)::int a, count(*)::int n
+      from event_participants p join events e on e.id = p.event_id join persons x on x.id = p.person_id
+      where x.first_name = 'Max' and x.last_name = 'Becker' and e.type = 'training'
+        and e.attendance_recorded_at is not null`;
+    expect(max!.a / max!.n).toBeGreaterThan(0.75);
+  });
+
   it('verwendet in allen Tabellen dieselbe club_id', async () => {
     const tables = await sql<{ table_name: string }[]>`
       select table_name from information_schema.columns

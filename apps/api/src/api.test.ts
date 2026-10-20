@@ -4094,7 +4094,7 @@ describe.skipIf(!url)('API', () => {
       expect(percents.some((p) => p !== null && p >= 75)).toBe(true);
       expect(percents.some((p) => p !== null && p >= 50 && p < 75)).toBe(true);
       expect(percents.some((p) => p !== null && p < 50)).toBe(true);
-      // Mannschaft ohne erfasste Trainings: kein Training im Fenster → null
+      // Auch die E-Jugend hat erfasste Trainings (Demodaten für alle Mannschaften)
       const e1 = (await login('eltern')).me.teams.find((t) => t.badge === 'E1')!;
       const parent = await login('eltern');
       const e1Match = (await get<EventSummary[]>('/events', parent.token)).find(
@@ -4102,7 +4102,7 @@ describe.skipIf(!url)('API', () => {
       )!;
       const e1Sheet = await get<MatchSheet>(`/events/${e1Match.id}/match`, parent.token);
       if (e1Sheet.candidates) {
-        expect(e1Sheet.candidates.every((c) => c.attendance.percent === null)).toBe(true);
+        expect(e1Sheet.candidates.some((c) => c.attendance.percent !== null)).toBe(true);
         // Standard: Mannschaften zeigen die Aufstellung nicht an Spieler und Eltern
         expect(e1Sheet.lineupVisible).toBe(false);
       }

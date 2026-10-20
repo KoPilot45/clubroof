@@ -33,6 +33,7 @@ import { and, asc, eq, gte, inArray, isNotNull, like, lt, sql } from 'drizzle-or
 import type { PgTable } from 'drizzle-orm/pg-core';
 import { createDb, type Db } from '../client';
 import { seedKasseAusbau } from './ausbau-kasse';
+import { planTrainingAttendance } from './ausbau-anwesenheit';
 import { seedInhalteAusbau } from './ausbau-inhalte';
 import * as s from '../schema';
 import {
@@ -1022,14 +1023,39 @@ export async function seed(
     const nextFjTournament = nextEventOf('fj', 'tournament');
     const nextH1Match = nextEventOf('h1', 'match');
 
-    // Trefferquote je Zusage nach Reihenfolge im Kader: niedrig, mittel, gut, gut
-    const ATTENDANCE_RATE = [38, 72, 100, 100];
-    const recordedTrainings = new Set(
-      events
-        .filter((e) => e.teamId === teamIds.b1 && e.type === 'training' && e.startsAt < now)
-        .filter((e) => e.status !== 'cancelled')
-        .map((e) => e.id as string),
-    );
+    // Anwesenheit vergangener Trainings aller Mannschaften (Typ je Person, Quote je Mannschaft)
+    const eventById = new Map(events.map((e) => [e.id as string, e]));
+    const attendancePlan = planTrainingAttendance({
+      now,
+      trainings: events
+        .filter((e) => e.type === 'training' && teamOfEvent.has(e.id))
+        .map((e) => ({
+          id: e.id as string,
+          teamKey: teamOfEvent.get(e.id)!.key,
+          startsAt: e.startsAt,
+          cancelled: e.status === 'cancelled',
+        })),
+      players: Object.fromEntries(
+        TEAMS.map((t) => [
+          t.key,
+          [
+            ...new Set(
+              teamMembers[t.key].filter((m) => m.fn === 'player').map((m) => m.person.id as string),
+            ),
+          ],
+        ]),
+      ),
+      perWeek: Object.fromEntries(TEAMS.map((t) => [t.key, t.trainings.length])),
+      fixedTypes: new Map([
+        [persona.player.id as string, 'high'],
+        [persona.coach.id as string, 'normal'],
+        [leon.id as string, 'normal'],
+        [mia.id as string, 'normal'],
+      ]),
+      absent: (personId, eventId) =>
+        !!absenceOn(personId, toIsoDate(calendarDayOf(eventById.get(eventId)!.startsAt))),
+    });
+    const recordedTrainings = attendancePlan.recorded;
     for (const event of events) {
       const team = teamOfEvent.get(event.id);
       if (!team) continue;
@@ -1095,6 +1121,13 @@ export async function seed(
           explicit = status === 'no';
         }
 
+        // Erfasste Trainings: Antwort passt zur geplanten Anwesenheit (wer da war, hatte zugesagt)
+        if (recordedTrainings.has(event.id) && !absence) {
+          if (attendancePlan.present(event.id, personId)) status = 'yes';
+          else if (status === 'yes' && faker.number.int(100) >= 25) status = 'no';
+          explicit = status !== 'pending';
+        }
+
         // Feste Zustände für die Demo-Personas
         if (event === nextB1Match && m.person === persona.player) status = 'yes';
         if (event === nextB1Training && m.person === persona.player) status = 'pending';
@@ -1120,10 +1153,9 @@ export async function seed(
           respondedAt,
           respondedByPersonId: respondedAt ? (guardianOf.get(personId) ?? personId) : null,
           absenceId: absence?.id ?? null,
-          // B1: Anwesenheit vergangener Trainings erfasst; Beteiligung je Spieler unterschiedlich, damit im
-          // Aufstellungsplaner alle drei Farbstufen vorkommen (gut ≥ 75 %, mittel 50–74 %, niedrig < 50 %)
+          // Anwesenheit erfasster Trainings aus dem Plan (Typ je Person, Quote je Mannschaft); nur bei Zusage
           attended: recordedTrainings.has(event.id)
-            ? status === 'yes' && faker.number.int(100) < ATTENDANCE_RATE[ordered.indexOf(m) % 4]!
+            ? status === 'yes' && attendancePlan.present(event.id, personId)
             : null,
         });
       }

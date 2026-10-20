@@ -46,6 +46,23 @@ Der Ausbau steckt im Seed-Schalter `extended` (Standard: an für `pnpm db:reset`
 
 Noch nicht ausgebaut: Familien/Altersverteilung (Bestand von rund 320 Personen unverändert), Saison mit Hin- und Rückrunde und Pokal, weitere News/Umfragen/Wiki-Artikel, Veranstaltungen im Jahreslauf, Mannschaftsillustrationen und Avatare, Download der Beispieldateien in der Hilfe.
 
+## Trainingsbeteiligung (Paket DEMODATEN-TRAININGSBETEILIGUNG)
+
+Die Anwesenheit vergangener Trainings ist für **alle 11 Mannschaften** erfasst (`packages/db/src/seed/ausbau-anwesenheit.ts`, aufgerufen aus `index.ts`). Je Person gibt es einen festen Anwesenheitstyp (nicht mehr nach Kaderreihenfolge): niedrig, mittel (ab 12 Spielern), Einbruch nach Verletzung (ab 12 Spielern, zuletzt vor drei Wochen), regelmäßig und normal. So kommen bei großen Kadern alle drei Farbstufen des Aufstellungsplaners vor (gut ab 75 %, mittel 50–74 %, niedrig unter 50 %). Max Becker (B1) ist regelmäßig dabei; die Demo-Logins Trainer, Eltern und Kinder sind nie niedrig.
+
+- `attended = true` nur bei Zusage und ohne Abwesenheit; abgesagte, künftige und bewusst offene Trainings haben keinen Wert.
+- Offen gelassen: bei zwei Trainings je Woche das jüngste (Kachel „Anwesenheit erfassen“ für B1 und C1) und ein älteres; bei einem Training je Woche eines von vor etwa fünf Wochen. Die letzten vier Wochen sind sonst vollständig erfasst.
+- Spiele: keine Anwesenheitserfassung (Einsatz kommt aus dem Spielbericht).
+
+| Mannschaft | Quote 6 Wochen | | Mannschaft | Quote 6 Wochen |
+| --- | --- | --- | --- | --- |
+| Bambini | ca. 80 % | | A-Jugend | ca. 80 % |
+| F-Jugend | ca. 93 % | | Frauen | ca. 74 % |
+| E-Jugend | ca. 87 % | | 1. Mannschaft | ca. 78 % |
+| D-Jugend | ca. 79 % | | 2. Mannschaft | ca. 64 % |
+| C-Jugend | ca. 78 % | | Alte Herren | ca. 57 % |
+| B-Jugend | ca. 79 % | | | |
+
 ## Demo-Logins
 
 Alle Demo-Logins haben das Passwort `clubroof-demo`. Auf der Anmeldeseite (Entwicklungsmodus) füllen die Buttons Admin, Trainer, Spieler, Eltern, Vorstand und Mitglied die Daten aus.
