@@ -151,14 +151,14 @@ export default function CalendarScreen() {
         </View>
         {desktop ? (
           <Section title="Das erscheint in deinem Kalender">
-            <Card list>
+            <View style={{ gap: 10 }}>
               {(upcoming.data ?? []).slice(0, 8).map((e, i) => (
                 <EventRow key={e.id} event={e} first={i === 0} />
               ))}
               {upcoming.data && upcoming.data.length === 0 ? (
                 <Empty icon="calendar-outline" text="Keine Termine in den nächsten 30 Tagen." />
               ) : null}
-            </Card>
+            </View>
           </Section>
         ) : null}
       </Columns>

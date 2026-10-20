@@ -2,7 +2,7 @@ import type { EventSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { EventRow } from '@/components/events';
+import { EventList } from '@/components/event-table';
 import { Card, ChoiceChips, Empty, ErrorNotice, Loading, Screen, Section } from '@/components/ui';
 import { EVENT_KIND_LABELS, kindOf, type EventKind } from '@/lib/event-types';
 import { useSignedIn } from '@/lib/session';
@@ -83,11 +83,7 @@ export default function AllEventsScreen() {
         const inWeek = list.filter((e) => weekOf(e.startsAt) === w);
         return (
           <Section key={w} title={`Woche ${label.format(start)} – ${label.format(end)}`}>
-            <Card>
-              {inWeek.map((e, i) => (
-                <EventRow key={e.id} event={e} first={i === 0} />
-              ))}
-            </Card>
+            <EventList events={inWeek} />
           </Section>
         );
       })}

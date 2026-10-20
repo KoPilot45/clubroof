@@ -67,6 +67,19 @@ export function formatRemaining(iso: string, now = new Date()): string {
   return `Noch ${Math.max(1, minutes)} Min.`;
 }
 
+/** „Antwort bis heute 12:00“, „… bis morgen 12:00“ bzw. „… bis Do., 22.10. 12:00“ (Ende der Antwortfrist, Vereinszeitzone). */
+export function formatAnswerBy(iso: string, now = new Date()): string {
+  const target = clubDayMinutes(iso).day;
+  const today = clubDayMinutes(now.toISOString()).day;
+  const diff = Math.round(
+    (Date.parse(`${target}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000,
+  );
+  const clock = formatTime(iso);
+  if (diff === 0) return t(`Antwort bis heute ${clock}`);
+  if (diff === 1) return t(`Antwort bis morgen ${clock}`);
+  return t(`Antwort bis ${formatDay(iso)} ${clock}`);
+}
+
 /** Kürzel für das Wappen, z. B. „SV Grün-Weiß“ → „SGW“ */
 export function clubInitials(name: string): string {
   return name

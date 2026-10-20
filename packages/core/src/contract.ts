@@ -141,6 +141,10 @@ export type MyResponse = {
   reason: string | null;
   /** Ob diese Person jetzt noch zu- oder absagen kann */
   canRespond: boolean;
+  /** Der Status ist nicht bewusst gegeben (Standard der Mannschaft, z. B. automatische Zusage) */
+  automatic: boolean;
+  /** Der Status „abgesagt“ folgt einer eingetragenen Abwesenheit (automatisch) */
+  absent: boolean;
 };
 
 /** Sichtbarkeit der erfassten Anwesenheit für Spieler: nur Trainerteam, nur Anzahl („14 von 20 da“) oder namentlich. */

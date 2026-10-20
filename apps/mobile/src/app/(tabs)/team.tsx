@@ -29,10 +29,9 @@ import {
   type TileItem,
 } from '@/components/ui';
 import { formatDateTile, formatTime } from '@/lib/format';
-import { EVENT_TYPE_LABELS, TEAM_FUNCTION_LABELS } from '@/lib/labels';
+import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { teamTitle } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
-import { AttendanceOverview } from '@/components/squad-sheet';
 import { useIsCompactDesktop, useIsDesktop } from '@/lib/layout';
 import { useTeamColorOf } from '@/lib/team-colors';
 import { useTheme } from '@/lib/theme';
@@ -41,6 +40,7 @@ import { useTileInfo, withTileInfo } from '@/lib/tile-info';
 import { readSetting, writeSetting } from '@/lib/flags';
 import { hapticSelect } from '@/lib/haptics';
 import { t } from '@/lib/i18n';
+import { EventRow } from '@/components/events';
 
 const PARTICIPATION_LABELS = {
   auto_accept: 'Automatische Zusage – nur Absagen nötig',
@@ -414,34 +414,10 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
                 <View style={{ flex: 1, minWidth: 0 }}>
                   {o?.nextEvent ? (
                     <Section title="Nächster Termin">
-                      <Card style={{ gap: 12 }}>
-                        <ListRow
-                          first
-                          onPress={() => router.push(`/events/${o.nextEvent!.id}`)}
-                          leading={
-                            <DateTile
-                              size="lg"
-                              muted={o.nextEvent.status === 'cancelled'}
-                              {...formatDateTile(o.nextEvent.startsAt)}
-                            />
-                          }
-                          title={o.nextEvent.title}
-                          subtitle={[
-                            formatTime(o.nextEvent.startsAt),
-                            o.nextEvent.location,
-                            EVENT_TYPE_LABELS[o.nextEvent.type],
-                          ]
-                            .filter(Boolean)
-                            .join(' · ')}
-                          trailing={
-                            o.nextEvent.status === 'cancelled' ? (
-                              <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
-                            ) : null
-                          }
-                        />
+                      <View style={{ gap: 8 }}>
+                        <EventRow event={o.nextEvent} />
                         <T variant="caption">{PARTICIPATION_LABELS[team.participationMode]}</T>
-                        <AttendanceOverview event={o.nextEvent} counts={o.nextEvent.counts} />
-                      </Card>
+                      </View>
                     </Section>
                   ) : null}
                 </View>
@@ -582,34 +558,10 @@ function MyTeamScreen({ switcher }: { switcher: ReactNode }) {
 
               {o?.nextEvent ? (
                 <Section title="Nächster Termin">
-                  <Card style={{ gap: 12 }}>
-                    <ListRow
-                      first
-                      onPress={() => router.push(`/events/${o.nextEvent!.id}`)}
-                      leading={
-                        <DateTile
-                          size="lg"
-                          muted={o.nextEvent.status === 'cancelled'}
-                          {...formatDateTile(o.nextEvent.startsAt)}
-                        />
-                      }
-                      title={o.nextEvent.title}
-                      subtitle={[
-                        formatTime(o.nextEvent.startsAt),
-                        o.nextEvent.location,
-                        EVENT_TYPE_LABELS[o.nextEvent.type],
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                      trailing={
-                        o.nextEvent.status === 'cancelled' ? (
-                          <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
-                        ) : null
-                      }
-                    />
+                  <View style={{ gap: 8 }}>
+                    <EventRow event={o.nextEvent} />
                     <T variant="caption">{PARTICIPATION_LABELS[team.participationMode]}</T>
-                    <AttendanceOverview event={o.nextEvent} counts={o.nextEvent.counts} />
-                  </Card>
+                  </View>
                 </Section>
               ) : null}
 

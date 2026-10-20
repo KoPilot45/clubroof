@@ -1,3 +1,4 @@
+import { View } from 'react-native';
 import type { EventSummary } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -68,14 +69,14 @@ export default function ClubEventsScreen() {
       {events.isPending ? <Loading /> : null}
       {events.error ? <ErrorNotice error={events.error} onRetry={() => events.refetch()} /> : null}
       {events.data && view === 'list' ? (
-        <Card>
+        <View style={{ gap: 10 }}>
           {list.length === 0 ? (
             <Empty icon="calendar-outline" text="Keine Vereinstermine in den nächsten Wochen." />
           ) : null}
           {list.map((e, i) => (
             <EventRow key={e.id} event={e} first={i === 0} />
           ))}
-        </Card>
+        </View>
       ) : null}
       {view === 'month' ? (
         <>
@@ -100,12 +101,12 @@ export default function ClubEventsScreen() {
           </Card>
           {day ? (
             <Section title={dayTitle.format(new Date(`${day}T12:00:00`))}>
-              <Card>
+              <View style={{ gap: 10 }}>
                 {ofDay.length === 0 ? <T variant="caption">Keine Termine an diesem Tag.</T> : null}
                 {ofDay.map((e, i) => (
                   <EventRow key={e.id} event={e} first={i === 0} />
                 ))}
-              </Card>
+              </View>
             </Section>
           ) : null}
         </>

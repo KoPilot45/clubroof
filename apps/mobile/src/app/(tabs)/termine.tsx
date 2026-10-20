@@ -2,9 +2,10 @@ import type { EventSummary, RefereeDuty } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { EventRow, FeaturedEventCard } from '@/components/events';
+import { EventList } from '@/components/event-table';
 import { Columns } from '@/components/columns';
 import { MonthCalendar, dayKey } from '@/components/month-calendar';
 import {
@@ -24,13 +25,15 @@ import {
 import { GridLegend } from '@/components/kind-legend';
 import { formatDateTile, formatShortDate, formatTime } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
-import { dateFormat } from '@/lib/i18n';
+import { dateFormat, t } from '@/lib/i18n';
+import { useTheme } from '@/lib/theme';
 
 const DAY = 24 * 60 * 60 * 1000;
 
 /** Meine Termine: die nächsten drei und ein Monatskalender nach Terminart. */
 export default function EventsTab() {
   const { api, me } = useSignedIn();
+  const { colors } = useTheme();
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -139,15 +142,6 @@ export default function EventsTab() {
             onToggle={setWhen}
           />
         </View>
-        {me.clubModules.includes('calendar_export') ? (
-          <Button
-            label="Kalender-Abo"
-            icon="calendar-outline"
-            variant="outline"
-            size="sm"
-            onPress={() => router.push('/calendar')}
-          />
-        ) : null}
         <Button
           label="Archiv"
           icon="archive-outline"
@@ -176,6 +170,18 @@ export default function EventsTab() {
         tone="light"
         scroll
       />
+      {me.clubModules.includes('calendar_export') ? (
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel={t('Kalender-Abo')}
+          onPress={() => router.push('/calendar')}
+          style={{ alignSelf: 'flex-end', minHeight: 36, justifyContent: 'center' }}
+        >
+          <T variant="caption" color={colors.primaryText} style={{ fontWeight: '800' }}>
+            {`${t('Kalender-Abo')} ›`}
+          </T>
+        </Pressable>
+      ) : null}
     </>
   );
   const listBlock = (
@@ -191,13 +197,7 @@ export default function EventsTab() {
             {upcoming.data && filtered.length === 0 ? (
               <Empty icon="calendar-outline" text="Keine anstehenden Termine." />
             ) : null}
-            {rest.length > 0 ? (
-              <Card list>
-                {rest.map((e, i) => (
-                  <EventRow key={e.id} event={e} first={i === 0} />
-                ))}
-              </Card>
-            ) : null}
+            {rest.length > 0 ? <EventList events={rest} /> : null}
           </Section>
         </>
       ) : (
@@ -207,13 +207,7 @@ export default function EventsTab() {
           {past.data && pastList.length === 0 ? (
             <Empty icon="time-outline" text="Keine vergangenen Termine." />
           ) : null}
-          {pastList.length > 0 ? (
-            <Card>
-              {pastList.map((e, i) => (
-                <EventRow key={e.id} event={e} first={i === 0} />
-              ))}
-            </Card>
-          ) : null}
+          {pastList.length > 0 ? <EventList events={pastList} /> : null}
         </Section>
       )}
 
@@ -254,7 +248,7 @@ export default function EventsTab() {
 
       {day ? (
         <Section title={dayTitle.format(new Date(`${day}T12:00:00`))}>
-          <Card>
+          <View style={{ gap: 10 }}>
             {ofDay.length === 0 && dutiesOfDay.length === 0 ? (
               <T variant="caption">Keine Termine an diesem Tag.</T>
             ) : null}
@@ -264,7 +258,7 @@ export default function EventsTab() {
             {dutiesOfDay.map((d, i) => (
               <DutyRow key={d.id} duty={d} first={ofDay.length === 0 && i === 0} />
             ))}
-          </Card>
+          </View>
         </Section>
       ) : null}
     </>

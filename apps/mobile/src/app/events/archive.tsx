@@ -1,3 +1,4 @@
+import { View } from 'react-native';
 import type { ClubSeason, EventSummary } from '@clubroof/core';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
@@ -164,11 +165,11 @@ export default function ArchiveScreen() {
       ) : null}
       {blocks.map((b) => (
         <Section key={b.key} title={b.title}>
-          <Card>
+          <View style={{ gap: 10 }}>
             {b.items.map((e, i) => (
               <EventRow key={e.id} event={e} first={i === 0} />
             ))}
-          </Card>
+          </View>
         </Section>
       ))}
       {query.isFetchingNextPage ? <Loading /> : null}
