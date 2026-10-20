@@ -36,6 +36,7 @@ import { seedKasseAusbau } from './ausbau-kasse';
 import { planTrainingAttendance } from './ausbau-anwesenheit';
 import { ausbauPersonen } from './ausbau-personen';
 import { seedInhalteAusbau } from './ausbau-inhalte';
+import { seedJahreslauf } from './ausbau-jahreslauf';
 import * as s from '../schema';
 import {
   ABSENCE_REASONS_NO,
@@ -2784,6 +2785,24 @@ export async function seed(
         adminUserId: userIds.admin,
         b1TeamId: teamIds.b1,
         adminPersonId: persona.admin.id,
+      });
+    if (extended)
+      await seedJahreslauf({
+        tx,
+        clubId,
+        now,
+        today,
+        teamIds,
+        orgUnitIds,
+        facilityIds,
+        people: {
+          admin: persona.admin.id,
+          board: persona.board.id,
+          coach: persona.coach.id,
+          youthDirector: official.youthDirector.id,
+          facilityManager: official.facilityManager.id,
+        },
+        adultIds: adults.filter((p) => p.membershipStatus !== 'left').map((p) => p.id),
       });
 
     // ── Mannschaftsaufgaben (B-Jugend) ──────────────────────────────────────────────────────

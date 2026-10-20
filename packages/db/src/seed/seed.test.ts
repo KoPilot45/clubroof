@@ -3,6 +3,7 @@
  * `DATABASE_URL` nicht gesetzt ist. Sie laufen in einer eigenen, frisch angelegten Datenbank,
  * damit sie parallel zu den API-Tests (die ebenfalls den Demoverein einspielen) laufen können.
  */
+import { existsSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb } from '../client';
 import { runMigrations } from '../migrate';
@@ -305,6 +306,54 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
       select count(distinct kind)::int kinds, count(*) filter (where note is not null)::int notes from absences`;
     expect(row!.kinds).toBeGreaterThanOrEqual(4);
     expect(row!.notes).toBeGreaterThanOrEqual(8);
+  });
+
+  it('Inhalte: News, Umfragen mit Stimmen, Wiki, Aushänge und Veranstaltungen im Jahreslauf', async () => {
+    const [n] = await sql`
+      select (select count(*) from announcements where status = 'published')::int news,
+        (select count(*) from announcements where image_url like '/brand/demo-team-%')::int mit_bild,
+        (select count(*) from polls)::int polls,
+        (select count(*) from poll_votes)::int stimmen,
+        (select count(distinct category) from wiki_pages)::int kategorien,
+        (select count(*) from wiki_pages)::int wiki,
+        (select count(*) from board_items)::int aushaenge,
+        (select count(*) from events where team_id is null)::int vereinstermine,
+        (select count(*) from helper_shifts)::int schichten`;
+    expect(n!.news).toBeGreaterThanOrEqual(16);
+    expect(n!.mit_bild).toBeGreaterThanOrEqual(4);
+    expect(n!.polls).toBeGreaterThanOrEqual(7);
+    expect(n!.stimmen).toBeGreaterThanOrEqual(250);
+    expect(n!.kategorien).toBeGreaterThanOrEqual(4);
+    expect(n!.wiki).toBeGreaterThanOrEqual(10);
+    expect(n!.aushaenge).toBeGreaterThanOrEqual(6);
+    expect(n!.vereinstermine).toBeGreaterThanOrEqual(14);
+    expect(n!.schichten).toBeGreaterThanOrEqual(18);
+    // Jahreslauf: Veranstaltungen verteilen sich über mehr als ein Jahr, mit abgelaufener Umfrage
+    const [span] = await sql`
+      select (max(starts_at)::date - min(starts_at)::date)::int days from events where team_id is null`;
+    expect(span!.days).toBeGreaterThan(300);
+    const [closed] = await sql`select count(*)::int n from polls where closes_at < now()`;
+    expect(closed!.n).toBeGreaterThanOrEqual(1);
+    // Helfer nie über der Schichtgröße, jede Person höchstens einmal je Schicht
+    const over = await sql`
+      select h.id from helper_shifts h
+      where (select count(*) from helper_signups s where s.shift_id = h.id) > h.capacity`;
+    expect(over).toHaveLength(0);
+    const unlinkedImages = await sql`
+      select id from announcements where image_url is not null and image_url !~ '^/brand/demo-[a-z0-9-]+\\.png$'`;
+    expect(unlinkedImages).toHaveLength(0);
+    // Jedes verwendete Demo-Bild gibt es als Datei (scripts/demo-bilder.mjs)
+    const used = await sql<{ url: string }[]>`
+      select image_url as url from announcements where image_url like '/brand/%'
+      union select avatar_url from persons where avatar_url like '/brand/%'
+      union select logo_ref from sponsors where logo_ref like '/brand/%'`;
+    for (const { url } of used) {
+      const file = new URL(
+        `../../../../apps/api/assets/${url.replace('/brand/', '')}`,
+        import.meta.url,
+      );
+      expect(existsSync(file), url).toBe(true);
+    }
   });
 
   it('Plätze sind nie doppelt belegt', async () => {
