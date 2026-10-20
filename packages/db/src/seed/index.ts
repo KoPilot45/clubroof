@@ -34,6 +34,7 @@ import type { PgTable } from 'drizzle-orm/pg-core';
 import { createDb, type Db } from '../client';
 import { seedKasseAusbau } from './ausbau-kasse';
 import { planTrainingAttendance } from './ausbau-anwesenheit';
+import { ausbauPersonen } from './ausbau-personen';
 import { seedInhalteAusbau } from './ausbau-inhalte';
 import * as s from '../schema';
 import {
@@ -320,6 +321,7 @@ export async function seed(
       person: PersonRow;
       fn: 'player' | 'coach' | 'assistant_coach';
       jersey?: number;
+      from?: string;
     };
     const teamMembers = {} as Record<TeamKey, Member[]>;
 
@@ -405,6 +407,31 @@ export async function seed(
       randomAdult(faker.helpers.arrayElement(['male', 'female']));
     }
 
+    // Ausbau: Familien, Doppelrollen, ältere Mitglieder, Zugänge und Abgänge, Profile
+    let personenAusbau: ReturnType<typeof ausbauPersonen> | undefined;
+    if (extended) {
+      personenAusbau = ausbauPersonen({
+        today,
+        persons,
+        guardianships,
+        clubId,
+        teamMembers,
+        addPerson,
+        fixed: new Set([...Object.values(persona), ...Object.values(official), leon, mia]),
+      });
+      const AVATARS: [PersonRow, number][] = [
+        [persona.player, 3],
+        [persona.coach, 7],
+        [persona.parent, 5],
+        [persona.board, 9],
+        [persona.treasurer, 2],
+        [leon, 11],
+        [mia, 4],
+      ];
+      for (const [person, n] of AVATARS)
+        person.avatarUrl = `/brand/demo-avatar-${String(n).padStart(2, '0')}.png`;
+    }
+
     // Damit die Startseite Geburtstage zeigt: ein Mitspieler der B-Jugend hat in zwei Tagen Geburtstag
     const birthdayKid = teamMembers.b1.find(
       (m) => m.fn === 'player' && m.person !== persona.player,
@@ -455,9 +482,21 @@ export async function seed(
           function: m.fn,
           jerseyNumber: m.jersey ?? null,
           isPrimaryTeam: !(m.person === persona.coach && m.fn === 'player'),
-          validFrom: toIsoDate(seasonStart),
+          validFrom: m.from ?? toIsoDate(seasonStart),
         });
       }
+    }
+    // Abgänge der letzten Monate: frühere Zuordnung mit Enddatum
+    for (const gone of personenAusbau?.departures ?? []) {
+      memberships.push({
+        clubId,
+        teamId: teamIds[gone.teamKey],
+        personId: gone.person.id,
+        function: 'player',
+        isPrimaryTeam: true,
+        validFrom: toIsoDate(seasonStart),
+        validTo: gone.leftOn,
+      });
     }
     await insertChunked(tx, s.teamMemberships, memberships);
 
@@ -491,6 +530,27 @@ export async function seed(
         externalClub: 'SpVgg Birkenbach',
       },
     ];
+    for (const n of personenAusbau?.newcomers ?? []) {
+      transfers.push({
+        clubId,
+        personId: n.person.id,
+        kind: 'join',
+        toTeamId: teamIds[n.teamKey],
+        startsOn: n.from,
+        externalClub: n.club,
+      });
+    }
+    for (const gone of personenAusbau?.departures ?? []) {
+      transfers.push({
+        clubId,
+        personId: gone.person.id,
+        kind: 'leave',
+        fromTeamId: teamIds[gone.teamKey],
+        startsOn: gone.leftOn,
+        externalClub: gone.to || null,
+        note: gone.to ? null : 'Karriereende',
+      });
+    }
     await tx.insert(s.playerTransfers).values(transfers);
 
     const deadlineRules: Insert<typeof s.teamDeadlineRules>[] = [];
@@ -1122,9 +1182,10 @@ export async function seed(
         }
 
         // Erfasste Trainings: Antwort passt zur geplanten Anwesenheit (wer da war, hatte zugesagt)
+        const noShow = recordedTrainings.has(event.id) ? faker.number.int(100) : 0;
         if (recordedTrainings.has(event.id) && !absence) {
           if (attendancePlan.present(event.id, personId)) status = 'yes';
-          else if (status === 'yes' && faker.number.int(100) >= 25) status = 'no';
+          else if (status === 'yes' && noShow >= 25) status = 'no';
           explicit = status !== 'pending';
         }
 

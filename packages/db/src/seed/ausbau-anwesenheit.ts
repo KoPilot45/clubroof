@@ -13,7 +13,7 @@ const DAY_MS = 86_400_000;
 export const TEAM_RATE: Record<string, number> = {
   h1: 77,
   h2: 58,
-  ah: 52,
+  ah: 49,
   f1: 71,
   a1: 81,
   b1: 76,

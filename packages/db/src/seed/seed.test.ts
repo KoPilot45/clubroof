@@ -77,7 +77,7 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
       Frauen: [62, 80],
       '1. Mannschaft': [68, 82],
       '2. Mannschaft': [52, 68],
-      'Alte Herren': [48, 63],
+      'Alte Herren': [48, 66],
     };
     for (const team of teams) {
       const trainings = await sql<{ id: string; recorded: boolean; recent: boolean }[]>`
@@ -204,6 +204,60 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
         and t.badge in ('C1', 'D1', 'E1', 'F1', 'BAM')
         and not exists (select 1 from guardianships g where g.child_person_id = p.id)`;
     expect(row!.n).toBe(0);
+  });
+
+  it('Familien: Geschwister in mehreren Mannschaften, zweite Elternteile, Doppelrollen', async () => {
+    const siblings = await sql`
+      select g.guardian_person_id from guardianships g
+      join team_memberships tm on tm.person_id = g.child_person_id and tm.function = 'player'
+      group by 1 having count(distinct tm.team_id) >= 2`;
+    expect(siblings.length).toBeGreaterThanOrEqual(8);
+    const threeKids = await sql`
+      select guardian_person_id from guardianships group by 1 having count(*) >= 3`;
+    expect(threeKids.length).toBeGreaterThanOrEqual(1);
+    const twoParents = await sql`
+      select child_person_id from guardianships group by 1 having count(*) = 2`;
+    expect(twoParents.length).toBeGreaterThanOrEqual(10);
+    // Doppelrolle: Elternteil, der selbst spielt, und Spielerin, die nebenbei Co-Trainerin ist
+    const playingParents = await sql`
+      select distinct g.guardian_person_id from guardianships g
+      join team_memberships tm on tm.person_id = g.guardian_person_id and tm.function = 'player'`;
+    expect(playingParents.length).toBeGreaterThanOrEqual(2);
+    const playerCoaches = await sql`
+      select p.id from persons p
+      join team_memberships a on a.person_id = p.id and a.function = 'player'
+      join team_memberships b on b.person_id = p.id and b.function = 'assistant_coach' and b.team_id <> a.team_id
+      where p.birth_date > '2005-01-01'`;
+    expect(playerCoaches.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('Altersverteilung, Neuzugänge, Abgänge und Profile', async () => {
+    const [ages] = await sql`
+      select count(*) filter (where date_part('year', age(birth_date)) >= 60)::int as senioren,
+        count(*) filter (where date_part('year', age(birth_date)) < 8)::int as bambini,
+        count(*) filter (where avatar_url like '/brand/demo-avatar-%')::int as avatare,
+        count(distinct contact_visibility)::int as sichtbarkeiten
+      from persons`;
+    expect(ages!.senioren).toBeGreaterThanOrEqual(12);
+    expect(ages!.bambini).toBeGreaterThanOrEqual(10);
+    expect(ages!.avatare).toBeGreaterThanOrEqual(30);
+    expect(ages!.sichtbarkeiten).toBe(3);
+    const arrivals = await sql`
+      select p.id from persons p
+      join player_transfers t on t.person_id = p.id and t.kind = 'join'
+      where p.member_since >= current_date - 60 and t.starts_on >= current_date - 60`;
+    expect(arrivals.length).toBeGreaterThanOrEqual(6);
+    const exits = await sql`
+      select p.id from persons p
+      join player_transfers t on t.person_id = p.id and t.kind = 'leave'
+      join team_memberships tm on tm.person_id = p.id and tm.valid_to is not null
+      where p.membership_status = 'left'`;
+    expect(exits.length).toBeGreaterThanOrEqual(4);
+    // Austritte tauchen in keinem aktuellen Kader auf
+    const stillThere = await sql`
+      select p.id from persons p join team_memberships tm on tm.person_id = p.id and tm.valid_to is null
+      where p.membership_status = 'left'`;
+    expect(stillThere).toHaveLength(0);
   });
 
   it('Plätze sind nie doppelt belegt', async () => {

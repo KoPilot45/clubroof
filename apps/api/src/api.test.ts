@@ -1268,7 +1268,15 @@ describe.skipIf(!url)('API', () => {
       const player = await login('spieler');
       const coach = await login('trainer');
       const events = await get<EventSummary[]>('/events', player.token);
-      const match = events.find((e) => e.team?.badge === 'B1' && e.type === 'match')!;
+      // ein B1-Spiel, bei dem es Absagen mit Grund gibt (hängt nicht vom Zufall der Demodaten ab)
+      let match = events.find((e) => e.team?.badge === 'B1' && e.type === 'match')!;
+      for (const e of events.filter((x) => x.team?.badge === 'B1' && x.type === 'match')) {
+        const d = await get<EventDetail>(`/events/${e.id}`, coach.token);
+        if (d.participants.some((p) => p.reason !== null)) {
+          match = e;
+          break;
+        }
+      }
 
       const asPlayer = await get<EventDetail>(`/events/${match.id}`, player.token);
       const asCoach = await get<EventDetail>(`/events/${match.id}`, coach.token);
