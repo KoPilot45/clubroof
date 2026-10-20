@@ -33,7 +33,10 @@ import { and, asc, eq, gte, inArray, isNotNull, like, lt, sql } from 'drizzle-or
 import type { PgTable } from 'drizzle-orm/pg-core';
 import { createDb, type Db } from '../client';
 import { seedKasseAusbau } from './ausbau-kasse';
+import { planTrainingAttendance } from './ausbau-anwesenheit';
+import { ausbauPersonen } from './ausbau-personen';
 import { seedInhalteAusbau } from './ausbau-inhalte';
+import { seedJahreslauf } from './ausbau-jahreslauf';
 import * as s from '../schema';
 import {
   ABSENCE_REASONS_NO,
@@ -319,6 +322,7 @@ export async function seed(
       person: PersonRow;
       fn: 'player' | 'coach' | 'assistant_coach';
       jersey?: number;
+      from?: string;
     };
     const teamMembers = {} as Record<TeamKey, Member[]>;
 
@@ -404,6 +408,31 @@ export async function seed(
       randomAdult(faker.helpers.arrayElement(['male', 'female']));
     }
 
+    // Ausbau: Familien, Doppelrollen, ältere Mitglieder, Zugänge und Abgänge, Profile
+    let personenAusbau: ReturnType<typeof ausbauPersonen> | undefined;
+    if (extended) {
+      personenAusbau = ausbauPersonen({
+        today,
+        persons,
+        guardianships,
+        clubId,
+        teamMembers,
+        addPerson,
+        fixed: new Set([...Object.values(persona), ...Object.values(official), leon, mia]),
+      });
+      const AVATARS: [PersonRow, number][] = [
+        [persona.player, 3],
+        [persona.coach, 7],
+        [persona.parent, 5],
+        [persona.board, 9],
+        [persona.treasurer, 2],
+        [leon, 11],
+        [mia, 4],
+      ];
+      for (const [person, n] of AVATARS)
+        person.avatarUrl = `/brand/demo-avatar-${String(n).padStart(2, '0')}.png`;
+    }
+
     // Damit die Startseite Geburtstage zeigt: ein Mitspieler der B-Jugend hat in zwei Tagen Geburtstag
     const birthdayKid = teamMembers.b1.find(
       (m) => m.fn === 'player' && m.person !== persona.player,
@@ -422,6 +451,40 @@ export async function seed(
     }
 
     // ── Mannschaften ──────────────────────────────────────────────────────────────────────
+    const TEAM_RULES: Partial<Record<TeamKey, Partial<Insert<typeof s.teams>>>> = {
+      h1: { attendanceVisibility: 'named', allowMaybe: false, reminderHours: 24 },
+      h2: { attendanceVisibility: 'staff' },
+      ah: {
+        attendanceVisibility: 'named',
+        welcomeText:
+          'Willkommen bei den Alten Herren! Nach dem Training sitzen wir im Vereinsheim.',
+      },
+      f1: {
+        attendanceVisibility: 'named',
+        declineReasonRequired: true,
+        reminderHours: 48,
+        absenceReasonsVisibleTo: 'team',
+        welcomeText: 'Schön, dass du dabei bist! Bei Fragen melde dich bei der Trainerin.',
+      },
+      a1: {
+        attendanceVisibility: 'staff',
+        declineReasonRequired: true,
+        reminderHours: 24,
+        lineupVisible: true,
+        allowMaybe: false,
+      },
+      d1: {
+        attendanceVisibility: 'named',
+        reminderHours: 36,
+        welcomeText: 'Willkommen in der D-Jugend! Bitte meldet euch bis zum Vorabend an.',
+      },
+      bam: {
+        allowMaybe: false,
+        reminderHours: 24,
+        welcomeText:
+          'Willkommen bei den Bambini! Bringt bitte Hallenschuhe und etwas zu trinken mit.',
+      },
+    };
     const teamIds = {} as Record<TeamKey, string>;
     await tx.insert(s.teams).values(
       TEAMS.map((t, i) => {
@@ -440,6 +503,8 @@ export async function seed(
           template: t.template,
           participationMode: t.mode,
           sortOrder: i,
+          // Ausbau: Spielform nach Altersklasse und je Mannschaft unterschiedliche Sichtbarkeiten und Regeln
+          ...(extended ? { matchFormat: defaultLineupSize(t.ageGroup), ...TEAM_RULES[t.key] } : {}),
         };
       }),
     );
@@ -454,9 +519,21 @@ export async function seed(
           function: m.fn,
           jerseyNumber: m.jersey ?? null,
           isPrimaryTeam: !(m.person === persona.coach && m.fn === 'player'),
-          validFrom: toIsoDate(seasonStart),
+          validFrom: m.from ?? toIsoDate(seasonStart),
         });
       }
+    }
+    // Abgänge der letzten Monate: frühere Zuordnung mit Enddatum
+    for (const gone of personenAusbau?.departures ?? []) {
+      memberships.push({
+        clubId,
+        teamId: teamIds[gone.teamKey],
+        personId: gone.person.id,
+        function: 'player',
+        isPrimaryTeam: true,
+        validFrom: toIsoDate(seasonStart),
+        validTo: gone.leftOn,
+      });
     }
     await insertChunked(tx, s.teamMemberships, memberships);
 
@@ -490,6 +567,27 @@ export async function seed(
         externalClub: 'SpVgg Birkenbach',
       },
     ];
+    for (const n of personenAusbau?.newcomers ?? []) {
+      transfers.push({
+        clubId,
+        personId: n.person.id,
+        kind: 'join',
+        toTeamId: teamIds[n.teamKey],
+        startsOn: n.from,
+        externalClub: n.club,
+      });
+    }
+    for (const gone of personenAusbau?.departures ?? []) {
+      transfers.push({
+        clubId,
+        personId: gone.person.id,
+        kind: 'leave',
+        fromTeamId: teamIds[gone.teamKey],
+        startsOn: gone.leftOn,
+        externalClub: gone.to || null,
+        note: gone.to ? null : 'Karriereende',
+      });
+    }
     await tx.insert(s.playerTransfers).values(transfers);
 
     const deadlineRules: Insert<typeof s.teamDeadlineRules>[] = [];
@@ -697,7 +795,11 @@ export async function seed(
     const matchDetails: Insert<typeof s.matchDetails>[] = [];
     const teamOfEvent = new Map<string, TeamDef>();
 
+    // Die Saisoneröffnung (Vereinstermin, weiter unten) belegt den Rasenplatz; Spiele der Hinrunde weichen aus
+    const openingStart = at(addDays(seasonStart, 45), '14:00');
+    const openingEnd = at(addDays(seasonStart, 45), '20:00');
     const isFacilityFree = (facilityId: string, start: Date, end: Date) =>
+      !(extended && facilityId === facilityIds.rasen && start < openingEnd && end > openingStart) &&
       !events.some(
         (e) =>
           e.facilityId === facilityId &&
@@ -740,15 +842,45 @@ export async function seed(
       }
     }
 
+    // Besondere Spiele im Ausbau: Testspiel zum Saisonstart, Kreispokal, Derby mit Hin- und Rückspiel
+    const DERBY_OPPONENT = 'SV Musterstadt-Nord';
+    function specialMatch(key: TeamKey, week: number) {
+      if (week === -5)
+        return {
+          kind: 'friendly' as const,
+          competition: 'Testspiel',
+          derby: false,
+          opponent: undefined,
+        };
+      if (week === -3 && ['h1', 'a1', 'b1', 'c1', 'd1'].includes(key))
+        return {
+          kind: 'cup' as const,
+          competition: 'Kreispokal',
+          derby: false,
+          opponent: undefined,
+        };
+      if ((key === 'h1' && (week === -1 || week === 8)) || (key === 'b1' && week === 9))
+        return {
+          kind: 'league' as const,
+          competition: undefined,
+          derby: true,
+          opponent: DERBY_OPPONENT,
+        };
+      return null;
+    }
+
     TEAMS.forEach((team, teamIndex) => {
       const teamId = teamIds[team.key];
       let matchNo = 0;
 
-      for (let w = 0; w < weeks; w++) {
-        if (w % team.match.everyWeeks !== teamIndex % team.match.everyWeeks) continue;
+      // Ausbau: fünf weitere Spielwochen davor (Hinrunde ab Saisonbeginn mit Testspiel und Pokal), Stadtderby
+      const mod = (n: number, m: number) => ((n % m) + m) % m;
+      for (let w = extended ? -5 : 0; w < weeks; w++) {
+        if (mod(w, team.match.everyWeeks) !== teamIndex % team.match.everyWeeks) continue;
         const day = addDays(windowStart, w * 7 + team.match.weekday - 1);
         const startsAt = at(day, team.match.time);
-        const opponent = OPPONENTS[(w + teamIndex * 5) % OPPONENTS.length]!;
+        const special = extended && !team.match.asTournament ? specialMatch(team.key, w) : null;
+        const opponent = special?.opponent ?? OPPONENTS[mod(w + teamIndex * 5, OPPONENTS.length)]!;
         const endsAt = addMinutes(startsAt, team.match.minutes);
         // Heimspiel nur, wenn der Platz frei ist – sonst wird es ein Auswärtsspiel
         const isHome =
@@ -765,9 +897,9 @@ export async function seed(
           type: team.match.asTournament ? 'tournament' : 'match',
           title: team.match.asTournament
             ? `Spielfest ${isHome ? 'auf unserer Anlage' : `in ${opponentTown}`}`
-            : isHome
-              ? `${ourName} – ${opponent}`
-              : `${opponent} – ${ourName}`,
+            : `${special?.derby ? 'Derby: ' : ''}${
+                isHome ? `${ourName} – ${opponent}` : `${opponent} – ${ourName}`
+              }`,
           startsAt,
           endsAt,
           meetingAt: addMinutes(startsAt, isHome ? -60 : -90),
@@ -787,7 +919,8 @@ export async function seed(
             clubId,
             opponentName: opponent,
             isHome,
-            competition: team.league,
+            competition: special?.competition ?? team.league,
+            ...(special ? { kind: special.kind } : {}),
             goalsFor: played
               ? weighted([
                   [0, 2],
@@ -993,6 +1126,37 @@ export async function seed(
         endsOn: toIsoDate(addDays(today, 9)),
       },
     ];
+    // Ausbau: weitere Abwesenheiten mit Anlass (Verletzung, Klassenfahrt, Ferien, Krankheit)
+    if (extended) {
+      const more: [
+        TeamKey,
+        number,
+        'injury' | 'illness' | 'vacation' | 'school_work',
+        number,
+        number,
+        string?,
+      ][] = [
+        ['h2', 3, 'injury', -20, 10, 'Muskelfaserriss'],
+        ['f1', 4, 'illness', -2, 2],
+        ['d1', 2, 'school_work', 5, 9, 'Klassenfahrt'],
+        ['e1', 5, 'vacation', 12, 26, 'Herbstferien'],
+        ['c1', 6, 'injury', -8, 14, 'Bänderriss, Reha läuft'],
+        ['a1', 6, 'vacation', 1, 7],
+        ['fj', 4, 'illness', 0, 4, 'Scharlach'],
+        ['bam', 3, 'vacation', 8, 20],
+        ['h1', 9, 'school_work', 3, 6, 'Prüfungswoche'],
+        ['ah', 4, 'injury', -30, 5, 'Knie-OP'],
+      ];
+      for (const [team, index, kind, from, to, note] of more)
+        absences.push({
+          clubId,
+          personId: pick(team, index).id,
+          kind,
+          startsOn: toIsoDate(addDays(today, from)),
+          endsOn: toIsoDate(addDays(today, to)),
+          ...(note ? { note } : {}),
+        });
+    }
     for (const a of absences) {
       a.id = randomUUID();
       a.createdByPersonId = a.personId;
@@ -1022,14 +1186,39 @@ export async function seed(
     const nextFjTournament = nextEventOf('fj', 'tournament');
     const nextH1Match = nextEventOf('h1', 'match');
 
-    // Trefferquote je Zusage nach Reihenfolge im Kader: niedrig, mittel, gut, gut
-    const ATTENDANCE_RATE = [38, 72, 100, 100];
-    const recordedTrainings = new Set(
-      events
-        .filter((e) => e.teamId === teamIds.b1 && e.type === 'training' && e.startsAt < now)
-        .filter((e) => e.status !== 'cancelled')
-        .map((e) => e.id as string),
-    );
+    // Anwesenheit vergangener Trainings aller Mannschaften (Typ je Person, Quote je Mannschaft)
+    const eventById = new Map(events.map((e) => [e.id as string, e]));
+    const attendancePlan = planTrainingAttendance({
+      now,
+      trainings: events
+        .filter((e) => e.type === 'training' && teamOfEvent.has(e.id))
+        .map((e) => ({
+          id: e.id as string,
+          teamKey: teamOfEvent.get(e.id)!.key,
+          startsAt: e.startsAt,
+          cancelled: e.status === 'cancelled',
+        })),
+      players: Object.fromEntries(
+        TEAMS.map((t) => [
+          t.key,
+          [
+            ...new Set(
+              teamMembers[t.key].filter((m) => m.fn === 'player').map((m) => m.person.id as string),
+            ),
+          ],
+        ]),
+      ),
+      perWeek: Object.fromEntries(TEAMS.map((t) => [t.key, t.trainings.length])),
+      fixedTypes: new Map([
+        [persona.player.id as string, 'high'],
+        [persona.coach.id as string, 'normal'],
+        [leon.id as string, 'normal'],
+        [mia.id as string, 'normal'],
+      ]),
+      absent: (personId, eventId) =>
+        !!absenceOn(personId, toIsoDate(calendarDayOf(eventById.get(eventId)!.startsAt))),
+    });
+    const recordedTrainings = attendancePlan.recorded;
     for (const event of events) {
       const team = teamOfEvent.get(event.id);
       if (!team) continue;
@@ -1095,6 +1284,14 @@ export async function seed(
           explicit = status === 'no';
         }
 
+        // Erfasste Trainings: Antwort passt zur geplanten Anwesenheit (wer da war, hatte zugesagt)
+        const noShow = recordedTrainings.has(event.id) ? faker.number.int(100) : 0;
+        if (recordedTrainings.has(event.id) && !absence) {
+          if (attendancePlan.present(event.id, personId)) status = 'yes';
+          else if (status === 'yes' && noShow >= 25) status = 'no';
+          explicit = status !== 'pending';
+        }
+
         // Feste Zustände für die Demo-Personas
         if (event === nextB1Match && m.person === persona.player) status = 'yes';
         if (event === nextB1Training && m.person === persona.player) status = 'pending';
@@ -1120,10 +1317,9 @@ export async function seed(
           respondedAt,
           respondedByPersonId: respondedAt ? (guardianOf.get(personId) ?? personId) : null,
           absenceId: absence?.id ?? null,
-          // B1: Anwesenheit vergangener Trainings erfasst; Beteiligung je Spieler unterschiedlich, damit im
-          // Aufstellungsplaner alle drei Farbstufen vorkommen (gut ≥ 75 %, mittel 50–74 %, niedrig < 50 %)
+          // Anwesenheit erfasster Trainings aus dem Plan (Typ je Person, Quote je Mannschaft); nur bei Zusage
           attended: recordedTrainings.has(event.id)
-            ? status === 'yes' && faker.number.int(100) < ATTENDANCE_RATE[ordered.indexOf(m) % 4]!
+            ? status === 'yes' && attendancePlan.present(event.id, personId)
             : null,
         });
       }
@@ -1383,6 +1579,15 @@ export async function seed(
             group.map((m) => m.eventId),
           ),
         );
+    }
+    // Ausbau: einzelne Platzverweise (rote Karte) statt nur gelber Karten
+    if (extended) {
+      incidents
+        .filter((i) => i.kind === 'yellow')
+        .filter((_, n) => n % 13 === 5)
+        .forEach((i) => {
+          i.kind = 'red';
+        });
     }
     await insertChunked(tx, s.matchIncidents, incidents);
 
@@ -2580,6 +2785,24 @@ export async function seed(
         adminUserId: userIds.admin,
         b1TeamId: teamIds.b1,
         adminPersonId: persona.admin.id,
+      });
+    if (extended)
+      await seedJahreslauf({
+        tx,
+        clubId,
+        now,
+        today,
+        teamIds,
+        orgUnitIds,
+        facilityIds,
+        people: {
+          admin: persona.admin.id,
+          board: persona.board.id,
+          coach: persona.coach.id,
+          youthDirector: official.youthDirector.id,
+          facilityManager: official.facilityManager.id,
+        },
+        adultIds: adults.filter((p) => p.membershipStatus !== 'left').map((p) => p.id),
       });
 
     // ── Mannschaftsaufgaben (B-Jugend) ──────────────────────────────────────────────────────

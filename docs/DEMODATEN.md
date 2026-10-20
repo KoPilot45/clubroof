@@ -42,9 +42,37 @@ Der Ausbau steckt im Seed-Schalter `extended` (Standard: an für `pnpm db:reset`
 | Archiv        | Einträge zum Wiederherstellen: Wiki-Artikel, Übung, Aufgabe, abgelaufener Sponsor, Dokument                                                                                        |
 | Bilder        | `node scripts/demo-bilder.mjs` zeichnet Sponsorenlogos und News-Bilder als PNG nach `apps/api/assets/` (Auslieferung unter `/brand/demo-…png`); das Wappen ist eine einzige Variante |
 | Rolle         | Eigene Beispielrolle „Platzwart Nord“ (Rollenverwaltung), zugewiesen an den Platzwart                                                                                              |
-| Beispieldateien | `docs/demo-dateien/`: `mitglieder.csv` (30 Zeilen mit Dublette und Fehlerzeilen), `kader-c-jugend.csv`, `beitragsarten.csv`, `haushaltsplan.csv`, `spielplan.csv` (nachgebaut, kein echtes DFBnet-Format); ein API-Test liest alle ein |
+| Beispieldateien | `apps/api/assets/beispiele/` (Download in der Hilfe unter `/beispieldateien/<name>.csv`): `mitglieder.csv` (30 Zeilen mit Dublette und Fehlerzeilen), `kader-c-jugend.csv`, `beitragsarten.csv`, `haushaltsplan.csv`, `spielplan.csv` (nachgebaut, kein echtes DFBnet-Format); ein API-Test liest alle ein |
 
-Noch nicht ausgebaut: Familien/Altersverteilung (Bestand von rund 320 Personen unverändert), Saison mit Hin- und Rückrunde und Pokal, weitere News/Umfragen/Wiki-Artikel, Veranstaltungen im Jahreslauf, Mannschaftsillustrationen und Avatare, Download der Beispieldateien in der Hilfe.
+### Weiterer Ausbau (20.10.2026)
+
+| Bereich | Inhalt |
+| --- | --- |
+| Personen und Familien (`ausbau-personen.ts`) | rund 390 Personen: Geschwister in mehreren Mannschaften (11 Familien, davon zwei mit drei Kindern), zweite Elternteile bei 20 Kindern, Doppelrollen (Mutter spielt bei den Frauen und hat ein Bambini-Kind, Vater spielt bei den Alten Herren, Vater ist Co-Trainer der D-Jugend, A-Jugend-Spielerin hilft bei der F-Jugend), 14 ältere Mitglieder (60 bis 84 Jahre, teils passiv), 7 Neuzugänge der letzten 50 Tage mit Zugangsvermerk, 4 Abgänge mit Enddatum, Sichtbarkeit der Kontaktdaten gemischt, rund 70 Avatare |
+| Saison und Spiele | fünf zusätzliche Spielwochen vor dem Fenster (Hinrunde ab August) mit Testspielen (`friendly`), Kreispokal (`cup`) für fünf Mannschaften, Stadtderby gegen den SV Musterstadt-Nord (Hinspiel gespielt, Rückspiel in der 1. Mannschaft und B-Jugend offen), einzelne rote Karten, Spielform je Altersklasse (7er, 9er, 11er), zehn weitere Abwesenheiten mit Anlass |
+| Sichtbarkeiten je Mannschaft | 1. Mannschaft: Namen sichtbar, kein „Vielleicht“, Erinnerung 24 h; 2. Mannschaft: nur Trainerteam; Alte Herren und D-Jugend: Namen; Frauen: Grund Pflicht, Gründe für die Mannschaft; A-Jugend: Aufstellung sichtbar, Grund Pflicht; Bambini: kein „Vielleicht“. B-, C-, E- und F-Jugend (Demo-Logins) bleiben im Standard |
+| Inhalte (`ausbau-jahreslauf.ts`) | 8 weitere News (mit Mannschaftsbildern), 4 weitere Umfragen (eine abgelaufen) mit rund 190 Stimmen, 8 weitere Wiki-Artikel in vier Kategorien, 4 weitere Aushänge, 9 Vereinsveranstaltungen im Jahreslauf (Sommerfest bis Jugendzeltlager) mit Helferplänen |
+| Bilder | zwölf Avatare (`demo-avatar-NN.png`) und elf Mannschaftsillustrationen (`demo-team-<Schlüssel>.png`) per `node scripts/demo-bilder.mjs` |
+| Beispieldateien | in der Hilfe unter „Gibt es Beispieldateien zum Ausprobieren?“ und bei den Import-Fragen herunterladbar |
+
+Bewusst nicht umgesetzt: eigene Mannschaftsfotos als Feld an der Mannschaft (das Produkt kennt kein Mannschaftsbild; die Illustrationen schmücken News), Wechsel als Spielereignis (die Auswechselbank steht in der Aufstellung).
+
+## Trainingsbeteiligung (Paket DEMODATEN-TRAININGSBETEILIGUNG)
+
+Die Anwesenheit vergangener Trainings ist für **alle 11 Mannschaften** erfasst (`packages/db/src/seed/ausbau-anwesenheit.ts`, aufgerufen aus `index.ts`). Je Person gibt es einen festen Anwesenheitstyp (nicht mehr nach Kaderreihenfolge): niedrig, mittel (ab 12 Spielern), Einbruch nach Verletzung (ab 12 Spielern, zuletzt vor drei Wochen), regelmäßig und normal. So kommen bei großen Kadern alle drei Farbstufen des Aufstellungsplaners vor (gut ab 75 %, mittel 50–74 %, niedrig unter 50 %). Max Becker (B1) ist regelmäßig dabei; die Demo-Logins Trainer, Eltern und Kinder sind nie niedrig.
+
+- `attended = true` nur bei Zusage und ohne Abwesenheit; abgesagte, künftige und bewusst offene Trainings haben keinen Wert.
+- Offen gelassen: bei zwei Trainings je Woche das jüngste (Kachel „Anwesenheit erfassen“ für B1 und C1) und ein älteres; bei einem Training je Woche eines von vor etwa fünf Wochen. Die letzten vier Wochen sind sonst vollständig erfasst.
+- Spiele: keine Anwesenheitserfassung (Einsatz kommt aus dem Spielbericht).
+
+| Mannschaft | Quote 6 Wochen | | Mannschaft | Quote 6 Wochen |
+| --- | --- | --- | --- | --- |
+| Bambini | ca. 80 % | | A-Jugend | ca. 80 % |
+| F-Jugend | ca. 93 % | | Frauen | ca. 74 % |
+| E-Jugend | ca. 87 % | | 1. Mannschaft | ca. 78 % |
+| D-Jugend | ca. 79 % | | 2. Mannschaft | ca. 64 % |
+| C-Jugend | ca. 78 % | | Alte Herren | ca. 57 % |
+| B-Jugend | ca. 79 % | | | |
 
 ## Demo-Logins
 

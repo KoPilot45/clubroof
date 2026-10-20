@@ -945,6 +945,8 @@ export const en: Record<string, string> = {
   'Beim Start und nach einer Minute im Hintergrund fragt die App nach Face ID, Fingerabdruck oder dem Gerätecode. Die Einstellung gilt nur auf diesem Gerät.':
     'At start and after a minute in the background the app asks for Face ID, fingerprint or the device code. This setting only applies to this device.',
   Beispiel: 'Example',
+  'Beispiel-Kader (CSV)': 'Sample squad (CSV)',
+  'Beispiel-Spielplan (CSV)': 'Sample schedule (CSV)',
   Beispielinhalt: 'Sample content',
   'Beispieltext – die Angaben werden vor dem Start ersetzt.':
     'Sample text – the details will be replaced before launch.',
@@ -984,6 +986,7 @@ export const en: Record<string, string> = {
   'Beitragsart bearbeiten': 'Edit fee type',
   'Beitragsart hinzufügen': 'Add fee type',
   Beitragsarten: 'Fee types',
+  'Beitragsarten (CSV)': 'Fee types (CSV)',
   'Beitragsarten & Mitglieder': 'Fee types & members',
   'Beitragsarten der Vereinskasse mit Betrag und Rhythmus (jährlich, vierteljährlich, monatlich, einmalig).':
     'Fee types of the club treasury with amount and interval (yearly, quarterly, monthly, once).',
@@ -1704,6 +1707,7 @@ export const en: Record<string, string> = {
   'Die Aufstellung macht das Trainerteam.': 'The coaching staff sets the line-up.',
   'Die Auslage': 'The claim',
   'Die Auswahl konnte nicht gespeichert werden.': 'The selection could not be saved.',
+  'Die Beispieldatei': 'The sample file',
   'Die Beiträge siehst du nicht im Einzelnen.': 'You cannot see the individual fees.',
   'Die Beitragsart': 'The fee type',
   'Die Benachrichtigung': 'The notification',
@@ -2707,6 +2711,7 @@ export const en: Record<string, string> = {
     'Enter the 6-digit code from your authenticator app – or one of your recovery codes.',
   'Gib den Einladungscode ein oder füge den Link aus deiner Einladung ein. Du bekommst ihn von deinem Verein per E-Mail, Nachricht oder als QR-Code.':
     'Enter the invitation code or paste the link from your invitation. You receive it from your club by e-mail, message or as a QR code.',
+  'Gibt es Beispieldateien zum Ausprobieren?': 'Are there sample files to try things out?',
   'Gilt ab': 'Valid from',
   'Gilt für': 'Applies to',
   'Gilt standardmäßig für': 'Applies by default to',
@@ -2758,6 +2763,7 @@ export const en: Record<string, string> = {
   Haushalt: 'Budget',
   'Haushalt Soll/Ist': 'Budget plan vs. actual',
   Haushaltsplan: 'Budget plan',
+  'Haushaltsplan (CSV)': 'Budget plan (CSV)',
   'Haushaltsplan: {0} geändert auf {1}': 'Budget: {0} changed to {1}',
   'Haushaltsplan: {0} geplant mit {1}': 'Budget: {0} planned at {1}',
   'Haushaltsplan: {0} Zeilen von {1} nach {2} übernommen':
@@ -2977,6 +2983,8 @@ export const en: Record<string, string> = {
     'Yes, with the calendar subscription: “Me → Settings → Calendar subscription” (or “Calendar subscription” in Events), create the subscription link and add it to your phone’s calendar. Your events, your children’s events and club events appear there. The link is secret – do not share it.',
   'Ja, mit dem Kalender-Abo: „Mehr → Kalender-Abo“, Abo-Link erstellen und im Kalender des Handys hinzufügen. Dort erscheinen deine Termine, die deiner Kinder und die Vereinstermine. Der Link ist geheim – gib ihn nicht weiter. Du kannst ihn jederzeit erneuern.':
     "Yes, with the calendar subscription: “More → Calendar subscription”, create a subscription link and add it to your phone's calendar. Your events, your children's events and the club events will appear there. The link is secret – don't share it. You can renew it at any time.",
+  'Ja, mit erfundenen Daten: eine Mitgliederliste (mit Dublette und Fehlerzeilen, damit du die Vorschau siehst), ein Kader, ein Spielplan, Beitragsarten und ein Haushaltsplan. Lade eine Datei herunter und importiere sie unter „Verwaltung → Importieren“ – oder öffne sie in Excel, um den Aufbau zu sehen. Der Spielplan ist nachgebaut und kein echtes DFBnet-Format.':
+    'Yes, with made-up data: a member list (with a duplicate and error rows so you can see the preview), a squad, a schedule, fee types and a budget plan. Download a file and import it under “Administration → Import” – or open it in Excel to see the structure. The schedule is a replica and not the real DFBnet format.',
   'Ja: „Verwaltung → Importieren → Termine einer Mannschaft“, Mannschaft wählen und eine Excel- oder CSV-Datei mit Datum, Beginn, Art, Gegner und Platz hochladen. Die Vorschau zeigt Dubletten, belegte Plätze und Termine in der Vergangenheit. Termine werden still angelegt, die Mannschaft bekommt keine Meldung. Den DFBnet-Spielplan importierst du weiter unter „Spielplan-Import“. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.':
     'Yes: “Administration → Import → Events of a team”, choose the team and upload an Excel or CSV file with date, start, type, opponent and pitch. The preview shows duplicates, booked pitches and events in the past. Events are created silently, the team gets no notification. You import the DFBnet fixtures under “Fixtures import”. You can undo the import within 24 hours.',
   'Ja. Bei offenen Terminen und ungelesenen Benachrichtigungen wischst du die Zeile nach links: Es erscheint „Zusagen“ bzw. „Gelesen“. Tippe darauf – oder wische ganz durch, dann passiert es sofort. Alles geht auch ohne Wischen über die Knöpfe in der Zeile.':
@@ -3074,6 +3082,7 @@ export const en: Record<string, string> = {
   'Kader & Aufstellung': 'Squad & line-up',
   'Kader anzeigen': 'Show squad',
   'Kader aus Datei importieren': 'Import squad from a file',
+  'Kader C-Jugend (CSV)': 'Squad U13 (CSV)',
   'Kader der Mannschaften': 'Team squads',
   'Kader einer Mannschaft': 'Squad of a team',
   'Kader im Detail': 'Squad in detail',
@@ -3554,6 +3563,7 @@ export const en: Record<string, string> = {
   'Mitglied zum Verein einladen': 'Invite a member to the club',
   'Mitglied zuordnen': 'Assign member',
   Mitglieder: 'Members',
+  'Mitglieder (CSV)': 'Members (CSV)',
   'Mitglieder importieren': 'Import members',
   'Mitglieder importiert nur die Mitgliederverwaltung.':
     'Only member administration imports members.',
@@ -4469,6 +4479,7 @@ export const en: Record<string, string> = {
   Spielklasse: 'Division',
   Spielort: 'Venue',
   Spielplan: 'Fixtures',
+  'Spielplan (CSV)': 'Schedule (CSV)',
   'Spielplan aktualisiert: {0}': 'Fixtures updated: {0}',
   'Spielplan aus dem DFBnet': 'Schedule from DFBnet',
   'Spielplan importieren': 'Import fixtures',

@@ -3,6 +3,7 @@
  * `DATABASE_URL` nicht gesetzt ist. Sie laufen in einer eigenen, frisch angelegten Datenbank,
  * damit sie parallel zu den API-Tests (die ebenfalls den Demoverein einspielen) laufen können.
  */
+import { existsSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb } from '../client';
 import { runMigrations } from '../migrate';
@@ -63,6 +64,94 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
     expect(outside).toHaveLength(0);
   });
 
+  it('erfasst die Trainingsanwesenheit für alle Mannschaften plausibel', async () => {
+    const teams = await sql<{ id: string; name: string }[]>`select id, name from teams`;
+    expect(teams).toHaveLength(11);
+    const ranges: Record<string, [number, number]> = {
+      Bambini: [75, 95],
+      'F-Jugend': [75, 95],
+      'E-Jugend': [75, 95],
+      'D-Jugend': [68, 88],
+      'C-Jugend': [68, 88],
+      'B-Jugend': [68, 88],
+      'A-Jugend': [68, 88],
+      Frauen: [62, 80],
+      '1. Mannschaft': [68, 82],
+      '2. Mannschaft': [52, 68],
+      'Alte Herren': [48, 66],
+    };
+    for (const team of teams) {
+      const trainings = await sql<{ id: string; recorded: boolean; recent: boolean }[]>`
+        select id, attendance_recorded_at is not null as recorded, starts_at > now() - interval '28 days' as recent
+        from events where team_id = ${team.id} and type = 'training' and status = 'scheduled' and starts_at < now()`;
+      const recorded = trainings.filter((x) => x.recorded);
+      const open = trainings.filter((x) => !x.recorded);
+      expect(recorded.filter((x) => x.recent).length, team.name).toBeGreaterThanOrEqual(4);
+      expect(open.length, `${team.name}: offene Trainings`).toBeGreaterThanOrEqual(1);
+      expect(open.length, `${team.name}: offene Trainings`).toBeLessThanOrEqual(2);
+
+      const rows = await sql<{ person_id: string; recent: boolean; attended: boolean | null }[]>`
+        select p.person_id, e.starts_at > now() - interval '28 days' as recent, p.attended
+        from event_participants p join events e on e.id = p.event_id
+        where e.team_id = ${team.id} and e.type = 'training' and e.status = 'scheduled'
+          and e.starts_at < now() and e.attendance_recorded_at is not null and p.role = 'player'`;
+      const quote = (100 * rows.filter((r) => r.attended).length) / rows.length;
+      const [min, max] = ranges[team.name]!;
+      expect(quote, `${team.name}: Quote ${quote.toFixed(0)} %`).toBeGreaterThanOrEqual(min);
+      expect(quote, `${team.name}: Quote ${quote.toFixed(0)} %`).toBeLessThanOrEqual(max);
+
+      // Farbstufen wie im Aufstellungsplaner: letzte vier Wochen, gut ≥ 75, mittel 50–74, niedrig < 50
+      const players = new Map<string, { n: number; a: number }>();
+      for (const r of rows.filter((x) => x.recent)) {
+        const v = players.get(r.person_id) ?? { n: 0, a: 0 };
+        v.n += 1;
+        if (r.attended) v.a += 1;
+        players.set(r.person_id, v);
+      }
+      const tier = (v: { n: number; a: number }) => {
+        const percent = (100 * v.a) / v.n;
+        return percent >= 75 ? 'gut' : percent >= 50 ? 'mittel' : 'niedrig';
+      };
+      const tiers = new Set([...players.values()].map(tier));
+      expect(tiers.has('gut'), `${team.name}: gut`).toBe(true);
+      expect(tiers.has('niedrig'), `${team.name}: niedrig`).toBe(true);
+      if (players.size >= 12) expect(tiers.has('mittel'), `${team.name}: mittel`).toBe(true);
+    }
+  });
+
+  it('Anwesenheit nur bei Zusage, nie bei Absage, Abwesenheit, offenen oder künftigen Terminen', async () => {
+    const wrong = await sql`
+      select p.event_id from event_participants p join events e on e.id = p.event_id
+      where p.attended is true and (p.status <> 'yes' or p.absence_id is not null
+        or e.status = 'cancelled' or e.starts_at > now() or e.attendance_recorded_at is null)`;
+    expect(wrong).toHaveLength(0);
+    const unrecordedValue = await sql`
+      select p.event_id from event_participants p join events e on e.id = p.event_id
+      where e.attendance_recorded_at is null and p.attended is not null`;
+    expect(unrecordedValue).toHaveLength(0);
+    const recordedWithoutValue = await sql`
+      select p.event_id from event_participants p join events e on e.id = p.event_id
+      where e.attendance_recorded_at is not null and e.type = 'training' and p.role = 'player' and p.attended is null`;
+    expect(recordedWithoutValue).toHaveLength(0);
+    const futureRecorded = await sql`
+      select id from events where attendance_recorded_at is not null and (starts_at > now() or status = 'cancelled')`;
+    expect(futureRecorded).toHaveLength(0);
+  });
+
+  it('Demo-Trainerin hat in B1 und C1 offene Trainings, Max Becker ist regelmäßig dabei', async () => {
+    const open = await sql<{ name: string }[]>`
+      select distinct t.name from events e join teams t on t.id = e.team_id
+      where e.type = 'training' and e.status = 'scheduled' and e.starts_at < now()
+        and e.attendance_recorded_at is null and t.name in ('B-Jugend', 'C-Jugend')`;
+    expect(open.map((o) => o.name).sort()).toEqual(['B-Jugend', 'C-Jugend']);
+    const [max] = await sql<{ a: number; n: number }[]>`
+      select count(*) filter (where p.attended)::int a, count(*)::int n
+      from event_participants p join events e on e.id = p.event_id join persons x on x.id = p.person_id
+      where x.first_name = 'Max' and x.last_name = 'Becker' and e.type = 'training'
+        and e.attendance_recorded_at is not null`;
+    expect(max!.a / max!.n).toBeGreaterThan(0.75);
+  });
+
   it('verwendet in allen Tabellen dieselbe club_id', async () => {
     const tables = await sql<{ table_name: string }[]>`
       select table_name from information_schema.columns
@@ -116,6 +205,155 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
         and t.badge in ('C1', 'D1', 'E1', 'F1', 'BAM')
         and not exists (select 1 from guardianships g where g.child_person_id = p.id)`;
     expect(row!.n).toBe(0);
+  });
+
+  it('Familien: Geschwister in mehreren Mannschaften, zweite Elternteile, Doppelrollen', async () => {
+    const siblings = await sql`
+      select g.guardian_person_id from guardianships g
+      join team_memberships tm on tm.person_id = g.child_person_id and tm.function = 'player'
+      group by 1 having count(distinct tm.team_id) >= 2`;
+    expect(siblings.length).toBeGreaterThanOrEqual(8);
+    const threeKids = await sql`
+      select guardian_person_id from guardianships group by 1 having count(*) >= 3`;
+    expect(threeKids.length).toBeGreaterThanOrEqual(1);
+    const twoParents = await sql`
+      select child_person_id from guardianships group by 1 having count(*) = 2`;
+    expect(twoParents.length).toBeGreaterThanOrEqual(10);
+    // Doppelrolle: Elternteil, der selbst spielt, und Spielerin, die nebenbei Co-Trainerin ist
+    const playingParents = await sql`
+      select distinct g.guardian_person_id from guardianships g
+      join team_memberships tm on tm.person_id = g.guardian_person_id and tm.function = 'player'`;
+    expect(playingParents.length).toBeGreaterThanOrEqual(2);
+    const playerCoaches = await sql`
+      select p.id from persons p
+      join team_memberships a on a.person_id = p.id and a.function = 'player'
+      join team_memberships b on b.person_id = p.id and b.function = 'assistant_coach' and b.team_id <> a.team_id
+      where p.birth_date > '2005-01-01'`;
+    expect(playerCoaches.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('Altersverteilung, Neuzugänge, Abgänge und Profile', async () => {
+    const [ages] = await sql`
+      select count(*) filter (where date_part('year', age(birth_date)) >= 60)::int as senioren,
+        count(*) filter (where date_part('year', age(birth_date)) < 8)::int as bambini,
+        count(*) filter (where avatar_url like '/brand/demo-avatar-%')::int as avatare,
+        count(distinct contact_visibility)::int as sichtbarkeiten
+      from persons`;
+    expect(ages!.senioren).toBeGreaterThanOrEqual(12);
+    expect(ages!.bambini).toBeGreaterThanOrEqual(10);
+    expect(ages!.avatare).toBeGreaterThanOrEqual(30);
+    expect(ages!.sichtbarkeiten).toBe(3);
+    const arrivals = await sql`
+      select p.id from persons p
+      join player_transfers t on t.person_id = p.id and t.kind = 'join'
+      where p.member_since >= current_date - 60 and t.starts_on >= current_date - 60`;
+    expect(arrivals.length).toBeGreaterThanOrEqual(6);
+    const exits = await sql`
+      select p.id from persons p
+      join player_transfers t on t.person_id = p.id and t.kind = 'leave'
+      join team_memberships tm on tm.person_id = p.id and tm.valid_to is not null
+      where p.membership_status = 'left'`;
+    expect(exits.length).toBeGreaterThanOrEqual(4);
+    // Austritte tauchen in keinem aktuellen Kader auf
+    const stillThere = await sql`
+      select p.id from persons p join team_memberships tm on tm.person_id = p.id and tm.valid_to is null
+      where p.membership_status = 'left'`;
+    expect(stillThere).toHaveLength(0);
+  });
+
+  it('Saison: Hinrunde mit Testspielen und Pokal, Derby mit Hin- und Rückspiel, Berichte mit Aufstellung', async () => {
+    const kinds = await sql<{ kind: string; n: number }[]>`
+      select kind, count(*)::int n from match_details group by 1`;
+    expect(kinds.map((k) => k.kind).sort()).toEqual(['cup', 'friendly', 'league']);
+    const [early] = await sql`
+      select count(*)::int n from events e join match_details d on d.event_id = e.id
+      where e.starts_at < now() - interval '6 weeks' and d.report_completed_at is not null`;
+    expect(early!.n).toBeGreaterThanOrEqual(15);
+    const derby = await sql<{ played: boolean }[]>`
+      select e.starts_at < now() as played from events e join match_details d on d.event_id = e.id
+      where d.opponent_name = 'SV Musterstadt-Nord' and e.title like 'Derby:%'`;
+    expect(derby.some((d) => d.played)).toBe(true);
+    expect(derby.some((d) => !d.played)).toBe(true);
+    const noLineup = await sql`
+      select d.event_id from match_details d
+      where d.report_completed_at is not null
+        and not exists (select 1 from match_lineups l where l.event_id = d.event_id)`;
+    expect(noLineup).toHaveLength(0);
+    const unplayedWithReport = await sql`
+      select d.event_id from match_details d join events e on e.id = d.event_id
+      where e.starts_at > now() and (d.report_completed_at is not null or d.goals_for is not null)`;
+    expect(unplayedWithReport).toHaveLength(0);
+    const cards = await sql<{ kind: string }[]>`select distinct kind from match_incidents`;
+    expect(cards.map((c) => c.kind)).toEqual(
+      expect.arrayContaining(['yellow', 'yellow_red', 'red']),
+    );
+  });
+
+  it('Sichtbarkeiten und Spielformen unterscheiden sich je Mannschaft', async () => {
+    const rules = await sql<{ badge: string; combo: string; match_format: number }[]>`
+      select badge, concat_ws('|', attendance_visibility, lineup_visible, allow_maybe, decline_reason_required,
+        absence_reasons_visible_to, coalesce(reminder_hours::text, '-')) as combo, match_format from teams`;
+    expect(new Set(rules.map((r) => r.combo)).size).toBeGreaterThanOrEqual(6);
+    const format = (badge: string) => rules.find((r) => r.badge === badge)!.match_format;
+    expect([format('BAM'), format('D1'), format('B1')]).toEqual([7, 9, 11]);
+    // Demo-Logins: B-Jugend zeigt die Aufstellung weiter, die übrigen Mannschaften der Logins bleiben im Standard
+    const [b1] = await sql`select lineup_visible from teams where badge = 'B1'`;
+    expect(b1!.lineup_visible).toBe(true);
+  });
+
+  it('Abwesenheiten haben verschiedene Anlässe und Hinweise', async () => {
+    const [row] = await sql`
+      select count(distinct kind)::int kinds, count(*) filter (where note is not null)::int notes from absences`;
+    expect(row!.kinds).toBeGreaterThanOrEqual(4);
+    expect(row!.notes).toBeGreaterThanOrEqual(8);
+  });
+
+  it('Inhalte: News, Umfragen mit Stimmen, Wiki, Aushänge und Veranstaltungen im Jahreslauf', async () => {
+    const [n] = await sql`
+      select (select count(*) from announcements where status = 'published')::int news,
+        (select count(*) from announcements where image_url like '/brand/demo-team-%')::int mit_bild,
+        (select count(*) from polls)::int polls,
+        (select count(*) from poll_votes)::int stimmen,
+        (select count(distinct category) from wiki_pages)::int kategorien,
+        (select count(*) from wiki_pages)::int wiki,
+        (select count(*) from board_items)::int aushaenge,
+        (select count(*) from events where team_id is null)::int vereinstermine,
+        (select count(*) from helper_shifts)::int schichten`;
+    expect(n!.news).toBeGreaterThanOrEqual(16);
+    expect(n!.mit_bild).toBeGreaterThanOrEqual(4);
+    expect(n!.polls).toBeGreaterThanOrEqual(7);
+    expect(n!.stimmen).toBeGreaterThanOrEqual(250);
+    expect(n!.kategorien).toBeGreaterThanOrEqual(4);
+    expect(n!.wiki).toBeGreaterThanOrEqual(10);
+    expect(n!.aushaenge).toBeGreaterThanOrEqual(6);
+    expect(n!.vereinstermine).toBeGreaterThanOrEqual(14);
+    expect(n!.schichten).toBeGreaterThanOrEqual(18);
+    // Jahreslauf: Veranstaltungen verteilen sich über mehr als ein Jahr, mit abgelaufener Umfrage
+    const [span] = await sql`
+      select (max(starts_at)::date - min(starts_at)::date)::int days from events where team_id is null`;
+    expect(span!.days).toBeGreaterThan(300);
+    const [closed] = await sql`select count(*)::int n from polls where closes_at < now()`;
+    expect(closed!.n).toBeGreaterThanOrEqual(1);
+    // Helfer nie über der Schichtgröße, jede Person höchstens einmal je Schicht
+    const over = await sql`
+      select h.id from helper_shifts h
+      where (select count(*) from helper_signups s where s.shift_id = h.id) > h.capacity`;
+    expect(over).toHaveLength(0);
+    const unlinkedImages = await sql`
+      select id from announcements where image_url is not null and image_url !~ '^/brand/demo-[a-z0-9-]+\\.png$'`;
+    expect(unlinkedImages).toHaveLength(0);
+    // Jedes verwendete Demo-Bild gibt es als Datei (scripts/demo-bilder.mjs)
+    const used = await sql<{ url: string }[]>`
+      select image_url as url from announcements where image_url like '/brand/%'
+      union select avatar_url from persons where avatar_url like '/brand/%'
+      union select logo_ref from sponsors where logo_ref like '/brand/%'`;
+    for (const { url } of used) {
+      const file = new URL(
+        `../../../../apps/api/assets/${url.replace('/brand/', '')}`,
+        import.meta.url,
+      );
+      expect(existsSync(file), url).toBe(true);
+    }
   });
 
   it('Plätze sind nie doppelt belegt', async () => {

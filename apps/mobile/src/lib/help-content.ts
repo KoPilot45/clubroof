@@ -12,6 +12,8 @@ export type HelpEntry = {
   answer: string;
   /** Springt direkt zur Funktion */
   link?: { label: string; href: string };
+  /** Beispieldateien zum Herunterladen (Pfad der API) */
+  downloads?: { label: string; path: string }[];
 };
 
 export type HelpSection = {
@@ -547,12 +549,14 @@ export const HELP_SECTIONS: HelpSection[] = [
         question: 'Wie importiere ich den Spielplan aus dem DFBnet?',
         answer:
           '„Mannschaft bearbeiten → Spielplan importieren“: CSV-Datei aus dem DFBnet wählen, Vorschau prüfen (neu, geändert, unverändert, übersprungen) und übernehmen. Die Mannschaft bekommt eine Sammelmeldung. Ein erneuter Import aktualisiert Verlegungen, statt Spiele doppelt anzulegen. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.',
+        downloads: [{ label: 'Beispiel-Spielplan (CSV)', path: '/beispieldateien/spielplan.csv' }],
       },
       {
         id: 'coach-roster-import',
         question: 'Wie importiere ich den Kader meiner Mannschaft aus einer Datei?',
         answer:
           'Unter „Verwaltung → Importieren“ den Bereich „Kader einer Mannschaft“ und deine Mannschaft wählen, Excel- oder CSV-Datei hochladen, Spalten zuordnen und die Vorschau prüfen. Vorhandene Mitglieder erkennt Clubroof an Nummer, E-Mail oder Name mit Geburtsdatum und nimmt sie in den Kader auf; neue Mitglieder legt nur die Mitgliederverwaltung an. Rückennummern werden auf Doppelte geprüft. Innerhalb von 24 Stunden kannst du den Import rückgängig machen.',
+        downloads: [{ label: 'Beispiel-Kader (CSV)', path: '/beispieldateien/kader-c-jugend.csv' }],
       },
       {
         id: 'coach-events-import',
@@ -759,6 +763,19 @@ export const HELP_SECTIONS: HelpSection[] = [
         question: 'Wie lege ich Mitglieder an oder importiere sie?',
         answer:
           'Einzeln unter „Mitglieder → Mitglied anlegen“ oder per Import aus Excel oder CSV („Importieren“): Bereich wählen, Vorlage laden, Datei hochladen, Spalten zuordnen, Vorschau prüfen (neu, aktualisiert, Dublette, Fehler), bei Dubletten überspringen, aktualisieren oder neu anlegen. Der Import wird ganz oder gar nicht übernommen und lässt sich 24 Stunden lang rückgängig machen. Austritte beenden Mannschaftszugehörigkeiten und sperren den App-Zugang. In der Mitgliederliste filterst du nach Rolle, Trainerteam, individuellen Rechten oder fehlendem App-Zugang.',
+      },
+      {
+        id: 'admin-example-files',
+        question: 'Gibt es Beispieldateien zum Ausprobieren?',
+        answer:
+          'Ja, mit erfundenen Daten: eine Mitgliederliste (mit Dublette und Fehlerzeilen, damit du die Vorschau siehst), ein Kader, ein Spielplan, Beitragsarten und ein Haushaltsplan. Lade eine Datei herunter und importiere sie unter „Verwaltung → Importieren“ – oder öffne sie in Excel, um den Aufbau zu sehen. Der Spielplan ist nachgebaut und kein echtes DFBnet-Format.',
+        downloads: [
+          { label: 'Mitglieder (CSV)', path: '/beispieldateien/mitglieder.csv' },
+          { label: 'Kader C-Jugend (CSV)', path: '/beispieldateien/kader-c-jugend.csv' },
+          { label: 'Spielplan (CSV)', path: '/beispieldateien/spielplan.csv' },
+          { label: 'Beitragsarten (CSV)', path: '/beispieldateien/beitragsarten.csv' },
+          { label: 'Haushaltsplan (CSV)', path: '/beispieldateien/haushaltsplan.csv' },
+        ],
       },
       {
         id: 'admin-import-areas',

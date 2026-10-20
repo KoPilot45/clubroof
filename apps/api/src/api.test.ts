@@ -1268,7 +1268,15 @@ describe.skipIf(!url)('API', () => {
       const player = await login('spieler');
       const coach = await login('trainer');
       const events = await get<EventSummary[]>('/events', player.token);
-      const match = events.find((e) => e.team?.badge === 'B1' && e.type === 'match')!;
+      // ein B1-Spiel, bei dem es Absagen mit Grund gibt (hängt nicht vom Zufall der Demodaten ab)
+      let match = events.find((e) => e.team?.badge === 'B1' && e.type === 'match')!;
+      for (const e of events.filter((x) => x.team?.badge === 'B1' && x.type === 'match')) {
+        const d = await get<EventDetail>(`/events/${e.id}`, coach.token);
+        if (d.participants.some((p) => p.reason !== null)) {
+          match = e;
+          break;
+        }
+      }
 
       const asPlayer = await get<EventDetail>(`/events/${match.id}`, player.token);
       const asCoach = await get<EventDetail>(`/events/${match.id}`, coach.token);
@@ -4094,7 +4102,7 @@ describe.skipIf(!url)('API', () => {
       expect(percents.some((p) => p !== null && p >= 75)).toBe(true);
       expect(percents.some((p) => p !== null && p >= 50 && p < 75)).toBe(true);
       expect(percents.some((p) => p !== null && p < 50)).toBe(true);
-      // Mannschaft ohne erfasste Trainings: kein Training im Fenster → null
+      // Auch die E-Jugend hat erfasste Trainings (Demodaten für alle Mannschaften)
       const e1 = (await login('eltern')).me.teams.find((t) => t.badge === 'E1')!;
       const parent = await login('eltern');
       const e1Match = (await get<EventSummary[]>('/events', parent.token)).find(
@@ -4102,7 +4110,7 @@ describe.skipIf(!url)('API', () => {
       )!;
       const e1Sheet = await get<MatchSheet>(`/events/${e1Match.id}/match`, parent.token);
       if (e1Sheet.candidates) {
-        expect(e1Sheet.candidates.every((c) => c.attendance.percent === null)).toBe(true);
+        expect(e1Sheet.candidates.some((c) => c.attendance.percent !== null)).toBe(true);
         // Standard: Mannschaften zeigen die Aufstellung nicht an Spieler und Eltern
         expect(e1Sheet.lineupVisible).toBe(false);
       }
@@ -5276,6 +5284,28 @@ describe.skipIf(!url)('API', () => {
         (await app.inject({ method: 'GET', url: '/brand/..%2Fpackage.json' })).statusCode,
       ).toBe(404);
       expect((await app.inject({ method: 'GET', url: '/brand/anderes.png' })).statusCode).toBe(404);
+    });
+
+    it('Beispieldateien zum Herunterladen: nur freigegebene CSV-Dateien, als Anhang', async () => {
+      for (const name of [
+        'mitglieder',
+        'kader-c-jugend',
+        'spielplan',
+        'beitragsarten',
+        'haushaltsplan',
+      ]) {
+        const res = await app.inject({ method: 'GET', url: `/beispieldateien/${name}.csv` });
+        expect(res.statusCode, name).toBe(200);
+        expect(res.headers['content-type']).toContain('text/csv');
+        expect(res.headers['content-disposition']).toContain(`attachment; filename="${name}.csv"`);
+        expect(res.body.length).toBeGreaterThan(50);
+      }
+      for (const url of [
+        '/beispieldateien/..%2Fpackage.json',
+        '/beispieldateien/anderes.csv',
+        '/beispieldateien/mitglieder.txt',
+      ])
+        expect((await app.inject({ method: 'GET', url })).statusCode, url).toBe(404);
     });
 
     it('Vereinskürzel: Vorgabe aus den Initialen, Änderung nur durch die Vereinsadministration', async () => {
@@ -9305,9 +9335,9 @@ describe.skipIf(!url)('API', () => {
       expect(Buffer.from(csv.body.dataBase64, 'base64').toString('utf8')).toContain('Position');
     });
 
-    it('die Beispieldateien in docs/demo-dateien lassen sich einlesen', async () => {
+    it('die Beispieldateien (assets/beispiele) lassen sich einlesen', async () => {
       const admin = await login('admin');
-      const dir = new URL('../../../docs/demo-dateien/', import.meta.url);
+      const dir = new URL('../assets/beispiele/', import.meta.url);
       const preview = async (name: string, area: string, extra: object = {}) => {
         const data = await readFile(new URL(name, dir));
         return send<ImportPreview>('POST', '/import/preview', admin.token, {

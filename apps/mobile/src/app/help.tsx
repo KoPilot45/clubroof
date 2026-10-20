@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 import { Button, Card, Empty, Screen, Section, T, TextField } from '@/components/ui';
 import { WelcomeTour } from '@/components/welcome-tour';
+import { API_URL } from '@/lib/api';
 import { HELP_SECTIONS, type HelpAudience } from '@/lib/help-content';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
@@ -124,6 +125,20 @@ export default function HelpScreen() {
                       <T variant="body" selectable>
                         {e.answer}
                       </T>
+                      {e.downloads ? (
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                          {e.downloads.map((d) => (
+                            <Button
+                              key={d.path}
+                              label={d.label}
+                              icon="download-outline"
+                              variant="tonal"
+                              size="sm"
+                              onPress={() => void Linking.openURL(`${API_URL}${d.path}`)}
+                            />
+                          ))}
+                        </View>
+                      ) : null}
                       {e.link ? (
                         <Button
                           label={e.link.label}

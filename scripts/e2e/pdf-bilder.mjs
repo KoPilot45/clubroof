@@ -1,5 +1,5 @@
 /** Bilder für die Design-/Funktionsübersicht (PDF) → .check/pdf/<name>.png (Wiedergabe 2x) */
-import { launch } from '../lib/e2e.mjs';
+import { api, launch, loginAs } from '../lib/e2e.mjs';
 import { mkdirSync } from 'node:fs';
 mkdirSync('.check/pdf', { recursive: true });
 const b = await launch();
@@ -37,12 +37,16 @@ await snap('trainer', '/club-calendar', 'vereinskalender');
 await snap('trainer', '/sponsors', 'sponsoren');
 await snap('trainer', '/board', 'brett');
 await snap('trainer', '/help', 'hilfe');
-await snap('trainer', '/termine', 'termin-detail', {
-  act: async (p) => {
-    const l = p.locator('a[href*="/events/"]').filter({ visible: true }).first();
-    await l.click();
-  },
-});
+// Termin-Detail: nächstes Training der B-Jugend direkt über die Adresse öffnen
+const coach = await loginAs('trainer');
+const from = new Date();
+const next = (
+  await api(
+    `/events?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(new Date(from.getTime() + 14 * 86_400_000).toISOString())}`,
+    coach.token,
+  )
+).find((e) => e.team?.badge === 'B1' && e.type === 'training' && e.status === 'scheduled');
+await snap('trainer', `/events/${next.id}`, 'termin-detail');
 const a = await b.anonymous();
 await a.goto('/login');
 await a.page.waitForTimeout(2500);

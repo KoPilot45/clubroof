@@ -176,6 +176,57 @@ for (const [n, f] of Object.entries(news)) {
   f(c);
   save(n, c);
 }
+
+// Avatare (160×160): Kopf und Schultern in zwölf Farben, Frisuren und Hauttönen – keine echten Gesichter
+const AVATARS = [
+  ['#2e7d32', '#f1c9a5', '#4e342e', 'short'],
+  ['#1565c0', '#d9a37b', '#212121', 'long'],
+  ['#ef6c00', '#f5d3b5', '#8d6e63', 'short'],
+  ['#6a1b9a', '#b9835a', '#212121', 'bun'],
+  ['#00838f', '#f1c9a5', '#f9a825', 'long'],
+  ['#c62828', '#e0b08a', '#3e2723', 'short'],
+  ['#37474f', '#f5d3b5', '#9e9e9e', 'bald'],
+  ['#558b2f', '#8d5a3b', '#212121', 'curly'],
+  ['#ad1457', '#f1c9a5', '#6d4c41', 'bun'],
+  ['#283593', '#d9a37b', '#bf360c', 'short'],
+  ['#00695c', '#e0b08a', '#212121', 'curly'],
+  ['#f9a825', '#f5d3b5', '#5d4037', 'long'],
+];
+AVATARS.forEach(([bg, skin, hair, style], i) => {
+  const c = canvas(160, 160, bg);
+  c.circle(80, 190, 70, '#ffffff', 0.9);
+  if (style === 'long') c.rect(46, 52, 68, 80, hair);
+  if (style === 'bun') c.circle(80, 30, 16, hair);
+  c.circle(80, 76, 34, skin);
+  if (style === 'short' || style === 'curly' || style === 'bun' || style === 'long')
+    c.rect(46, 40, 68, style === 'curly' ? 28 : 20, hair);
+  if (style === 'curly') for (const x of [52, 70, 90, 108]) c.circle(x, 44, 12, hair);
+  c.circle(68, 78, 4, '#212121');
+  c.circle(92, 78, 4, '#212121');
+  c.rect(70, 94, 20, 4, '#8d4a3b');
+  save(`demo-avatar-${String(i + 1).padStart(2, '0')}.png`, c);
+});
+
+// Mannschaftsillustrationen (800×450): Farbfläche mit Spielfeld und Mannschaftsnummer als Punkte
+const TEAM_ART = {
+  h1: ['#1b5e20', '#43a047', 1],
+  h2: ['#2e7d32', '#81c784', 2],
+  ah: ['#4e342e', '#a1887f', 3],
+  f1: ['#ad1457', '#f06292', 4],
+  a1: ['#1a237e', '#5c6bc0', 5],
+  b1: ['#0d47a1', '#42a5f5', 6],
+  c1: ['#00695c', '#4db6ac', 7],
+  d1: ['#e65100', '#ffb74d', 8],
+  e1: ['#6a1b9a', '#ba68c8', 9],
+  fj: ['#c62828', '#ef9a9a', 10],
+  bam: ['#f9a825', '#fff176', 11],
+};
+for (const [key, [a, b, n]] of Object.entries(TEAM_ART)) {
+  const c = canvas(800, 450, '#000000');
+  pitch(c, a, b);
+  for (let i = 0; i < n; i++) c.circle(130 + (i % 6) * 110, i < 6 ? 150 : 300, 24, '#ffffff', 0.92);
+  save(`demo-team-${key}.png`, c);
+}
 console.log(
-  `${Object.keys(logos).length + Object.keys(news).length} Bilder nach apps/api/assets/ geschrieben.`,
+  `${Object.keys(logos).length + Object.keys(news).length + AVATARS.length + Object.keys(TEAM_ART).length} Bilder nach apps/api/assets/ geschrieben.`,
 );
