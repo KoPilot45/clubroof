@@ -5286,6 +5286,28 @@ describe.skipIf(!url)('API', () => {
       expect((await app.inject({ method: 'GET', url: '/brand/anderes.png' })).statusCode).toBe(404);
     });
 
+    it('Beispieldateien zum Herunterladen: nur freigegebene CSV-Dateien, als Anhang', async () => {
+      for (const name of [
+        'mitglieder',
+        'kader-c-jugend',
+        'spielplan',
+        'beitragsarten',
+        'haushaltsplan',
+      ]) {
+        const res = await app.inject({ method: 'GET', url: `/beispieldateien/${name}.csv` });
+        expect(res.statusCode, name).toBe(200);
+        expect(res.headers['content-type']).toContain('text/csv');
+        expect(res.headers['content-disposition']).toContain(`attachment; filename="${name}.csv"`);
+        expect(res.body.length).toBeGreaterThan(50);
+      }
+      for (const url of [
+        '/beispieldateien/..%2Fpackage.json',
+        '/beispieldateien/anderes.csv',
+        '/beispieldateien/mitglieder.txt',
+      ])
+        expect((await app.inject({ method: 'GET', url })).statusCode, url).toBe(404);
+    });
+
     it('Vereinskürzel: Vorgabe aus den Initialen, Änderung nur durch die Vereinsadministration', async () => {
       const admin = await login('admin');
       const board = await login('vorstand');
@@ -9313,9 +9335,9 @@ describe.skipIf(!url)('API', () => {
       expect(Buffer.from(csv.body.dataBase64, 'base64').toString('utf8')).toContain('Position');
     });
 
-    it('die Beispieldateien in docs/demo-dateien lassen sich einlesen', async () => {
+    it('die Beispieldateien (assets/beispiele) lassen sich einlesen', async () => {
       const admin = await login('admin');
-      const dir = new URL('../../../docs/demo-dateien/', import.meta.url);
+      const dir = new URL('../assets/beispiele/', import.meta.url);
       const preview = async (name: string, area: string, extra: object = {}) => {
         const data = await readFile(new URL(name, dir));
         return send<ImportPreview>('POST', '/import/preview', admin.token, {

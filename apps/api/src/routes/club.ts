@@ -255,7 +255,28 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
 /** Feste Bilder der Marke und des Demovereins (öffentlich, nur diese Namen). */
 const BRAND_FILE = /^demo-[a-z0-9-]{1,40}\.png$/;
 
+const EXAMPLE_FILE = /^[a-z0-9-]{1,40}\.csv$/;
+
 export const brandRoutes: FastifyPluginAsyncZod = async (app) => {
+  // Beispieldateien zum Ausprobieren der Importe (erfundene Daten, Download aus der Hilfe)
+  app.get(
+    '/beispieldateien/:name',
+    { schema: { params: z.object({ name: z.string().max(60) }) } },
+    async (request, reply) => {
+      if (!EXAMPLE_FILE.test(request.params.name)) throw notFound('Die Beispieldatei');
+      const file = await readFile(
+        fileURLToPath(new URL(`../../assets/beispiele/${request.params.name}`, import.meta.url)),
+      ).catch(() => null);
+      if (!file) throw notFound('Die Beispieldatei');
+      return reply
+        .header('content-type', 'text/csv; charset=utf-8')
+        .header('content-disposition', `attachment; filename="${request.params.name}"`)
+        .header('cache-control', 'public, max-age=3600')
+        .header('x-content-type-options', 'nosniff')
+        .send(file);
+    },
+  );
+
   app.get(
     '/brand/:name',
     { schema: { params: z.object({ name: z.string().max(60) }) } },
