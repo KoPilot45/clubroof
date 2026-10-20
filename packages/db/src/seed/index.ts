@@ -450,6 +450,40 @@ export async function seed(
     }
 
     // ── Mannschaften ──────────────────────────────────────────────────────────────────────
+    const TEAM_RULES: Partial<Record<TeamKey, Partial<Insert<typeof s.teams>>>> = {
+      h1: { attendanceVisibility: 'named', allowMaybe: false, reminderHours: 24 },
+      h2: { attendanceVisibility: 'staff' },
+      ah: {
+        attendanceVisibility: 'named',
+        welcomeText:
+          'Willkommen bei den Alten Herren! Nach dem Training sitzen wir im Vereinsheim.',
+      },
+      f1: {
+        attendanceVisibility: 'named',
+        declineReasonRequired: true,
+        reminderHours: 48,
+        absenceReasonsVisibleTo: 'team',
+        welcomeText: 'Schön, dass du dabei bist! Bei Fragen melde dich bei der Trainerin.',
+      },
+      a1: {
+        attendanceVisibility: 'staff',
+        declineReasonRequired: true,
+        reminderHours: 24,
+        lineupVisible: true,
+        allowMaybe: false,
+      },
+      d1: {
+        attendanceVisibility: 'named',
+        reminderHours: 36,
+        welcomeText: 'Willkommen in der D-Jugend! Bitte meldet euch bis zum Vorabend an.',
+      },
+      bam: {
+        allowMaybe: false,
+        reminderHours: 24,
+        welcomeText:
+          'Willkommen bei den Bambini! Bringt bitte Hallenschuhe und etwas zu trinken mit.',
+      },
+    };
     const teamIds = {} as Record<TeamKey, string>;
     await tx.insert(s.teams).values(
       TEAMS.map((t, i) => {
@@ -468,6 +502,8 @@ export async function seed(
           template: t.template,
           participationMode: t.mode,
           sortOrder: i,
+          // Ausbau: Spielform nach Altersklasse und je Mannschaft unterschiedliche Sichtbarkeiten und Regeln
+          ...(extended ? { matchFormat: defaultLineupSize(t.ageGroup), ...TEAM_RULES[t.key] } : {}),
         };
       }),
     );
@@ -758,7 +794,11 @@ export async function seed(
     const matchDetails: Insert<typeof s.matchDetails>[] = [];
     const teamOfEvent = new Map<string, TeamDef>();
 
+    // Die Saisoneröffnung (Vereinstermin, weiter unten) belegt den Rasenplatz; Spiele der Hinrunde weichen aus
+    const openingStart = at(addDays(seasonStart, 45), '14:00');
+    const openingEnd = at(addDays(seasonStart, 45), '20:00');
     const isFacilityFree = (facilityId: string, start: Date, end: Date) =>
+      !(extended && facilityId === facilityIds.rasen && start < openingEnd && end > openingStart) &&
       !events.some(
         (e) =>
           e.facilityId === facilityId &&
@@ -801,15 +841,45 @@ export async function seed(
       }
     }
 
+    // Besondere Spiele im Ausbau: Testspiel zum Saisonstart, Kreispokal, Derby mit Hin- und Rückspiel
+    const DERBY_OPPONENT = 'SV Musterstadt-Nord';
+    function specialMatch(key: TeamKey, week: number) {
+      if (week === -5)
+        return {
+          kind: 'friendly' as const,
+          competition: 'Testspiel',
+          derby: false,
+          opponent: undefined,
+        };
+      if (week === -3 && ['h1', 'a1', 'b1', 'c1', 'd1'].includes(key))
+        return {
+          kind: 'cup' as const,
+          competition: 'Kreispokal',
+          derby: false,
+          opponent: undefined,
+        };
+      if ((key === 'h1' && (week === -1 || week === 8)) || (key === 'b1' && week === 9))
+        return {
+          kind: 'league' as const,
+          competition: undefined,
+          derby: true,
+          opponent: DERBY_OPPONENT,
+        };
+      return null;
+    }
+
     TEAMS.forEach((team, teamIndex) => {
       const teamId = teamIds[team.key];
       let matchNo = 0;
 
-      for (let w = 0; w < weeks; w++) {
-        if (w % team.match.everyWeeks !== teamIndex % team.match.everyWeeks) continue;
+      // Ausbau: fünf weitere Spielwochen davor (Hinrunde ab Saisonbeginn mit Testspiel und Pokal), Stadtderby
+      const mod = (n: number, m: number) => ((n % m) + m) % m;
+      for (let w = extended ? -5 : 0; w < weeks; w++) {
+        if (mod(w, team.match.everyWeeks) !== teamIndex % team.match.everyWeeks) continue;
         const day = addDays(windowStart, w * 7 + team.match.weekday - 1);
         const startsAt = at(day, team.match.time);
-        const opponent = OPPONENTS[(w + teamIndex * 5) % OPPONENTS.length]!;
+        const special = extended && !team.match.asTournament ? specialMatch(team.key, w) : null;
+        const opponent = special?.opponent ?? OPPONENTS[mod(w + teamIndex * 5, OPPONENTS.length)]!;
         const endsAt = addMinutes(startsAt, team.match.minutes);
         // Heimspiel nur, wenn der Platz frei ist – sonst wird es ein Auswärtsspiel
         const isHome =
@@ -826,9 +896,9 @@ export async function seed(
           type: team.match.asTournament ? 'tournament' : 'match',
           title: team.match.asTournament
             ? `Spielfest ${isHome ? 'auf unserer Anlage' : `in ${opponentTown}`}`
-            : isHome
-              ? `${ourName} – ${opponent}`
-              : `${opponent} – ${ourName}`,
+            : `${special?.derby ? 'Derby: ' : ''}${
+                isHome ? `${ourName} – ${opponent}` : `${opponent} – ${ourName}`
+              }`,
           startsAt,
           endsAt,
           meetingAt: addMinutes(startsAt, isHome ? -60 : -90),
@@ -848,7 +918,8 @@ export async function seed(
             clubId,
             opponentName: opponent,
             isHome,
-            competition: team.league,
+            competition: special?.competition ?? team.league,
+            ...(special ? { kind: special.kind } : {}),
             goalsFor: played
               ? weighted([
                   [0, 2],
@@ -1054,6 +1125,37 @@ export async function seed(
         endsOn: toIsoDate(addDays(today, 9)),
       },
     ];
+    // Ausbau: weitere Abwesenheiten mit Anlass (Verletzung, Klassenfahrt, Ferien, Krankheit)
+    if (extended) {
+      const more: [
+        TeamKey,
+        number,
+        'injury' | 'illness' | 'vacation' | 'school_work',
+        number,
+        number,
+        string?,
+      ][] = [
+        ['h2', 3, 'injury', -20, 10, 'Muskelfaserriss'],
+        ['f1', 4, 'illness', -2, 2],
+        ['d1', 2, 'school_work', 5, 9, 'Klassenfahrt'],
+        ['e1', 5, 'vacation', 12, 26, 'Herbstferien'],
+        ['c1', 6, 'injury', -8, 14, 'Bänderriss, Reha läuft'],
+        ['a1', 6, 'vacation', 1, 7],
+        ['fj', 4, 'illness', 0, 4, 'Scharlach'],
+        ['bam', 3, 'vacation', 8, 20],
+        ['h1', 9, 'school_work', 3, 6, 'Prüfungswoche'],
+        ['ah', 4, 'injury', -30, 5, 'Knie-OP'],
+      ];
+      for (const [team, index, kind, from, to, note] of more)
+        absences.push({
+          clubId,
+          personId: pick(team, index).id,
+          kind,
+          startsOn: toIsoDate(addDays(today, from)),
+          endsOn: toIsoDate(addDays(today, to)),
+          ...(note ? { note } : {}),
+        });
+    }
     for (const a of absences) {
       a.id = randomUUID();
       a.createdByPersonId = a.personId;
@@ -1476,6 +1578,15 @@ export async function seed(
             group.map((m) => m.eventId),
           ),
         );
+    }
+    // Ausbau: einzelne Platzverweise (rote Karte) statt nur gelber Karten
+    if (extended) {
+      incidents
+        .filter((i) => i.kind === 'yellow')
+        .filter((_, n) => n % 13 === 5)
+        .forEach((i) => {
+          i.kind = 'red';
+        });
     }
     await insertChunked(tx, s.matchIncidents, incidents);
 

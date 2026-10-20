@@ -260,6 +260,53 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
     expect(stillThere).toHaveLength(0);
   });
 
+  it('Saison: Hinrunde mit Testspielen und Pokal, Derby mit Hin- und Rückspiel, Berichte mit Aufstellung', async () => {
+    const kinds = await sql<{ kind: string; n: number }[]>`
+      select kind, count(*)::int n from match_details group by 1`;
+    expect(kinds.map((k) => k.kind).sort()).toEqual(['cup', 'friendly', 'league']);
+    const [early] = await sql`
+      select count(*)::int n from events e join match_details d on d.event_id = e.id
+      where e.starts_at < now() - interval '6 weeks' and d.report_completed_at is not null`;
+    expect(early!.n).toBeGreaterThanOrEqual(15);
+    const derby = await sql<{ played: boolean }[]>`
+      select e.starts_at < now() as played from events e join match_details d on d.event_id = e.id
+      where d.opponent_name = 'SV Musterstadt-Nord' and e.title like 'Derby:%'`;
+    expect(derby.some((d) => d.played)).toBe(true);
+    expect(derby.some((d) => !d.played)).toBe(true);
+    const noLineup = await sql`
+      select d.event_id from match_details d
+      where d.report_completed_at is not null
+        and not exists (select 1 from match_lineups l where l.event_id = d.event_id)`;
+    expect(noLineup).toHaveLength(0);
+    const unplayedWithReport = await sql`
+      select d.event_id from match_details d join events e on e.id = d.event_id
+      where e.starts_at > now() and (d.report_completed_at is not null or d.goals_for is not null)`;
+    expect(unplayedWithReport).toHaveLength(0);
+    const cards = await sql<{ kind: string }[]>`select distinct kind from match_incidents`;
+    expect(cards.map((c) => c.kind)).toEqual(
+      expect.arrayContaining(['yellow', 'yellow_red', 'red']),
+    );
+  });
+
+  it('Sichtbarkeiten und Spielformen unterscheiden sich je Mannschaft', async () => {
+    const rules = await sql<{ badge: string; combo: string; match_format: number }[]>`
+      select badge, concat_ws('|', attendance_visibility, lineup_visible, allow_maybe, decline_reason_required,
+        absence_reasons_visible_to, coalesce(reminder_hours::text, '-')) as combo, match_format from teams`;
+    expect(new Set(rules.map((r) => r.combo)).size).toBeGreaterThanOrEqual(6);
+    const format = (badge: string) => rules.find((r) => r.badge === badge)!.match_format;
+    expect([format('BAM'), format('D1'), format('B1')]).toEqual([7, 9, 11]);
+    // Demo-Logins: B-Jugend zeigt die Aufstellung weiter, die übrigen Mannschaften der Logins bleiben im Standard
+    const [b1] = await sql`select lineup_visible from teams where badge = 'B1'`;
+    expect(b1!.lineup_visible).toBe(true);
+  });
+
+  it('Abwesenheiten haben verschiedene Anlässe und Hinweise', async () => {
+    const [row] = await sql`
+      select count(distinct kind)::int kinds, count(*) filter (where note is not null)::int notes from absences`;
+    expect(row!.kinds).toBeGreaterThanOrEqual(4);
+    expect(row!.notes).toBeGreaterThanOrEqual(8);
+  });
+
   it('Plätze sind nie doppelt belegt', async () => {
     const conflicts = await sql`
       select a.title, b.title, a.starts_at
