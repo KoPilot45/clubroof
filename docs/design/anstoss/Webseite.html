@@ -135,7 +135,7 @@ section{scroll-margin-top:80px}
 .step{border-top:3px solid transparent;border-image:var(--grad) 1;padding-top:18px;display:flex;flex-direction:column;gap:10px}.step h3{font-size:30px;font-weight:800;text-transform:uppercase}.step p{color:var(--fg2);font-size:15px}
 /* Pilot */
 .cta-band{position:relative;overflow:hidden;background:var(--grad);color:#fff;padding-block:100px 80px;clip-path:polygon(0 56px,50% 0,100% 56px,100% 100%,0 100%);margin-top:-1px}
-.cta-band .w{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.cta-band .w{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}.ctaact{display:flex;gap:12px;flex-wrap:wrap}.ctaact .btn:first-child{background:#fff;color:#0A1E8F;border-color:#fff}
 .cta-band h2{font-size:clamp(38px,5.4vw,66px);font-weight:800;text-transform:uppercase}.cta-band p{color:rgba(255,255,255,.88);font-size:17px;margin-top:14px}
 .form{background:rgba(5,12,40,.45);border:1px solid rgba(255,255,255,.28);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:12px;backdrop-filter:blur(6px)}
 .form label{font:700 11px var(--body);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.85);display:flex;flex-direction:column;gap:6px}
@@ -158,6 +158,38 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
 }
 @media (max-width:560px){.facts,.rooms{grid-template-columns:1fr}.band{padding-block:64px}.chipf{display:none}}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* USPs, Vergleich, Tarife */
+.usps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.usp{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px 22px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.usp .n{font:800 15px/1 var(--display);letter-spacing:.12em;color:var(--accent)}
+.usp h3{font-size:28px;font-weight:800;text-transform:uppercase}.usp p{font-size:15px;color:var(--fg2)}
+.usp.big{background:var(--grad);color:#fff;border-color:transparent}.usp.big .n,.usp.big p{color:rgba(255,255,255,.9)}
+.cmpwrap{overflow-x:auto;border:1px solid var(--line);border-radius:20px;background:var(--card)}
+.cmp{width:100%;border-collapse:collapse;min-width:640px;font-size:15px}
+.cmp th,.cmp td{padding:14px 18px;text-align:left;border-bottom:1px solid var(--line)}
+.cmp tr:last-child td{border-bottom:0}
+.cmp thead th{font:800 20px/1.1 var(--display);text-transform:uppercase;color:var(--fg2)}
+.cmp th.us,.cmp td.us{background:color-mix(in srgb,var(--accent) 11%,transparent);color:var(--fg);font-weight:700}
+.cmp thead th.us{color:var(--accent)}
+.cmp td{color:var(--fg2)}.cmp .y{color:var(--ok)}.cmp .h{color:var(--warn)}.cmp .no{color:var(--fg3)}
+.cmpnote{margin-top:14px;font-size:13px;color:var(--fg3);max-width:none}
+.bill{display:inline-flex;border:1.5px solid var(--line);border-radius:999px;padding:4px;background:var(--card);margin-bottom:26px;gap:4px;flex-wrap:wrap}
+.bill button{font:700 14px var(--body);border:0;background:transparent;color:var(--fg2);border-radius:999px;padding:9px 18px;cursor:pointer}
+.bill button[aria-pressed="true"]{background:var(--grad);color:#fff}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:28px 24px;display:flex;flex-direction:column;gap:14px;position:relative}
+.plan.top{border:2px solid var(--accent);box-shadow:0 30px 70px -40px var(--glow)}
+.plan .badge{position:absolute;top:-13px;left:24px;background:var(--grad);color:#fff;font:700 12px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;border-radius:999px;padding:7px 12px}
+.plan h3{font-size:34px;font-weight:800;text-transform:uppercase}
+.plan .for{color:var(--fg2);font-size:15px}
+.plan .pr{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.plan .pr b{font:800 56px/1 var(--display)}.plan .pr span{color:var(--fg2);font-size:14px}
+.plan .sub{font-size:13px;color:var(--fg3);min-height:18px}
+.plan ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:14px;color:var(--fg2)}
+.plan li{display:flex;gap:10px}.plan li:before{content:"✓";color:var(--ok);font-weight:800}
+.plan .btn{margin-top:auto}
+.allin{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px 22px;color:var(--fg2);font-size:15px}.allin span:before{content:"✓ ";color:var(--ok);font-weight:800}
+@media (max-width:980px){.usps,.plans{grid-template-columns:1fr}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="crg" gradientUnits="userSpaceOnUse" x1="200" y1="1000" x2="1057" y2="627"><stop offset="0" stop-color="#002AFA"/><stop offset="1" stop-color="#00C3FF"/></linearGradient></defs>
@@ -166,17 +198,17 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
 
 <header class="nav"><div class="w">
   <a class="brand" href="#top" aria-label="Clubroof Startseite"><svg class="logo" width="30" height="33" viewBox="0 0 950 1035"><use href="#lg"/></svg>Clubroof</a>
-  <nav aria-label="Hauptnavigation"><a href="#raeume">Die App</a><a href="#zusagen">Funktionen</a><a href="#rollen">Für jede Rolle</a><a href="#start">Einrichten</a><a href="#faq">Fragen</a></nav>
-  <a class="btn p sm" href="#pilot">Pilotverein werden</a>
+  <nav aria-label="Hauptnavigation"><a href="#raeume">Die App</a><a href="#zusagen">Funktionen</a><a href="#rollen">Für jede Rolle</a><a href="#tarife">Tarife</a><a href="#start">Einrichten</a><a href="#faq">Fragen</a></nav>
+  <a class="btn p sm" href="#tarife">Tarife ansehen</a>
 </div></header>
 
 <main id="top">
 <section class="hero"><svg class="roof" viewBox="150 100 950 1035" aria-hidden="true"><use href="#lgw"/></svg>
  <div class="w"><div>
-   <span class="eyebrow">Die Vereins-App für iOS, Android und Web</span>
+   <span class="eyebrow">Team und Verein in einer App</span>
    <h1 style="margin-top:16px">Ein Dach für den <em>ganzen Verein.</em></h1>
-   <p class="lead">Termine, Zusagen, Mitteilungen, Kasse und Verwaltung in einer App. Jede Mannschaft, jedes Amt und jede Familie sieht genau das, was sie braucht.</p>
-   <div class="cta"><a class="btn p" href="#zusagen">App ansehen</a><a class="btn s" href="#pilot">Pilotverein werden</a></div>
+   <p class="lead">Mannschaftsalltag und Vereinsverwaltung in einer App: Termine, Zusagen, Kasse, Platzbelegung und Rechte für jedes Amt. Eine Anmeldung, ein Rechtekonzept, keine Werbung.</p>
+   <div class="cta"><a class="btn p" href="#warum">Warum Clubroof</a><a class="btn s" href="#tarife">Tarife ansehen</a></div>
    <div class="meta"><span><b>Handy</b> und <b>Desktop</b></span><span>Rechte nach <b>Rolle</b></span><span>Daten bleiben <b>im Verein</b></span></div>
  </div>
  <div class="stage"><div class="phone" aria-label="Beispiel: Startseite der App">
@@ -200,7 +232,30 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
  <div class="dachlinie"></div>
 </section>
 
-<section class="band alt" id="zusagen"><div class="w">
+<section class="band alt" id="warum"><div class="w">
+ <div class="head"><span class="eyebrow">Warum Clubroof</span><h2>Nicht noch eine Team-App. Das Dach für den ganzen Verein.</h2><p>Team-Apps regeln den Mannschaftsalltag, Vereinssoftware die Verwaltung. Clubroof verbindet beides und prüft jedes Recht auf dem Server.</p></div>
+ <div class="usps">
+  <div class="usp big"><span class="n">01</span><h3>Eine App für Team und Verein</h3><p>Zusagen, Kader und Kasse der Mannschaft und Mitglieder, Beiträge und Haushalt des Vereins. Ein Login, ein Rechtekonzept, keine zweite Software.</p></div>
+  <div class="usp"><span class="n">02</span><h3>Rechte nach Rolle und Bereich</h3><p>Rollen gelten für Verein, Abteilung oder Mannschaft. Absagegründe und Kontaktdaten sehen nur Berechtigte.</p></div>
+  <div class="usp"><span class="n">03</span><h3>Vereinskasse mit Bereichen</h3><p>Ideeller Bereich, Zweckbetrieb, Vermögensverwaltung und wirtschaftlicher Geschäftsbetrieb, dazu Haushaltsplan, Kassenprüfung und Spenden.</p></div>
+  <div class="usp"><span class="n">04</span><h3>Alles Praktische im selben System</h3><p>Platzbelegung, Material, Schlüssel, Helferschichten und Sponsoren. Keine Excel-Listen daneben.</p></div>
+  <div class="usp"><span class="n">05</span><h3>Eure Farben, euer Wappen</h3><p>Die App sieht aus wie euer Verein. Clubroof bleibt im Hintergrund, Werbung Dritter gibt es nicht.</p></div>
+  <div class="usp"><span class="n">06</span><h3>Handy und Desktop gleichwertig</h3><p>Unterwegs zusagen, am Laptop verwalten. Einrichtungsassistent mit Import, Module je Verein ein- und ausschaltbar.</p></div>
+ </div>
+ <div class="head" style="margin-top:72px;margin-bottom:26px"><span class="eyebrow">Im Vergleich</span><h2>Zwei Werkzeuge werden zu einem.</h2></div>
+ <div class="cmpwrap"><table class="cmp"><thead><tr><th>Was der Verein braucht</th><th>Team-Apps</th><th>Vereinssoftware</th><th class="us">Clubroof</th></tr></thead><tbody>
+  <tr><td>Termine mit Zu- und Absage</td><td class="y">✓ Ja</td><td class="h">◐ Teilweise</td><td class="us y">✓ Ja</td></tr>
+  <tr><td>Aufstellung und Trainingsbeteiligung</td><td class="y">✓ Ja</td><td class="no">– Nein</td><td class="us y">✓ Ja</td></tr>
+  <tr><td>Mitgliederverwaltung und Beiträge</td><td class="no">– Nein</td><td class="y">✓ Ja</td><td class="us y">✓ Ja</td></tr>
+  <tr><td>Kasse mit steuerlichen Bereichen</td><td class="h">◐ Teamkasse</td><td class="y">✓ Ja</td><td class="us y">✓ Mannschaft und Verein</td></tr>
+  <tr><td>Rechte nach Rolle und Mannschaft</td><td class="h">◐ Teilweise</td><td class="h">◐ Teilweise</td><td class="us y">✓ Ja, überall</td></tr>
+  <tr><td>Platz, Material, Schlüssel, Helfer</td><td class="no">– Nein</td><td class="h">◐ Teilweise</td><td class="us y">✓ Ja</td></tr>
+  <tr><td>Am Desktop verwalten</td><td class="no">– Nein</td><td class="y">✓ Ja</td><td class="us y">✓ Ja</td></tr>
+ </tbody></table></div>
+ <p class="cmpnote">Vergleich nach Art der Lösung, nicht nach einzelnen Anbietern. Funktionsumfang kann je Produkt abweichen.</p>
+</div></section>
+
+<section class="band" id="zusagen"><div class="w">
  <div class="split">
   <div class="copy"><span class="eyebrow">Termine und Zusagen</span><h3>Zusagen in einem Tipp. Teilnehmer in einem Blick.</h3>
    <p>Drei Knöpfe an jedem Termin: Zusage, Vielleicht, Absage. Die Teilnehmerliste klappt auf, ohne die Seite zu verlassen. Für Kinder antworten Eltern pro Kind.</p>
@@ -220,7 +275,7 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
  <p class="note" style="margin-top:14px;text-align:center;max-width:none">Zum Ausprobieren: Antwort antippen, dann „Teilnehmer“ aufklappen. Beispieldaten sind erfunden.</p>
 </div></section>
 
-<section class="band" id="raeume"><div class="w">
+<section class="band alt" id="raeume"><div class="w">
   <div class="head"><span class="eyebrow">Alles unter einem Dach</span><h2>Fünf Bereiche. Jede Aufgabe hat ihren Platz.</h2><p>Die Navigation bleibt für alle gleich, die Inhalte richten sich nach Rolle, Mannschaft und Vereinsmodulen. Wer Trainer, Elternteil und Spieler zugleich ist, sieht alles an einem Ort.</p></div>
   <div class="rooms">
     <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4z"/></svg><h3>Start</h3><p>Was jetzt Aufmerksamkeit braucht: offene Antworten, das nächste Spiel, Neuigkeiten.</p></div>
@@ -231,13 +286,13 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
   </div>
 </div></section>
 
-<section class="band alt" id="rollen"><div class="w">
+<section class="band" id="rollen"><div class="w">
  <div class="head"><span class="eyebrow">Für jede Rolle</span><h2>Jeder sieht, was er braucht. Nicht mehr.</h2><p>Rechte hängen an Rollen, nicht an Personen. Der Verein vergibt sie, die App prüft sie auf dem Server.</p></div>
  <div class="tabs" role="tablist" id="rt"></div>
  <div class="rolebox"><div class="rcard" id="rc"></div><div class="rcard q" id="rq"></div></div>
 </div></section>
 
-<section class="band"><div class="w">
+<section class="band alt"><div class="w">
  <div class="split">
   <div class="copy"><span class="eyebrow">Kasse</span><h3>Mannschaftskasse und Vereinskasse. Getrennt geführt.</h3>
    <p>Strafen, Getränke und Einzahlungen für die Mannschaft. Für den Verein ein Kassenbuch mit Konten, Beiträgen, Haushaltsplan und Auswertungen. Wer die Zahlen sehen darf, legt der Verein fest.</p>
@@ -252,7 +307,7 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
  </div>
 </div></section>
 
-<section class="band alt"><div class="w">
+<section class="band"><div class="w">
  <div class="head"><span class="eyebrow">Verwaltung am Desktop</span><h2>Mehr Platz für Listen, Kasse und Mitglieder.</h2><p>Ab Laptop-Breite arbeitet die App mit fester Seitenleiste. Tabellen mit Filtern, Auswahl mit Seitenpanel, Tastaturbedienung.</p></div>
  <div class="win" role="img" aria-label="Beispiel: Beitragsübersicht am Desktop"><div class="bar"><i></i><i></i><i></i><span>clubroof.example/club-cash/fees</span></div>
   <div class="body"><div class="sd"><a>Start</a><a>Termine</a><a>Team</a><a>Verein</a><a>Ich</a><div style="height:10px"></div><a class="v">Verwaltung</a><a class="on" style="background:#1C4FA3;color:#fff">Vereinskasse</a></div>
@@ -263,7 +318,7 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
      <tr><td>Mitglied C</td><td>Jugend</td><td>Q3 2026</td><td>45,00 €</td><td><span class="pill b">Überfällig</span></td></tr></table></div></div></div></div>
 </div></section>
 
-<section class="band"><div class="w">
+<section class="band alt"><div class="w">
  <div class="head"><span class="eyebrow">Und außerdem</span><h2>Was sonst noch zum Vereinsalltag gehört.</h2><p>Jedes Modul lässt sich pro Verein an- und abschalten. Wer es nicht braucht, sieht es nicht.</p></div>
  <div class="facts more">
   <div class="fact"><h3>Aufstellung</h3><p>Formation wählen, Spieler per Drag &amp; Drop aufs Feld ziehen, Entwurf speichern, später veröffentlichen.</p></div>
@@ -277,7 +332,7 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
  </div>
 </div></section>
 
-<section class="band alt"><div class="w">
+<section class="band"><div class="w">
  <div class="head"><span class="eyebrow">Datenschutz und Rechte</span><h2>Datensparsam eingebaut.</h2></div>
  <div class="facts">
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><h3>Rollen statt Zufall</h3><p>Rollen sind Rechtepakete mit Geltungsbereich: Verein, Abteilung oder Mannschaft.</p></div>
@@ -287,7 +342,7 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
  </div>
 </div></section>
 
-<section class="band"><div class="w">
+<section class="band alt"><div class="w">
  <div class="split rev">
   <div class="copy"><span class="eyebrow">Vereinsfarbe</span><h3>Clubroof ist das Dach. Die App sieht aus wie euer Verein.</h3>
    <p>Der Verein wählt Wappen und Farbe, die ganze App zieht mit. Hell und dunkel sind für jede Farbe auf Lesbarkeit geprüft.</p>
@@ -300,6 +355,21 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
     <div class="tabbar"><span class="on">Start</span><span>Termine</span><span>Team</span><span>Verein</span><span>Ich</span></div>
   </div></div></div>
  </div>
+</div></section>
+
+<section class="band" id="tarife"><div class="w">
+ <div class="head"><span class="eyebrow">Tarife</span><h2>Ein Preis nach Vereinsgröße. Alle Funktionen inklusive.</h2><p>Gezählt werden Mitglieder, nicht Mannschaften oder Konten. Spieler, Eltern und Trainer kosten nichts extra.</p></div>
+ <div class="bill" role="group" aria-label="Zahlweise"><button type="button" id="bm" aria-pressed="false">Monatlich</button><button type="button" id="by" aria-pressed="true">Jährlich · 2 Monate sparen</button></div>
+ <div class="plans">
+  <div class="plan"><h3>Klein</h3><div class="for">Bis 300 Mitglieder</div><div class="pr"><b data-m="29" data-y="24">24</b><span>€ im Monat</span></div><div class="sub" data-sub></div>
+   <ul><li>Alle Mannschaften und Abteilungen</li><li>Alle Module inklusive</li><li>Einrichtungsassistent und Import</li><li>Support per E-Mail</li></ul><a class="btn s" href="#pilot">Klein wählen</a></div>
+  <div class="plan top"><span class="badge">Am häufigsten gewählt</span><h3>Mittel</h3><div class="for">Bis 500 Mitglieder</div><div class="pr"><b data-m="49" data-y="41">41</b><span>€ im Monat</span></div><div class="sub" data-sub></div>
+   <ul><li>Alle Mannschaften und Abteilungen</li><li>Alle Module inklusive</li><li>Einrichtungsassistent und Import</li><li>Support per E-Mail, schnellere Antwort</li></ul><a class="btn p" href="#pilot">Mittel wählen</a></div>
+  <div class="plan"><h3>Groß</h3><div class="for">Bis 1.000 Mitglieder</div><div class="pr"><b data-m="89" data-y="74">74</b><span>€ im Monat</span></div><div class="sub" data-sub></div>
+   <ul><li>Alle Mannschaften und Abteilungen</li><li>Alle Module inklusive</li><li>Einrichtungsassistent und Import</li><li>Persönlicher Ansprechpartner</li></ul><a class="btn s" href="#pilot">Groß wählen</a></div>
+ </div>
+ <div class="allin"><span>Keine Funktionssperren</span><span>Keine Werbung</span><span>Datenexport jederzeit</span><span>Monatlich kündbar</span></div>
+ <p class="cmpnote">Mehr als 1.000 Mitglieder oder mehrere Vereine? Sprecht uns an. Preise netto zuzüglich Umsatzsteuer, Beispielwerte für dieses Mockup.</p>
 </div></section>
 
 <section class="band alt" id="start"><div class="w">
@@ -317,17 +387,14 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
   <details><summary>Für welche Vereine ist Clubroof gedacht?</summary><p>Für Sportvereine mit mehreren Mannschaften, zunächst mit Schwerpunkt Fußball. Die Struktur aus Abteilungen, Mannschaften und Rollen passt auch zu Mehrspartenvereinen.</p></details>
   <details><summary>Brauchen Spieler und Eltern ein eigenes Konto?</summary><p>Ja, über eine Einladung des Vereins. Eltern verwalten die Antworten ihrer Kinder, ab welchem Alter ein Kind einen eigenen Zugang bekommt, entscheiden die Eltern.</p></details>
   <details><summary>Gibt es einen Gruppenchat?</summary><p>Nein, bewusst nicht. Nachrichten, Umfragen und Termine haben feste Orte und gehen im Alltag nicht unter.</p></details>
-  <details><summary>Was kostet Clubroof?</summary><p>Die Preise stehen noch nicht fest. Pilotvereine werden begleitet eingerichtet und gestalten die App mit.</p></details>
+  <details><summary>Was kostet Clubroof?</summary><p>Der Preis richtet sich nach der Zahl der Mitglieder: bis 300, bis 500 oder bis 1.000. Alle Funktionen sind in jedem Tarif enthalten, Spieler, Eltern und Trainer kosten nichts extra.</p></details><details><summary>Kann ich Clubroof erst testen?</summary><p>Ja. Ihr legt den Verein an, richtet ihn mit dem Assistenten ein und entscheidet danach über den Tarif. Die Daten lassen sich jederzeit exportieren.</p></details>
   <details><summary>Ist die Anbindung an DFBnet und FUSSBALL.DE vorhanden?</summary><p>Spielpläne lassen sich aus Dateien importieren. Eine direkte Anbindung ist noch nicht verfügbar.</p></details>
  </div>
 </div></section>
 
 <section class="cta-band" id="pilot"><div class="w">
- <div><h2>Pilotverein werden.</h2><p>Wir richten Clubroof gemeinsam mit euch ein und lernen von jedem Trainingsabend. Schreibt uns, wie euer Verein aufgebaut ist.</p></div>
- <form class="form" id="pf" novalidate><label for="pv">Vereinsname<input id="pv" name="verein" autocomplete="organization" placeholder="SV Beispielstadt 1920"></label>
-  <label for="pm">E-Mail<input id="pm" name="mail" type="email" autocomplete="email" placeholder="vorstand@beispiel.example"></label>
-  <label for="pg">Mitglieder<select id="pg" name="gr"><option>bis 150</option><option>150 bis 500</option><option>über 500</option></select></label>
-  <button class="btn" type="submit">Anfrage vormerken</button><small id="pmsg" role="status"></small></form>
+ <div><h2>Ein Dach für euren Verein.</h2><p>Verein anlegen, Mannschaften importieren, Mitglieder einladen. In einem Nachmittag ist Clubroof startklar.</p></div>
+ <div class="ctaact"><a class="btn" href="#tarife">Verein anlegen</a><a class="btn" href="#tarife" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.6)">Tarife vergleichen</a></div>
 </div></section>
 </main>
 
@@ -347,8 +414,8 @@ document.querySelectorAll('[data-group="hero"] button').forEach(function(b){b.cl
 document.getElementById('ev1t').addEventListener('click',function(){const l=document.getElementById('ev1l');l.hidden=!l.hidden;this.textContent=l.hidden?'Teilnehmer ⌄':'Teilnehmer ⌃';});
 const ROLES=[['Spieler','Eigene Termine, Antwort, Statistik.',['Zu- und Absage mit einem Tipp','Eigene Trainingsbeteiligung und Spielstatistik','Aufstellung sehen, sobald sie veröffentlicht ist','Abwesenheit melden: Urlaub, Verletzung, Prüfung']],['Eltern','Ein Konto, alle Kinder.',['Antworten pro Kind in einer Liste','Abwesenheit für jedes Kind melden','Fahrgemeinschaften und Helferdienste','Kasse der Mannschaft ihres Kindes einsehen']],['Trainer','Die Mannschaft im Griff.',['Kader, Aufstellung und Trainingsbeteiligung','Zusagen korrigieren, Anwesenheit erfassen','Übungen und Trainingsplanung','Mannschaftskasse mit Strafen und Getränken']],['Vorstand','Der Verein im Überblick.',['Mitglieder, Mannschaften und Veranstaltungen','Nachrichten und Umfragen mit Freigabe','Helfersuche und Dokumente','Auswertungen und Änderungsprotokoll']],['Kasse','Zahlen sauber geführt.',['Vereinskasse mit Konten und Kassenbuch','Beiträge, Spenden, Haushaltsplan','Rücklagen, Inventar und Jahresabschluss','Kassenprüfer lesen und prüfen mit eigener Rolle']]];
 (function(){const t=document.getElementById('rt'),c=document.getElementById('rc'),q=document.getElementById('rq');function show(i){t.querySelectorAll('button').forEach(function(b,k){b.setAttribute('aria-selected',k===i)});const r=ROLES[i];c.innerHTML='<h3>'+r[0]+'</h3><ul>'+r[2].map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul>';q.innerHTML='<b>'+r[1]+'</b><span>Der Verein kann Rollen anpassen und eigene Rollen mit eigenen Rechten anlegen.</span>';}ROLES.forEach(function(r,i){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.textContent=r[0];b.addEventListener('click',function(){show(i)});t.appendChild(b);});show(0);})();
-// Formular (Entwurf, es wird nichts gesendet)
-document.getElementById('pf').addEventListener('submit',function(e){e.preventDefault();const v=document.getElementById('pv').value.trim(),m=document.getElementById('pm').value.trim(),o=document.getElementById('pmsg');if(!v||!/.+@.+\..+/.test(m)){o.textContent='Bitte Vereinsname und eine gültige E-Mail-Adresse eingeben.';return;}o.textContent='Entwurf: Die Anfrage wird hier nicht gesendet.';});
+// Tarife: monatlich oder jährlich
+(function(){const bm=document.getElementById('bm'),by=document.getElementById('by');function set(y){bm.setAttribute('aria-pressed',!y);by.setAttribute('aria-pressed',y);document.querySelectorAll('.plan .pr b').forEach(function(b){b.textContent=y?b.dataset.y:b.dataset.m;});document.querySelectorAll('[data-sub]').forEach(function(s){const p=s.parentNode.querySelector('b');s.textContent=y?'Jährlich abgerechnet: '+(p.dataset.y*12)+' € im Jahr':'Monatlich kündbar';});}bm.addEventListener('click',function(){set(false)});by.addEventListener('click',function(){set(true)});set(true);})();
 // Theme-Umschalter
 document.getElementById('tb').addEventListener('click',function(){const r=document.documentElement,cur=r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');r.setAttribute('data-theme',cur==='dark'?'light':'dark');});
 </script>
