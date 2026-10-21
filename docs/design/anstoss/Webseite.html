@@ -190,6 +190,25 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
 .plan .btn{margin-top:auto}
 .allin{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px 22px;color:var(--fg2);font-size:15px}.allin span:before{content:"✓ ";color:var(--ok);font-weight:800}
 @media (max-width:980px){.usps,.plans{grid-template-columns:1fr}}
+/* Ansicht je Rolle, Anwendungsfälle */
+html,body{overflow-x:clip}
+.views{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:48px;align-items:start}
+.stage2{display:flex;justify-content:center}
+.tcount{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:16px}.tcount b{font:800 54px/1 var(--display);background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}.tcount span{color:var(--fg2);font-size:16px}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tool{border-radius:16px;padding:14px 14px 12px;border:1.5px solid var(--line);background:var(--card);display:flex;flex-direction:column;gap:6px;min-height:78px;transition:opacity .25s,transform .25s,background .25s}
+.tool b{font-size:14px;line-height:1.25}.tool small{font:700 11px/1 var(--body);letter-spacing:.1em;text-transform:uppercase}
+.tool.s2{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--card))}.tool.s2 small{color:var(--accent)}
+.tool.s1 small{color:var(--fg2)}
+.tool.s0{border-style:dashed;background:transparent;opacity:.42}.tool.s0 b{text-decoration:line-through;text-decoration-thickness:1px}.tool.s0 small{color:var(--fg3)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;font-size:13px;color:var(--fg2)}.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:7px;vertical-align:-1px;border:1.5px solid var(--accent)}.legend .k2{background:var(--accent)}.legend .k1{border-color:var(--fg2);background:var(--card)}.legend .k0{border:1.5px dashed var(--fg3)}
+.cases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.case{min-width:0}
+.case{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px 22px;display:flex;flex-direction:column;gap:12px}
+.case .who{align-self:flex-start;font:700 12px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);border:1.5px solid var(--accent);border-radius:999px;padding:6px 11px}
+.case h3{font-size:28px;font-weight:800;text-transform:uppercase}
+.case ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:14.5px;color:var(--fg2)}.case li b{color:var(--fg)}
+@media (max-width:980px){.views,.cases{grid-template-columns:minmax(0,1fr)}.tools{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:340px){.tools{grid-template-columns:1fr}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="crg" gradientUnits="userSpaceOnUse" x1="200" y1="1000" x2="1057" y2="627"><stop offset="0" stop-color="#002AFA"/><stop offset="1" stop-color="#00C3FF"/></linearGradient></defs>
@@ -198,7 +217,7 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
 
 <header class="nav"><div class="w">
   <a class="brand" href="#top" aria-label="Clubroof Startseite"><svg class="logo" width="30" height="33" viewBox="0 0 950 1035"><use href="#lg"/></svg>Clubroof</a>
-  <nav aria-label="Hauptnavigation"><a href="#raeume">Die App</a><a href="#zusagen">Funktionen</a><a href="#rollen">Für jede Rolle</a><a href="#tarife">Tarife</a><a href="#start">Einrichten</a><a href="#faq">Fragen</a></nav>
+  <nav aria-label="Hauptnavigation"><a href="#warum">Warum Clubroof</a><a href="#zusagen">Funktionen</a><a href="#rollen">Für jede Rolle</a><a href="#tarife">Tarife</a><a href="#start">Einrichten</a><a href="#faq">Fragen</a></nav>
   <a class="btn p sm" href="#tarife">Tarife ansehen</a>
 </div></header>
 
@@ -255,7 +274,21 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
  <p class="cmpnote">Vergleich nach Art der Lösung, nicht nach einzelnen Anbietern. Funktionsumfang kann je Produkt abweichen.</p>
 </div></section>
 
-<section class="band" id="zusagen"><div class="w">
+<section class="band" id="rollen"><div class="w">
+ <div class="head"><span class="eyebrow">Eine App, jede Ansicht</span><h2>Alle Werkzeuge des Vereins. Jeder sieht nur seine.</h2><p>Trainer, Spieler, Eltern, Kassenwart und Vorstand arbeiten in derselben App mit derselben Navigation. Welche Werkzeuge erscheinen, bestimmt die Rolle. Wähle eine Rolle und sieh, was sich ändert.</p></div>
+ <div class="tabs" role="tablist" id="rt" aria-label="Rolle wählen"></div>
+ <div class="views">
+  <div class="stage2"><div class="phone" aria-label="Beispiel: Startseite je nach Rolle"><div class="scr" id="vs"></div></div></div>
+  <div>
+   <div class="tcount"><b id="tc"></b><span id="td"></span></div>
+   <div class="tools" id="tl"></div>
+   <div class="legend"><span><i class="k2"></i>Bearbeiten</span><span><i class="k1"></i>Ansehen</span><span><i class="k0"></i>Ausgeblendet</span></div>
+  </div>
+ </div>
+ <p class="cmpnote">Rollen sind Rechtepakete mit Geltungsbereich: Verein, Abteilung oder Mannschaft. Wer mehrere Aufgaben hat, sieht die Summe. Der Verein kann Rollen anpassen, die Prüfung passiert immer auf dem Server.</p>
+</div></section>
+
+<section class="band alt" id="zusagen"><div class="w">
  <div class="split">
   <div class="copy"><span class="eyebrow">Termine und Zusagen</span><h3>Zusagen in einem Tipp. Teilnehmer in einem Blick.</h3>
    <p>Drei Knöpfe an jedem Termin: Zusage, Vielleicht, Absage. Die Teilnehmerliste klappt auf, ohne die Seite zu verlassen. Für Kinder antworten Eltern pro Kind.</p>
@@ -275,21 +308,16 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
  <p class="note" style="margin-top:14px;text-align:center;max-width:none">Zum Ausprobieren: Antwort antippen, dann „Teilnehmer“ aufklappen. Beispieldaten sind erfunden.</p>
 </div></section>
 
-<section class="band alt" id="raeume"><div class="w">
-  <div class="head"><span class="eyebrow">Alles unter einem Dach</span><h2>Fünf Bereiche. Jede Aufgabe hat ihren Platz.</h2><p>Die Navigation bleibt für alle gleich, die Inhalte richten sich nach Rolle, Mannschaft und Vereinsmodulen. Wer Trainer, Elternteil und Spieler zugleich ist, sieht alles an einem Ort.</p></div>
-  <div class="rooms">
-    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4z"/></svg><h3>Start</h3><p>Was jetzt Aufmerksamkeit braucht: offene Antworten, das nächste Spiel, Neuigkeiten.</p></div>
-    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><h3>Termine</h3><p>Training, Spiele, Veranstaltungen. Zu- und Absage mit einem Tipp, Kalender-Abo fürs Handy.</p></div>
-    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14c3 0 5 2 5 5"/></svg><h3>Team</h3><p>Kader, Aufstellung, Statistik, Übungen, Mannschaftskasse und Aufgaben je Mannschaft.</p></div>
-    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg><h3>Verein</h3><p>Nachrichten, Veranstaltungen, Helfer, Dokumente, Platzbelegung, Sponsoren.</p></div>
-    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><h3>Ich</h3><p>Profil, Kinder, Abwesenheiten, Benachrichtigungen, Darstellung und Hilfe.</p></div>
-  </div>
-</div></section>
-
-<section class="band" id="rollen"><div class="w">
- <div class="head"><span class="eyebrow">Für jede Rolle</span><h2>Jeder sieht, was er braucht. Nicht mehr.</h2><p>Rechte hängen an Rollen, nicht an Personen. Der Verein vergibt sie, die App prüft sie auf dem Server.</p></div>
- <div class="tabs" role="tablist" id="rt"></div>
- <div class="rolebox"><div class="rcard" id="rc"></div><div class="rcard q" id="rq"></div></div>
+<section class="band" id="faelle"><div class="w">
+ <div class="head"><span class="eyebrow">Aus dem Vereinsalltag</span><h2>Sechs Situationen, die jeder Verein kennt.</h2><p>Wie Clubroof sie löst, ohne dass jemand mehr sieht als nötig.</p></div>
+ <div class="cases">
+  <article class="case"><span class="who">Trainer</span><h3>Spieltag der C-Jugend</h3><ol><li><b>Davor:</b> Eltern antworten pro Kind mit einem Tipp.</li><li><b>Dann:</b> Der Trainer sieht Quote und Trainingsbeteiligung und stellt auf.</li><li><b>Danach:</b> Mit „Veröffentlichen“ sieht es die ganze Mannschaft.</li></ol></article>
+  <article class="case"><span class="who">Eltern</span><h3>Zwei Kinder, zwei Mannschaften</h3><ol><li><b>Davor:</b> Ein Konto statt zwei Gruppen und drei Nachrichten.</li><li><b>Dann:</b> Alle Termine beider Kinder stehen in einer Liste.</li><li><b>Danach:</b> Fahrgemeinschaft und Helferdienst direkt am Termin.</li></ol></article>
+  <article class="case"><span class="who">Admin</span><h3>Neuer Trainer übernimmt</h3><ol><li><b>Davor:</b> Wer darf was, ist bisher Gefühlssache.</li><li><b>Dann:</b> Der Admin vergibt die Trainerrolle für genau diese Mannschaft.</li><li><b>Danach:</b> Der Kader ist sofort da, die alte Rolle endet, das Protokoll hält es fest.</li></ol></article>
+  <article class="case"><span class="who">Kasse</span><h3>Quartalsabschluss</h3><ol><li><b>Davor:</b> Beiträge, Strafen und Spenden stehen in drei Tabellen.</li><li><b>Dann:</b> Offene Beiträge filtern, Zahlungen verbuchen, Mahnungen vorbereiten.</li><li><b>Danach:</b> Die Auswertung steht nach Bereichen getrennt bereit.</li></ol></article>
+  <article class="case"><span class="who">Vorstand</span><h3>Mitgliederversammlung</h3><ol><li><b>Davor:</b> Zahlen aus mehreren Quellen zusammensuchen.</li><li><b>Dann:</b> Haushaltsplan, Kassenstand und Mitgliederzahlen an einem Ort.</li><li><b>Danach:</b> Kassenprüfung und Protokoll liegen im Dokumentenbereich.</li></ol></article>
+  <article class="case"><span class="who">Spieler</span><h3>Verletzung und Urlaub</h3><ol><li><b>Davor:</b> Absagen per Nachricht an irgendwen.</li><li><b>Dann:</b> Abwesenheit einmal melden, mit Zeitraum und Grund.</li><li><b>Danach:</b> Das Trainerteam sieht den Grund, die Mannschaft nur, was der Trainer freigibt.</li></ol></article>
+ </div>
 </div></section>
 
 <section class="band alt"><div class="w">
@@ -412,8 +440,33 @@ const LAB={y:'✓ Du: Zugesagt',m:'? Du: Unsicher',n:'✕ Du: Abgesagt'};
 document.querySelectorAll('[data-group]').forEach(function(g){g.addEventListener('click',function(e){const b=e.target.closest('button');if(!b||b.disabled)return;g.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);if(x===b)x.classList.add(b.dataset.a);});if(g.dataset.group==='ev1'){const s=document.getElementById('ev1s');s.textContent=LAB[b.dataset.a];s.style.color=b.dataset.a==='y'?'var(--acc)':b.dataset.a==='m'?'var(--warn)':'#FF8A8A';}});});
 document.querySelectorAll('[data-group="hero"] button').forEach(function(b){b.classList.add(b.dataset.a)});
 document.getElementById('ev1t').addEventListener('click',function(){const l=document.getElementById('ev1l');l.hidden=!l.hidden;this.textContent=l.hidden?'Teilnehmer ⌄':'Teilnehmer ⌃';});
-const ROLES=[['Spieler','Eigene Termine, Antwort, Statistik.',['Zu- und Absage mit einem Tipp','Eigene Trainingsbeteiligung und Spielstatistik','Aufstellung sehen, sobald sie veröffentlicht ist','Abwesenheit melden: Urlaub, Verletzung, Prüfung']],['Eltern','Ein Konto, alle Kinder.',['Antworten pro Kind in einer Liste','Abwesenheit für jedes Kind melden','Fahrgemeinschaften und Helferdienste','Kasse der Mannschaft ihres Kindes einsehen']],['Trainer','Die Mannschaft im Griff.',['Kader, Aufstellung und Trainingsbeteiligung','Zusagen korrigieren, Anwesenheit erfassen','Übungen und Trainingsplanung','Mannschaftskasse mit Strafen und Getränken']],['Vorstand','Der Verein im Überblick.',['Mitglieder, Mannschaften und Veranstaltungen','Nachrichten und Umfragen mit Freigabe','Helfersuche und Dokumente','Auswertungen und Änderungsprotokoll']],['Kasse','Zahlen sauber geführt.',['Vereinskasse mit Konten und Kassenbuch','Beiträge, Spenden, Haushaltsplan','Rücklagen, Inventar und Jahresabschluss','Kassenprüfer lesen und prüfen mit eigener Rolle']]];
-(function(){const t=document.getElementById('rt'),c=document.getElementById('rc'),q=document.getElementById('rq');function show(i){t.querySelectorAll('button').forEach(function(b,k){b.setAttribute('aria-selected',k===i)});const r=ROLES[i];c.innerHTML='<h3>'+r[0]+'</h3><ul>'+r[2].map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul>';q.innerHTML='<b>'+r[1]+'</b><span>Der Verein kann Rollen anpassen und eigene Rollen mit eigenen Rechten anlegen.</span>';}ROLES.forEach(function(r,i){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.textContent=r[0];b.addEventListener('click',function(){show(i)});t.appendChild(b);});show(0);})();
+// Ansicht je Rolle
+(function(){
+const R=['Spieler','Eltern','Trainer','Vorstand','Kasse','Admin'];
+const T=[['Termine und Zusagen',[2,2,2,2,1,2]],['Mitteilungen',[1,1,2,2,1,2]],['Kader und Aufstellung',[1,1,2,1,0,1]],['Anwesenheit und Statistik',[1,1,2,1,0,1]],['Abwesenheit und Kinder',[2,2,1,0,0,0]],['Helfer und Fahrten',[1,2,2,2,0,1]],['Mannschaftskasse',[0,1,2,1,2,1]],['Vereinskasse und Haushalt',[0,0,0,1,2,1]],['Mitglieder und Beiträge',[0,0,0,2,2,2]],['Platz und Material',[0,0,1,2,0,1]],['Dokumente und Protokolle',[1,1,1,2,1,2]],['Sponsoren',[0,0,0,2,0,1]],['Rollen und Rechte',[0,0,0,0,0,2]]];
+const S=[
+['Nächstes Spiel · C-Jugend','4','TAGE','SV Grün-Weiß C1 vs. TSV Blauen','Sa., 24.10. · 13:00',['Zusage tippen','Eigene Beteiligung: hoch'],'Antwort offen'],
+['Familie Wagner','2','KINDER','Leon (C1) und Mia (D2)','Zwei Termine diese Woche',['Antwort für Leon offen','Fahrgemeinschaft Sa. anbieten'],'Antworten pro Kind'],
+['Mannschaft C1','12/18','ZUSAGEN','Training Do., 18:00','Anwesenheit vom Mo. offen',['Aufstellung als Entwurf','3 Antworten fehlen'],'Aufstellung bearbeiten'],
+['Verein im Überblick','412','MITGLIEDER','3 offene Anträge','Mitgliederversammlung in 21 Tagen',['Haushaltsplan prüfen','2 Helferdienste unbesetzt'],'Anträge ansehen'],
+['Vereinskasse','18.582 €','BESTAND','3 überfällige Beiträge','Quartal Q4 läuft',['Zahlungen verbuchen','Spenden zuordnen'],'Beiträge öffnen'],
+['Verwaltung','2','EINLADUNGEN','Rollen und Rechte','Neuer Trainer wartet auf Freigabe',['Rolle für B1 vergeben','Protokoll ansehen'],'Rolle zuweisen']];
+const t=document.getElementById('rt'),vs=document.getElementById('vs'),tl=document.getElementById('tl'),tc=document.getElementById('tc'),td=document.getElementById('td');
+const L=['Ausgeblendet','Ansehen','Bearbeiten'];
+tl.innerHTML=T.map(function(x){return '<div class="tool"><b>'+x[0]+'</b><small></small></div>'}).join('');
+function show(i){
+ t.querySelectorAll('button').forEach(function(b,k){b.setAttribute('aria-selected',k===i)});
+ let n=0;tl.querySelectorAll('.tool').forEach(function(el,k){const v=T[k][1][i];if(v)n++;el.className='tool s'+v;el.querySelector('small').textContent=L[v];});
+ tc.textContent=n+' von '+T.length;td.textContent='Werkzeugen sichtbar für '+R[i]+(i===5?' (Admin vergibt Rollen, sieht aber keine Fachdaten mehr als nötig)':'');
+ const s=S[i];
+ vs.innerHTML='<div class="st"><span>9:41</span><span>5G</span></div><div class="hd"><div class="crest">SGW</div><div><small>'+R[i]+'</small><b>'+s[0]+'</b></div></div>'
+  +'<div class="hr"><span class="tag">'+s[6]+'</span><div class="big">'+s[1]+'<small>'+s[2]+'</small></div><div><div class="ttl">'+s[3]+'</div><div class="ln">'+s[4]+'</div></div></div>'
+  +'<div class="sec">Als Nächstes</div>'+s[5].map(function(x){return '<div class="card row"><div class="dt">▤</div><div class="tx"><b>'+x+'</b></div></div>'}).join('')
+  +'<div class="tabbar"><span class="on">Start</span><span>Termine</span><span>Team</span><span>Verein</span><span>Ich</span></div>';
+}
+R.forEach(function(r,i){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.textContent=r;b.addEventListener('click',function(){show(i)});t.appendChild(b);});
+show(2);
+})();
 // Tarife: monatlich oder jährlich
 (function(){const bm=document.getElementById('bm'),by=document.getElementById('by');function set(y){bm.setAttribute('aria-pressed',!y);by.setAttribute('aria-pressed',y);document.querySelectorAll('.plan .pr b').forEach(function(b){b.textContent=y?b.dataset.y:b.dataset.m;});document.querySelectorAll('[data-sub]').forEach(function(s){const p=s.parentNode.querySelector('b');s.textContent=y?'Jährlich abgerechnet: '+(p.dataset.y*12)+' € im Jahr':'Monatlich kündbar';});}bm.addEventListener('click',function(){set(false)});by.addEventListener('click',function(){set(true)});set(true);})();
 // Theme-Umschalter
