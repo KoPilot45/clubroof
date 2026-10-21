@@ -2,6 +2,7 @@ import type { MemberListItem, TransferKind, TransferOverview } from '@clubroof/c
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { useLeaveGuard } from '@/components/edited';
 import {
   Button,
   Card,
@@ -68,6 +69,18 @@ export default function NewTransferScreen() {
   const needsTo = kind !== 'leave';
   const teamOptions = teams.map((t) => ({ value: t.id, label: teamTitle(t) }));
 
+  // Begonnene Eingaben gehen beim Verlassen nicht still verloren
+  const dirty =
+    !!person ||
+    kind !== 'internal' ||
+    !!fromTeam ||
+    !!toTeam ||
+    external.trim() !== '' ||
+    note.trim() !== '';
+  const { guard, allowLeave } = useLeaveGuard(dirty, () => {
+    if (valid) save.mutate();
+  });
+
   const save = useMutation({
     mutationFn: () =>
       api<TransferOverview>('/admin/transfers', {
@@ -85,6 +98,7 @@ export default function NewTransferScreen() {
     onSuccess: (data) => {
       queryClient.setQueryData(['admin', 'transfers'], data);
       void queryClient.invalidateQueries();
+      allowLeave();
       router.back();
     },
     onError: (e) =>
@@ -114,6 +128,7 @@ export default function NewTransferScreen() {
         </>
       }
     >
+      {guard}
       <Card style={{ gap: 10 }}>
         {person ? (
           <>

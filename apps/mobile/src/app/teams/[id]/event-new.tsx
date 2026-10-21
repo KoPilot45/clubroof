@@ -11,6 +11,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
+import { useLeaveGuard } from '@/components/edited';
 import { View } from 'react-native';
 import {
   Button,
@@ -127,6 +128,14 @@ export default function NewEventScreen() {
     ? Math.floor((fromIsoDate(until).getTime() - fromIsoDate(date).getTime()) / 86_400_000 / 7) + 1
     : 0;
 
+  // Begonnene Texteingaben gehen beim Verlassen nicht still verloren
+  const dirty = [opponent, title, description, meetingPoint, locationText, locationUrl].some(
+    (v) => v.trim() !== '',
+  );
+  const { guard, allowLeave } = useLeaveGuard(dirty, () => {
+    if (!validation) save.mutate(false);
+  });
+
   const save = useMutation({
     mutationFn: (allowConflict: boolean) =>
       api<EventDetail>(`/teams/${id}/events`, {
@@ -157,6 +166,7 @@ export default function NewEventScreen() {
     onSuccess: (event) => {
       for (const key of ['events', 'team', 'home'])
         void queryClient.invalidateQueries({ queryKey: [key] });
+      allowLeave();
       router.replace(`/events/${event.id}`);
     },
     onError: (e) => {
@@ -225,6 +235,7 @@ export default function NewEventScreen() {
         </>
       }
     >
+      {guard}
       <Segment
         options={[
           { value: 'training' as Type, label: 'Training' },

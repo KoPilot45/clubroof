@@ -1014,6 +1014,7 @@ export function HomePoster({
           <Pressable
             accessibilityRole="link"
             accessibilityLabel={t('Spiel ansehen')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             onPress={() => router.push(`/events/${slides[current]!.id}`)}
             style={{
               position: 'absolute',

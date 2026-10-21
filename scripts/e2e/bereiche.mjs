@@ -14,6 +14,17 @@ const ok = (cond, msg) => {
 const vis = (page, re, o = {}) => page.getByText(re, o).filter({ visible: true });
 const tab = (page, name) => page.getByRole('tab', { name, exact: true });
 const rgb = (c) => c.match(/\d+/g).slice(0, 3).map(Number);
+// Das Kopfband ist ein SVG-Farbverlauf (GradientFill): erste Verlaufsfarbe des nächsten Elternelements lesen
+const bandColor = (btn) =>
+  btn.evaluate((e) => {
+    for (let up = e.parentElement, n = 0; up && n < 6; up = up.parentElement, n++) {
+      const stop = up.querySelector('stop');
+      const hex = stop?.getAttribute('stop-color') ?? getComputedStyle(stop ?? up).stopColor;
+      if (/^#[0-9a-f]{6}$/i.test(hex ?? ''))
+        return `rgb(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')})`;
+    }
+    return 'rgb(0, 0, 0)';
+  });
 
 // ── Zugänge in „Verein › Meine Vereinsaufgaben“ je nach Rechten ────────────────────────────────────────
 const access = async (who) => {
@@ -54,9 +65,7 @@ ok(
   (await vis(page, 'Mitglied anlegen', { exact: true }).count()) === 0,
   'Übersicht ohne Funktionskacheln',
 );
-const band = await button(page, /^zur app$/i).evaluate(
-  (e) => getComputedStyle(e.parentElement).backgroundColor,
-);
+const band = await bandColor(button(page, /^zur app$/i));
 const [vr, vg, vb] = rgb(band);
 ok(vr > vg && vb > vg, `Kopfband violett (${vr},${vg},${vb})`);
 await tab(page, 'Mitglieder').click();
@@ -97,11 +106,9 @@ const c = kasse.s.page;
 await c.getByRole('button', { name: 'Vereinskasse' }).click();
 await tab(c, 'Beiträge').waitFor({ timeout: 20_000 });
 await c.waitForTimeout(1500);
-for (const name of ['Übersicht', 'Buchung', 'Beiträge', 'Planung', 'Prüfung'])
+for (const name of ['Übersicht', 'Buchung', 'Beiträge', 'Planung', 'Auswertung'])
   ok((await tab(c, name).count()) === 1, `Kasse: Reiter „${name}“`);
-const cband = await button(c, /^zur app$/i).evaluate(
-  (e) => getComputedStyle(e.parentElement).backgroundColor,
-);
+const cband = await bandColor(button(c, /^zur app$/i));
 const [cr, cg, cb] = rgb(cband);
 ok(cb > cr && cb > cg, `Kopfband blau (${cr},${cg},${cb})`);
 ok((await vis(c, 'Gesamtbestand aller Konten').count()) > 0, 'Kasse: Übersicht mit Gesamtbestand');

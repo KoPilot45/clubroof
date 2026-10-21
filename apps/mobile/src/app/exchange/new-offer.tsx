@@ -2,6 +2,7 @@ import type { ExchangeOverview } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { useLeaveGuard } from '@/components/edited';
 import { Button, Card, ChoiceChips, Chip, Loading, Screen, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatShortDate, todayIso } from '@/lib/format';
@@ -34,6 +35,11 @@ export default function NewOfferScreen() {
   const team = teamId ?? teams[0]?.id ?? null;
   const n = Number(count);
 
+  const dirty = day !== null || note.trim() !== '' || count !== '1';
+  const { guard, allowLeave } = useLeaveGuard(dirty, () => {
+    if (valid) save.mutate();
+  });
+
   const save = useMutation({
     mutationFn: () =>
       api<ExchangeOverview>('/exchange/offers', {
@@ -42,6 +48,7 @@ export default function NewOfferScreen() {
       }),
     onSuccess: (data) => {
       queryClient.setQueryData(['exchange'], data);
+      allowLeave();
       router.back();
     },
     onError: (e) =>
@@ -50,8 +57,8 @@ export default function NewOfferScreen() {
       ),
   });
 
-  if (overview.isPending) return <Loading />;
   const valid = !!team && !!day && Number.isInteger(n) && n >= 1 && n <= 10;
+  if (overview.isPending) return <Loading />;
 
   return (
     <Screen
@@ -69,6 +76,7 @@ export default function NewOfferScreen() {
         </>
       }
     >
+      {guard}
       <Card style={{ gap: 12 }}>
         {teams.length > 1 ? (
           <ChoiceChips

@@ -28,7 +28,7 @@ const files = {};
   for (const mode of ['light', 'dark']) {
     await setMode(login, mode);
     await goto('/');
-    await text(page, 'Deine Woche').waitFor({ timeout: 20_000 });
+    await text(page, 'Diese Woche').waitFor({ timeout: 20_000 });
     ok(
       await text(page, /Nächste Spiele · 1 von/).isVisible(),
       `${mode}: Spielekarten mit „1 von n“`,
@@ -43,7 +43,7 @@ const files = {};
   }
   await setMode(login, 'light');
   await goto('/');
-  await text(page, 'Deine Woche').waitFor({ timeout: 20_000 });
+  await text(page, 'Diese Woche').waitFor({ timeout: 20_000 });
   // Absagen auf der Spielkarte öffnet das Blatt mit Grund
   await button(page, 'Absagen').click();
   ok(
@@ -137,7 +137,7 @@ const files = {};
   );
   if (open) {
     await goto('/');
-    await text(page, 'Deine Woche').waitFor({ timeout: 20_000 });
+    await text(page, 'Diese Woche').waitFor({ timeout: 20_000 });
     const cross = page.getByRole('button', { name: 'Absagen' }).filter({ visible: true }).last();
     await cross.click();
     await text(page, 'Warum kannst du nicht?').waitFor({ timeout: 5_000 });

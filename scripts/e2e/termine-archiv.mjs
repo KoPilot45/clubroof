@@ -85,7 +85,8 @@ await page
   .getByRole('button')
   .filter({ hasText: /Training/ })
   .filter({ visible: true })
-  .first()
+  // das jüngste Training ist in den Demodaten bewusst noch nicht erfasst – das zweite hat Anwesenheit
+  .nth(1)
   .click();
 await text(page, 'Vergangener Termin', { exact: true }).waitFor({ timeout: 20_000 });
 ok(true, 'Detailseite: Hinweis „Vergangener Termin“');
