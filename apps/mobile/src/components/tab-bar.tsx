@@ -46,7 +46,7 @@ function useCapsule(active: boolean) {
       useNativeDriver: Platform.OS !== 'web',
     }).start();
   }, [active, reduce, value]);
-  return value.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] });
+  return value.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] });
 }
 
 function NavDot({ item, children }: { item: NavItem; children: React.ReactNode }) {

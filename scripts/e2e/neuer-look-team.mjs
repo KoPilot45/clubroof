@@ -25,7 +25,7 @@ const files = {};
   const { page, login, goto } = await b.session('eltern');
   await setMode(login, 'light');
   await goto('/');
-  await text(page, 'Deine Woche').waitFor({ timeout: 20_000 });
+  await text(page, 'Diese Woche').waitFor({ timeout: 20_000 });
   for (const name of ['Zusagen', 'Unsicher', 'Absagen']) {
     const box = await button(page, name).boundingBox();
     ok(

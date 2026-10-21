@@ -175,7 +175,7 @@ export default function EventsTab() {
           accessibilityRole="link"
           accessibilityLabel={t('Kalender-Abo')}
           onPress={() => router.push('/calendar')}
-          style={{ alignSelf: 'flex-end', minHeight: 36, justifyContent: 'center' }}
+          style={{ alignSelf: 'flex-end', minHeight: 44, justifyContent: 'center' }}
         >
           <T variant="caption" color={colors.primaryText} style={{ fontWeight: '800' }}>
             {`${t('Kalender-Abo')} ›`}

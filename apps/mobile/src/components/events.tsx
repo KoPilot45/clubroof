@@ -354,7 +354,14 @@ export function EventRow({
       }}
     >
       {cancelled ? (
-        head(<Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />, null, null)
+        head(
+          // der Chip steht sonst oben (eigenes alignSelf) statt auf der Mittellinie der Karte
+          <View style={{ alignSelf: 'center' }}>
+            <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
+          </View>,
+          null,
+          null,
+        )
       ) : mine && !multi ? (
         <AnswerUnit event={event} r={mine} past={past}>
           {(u) => head(u.knobs ?? result, u.line, u.sheet)}

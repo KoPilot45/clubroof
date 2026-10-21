@@ -20,7 +20,7 @@ await api(`/teams/${b1.id}/profile`, admin.token, {
   body: JSON.stringify({ declineReasonRequired: true }),
 });
 try {
-  const { page, goto, login } = await b.session('spieler');
+  const { page, goto, login } = await b.session('spieler', { width: 390, height: 1400 });
   // Ein kommender Termin der Mannschaft steht auf „offen“, damit ✓/✕ in der Liste erscheinen
   const from = new Date();
   const to = new Date(from.getTime() + 20 * 86_400_000);
@@ -37,8 +37,16 @@ try {
     body: JSON.stringify({ status: 'pending', reason: null }),
   });
   ok(reset.myResponses?.[0]?.status === 'pending', 'Testtermin steht auf offen');
-  await goto('/termine');
-  const decline = page.getByRole('button', { name: 'Absagen' }).filter({ visible: true }).first();
+  // die Karten mit Antwortknöpfen stehen auf der Startseite („Diese Woche“); /termine zeigt zuerst nur das Plakat
+  await goto('/');
+  // der Offline-Zwischenspeicher zeigt sonst noch den alten Stand der Antwort
+  await page.reload();
+  await page.waitForTimeout(3500);
+  // seit der neuen Terminkarte sind die Antworten Radioknöpfe „Absage“
+  const decline = page
+    .locator('[aria-label="Absage"][role="radio"]:not([disabled])')
+    .filter({ visible: true })
+    .first();
   await decline.waitFor({ timeout: 20_000 });
   await decline.click();
   await text(page, 'Absage senden', { exact: true }).click();
@@ -62,7 +70,17 @@ for (const width of [360, 390]) {
     await page.getByTestId('poster-dots').waitFor({ timeout: 20_000 });
     await page.evaluate((z) => (document.body.style.zoom = String(z)), zoom);
     await page.waitForTimeout(600);
-    const dots = await page.getByTestId('poster-dots').boundingBox();
+    // die Punktzeile selbst ist breit („Spiel ansehen ›“ steht bewusst rechts in derselben Zeile): geprüft werden die Punkte
+    const dots = await page.evaluate(() => {
+      const rects = [...document.querySelectorAll('[data-testid="poster-dots"] > *')]
+        .map((e) => e.getBoundingClientRect())
+        .filter((r) => r.width > 0);
+      const left = Math.min(...rects.map((r) => r.left));
+      const right = Math.max(...rects.map((r) => r.right));
+      const top = Math.min(...rects.map((r) => r.top));
+      const bottom = Math.max(...rects.map((r) => r.bottom));
+      return { x: left, y: top, width: right - left, height: bottom - top };
+    });
     // alles Sichtbare im Plakat darf die Punktzeile nicht schneiden
     const clash = await page.evaluate((d) => {
       const hits = [];

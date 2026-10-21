@@ -8,7 +8,13 @@ import { api, launch } from '../lib/e2e.mjs';
 
 const MIN = 44;
 // Bewusst kleine Elemente mit größerem Tippbereich (hitSlop) oder Teil einer größeren Zeile
-const AUSNAHMEN = [/›$/];
+// Mit hitSlop (≥ 8 pt rundum) auf mindestens 44 pt vergrößert: Teilnehmer-Pfeil, „Spiel ansehen“, „Kader anzeigen“
+const AUSNAHMEN = [
+  /›$/,
+  /^Teilnehmer (an|aus)(zeigen|blenden)$/,
+  /^Spiel ansehen$/,
+  /^Kader anzeigen$/,
+];
 
 const b = await launch();
 const offenders = new Map();
@@ -44,7 +50,8 @@ async function sweep(who, pages) {
     for (const f of found) {
       if (!f.name || AUSNAHMEN.some((re) => re.test(f.name))) continue;
       // Auswahl-Chips: 34 pt hoch, Tippbereich 6 pt darüber und darunter (hitSlop) = 46 pt
-      if (f.role === 'radio' && f.h >= 34 && f.w >= 40) continue;
+      // Antwortknöpfe: 38 pt mit 3 pt hitSlop = 44 pt
+      if (f.role === 'radio' && f.h >= 34 && f.w >= 36) continue;
       const key = `${f.name} (${f.w}×${f.h})`;
       offenders.set(key, [...(offenders.get(key) ?? []), `${who}:${name}`]);
     }

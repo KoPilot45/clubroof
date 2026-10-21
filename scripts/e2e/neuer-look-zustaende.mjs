@@ -31,7 +31,7 @@ const files = {};
   await page.getByRole('progressbar').first().waitFor({ timeout: 10_000 });
   ok(true, 'Laden: Platzhalter erscheinen');
   files.laden = await b.shot(page, 'nlz-laden', false);
-  await text(page, 'Deine Woche').waitFor({ timeout: 20_000 });
+  await text(page, 'Diese Woche').waitFor({ timeout: 20_000 });
   ok(true, 'Laden: Inhalt ersetzt die Platzhalter');
 }
 
@@ -54,7 +54,7 @@ const files = {};
   files.fehler = await b.shot(page, 'nlz-fehler', false);
   fail = false;
   await button(page, 'Erneut versuchen').click();
-  await text(page, 'Deine Woche').waitFor({ timeout: 20_000 });
+  await text(page, 'Diese Woche').waitFor({ timeout: 20_000 });
   ok(true, 'Fehler: erneuter Versuch lädt die Seite');
 }
 
@@ -63,7 +63,7 @@ const files = {};
   const { page, login, goto } = await b.session('mitglied');
   await setMode(login, 'light');
   await goto('/');
-  await text(page, 'Deine Woche').waitFor({ timeout: 20_000 });
+  await text(page, 'Diese Woche').waitFor({ timeout: 20_000 });
   const noTeam = login.me.teams.length === 0;
   ok(
     noTeam ? await text(page, 'Noch keine Mannschaft').isVisible() : true,
@@ -78,7 +78,7 @@ const files = {};
 {
   const { page, goto } = await b.session('eltern');
   await goto('/');
-  await text(page, 'Deine Woche').waitFor({ timeout: 20_000 });
+  await text(page, 'Diese Woche').waitFor({ timeout: 20_000 });
   await page.context().setOffline(true);
   await page.evaluate(() => window.dispatchEvent(new Event('offline')));
   await text(page, 'Du bist offline').waitFor({ timeout: 10_000 });
@@ -87,7 +87,7 @@ const files = {};
     'Offline: Hinweis mit Stand',
   );
   ok(
-    await text(page, 'Deine Woche').isVisible(),
+    await text(page, 'Diese Woche').isVisible(),
     'Offline: zwischengespeicherter Inhalt bleibt sichtbar',
   );
   files.offline = await b.shot(page, 'nlz-offline', false);
