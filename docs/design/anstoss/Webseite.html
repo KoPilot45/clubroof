@@ -128,6 +128,7 @@ section{scroll-margin-top:80px}
 .tablewrap{overflow-x:auto}
 /* Rechte */
 .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.facts.more .fact{padding-top:22px}
 .fact{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:10px}.fact h3{font-size:25px;font-weight:800;text-transform:uppercase}.fact p{font-size:14px;color:var(--fg2)}.fact svg{width:28px;height:28px;color:var(--accent)}
 /* Start */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
@@ -174,7 +175,7 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
  <div class="w"><div>
    <span class="eyebrow">Die Vereins-App für iOS, Android und Web</span>
    <h1 style="margin-top:16px">Ein Dach für den <em>ganzen Verein.</em></h1>
-   <p class="lead">Termine, Zusagen, Kader, Aufstellung, Kasse und Verwaltung in einer App. Jede Mannschaft, jedes Amt und jede Familie sieht genau das, was sie braucht.</p>
+   <p class="lead">Termine, Zusagen, Mitteilungen, Kasse und Verwaltung in einer App. Jede Mannschaft, jedes Amt und jede Familie sieht genau das, was sie braucht.</p>
    <div class="cta"><a class="btn p" href="#zusagen">App ansehen</a><a class="btn s" href="#pilot">Pilotverein werden</a></div>
    <div class="meta"><span><b>Handy</b> und <b>Desktop</b></span><span>Rechte nach <b>Rolle</b></span><span>Daten bleiben <b>im Verein</b></span></div>
  </div>
@@ -199,18 +200,7 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
  <div class="dachlinie"></div>
 </section>
 
-<section class="band alt" id="raeume"><div class="w">
-  <div class="head"><span class="eyebrow">Alles unter einem Dach</span><h2>Fünf Bereiche. Jede Aufgabe hat ihren Platz.</h2><p>Die Navigation bleibt für alle gleich, die Inhalte richten sich nach Rolle, Mannschaft und Vereinsmodulen. Wer Trainer, Elternteil und Spieler zugleich ist, sieht alles an einem Ort.</p></div>
-  <div class="rooms">
-    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4z"/></svg><h3>Start</h3><p>Was jetzt Aufmerksamkeit braucht: offene Antworten, das nächste Spiel, Neuigkeiten.</p></div>
-    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><h3>Termine</h3><p>Training, Spiele, Veranstaltungen. Zu- und Absage mit einem Tipp, Kalender-Abo fürs Handy.</p></div>
-    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14c3 0 5 2 5 5"/></svg><h3>Team</h3><p>Kader, Aufstellung, Statistik, Übungen, Mannschaftskasse und Aufgaben je Mannschaft.</p></div>
-    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg><h3>Verein</h3><p>Nachrichten, Veranstaltungen, Helfer, Dokumente, Platzbelegung, Sponsoren.</p></div>
-    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><h3>Ich</h3><p>Profil, Kinder, Abwesenheiten, Benachrichtigungen, Darstellung und Hilfe.</p></div>
-  </div>
-</div></section>
-
-<section class="band" id="zusagen"><div class="w">
+<section class="band alt" id="zusagen"><div class="w">
  <div class="split">
   <div class="copy"><span class="eyebrow">Termine und Zusagen</span><h3>Zusagen in einem Tipp. Teilnehmer in einem Blick.</h3>
    <p>Drei Knöpfe an jedem Termin: Zusage, Vielleicht, Absage. Die Teilnehmerliste klappt auf, ohne die Seite zu verlassen. Für Kinder antworten Eltern pro Kind.</p>
@@ -230,17 +220,21 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
  <p class="note" style="margin-top:14px;text-align:center;max-width:none">Zum Ausprobieren: Antwort antippen, dann „Teilnehmer“ aufklappen. Beispieldaten sind erfunden.</p>
 </div></section>
 
-<section class="band alt"><div class="w">
- <div class="split rev">
-  <div class="copy"><span class="eyebrow">Kader und Aufstellung</span><h3>Aufstellen per Drag &amp; Drop.</h3>
-   <p>Formation wählen, Spieler aufs Feld ziehen, Bank füllen. Neben jedem Namen steht die Trainingsbeteiligung der letzten Wochen. Wenn der Trainer veröffentlicht, sehen es alle.</p>
-   <ul><li>7er, 9er und 11er mit passenden Formationen</li><li>Beteiligung in drei Stufen als Entscheidungshilfe</li><li>Entwurf speichern, später veröffentlichen</li><li>Jeder Spieler nur einmal, Tauschen durch Ablegen</li></ul></div>
-  <div class="shot"><div class="phone"><div class="scr"><div class="st"><span>9:41</span><span>5G</span></div><div class="sec">Aufstellung</div>
-    <div class="fchips" id="forms"><button class="on" data-f="433">4-3-3</button><button data-f="442">4-4-2</button><button data-f="352">3-5-2</button></div>
-    <div class="pitch" id="pitch"><svg viewBox="0 0 100 100" preserveAspectRatio="none" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".35"><rect x="3" y="3" width="94" height="94"/><path d="M3 50h94"/><circle cx="50" cy="50" r="9"/><rect x="26" y="3" width="48" height="16"/><rect x="26" y="81" width="48" height="16"/></svg></div>
-    <div class="card" style="display:flex;justify-content:space-between;font-size:11px"><span>Bank 3 von 5</span><span style="color:var(--acc);font-weight:700">Veröffentlichen</span></div>
-  </div></div></div>
- </div>
+<section class="band" id="raeume"><div class="w">
+  <div class="head"><span class="eyebrow">Alles unter einem Dach</span><h2>Fünf Bereiche. Jede Aufgabe hat ihren Platz.</h2><p>Die Navigation bleibt für alle gleich, die Inhalte richten sich nach Rolle, Mannschaft und Vereinsmodulen. Wer Trainer, Elternteil und Spieler zugleich ist, sieht alles an einem Ort.</p></div>
+  <div class="rooms">
+    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4z"/></svg><h3>Start</h3><p>Was jetzt Aufmerksamkeit braucht: offene Antworten, das nächste Spiel, Neuigkeiten.</p></div>
+    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><h3>Termine</h3><p>Training, Spiele, Veranstaltungen. Zu- und Absage mit einem Tipp, Kalender-Abo fürs Handy.</p></div>
+    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14c3 0 5 2 5 5"/></svg><h3>Team</h3><p>Kader, Aufstellung, Statistik, Übungen, Mannschaftskasse und Aufgaben je Mannschaft.</p></div>
+    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg><h3>Verein</h3><p>Nachrichten, Veranstaltungen, Helfer, Dokumente, Platzbelegung, Sponsoren.</p></div>
+    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><h3>Ich</h3><p>Profil, Kinder, Abwesenheiten, Benachrichtigungen, Darstellung und Hilfe.</p></div>
+  </div>
+</div></section>
+
+<section class="band alt" id="rollen"><div class="w">
+ <div class="head"><span class="eyebrow">Für jede Rolle</span><h2>Jeder sieht, was er braucht. Nicht mehr.</h2><p>Rechte hängen an Rollen, nicht an Personen. Der Verein vergibt sie, die App prüft sie auf dem Server.</p></div>
+ <div class="tabs" role="tablist" id="rt"></div>
+ <div class="rolebox"><div class="rcard" id="rc"></div><div class="rcard q" id="rq"></div></div>
 </div></section>
 
 <section class="band"><div class="w">
@@ -259,27 +253,6 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
 </div></section>
 
 <section class="band alt"><div class="w">
- <div class="split rev">
-  <div class="copy"><span class="eyebrow">Vereinsfarbe</span><h3>Clubroof ist das Dach. Die App sieht aus wie euer Verein.</h3>
-   <p>Der Verein wählt Wappen und Farbe, die ganze App zieht mit. Hell und dunkel sind für jede Farbe auf Lesbarkeit geprüft.</p>
-   <div class="swatches" role="group" aria-label="Vereinsfarbe wählen" id="sws"></div>
-   <p class="note" style="margin-top:6px" id="swname">Grün</p></div>
-  <div class="shot"><div class="phone"><div class="scr" id="clubscr"><div class="st"><span>9:41</span><span>5G</span></div>
-    <div class="hd"><div class="crest" id="crest2">SGW</div><div><small>Samstag, 17. Oktober</small><b>Hallo, Max</b></div></div>
-    <div class="hr"><span class="tag">Nächstes Spiel · B-Jugend</span><div class="big">4<small>TAGE</small></div><div class="ttl">SV Grün-Weiß B1 <em>vs.</em> VfR Sonnenberg</div><div class="ln">Sa., 24.10. · 15:00 · Sonnenberg · Liga</div><div class="rb"><i style="flex:11;background:var(--acc)"></i><i style="flex:2;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:7;background:rgba(255,255,255,.3)"></i></div></div>
-    <div class="sec">Diese Woche</div><div class="card row"><div class="dt"><div><small>DI</small>20</div></div><div class="tx"><b>Training</b><span>B1 · 18:00 · Kunstrasen</span></div></div>
-    <div class="tabbar"><span class="on">Start</span><span>Termine</span><span>Team</span><span>Verein</span><span>Ich</span></div>
-  </div></div></div>
- </div>
-</div></section>
-
-<section class="band" id="rollen"><div class="w">
- <div class="head"><span class="eyebrow">Für jede Rolle</span><h2>Jeder sieht, was er braucht. Nicht mehr.</h2><p>Rechte hängen an Rollen, nicht an Personen. Der Verein vergibt sie, die App prüft sie auf dem Server.</p></div>
- <div class="tabs" role="tablist" id="rt"></div>
- <div class="rolebox"><div class="rcard" id="rc"></div><div class="rcard q" id="rq"></div></div>
-</div></section>
-
-<section class="band alt"><div class="w">
  <div class="head"><span class="eyebrow">Verwaltung am Desktop</span><h2>Mehr Platz für Listen, Kasse und Mitglieder.</h2><p>Ab Laptop-Breite arbeitet die App mit fester Seitenleiste. Tabellen mit Filtern, Auswahl mit Seitenpanel, Tastaturbedienung.</p></div>
  <div class="win" role="img" aria-label="Beispiel: Beitragsübersicht am Desktop"><div class="bar"><i></i><i></i><i></i><span>clubroof.example/club-cash/fees</span></div>
   <div class="body"><div class="sd"><a>Start</a><a>Termine</a><a>Team</a><a>Verein</a><a>Ich</a><div style="height:10px"></div><a class="v">Verwaltung</a><a class="on" style="background:#1C4FA3;color:#fff">Vereinskasse</a></div>
@@ -291,12 +264,41 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
 </div></section>
 
 <section class="band"><div class="w">
+ <div class="head"><span class="eyebrow">Und außerdem</span><h2>Was sonst noch zum Vereinsalltag gehört.</h2><p>Jedes Modul lässt sich pro Verein an- und abschalten. Wer es nicht braucht, sieht es nicht.</p></div>
+ <div class="facts more">
+  <div class="fact"><h3>Aufstellung</h3><p>Formation wählen, Spieler per Drag &amp; Drop aufs Feld ziehen, Entwurf speichern, später veröffentlichen.</p></div>
+  <div class="fact"><h3>Anwesenheit und Statistik</h3><p>Anwesenheit erfassen, Trainingsbeteiligung und Spielstatistik je Spieler.</p></div>
+  <div class="fact"><h3>Helfer und Fahrten</h3><p>Helferdienste bei Heimspielen und Fahrgemeinschaften zu Auswärtsspielen.</p></div>
+  <div class="fact"><h3>Platzbelegung</h3><p>Plätze und Hallen belegen, Überschneidungen werden gemeldet.</p></div>
+  <div class="fact"><h3>Trainingsplanung</h3><p>Übungen sammeln und Einheiten planen, mit der Mannschaft teilen.</p></div>
+  <div class="fact"><h3>Nachrichten</h3><p>Mitteilungen an Mannschaft, Abteilung oder Verein. Nur an die, die es betrifft.</p></div>
+  <div class="fact"><h3>Dokumente</h3><p>Satzung, Formulare und Protokolle an einem Ort, mit Rechten je Rolle.</p></div>
+  <div class="fact"><h3>Sponsoren</h3><p>Sponsoren und Partner des Vereins verwalten und in der App zeigen.</p></div>
+ </div>
+</div></section>
+
+<section class="band alt"><div class="w">
  <div class="head"><span class="eyebrow">Datenschutz und Rechte</span><h2>Datensparsam eingebaut.</h2></div>
  <div class="facts">
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><h3>Rollen statt Zufall</h3><p>Rollen sind Rechtepakete mit Geltungsbereich: Verein, Abteilung oder Mannschaft.</p></div>
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 018 0v3"/></svg><h3>Prüfung am Server</h3><p>Rechte werden immer auf dem Server geprüft. Die App blendet nur aus.</p></div>
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><h3>Gründe bleiben intern</h3><p>Absagegründe sehen nur Berechtigte. Das Trainerteam stellt ein, ob auch die Mannschaft sie sieht.</p></div>
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg><h3>Archiv und Protokoll</h3><p>Löschen heißt archivieren. Änderungen an Rollen und Daten stehen im Protokoll.</p></div>
+ </div>
+</div></section>
+
+<section class="band"><div class="w">
+ <div class="split rev">
+  <div class="copy"><span class="eyebrow">Vereinsfarbe</span><h3>Clubroof ist das Dach. Die App sieht aus wie euer Verein.</h3>
+   <p>Der Verein wählt Wappen und Farbe, die ganze App zieht mit. Hell und dunkel sind für jede Farbe auf Lesbarkeit geprüft.</p>
+   <div class="swatches" role="group" aria-label="Vereinsfarbe wählen" id="sws"></div>
+   <p class="note" style="margin-top:6px" id="swname">Grün</p></div>
+  <div class="shot"><div class="phone"><div class="scr" id="clubscr"><div class="st"><span>9:41</span><span>5G</span></div>
+    <div class="hd"><div class="crest" id="crest2">SGW</div><div><small>Samstag, 17. Oktober</small><b>Hallo, Max</b></div></div>
+    <div class="hr"><span class="tag">Nächstes Spiel · B-Jugend</span><div class="big">4<small>TAGE</small></div><div class="ttl">SV Grün-Weiß B1 <em>vs.</em> VfR Sonnenberg</div><div class="ln">Sa., 24.10. · 15:00 · Sonnenberg · Liga</div><div class="rb"><i style="flex:11;background:var(--acc)"></i><i style="flex:2;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:7;background:rgba(255,255,255,.3)"></i></div></div>
+    <div class="sec">Diese Woche</div><div class="card row"><div class="dt"><div><small>DI</small>20</div></div><div class="tx"><b>Training</b><span>B1 · 18:00 · Kunstrasen</span></div></div>
+    <div class="tabbar"><span class="on">Start</span><span>Termine</span><span>Team</span><span>Verein</span><span>Ich</span></div>
+  </div></div></div>
  </div>
 </div></section>
 
@@ -343,14 +345,6 @@ const LAB={y:'✓ Du: Zugesagt',m:'? Du: Unsicher',n:'✕ Du: Abgesagt'};
 document.querySelectorAll('[data-group]').forEach(function(g){g.addEventListener('click',function(e){const b=e.target.closest('button');if(!b||b.disabled)return;g.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);if(x===b)x.classList.add(b.dataset.a);});if(g.dataset.group==='ev1'){const s=document.getElementById('ev1s');s.textContent=LAB[b.dataset.a];s.style.color=b.dataset.a==='y'?'var(--acc)':b.dataset.a==='m'?'var(--warn)':'#FF8A8A';}});});
 document.querySelectorAll('[data-group="hero"] button').forEach(function(b){b.classList.add(b.dataset.a)});
 document.getElementById('ev1t').addEventListener('click',function(){const l=document.getElementById('ev1l');l.hidden=!l.hidden;this.textContent=l.hidden?'Teilnehmer ⌄':'Teilnehmer ⌃';});
-// Aufstellung
-const FM={'433':[[50,90,1,'Keller'],[15,70,4,'Brandt'],[38,73,2,'Hanniske'],[62,73,20,'Wulf'],[85,70,5,'Lang'],[28,48,19,'Sauer'],[50,53,8,'Vogt'],[72,48,7,'Belz'],[18,22,11,'Roth'],[50,15,9,'Krämer'],[82,22,10,'Maier']],'442':[[50,90,1,'Keller'],[15,70,4,'Brandt'],[38,73,2,'Hanniske'],[62,73,20,'Wulf'],[85,70,5,'Lang'],[16,46,11,'Roth'],[38,50,8,'Vogt'],[62,50,7,'Belz'],[84,46,10,'Maier'],[36,17,9,'Krämer'],[64,17,19,'Sauer']],'352':[[50,90,1,'Keller'],[28,72,4,'Brandt'],[50,75,2,'Hanniske'],[72,72,20,'Wulf'],[12,48,5,'Lang'],[32,50,8,'Vogt'],[50,42,7,'Belz'],[68,50,6,'Funk'],[88,48,11,'Roth'],[36,17,9,'Krämer'],[64,17,10,'Maier']]};
-function pitch(k){const el=document.getElementById('pitch');el.querySelectorAll('.pl').forEach(function(n){n.remove()});FM[k].forEach(function(p){const d=document.createElement('div');d.className='pl';d.style.left=p[0]+'%';d.style.top=p[1]+'%';d.innerHTML='<i>'+p[2]+'</i><span>'+p[3]+'</span>';el.appendChild(d)});}
-pitch('433');document.getElementById('forms').addEventListener('click',function(e){const b=e.target.closest('button');if(!b)return;this.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b)});pitch(b.dataset.f);});
-// Vereinsfarbe
-const COL=[['Grün','#1E7A44','#0F3D24','#2EDB6B','#06210F','#0B120E','#151D18','SGW'],['Blau','#1F55D6','#0B2A6B','#5AA9FF','#06122B','#0A101C','#131B2B','TVB'],['Rot','#B3261E','#5A0F0B','#FF7A70','#2B0705','#150B0B','#231414','FCR'],['Gelb','#C99700','#5C4400','#FFD54F','#2B2100','#14110A','#221E12','SVG'],['Schwarz','#3A3F47','#14161A','#E4E8EE','#0E1013','#0C0D10','#17191E','BSC']];
-(function(){const box=document.getElementById('sws'),scr=document.getElementById('clubscr'),nm=document.getElementById('swname'),cr=document.getElementById('crest2');COL.forEach(function(c,i){const b=document.createElement('button');b.className='sw';b.type='button';b.style.background='linear-gradient(135deg,'+c[1]+','+c[3]+')';b.setAttribute('aria-label',c[0]);b.setAttribute('aria-pressed',i===0);b.addEventListener('click',function(){box.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});const s=scr.style;s.setProperty('--p1',c[1]);s.setProperty('--p2',c[2]);s.setProperty('--acc',c[3]);s.setProperty('--on',c[4]);s.setProperty('--abg',c[5]);s.setProperty('--acard',c[6]);cr.textContent=c[7];cr.style.color=c[2];nm.textContent=c[0];});box.appendChild(b);});})();
-// Rollen
 const ROLES=[['Spieler','Eigene Termine, Antwort, Statistik.',['Zu- und Absage mit einem Tipp','Eigene Trainingsbeteiligung und Spielstatistik','Aufstellung sehen, sobald sie veröffentlicht ist','Abwesenheit melden: Urlaub, Verletzung, Prüfung']],['Eltern','Ein Konto, alle Kinder.',['Antworten pro Kind in einer Liste','Abwesenheit für jedes Kind melden','Fahrgemeinschaften und Helferdienste','Kasse der Mannschaft ihres Kindes einsehen']],['Trainer','Die Mannschaft im Griff.',['Kader, Aufstellung und Trainingsbeteiligung','Zusagen korrigieren, Anwesenheit erfassen','Übungen und Trainingsplanung','Mannschaftskasse mit Strafen und Getränken']],['Vorstand','Der Verein im Überblick.',['Mitglieder, Mannschaften und Veranstaltungen','Nachrichten und Umfragen mit Freigabe','Helfersuche und Dokumente','Auswertungen und Änderungsprotokoll']],['Kasse','Zahlen sauber geführt.',['Vereinskasse mit Konten und Kassenbuch','Beiträge, Spenden, Haushaltsplan','Rücklagen, Inventar und Jahresabschluss','Kassenprüfer lesen und prüfen mit eigener Rolle']]];
 (function(){const t=document.getElementById('rt'),c=document.getElementById('rc'),q=document.getElementById('rq');function show(i){t.querySelectorAll('button').forEach(function(b,k){b.setAttribute('aria-selected',k===i)});const r=ROLES[i];c.innerHTML='<h3>'+r[0]+'</h3><ul>'+r[2].map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul>';q.innerHTML='<b>'+r[1]+'</b><span>Der Verein kann Rollen anpassen und eigene Rollen mit eigenen Rechten anlegen.</span>';}ROLES.forEach(function(r,i){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.textContent=r[0];b.addEventListener('click',function(){show(i)});t.appendChild(b);});show(0);})();
 // Formular (Entwurf, es wird nichts gesendet)
