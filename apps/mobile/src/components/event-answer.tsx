@@ -24,6 +24,7 @@ import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { useToast } from '@/lib/toast';
 import { AttendanceBar } from './attendance-bar';
+import { queuedFor, useOutbox } from '@/lib/outbox';
 import { ReasonForm, declineMessage, useRespond } from './events';
 import { SquadSheet } from './squad-sheet';
 import { Avatar, Button, ErrorNotice, Loading, Sheet, T, withAlpha } from './ui';
@@ -567,7 +568,8 @@ export function NotReleasedHint() {
 // ── Home-Plakat ─────────────────────────────────────────────────────────────
 
 /** Kurzfassung der Statuszeile für das Plakat rechts im Kopf des Antwortblocks. */
-function heroStatus(state: AnswerState, r: MyResponse): string {
+function heroStatus(state: AnswerState, r: MyResponse, queued = false): string {
+  if (queued) return state.line;
   if (state.locked && r.status !== 'pending') return `🔒 ${t('Frist abgelaufen')}`;
   if (state.tone === 'yes' || state.tone === 'maybe' || state.tone === 'no') {
     const mark = r.status === 'yes' ? '✓' : r.status === 'maybe' ? '?' : '✕';
@@ -597,8 +599,12 @@ export function HeroAnswer({ event }: { event: EventSummary }) {
     queryFn: () => api<EventDetail>(`/events/${event.id}`),
     enabled: open,
   });
+  // Offline gemerkte Antwort sofort zeigen („Wird gesendet“), wie in der Terminkarte
+  const outbox = useOutbox();
+  const queued = r ? queuedFor(outbox, event.id, r.personId) : undefined;
   if (event.status !== 'scheduled') return null;
-  const state = r ? answerState(event, r, { past: false, queued: false }) : null;
+  const shown = r && queued ? { ...r, status: queued.status } : r;
+  const state = shown ? answerState(event, shown, { past: false, queued: !!queued }) : null;
   const title = !r
     ? null
     : r.role === 'coach'
@@ -631,14 +637,16 @@ export function HeroAnswer({ event }: { event: EventSummary }) {
               verbatim
               style={{ fontSize: 12, fontWeight: '800' }}
             >
-              {r.role === 'coach' ? `✎ ${t('automatisch eingeplant')}` : heroStatus(state, r)}
+              {r.role === 'coach'
+                ? `✎ ${t('automatisch eingeplant')}`
+                : heroStatus(state, shown ?? r, !!queued)}
             </T>
           </View>
           {state.knobs ? (
             <AnswerKnobs
               wide
               onPlate
-              value={r.status}
+              value={shown?.status ?? r.status}
               needsAnswer={state.needsAnswer}
               locked={state.locked || flow.pending}
               allowMaybe={event.responseRules?.allowMaybe ?? true}

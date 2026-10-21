@@ -2,6 +2,7 @@ import type { DemandDetail, EventSummary, ExchangeOverview } from '@clubroof/cor
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { useLeaveGuard } from '@/components/edited';
 import { Button, Card, ChoiceChips, Chip, Loading, Screen, TextField } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatDay, formatTime } from '@/lib/format';
@@ -30,6 +31,11 @@ export default function NewDemandScreen() {
   const list = (events.data ?? []).filter((e) => e.team?.id === team && e.status === 'scheduled');
   const n = Number(count);
 
+  const dirty = eventId !== null || note.trim() !== '' || positions.length > 0 || count !== '1';
+  const { guard, allowLeave } = useLeaveGuard(dirty, () => {
+    if (valid) save.mutate();
+  });
+
   const save = useMutation({
     mutationFn: () =>
       api<DemandDetail>('/exchange/demands', {
@@ -38,14 +44,15 @@ export default function NewDemandScreen() {
       }),
     onSuccess: (d) => {
       void queryClient.invalidateQueries({ queryKey: ['exchange'] });
+      allowLeave();
       router.replace(`/exchange/${d.id}`);
     },
     onError: (e) =>
       setError(e instanceof RequestError ? e.message : 'Der Bedarf konnte nicht gemeldet werden.'),
   });
 
-  if (overview.isPending || events.isPending) return <Loading />;
   const valid = !!team && !!eventId && Number.isInteger(n) && n >= 1 && n <= 10;
+  if (overview.isPending || events.isPending) return <Loading />;
 
   return (
     <Screen
@@ -63,6 +70,7 @@ export default function NewDemandScreen() {
         </>
       }
     >
+      {guard}
       <Card style={{ gap: 12 }}>
         {teams.length > 1 ? (
           <ChoiceChips
