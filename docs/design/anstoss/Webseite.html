@@ -1,0 +1,360 @@
+<title>Clubroof</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Saira+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Layout: dunkle Startseite im Clubroof-Blau (Logo-Verlauf), Dach-Motiv als Trennlinie; die App-Bildschirme tragen die Vereinsfarbe (hier Grün), damit sichtbar wird: Clubroof ist das Dach, der Verein ist das Haus. */
+:root{
+  --bg:#070B14;--bg2:#0B1224;--card:#101A30;--card2:#16223F;
+  --fg:#EEF3FF;--fg2:#B7C3DE;--fg3:#8191B3;
+  --line:rgba(140,170,255,.16);
+  --blue:#002AFA;--cyan:#00C3FF;--accent:#4DC3FF;--on-accent:#04112B;
+  --grad:linear-gradient(135deg,#002AFA 0%,#00C3FF 100%);
+  --glow:rgba(0,120,255,.35);
+  --ok:#2EDB6B;--warn:#FFB020;--bad:#FF6B6B;
+  --display:'Saira Condensed','Arial Narrow',sans-serif;--body:'Open Sans',system-ui,sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#F5F8FF;--bg2:#E8EEFC;--card:#FFFFFF;--card2:#EEF3FF;
+  --fg:#0A1230;--fg2:#38476E;--fg3:#62729C;--line:rgba(0,42,250,.14);
+  --accent:#0B3BEF;--on-accent:#FFFFFF;--glow:rgba(0,90,255,.18);color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#F5F8FF;--bg2:#E8EEFC;--card:#FFFFFF;--card2:#EEF3FF;
+  --fg:#0A1230;--fg2:#38476E;--fg3:#62729C;--line:rgba(0,42,250,.14);
+  --accent:#0B3BEF;--on-accent:#FFFFFF;--glow:rgba(0,90,255,.18);color-scheme:light}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 var(--body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1;letter-spacing:.005em}
+p{margin:0;max-width:62ch}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}
+.w{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font:700 12px/1 var(--body);letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+svg.logo{display:block}
+/* Kopf */
+header.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav .w{display:flex;align-items:center;gap:22px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 26px/1 var(--display);letter-spacing:.02em}
+.nav nav{display:flex;gap:22px;margin-left:auto;font-weight:600;font-size:14px;color:var(--fg2)}
+.nav nav a{text-decoration:none;padding:6px 2px}.nav nav a:hover{color:var(--fg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;padding:13px 22px;font:700 15px/1 var(--body);text-decoration:none;border:1.5px solid var(--line);color:var(--fg);background:transparent;cursor:pointer}
+.btn.p{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 10px 30px -10px var(--glow)}
+.btn.s{background:var(--card);}
+.btn.sm{padding:10px 16px;font-size:13px}
+/* Hero */
+.hero{position:relative;overflow:hidden;background:radial-gradient(90% 80% at 85% 10%,var(--glow) 0%,transparent 60%),var(--bg)}
+.hero .w{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center;padding-block:56px 110px;min-height:600px}
+.hero h1{font-size:clamp(46px,7.4vw,92px);font-weight:800;text-transform:uppercase}
+.hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{font-size:19px;color:var(--fg2);margin-top:22px}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:26px;color:var(--fg3);font-size:13px}.meta b{color:var(--fg2);font-weight:600}
+.roof{position:absolute;right:-120px;top:-60px;width:760px;opacity:.14;pointer-events:none}
+.stage{position:relative;display:flex;justify-content:center}
+.chipf{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 14px;font-size:13px;box-shadow:0 18px 40px -18px rgba(0,0,0,.6);display:flex;gap:10px;align-items:center}
+.chipf b{display:block;font-weight:700}.chipf span{color:var(--fg3);font-size:12px}
+.chipf i{font-style:normal;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:rgba(46,219,107,.18);color:var(--ok)}
+.dachlinie{position:absolute;left:0;right:0;bottom:-1px;height:70px;background:var(--bg2);clip-path:polygon(0 100%,0 62%,50% 0,100% 62%,100% 100%)}
+/* Telefon */
+.phone{width:290px;flex:none;border-radius:42px;background:#05080F;padding:9px;border:1px solid rgba(255,255,255,.14);box-shadow:0 40px 80px -30px rgba(0,0,0,.7),0 0 0 1px rgba(0,0,0,.4)}
+.scr{--p1:#1E7A44;--p2:#0F3D24;--acc:#2EDB6B;--on:#06210F;--abg:#0B120E;--acard:#151D18;--afg:#F2F7F3;--afg2:#C5D6CB;--afg3:#9FB5A6;--aline:rgba(255,255,255,.1);
+  border-radius:34px;background:var(--abg);color:var(--afg);min-height:560px;padding:14px 12px 16px;display:flex;flex-direction:column;gap:10px;font:13px/1.4 var(--body);overflow:hidden}
+.scr .st{display:flex;justify-content:space-between;font:600 10px var(--body);color:var(--afg3);padding:0 8px}
+.scr .hd{display:flex;align-items:center;gap:9px}.scr .crest{width:30px;height:30px;border-radius:50%;background:#fff;color:var(--p2);display:grid;place-items:center;font:800 10px var(--display)}
+.scr .hd small{display:block;font-size:10px;color:var(--afg3)}.scr .hd b{font:800 20px/1 var(--display)}
+.scr .hr{position:relative;border-radius:22px;padding:13px;background:radial-gradient(120% 120% at 90% 0%,var(--p1) 0%,var(--p2) 60%,var(--abg) 130%);border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.scr .hr svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.scr .tag{align-self:flex-start;background:var(--acc);color:var(--on);font:800 8.5px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;padding:5px 9px;border-radius:99px;position:relative}
+.scr .big{font:800 50px/.95 var(--display);position:relative}.scr .big small{font:700 18px var(--display);letter-spacing:.06em;margin-left:5px}
+.scr .ttl{font:800 20px/1.05 var(--display);position:relative}.scr .ttl em{font-style:normal;color:var(--acc)}.scr .ln{font-size:10.5px;color:rgba(255,255,255,.85);position:relative}
+.scr .hb{display:flex;gap:6px;position:relative}.scr .hb button{flex:1;border:1.5px solid rgba(255,255,255,.35);background:rgba(0,0,0,.22);color:#fff;border-radius:99px;padding:7px 2px;font:700 11px var(--body);cursor:pointer}
+.scr .hb button.on{border-color:transparent}.scr .hb button.on.y{background:var(--acc);color:var(--on)}.scr .hb button.on.m{background:var(--warn);color:#2b1c00}.scr .hb button.on.n{background:var(--bad);color:#2b0606}
+.scr .rb{display:flex;height:6px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.2);position:relative}.scr .rb i{display:block}
+.scr .rg{font-size:10px;color:rgba(255,255,255,.92);display:flex;gap:2px 9px;flex-wrap:wrap;position:relative}
+.scr .sec{display:flex;align-items:center;gap:7px;font:700 14px/1 var(--display);text-transform:uppercase;letter-spacing:.05em}.scr .sec:before{content:"";width:3px;height:13px;border-radius:2px;background:var(--acc)}
+.scr .card{background:var(--acard);border:1px solid var(--aline);border-radius:16px;padding:10px 11px}
+.scr .row{display:flex;align-items:center;gap:9px}
+.scr .dt{width:38px;height:42px;border-radius:11px;background:rgba(255,255,255,.08);color:var(--acc);display:grid;place-items:center;text-align:center;font:800 17px/1 var(--display);flex:none}.scr .dt small{display:block;font:700 8px var(--display);letter-spacing:.1em}
+.scr .tx{flex:1;min-width:0}.scr .tx b{display:block;font-size:12.5px}.scr .tx span{display:block;font-size:10.5px;color:var(--afg3)}
+.scr .ab{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--aline);background:transparent;color:var(--afg2);font:800 13px var(--body);padding:0;cursor:pointer}
+.scr .ab.on.y{background:var(--acc);border-color:var(--acc);color:var(--on)}.scr .ab.on.m{background:var(--warn);border-color:var(--warn);color:#2b1c00}.scr .ab.on.n{background:var(--bad);border-color:var(--bad);color:#2b0606}
+.scr .st2{font:700 10px var(--body);color:var(--acc)}
+.scr .p{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:11.5px}.scr .p .av{width:22px;height:22px;border-radius:50%;background:#26332b;display:grid;place-items:center;font:700 8px var(--body);color:var(--afg2)}.scr .p b{flex:1;font-weight:600}.scr .p small{color:var(--afg3)}
+.scr .grp{font:700 10px var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--afg3);margin:6px 0 2px;display:flex;align-items:center;gap:6px}.scr .grp i{width:7px;height:7px;border-radius:50%}
+.tabbar{margin-top:auto;display:flex;justify-content:space-around;background:rgba(30,42,34,.86);border:1px solid var(--aline);border-radius:99px;padding:8px 6px;font:700 9px var(--body);color:var(--afg3)}.tabbar span.on{color:var(--on);background:var(--acc);border-radius:99px;padding:3px 9px}
+/* Bänder */
+section{scroll-margin-top:80px}
+.band{padding-block:92px}
+.band.alt{background:var(--bg2)}
+.head{display:flex;flex-direction:column;gap:14px;margin-bottom:44px}.head h2{font-size:clamp(36px,5vw,58px);font-weight:800;text-transform:uppercase}.head p{color:var(--fg2);font-size:17px}
+/* Räume */
+.rooms{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.room{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px 18px 20px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.room:before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--grad)}
+.room svg{width:30px;height:30px;color:var(--accent)}
+.room h3{font-size:28px;font-weight:800;text-transform:uppercase}.room p{font-size:14px;color:var(--fg2)}
+/* Funktionsblöcke */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}.split.rev .copy{order:2}
+.copy{display:flex;flex-direction:column;gap:16px;min-width:0}.copy h3{font-size:clamp(32px,4.2vw,48px);font-weight:800;text-transform:uppercase}.copy p{color:var(--fg2)}
+.copy ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}.copy li{display:flex;gap:11px;color:var(--fg2);font-size:15px}.copy li:before{content:"";flex:none;width:18px;height:18px;margin-top:3px;border-radius:50%;background:var(--grad);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M5 9.5l2.6 2.6L13 6.5' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='9' cy='9' r='9' fill-opacity='.0'/%3E%3C/svg%3E") center/contain no-repeat,linear-gradient(#000,#000);-webkit-mask-composite:source-over}
+.copy li:before{background:none;border:0;width:18px;height:18px;margin-top:3px;-webkit-mask:none;content:"✓";color:var(--accent);font-weight:800;font-size:15px;line-height:1.2}
+.shot{display:flex;justify-content:center;position:relative}
+.shot:before{content:"";position:absolute;inset:6% 8%;background:radial-gradient(closest-side,var(--glow),transparent);z-index:0}
+.shot>*{position:relative;z-index:1}
+.pitch{border-radius:14px;overflow:hidden;background:repeating-linear-gradient(180deg,#1d6b3c 0 40px,#1a6236 40px 80px);position:relative;height:330px;border:1px solid rgba(255,255,255,.1)}
+.pitch svg{position:absolute;inset:0;width:100%;height:100%}
+.pl{position:absolute;transform:translate(-50%,-50%);width:50px;text-align:center}.pl i{display:grid;place-items:center;width:28px;height:28px;margin:0 auto;border-radius:50%;background:#fff;color:#0F3D24;font:800 12px var(--display);font-style:normal;border:2px solid var(--acc);transition:left .5s,top .5s}.pl span{display:block;font:700 8.5px var(--body);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);margin-top:2px}
+.fchips{display:flex;gap:5px;flex-wrap:wrap}.fchips button{font:700 11px var(--display);letter-spacing:.04em;border:1px solid var(--aline);background:var(--acard);color:var(--afg2);border-radius:99px;padding:5px 10px;cursor:pointer}.fchips button.on{border-color:var(--acc);color:var(--acc)}
+/* Farbwahl */
+.swatches{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.sw{width:46px;height:46px;border-radius:50%;border:3px solid transparent;outline:1px solid var(--line);cursor:pointer;padding:0}.sw[aria-pressed="true"]{border-color:var(--fg)}
+.sw span{display:none}
+/* Rollen */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}.tabs button{font:700 15px var(--body);border:1.5px solid var(--line);background:var(--card);color:var(--fg2);border-radius:999px;padding:11px 18px;cursor:pointer}.tabs button[aria-selected="true"]{background:var(--grad);border-color:transparent;color:#fff}
+.rolebox{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.rcard{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:12px}.rcard h3{font-size:30px;font-weight:800;text-transform:uppercase}
+.rcard ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}.rcard li{display:flex;gap:10px;color:var(--fg2);font-size:15px}.rcard li:before{content:"✓";color:var(--accent);font-weight:800}
+.rcard.q{background:var(--card2);color:var(--fg2);justify-content:center}.rcard.q b{font:800 34px/1.05 var(--display);color:var(--fg);text-transform:uppercase}
+/* Desktop-Fenster */
+.win{border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#0B120E;color:#F2F7F3;box-shadow:0 50px 90px -40px rgba(0,0,0,.7)}
+.win .bar{height:30px;background:#0a100c;display:flex;align-items:center;gap:6px;padding:0 12px}.win .bar i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.2)}.win .bar span{margin-left:12px;font-size:10px;color:#6F8277;background:rgba(255,255,255,.05);border-radius:6px;padding:3px 14px}
+.win .body{display:grid;grid-template-columns:170px 1fr;min-height:340px}
+.win .sd{background:#0E1712;border-right:1px solid rgba(255,255,255,.08);padding:14px 10px;display:flex;flex-direction:column;gap:3px;font-size:12px;color:#C5D6CB}.win .sd a{padding:8px 10px;border-radius:10px;text-decoration:none;font-weight:600}.win .sd a.on{background:#2EDB6B;color:#06210F}.win .sd .v{color:#B28CFF}.win .sd .k{color:#5AA9FF}
+.win .mn{padding:16px;min-width:0}.win h4{font:800 22px/1 var(--display);margin:0 0 10px;text-transform:uppercase}
+.win table{width:100%;border-collapse:collapse;font-size:12px}.win th{text-align:left;font:700 9.5px var(--display);letter-spacing:.12em;text-transform:uppercase;color:#9FB5A6;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.14)}.win td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.pill{font:700 10px var(--body);border-radius:99px;padding:2px 8px}.pill.ok{background:rgba(46,219,107,.15);color:#2EDB6B}.pill.w{background:rgba(255,176,32,.16);color:#FFB020}.pill.b{background:rgba(255,90,90,.16);color:#FF8A8A}
+.tablewrap{overflow-x:auto}
+/* Rechte */
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.fact{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:10px}.fact h3{font-size:25px;font-weight:800;text-transform:uppercase}.fact p{font-size:14px;color:var(--fg2)}.fact svg{width:28px;height:28px;color:var(--accent)}
+/* Start */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.step{border-top:3px solid transparent;border-image:var(--grad) 1;padding-top:18px;display:flex;flex-direction:column;gap:10px}.step h3{font-size:30px;font-weight:800;text-transform:uppercase}.step p{color:var(--fg2);font-size:15px}
+/* Pilot */
+.cta-band{position:relative;overflow:hidden;background:var(--grad);color:#fff;padding-block:100px 80px;clip-path:polygon(0 56px,50% 0,100% 56px,100% 100%,0 100%);margin-top:-1px}
+.cta-band .w{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.cta-band h2{font-size:clamp(38px,5.4vw,66px);font-weight:800;text-transform:uppercase}.cta-band p{color:rgba(255,255,255,.88);font-size:17px;margin-top:14px}
+.form{background:rgba(5,12,40,.45);border:1px solid rgba(255,255,255,.28);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:12px;backdrop-filter:blur(6px)}
+.form label{font:700 11px var(--body);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.85);display:flex;flex-direction:column;gap:6px}
+.form input,.form select{font:600 15px var(--body);border-radius:12px;border:1px solid rgba(255,255,255,.35);background:rgba(5,12,40,.5);color:#fff;padding:12px 14px}
+.form input::placeholder{color:rgba(255,255,255,.55)}
+.form .btn{background:#fff;color:#0A1E8F;border-color:#fff}
+.form small{color:rgba(255,255,255,.85);font-size:12px;min-height:16px}
+/* FAQ */
+.faq{display:grid;gap:10px;max-width:860px}
+details{background:var(--card);border:1px solid var(--line);border-radius:16px}summary{list-style:none;cursor:pointer;padding:18px 20px;font-weight:700;display:flex;gap:12px;align-items:center}summary::-webkit-details-marker{display:none}summary:after{content:"+";margin-left:auto;font:700 22px/1 var(--body);color:var(--accent)}details[open] summary:after{content:"–"}details p{padding:0 20px 18px;color:var(--fg2);font-size:15px}
+footer{background:var(--bg2);padding-block:46px 52px;font-size:14px;color:var(--fg2)}
+footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{font:700 12px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);margin:0 0 12px}footer a{display:block;text-decoration:none;padding:3px 0;color:var(--fg2)}
+.note{font-size:12px;color:var(--fg3);margin-top:20px}
+.themebtn{border:1px solid var(--line);background:var(--card);color:var(--fg2);border-radius:999px;padding:8px 13px;font:700 12px var(--body);cursor:pointer}
+@media (max-width:980px){
+  .hero .w{grid-template-columns:1fr;padding-block:40px 100px}.roof{width:520px;right:-160px}
+  .rooms{grid-template-columns:repeat(2,1fr)}.split,.cta-band .w,.rolebox,.facts,.steps,footer .w{grid-template-columns:1fr}
+  .split.rev .copy{order:0}.split{gap:34px}.facts{grid-template-columns:repeat(2,1fr)}
+  .nav nav{display:none}.nav .w{gap:10px}.nav .btn{margin-left:auto}
+}
+@media (max-width:560px){.facts,.rooms{grid-template-columns:1fr}.band{padding-block:64px}.chipf{display:none}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="crg" gradientUnits="userSpaceOnUse" x1="200" y1="1000" x2="1057" y2="627"><stop offset="0" stop-color="#002AFA"/><stop offset="1" stop-color="#00C3FF"/></linearGradient></defs>
+<symbol id="lg" viewBox="150 100 950 1035"><path fill="url(#crg)" d="M 190.5,451 C 190.5,413 211,379 246,356 L 561,158 C 604,131 651,131 694,158 L 1014,365 C 1045,385 1063,418 1063,452 L 1063,538 C 1063,552 1051,561 1039,553 L 672,313 C 643,294 613,294 584,313 L 361,452 C 341,464 330,483 330,506 L 330,876 C 330,930 373,970 425,970 L 707,970 C 715,970 720,973 726,979 L 811,1071 C 821,1082 812,1094 800,1094 L 378,1094 C 276,1094 190.5,1013 190.5,918 Z"/><path fill="url(#crg)" d="M 477,515.8 L 782,515.8 C 865,515.8 929.5,580 929.5,663.5 C 929.5,738 878,793 806.5,811 L 1057,1071 C 1067,1082 1058,1094 1047,1094 L 930,1094 C 909,1094 892,1087 876,1071 L 609,787 C 578,755 603,703 641,703 L 762,703 C 783,703 800,687 800,666 C 800,645 783,628.5 762,628.5 L 572,628.5 C 560,628.5 551.5,636 551.5,647 L 551.5,902 C 551.5,908 548,911.5 541,911.5 L 437,911.5 C 430,911.5 426.5,908 426.5,902 L 426.5,566 C 426.5,538 449,515.8 477,515.8 Z"/></symbol>
+<symbol id="lgw" viewBox="150 100 950 1035"><path fill="#fff" d="M 190.5,451 C 190.5,413 211,379 246,356 L 561,158 C 604,131 651,131 694,158 L 1014,365 C 1045,385 1063,418 1063,452 L 1063,538 C 1063,552 1051,561 1039,553 L 672,313 C 643,294 613,294 584,313 L 361,452 C 341,464 330,483 330,506 L 330,876 C 330,930 373,970 425,970 L 707,970 C 715,970 720,973 726,979 L 811,1071 C 821,1082 812,1094 800,1094 L 378,1094 C 276,1094 190.5,1013 190.5,918 Z"/><path fill="#fff" d="M 477,515.8 L 782,515.8 C 865,515.8 929.5,580 929.5,663.5 C 929.5,738 878,793 806.5,811 L 1057,1071 C 1067,1082 1058,1094 1047,1094 L 930,1094 C 909,1094 892,1087 876,1071 L 609,787 C 578,755 603,703 641,703 L 762,703 C 783,703 800,687 800,666 C 800,645 783,628.5 762,628.5 L 572,628.5 C 560,628.5 551.5,636 551.5,647 L 551.5,902 C 551.5,908 548,911.5 541,911.5 L 437,911.5 C 430,911.5 426.5,908 426.5,902 L 426.5,566 C 426.5,538 449,515.8 477,515.8 Z"/></symbol></defs></svg>
+
+<header class="nav"><div class="w">
+  <a class="brand" href="#top" aria-label="Clubroof Startseite"><svg class="logo" width="30" height="33" viewBox="0 0 950 1035"><use href="#lg"/></svg>Clubroof</a>
+  <nav aria-label="Hauptnavigation"><a href="#raeume">Die App</a><a href="#zusagen">Funktionen</a><a href="#rollen">Für jede Rolle</a><a href="#start">Einrichten</a><a href="#faq">Fragen</a></nav>
+  <a class="btn p sm" href="#pilot">Pilotverein werden</a>
+</div></header>
+
+<main id="top">
+<section class="hero"><svg class="roof" viewBox="150 100 950 1035" aria-hidden="true"><use href="#lgw"/></svg>
+ <div class="w"><div>
+   <span class="eyebrow">Die Vereins-App für iOS, Android und Web</span>
+   <h1 style="margin-top:16px">Ein Dach für den <em>ganzen Verein.</em></h1>
+   <p class="lead">Termine, Zusagen, Kader, Aufstellung, Kasse und Verwaltung in einer App. Jede Mannschaft, jedes Amt und jede Familie sieht genau das, was sie braucht.</p>
+   <div class="cta"><a class="btn p" href="#zusagen">App ansehen</a><a class="btn s" href="#pilot">Pilotverein werden</a></div>
+   <div class="meta"><span><b>Handy</b> und <b>Desktop</b></span><span>Rechte nach <b>Rolle</b></span><span>Daten bleiben <b>im Verein</b></span></div>
+ </div>
+ <div class="stage"><div class="phone" aria-label="Beispiel: Startseite der App">
+   <div class="scr" id="heroscr"><div class="st"><span>9:41</span><span>5G</span></div>
+    <div class="hd"><div class="crest">SGW</div><div><small>Samstag, 17. Oktober</small><b>Hallo, Max</b></div></div>
+    <div class="hr"><svg viewBox="0 0 270 280" preserveAspectRatio="xMaxYMin slice" id="hexa"></svg>
+      <span class="tag">Nächstes Spiel · C-Jugend</span>
+      <div class="big">4<small>TAGE</small></div>
+      <div><div class="ttl">SV Grün-Weiß C1 <em>vs.</em> TSV Blauen</div><div class="ln">Sa., 24.10. · 13:00 · Rasenplatz · Heimspiel</div></div>
+      <div class="hb" data-group="hero"><button class="y" data-a="y">✓ Zusage</button><button class="m" data-a="m">? Vielleicht</button><button class="n" data-a="n">✕ Absage</button></div>
+      <div class="rb"><i style="flex:12;background:#2EDB6B"></i><i style="flex:1;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:6;background:rgba(255,255,255,.3)"></i></div>
+      <div class="rg"><span>12 Zusagen</span><span>1 Unsicher</span><span>2 Absagen</span><span>6 offen</span></div>
+    </div>
+    <div class="sec">Offen</div>
+    <div class="card row"><div class="dt" style="color:var(--warn)">▤</div><div class="tx"><b>Anwesenheit erfassen</b><span>C1 · Training vom Mo., 12.10.</span></div></div>
+    <div class="tabbar"><span class="on">Start</span><span>Termine</span><span>Team</span><span>Verein</span><span>Ich</span></div>
+   </div></div>
+   <div class="chipf" style="left:0;top:90px"><i>✓</i><div><b>Zusage für Leon</b><span>Rückgängig möglich</span></div></div>
+   <div class="chipf" style="right:-6px;bottom:80px"><i style="background:rgba(77,195,255,.18);color:var(--accent)">€</i><div><b>Mannschaftskasse</b><span>Strafen, Getränke, Beiträge</span></div></div>
+ </div></div>
+ <div class="dachlinie"></div>
+</section>
+
+<section class="band alt" id="raeume"><div class="w">
+  <div class="head"><span class="eyebrow">Alles unter einem Dach</span><h2>Fünf Bereiche. Jede Aufgabe hat ihren Platz.</h2><p>Die Navigation bleibt für alle gleich, die Inhalte richten sich nach Rolle, Mannschaft und Vereinsmodulen. Wer Trainer, Elternteil und Spieler zugleich ist, sieht alles an einem Ort.</p></div>
+  <div class="rooms">
+    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4z"/></svg><h3>Start</h3><p>Was jetzt Aufmerksamkeit braucht: offene Antworten, das nächste Spiel, Neuigkeiten.</p></div>
+    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><h3>Termine</h3><p>Training, Spiele, Veranstaltungen. Zu- und Absage mit einem Tipp, Kalender-Abo fürs Handy.</p></div>
+    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14c3 0 5 2 5 5"/></svg><h3>Team</h3><p>Kader, Aufstellung, Statistik, Übungen, Mannschaftskasse und Aufgaben je Mannschaft.</p></div>
+    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg><h3>Verein</h3><p>Nachrichten, Veranstaltungen, Helfer, Dokumente, Platzbelegung, Sponsoren.</p></div>
+    <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><h3>Ich</h3><p>Profil, Kinder, Abwesenheiten, Benachrichtigungen, Darstellung und Hilfe.</p></div>
+  </div>
+</div></section>
+
+<section class="band" id="zusagen"><div class="w">
+ <div class="split">
+  <div class="copy"><span class="eyebrow">Termine und Zusagen</span><h3>Zusagen in einem Tipp. Teilnehmer in einem Blick.</h3>
+   <p>Drei Knöpfe an jedem Termin: Zusage, Vielleicht, Absage. Die Teilnehmerliste klappt auf, ohne die Seite zu verlassen. Für Kinder antworten Eltern pro Kind.</p>
+   <ul><li>Antwortfrist je Mannschaft, danach bleibt die Antwort sichtbar</li><li>Absagegrund nur für das Trainerteam, wenn der Verein es so will</li><li>Rückgängig nach jeder Antwort, auch ohne Netz</li><li>Trainer korrigieren Antworten direkt in der Liste</li></ul></div>
+  <div class="shot"><div class="phone"><div class="scr" id="evscr"><div class="st"><span>9:41</span><span>5G</span></div><div class="sec">Diese Woche</div>
+    <div class="card" id="ev1" style="display:flex;flex-direction:column;gap:8px"><div class="row"><div class="dt"><div><small>DI</small>20</div></div><div class="tx"><b>Training</b><span>B1 · 18:00 · Kunstrasen</span><span class="st2" id="ev1s">● Antwort bis morgen 12:00</span></div>
+      <div style="display:flex;gap:5px" data-group="ev1"><button class="ab" data-a="y" aria-label="Zusage">✓</button><button class="ab" data-a="m" aria-label="Vielleicht">?</button><button class="ab" data-a="n" aria-label="Absage">✕</button></div></div>
+      <div class="rb" style="height:6px;border-radius:4px;display:flex;overflow:hidden;background:rgba(255,255,255,.14)"><i style="flex:12;background:#2EDB6B"></i><i style="flex:1;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:7;background:rgba(255,255,255,.3)"></i></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--afg2)"><span>12 Zusagen · 1 Unsicher · 2 Absagen · 7 offen</span><span style="color:var(--acc);font-weight:700;cursor:pointer" id="ev1t">Teilnehmer ⌄</span></div>
+      <div id="ev1l" hidden><div class="grp"><i style="background:#2EDB6B"></i>Zusagen · 12</div><div class="p"><span class="av">MB</span><b>Max Becker (du)</b><small>#14</small></div><div class="p"><span class="av">JK</span><b>Jonas Keller</b><small>#1</small></div><div class="p"><span class="av">GB</span><b>Gabriel Belz</b><small>#7</small></div><div style="color:var(--acc);font-weight:700;font-size:11px;padding:3px 0">Alle anzeigen (12) ›</div>
+        <div class="grp"><i style="background:#FFB020"></i>Vielleicht · 1</div><div class="p"><span class="av">ES</span><b>Emil Sauer</b><small>#19</small></div>
+        <div class="grp"><i style="background:#FF6B6B"></i>Absagen · 2</div><div class="p"><span class="av">AW</span><b>Anton Wulf</b></div></div></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:6px"><div class="row"><div class="dt"><div><small>SA</small>24</div></div><div class="tx"><b>Spiel · VfR Sonnenberg</b><span>B1 · 15:00 · Sonnenberg</span><span class="st2" style="color:var(--warn)">? Du: Unsicher</span></div><div style="display:flex;gap:5px"><button class="ab" disabled>✓</button><button class="ab on m" disabled>?</button><button class="ab" disabled>✕</button></div></div></div>
+    <div class="tabbar"><span>Start</span><span class="on">Termine</span><span>Team</span><span>Verein</span><span>Ich</span></div>
+  </div></div></div>
+ </div>
+ <p class="note" style="margin-top:14px;text-align:center;max-width:none">Zum Ausprobieren: Antwort antippen, dann „Teilnehmer“ aufklappen. Beispieldaten sind erfunden.</p>
+</div></section>
+
+<section class="band alt"><div class="w">
+ <div class="split rev">
+  <div class="copy"><span class="eyebrow">Kader und Aufstellung</span><h3>Aufstellen per Drag &amp; Drop.</h3>
+   <p>Formation wählen, Spieler aufs Feld ziehen, Bank füllen. Neben jedem Namen steht die Trainingsbeteiligung der letzten Wochen. Wenn der Trainer veröffentlicht, sehen es alle.</p>
+   <ul><li>7er, 9er und 11er mit passenden Formationen</li><li>Beteiligung in drei Stufen als Entscheidungshilfe</li><li>Entwurf speichern, später veröffentlichen</li><li>Jeder Spieler nur einmal, Tauschen durch Ablegen</li></ul></div>
+  <div class="shot"><div class="phone"><div class="scr"><div class="st"><span>9:41</span><span>5G</span></div><div class="sec">Aufstellung</div>
+    <div class="fchips" id="forms"><button class="on" data-f="433">4-3-3</button><button data-f="442">4-4-2</button><button data-f="352">3-5-2</button></div>
+    <div class="pitch" id="pitch"><svg viewBox="0 0 100 100" preserveAspectRatio="none" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".35"><rect x="3" y="3" width="94" height="94"/><path d="M3 50h94"/><circle cx="50" cy="50" r="9"/><rect x="26" y="3" width="48" height="16"/><rect x="26" y="81" width="48" height="16"/></svg></div>
+    <div class="card" style="display:flex;justify-content:space-between;font-size:11px"><span>Bank 3 von 5</span><span style="color:var(--acc);font-weight:700">Veröffentlichen</span></div>
+  </div></div></div>
+ </div>
+</div></section>
+
+<section class="band"><div class="w">
+ <div class="split">
+  <div class="copy"><span class="eyebrow">Kasse</span><h3>Mannschaftskasse und Vereinskasse. Getrennt geführt.</h3>
+   <p>Strafen, Getränke und Einzahlungen für die Mannschaft. Für den Verein ein Kassenbuch mit Konten, Beiträgen, Haushaltsplan und Auswertungen. Wer die Zahlen sehen darf, legt der Verein fest.</p>
+   <ul><li>Strafenkatalog und Getränkelisten je Mannschaft</li><li>Mitgliedsbeiträge mit offenen Posten</li><li>Haushaltsplan gegen Ist, Rücklagen, Kassenprüfung</li><li>Auswertungen mit Verlauf und Vorjahresvergleich</li></ul></div>
+  <div class="shot"><div class="phone"><div class="scr" style="--p1:#1F55D6;--p2:#0B2A6B;--acc:#5AA9FF;--on:#06122B"><div class="st"><span>9:41</span><span>5G</span></div><div class="sec">Vereinskasse</div>
+    <div class="hr"><span class="tag" style="background:rgba(255,255,255,.18);color:#fff">Gesamtbestand aller Konten</span><div class="big" style="font-size:34px">18.582,20 €</div><div class="ln">▲ 2.682 € seit Jahresbeginn</div></div>
+    <div class="card"><div style="font:700 12px var(--display);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Bestand im Verlauf</div>
+     <svg viewBox="0 0 250 110" width="100%" role="img" aria-label="Bestand im Verlauf, Jan bis Okt, mit Vorjahreslinie"><g stroke="rgba(255,255,255,.1)"><line x1="30" x2="244" y1="14" y2="14"/><line x1="30" x2="244" y1="46" y2="46"/><line x1="30" x2="244" y1="78" y2="78"/></g><g fill="#9FB5A6" font-size="8" font-family="Open Sans"><text x="26" y="17" text-anchor="end">20 T€</text><text x="26" y="49" text-anchor="end">16 T€</text><text x="26" y="81" text-anchor="end">12 T€</text><text x="30" y="100">Jan</text><text x="137" y="100" text-anchor="middle">Jun</text><text x="244" y="100" text-anchor="end">Okt</text></g><path d="M30,60 L56,66 L83,74 L110,62 L137,67 L163,56 L190,50 L217,43 L244,36 L244,84 L30,84Z" fill="#5AA9FF" opacity=".14"/><path d="M30,64 L56,60 L83,63 L110,57 L137,58 L163,56 L190,53 L217,49 L244,46" fill="none" stroke="#9FB5A6" stroke-width="1.4" stroke-dasharray="3 3"/><path d="M30,60 L56,66 L83,74 L110,62 L137,67 L163,56 L190,50 L217,43 L244,36" fill="none" stroke="#5AA9FF" stroke-width="2" stroke-linejoin="round"/><circle cx="244" cy="36" r="3.5" fill="#5AA9FF"/></svg>
+     <div style="display:flex;gap:12px;font-size:10px;color:var(--afg2)"><span>● 2026</span><span style="color:var(--afg3)">╌ Vorjahr</span></div></div>
+    <div class="card"><div style="font-size:11px;display:flex;justify-content:space-between"><b>Beiträge 2026</b><span style="color:var(--afg3)">70 % bezahlt</span></div><div class="rb" style="height:7px;margin-top:6px;border-radius:4px;display:flex;overflow:hidden;background:rgba(255,255,255,.12)"><i style="flex:70;background:#5AA9FF"></i><i style="flex:18;background:#FFB020"></i><i style="flex:12;background:#FF6B6B"></i></div></div>
+  </div></div></div>
+ </div>
+</div></section>
+
+<section class="band alt"><div class="w">
+ <div class="split rev">
+  <div class="copy"><span class="eyebrow">Vereinsfarbe</span><h3>Clubroof ist das Dach. Die App sieht aus wie euer Verein.</h3>
+   <p>Der Verein wählt Wappen und Farbe, die ganze App zieht mit. Hell und dunkel sind für jede Farbe auf Lesbarkeit geprüft.</p>
+   <div class="swatches" role="group" aria-label="Vereinsfarbe wählen" id="sws"></div>
+   <p class="note" style="margin-top:6px" id="swname">Grün</p></div>
+  <div class="shot"><div class="phone"><div class="scr" id="clubscr"><div class="st"><span>9:41</span><span>5G</span></div>
+    <div class="hd"><div class="crest" id="crest2">SGW</div><div><small>Samstag, 17. Oktober</small><b>Hallo, Max</b></div></div>
+    <div class="hr"><span class="tag">Nächstes Spiel · B-Jugend</span><div class="big">4<small>TAGE</small></div><div class="ttl">SV Grün-Weiß B1 <em>vs.</em> VfR Sonnenberg</div><div class="ln">Sa., 24.10. · 15:00 · Sonnenberg · Liga</div><div class="rb"><i style="flex:11;background:var(--acc)"></i><i style="flex:2;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:7;background:rgba(255,255,255,.3)"></i></div></div>
+    <div class="sec">Diese Woche</div><div class="card row"><div class="dt"><div><small>DI</small>20</div></div><div class="tx"><b>Training</b><span>B1 · 18:00 · Kunstrasen</span></div></div>
+    <div class="tabbar"><span class="on">Start</span><span>Termine</span><span>Team</span><span>Verein</span><span>Ich</span></div>
+  </div></div></div>
+ </div>
+</div></section>
+
+<section class="band" id="rollen"><div class="w">
+ <div class="head"><span class="eyebrow">Für jede Rolle</span><h2>Jeder sieht, was er braucht. Nicht mehr.</h2><p>Rechte hängen an Rollen, nicht an Personen. Der Verein vergibt sie, die App prüft sie auf dem Server.</p></div>
+ <div class="tabs" role="tablist" id="rt"></div>
+ <div class="rolebox"><div class="rcard" id="rc"></div><div class="rcard q" id="rq"></div></div>
+</div></section>
+
+<section class="band alt"><div class="w">
+ <div class="head"><span class="eyebrow">Verwaltung am Desktop</span><h2>Mehr Platz für Listen, Kasse und Mitglieder.</h2><p>Ab Laptop-Breite arbeitet die App mit fester Seitenleiste. Tabellen mit Filtern, Auswahl mit Seitenpanel, Tastaturbedienung.</p></div>
+ <div class="win" role="img" aria-label="Beispiel: Beitragsübersicht am Desktop"><div class="bar"><i></i><i></i><i></i><span>clubroof.example/club-cash/fees</span></div>
+  <div class="body"><div class="sd"><a>Start</a><a>Termine</a><a>Team</a><a>Verein</a><a>Ich</a><div style="height:10px"></div><a class="v">Verwaltung</a><a class="on" style="background:#1C4FA3;color:#fff">Vereinskasse</a></div>
+   <div class="mn"><h4>Mitgliedsbeiträge</h4><div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap"><span class="pill ok">Offen</span><span class="pill b">Überfällig · 3</span><span class="pill" style="background:rgba(255,255,255,.1)">Bezahlt</span><span class="pill" style="background:rgba(255,255,255,.1)">Storniert</span></div>
+    <div class="tablewrap"><table><tr><th>Mitglied</th><th>Beitragsart</th><th>Zeitraum</th><th>Offen</th><th>Status</th></tr>
+     <tr><td>Mitglied A</td><td>Jugend</td><td>Q4 2026</td><td>45,00 €</td><td><span class="pill b">Überfällig</span></td></tr>
+     <tr><td>Mitglied B</td><td>Senioren</td><td>Q4 2026</td><td>30,00 €</td><td><span class="pill w">Offen</span></td></tr>
+     <tr><td>Mitglied C</td><td>Jugend</td><td>Q3 2026</td><td>45,00 €</td><td><span class="pill b">Überfällig</span></td></tr></table></div></div></div></div>
+</div></section>
+
+<section class="band"><div class="w">
+ <div class="head"><span class="eyebrow">Datenschutz und Rechte</span><h2>Datensparsam eingebaut.</h2></div>
+ <div class="facts">
+  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><h3>Rollen statt Zufall</h3><p>Rollen sind Rechtepakete mit Geltungsbereich: Verein, Abteilung oder Mannschaft.</p></div>
+  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 018 0v3"/></svg><h3>Prüfung am Server</h3><p>Rechte werden immer auf dem Server geprüft. Die App blendet nur aus.</p></div>
+  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><h3>Gründe bleiben intern</h3><p>Absagegründe sehen nur Berechtigte. Das Trainerteam stellt ein, ob auch die Mannschaft sie sieht.</p></div>
+  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg><h3>Archiv und Protokoll</h3><p>Löschen heißt archivieren. Änderungen an Rollen und Daten stehen im Protokoll.</p></div>
+ </div>
+</div></section>
+
+<section class="band alt" id="start"><div class="w">
+ <div class="head"><span class="eyebrow">Einrichten</span><h2>In einem Nachmittag startklar.</h2><p>Der Einrichtungsassistent führt durch Verein, Mannschaften und Kasse und erklärt jeden Schritt.</p></div>
+ <div class="steps">
+  <div class="step"><span class="eyebrow">Schritt 1</span><h3>Verein anlegen</h3><p>Name, Wappen, Farbe, Abteilungen und Module. Mannschaften lassen sich aus Vorlagen anlegen.</p></div>
+  <div class="step"><span class="eyebrow">Schritt 2</span><h3>Daten übernehmen</h3><p>Mitglieder und Kader aus Excel oder CSV importieren, mit Vorschau, Dublettenprüfung und Rückgängig. Spielplan als Datei einlesen.</p></div>
+  <div class="step"><span class="eyebrow">Schritt 3</span><h3>Einladen</h3><p>Per Link oder QR-Code, mit Freigabe durch den Verein. Eltern verknüpfen ihre Kinder selbst.</p></div>
+ </div>
+</div></section>
+
+<section class="band" id="faq"><div class="w">
+ <div class="head"><span class="eyebrow">Fragen</span><h2>Kurz beantwortet.</h2></div>
+ <div class="faq">
+  <details><summary>Für welche Vereine ist Clubroof gedacht?</summary><p>Für Sportvereine mit mehreren Mannschaften, zunächst mit Schwerpunkt Fußball. Die Struktur aus Abteilungen, Mannschaften und Rollen passt auch zu Mehrspartenvereinen.</p></details>
+  <details><summary>Brauchen Spieler und Eltern ein eigenes Konto?</summary><p>Ja, über eine Einladung des Vereins. Eltern verwalten die Antworten ihrer Kinder, ab welchem Alter ein Kind einen eigenen Zugang bekommt, entscheiden die Eltern.</p></details>
+  <details><summary>Gibt es einen Gruppenchat?</summary><p>Nein, bewusst nicht. Nachrichten, Umfragen und Termine haben feste Orte und gehen im Alltag nicht unter.</p></details>
+  <details><summary>Was kostet Clubroof?</summary><p>Die Preise stehen noch nicht fest. Pilotvereine werden begleitet eingerichtet und gestalten die App mit.</p></details>
+  <details><summary>Ist die Anbindung an DFBnet und FUSSBALL.DE vorhanden?</summary><p>Spielpläne lassen sich aus Dateien importieren. Eine direkte Anbindung ist noch nicht verfügbar.</p></details>
+ </div>
+</div></section>
+
+<section class="cta-band" id="pilot"><div class="w">
+ <div><h2>Pilotverein werden.</h2><p>Wir richten Clubroof gemeinsam mit euch ein und lernen von jedem Trainingsabend. Schreibt uns, wie euer Verein aufgebaut ist.</p></div>
+ <form class="form" id="pf" novalidate><label for="pv">Vereinsname<input id="pv" name="verein" autocomplete="organization" placeholder="SV Beispielstadt 1920"></label>
+  <label for="pm">E-Mail<input id="pm" name="mail" type="email" autocomplete="email" placeholder="vorstand@beispiel.example"></label>
+  <label for="pg">Mitglieder<select id="pg" name="gr"><option>bis 150</option><option>150 bis 500</option><option>über 500</option></select></label>
+  <button class="btn" type="submit">Anfrage vormerken</button><small id="pmsg" role="status"></small></form>
+</div></section>
+</main>
+
+<footer><div class="w">
+ <div><a class="brand" href="#top" style="padding:0"><svg class="logo" width="26" height="28" viewBox="0 0 950 1035"><use href="#lg"/></svg>Clubroof</a><p style="margin-top:12px;color:var(--fg3)">Die Vereins-App mit einem Dach für Team und Verein.</p><p class="note">Alle Vereine, Namen und Zahlen auf dieser Seite sind erfunden.</p></div>
+ <div><h4>Rechtliches</h4><a href="#top">Impressum (folgt)</a><a href="#top">Datenschutz (folgt)</a><a href="#top">AGB (folgt)</a></div>
+ <div><h4>Darstellung</h4><button class="themebtn" id="tb" type="button">Hell oder dunkel wechseln</button></div>
+</div></footer>
+
+<script>
+// Waben im Hero der Beispiel-App
+(function(){const svg=document.getElementById('hexa');if(!svg)return;const R=20,w=270,h=280;let o='';for(let i=-1;i<14;i++)for(let j=-1;j<12;j++){const cx=-12+1.5*R*i,cy=-16+2*.866*R*j+(i%2?.866*R:0);const p=[[cx+R,cy],[cx+R/2,cy+.866*R],[cx-R/2,cy+.866*R],[cx-R,cy],[cx-R/2,cy-.866*R],[cx+R/2,cy-.866*R]];const d=Math.hypot(w-cx,cy)/Math.hypot(w,h),a=Math.max(0,1-d*1.9);if(a<=.02)continue;o+='<polygon points="'+p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')+'" fill="none" stroke="#fff" stroke-width="1.4" opacity="'+(.22*a).toFixed(3)+'"/>';}svg.innerHTML=o;document.querySelectorAll('#clubscr .hr').forEach(function(h){var c=svg.cloneNode(true);c.removeAttribute('id');h.prepend(c)});})();
+// Antwortknöpfe
+const LAB={y:'✓ Du: Zugesagt',m:'? Du: Unsicher',n:'✕ Du: Abgesagt'};
+document.querySelectorAll('[data-group]').forEach(function(g){g.addEventListener('click',function(e){const b=e.target.closest('button');if(!b||b.disabled)return;g.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);if(x===b)x.classList.add(b.dataset.a);});if(g.dataset.group==='ev1'){const s=document.getElementById('ev1s');s.textContent=LAB[b.dataset.a];s.style.color=b.dataset.a==='y'?'var(--acc)':b.dataset.a==='m'?'var(--warn)':'#FF8A8A';}});});
+document.querySelectorAll('[data-group="hero"] button').forEach(function(b){b.classList.add(b.dataset.a)});
+document.getElementById('ev1t').addEventListener('click',function(){const l=document.getElementById('ev1l');l.hidden=!l.hidden;this.textContent=l.hidden?'Teilnehmer ⌄':'Teilnehmer ⌃';});
+// Aufstellung
+const FM={'433':[[50,90,1,'Keller'],[15,70,4,'Brandt'],[38,73,2,'Hanniske'],[62,73,20,'Wulf'],[85,70,5,'Lang'],[28,48,19,'Sauer'],[50,53,8,'Vogt'],[72,48,7,'Belz'],[18,22,11,'Roth'],[50,15,9,'Krämer'],[82,22,10,'Maier']],'442':[[50,90,1,'Keller'],[15,70,4,'Brandt'],[38,73,2,'Hanniske'],[62,73,20,'Wulf'],[85,70,5,'Lang'],[16,46,11,'Roth'],[38,50,8,'Vogt'],[62,50,7,'Belz'],[84,46,10,'Maier'],[36,17,9,'Krämer'],[64,17,19,'Sauer']],'352':[[50,90,1,'Keller'],[28,72,4,'Brandt'],[50,75,2,'Hanniske'],[72,72,20,'Wulf'],[12,48,5,'Lang'],[32,50,8,'Vogt'],[50,42,7,'Belz'],[68,50,6,'Funk'],[88,48,11,'Roth'],[36,17,9,'Krämer'],[64,17,10,'Maier']]};
+function pitch(k){const el=document.getElementById('pitch');el.querySelectorAll('.pl').forEach(function(n){n.remove()});FM[k].forEach(function(p){const d=document.createElement('div');d.className='pl';d.style.left=p[0]+'%';d.style.top=p[1]+'%';d.innerHTML='<i>'+p[2]+'</i><span>'+p[3]+'</span>';el.appendChild(d)});}
+pitch('433');document.getElementById('forms').addEventListener('click',function(e){const b=e.target.closest('button');if(!b)return;this.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b)});pitch(b.dataset.f);});
+// Vereinsfarbe
+const COL=[['Grün','#1E7A44','#0F3D24','#2EDB6B','#06210F','#0B120E','#151D18','SGW'],['Blau','#1F55D6','#0B2A6B','#5AA9FF','#06122B','#0A101C','#131B2B','TVB'],['Rot','#B3261E','#5A0F0B','#FF7A70','#2B0705','#150B0B','#231414','FCR'],['Gelb','#C99700','#5C4400','#FFD54F','#2B2100','#14110A','#221E12','SVG'],['Schwarz','#3A3F47','#14161A','#E4E8EE','#0E1013','#0C0D10','#17191E','BSC']];
+(function(){const box=document.getElementById('sws'),scr=document.getElementById('clubscr'),nm=document.getElementById('swname'),cr=document.getElementById('crest2');COL.forEach(function(c,i){const b=document.createElement('button');b.className='sw';b.type='button';b.style.background='linear-gradient(135deg,'+c[1]+','+c[3]+')';b.setAttribute('aria-label',c[0]);b.setAttribute('aria-pressed',i===0);b.addEventListener('click',function(){box.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});const s=scr.style;s.setProperty('--p1',c[1]);s.setProperty('--p2',c[2]);s.setProperty('--acc',c[3]);s.setProperty('--on',c[4]);s.setProperty('--abg',c[5]);s.setProperty('--acard',c[6]);cr.textContent=c[7];cr.style.color=c[2];nm.textContent=c[0];});box.appendChild(b);});})();
+// Rollen
+const ROLES=[['Spieler','Eigene Termine, Antwort, Statistik.',['Zu- und Absage mit einem Tipp','Eigene Trainingsbeteiligung und Spielstatistik','Aufstellung sehen, sobald sie veröffentlicht ist','Abwesenheit melden: Urlaub, Verletzung, Prüfung']],['Eltern','Ein Konto, alle Kinder.',['Antworten pro Kind in einer Liste','Abwesenheit für jedes Kind melden','Fahrgemeinschaften und Helferdienste','Kasse der Mannschaft ihres Kindes einsehen']],['Trainer','Die Mannschaft im Griff.',['Kader, Aufstellung und Trainingsbeteiligung','Zusagen korrigieren, Anwesenheit erfassen','Übungen und Trainingsplanung','Mannschaftskasse mit Strafen und Getränken']],['Vorstand','Der Verein im Überblick.',['Mitglieder, Mannschaften und Veranstaltungen','Nachrichten und Umfragen mit Freigabe','Helfersuche und Dokumente','Auswertungen und Änderungsprotokoll']],['Kasse','Zahlen sauber geführt.',['Vereinskasse mit Konten und Kassenbuch','Beiträge, Spenden, Haushaltsplan','Rücklagen, Inventar und Jahresabschluss','Kassenprüfer lesen und prüfen mit eigener Rolle']]];
+(function(){const t=document.getElementById('rt'),c=document.getElementById('rc'),q=document.getElementById('rq');function show(i){t.querySelectorAll('button').forEach(function(b,k){b.setAttribute('aria-selected',k===i)});const r=ROLES[i];c.innerHTML='<h3>'+r[0]+'</h3><ul>'+r[2].map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul>';q.innerHTML='<b>'+r[1]+'</b><span>Der Verein kann Rollen anpassen und eigene Rollen mit eigenen Rechten anlegen.</span>';}ROLES.forEach(function(r,i){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.textContent=r[0];b.addEventListener('click',function(){show(i)});t.appendChild(b);});show(0);})();
+// Formular (Entwurf, es wird nichts gesendet)
+document.getElementById('pf').addEventListener('submit',function(e){e.preventDefault();const v=document.getElementById('pv').value.trim(),m=document.getElementById('pm').value.trim(),o=document.getElementById('pmsg');if(!v||!/.+@.+\..+/.test(m)){o.textContent='Bitte Vereinsname und eine gültige E-Mail-Adresse eingeben.';return;}o.textContent='Entwurf: Die Anfrage wird hier nicht gesendet.';});
+// Theme-Umschalter
+document.getElementById('tb').addEventListener('click',function(){const r=document.documentElement,cur=r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');r.setAttribute('data-theme',cur==='dark'?'light':'dark');});
+</script>
