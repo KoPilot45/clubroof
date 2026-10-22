@@ -17,6 +17,9 @@ import { absenceReason } from './absences';
 
 type Scope = { personId: string } | { eventId: string };
 
+/** Neu entstandene Absage (aus einer Abwesenheit) – Grundlage für den Hinweis an das Trainerteam bei Aufstellungen. */
+export type NewAbsence = { eventId: string; personId: string; reason: string };
+
 export async function recalcAbsenceParticipation(
   tx: Db,
   opts: {
@@ -27,10 +30,11 @@ export async function recalcAbsenceParticipation(
     /** Abwesenheit, die gerade gelöscht wird: zählt nicht mehr (ihre Verknüpfungen werden aufgelöst, bevor die Zeile verschwindet) */
     ignoreAbsenceId?: string;
   } & Scope,
-): Promise<void> {
+): Promise<NewAbsence[]> {
   const rows = await tx
     .select({
       id: s.eventParticipants.id,
+      eventId: s.eventParticipants.eventId,
       personId: s.eventParticipants.personId,
       status: s.eventParticipants.status,
       absenceId: s.eventParticipants.absenceId,
@@ -54,7 +58,7 @@ export async function recalcAbsenceParticipation(
           : eq(s.eventParticipants.eventId, opts.eventId),
       ),
     );
-  if (rows.length === 0) return;
+  if (rows.length === 0) return [];
 
   const personIds = [...new Set(rows.map((r) => r.personId))];
   const absences = await tx
@@ -65,6 +69,7 @@ export async function recalcAbsenceParticipation(
   const dayOf = (d: Date) => d.toLocaleDateString('sv', { timeZone: opts.timezone });
 
   const toAbsent = new Map<string, { absenceId: string; reason: string }>();
+  const fresh: NewAbsence[] = [];
   const toDefault: { id: string; status: 'yes' | 'pending' }[] = [];
   for (const r of rows) {
     const manual = r.respondedAt !== null && r.absenceId === null;
@@ -84,6 +89,7 @@ export async function recalcAbsenceParticipation(
       const reason = absenceReason(match.kind);
       if (r.status !== 'no' || r.absenceId !== match.id || r.reason !== reason)
         toAbsent.set(r.id, { absenceId: match.id, reason });
+      if (r.status !== 'no') fresh.push({ eventId: r.eventId, personId: r.personId, reason });
     } else if (r.absenceId !== null) {
       toDefault.push({ id: r.id, status: r.mode === 'active_response' ? 'pending' : 'yes' });
     }
@@ -110,4 +116,5 @@ export async function recalcAbsenceParticipation(
         .set({ ...reset, status })
         .where(inArray(s.eventParticipants.id, ids));
   }
+  return fresh;
 }

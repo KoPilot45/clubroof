@@ -355,10 +355,6 @@ export async function saveLineup(
   if (new Set(numbers).size !== numbers.length)
     throw new HttpError(400, 'jersey_duplicate', 'Eine Rückennummer ist doppelt vergeben.');
 
-  const before = await db
-    .select({ personId: s.matchLineups.personId })
-    .from(s.matchLineups)
-    .where(eq(s.matchLineups.eventId, eventId));
   const wasPublished = m.match.lineupPublishedAt !== null;
 
   await db.transaction(async (tx) => {
@@ -388,40 +384,9 @@ export async function saveLineup(
     }
   });
 
-  // Benachrichtigen: beim ersten Veröffentlichen alle Nominierten, danach nur neu Hinzugekommene
-  if (input.publish) {
-    const previously = new Set(wasPublished ? before.map((b) => b.personId) : []);
-    const fresh = input.entries.filter((e) => !previously.has(e.personId));
-    // Zeigt die Mannschaft die Aufstellung nicht an Spieler und Eltern, steht nur „nominiert“ in der Nachricht
-    const groups: { people: string[]; body: string }[] = m.team.lineupVisible
-      ? [
-          {
-            people: fresh.filter((e) => e.role === 'starter').map((e) => e.personId),
-            body: 'Du stehst in der Startelf.',
-          },
-          {
-            people: fresh.filter((e) => e.role === 'substitute').map((e) => e.personId),
-            body: 'Du bist im Kader (Bank).',
-          },
-        ]
-      : [{ people: fresh.map((e) => e.personId), body: 'Du bist nominiert.' }];
-    for (const group of groups) {
-      await notify(
-        db,
-        actor,
-        await recipientsFor(db, group.people, actor.user.id),
-        {
-          level: 'important',
-          topic: 'matches',
-          teamId: m.event.teamId,
-          title: `Nominiert: ${m.event.title}`,
-          body: group.body,
-          link: `/events/${eventId}`,
-        },
-        now,
-      );
-    }
-  }
+  // Keine Benachrichtigung an Spieler und Eltern: Die Aufstellung ist ein Werkzeug des Trainerteams; ob sie für die
+  // Mannschaft sichtbar wird, entscheidet allein der Trainer (Schalter der Mannschaft). Das Trainerteam erfährt dagegen
+  // Absagen und „Unsicher“ aus der Aufstellung (siehe `lineup-alerts.ts`).
   return getMatchSheet(db, actor, eventId, now);
 }
 
