@@ -56,8 +56,20 @@ ok(/\(du\)/.test(t), 'aufgeklappt: eigene Zeile markiert');
 if (shots) await b.shot(spieler.page, 'ta-spieler-karten', false);
 
 // Zusage mit einem Tipp: Bestätigung benennt Person, Rückgängig stellt her
-const target = spieler.page.locator('[aria-label="Zusage"][role="radio"]:not([disabled])').first();
-await target.click();
+// Das Plakat-Karussell enthält Klone außerhalb des Bildes und wechselt von selbst: einen Knopf im Bild wählen
+let target = null;
+for (const el of await spieler.page
+  .locator('[aria-label="Zusage"][role="radio"]:not([disabled]):not([aria-disabled="true"])')
+  .all()) {
+  const box = await el.boundingBox();
+  if (box && box.x >= 0 && box.x + box.width <= 390) {
+    target = el;
+    break;
+  }
+}
+await target.evaluate((e) => e.scrollIntoView({ block: 'center' }));
+await spieler.page.waitForTimeout(500);
+await target.click({ force: true });
 await text(spieler.page, /Teilnahme bestätigt: Zusage für/).waitFor({ timeout: 10_000 });
 ok(true, 'Zusage: Bestätigung „Teilnahme bestätigt: Zusage für dich.“ mit Rückgängig');
 ok(new URL(spieler.page.url()).pathname === '/events', 'Antwortknopf öffnet keine Details');
@@ -70,7 +82,10 @@ await api(`/teams/${team.id}/profile`, admin.token, {
 try {
   await spieler.page.reload();
   await spieler.page.waitForTimeout(3500);
-  await spieler.page.locator('[aria-label="Absage"][role="radio"]:not([disabled])').first().click();
+  await spieler.page
+    .locator('[aria-label="Absage"][role="radio"]:not([disabled]):not([aria-disabled="true"])')
+    .first()
+    .click();
   await text(spieler.page, 'Absage senden', { exact: true }).click();
   await spieler.page.getByRole('alert').filter({ hasText: /Grund/ }).waitFor({ timeout: 5_000 });
   ok(true, 'Absage: Pflichtgrund wird im gemeinsamen Formular erklärt (Client oder Serverfehler)');
@@ -160,7 +175,11 @@ try {
   );
   if (shots) await b.shot(page, 'ta-desktop', false);
   // Tastatur: Fokuszeile, Taste 1 setzt die Zusage
-  const row = page.getByRole('button', { name: new RegExp(mine.title) }).first();
+  // die Zeile des ersten Termins, den man noch beantworten darf (frühere Zeilen können gesperrt sein)
+  const row = page
+    .locator('[role=radio][aria-label="Zusage"]:not([aria-disabled="true"])')
+    .first()
+    .locator('xpath=ancestor::*[@role="button"][1]');
   await row.focus();
   await page.keyboard.press('1');
   await text(page, /Teilnahme bestätigt: Zusage/).waitFor({ timeout: 10_000 });

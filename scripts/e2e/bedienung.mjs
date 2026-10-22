@@ -44,7 +44,7 @@ try {
   await page.waitForTimeout(3500);
   // seit der neuen Terminkarte sind die Antworten Radioknöpfe „Absage“
   const decline = page
-    .locator('[aria-label="Absage"][role="radio"]:not([disabled])')
+    .locator('[aria-label="Absage"][role="radio"]:not([disabled]):not([aria-disabled="true"])')
     .filter({ visible: true })
     .first();
   await decline.waitFor({ timeout: 20_000 });

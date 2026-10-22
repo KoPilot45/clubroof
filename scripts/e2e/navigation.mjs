@@ -178,7 +178,7 @@ for (const width of [1250, 1440, 1891]) {
   await page.reload();
   await page.waitForTimeout(3500);
   const yes = page
-    .locator('[aria-label="Zusage"][role="radio"]:not([disabled])')
+    .locator('[aria-label="Zusage"][role="radio"]:not([disabled]):not([aria-disabled="true"])')
     .filter({ visible: true })
     .first();
   await yes.waitFor({ timeout: 20_000 });
@@ -198,7 +198,7 @@ for (const width of [1250, 1440, 1891]) {
   // welche Karten die Liste oben zeigt, hängt vom Wochentag ab: die erste sichtbare Karte eines antwortbaren Termins
   let card = null;
   for (const e of answerable) {
-    const hit = page.getByText(e.title, { exact: true }).filter({ visible: true }).first();
+    const hit = page.getByText(e.title, { exact: true }).filter({ visible: true }).last();
     if (await hit.count()) {
       card = hit;
       break;
