@@ -139,3 +139,13 @@ export async function confirmDialog(
     .waitFor({ timeout: 8000 });
   await page.getByRole('button', { name: label }).filter({ visible: true }).last().click();
 }
+
+/** „…“-Menü einer Zeile oder Karte („Weitere Aktionen“) öffnen und die Aktion wählen. */
+export async function moreAction(page, label) {
+  await page
+    .getByRole('button', { name: 'Weitere Aktionen' })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await page.getByText(label, { exact: true }).filter({ visible: true }).first().click();
+}
