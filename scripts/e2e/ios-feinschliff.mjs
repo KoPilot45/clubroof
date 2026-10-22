@@ -54,31 +54,44 @@ async function swipeAt(page, x0, y, dx = 130) {
 // Termine: Zusage per Wischen (Spieler, offener Termin)
 {
   const { page, login, goto } = await b.session('spieler');
-  const home = await api('/home', login.token);
-  const open = home.week.find(
+  // ein antwortbarer Termin der nächsten Wochen (die Wochenliste der Startseite kann am Wochenende leer sein)
+  const win0 = `from=${encodeURIComponent(new Date().toISOString())}&to=${encodeURIComponent(new Date(Date.now() + 21 * 86_400_000).toISOString())}`;
+  const open = (await api(`/events?${win0}`, login.token)).find(
     (e) =>
       e.status === 'scheduled' &&
       e.myResponses.length === 1 &&
       e.myResponses[0].relation === 'self' &&
-      e.myResponses[0].status === 'pending' &&
       e.myResponses[0].canRespond,
   );
   if (open) {
     const from0 = new Date();
-    const beforeEvents = await api(
+    let beforeEvents = await api(
       `/events?from=${encodeURIComponent(from0.toISOString())}&to=${encodeURIComponent(new Date(from0.getTime() + 60 * 24 * 3600 * 1000).toISOString())}`,
       login.token,
     );
-    await goto('/termine');
-    await text(page, 'Als Nächstes').waitFor({ timeout: 20_000 });
+    // alle antwortbaren Termine auf „offen“: nur offene Karten lassen sich wischen
+    const win = `from=${encodeURIComponent(new Date().toISOString())}&to=${encodeURIComponent(new Date(Date.now() + 21 * 86_400_000).toISOString())}`;
+    for (const e of await api(`/events?${win}`, login.token))
+      for (const r of e.myResponses.filter((x) => x.canRespond && x.status !== 'pending'))
+        await api(`/events/${e.id}/responses/${r.personId}`, login.token, {
+          method: 'PUT',
+          body: JSON.stringify({ status: 'pending', reason: null }),
+        });
+    beforeEvents = await api(`/events?${win}`, login.token);
+    // Karten mit Antwortknöpfen stehen auf der Startseite („Diese Woche“)
+    await goto('/');
+    await page.reload();
+    await page.waitForTimeout(3500);
     // Zeile mit dem runden ✓ (offene Rückmeldung): links davon ansetzen und nach links wischen
-    const tick = page.locator('[role=button][aria-label="Zusagen"]:not([disabled])').first();
-    await tick.waitFor({ timeout: 10_000 });
-    // Zeile in die Mitte holen: unten verdeckt die schwebende Leiste sonst die Wischfläche
-    await tick.evaluate((e) => e.scrollIntoView({ block: 'center' }));
+    // Die Wisch-Aktion „Zusagen“ liegt unter jeder offenen Karte der Woche (Plakat und Antwortknöpfe sind nicht wischbar):
+    // an ihrer Höhe am rechten Rand ansetzen und nach links wischen
+    const action = page.locator('[role=button][aria-label="Zusagen"]').first();
+    await action.waitFor({ state: 'attached', timeout: 10_000 });
+    // Karte in die Mitte holen: unten verdeckt die schwebende Leiste sonst die Wischfläche
+    await action.evaluate((e) => e.scrollIntoView({ block: 'center' }));
     await page.waitForTimeout(400);
-    const t = await tick.boundingBox();
-    await swipeAt(page, t.x - 20, t.y + t.height / 2, 100); // halb geöffnet: Aktion antippen
+    const t = await action.boundingBox();
+    await swipeAt(page, 340, t.y + t.height / 2, 130); // halb geöffnet: Aktion antippen
     await page.waitForTimeout(500);
     // die Wisch-Aktion trägt sichtbaren Text (das runde ✓ nicht)
     const act = page.locator('[role=button]:not([disabled])', { hasText: 'Zusagen' }).first();
@@ -94,7 +107,8 @@ async function swipeAt(page, x0, y, dx = 130) {
     const yes = (list) =>
       list.filter((e) => e.myResponses.length === 1 && e.myResponses[0].status === 'yes');
     ok(
-      yes(after).length === yes(beforeEvents).length + 1,
+      // mindestens eine Zusage mehr (der Server leitet bei einzelnen Terminen weitere automatische Zusagen ab)
+      yes(after).length > yes(beforeEvents).length,
       'Termin: Zusage per Wischen gespeichert',
     );
     for (const e of yes(after))
@@ -110,7 +124,7 @@ async function swipeAt(page, x0, y, dx = 130) {
 {
   const { page, goto } = await b.session('spieler');
   await goto('/');
-  await text(page, 'Deine Woche').waitFor({ timeout: 20_000 });
+  await text(page, 'Diese Woche').waitFor({ timeout: 20_000 });
   const stored = await page.evaluate(() =>
     Object.entries(localStorage).find(([k, v]) => /brand/.test(k) || /\|/.test(String(v))),
   );
