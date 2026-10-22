@@ -209,6 +209,13 @@ html,body{overflow-x:clip}
 .case ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:14.5px;color:var(--fg2)}.case li b{color:var(--fg)}
 @media (max-width:980px){.views,.cases{grid-template-columns:minmax(0,1fr)}.tools{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:340px){.tools{grid-template-columns:1fr}}
+/* Heller und dunkler Wechsel: Bänder tragen feste Token unabhängig vom Theme */
+.lt{--bg:#F5F8FF;--bg2:#E6EDFC;--card:#FFFFFF;--card2:#EEF3FF;--fg:#0A1230;--fg2:#38476E;--fg3:#5B6B95;--line:rgba(0,42,250,.14);--accent:#0B3BEF;--on-accent:#FFFFFF;--glow:rgba(0,90,255,.18);color-scheme:light}
+.dk{--bg:#070B14;--bg2:#0B1224;--card:#101A30;--card2:#16223F;--fg:#EEF3FF;--fg2:#B7C3DE;--fg3:#8191B3;--line:rgba(140,170,255,.16);--accent:#4DC3FF;--on-accent:#04112B;--glow:rgba(0,120,255,.35);color-scheme:dark}
+.band,footer{background:var(--bg);color:var(--fg)}
+.band.alt{background:var(--bg2)}
+.lt.band .usp.big,.lt .usp.big{color:#fff}
+.lt .head h2 em{color:var(--accent)}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="crg" gradientUnits="userSpaceOnUse" x1="200" y1="1000" x2="1057" y2="627"><stop offset="0" stop-color="#002AFA"/><stop offset="1" stop-color="#00C3FF"/></linearGradient></defs>
@@ -222,7 +229,7 @@ html,body{overflow-x:clip}
 </div></header>
 
 <main id="top">
-<section class="hero"><svg class="roof" viewBox="150 100 950 1035" aria-hidden="true"><use href="#lgw"/></svg>
+<section class="hero dk"><svg class="roof" viewBox="150 100 950 1035" aria-hidden="true"><use href="#lgw"/></svg>
  <div class="w"><div>
    <span class="eyebrow">Team und Verein in einer App</span>
    <h1 style="margin-top:16px">Ein Dach für den <em>ganzen Verein.</em></h1>
@@ -251,7 +258,7 @@ html,body{overflow-x:clip}
  <div class="dachlinie"></div>
 </section>
 
-<section class="band alt" id="warum"><div class="w">
+<section class="band lt alt" id="warum"><div class="w">
  <div class="head"><span class="eyebrow">Warum Clubroof</span><h2>Nicht noch eine Team-App. Das Dach für den ganzen Verein.</h2><p>Team-Apps regeln den Mannschaftsalltag, Vereinssoftware die Verwaltung. Clubroof verbindet beides und prüft jedes Recht auf dem Server.</p></div>
  <div class="usps">
   <div class="usp big"><span class="n">01</span><h3>Eine App für Team und Verein</h3><p>Zusagen, Kader und Kasse der Mannschaft und Mitglieder, Beiträge und Haushalt des Vereins. Ein Login, ein Rechtekonzept, keine zweite Software.</p></div>
@@ -274,7 +281,7 @@ html,body{overflow-x:clip}
  <p class="cmpnote">Vergleich nach Art der Lösung, nicht nach einzelnen Anbietern. Funktionsumfang kann je Produkt abweichen.</p>
 </div></section>
 
-<section class="band" id="rollen"><div class="w">
+<section class="band lt" id="rollen"><div class="w">
  <div class="head"><span class="eyebrow">Eine App, jede Ansicht</span><h2>Alle Werkzeuge des Vereins. Jeder sieht nur seine.</h2><p>Trainer, Spieler, Eltern, Kassenwart und Vorstand arbeiten in derselben App mit derselben Navigation. Welche Werkzeuge erscheinen, bestimmt die Rolle. Wähle eine Rolle und sieh, was sich ändert.</p></div>
  <div class="tabs" role="tablist" id="rt" aria-label="Rolle wählen"></div>
  <div class="views">
@@ -288,7 +295,7 @@ html,body{overflow-x:clip}
  <p class="cmpnote">Rollen sind Rechtepakete mit Geltungsbereich: Verein, Abteilung oder Mannschaft. Wer mehrere Aufgaben hat, sieht die Summe. Der Verein kann Rollen anpassen, die Prüfung passiert immer auf dem Server.</p>
 </div></section>
 
-<section class="band alt" id="zusagen"><div class="w">
+<section class="band lt" id="zusagen"><div class="w">
  <div class="split">
   <div class="copy"><span class="eyebrow">Termine und Zusagen</span><h3>Zusagen in einem Tipp. Teilnehmer in einem Blick.</h3>
    <p>Drei Knöpfe an jedem Termin: Zusage, Vielleicht, Absage. Die Teilnehmerliste klappt auf, ohne die Seite zu verlassen. Für Kinder antworten Eltern pro Kind.</p>
@@ -308,7 +315,7 @@ html,body{overflow-x:clip}
  <p class="note" style="margin-top:14px;text-align:center;max-width:none">Zum Ausprobieren: Antwort antippen, dann „Teilnehmer“ aufklappen. Beispieldaten sind erfunden.</p>
 </div></section>
 
-<section class="band" id="faelle"><div class="w">
+<section class="band lt alt" id="faelle"><div class="w">
  <div class="head"><span class="eyebrow">Aus dem Vereinsalltag</span><h2>Sechs Situationen, die jeder Verein kennt.</h2><p>Wie Clubroof sie löst, ohne dass jemand mehr sieht als nötig.</p></div>
  <div class="cases">
   <article class="case"><span class="who">Trainer</span><h3>Spieltag der C-Jugend</h3><ol><li><b>Davor:</b> Eltern antworten pro Kind mit einem Tipp.</li><li><b>Dann:</b> Der Trainer sieht Quote und Trainingsbeteiligung und stellt auf.</li><li><b>Danach:</b> Mit „Veröffentlichen“ sieht es die ganze Mannschaft.</li></ol></article>
@@ -320,7 +327,7 @@ html,body{overflow-x:clip}
  </div>
 </div></section>
 
-<section class="band alt"><div class="w">
+<section class="band dk"><div class="w">
  <div class="split">
   <div class="copy"><span class="eyebrow">Kasse</span><h3>Mannschaftskasse und Vereinskasse. Getrennt geführt.</h3>
    <p>Strafen, Getränke und Einzahlungen für die Mannschaft. Für den Verein ein Kassenbuch mit Konten, Beiträgen, Haushaltsplan und Auswertungen. Wer die Zahlen sehen darf, legt der Verein fest.</p>
@@ -335,7 +342,7 @@ html,body{overflow-x:clip}
  </div>
 </div></section>
 
-<section class="band"><div class="w">
+<section class="band lt"><div class="w">
  <div class="head"><span class="eyebrow">Verwaltung am Desktop</span><h2>Mehr Platz für Listen, Kasse und Mitglieder.</h2><p>Ab Laptop-Breite arbeitet die App mit fester Seitenleiste. Tabellen mit Filtern, Auswahl mit Seitenpanel, Tastaturbedienung.</p></div>
  <div class="win" role="img" aria-label="Beispiel: Beitragsübersicht am Desktop"><div class="bar"><i></i><i></i><i></i><span>clubroof.example/club-cash/fees</span></div>
   <div class="body"><div class="sd"><a>Start</a><a>Termine</a><a>Team</a><a>Verein</a><a>Ich</a><div style="height:10px"></div><a class="v">Verwaltung</a><a class="on" style="background:#1C4FA3;color:#fff">Vereinskasse</a></div>
@@ -346,7 +353,7 @@ html,body{overflow-x:clip}
      <tr><td>Mitglied C</td><td>Jugend</td><td>Q3 2026</td><td>45,00 €</td><td><span class="pill b">Überfällig</span></td></tr></table></div></div></div></div>
 </div></section>
 
-<section class="band alt"><div class="w">
+<section class="band lt alt"><div class="w">
  <div class="head"><span class="eyebrow">Und außerdem</span><h2>Was sonst noch zum Vereinsalltag gehört.</h2><p>Jedes Modul lässt sich pro Verein an- und abschalten. Wer es nicht braucht, sieht es nicht.</p></div>
  <div class="facts more">
   <div class="fact"><h3>Aufstellung</h3><p>Formation wählen, Spieler per Drag &amp; Drop aufs Feld ziehen, Entwurf speichern, später veröffentlichen.</p></div>
@@ -360,7 +367,7 @@ html,body{overflow-x:clip}
  </div>
 </div></section>
 
-<section class="band"><div class="w">
+<section class="band dk"><div class="w">
  <div class="head"><span class="eyebrow">Datenschutz und Rechte</span><h2>Datensparsam eingebaut.</h2></div>
  <div class="facts">
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><h3>Rollen statt Zufall</h3><p>Rollen sind Rechtepakete mit Geltungsbereich: Verein, Abteilung oder Mannschaft.</p></div>
@@ -370,7 +377,7 @@ html,body{overflow-x:clip}
  </div>
 </div></section>
 
-<section class="band alt"><div class="w">
+<section class="band lt"><div class="w">
  <div class="split rev">
   <div class="copy"><span class="eyebrow">Vereinsfarbe</span><h3>Clubroof ist das Dach. Die App sieht aus wie euer Verein.</h3>
    <p>Der Verein wählt Wappen und Farbe, die ganze App zieht mit. Hell und dunkel sind für jede Farbe auf Lesbarkeit geprüft.</p>
@@ -385,7 +392,7 @@ html,body{overflow-x:clip}
  </div>
 </div></section>
 
-<section class="band" id="tarife"><div class="w">
+<section class="band lt alt" id="tarife"><div class="w">
  <div class="head"><span class="eyebrow">Tarife</span><h2>Ein Preis nach Vereinsgröße. Alle Funktionen inklusive.</h2><p>Gezählt werden Mitglieder, nicht Mannschaften oder Konten. Spieler, Eltern und Trainer kosten nichts extra.</p></div>
  <div class="bill" role="group" aria-label="Zahlweise"><button type="button" id="bm" aria-pressed="false">Monatlich</button><button type="button" id="by" aria-pressed="true">Jährlich · 2 Monate sparen</button></div>
  <div class="plans">
@@ -400,7 +407,7 @@ html,body{overflow-x:clip}
  <p class="cmpnote">Mehr als 1.000 Mitglieder oder mehrere Vereine? Sprecht uns an. Preise netto zuzüglich Umsatzsteuer, Beispielwerte für dieses Mockup.</p>
 </div></section>
 
-<section class="band alt" id="start"><div class="w">
+<section class="band lt" id="start"><div class="w">
  <div class="head"><span class="eyebrow">Einrichten</span><h2>In einem Nachmittag startklar.</h2><p>Der Einrichtungsassistent führt durch Verein, Mannschaften und Kasse und erklärt jeden Schritt.</p></div>
  <div class="steps">
   <div class="step"><span class="eyebrow">Schritt 1</span><h3>Verein anlegen</h3><p>Name, Wappen, Farbe, Abteilungen und Module. Mannschaften lassen sich aus Vorlagen anlegen.</p></div>
@@ -409,7 +416,7 @@ html,body{overflow-x:clip}
  </div>
 </div></section>
 
-<section class="band" id="faq"><div class="w">
+<section class="band lt alt" id="faq"><div class="w">
  <div class="head"><span class="eyebrow">Fragen</span><h2>Kurz beantwortet.</h2></div>
  <div class="faq">
   <details><summary>Für welche Vereine ist Clubroof gedacht?</summary><p>Für Sportvereine mit mehreren Mannschaften, zunächst mit Schwerpunkt Fußball. Die Struktur aus Abteilungen, Mannschaften und Rollen passt auch zu Mehrspartenvereinen.</p></details>
@@ -426,7 +433,7 @@ html,body{overflow-x:clip}
 </div></section>
 </main>
 
-<footer><div class="w">
+<footer class="dk"><div class="w">
  <div><a class="brand" href="#top" style="padding:0"><svg class="logo" width="26" height="28" viewBox="0 0 950 1035"><use href="#lg"/></svg>Clubroof</a><p style="margin-top:12px;color:var(--fg3)">Die Vereins-App mit einem Dach für Team und Verein.</p><p class="note">Alle Vereine, Namen und Zahlen auf dieser Seite sind erfunden.</p></div>
  <div><h4>Rechtliches</h4><a href="#top">Impressum (folgt)</a><a href="#top">Datenschutz (folgt)</a><a href="#top">AGB (folgt)</a></div>
  <div><h4>Darstellung</h4><button class="themebtn" id="tb" type="button">Hell oder dunkel wechseln</button></div>
