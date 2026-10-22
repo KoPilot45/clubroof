@@ -15,12 +15,16 @@ const ok = (cond, msg) => {
   ok(await text(page, 'Girokonto Sparkasse').isVisible(), 'Übersicht zeigt die Konten');
   ok(await text(page, 'Ideeller Bereich').isVisible(), 'Summen nach den vier Bereichen');
 
+  // seit der Kassen-Nachbesserung: Reiter „Buchung“ → Kachel „Ausgabe“ → Formular mit vorgewählter Art
+  await page.getByRole('tab', { name: 'Buchung' }).click();
   await button(page, 'Ausgabe').click();
   await text(page, 'Art der Buchung').waitFor();
   await page.getByLabel('Betrag in €').fill('19,90');
   await page.getByLabel('Verwendungszweck', { exact: true }).fill('Browsertest Spielfeldkreide');
   await text(page, 'Sportgeräte und Material', { exact: true }).click();
   await page.getByText(/^Buchen: /).click();
+  await page.waitForTimeout(1500);
+  await goto('/club-cash');
   await text(page, 'Gesamtbestand aller Konten').waitFor({ timeout: 10_000 });
   await text(page, 'Browsertest Spielfeldkreide').waitFor({ timeout: 10_000 });
   ok(true, 'Ausgabe gebucht, erscheint unter „Letzte Buchungen“');
@@ -38,11 +42,13 @@ const ok = (cond, msg) => {
   const { page, goto } = await b.session('mitglied');
   await goto('/club-cash');
   await text(page, 'Gesamtbestand aller Konten').waitFor({ timeout: 20_000 });
+  // Prüfer dürfen lesen, aber nicht buchen: auch im Reiter „Buchung“ gibt es keine Kachel „Ausgabe“
+  const tab = page.getByRole('tab', { name: 'Buchung' });
+  if (await tab.count()) await tab.click();
+  await page.waitForTimeout(800);
   ok(
-    !(await button(page, 'Ausgabe')
-      .isVisible()
-      .catch(() => false)),
-    'Prüfer sehen keine Buchen-Schaltflächen',
+    (await button(page, 'Ausgabe').count()) === 0,
+    'Prüfer sehen keine Buchungs-Kacheln (Einnahme, Ausgabe, Umbuchung)',
   );
 }
 
