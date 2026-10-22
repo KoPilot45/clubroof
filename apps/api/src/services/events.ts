@@ -43,6 +43,7 @@ import { actorCan, isFullAdmin, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { coachUsers, digestAt } from '../notify/coaches';
 import { deliver } from '../notify/deliver';
+import { notifyLineupChanges } from './lineup-alerts';
 import { carpoolFor } from './carpool';
 import { OPEN_EVENT_TYPES, attendanceFor, shiftsFor } from './helpers';
 import { resolveMediaUrl } from '../storage/media-links';
@@ -732,6 +733,26 @@ export async function respondToEvent(
       now,
     );
   }
+
+  // Steht der Spieler in der Aufstellung, erfährt das Trainerteam jede Absage und jedes „Unsicher“ sofort
+  if (
+    (input.status === 'no' || input.status === 'maybe') &&
+    participant.status !== input.status &&
+    participant.role === 'player'
+  )
+    await notifyLineupChanges(
+      db,
+      actor,
+      [
+        {
+          eventId: input.eventId,
+          personId: input.personId,
+          status: input.status,
+          reason: input.reason,
+        },
+      ],
+      now,
+    );
 
   const [updated] = await summarizeEvents(db, actor, [row], now);
   return updated!;

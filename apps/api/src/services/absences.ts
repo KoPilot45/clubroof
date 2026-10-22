@@ -16,7 +16,8 @@ import {
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, eq, gte, inArray } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
-import { recalcAbsenceParticipation } from './participation';
+import { notifyLineupChanges } from './lineup-alerts';
+import { recalcAbsenceParticipation, type NewAbsence } from './participation';
 import { HttpError, forbidden, notFound } from '../errors';
 
 const LABELS: Record<AbsenceKind, string> = {
@@ -90,6 +91,20 @@ const recalc = (tx: Db, actor: Actor, personId: string, now: Date, ignoreAbsence
     ignoreAbsenceId,
   });
 
+/** Absagen aus Abwesenheiten: steht die Person in einer Aufstellung, erfährt es das Trainerteam. */
+const notifyAbsences = (db: Db, actor: Actor, fresh: NewAbsence[], now: Date) =>
+  notifyLineupChanges(
+    db,
+    actor,
+    fresh.map((f) => ({
+      eventId: f.eventId,
+      personId: f.personId,
+      status: 'no' as const,
+      reason: f.reason,
+    })),
+    now,
+  );
+
 /**
  * Abwesenheit nachträglich ändern (Paket BE): Zeitraum, Grund, Mannschaftsauswahl und Notiz. Die abgeleitete Teilnahme
  * wird danach aus allen Abwesenheiten der Person neu berechnet – wie beim Löschen und Anlegen. Ändern dürfen die
@@ -137,7 +152,8 @@ export async function updateAbsence(
       'Eine ausgewählte Mannschaft gehört nicht zu dieser Person.',
     );
 
-  return db.transaction(async (tx) => {
+  const fresh: NewAbsence[] = [];
+  const result = await db.transaction(async (tx) => {
     const [updated] = await tx
       .update(s.absences)
       .set({
@@ -150,7 +166,7 @@ export async function updateAbsence(
       })
       .where(eq(s.absences.id, id))
       .returning();
-    await recalc(tx as unknown as Db, actor, absence.personId, now);
+    fresh.push(...(await recalc(tx as unknown as Db, actor, absence.personId, now)));
     await tx.insert(s.auditLog).values({
       clubId: actor.club.id,
       actorUserId: actor.user.id,
@@ -166,6 +182,8 @@ export async function updateAbsence(
     ]);
     return result!;
   });
+  await notifyAbsences(db, actor, fresh, now);
+  return result;
 }
 
 export async function createAbsence(
@@ -209,7 +227,8 @@ export async function createAbsence(
     );
   }
 
-  return db.transaction(async (tx) => {
+  const fresh: NewAbsence[] = [];
+  const result = await db.transaction(async (tx) => {
     const [absence] = await tx
       .insert(s.absences)
       .values({
@@ -224,7 +243,7 @@ export async function createAbsence(
       })
       .returning();
 
-    await recalc(tx as unknown as Db, actor, input.personId, now);
+    fresh.push(...(await recalc(tx as unknown as Db, actor, input.personId, now)));
 
     const person = actor.managed.find((m) => m.id === input.personId)!;
     const [result] = await toAbsences(tx as unknown as Db, [
@@ -232,6 +251,8 @@ export async function createAbsence(
     ]);
     return result!;
   });
+  await notifyAbsences(db, actor, fresh, now);
+  return result;
 }
 
 /**

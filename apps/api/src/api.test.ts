@@ -309,8 +309,12 @@ describe.skipIf(!url)('API', () => {
       const b1 = player.me.teams.find((t) => t.badge === 'B1')!.id;
       const own = await get<TeamCash>(`/teams/${b1}/cash`, player.token);
       expect(own.balanceCents).toBe(51235);
-      expect(own.entries!.length).toBeGreaterThan(3);
-      expect(own.members!.length).toBeGreaterThan(3);
+      // Standard: Kassenstand, Einnahmen und Ausgaben sieht die Mannschaft, die Beträge anderer nur mit Freigabe
+      expect(own.incomeCents).not.toBeNull();
+      expect(own.members).toBeNull();
+      expect(own.entries!.every((e) => !e.person || e.person.id === player.me.person.id)).toBe(
+        true,
+      );
       // Die Startseite zeigt keine Kasse mehr
       const home = await get<HomeResponse>('/home', player.token);
       expect('cash' in home).toBe(false);
@@ -2133,6 +2137,40 @@ describe.skipIf(!url)('API', () => {
       expect(pdf.headers['content-type']).toBe('application/pdf');
       expect(pdf.rawPayload.subarray(0, 5).toString()).toBe('%PDF-');
       expect(pdf.rawPayload.toString('latin1')).toContain('Kassenpr');
+    });
+
+    it('Mannschaftskasse: Kassenstand sieht die ganze Mannschaft, Beträge aller nur mit Freigabe (Standard: nur eigene)', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const overview = await get<TeamAdminOverview>('/admin/teams', admin.token);
+      const a1 = overview.teams.find((t) => t.badge === 'A1')!;
+
+      // Neue Kasse ohne gespeicherte Einstellung: Standard ist „nur eigene Beträge“
+      const fresh = await get<TeamCash>(`/teams/${a1.id}/cash`, admin.token);
+      expect(fresh.settings.showMemberBalances).toBe(false);
+
+      // Spieler der B-Jugend: Kassenstand, Einnahmen und Ausgaben immer sichtbar
+      await send('PUT', `/teams/${b1.id}/cash/settings`, coach.token, {
+        showMemberBalances: false,
+      });
+      const own = await get<TeamCash>(`/teams/${b1.id}/cash`, player.token);
+      expect(own.balanceCents).not.toBeNull();
+      expect(own.incomeCents).not.toBeNull();
+      expect(own.expenseCents).not.toBeNull();
+      expect(own.members).toBeNull();
+      expect(own.entries!.every((e) => !e.person || e.person.id === player.me.person.id)).toBe(
+        true,
+      );
+      const stats = await get<{ highlights?: unknown }>(`/teams/${b1.id}/cash/stats`, player.token);
+      expect(stats).toBeDefined();
+
+      // Mit Freigabe sehen alle die Beträge aller Beteiligten
+      await send('PUT', `/teams/${b1.id}/cash/settings`, coach.token, { showMemberBalances: true });
+      const all = await get<TeamCash>(`/teams/${b1.id}/cash`, player.token);
+      expect(all.members!.length).toBeGreaterThan(1);
+      expect(all.balanceCents).toBe(own.balanceCents);
     });
 
     it('Kassenstatistik für die ganze Mannschaft', async () => {
@@ -4116,7 +4154,76 @@ describe.skipIf(!url)('API', () => {
       }
     });
 
-    it('Aufstellung: Entwurf nur fürs Trainerteam, Veröffentlichen benachrichtigt', async () => {
+    it('Aufstellung: Absage oder „Unsicher“ aus der Aufstellung benachrichtigt das Trainerteam', async () => {
+      const coach = await login('trainer');
+      const player = await login('spieler');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      const next = (await get<EventSummary[]>('/events', coach.token)).find(
+        (e) =>
+          e.team?.id === b1.id &&
+          e.type === 'match' &&
+          e.status === 'scheduled' &&
+          new Date(e.startsAt) > NOW,
+      )!;
+      const meId = player.me.person.id;
+      const sheet = await get<MatchSheet>(`/events/${next.id}/match`, coach.token);
+      const others = sheet
+        .candidates!.filter((c) => c.status !== 'no' && c.personId !== meId)
+        .slice(0, 10);
+      const entries = [
+        { personId: meId, role: 'starter' },
+        ...others.map((c) => ({ personId: c.personId, role: 'starter' })),
+      ];
+      const titleOf = (n: NotificationItem) => n.title;
+      const alerts = async () =>
+        (await get<NotificationItem[]>('/notifications', coach.token))
+          .map(titleOf)
+          .filter((x) => x.startsWith('Aufstellung:'));
+      const before = (await alerts()).length;
+      const beforeNo = (await alerts()).filter((x) => /hat abgesagt/.test(x)).length;
+
+      await send('PUT', `/events/${next.id}/lineup`, coach.token, { entries, publish: false });
+      const put = (status: string, reason?: string) =>
+        send('PUT', `/events/${next.id}/responses/${meId}`, player.token, { status, reason });
+      expect((await put('maybe', 'Knie zwickt')).status).toBe(200);
+      let titles = await alerts();
+      expect(titles).toHaveLength(before + 1);
+      expect(titles.some((x) => /Aufstellung: .+ ist unsicher/.test(x))).toBe(true);
+      expect((await put('no', 'Verletzt')).status).toBe(200);
+      titles = await alerts();
+      expect(titles).toHaveLength(before + 2);
+      expect(titles.some((x) => /Aufstellung: .+ hat abgesagt/.test(x))).toBe(true);
+      // gleiche Antwort noch einmal: kein zweiter Hinweis
+      await put('no', 'Verletzt');
+      expect(await alerts()).toHaveLength(before + 2);
+      // Zusage meldet nichts
+      await put('yes');
+      expect(await alerts()).toHaveLength(before + 2);
+      // Abwesenheit sagt automatisch ab: auch das erfährt das Trainerteam, wenn der Spieler in der Aufstellung steht
+      await put('pending');
+      const day = next.startsAt.slice(0, 10);
+      const absence = await send<Absence>('POST', '/absences', player.token, {
+        personId: meId,
+        kind: 'illness',
+        startsOn: day,
+        endsOn: day,
+      });
+      expect(absence.status).toBe(201);
+      titles = await alerts();
+      expect(titles).toHaveLength(before + 3);
+      expect(titles.filter((x) => /hat abgesagt/.test(x))).toHaveLength(beforeNo + 2);
+      await send('DELETE', `/absences/${absence.body.id}`, player.token);
+      // Spieler außerhalb der Aufstellung: kein Hinweis
+      await send('PUT', `/events/${next.id}/lineup`, coach.token, {
+        entries: entries.slice(1),
+        publish: false,
+      });
+      await put('no', 'Verletzt');
+      expect(await alerts()).toHaveLength(before + 3);
+      await put('yes');
+    });
+
+    it('Aufstellung: Entwurf nur fürs Trainerteam, Veröffentlichen benachrichtigt Spieler nicht', async () => {
       const coach = await login('trainer');
       const player = await login('spieler');
       const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
@@ -4173,12 +4280,9 @@ describe.skipIf(!url)('API', () => {
       const forPlayer = await get<MatchSheet>(`/events/${next.id}/match`, player.token);
       expect(forPlayer.lineup!.published).toBe(true);
       expect(forPlayer.candidates).toBeNull();
+      // Die Aufstellung ist ein Werkzeug des Trainerteams: Spieler und Eltern erhalten keine Benachrichtigung dazu
       const notes = await get<NotificationItem[]>('/notifications', player.token);
-      expect(
-        notes.some(
-          (n) => n.title.startsWith('Nominiert:') && n.body === 'Du stehst in der Startelf.',
-        ),
-      ).toBe(true);
+      expect(notes.some((n) => n.title.startsWith('Nominiert'))).toBe(false);
       // Bericht vor Anpfiff nicht möglich
       const early = await send('PUT', `/events/${next.id}/report`, coach.token, {
         goalsFor: 0,
@@ -9966,7 +10070,8 @@ describe.skipIf(!url)('API', () => {
       );
       expect(mine.slice(1).every((r) => r[1] === 'Ich')).toBe(true);
       const admin = await login('admin');
-      const audit = await send<AuditEntry[]>('GET', '/admin/audit', admin.token);
+      // das Protokoll zeigt standardmäßig die letzten 200 Einträge; die Tests davor füllen es: großzügiger lesen
+      const audit = await send<AuditEntry[]>('GET', '/admin/audit?limit=500', admin.token);
       expect(audit.body.some((e) => e.label.startsWith('Export: '))).toBe(true);
     });
   });

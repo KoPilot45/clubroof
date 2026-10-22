@@ -64,7 +64,7 @@ export const NOTIFICATION_TOPICS = [
   {
     key: 'responses',
     label: 'Rückmeldungen (Trainer)',
-    description: 'Sammelhinweis zur Frist und kurzfristige Absagen',
+    description: 'Sammelhinweis zur Frist, kurzfristige Absagen und Absagen aus der Aufstellung',
     category: 'team',
     defaultMode: 'app',
   },

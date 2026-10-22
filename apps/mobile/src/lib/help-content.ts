@@ -370,7 +370,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'cash-view',
         question: 'Was sehe ich in der Kasse?',
         answer:
-          'Unter „Team → Kasse“ steht der Kassenstand mit Einnahmen und Ausgaben, deine eigenen Buchungen („Mein Konto“) und die letzten Buchungen der Mannschaft. Die Statistik zeigt Diagramme und Auswertungen. Die Kasse sieht die ganze Mannschaft.',
+          'Unter „Team → Kasse“ steht der Kassenstand mit Einnahmen und Ausgaben, deine eigenen Buchungen („Mein Konto“) und die letzten Buchungen der Mannschaft. Die Statistik zeigt Diagramme und Auswertungen. Kassenstand, Einnahmen und Ausgaben sieht die ganze Mannschaft (Spieler, Eltern und Trainerteam). Die Beträge der anderen Personen siehst du nur, wenn die Kasse das freigibt – sonst nur deine eigenen.',
       },
       {
         id: 'cash-fines',
@@ -574,7 +574,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'coach-lineup',
         question: 'Wie stelle ich die Aufstellung auf und führe den Spielbericht?',
         answer:
-          'Im Spieltermin: „Aufstellung erstellen“. Der Planer zeigt ein Spielfeld: Wähle oben 7er, 9er oder 11er und eine Formation, ziehe dann Spieler aus der Kaderleiste auf eine Position oder auf die Bank (oder tippe zuerst den Spieler und dann den Platz an). Ziehst du einen Spieler auf einen besetzten Platz, tauschen beide; zurück in die Kaderleiste nimmt ihn aus der Aufstellung. Die Punkte und Balken zeigen die Trainingsbeteiligung der letzten vier Wochen – nur das Trainerteam sieht sie. „Entwurf speichern“ ist nur für das Trainerteam sichtbar; „Veröffentlichen“ benachrichtigt die Nominierten. Ob Spieler und Eltern die veröffentlichte Aufstellung sehen, stellst du unter „Mannschaft bearbeiten“ ein. Nach dem Spiel trägst du Ergebnis, Tore, Vorlagen und Karten im Spielbericht ein – erst dann zählen sie in der Statistik.',
+          'Im Spieltermin: „Aufstellung erstellen“. Der Planer zeigt ein Spielfeld: Wähle oben 7er, 9er oder 11er und eine Formation, ziehe dann Spieler aus der Kaderleiste auf eine Position oder auf die Bank (oder tippe zuerst den Spieler und dann den Platz an). Ziehst du einen Spieler auf einen besetzten Platz, tauschen beide; zurück in die Kaderleiste nimmt ihn aus der Aufstellung. Die Punkte und Balken zeigen die Trainingsbeteiligung der letzten vier Wochen – nur das Trainerteam sieht sie. „Entwurf speichern“ ist nur für das Trainerteam sichtbar. Die Aufstellung ist dein Werkzeug: Spieler und Eltern bekommen dazu keine Benachrichtigung. Ob sie die veröffentlichte Aufstellung sehen, stellst du allein unter „Mannschaft bearbeiten“ ein. Dafür erfährst du sofort, wenn jemand aus Startelf oder Bank absagt oder auf „Unsicher“ stellt (Hinweis „Aufstellung: … hat abgesagt“, auch bei einer Abwesenheit). Nach dem Spiel trägst du Ergebnis, Tore, Vorlagen und Karten im Spielbericht ein – erst dann zählen sie in der Statistik.',
       },
       {
         id: 'coach-attendance',
@@ -717,7 +717,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'tr-more',
         question: 'Erinnerung, Bezahlinfos und Kassenprüfung?',
         answer:
-          'Erinnerungen an offene Beträge verschickst du per Knopf oder lässt sie monatlich automatisch laufen (Einstellungen). Unter „Bezahlinfos & Einstellungen“ hinterlegst du IBAN und PayPal und bestimmst, ob alle die offenen Beträge der anderen sehen. „Kassenprüfung“ hält den Stand mit Prüfer fest. Berichte gibt es als Excel und PDF.',
+          'Erinnerungen an offene Beträge verschickst du per Knopf oder lässt sie monatlich automatisch laufen (Einstellungen). Unter „Bezahlinfos & Einstellungen“ hinterlegst du IBAN und PayPal und bestimmst, ob alle die Beträge aller Beteiligten sehen (Standard: jeder nur die eigenen; Kassenstand, Einnahmen und Ausgaben sieht immer die ganze Mannschaft). „Kassenprüfung“ hält den Stand mit Prüfer fest. Berichte gibt es als Excel und PDF.',
       },
     ],
   },

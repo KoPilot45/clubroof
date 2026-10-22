@@ -1874,6 +1874,8 @@ export async function seed(
                 accountHolder: 'SV Grün-Weiß – 1. Mannschaft',
                 paypalLink: 'https://paypal.me/svgw-erste',
                 drinkPriceCents: 150,
+                // Herren: alle sehen die Beträge aller; B-Jugend und übrige Mannschaften nur die eigenen (Standard)
+                showMemberBalances: true,
               }
             : k === 'b1'
               ? { iban: 'DE89 3704 0044 0532 0130 00', accountHolder: 'SV Grün-Weiß – B-Jugend' }

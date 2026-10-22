@@ -105,11 +105,11 @@ function Form({
         <Card>
           <ListRow
             first
-            title="Offene Beträge für alle sichtbar"
-            subtitle="Aus: Jede Person sieht nur das eigene Konto."
+            title="Beträge aller Beteiligten für alle sichtbar"
+            subtitle="Aus: Jede Person sieht nur die eigenen Beträge. Kassenstand, Einnahmen und Ausgaben sieht immer die ganze Mannschaft."
             trailing={
               <Toggle
-                label="Offene Beträge sichtbar"
+                label="Beträge aller sichtbar"
                 value={showBalances}
                 onChange={setShowBalances}
               />
