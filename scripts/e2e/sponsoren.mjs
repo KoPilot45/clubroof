@@ -23,6 +23,8 @@ const created = await api('/admin/sponsors', admin.token, {
     tier: 'main',
     scope: 'club',
     bannerImageId: image.id,
+    advertise: true,
+    hideForYouth: true,
   }),
 });
 const mine = created.sponsors.find((s) => s.name === 'Browser Sponsor GmbH');
@@ -31,32 +33,61 @@ const mine = created.sponsors.find((s) => s.name === 'Browser Sponsor GmbH');
   const { page, goto } = await b.session('trainer');
   await goto('/');
   await text(page, 'Schnellzugriff', { exact: true }).waitFor({ timeout: 20_000 });
-  await page.getByLabel(/Anzeige: Browser Sponsor GmbH/).waitFor({ timeout: 10_000 });
-  ok(true, 'Startseite zeigt das gekennzeichnete Banner („Anzeige“)');
+  // der Demoverein hat mehrere laufende Sponsoren; welches Banner erscheint, wechselt – geprüft wird die Kennzeichnung
+  await page
+    .getByLabel(/^Anzeige: /)
+    .first()
+    .waitFor({ timeout: 10_000 });
+  ok(true, 'Startseite zeigt ein gekennzeichnetes Banner („Anzeige“)');
 
-  await goto('/termine');
-  await page.getByLabel(/Anzeige: Browser Sponsor GmbH/).waitFor({ timeout: 10_000 });
-  ok(true, 'Termine zeigen das Banner');
+  // Banner stehen auf Start, im Team-Reiter und im Verein-Reiter (nicht mehr in den Terminen)
+  await goto('/verein');
+  await page
+    .getByLabel(/^Anzeige: /)
+    .first()
+    .waitFor({ timeout: 10_000 });
+  ok(true, 'Verein-Reiter zeigt das Banner');
 
-  await goto('/mehr');
-  await text(page, 'Unsere Sponsoren', { exact: true }).click();
-  await text(page, 'Hauptsponsoren', { exact: true }).waitFor({ timeout: 10_000 });
-  ok(await text(page, 'Sportshop Musterstadt').isVisible(), 'Seite „Unsere Sponsoren“ nach Stufen');
+  // die Seite liegt unter „Verein“ (Kachel „Sponsoren“); direkt öffnen
+  await goto('/sponsors');
+  await text(page, 'Diese Unternehmen unterstützen unseren Verein.', { exact: false }).waitFor({
+    timeout: 10_000,
+  });
   ok(
-    (await page.getByText('Bäckerei Kaiser').count()) === 0,
-    'Geplante Sponsoren erscheinen nicht',
+    await text(page, 'Sportshop Musterstadt').isVisible(),
+    'Seite „Unsere Sponsoren“ listet die laufenden Sponsoren',
   );
+  // geplante (noch nicht laufende) Sponsoren stehen nicht auf der öffentlichen Seite
+  const planned = (await api('/admin/sponsors', admin.token)).sponsors.filter(
+    (s) => s.status === 'planned',
+  );
+  ok(planned.length > 0, 'Demodaten enthalten einen geplanten Sponsor');
+  for (const s of planned)
+    ok(
+      (await page.getByText(s.name, { exact: true }).count()) === 0,
+      `Geplant: ${s.name} nicht sichtbar`,
+    );
 }
 
 {
-  const { page, goto } = await b.session('spieler'); // minderjährig
+  // minderjährig: Sponsoren mit „Nicht bei Jugendlichen zeigen“ (Gasthaus, Browser Sponsor) bleiben weg
+  const { page, goto } = await b.session('spieler');
   await goto('/');
   await text(page, 'Schnellzugriff', { exact: true }).waitFor({ timeout: 20_000 });
   await page.waitForTimeout(1500);
-  ok((await page.getByLabel(/Anzeige:/).count()) === 0, 'Minderjährige sehen kein Banner');
+  ok(
+    (await page.getByLabel(/Anzeige: (Gasthaus Zur Linde|Browser Sponsor GmbH)/).count()) === 0,
+    'Minderjährige sehen keine Banner der für Jugendliche gesperrten Sponsoren',
+  );
   await goto('/sponsors');
-  await text(page, /nichts anzuzeigen/).waitFor({ timeout: 10_000 });
-  ok(true, 'Seite „Unsere Sponsoren“ ist für Minderjährige leer');
+  await text(page, 'Diese Unternehmen unterstützen unseren Verein.', { exact: false }).waitFor({
+    timeout: 10_000,
+  });
+  // die Übersichtsseite ist eine Dankesliste aller laufenden Sponsoren; der Schalter betrifft nur die Werbebanner
+  ok(
+    (await page.getByText('Gasthaus Zur Linde').count()) > 0,
+    'Seite „Unsere Sponsoren“ bleibt für alle eine Dankesliste (Schalter betrifft nur Banner)',
+  );
 }
 
 {
