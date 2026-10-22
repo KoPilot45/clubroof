@@ -216,6 +216,9 @@ html,body{overflow-x:clip}
 .band.alt{background:var(--bg2)}
 .lt.band .usp.big,.lt .usp.big{color:#fff}
 .lt .head h2 em{color:var(--accent)}
+.scr.lm .hr{color:#fff;background:radial-gradient(120% 120% at 90% 0%,var(--p1) 0%,var(--p2) 100%)}.scr.lm .hr .ln,.scr.lm .hr .ttl{color:#fff}.scr.lm .hr .ln{opacity:.88}
+.scr.lm .tabbar{background:#fff;border:1px solid var(--aline)}.scr.lm .tabbar span{color:var(--afg3)}.scr.lm .tabbar span.on{color:var(--on)}
+.scr.lm .rg,.scr.lm .rg span{color:rgba(255,255,255,.9)}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="crg" gradientUnits="userSpaceOnUse" x1="200" y1="1000" x2="1057" y2="627"><stop offset="0" stop-color="#002AFA"/><stop offset="1" stop-color="#00C3FF"/></linearGradient></defs>
@@ -300,6 +303,7 @@ html,body{overflow-x:clip}
   <div class="copy"><span class="eyebrow">Vereinsfarbe</span><h3>Clubroof ist das Dach. Die App sieht aus wie euer Verein.</h3>
    <p>Der Verein wählt Wappen und Farbe, die ganze App zieht mit. Hell und dunkel sind für jede Farbe auf Lesbarkeit geprüft.</p>
    <div class="swatches" role="group" aria-label="Vereinsfarbe wählen" id="sws"></div>
+   <div class="bill" role="group" aria-label="Darstellung der App" style="margin:14px 0 0"><button type="button" id="sd" aria-pressed="true">Dunkel</button><button type="button" id="sl" aria-pressed="false">Hell</button></div>
    <p class="note" style="margin-top:6px" id="swname">Grün</p></div>
   <div class="shot"><div class="phone"><div class="scr" id="clubscr"><div class="st"><span>9:41</span><span>5G</span></div>
     <div class="hd"><div class="crest" id="crest2">SGW</div><div><small>Samstag, 17. Oktober</small><b>Hallo, Max</b></div></div>
@@ -482,7 +486,9 @@ show(2);
 (function(){
 const C=[['Grün','#1E7A44','#0F3D24','#2EDB6B','#06210F','#0B120E','#151D18'],['Blau','#1F55D6','#0B2A6B','#5AA9FF','#06122B','#0A0F1C','#131B2E'],['Rot','#B3262E','#5E0F14','#FF6B6B','#2B0606','#140B0C','#1F1315'],['Gelb','#B88A00','#5A4200','#FFD43B','#2B2000','#14110A','#1E1A10'],['Schwarz','#3A3F47','#15181D','#E8ECF2','#0B0D10','#0D0E10','#17181B'],['Orange','#C25A0A','#5E2A03','#FF9A3D','#2B1200','#140E09','#1F1710'],['Lila','#6B3FC4','#321A66','#B794FF','#140A2B','#100C18','#1A1426'],['Weinrot','#8A1E3F','#43101F','#FF7A9E','#2B0610','#140A0E','#1F1217'],['Himmelblau','#1E88C9','#0B3F63','#5CD0FF','#04162B','#0A121A','#121D2A'],['Türkis','#0F8F86','#064A45','#3DE0CF','#032421','#0A1413','#122220']];
 const box=document.getElementById('sws'),scr=document.getElementById('clubscr'),nm=document.getElementById('swname');
-function set(i){const c=C[i];['--p1','--p2','--acc','--on','--abg','--acard'].forEach(function(k,j){scr.style.setProperty(k,c[j+1])});nm.textContent=c[0]+' · Wappen und Farbe wählt der Verein';box.querySelectorAll('button').forEach(function(b,k){b.setAttribute('aria-pressed',k===i)});}
+let cur=0,light=false;
+function set(i){if(i!==undefined)cur=i;const c=C[cur];const v={'--p1':c[1],'--p2':c[2],'--acc':light?c[1]:c[3],'--on':light?'#FFFFFF':c[4],'--abg':light?'color-mix(in srgb,'+c[1]+' 6%,#F7F9F8)':c[5],'--acard':light?'#FFFFFF':c[6],'--afg':light?'#101814':'#F2F7F3','--afg2':light?'#3C4A41':'#C5D6CB','--afg3':light?'#66756B':'#9FB5A6','--aline':light?'rgba(0,0,0,.1)':'rgba(255,255,255,.1)'};for(const k in v)scr.style.setProperty(k,v[k]);scr.classList.toggle('lm',light);nm.textContent=c[0]+(light?' hell':' dunkel')+' · Wappen und Farbe wählt der Verein';box.querySelectorAll('button').forEach(function(b,k){b.setAttribute('aria-pressed',k===cur)});document.getElementById('sd').setAttribute('aria-pressed',!light);document.getElementById('sl').setAttribute('aria-pressed',light);}
+document.getElementById('sd').addEventListener('click',function(){light=false;set()});document.getElementById('sl').addEventListener('click',function(){light=true;set()});
 C.forEach(function(c,i){const b=document.createElement('button');b.type='button';b.className='sw';b.style.background='linear-gradient(135deg,'+c[1]+','+c[3]+')';b.setAttribute('aria-label',c[0]);b.setAttribute('aria-pressed',i===0);b.addEventListener('click',function(){set(i)});box.appendChild(b);});
 set(0);
 })();
