@@ -89,3 +89,43 @@ Eigener Stand: `docs/FUNKTIONEN.md` im Umsetzungsbranch (19.10.2026).
 - [Vereinsplaner App](https://vereinsplaner.com/en/b/mobile-app) · [Vereinsverwaltung kostenlos (OMR)](https://omr.com/de/reviews/contenthub/vereinsverwaltung-kostenlos-software)
 - [BFV-Team-App](https://apps.appfollow.io/ios/bfv-team-app/1403863269?country=us) · [TeamCaptain](https://apps.apple.com/co/app/teamcaptain/id6737807434) · [Strafenmanager](https://apps.apple.com/de/app/strafenmanager/id6745397267) · [CoTrainer](https://apps.apple.com/de/app/cotrainer/id6499470120)
 - [TeamSnap vs. SportEasy (G2)](https://www.g2.com/compare/sporteasy-vs-teamsnap) · [TeamSnap vs. Spond (G2)](https://www.g2.com/compare/spond-vs-teamsnap)
+
+## Nachtrag 22.10.2026: zweite Recherche
+
+**Belastbarkeit:** wieder Websuche (Hersteller-Hilfeseiten, App-Store-Texte, Vergleichsportale, teils Wettbewerber-Blogs mit Eigeninteresse). Herstellerseiten ließen sich nicht direkt abrufen. Preise und Funktionen vor jeder öffentlichen Aussage beim Anbieter prüfen. „nicht belegt“ heißt nicht „gibt es nicht“.
+
+### Neu oder genauer belegt
+
+| Anbieter | Art | Belegt |
+| --- | --- | --- |
+| SpielerPlus („TeamPlus“) | Team-App | Basis kostenlos, Premium ca. 53,99 € je Team und Jahr (5,99 € monatlich), Mengenrabatt je Team; Vereinslizenz-Preise nicht belegt |
+| Spond / Spond Club | Team-App + Verein | kostenlos, Zahlungen 2,5 % + 0,20 € (Euroraum; im Okt. 2026 Aktion 1,25 % + 0,10 € für Vereine in Deutschland); Mitgliederverwaltung, Zahlungen, Vereinswebsite; Werbung in der App (laut Wettbewerber nicht abschaltbar, ungeprüft); laut einem Vergleich kein Elternportal |
+| easyVerein | Vereinssoftware | Einstieg 7,14 / 12,24 / 15,30 / 19,38 € im Monat (Essentials, Community, Office, Professional) für Größe Small (bis 100 Mitglieder), Preis steigt mit Mitgliedern und Admins; Buchhaltung laut mehreren Quellen erst ab Office, DATEV, SEPA-Lastschrift und Mahnwesen; bis 50 % Nachlass für Gemeinnützige; mobile App: Quellen widersprüchlich |
+| easy2coach | Team-App | grafische Aufstellung auf dem Spielfeld, Taktikboard, über 2.500 Übungen, Teamkasse, kostenlos; Club-Premium ohne genannten Preis |
+| Teamodo | Team-App + Verein | kostenlose Basis (Termine, Zusagen, Teamkasse, Chat, Aufstellung bis 30 Teammitglieder); Vereinstarif ca. 50–100 € im Monat je nach Zahl der Mannschaften; Rollen (Trainerteam, Kassenwart, sportliche Leitung), Übungsdatenbank, Spielerbewertung |
+| Vereinsplaner | Vereinssoftware + App | Free bis 5 Accounts, Pro 119 €/Jahr (bis 50), Premium 179 €/Jahr (bis 100); Zu-/Absagen, Teilnehmerlisten, Erinnerungen, kostenlose Mitglieder-App |
+| unsere-vereinsapp.de | Vereinsapp | ab 6 € im Monat bis 100 Mitglieder, alle Funktionen, Eventkalender, Buchung von Plätzen und Hallen, Dokumente, Rollen |
+| campai | Vereinssoftware | ca. 30 € im Monat bei 100 Mitgliedern (unsichere Angabe), Buchhaltung, Beiträge |
+| SportMember | Vereinssoftware | Basic kostenlos, Pro 22 € im Monat (122 Mitglieder) |
+| Weitere | – | Webling kostenlos bis 50 Mitglieder; Collmex ab 11,95 €; Heja kostenlos mit Gruppenchat; Teamy mit Anwesenheit und Aufgaben (Fahrdienste, Material); Klubraum als neue Vereins-App (Freemium); DFBnet-App (Liveticker, Ergebnisse, Aufstellungen, Spielbericht für Vereinsmelder und Staffelleiter) |
+
+### Was das für Clubroof bedeutet
+
+**Bestätigt (Alleinstellung bleibt plausibel):**
+- Team-Apps (Spond, SpielerPlus, easy2coach, Teamodo) und Vereinssoftware (easyVerein, campai, Vereinsplaner) sind weiter getrennte Welten, die Annäherung läuft von beiden Seiten (Spond Club, Teamodo-Vereinstarif, Vereinsplaner mit App). Der Unterschied „ein Rechtekonzept über Mannschaft und Verein“ trägt, ist aber **nicht mehr konkurrenzlos**: Teamodo nennt Rollen für Kassenwart und sportliche Leitung.
+- **Keine Werbung durch Dritte** ist ein belegbarer Unterschied zu SpielerPlus (Basis mit Werbung) und Spond (Werbung laut Wettbewerber).
+- Steuerliche Bereiche, Haushaltsplan, Kassenprüfung in der Vereinskasse: bei Team-Apps nicht belegt; bei easyVerein/campai gibt es Buchhaltung, aber nicht gemeinsam mit Mannschaftsalltag.
+- Gastspieler und Spielerbedarf zwischen Mannschaften: weiterhin in keiner Quelle belegt.
+
+**Wo Clubroof nachzieht oder ehrlich benennen sollte:**
+1. **Online-Zahlung und SEPA** (Spond, easyVerein, campai). Weiter Lücke (Entscheidung K2).
+2. **Taktikboard und große Übungsbibliothek** (easy2coach: über 2.500 Übungen; Teamodo: Übungsdatenbank). Clubroof hat Trainingsplanung mit eigener Übungsbibliothek, aber ohne Taktikboard und ohne mitgelieferte Übungen.
+3. **Gruppenchat** (Heja, Teamodo, Spond) bleibt Verkaufshindernis; das Forum ersetzt ihn nur teilweise.
+4. **Vereinswebsite** (ClubDesk, Spond Club) fehlt.
+5. **Verbandsanbindung** (DFBnet-App, FUSSBALL.DE): nur Importdateien.
+6. **Preiswahrnehmung:** viele Bausteine sind kostenlos oder sehr günstig (Spond, easy2coach, Teamodo-Basis, Vereinsplaner Free, unsere-vereinsapp ab 6 €). Bezahlte Vereinssoftware beginnt bei etwa 7–30 € im Monat für 100 Mitglieder. Die Beispiel-Tarife der Webseite (29 / 49 / 89 € für bis 300 / 500 / 1.000 Mitglieder) liegen im Rahmen von campai, aber über easyVerein-Small; sie müssen über den Zusammenschluss von Team und Verein begründet werden, nicht über den Preis.
+
+### Folgen für die Webseite (Entwurf)
+- Vergleichstabelle „Team-Apps / Vereinssoftware / Clubroof“ angepasst: Mitgliederverwaltung bei Team-Apps „Teilweise“ (Spond Club), Desktop bei Team-Apps „Web“.
+- Kein Satz wie „als einzige“ oder „keine andere App“. Aussagen zu Wettbewerbern bleiben Kategorien, keine Namen.
+- Offene Entscheidung: **Gemeinnützigkeits-Nachlass** (easyVerein: bis 50 %) und **Preisstaffel** vor der Veröffentlichung klären.
