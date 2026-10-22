@@ -20,7 +20,10 @@ const files = [];
   const { page } = a;
   await a.goto('/login');
   await text(page, 'Ich habe einen Einladungscode', { exact: true }).waitFor({ timeout: 20_000 });
-  ok(await text(page, 'CLUBROOF', { exact: true }).isVisible(), 'Erster Start: Clubroof-Kopf');
+  ok(
+    await page.getByLabel('Clubroof', { exact: true }).first().isVisible(),
+    'Erster Start: Clubroof-Zeichen im Kopf',
+  );
   ok(await text(page, 'QR scannen', { exact: true }).isVisible(), 'Startauswahl: QR scannen');
   ok(await text(page, 'Code eingeben', { exact: true }).isVisible(), 'Startauswahl: Code eingeben');
   ok(
