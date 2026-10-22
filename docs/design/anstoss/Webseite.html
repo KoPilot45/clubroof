@@ -192,10 +192,10 @@ footer .w{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:30px}footer h4{fo
 @media (max-width:980px){.usps,.plans{grid-template-columns:1fr}}
 /* Ansicht je Rolle, Anwendungsfälle */
 html,body{overflow-x:clip}
-.views{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:48px;align-items:start}
+.views{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:48px;align-items:start}.stage2{position:sticky;top:96px}
 .stage2{display:flex;justify-content:center}
 .tcount{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:16px}.tcount b{font:800 54px/1 var(--display);background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}.tcount span{color:var(--fg2);font-size:16px}
-.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.tg{grid-column:1/-1;margin:10px 0 0;font:700 12px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--fg3)}.tg:first-child{margin-top:0}.tool{min-height:64px;padding:12px 13px 10px}
 .tool{border-radius:16px;padding:14px 14px 12px;border:1.5px solid var(--line);background:var(--card);display:flex;flex-direction:column;gap:6px;min-height:78px;transition:opacity .25s,transform .25s,background .25s}
 .tool b{font-size:14px;line-height:1.25}.tool small{font:700 11px/1 var(--body);letter-spacing:.1em;text-transform:uppercase}
 .tool.s2{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--card))}.tool.s2 small{color:var(--accent)}
@@ -207,7 +207,7 @@ html,body{overflow-x:clip}
 .case .who{align-self:flex-start;font:700 12px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);border:1.5px solid var(--accent);border-radius:999px;padding:6px 11px}
 .case h3{font-size:28px;font-weight:800;text-transform:uppercase}
 .case ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:14.5px;color:var(--fg2)}.case li b{color:var(--fg)}
-@media (max-width:980px){.views,.cases{grid-template-columns:minmax(0,1fr)}.tools{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:980px){.views,.cases{grid-template-columns:minmax(0,1fr)}.tools{grid-template-columns:repeat(2,minmax(0,1fr))}.stage2{position:static}}
 @media (max-width:340px){.tools{grid-template-columns:1fr}}
 /* Heller und dunkler Wechsel: Bänder tragen feste Token unabhängig vom Theme */
 .lt{--bg:#F5F8FF;--bg2:#E6EDFC;--card:#FFFFFF;--card2:#EEF3FF;--fg:#0A1230;--fg2:#38476E;--fg3:#5B6B95;--line:rgba(0,42,250,.14);--accent:#0B3BEF;--on-accent:#FFFFFF;--glow:rgba(0,90,255,.18);color-scheme:light}
@@ -216,6 +216,9 @@ html,body{overflow-x:clip}
 .band.alt{background:var(--bg2)}
 .lt.band .usp.big,.lt .usp.big{color:#fff}
 .lt .head h2 em{color:var(--accent)}
+.scr.lm .hr{color:#fff;background:radial-gradient(120% 120% at 90% 0%,var(--p1) 0%,var(--p2) 100%)}.scr.lm .hr .ln,.scr.lm .hr .ttl{color:#fff}.scr.lm .hr .ln{opacity:.88}
+.scr.lm .tabbar{background:#fff;border:1px solid var(--aline)}.scr.lm .tabbar span{color:var(--afg3)}.scr.lm .tabbar span.on{color:var(--on)}
+.scr.lm .rg,.scr.lm .rg span{color:rgba(255,255,255,.9)}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="crg" gradientUnits="userSpaceOnUse" x1="200" y1="1000" x2="1057" y2="627"><stop offset="0" stop-color="#002AFA"/><stop offset="1" stop-color="#00C3FF"/></linearGradient></defs>
@@ -295,6 +298,22 @@ html,body{overflow-x:clip}
  <p class="cmpnote">Rollen sind Rechtepakete mit Geltungsbereich: Verein, Abteilung oder Mannschaft. Wer mehrere Aufgaben hat, sieht die Summe. Der Verein kann Rollen anpassen, die Prüfung passiert immer auf dem Server.</p>
 </div></section>
 
+<section class="band lt alt"><div class="w">
+ <div class="split rev">
+  <div class="copy"><span class="eyebrow">Vereinsfarbe</span><h3>Clubroof ist das Dach. Die App sieht aus wie euer Verein.</h3>
+   <p>Der Verein wählt Wappen und Farbe, die ganze App zieht mit. Hell und dunkel sind für jede Farbe auf Lesbarkeit geprüft.</p>
+   <div class="swatches" role="group" aria-label="Vereinsfarbe wählen" id="sws"></div>
+   <div class="bill" role="group" aria-label="Darstellung der App" style="margin:14px 0 0"><button type="button" id="sd" aria-pressed="true">Dunkel</button><button type="button" id="sl" aria-pressed="false">Hell</button></div>
+   <p class="note" style="margin-top:6px" id="swname">Grün</p></div>
+  <div class="shot"><div class="phone"><div class="scr" id="clubscr"><div class="st"><span>9:41</span><span>5G</span></div>
+    <div class="hd"><div class="crest" id="crest2">SGW</div><div><small>Samstag, 17. Oktober</small><b>Hallo, Max</b></div></div>
+    <div class="hr"><span class="tag">Nächstes Spiel · B-Jugend</span><div class="big">4<small>TAGE</small></div><div class="ttl">SV Grün-Weiß B1 <em>vs.</em> VfR Sonnenberg</div><div class="ln">Sa., 24.10. · 15:00 · Sonnenberg · Liga</div><div class="rb"><i style="flex:11;background:var(--acc)"></i><i style="flex:2;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:7;background:rgba(255,255,255,.3)"></i></div></div>
+    <div class="sec">Diese Woche</div><div class="card row"><div class="dt"><div><small>DI</small>20</div></div><div class="tx"><b>Training</b><span>B1 · 18:00 · Kunstrasen</span></div></div>
+    <div class="tabbar"><span class="on">Start</span><span>Termine</span><span>Team</span><span>Verein</span><span>Ich</span></div>
+  </div></div></div>
+ </div>
+</div></section>
+
 <section class="band lt" id="zusagen"><div class="w">
  <div class="split">
   <div class="copy"><span class="eyebrow">Termine und Zusagen</span><h3>Zusagen in einem Tipp. Teilnehmer in einem Blick.</h3>
@@ -361,7 +380,7 @@ html,body{overflow-x:clip}
   <div class="fact"><h3>Helfer und Fahrten</h3><p>Helferdienste bei Heimspielen und Fahrgemeinschaften zu Auswärtsspielen.</p></div>
   <div class="fact"><h3>Platzbelegung</h3><p>Plätze und Hallen belegen, Überschneidungen werden gemeldet.</p></div>
   <div class="fact"><h3>Trainingsplanung</h3><p>Übungen sammeln und Einheiten planen, mit der Mannschaft teilen.</p></div>
-  <div class="fact"><h3>Nachrichten</h3><p>Mitteilungen an Mannschaft, Abteilung oder Verein. Nur an die, die es betrifft.</p></div>
+  <div class="fact"><h3>Gastspieler und Spielerbedarf</h3><p>Fehlen Spieler, meldet der Trainer den Bedarf. Andere Mannschaften bieten Spieler an, ohne Gründe offenzulegen.</p></div>
   <div class="fact"><h3>Dokumente</h3><p>Satzung, Formulare und Protokolle an einem Ort, mit Rechten je Rolle.</p></div>
   <div class="fact"><h3>Sponsoren</h3><p>Sponsoren und Partner des Vereins verwalten und in der App zeigen.</p></div>
  </div>
@@ -374,21 +393,6 @@ html,body{overflow-x:clip}
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 018 0v3"/></svg><h3>Prüfung am Server</h3><p>Rechte werden immer auf dem Server geprüft. Die App blendet nur aus.</p></div>
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><h3>Gründe bleiben intern</h3><p>Absagegründe sehen nur Berechtigte. Das Trainerteam stellt ein, ob auch die Mannschaft sie sieht.</p></div>
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg><h3>Archiv und Protokoll</h3><p>Löschen heißt archivieren. Änderungen an Rollen und Daten stehen im Protokoll.</p></div>
- </div>
-</div></section>
-
-<section class="band lt"><div class="w">
- <div class="split rev">
-  <div class="copy"><span class="eyebrow">Vereinsfarbe</span><h3>Clubroof ist das Dach. Die App sieht aus wie euer Verein.</h3>
-   <p>Der Verein wählt Wappen und Farbe, die ganze App zieht mit. Hell und dunkel sind für jede Farbe auf Lesbarkeit geprüft.</p>
-   <div class="swatches" role="group" aria-label="Vereinsfarbe wählen" id="sws"></div>
-   <p class="note" style="margin-top:6px" id="swname">Grün</p></div>
-  <div class="shot"><div class="phone"><div class="scr" id="clubscr"><div class="st"><span>9:41</span><span>5G</span></div>
-    <div class="hd"><div class="crest" id="crest2">SGW</div><div><small>Samstag, 17. Oktober</small><b>Hallo, Max</b></div></div>
-    <div class="hr"><span class="tag">Nächstes Spiel · B-Jugend</span><div class="big">4<small>TAGE</small></div><div class="ttl">SV Grün-Weiß B1 <em>vs.</em> VfR Sonnenberg</div><div class="ln">Sa., 24.10. · 15:00 · Sonnenberg · Liga</div><div class="rb"><i style="flex:11;background:var(--acc)"></i><i style="flex:2;background:#FFB020"></i><i style="flex:2;background:#FF6B6B"></i><i style="flex:7;background:rgba(255,255,255,.3)"></i></div></div>
-    <div class="sec">Diese Woche</div><div class="card row"><div class="dt"><div><small>DI</small>20</div></div><div class="tx"><b>Training</b><span>B1 · 18:00 · Kunstrasen</span></div></div>
-    <div class="tabbar"><span class="on">Start</span><span>Termine</span><span>Team</span><span>Verein</span><span>Ich</span></div>
-  </div></div></div>
  </div>
 </div></section>
 
@@ -421,7 +425,7 @@ html,body{overflow-x:clip}
  <div class="faq">
   <details><summary>Für welche Vereine ist Clubroof gedacht?</summary><p>Für Sportvereine mit mehreren Mannschaften, zunächst mit Schwerpunkt Fußball. Die Struktur aus Abteilungen, Mannschaften und Rollen passt auch zu Mehrspartenvereinen.</p></details>
   <details><summary>Brauchen Spieler und Eltern ein eigenes Konto?</summary><p>Ja, über eine Einladung des Vereins. Eltern verwalten die Antworten ihrer Kinder, ab welchem Alter ein Kind einen eigenen Zugang bekommt, entscheiden die Eltern.</p></details>
-  <details><summary>Gibt es einen Gruppenchat?</summary><p>Nein, bewusst nicht. Nachrichten, Umfragen und Termine haben feste Orte und gehen im Alltag nicht unter.</p></details>
+  <details><summary>Gibt es einen Gruppenchat?</summary><p>Nein, bewusst nicht. Nachrichten, Umfragen und Termine haben feste Orte und gehen im Alltag nicht unter. Für den Austausch gibt es ein moderiertes Forum mit wenigen Themen und Ablaufdatum.</p></details>
   <details><summary>Was kostet Clubroof?</summary><p>Der Preis richtet sich nach der Zahl der Mitglieder: bis 300, bis 500 oder bis 1.000. Alle Funktionen sind in jedem Tarif enthalten, Spieler, Eltern und Trainer kosten nichts extra.</p></details><details><summary>Kann ich Clubroof erst testen?</summary><p>Ja. Ihr legt den Verein an, richtet ihn mit dem Assistenten ein und entscheidet danach über den Tarif. Die Daten lassen sich jederzeit exportieren.</p></details>
   <details><summary>Ist die Anbindung an DFBnet und FUSSBALL.DE vorhanden?</summary><p>Spielpläne lassen sich aus Dateien importieren. Eine direkte Anbindung ist noch nicht verfügbar.</p></details>
  </div>
@@ -450,7 +454,11 @@ document.getElementById('ev1t').addEventListener('click',function(){const l=docu
 // Ansicht je Rolle
 (function(){
 const R=['Spieler','Eltern','Trainer','Vorstand','Kasse','Admin'];
-const T=[['Termine und Zusagen',[2,2,2,2,1,2]],['Mitteilungen',[1,1,2,2,1,2]],['Kader und Aufstellung',[1,1,2,1,0,1]],['Anwesenheit und Statistik',[1,1,2,1,0,1]],['Abwesenheit und Kinder',[2,2,1,0,0,0]],['Helfer und Fahrten',[1,2,2,2,0,1]],['Mannschaftskasse',[0,1,2,1,2,1]],['Vereinskasse und Haushalt',[0,0,0,1,2,1]],['Mitglieder und Beiträge',[0,0,0,2,2,2]],['Platz und Material',[0,0,1,2,0,1]],['Dokumente und Protokolle',[1,1,1,2,1,2]],['Sponsoren',[0,0,0,2,0,1]],['Rollen und Rechte',[0,0,0,0,0,2]]];
+const G=[['Persönlich',[['Termine und Zusagen',[2,2,2,2,1,2]],['Abwesenheit und Kinder',[2,2,1,0,0,0]],['Benachrichtigungen und Kalender',[2,2,2,2,2,2]]]],
+['Mannschaft',[['Kader und Aufstellung',[1,1,2,1,0,1]],['Anwesenheit und Beteiligung',[1,1,2,1,0,1]],['Spielbericht und Statistik',[1,1,2,1,0,1]],['Trainingsplanung',[0,0,2,0,0,0]],['Gastspieler und Spielerbedarf',[1,1,2,1,0,0]],['Helfer und Fahrten',[1,2,2,2,0,1]],['Mannschaftskasse',[0,1,2,1,2,1]]]],
+['Verein',[['Nachrichten und Umfragen',[1,1,2,2,1,2]],['Veranstaltungen',[1,1,1,2,0,1]],['Forum und Aushänge',[2,2,2,2,1,2]],['Dokumente und Protokolle',[1,1,1,2,1,2]],['Platz und Material',[0,0,1,2,0,1]],['Sponsoren',[0,0,0,2,0,1]],['Vereinskasse und Haushalt',[0,0,0,1,2,1]]]],
+['Verwaltung',[['Mitglieder und Beiträge',[0,0,0,2,2,2]],['Saison und Spielerwechsel',[0,0,1,2,0,2]],['Rollen und Rechte',[0,0,0,0,0,2]],['Module und Einrichtung',[0,0,0,0,0,2]],['Import, Export und Archiv',[0,0,0,1,1,2]]]]];
+const T=[];G.forEach(function(g){g[1].forEach(function(x){T.push(x)})});
 const S=[
 ['Nächstes Spiel · C-Jugend','4','TAGE','SV Grün-Weiß C1 vs. TSV Blauen','Sa., 24.10. · 13:00',['Zusage tippen','Eigene Beteiligung: hoch'],'Antwort offen'],
 ['Familie Wagner','2','KINDER','Leon (C1) und Mia (D2)','Zwei Termine diese Woche',['Antwort für Leon offen','Fahrgemeinschaft Sa. anbieten'],'Antworten pro Kind'],
@@ -460,11 +468,11 @@ const S=[
 ['Verwaltung','2','EINLADUNGEN','Rollen und Rechte','Neuer Trainer wartet auf Freigabe',['Rolle für B1 vergeben','Protokoll ansehen'],'Rolle zuweisen']];
 const t=document.getElementById('rt'),vs=document.getElementById('vs'),tl=document.getElementById('tl'),tc=document.getElementById('tc'),td=document.getElementById('td');
 const L=['Ausgeblendet','Ansehen','Bearbeiten'];
-tl.innerHTML=T.map(function(x){return '<div class="tool"><b>'+x[0]+'</b><small></small></div>'}).join('');
+tl.innerHTML=G.map(function(g){return '<h4 class="tg">'+g[0]+'</h4>'+g[1].map(function(x){return '<div class="tool"><b>'+x[0]+'</b><small></small></div>'}).join('')}).join('');
 function show(i){
  t.querySelectorAll('button').forEach(function(b,k){b.setAttribute('aria-selected',k===i)});
  let n=0;tl.querySelectorAll('.tool').forEach(function(el,k){const v=T[k][1][i];if(v)n++;el.className='tool s'+v;el.querySelector('small').textContent=L[v];});
- tc.textContent=n+' von '+T.length;td.textContent='Werkzeugen sichtbar für '+R[i]+(i===5?' (Admin vergibt Rollen, sieht aber keine Fachdaten mehr als nötig)':'');
+ tc.textContent=n+' von '+T.length;td.textContent='Werkzeugen sichtbar für '+R[i];
  const s=S[i];
  vs.innerHTML='<div class="st"><span>9:41</span><span>5G</span></div><div class="hd"><div class="crest">SGW</div><div><small>'+R[i]+'</small><b>'+s[0]+'</b></div></div>'
   +'<div class="hr"><span class="tag">'+s[6]+'</span><div class="big">'+s[1]+'<small>'+s[2]+'</small></div><div><div class="ttl">'+s[3]+'</div><div class="ln">'+s[4]+'</div></div></div>'
@@ -473,6 +481,16 @@ function show(i){
 }
 R.forEach(function(r,i){const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.textContent=r;b.addEventListener('click',function(){show(i)});t.appendChild(b);});
 show(2);
+})();
+// Vereinsfarbe wählen
+(function(){
+const C=[['Grün','#1E7A44','#0F3D24','#2EDB6B','#06210F','#0B120E','#151D18'],['Blau','#1F55D6','#0B2A6B','#5AA9FF','#06122B','#0A0F1C','#131B2E'],['Rot','#B3262E','#5E0F14','#FF6B6B','#2B0606','#140B0C','#1F1315'],['Gelb','#B88A00','#5A4200','#FFD43B','#2B2000','#14110A','#1E1A10'],['Schwarz','#3A3F47','#15181D','#E8ECF2','#0B0D10','#0D0E10','#17181B'],['Orange','#C25A0A','#5E2A03','#FF9A3D','#2B1200','#140E09','#1F1710'],['Lila','#6B3FC4','#321A66','#B794FF','#140A2B','#100C18','#1A1426'],['Weinrot','#8A1E3F','#43101F','#FF7A9E','#2B0610','#140A0E','#1F1217'],['Himmelblau','#1E88C9','#0B3F63','#5CD0FF','#04162B','#0A121A','#121D2A'],['Türkis','#0F8F86','#064A45','#3DE0CF','#032421','#0A1413','#122220']];
+const box=document.getElementById('sws'),scr=document.getElementById('clubscr'),nm=document.getElementById('swname');
+let cur=0,light=false;
+function set(i){if(i!==undefined)cur=i;const c=C[cur];const v={'--p1':c[1],'--p2':c[2],'--acc':light?c[1]:c[3],'--on':light?'#FFFFFF':c[4],'--abg':light?'color-mix(in srgb,'+c[1]+' 6%,#F7F9F8)':c[5],'--acard':light?'#FFFFFF':c[6],'--afg':light?'#101814':'#F2F7F3','--afg2':light?'#3C4A41':'#C5D6CB','--afg3':light?'#66756B':'#9FB5A6','--aline':light?'rgba(0,0,0,.1)':'rgba(255,255,255,.1)'};for(const k in v)scr.style.setProperty(k,v[k]);scr.classList.toggle('lm',light);nm.textContent=c[0]+(light?' hell':' dunkel')+' · Wappen und Farbe wählt der Verein';box.querySelectorAll('button').forEach(function(b,k){b.setAttribute('aria-pressed',k===cur)});document.getElementById('sd').setAttribute('aria-pressed',!light);document.getElementById('sl').setAttribute('aria-pressed',light);}
+document.getElementById('sd').addEventListener('click',function(){light=false;set()});document.getElementById('sl').addEventListener('click',function(){light=true;set()});
+C.forEach(function(c,i){const b=document.createElement('button');b.type='button';b.className='sw';b.style.background='linear-gradient(135deg,'+c[1]+','+c[3]+')';b.setAttribute('aria-label',c[0]);b.setAttribute('aria-pressed',i===0);b.addEventListener('click',function(){set(i)});box.appendChild(b);});
+set(0);
 })();
 // Tarife: monatlich oder jährlich
 (function(){const bm=document.getElementById('bm'),by=document.getElementById('by');function set(y){bm.setAttribute('aria-pressed',!y);by.setAttribute('aria-pressed',y);document.querySelectorAll('.plan .pr b').forEach(function(b){b.textContent=y?b.dataset.y:b.dataset.m;});document.querySelectorAll('[data-sub]').forEach(function(s){const p=s.parentNode.querySelector('b');s.textContent=y?'Jährlich abgerechnet: '+(p.dataset.y*12)+' € im Jahr':'Monatlich kündbar';});}bm.addEventListener('click',function(){set(false)});by.addEventListener('click',function(){set(true)});set(true);})();
