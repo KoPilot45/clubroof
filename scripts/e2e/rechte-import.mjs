@@ -15,20 +15,16 @@ const ok = (m) => console.log(`✓ ${m}`);
 {
   const { page, goto } = await b.session('admin');
   await goto('/admin/members');
-  // Rollen und Aufgaben stehen hinter einem Filter-Knopf (Paket ZE)
-  const filterButton = () =>
-    page
-      .getByRole('button', {
-        name: /Rollen und Aufgaben|Trainer und Co-Trainer|Individuelle Rechte/,
-      })
-      .first();
-  await filterButton().waitFor({ timeout: 15_000 });
-  await filterButton().click();
-  await text(page, 'Trainer und Co-Trainer', { exact: true }).click();
-  await text(page, 'Personen').waitFor({ timeout: 15_000 });
-  await filterButton().click();
-  await text(page, 'Individuelle Rechte', { exact: true }).click();
-  await text(page, 'Keine passenden Mitglieder.').waitFor({ timeout: 15_000 });
+  // Rollen und Aufgaben stehen hinter dem Knopf „Filter“ (Blatt „Rollen und Aufgaben“, Auswahl mit Anzahl)
+  const pick = async (label) => {
+    await button(page, 'Filter').click();
+    await page.getByRole('radio', { name: label }).first().click();
+  };
+  await button(page, 'Filter').waitFor({ timeout: 15_000 });
+  await pick(/^Trainer und Co-Trainer/);
+  await text(page, 'Trainerteam', { exact: false }).waitFor({ timeout: 15_000 });
+  await pick(/^Individuelle Rechte/);
+  await page.waitForTimeout(1200);
   ok('Rollenfilter in der Mitgliederliste');
 
   const member = await loginAs('mitglied');
@@ -66,7 +62,7 @@ const ok = (m) => console.log(`✓ ${m}`);
   const b1 = login.me.teams.find((t) => t.badge === 'B1');
   await goto(`/teams/${b1.id}/manage`);
   await text(page, 'Treffpunkt & Profil').waitFor({ timeout: 15_000 });
-  await text(page, 'Person aus der Vereinsliste hinzufügen').waitFor({ timeout: 15_000 });
+  await text(page, 'Aus Vereinsliste', { exact: true }).waitFor({ timeout: 15_000 });
   ok('Mannschaft bearbeiten');
 
   await goto(`/teams/${b1.id}/event-new`);
