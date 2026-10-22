@@ -13,9 +13,7 @@ Abgeglichen mit dem Umsetzungsbranch. W1–W7, AL, AN, AK, AO und RS sind umgese
 ## Umgesetzt mit offenen Restpunkten
 | Paket | Offen |
 |---|---|
-| AUF | Sichtbarkeit „Standard aus“ auch für bestehende Mannschaften; weitere Punkte in der Zeile |
 | AR | Archiv Stufe 3: Aushänge, Dokumente, Umfragen, Termine, Mitglieder, Mannschaften, Kassen |
-| ST | Fachfrage: Kassenstand/Verlauf optional für Spieler und Eltern freigeben |
 
 ## Später (Produkt und Betrieb)
 | Paket | Größe | Was steckt drin |

@@ -785,6 +785,8 @@ export const en: Record<string, string> = {
   'Aufstellung erstellen': 'Create line-up',
   'Aufstellung für Spieler und Eltern sichtbar': 'Line-up visible to players and parents',
   'Aufstellung sichtbar': 'Line-up visible',
+  'Aufstellung: {0} {1} hat abgesagt': 'Line-up: {0} {1} has declined',
+  'Aufstellung: {0} {1} ist unsicher': 'Line-up: {0} {1} is unsure',
   Auftritt: 'Appearance',
   Aufwandsentschädigungen: 'Expense allowances',
   Aufwärmen: 'Warm-up',
@@ -807,6 +809,8 @@ export const en: Record<string, string> = {
     'From Excel or CSV; DFBnet files go through “Import schedule”',
   'Aus Vereinsliste': 'From club list',
   'Aus: Jede Person sieht nur das eigene Konto.': 'Off: Each person only sees their own account.',
+  'Aus: Jede Person sieht nur die eigenen Beträge. Kassenstand, Einnahmen und Ausgaben sieht immer die ganze Mannschaft.':
+    'Off: everyone only sees their own amounts. The whole team always sees the balance, income and expenses.',
   Ausblenden: 'Hide',
   'Ausblenden kann das Moderationsteam.': 'The moderation team can hide it.',
   Ausführlich: 'Detailed',
@@ -1071,6 +1075,9 @@ export const en: Record<string, string> = {
   'Betrag je Spieler in €': 'Amount per player in €',
   'Betrag oder Datum nicht lesbar': 'Amount or date not readable',
   'Betrag passt zu keiner offenen Forderung': 'Amount does not match any open claim',
+  'Beträge aller Beteiligten anzeigen': 'Show amounts of everyone involved',
+  'Beträge aller Beteiligten für alle sichtbar': 'Amounts of everyone visible to all',
+  'Beträge aller sichtbar': 'Amounts of everyone visible',
   Betreuer: 'Team manager',
   Betrieb: 'Operations',
   'Betroffene Termine': 'Affected events',
@@ -2349,6 +2356,8 @@ export const en: Record<string, string> = {
   'Erinnerung vor der Frist (Stunden, 0 = keine)': 'Reminder before the deadline (hours, 0 = none)',
   'Erinnerung, Bezahlinfos und Kassenprüfung?': 'Reminders, payment details and cash audit?',
   Erinnerungen: 'reminders',
+  'Erinnerungen an offene Beträge verschickst du per Knopf oder lässt sie monatlich automatisch laufen (Einstellungen). Unter „Bezahlinfos & Einstellungen“ hinterlegst du IBAN und PayPal und bestimmst, ob alle die Beträge aller Beteiligten sehen (Standard: jeder nur die eigenen; Kassenstand, Einnahmen und Ausgaben sieht immer die ganze Mannschaft). „Kassenprüfung“ hält den Stand mit Prüfer fest. Berichte gibt es als Excel und PDF.':
+    'You send reminders about open amounts with a button or let them run automatically every month (settings). Under “Payment info & settings” you enter IBAN and PayPal and decide whether everyone sees the amounts of everyone involved (default: everyone only their own; the whole team always sees the balance, income and expenses). “Cash audit” records the balance with an auditor. Reports are available as Excel and PDF.',
   'Erinnerungen an offene Beträge verschickst du per Knopf oder lässt sie monatlich automatisch laufen (Einstellungen). Unter „Bezahlinfos & Einstellungen“ hinterlegst du IBAN und PayPal und bestimmst, ob alle die offenen Beträge der anderen sehen. „Kassenprüfung“ hält den Stand mit Prüfer fest. Berichte gibt es als Excel und PDF.':
     "You send reminders about outstanding amounts with a button or let them run automatically every month (settings). Under “Payment details & settings” you store IBAN and PayPal and decide whether everyone can see the others' outstanding amounts. “Cash audit” records the balance together with the auditor. Reports are available as Excel and PDF.",
   'Erkannte Spalten': 'Detected columns',
@@ -2881,6 +2890,8 @@ export const en: Record<string, string> = {
     'In the match event: “Create line-up” (starting XI and bench). The draft is only visible to the coaching staff; only “Publish” notifies the selected players. After the match, enter the result, goals, assists and cards in the match report – only then do they count in the statistics.',
   'Im Spieltermin: „Aufstellung erstellen“. Der Planer zeigt ein Spielfeld: Wähle oben 7er, 9er oder 11er und eine Formation, ziehe dann Spieler aus der Kaderleiste auf eine Position oder auf die Bank (oder tippe zuerst den Spieler und dann den Platz an). Ziehst du einen Spieler auf einen besetzten Platz, tauschen beide; zurück in die Kaderleiste nimmt ihn aus der Aufstellung. Die Punkte und Balken zeigen die Trainingsbeteiligung der letzten vier Wochen – nur das Trainerteam sieht sie. „Entwurf speichern“ ist nur für das Trainerteam sichtbar; „Veröffentlichen“ benachrichtigt die Nominierten. Ob Spieler und Eltern die veröffentlichte Aufstellung sehen, stellst du unter „Mannschaft bearbeiten“ ein. Nach dem Spiel trägst du Ergebnis, Tore, Vorlagen und Karten im Spielbericht ein – erst dann zählen sie in der Statistik.':
     'In the match event, tap “Create line-up”. The planner shows a pitch: choose 7-a-side, 9-a-side or 11-a-side and a formation at the top, then drag players from the squad strip onto a position or the bench (or tap the player first and then the spot). Dragging a player onto an occupied spot swaps the two; dragging back into the squad strip takes them out of the line-up. The dots and bars show training participation over the last four weeks – only the coaching team sees them. “Save draft” is visible to the coaching team only; “Publish” notifies the nominated players. Whether players and parents see the published line-up is set under “Edit team”. After the match you enter the result, goals, assists and cards in the match report – only then do they count in the statistics.',
+  'Im Spieltermin: „Aufstellung erstellen“. Der Planer zeigt ein Spielfeld: Wähle oben 7er, 9er oder 11er und eine Formation, ziehe dann Spieler aus der Kaderleiste auf eine Position oder auf die Bank (oder tippe zuerst den Spieler und dann den Platz an). Ziehst du einen Spieler auf einen besetzten Platz, tauschen beide; zurück in die Kaderleiste nimmt ihn aus der Aufstellung. Die Punkte und Balken zeigen die Trainingsbeteiligung der letzten vier Wochen – nur das Trainerteam sieht sie. „Entwurf speichern“ ist nur für das Trainerteam sichtbar. Die Aufstellung ist dein Werkzeug: Spieler und Eltern bekommen dazu keine Benachrichtigung. Ob sie die veröffentlichte Aufstellung sehen, stellst du allein unter „Mannschaft bearbeiten“ ein. Dafür erfährst du sofort, wenn jemand aus Startelf oder Bank absagt oder auf „Unsicher“ stellt (Hinweis „Aufstellung: … hat abgesagt“, auch bei einer Abwesenheit). Nach dem Spiel trägst du Ergebnis, Tore, Vorlagen und Karten im Spielbericht ein – erst dann zählen sie in der Statistik.':
+    'In the match event: “Create line-up”. The planner shows a pitch: choose 7-a-side, 9-a-side or 11-a-side and a formation at the top, then drag players from the squad strip onto a position or onto the bench (or tap the player first and then the spot). If you drag a player onto an occupied spot, the two swap; dragging back into the squad strip removes them from the line-up. The dots and bars show training attendance over the last four weeks – only the coaching staff can see it. “Save draft” is only visible to the coaching staff. The line-up is your tool: players and parents get no notification about it. Whether they can see the published line-up is set by you alone under “Edit team”. In return you find out immediately when someone from the starting eleven or the bench declines or switches to “Unsure” (notice “Line-up: … has declined”, also in case of an absence). After the match you enter the result, goals, assists and cards in the match report – only then do they count in the statistics.',
   'Im Team-Bereich der Mannschaft unter „Kasse → Konto <Name>“. Dort steht der offene Betrag, und du kannst die Zahlung melden.':
     "In the team's Team section under “Team fund → Account <Name>”. The outstanding amount is shown there, and you can report the payment.",
   'Im Team-Menü legst du Termine an und verwaltest Kader, Aufstellung, Kasse und Funktionen deiner Mannschaft.':
@@ -3150,6 +3161,8 @@ export const en: Record<string, string> = {
   'Kassenstand je Monat': 'Fund balance per month',
   'Kassenstand nicht sichtbar': 'Fund balance not visible',
   'Kassenstand seit Saisonbeginn': 'Balance since the start of the season',
+  'Kassenstand, Einnahmen und Ausgaben sieht immer die ganze Mannschaft. Die Beträge der einzelnen Personen zeigst du nur, wenn ihr das wollt – sonst sieht jeder nur die eigenen.':
+    'The whole team always sees the balance, income and expenses. You only show the amounts of individual people if you want to – otherwise everyone only sees their own.',
   Kassenstatistik: 'Team fund statistics',
   Kassenübersicht: 'Treasury overview',
   Kassenverwaltung: 'Team fund administration',
@@ -4242,6 +4255,8 @@ export const en: Record<string, string> = {
   'Saldo, Strafen, Getränke, Einzahlungen': 'Balance, fines, drinks, payments',
   'Sammelhinweis zur Frist und kurzfristige Absagen':
     'Summary notice on the deadline and short-notice declines',
+  'Sammelhinweis zur Frist, kurzfristige Absagen und Absagen aus der Aufstellung':
+    'Summary notice for the deadline, short-notice declines and declines from the line-up',
   'Samstag, 15:00 Uhr': 'Saturday, 3:00 pm',
   'Satzung, Ordnungen, Formulare, Trainingspläne': 'Statutes, regulations, forms, training plans',
   Schäden: 'Damage',
@@ -4950,6 +4965,8 @@ export const en: Record<string, string> = {
     'Under “Team → Squad”. It lists the coaching staff and players with number and position. Anyone who is currently absent is marked; only authorised people can see the reason.',
   'Unter „Team → Kasse“ steht der Kassenstand mit Einnahmen und Ausgaben, deine eigenen Buchungen („Mein Konto“) und die letzten Buchungen der Mannschaft. Die Statistik zeigt Diagramme und Auswertungen. Die Kasse sieht die ganze Mannschaft.':
     "Under “Team → Team fund” you'll find the balance with income and expenses, your own entries (“My account”) and the team's latest entries. The statistics show charts and evaluations. The whole team can see the team fund.",
+  'Unter „Team → Kasse“ steht der Kassenstand mit Einnahmen und Ausgaben, deine eigenen Buchungen („Mein Konto“) und die letzten Buchungen der Mannschaft. Die Statistik zeigt Diagramme und Auswertungen. Kassenstand, Einnahmen und Ausgaben sieht die ganze Mannschaft (Spieler, Eltern und Trainerteam). Die Beträge der anderen Personen siehst du nur, wenn die Kasse das freigibt – sonst nur deine eigenen.':
+    'Under “Team → Cash” you find the balance with income and expenses, your own bookings (“My account”) and the team’s latest bookings. The statistics show charts and evaluations. The whole team (players, parents and coaching staff) sees the balance, income and expenses. You only see other people’s amounts if the cash manager allows it – otherwise only your own.',
   'Unter „Team → Statistik“ findest du oben die Saison-Bilanz und darunter Kacheln: Kader, Training, Torschützen, Scorer, Karten und Ergebnisse. Jede Auswertung hat einen eigenen Zeitraum: gesamte Saison, letzter Monat oder ein selbst gewählter Zeitraum. Die Trainingsbeteiligung sehen alle Personen der Mannschaft.':
     "Under “Team → Statistics” you'll find the season record at the top and tiles below: squad, training, goalscorers, scorers, cards and results. Each evaluation has its own period: whole season, last month or a period you choose. Everyone in the team can see training participation.",
   'Unter „Verein → Ansprechpartner“ stehen Vorstand, Leitung und Trainer mit Telefon und E-Mail (je nach Freigabe). Mit einem Tipp auf das Symbol rufst du an oder schreibst.':

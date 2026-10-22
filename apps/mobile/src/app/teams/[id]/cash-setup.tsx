@@ -391,10 +391,10 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
       <WizardShell
         {...shell}
         title="Was darf die Mannschaft sehen?"
-        explanation="Jeder sieht den eigenen Stand. Die Stände der anderen zeigst du nur, wenn ihr das wollt."
+        explanation="Kassenstand, Einnahmen und Ausgaben sieht immer die ganze Mannschaft. Die Beträge der einzelnen Personen zeigst du nur, wenn ihr das wollt – sonst sieht jeder nur die eigenen."
       >
         <Toggle
-          label="Offene Beträge der anderen anzeigen"
+          label="Beträge aller Beteiligten anzeigen"
           value={d.showBalances}
           onChange={(showBalances) => patch({ showBalances })}
         />

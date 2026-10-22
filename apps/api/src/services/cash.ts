@@ -82,7 +82,8 @@ export function cashSettings(account: { settings: AccountSettings } | null): Cas
     accountHolder: v.accountHolder ?? null,
     paypalLink: v.paypalLink ?? null,
     drinkPriceCents: v.drinkPriceCents ?? null,
-    showMemberBalances: v.showMemberBalances !== false,
+    // Standard: Kassenstand, Einnahmen und Ausgaben sieht die ganze Mannschaft, die Beträge der anderen nur mit Freigabe
+    showMemberBalances: v.showMemberBalances === true,
     autoReminder: v.autoReminder === true,
     savingsGoalName: v.savingsGoalName ?? null,
     savingsGoalCents: v.savingsGoalCents ?? null,
@@ -146,7 +147,7 @@ export async function getTeamCash(
   const account = await accountFor(db, actor, team);
   const config = cashConfig(actor, team);
   const settings = cashSettings(account);
-  // Offene Beträge anderer: ganze Mannschaft, außer die Kasse hat das abgeschaltet
+  // Beträge anderer Personen: nur mit Freigabe der Kasse (Standard: jeder sieht nur die eigenen), Kassenverantwortliche immer
   const seesOthers = seesAll && (settings.showMemberBalances || permissions.manageCash);
 
   const rows = account
