@@ -39,7 +39,11 @@ ok(
 ok((await vis(page, /Trainerteam/).count()) > 3, 'Trainerteam je Mannschaft');
 ok((await vis(page, 'Trainingsbeteiligung').count()) > 3, 'Trainingsbeteiligung je Mannschaft');
 ok((await vis(page, /\d+ % · (gut|mittel|niedrig)/).count()) > 0, 'Ampel mit Prozent und Wort');
-ok((await vis(page, 'zu wenig Daten').count()) > 0, 'Wenig Daten: grauer Balken mit Hinweis');
+// seit den ausgebauten Demodaten haben alle Mannschaften erfasste Trainings; der graue Balken „zu wenig Daten“ erscheint nur ohne
+ok(
+  (await vis(page, 'zu wenig Daten').count()) === 0,
+  'Alle Mannschaften haben genug erfasste Trainings',
+);
 ok(
   (await vis(page, /\d+ zugesagt · \d+ abgesagt · \d+ offen/).count()) > 0,
   'Nächstes Spiel mit zugesagt / abgesagt / offen',

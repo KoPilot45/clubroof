@@ -29,9 +29,9 @@ console.log('✓ Menü öffnet mit Löschen');
 
 // Löschen fragt immer nach
 await text(page, 'Löschen', { exact: true }).click();
-await text(page, 'Wirklich löschen?').waitFor({ timeout: 5_000 });
+await text(page, /^(Wirklich löschen\?|Ins Archiv verschieben\?)/).waitFor({ timeout: 5_000 });
 await b.shot(page, 'aktionen-u15', false);
-console.log('✓ Rückfrage „Wirklich löschen?“ erscheint');
+console.log('✓ Rückfrage („Wirklich löschen?“ bzw. „Ins Archiv verschieben?“) erscheint');
 let list = await api(`/teams/${b1.id}/tasks`, login.token);
 const still = [...list.open, ...list.done].some((t) => t.title === title);
 console.log(still ? '✓ vor der Bestätigung ist nichts gelöscht' : '✗ Eintrag war vorzeitig weg');
@@ -46,9 +46,9 @@ console.log(
 );
 await page.getByRole('button', { name: 'Weitere Aktionen' }).first().click();
 await text(page, 'Löschen', { exact: true }).click();
-await text(page, 'Wirklich löschen?').waitFor({ timeout: 5_000 });
+await text(page, /^(Wirklich löschen\?|Ins Archiv verschieben\?)/).waitFor({ timeout: 5_000 });
 await page
-  .getByRole('button', { name: 'Löschen', exact: true })
+  .getByRole('button', { name: /^(Löschen|Archivieren)$/ })
   .filter({ visible: true })
   .last()
   .click();

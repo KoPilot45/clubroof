@@ -1,5 +1,5 @@
 /** SR: Schiedsrichter – eigene Einsätze, Termine-Tab, Vereins-Soll (Administration). */
-import { button, launch, text } from '../lib/e2e.mjs';
+import { button, confirmDialog, launch, moreAction, text } from '../lib/e2e.mjs';
 
 const b = await launch();
 let failed = false;
@@ -35,7 +35,8 @@ const ok = (cond, msg) => {
   });
   ok(true, 'Einsatz gespeichert, Hinweis zur Überschneidung erscheint');
   await text(page, /SV Browser – FC Test/).click();
-  await text(page, 'Einsatz löschen', { exact: true }).click();
+  await moreAction(page, 'Einsatz löschen');
+  await confirmDialog(page);
   await page.waitForTimeout(800);
   ok((await page.getByText(/SV Browser – FC Test/).count()) === 0, 'Einsatz gelöscht');
 

@@ -101,7 +101,7 @@ export function SearchField({ onPress, overlay }: { onPress: () => void; overlay
       onPress={onPress}
       style={{
         width: compact ? 220 : 300,
-        minHeight: 40,
+        minHeight: 44,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,

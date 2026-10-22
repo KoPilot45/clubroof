@@ -17,9 +17,10 @@ const auditor = await b.session('mitglied');
 const pa = auditor.page;
 await auditor.goto('/club-cash/audit');
 await text(pa, 'Neue Prüfung').waitFor({ timeout: 20_000 });
-await button(pa, 'Prüfung beginnen').click();
+// Demodaten: die Prüfung 2026 ist schon „In Arbeit“ (2 in Ordnung, 4 offen) – sie öffnen und weiterführen
+await text(pa, /^2026 · Ganzer Verein/).click();
 await text(pa, 'Stichproben ziehen').waitFor({ timeout: 10_000 });
-ok(true, 'Prüfung begonnen, Detailseite öffnet');
+ok(true, 'Laufende Prüfung öffnet, Detailseite zeigt Stichproben');
 await pa.getByLabel('Anzahl').fill('3');
 await button(pa, 'Stichproben ziehen').click();
 await pa.getByRole('button', { name: 'Prüfen', exact: true }).first().waitFor({ timeout: 10_000 });
@@ -32,7 +33,7 @@ await text(pa, /Beanstandet/)
   .first()
   .waitFor({ timeout: 10_000 });
 ok(true, 'Beanstandung mit Begründung vermerkt');
-for (let i = 0; i < 5; i++) {
+for (let i = 0; i < 15; i++) {
   const next = pa.getByRole('button', { name: 'Prüfen', exact: true }).first();
   if ((await next.count()) === 0) break;
   await next.click();
@@ -67,9 +68,14 @@ const kasse = await b.session('kasse');
 const pk = kasse.page;
 await kasse.goto('/club-cash/donations');
 await text(pk, 'Spende erfassen', { exact: true }).waitFor({ timeout: 20_000 });
+// Demodaten: Steuerdaten sind eingetragen und die Vorlage ist freigegeben, zwei Bestätigungen sind ausgestellt
 ok(
-  (await vis(pk, /noch nicht freigegeben/).count()) > 0,
-  'Ohne Freigabe der Vorlage: Hinweis, dass keine Bestätigungen möglich sind',
+  (await vis(pk, /noch nicht freigegeben/).count()) === 0,
+  'Mit freigegebener Vorlage kein Sperrhinweis',
+);
+ok(
+  (await vis(pk, /Bestätigung 2026-002/).count()) > 0,
+  'Bestätigungen tragen fortlaufende Nummern (2026-001, 2026-002)',
 );
 await pk.getByLabel('Name', { exact: true }).fill('E2E Spender');
 await pk.getByLabel('Anschrift (für die Bestätigung)').fill('Hauptstraße 1, 12345 Musterstadt');
@@ -78,30 +84,23 @@ await button(pk, 'Spende buchen').click();
 await text(pk, 'E2E Spender', { exact: true }).waitFor({ timeout: 10_000 });
 ok(true, 'Spende erscheint in der Liste');
 ok(
-  await button(pk, 'Bestätigung ausstellen').first().isDisabled(),
-  'Bestätigung ausstellen ist ohne Freigabe gesperrt',
+  !(await button(pk, 'Bestätigung ausstellen').first().isDisabled()),
+  'Bestätigung ausstellen ist bei freigegebener Vorlage möglich',
 );
 
+// Administration sieht die Freigabe der Vorlage (Steuerdaten bleiben unverändert)
 const admin = await b.session('admin');
-const pad = admin.page;
 await admin.goto('/club-cash/tax');
-await text(pad, 'Angaben zur Steuerbegünstigung').waitFor({ timeout: 20_000 });
-await pad.getByLabel('Finanzamt').fill('Finanzamt Musterstadt');
-await pad.getByLabel('Steuernummer').fill('123/456/78901');
-await pad.getByLabel('Zeitraum (z. B. 2022 bis 2024)').fill('2022 bis 2024');
-await pad.getByLabel('Begünstigter Zweck').fill('Förderung des Sports');
-await button(pad, 'Speichern').click();
-await text(pad, 'Vorlage freigeben', { exact: true }).first().waitFor({ timeout: 10_000 });
-await pad.getByLabel(/Geprüft von/).fill('Steuerberatung Muster');
-await button(pad, 'Vorlage freigeben').click();
-await text(pad, /Vorlage freigegeben/).waitFor({ timeout: 10_000 });
-ok(true, 'Administration trägt Steuerdaten ein und gibt die Vorlage frei');
+await text(admin.page, /Vorlage freigegeben/)
+  .first()
+  .waitFor({ timeout: 20_000 });
+ok(true, 'Steuerdaten: Vorlage ist freigegeben');
 
 await kasse.goto('/club-cash/donations');
 await text(pk, 'E2E Spender', { exact: true }).waitFor({ timeout: 20_000 });
 await button(pk, 'Bestätigung ausstellen').first().click();
-await button(pk, 'Bestätigung öffnen').first().waitFor({ timeout: 10_000 });
-ok(true, 'Nach der Freigabe lässt sich die Bestätigung ausstellen und öffnen');
+await text(pk, /Bestätigung 2026-003/).waitFor({ timeout: 10_000 });
+ok(true, 'Bestätigung ausgestellt, nächste fortlaufende Nummer 2026-003');
 await b.shot(pk, 'k4-spenden', false);
 
 await b.close();

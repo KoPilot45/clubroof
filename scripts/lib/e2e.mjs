@@ -123,3 +123,29 @@ export async function launch() {
 export const text = (page, t, o = {}) => page.getByText(t, o).filter({ visible: true }).first();
 export const button = (page, name) =>
   page.getByRole('button', { name }).filter({ visible: true }).first();
+
+/**
+ * Löschen fragt immer nach („Wirklich löschen?“, Dialog in der Mitte): den roten Bestätigungsknopf drücken.
+ * `label` nur angeben, wenn der Knopf anders heißt als Löschen, Archivieren, Entfernen, Beenden oder Zurückziehen.
+ */
+export async function confirmDialog(
+  page,
+  label = /^(Löschen|Archivieren|Entfernen|Beenden|Zurückziehen)/,
+) {
+  await page
+    .getByText(/^Wirklich /)
+    .filter({ visible: true })
+    .first()
+    .waitFor({ timeout: 8000 });
+  await page.getByRole('button', { name: label }).filter({ visible: true }).last().click();
+}
+
+/** „…“-Menü einer Zeile oder Karte („Weitere Aktionen“) öffnen und die Aktion wählen. */
+export async function moreAction(page, label) {
+  await page
+    .getByRole('button', { name: 'Weitere Aktionen' })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await page.getByText(label, { exact: true }).filter({ visible: true }).first().click();
+}

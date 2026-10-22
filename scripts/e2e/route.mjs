@@ -1,5 +1,5 @@
-/** Browserprüfung „Route“: Auswärtsspiel öffnen, Button „Route“ öffnet die Karten-Adresse. */
-import { api, button, launch } from '../lib/e2e.mjs';
+/** Browserprüfung „Route“: Auswärtsspiel öffnen, Link „Route“ öffnet die Karten-Adresse. */
+import { api, launch } from '../lib/e2e.mjs';
 
 const b = await launch();
 let failed = false;
@@ -13,7 +13,7 @@ const away = events.find((e) => e.match && !e.match.isHome && e.routeUrl);
 ok(!!away, 'Es gibt ein Auswärtsspiel mit Route-Link');
 if (away) {
   await s.goto(`/events/${away.id}`);
-  const route = button(s.page, 'Route');
+  const route = s.page.getByRole('link', { name: 'Route' }).filter({ visible: true }).first();
   await route.waitFor({ timeout: 20_000 });
   const [popup] = await Promise.all([
     s.page.context().waitForEvent('page', { timeout: 10_000 }),
@@ -22,7 +22,7 @@ if (away) {
   // Ohne Internet im Testlauf lädt die Seite nicht; es genügt, dass ein neuer Tab zur Karten-Adresse öffnet
   await popup.waitForTimeout(500);
   const target = await popup.evaluate(() => location.href).catch(() => popup.url());
-  ok(!!popup, `Button „Route“ öffnet einen neuen Tab (${target.slice(0, 60)})`);
+  ok(!!popup, `Link „Route“ öffnet einen neuen Tab (${target.slice(0, 60)})`);
 }
 await b.close();
 console.log(b.errors.length ? `Konsolenfehler:\n${b.errors.join('\n')}` : '✓ keine Konsolenfehler');

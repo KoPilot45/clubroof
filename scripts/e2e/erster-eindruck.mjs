@@ -40,7 +40,12 @@ const target = events.find(
 ok(!!target, 'Es gibt einen Termin mit offener Antwort');
 if (target) {
   await s.goto(`/events/${target.id}`);
-  await button(s.page, 'Zusagen').click();
+  // exakter Name: die Teilnehmerliste hat Gruppenköpfe wie „14 Zusagen“
+  await s.page
+    .getByRole('button', { name: 'Zusagen', exact: true })
+    .filter({ visible: true })
+    .first()
+    .click();
   await text(s.page, 'Rückgängig', { exact: true }).waitFor({ timeout: 10_000 });
   ok(true, 'Nach der Zusage erscheint „Rückgängig“');
   await text(s.page, 'Rückgängig', { exact: true }).click();

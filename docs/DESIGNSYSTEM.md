@@ -116,8 +116,7 @@ Entscheidungen in diesem Schritt:
   und entfällt mit dem Schnellzugriff (Schritt Home/Mehr).
 - **Ein Aufbau für alle Seiten:** Seitenhintergrund ist jetzt `background` (nicht mehr `surface`); Kopfzeile ohne Trennlinie.
 - **Seite „Bausteine“** (`/bausteine`, nicht verlinkt): alle Bausteine hell und dunkel als Sicht- und Browserprüfung.
-- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-bausteine.mjs` (Tab-Leiste, Tippflächen ≥ 44, Umbruch langer Namen,
-  Überblicksbild `.check/shots/neuer-look-bausteine.png`).
+- Browserprüfung: die Entwurfsskripte `neuer-look-*` sind entfernt (21.10.2026); abgelöst durch `navigation.mjs`, `termin-antwort.mjs`, `bedienung.mjs`, `review-gesamt.mjs` und `hell-kontrast.mjs` (Stand: `docs/E2E-STAND.md`).
 
 ### Stand Schritt 2: Home (10.10.2026) ✅
 
@@ -140,8 +139,7 @@ Entscheidungen und Abweichungen:
 - **Hinweise an Schnellzugriff-Chips** (Zähler oder „neu“) kommen aus den Kachel-Infos (`/tile-info` für Verein, Mehr und Mannschaftskasse); neuer Eintrag „Kasse“.
 - **Noch offen aus dem Entwurf:** Spielekarte für abgesagte Spiele (abgesagte Spiele erscheinen nur in „Deine Woche“).
 - Die Willkommens-Tour und der Pull-to-refresh bleiben unverändert.
-- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-home.mjs` (Eltern und Vorstand, hell und dunkel, Blatt beim Absagen, Schnellzugriff
-  anpassen/zurücksetzen; Überblicksbild `.check/shots/neuer-look-home.png`).
+- Browserprüfung: die Entwurfsskripte `neuer-look-*` sind entfernt (21.10.2026); abgelöst durch `navigation.mjs`, `termin-antwort.mjs`, `bedienung.mjs`, `review-gesamt.mjs` und `hell-kontrast.mjs` (Stand: `docs/E2E-STAND.md`).
 
 ### Änderung am Home-Schritt: Symbole statt Beschriftung (10.10.2026)
 
@@ -162,7 +160,7 @@ Aufbau wie `TeamNeu`: Team-Kacheln → Funktionschips → Blickfang Kader → Ka
 | Trainingswoche      | Datumskachel, Titel, „Zeit · Ort · n von m zugesagt“, abgesagte mit Chip und Grund                                                                                                              |
 
 - Neu in `ui.tsx`: `DateTile` (auch von Home genutzt), `TileGrid compact`, `Button hideLabel`.
-- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-team.mjs` (Symbole auf den Spielkarten, Team als Eltern und Trainer, hell und dunkel; Überblick `.check/shots/neuer-look-team.png`).
+- Browserprüfung: die Entwurfsskripte `neuer-look-*` sind entfernt (21.10.2026); abgelöst durch `navigation.mjs`, `termin-antwort.mjs`, `bedienung.mjs`, `review-gesamt.mjs` und `hell-kontrast.mjs` (Stand: `docs/E2E-STAND.md`).
 
 ### Stand Schritt 4: Termine (10.10.2026) ✅
 
@@ -177,7 +175,7 @@ Aufbau wie `TermineNeu`: Filter → Als Nächstes (Blickfang) → Liste → Kale
 | Kalender      | Zellen 44, gewählter Tag als Pille in Vereinsfarbe, runde 44er-Monatsknöpfe, Punkte (5) nach Terminart; abgesagte Termine als roter Punkt, Legende ergänzt „Abgesagt“ (auch Vereinskalender) |
 | Gewählter Tag | Abschnitt mit `EventRow`s (Zusage direkt per ✓ möglich)                                                                                                                              |
 
-- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-termine.mjs` (Filter, Kinderfilter, Kalender, Tippflächen; Überblick `.check/shots/neuer-look-termine.png`).
+- Browserprüfung: die Entwurfsskripte `neuer-look-*` sind entfernt (21.10.2026); abgelöst durch `navigation.mjs`, `termin-antwort.mjs`, `bedienung.mjs`, `review-gesamt.mjs` und `hell-kontrast.mjs` (Stand: `docs/E2E-STAND.md`).
 
 ### Stand Schritt 5: Verein (10.10.2026) ✅
 
@@ -192,7 +190,7 @@ Aufbau wie `VereinNeu`: Nächster Vereinstermin (Blickfang) → „Vereinsleben�
 
 - **„Anpassen“** (Kachel am Ende): Blatt „Kacheln anpassen“ – Kacheln aus- und einblenden, mit Pfeilen verschieben; Auswahl je Person in `users.club_tiles` (`PUT /me/preferences`, `{ order, hidden }`), neue Funktionen erscheinen am Ende, „Zurücksetzen“ stellt alles her (`components/tile-customizer.tsx`).
 - Dringende News in der News-Liste tragen jetzt auch im hellen Modus ihren roten Rahmen (Warnfläche mit Beschriftung „Dringend“).
-- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-verein.mjs` (Vorstand hell/dunkel, Spieler, Tippflächen, „Mehr erfahren“; Überblick `.check/shots/neuer-look-verein.png`).
+- Browserprüfung: die Entwurfsskripte `neuer-look-*` sind entfernt (21.10.2026); abgelöst durch `navigation.mjs`, `termin-antwort.mjs`, `bedienung.mjs`, `review-gesamt.mjs` und `hell-kontrast.mjs` (Stand: `docs/E2E-STAND.md`).
 
 ### Stand Schritt 6: Mehr (10.10.2026) ✅
 
@@ -207,7 +205,7 @@ Aufbau wie `MehrNeu`: Profilkarte (Blickfang) → 2-Faktor-Hinweis (falls nötig
 | Einstellungen       | Konto & Einstellungen, Hilfe & Anleitung, Einladen (mit Recht), **Verwaltung** (mit Verwaltungsrecht – bleibt hier zusätzlich zum Schnellzugriff, damit sie sicher erreichbar ist) |
 | Hinweise            | Hinweise und Zähler aus `tile-info` ersetzen die Erklärzeile bzw. den Zähler                                                                                  |
 
-- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-mehr.mjs` (Eltern hell/dunkel, Admin; Überblick `.check/shots/neuer-look-mehr.png`).
+- Browserprüfung: die Entwurfsskripte `neuer-look-*` sind entfernt (21.10.2026); abgelöst durch `navigation.mjs`, `termin-antwort.mjs`, `bedienung.mjs`, `review-gesamt.mjs` und `hell-kontrast.mjs` (Stand: `docs/E2E-STAND.md`).
 
 ### Stand Schritt 7: Zustände (10.10.2026) ✅
 
@@ -223,7 +221,7 @@ Nach `ZustandLaden/Offline/Leer/Fehler`:
 | Bestätigung   | `Sheet` (Blatt von unten) „Termin absagen?“ mit Hinweis, Grundauswahl und „Abbrechen“ / „Absagen und informieren“ (erst mit Grund); ebenso Grund beim Absagen/Unsicher auf den Spielkarten            |
 
 - **Offline-Warteschlange** (nachgeholt): Zu- und Absagen ohne Verbindung werden auf dem Gerät gemerkt (`lib/outbox.ts`, je Termin und Person gilt die letzte Antwort), sofort angezeigt („Wird gesendet“, Hinweis „Deine Rückmeldung wird gesendet, sobald du wieder online bist.“) und beim Wiederverbinden gesendet (`OutboxSync`); vom Server abgelehnte (z. B. Frist abgelaufen) werden gemeldet. Eingriffe des Trainerteams für andere werden nie gemerkt.
-- Browserprüfung: `pnpm browser-check scripts/e2e/neuer-look-zustaende.mjs` (Laden verzögert, Fehler 500 mit erneutem Versuch, Mitglied ohne Mannschaft, Offline, Bestätigungsblatt; Überblick `.check/shots/neuer-look-zustaende.png`).
+- Browserprüfung: die Entwurfsskripte `neuer-look-*` sind entfernt (21.10.2026); abgelöst durch `navigation.mjs`, `termin-antwort.mjs`, `bedienung.mjs`, `review-gesamt.mjs` und `hell-kontrast.mjs` (Stand: `docs/E2E-STAND.md`).
 
 ### Stand Schritt 8: Dunkelmodus-Durchgang (10.10.2026) ✅
 
@@ -238,7 +236,7 @@ Unterseiten; keine Seite mit weißen Flächen, unlesbarem Text oder Überlauf. A
 - **Verwaltungsmodus:** untere Navigation als schwebende Pille (`FloatingNav`, gemeinsame Grundlage mit der Tab-Leiste); die Seiten lassen darunter Platz.
   Die abgesetzte Kopfzeile in `primaryContainer` mit „Beenden“ bleibt als Erkennungszeichen des Modus.
 - Bewusst weiß bleiben: QR-Codes (Kontrast), Gelbe/Rote Karte im Spielbericht.
-- **Seite `/bausteine`** bleibt (nicht verlinkt) als Sichtprüfung für Bausteine, hell und dunkel; `neuer-look-bausteine.mjs` nutzt sie.
+- **Seite `/bausteine`** bleibt (nicht verlinkt) als Sichtprüfung für Bausteine, hell und dunkel; früher nutzte sie `neuer-look-bausteine.mjs` (entfernt).
 
 ### Unterseiten im neuen Aufbau (10.10.2026) ✅
 

@@ -158,26 +158,53 @@ for (const width of [1250, 1440, 1891]) {
     `/events?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
     login.token,
   );
-  const target = events.find((e) => e.type === 'match' && e.myResponses.some((r) => r.canRespond));
-  await api(`/events/${target.id}/responses/${login.me.person.id}`, login.token, {
-    method: 'PUT',
-    body: JSON.stringify({ status: 'pending', reason: null }),
-  });
-  await goto('/termine');
-  const yes = page.locator('button[aria-label="Zusagen"]:not([disabled])').first();
+  // alle antwortbaren Termine auf „offen“ (die erste Karte der Startseite ist dann sicher eine offene)
+  const answerable = events.filter((e) => e.myResponses.some((r) => r.canRespond));
+  for (const e of answerable)
+    await api(`/events/${e.id}/responses/${login.me.person.id}`, login.token, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'pending', reason: null }),
+    });
+  const answered = async () => {
+    const list = [];
+    for (const e of answerable) {
+      const d = await api(`/events/${e.id}`, login.token);
+      if (d.myResponses[0].status !== 'pending') list.push(e);
+    }
+    return list;
+  };
+  const target = answerable.find((e) => e.type === 'match') ?? answerable[0];
+  await goto('/');
+  await page.reload();
+  await page.waitForTimeout(3500);
+  const yes = page
+    .locator('[aria-label="Zusage"][role="radio"]:not([disabled]):not([aria-disabled="true"])')
+    .filter({ visible: true })
+    .first();
   await yes.waitFor({ timeout: 20_000 });
   await yes.click();
   await text(page, 'Teilnahme bestätigt').waitFor({ timeout: 10_000 });
   ok(
-    new URL(page.url()).pathname === '/termine',
-    'Zusagen in der Liste öffnet keine Details, Bestätigung nennt den Vorgang',
+    new URL(page.url()).pathname === '/',
+    'Antwortknopf auf der Karte öffnet keine Details, Bestätigung nennt den Vorgang',
   );
+  ok((await answered()).length === 1, 'genau eine Antwort wurde gespeichert');
   await text(page, 'Rückgängig', { exact: true }).click();
   await page.waitForTimeout(800);
-  const after = await api(`/events/${target.id}`, login.token);
-  ok(after.myResponses[0].status === 'pending', 'Rückgängig stellt die vorherige Antwort her');
+  ok((await answered()).length === 0, 'Rückgängig stellt die vorherige Antwort her');
+  await goto('/termine');
+  await page.waitForTimeout(1500);
   // Karte öffnet Details
-  await page.getByText(target.title).filter({ visible: true }).first().click();
+  // welche Karten die Liste oben zeigt, hängt vom Wochentag ab: die erste sichtbare Karte eines antwortbaren Termins
+  let card = null;
+  for (const e of answerable) {
+    const hit = page.getByText(e.title, { exact: true }).filter({ visible: true }).last();
+    if (await hit.count()) {
+      card = hit;
+      break;
+    }
+  }
+  await card.click();
   await page.waitForURL(/\/events\//, { timeout: 10_000 });
   ok(true, 'Karte öffnet die gemeinsamen Termindetails');
 }

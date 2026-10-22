@@ -2,7 +2,7 @@
  * K3: Haushaltsplan mit Soll-Ist, Rücklagen und Jahresabschluss in der Vereinskasse.
  * Aufruf: pnpm browser-check scripts/e2e/planung.mjs [--no-build|--reset]
  */
-import { button, launch, text } from '../lib/e2e.mjs';
+import { button, confirmDialog, launch, text } from '../lib/e2e.mjs';
 
 const b = await launch();
 let failed = false;
@@ -18,10 +18,15 @@ const page = s.page;
 // ── Haushaltsplan ────────────────────────────────────────────────────────────
 await s.goto('/club-cash/budget?mode=plan');
 await text(page, 'Planzeile hinzufügen').waitFor({ timeout: 20_000 });
+// Demodaten: der Plan des laufenden Jahres ist gefüllt, eine Zeile liegt über dem Plan
 ok(
-  (await vis(page, 'Noch keine Planzeile für Ausgaben.').count()) > 0,
-  'Leerer Plan zeigt Hinweis',
+  (await vis(page, 'über Plan', { exact: true }).count()) > 0,
+  'Demoplan zeigt eine Zeile „über Plan“',
 );
+// Ein noch leeres Planjahr (2027) für die Eingabe nehmen
+await page.getByRole('radio', { name: '2027', exact: true }).click();
+await text(page, 'Noch keine Planzeile für Ausgaben.').waitFor({ timeout: 10_000 });
+ok(true, 'Leerer Plan zeigt Hinweis');
 await page.getByRole('radio', { name: /^Versicherungen/ }).click();
 await page.getByLabel('Planbetrag in €').last().fill('1000');
 await button(page, 'Zeile anlegen').click();
@@ -32,6 +37,7 @@ ok((await vis(page, 'im Plan').count()) > 0, 'Status steht als Text („im Plan�
 await b.shot(page, 'k3-haushalt', false);
 await button(page, 'Planbetrag ändern').click();
 await button(page, 'Zeile entfernen').click();
+await confirmDialog(page);
 await text(page, 'Noch keine Planzeile für Ausgaben.').waitFor({ timeout: 10_000 });
 ok(true, 'Planzeile entfernt');
 
@@ -45,12 +51,14 @@ ok(true, 'Rücklage angelegt');
 await text(page, 'E2E-Rücklage', { exact: true }).click();
 await page.getByLabel('Betrag in €', { exact: true }).fill('150');
 await button(page, 'Zuführen').click();
-await text(page, /gebunden 150,00\s€/).waitFor({ timeout: 10_000 });
-ok(true, 'Zuführung bindet Kassenbestand');
+// das Gesamtbild „gebunden“ enthält jetzt auch die Demo-Rücklagen; die Zuführung steht an der Rücklage selbst
+await text(page, /\+150,00\s€/).waitFor({ timeout: 10_000 });
+ok(true, 'Zuführung erscheint an der Rücklage');
 await page.getByLabel('Betrag in €', { exact: true }).fill('150');
 await button(page, 'Entnehmen').click();
 await page.waitForTimeout(800);
 await button(page, 'Rücklage auflösen').click();
+await confirmDialog(page).catch(() => {});
 await page.waitForTimeout(800);
 ok((await vis(page, 'E2E-Rücklage', { exact: true }).count()) === 0, 'Rücklage aufgelöst');
 await b.shot(page, 'k3-ruecklagen', false);

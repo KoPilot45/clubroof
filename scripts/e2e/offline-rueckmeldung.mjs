@@ -48,7 +48,10 @@ await page.evaluate(() => window.dispatchEvent(new Event('offline')));
 await text(page, 'Du bist offline').waitFor({ timeout: 10_000 });
 
 // seit der neuen Terminkarte sind die Antworten Radioknöpfe „Zusage“; den ersten antwortbaren nehmen
-await page.locator('[aria-label="Zusage"][role="radio"]:not([disabled])').first().click();
+await page
+  .locator('[aria-label="Zusage"][role="radio"]:not([disabled]):not([aria-disabled="true"])')
+  .first()
+  .click();
 await text(page, /wird gesendet, sobald du wieder online bist/)
   .first()
   .waitFor({ timeout: 10_000 });
