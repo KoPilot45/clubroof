@@ -3,7 +3,7 @@
  * Umschalter „Alle | Kasse“ in der Vereinskasse, Kassenübersicht für den Vorstand statt Kassenbereich.
  * Aufruf: pnpm browser-check scripts/e2e/kassen.mjs [--no-build|--reset]
  */
-import { api, button, launch, text } from '../lib/e2e.mjs';
+import { api, button, confirmDialog, launch, text } from '../lib/e2e.mjs';
 
 const b = await launch();
 let failed = false;
@@ -48,6 +48,7 @@ ok(
   'Abteilung bleibt; bis zur Entscheidung läuft sie über die Hauptkasse',
 );
 await page.getByRole('button', { name: 'E2E-Abteilung löschen' }).click();
+await confirmDialog(page);
 await page.waitForTimeout(800);
 ok(
   (await vis(page, 'E2E-Abteilung', { exact: true }).count()) === 0,

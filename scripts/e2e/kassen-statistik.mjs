@@ -52,11 +52,11 @@ const reservesHeading = clubStats.reserves?.length ? 'Rücklagen' : null;
     ok(true, `Thema „${chip}“`);
   }
 
-  // Direktlink aus dem Reiter Beiträge
-  await goto('/club-cash/area/beitraege');
-  await text(page, 'Beitragsstatistik').click({ timeout: 15_000 });
+  // Direktlink aus dem Reiter Auswertung: Kachel „Beiträge“
+  await goto('/club-cash/area/auswertung');
+  await page.getByRole('button', { name: 'Beiträge', exact: true }).first().click({ timeout: 15_000 });
   await text(page, 'Beitragsstatus', { exact: true }).waitFor({ timeout: 15_000 });
-  ok(true, 'Direktlink „Beitragsstatistik“ öffnet das Thema Beiträge');
+  ok(true, 'Kachel „Beiträge“ im Reiter Auswertung öffnet das Thema Beiträge');
 }
 
 // Rechte: ohne Kassenrecht liefert der Server nichts
