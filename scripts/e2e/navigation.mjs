@@ -195,7 +195,16 @@ for (const width of [1250, 1440, 1891]) {
   await goto('/termine');
   await page.waitForTimeout(1500);
   // Karte öffnet Details
-  await page.getByText(target.title).filter({ visible: true }).first().click();
+  // welche Karten die Liste oben zeigt, hängt vom Wochentag ab: die erste sichtbare Karte eines antwortbaren Termins
+  let card = null;
+  for (const e of answerable) {
+    const hit = page.getByText(e.title, { exact: true }).filter({ visible: true }).first();
+    if (await hit.count()) {
+      card = hit;
+      break;
+    }
+  }
+  await card.click();
   await page.waitForURL(/\/events\//, { timeout: 10_000 });
   ok(true, 'Karte öffnet die gemeinsamen Termindetails');
 }
