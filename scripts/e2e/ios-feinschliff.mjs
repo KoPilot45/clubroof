@@ -77,7 +77,11 @@ async function swipeAt(page, x0, y, dx = 130) {
           method: 'PUT',
           body: JSON.stringify({ status: 'pending', reason: null }),
         });
-    beforeEvents = await api(`/events?${win}`, login.token);
+    // gleiches Zeitfenster (60 Tage) wie der Vergleich nach dem Wischen
+    beforeEvents = await api(
+      `/events?from=${encodeURIComponent(new Date().toISOString())}&to=${encodeURIComponent(new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString())}`,
+      login.token,
+    );
     // Karten mit Antwortknöpfen stehen auf der Startseite („Diese Woche“)
     await goto('/');
     await page.reload();
@@ -107,8 +111,7 @@ async function swipeAt(page, x0, y, dx = 130) {
     const yes = (list) =>
       list.filter((e) => e.myResponses.length === 1 && e.myResponses[0].status === 'yes');
     ok(
-      // mindestens eine Zusage mehr (der Server leitet bei einzelnen Terminen weitere automatische Zusagen ab)
-      yes(after).length > yes(beforeEvents).length,
+      yes(after).length === yes(beforeEvents).length + 1,
       'Termin: Zusage per Wischen gespeichert',
     );
     for (const e of yes(after))
