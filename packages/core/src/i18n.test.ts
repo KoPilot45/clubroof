@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LOCALES, dictionaryKeys, intlLocale, localeFromTag, translate } from './i18n';
+import { LOCALES, dictionaryKeys, intlLocale, isRtlLocale, localeFromTag, translate } from './i18n';
 
 describe('Mehrsprachigkeit', () => {
   it('erkennt die Sprache aus Gerätekennungen, sonst Deutsch', () => {
@@ -7,6 +7,9 @@ describe('Mehrsprachigkeit', () => {
     expect(localeFromTag('de_AT')).toBe('de');
     expect(localeFromTag('fr-FR')).toBe('fr');
     expect(localeFromTag('tr-TR')).toBe('tr');
+    expect(localeFromTag('ar-EG')).toBe('ar');
+    expect(isRtlLocale('ar')).toBe(true);
+    expect(isRtlLocale('fr')).toBe(false);
     expect(localeFromTag('ja-JP')).toBe('de');
     expect(localeFromTag(undefined)).toBe('de');
   });
@@ -32,9 +35,9 @@ describe('Mehrsprachigkeit', () => {
   });
 
   it('weitere Sprachen übersetzen bekannte Texte', () => {
-    for (const code of ['tr', 'uk', 'pl', 'es', 'fr'] as const) {
+    for (const code of ['tr', 'uk', 'pl', 'es', 'fr', 'ar'] as const) {
       expect(translate('Abmelden', code), code).not.toBe('Abmelden');
-      expect(intlLocale(code)).toMatch(/^[a-z]{2}-[A-Z]{2}$/);
+      expect(intlLocale(code)).toMatch(/^[a-z]{2}-/);
     }
   });
 

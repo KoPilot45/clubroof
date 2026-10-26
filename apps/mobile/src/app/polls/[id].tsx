@@ -1,5 +1,5 @@
 import type { PollDetail } from '@clubroof/core';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';

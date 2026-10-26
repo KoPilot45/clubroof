@@ -3,7 +3,7 @@
  * Termine sind Blöcke in der Farbe ihrer Mannschaft, Sperrungen schraffiert, Überschneidungen markiert.
  * Reine Ansicht: Blöcke werden nur angetippt, nicht verschoben.
  */
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import type { FacilityBooking } from '@clubroof/core';
 import { useId } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';

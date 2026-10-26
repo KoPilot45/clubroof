@@ -3,7 +3,7 @@
  * Hauptbereiche (aktiver Punkt in der Akzentfläche), Suche (Kürzel `/`), Mitteilungen mit Zähler, „Verwaltung“
  * (violett) und „Vereinskasse“ (blau) nur mit Recht, unten die Profilkarte. Immer ausgeklappt, nicht einklappbar.
  */
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import type { HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router, usePathname, useSegments } from 'expo-router';

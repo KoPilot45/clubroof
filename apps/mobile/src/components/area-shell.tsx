@@ -2,7 +2,7 @@
  * Gemeinsame Bausteine der eigenen Bereiche „Admin-Verwaltung“ (violett) und „Vereinskasse“ (blau), Paket AV:
  * Kopfband mit „Zur App“, untere Leiste mit beschrifteten Reitern, Kategorien mit farbigen Untergruppen.
  */
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { router } from 'expo-router';
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { Pressable, View } from 'react-native';

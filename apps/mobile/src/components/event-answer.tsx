@@ -13,7 +13,7 @@ import type {
   MyResponse,
   Participant,
 } from '@clubroof/core';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';

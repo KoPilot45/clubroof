@@ -7,6 +7,7 @@
  * Texte („Konto Max“) werden über das Muster wiedererkannt, die Einsetzwerte einzeln übersetzt.
  */
 import { en } from './locales/en';
+import { ar } from './locales/ar';
 import { es } from './locales/es';
 import { fr } from './locales/fr';
 import { pl } from './locales/pl';
@@ -21,10 +22,16 @@ export const LOCALES = [
   { code: 'pl', name: 'Polski', intl: 'pl-PL' },
   { code: 'es', name: 'Español', intl: 'es-ES' },
   { code: 'fr', name: 'Français', intl: 'fr-FR' },
+  // Ziffern bleiben lateinisch (0–9): Beträge, Uhrzeiten und Tabellen bleiben so lesbar
+  { code: 'ar', name: 'العربية', intl: 'ar-u-nu-latn' },
 ] as const;
 
 export type Locale = (typeof LOCALES)[number]['code'];
 export const DEFAULT_LOCALE: Locale = 'de';
+
+/** Sprachen, die von rechts nach links geschrieben werden (Layout wird gespiegelt). */
+export const RTL_LOCALES: readonly Locale[] = ['ar'];
+export const isRtlLocale = (locale: Locale): boolean => RTL_LOCALES.includes(locale);
 
 export const isLocale = (value: unknown): value is Locale => LOCALES.some((l) => l.code === value);
 
@@ -38,7 +45,7 @@ export const intlLocale = (locale: Locale): string =>
   LOCALES.find((l) => l.code === locale)?.intl ?? 'de-DE';
 
 type Dictionary = Record<string, string>;
-const DICTIONARIES: Partial<Record<Locale, Dictionary>> = { en, tr, uk, pl, es, fr };
+const DICTIONARIES: Partial<Record<Locale, Dictionary>> = { en, tr, uk, pl, es, fr, ar };
 
 type Pattern = { regex: RegExp; target: string };
 const patternCache = new Map<Locale, Pattern[]>();

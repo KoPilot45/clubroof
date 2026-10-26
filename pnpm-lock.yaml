@@ -102,6 +102,9 @@ importers:
       '@clubroof/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens
+      '@expo-google-fonts/noto-sans-arabic':
+        specifier: ^0.4.3
+        version: 0.4.3
       '@expo-google-fonts/open-sans':
         specifier: ^0.4.2
         version: 0.4.2
@@ -1138,6 +1141,9 @@ packages:
 
   '@expo-google-fonts/material-symbols@0.4.48':
     resolution: {integrity: sha512-aZztj44PyA/sj3TXSwwpLJwqMlTUJ49okbZJYURzEcuERxMQB0KbX7RrLBi8WJnuWz5HFOLlTRxORrJfNnUPNQ==}
+
+  '@expo-google-fonts/noto-sans-arabic@0.4.3':
+    resolution: {integrity: sha512-YvtxyuegxPegu2g5urXJ+gQxRp8i798nQswTmEjwXOWR/fqy0Gvey6h5IoNRBrc43SxRxPezqCiR9ivpfPAXSg==}
 
   '@expo-google-fonts/open-sans@0.4.2':
     resolution: {integrity: sha512-gvhPqLXYnltWgll3iBwRGUwf5yN2HCh4mgQmFoQ8oU66LTs23oX4N7T3t0BDsKfP/1Z8F8+4c7wSkA11Nnk4kA==}
@@ -5524,6 +5530,8 @@ snapshots:
       levn: 0.4.1
 
   '@expo-google-fonts/material-symbols@0.4.48': {}
+
+  '@expo-google-fonts/noto-sans-arabic@0.4.3': {}
 
   '@expo-google-fonts/open-sans@0.4.2': {}
 

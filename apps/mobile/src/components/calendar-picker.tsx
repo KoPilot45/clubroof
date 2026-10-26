@@ -2,7 +2,7 @@
  * Datumsauswahl mit Kalender (Paket DP): Monatsraster, Wischen zwischen Monaten, „Heute“,
  * Mindest- und Höchstdatum. Wird vom `DateStepper` geöffnet, wenn man auf das Datum tippt.
  */
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useMemo, useRef, useState } from 'react';
 import { PanResponder, Pressable, View } from 'react-native';
 import { hapticSelect } from '@/lib/haptics';

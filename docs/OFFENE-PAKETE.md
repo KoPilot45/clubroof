@@ -19,7 +19,7 @@ Abgeglichen mit dem Umsetzungsbranch. W1–W7, AL, AN, AK, AO und RS sind umgese
 | Paket | Größe | Was steckt drin |
 |---|---|---|
 | LS1 | S | Weitere Sprachen: Übersetzungen (tr, uk, pl, es, fr) sind umgesetzt; offen nur das Gegenlesen durch Muttersprachler |
-| LS2 | M | Arabisch mit gespiegeltem Layout (rechts-nach-links) |
+| LS2 | S | Arabisch: umgesetzt; offen nur das Gegenlesen durch Muttersprachler und eine Sichtprüfung der Geräte-Apps (Neustart nach Sprachwechsel) |
 | M | L | Mandantenbetrieb: Vereine durch den Betreiber anlegen, Einladungscode, Personen in mehreren Vereinen |
 | D | M | Demo-Verein mit Persona-Wechsel, täglich zurückgesetzt, ohne Push/Mail |
 | P | L | Pläne und Abo: Stufen nach Mitgliederzahl, Zahlungsanbieter, AVV |

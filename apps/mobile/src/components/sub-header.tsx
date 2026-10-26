@@ -6,7 +6,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader, HeaderButton, SearchField } from '@/components/app-header';
 import { useIsDesktop } from '@/lib/layout';

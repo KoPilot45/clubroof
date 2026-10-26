@@ -1,6 +1,6 @@
 import type { ClubSchedule, ClubScheduleMatch, OrgUnitKind } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { PanResponder, Pressable, View } from 'react-native';

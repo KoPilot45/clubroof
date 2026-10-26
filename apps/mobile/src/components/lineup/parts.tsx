@@ -2,6 +2,7 @@
  * Bausteine des Aufstellungsplaners (Paket AUF): Spielerscheibe, Spielfeld, Bank- und Kaderleiste,
  * Formationschips, Beteiligungsbalken. Farben nur aus dem Theme; Beteiligung immer zusätzlich als Prozentwert.
  */
+import { LTR } from '@/lib/direction';
 import {
   PLAYER_POSITION_ABBR,
   attendanceLevel,
@@ -269,8 +270,10 @@ export function Pitch({
   const { w, h } = box;
   return (
     <View
+      {...LTR}
       onLayout={(e) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
       style={{
+        direction: 'ltr',
         height,
         borderRadius: 22,
         overflow: 'hidden',

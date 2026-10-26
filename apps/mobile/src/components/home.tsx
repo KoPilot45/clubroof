@@ -13,7 +13,7 @@ import type {
   TileInfoEntry,
 } from '@clubroof/core';
 import type { TintKey } from '@clubroof/design-tokens';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';

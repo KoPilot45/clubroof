@@ -7,7 +7,7 @@ import {
   type UploadedImage,
 } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { ReorderList } from '@/components/reorder';

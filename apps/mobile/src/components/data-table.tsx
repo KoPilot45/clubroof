@@ -3,7 +3,7 @@
  * (Pfeile wählen die Zeile, Enter öffnet, Leertaste markiert), optionale Mehrfachauswahl mit Sammelaktionen und
  * Export als CSV (Auswahl oder alle Zeilen). Nur für den Desktop gedacht; auf dem Handy bleibt die Liste.
  */
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 import { t } from '@/lib/i18n';

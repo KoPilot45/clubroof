@@ -21,7 +21,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/app-text';
 import { DndProvider, DropZone, useDndState, type DragData } from '@/components/lineup/dnd';

@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import type { HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';

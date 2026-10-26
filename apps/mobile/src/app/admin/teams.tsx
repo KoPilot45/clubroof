@@ -24,7 +24,7 @@ import { t } from '@/lib/i18n';
 import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 
 function TeamList({
   teams,

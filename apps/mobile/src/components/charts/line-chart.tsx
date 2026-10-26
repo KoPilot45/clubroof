@@ -1,3 +1,4 @@
+import { LTR } from '@/lib/direction';
 import { useState } from 'react';
 import { View } from 'react-native';
 import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
@@ -62,7 +63,7 @@ export function LineChart({
       .map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`)
       .join(' ');
   return (
-    <View style={{ gap: 4 }}>
+    <View {...LTR} style={{ gap: 4, direction: 'ltr' }}>
       <Readout
         title={labels[shown]}
         items={series.map((s) => ({

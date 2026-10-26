@@ -2,7 +2,7 @@
  * Sortierbare Liste per Drag & Drop (Anfasser ziehen). Funktioniert mit Finger und Maus; für
  * Bildschirmleser gibt es „nach oben“/„nach unten“ als Aktionen am Anfasser.
  */
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { PanResponder, View, type GestureResponderHandlers } from 'react-native';
 import { useTheme } from '@/lib/theme';

@@ -1,3 +1,4 @@
+import { LTR } from '@/lib/direction';
 import { useState } from 'react';
 import { View } from 'react-native';
 import Svg, { Line, Path, Text as SvgText } from 'react-native-svg';
@@ -60,7 +61,7 @@ export function ColumnChart({
   const fmtReadout = readoutFormat ?? format;
   const ticks = [0, max / 2, max];
   return (
-    <View style={{ gap: 4 }}>
+    <View {...LTR} style={{ gap: 4, direction: 'ltr' }}>
       <Readout
         title={labels[shown]}
         items={series.map((s) => ({

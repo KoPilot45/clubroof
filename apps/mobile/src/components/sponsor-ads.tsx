@@ -5,7 +5,7 @@
  * Hintergrund und bei „Bewegung reduzieren“ (dann nur Wischen). Nie in Anmeldung, Kasse, Chat oder Kinderdaten.
  */
 import type { SponsorAds, SponsorItem } from '@clubroof/core';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';

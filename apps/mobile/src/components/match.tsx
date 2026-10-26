@@ -1,6 +1,6 @@
 import type { EventDetail, LineupEntry, MatchIncident, MatchSheet } from '@clubroof/core';
 import { LineupView } from '@/components/lineup/lineup-view';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { View } from 'react-native';

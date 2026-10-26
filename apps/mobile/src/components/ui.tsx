@@ -3,7 +3,7 @@
  * docs/FARBKONZEPT.md): `primary` nur als Fläche, `primaryText` für Text/Icons auf Karten,
  * Statusfarben immer mit Beschriftung.
  */
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { router, usePathname } from 'expo-router';
 import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import type { StatusKey, TintKey } from '@clubroof/design-tokens';

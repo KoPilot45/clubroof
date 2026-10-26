@@ -5,7 +5,7 @@
  * Tastatur: Pfeil auf/ab wechselt die Zeile, Leertaste klappt auf, 1/2/3 oder Z/V/A setzen die Antwort der Fokuszeile.
  */
 import type { EventDetail, EventSummary, Participant } from '@clubroof/core';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';

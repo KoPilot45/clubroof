@@ -1,5 +1,5 @@
 import type { EventSummary } from '@clubroof/core';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { Pressable, View } from 'react-native';
 import { T } from '@/components/ui';
 import { kindOf } from '@/lib/event-types';

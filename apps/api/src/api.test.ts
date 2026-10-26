@@ -6879,7 +6879,7 @@ describe.skipIf(!url)('API', () => {
       });
       expect(en.body.user.language).toBe('en');
       expect(en.body.user.colorMode).toBe('light'); // unverändert
-      for (const code of ['tr', 'uk', 'pl', 'es', 'fr']) {
+      for (const code of ['tr', 'uk', 'pl', 'es', 'fr', 'ar']) {
         const r = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
           language: code,
         });

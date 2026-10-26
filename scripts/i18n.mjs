@@ -22,8 +22,8 @@ import ts from 'typescript';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCES = ['apps/mobile/src', 'apps/api/src', 'packages/core/src'];
-const LANGS = ['en', 'tr', 'uk', 'pl', 'es', 'fr'];
-const LANG_NAMES = { en: 'Englisch', tr: 'Türkisch', uk: 'Ukrainisch', pl: 'Polnisch', es: 'Spanisch', fr: 'Französisch' };
+const LANGS = ['en', 'tr', 'uk', 'pl', 'es', 'fr', 'ar'];
+const LANG_NAMES = { en: 'Englisch', tr: 'Türkisch', uk: 'Ukrainisch', pl: 'Polnisch', es: 'Spanisch', fr: 'Französisch', ar: 'Arabisch' };
 const langFile = (code) => join(root, `packages/core/src/locales/${code}.ts`);
 const IGNORE_FILE = join(root, 'scripts/i18n-ignore.json');
 const EXTRA_FILE = join(root, 'scripts/i18n-extra.json');

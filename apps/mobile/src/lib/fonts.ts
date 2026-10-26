@@ -35,3 +35,29 @@ export function bodyFontFor(weight: TextStyle['fontWeight']): string {
 export function inputFont(): TextStyle {
   return fontState.ready ? { fontFamily: BODY.regular, fontWeight: '400' } : {};
 }
+
+/** Arabische Schnitte (Open Sans und Saira Condensed haben keine arabischen Zeichen): Noto Sans Arabic. */
+const ARABIC = {
+  regular: 'NotoSansArabic_400Regular',
+  semibold: 'NotoSansArabic_600SemiBold',
+  bold: 'NotoSansArabic_700Bold',
+  extrabold: 'NotoSansArabic_800ExtraBold',
+} as const;
+
+/** Schrift für arabischen Text anhand der bisher gewählten Schrift und Stärke. */
+export function arabicFontFor(family: string | undefined, weight: TextStyle['fontWeight']): string {
+  if (family === HEADING_FONT) return ARABIC.bold;
+  if (family === FIGURE_FONT) return ARABIC.extrabold;
+  if (family && !family.startsWith('OpenSans_')) return family;
+  const w = family
+    ? Number(/_(\d+)/.exec(family)?.[1] ?? 400)
+    : weight === 'bold'
+      ? 700
+      : weight === 'normal' || weight === undefined
+        ? 400
+        : Number(weight);
+  if (w >= 800) return ARABIC.extrabold;
+  if (w >= 700) return ARABIC.bold;
+  if (w >= 500) return ARABIC.semibold;
+  return ARABIC.regular;
+}

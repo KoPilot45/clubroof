@@ -1,8 +1,8 @@
 import { Children, forwardRef, type ReactNode } from 'react';
 import { StyleSheet, Text as RNText, type TextProps } from 'react-native';
-import { bodyFontFor, fontState } from '@/lib/fonts';
+import { arabicFontFor, bodyFontFor, fontState } from '@/lib/fonts';
 import { useFontScale } from '@/lib/font-scale';
-import { t, useLocale } from '@/lib/i18n';
+import { t, useRtl } from '@/lib/i18n';
 
 /** Texte in der aktiven Sprache; zusammengesetzte Teile werden als Ganzes nachgeschlagen. */
 function translateChildren(children: ReactNode): ReactNode {
@@ -24,7 +24,7 @@ export const Text = forwardRef<RNText, TextProps & { verbatim?: boolean }>(funct
   { style, children, verbatim, ...props },
   ref,
 ) {
-  useLocale();
+  const arabic = useRtl();
   const scale = useFontScale();
   const content = verbatim ? children : translateChildren(children);
   const flat = StyleSheet.flatten(style) ?? {};
@@ -43,9 +43,15 @@ export const Text = forwardRef<RNText, TextProps & { verbatim?: boolean }>(funct
         {content}
       </RNText>
     );
-  const resolved = sized.fontFamily
-    ? sized
-    : { ...sized, fontFamily: bodyFontFor(sized.fontWeight), fontWeight: '400' as const };
+  const resolved = arabic
+    ? {
+        ...sized,
+        fontFamily: arabicFontFor(sized.fontFamily, sized.fontWeight),
+        fontWeight: '400' as const,
+      }
+    : sized.fontFamily
+      ? sized
+      : { ...sized, fontFamily: bodyFontFor(sized.fontWeight), fontWeight: '400' as const };
   return (
     <RNText ref={ref} style={resolved} {...props}>
       {content}

@@ -3,7 +3,7 @@
  * („Schritt X von N · NN %“), Frage mit kurzer Erklärung, Auswahl, optionaler Hinweis, fester Weiter-Knopf und
  * „Überspringen“. Pro Seite nur ein Thema. Zwischenstände bleiben auf dem Gerät (`useWizardDraft`).
  */
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';

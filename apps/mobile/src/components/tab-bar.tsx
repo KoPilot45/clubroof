@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { BottomTabBarHeightCallbackContext, type BottomTabBarProps } from 'expo-router/js-tabs';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Keyboard, Platform, Pressable, View } from 'react-native';

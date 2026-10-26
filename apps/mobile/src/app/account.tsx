@@ -1,7 +1,7 @@
 import { LOCALES, type Locale, type TwoFactorSetup, type TwoFactorStatus } from '@clubroof/core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { router } from 'expo-router';
 import { Platform, Pressable, View } from 'react-native';
 import { Columns } from '@/components/columns';

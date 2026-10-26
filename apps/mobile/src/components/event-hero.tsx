@@ -1,5 +1,5 @@
 import type { EventDetail } from '@clubroof/core';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { Linking, Pressable, View } from 'react-native';
 import { AttendanceOverview } from '@/components/squad-sheet';
 import { Chip, HeroCard, T, TeamBadge } from '@/components/ui';

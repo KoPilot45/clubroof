@@ -3,7 +3,7 @@ import type { EventAttendance, EventDetail, Participant } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { Pressable, View } from 'react-native';
 import { AnswerButtons, AttendanceChip, ResponseControls, useRespond } from '@/components/events';
 import { AttendanceBar } from '@/components/attendance-bar';

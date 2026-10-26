@@ -8,7 +8,7 @@ import {
   type SetupInput,
   type UploadedImage,
 } from '@clubroof/core';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Image, View } from 'react-native';

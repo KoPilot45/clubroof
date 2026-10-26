@@ -1,5 +1,5 @@
 import type { MeResponse } from '@clubroof/core';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { useState } from 'react';
 import { Modal, View } from 'react-native';
 import { Button, T, type IconName } from '@/components/ui';

@@ -9,6 +9,12 @@ import {
   SairaCondensed_700Bold,
   SairaCondensed_800ExtraBold,
 } from '@expo-google-fonts/saira-condensed';
+import {
+  NotoSansArabic_400Regular,
+  NotoSansArabic_600SemiBold,
+  NotoSansArabic_700Bold,
+  NotoSansArabic_800ExtraBold,
+} from '@expo-google-fonts/noto-sans-arabic';
 import { useFonts } from 'expo-font';
 import { BottomTabBarHeightContext } from 'expo-router/js-tabs';
 import { Stack, useSegments } from 'expo-router';
@@ -33,6 +39,7 @@ import { useReduceMotion } from '@/lib/motion';
 import { loadAppearance } from '@/lib/appearance';
 import { useLocale } from '@/lib/i18n';
 import { Platform, View } from 'react-native';
+import { DirectionProvider } from '@/lib/direction';
 import { NO_SUB_NAV, SubNav } from '@/components/sub-nav';
 import { Sidebar } from '@/components/sidebar';
 import { useIsDesktop } from '@/lib/layout';
@@ -78,6 +85,10 @@ function Navigator() {
     OpenSans_600SemiBold,
     OpenSans_700Bold,
     OpenSans_800ExtraBold,
+    NotoSansArabic_400Regular,
+    NotoSansArabic_600SemiBold,
+    NotoSansArabic_700Bold,
+    NotoSansArabic_800ExtraBold,
   });
   fontState.ready = fontsLoaded;
 
@@ -487,11 +498,13 @@ export default function RootLayout() {
         <SessionProvider>
           <ClubTheme>
             <ToastProvider>
-              <AppLockGate>
-                <Navigator />
-                <OfflineBanner />
-                <OutboxSync />
-              </AppLockGate>
+              <DirectionProvider>
+                <AppLockGate>
+                  <Navigator />
+                  <OfflineBanner />
+                  <OutboxSync />
+                </AppLockGate>
+              </DirectionProvider>
             </ToastProvider>
           </ClubTheme>
         </SessionProvider>

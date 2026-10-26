@@ -1,7 +1,7 @@
 import type { NotificationSettings, UpdateNotificationSettingsInput } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@/components/icon';
 import { Pressable, Switch, View } from 'react-native';
 import {
   Button,

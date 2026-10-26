@@ -2,7 +2,7 @@
  * Aktive Sprache der App. Quelltexte sind Deutsch und werden bei der Anzeige übersetzt
  * (`t`, automatisch in `Text`). Die Sprache kommt aus dem Profil, sonst vom Gerät.
  */
-import { intlLocale, localeFromTag, translate, type Locale } from '@clubroof/core';
+import { intlLocale, isRtlLocale, localeFromTag, translate, type Locale } from '@clubroof/core';
 import { useSyncExternalStore } from 'react';
 
 export function deviceLocale(): Locale {
@@ -65,3 +65,6 @@ export function numberFormat(options: Intl.NumberFormatOptions) {
     },
   };
 }
+
+/** Wird die aktive Sprache von rechts nach links geschrieben (Arabisch)? Rendert bei einem Wechsel neu. */
+export const useRtl = (): boolean => isRtlLocale(useLocale());
