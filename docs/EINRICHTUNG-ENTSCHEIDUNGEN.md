@@ -21,7 +21,7 @@ Die drei Assistenten (vier Abläufe): **Verein** (Admin), **Mannschaft** (Traine
 | **Vereinsvorgaben für neue Mannschaften** (Teilnahme-Modell, Fristen, Grund bei Absage Pflicht) | ❌ | jede Mannschaft stellt alles einzeln ein; keine Vorgabe vom Verein |
 | **News: wer darf veröffentlichen, braucht es Freigabe** | 🟡 | im Assistenten nur Hinweis; Freigabe-Workflow existiert in der App |
 | **Beitrittsanfragen: wer gibt frei** (Trainer, Admin) | ❌ | Einladung per Link/QR gibt es, die Freigaberegel wird nicht gewählt |
-| **Elternzugang: ab welchem Alter ein Kind ein eigenes Konto bekommt**; Einwilligungen für Kinder (Fotos, Namen) | ❌ | Modul `parent_access` ist nur ein Schalter; Altersgrenze ist laut FAQ Sache der Eltern, Einwilligungstexte sind nirgends vorgesehen |
+| **Elternzugang: ab welchem Alter ein Kind ein eigenes Konto bekommt**; Einwilligungen für Kinder (Fotos, Namen) | ❌ bewusst nicht im Assistenten (26.10.2026), Thema vorgemerkt: eigener Zugang für Kinder | Modul `parent_access` ist nur ein Schalter; Altersgrenze ist laut FAQ Sache der Eltern, Einwilligungstexte sind nirgends vorgesehen |
 | **Rechte-Übersicht** (wer sieht Kasse, Mitglieder, Gründe) | 🟡 | Rollenverwaltung existiert (ROLLEN-VERWALTUNG), im Assistenten nur Vorstand |
 | Ruhezeiten, Standard-Benachrichtigungen | 🟡 | Hinweise statt Einstellungen (bewusst entfallen) |
 
