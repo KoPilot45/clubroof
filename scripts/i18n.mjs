@@ -2,11 +2,15 @@
 /**
  * Übersetzungen pflegen. Schlüssel sind die deutschen Texte aus dem Quelltext.
  *
- *   node scripts/i18n.mjs check              fehlende Übersetzungen melden (Exit 1) – Teil von `pnpm check`
- *   node scripts/i18n.mjs todo [datei.json]  fehlende Texte als JSON ausgeben (Standard: .check/i18n-todo.json)
- *   node scripts/i18n.mjs merge datei.json   Übersetzungen {"Text": "Text"|null} einarbeiten;
- *                                            null oder unverändert = keine Übersetzung nötig (Ignorierliste)
- *   node scripts/i18n.mjs unused [--prune]   Wörterbucheinträge ohne Fundstelle im Quelltext (ggf. entfernen)
+ *   node scripts/i18n.mjs check                      fehlende Übersetzungen (alle Sprachen) melden (Exit 1) – Teil von `pnpm check`
+ *   node scripts/i18n.mjs todo [datei.json] [--lang=tr]  fehlende Texte als JSON ausgeben (Standard: .check/i18n-todo[-tr].json)
+ *   node scripts/i18n.mjs merge datei.json [--lang=tr]   Übersetzungen {"Text": "Text"|null} einarbeiten;
+ *                                            Englisch: null oder unverändert = keine Übersetzung nötig (Ignorierliste)
+ *                                            andere Sprachen: Texte ohne Eintrag in en.ts sind nicht nötig; unverändert = bewusst gleich
+ *   node scripts/i18n.mjs unused [--prune]   englische Einträge ohne Fundstelle im Quelltext (ggf. entfernen)
+ *
+ * Englisch (en) ist die Leitsprache: sie deckt alle Texte aus dem Quelltext ab. Die weiteren Sprachen
+ * (tr, uk, pl, es, fr) übersetzen jeden Text, den en.ts enthält.
  *
  * Gesucht wird in apps/mobile/src, apps/api/src und packages/core/src (ohne Tests und Wörterbücher).
  * Platzhalter in Mustern: „Konto {0}“ (aus `Konto ${name}`).
@@ -18,7 +22,9 @@ import ts from 'typescript';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCES = ['apps/mobile/src', 'apps/api/src', 'packages/core/src'];
-const EN_FILE = join(root, 'packages/core/src/locales/en.ts');
+const LANGS = ['en', 'tr', 'uk', 'pl', 'es', 'fr'];
+const LANG_NAMES = { en: 'Englisch', tr: 'Türkisch', uk: 'Ukrainisch', pl: 'Polnisch', es: 'Spanisch', fr: 'Französisch' };
+const langFile = (code) => join(root, `packages/core/src/locales/${code}.ts`);
 const IGNORE_FILE = join(root, 'scripts/i18n-ignore.json');
 const EXTRA_FILE = join(root, 'scripts/i18n-extra.json');
 
@@ -329,61 +335,96 @@ const readJson = (file, fallback) => {
   }
 };
 
-async function readEn() {
-  const src = readFileSync(EN_FILE, 'utf8');
+async function readDict(code) {
+  let src;
+  try {
+    src = readFileSync(langFile(code), 'utf8');
+  } catch {
+    return {};
+  }
   const body = src.slice(src.indexOf('= {') + 2, src.lastIndexOf('};') + 1);
   return new Function(`return (${body})`)();
 }
+const readEn = () => readDict('en');
 
-function writeEn(dict) {
+function writeDict(code, dict) {
   const keys = Object.keys(dict).sort((a, b) => a.localeCompare(b, 'de'));
   const lines = keys.map((k) => `  ${JSON.stringify(k)}: ${JSON.stringify(dict[k])},`);
   writeFileSync(
-    EN_FILE,
-    `/** Englisches Wörterbuch (Schlüssel = deutscher Text). Gepflegt über \`node scripts/i18n.mjs\`. */\nexport const en: Record<string, string> = {\n${lines.join('\n')}\n};\n`,
+    langFile(code),
+    `/** ${LANG_NAMES[code]}es Wörterbuch (Schlüssel = deutscher Text). Gepflegt über \`node scripts/i18n.mjs\`. */\nexport const ${code}: Record<string, string> = {\n${lines.join('\n')}\n};\n`,
   );
 }
+const writeEn = (dict) => writeDict('en', dict);
 
-async function todo() {
+async function todo(lang = 'en') {
   const keys = extractKeys();
   const en = await readEn();
   const ignore = new Set(readJson(IGNORE_FILE, []));
-  const missing = [...keys.keys()].filter((k) => !(k in en) && !ignore.has(k));
+  if (lang === 'en') {
+    const missing = [...keys.keys()].filter((k) => !(k in en) && !ignore.has(k));
+    return { keys, missing, en, ignore };
+  }
+  // weitere Sprachen: jeder Text, den Englisch übersetzt und der im Quelltext noch vorkommt
+  const dict = await readDict(lang);
+  const missing = Object.keys(en).filter((k) => keys.has(k) && !(k in dict));
   return { keys, missing, en, ignore };
 }
 
-const [cmd, arg] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const langOpt = args.find((a) => a.startsWith('--lang='))?.slice(7) ?? 'en';
+if (!LANGS.includes(langOpt)) {
+  console.error(`Unbekannte Sprache: ${langOpt} (${LANGS.join(', ')})`);
+  process.exit(2);
+}
+const [cmd, arg] = args.filter((a) => !a.startsWith('--'));
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   if (cmd === 'check') {
-    const { keys, missing, en } = await todo();
-    if (missing.length) {
-      console.error(`✗ ${missing.length} Texte ohne englische Übersetzung, z. B.:`);
-      for (const k of missing.slice(0, 8)) console.error(`  - ${k}`);
-      console.error('  Alle: node scripts/i18n.mjs todo');
-      process.exit(1);
+    let failed = false;
+    for (const lang of LANGS) {
+      const { keys, missing, en } = await todo(lang);
+      if (missing.length) {
+        failed = true;
+        console.error(`✗ ${missing.length} Texte ohne Übersetzung (${LANG_NAMES[lang]}), z. B.:`);
+        for (const k of missing.slice(0, 8)) console.error(`  - ${k}`);
+        console.error(`  Alle: node scripts/i18n.mjs todo --lang=${lang}`);
+      } else if (lang === 'en') console.log(`✓ ${keys.size} Texte, ${Object.keys(en).length} übersetzt`);
+      else console.log(`✓ ${LANG_NAMES[lang]} vollständig`);
     }
-    console.log(`✓ ${keys.size} Texte, ${Object.keys(en).length} übersetzt`);
+    if (failed) process.exit(1);
   } else if (cmd === 'todo') {
-    const { missing, keys } = await todo();
-    const out = arg ?? join(root, '.check/i18n-todo.json');
+    const { missing, keys } = await todo(langOpt);
+    const out = arg ?? join(root, `.check/i18n-todo${langOpt === 'en' ? '' : `-${langOpt}`}.json`);
     mkdirSync(dirname(out), { recursive: true });
     writeFileSync(out, JSON.stringify(Object.fromEntries(missing.map((k) => [k, ''])), null, 1));
     console.log(`${missing.length} fehlend von ${keys.size} → ${out}`);
   } else if (cmd === 'merge') {
     const incoming = JSON.parse(readFileSync(arg, 'utf8'));
-    const en = await readEn();
-    const ignore = new Set(readJson(IGNORE_FILE, []));
-    let added = 0;
-    for (const [k, v] of Object.entries(incoming)) {
-      if (v === null || v === k || v === '') ignore.add(k);
-      else {
-        en[k] = v;
+    if (langOpt !== 'en') {
+      const dict = await readDict(langOpt);
+      let added = 0;
+      for (const [k, v] of Object.entries(incoming)) {
+        if (typeof v !== 'string' || !v) continue;
+        dict[k] = v;
         added++;
       }
+      writeDict(langOpt, dict);
+      console.log(`${added} übersetzt (${LANG_NAMES[langOpt]}), ${Object.keys(dict).length} gesamt`);
+    } else {
+      const en = await readEn();
+      const ignore = new Set(readJson(IGNORE_FILE, []));
+      let added = 0;
+      for (const [k, v] of Object.entries(incoming)) {
+        if (v === null || v === k || v === '') ignore.add(k);
+        else {
+          en[k] = v;
+          added++;
+        }
+      }
+      writeEn(en);
+      writeFileSync(IGNORE_FILE, JSON.stringify([...ignore].sort(), null, 1) + '\n');
+      console.log(`${added} übersetzt, ${ignore.size} ignoriert`);
     }
-    writeEn(en);
-    writeFileSync(IGNORE_FILE, JSON.stringify([...ignore].sort(), null, 1) + '\n');
-    console.log(`${added} übersetzt, ${ignore.size} ignoriert`);
   } else if (cmd === 'unused') {
     const keys = extractKeys();
     const en = await readEn();
@@ -391,12 +432,17 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (process.argv.includes('--prune')) {
       for (const k of unused) delete en[k];
       writeEn(en);
+      for (const lang of LANGS.slice(1)) {
+        const d = await readDict(lang);
+        for (const k of Object.keys(d)) if (!(k in en)) delete d[k];
+        writeDict(lang, d);
+      }
     } else console.log(unused.join('\n'));
     console.log(
       `${unused.length} ohne Fundstelle${process.argv.includes('--prune') ? ' (entfernt)' : ''}`,
     );
   } else {
-    console.error('Aufruf: node scripts/i18n.mjs check|todo|merge|unused');
+    console.error('Aufruf: node scripts/i18n.mjs check|todo|merge|unused [--lang=tr]');
     process.exit(2);
   }
 }

@@ -6879,6 +6879,12 @@ describe.skipIf(!url)('API', () => {
       });
       expect(en.body.user.language).toBe('en');
       expect(en.body.user.colorMode).toBe('light'); // unverändert
+      for (const code of ['tr', 'uk', 'pl', 'es', 'fr']) {
+        const r = await send<LoginResponse['me']>('PUT', '/me/preferences', player.token, {
+          language: code,
+        });
+        expect(r.body.user.language).toBe(code);
+      }
       expect((await login('trainer')).me.user.language).toBeNull();
       expect((await login('spieler')).me.user.language).toBe('en');
       expect(

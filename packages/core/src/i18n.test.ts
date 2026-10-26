@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { LOCALES, dictionaryKeys, localeFromTag, translate } from './i18n';
+import { LOCALES, dictionaryKeys, intlLocale, localeFromTag, translate } from './i18n';
 
 describe('Mehrsprachigkeit', () => {
   it('erkennt die Sprache aus Gerätekennungen, sonst Deutsch', () => {
     expect(localeFromTag('en-US')).toBe('en');
     expect(localeFromTag('de_AT')).toBe('de');
-    expect(localeFromTag('fr-FR')).toBe('de');
+    expect(localeFromTag('fr-FR')).toBe('fr');
+    expect(localeFromTag('tr-TR')).toBe('tr');
+    expect(localeFromTag('ja-JP')).toBe('de');
     expect(localeFromTag(undefined)).toBe('de');
   });
 
@@ -27,6 +29,13 @@ describe('Mehrsprachigkeit', () => {
     expect(translate('Max Muster, Einrichten und mehr', 'en')).toBe(
       'Max Muster, Einrichten und mehr',
     );
+  });
+
+  it('weitere Sprachen übersetzen bekannte Texte', () => {
+    for (const code of ['tr', 'uk', 'pl', 'es', 'fr'] as const) {
+      expect(translate('Abmelden', code), code).not.toBe('Abmelden');
+      expect(intlLocale(code)).toMatch(/^[a-z]{2}-[A-Z]{2}$/);
+    }
   });
 
   it('Platzhalter bleiben in allen Übersetzungen erhalten', () => {

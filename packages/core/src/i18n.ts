@@ -7,10 +7,20 @@
  * Texte („Konto Max“) werden über das Muster wiedererkannt, die Einsetzwerte einzeln übersetzt.
  */
 import { en } from './locales/en';
+import { es } from './locales/es';
+import { fr } from './locales/fr';
+import { pl } from './locales/pl';
+import { tr } from './locales/tr';
+import { uk } from './locales/uk';
 
 export const LOCALES = [
   { code: 'de', name: 'Deutsch', intl: 'de-DE' },
   { code: 'en', name: 'English', intl: 'en-GB' },
+  { code: 'tr', name: 'Türkçe', intl: 'tr-TR' },
+  { code: 'uk', name: 'Українська', intl: 'uk-UA' },
+  { code: 'pl', name: 'Polski', intl: 'pl-PL' },
+  { code: 'es', name: 'Español', intl: 'es-ES' },
+  { code: 'fr', name: 'Français', intl: 'fr-FR' },
 ] as const;
 
 export type Locale = (typeof LOCALES)[number]['code'];
@@ -28,7 +38,7 @@ export const intlLocale = (locale: Locale): string =>
   LOCALES.find((l) => l.code === locale)?.intl ?? 'de-DE';
 
 type Dictionary = Record<string, string>;
-const DICTIONARIES: Partial<Record<Locale, Dictionary>> = { en };
+const DICTIONARIES: Partial<Record<Locale, Dictionary>> = { en, tr, uk, pl, es, fr };
 
 type Pattern = { regex: RegExp; target: string };
 const patternCache = new Map<Locale, Pattern[]>();
