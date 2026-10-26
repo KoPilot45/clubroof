@@ -49,7 +49,7 @@ export function tourSteps(me: MeResponse): Step[] {
     steps.push({
       icon: 'shield-checkmark-outline',
       title: 'Verwaltung',
-      text: 'Über Verein → Meine Vereinsaufgaben → Verwaltung erreichst du Mitglieder, Rollen und Module.',
+      text: 'Über Ich → Admin-Verwaltung oder Verein → Meine Vereinsaufgaben → Verwaltung erreichst du Mitglieder, Rollen und Module.',
     });
   steps.push({
     icon: 'help-circle-outline',
