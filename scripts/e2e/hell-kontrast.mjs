@@ -1,6 +1,7 @@
 /**
  * Paket LH2: Kontrastprüfung aller Routen im Browser (Text gegen die Fläche dahinter).
- * Aufruf: SCHEME=light [WIDTH=1440 HEIGHT=900] [ROLES=admin,trainer] pnpm browser-check scripts/e2e/hell-kontrast.mjs --no-build [-- rolle,rolle]
+ * Aufruf: SCHEME=light [WIDTH=1440 HEIGHT=900] [ROLES=admin,trainer] [ROUTES=/mehr,/verein] pnpm browser-check scripts/e2e/hell-kontrast.mjs --no-build [-- rolle,rolle]
+ * `ROUTES`: nur diese Routen (und ihre Unterseiten) prüfen – bei kleinen Paketen statt aller rund 150 Routen; ohne Angabe alle.
  * Ausgabe: .check/kontrast-<hell|dunkel>.json und eine Zusammenfassung. Flächen mit Verlauf (Hero, Plakat,
  * Kopfbänder) und Bilder werden übersprungen – dort bleibt die Fläche in beiden Stilen farbig.
  */
@@ -25,7 +26,20 @@ const toRoute = (f) =>
     .replace(/\(tabs\)\//, '')
     .replace(/\/index$/, '')
     .replace(/^index$/, '');
-const routes = files.map(toRoute).filter((r) => !SKIP.test(r.slice(1)));
+const allRoutes = files.map(toRoute).filter((r) => !SKIP.test(r.slice(1)));
+// ROUTES=/mehr,/verein: nur diese Routen und ihre Unterseiten (z. B. /admin ergibt auch /admin/members)
+const only = (process.env.ROUTES ?? '')
+  .split(',')
+  .map((r) => r.trim())
+  .filter(Boolean);
+const routes = only.length
+  ? allRoutes.filter((r) => only.some((o) => r === o || r.startsWith(`${o}/`)))
+  : allRoutes;
+if (only.length) {
+  const unknown = only.filter((o) => !allRoutes.some((r) => r === o || r.startsWith(`${o}/`)));
+  if (unknown.length) console.log(`✗ Unbekannte Routen in ROUTES: ${unknown.join(', ')}`);
+  console.log(`Auswahl: ${routes.length} von ${allRoutes.length} Routen`);
+}
 
 const light = process.env.SCHEME === 'light';
 const roles = (
