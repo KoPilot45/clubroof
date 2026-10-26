@@ -25,6 +25,10 @@ Bereits **umgesetzte** Pakete behalten ihr altes Kürzel (die Commits und Dokume
 | T | TESTSERVER |
 | (neu) | ROLLEN-VERWALTUNG |
 
+## Branch für die Umsetzung (ab 26.10.2026)
+
+**Alle Umsetzungssitzungen pushen direkt auf `claude/app-entwicklung-planung-183gtv`** (ohne eigenen Branch und ohne Pull Request), und es läuft höchstens eine Umsetzungssitzung gleichzeitig. Jeder Übergabeprompt nennt das im Abschnitt „Branch und Reihenfolge“. Ausnahme: **SPRACHEN-WEITERE** läuft noch auf `claude/keen-babbage-386nkp` (Stand 26.10.2026) und wird nach dem Durchlauf auf den Planungs-Branch gebracht; die folgenden Pakete beginnen erst danach, weil neue Texte sonst in fünf weiteren Sprachen nachgezogen werden müssten. Die Planungssitzung ändert `docs/PAKETE.md` nur, wenn kein Branch mit Änderungen daran offen ist.
+
 ## Wochenende: Optimierung der Bedienung
 
 **Stand 10.10.2026: W1 bis W7 sowie R, F und I sind umgesetzt** (Kachel-Infos, Neu-Hinweise und Warnungen, Erster Eindruck, Route, Optik, Komfort, Einrichtungs-Demos). Weiter mit den Paketen unter „Danach“.
