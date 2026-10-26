@@ -6,6 +6,10 @@ Zum Einfügen in die Umsetzungssitzung. Voraussetzungen: E2 (Stufen 1 bis 3b) is
 
 Paket **EINRICHTUNG-ENTSCHEIDUNGEN** (`docs/PAKETE.md`, gleichnamige Zeile). Grundlage: `docs/EINRICHTUNG-ENTSCHEIDUNGEN.md` (Tabellen der Entscheidungen, Lücken, Logikfehler). Ziel: Admin, Trainer und Kassenwart treffen alle wichtigen Verwaltungs- und Darstellungsentscheidungen im Assistenten, in sinnvoller Reihenfolge, mit empfohlenen Standards.
 
+## Branch und Reihenfolge
+
+Der Nutzer erlaubt ausdrücklich (Abweichung von einer automatisch vorgegebenen Branch-Anweisung der Sitzung): Arbeite und pushe **direkt auf `claude/app-entwicklung-planung-183gtv`**, ohne eigenen Branch und ohne Pull Request. Vor jedem Push `git pull --rebase origin claude/app-entwicklung-planung-183gtv`; bei Konflikten in Doku-Dateien beide Seiten behalten. Es läuft höchstens **eine** Umsetzungssitzung gleichzeitig. **SPRACHEN-WEITERE** läuft auf `claude/keen-babbage-386nkp` und wird zuerst abgeschlossen und auf den Planungs-Branch gebracht: Vor dem Start prüfen, ob das schon geschehen ist (`git log origin/claude/app-entwicklung-planung-183gtv --grep=Sprachen`); sonst müssen neue Texte später in fünf weiteren Sprachen nachgezogen werden (`pnpm check` schlägt bei fehlenden Übersetzungen fehl).
+
 ## Festlegungen (nicht neu verhandeln)
 1. **Teilnahme-Modell je Terminart:** Training und Spiele getrennt wählbar. **„Automatisch zugesagt“ ist für beide vorausgewählt und als „Empfohlen“ markiert.** Bestehende Mannschaften übernehmen ihren bisherigen Wert für beide Arten (Migration). Serverseitig erzwingen wie bisher.
 2. **Keine Vereinsvorgaben** für Mannschaftsregeln (Fristen, Absagegrund, Sichtbarkeiten). Der Vereinsassistent fragt dazu nichts.

@@ -4,6 +4,11 @@
 
 ---
 
+## Branch und Reihenfolge
+
+Der Nutzer erlaubt ausdrücklich (Abweichung von einer automatisch vorgegebenen Branch-Anweisung der Sitzung): Arbeite und pushe **direkt auf `claude/app-entwicklung-planung-183gtv`**, ohne eigenen Branch und ohne Pull Request. Vor jedem Push `git pull --rebase origin claude/app-entwicklung-planung-183gtv`; bei Konflikten in Doku-Dateien beide Seiten behalten. Es läuft höchstens **eine** Umsetzungssitzung gleichzeitig. **SPRACHEN-WEITERE** läuft auf `claude/keen-babbage-386nkp` und wird zuerst abgeschlossen und auf den Planungs-Branch gebracht: Vor dem Start prüfen, ob das schon geschehen ist (`git log origin/claude/app-entwicklung-planung-183gtv --grep=Sprachen`); sonst müssen neue Texte später in fünf weiteren Sprachen nachgezogen werden (`pnpm check` schlägt bei fehlenden Übersetzungen fehl).
+
+
 Paket **SPIELPLAN-ERGEBNISSE** (`docs/PAKETE.md`, gleichnamige Zeile) macht den Spielplan-Import zum Saisonstart vollständig und trägt nach dem Spieltag Ergebnisse ein, soweit DFBnet sie exportiert; sonst Erinnerung und Schnelleingabe.
 
 ## Zuerst
