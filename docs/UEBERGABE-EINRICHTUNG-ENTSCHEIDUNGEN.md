@@ -26,7 +26,7 @@ Neue Reihenfolge: Name, Abteilung, Altersklasse/Spielform/Liga, Vorlage, **Train
 - Zusammenfassung und „Mannschaft bearbeiten“ zeigen dieselben Felder.
 
 ## B. Vereinsassistent
-Reihenfolge: Willkommen, Größe, Name, Euer Verein (A), Spielstätte (A), Logo, Farbe/Darstellung, Aufbau, Saison, **Vorstand und Aufgaben (ohne Kassenwart, mit Hinweis)**, **Vertretung: zweiten Admin bestimmen (S)**, Funktionen, **Wer sieht was?** (Kontaktdaten-Standard, **Altersgrenze für eigene Kinderkonten: wählbar, kein fester Vorgabewert, Standard „Eltern entscheiden“**, Hinweis auf Einwilligungen für Kinder), **Neue Mitglieder: Wer gibt Beitrittsanfragen frei? (A: Trainer der Mannschaft oder nur Admin)**, Mitglieder (später, Import, Einladung), Konto/Passwort/2FA, Zusammenfassung, Fertig.
+Reihenfolge: Willkommen, Größe, Name, Euer Verein (A), Spielstätte (A), Logo, Farbe/Darstellung, Aufbau, Saison, **Vorstand und Aufgaben (ohne Kassenwart, mit Hinweis)**, **Vertretung: zweiten Admin bestimmen (S)**, Funktionen, **Wer sieht was?** (Kontaktdaten-Standard; **Kinderkonten, Altersgrenze und Einwilligungen kommen nicht in den Assistenten**, Entscheidung 26.10.2026), **Neue Mitglieder: Wer gibt Beitrittsanfragen frei? (A: Trainer der Mannschaft oder nur Admin)**, Mitglieder (später, Import, Einladung), Konto/Passwort/2FA, Zusammenfassung, Fertig.
 - **Fertig:** „Nächste Schritte“ in fester Reihenfolge: **1. Mitglieder importieren, 2. Vereinskasse einrichten, 3. erste Mannschaft anlegen**, danach die übrigen.
 - News-Freigabe und Ruhezeiten bleiben Hinweise (bewusst).
 
