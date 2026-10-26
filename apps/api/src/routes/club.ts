@@ -253,7 +253,7 @@ export const clubRoutes: FastifyPluginAsyncZod = async (app) => {
 };
 
 /** Feste Bilder der Marke und des Demovereins (öffentlich, nur diese Namen). */
-const BRAND_FILE = /^demo-[a-z0-9-]{1,40}\.png$/;
+const BRAND_FILE = /^demo-[a-z0-9-]{1,40}\.(png|webp)$/;
 
 const EXAMPLE_FILE = /^[a-z0-9-]{1,40}\.csv$/;
 
@@ -287,7 +287,7 @@ export const brandRoutes: FastifyPluginAsyncZod = async (app) => {
       ).catch(() => null);
       if (!file) throw notFound('Das Bild');
       return reply
-        .header('content-type', 'image/png')
+        .header('content-type', request.params.name.endsWith('.webp') ? 'image/webp' : 'image/png')
         .header('cache-control', 'public, max-age=86400')
         .header('x-content-type-options', 'nosniff')
         .send(file);
