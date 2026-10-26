@@ -6885,6 +6885,7 @@ describe.skipIf(!url)('API', () => {
         });
         expect(r.body.user.language).toBe(code);
       }
+      await send('PUT', '/me/preferences', player.token, { language: 'en' });
       expect((await login('trainer')).me.user.language).toBeNull();
       expect((await login('spieler')).me.user.language).toBe('en');
       expect(
