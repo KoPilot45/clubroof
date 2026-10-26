@@ -236,7 +236,7 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
     const [ages] = await sql`
       select count(*) filter (where date_part('year', age(birth_date)) >= 60)::int as senioren,
         count(*) filter (where date_part('year', age(birth_date)) < 8)::int as bambini,
-        count(*) filter (where avatar_url like '/brand/demo-avatar-%')::int as avatare,
+        count(*) filter (where avatar_url like '/brand/demo-avatar-%.webp')::int as avatare,
         count(distinct contact_visibility)::int as sichtbarkeiten
       from persons`;
     expect(ages!.senioren).toBeGreaterThanOrEqual(12);

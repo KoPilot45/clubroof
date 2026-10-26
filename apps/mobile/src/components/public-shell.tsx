@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import { Image, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GradientHeader } from '@/components/brand-header';
-import { Crest, T } from '@/components/ui';
+import { ClubLogo, Crest, T } from '@/components/ui';
 import { useIsDesktop } from '@/lib/layout';
 import { clubInitials } from '@/lib/format';
 import { useTheme } from '@/lib/theme';
@@ -23,11 +23,7 @@ export function PublicShell({
   const { colors, spacing } = useTheme();
   const desktop = useIsDesktop();
   const logo = club?.logoUrl ? (
-    <Image
-      source={{ uri: mediaUri(club.logoUrl)! }}
-      style={{ width: 64, height: 70 }}
-      resizeMode="contain"
-    />
+    <ClubLogo uri={mediaUri(club.logoUrl)!} size={72} />
   ) : (
     <Crest initials={club ? (club.shortCode ?? clubInitials(club.shortName)) : 'CR'} size={56} />
   );

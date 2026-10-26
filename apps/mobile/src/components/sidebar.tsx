@@ -8,7 +8,7 @@ import type { HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router, usePathname, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import { Image, Platform, Pressable, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import { sectionOf, TAB_HREFS, TAB_LABELS, type TabKey } from '@/lib/breadcrumbs';
 import { canOpenAdmin, canOpenClubCash } from '@/lib/areas';
 import { t } from '@/lib/i18n';
@@ -21,7 +21,7 @@ import { Text } from './app-text';
 import { AREA_ACCENT, type AreaTone } from './area-shell';
 import { Honeycomb } from './honeycomb';
 import { TAB_ICONS } from './tab-bar';
-import { Crest, T, type IconName } from './ui';
+import { ClubLogo, Crest, T, type IconName } from './ui';
 
 const TABS: TabKey[] = ['index', 'termine', 'team', 'verein', 'mehr'];
 
@@ -257,12 +257,7 @@ export function Sidebar() {
         }}
       >
         {me.club.logoUrl ? (
-          <Image
-            source={{ uri: mediaUri(me.club.logoUrl)! }}
-            accessibilityLabel={t('Vereinslogo')}
-            style={{ width: 44, height: 44 }}
-            resizeMode="contain"
-          />
+          <ClubLogo uri={mediaUri(me.club.logoUrl)!} size={44} />
         ) : (
           <Crest initials={me.club.shortCode} size={44} />
         )}

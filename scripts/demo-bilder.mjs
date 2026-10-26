@@ -178,7 +178,6 @@ for (const [n, f] of Object.entries(news)) {
   save(n, c);
 }
 
-
 // Mannschaftsillustrationen (800×450): Farbfläche mit Spielfeld und Mannschaftsnummer als Punkte
 const TEAM_ART = {
   h1: ['#1b5e20', '#43a047', 1],

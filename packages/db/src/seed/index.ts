@@ -34,6 +34,7 @@ import type { PgTable } from 'drizzle-orm/pg-core';
 import { createDb, type Db } from '../client';
 import { seedKasseAusbau } from './ausbau-kasse';
 import { planTrainingAttendance } from './ausbau-anwesenheit';
+import { weiseProfilbilderZu } from './profilbilder';
 import { ausbauPersonen } from './ausbau-personen';
 import { seedInhalteAusbau } from './ausbau-inhalte';
 import { seedJahreslauf } from './ausbau-jahreslauf';
@@ -420,17 +421,24 @@ export async function seed(
         addPerson,
         fixed: new Set([...Object.values(persona), ...Object.values(official), leon, mia]),
       });
-      const AVATARS: [PersonRow, number][] = [
-        [persona.player, 3],
-        [persona.coach, 7],
-        [persona.parent, 5],
-        [persona.board, 9],
-        [persona.treasurer, 2],
-        [leon, 11],
-        [mia, 4],
-      ];
-      for (const [person, n] of AVATARS)
-        person.avatarUrl = `/brand/demo-avatar-${String(n).padStart(2, '0')}.png`;
+      weiseProfilbilderZu({
+        today,
+        persons,
+        guardianships,
+        teamMembers,
+        amtstraeger: Object.values(official),
+        fest: [
+          [persona.admin, 'maenner', 1],
+          [persona.board, 'frauen', 5],
+          [persona.coach, 'maenner', 2],
+          [persona.player, 'jungen', 1],
+          [persona.parent, 'frauen', 3],
+          [leon, 'jungen', 2],
+          [mia, 'maedchen', 3],
+          [persona.treasurer, 'frauen', 2],
+          [persona.member, 'frauen', 4],
+        ],
+      });
     }
 
     // Damit die Startseite Geburtstage zeigt: ein Mitspieler der B-Jugend hat in zwei Tagen Geburtstag
