@@ -8,6 +8,6 @@ Vom Auftraggeber gelieferte, gezeichnete Beispielbilder (keine Fotos echter Pers
 | `demo-avatar-frauen-01…05.webp` | Erwachsene, weiblich | 100 × 100 |
 | `demo-avatar-jungen-01…05.webp` | Kinder und Jugendliche, männlich | 100 × 100 |
 | `demo-avatar-maedchen-01…05.webp` | Kinder und Jugendliche, weiblich | 100 × 100 |
-| `demo-wappen.webp` | Vereinswappen „SV Grün-Weiß Musterstadt 1920 e. V.“ (weißer Hintergrund) | 150 × 150 |
+| `demo-wappen.webp` | Vereinswappen „SV Grün-Weiß Musterstadt 1920 e. V.“ (freigestellt, transparenter Hintergrund) | 150 × 150 |
 
 Alle Avatare tragen ein grünes Trikot auf hellgrünem Grund. Die Dateien liegen unter `apps/api/assets/` (Auslieferung über `/brand/<name>`); hier bleibt nur diese Beschreibung.

@@ -425,8 +425,6 @@ export async function seed(
         today,
         persons,
         guardianships,
-        teamMembers,
-        amtstraeger: Object.values(official),
         fest: [
           [persona.admin, 'maenner', 1],
           [persona.board, 'frauen', 5],
