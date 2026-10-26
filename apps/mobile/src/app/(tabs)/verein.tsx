@@ -11,8 +11,8 @@ import {
   useRefreshSponsorAds,
 } from '@/components/sponsor-ads';
 import type { TintKey } from '@clubroof/design-tokens';
-import { adminFunctionTiles } from '@/lib/admin-tiles';
-import { canOpenClubCash, canSeeCashOverview } from '@/lib/areas';
+import { taskTilesFor } from '@/lib/admin-tiles';
+import { canSeeCashOverview } from '@/lib/areas';
 import {
   Button,
   Card,
@@ -235,15 +235,8 @@ export default function ClubScreen() {
   ];
   const pick = (keys: string[]) =>
     [...eventTiles, ...newsTiles, ...life].filter((t) => keys.includes(t.key));
-  // Verwaltung und Vereinskasse wandern vom Kopf von „Ich“ hierher; die Kachel „Vereinskasse“ gibt es auch für Kassenleute
-  const taskTiles = adminFunctionTiles(me);
-  if (canOpenClubCash(me) && !taskTiles.some((t) => t.key === 'clubcash'))
-    taskTiles.push({
-      key: 'clubcash',
-      label: 'Vereinskasse',
-      icon: 'wallet',
-      onPress: () => router.push('/club-cash'),
-    });
+  // Verwaltung und Vereinskasse stehen hier in „Meine Vereinsaufgaben“ und zusätzlich als Knöpfe in „Ich“ (gleiche Rechte)
+  const taskTiles = taskTilesFor(me);
   const groups: Group[] = [
     {
       key: 'current',

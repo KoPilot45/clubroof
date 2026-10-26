@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Linking, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
+import { AreaButtons } from '@/components/area-buttons';
 import {
   Avatar,
   Button,
@@ -314,6 +315,9 @@ export default function MoreScreen() {
           </View>
         </View>
       </HeroCard>
+
+      {/* Zugänge zu Admin-Verwaltung und Vereinskasse (zusätzlich zu „Verein → Meine Vereinsaufgaben“) */}
+      <AreaButtons adminBadge={tileInfo?.admin?.figure} />
 
       {me.security.twoFactorRequired ? (
         <Notice

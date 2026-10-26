@@ -58,7 +58,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'admin-area',
         question: 'Wo finde ich die Verwaltung und die Vereinskasse?',
         answer:
-          'Unter „Verein“ steht in der Gruppe „Meine Vereinsaufgaben“ der Zugang zur „Verwaltung“ (für alle mit Verwaltungsrechten) und zur „Vereinskasse“ (für alle mit Kassenzugriff); am Desktop stehen beide dauerhaft in der Seitenleiste. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Zur App“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Auswertung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.',
+          'Es gibt zwei Wege: Unter „Ich“ stehen direkt unter deinem Profil die zwei farbigen Knöpfe „Admin-Verwaltung“ (violett) und „Vereinskasse“ (blau) – nur die, für die du Rechte hast. Außerdem steht unter „Verein“ in der Gruppe „Meine Vereinsaufgaben“ der Zugang zur „Verwaltung“ (für alle mit Verwaltungsrechten) und zur „Vereinskasse“ (für alle mit Kassenzugriff); am Desktop stehen beide dauerhaft in der Seitenleiste. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Zur App“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Auswertung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.',
       },
       {
         id: 'custom-roles',
@@ -749,7 +749,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'admin-start',
         question: 'Wo ist die Verwaltung?',
         answer:
-          'Über das Schild-Symbol oben rechts oder „Verein → Meine Vereinsaufgaben → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.',
+          'Über das Schild-Symbol oben rechts oder „Ich → Admin-Verwaltung“ oder „Verein → Meine Vereinsaufgaben → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.',
       },
       {
         id: 'admin-roles',

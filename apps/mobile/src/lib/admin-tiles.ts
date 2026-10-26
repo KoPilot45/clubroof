@@ -6,6 +6,7 @@
 import type { MeResponse } from '@clubroof/core';
 import { router } from 'expo-router';
 import type { TileItem } from '@/components/ui';
+import { canOpenClubCash } from '@/lib/areas';
 
 export function adminFunctionTiles(me: MeResponse): TileItem[] {
   const a = me.admin;
@@ -130,4 +131,21 @@ export function adminFunctionTiles(me: MeResponse): TileItem[] {
     },
   ];
   return tiles.filter((t): t is TileItem => !!t);
+}
+
+/**
+ * Gruppe „Meine Vereinsaufgaben“ im Verein-Tab: alle Verwaltungs-Kacheln der Rolle und, für Kassenleute ohne
+ * Verwaltungsrechte, die Kachel „Vereinskasse“. Dieselben Rechte (`canOpenAdmin`, `canOpenClubCash`) steuern die
+ * hervorgehobenen Zugänge in „Ich“ (`components/area-buttons.tsx`).
+ */
+export function taskTilesFor(me: MeResponse): TileItem[] {
+  const tiles = adminFunctionTiles(me);
+  if (canOpenClubCash(me) && !tiles.some((t) => t.key === 'clubcash'))
+    tiles.push({
+      key: 'clubcash',
+      label: 'Vereinskasse',
+      icon: 'wallet',
+      onPress: () => router.push('/club-cash'),
+    });
+  return tiles;
 }

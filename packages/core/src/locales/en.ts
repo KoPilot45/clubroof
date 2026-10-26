@@ -1217,6 +1217,7 @@ export const en: Record<string, string> = {
   'Buchung erfassen': 'Record entry',
   'Buchung speichern': 'Save entry',
   'Buchung stornieren': 'Reverse entry',
+  'Buchung, Beiträge, Planung, Auswertung': 'Booking, fees, planning, evaluation',
   'Buchung, Beiträge, Planung, Prüfung': 'Bookings, fees, planning, audit',
   Buchungen: 'Entries',
   'Buchungen & Storno': 'Entries & reversals',
@@ -2409,6 +2410,8 @@ export const en: Record<string, string> = {
     'There are no categories for this type yet. Create them under “Setup”.',
   'Es gibt nur einen Fulladmin – lege einen zweiten an.':
     'There is only one full admin – add a second one.',
+  'Es gibt zwei Wege: Unter „Ich“ stehen direkt unter deinem Profil die zwei farbigen Knöpfe „Admin-Verwaltung“ (violett) und „Vereinskasse“ (blau) – nur die, für die du Rechte hast. Außerdem steht unter „Verein“ in der Gruppe „Meine Vereinsaufgaben“ der Zugang zur „Verwaltung“ (für alle mit Verwaltungsrechten) und zur „Vereinskasse“ (für alle mit Kassenzugriff); am Desktop stehen beide dauerhaft in der Seitenleiste. Beide öffnen einen eigenen Bereich mit farbigem Kopfband und „Zur App“ oben sowie einer Leiste mit Reitern unten. Die Verwaltung hat die Reiter Übersicht, Mitglieder, Sport, Inhalte und Verein – du siehst nur, wofür du Rechte hast. In der Vereinskasse gibt es Übersicht, Buchung, Beiträge, Planung und Auswertung. Funktionen mit „Bald verfügbar“ folgen in einem späteren Update.':
+    'There are two ways: under “Me”, directly below your profile, you find the two coloured buttons “Admin area” (purple) and “Club cash” (blue) – only those you have rights for. In addition, under “Club” in the group “My club tasks” you find access to “Administration” (for everyone with administration rights) and to “Club cash” (for everyone with cash access); on the desktop both are always in the sidebar. Both open their own area with a coloured header band and “Back to app” at the top and a bar with tabs at the bottom. Administration has the tabs Overview, Members, Sport, Content and Club – you only see what you have rights for. Club cash has Overview, Booking, Fees, Planning and Evaluation. Functions marked “Coming soon” follow in a later update.',
   'Es ist ein unerwarteter Fehler aufgetreten.': 'An unexpected error occurred.',
   'Es ist keine laufende Saison eingerichtet.': 'No current season is set up.',
   'Es muss immer eine Hauptkasse geben. Lege eine andere Kasse als Hauptkasse fest.':
@@ -4817,6 +4820,8 @@ export const en: Record<string, string> = {
   Türkis: 'Teal',
   Turnier: 'Tournament',
   'Über Clubroof': 'About Clubroof',
+  'Über das Schild-Symbol oben rechts oder „Ich → Admin-Verwaltung“ oder „Verein → Meine Vereinsaufgaben → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.':
+    'Via the shield icon at the top right, “Me → Admin area” or “Club → My club tasks → Administration”. With “Back to app” you return to the normal app. At the bottom you switch between Overview, Members, Teams, Events and News.',
   'Über das Schild-Symbol oben rechts oder „Mehr → Verwaltung“. Mit „Beenden“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.':
     'Via the shield icon at the top right or “More → Administration”. Tap “Exit” to return to the normal app. At the bottom you switch between overview, members, teams, festivals and news.',
   'Über das Schild-Symbol oben rechts oder „Mehr → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.':
@@ -4829,6 +4834,8 @@ export const en: Record<string, string> = {
   'Über diese Auslage ist schon entschieden.': 'A decision has already been made on this claim.',
   'Über diesen Link legst du dein Passwort fest (gültig {0} Tage):':
     'Use this link to set your password (valid for {0} days):',
+  'Über Ich → Admin-Verwaltung oder Verein → Meine Vereinsaufgaben → Verwaltung erreichst du Mitglieder, Rollen und Module.':
+    'Via Me → Admin area or Club → My club tasks → Administration you reach members, roles and modules.',
   'Über Mehr → Verwaltung erreichst du Mitglieder, Rollen und Module.':
     'Under More → Administration you reach members, roles and modules.',
   'über Plan': 'over plan',
