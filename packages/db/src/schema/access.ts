@@ -130,6 +130,8 @@ export const invitations = pgTable(
     tokenHash: text().notNull().unique(),
     /** Kurzcode zum Eintippen (Hash, global eindeutig); leer = nur Link/QR */
     codeHash: text().unique(),
+    /** Kurzcode verschlüsselt, damit er in der Einladungsübersicht erneut angezeigt werden kann */
+    codeEncrypted: text(),
     /** Verschlüsselter Token, damit Mannschafts-Links/QR-Codes erneut angezeigt werden können */
     tokenEncrypted: text(),
     personId: uuid().references(() => persons.id, { onDelete: 'cascade' }),
@@ -241,4 +243,30 @@ export const clubSetupInvites = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index().on(t.adminEmail)],
+);
+
+/**
+ * Admin-Wiederherstellung: Ist kein Admin mehr erreichbar, kündigt der Betreiber nach Prüfung außerhalb der App
+ * einen neuen Admin an. Der Verein hat bis `notBefore` Zeit zu widersprechen; erst danach geht die Einladung raus.
+ */
+export const adminRecoveries = pgTable(
+  'admin_recoveries',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    firstName: text().notNull(),
+    lastName: text().notNull(),
+    email: text().notNull(),
+    /** Hinweis des Betreibers, wie die Berechtigung geprüft wurde */
+    note: text(),
+    createdByUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
+    notBefore: timestamp({ withTimezone: true }).notNull(),
+    objectedAt: timestamp({ withTimezone: true }),
+    objectedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    completedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId)],
 );

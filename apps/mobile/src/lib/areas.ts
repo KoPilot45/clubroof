@@ -215,6 +215,7 @@ export function adminCategories(me: MeResponse): AreaCategory[] {
           [
             ['modules', 'Funktionen', 'apps', '/admin/modules', a.manageModules],
             ['security', 'Sicherheit', 'lock-closed', '/account', club],
+            ['support', 'Support', 'help-buoy', '/admin/support', club],
             ['notifications', 'Benachrichtigungen', 'notifications', null, club],
           ],
         ],

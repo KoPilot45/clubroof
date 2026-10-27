@@ -1,10 +1,12 @@
 import { verify } from '@node-rs/argon2';
 import { schema as s } from '@clubroof/db';
 import { eq } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import type {
   LoginResponse,
+  NoClubLoginResponse,
   TwoFactorChallenge,
   TwoFactorSetup,
   TwoFactorStatus,
@@ -13,7 +15,7 @@ import { loadActor } from '../actor';
 import { createSession, deleteSession } from '../auth/session';
 import { HttpError } from '../errors';
 import { changePassword, requestPasswordReset, resetPassword } from '../services/account';
-import { pendingRequestState } from '../services/invitations';
+import { accountInfo } from '../services/account-club';
 import { buildMe } from '../services/me';
 import {
   completeChallenge,
@@ -34,6 +36,50 @@ const invalidLogin = () =>
 const DUMMY_HASH =
   '$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHRzb21lc2FsdA$Ff0gWr0Hq8i5o4p2nWkHk2rAfFJwKfQe3zjDA1Qn0wY';
 
+type UserRow = typeof s.users.$inferSelect;
+type Entry = Awaited<ReturnType<typeof loadActor>> | null;
+
+/** Lädt den Actor des Kontos; `null` für ein Konto ohne Verein, alle anderen Gründe (gesperrt, ausgetreten) werfen. */
+async function tryLoadActor(app: FastifyInstance, user: UserRow, now: Date): Promise<Entry> {
+  try {
+    return await loadActor(
+      app.db,
+      {
+        sessionId: '',
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        twoFactorEnabled: user.totpSecret !== null || user.twoFactorEmail,
+      },
+      now,
+      app.links,
+      user.lastClubId,
+    );
+  } catch (e) {
+    if (e instanceof HttpError && e.code === 'no_club') return null;
+    throw e;
+  }
+}
+
+async function enterSession(
+  app: FastifyInstance,
+  user: UserRow,
+  entry: Entry,
+  now: Date,
+  userAgent: string | undefined,
+): Promise<LoginResponse | NoClubLoginResponse> {
+  const session = await createSession(app.db, user.id, {
+    now,
+    ttlDays: app.config.sessionTtlDays,
+    userAgent,
+    activeClubId: entry?.club.id ?? null,
+  });
+  await app.db.update(s.users).set({ lastLoginAt: now }).where(eq(s.users.id, user.id));
+  const base = { token: session.token, expiresAt: session.expiresAt.toISOString() };
+  if (!entry) return { ...base, me: null, account: await accountInfo(app.db, user.id) };
+  return { ...base, me: await buildMe(app.db, entry) };
+}
+
 export const authRoutes: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/auth/login',
@@ -46,47 +92,16 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         }),
       },
     },
-    async (request): Promise<LoginResponse | TwoFactorChallenge> => {
+    async (request): Promise<LoginResponse | NoClubLoginResponse | TwoFactorChallenge> => {
       const { email, password } = request.body;
       const [user] = await app.db.select().from(s.users).where(eq(s.users.email, email)).limit(1);
       const ok = await verify(user?.passwordHash ?? DUMMY_HASH, password).catch(() => false);
       if (!user || !user.passwordHash || !ok) throw invalidLogin();
 
       const now = app.now();
-      // Konto ohne Vereinszuordnung: Beitrittsanfrage noch offen oder abgelehnt?
-      const [linked] = await app.db
-        .select({ id: s.persons.id })
-        .from(s.persons)
-        .where(eq(s.persons.userId, user.id));
-      if (!linked) {
-        const state = await pendingRequestState(app.db, user.id);
-        if (state === 'pending')
-          throw new HttpError(
-            403,
-            'request_pending',
-            'Deine Beitrittsanfrage wartet noch auf Freigabe durch den Verein.',
-          );
-        if (state === 'rejected')
-          throw new HttpError(
-            403,
-            'request_rejected',
-            'Deine Beitrittsanfrage wurde nicht freigegeben.',
-          );
-      }
-      // Zuerst prüfen, ob das Konto noch zu einem aktiven Mitglied gehört – erst dann Sitzung anlegen
-      const actor = await loadActor(
-        app.db,
-        {
-          sessionId: '',
-          id: user.id,
-          email: user.email,
-          displayName: user.displayName,
-          twoFactorEnabled: user.totpSecret !== null || user.twoFactorEmail,
-        },
-        now,
-        app.links,
-        user.lastClubId,
-      );
+      // Zuerst prüfen, ob das Konto noch zu einem aktiven Mitglied gehört (Sperre, Austritt) – erst dann Sitzung anlegen.
+      // Ein Konto ganz ohne Verein darf sich anmelden und sieht den Hinweis in der App.
+      const entry = await tryLoadActor(app, user, now);
       // Mit 2-Faktor: noch keine Sitzung, erst den Code abfragen
       if (user.totpSecret || user.twoFactorEmail) {
         const methods: TwoFactorChallenge['methods'] = [
@@ -101,18 +116,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
           methods,
         };
       }
-      const session = await createSession(app.db, user.id, {
-        now,
-        ttlDays: app.config.sessionTtlDays,
-        userAgent: request.headers['user-agent'],
-        activeClubId: actor.club.id,
-      });
-      await app.db.update(s.users).set({ lastLoginAt: now }).where(eq(s.users.id, user.id));
-      return {
-        token: session.token,
-        expiresAt: session.expiresAt.toISOString(),
-        me: await buildMe(app.db, actor),
-      };
+      return enterSession(app, user, entry, now, request.headers['user-agent']);
     },
   );
 
@@ -178,7 +182,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         }),
       },
     },
-    async (request): Promise<LoginResponse> => {
+    async (request): Promise<LoginResponse | NoClubLoginResponse> => {
       const now = app.now();
       const userId = await completeChallenge(
         app.db,
@@ -188,31 +192,8 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         now,
       );
       const [user] = await app.db.select().from(s.users).where(eq(s.users.id, userId));
-      const actor = await loadActor(
-        app.db,
-        {
-          sessionId: '',
-          id: user!.id,
-          email: user!.email,
-          displayName: user!.displayName,
-          twoFactorEnabled: true,
-        },
-        now,
-        app.links,
-        user!.lastClubId,
-      );
-      const session = await createSession(app.db, user!.id, {
-        now,
-        ttlDays: app.config.sessionTtlDays,
-        userAgent: request.headers['user-agent'],
-        activeClubId: actor.club.id,
-      });
-      await app.db.update(s.users).set({ lastLoginAt: now }).where(eq(s.users.id, user!.id));
-      return {
-        token: session.token,
-        expiresAt: session.expiresAt.toISOString(),
-        me: await buildMe(app.db, actor),
-      };
+      const entry = await tryLoadActor(app, user!, now);
+      return enterSession(app, user!, entry, now, request.headers['user-agent']);
     },
   );
 

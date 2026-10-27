@@ -7,6 +7,7 @@
   "apps/mobile/src/app/login.tsx": 2,
   "apps/mobile/src/app/match/[id]/lineup.tsx": 3,
   "apps/mobile/src/app/news/[id].tsx": 7,
+  "apps/mobile/src/app/no-club.tsx": 1,
   "apps/mobile/src/app/schedule-import.tsx": 1,
   "apps/mobile/src/components/app-header.tsx": 8,
   "apps/mobile/src/components/area-overview.tsx": 1,

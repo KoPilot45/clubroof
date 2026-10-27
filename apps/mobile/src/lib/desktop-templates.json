@@ -169,6 +169,11 @@
     "note": "Tabelle mit Filterleiste",
     "status": "Breite"
   },
+  "admin/support": {
+    "t": "B",
+    "note": "Formular",
+    "status": "fertig"
+  },
   "admin/team-new": {
     "t": "E",
     "note": "Assistent",
@@ -549,6 +554,11 @@
     "note": "Liste bzw. Detailseite",
     "status": "Breite"
   },
+  "no-club": {
+    "t": "S",
+    "note": "Einzelkarte auf Seite ohne Navigation (wie Anmeldung)",
+    "status": "fertig"
+  },
   "notification-settings": {
     "t": "B",
     "note": "Formular",
@@ -558,6 +568,16 @@
     "t": "A",
     "note": "Liste bzw. Detailseite",
     "status": "Breite"
+  },
+  "operator/club": {
+    "t": "D",
+    "note": "Kachelraster / Übersicht",
+    "status": "fertig"
+  },
+  "operator/index": {
+    "t": "C",
+    "note": "Tabelle mit Filterleiste",
+    "status": "fertig"
   },
   "polls/[id]": {
     "t": "A",

@@ -27,10 +27,11 @@ import {
   type JoinRequestItem,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, desc, eq, gt, gte, inArray, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, gte, inArray, isNull, ne, or, sql } from 'drizzle-orm';
 import QRCode from 'qrcode';
 import { actorCan, type Actor } from '../actor';
 import { generateToken, hashToken } from '../auth/session';
+import { codeHash, generateCode } from './codes';
 import type { Config } from '../config';
 import { deliver } from '../notify/deliver';
 import { HttpError, forbidden, notFound } from '../errors';
@@ -70,10 +71,16 @@ async function currentTeams(db: Db, actor: Actor): Promise<TeamRow[]> {
     .then((rows) => rows.map((r) => r.team));
 }
 
-async function link(config: Config, token: string, expiresAt: Date): Promise<InviteLink> {
+async function link(
+  config: Config,
+  token: string,
+  expiresAt: Date,
+  code: string | null = null,
+): Promise<InviteLink> {
   const url = `${config.appUrl}/join/${token}`;
   return {
     url,
+    code,
     qrSvg: await QRCode.toString(url, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' }),
     expiresAt: expiresAt.toISOString(),
   };
@@ -183,12 +190,15 @@ export async function getInviteOverview(
       const token = l?.tokenEncrypted
         ? decrypt(ctx.config.dataEncryptionKey, l.tokenEncrypted)
         : null;
+      const code = l?.codeEncrypted ? decrypt(ctx.config.dataEncryptionKey, l.codeEncrypted) : null;
       return {
         id: t.id,
         badge: t.badge,
         name: t.name,
         link:
-          l && token ? { ...(await link(ctx.config, token, l.expiresAt)), uses: l.useCount } : null,
+          l && token
+            ? { ...(await link(ctx.config, token, l.expiresAt, code)), uses: l.useCount }
+            : null,
       };
     }),
   );
@@ -299,11 +309,13 @@ export async function invitePerson(
     .set({ revokedAt: now })
     .where(and(eq(s.invitations.personId, row.id), isNull(s.invitations.revokedAt)));
   const token = generateToken();
+  const code = generateCode(8);
   const expiresAt = new Date(now.getTime() + PERSON_DAYS * DAY);
   await db.insert(s.invitations).values({
     clubId: actor.club.id,
     kind: 'person',
     tokenHash: hashToken(token),
+    codeHash: codeHash(code),
     personId: row.id,
     email,
     createdByPersonId: actor.person.id,
@@ -311,7 +323,7 @@ export async function invitePerson(
     maxUses: 1,
     createdAt: now,
   });
-  const result = await link(ctx.config, token, expiresAt);
+  const result = await link(ctx.config, token, expiresAt, code);
   if (input.send) {
     if (!email)
       throw new HttpError(400, 'email_required', 'Für den Versand fehlt eine E-Mail-Adresse.');
@@ -325,6 +337,8 @@ export async function invitePerson(
         `Über diesen Link legst du dein Passwort fest (gültig ${PERSON_DAYS} Tage):`,
         '',
         result.url,
+        '',
+        `Oder gib in der App diesen Code ein: ${code}`,
       ].join('\n'),
     });
   }
@@ -343,18 +357,21 @@ export async function createTeamLink(
     throw forbidden('Für diese Mannschaft darfst du nicht einladen.');
   await revokeTeamLink(db, actor, teamId, now);
   const token = generateToken();
+  const code = generateCode(8);
   const expiresAt = new Date(now.getTime() + TEAM_DAYS * DAY);
   await db.insert(s.invitations).values({
     clubId: actor.club.id,
     kind: 'team',
     tokenHash: hashToken(token),
     tokenEncrypted: encrypt(ctx.config.dataEncryptionKey, token),
+    codeHash: codeHash(code),
+    codeEncrypted: encrypt(ctx.config.dataEncryptionKey, code),
     teamId,
     createdByPersonId: actor.person.id,
     expiresAt,
     createdAt: now,
   });
-  return link(ctx.config, token, expiresAt);
+  return link(ctx.config, token, expiresAt, code);
 }
 
 export async function revokeTeamLink(db: Db, actor: Actor, teamId: string, now: Date) {
@@ -382,7 +399,13 @@ async function loadInvitation(db: Db, token: string, now: Date) {
     .innerJoin(s.clubs, eq(s.clubs.id, s.invitations.clubId))
     .leftJoin(s.persons, eq(s.persons.id, s.invitations.personId))
     .leftJoin(s.teams, eq(s.teams.id, s.invitations.teamId))
-    .where(eq(s.invitations.tokenHash, hashToken(token)));
+    // Langer Link-Token oder Kurzcode (Eintippen); beide führen zur selben Einladung
+    .where(
+      or(
+        eq(s.invitations.tokenHash, hashToken(token)),
+        eq(s.invitations.codeHash, codeHash(token)),
+      ),
+    );
   const i = row?.invitation;
   if (
     !row ||
@@ -482,6 +505,68 @@ export async function acceptInvite(
   });
 }
 
+type JoinRow = Awaited<ReturnType<typeof loadInvitation>>;
+type JoinPerson = Omit<JoinRequestInput, 'email' | 'password'>;
+
+function checkJoinPerson(row: JoinRow, input: JoinPerson) {
+  if (row.invitation.kind !== 'team' || !row.team)
+    throw new HttpError(400, 'wrong_kind', 'Dieser Link ist eine persönliche Einladung.');
+  if (
+    input.relation === 'parent' &&
+    (!input.childFirstName?.trim() || !input.childLastName?.trim())
+  )
+    throw new HttpError(400, 'child_required', 'Bitte Vor- und Nachname des Kindes angeben.');
+}
+
+/** Persönliche Einladung mit bestehendem Konto annehmen: die Person wird mit dem Konto verknüpft (weiterer Verein). */
+export async function acceptInviteSignedIn(
+  db: Db,
+  token: string,
+  userId: string,
+  now: Date,
+): Promise<void> {
+  const row = await loadInvitation(db, token, now);
+  if (row.invitation.kind !== 'person' || !row.person)
+    throw new HttpError(400, 'wrong_kind', 'Dieser Link ist eine Mannschafts-Einladung.');
+  if (row.person.userId)
+    throw new HttpError(409, 'has_account', 'Für diese Person gibt es bereits ein Konto.');
+  const [member] = await db
+    .select({ id: s.persons.id })
+    .from(s.persons)
+    .where(
+      and(
+        eq(s.persons.userId, userId),
+        eq(s.persons.clubId, row.club.id),
+        ne(s.persons.membershipStatus, 'left'),
+      ),
+    );
+  if (member)
+    throw new HttpError(409, 'already_member', 'Du bist in diesem Verein bereits Mitglied.');
+  const [user] = await db.select().from(s.users).where(eq(s.users.id, userId));
+  await db.transaction(async (tx) => {
+    const [used] = await tx
+      .update(s.invitations)
+      .set({ useCount: sql`${s.invitations.useCount} + 1`, revokedAt: now })
+      .where(and(eq(s.invitations.id, row.invitation.id), isNull(s.invitations.revokedAt)))
+      .returning({ id: s.invitations.id });
+    if (!used)
+      throw new HttpError(410, 'invite_invalid', 'Diese Einladung wurde bereits verwendet.');
+    await tx
+      .update(s.persons)
+      .set({ userId, email: row.person!.email ?? user!.email })
+      .where(eq(s.persons.id, row.person!.id));
+    await tx.insert(s.auditLog).values({
+      clubId: row.club.id,
+      actorUserId: userId,
+      action: 'invite.accepted',
+      entityType: 'person',
+      entityId: row.person!.id,
+      data: { label: `App-Zugang eingerichtet: ${row.person!.firstName} ${row.person!.lastName}` },
+      createdAt: now,
+    });
+  });
+}
+
 /** Anfrage über einen Mannschafts-Link: Konto anlegen (noch ohne Zugang) und Freigabe anfordern. */
 export async function requestJoin(
   db: Db,
@@ -490,17 +575,10 @@ export async function requestJoin(
   now: Date,
 ): Promise<void> {
   const row = await loadInvitation(db, token, now);
-  if (row.invitation.kind !== 'team' || !row.team)
-    throw new HttpError(400, 'wrong_kind', 'Dieser Link ist eine persönliche Einladung.');
+  checkJoinPerson(row, input);
   const email = input.email.trim().toLowerCase();
   await ensureEmailFree(db, email);
   checkPassword(input.password, email);
-  if (
-    input.relation === 'parent' &&
-    (!input.childFirstName?.trim() || !input.childLastName?.trim())
-  )
-    throw new HttpError(400, 'child_required', 'Bitte Vor- und Nachname des Kindes angeben.');
-
   const [user] = await db
     .insert(s.users)
     .values({
@@ -510,10 +588,64 @@ export async function requestJoin(
       passwordChangedAt: now,
     })
     .returning({ id: s.users.id });
+  await createJoinRequest(db, row, user!.id, input, now);
+}
+
+/**
+ * Beitrittsanfrage eines bereits angemeldeten Kontos (z. B. mit Konto im ersten Verein oder ohne Verein):
+ * kein neues Konto, die Person wird erst mit der Freigabe im Verein angelegt.
+ */
+export async function requestJoinSignedIn(
+  db: Db,
+  token: string,
+  userId: string,
+  input: JoinPerson,
+  now: Date,
+): Promise<void> {
+  const row = await loadInvitation(db, token, now);
+  checkJoinPerson(row, input);
+  const [member] = await db
+    .select({ id: s.persons.id })
+    .from(s.persons)
+    .where(
+      and(
+        eq(s.persons.userId, userId),
+        eq(s.persons.clubId, row.club.id),
+        ne(s.persons.membershipStatus, 'left'),
+      ),
+    );
+  if (member)
+    throw new HttpError(409, 'already_member', 'Du bist in diesem Verein bereits Mitglied.');
+  const [pending] = await db
+    .select({ id: s.joinRequests.id })
+    .from(s.joinRequests)
+    .where(
+      and(
+        eq(s.joinRequests.userId, userId),
+        eq(s.joinRequests.clubId, row.club.id),
+        eq(s.joinRequests.status, 'pending'),
+      ),
+    );
+  if (pending)
+    throw new HttpError(
+      409,
+      'request_pending',
+      'Deine Beitrittsanfrage wartet noch auf Freigabe durch den Verein.',
+    );
+  await createJoinRequest(db, row, userId, input, now);
+}
+
+async function createJoinRequest(
+  db: Db,
+  row: JoinRow,
+  userId: string,
+  input: JoinPerson,
+  now: Date,
+): Promise<void> {
   await db.insert(s.joinRequests).values({
     clubId: row.club.id,
     invitationId: row.invitation.id,
-    userId: user!.id,
+    userId,
     relation: input.relation,
     firstName: input.firstName.trim(),
     lastName: input.lastName.trim(),

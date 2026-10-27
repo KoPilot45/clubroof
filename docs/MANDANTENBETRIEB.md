@@ -1,6 +1,6 @@
 # Mandantenbetrieb – Konzept (Entwurf zur Bestätigung)
 
-Stand: 27.10.2026 · Paket MANDANTENBETRIEB · **noch nichts gebaut** – erst nach Bestätigung der offenen Fragen (Abschnitt 8).
+Stand: 27.10.2026 · Paket MANDANTENBETRIEB · **umgesetzt** (Abschnitt 11 nennt Abweichungen vom Entwurf und offene Punkte).
 
 ## 1. Ausgangslage im Code
 
@@ -94,5 +94,25 @@ Zuerst gilt: jeder Verein soll mindestens zwei Admins haben (Hinweis in der Verw
 5. Support-Freigabe und Support-Sitzung.
 6. Mandantentrenn-Tests je Bereich, Doku (`FUNKTIONEN.md`, Hilfe), Abschluss-Sicherheitsreview mit dem starken Modell.
 
-## 10. Ablauf „Verein anlegen“ (Betreiber → Admin)
-Alle Vereine liegen in **einer** Datenbank, getrennt über `club_id` (keine eigene Datenbank je Verein). 1) Betreiber füllt in der Konsole Vereinsname, Kurzname und Name/E-Mail des Admins aus. 2) Der Server legt in einer Transaktion Verein (Status „Einrichtung offen“), Standardrollen/-module, die Admin-Person und eine persönliche Einladung an. 3) Der Admin erhält Mail mit Link und Code, vergibt selbst sein Passwort (kein Passwort vom Betreiber), richtet Zwei-Faktor ein. 4) Beim ersten Login startet der bestehende Einrichtungsassistent (Verein, Mannschaften, Module). 5) Nach Abschluss Status „aktiv“; der Betreiber sieht nur den Status. Einladung abgelaufen → Betreiber verschickt sie neu.
+## 10. Ablauf „Verein anlegen“ (Betreiber → Admin) – umgesetzt
+Alle Vereine liegen in **einer** Datenbank, getrennt über `club_id` (keine eigene Datenbank je Verein). Abweichung vom ersten Entwurf: Der Betreiber legt den Verein nicht selbst an, sondern einen **Einrichtungscode** (`CR-XXXX-XXXX`, 14 Tage, einmalig, an die E-Mail des Admins gebunden, nur als Hash gespeichert). 1) Betreiber trägt in der Konsole Vereinsname und Admin-E-Mail ein; der Code geht per Mail an den Admin. 2) Der Admin öffnet `/setup`, gibt den Code ein, bestätigt seine E-Mail und durchläuft den **bestehenden Einrichtungsassistenten**, der Verein, Saison, Rollen, Module und sein Administrationskonto anlegt (Passwort wählt er selbst). 3) Der Code ist danach verbraucht; der Betreiber sieht in der Konsole nur „Eingelöst“ und Kennzahlen. Der Server-Einrichtungscode (`SETUP_TOKEN`) gilt weiterhin nur für den allerersten Verein. Widerrufen oder neu ausstellen geht in der Konsole.
+
+Betreiber-Konto anlegen: `pnpm --filter @clubroof/db operator <E-Mail>` (Konto muss existieren; 2-Faktor ist Pflicht). Sperren beendet die Sitzungen des Vereins; Archivieren löscht nichts.
+
+## 11. Umsetzungsstand (27.10.2026)
+
+Umgesetzt und getestet (`apps/api/src/mandanten.test.ts`, `scripts/e2e/mandanten.mjs`):
+
+- **Datenmodell** (Migrationen 0067–0071): `operators`, `operator_audit`, `support_grants`, `club_setup_invites`, `admin_recoveries`, `clubs.status`, `sessions.active_club_id`, `users.last_club_id`, `invitations.code_hash/code_encrypted`; Kalenderabo, Benachrichtigungseinstellungen und „zuletzt gesehen“ je Konto **und Verein**.
+- **Aktiver Verein** je Sitzung (`loadActor(…, clubId)`), `me.clubs` (nur bei mehr als einem Verein gefüllt), `POST /me/club`; Wechsel-Symbol am Logo überlagert das Logo unten rechts, leert Cache und Offline-Speicher. Nicht gesendete Antworten blockieren den Wechsel.
+- **Betreiber-Konsole** (`/operator`, nur Web-Verwaltung vorgesehen): Vereine mit Kennzahlen, Einrichtungscodes (`CR-XXXX-XXXX`), Sperren/Entsperren/Archivieren, Support-Ansicht, Admin-Wiederherstellung. Betreiber nur per `pnpm --filter @clubroof/db operator <E-Mail>`; 2-Faktor Pflicht; Nicht-Betreiber erhalten 404.
+- **Kurzcodes** (`XXXX-XXXX`) für Mannschafts-Links und persönliche Einladungen; Beitritt und Annahme **mit bestehendem Konto** (`/join/:token/request-signed-in`, `/accept-signed-in`).
+- **Konto ohne Verein**: Anmeldung gelingt (`me: null`, `account`), Hinweisseite „Noch kein Verein“, Aufnahme durch den Verein per Code/QR (`/account/link-code`, `/members/attach-account`, 15 Minuten gültig, einmalig).
+- **Support-Zugriff**: Freigabe 1 Stunde/1 Tag/7 Tage durch Administration/Vorstand (`club.settings.manage`), widerrufbar; Betreiber sieht nur eine **schreibgeschützte Support-Ansicht** (Einstellungen, Funktionen, Admins, Änderungsprotokoll), nie Personen-, Kassen- oder Termindaten. Jeder Abruf steht in `operator_audit` und im Änderungsprotokoll des Vereins.
+- **Admin-Wiederherstellung**: Ankündigung → 48 Stunden Frist, Mail an alle Admins/Vorstände und Vereinsadresse, Widerspruch im Verein → danach Einladung des neuen Admins (nur Einladung, keine Altdaten).
+- **Mandantentests**: Sweep über alle Routen (Pfade, fremde IDs, Abfrageparameter, schreibende Routen) in beide Richtungen mit Inhalts-Fingerabdruck je Tabelle.
+- `/public/club` zeigt bei mehr als einem Verein keinen einzelnen Verein (Anmeldeseite neutral).
+
+**Abweichungen vom Entwurf:** (1) Der Betreiber legt keinen Verein direkt an, sondern einen Einrichtungscode; der Admin richtet den Verein im bestehenden Assistenten ein (Abschnitt 10). (2) Der Support-Zugriff ist eine eigene Lese-Ansicht statt einer Support-Sitzung, die als Vereinsmitglied handelt. (3) Kein Vereins-Code ohne Mannschaft: Codes gelten für eine Mannschaft oder eine Person.
+
+**Offen / Hinweise für die Sicherheitsprüfung:** Kurzcodes haben 40 Bit; Schutz durch Ratenbegrenzung je IP (20/Minute) und Befristung – ein Fehlversuchszähler je Code fehlt. Der Betreiber-Sweep sendet bei schreibenden Routen leere Inhalte (greift vor allem die Rechteprüfung, nicht jede Fachlogik). Row-Level-Security in PostgreSQL ist als spätere Härtung vorgesehen. Dateilinks (`/files`) sind signierte Fähigkeits-Links und werden im Review gesondert geprüft. Demo-Verein, Pläne und Abo folgen in eigenen Paketen.

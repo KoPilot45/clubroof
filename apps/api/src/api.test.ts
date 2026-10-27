@@ -4619,8 +4619,21 @@ describe.skipIf(!url)('API', () => {
         email: 'neu.spieler@example.org',
         password: PW,
       });
-      expect(early.statusCode).toBe(403);
-      expect(early.json().error).toBe('request_pending');
+      // Konto ohne Verein darf sich anmelden und sieht den Stand seiner Anfrage
+      expect(early.statusCode).toBe(200);
+      expect(early.json().me).toBeNull();
+      expect(early.json().account.requests).toEqual([
+        { clubName: expect.any(String), status: 'pending' },
+      ]);
+      expect(
+        (
+          await app.inject({
+            method: 'GET',
+            url: '/me',
+            headers: { authorization: `Bearer ${early.json().token}` },
+          })
+        ).json().error,
+      ).toBe('no_club');
       const notes = await get<NotificationItem[]>('/notifications', coach.token);
       expect(notes.some((n) => n.title === 'Beitrittsanfrage B1')).toBe(true);
 
@@ -4672,7 +4685,8 @@ describe.skipIf(!url)('API', () => {
         email: 'fremd@example.org',
         password: PW,
       });
-      expect(rejected.json().error).toBe('request_rejected');
+      expect(rejected.json().me).toBeNull();
+      expect(rejected.json().account.requests[0].status).toBe('rejected');
       expect(
         (await send('POST', `/join-requests/${other.id}/approve`, coach.token, {})).status,
       ).toBe(409);

@@ -35,6 +35,7 @@ const CATEGORY_OF: Record<string, string> = {
   funds: 'verein',
   modules: 'verein',
   audit: 'verein',
+  support: 'verein',
   archive: 'verein',
 };
 
@@ -111,6 +112,7 @@ export default function AdminLayout() {
             <Stack.Screen name="role-edit" options={{ title: 'Rolle bearbeiten' }} />
             <Stack.Screen name="member-effective" options={{ title: 'Was darf diese Person?' }} />
             <Stack.Screen name="audit" options={{ title: 'Änderungsprotokoll' }} />
+            <Stack.Screen name="support" options={{ title: 'Support' }} />
             <Stack.Screen name="archive" options={{ title: 'Archiv' }} />
             <Stack.Screen name="news/index" options={{ title: 'News-Redaktion' }} />
             <Stack.Screen name="news/new" options={{ title: 'News schreiben' }} />

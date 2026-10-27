@@ -1,4 +1,10 @@
-import type { LoginResponse, MeResponse, TwoFactorChallenge } from '@clubroof/core';
+import type {
+  AccountInfo,
+  LoginResponse,
+  MeResponse,
+  NoClubLoginResponse,
+  TwoFactorChallenge,
+} from '@clubroof/core';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
@@ -19,7 +25,9 @@ import { readToken, writeToken } from './token-storage';
 type SessionState =
   | { status: 'loading'; token: null; me: null }
   | { status: 'signedOut'; token: null; me: null }
-  | { status: 'signedIn'; token: string; me: MeResponse };
+  | { status: 'signedIn'; token: string; me: MeResponse }
+  /** Konto ohne Verein: angemeldet, aber noch keinem Verein zugeordnet */
+  | { status: 'noClub'; token: string; me: null; account: AccountInfo };
 
 type SessionContextValue = SessionState & {
   /** Liefert eine Challenge, wenn ein zweiter Faktor nötig ist */
@@ -28,7 +36,9 @@ type SessionContextValue = SessionState & {
   /** Nutzerdaten (`/me`) neu laden, z. B. nach Änderung von Logo oder Rechten */
   refresh: () => Promise<void>;
   /** Sitzung aus einer Antwort übernehmen (Einladung angenommen, 2-Faktor bestätigt) */
-  adopt: (result: LoginResponse) => Promise<void>;
+  adopt: (result: LoginResponse | NoClubLoginResponse) => Promise<void>;
+  /** Aktiven Verein wechseln (Konten mit mehreren Vereinen) */
+  switchClub: (clubId: string) => Promise<void>;
   /** Für API-Aufrufe mit dem Token der Sitzung */
   api: <T>(
     path: string,
@@ -53,6 +63,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         await restoreOfflineCache(queryClient, me.user.id);
         if (active) setState({ status: 'signedIn', token, me });
       } catch (error) {
+        if (error instanceof RequestError && error.code === 'no_club') {
+          const account = await request<AccountInfo>('/account', { token }).catch(() => null);
+          if (account) {
+            if (active) setState({ status: 'noClub', token, me: null, account });
+            return;
+          }
+        }
         if (error instanceof RequestError && error.status === 0) {
           // Start ohne Verbindung: mit den zuletzt gespeicherten Daten öffnen statt abzumelden
           const cached = await readOfflineMe();
@@ -73,15 +90,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(
     async (email: string, password: string) => {
-      const result = await request<LoginResponse | TwoFactorChallenge>('/auth/login', {
-        method: 'POST',
-        body: { email, password },
-      });
+      const result = await request<LoginResponse | NoClubLoginResponse | TwoFactorChallenge>(
+        '/auth/login',
+        {
+          method: 'POST',
+          body: { email, password },
+        },
+      );
       if ('twoFactorRequired' in result) return result;
       // Neues Konto startet immer ohne Daten des vorherigen (Cache, Offline-Speicher, laufende Abfragen)
       await resetAccountState(queryClient, { keepOutbox: true });
       await writeToken(result.token);
-      setState({ status: 'signedIn', token: result.token, me: result.me });
+      setState(
+        result.me
+          ? { status: 'signedIn', token: result.token, me: result.me }
+          : { status: 'noClub', token: result.token, me: null, account: result.account },
+      );
       return null;
     },
     [queryClient],
@@ -137,23 +161,52 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   const adopt = useCallback(
-    async (result: LoginResponse) => {
+    async (result: LoginResponse | NoClubLoginResponse) => {
       await resetAccountState(queryClient, { keepOutbox: true });
       await writeToken(result.token);
-      setState({ status: 'signedIn', token: result.token, me: result.me });
+      setState(
+        result.me
+          ? { status: 'signedIn', token: result.token, me: result.me }
+          : { status: 'noClub', token: result.token, me: null, account: result.account },
+      );
     },
     [queryClient],
   );
 
   const refresh = useCallback(async () => {
     if (!state.token) return;
-    const me = await request<MeResponse>('/me', { token: state.token });
-    setState({ status: 'signedIn', token: state.token, me });
+    const token = state.token;
+    try {
+      const me = await request<MeResponse>('/me', { token });
+      setState({ status: 'signedIn', token, me });
+    } catch (error) {
+      if (error instanceof RequestError && error.code === 'no_club') {
+        const account = await request<AccountInfo>('/account', { token });
+        setState({ status: 'noClub', token, me: null, account });
+        return;
+      }
+      throw error;
+    }
   }, [state.token]);
 
+  // Vereinswechsel: die Daten des bisherigen Vereins dürfen nirgends stehen bleiben (Cache, Offline-Speicher)
+  const switchClub = useCallback(
+    async (clubId: string) => {
+      if (state.status !== 'signedIn') return;
+      const me = await request<MeResponse>('/me/club', {
+        method: 'POST',
+        token: state.token,
+        body: { clubId },
+      });
+      await resetAccountState(queryClient, { keepOutbox: false });
+      setState({ status: 'signedIn', token: state.token, me });
+    },
+    [state, queryClient],
+  );
+
   const value = useMemo(
-    () => ({ ...state, signIn, signOut, api, refresh, adopt }),
-    [state, signIn, signOut, api, refresh, adopt],
+    () => ({ ...state, signIn, signOut, api, refresh, adopt, switchClub }),
+    [state, signIn, signOut, api, refresh, adopt, switchClub],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

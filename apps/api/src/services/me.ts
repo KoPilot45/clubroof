@@ -129,6 +129,13 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       timezone: actor.club.timezone,
     },
     clubs: await accountClubs(db, actor),
+    isOperator:
+      (
+        await db
+          .select({ active: s.operators.active })
+          .from(s.operators)
+          .where(eq(s.operators.userId, actor.user.id))
+      )[0]?.active === true,
     managedPersons: actor.managed.map((m) => ({
       ...m,
       avatarUrl: resolveMediaUrl(actor.links, m.avatarUrl),

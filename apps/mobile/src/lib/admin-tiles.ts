@@ -117,6 +117,12 @@ export function adminFunctionTiles(me: MeResponse): TileItem[] {
       icon: 'person-add-outline',
       onPress: () => router.push('/admin/invites'),
     },
+    me.isOperator && {
+      key: 'operator',
+      label: 'Betreiber-Konsole',
+      icon: 'business-outline',
+      onPress: () => router.push('/operator'),
+    },
     a.readAudit && {
       key: 'audit',
       label: 'Änderungsprotokoll',

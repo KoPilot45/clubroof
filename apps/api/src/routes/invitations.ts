@@ -2,7 +2,8 @@ import type { InviteLink, InviteOverview, JoinInfo, LoginResponse } from '@clubr
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { loadActor } from '../actor';
-import { createSession } from '../auth/session';
+import { createSession, findSessionUser } from '../auth/session';
+import { unauthorized } from '../errors';
 import { buildMe } from '../services/me';
 import {
   acceptInvite,
@@ -12,11 +13,13 @@ import {
   getJoinInfo,
   invitePerson,
   rejectJoin,
+  acceptInviteSignedIn,
   requestJoin,
+  requestJoinSignedIn,
   revokeTeamLink,
 } from '../services/invitations';
 
-const token = z.object({ token: z.string().min(20).max(200) });
+const token = z.object({ token: z.string().min(8).max(200) });
 const isoDate = z.iso.date();
 const name = z.string().trim().min(1).max(60);
 
@@ -165,6 +168,51 @@ export const joinRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request, reply) => {
       await requestJoin(app.db, request.params.token, request.body, app.now());
+      return reply.code(202).send({ status: 'pending' });
+    },
+  );
+
+  /** Persönliche Einladung mit bestehendem Konto annehmen. */
+  app.post(
+    '/join/:token/accept-signed-in',
+    { ...limited, schema: { params: token } },
+    async (request, reply) => {
+      const now = app.now();
+      const header = request.headers.authorization;
+      const bearer = header?.startsWith('Bearer ') ? header.slice(7).trim() : null;
+      const user = bearer ? await findSessionUser(app.db, bearer, now) : null;
+      if (!user) throw unauthorized();
+      await acceptInviteSignedIn(app.db, request.params.token, user.id, now);
+      return reply.code(204).send();
+    },
+  );
+
+  /** Beitrittsanfrage mit bestehendem Konto (auch ohne Verein oder bei Mitgliedschaft in einem anderen Verein). */
+  app.post(
+    '/join/:token/request-signed-in',
+    {
+      ...limited,
+      schema: {
+        params: token,
+        body: z.object({
+          relation: z.enum(['player', 'parent']),
+          firstName: name,
+          lastName: name,
+          birthDate: isoDate.nullish(),
+          childFirstName: name.nullish(),
+          childLastName: name.nullish(),
+          childBirthDate: isoDate.nullish(),
+          message: z.string().trim().max(300).nullish(),
+        }),
+      },
+    },
+    async (request, reply) => {
+      const now = app.now();
+      const header = request.headers.authorization;
+      const bearer = header?.startsWith('Bearer ') ? header.slice(7).trim() : null;
+      const user = bearer ? await findSessionUser(app.db, bearer, now) : null;
+      if (!user) throw unauthorized();
+      await requestJoinSignedIn(app.db, request.params.token, user.id, request.body, now);
       return reply.code(202).send({ status: 'pending' });
     },
   );

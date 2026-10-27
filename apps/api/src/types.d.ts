@@ -13,6 +13,8 @@ declare module 'fastify' {
     /** Aktuelle Zeit – in Tests fest einstellbar */
     now: () => Date;
     authenticate: (request: FastifyRequest) => Promise<void>;
+    /** Nur Sitzung und Konto, ohne Verein (Konto ohne Vereinszuordnung) */
+    authenticateAccount: (request: FastifyRequest) => Promise<void>;
     storage: FileStorage;
     links: LinkSigner;
     mailer: Mailer;

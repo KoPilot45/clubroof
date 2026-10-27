@@ -129,7 +129,7 @@ describe.skipIf(!url)('Mandantenbetrieb', () => {
     inviteCode = out.code;
     inviteId = out.invite.id;
     expect(out.invite.status).toBe('open');
-    expect(inviteCode).toMatch(/^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/);
+    expect(inviteCode).toMatch(/^CR-[A-Z2-9]{4}-[A-Z2-9]{4}$/);
     const mail = mailer.outbox.at(-1)!;
     expect(mail.to).toBe('erika@fc-neustadt.example');
     expect(mail.text).toContain(inviteCode);
@@ -303,5 +303,407 @@ describe.skipIf(!url)('Mandantenbetrieb', () => {
     expect((await login('erika@fc-neustadt.example', 'sicheres-passwort-1')).me.club.id).toBe(
       club2!.id,
     );
+  });
+
+  it('Kurzcode der Mannschaft und Beitritt mit bestehendem Konto in einen zweiten Verein', async () => {
+    const [club2] = await conn.db
+      .select()
+      .from(s.clubs)
+      .where(eq(s.clubs.shortName, 'FC Neustadt'));
+    const [unit] = await conn.db.select().from(s.orgUnits).where(eq(s.orgUnits.clubId, club2!.id));
+    const [season] = await conn.db.select().from(s.seasons).where(eq(s.seasons.clubId, club2!.id));
+    const [team] = await conn.db
+      .insert(s.teams)
+      .values({
+        clubId: club2!.id,
+        orgUnitId: unit!.id,
+        seasonId: season!.id,
+        name: 'Erste Mannschaft',
+        badge: '1.',
+        template: 'classic',
+        participationMode: 'auto_accept',
+      })
+      .returning({ id: s.teams.id });
+    const erika = await login('erika@fc-neustadt.example', 'sicheres-passwort-1');
+    const created = await call('POST', `/teams/${team!.id}/invite-link`, erika.token);
+    expect(created.statusCode, created.body).toBeLessThan(300);
+    const code = created.json<{ code: string }>().code;
+    expect(code).toMatch(/^[A-Z2-9]{4}-[A-Z2-9]{4}$/);
+    // Der Code führt zur selben Einladung wie der Link (Schreibweise egal)
+    const info = await call('GET', `/join/${code.toLowerCase()}`);
+    expect(info.statusCode, info.body).toBe(200);
+    expect(info.json<{ club: { name: string } }>().club.name).toBe('FC Neustadt 1920');
+    expect((await call('GET', '/join/ABCD-EFGH')).statusCode).toBe(410);
+
+    const eltern = await login(demo('eltern'));
+    const body = {
+      relation: 'parent',
+      firstName: 'Eva',
+      lastName: 'Eltern',
+      childFirstName: 'Kai',
+      childLastName: 'Eltern',
+    };
+    expect(
+      (await call('POST', `/join/${code}/request-signed-in`, undefined, body)).statusCode,
+    ).toBe(401);
+    expect(
+      (await call('POST', `/join/${code}/request-signed-in`, eltern.token, body)).statusCode,
+    ).toBe(202);
+    expect(
+      (await call('POST', `/join/${code}/request-signed-in`, eltern.token, body)).statusCode,
+    ).toBe(409);
+    // Wer schon Mitglied ist, kann nicht erneut anfragen
+    const spieler = await login(demo('spieler'));
+    expect(
+      (
+        await call('POST', `/join/${code}/request-signed-in`, spieler.token, {
+          ...body,
+          relation: 'player',
+        })
+      ).statusCode,
+    ).toBe(409);
+
+    const overview = await call('GET', '/invitations', erika.token);
+    const request = overview.json<{ requests: { id: string }[] }>().requests[0]!;
+    const ok = await call('POST', `/join-requests/${request.id}/approve`, erika.token, {});
+    expect(ok.statusCode, ok.body).toBe(200);
+    // Nach der Freigabe hat das Konto zwei Vereine
+    const again = await login(demo('eltern'));
+    expect(again.me.clubs).toHaveLength(2);
+    // Die Vereinsdaten bleiben getrennt: Eltern sehen im zweiten Verein nur dessen Kinder
+    const switched = await call('POST', '/me/club', again.token, { clubId: club2!.id });
+    expect(switched.json<MeResponse>().managedPersons.map((m) => m.firstName)).toEqual([
+      'Eva',
+      'Kai',
+    ]);
+  });
+
+  it('Konto ohne Verein: Anmeldung gelingt, Aufnahme per Code durch den Verein', async () => {
+    const [user] = await conn.db
+      .insert(s.users)
+      .values({
+        email: 'lena@example.org',
+        displayName: 'Lena Lose',
+        passwordHash: await hashPassword('sicheres-passwort-1'),
+      })
+      .returning({ id: s.users.id });
+    void user;
+    const res = await call('POST', '/auth/login', undefined, {
+      email: 'lena@example.org',
+      password: 'sicheres-passwort-1',
+    });
+    expect(res.statusCode, res.body).toBe(200);
+    const session = res.json<{ token: string; me: null; account: { requests: unknown[] } }>();
+    expect(session.me).toBeNull();
+    expect((await call('GET', '/me', session.token)).json().error).toBe('no_club');
+    expect((await call('GET', '/account', session.token)).statusCode).toBe(200);
+    // Vereinsdaten bleiben ohne Verein unerreichbar
+    expect((await call('GET', '/events', session.token)).statusCode).toBe(403);
+
+    const link = await call('POST', '/account/link-code', session.token);
+    expect(link.statusCode, link.body).toBe(201);
+    const { code } = link.json<{ code: string; qrSvg: string }>();
+    expect(link.json().qrSvg).toContain('<svg');
+
+    const erika = await login('erika@fc-neustadt.example', 'sicheres-passwort-1');
+    const preview = await call('GET', `/account-links/${code}`, erika.token);
+    expect(preview.json()).toEqual({ displayName: 'Lena Lose', email: 'lena@example.org' });
+    // Trainer des Demovereins kann das Konto nicht in einen fremden Verein aufnehmen – und umgekehrt sieht er den Code nicht als gültig an
+    const body = { code, firstName: 'Lena', lastName: 'Lose' };
+    const attached = await call('POST', '/members/attach-account', erika.token, body);
+    expect(attached.statusCode, attached.body).toBe(201);
+    // Code ist einmalig
+    expect((await call('POST', '/members/attach-account', erika.token, body)).statusCode).toBe(410);
+    // Neu anmelden: jetzt Mitglied im Verein
+    const again = await call('POST', '/auth/login', undefined, {
+      email: 'lena@example.org',
+      password: 'sicheres-passwort-1',
+    });
+    expect(again.json<LoginResponse>().me.club.name).toBe('FC Neustadt 1920');
+    // Ein Mitglied ohne Einladungsrecht darf nicht aufnehmen
+    const spieler = await login(demo('spieler'));
+    expect((await call('POST', '/members/attach-account', spieler.token, body)).statusCode).toBe(
+      403,
+    );
+  });
+
+  it('Support-Zugriff nur mit Freigabe des Vereins, schreibgeschützt und protokolliert', async () => {
+    const [club2] = await conn.db
+      .select()
+      .from(s.clubs)
+      .where(eq(s.clubs.shortName, 'FC Neustadt'));
+    const view = `/operator/clubs/${club2!.id}/support`;
+    // ohne Freigabe: kein Zugriff, auch nicht für Betreiber
+    const denied = await call('GET', view, operatorToken);
+    expect(denied.statusCode).toBe(403);
+    expect(denied.json().error).toBe('support_not_granted');
+
+    const erika = await login('erika@fc-neustadt.example', 'sicheres-passwort-1');
+    // Nur Administration/Vorstand darf freigeben
+    const spieler = await login(demo('spieler'));
+    expect((await call('PUT', '/admin/support', spieler.token, { hours: 1 })).statusCode).toBe(403);
+    expect((await call('PUT', '/admin/support', erika.token, { hours: 5 })).statusCode).toBe(400);
+    const granted = await call('PUT', '/admin/support', erika.token, { hours: 1 });
+    expect(granted.statusCode, granted.body).toBe(200);
+    expect(granted.json<{ active: boolean }>().active).toBe(true);
+
+    const ok = await call('GET', view, operatorToken);
+    expect(ok.statusCode, ok.body).toBe(200);
+    const body = ok.json<{
+      club: { name: string };
+      counts: { members: number };
+      admins: { name: string }[];
+    }>();
+    expect(body.club.name).toBe('FC Neustadt 1920');
+    expect(body.admins.map((a) => a.name)).toContain('Erika Muster');
+    // keine Personen-, Kassen- oder Termindaten
+    expect(Object.keys(ok.json()).sort()).toEqual(
+      ['admins', 'audit', 'club', 'counts', 'modules', 'recoveries'].sort(),
+    );
+    // der Abruf steht in beiden Protokollen
+    const mine = await conn.db
+      .select()
+      .from(s.operatorAudit)
+      .where(eq(s.operatorAudit.action, 'support.viewed'));
+    expect(mine.length).toBeGreaterThan(0);
+    const audit = await call('GET', '/admin/audit', erika.token);
+    expect(audit.body).toContain('Support-Ansicht');
+    // Der Demoverein ist nicht freigegeben
+    const [club1] = await conn.db
+      .select()
+      .from(s.clubs)
+      .where(eq(s.clubs.shortName, 'SV Grün-Weiß'));
+    expect(
+      (await call('GET', `/operator/clubs/${club1!.id}/support`, operatorToken)).statusCode,
+    ).toBe(403);
+
+    expect((await call('DELETE', '/admin/support', erika.token)).statusCode).toBe(200);
+    expect((await call('GET', view, operatorToken)).statusCode).toBe(403);
+  });
+
+  it('Admin-Wiederherstellung: Wartefrist, Widerspruch und Einladung des neuen Admins', async () => {
+    const [club2] = await conn.db
+      .select()
+      .from(s.clubs)
+      .where(eq(s.clubs.shortName, 'FC Neustadt'));
+    const start = () =>
+      call('POST', `/operator/clubs/${club2!.id}/admin-recovery`, operatorToken, {
+        firstName: 'Ralf',
+        lastName: 'Retter',
+        email: 'Ralf@FC-Neustadt.example',
+        note: 'Rückruf unter der Nummer im Vereinsregister',
+      });
+    const first = await start();
+    expect(first.statusCode, first.body).toBe(201);
+    const id = first.json<{ id: string; status: string }>().id;
+    expect(first.json().status).toBe('waiting');
+    // Hinweis an alle Admins
+    expect(
+      mailer.outbox.some(
+        (m) =>
+          m.to === 'erika@fc-neustadt.example' && m.subject.includes('Admin-Wiederherstellung'),
+      ),
+    ).toBe(true);
+    expect((await start()).statusCode).toBe(409);
+    const early = await call('POST', `/operator/admin-recoveries/${id}/complete`, operatorToken);
+    expect(early.json().error).toBe('recovery_waiting');
+
+    // Widerspruch stoppt den Vorgang
+    const erika = await login('erika@fc-neustadt.example', 'sicheres-passwort-1');
+    const objected = await call('POST', `/admin/support/recoveries/${id}/object`, erika.token);
+    expect(objected.statusCode, objected.body).toBe(200);
+    await conn.db.update(s.adminRecoveries).set({ notBefore: new Date(NOW.getTime() - 1000) });
+    expect(
+      (await call('POST', `/operator/admin-recoveries/${id}/complete`, operatorToken)).json().error,
+    ).toBe('recovery_objected');
+
+    // Zweiter Versuch ohne Widerspruch nach Ablauf der Frist
+    const second = await start();
+    expect(second.statusCode).toBe(201);
+    const id2 = second.json<{ id: string }>().id;
+    await conn.db
+      .update(s.adminRecoveries)
+      .set({ notBefore: new Date(NOW.getTime() - 1000) })
+      .where(eq(s.adminRecoveries.id, id2));
+    const done = await call('POST', `/operator/admin-recoveries/${id2}/complete`, operatorToken);
+    expect(done.statusCode, done.body).toBe(200);
+    const invite = mailer.outbox.at(-1)!;
+    expect(invite.to).toBe('ralf@fc-neustadt.example');
+    const token = /\/join\/([\w-]+)/.exec(invite.text)![1]!;
+    const accepted = await call('POST', `/join/${token}/accept`, undefined, {
+      email: 'ralf@fc-neustadt.example',
+      password: 'sicheres-passwort-2',
+    });
+    expect(accepted.statusCode, accepted.body).toBe(200);
+    const me = accepted.json<LoginResponse>().me;
+    expect(me.club.name).toBe('FC Neustadt 1920');
+    expect(me.roles.map((r) => r.key)).toContain('fulladmin');
+    // Bis dahin Betreiberzugang ohne Vereinsdaten: der Betreiber selbst ist nirgends Mitglied
+    const [op] = await conn.db
+      .select()
+      .from(s.persons)
+      .where(eq(s.persons.email, 'betreiber@clubroof.example'));
+    expect(op).toBeUndefined();
+  });
+
+  describe('Mandantentrennung über alle Routen', () => {
+    type RouteDef = { method: string; path: string };
+    /** Alle Routen aus dem Routenbaum (ohne HEAD/OPTIONS). */
+    const routes = (): RouteDef[] => {
+      const out: RouteDef[] = [];
+      const stack: string[] = [];
+      for (const line of app.printRoutes({ commonPrefix: false }).split('\n')) {
+        // Baumdarstellung: je Ebene 4 Zeichen Einrückung, der Pfad steht relativ zum übergeordneten Knoten
+        const m = /^((?:│ {3}| {4})*)[├└]── (\S+)(?: \(([^)]*)\))?/.exec(line);
+        if (!m) continue;
+        const depth = m[1]!.length / 4;
+        stack.length = depth;
+        const full = (stack[depth - 1] ?? '') + m[2]!;
+        stack[depth] = full;
+        for (const method of (m[3] ?? '').split(',').map((x) => x.trim())) {
+          if (!method || ['HEAD', 'OPTIONS'].includes(method)) continue;
+          out.push({ method, path: full.replace(/\/$/, '') || '/' });
+        }
+      }
+      return out;
+    };
+    // Öffentliche, tokenbasierte oder verbrauchende Routen sind kein Thema der Vereinsdaten-Trennung
+    const SKIP = [
+      '/operator',
+      '/public',
+      '/join',
+      '/setup',
+      '/auth',
+      '/files',
+      '/brand',
+      '/account',
+      '/calendar',
+    ];
+    const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
+
+    /** Alle Primärschlüssel-IDs eines Vereins aus allen Tabellen mit `club_id`. */
+    async function idsOfClub(clubId: string): Promise<Set<string>> {
+      const tables = await conn.sql<{ table_name: string; has_id: boolean }[]>`
+        select c.table_name,
+               exists (select 1 from information_schema.columns i
+                       where i.table_schema = 'public' and i.table_name = c.table_name and i.column_name = 'id') as has_id
+        from information_schema.columns c
+        where c.table_schema = 'public' and c.column_name = 'club_id'`;
+      const ids = new Set<string>([clubId]);
+      for (const tbl of tables) {
+        if (!tbl.has_id) continue;
+        const rows = await conn.sql.unsafe(
+          `select id::text as id from "${tbl.table_name}" where club_id = '${clubId}'`,
+        );
+        for (const r of rows) ids.add(String(r.id));
+      }
+      return ids;
+    }
+    /** Inhalts-Fingerabdruck aller Zeilen eines Vereins je Tabelle: zeigt jede Veränderung (auch Updates). */
+    async function fingerprint(clubId: string): Promise<Record<string, string>> {
+      const tables = await conn.sql<{ table_name: string }[]>`
+        select table_name from information_schema.columns
+        where table_schema = 'public' and column_name = 'club_id' order by table_name`;
+      const out: Record<string, string> = {};
+      for (const tbl of tables) {
+        const rows = await conn.sql.unsafe(
+          `select coalesce(md5(string_agg(x::text, '|' order by x::text)), '') as h from "${tbl.table_name}" x where club_id = '${clubId}'`,
+        );
+        out[tbl.table_name] = String(rows[0]!.h);
+      }
+      return out;
+    }
+    /** Je Tabelle ein paar Beispiel-IDs des fremden Vereins, um sie in Pfade und Abfragen einzusetzen. */
+    async function sampleIds(clubId: string): Promise<string[]> {
+      const tables = await conn.sql<{ table_name: string }[]>`
+        select c.table_name from information_schema.columns c
+        where c.table_schema = 'public' and c.column_name = 'club_id'
+          and exists (select 1 from information_schema.columns i where i.table_schema = 'public' and i.table_name = c.table_name and i.column_name = 'id')`;
+      const out: string[] = [clubId];
+      for (const tbl of tables) {
+        const rows = await conn.sql.unsafe(
+          `select id::text as id from "${tbl.table_name}" where club_id = '${clubId}' limit 2`,
+        );
+        for (const r of rows) out.push(String(r.id));
+      }
+      return out;
+    }
+
+    async function sweep(token: string, foreignClub: string) {
+      const foreign = await idsOfClub(foreignClub);
+      const samples = await sampleIds(foreignClub);
+      const leaks: string[] = [];
+      const inspect = (label: string, status: number, body: string, expectDenied: boolean) => {
+        if (expectDenied && status >= 200 && status < 300) leaks.push(`${label} → ${status}`);
+        for (const id of body.match(UUID) ?? [])
+          if (foreign.has(id)) leaks.push(`${label} enthält ${id}`);
+      };
+      const list = routes().filter(
+        (r) => !SKIP.some((p) => r.path === p || r.path.startsWith(`${p}/`)),
+      );
+      for (const r of list) {
+        const params = [...r.path.matchAll(/:(\w+)/g)].map((m) => m[1]!);
+        const idParams = params.filter((p) => /id$/i.test(p));
+        const fill = (id: string) =>
+          r.path.replace(/:(\w+)/g, (_m, name: string) => (/id$/i.test(name) ? id : 'x'));
+        const candidates = idParams.length ? samples : [''];
+        for (const id of candidates) {
+          const path = id ? fill(id) : fill('');
+          if (r.method === 'GET') {
+            const res = await call('GET', path, token);
+            inspect(`GET ${path}`, res.statusCode, res.body, idParams.length > 0);
+          } else if (idParams.length) {
+            // Schreibende Routen mit fremder ID: nie erfolgreich (leerer Inhalt genügt als Versuch)
+            const res = await call(r.method as 'POST', path, token, {});
+            inspect(`${r.method} ${path}`, res.statusCode, res.body, false);
+          }
+        }
+        if (r.method === 'GET' && !idParams.length) {
+          // Fremde IDs als Abfrageparameter (teamId, personId, eventId …)
+          for (const id of samples.slice(0, 12)) {
+            const q = [
+              'teamId',
+              'personId',
+              'eventId',
+              'clubId',
+              'id',
+              'fundId',
+              'orgUnitId',
+              'seasonId',
+            ]
+              .map((k) => `${k}=${id}`)
+              .join('&');
+            const res = await call('GET', `${fill('')}?${q}`, token);
+            inspect(`GET ${fill('')}?…${id}`, res.statusCode, res.body, false);
+          }
+        }
+      }
+      return leaks;
+    }
+
+    it('zweiter Verein erreicht nichts vom Demoverein (Pfade, IDs, Abfragen, schreibende Routen)', async () => {
+      const [club1] = await conn.db
+        .select()
+        .from(s.clubs)
+        .where(eq(s.clubs.shortName, 'SV Grün-Weiß'));
+      const before = await fingerprint(club1!.id);
+      const erika = await login('erika@fc-neustadt.example', 'sicheres-passwort-1');
+      const leaks = await sweep(erika.token, club1!.id);
+      expect(leaks.slice(0, 20)).toEqual([]);
+      // nichts wurde im Demoverein verändert
+      expect(await fingerprint(club1!.id)).toEqual(before);
+    }, 300_000);
+
+    it('der Demoverein erreicht nichts vom zweiten Verein', async () => {
+      const [club2] = await conn.db
+        .select()
+        .from(s.clubs)
+        .where(eq(s.clubs.shortName, 'FC Neustadt'));
+      const before = await fingerprint(club2!.id);
+      const admin = await login(demo('admin'));
+      const leaks = await sweep(admin.token, club2!.id);
+      expect(leaks.slice(0, 20)).toEqual([]);
+      expect(await fingerprint(club2!.id)).toEqual(before);
+    }, 300_000);
   });
 });

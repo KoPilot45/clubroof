@@ -16,12 +16,12 @@ import { SIDEBAR_WIDTH, SIDEBAR_WIDTH_COMPACT, useIsCompactDesktop } from '@/lib
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { webState } from '@/lib/web-state';
-import { mediaUri } from '@/lib/upload';
 import { Text } from './app-text';
 import { AREA_ACCENT, type AreaTone } from './area-shell';
 import { Honeycomb } from './honeycomb';
 import { TAB_ICONS } from './tab-bar';
-import { ClubLogo, Crest, T, type IconName } from './ui';
+import { ClubMark } from './club-switcher';
+import { T, type IconName } from './ui';
 
 const TABS: TabKey[] = ['index', 'termine', 'team', 'verein', 'mehr'];
 
@@ -256,11 +256,7 @@ export function Sidebar() {
           paddingBottom: 14,
         }}
       >
-        {me.club.logoUrl ? (
-          <ClubLogo uri={mediaUri(me.club.logoUrl)!} size={44} />
-        ) : (
-          <Crest initials={me.club.shortCode} size={44} />
-        )}
+        <ClubMark size={44} />
         <View style={{ flex: 1, minWidth: 0 }}>
           {/* Name bricht auf zwei Zeilen um, die Schrift passt sich der Länge an (nie „…“) */}
           <T

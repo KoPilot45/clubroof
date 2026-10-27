@@ -32,6 +32,14 @@ export default function JoinScreen() {
   );
 }
 
+/** Angemeldetes Konto (z. B. Mitglied in einem anderen Verein) tritt mit demselben Konto bei. */
+function useSignedInAccount() {
+  const session = useSession();
+  return session.status === 'signedIn'
+    ? { email: session.me.user.email, api: session.api, refresh: session.refresh }
+    : null;
+}
+
 function Passwords({
   pw,
   setPw,
@@ -68,6 +76,7 @@ function Passwords({
 
 function Accept({ token, info }: { token: string; info: JoinInfo }) {
   const { adopt } = useSession();
+  const account = useSignedInAccount();
   const [email, setEmail] = useState(info.person?.email ?? '');
   const [pw, setPw] = useState('');
   const [pw2, setPw2] = useState('');
@@ -77,6 +86,12 @@ function Accept({ token, info }: { token: string; info: JoinInfo }) {
     setBusy(true);
     setError(null);
     try {
+      if (account) {
+        await account.api(`/join/${token}/accept-signed-in`, { method: 'POST' });
+        await account.refresh();
+        router.replace('/');
+        return;
+      }
       const result = await request<LoginResponse>(`/join/${token}/accept`, {
         method: 'POST',
         body: { email: email.trim(), password: pw },
@@ -96,20 +111,26 @@ function Accept({ token, info }: { token: string; info: JoinInfo }) {
       subtitle={`${info.club.name} lädt dich in die Vereins-App ein. Lege deine Anmeldedaten fest.`}
     >
       <Card style={{ gap: 12 }}>
-        <TextField
-          label="E-Mail-Adresse"
-          kind="email"
-          value={email}
-          onChangeText={setEmail}
-          maxLength={120}
-        />
-        <Passwords pw={pw} setPw={setPw} pw2={pw2} setPw2={setPw2} />
+        {account ? (
+          <T>{`Du bist als ${account.email} angemeldet. Mit diesem Konto trittst du ${info.club.name} bei – dein Konto im anderen Verein bleibt unverändert.`}</T>
+        ) : (
+          <>
+            <TextField
+              label="E-Mail-Adresse"
+              kind="email"
+              value={email}
+              onChangeText={setEmail}
+              maxLength={120}
+            />
+            <Passwords pw={pw} setPw={setPw} pw2={pw2} setPw2={setPw2} />
+          </>
+        )}
         {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
         <Button
-          label="Zugang einrichten"
+          label={account ? 'Mit diesem Konto beitreten' : 'Zugang einrichten'}
           icon="checkmark"
           loading={busy}
-          disabled={!email.includes('@') || pw.length < 10 || pw !== pw2}
+          disabled={!account && (!email.includes('@') || pw.length < 10 || pw !== pw2)}
           onPress={() => void submit()}
         />
       </Card>
@@ -118,6 +139,7 @@ function Accept({ token, info }: { token: string; info: JoinInfo }) {
 }
 
 function Request({ token, info }: { token: string; info: JoinInfo }) {
+  const account = useSignedInAccount();
   const [relation, setRelation] = useState<'player' | 'parent'>('player');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -142,7 +164,11 @@ function Request({ token, info }: { token: string; info: JoinInfo }) {
         title="Anfrage gesendet"
         subtitle={`Das Trainerteam von ${info.team?.name} prüft deine Anfrage. Sobald sie freigegeben ist, bekommst du eine E-Mail und kannst dich anmelden.`}
       >
-        <Button label="Zur Anmeldung" variant="outline" onPress={() => router.replace('/login')} />
+        <Button
+          label={account ? 'Zurück' : 'Zur Anmeldung'}
+          variant="outline"
+          onPress={() => router.replace(account ? '/' : '/login')}
+        />
       </PublicShell>
     );
 
@@ -162,7 +188,14 @@ function Request({ token, info }: { token: string; info: JoinInfo }) {
         childBirthDate: relation === 'parent' ? (childBirthDate ?? null) : null,
         message: message.trim() || null,
       };
-      await request(`/join/${token}/request`, { method: 'POST', body });
+      if (account) {
+        const person: Partial<JoinRequestInput> = { ...body };
+        delete person.email;
+        delete person.password;
+        await account.api(`/join/${token}/request-signed-in`, { method: 'POST', body: person });
+      } else {
+        await request(`/join/${token}/request`, { method: 'POST', body });
+      }
       setSent(true);
     } catch (e) {
       setError(e instanceof RequestError ? e.message : 'Das hat nicht geklappt.');
@@ -175,9 +208,7 @@ function Request({ token, info }: { token: string; info: JoinInfo }) {
     lastName.trim() &&
     birthDate !== undefined &&
     (relation === 'player' || (childFirst.trim() && childBirthDate !== undefined)) &&
-    email.includes('@') &&
-    pw.length >= 10 &&
-    pw === pw2;
+    (account || (email.includes('@') && pw.length >= 10 && pw === pw2));
 
   return (
     <PublicShell
@@ -244,17 +275,23 @@ function Request({ token, info }: { token: string; info: JoinInfo }) {
           multiline
         />
       </Card>
-      <Card style={{ gap: 12 }}>
-        <T variant="label">Deine Anmeldedaten</T>
-        <TextField
-          label="E-Mail-Adresse"
-          kind="email"
-          value={email}
-          onChangeText={setEmail}
-          maxLength={120}
-        />
-        <Passwords pw={pw} setPw={setPw} pw2={pw2} setPw2={setPw2} />
-      </Card>
+      {account ? (
+        <Card>
+          <T>{`Du bist als ${account.email} angemeldet. Die Anfrage läuft über dieses Konto.`}</T>
+        </Card>
+      ) : (
+        <Card style={{ gap: 12 }}>
+          <T variant="label">Deine Anmeldedaten</T>
+          <TextField
+            label="E-Mail-Adresse"
+            kind="email"
+            value={email}
+            onChangeText={setEmail}
+            maxLength={120}
+          />
+          <Passwords pw={pw} setPw={setPw} pw2={pw2} setPw2={setPw2} />
+        </Card>
+      )}
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       <Button
         label="Anfrage senden"

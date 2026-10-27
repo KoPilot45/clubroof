@@ -1,8 +1,15 @@
-import type { InviteLink, InviteOverview, InvitePerson, JoinRequestItem } from '@clubroof/core';
+import type {
+  AccountLinkPreview,
+  InviteLink,
+  InviteOverview,
+  InvitePerson,
+  JoinRequestItem,
+} from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Platform, Share, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
+import { QrScanner } from '@/components/qr-scanner';
 import {
   Button,
   Card,
@@ -25,7 +32,7 @@ import { teamTitle } from '@/lib/team-labels';
 import { useConfirmDelete } from '@/lib/confirm';
 import { t } from '@/lib/i18n';
 
-type Tab = 'requests' | 'links' | 'people';
+type Tab = 'requests' | 'links' | 'people' | 'account';
 
 async function share(url: string, title: string) {
   if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -49,6 +56,14 @@ function LinkCard({ link, title }: { link: InviteLink; title: string }) {
       <T variant="caption" style={{ textAlign: 'center' }}>
         {link.url}
       </T>
+      {link.code ? (
+        <View style={{ alignItems: 'center', gap: 2 }}>
+          <T variant="caption">Oder in der App den Code eingeben:</T>
+          <T variant="figure" selectable>
+            {link.code}
+          </T>
+        </View>
+      ) : null}
       <T variant="caption">gültig bis {toGermanDate(link.expiresAt.slice(0, 10))}</T>
       <Button
         label={copied ?? (Platform.OS === 'web' ? 'Link kopieren' : 'Link teilen')}
@@ -240,6 +255,133 @@ function PersonRow({ p }: { p: InvitePerson }) {
   );
 }
 
+/** Konto ohne Verein aufnehmen: Code (oder QR-Code) des Kontos eingeben, Namen prüfen, Mannschaft wählen. */
+function AttachAccount({ teams }: { teams: InviteOverview['teams'] }) {
+  const { api } = useSignedIn();
+  const [input, setInput] = useState('');
+  const [scanning, setScanning] = useState(false);
+  const [code, setCode] = useState<string | null>(null);
+  const [preview, setPreview] = useState<AccountLinkPreview | null>(null);
+  const [first, setFirst] = useState('');
+  const [last, setLast] = useState('');
+  const [teamId, setTeamId] = useState<string | null>(teams.length === 1 ? teams[0]!.id : null);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fail = (e: unknown) =>
+    setError(e instanceof RequestError ? e.message : 'Das hat nicht geklappt.');
+  const clean = (v: string) => v.replace('clubroof-konto:', '').trim();
+
+  const lookup = useMutation({
+    mutationFn: (raw: string) =>
+      api<AccountLinkPreview>(`/account-links/${encodeURIComponent(clean(raw))}`),
+    onSuccess: (p, raw) => {
+      setError(null);
+      setCode(clean(raw));
+      setPreview(p);
+      const [f = '', ...rest] = p.displayName.split(' ');
+      setFirst(f);
+      setLast(rest.join(' '));
+    },
+    onError: fail,
+  });
+  const attach = useMutation({
+    mutationFn: () =>
+      api('/members/attach-account', {
+        method: 'POST',
+        body: { code, firstName: first.trim(), lastName: last.trim(), teamId },
+      }),
+    onSuccess: () => setDone(true),
+    onError: fail,
+  });
+
+  if (done)
+    return (
+      <Card style={{ gap: 10 }}>
+        <Chip tone="success" icon="checkmark-circle" label="Konto aufgenommen." />
+        <Button
+          label="Weiteres Konto aufnehmen"
+          variant="outline"
+          onPress={() => {
+            setDone(false);
+            setPreview(null);
+            setCode(null);
+            setInput('');
+          }}
+        />
+      </Card>
+    );
+  return (
+    <Card style={{ gap: 12 }}>
+      <T variant="caption">
+        Wer schon ein Konto, aber noch keinen Verein hat, zeigt dir den Code oder QR-Code aus der
+        App. Gib ihn hier ein oder scanne ihn.
+      </T>
+      {!preview ? (
+        scanning ? (
+          <QrScanner
+            onScan={(data) => {
+              setScanning(false);
+              setInput(clean(data));
+              lookup.mutate(data);
+            }}
+            onClose={() => setScanning(false)}
+          />
+        ) : (
+          <>
+            <TextField
+              label="Code des Kontos"
+              value={input}
+              onChangeText={setInput}
+              kind="code"
+              onSubmit={() => lookup.mutate(input)}
+            />
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {Platform.OS !== 'web' ? (
+                <Button
+                  style={{ flex: 1 }}
+                  label="Scannen"
+                  variant="outline"
+                  icon="qr-code-outline"
+                  onPress={() => setScanning(true)}
+                />
+              ) : null}
+              <Button
+                style={{ flex: 1 }}
+                label="Prüfen"
+                loading={lookup.isPending}
+                disabled={input.trim().length < 8}
+                onPress={() => lookup.mutate(input)}
+              />
+            </View>
+          </>
+        )
+      ) : (
+        <>
+          <T>{`${preview.displayName} · ${preview.email}`}</T>
+          <TextField label="Vorname" value={first} onChangeText={setFirst} maxLength={60} />
+          <TextField label="Nachname" value={last} onChangeText={setLast} maxLength={60} />
+          {teams.length ? (
+            <ChoiceChips
+              label="Mannschaft"
+              options={teams.map((t2) => ({ value: t2.id, label: `${t2.badge} ${t2.name}` }))}
+              selected={teamId ? [teamId] : []}
+              onToggle={(v) => setTeamId(v)}
+            />
+          ) : null}
+          <Button
+            label="In den Verein aufnehmen"
+            icon="person-add-outline"
+            loading={attach.isPending}
+            disabled={!first.trim() || !last.trim()}
+            onPress={() => attach.mutate()}
+          />
+        </>
+      )}
+      {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
+    </Card>
+  );
+}
+
 export default function InvitesScreen() {
   const confirmDelete = useConfirmDelete();
   const { api } = useSignedIn();
@@ -275,6 +417,7 @@ export default function InvitesScreen() {
           { value: 'requests', label: `Anfragen (${o.requests.length})` },
           { value: 'links', label: 'Mannschafts-Links' },
           { value: 'people', label: `Ohne Zugang (${o.people.length})` },
+          { value: 'account', label: 'Konto aufnehmen' },
         ]}
         selected={[tab]}
         onToggle={setTab}
@@ -343,6 +486,8 @@ export default function InvitesScreen() {
           ))}
         </>
       ) : null}
+
+      {tab === 'account' ? <AttachAccount teams={o.teams} /> : null}
 
       {tab === 'people' ? (
         o.people.length ? (

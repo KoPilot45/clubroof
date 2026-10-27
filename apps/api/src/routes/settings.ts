@@ -110,8 +110,11 @@ export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
 
   /** Vereinsangaben für die Anmeldeseite: Name, Ort, Gründungsjahr, Farbe, Logo (öffentlich sichtbar). */
   app.get('/public/club', async (): Promise<PublicClub> => {
-    const [club] = await app.db.select().from(schema.clubs).limit(1);
-    if (!club) return { needsSetup: true, club: null };
+    const all = await app.db.select().from(schema.clubs).limit(2);
+    if (all.length === 0) return { needsSetup: true, club: null };
+    // Mit mehreren Vereinen auf dem Server zeigt die Anmeldeseite keinen einzelnen Verein
+    if (all.length > 1) return { needsSetup: false, club: null };
+    const club = all[0]!;
     return {
       needsSetup: false,
       club: {

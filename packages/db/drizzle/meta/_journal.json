@@ -491,6 +491,20 @@
       "when": 1793103214796,
       "tag": "0069_vereins_einrichtungscodes",
       "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1793103645158,
+      "tag": "0070_einladung_kurzcode",
+      "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1793104584473,
+      "tag": "0071_support_und_wiederherstellung",
+      "breakpoints": true
     }
   ]
 }

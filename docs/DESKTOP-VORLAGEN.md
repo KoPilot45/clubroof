@@ -53,6 +53,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `admin/role/[key]` | A | Breite | Liste bzw. Detailseite |
 | `admin/roles` | C | fertig | Tabelle mit Filterleiste |
 | `admin/sponsors` | C | Breite | Tabelle mit Filterleiste |
+| `admin/support` | B | fertig | Formular |
 | `admin/team-new` | E | fertig | Assistent |
 | `admin/team/[id]` | A | Breite | Liste bzw. Detailseite |
 | `admin/teams` | C | fertig | Tabelle mit Filterleiste |
@@ -129,8 +130,11 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `match/[id]/report` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `news/[id]` | A | Breite | Liste bzw. Detailseite |
 | `news/index` | A | Breite | Liste bzw. Detailseite |
+| `no-club` | S | fertig | Einzelkarte auf Seite ohne Navigation (wie Anmeldung) |
 | `notification-settings` | B | Breite | Formular |
 | `notifications` | A | Breite | Liste bzw. Detailseite |
+| `operator/club` | D | fertig | Kachelraster / Übersicht |
+| `operator/index` | C | fertig | Tabelle mit Filterleiste |
 | `polls/[id]` | A | Breite | Liste bzw. Detailseite |
 | `polls/index` | A | Breite | Liste bzw. Detailseite |
 | `polls/new` | B | Breite | Formular |

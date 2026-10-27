@@ -14,7 +14,7 @@ import {
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, eq, gte, inArray, isNull, or } from 'drizzle-orm';
-import { forbidden } from './errors';
+import { HttpError, forbidden } from './errors';
 import type { SessionUser } from './auth/session';
 import type { LinkSigner } from './storage/files';
 
@@ -59,7 +59,8 @@ export async function loadActor(
     .innerJoin(s.clubs, eq(s.clubs.id, s.persons.clubId))
     .where(eq(s.persons.userId, user.id))
     .orderBy(s.persons.createdAt);
-  if (candidates.length === 0) throw forbidden('Dein Konto ist keinem Verein zugeordnet.');
+  if (candidates.length === 0)
+    throw new HttpError(403, 'no_club', 'Dein Konto ist keinem Verein zugeordnet.');
   const usable = candidates.filter(
     (c) =>
       c.person.membershipStatus !== 'left' && !['suspended', 'archived'].includes(c.club.status),

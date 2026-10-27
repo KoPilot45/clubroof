@@ -9,8 +9,8 @@ import { formatLongDate } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { useIsCompactDesktop, useIsDesktop } from '@/lib/layout';
-import { mediaUri } from '@/lib/upload';
-import { ClubLogo, Crest, shadowStyle, T, type IconName } from './ui';
+import { ClubMark } from './club-switcher';
+import { shadowStyle, T, type IconName } from './ui';
 import { Text } from './app-text';
 import { t } from '@/lib/i18n';
 
@@ -179,11 +179,7 @@ export function AppHeader({
           justifyContent: 'center',
         }}
       >
-        {me.club.logoUrl ? (
-          <ClubLogo uri={mediaUri(me.club.logoUrl)!} size={sizes.logo + 4} />
-        ) : (
-          <Crest initials={me.club.shortCode} size={sizes.logo} />
-        )}
+        <ClubMark size={sizes.logo + 4} crestSize={sizes.logo} />
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <T variant="caption" numberOfLines={1} color={overlay ? ON_POSTER_SOFT : undefined}>

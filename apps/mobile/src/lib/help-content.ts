@@ -126,7 +126,19 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'first-start',
         question: 'Wie melde ich mich an oder richte einen Verein ein?',
         answer:
-          'Mit Einladungslink oder Einladungscode (auch per QR-Code scannen) trittst du deinem Verein bei – der Verein wird danach auf diesem Gerät gemerkt. Hast du schon ein Konto, melde dich mit E-Mail und Passwort an („Zeigen“ macht das Passwort sichtbar). Einen neuen Verein richtest du mit dem Einrichtungscode (Format CR-XXXX-XXXX) ein, den du von Clubroof nach Zahlungseingang erhältst; er gilt einmal.',
+          'Mit Einladungslink oder Einladungscode (auch per QR-Code scannen) trittst du deinem Verein bei – der Verein wird danach auf diesem Gerät gemerkt. Hast du schon ein Konto, melde dich mit E-Mail und Passwort an („Zeigen“ macht das Passwort sichtbar). Einen neuen Verein richtest du mit dem Einrichtungscode (Format CR-XXXX-XXXX) ein, den dir der Betreiber von Clubroof per E-Mail schickt (er gilt 14 Tage, einmal und nur für deine E-Mail-Adresse).',
+      },
+      {
+        id: 'no-club',
+        question: 'Mein Konto ist keinem Verein zugeordnet – was nun?',
+        answer:
+          'Du kannst dich trotzdem anmelden. Auf dem Hinweis „Noch kein Verein“ hast du zwei Wege: Gib den Einladungscode deines Vereins oder deiner Mannschaft ein (auch scannen geht), oder zeige deinem Trainer bzw. der Vereinsverwaltung den Code oder QR-Code unter „Vom Verein aufnehmen lassen“ – sie nehmen dein Konto damit auf. Der Code gilt nur 15 Minuten.',
+      },
+      {
+        id: 'two-clubs',
+        question: 'Ich bin in zwei Vereinen – wie wechsle ich?',
+        answer:
+          'Mit einem Konto kannst du in mehreren Vereinen Mitglied sein, zum Beispiel als Elternteil oder Trainer. Dann siehst du oben beim Vereinslogo unten rechts ein kleines Wechsel-Symbol. Tippe darauf und wähle den Verein. Es ist immer nur ein Verein aktiv; die Vereine sehen nichts voneinander. Ein Punkt am Symbol zeigt Neuigkeiten im anderen Verein.',
       },
       {
         id: 'dates',

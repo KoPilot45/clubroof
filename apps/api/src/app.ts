@@ -20,7 +20,9 @@ import { diskStorage, linkSigner, type FileStorage } from './storage/files';
 import { communityRoutes } from './routes/community';
 import { eventRoutes } from './routes/events';
 import { meRoutes } from './routes/me';
+import { accountRoutes } from './routes/account';
 import { operatorRoutes } from './routes/operator';
+import { supportRoutes } from './routes/support';
 import { notificationRoutes } from './routes/notifications';
 import { adminRoutes } from './routes/admin';
 import { importRoutes } from './routes/imports';
@@ -99,6 +101,15 @@ export async function buildApp({
   app.decorateRequest('sessionUser', null);
   app.decorateRequest('actor', null);
 
+  app.decorate('authenticateAccount', async (request: FastifyRequest) => {
+    const header = request.headers.authorization;
+    const token = header?.startsWith('Bearer ') ? header.slice(7).trim() : null;
+    if (!token) throw unauthorized();
+    const user = await findSessionUser(db, token, now());
+    if (!user) throw unauthorized();
+    request.sessionUser = user;
+  });
+
   app.decorate('authenticate', async (request: FastifyRequest) => {
     const header = request.headers.authorization;
     const token = header?.startsWith('Bearer ') ? header.slice(7).trim() : null;
@@ -159,6 +170,8 @@ export async function buildApp({
   await app.register(authRoutes);
   await app.register(meRoutes);
   await app.register(operatorRoutes);
+  await app.register(supportRoutes);
+  await app.register(accountRoutes);
   await app.register(eventRoutes);
   await app.register(notificationRoutes);
   await app.register(communityRoutes);

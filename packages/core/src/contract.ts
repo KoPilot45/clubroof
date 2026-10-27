@@ -90,6 +90,8 @@ export type MeResponse = {
   club: ClubInfo;
   /** Alle Vereine des Kontos (Vereinswechsel nur bei mehr als einem Eintrag) */
   clubs: AccountClub[];
+  /** Betreiber der Plattform (Betreiber-Konsole sichtbar) */
+  isOperator: boolean;
   managedPersons: ManagedPerson[];
   teams: MyTeam[];
   roles: { key: string; name: string; scopeType: ScopeType; scopeId: string | null }[];
@@ -124,6 +126,32 @@ export type MeResponse = {
 };
 
 export type LoginResponse = { token: string; expiresAt: string; me: MeResponse };
+
+/** Konto ohne Verein: Anmeldung gelingt, die App zeigt den Hinweis „keinem Verein zugeordnet“. */
+export type AccountInfo = {
+  user: { id: string; email: string; displayName: string };
+  /** Offene oder abgelehnte Beitrittsanfragen mit dem Namen des Vereins */
+  requests: { clubName: string; status: 'pending' | 'rejected' }[];
+  isOperator: boolean;
+};
+export type NoClubLoginResponse = {
+  token: string;
+  expiresAt: string;
+  me: null;
+  account: AccountInfo;
+};
+
+/** Kurzlebiger Code (und QR-Code), mit dem sich ein Konto von einem Verein aufnehmen lässt. */
+export type AccountLinkCode = { code: string; qrSvg: string; expiresAt: string };
+export type AccountLinkPreview = { displayName: string; email: string };
+export type AttachAccountInput = {
+  code: string;
+  firstName: string;
+  lastName: string;
+  birthDate?: string | null;
+  /** Mannschaft, in die die Person als Spieler aufgenommen wird (optional) */
+  teamId?: string | null;
+};
 
 /** Zweiter Anmeldeschritt nötig: Code aus der Authenticator-App eingeben */
 export type TwoFactorChallenge = {
@@ -1723,6 +1751,8 @@ export type CreateTransferInput = {
 
 export type InviteLink = {
   url: string;
+  /** Kurzcode zum Eintippen (z. B. K7M2-QX4P); gleichwertig zum Link */
+  code: string | null;
   /** QR-Code als SVG-Text */
   qrSvg: string;
   expiresAt: string;
@@ -2831,3 +2861,38 @@ export type OperatorOverview = { clubs: OperatorClub[]; invites: OperatorInvite[
 
 /** Der Code wird nur einmal angezeigt (und per Mail an den Admin geschickt). */
 export type OperatorInviteResult = { invite: OperatorInvite; code: string };
+
+// ── Support-Zugriff und Admin-Wiederherstellung ───────────────────────────
+
+export type AdminRecoveryInfo = {
+  id: string;
+  name: string;
+  email: string;
+  notBefore: string;
+  status: 'waiting' | 'ready' | 'objected' | 'completed';
+  createdAt: string;
+};
+
+/** Sicht des Vereins: Support-Freigabe und angekündigte Admin-Wiederherstellungen. */
+export type SupportAccess = {
+  active: boolean;
+  expiresAt: string | null;
+  recoveries: AdminRecoveryInfo[];
+};
+
+/** Schreibgeschützte Sicht für den Betreiber – nur mit Freigabe, nie Personen- oder Kassendaten. */
+export type SupportView = {
+  club: {
+    name: string;
+    shortName: string;
+    status: ClubStatus;
+    timezone: string;
+    requireTwoFactor: boolean;
+    createdAt: string;
+  };
+  counts: { members: number; teams: number };
+  modules: { key: string; state: string }[];
+  admins: { name: string; email: string | null; hasAccount: boolean; lastLoginAt: string | null }[];
+  audit: { at: string; actor: string | null; label: string }[];
+  recoveries: AdminRecoveryInfo[];
+};

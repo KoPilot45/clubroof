@@ -97,6 +97,7 @@ function Navigator() {
   }
 
   const signedIn = session.status === 'signedIn';
+  const noClub = session.status === 'noClub';
   // Ab 1100 px: feste Seitenleiste statt schwebender Leiste (Paket DT)
   const showSidebar = signedIn && desktop && !PUBLIC_ROUTES.has(segments[0] ?? '');
   const showNav =
@@ -420,7 +421,20 @@ function Navigator() {
                   options={{ headerShown: true, title: 'Konto & Einstellungen' }}
                 />
               </Stack.Protected>
-              <Stack.Protected guard={!signedIn}>
+              <Stack.Protected guard={noClub}>
+                <Stack.Screen name="no-club" />
+              </Stack.Protected>
+              <Stack.Protected guard={signedIn || noClub}>
+                <Stack.Screen
+                  name="operator/index"
+                  options={{ headerShown: true, title: 'Betreiber-Konsole' }}
+                />
+                <Stack.Screen
+                  name="operator/club"
+                  options={{ headerShown: true, title: 'Support-Ansicht' }}
+                />
+              </Stack.Protected>
+              <Stack.Protected guard={!signedIn && !noClub}>
                 <Stack.Screen name="login" />
                 <Stack.Screen name="forgot" />
                 <Stack.Screen name="setup" />
@@ -473,7 +487,16 @@ function ClubTheme({ children }: { children: React.ReactNode }) {
 }
 
 /** Seiten ohne Seitenleiste (Anmeldung, Einrichtung, öffentliche Links) */
-const PUBLIC_ROUTES = new Set(['login', 'forgot', 'setup', 'demo', 'join', 'join-code', 'reset']);
+const PUBLIC_ROUTES = new Set([
+  'login',
+  'forgot',
+  'setup',
+  'demo',
+  'join',
+  'join-code',
+  'reset',
+  'no-club',
+]);
 
 export default function RootLayout() {
   const [queryClient] = useState(

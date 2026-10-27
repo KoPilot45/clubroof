@@ -119,7 +119,7 @@ export async function createSetupInvite(
   now: Date,
 ): Promise<OperatorInviteResult> {
   const adminEmail = input.adminEmail.trim().toLowerCase();
-  const code = generateCode(12);
+  const code = `CR-${generateCode(8)}`;
   const [row] = await db
     .insert(s.clubSetupInvites)
     .values({
