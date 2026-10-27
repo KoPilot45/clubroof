@@ -79,6 +79,8 @@ export type MeResponse = {
   person: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
   club: ClubInfo;
   managedPersons: ManagedPerson[];
+  /** Eltern haben Zugriff auf meine Daten (Verknüpfung als Kind); dann zeigt „Ich“ die Karte „Wer darf für mich mitsehen?“ */
+  hasGuardians: boolean;
   teams: MyTeam[];
   roles: { key: string; name: string; scopeType: ScopeType; scopeId: string | null }[];
   /** Ob der Nutzer den Verwaltungsmodus betreten darf */

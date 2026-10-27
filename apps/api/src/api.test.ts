@@ -126,7 +126,7 @@ import { participationLevel } from '@clubroof/core';
 import { unzipSync } from 'fflate';
 import { readTableFile, writeXlsx } from './services/table-file';
 import { createDb, schema as s } from '@clubroof/db';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { runMigrations } from '@clubroof/db/migrate';
 import { seed } from '@clubroof/db/seed';
 import { mkdtemp, readFile } from 'node:fs/promises';
@@ -10860,9 +10860,41 @@ describe.skipIf(!url)('API', () => {
     let miaId: string;
     let leonId: string;
 
+    // Eigener Termin für Mias Mannschaft, damit die Prüfung nicht vom Stand anderer Tests abhängt
     const events = async (token: string) => {
-      const res = await get<EventSummary[]>('/events', token);
+      const range = `from=${encodeURIComponent('2027-03-09T00:00:00Z')}&to=${encodeURIComponent('2027-03-10T00:00:00Z')}`;
+      const res = await get<EventSummary[]>(`/events?${range}`, token);
       return res.filter((e) => e.status === 'scheduled' && e.myResponses.length > 0);
+    };
+    const createMiaEvent = async () => {
+      const admin = await login('admin');
+      // Andere Tests verschieben Kader und Saison: Mia sicher in eine aktuelle Mannschaft der Eltern stellen
+      // (nicht E1: dort ist die Mutter Co-Trainerin und dürfte stellvertretend antworten)
+      const [miaTeam] = await db
+        .select({ id: s.teams.id })
+        .from(s.teams)
+        .innerJoin(s.seasons, eq(s.seasons.id, s.teams.seasonId))
+        .where(and(eq(s.seasons.isCurrent, true), eq(s.teams.badge, 'F1')));
+      await db
+        .insert(s.teamMemberships)
+        .values({
+          clubId: parent.me.club.id,
+          teamId: miaTeam!.id,
+          personId: miaId,
+          function: 'player',
+          validFrom: '2026-01-01',
+        })
+        .onConflictDoNothing();
+      parent = await login('eltern');
+      const created = await send('POST', `/teams/${miaTeam!.id}/events`, admin.token, {
+        type: 'team_event',
+        title: 'Zugang-Test',
+        startsAt: '2027-03-09T17:00:00Z',
+        endsAt: '2027-03-09T18:30:00Z',
+        meetingPoint: 'Parkplatz',
+        locationText: 'Stadtpark',
+      });
+      expect(created.status).toBe(201);
     };
     const levelOf = async () =>
       (await login('eltern')).me.managedPersons.find((m) => m.id === miaId)?.access ?? null;
@@ -10873,6 +10905,7 @@ describe.skipIf(!url)('API', () => {
       leonId = parent.me.managedPersons.find((m) => m.firstName === 'Leon')!.id;
       const info = await get<ChildAccessInfo>(`/me/children/${miaId}/access`, parent.token);
       expect(info).toMatchObject({ account: 'none', access: 'manage' });
+      await createMiaEvent();
 
       // Fremde sehen das Kind nicht
       const coach = await login('trainer');

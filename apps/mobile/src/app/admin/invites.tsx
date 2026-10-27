@@ -1,8 +1,8 @@
 import type { InviteLink, InviteOverview, InvitePerson, JoinRequestItem } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Platform, Share, View } from 'react-native';
-import { SvgXml } from 'react-native-svg';
+import { View } from 'react-native';
+import { LinkCard } from '@/components/invite-link';
 import {
   Button,
   Card,
@@ -23,42 +23,8 @@ import { formatAgo } from '@/lib/format';
 import { useSignedIn } from '@/lib/session';
 import { teamTitle } from '@/lib/team-labels';
 import { useConfirmDelete } from '@/lib/confirm';
-import { t } from '@/lib/i18n';
 
 type Tab = 'requests' | 'links' | 'people';
-
-async function share(url: string, title: string) {
-  if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
-    await navigator.clipboard.writeText(url);
-    return 'Link kopiert';
-  }
-  await Share.share({ message: `${title}: ${url}` });
-  return null;
-}
-
-function LinkCard({ link, title }: { link: InviteLink; title: string }) {
-  const [copied, setCopied] = useState<string | null>(null);
-  return (
-    <View style={{ gap: 10, alignItems: 'center' }}>
-      <View
-        style={{ backgroundColor: '#FFFFFF', padding: 10, borderRadius: 12 }}
-        accessibilityLabel={t(`QR-Code: ${title}`)}
-      >
-        <SvgXml xml={link.qrSvg} width={200} height={200} />
-      </View>
-      <T variant="caption" style={{ textAlign: 'center' }}>
-        {link.url}
-      </T>
-      <T variant="caption">gültig bis {toGermanDate(link.expiresAt.slice(0, 10))}</T>
-      <Button
-        label={copied ?? (Platform.OS === 'web' ? 'Link kopieren' : 'Link teilen')}
-        variant="outline"
-        icon="share-outline"
-        onPress={() => void share(link.url, title).then(setCopied)}
-      />
-    </View>
-  );
-}
 
 function RequestCard({ r, onDone }: { r: JoinRequestItem; onDone: (o: InviteOverview) => void }) {
   const { api } = useSignedIn();

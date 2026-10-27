@@ -62,6 +62,7 @@ Status: **fertig** = Seite für den Desktop umgesetzt, **Breite** = nur die Brei
 | `bausteine` | D | Breite | Kachelraster / Übersicht |
 | `board` | A | Breite | Liste bzw. Detailseite |
 | `calendar` | S | fertig | Sonderfall mit eigenem Entwurf |
+| `child-access/[id]` | B | Breite | Formular |
 | `club-calendar` | S | fertig | Sonderfall mit eigenem Entwurf |
 | `club-cash-overview` | D | Breite | Kachelraster / Übersicht |
 | `club-cash/allowances` | C | fertig | Tabelle mit Filterleiste |

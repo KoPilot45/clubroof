@@ -454,7 +454,7 @@ export async function seed(
     const andereKinder = guardianships
       .map((g) => persons.find((p) => p.id === g.childPersonId)!)
       .filter((c, i, all) => c !== leon && c !== mia && all.indexOf(c) === i && !c.userId)
-      .filter((c) => Number(c.birthDate!.slice(0, 4)) <= 2011);
+      .sort((a, b) => a.birthDate!.localeCompare(b.birthDate!));
     if (andereKinder[0])
       kindZugaenge.push({
         child: andereKinder[0],
