@@ -6,6 +6,10 @@ Zum Einfügen in die Umsetzungssitzung. Voraussetzung: PILOT-SICHERHEIT (Regel F
 
 Paket **KIND-EIGENER-ZUGANG** (`docs/PAKETE.md`, gleichnamige Zeile; Entscheidung 26.10.2026 in `docs/ENTSCHEIDUNGEN.md`). Grundidee: Ein Kind ist eine **eigene Person** (Mitgliedsdaten) ohne Konto und wird heute über die Eltern verwaltet (`persons.userId` leer, Verknüpfung in `guardianships`). Wird es alt genug, legen die **Eltern** ihm einen eigenen Zugang an. Das Konto wird **an die bestehende Person gehängt**; das Elternkonto bleibt unverändert, es gibt **keine Kontoübertragung**.
 
+## Branch und Reihenfolge
+
+Der Nutzer erlaubt ausdrücklich (Abweichung von einer automatisch vorgegebenen Branch-Anweisung der Sitzung): Arbeite und pushe **direkt auf `claude/app-entwicklung-planung-183gtv`**, ohne eigenen Branch und ohne Pull Request. Vor jedem Push `git pull --rebase origin claude/app-entwicklung-planung-183gtv`; bei Konflikten in Doku-Dateien beide Seiten behalten. Es läuft höchstens **eine** Umsetzungssitzung gleichzeitig. **SPRACHEN-WEITERE** läuft auf `claude/keen-babbage-386nkp` und wird zuerst abgeschlossen und auf den Planungs-Branch gebracht: Vor dem Start prüfen, ob das schon geschehen ist (`git log origin/claude/app-entwicklung-planung-183gtv --grep=Sprachen`); sonst müssen neue Texte später in fünf weiteren Sprachen nachgezogen werden (`pnpm check` schlägt bei fehlenden Übersetzungen fehl).
+
 ## Festlegungen (nicht neu verhandeln)
 1. **Drei Stufen je Kind**, von den Eltern wählbar und jederzeit änderbar: **(1) Mitsicht und Mitentscheiden** (Eltern antworten, melden Abwesenheit, buchen Fahrten, sehen die Kasse weiter), **(2) nur Mitsicht** (sehen, aber keine Aktion), **(3) eigenständig** (ohne Mitsicht und Entscheidung: Eltern sehen und tun nichts mehr für das Kind).
 2. **Rückweg:** Von (3) zurück zu (1) oder (2) nur **mit Zustimmung des Kindes**. Das Kind kann die Stufe jederzeit **selbst senken**, nie ohne Zustimmung der Eltern erhöhen, was Mitsicht betrifft, ist aber die Zustimmung des Kindes der Maßstab. Die Stufe (1) beim ersten Anlegen ist der Standard.

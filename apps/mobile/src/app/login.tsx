@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -14,7 +13,7 @@ import type { LoginResponse, PublicClub, TwoFactorChallenge } from '@clubroof/co
 import { Text } from '@/components/app-text';
 import { useIsDesktop } from '@/lib/layout';
 import { ClubroofLogo, GradientHeader, PoweredBy } from '@/components/brand-header';
-import { Button, Chip, Crest, T, TextField } from '@/components/ui';
+import { Button, Chip, ClubLogo, Crest, T, TextField } from '@/components/ui';
 import { request, RequestError } from '@/lib/api';
 import { setBrand, useBrand } from '@/lib/brand';
 import { readSetting } from '@/lib/flags';
@@ -152,12 +151,7 @@ function Login({ known }: { known: boolean }) {
       ]}
     >
       {logo ? (
-        <Image
-          source={{ uri: logo }}
-          accessibilityLabel={t('Vereinslogo')}
-          resizeMode="contain"
-          style={{ width: 84, height: 92 }}
-        />
+        <ClubLogo uri={logo} size={92} />
       ) : (
         <Crest initials={club?.shortCode ?? ''} size={84} />
       )}

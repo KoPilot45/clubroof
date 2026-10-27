@@ -236,12 +236,19 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
     const [ages] = await sql`
       select count(*) filter (where date_part('year', age(birth_date)) >= 60)::int as senioren,
         count(*) filter (where date_part('year', age(birth_date)) < 8)::int as bambini,
-        count(*) filter (where avatar_url like '/brand/demo-avatar-%')::int as avatare,
+        count(*) filter (where avatar_url like '/brand/demo-avatar-%.webp')::int as avatare,
         count(distinct contact_visibility)::int as sichtbarkeiten
       from persons`;
     expect(ages!.senioren).toBeGreaterThanOrEqual(12);
     expect(ages!.bambini).toBeGreaterThanOrEqual(10);
-    expect(ages!.avatare).toBeGreaterThanOrEqual(30);
+    // jede Person zeigt eines der 20 Demo-Profilbilder, Eltern und Kinder nie dasselbe
+    const [alle] = await sql`select count(*)::int as n from persons`;
+    expect(ages!.avatare).toBe(alle!.n);
+    const gleich = await sql`
+      select g.child_person_id from guardianships g
+      join persons a on a.id = g.guardian_person_id join persons b on b.id = g.child_person_id
+      where a.avatar_url = b.avatar_url`;
+    expect(gleich).toHaveLength(0);
     expect(ages!.sichtbarkeiten).toBe(3);
     const arrivals = await sql`
       select p.id from persons p

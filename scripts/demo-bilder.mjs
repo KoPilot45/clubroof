@@ -3,6 +3,7 @@
  * Erzeugt die Demo-Bilder (Sponsorenlogos, News-Bilder, Mannschaftsillustrationen) als PNG nach
  * `apps/api/assets/`. Alles selbst gezeichnet, reproduzierbar, keine Fotos Dritter.
  * Aufruf: `node scripts/demo-bilder.mjs`. Die API liefert sie unter `/brand/<name>` aus.
+ * Profilbilder (`demo-avatar-*.webp`) und Wappen (`demo-wappen.webp`) sind gelieferte Dateien und werden hier nie erzeugt oder überschrieben.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -176,36 +177,6 @@ for (const [n, f] of Object.entries(news)) {
   f(c);
   save(n, c);
 }
-
-// Avatare (160×160): Kopf und Schultern in zwölf Farben, Frisuren und Hauttönen – keine echten Gesichter
-const AVATARS = [
-  ['#2e7d32', '#f1c9a5', '#4e342e', 'short'],
-  ['#1565c0', '#d9a37b', '#212121', 'long'],
-  ['#ef6c00', '#f5d3b5', '#8d6e63', 'short'],
-  ['#6a1b9a', '#b9835a', '#212121', 'bun'],
-  ['#00838f', '#f1c9a5', '#f9a825', 'long'],
-  ['#c62828', '#e0b08a', '#3e2723', 'short'],
-  ['#37474f', '#f5d3b5', '#9e9e9e', 'bald'],
-  ['#558b2f', '#8d5a3b', '#212121', 'curly'],
-  ['#ad1457', '#f1c9a5', '#6d4c41', 'bun'],
-  ['#283593', '#d9a37b', '#bf360c', 'short'],
-  ['#00695c', '#e0b08a', '#212121', 'curly'],
-  ['#f9a825', '#f5d3b5', '#5d4037', 'long'],
-];
-AVATARS.forEach(([bg, skin, hair, style], i) => {
-  const c = canvas(160, 160, bg);
-  c.circle(80, 190, 70, '#ffffff', 0.9);
-  if (style === 'long') c.rect(46, 52, 68, 80, hair);
-  if (style === 'bun') c.circle(80, 30, 16, hair);
-  c.circle(80, 76, 34, skin);
-  if (style === 'short' || style === 'curly' || style === 'bun' || style === 'long')
-    c.rect(46, 40, 68, style === 'curly' ? 28 : 20, hair);
-  if (style === 'curly') for (const x of [52, 70, 90, 108]) c.circle(x, 44, 12, hair);
-  c.circle(68, 78, 4, '#212121');
-  c.circle(92, 78, 4, '#212121');
-  c.rect(70, 94, 20, 4, '#8d4a3b');
-  save(`demo-avatar-${String(i + 1).padStart(2, '0')}.png`, c);
-});
 
 // Mannschaftsillustrationen (800×450): Farbfläche mit Spielfeld und Mannschaftsnummer als Punkte
 const TEAM_ART = {

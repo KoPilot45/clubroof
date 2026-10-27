@@ -5379,15 +5379,29 @@ describe.skipIf(!url)('API', () => {
 
   describe('Vereinseinstellungen', () => {
     it('Demoverein hat ein Platzhalter-Wappen, das die API öffentlich ausliefert', async () => {
-      const res = await app.inject({ method: 'GET', url: '/brand/demo-wappen.png' });
+      const res = await app.inject({ method: 'GET', url: '/brand/demo-wappen.webp' });
       expect(res.statusCode).toBe(200);
-      expect(res.headers['content-type']).toBe('image/png');
-      expect(res.rawPayload.subarray(1, 4).toString()).toBe('PNG');
+      expect(res.headers['content-type']).toBe('image/webp');
+      expect(res.rawPayload.subarray(0, 4).toString()).toBe('RIFF');
+      expect(res.rawPayload.subarray(8, 12).toString()).toBe('WEBP');
+      const avatar = await app.inject({ method: 'GET', url: '/brand/demo-avatar-frauen-05.webp' });
+      expect(avatar.statusCode).toBe(200);
+      expect(avatar.headers['content-type']).toBe('image/webp');
+      const png = await app.inject({ method: 'GET', url: '/brand/demo-team-h1.png' });
+      expect(png.statusCode).toBe(200);
+      expect(png.headers['content-type']).toBe('image/png');
+      expect(png.rawPayload.subarray(1, 4).toString()).toBe('PNG');
       // nur freigegebene Namen, kein Zugriff auf andere Dateien
-      expect(
-        (await app.inject({ method: 'GET', url: '/brand/..%2Fpackage.json' })).statusCode,
-      ).toBe(404);
-      expect((await app.inject({ method: 'GET', url: '/brand/anderes.png' })).statusCode).toBe(404);
+      for (const name of [
+        '..%2Fpackage.json',
+        'anderes.png',
+        'anderes.webp',
+        'demo-wappen.gif',
+        'demo-wappen.webp.txt',
+        'demo-..%2F..%2Fpackage.webp',
+        'demo-gibt-es-nicht.webp',
+      ])
+        expect((await app.inject({ method: 'GET', url: `/brand/${name}` })).statusCode).toBe(404);
     });
 
     it('Beispieldateien zum Herunterladen: nur freigegebene CSV-Dateien, als Anhang', async () => {

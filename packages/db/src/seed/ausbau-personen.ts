@@ -1,7 +1,7 @@
 /**
  * Demodaten-Ausbau der Personen und Familien (Paket DEMODATEN-AUSBAU, Schritt 1): Geschwister in mehreren
  * Mannschaften, zweite Elternteile, Doppelrollen (Mutter spielt bei den Frauen, Spielerin und Co-Trainerin),
- * ältere Mitglieder, Neuzugänge und Abgänge der letzten Monate, abwechslungsreiche Profile und Avatare.
+ * ältere Mitglieder, Neuzugänge und Abgänge der letzten Monate, abwechslungsreiche Profile (die Avatare folgen in `profilbilder.ts`).
  * Läuft nur mit `extended` und verändert die Listen des Seeds, bevor sie eingefügt werden.
  */
 import { addDays, toIsoDate } from '@clubroof/core';
@@ -24,7 +24,6 @@ type TeamKey = (typeof TEAMS)[number]['key'];
 export type Abgang = { person: AusbauPerson; teamKey: TeamKey; leftOn: string; to: string };
 
 const SENIOR_COUNT = 14;
-export const AVATAR_COUNT = 12;
 
 export function ausbauPersonen(ctx: {
   today: Date;
@@ -230,16 +229,12 @@ export function ausbauPersonen(ctx: {
     departures.push({ person, teamKey: key, leftOn: toIsoDate(addDays(today, -daysAgo)), to });
   }
 
-  // ── Profile: Sichtbarkeit der Kontaktdaten und Avatare ──────────────────────────────────
+  // ── Profile: Sichtbarkeit der Kontaktdaten ──────────────────────────────────
   for (const person of persons) {
     if (fixed.has(person)) continue;
     const draw = faker.number.int({ min: 1, max: 100 });
     if (draw <= 12) person.contactVisibility = 'coaches_only';
     else if (draw <= 30) person.contactVisibility = 'club';
-    if (person.birthDate && Number(person.birthDate.slice(0, 4)) > 2008) continue;
-    if (faker.number.int({ min: 1, max: 100 }) <= 22) {
-      person.avatarUrl = `/brand/demo-avatar-${String(faker.number.int({ min: 1, max: AVATAR_COUNT })).padStart(2, '0')}.png`;
-    }
   }
 
   return { newcomers, departures };

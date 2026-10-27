@@ -82,7 +82,7 @@ pnpm browser-check --reset     # vorher Demodaten neu laden
 - **Neue Oberflächen immer in beiden Darstellungen prüfen** (hell: `SCHEME=light`, dunkel: ohne), Kontrast mit `scripts/e2e/hell-kontrast.mjs`; feste Farben nur auf Hero, Plakat, Kopfband, Spielfeld und Marke (`pnpm check` meldet neue).
 - Farben nur aus dem Theme (`useTheme`): `primary` als Fläche, `primaryText` für Text/Icons, Statusfarben mit Beschriftung. **Eine Blickfang-Fläche pro Bildschirm** (wichtigste Zahl/Aussage, Verlauf `hero`, Text `onHero`); weitere Hervorhebungen mit `primaryContainer` oder Pastell (`tints`, Text `onContainer`), Dringendes als Statusfläche (siehe `docs/FARBKONZEPT.md`, `docs/DESIGNSYSTEM.md`).
 - Schemaänderung → Migration erzeugen **und** Seed anpassen; `pnpm db:reset` muss laufen.
-- Kleine, thematisch getrennte Commits; Push auf den Entwicklungsbranch.
+- Kleine, thematisch getrennte Commits; Push auf den Entwicklungsbranch `claude/app-entwicklung-planung-183gtv` (kein eigener Branch, höchstens eine Umsetzungssitzung gleichzeitig; siehe `docs/PAKETE.md`, „Branch für die Umsetzung“).
 
 ## Ablauf pro Funktionspaket
 

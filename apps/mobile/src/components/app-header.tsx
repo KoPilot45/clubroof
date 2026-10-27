@@ -2,7 +2,7 @@ import { Ionicons } from '@/components/icon';
 import type { HomeResponse } from '@clubroof/core';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Animated, Image, Pressable, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useReduceMotion, useScrollY } from '@/lib/motion';
 import { formatLongDate } from '@/lib/format';
@@ -10,7 +10,7 @@ import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { useIsCompactDesktop, useIsDesktop } from '@/lib/layout';
 import { mediaUri } from '@/lib/upload';
-import { Crest, shadowStyle, T, type IconName } from './ui';
+import { ClubLogo, Crest, shadowStyle, T, type IconName } from './ui';
 import { Text } from './app-text';
 import { t } from '@/lib/i18n';
 
@@ -180,12 +180,7 @@ export function AppHeader({
         }}
       >
         {me.club.logoUrl ? (
-          <Image
-            source={{ uri: mediaUri(me.club.logoUrl)! }}
-            accessibilityLabel={t('Vereinslogo')}
-            style={{ width: sizes.logo + 4, height: sizes.logo + 4 }}
-            resizeMode="contain"
-          />
+          <ClubLogo uri={mediaUri(me.club.logoUrl)!} size={sizes.logo + 4} />
         ) : (
           <Crest initials={me.club.shortCode} size={sizes.logo} />
         )}

@@ -1125,6 +1125,26 @@ export function Toggle({
 // ── Wappen & Avatar ───────────────────────────────────────────────────────────
 
 /** Vereinswappen. Solange kein Logo hochgeladen ist, ein Schild mit Kürzel in Vereinsfarbe. */
+/** Vereinswappen (hochgeladen oder Demo): quadratischer Rahmen, Bild eingepasst. */
+export function ClubLogo({
+  uri,
+  size,
+  label = t('Vereinslogo'),
+}: {
+  uri: string;
+  size: number;
+  label?: string;
+}) {
+  return (
+    <Image
+      source={{ uri }}
+      accessibilityLabel={label}
+      resizeMode="contain"
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
 export function Crest({ initials, size = 40 }: { initials: string; size?: number }) {
   const { colors } = useTheme();
   return (

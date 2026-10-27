@@ -3,7 +3,7 @@ import { normalizeClubCode, type ClubColorKey } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 import { Columns } from '@/components/columns';
 import { ClubColorPicker } from '@/components/club-color';
 import {
@@ -11,6 +11,7 @@ import {
   Card,
   ChoiceChips,
   Chip,
+  ClubLogo,
   Crest,
   ErrorNotice,
   Loading,
@@ -59,11 +60,10 @@ export default function ClubSettingsScreen() {
       <Section title="Vereinslogo">
         <Card style={{ alignItems: 'center', gap: 12, paddingVertical: 24 }}>
           {me.club.logoUrl ? (
-            <Image
-              source={{ uri: mediaUri(me.club.logoUrl)! }}
-              accessibilityLabel={t('Aktuelles Vereinslogo')}
-              style={{ width: 120, height: 132 }}
-              resizeMode="contain"
+            <ClubLogo
+              uri={mediaUri(me.club.logoUrl)!}
+              size={120}
+              label={t('Aktuelles Vereinslogo')}
             />
           ) : (
             <Crest initials={me.club.shortCode} size={110} />
