@@ -63,6 +63,7 @@ pnpm browser-check --reset     # vorher Demodaten neu laden
   bei Kleinigkeiten ohne Rückfrage nach Vorgabe entscheiden und die Entscheidung benennen.
 - Große Dateien nur ausschnittsweise lesen; mechanische Suche/Auswertung an Hilfsagenten mit kleinerem Modell geben.
 - Das stärkste Modell nur für Sicherheitsprüfung und große Umbauten, sonst Sonnet.
+- **Pakete betreffen nur die App.** Verkaufs-PDF, Webseiten-Entwurf, Mockups und Designartefakte werden nicht angefasst oder neu erzeugt, außer ein Paket nennt es ausdrücklich.
 
 ## Regeln
 
