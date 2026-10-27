@@ -278,6 +278,7 @@ function ClubDetails({
   const [phone, setPhone] = useState(s.phone ?? '');
   const [site, setSite] = useState(s.website ?? '');
   const [visibility, setVisibility] = useState(s.defaultContactVisibility);
+  const [joinApproval, setJoinApproval] = useState(s.joinApproval);
   const dirty =
     year !== (s.foundedYear?.toString() ?? '') ||
     street !== (s.street ?? '') ||
@@ -286,7 +287,8 @@ function ClubDetails({
     email !== (s.email ?? '') ||
     phone !== (s.phone ?? '') ||
     site !== (s.website ?? '') ||
-    visibility !== s.defaultContactVisibility;
+    visibility !== s.defaultContactVisibility ||
+    joinApproval !== s.joinApproval;
   return (
     <Section title="Angaben zum Verein">
       <Card style={{ gap: 14 }}>
@@ -337,6 +339,18 @@ function ClubDetails({
           Das ist der Standard für neu angelegte Personen; jede Person ändert ihn für sich im
           Profil.
         </T>
+        <ChoiceChips
+          label="Wer gibt Beitrittsanfragen frei?"
+          options={[
+            { value: 'team_staff' as const, label: 'Trainerteam der Mannschaft' },
+            { value: 'admin_only' as const, label: 'Nur die Verwaltung' },
+          ]}
+          selected={[joinApproval]}
+          onToggle={setJoinApproval}
+        />
+        <T variant="caption">
+          Gilt für Anfragen über Einladungslink oder QR-Code. Die Verwaltung kann immer freigeben.
+        </T>
         <Button
           label="Speichern"
           icon="checkmark"
@@ -352,6 +366,7 @@ function ClubDetails({
               phone: phone.trim() || null,
               website: site.trim() || null,
               defaultContactVisibility: visibility,
+              joinApproval,
             })
           }
         />

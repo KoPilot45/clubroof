@@ -1833,6 +1833,8 @@ export type ClubSettings = {
   timezone: string;
   /** Wer die Kontaktdaten neuer Personen standardmäßig sieht */
   defaultContactVisibility: 'club' | 'team_and_coaches' | 'coaches_only';
+  /** Wer Beitrittsanfragen freigibt: Trainerteam der Mannschaft (Standard) oder nur die Verwaltung */
+  joinApproval: 'team_staff' | 'admin_only';
   /** Vorgabe nur einschaltbar, wenn man selbst 2-Faktor nutzt (Schutz vor Aussperren) */
   canRequireTwoFactor: boolean;
   orgUnits: { id: string; name: string; kind: OrgUnitKind; teams: number }[];
@@ -1853,6 +1855,7 @@ export type UpdateClubInput = Partial<{
   phone: string | null;
   website: string | null;
   defaultContactVisibility: 'club' | 'team_and_coaches' | 'coaches_only';
+  joinApproval: 'team_staff' | 'admin_only';
 }>;
 
 /** Untergrund eines Platzes (Einrichtungsassistent) */
@@ -1889,6 +1892,7 @@ export type SetupInput = {
     /** Monat, in dem die Saison beginnt (1–12, Standard 7 = Juli) */
     seasonStartMonth?: number;
     defaultContactVisibility?: 'club' | 'team_and_coaches' | 'coaches_only';
+    joinApproval?: 'team_staff' | 'admin_only';
   };
   orgUnits: { name: string; kind: OrgUnitKind }[];
   venues?: SetupVenue[];

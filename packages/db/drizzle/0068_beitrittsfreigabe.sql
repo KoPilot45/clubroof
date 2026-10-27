@@ -1,0 +1,1 @@
+ALTER TABLE "clubs" ADD COLUMN "join_approval" text DEFAULT 'team_staff' NOT NULL;

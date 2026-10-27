@@ -4681,6 +4681,44 @@ describe.skipIf(!url)('API', () => {
       await send('DELETE', `/teams/${b1.id}/invite-link`, coach.token);
       expect((await pub('GET', `/join/${token}`)).statusCode).toBe(410);
     });
+
+    it('Freigabe „nur Verwaltung“: das Trainerteam sieht und entscheidet nichts', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      expect((await get<ClubSettings>('/admin/club', admin.token)).joinApproval).toBe('team_staff');
+      const set = await send<ClubSettings>('PATCH', '/admin/club', admin.token, {
+        joinApproval: 'admin_only',
+      });
+      expect(set.body.joinApproval).toBe('admin_only');
+      expect(
+        (await send('PATCH', '/admin/club', coach.token, { joinApproval: 'team_staff' })).status,
+      ).toBe(403);
+      try {
+        const link = await send<InviteLink>('POST', `/teams/${b1.id}/invite-link`, coach.token);
+        await pub('POST', `/join/${tokenOf(link.body.url)}/request`, {
+          email: 'nur.verwaltung@example.org',
+          password: PW,
+          relation: 'player',
+          firstName: 'Vera',
+          lastName: 'Verwaltung',
+        });
+        expect((await get<InviteOverview>('/invitations', coach.token)).requests).toHaveLength(0);
+        const adminView = (await get<InviteOverview>('/invitations', admin.token)).requests;
+        const req = adminView.find((r) => r.name === 'Vera Verwaltung')!;
+        expect(req).toBeDefined();
+        expect(
+          (await send('POST', `/join-requests/${req.id}/approve`, coach.token, {})).status,
+        ).toBe(404);
+        expect(
+          (await send('POST', `/join-requests/${req.id}/reject`, admin.token, { note: 'Test' }))
+            .status,
+        ).toBe(200);
+      } finally {
+        await send('PATCH', '/admin/club', admin.token, { joinApproval: 'team_staff' });
+        await send('DELETE', `/teams/${b1.id}/invite-link`, coach.token);
+      }
+    });
   });
 
   describe('2-Faktor-Anmeldung', () => {

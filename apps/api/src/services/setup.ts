@@ -180,6 +180,7 @@ export async function setupClub(
         phone: text(input.club.phone),
         website: text(input.club.website),
         defaultContactVisibility: input.club.defaultContactVisibility ?? 'team_and_coaches',
+        joinApproval: input.club.joinApproval ?? 'team_staff',
       })
       .returning({ id: s.clubs.id });
     const clubId = club!.id;

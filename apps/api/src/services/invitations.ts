@@ -51,6 +51,11 @@ type Ctx = { config: Config; mailer: Mailer };
 const target = (t: TeamRow) => ({ teamId: t.id, orgUnitId: t.orgUnitId });
 const mayInvite = (actor: Actor, t: TeamRow) => can(actor.grants, 'members.invite', target(t));
 
+/** Beitrittsanfragen entscheiden: Einladende der Mannschaft – oder, wenn der Verein es so festgelegt hat, nur die Mitgliederverwaltung. */
+const mayDecide = (actor: Actor, t: TeamRow) =>
+  mayInvite(actor, t) &&
+  (actor.club.joinApproval !== 'admin_only' || actorCan(actor, 'members.manage'));
+
 export function canInvite(actor: Actor): boolean {
   const sc = scopesWith(actor.grants, 'members.invite');
   return sc.all || sc.orgUnitIds.length > 0 || sc.teamIds.length > 0;
@@ -95,6 +100,7 @@ export async function getInviteOverview(
   const today = toIsoDate(calendarDayOf(now, actor.club.timezone));
   const teams = (await currentTeams(db, actor)).filter((t) => mayInvite(actor, t));
   const teamIds = teams.map((t) => t.id);
+  const deciding = teams.filter((t) => mayDecide(actor, t));
 
   const teamLinks = teamIds.length
     ? await db
@@ -197,7 +203,7 @@ export async function getInviteOverview(
   return {
     teams: teamOut,
     people: [...people.values()].sort((a, b) => a.name.localeCompare(b.name)),
-    requests: await pendingRequests(db, actor, teams),
+    requests: await pendingRequests(db, actor, deciding),
   };
 }
 
@@ -573,7 +579,7 @@ async function loadRequest(db: Db, actor: Actor, id: string) {
     .innerJoin(s.teams, eq(s.teams.id, s.invitations.teamId))
     .innerJoin(s.users, eq(s.users.id, s.joinRequests.userId))
     .where(and(eq(s.joinRequests.id, id), eq(s.joinRequests.clubId, actor.club.id)));
-  if (!row || !mayInvite(actor, row.team)) throw notFound('Die Anfrage');
+  if (!row || !mayDecide(actor, row.team)) throw notFound('Die Anfrage');
   if (row.request.status !== 'pending')
     throw new HttpError(409, 'decided', 'Über diese Anfrage wurde bereits entschieden.');
   return row;

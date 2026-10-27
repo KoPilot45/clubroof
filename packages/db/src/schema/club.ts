@@ -51,6 +51,8 @@ export const clubs = pgTable('clubs', {
   feeReminderText: text(),
   /** Wer die Kontaktdaten neuer Personen sieht (Standard; jede Person ändert es für sich): club | team_and_coaches | coaches_only */
   defaultContactVisibility: text().notNull().default('team_and_coaches'),
+  /** Wer Beitrittsanfragen freigibt: `team_staff` = Trainerteam der Mannschaft und Verwaltung, `admin_only` = nur die Verwaltung */
+  joinApproval: text().notNull().default('team_staff'),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });

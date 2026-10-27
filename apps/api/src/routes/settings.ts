@@ -60,6 +60,7 @@ export const settingsRoutes: FastifyPluginAsyncZod = async (app) => {
           phone: z.string().max(40).nullable().optional(),
           website: z.string().max(200).nullable().optional(),
           defaultContactVisibility: z.enum(CONTACT_VISIBILITIES).optional(),
+          joinApproval: z.enum(['team_staff', 'admin_only']).optional(),
         }),
       },
     },
@@ -181,6 +182,7 @@ export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
             colorMode: z.enum(['light', 'dark', 'system']).optional(),
             seasonStartMonth: z.number().int().min(1).max(12).optional(),
             defaultContactVisibility: z.enum(CONTACT_VISIBILITIES).optional(),
+            joinApproval: z.enum(['team_staff', 'admin_only']).optional(),
           }),
           orgUnits: z
             .array(z.object({ name: unitName, kind: z.enum(KINDS) }))

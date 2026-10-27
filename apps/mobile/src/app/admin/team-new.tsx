@@ -1334,11 +1334,7 @@ function ResponseKind({
         />
       ))}
       <Card style={{ gap: 12 }}>
-        <HoursStepper
-          label={deadlineLabel}
-          value={deadline}
-          onChange={onDeadline}
-        />
+        <HoursStepper label={deadlineLabel} value={deadline} onChange={onDeadline} />
         <T variant="caption">
           {mode === 'auto_accept'
             ? 'Bis dahin kann abgesagt werden; danach gilt die Zusage.'

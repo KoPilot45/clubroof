@@ -61,6 +61,7 @@ export async function getClubSettings(db: Db, actor: Actor): Promise<ClubSetting
     website: club!.website,
     timezone: club!.timezone,
     defaultContactVisibility: toVisibility(club!.defaultContactVisibility),
+    joinApproval: club!.joinApproval === 'admin_only' ? 'admin_only' : 'team_staff',
     canRequireTwoFactor: actor.user.twoFactorEnabled === true,
     orgUnits: units.map((u) => ({
       id: u.unit.id,
@@ -111,6 +112,7 @@ export async function updateClub(
   if (input.website !== undefined) patch.website = text(input.website);
   if (input.defaultContactVisibility !== undefined)
     patch.defaultContactVisibility = input.defaultContactVisibility;
+  if (input.joinApproval !== undefined) patch.joinApproval = input.joinApproval;
   if (Object.keys(patch).length) {
     await db.update(s.clubs).set(patch).where(eq(s.clubs.id, actor.club.id));
     const what = [
@@ -126,6 +128,7 @@ export async function updateClub(
         ? 'Angaben zum Verein'
         : null,
       patch.defaultContactVisibility ? 'Sichtbarkeit der Kontaktdaten' : null,
+      patch.joinApproval ? 'Freigabe von Beitrittsanfragen' : null,
       patch.requireTwoFactor !== undefined
         ? `2-Faktor-Pflicht ${patch.requireTwoFactor ? 'an' : 'aus'}`
         : null,
