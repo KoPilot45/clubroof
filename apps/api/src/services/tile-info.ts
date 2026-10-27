@@ -100,7 +100,10 @@ export async function getTileInfo(
     }).format(cents / 100);
   const today = now.toISOString().slice(0, 10);
   // „Neu seit dem letzten Besuch“: ohne Merker gelten die letzten 7 Tage als neu
-  const seenRows = await db.select().from(s.userSeen).where(eq(s.userSeen.userId, actor.user.id));
+  const seenRows = await db
+    .select()
+    .from(s.userSeen)
+    .where(and(eq(s.userSeen.userId, actor.user.id), eq(s.userSeen.clubId, actor.club.id)));
   const seen = new Map(seenRows.map((r) => [r.key, r.seenAt]));
   const since = (key: string) => seen.get(key) ?? new Date(now.getTime() - 7 * 24 * 3600_000);
   const putNew = (tile: string, n: number) => {

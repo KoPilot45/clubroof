@@ -27,6 +27,8 @@ export const clubs = pgTable('clubs', {
   /** Vereinskürzel (2–4 Zeichen, Großbuchstaben/Ziffern); leer = Vorgabe aus den Initialen des Kurznamens */
   shortCode: text(),
   slug: text().notNull().unique(),
+  /** Lebenszyklus (Mandantenbetrieb): setup = Einrichtung offen | active | suspended = gesperrt | archived */
+  status: text().notNull().default('active'),
   foundedYear: integer(),
   logoUrl: text(),
   colorTheme: clubColorEnum().notNull().default('green'),

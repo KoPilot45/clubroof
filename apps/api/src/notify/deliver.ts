@@ -13,7 +13,7 @@ import {
   type NotificationTopic,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 type PrefRow = typeof s.notificationPreferences.$inferSelect;
@@ -49,7 +49,12 @@ export async function deliver(
   const prefs = await db
     .select()
     .from(s.notificationPreferences)
-    .where(inArray(s.notificationPreferences.userId, unique));
+    .where(
+      and(
+        inArray(s.notificationPreferences.userId, unique),
+        eq(s.notificationPreferences.clubId, club.id),
+      ),
+    );
   const prefOf = (userId: string) => prefs.find((p) => p.userId === userId);
   const urgent = n.level === 'urgent';
 

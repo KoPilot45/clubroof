@@ -38,7 +38,12 @@ export async function getNotificationSettings(db: Db, actor: Actor): Promise<Not
   const [pref] = await db
     .select()
     .from(s.notificationPreferences)
-    .where(eq(s.notificationPreferences.userId, actor.user.id));
+    .where(
+      and(
+        eq(s.notificationPreferences.userId, actor.user.id),
+        eq(s.notificationPreferences.clubId, actor.club.id),
+      ),
+    );
   const teams = actor.teamIds.length
     ? await db
         .select({ id: s.teams.id, badge: s.teams.badge, name: s.teams.name })
@@ -79,7 +84,12 @@ export async function updateNotificationSettings(
   const [current] = await db
     .select()
     .from(s.notificationPreferences)
-    .where(eq(s.notificationPreferences.userId, actor.user.id));
+    .where(
+      and(
+        eq(s.notificationPreferences.userId, actor.user.id),
+        eq(s.notificationPreferences.clubId, actor.club.id),
+      ),
+    );
   const topics = { ...(current?.topics ?? {}) };
   for (const [key, mode] of Object.entries(input.topics ?? {})) {
     if (!NOTIFICATION_TOPICS.some((t) => t.key === key))
@@ -100,7 +110,10 @@ export async function updateNotificationSettings(
   await db
     .insert(s.notificationPreferences)
     .values({ userId: actor.user.id, clubId: actor.club.id, ...values })
-    .onConflictDoUpdate({ target: s.notificationPreferences.userId, set: values });
+    .onConflictDoUpdate({
+      target: [s.notificationPreferences.userId, s.notificationPreferences.clubId],
+      set: values,
+    });
   return getNotificationSettings(db, actor);
 }
 

@@ -53,7 +53,7 @@ export const users = pgTable('users', {
 
 /**
  * Zuletzt angesehen (je Person und Bereich, z. B. „forum“ oder „documents:<teamId>“): daraus entsteht „neu seit
- * dem letzten Besuch“ in den Kachel-Infos. Reiner Darstellungszustand, daher ohne `club_id` (hängt am Konto).
+ * dem letzten Besuch“ in den Kachel-Infos. Reiner Darstellungszustand, daher ohne `club_id` (hängt am Konto und Verein).
  */
 export const userSeen = pgTable(
   'user_seen',
@@ -61,10 +61,13 @@ export const userSeen = pgTable(
     userId: uuid()
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
     key: text().notNull(),
     seenAt: timestamp({ withTimezone: true }).notNull(),
   },
-  (t) => [primaryKey({ columns: [t.userId, t.key] })],
+  (t) => [primaryKey({ columns: [t.userId, t.clubId, t.key] })],
 );
 
 /**
@@ -127,6 +130,8 @@ export const sessions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     tokenHash: text().notNull().unique(),
+    /** Aktiver Verein bei Konten mit mehreren Vereinen (leer = einziger bzw. erster Verein) */
+    activeClubId: uuid().references(() => clubs.id, { onDelete: 'set null' }),
     userAgent: text(),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
     lastUsedAt: timestamp({ withTimezone: true }),

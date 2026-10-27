@@ -93,7 +93,12 @@ export async function sendReminders(db: Db | Tx, club: Club, now: Date): Promise
           hours: s.notificationPreferences.reminderHours,
         })
         .from(s.notificationPreferences)
-        .where(inArray(s.notificationPreferences.userId, userIds))
+        .where(
+          and(
+            inArray(s.notificationPreferences.userId, userIds),
+            eq(s.notificationPreferences.clubId, club.id),
+          ),
+        )
     : [];
   // Persönliche Einstellung geht vor, dann die der Mannschaft (Paket E2), dann der Standard
   const hoursOf = (userId: string, teamHours: number | null) =>

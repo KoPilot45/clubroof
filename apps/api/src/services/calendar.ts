@@ -35,7 +35,9 @@ export async function getCalendarFeed(
   const [feed] = await db
     .select()
     .from(s.calendarFeeds)
-    .where(eq(s.calendarFeeds.userId, actor.user.id));
+    .where(
+      and(eq(s.calendarFeeds.userId, actor.user.id), eq(s.calendarFeeds.clubId, actor.club.id)),
+    );
   const token = feed ? decrypt(key, feed.tokenEncrypted) : null;
   return {
     url: token ? feedUrl(base, token) : null,
@@ -63,12 +65,16 @@ export async function renewCalendarFeed(
   await db
     .insert(s.calendarFeeds)
     .values({ userId: actor.user.id, ...values })
-    .onConflictDoUpdate({ target: s.calendarFeeds.userId, set: values });
+    .onConflictDoUpdate({ target: [s.calendarFeeds.userId, s.calendarFeeds.clubId], set: values });
   return { url: feedUrl(base, token), lastAccessAt: null };
 }
 
 export async function deleteCalendarFeed(db: Db, actor: Actor) {
-  await db.delete(s.calendarFeeds).where(eq(s.calendarFeeds.userId, actor.user.id));
+  await db
+    .delete(s.calendarFeeds)
+    .where(
+      and(eq(s.calendarFeeds.userId, actor.user.id), eq(s.calendarFeeds.clubId, actor.club.id)),
+    );
 }
 
 // ── iCalendar ────────────────────────────────────────────────────────────
@@ -132,6 +138,7 @@ export async function calendarIcs(
       },
       now,
       links,
+      feed.feed.clubId,
     );
   } catch {
     return null; // z. B. ausgetreten
@@ -140,7 +147,9 @@ export async function calendarIcs(
   await db
     .update(s.calendarFeeds)
     .set({ lastAccessAt: now })
-    .where(eq(s.calendarFeeds.userId, feed.user.id));
+    .where(
+      and(eq(s.calendarFeeds.userId, feed.user.id), eq(s.calendarFeeds.clubId, feed.feed.clubId)),
+    );
 
   const rows = await fetchEventRows(
     db,

@@ -470,6 +470,13 @@
       "when": 1792436060951,
       "tag": "0066_exotic_korg",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1793102701725,
+      "tag": "0067_mandantenbetrieb",
+      "breakpoints": true
     }
   ]
 }

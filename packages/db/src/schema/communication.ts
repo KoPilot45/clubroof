@@ -140,25 +140,29 @@ export const notifications = pgTable(
 );
 
 /** Persönliche Benachrichtigungseinstellungen (ohne Zeile gelten die Voreinstellungen). */
-export const notificationPreferences = pgTable('notification_preferences', {
-  userId: uuid()
-    .primaryKey()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  clubId: uuid()
-    .notNull()
-    .references(() => clubs.id, { onDelete: 'cascade' }),
-  /** Abweichungen von der Voreinstellung je Thema: push | app | off */
-  topics: jsonb().$type<Record<string, string>>().notNull().default({}),
-  mutedTeamIds: uuid()
-    .array()
-    .notNull()
-    .default(sql`'{}'::uuid[]`),
-  reminderHours: smallint().notNull().default(24),
-  quietHoursEnabled: boolean().notNull().default(true),
-  quietStart: text().notNull().default('22:00'),
-  quietEnd: text().notNull().default('07:00'),
-  updatedAt: updatedAt(),
-});
+export const notificationPreferences = pgTable(
+  'notification_preferences',
+  {
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    /** Abweichungen von der Voreinstellung je Thema: push | app | off */
+    topics: jsonb().$type<Record<string, string>>().notNull().default({}),
+    mutedTeamIds: uuid()
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
+    reminderHours: smallint().notNull().default(24),
+    quietHoursEnabled: boolean().notNull().default(true),
+    quietStart: text().notNull().default('22:00'),
+    quietEnd: text().notNull().default('07:00'),
+    updatedAt: updatedAt(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.clubId] })],
+);
 
 /** Geräte für Push (Expo Push Token). */
 export const pushDevices = pgTable(
@@ -176,7 +180,7 @@ export const pushDevices = pgTable(
     createdAt: createdAt(),
     lastSeenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index().on(t.userId)],
+  (t) => [index().on(t.userId), index().on(t.clubId)],
 );
 
 /** Warteschlange für Push-Nachrichten (Ruhezeiten verschieben `sendAfter`). */
@@ -256,18 +260,22 @@ export const comments = pgTable(
 );
 
 /** Persönlicher Kalender-Abo-Link (ICS). Der Token liegt nur gehasht und verschlüsselt vor. */
-export const calendarFeeds = pgTable('calendar_feeds', {
-  userId: uuid()
-    .primaryKey()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  clubId: uuid()
-    .notNull()
-    .references(() => clubs.id, { onDelete: 'cascade' }),
-  tokenHash: text().notNull().unique(),
-  tokenEncrypted: text().notNull(),
-  createdAt: createdAt(),
-  lastAccessAt: timestamp({ withTimezone: true }),
-});
+export const calendarFeeds = pgTable(
+  'calendar_feeds',
+  {
+    userId: uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    tokenHash: text().notNull().unique(),
+    tokenEncrypted: text().notNull(),
+    createdAt: createdAt(),
+    lastAccessAt: timestamp({ withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.clubId] })],
+);
 
 /** Mini-Forum: wenige, moderierte Themen mit Ablaufdatum (Konzept §11). */
 export const forumTopics = pgTable(

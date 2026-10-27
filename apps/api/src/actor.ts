@@ -49,8 +49,19 @@ export async function loadActor(
   user: SessionUser,
   now: Date,
   links: LinkSigner,
+  /** Verein, in dem der Nutzer handelt (bei Konten mit mehreren Vereinen); leer = erster Verein des Kontos */
+  clubId?: string | null,
 ): Promise<Actor> {
-  const [person] = await db.select().from(s.persons).where(eq(s.persons.userId, user.id)).limit(1);
+  const [person] = await db
+    .select()
+    .from(s.persons)
+    .where(
+      clubId
+        ? and(eq(s.persons.userId, user.id), eq(s.persons.clubId, clubId))
+        : eq(s.persons.userId, user.id),
+    )
+    .orderBy(s.persons.createdAt)
+    .limit(1);
   if (!person) throw forbidden('Dein Konto ist keinem Verein zugeordnet.');
   if (person.membershipStatus === 'left') throw forbidden('Deine Mitgliedschaft ist beendet.');
 

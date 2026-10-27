@@ -128,6 +128,8 @@ export const invitations = pgTable(
       .references(() => clubs.id, { onDelete: 'cascade' }),
     kind: text().notNull(),
     tokenHash: text().notNull().unique(),
+    /** Kurzcode zum Eintippen (Hash, global eindeutig); leer = nur Link/QR */
+    codeHash: text().unique(),
     /** Verschlüsselter Token, damit Mannschafts-Links/QR-Codes erneut angezeigt werden können */
     tokenEncrypted: text(),
     personId: uuid().references(() => persons.id, { onDelete: 'cascade' }),
@@ -173,4 +175,46 @@ export const joinRequests = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index().on(t.clubId, t.status)],
+);
+
+/**
+ * Betreiber der Plattform (Mandantenbetrieb). Bewusst außerhalb aller Vereine: keine Person, keine Rolle,
+ * keine Vereinsrechte. Angelegt nur per Skript/Konfiguration, nie über die App.
+ */
+export const operators = pgTable('operators', {
+  userId: uuid()
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  active: boolean().notNull().default(true),
+  createdAt: createdAt(),
+});
+
+/** Protokoll aller Betreiberaktionen (wer, was, welcher Verein). Bleibt auch nach dem Löschen eines Vereins. */
+export const operatorAudit = pgTable(
+  'operator_audit',
+  {
+    id: id(),
+    operatorUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
+    clubId: uuid().references(() => clubs.id, { onDelete: 'set null' }),
+    action: text().notNull(),
+    data: jsonb().$type<Record<string, unknown>>(),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId, t.createdAt)],
+);
+
+/** Freigabe des Vereins für den Support-Zugriff des Betreibers: zeitlich begrenzt und widerrufbar. */
+export const supportGrants = pgTable(
+  'support_grants',
+  {
+    id: id(),
+    clubId: uuid()
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    grantedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    revokedAt: timestamp({ withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.clubId)],
 );

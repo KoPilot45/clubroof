@@ -173,6 +173,9 @@ export async function setPreferences(
 export async function markSeen(db: Db, actor: Actor, key: string, now: Date): Promise<void> {
   await db
     .insert(s.userSeen)
-    .values({ userId: actor.user.id, key, seenAt: now })
-    .onConflictDoUpdate({ target: [s.userSeen.userId, s.userSeen.key], set: { seenAt: now } });
+    .values({ userId: actor.user.id, clubId: actor.club.id, key, seenAt: now })
+    .onConflictDoUpdate({
+      target: [s.userSeen.userId, s.userSeen.clubId, s.userSeen.key],
+      set: { seenAt: now },
+    });
 }
