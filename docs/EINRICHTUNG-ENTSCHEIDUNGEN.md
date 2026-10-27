@@ -92,3 +92,12 @@ Reihenfolge nach Nutzen: (1) Doppelabfrage Kassenwart beheben, Hinweis zur Impor
 ## Korrekturen nach Durchsicht des Vereinsassistenten (27.10.2026)
 
 Der Nutzer hat die Bildschirme des bestehenden Vereinsassistenten (20 Schritte) angesehen und fünf Punkte bemängelt, die in der obigen Analyse fälschlich als ✅ standen: **Saisonbeginn** (der Wechsel ist immer manuell, der Schritt ist überflüssig), **Mannschaftsmodule im Vereinsassistenten** (widersprechen der Festlegung, dass jede Mannschaft ihre Regeln selbst bestimmt), **Schiedsrichter-Beschreibung** („Vereinsschiedsrichter für Heimspiele einteilen“ ist veraltet: Der Verband setzt Schiedsrichter bei fremden Spielen ein, die Einteilung zu Heimspielen ist entfallen), **„Per Code oder QR einladen“ als Auswahl** (Grundfunktion), **Kontaktdaten-Standard** (getrennt für Jugend und Erwachsene nötig). Umsetzung als Punkte 1 bis 5 im Abschnitt B des Übergabeprompts; Punkt 6 ist eine Rückfrage zu „Elternzugänge“. Die Analyse hat diese Widersprüche übersehen, weil sie den Bestand nur über Doku und Code gelesen hat; für künftige Durchsichten Bildschirme vergleichen.
+
+### Zweite Durchsicht, Mannschaftsassistent (27.10.2026)
+
+- **Altersklasse:** wirkt nur auf die Anzeige (Mannschaftsübersicht, Listen, Export) und schlägt die Spielform vor, nur bei Eingabe „U<Zahl>“. Bleibt freiwillig, wird erklärt.
+- **Vorlagen** („Leistungsorientiert, Klassisch, Jugend, Freizeit“) entfallen, ersetzt durch einen Fragenkatalog je Funktion mit Beispiel und Vorbelegung nach Abteilung.
+- **„Funktionen und Sichtbarkeit“** wird auf Sichtbarkeit reduziert („Wer sieht was?“).
+- **Treffpunkt-Ort** entfällt im Assistenten (nur Treffzeit), **Willkommenstext-Schritt** entfällt, **Hinweis zum Zeitraum der Trainingsserie** kommt dazu.
+- **Schiedsrichter:** im Vereinsassistenten nicht mehr angeboten (Entscheidung 27.10.).
+- **Kontaktdaten-Standard** je Abteilung (Jugend, Senioren) statt nach Alter (Korrektur der Korrektur vom selben Tag).
