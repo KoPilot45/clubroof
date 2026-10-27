@@ -402,9 +402,24 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
       join persons p on p.user_id = u.id
       left join notifications n on n.user_id = u.id
       where u.email like '%@sv-gruen-weiss.example'
+        and u.email !~ '^(leon|kind-)'
       group by u.email`;
     expect(rows).toHaveLength(7);
     for (const r of rows) expect(r.notifications, r.email).toBeGreaterThan(0);
+  });
+
+  it('Kinder mit eigenem Zugang: je Stufe ein Kind (KIND-EIGENER-ZUGANG)', async () => {
+    const rows = await sql`
+      select g.access, count(*)::int as n
+      from guardianships g
+      join persons c on c.id = g.child_person_id
+      where c.user_id is not null
+      group by g.access`;
+    expect(Object.fromEntries(rows.map((r) => [r.access, r.n]))).toEqual({
+      manage: 1,
+      view: 1,
+      none: 1,
+    });
   });
 
   describe('Ausbau der Vereinskasse und Inhalte', () => {

@@ -18,6 +18,7 @@ import {
   Notice,
   type TileItem,
 } from '@/components/ui';
+import { GuardianAccessCard } from '@/components/guardian-access';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
 import { useIsDesktop } from '@/lib/layout';
 import { useSignedIn } from '@/lib/session';
@@ -343,6 +344,7 @@ export default function MoreScreen() {
                 subtitle={[
                   'Spieler',
                   ...new Set(me.teams.filter((t) => t.personId === c.id).map((t) => t.badge)),
+                  ...(c.access === 'view' ? ['Nur Mitsicht'] : []),
                 ].join(' · ')}
                 onPress={() => router.push(`/profile/${c.id}`)}
               />
@@ -353,6 +355,8 @@ export default function MoreScreen() {
           </T>
         </Section>
       ) : null}
+
+      {me.hasGuardians ? <GuardianAccessCard /> : null}
 
       <Section title="Ich und Familie">
         <MenuCard rows={myArea} />

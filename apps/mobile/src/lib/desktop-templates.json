@@ -214,6 +214,11 @@
     "note": "Sonderfall mit eigenem Entwurf",
     "status": "fertig"
   },
+  "child-access/[id]": {
+    "t": "B",
+    "note": "Formular",
+    "status": "Breite"
+  },
   "club-calendar": {
     "t": "S",
     "note": "Sonderfall mit eigenem Entwurf",

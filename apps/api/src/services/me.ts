@@ -96,6 +96,14 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       ...m,
       avatarUrl: resolveMediaUrl(actor.links, m.avatarUrl),
     })),
+    hasGuardians:
+      (
+        await db
+          .select({ id: s.guardianships.guardianPersonId })
+          .from(s.guardianships)
+          .where(eq(s.guardianships.childPersonId, actor.person.id))
+          .limit(1)
+      ).length > 0,
     teams: [...teams.values()],
     roles: actor.grants.map((g) => ({
       key: g.key,
