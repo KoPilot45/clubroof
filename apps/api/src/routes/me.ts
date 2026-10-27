@@ -12,12 +12,19 @@ import { z } from 'zod';
 import { search } from '../services/search';
 import { loadHome } from '../services/home';
 import { getTileInfo } from '../services/tile-info';
-import { buildMe, markSeen, setPreferences } from '../services/me';
+import { buildMe, markSeen, setPreferences, switchClub } from '../services/me';
 
 export const meRoutes: FastifyPluginAsyncZod = async (app) => {
   app.addHook('preHandler', app.authenticate);
 
   app.get('/me', async (request): Promise<MeResponse> => buildMe(app.db, request.actor!));
+
+  app.post(
+    '/me/club',
+    { schema: { body: z.object({ clubId: z.string().uuid() }) } },
+    async (request): Promise<MeResponse> =>
+      switchClub(app.db, request.actor!, request.body.clubId, app.now(), app.links),
+  );
 
   app.put(
     '/me/preferences',

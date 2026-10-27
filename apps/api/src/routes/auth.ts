@@ -85,6 +85,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         },
         now,
         app.links,
+        user.lastClubId,
       );
       // Mit 2-Faktor: noch keine Sitzung, erst den Code abfragen
       if (user.totpSecret || user.twoFactorEmail) {
@@ -104,6 +105,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         now,
         ttlDays: app.config.sessionTtlDays,
         userAgent: request.headers['user-agent'],
+        activeClubId: actor.club.id,
       });
       await app.db.update(s.users).set({ lastLoginAt: now }).where(eq(s.users.id, user.id));
       return {
@@ -197,11 +199,13 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
         },
         now,
         app.links,
+        user!.lastClubId,
       );
       const session = await createSession(app.db, user!.id, {
         now,
         ttlDays: app.config.sessionTtlDays,
         userAgent: request.headers['user-agent'],
+        activeClubId: actor.club.id,
       });
       await app.db.update(s.users).set({ lastLoginAt: now }).where(eq(s.users.id, user!.id));
       return {

@@ -13,13 +13,14 @@ export function hashToken(token: string): string {
 export async function createSession(
   db: Db,
   userId: string,
-  options: { now: Date; ttlDays: number; userAgent?: string },
+  options: { now: Date; ttlDays: number; userAgent?: string; activeClubId?: string | null },
 ): Promise<{ token: string; expiresAt: Date }> {
   const token = generateToken();
   const expiresAt = new Date(options.now.getTime() + options.ttlDays * 24 * 60 * 60 * 1000);
   await db.insert(s.sessions).values({
     userId,
     tokenHash: hashToken(token),
+    activeClubId: options.activeClubId ?? null,
     userAgent: options.userAgent?.slice(0, 300) ?? null,
     expiresAt,
     lastUsedAt: options.now,
@@ -33,6 +34,8 @@ export type SessionUser = {
   email: string;
   displayName: string;
   twoFactorEnabled?: boolean;
+  /** Aktiver Verein dieser Sitzung (leer = Vorgabe aus dem Konto) */
+  activeClubId?: string | null;
 };
 
 /** Liefert den Nutzer zu einem gültigen Token oder `null`. */
@@ -45,6 +48,7 @@ export async function findSessionUser(
     .select({
       sessionId: s.sessions.id,
       lastUsedAt: s.sessions.lastUsedAt,
+      activeClubId: s.sessions.activeClubId,
       id: s.users.id,
       email: s.users.email,
       displayName: s.users.displayName,
@@ -67,6 +71,7 @@ export async function findSessionUser(
     email: row.email,
     displayName: row.displayName,
     twoFactorEnabled: row.totpSecret !== null || row.twoFactorEmail,
+    activeClubId: row.activeClubId,
   };
 }
 

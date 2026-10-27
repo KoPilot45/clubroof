@@ -36,6 +36,18 @@ export type ClubInfo = {
   timezone: string;
 };
 
+/** Ein Verein des Kontos in der Vereinsauswahl; `unread` = ungelesene Meldungen, ohne Inhalt. */
+export type AccountClub = {
+  id: string;
+  name: string;
+  shortName: string;
+  shortCode: string;
+  logoUrl: string | null;
+  colorTheme: string;
+  active: boolean;
+  unread: number;
+};
+
 export type ManagedPerson = {
   id: string;
   firstName: string;
@@ -76,6 +88,8 @@ export type MeResponse = {
   };
   person: { id: string; firstName: string; lastName: string; avatarUrl: string | null };
   club: ClubInfo;
+  /** Alle Vereine des Kontos (Vereinswechsel nur bei mehr als einem Eintrag) */
+  clubs: AccountClub[];
   managedPersons: ManagedPerson[];
   teams: MyTeam[];
   roles: { key: string; name: string; scopeType: ScopeType; scopeId: string | null }[];

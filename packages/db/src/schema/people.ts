@@ -36,6 +36,8 @@ export const users = pgTable('users', {
   /** Vereinsbereich: Reihenfolge und ausgeblendete Kacheln. Leer (null) = alle in Standardreihenfolge */
   clubTiles: jsonb().$type<{ order: string[]; hidden: string[] }>(),
   lastLoginAt: timestamp({ withTimezone: true }),
+  /** Zuletzt aktiver Verein (Konten mit mehreren Vereinen): Vorgabe beim nächsten Anmelden */
+  lastClubId: uuid().references(() => clubs.id, { onDelete: 'set null' }),
   passwordChangedAt: timestamp({ withTimezone: true }),
   /** TOTP-Geheimnis (verschlüsselt). Gesetzt = 2-Faktor-Anmeldung aktiv */
   totpSecret: text(),

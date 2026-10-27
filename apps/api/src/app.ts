@@ -105,7 +105,7 @@ export async function buildApp({
     const user = await findSessionUser(db, token, now());
     if (!user) throw unauthorized();
     request.sessionUser = user;
-    request.actor = await loadActor(db, user, now(), links);
+    request.actor = await loadActor(db, user, now(), links, user.activeClubId);
     // Vereinsvorgabe: Verwaltung nur mit eingerichteter 2-Faktor-Anmeldung
     // Gesperrt sind Verwaltungsbereiche (Lesen) und jede Schreibaktion; offen bleiben nur
     // Konto/Sicherheit (also auch die Einrichtung selbst) und die persönlichen Einstellungen.

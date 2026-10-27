@@ -52,21 +52,28 @@ export async function loadActor(
   /** Verein, in dem der Nutzer handelt (bei Konten mit mehreren Vereinen); leer = erster Verein des Kontos */
   clubId?: string | null,
 ): Promise<Actor> {
-  const [person] = await db
-    .select()
+  // Eigene Personen in aktiven Vereinen; der gewünschte Verein zuerst, sonst der älteste
+  const candidates = await db
+    .select({ person: s.persons, club: s.clubs })
     .from(s.persons)
-    .where(
-      clubId
-        ? and(eq(s.persons.userId, user.id), eq(s.persons.clubId, clubId))
-        : eq(s.persons.userId, user.id),
-    )
-    .orderBy(s.persons.createdAt)
-    .limit(1);
-  if (!person) throw forbidden('Dein Konto ist keinem Verein zugeordnet.');
-  if (person.membershipStatus === 'left') throw forbidden('Deine Mitgliedschaft ist beendet.');
-
-  const [club] = await db.select().from(s.clubs).where(eq(s.clubs.id, person.clubId));
-  if (!club) throw forbidden('Dein Konto ist keinem Verein zugeordnet.');
+    .innerJoin(s.clubs, eq(s.clubs.id, s.persons.clubId))
+    .where(eq(s.persons.userId, user.id))
+    .orderBy(s.persons.createdAt);
+  if (candidates.length === 0) throw forbidden('Dein Konto ist keinem Verein zugeordnet.');
+  const usable = candidates.filter(
+    (c) =>
+      c.person.membershipStatus !== 'left' && !['suspended', 'archived'].includes(c.club.status),
+  );
+  const chosen = usable.find((c) => c.person.clubId === clubId) ?? usable[0];
+  if (!chosen) {
+    const first = candidates[0]!;
+    throw forbidden(
+      first.club.status === 'suspended' || first.club.status === 'archived'
+        ? 'Dieser Verein ist derzeit nicht erreichbar.'
+        : 'Deine Mitgliedschaft ist beendet.',
+    );
+  }
+  const { person, club } = chosen;
 
   const children = await db
     .select({

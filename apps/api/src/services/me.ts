@@ -3,6 +3,7 @@ import {
   effectiveClubCode,
   scopesWith,
   isLocale,
+  type AccountClub,
   type ColorMode,
   type Locale,
   type MeResponse,
@@ -10,8 +11,9 @@ import {
   type TeamFunction,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, eq, inArray } from 'drizzle-orm';
-import { actorCan, isAdminActor, moduleEnabled, type Actor } from '../actor';
+import { and, count, eq, inArray, isNull, notInArray } from 'drizzle-orm';
+import { actorCan, isAdminActor, loadActor, moduleEnabled, type Actor } from '../actor';
+import { forbidden } from '../errors';
 import { resolveMediaUrl } from '../storage/media-links';
 import { loadScopeContext, targetsWith } from './scopes';
 import { adminPermissions } from './admin';
@@ -20,6 +22,40 @@ import { clubCashLevel } from './club-cash';
 import { canInvite } from './invitations';
 import { areaAccess } from './area-overview';
 import { twoFactorMissing } from './two-factor';
+
+/** Vereine des Kontos für die Vereinsauswahl; leer bei Konten mit nur einem Verein. */
+export async function accountClubs(db: Db, actor: Actor): Promise<AccountClub[]> {
+  const rows = await db
+    .select({ club: s.clubs })
+    .from(s.persons)
+    .innerJoin(s.clubs, eq(s.clubs.id, s.persons.clubId))
+    .where(
+      and(
+        eq(s.persons.userId, actor.user.id),
+        notInArray(s.persons.membershipStatus, ['left']),
+        notInArray(s.clubs.status, ['suspended', 'archived']),
+      ),
+    )
+    .orderBy(s.clubs.name);
+  if (rows.length < 2) return [];
+  const unread = await db
+    .select({ clubId: s.notifications.clubId, n: count() })
+    .from(s.notifications)
+    .where(and(eq(s.notifications.userId, actor.user.id), isNull(s.notifications.readAt)))
+    .groupBy(s.notifications.clubId);
+  return rows.map(({ club }) => ({
+    id: club.id,
+    name: club.name,
+    shortName: club.shortName,
+    shortCode: effectiveClubCode(club.shortCode, club.shortName),
+    logoUrl: resolveMediaUrl(actor.links, club.logoUrl),
+    colorTheme: club.colorTheme,
+    active: club.id === actor.club.id,
+    // Nur die Zahl, nie der Inhalt anderer Vereine
+    unread:
+      club.id === actor.club.id ? 0 : Number(unread.find((u) => u.clubId === club.id)?.n ?? 0),
+  }));
+}
 
 export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
   const ctx = await loadScopeContext(db, actor);
@@ -92,6 +128,7 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       colorMode: actor.club.colorMode,
       timezone: actor.club.timezone,
     },
+    clubs: await accountClubs(db, actor),
     managedPersons: actor.managed.map((m) => ({
       ...m,
       avatarUrl: resolveMediaUrl(actor.links, m.avatarUrl),
@@ -178,4 +215,23 @@ export async function markSeen(db: Db, actor: Actor, key: string, now: Date): Pr
       target: [s.userSeen.userId, s.userSeen.clubId, s.userSeen.key],
       set: { seenAt: now },
     });
+}
+
+/** Aktiven Verein der Sitzung wechseln. Nur Vereine, in denen das Konto eine aktive Person hat. */
+export async function switchClub(
+  db: Db,
+  actor: Actor,
+  clubId: string,
+  now: Date,
+  links: Actor['links'],
+): Promise<MeResponse> {
+  const target = await loadActor(db, actor.user, now, links, clubId).catch(() => null);
+  if (!target || target.club.id !== clubId)
+    throw forbidden('In diesem Verein hast du keinen Zugang.');
+  await db
+    .update(s.sessions)
+    .set({ activeClubId: clubId })
+    .where(eq(s.sessions.id, actor.user.sessionId));
+  await db.update(s.users).set({ lastClubId: clubId }).where(eq(s.users.id, actor.user.id));
+  return buildMe(db, target);
 }
