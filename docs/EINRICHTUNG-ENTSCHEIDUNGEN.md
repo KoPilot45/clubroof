@@ -102,3 +102,11 @@ Der Nutzer hat die Bildschirme des bestehenden Vereinsassistenten (20 Schritte) 
 - **Schiedsrichter:** im Vereinsassistenten nicht mehr angeboten (Entscheidung 27.10.).
 - **Kontaktdaten-Standard** je Abteilung (Jugend, Senioren) statt nach Alter (Korrektur der Korrektur vom selben Tag).
 - **Elternzugänge:** abwählbar, Vorbelegung nach Altersklasse (Jugend an bis U17, ab U18 aus, Senioren aus), das Trainerteam entscheidet manuell (27.10.2026).
+
+### Zweite Durchsicht, Vereinskasse (27.10.2026)
+
+- **Kategorien** (eine Karte „Vorlage übernehmen“): unverständlich für Neue, ersetzt durch eine Auswahlliste mit Vorauswahl und eigenen Kategorien, mit Erklärung „Art der Einnahme/Ausgabe“.
+- **Kostenstellen:** Zweck nicht erklärt, die fünf Vorschläge sind fest im Code (`COST_CENTER_IDEAS`); künftig Beispiel, Vorauswahl aus den Abteilungen des Vereinsassistenten.
+- **Beitragsarten:** Erklärung fehlt, die Vorschläge (Erwachsene, Jugend, Passive; 120/60/30 €) sind Beispielwerte und müssen so beschriftet werden. **Es gibt keine Fälligkeit je Beitragsart**, Name, Betrag und Rhythmus sind die einzigen Felder; die Erinnerung („Tage nach Fälligkeit“) steht deshalb im Leeren.
+- **Zuordnungsregeln:** Die drei Gruppen (unter n Jahre, passiv, übrige) sind fest im Server (`assignByRules`); Vereine mit weiteren Unterscheidungen können sie nicht abbilden. Regelliste frei definierbar.
+- **Haushaltsjahr:** nicht an „Saison“ koppeln (Saisonwechsel ist manuell), sondern Kalenderjahr oder Startmonat.
