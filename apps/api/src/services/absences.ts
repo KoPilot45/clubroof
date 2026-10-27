@@ -121,7 +121,7 @@ export async function updateAbsence(
     .select()
     .from(s.absences)
     .where(and(eq(s.absences.id, id), eq(s.absences.clubId, actor.club.id)));
-  if (!absence || !actor.managedIds.includes(absence.personId)) throw notFound('Die Abwesenheit');
+  if (!absence || !actor.actIds.includes(absence.personId)) throw notFound('Die Abwesenheit');
 
   const kind = input.kind ?? absence.kind;
   if (!ABSENCE_KINDS.includes(kind))
@@ -192,7 +192,7 @@ export async function createAbsence(
   input: CreateAbsenceInput,
   now: Date,
 ): Promise<Absence> {
-  if (!actor.managedIds.includes(input.personId)) {
+  if (!actor.actIds.includes(input.personId)) {
     throw forbidden('Du kannst Abwesenheiten nur für dich oder deine Kinder eintragen.');
   }
   if (!ABSENCE_KINDS.includes(input.kind)) {
@@ -267,7 +267,7 @@ export async function deleteAbsence(db: Db, actor: Actor, id: string, now: Date)
     .where(and(eq(s.absences.id, id), eq(s.absences.clubId, actor.club.id)));
   if (!absence) throw notFound('Die Abwesenheit');
 
-  if (!actor.managedIds.includes(absence.personId)) {
+  if (!actor.actIds.includes(absence.personId)) {
     const coachOf = await db
       .select({ team: { id: s.teams.id, orgUnitId: s.teams.orgUnitId } })
       .from(s.teamMemberships)

@@ -2,6 +2,7 @@
  * Erinnerungen an fehlende Rückmeldungen und Sammelhinweise für Trainer (Konzept §10).
  * Läuft regelmäßig im Hintergrund; `dedupeKey` sorgt dafür, dass nichts doppelt ankommt.
  */
+import { guardianActsForChild } from '../guardian-access';
 import { DEFAULT_REMINDER_HOURS, calendarDayOf, responseDeadline, toIsoDate } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 
@@ -78,7 +79,7 @@ export async function sendReminders(db: Db | Tx, club: Club, now: Date): Promise
     .select({ childId: s.guardianships.childPersonId, userId: s.persons.userId })
     .from(s.guardianships)
     .innerJoin(s.persons, eq(s.persons.id, s.guardianships.guardianPersonId))
-    .where(inArray(s.guardianships.childPersonId, personIds));
+    .where(and(inArray(s.guardianships.childPersonId, personIds), guardianActsForChild));
   const userIds = [
     ...new Set(
       [...open.map((o) => o.person.userId), ...guardians.map((g) => g.userId)].filter(

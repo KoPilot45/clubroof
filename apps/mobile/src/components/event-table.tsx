@@ -106,6 +106,7 @@ function TableRow({
       status: 'pending',
       reason: null,
       canRespond: false,
+      respondedBy: null,
       automatic: false,
       absent: false,
     },

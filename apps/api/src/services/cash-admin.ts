@@ -4,6 +4,7 @@
  * offene Beträge, bestätigen Zahlungsmeldungen, bestimmen Kassenwarte und halten Kassenprüfungen
  * fest. Alles verlangt `cash.manage` für die Mannschaft.
  */
+import { guardianSeesChild } from '../guardian-access';
 import {
   calendarDayOf,
   toIsoDate,
@@ -725,7 +726,7 @@ export async function createPaymentNotice(
   now: Date,
 ): Promise<TeamCash> {
   const { team, isMember } = await loadCashTeam(db, actor, teamId);
-  if (!isMember || !actor.managedIds.includes(input.personId)) {
+  if (!isMember || !actor.actIds.includes(input.personId)) {
     throw forbidden('Du kannst nur Zahlungen für dich oder deine Kinder melden.');
   }
   await requireMembers(db, team.id, [input.personId], today(actor, now));
@@ -873,7 +874,13 @@ async function treasurerCandidates(db: Db, actor: Actor, team: TeamRow, day: str
           })
           .from(s.guardianships)
           .innerJoin(s.persons, eq(s.persons.id, s.guardianships.guardianPersonId))
-          .where(and(inArray(s.guardianships.childPersonId, players), isNotNull(s.persons.userId)))
+          .where(
+            and(
+              inArray(s.guardianships.childPersonId, players),
+              isNotNull(s.persons.userId),
+              guardianSeesChild,
+            ),
+          )
       : [],
   ]);
   const childNames = new Map(
