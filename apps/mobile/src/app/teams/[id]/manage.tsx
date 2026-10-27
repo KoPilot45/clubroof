@@ -26,6 +26,7 @@ import {
 } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { TEAM_FUNCTION_LABELS } from '@/lib/labels';
+import { PARTICIPATION_OPTIONS } from '@/lib/team-labels';
 import { useSignedIn } from '@/lib/session';
 import { useToast } from '@/lib/toast';
 import { useConfirmDelete } from '@/lib/confirm';
@@ -334,6 +335,8 @@ function ProfileEditor({
   const [visibility, setVisibility] = useState<AttendanceVisibility>(profile.attendanceVisibility);
   const [lineupVisible, setLineupVisible] = useState(profile.lineupVisible);
   const [responsesVisible, setResponsesVisible] = useState(profile.responsesVisible);
+  const [mode, setMode] = useState(profile.participationMode);
+  const [matchMode, setMatchMode] = useState(profile.matchParticipationMode);
   const [reminder, setReminder] = useState(profile.reminderHours?.toString() ?? '');
   const [reasonRequired, setReasonRequired] = useState(profile.declineReasonRequired);
   const [allowMaybe, setAllowMaybe] = useState(profile.allowMaybe);
@@ -352,6 +355,8 @@ function ProfileEditor({
       await api(`/teams/${teamId}/profile`, {
         method: 'PUT',
         body: {
+          participationMode: mode,
+          matchParticipationMode: matchMode,
           matchMeetingMinutes: match ? Number(match) : null,
           trainingMeetingMinutes: training ? Number(training) : null,
           defaultMeetingPoint: point.trim() || null,
@@ -486,6 +491,22 @@ function ProfileEditor({
           onToggle={setFormat}
         />
         <T variant="label">Antworten auf Termine</T>
+        <ChoiceChips
+          label="Teilnahme am Training"
+          options={PARTICIPATION_OPTIONS}
+          selected={[mode]}
+          onToggle={setMode}
+        />
+        <ChoiceChips
+          label="Teilnahme an Spielen"
+          options={PARTICIPATION_OPTIONS}
+          selected={[matchMode]}
+          onToggle={setMatchMode}
+        />
+        <T variant="caption">
+          „Automatisch zugesagt“ ist empfohlen; bei aktiver Antwort gilt jede Person als offen, bis
+          sie antwortet. Änderungen gelten für neue Termine.
+        </T>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <T style={{ flex: 1, fontWeight: '600' }}>„Unsicher“ als Antwort erlauben</T>
           <Toggle label="Unsicher erlauben" value={allowMaybe} onChange={setAllowMaybe} />

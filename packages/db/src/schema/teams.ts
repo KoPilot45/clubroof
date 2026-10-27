@@ -44,7 +44,10 @@ export const teams = pgTable(
     ageGroup: text(),
     league: text(),
     template: teamTemplateEnum().notNull(),
+    /** Teilnahme-Modell fürs Training (alle Termine außer Spielen) */
     participationMode: participationModeEnum().notNull(),
+    /** Teilnahme-Modell für Spiele (Paket EINRICHTUNG-ENTSCHEIDUNGEN); Migration übernimmt den bisherigen Wert */
+    matchParticipationMode: participationModeEnum().notNull().default('auto_accept'),
     sortOrder: integer().notNull().default(0),
     /** Aufstellung für Spieler und Eltern sichtbar (Paket AUF); Standard aus, das Trainerteam schaltet ein */
     lineupVisible: boolean().notNull().default(false),

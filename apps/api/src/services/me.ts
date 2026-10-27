@@ -60,6 +60,7 @@ export async function buildMe(db: Db, actor: Actor): Promise<MeResponse> {
       ageGroup: m.team.ageGroup,
       league: m.team.league,
       participationMode: m.team.participationMode,
+      matchParticipationMode: m.team.matchParticipationMode,
       personId: m.personId,
       functions: [m.function as TeamFunction],
       modules: MODULES.filter((mod) => moduleEnabled(actor, mod.key, m.team)).map((mod) => mod.key),

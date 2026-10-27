@@ -50,7 +50,10 @@ export type MyTeam = {
   badge: string;
   ageGroup: string | null;
   league: string | null;
+  /** Teilnahme-Modell fürs Training */
   participationMode: ParticipationMode;
+  /** Teilnahme-Modell für Spiele */
+  matchParticipationMode: ParticipationMode;
   /** Person (ich selbst oder mein Kind), über die ich zu dieser Mannschaft gehöre */
   personId: string;
   functions: TeamFunction[];
@@ -1310,6 +1313,10 @@ export type AddMembershipInput = {
 
 /** Mannschaftsprofil, das Trainer selbst pflegen (Treffpunkt-Regeln, DFBnet-Schreibweisen) */
 export type TeamProfile = {
+  /** Teilnahme-Modell fürs Training (Standard: automatisch zugesagt) */
+  participationMode: ParticipationMode;
+  /** Teilnahme-Modell für Spiele */
+  matchParticipationMode: ParticipationMode;
   /** Minuten vor Spielbeginn (leer = kein automatisches Treffen) */
   matchMeetingMinutes: number | null;
   /** Minuten vor Trainingsbeginn */
@@ -1532,6 +1539,7 @@ export type AdminTeam = {
   league: string | null;
   template: TeamTemplate;
   participationMode: ParticipationMode;
+  matchParticipationMode: ParticipationMode;
   orgUnit: { id: string; name: string };
   seasonId: string;
   players: number;
@@ -1555,7 +1563,10 @@ export type TeamInput = {
   league?: string | null;
   orgUnitId: string;
   template: TeamTemplate;
+  /** Training */
   participationMode: ParticipationMode;
+  /** Spiele; ohne Angabe wie das Training */
+  matchParticipationMode?: ParticipationMode;
   /** Ohne Angabe: laufende Saison */
   seasonId?: string | null;
 };

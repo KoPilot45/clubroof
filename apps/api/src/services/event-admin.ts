@@ -14,6 +14,7 @@ import {
   type EventDetail,
   type MatchKind,
   type UpdateEventInput,
+  participationModeFor,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { randomUUID } from 'node:crypto';
@@ -284,7 +285,7 @@ export async function createTeamEvent(
             personId: m.personId,
             role: 'player' as const,
             status:
-              team.participationMode === 'active_response'
+              participationModeFor(team, input.type) === 'active_response'
                 ? ('pending' as const)
                 : ('yes' as const),
           };
@@ -310,7 +311,7 @@ export async function createTeamEvent(
       actor,
       await recipientsFor(db, memberIds, actor.user.id),
       {
-        level: team.participationMode === 'active_response' ? 'action' : 'info',
+        level: participationModeFor(team, input.type) === 'active_response' ? 'action' : 'info',
         topic: 'events',
         teamId: team.id,
         title: repeat > 1 ? `Neue Terminserie: ${title}` : `Neuer Termin: ${title}`,

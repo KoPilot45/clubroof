@@ -1,4 +1,9 @@
-import { ATTENDANCE_VISIBILITIES, MATCH_KINDS, SCHEDULE_FIELDS } from '@clubroof/core';
+import {
+  ATTENDANCE_VISIBILITIES,
+  MATCH_KINDS,
+  PARTICIPATION_MODES,
+  SCHEDULE_FIELDS,
+} from '@clubroof/core';
 import type {
   SchedulePreview,
   TeamCandidate,
@@ -213,6 +218,8 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: {
         params: teamParams,
         body: z.object({
+          participationMode: z.enum(PARTICIPATION_MODES).optional(),
+          matchParticipationMode: z.enum(PARTICIPATION_MODES).optional(),
           matchMeetingMinutes: z.number().int().min(0).max(300).nullable().optional(),
           trainingMeetingMinutes: z.number().int().min(0).max(300).nullable().optional(),
           defaultMeetingPoint: z.string().max(120).nullable().optional(),

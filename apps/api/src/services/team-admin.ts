@@ -24,6 +24,7 @@ import {
   type TeamAdminOverview,
   type TeamDetailAdmin,
   type TeamInput,
+  participationModeFor,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, eq, gt, gte, inArray, isNull, max, ne, notInArray, or, sql } from 'drizzle-orm';
@@ -125,6 +126,7 @@ async function teamsOf(db: Db, actor: Actor, seasonId: string, now: Date): Promi
       league: t.league,
       template: t.template,
       participationMode: t.participationMode,
+      matchParticipationMode: t.matchParticipationMode,
       orgUnit: { id: t.orgUnitId, name: units.find((u) => u.id === t.orgUnitId)?.name ?? '' },
       seasonId: t.seasonId,
       players: own.filter((c) => c.fn === 'player').reduce((a, c) => a + c.n, 0),
@@ -231,6 +233,7 @@ export async function createTeam(
         league: input.league?.trim() || null,
         template: input.template,
         participationMode: input.participationMode,
+        matchParticipationMode: input.matchParticipationMode ?? input.participationMode,
         sortOrder: (last ?? 0) + 1,
       })
       .returning({ id: s.teams.id });
@@ -279,6 +282,8 @@ export async function updateTeam(
   if (input.league !== undefined) patch.league = input.league?.trim() || null;
   if (input.template !== undefined) patch.template = input.template;
   if (input.participationMode !== undefined) patch.participationMode = input.participationMode;
+  if (input.matchParticipationMode !== undefined)
+    patch.matchParticipationMode = input.matchParticipationMode;
   if (Object.keys(patch).length) {
     await db.update(s.teams).set(patch).where(eq(s.teams.id, id));
     await audit(
@@ -386,6 +391,7 @@ export async function prepareSeason(
           league: t.league,
           template: t.template,
           participationMode: t.participationMode,
+          matchParticipationMode: t.matchParticipationMode,
           sortOrder: t.sortOrder,
           previousTeamId: t.id,
         })
@@ -546,7 +552,7 @@ export async function startSeason(
         .update(s.events)
         .set({ teamId: t.id })
         .where(and(eq(s.events.teamId, t.previousTeamId), gt(s.events.startsAt, now)))
-        .returning({ id: s.events.id, status: s.events.status });
+        .returning({ id: s.events.id, status: s.events.status, type: s.events.type });
       // Offener Spielerbedarf und Angebote der Gastspielerbörse gehören ebenfalls zur Nachfolgemannschaft
       await tx
         .update(s.playerDemands)
@@ -557,6 +563,7 @@ export async function startSeason(
         .set({ teamId: t.id })
         .where(eq(s.playerOffers.teamId, t.previousTeamId));
       const scheduled = moved.filter((e) => e.status === 'scheduled').map((e) => e.id);
+      const typeOf = new Map(moved.map((e) => [e.id, e.type]));
       if (scheduled.length === 0) continue;
       const members = await tx
         .select({ personId: s.teamMemberships.personId, fn: s.teamMemberships.function })
@@ -585,7 +592,8 @@ export async function startSeason(
                 personId,
                 role: isPlayer(personId) ? ('player' as const) : ('coach' as const),
                 status:
-                  isPlayer(personId) && t.participationMode === 'active_response'
+                  isPlayer(personId) &&
+                  participationModeFor(t, typeOf.get(eventId)!) === 'active_response'
                     ? ('pending' as const)
                     : ('yes' as const),
               })),

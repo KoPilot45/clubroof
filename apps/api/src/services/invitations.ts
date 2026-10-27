@@ -25,6 +25,7 @@ import {
   type JoinInfo,
   type JoinRequestInput,
   type JoinRequestItem,
+  participationModeFor,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, gt, gte, inArray, isNull, or, sql } from 'drizzle-orm';
@@ -688,7 +689,7 @@ export async function approveJoin(
         validFrom: today,
       });
       const future = await tx
-        .select({ id: s.events.id })
+        .select({ id: s.events.id, type: s.events.type })
         .from(s.events)
         .where(
           and(
@@ -707,7 +708,7 @@ export async function approveJoin(
               personId,
               role: 'player' as const,
               status:
-                team.participationMode === 'active_response'
+                participationModeFor(team, e.type) === 'active_response'
                   ? ('pending' as const)
                   : ('yes' as const),
             })),

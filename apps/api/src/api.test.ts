@@ -9931,6 +9931,96 @@ describe.skipIf(!url)('API', () => {
     });
   });
 
+  describe('Teilnahme-Modell je Terminart (EINRICHTUNG-ENTSCHEIDUNGEN)', () => {
+    it('wendet Training und Spiele getrennt an; nur das Trainerteam stellt um', async () => {
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const team = player.me.teams[0]!;
+      const statusOf = async (type: 'training' | 'match', startsAt: string) => {
+        const made = await send<EventDetail>('POST', `/teams/${team.id}/events`, admin.token, {
+          type,
+          startsAt,
+          ...(type === 'match' ? { opponentName: 'TSV Modelltest' } : {}),
+        });
+        expect(made.status).toBe(201);
+        const mine = await get<EventDetail>(`/events/${made.body.id}`, player.token);
+        await send('POST', `/events/${made.body.id}/cancel`, admin.token, { reason: 'Test' });
+        return mine.myResponses[0]!.status;
+      };
+
+      const saved = await send<TeamProfile>('PUT', `/teams/${team.id}/profile`, admin.token, {
+        participationMode: 'auto_accept',
+        matchParticipationMode: 'active_response',
+      });
+      expect(saved.status).toBe(200);
+      expect(saved.body).toMatchObject({
+        participationMode: 'auto_accept',
+        matchParticipationMode: 'active_response',
+      });
+      expect(await statusOf('training', '2026-12-02T18:00:00.000Z')).toBe('yes');
+      expect(await statusOf('match', '2026-12-05T12:00:00.000Z')).toBe('pending');
+
+      // Umgekehrt
+      await send('PUT', `/teams/${team.id}/profile`, admin.token, {
+        participationMode: 'active_response',
+        matchParticipationMode: 'auto_accept',
+      });
+      expect(await statusOf('training', '2026-12-03T18:00:00.000Z')).toBe('pending');
+      expect(await statusOf('match', '2026-12-06T12:00:00.000Z')).toBe('yes');
+
+      // Spieler dürfen das Modell nicht ändern, ungültige Werte werden abgelehnt
+      expect(
+        (
+          await send('PUT', `/teams/${team.id}/profile`, player.token, {
+            matchParticipationMode: 'active_response',
+          })
+        ).status,
+      ).toBe(403);
+      expect(
+        (
+          await send('PUT', `/teams/${team.id}/profile`, admin.token, {
+            participationMode: 'absences_only',
+          })
+        ).status,
+      ).toBe(400);
+
+      // Zurück auf den Ausgangszustand
+      await send('PUT', `/teams/${team.id}/profile`, admin.token, {
+        participationMode: team.participationMode,
+        matchParticipationMode: team.matchParticipationMode,
+      });
+    });
+  });
+
+  describe('Eltern mit Kindern verknüpfen (Mannschaftsassistent)', () => {
+    it('verknüpft nur mit dem Recht „Mitglieder verwalten“ und nur im eigenen Verein', async () => {
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const child = await send<MemberDetail>('POST', '/admin/members', admin.token, {
+        firstName: 'Kind',
+        lastName: 'Verknüpfungstest',
+      });
+      const parent = await send<MemberDetail>('POST', '/admin/members', admin.token, {
+        firstName: 'Eltern',
+        lastName: 'Verknüpfungstest',
+      });
+      const link = (token: string, childId: string, guardianPersonId: string) =>
+        send<MemberDetail>('POST', `/admin/members/${childId}/guardians`, token, {
+          guardianPersonId,
+        });
+      expect((await link(player.token, child.body.id, parent.body.id)).status).toBe(403);
+      const ok = await link(admin.token, child.body.id, parent.body.id);
+      expect(ok.status).toBe(200);
+      expect(ok.body.guardians.map((g) => g.id)).toEqual([parent.body.id]);
+      // wiederholen ist unschädlich
+      expect((await link(admin.token, child.body.id, parent.body.id)).status).toBe(200);
+      expect((await link(admin.token, child.body.id, child.body.id)).status).toBe(400);
+      expect(
+        (await link(admin.token, child.body.id, '00000000-0000-4000-8000-000000000000')).status,
+      ).toBe(404);
+    });
+  });
+
   describe('Antwortregeln der Mannschaft (E2)', () => {
     it('erzwingt Absagegrund, kann „Unsicher“ abschalten und zeigt den Willkommenstext', async () => {
       // Die Demodaten ändern sich im Lauf der Tests: die aktuelle Mannschaft der Spielerin nehmen, angelegt vom Admin

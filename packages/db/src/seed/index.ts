@@ -508,6 +508,7 @@ export async function seed(
           league: t.league,
           template: t.template,
           participationMode: t.mode,
+          matchParticipationMode: t.mode,
           sortOrder: i,
           // Ausbau: Spielform nach Altersklasse und je Mannschaft unterschiedliche Sichtbarkeiten und Regeln
           ...(extended ? { matchFormat: defaultLineupSize(t.ageGroup), ...TEAM_RULES[t.key] } : {}),

@@ -33,6 +33,7 @@ const teamFields = {
   league: z.string().trim().max(80).nullish(),
   template: z.enum(TEAM_TEMPLATES),
   participationMode: z.enum(PARTICIPATION_MODES),
+  matchParticipationMode: z.enum(PARTICIPATION_MODES).optional(),
 };
 
 /** Module, Mannschaften und Saisonwechsel. Rechte prüfen die Services. */

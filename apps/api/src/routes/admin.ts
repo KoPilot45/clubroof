@@ -14,6 +14,7 @@ import {
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import {
+  addGuardian,
   addMembership,
   assignRole,
   createMember,
@@ -270,6 +271,21 @@ export const adminRoutes: FastifyPluginAsyncZod = async (app) => {
     },
     async (request): Promise<MemberDetail> =>
       addMembership(app.db, request.actor!, request.params.personId, request.body, app.now()),
+  );
+
+  app.post(
+    '/admin/members/:personId/guardians',
+    {
+      schema: { params: memberParams, body: z.object({ guardianPersonId: z.uuid() }) },
+    },
+    async (request): Promise<MemberDetail> =>
+      addGuardian(
+        app.db,
+        request.actor!,
+        request.params.personId,
+        request.body.guardianPersonId,
+        app.now(),
+      ),
   );
 
   app.delete(

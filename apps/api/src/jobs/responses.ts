@@ -2,7 +2,13 @@
  * Erinnerungen an fehlende Rückmeldungen und Sammelhinweise für Trainer (Konzept §10).
  * Läuft regelmäßig im Hintergrund; `dedupeKey` sorgt dafür, dass nichts doppelt ankommt.
  */
-import { DEFAULT_REMINDER_HOURS, calendarDayOf, responseDeadline, toIsoDate } from '@clubroof/core';
+import {
+  DEFAULT_REMINDER_HOURS,
+  calendarDayOf,
+  participationModeFor,
+  responseDeadline,
+  toIsoDate,
+} from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
@@ -55,7 +61,7 @@ const when = (date: Date, timeZone: string) =>
 /** Erinnert Spieler bzw. Eltern, deren Zu- oder Absage noch fehlt. */
 export async function sendReminders(db: Db | Tx, club: Club, now: Date): Promise<number> {
   const events = (await upcoming(db, club, now, 10)).filter(
-    (e) => e.team.participationMode === 'active_response' && e.responseEnd > now,
+    (e) => participationModeFor(e.team, e.event.type) === 'active_response' && e.responseEnd > now,
   );
   if (events.length === 0) return 0;
   const open = await db

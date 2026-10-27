@@ -34,6 +34,7 @@ import {
   type RoleCatalog,
   type TeamFunction,
   type UpdateMemberInput,
+  participationModeFor,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, gt, gte, inArray, isNull, or } from 'drizzle-orm';
@@ -612,7 +613,7 @@ export async function syncFutureParticipation(
   now: Date,
 ) {
   const events = await tx
-    .select({ id: s.events.id })
+    .select({ id: s.events.id, type: s.events.type })
     .from(s.events)
     .where(
       and(
@@ -623,6 +624,7 @@ export async function syncFutureParticipation(
     );
   if (events.length === 0) return;
   const ids = events.map((e) => e.id);
+  const typeOf = new Map(events.map((e) => [e.id, e.type]));
   if (fn === null) {
     // Nur eigene Teilnahme entfernen, Gastspieler-Einsätze bleiben bestehen
     await tx
@@ -646,7 +648,7 @@ export async function syncFutureParticipation(
         personId,
         role: isPlayer ? ('player' as const) : ('coach' as const),
         status:
-          isPlayer && team.participationMode === 'active_response'
+          isPlayer && participationModeFor(team, typeOf.get(eventId)!) === 'active_response'
             ? ('pending' as const)
             : ('yes' as const),
       })),
@@ -836,6 +838,26 @@ export async function addMembership(
   requireManageMembers(actor);
   await addMembershipCore(db, actor, personId, input, now);
   return getMember(db, actor, personId, now);
+}
+
+/** Verknüpft eine Elternperson mit einem Kind (beide aus demselben Verein); wiederholen ist unschädlich. */
+export async function addGuardian(
+  db: Db,
+  actor: Actor,
+  childPersonId: string,
+  guardianPersonId: string,
+  now: Date,
+): Promise<MemberDetail> {
+  requireManageMembers(actor);
+  if (childPersonId === guardianPersonId)
+    throw new HttpError(400, 'validation', 'Ein Kind kann nicht sein eigener Elternteil sein.');
+  await loadPerson(db, actor, childPersonId);
+  await loadPerson(db, actor, guardianPersonId);
+  await db
+    .insert(s.guardianships)
+    .values({ clubId: actor.club.id, guardianPersonId, childPersonId, createdAt: now })
+    .onConflictDoNothing();
+  return getMember(db, actor, childPersonId, now);
 }
 
 export async function endMembershipCore(

@@ -49,6 +49,7 @@ function Editor({ team }: { team: TeamDetailAdmin }) {
   const [league, setLeague] = useState(team.league ?? '');
   const [template, setTemplate] = useState<TeamTemplate>(team.template);
   const [mode, setMode] = useState<ParticipationMode>(team.participationMode);
+  const [matchMode, setMatchMode] = useState<ParticipationMode>(team.matchParticipationMode);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const key = ['admin', 'team', team.id];
@@ -66,6 +67,7 @@ function Editor({ team }: { team: TeamDetailAdmin }) {
           league: league.trim() || null,
           template,
           participationMode: mode,
+          matchParticipationMode: matchMode,
         },
       }),
     onSuccess: (data) => {
@@ -149,10 +151,16 @@ function Editor({ team }: { team: TeamDetailAdmin }) {
             onToggle={(v) => (setTemplate(v), setSaved(false))}
           />
           <ChoiceChips
-            label="Teilnahme an Terminen"
+            label="Teilnahme am Training"
             options={PARTICIPATION_OPTIONS}
             selected={[mode]}
             onToggle={(v) => (setMode(v), setSaved(false))}
+          />
+          <ChoiceChips
+            label="Teilnahme an Spielen"
+            options={PARTICIPATION_OPTIONS}
+            selected={[matchMode]}
+            onToggle={(v) => (setMatchMode(v), setSaved(false))}
           />
           {saved ? <Chip tone="success" icon="checkmark-circle" label="Gespeichert" /> : null}
           <Button
