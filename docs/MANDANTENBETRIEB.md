@@ -70,15 +70,20 @@ ID fremder Datensätze (Termine, Personen, Buchungen, Belege); Dateilinks (signi
 geprüft); Tokens (Einladung, Passwort-Reset, Kalender, Geräte) ohne Vereinsüberschneidung; Hintergrundjobs (`jobs/*`, `notify/*`) arbeiten je Verein;
 Suche (`search.ts`); Importe/Exporte; Wiederholung PILOT-SICHERHEIT F01, F02, F06, F07 mit zwei Vereinen.
 
-## 8. Offene Fachfragen (bitte entscheiden)
+## 8. Entscheidungen (27.10.2026) und noch offen
 
-1. **Konto ohne Verein** (Verein verlassen/gelöscht): Konto bleibt bestehen und zeigt nur „Code eingeben“, oder wird mit dem letzten Verein gelöscht?
-2. **Verein löschen:** nur sperren/archivieren (Daten bleiben für Aufbewahrungsfristen, z. B. Belege 10 Jahre) oder auch endgültig löschen mit Frist?
-3. **Datenübernahme** zwischen Vereinen: keine (jeder Verein hat eigene Person und eigene Daten) – bestätigen?
-4. **Betreiber-Zugang:** nur Web-Verwaltung (empfohlen) oder auch in der App? Wer sind die ersten Betreiber (nur Sie)?
-5. **Support-Zugriff:** lesend und mit Freigabe des Admins wie beschrieben – ausreichend, oder zusätzlich ein Notfallzugang ohne Freigabe (nicht empfohlen)?
-6. **Code-Format und Gültigkeit:** 8 Zeichen, 14 Tage – einverstanden?
-7. **Bestehender Demoverein** bleibt unverändert der erste Mandant; Paket DEMO-VEREIN legt später einen getrennten Demo-Mandanten an.
+1. **Konto ohne Verein** bleibt bestehen. Nach der Anmeldung: Hinweis „Dieses Konto ist keinem Verein zugeordnet“ mit „Code eingeben“ und **eigenem QR-Code** („Mich aufnehmen lassen“). Ein Admin/Trainer scannt ihn in der Verwaltung und nimmt das Konto in Verein bzw. Mannschaft auf (Person wird angelegt). Zwei Wege: Verein lädt ein – oder Mitglied legt Konto an und lässt sich per QR aufnehmen. Der QR-Code enthält nur eine kurze, ablaufende Konto-Kennung, keine Daten.
+2. **Verein löschen:** vorerst nur sperren und archivieren.
+3. **Datenübernahme:** keine; jeder Verein hat eigene Person und Daten. Sonderfall „Konto in zwei Vereinen“: siehe Abschnitt 5a.
+4. **Betreiber-Zugang:** nur Web-Verwaltung (siehe Antwort in der Sitzung); erster Betreiber: der Eigentümer.
+5. **Support-Zugriff:** mit Freigabe durch einen Admin **oder** Vorstand; Notfall siehe Abschnitt 6a (offen: Bestätigung).
+6. **Code:** 8 Zeichen, 14 Tage – bestätigt.
+
+### 5a. Konto in zwei Vereinen (Sonderfall)
+Jeder Verein hat seine **eigene Person** (Name, Mitgliedsnummer, Kinder, Mannschaften, Rollen, Kontaktsichtbarkeit). Nichts wird zwischen Vereinen geteilt oder abgeglichen; ein Verein sieht nie, dass das Konto im anderen Verein ist. Gemeinsam sind nur E-Mail, Passwort, 2-Faktor, Sprache und Darstellung. Es ist immer **ein** Verein aktiv: Home, Termine, Kasse, Suche und Kalender zeigen nur diesen. In „Ich“ steht „Verein wechseln“ mit Punkt-Markierung bei Neuigkeiten im anderen Verein (nur Zahl, kein Inhalt). Push nennt den Vereinsnamen; Antippen wechselt den Verein. Typische Fälle: Elternteil mit Kindern in zwei Vereinen, Trainer in zwei Vereinen, Spieler mit Zweitspielrecht.
+
+### 6a. Admin nicht mehr erreichbar
+Zuerst gilt: jeder Verein soll mindestens zwei Admins haben (Hinweis in der Verwaltung). Fällt der einzige Admin aus: Der Betreiber darf **keine Daten sehen**, aber „Admin neu einladen“ auslösen – nur nach Prüfung außerhalb der App (Rückruf/Nachweis über Vereinsregister oder hinterlegte Vereins-E-Mail), mit 48 Stunden Wartefrist, Mail an alle Vorstände und die Vereinsadresse (Widerspruch möglich) und Eintrag in beide Protokolle. Der neue Admin bekommt nur die Einladung, keine Altdaten über den Betreiber.
 
 ## 9. Umsetzungsschritte (nach Bestätigung, je eigener Commit)
 
