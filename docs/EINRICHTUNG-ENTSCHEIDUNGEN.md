@@ -101,3 +101,4 @@ Der Nutzer hat die Bildschirme des bestehenden Vereinsassistenten (20 Schritte) 
 - **Treffpunkt-Ort** entfällt im Assistenten (nur Treffzeit), **Willkommenstext-Schritt** entfällt, **Hinweis zum Zeitraum der Trainingsserie** kommt dazu.
 - **Schiedsrichter:** im Vereinsassistenten nicht mehr angeboten (Entscheidung 27.10.).
 - **Kontaktdaten-Standard** je Abteilung (Jugend, Senioren) statt nach Alter (Korrektur der Korrektur vom selben Tag).
+- **Elternzugänge:** abwählbar, Vorbelegung nach Altersklasse (Jugend an bis U17, ab U18 aus, Senioren aus), das Trainerteam entscheidet manuell (27.10.2026).
