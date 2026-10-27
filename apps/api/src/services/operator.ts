@@ -10,7 +10,7 @@ import type {
   OperatorOverview,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, count, desc, eq, isNull, max, ne } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, isNotNull, isNull, max, ne } from 'drizzle-orm';
 import { findSessionUser, type SessionUser } from '../auth/session';
 import { HttpError, forbidden, notFound, unauthorized } from '../errors';
 import type { Mailer } from '../security/mailer';
@@ -190,7 +190,19 @@ export async function setClubStatus(
     throw forbidden('Dieser Verein ist noch in der Einrichtung.');
   await db.update(s.clubs).set({ status, updatedAt: now }).where(eq(s.clubs.id, clubId));
   // Sitzungen in diesem Verein enden; wer nur hier Mitglied ist, sieht beim nächsten Aufruf den Hinweis
-  if (status !== 'active') await db.delete(s.sessions).where(eq(s.sessions.activeClubId, clubId));
+  if (status !== 'active') {
+    await db.delete(s.sessions).where(eq(s.sessions.activeClubId, clubId));
+    // Sitzungen ohne gemerkten Verein von Mitgliedern dieses Vereins ebenfalls
+    const members = await db
+      .select({ id: s.persons.userId })
+      .from(s.persons)
+      .where(and(eq(s.persons.clubId, clubId), isNotNull(s.persons.userId)));
+    const userIds = members.map((m) => m.id!);
+    if (userIds.length)
+      await db
+        .delete(s.sessions)
+        .where(and(isNull(s.sessions.activeClubId), inArray(s.sessions.userId, userIds)));
+  }
   await logOperator(
     db,
     operatorUserId,

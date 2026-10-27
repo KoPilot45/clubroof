@@ -329,6 +329,7 @@ async function loadActions(db: Db, actor: Actor, now: Date): Promise<ActionItem[
     .where(
       and(
         eq(s.notifications.userId, actor.user.id),
+        eq(s.notifications.clubId, actor.club.id),
         eq(s.notifications.level, 'action'),
         isNull(s.notifications.doneAt),
       ),
@@ -472,7 +473,13 @@ export async function loadHome(db: Db, actor: Actor, now: Date): Promise<HomeRes
     db
       .select({ n: count() })
       .from(s.notifications)
-      .where(and(eq(s.notifications.userId, actor.user.id), isNull(s.notifications.readAt))),
+      .where(
+        and(
+          eq(s.notifications.userId, actor.user.id),
+          eq(s.notifications.clubId, actor.club.id),
+          isNull(s.notifications.readAt),
+        ),
+      ),
     loadBirthdays(db, actor, now),
   ]);
 

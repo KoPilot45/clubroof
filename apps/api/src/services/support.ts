@@ -362,7 +362,7 @@ export async function completeRecovery(
     .where(and(eq(s.roles.clubId, row.clubId), eq(s.roles.key, 'fulladmin')));
   if (!club || !role) throw notFound('Der Verein');
   const token = generateToken();
-  const code = generateCode(8);
+  const code = generateCode(12);
   const expiresAt = new Date(now.getTime() + INVITE_DAYS * 24 * HOUR);
   await db.transaction(async (tx) => {
     const [done] = await tx

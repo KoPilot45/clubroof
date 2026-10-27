@@ -65,15 +65,25 @@ export async function disablePush(api: Api) {
   currentToken = null;
 }
 
-/** Antippen einer Push-Nachricht öffnet den Inhalt – auch beim Kaltstart der App. */
-export function listenForPushTaps(): () => void {
-  void Notifications.getLastNotificationResponseAsync().then((r) => {
-    const link = r?.notification.request.content.data?.link;
-    if (typeof link === 'string') openLink(link);
-  });
-  const sub = Notifications.addNotificationResponseReceivedListener((r) => {
-    const link = r.notification.request.content.data?.link;
-    if (typeof link === 'string') openLink(link);
-  });
+/**
+ * Antippen einer Push-Nachricht öffnet den Inhalt – auch beim Kaltstart der App. `beforeOpen` wechselt bei Bedarf
+ * zuerst den Verein (Meldung aus dem anderen Verein eines Kontos), sonst landet der Link im falschen Verein.
+ */
+export function listenForPushTaps(
+  beforeOpen?: (clubId: string | null) => Promise<void>,
+): () => void {
+  const open = async (data: Record<string, unknown> | undefined) => {
+    const link = data?.link;
+    if (typeof link !== 'string') return;
+    const clubId = typeof data?.clubId === 'string' ? data.clubId : null;
+    await beforeOpen?.(clubId).catch(() => undefined);
+    openLink(link);
+  };
+  void Notifications.getLastNotificationResponseAsync().then((r) =>
+    open(r?.notification.request.content.data),
+  );
+  const sub = Notifications.addNotificationResponseReceivedListener((r) =>
+    open(r.notification.request.content.data),
+  );
   return () => sub.remove();
 }

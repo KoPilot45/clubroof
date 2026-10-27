@@ -22,7 +22,12 @@ export const notificationRoutes: FastifyPluginAsyncZod = async (app) => {
     const rows = await app.db
       .select()
       .from(s.notifications)
-      .where(eq(s.notifications.userId, request.actor!.user.id))
+      .where(
+        and(
+          eq(s.notifications.userId, request.actor!.user.id),
+          eq(s.notifications.clubId, request.actor!.club.id),
+        ),
+      )
       .orderBy(desc(s.notifications.createdAt))
       .limit(100);
     return rows.map((n) => ({
@@ -75,7 +80,11 @@ export const notificationRoutes: FastifyPluginAsyncZod = async (app) => {
       .update(s.notifications)
       .set({ readAt: app.now() })
       .where(
-        and(eq(s.notifications.userId, request.actor!.user.id), isNull(s.notifications.readAt)),
+        and(
+          eq(s.notifications.userId, request.actor!.user.id),
+          eq(s.notifications.clubId, request.actor!.club.id),
+          isNull(s.notifications.readAt),
+        ),
       );
     return reply.status(204).send();
   });

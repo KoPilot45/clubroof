@@ -56,7 +56,11 @@ export async function dispatchPush(db: Db | Tx, sender: PushSender, now: Date): 
           to: device.token,
           title: translate(d.notification.title, languageOf(d.outbox.userId)),
           body: translate(d.notification.body ?? '', languageOf(d.outbox.userId)),
-          data: { link: d.notification.link, notificationId: d.notification.id },
+          data: {
+            link: d.notification.link,
+            notificationId: d.notification.id,
+            clubId: d.notification.clubId,
+          },
           priority: d.notification.level === 'urgent' ? 'high' : 'normal',
         },
       });

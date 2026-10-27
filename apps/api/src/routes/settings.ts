@@ -220,16 +220,17 @@ export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
     async (request, reply): Promise<LoginResponse> => {
       const now = app.now();
       const { userId } = await setupClub(app.db, app.config, app.links, request.body, now);
-      const session = await createSession(app.db, userId, {
-        now,
-        ttlDays: app.config.sessionTtlDays,
-      });
       const actor = await loadActor(
         app.db,
         { sessionId: '', id: userId, email: request.body.admin.email, displayName: '' },
         now,
         app.links,
       );
+      const session = await createSession(app.db, userId, {
+        now,
+        ttlDays: app.config.sessionTtlDays,
+        activeClubId: actor.club.id,
+      });
       reply.code(201);
       return {
         token: session.token,

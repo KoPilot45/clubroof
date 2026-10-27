@@ -706,4 +706,90 @@ describe.skipIf(!url)('Mandantenbetrieb', () => {
       expect(await fingerprint(club2!.id)).toEqual(before);
     }, 300_000);
   });
+
+  it('Review-Fixes: Benachrichtigungen je Verein, Kurzcode nur mit passender E-Mail, gesperrte Vereine', async () => {
+    const [club1] = await conn.db
+      .select()
+      .from(s.clubs)
+      .where(eq(s.clubs.shortName, 'SV Grün-Weiß'));
+    const [club2] = await conn.db
+      .select()
+      .from(s.clubs)
+      .where(eq(s.clubs.shortName, 'FC Neustadt'));
+    const [user] = await conn.db
+      .select()
+      .from(s.users)
+      .where(eq(s.users.email, demo('spieler')));
+    await conn.db.insert(s.notifications).values({
+      clubId: club1!.id,
+      userId: user!.id,
+      level: 'info',
+      category: 'verein',
+      title: 'Nur im Demoverein sichtbar',
+      createdAt: NOW,
+      updatedAt: NOW,
+    });
+    const spieler = await login(demo('spieler'));
+    const inClub1 = spieler.me.club.id === club1!.id ? spieler : null;
+    const token = spieler.token;
+    if (!inClub1) await call('POST', '/me/club', token, { clubId: club1!.id });
+    expect((await call('GET', '/notifications', token)).body).toContain(
+      'Nur im Demoverein sichtbar',
+    );
+    await call('POST', '/me/club', token, { clubId: club2!.id });
+    expect((await call('GET', '/notifications', token)).body).not.toContain(
+      'Nur im Demoverein sichtbar',
+    );
+    await call('POST', '/notifications/read-all', token);
+    const [still] = await conn.db
+      .select()
+      .from(s.notifications)
+      .where(eq(s.notifications.title, 'Nur im Demoverein sichtbar'));
+    expect(still!.readAt).toBeNull();
+
+    // Persönliche Einladung per Kurzcode: nur mit der vorgesehenen E-Mail, ohne Angaben zur Person
+    const [person] = await conn.db
+      .insert(s.persons)
+      .values({
+        clubId: club2!.id,
+        firstName: 'Paula',
+        lastName: 'Platz',
+        email: 'paula@fc-neustadt.example',
+      })
+      .returning({ id: s.persons.id });
+    const erika = await login('erika@fc-neustadt.example', 'sicheres-passwort-1');
+    const invited = await call('POST', '/invitations/person', erika.token, {
+      personId: person!.id,
+      send: false,
+    });
+    expect(invited.statusCode, invited.body).toBeLessThan(300);
+    const { code } = invited.json<{ code: string }>();
+    expect(code).toMatch(/^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/);
+    const info = await call('GET', `/join/${code}`);
+    expect(info.json<{ person: unknown }>().person).toBeNull();
+    const wrong = await call('POST', `/join/${code}/accept`, undefined, {
+      email: 'angreifer@example.org',
+      password: 'sicheres-passwort-9',
+    });
+    expect(wrong.statusCode).toBe(410);
+    const right = await call('POST', `/join/${code}/accept`, undefined, {
+      email: 'paula@fc-neustadt.example',
+      password: 'sicheres-passwort-9',
+    });
+    expect(right.statusCode, right.body).toBe(200);
+
+    // Gesperrter Verein: Einladungen sind nicht mehr einlösbar
+    const link = await call(
+      'POST',
+      `/teams/${(await conn.db.select().from(s.teams).where(eq(s.teams.clubId, club2!.id)))[0]!.id}/invite-link`,
+      erika.token,
+    );
+    const teamCode = link.json<{ code: string }>().code;
+    expect((await call('GET', `/join/${teamCode}`)).statusCode).toBe(200);
+    await call('PUT', `/operator/clubs/${club2!.id}/status`, operatorToken, {
+      status: 'suspended',
+    });
+    expect((await call('GET', `/join/${teamCode}`)).statusCode).toBe(410);
+    await call('PUT', `/operator/clubs/${club2!.id}/status`, operatorToken, { status: 'active' });
+  });
 });

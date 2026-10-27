@@ -12,6 +12,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -51,6 +52,9 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<SessionState>({ status: 'loading', token: null, me: null });
   const queryClient = useQueryClient();
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const switchRef = useRef<((clubId: string) => Promise<void>) | null>(null);
 
   // Beim Start eine gespeicherte Sitzung wiederherstellen
   useEffect(() => {
@@ -131,7 +135,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     void enablePush((path, options) => request(path, { ...options, token }), false).catch(
       () => undefined,
     );
-    return listenForPushTaps();
+    return listenForPushTaps(async (clubId) => {
+      const current = stateRef.current;
+      if (
+        clubId &&
+        current.status === 'signedIn' &&
+        current.me.club.id !== clubId &&
+        current.me.clubs.some((c) => c.id === clubId)
+      )
+        await switchRef.current?.(clubId);
+    });
   }, [state.status, state.token]);
 
   const signOut = useCallback(async () => {
@@ -203,6 +216,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     },
     [state, queryClient],
   );
+
+  switchRef.current = switchClub;
 
   const value = useMemo(
     () => ({ ...state, signIn, signOut, api, refresh, adopt, switchClub }),

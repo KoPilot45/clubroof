@@ -127,17 +127,18 @@ export const joinRoutes: FastifyPluginAsyncZod = async (app) => {
       const now = app.now();
       const { userId } = await acceptInvite(app.db, request.params.token, request.body, now);
       // Direkt angemeldet
-      const session = await createSession(app.db, userId, {
-        now,
-        ttlDays: app.config.sessionTtlDays,
-        userAgent: request.headers['user-agent'],
-      });
       const actor = await loadActor(
         app.db,
         { sessionId: '', id: userId, email: request.body.email, displayName: '' },
         now,
         app.links,
       );
+      const session = await createSession(app.db, userId, {
+        now,
+        ttlDays: app.config.sessionTtlDays,
+        userAgent: request.headers['user-agent'],
+        activeClubId: actor.club.id,
+      });
       return {
         token: session.token,
         expiresAt: session.expiresAt.toISOString(),

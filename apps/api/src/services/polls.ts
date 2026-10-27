@@ -381,6 +381,7 @@ export async function vote(
     .where(
       and(
         eq(s.notifications.userId, actor.user.id),
+        eq(s.notifications.clubId, actor.club.id),
         eq(s.notifications.link, `/polls/${id}`),
         isNull(s.notifications.doneAt),
       ),

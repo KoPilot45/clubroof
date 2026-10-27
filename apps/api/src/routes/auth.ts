@@ -270,7 +270,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
-  app.post('/auth/logout', { preHandler: app.authenticate }, async (request, reply) => {
+  app.post('/auth/logout', { preHandler: app.authenticateAccount }, async (request, reply) => {
     await deleteSession(app.db, request.sessionUser!.sessionId);
     return reply.status(204).send();
   });

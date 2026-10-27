@@ -309,7 +309,7 @@ export async function invitePerson(
     .set({ revokedAt: now })
     .where(and(eq(s.invitations.personId, row.id), isNull(s.invitations.revokedAt)));
   const token = generateToken();
-  const code = generateCode(8);
+  const code = generateCode(12);
   const expiresAt = new Date(now.getTime() + PERSON_DAYS * DAY);
   await db.insert(s.invitations).values({
     clubId: actor.club.id,
@@ -410,6 +410,7 @@ async function loadInvitation(db: Db, token: string, now: Date) {
   if (
     !row ||
     !i ||
+    ['suspended', 'archived'].includes(row.club.status) ||
     i.revokedAt ||
     i.expiresAt <= now ||
     (i.maxUses !== null && i.useCount >= i.maxUses)
@@ -419,7 +420,8 @@ async function loadInvitation(db: Db, token: string, now: Date) {
       'invite_invalid',
       'Diese Einladung ist abgelaufen oder wurde bereits verwendet.',
     );
-  return row;
+  // Per Kurzcode (erratbar) gelten strengere Regeln als beim langen Link
+  return { ...row, viaCode: row.invitation.tokenHash !== hashToken(token) };
 }
 
 export async function getJoinInfo(
@@ -439,8 +441,22 @@ export async function getJoinInfo(
       logoUrl: resolveMediaUrl(links, row.club.logoUrl, now),
     },
     team: row.team ? { badge: row.team.badge, name: row.team.name } : null,
-    person: row.person ? { firstName: row.person.firstName, email: row.invitation.email } : null,
+    // Über einen Kurzcode (erratbar) keine Angaben zur eingeladenen Person
+    person:
+      row.person && !row.viaCode
+        ? { firstName: row.person.firstName, email: row.invitation.email }
+        : null,
   };
+}
+
+/** Persönliche Einladung per Kurzcode: nur mit der E-Mail-Adresse, für die sie ausgestellt wurde. */
+function assertCodeEmail(row: Awaited<ReturnType<typeof loadInvitation>>, email: string) {
+  if (row.viaCode && row.invitation.email && row.invitation.email.toLowerCase() !== email)
+    throw new HttpError(
+      410,
+      'invite_invalid',
+      'Diese Einladung ist abgelaufen oder wurde bereits verwendet.',
+    );
 }
 
 async function ensureEmailFree(db: Db, email: string) {
@@ -466,6 +482,7 @@ export async function acceptInvite(
   if (row.person.userId)
     throw new HttpError(409, 'has_account', 'Für diese Person gibt es bereits ein Konto.');
   const email = input.email.trim().toLowerCase();
+  assertCodeEmail(row, email);
   await ensureEmailFree(db, email);
   checkPassword(input.password, email);
   const passwordHash = await hashPassword(input.password);
@@ -543,6 +560,7 @@ export async function acceptInviteSignedIn(
   if (member)
     throw new HttpError(409, 'already_member', 'Du bist in diesem Verein bereits Mitglied.');
   const [user] = await db.select().from(s.users).where(eq(s.users.id, userId));
+  assertCodeEmail(row, user!.email);
   await db.transaction(async (tx) => {
     const [used] = await tx
       .update(s.invitations)

@@ -3,7 +3,7 @@
  * stellt sicher, dass bei mehreren Server-Prozessen immer nur einer arbeitet.
  */
 import { schema as s, type Db } from '@clubroof/db';
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { PushSender } from '../notify/push';
 
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
@@ -38,7 +38,7 @@ export async function runJobs(db: Db, sender: PushSender, now: Date): Promise<Jo
     async (tx) => {
       let reminders = 0;
       let digests = 0;
-      for (const club of await tx.select().from(s.clubs)) {
+      for (const club of await tx.select().from(s.clubs).where(eq(s.clubs.status, 'active'))) {
         reminders += await sendReminders(tx, club, now);
         digests += await sendCoachDigests(tx, club, now);
       }
@@ -48,7 +48,7 @@ export async function runJobs(db: Db, sender: PushSender, now: Date): Promise<Jo
   // Mannschaftsbeiträge buchen und monatlich an offene Beträge erinnern
   const fees = await locked(db, LOCK_CASH, 0, async (tx) => {
     let charged = 0;
-    for (const club of await tx.select().from(s.clubs)) {
+    for (const club of await tx.select().from(s.clubs).where(eq(s.clubs.status, 'active'))) {
       charged += await chargeDueFees(tx, club, now);
       await autoCashReminders(tx, club, now);
     }

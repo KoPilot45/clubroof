@@ -7,7 +7,7 @@ export type PushMessage = {
   title: string;
   body: string;
   /** Deep Link, den die App beim Antippen öffnet */
-  data: { link: string | null; notificationId: string };
+  data: { link: string | null; notificationId: string; clubId: string };
   priority: 'high' | 'normal';
 };
 

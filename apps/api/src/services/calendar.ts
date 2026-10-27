@@ -143,6 +143,8 @@ export async function calendarIcs(
   } catch {
     return null; // z. B. ausgetreten
   }
+  // Nie in einem anderen Verein antworten, falls der des Abos nicht (mehr) erreichbar ist
+  if (actor.club.id !== feed.feed.clubId) return null;
   if (!moduleEnabled(actor, 'calendar_export')) return null;
   await db
     .update(s.calendarFeeds)
