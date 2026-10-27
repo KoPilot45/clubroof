@@ -85,6 +85,12 @@ export async function submitClaim(
     if (!Number.isInteger(amountCents) || amountCents < 1 || amountCents > 1_000_000)
       throw new HttpError(400, 'invalid_amount', 'Bitte den Betrag angeben.');
   }
+  if (input.kind === 'expense' && actor.club.claimReceiptRequired && !input.receiptImageId)
+    throw new HttpError(
+      400,
+      'receipt_required',
+      'Der Verein verlangt zu jeder Auslage einen Beleg. Bitte füge ein Foto oder eine Datei hinzu.',
+    );
   const receiptRef = input.receiptImageId
     ? await mediaReference(db, actor, input.receiptImageId, 'claim')
     : null;
@@ -150,6 +156,7 @@ export async function listClaims(db: Db, actor: Actor, now: Date): Promise<ClubE
     expenseDate: r.claim.expenseDate,
     receiptUrl: resolveMediaUrl(actor.links, r.claim.receiptRef, now),
     status: claimStatus(r.claim.status),
+    awaitingSecondApproval: r.claim.status === 'submitted' && !!r.claim.firstApprovedByPersonId,
     decidedByName: r.claim.decidedByPersonId
       ? (deciders.get(r.claim.decidedByPersonId) ?? null)
       : null,
@@ -208,6 +215,38 @@ export async function decideClaim(
     throw new HttpError(409, 'already_decided', 'Über diese Auslage ist schon entschieden.');
   if (!decision.approve && decision.reason.trim().length < 3)
     throw new HttpError(400, 'reason_required', 'Bitte die Ablehnung begründen.');
+  // Vier-Augen-Prinzip: ab der Grenze geben zwei verschiedene Personen frei, nie die einreichende selbst
+  const limit = actor.club.claimSecondApprovalCents;
+  if (decision.approve && limit !== null && claim.amountCents >= limit) {
+    if (claim.personId === actor.person.id)
+      throw new HttpError(
+        403,
+        'own_claim',
+        'Diese Auslage hast du selbst eingereicht. Bei diesem Betrag geben zwei andere Personen frei.',
+      );
+    if (!claim.firstApprovedByPersonId) {
+      await db
+        .update(s.clubExpenseClaims)
+        .set({ firstApprovedByPersonId: actor.person.id })
+        .where(eq(s.clubExpenseClaims.id, id));
+      await audit(
+        db,
+        actor,
+        'clubcash.claim',
+        'club_expense_claim',
+        id,
+        `Auslage erstmals freigegeben (zweite Freigabe fehlt): ${euro(claim.amountCents)} – ${claim.description}`,
+        now,
+      );
+      return;
+    }
+    if (claim.firstApprovedByPersonId === actor.person.id)
+      throw new HttpError(
+        409,
+        'second_person_needed',
+        'Du hast schon freigegeben. Ab diesem Betrag muss eine zweite Person bestätigen.',
+      );
+  }
   await db
     .update(s.clubExpenseClaims)
     .set({

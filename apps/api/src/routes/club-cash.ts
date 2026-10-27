@@ -22,6 +22,7 @@ import {
   createTransfer,
   getClubCash,
   listEntries,
+  setCashRules,
   setNonprofit,
   setVisibility,
   updateAccount,
@@ -298,6 +299,32 @@ export const clubCashRoutes: FastifyPluginAsyncZod = async (app) => {
       await setVisibility(app.db, request.actor!, request.body.visibility, app.now());
       // Der Actor trägt noch den alten Wert – neu laden
       request.actor!.club = { ...request.actor!.club, clubCashVisibility: request.body.visibility };
+      return overview(request);
+    },
+  );
+  app.put(
+    '/club-cash/rules',
+    {
+      schema: {
+        body: z.object({
+          fiscalYear: z.enum(['calendar', 'season']).optional(),
+          claimReceiptRequired: z.boolean().optional(),
+          claimSecondApprovalCents: z.number().int().min(100).max(10_000_000).nullable().optional(),
+        }),
+      },
+    },
+    async (request): Promise<ClubCash> => {
+      await setCashRules(app.db, request.actor!, request.body, app.now());
+      const club = request.actor!.club;
+      request.actor!.club = {
+        ...club,
+        fiscalYearKind: request.body.fiscalYear ?? club.fiscalYearKind,
+        claimReceiptRequired: request.body.claimReceiptRequired ?? club.claimReceiptRequired,
+        claimSecondApprovalCents:
+          request.body.claimSecondApprovalCents === undefined
+            ? club.claimSecondApprovalCents
+            : request.body.claimSecondApprovalCents,
+      };
       return overview(request);
     },
   );

@@ -53,6 +53,12 @@ export const clubs = pgTable('clubs', {
   defaultContactVisibility: text().notNull().default('team_and_coaches'),
   /** Wer Beitrittsanfragen freigibt: `team_staff` = Trainerteam der Mannschaft und Verwaltung, `admin_only` = nur die Verwaltung */
   joinApproval: text().notNull().default('team_staff'),
+  /** Haushaltsjahr der Vereinskasse: `calendar` = Kalenderjahr, `season` = Saison (Beginn wie die laufende Saison) */
+  fiscalYearKind: text().notNull().default('calendar'),
+  /** Auslagen brauchen einen Beleg (Fahrtkosten nicht) */
+  claimReceiptRequired: boolean().notNull().default(false),
+  /** Ab diesem Betrag (Cent) muss eine zweite Person eine Auslage freigeben; leer = keine Grenze */
+  claimSecondApprovalCents: integer(),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });

@@ -6,6 +6,8 @@
 import {
   CLUB_CASH_ACCOUNT_KINDS,
   CLUB_CASH_ACCOUNT_KIND_LABEL,
+  CLUB_CASH_AREA_LABEL,
+  CLUB_CASH_CATEGORY_TEMPLATE,
   CLUB_CASH_VISIBILITIES,
   CLUB_CASH_VISIBILITY_INFO,
   CLUB_FEE_INTERVALS,
@@ -36,8 +38,19 @@ import {
   useWizardDraft,
   type SetupMode,
 } from '@/components/wizard';
-import { Button, Card, ChoiceChips, Chip, Loading, T, TextField, Toggle } from '@/components/ui';
+import {
+  Button,
+  Card,
+  ChoiceChips,
+  Chip,
+  DateStepper,
+  Loading,
+  T,
+  TextField,
+  Toggle,
+} from '@/components/ui';
 import { RequestError } from '@/lib/api';
+import { todayIso } from '@/lib/format';
 import { formatEuro, parseEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
@@ -50,6 +63,8 @@ type Draft = {
   flow: SetupMode;
   nonprofit: 'yes' | 'no' | 'unknown';
   simplify: boolean;
+  /** Haushaltsjahr: Kalenderjahr oder Saison */
+  fiscal: 'calendar' | 'season';
   accounts: AccountDraft[];
   template: boolean;
   costCenters: string[];
@@ -64,12 +79,26 @@ type Draft = {
   treasurers: Person[];
   auditors: Person[];
   visibility: ClubCashVisibility;
+  /** Abteilungen (IDs), die eine eigene Kasse bekommen */
+  fundUnits: string[];
+  /** Auslagen: Belegpflicht und Betrag (€) ab dem eine zweite Person freigibt (leer = keine Grenze) */
+  claimReceipt: boolean;
+  claimLimit: string;
+  /** Spenden (nur gemeinnützig): Steuerdaten für Zuwendungsbestätigungen oder später */
+  taxLater: boolean;
+  taxOffice: string;
+  taxNumber: string;
+  taxKind: 'freistellung' | 'feststellung';
+  taxDate: string;
+  taxPeriod: string;
+  taxPurposes: string;
 };
 
 const INITIAL: Draft = {
   flow: 'quick',
   nonprofit: 'unknown',
   simplify: true,
+  fiscal: 'calendar',
   accounts: [{ name: 'Girokonto', kind: 'bank', opening: '' }],
   template: true,
   costCenters: [],
@@ -83,37 +112,56 @@ const INITIAL: Draft = {
   treasurers: [],
   auditors: [],
   visibility: 'treasury',
+  fundUnits: [],
+  claimReceipt: true,
+  claimLimit: '250',
+  taxLater: true,
+  taxOffice: '',
+  taxNumber: '',
+  taxKind: 'freistellung',
+  taxDate: '',
+  taxPeriod: '',
+  taxPurposes: '',
 };
 
 type StepKey =
   | 'intro'
   | 'nonprofit'
+  | 'fiscal'
   | 'accounts'
   | 'categories'
   | 'costcenters'
+  | 'funds'
   | 'fees'
   | 'rules'
   | 'reminders'
   | 'people'
+  | 'claims'
+  | 'donations'
   | 'visibility'
   | 'summary';
 
 const FULL: StepKey[] = [
   'intro',
   'nonprofit',
+  'fiscal',
   'accounts',
   'categories',
   'costcenters',
+  'funds',
   'fees',
   'rules',
   'reminders',
   'people',
+  'claims',
+  'donations',
   'visibility',
   'summary',
 ];
 const QUICK: StepKey[] = [
   'intro',
   'nonprofit',
+  'fiscal',
   'accounts',
   'categories',
   'fees',
@@ -170,7 +218,10 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
 
   const cash = backend.cash;
   if (!cash || !loaded) return <Loading />;
-  const keys = d.flow === 'quick' ? QUICK : FULL;
+  // Spenden-Angaben gibt es nur für gemeinnützige Vereine; Abteilungskassen nur mit mehreren Abteilungen
+  const keys = (d.flow === 'quick' ? QUICK : FULL).filter(
+    (k) => (k !== 'donations' || d.nonprofit === 'yes') && (k !== 'funds' || cash.units.length > 1),
+  );
   const key = keys[Math.min(step, keys.length - 1)]!;
   const hasCategories = cash.categories.length > 0;
 
@@ -195,6 +246,13 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
   const accounts = d.accounts.filter((a) => a.name.trim());
   const fees = d.fees.filter((f) => f.name.trim() && (parseEuro(f.amount) ?? 0) > 0);
   const feeName = (i: string) => fees[Number(i)]?.name ?? '';
+  const taxFilled =
+    d.taxOffice.trim().length >= 2 &&
+    d.taxNumber.trim().length >= 3 &&
+    d.taxPeriod.trim().length >= 4 &&
+    d.taxPurposes.trim().length >= 3;
+  /** Beitragsregeln nach Alter greifen nur mit Geburtsdaten */
+  const hasBirthDates = cash.memberStats.withBirthDate > 0;
   const setAccount = (i: number, p: Partial<AccountDraft>) =>
     patch({ accounts: d.accounts.map((a, n) => (n === i ? { ...a, ...p } : a)) });
   const setFee = (i: number, p: Partial<FeeDraft>) =>
@@ -218,6 +276,16 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
               simplifyCategories: d.nonprofit !== 'yes' && d.simplify,
             },
           });
+        const limitCents = d.claimLimit.trim() ? parseEuro(d.claimLimit) : null;
+        await api('/club-cash/rules', {
+          method: 'PUT',
+          body: {
+            fiscalYear: d.fiscal,
+            ...(d.flow === 'full'
+              ? { claimReceiptRequired: d.claimReceipt, claimSecondApprovalCents: limitCents }
+              : {}),
+          },
+        });
         for (const a of accounts) {
           await api('/club-cash/accounts', {
             method: 'POST',
@@ -228,6 +296,14 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
           await api('/club-cash/categories/template', { method: 'POST' });
         for (const name of d.costCenters) {
           await api('/club-cash/cost-centers', { method: 'POST', body: { name, kind: 'other' } });
+        }
+        for (const unitId of d.fundUnits) {
+          const unit = cash.units.find((u) => u.id === unitId);
+          if (unit)
+            await api('/club-cash/funds', {
+              method: 'POST',
+              body: { name: `Kasse ${unit.name}`, unitIds: [unitId] },
+            });
         }
         const made = new Map<string, string>();
         for (const f of fees) {
@@ -268,6 +344,18 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
             }).catch(() => undefined);
           }
         }
+        if (d.flow === 'full' && d.nonprofit === 'yes' && !d.taxLater && taxFilled)
+          await api('/club-cash/tax', {
+            method: 'PUT',
+            body: {
+              taxOffice: d.taxOffice.trim(),
+              taxNumber: d.taxNumber.trim(),
+              exemptionKind: d.taxKind,
+              exemptionDate: d.taxDate || todayIso(),
+              exemptionPeriod: d.taxPeriod.trim(),
+              purposes: d.taxPurposes.trim(),
+            },
+          }).catch(() => undefined);
         if (d.flow === 'full' && d.visibility !== cash.visibility && cash.canChangeSettings)
           await api('/club-cash/visibility', {
             method: 'PUT',
@@ -304,11 +392,11 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
         {backend.demo ? null : (
           <View style={{ gap: 10 }}>
             <ChoiceCard
-              icon="receipt"
-              title="Beiträge fällig stellen"
-              text="Fällige Beiträge für das laufende Jahr anlegen"
+              icon="stats-chart"
+              title="Haushaltsplan anlegen"
+              text="Soll je Kategorie für das Haushaltsjahr festlegen"
               selected={false}
-              onPress={() => router.replace('/club-cash/fees')}
+              onPress={() => router.replace('/club-cash/budget')}
             />
             <ChoiceCard
               icon="cloud-upload"
@@ -325,11 +413,11 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
               onPress={() => router.replace('/club-cash/new')}
             />
             <ChoiceCard
-              icon="stats-chart"
-              title="Budget planen"
-              text="Soll je Kategorie für das Jahr festlegen"
+              icon="receipt"
+              title="Beiträge fällig stellen"
+              text="Fällige Beiträge für das laufende Jahr anlegen"
               selected={false}
-              onPress={() => router.replace('/club-cash/budget')}
+              onPress={() => router.replace('/club-cash/fees')}
             />
           </View>
         )}
@@ -389,6 +477,43 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
             onChange={(simplify) => patch({ simplify })}
           />
         ) : null}
+      </WizardShell>
+    );
+
+  if (key === 'fiscal')
+    return (
+      <WizardShell
+        {...shell}
+        title="Haushaltsjahr"
+        explanation="Haushaltsplan, Jahresabschluss und Auswertungen rechnen je Haushaltsjahr. Es beginnt entweder am 1. Januar oder mit der Saison."
+        hint={
+          cash.fiscalYear !== d.fiscal
+            ? 'Das Haushaltsjahr lässt sich nur ändern, solange noch kein Jahr abgeschlossen ist.'
+            : undefined
+        }
+      >
+        <ChoiceCard
+          icon="calendar"
+          title="Kalenderjahr"
+          text="1. Januar bis 31. Dezember – üblich für Steuer und Finanzamt"
+          badge="Empfohlen"
+          selected={d.fiscal === 'calendar'}
+          onPress={() => patch({ fiscal: 'calendar' })}
+        />
+        <ChoiceCard
+          icon="football"
+          title="Saison"
+          text="So lang wie die Saison des Vereins, z. B. Juli bis Juni"
+          selected={d.fiscal === 'season'}
+          onPress={() => patch({ fiscal: 'season' })}
+        />
+        {d.flow === 'full' ? (
+          <WhyBox>
+            Wer Beiträge und Zuschüsse nach der Saison abrechnet, plant oft lieber in Saisons. Für
+            die Steuererklärung zählt dagegen meist das Kalenderjahr.
+          </WhyBox>
+        ) : null}
+        <LaterHint where="Vereinskasse › Haushaltsplan" />
       </WizardShell>
     );
 
@@ -474,6 +599,18 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
             onPress={() => patch({ template: !d.template })}
           />
         )}
+        {d.nonprofit === 'yes' && d.template && !hasCategories ? (
+          <Card style={{ gap: 6 }}>
+            <T variant="label" style={{ fontWeight: '700' }}>
+              Zuordnung zu den vier steuerlichen Bereichen
+            </T>
+            {CLUB_CASH_CATEGORY_TEMPLATE.map((c) => (
+              <T key={c.name} variant="caption">
+                {`${t(c.name)} → ${t(CLUB_CASH_AREA_LABEL[c.area])}`}
+              </T>
+            ))}
+          </Card>
+        ) : null}
         <LaterHint where="Vereinskasse › Kategorien" />
       </WizardShell>
     );
@@ -499,6 +636,33 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
           }
         />
         <LaterHint where="Vereinskasse › Kostenstellen" />
+      </WizardShell>
+    );
+
+  if (key === 'funds')
+    return (
+      <WizardShell
+        {...shell}
+        title="Abteilungskassen"
+        explanation="Hat eine Abteilung eigenes Geld (z. B. die Jugend), bekommt sie eine eigene Kasse. Wer die Abteilung leitet, sieht dann nur diese Kasse. Optional."
+        onSkip={next}
+      >
+        <ChoiceChips
+          options={cash.units.map((u) => ({ value: u.id, label: u.name }))}
+          selected={d.fundUnits}
+          check
+          onToggle={(id) =>
+            patch({
+              fundUnits: d.fundUnits.includes(id)
+                ? d.fundUnits.filter((x) => x !== id)
+                : [...d.fundUnits, id],
+            })
+          }
+        />
+        <T variant="caption">
+          Konten legst du danach unter Vereinskasse › Kassen und Konten in der jeweiligen Kasse an.
+        </T>
+        <LaterHint where="Vereinskasse › Kassen" />
       </WizardShell>
     );
 
@@ -560,7 +724,23 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
         explanation="Regeln ordnen allen Mitgliedern ohne laufende Beitragsart eine zu. Ohne Regel bleibt es bei der manuellen Zuordnung."
         onSkip={next}
       >
-        {fees.length === 0 ? (
+        {!hasBirthDates ? (
+          <>
+            <T>
+              Für die Regeln „jünger als … Jahre“ braucht Clubroof die Geburtsdaten der Mitglieder.
+            </T>
+            <WhyBox>
+              Importiere zuerst die Mitgliederliste mit Geburtsdaten. Danach kannst du die Zuordnung
+              unter Vereinskasse › Beiträge nachholen.
+            </WhyBox>
+            <Button
+              label="Später nach dem Import"
+              icon="cloud-upload"
+              variant="outline"
+              onPress={() => router.push('/admin/import')}
+            />
+          </>
+        ) : fees.length === 0 ? (
           <T>Lege zuerst im vorigen Schritt Beitragsarten an.</T>
         ) : (
           <View style={{ gap: 16 }}>
@@ -663,6 +843,120 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
       </WizardShell>
     );
 
+  if (key === 'claims')
+    return (
+      <WizardShell
+        {...shell}
+        title="Auslagen und Freigaben"
+        explanation="Mitglieder reichen Auslagen und Fahrtkosten ein, die Kassenführung prüft sie. Lege fest, wie streng das geschieht."
+        onSkip={next}
+      >
+        <Card style={{ gap: 14 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <T style={{ flex: 1, fontWeight: '600' }}>Beleg ist Pflicht (Fahrtkosten nicht)</T>
+            <Toggle
+              label="Beleg ist Pflicht"
+              value={d.claimReceipt}
+              onChange={(claimReceipt) => patch({ claimReceipt })}
+            />
+          </View>
+          <TextField
+            label="Zweite Freigabe ab Betrag in € (leer = nie)"
+            value={d.claimLimit}
+            onChangeText={(claimLimit) => patch({ claimLimit })}
+            placeholder="250"
+          />
+          <T variant="caption">
+            Ab diesem Betrag müssen zwei verschiedene Personen der Kassenführung freigeben
+            (Vier-Augen-Prinzip). Wer die Auslage eingereicht hat, zählt nicht mit.
+          </T>
+        </Card>
+        {d.flow === 'full' ? (
+          <WhyBox>
+            Ein Beleg schützt bei der Kassenprüfung. Die zweite Freigabe verhindert, dass eine
+            Person allein größere Beträge anweist.
+          </WhyBox>
+        ) : null}
+        <LaterHint where="Vereinskasse › Auslagen" />
+      </WizardShell>
+    );
+
+  if (key === 'donations')
+    return (
+      <WizardShell
+        {...shell}
+        title="Spenden und Zuwendungsbestätigungen"
+        explanation="Für Zuwendungsbestätigungen braucht der Verein Angaben aus dem Freistellungsbescheid. Das trägt die Vereinsadministration ein; die Vorlage wird erst nach rechtlicher Prüfung freigegeben."
+        onSkip={next}
+      >
+        {!cash.canChangeSettings ? (
+          <T>Die Steuerdaten pflegt die Vereinsadministration (Vereinskasse › Steuerdaten).</T>
+        ) : (
+          <>
+            <ChoiceCard
+              icon="time"
+              title="Später eintragen"
+              text="Du ergänzt die Steuerdaten, wenn der Bescheid zur Hand ist"
+              badge="Empfohlen"
+              selected={d.taxLater}
+              onPress={() => patch({ taxLater: true })}
+            />
+            <ChoiceCard
+              icon="document-text"
+              title="Jetzt eintragen"
+              text="Finanzamt, Steuernummer und Bescheid"
+              selected={!d.taxLater}
+              onPress={() => patch({ taxLater: false })}
+            />
+            {!d.taxLater ? (
+              <Card style={{ gap: 12 }}>
+                <TextField
+                  label="Finanzamt"
+                  value={d.taxOffice}
+                  onChangeText={(taxOffice) => patch({ taxOffice })}
+                  maxLength={120}
+                />
+                <TextField
+                  label="Steuernummer"
+                  value={d.taxNumber}
+                  onChangeText={(taxNumber) => patch({ taxNumber })}
+                  maxLength={40}
+                />
+                <ChoiceChips
+                  label="Nachweis"
+                  selected={[d.taxKind]}
+                  onToggle={(taxKind) => patch({ taxKind })}
+                  options={[
+                    { value: 'freistellung' as const, label: t('Freistellungsbescheid') },
+                    { value: 'feststellung' as const, label: t('Feststellung nach § 60a AO') },
+                  ]}
+                />
+                <DateStepper
+                  label="Datum des Bescheids"
+                  value={d.taxDate || todayIso()}
+                  onChange={(taxDate) => patch({ taxDate })}
+                />
+                <TextField
+                  label="Zeitraum (z. B. 2022 bis 2024)"
+                  value={d.taxPeriod}
+                  onChangeText={(taxPeriod) => patch({ taxPeriod })}
+                  maxLength={40}
+                />
+                <TextField
+                  label="Begünstigter Zweck"
+                  value={d.taxPurposes}
+                  onChangeText={(taxPurposes) => patch({ taxPurposes })}
+                  maxLength={200}
+                  placeholder={t('z. B. Förderung des Sports')}
+                />
+              </Card>
+            ) : null}
+          </>
+        )}
+        <LaterHint where="Vereinskasse › Steuerdaten" />
+      </WizardShell>
+    );
+
   if (key === 'visibility')
     return (
       <WizardShell
@@ -695,6 +989,11 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
       label: t('Gemeinnützig'),
       value: d.nonprofit === 'yes' ? t('Ja') : d.nonprofit === 'no' ? t('Nein') : t('offen'),
       key: 'nonprofit',
+    },
+    {
+      label: t('Haushaltsjahr'),
+      value: d.fiscal === 'season' ? t('Saison') : t('Kalenderjahr'),
+      key: 'fiscal',
     },
     {
       label: t('Konten'),
@@ -730,6 +1029,20 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
       value: d.treasurers.map((p) => p.name).join(' · '),
       key: 'people',
     },
+    ...(d.flow === 'full'
+      ? [
+          {
+            label: t('Auslagen'),
+            value: [
+              d.claimReceipt ? t('Beleg Pflicht') : t('Beleg freiwillig'),
+              d.claimLimit.trim()
+                ? t(`zweite Freigabe ab ${formatEuro(parseEuro(d.claimLimit) ?? 0)}`)
+                : t('keine zweite Freigabe'),
+            ].join(' · '),
+            key: 'claims' as const,
+          },
+        ]
+      : []),
   ];
   return (
     <WizardShell

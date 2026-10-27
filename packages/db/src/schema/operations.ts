@@ -801,6 +801,8 @@ export const clubExpenseClaims = pgTable(
     status: text().notNull().default('submitted'),
     decidedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     decidedAt: timestamp({ withTimezone: true }),
+    /** Erste Freigabe bei Beträgen über der Grenze (Vier-Augen-Prinzip); die zweite Person schließt ab */
+    firstApprovedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     rejectReason: text(),
     /** Ausgabe im Kassenbuch nach der Zahlung */
     entryId: uuid().references(() => clubCashEntries.id),

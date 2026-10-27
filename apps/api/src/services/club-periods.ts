@@ -7,10 +7,44 @@ import { and, eq, isNotNull, isNull } from 'drizzle-orm';
 import { HttpError } from '../errors';
 
 const yearOf = (day: string) => Number(day.slice(0, 4));
+const pad = (n: number) => String(n).padStart(2, '0');
 
-/** Wirft 409, wenn das Jahr des Datums abgeschlossen ist (Buchen, Stornieren, Zahlung). */
+/** Haushaltsjahr des Vereins: Beginnmonat (1 = Kalenderjahr; bei „Saison“ der Beginn der laufenden Saison). */
+export type Fiscal = { startMonth: number };
+
+export async function fiscalOf(db: Db, clubId: string): Promise<Fiscal> {
+  const [club] = await db
+    .select({ kind: s.clubs.fiscalYearKind })
+    .from(s.clubs)
+    .where(eq(s.clubs.id, clubId));
+  if (club?.kind !== 'season') return { startMonth: 1 };
+  const [season] = await db
+    .select({ startsOn: s.seasons.startsOn })
+    .from(s.seasons)
+    .where(and(eq(s.seasons.clubId, clubId), eq(s.seasons.isCurrent, true)));
+  return { startMonth: season ? Number(season.startsOn.slice(5, 7)) : 1 };
+}
+
+/** Haushaltsjahr (Nummer = Jahr des Beginns) zu einem Datum. */
+export const fiscalYearOf = (f: Fiscal, day: string) =>
+  f.startMonth === 1 || Number(day.slice(5, 7)) >= f.startMonth ? yearOf(day) : yearOf(day) - 1;
+
+/** Erster und letzter Tag eines Haushaltsjahres. */
+export function fiscalRange(f: Fiscal, year: number): { from: string; to: string } {
+  if (f.startMonth === 1) return { from: `${year}-01-01`, to: `${year}-12-31` };
+  const last = new Date(Date.UTC(year + 1, f.startMonth - 1, 0)).toISOString().slice(0, 10);
+  return { from: `${year}-${pad(f.startMonth)}-01`, to: last };
+}
+
+/** Letzter Tag vor Beginn des Haushaltsjahres (Stichtag der Eröffnungsbilanz). */
+export const dayBeforeFiscal = (f: Fiscal, year: number) =>
+  new Date(Date.parse(`${fiscalRange(f, year).from}T00:00:00Z`) - 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+
+/** Wirft 409, wenn das Haushaltsjahr des Datums abgeschlossen ist (Buchen, Stornieren, Zahlung). */
 export async function assertPeriodOpen(db: Db, clubId: string, bookedOn: string): Promise<void> {
-  const year = yearOf(bookedOn);
+  const year = fiscalYearOf(await fiscalOf(db, clubId), bookedOn);
   const [lock] = await db
     .select({ id: s.clubPeriodLocks.id })
     .from(s.clubPeriodLocks)

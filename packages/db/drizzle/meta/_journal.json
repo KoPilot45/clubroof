@@ -484,6 +484,13 @@
       "when": 1793093400314,
       "tag": "0068_beitrittsfreigabe",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1793093901569,
+      "tag": "0069_kassenregeln",
+      "breakpoints": true
     }
   ]
 }

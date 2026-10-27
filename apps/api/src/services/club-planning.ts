@@ -41,10 +41,16 @@ import {
   seesAllFunds,
 } from './club-cash';
 import { assertFund, ensureMainFund, fundScope, listFunds } from './club-funds';
-import { activeLock, assertPeriodOpen } from './club-periods';
+import {
+  activeLock,
+  assertPeriodOpen,
+  dayBeforeFiscal,
+  fiscalOf,
+  fiscalRange,
+  fiscalYearOf,
+} from './club-periods';
 
 const today = (actor: Actor, now: Date) => toIsoDate(calendarDayOf(now, actor.club.timezone));
-const yearOf = (day: string) => Number(day.slice(0, 4));
 const german = (iso: string) => iso.split('-').reverse().join('.');
 
 // ── Gebuchte Summen ─────────────────────────────────────────────────────────
@@ -65,6 +71,7 @@ async function actualsFor(
 ): Promise<Actuals[]> {
   if (fundIds.length === 0) return [];
   const e = s.clubCashEntries;
+  const range = fiscalRange(await fiscalOf(db, clubId), year);
   const rows = await db
     .select({
       categoryId: e.categoryId,
@@ -80,8 +87,8 @@ async function actualsFor(
         isNull(e.cancelledAt),
         inArray(e.kind, ['income', 'expense']),
         inArray(s.clubCashAccounts.fundId, fundIds),
-        gte(e.bookedOn, `${year}-01-01`),
-        lte(e.bookedOn, `${year}-12-31`),
+        gte(e.bookedOn, range.from),
+        lte(e.bookedOn, range.to),
       ),
     )
     .groupBy(e.categoryId, e.costCenterId, e.kind);
@@ -620,6 +627,7 @@ export async function listReserveMoves(
 /** Jahressummen je Kategorie über alle Kassen (der Abschluss gilt für den ganzen Verein). */
 async function yearTotals(db: Db, clubId: string, year: number) {
   const e = s.clubCashEntries;
+  const range = fiscalRange(await fiscalOf(db, clubId), year);
   const rows = await db
     .select({
       categoryName: s.clubCashCategories.name,
@@ -634,8 +642,8 @@ async function yearTotals(db: Db, clubId: string, year: number) {
         eq(e.clubId, clubId),
         isNull(e.cancelledAt),
         inArray(e.kind, ['income', 'expense']),
-        gte(e.bookedOn, `${year}-01-01`),
-        lte(e.bookedOn, `${year}-12-31`),
+        gte(e.bookedOn, range.from),
+        lte(e.bookedOn, range.to),
       ),
     )
     .groupBy(s.clubCashCategories.name, s.clubCashCategories.area, e.kind);
@@ -725,8 +733,9 @@ export async function getClosing(
       previousExpenseCents: total(expenseLines, 'previousCents'),
     };
   });
-  const closing = await balancesAt(db, clubId, `${year}-12-31`);
-  const opening = await balancesAt(db, clubId, `${year - 1}-12-31`);
+  const fiscal = await fiscalOf(db, clubId);
+  const closing = await balancesAt(db, clubId, fiscalRange(fiscal, year).to);
+  const opening = await balancesAt(db, clubId, dayBeforeFiscal(fiscal, year));
   const reserves = await getReserves(db, actor, now);
   const sumOf = (
     key: 'incomeCents' | 'expenseCents' | 'previousIncomeCents' | 'previousExpenseCents',
@@ -738,7 +747,7 @@ export async function getClosing(
     canManage: actorCan(actor, 'clubcash.manage'),
     canUnlock: actorCan(actor, 'club.settings.manage'),
     lock: await activeLock(db, clubId, year),
-    canClose: year < yearOf(day),
+    canClose: year < fiscalYearOf(fiscal, day),
     openingCents: opening.reduce((sum, a) => sum + a.cents, 0),
     closingCents: closing.reduce((sum, a) => sum + a.cents, 0),
     incomeCents: sumOf('incomeCents'),
@@ -761,7 +770,8 @@ export async function getClosing(
 export async function closeYear(db: Db, actor: Actor, year: number, now: Date): Promise<void> {
   requireClubManage(actor);
   const clubId = actor.club.id;
-  if (year >= yearOf(today(actor, now)))
+  const fiscal = await fiscalOf(db, clubId);
+  if (year >= fiscalYearOf(fiscal, today(actor, now)))
     throw new HttpError(
       409,
       'year_not_over',
@@ -774,7 +784,7 @@ export async function closeYear(db: Db, actor: Actor, year: number, now: Date): 
     .select({ day: sql<string>`min(${s.clubCashEntries.bookedOn})` })
     .from(s.clubCashEntries)
     .where(eq(s.clubCashEntries.clubId, clubId));
-  const firstYear = firstEntry?.day ? yearOf(firstEntry.day) : year;
+  const firstYear = firstEntry?.day ? fiscalYearOf(fiscal, firstEntry.day) : year;
   for (let y = firstYear; y < year; y++) {
     if (!(await activeLock(db, clubId, y)))
       throw new HttpError(409, 'previous_open', `Bitte schließe zuerst das Jahr ${y} ab.`);
@@ -895,8 +905,10 @@ async function closingData(
     yearTotals(db, clubId, year),
     yearTotals(db, clubId, year - 1),
   ]);
-  const closing = await balancesAt(db, clubId, `${year}-12-31`);
-  const opening = await balancesAt(db, clubId, `${year - 1}-12-31`);
+  const fiscal = await fiscalOf(db, clubId);
+  const range = fiscalRange(fiscal, year);
+  const closing = await balancesAt(db, clubId, range.to);
+  const opening = await balancesAt(db, clubId, dayBeforeFiscal(fiscal, year));
   const lock = await activeLock(db, clubId, year);
   const reserves = await db
     .select({
@@ -925,6 +937,8 @@ async function closingData(
     })),
     reserves: reserveRows,
     lock,
+    from: german(range.from),
+    to: german(range.to),
     created: german(toIsoDate(calendarDayOf(now, club.timezone))),
   };
 }
@@ -1001,8 +1015,8 @@ export async function closingCsv(
     `Summe Ausgaben;;;${num(expense)};${num(expensePrev)}`,
     `Jahresergebnis;;;${num(income - expense)};${num(incomePrev - expensePrev)}`,
     '',
-    `Bestand 01.01.${year};;;${num(data.opening)};`,
-    `Bestand 31.12.${year};;;${num(data.closing)};`,
+    `Bestand ${data.from};;;${num(data.opening)};`,
+    `Bestand ${data.to};;;${num(data.closing)};`,
     '',
     `Konto;Kasse;;Anfang ${year};Ende ${year}`,
     ...data.accounts.map(
@@ -1091,7 +1105,7 @@ export async function closingPdf(
   );
   doc.gap(10);
   doc.text('Bestände', { size: 12, bold: true });
-  doc.row(['Konto (Kasse)', `01.01.${year}`, `31.12.${year}`], cols, {
+  doc.row(['Konto (Kasse)', data.from, data.to], cols, {
     bold: true,
     alignRight: [1, 2],
   });

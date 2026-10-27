@@ -8923,6 +8923,99 @@ describe.skipIf(!url)('API', () => {
       expect(cancel.body.error).toBe('linked_claim');
     });
 
+    it('Kassenregeln: Belegpflicht, Vier-Augen-Grenze und Rechte', async () => {
+      const { kasse } = await setup();
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const rules = (token: string, body: object) =>
+        send<ClubCash>('PUT', '/club-cash/rules', token, body);
+      const claim = (token: string, body: object) =>
+        send<ClubExpenseClaims>('POST', '/club-cash/claims', token, {
+          description: 'Regeltest',
+          expenseDate: '2026-10-04',
+          ...body,
+        });
+
+      // Nur die Kassenführung stellt die Regeln ein
+      expect((await rules(player.token, { claimReceiptRequired: true })).status).toBe(403);
+      expect((await rules(kasse.token, { claimSecondApprovalCents: 50 })).status).toBe(400);
+
+      try {
+        // Belegpflicht gilt für Auslagen, nicht für Fahrtkosten
+        const on = await rules(kasse.token, { claimReceiptRequired: true });
+        expect(on.body.claimRules.receiptRequired).toBe(true);
+        const noReceipt = await claim(player.token, { kind: 'expense', amountCents: 800 });
+        expect(noReceipt.status).toBe(400);
+        expect((noReceipt.body as unknown as { error: string }).error).toBe('receipt_required');
+        expect((await claim(player.token, { kind: 'mileage', kilometers: 10 })).status).toBe(201);
+        await rules(kasse.token, { claimReceiptRequired: false });
+
+        // Vier-Augen-Prinzip ab 20 €
+        const limit = await rules(kasse.token, { claimSecondApprovalCents: 2000 });
+        expect(limit.body.claimRules.secondApprovalCents).toBe(2000);
+        const big = await claim(player.token, { kind: 'expense', amountCents: 3000 });
+        expect(big.status).toBe(201);
+        const id = big.body.claims.find((c) => c.amountCents === 3000)!.id;
+        const first = await send<ClubExpenseClaims>(
+          'POST',
+          `/club-cash/claims/${id}/approve`,
+          kasse.token,
+        );
+        expect(first.status).toBe(200);
+        expect(first.body.claims.find((c) => c.id === id)).toMatchObject({
+          status: 'submitted',
+          awaitingSecondApproval: true,
+        });
+        const again = await send('POST', `/club-cash/claims/${id}/approve`, kasse.token);
+        expect(again.status).toBe(409);
+        const second = await send<ClubExpenseClaims>(
+          'POST',
+          `/club-cash/claims/${id}/approve`,
+          admin.token,
+        );
+        expect(second.body.claims.find((c) => c.id === id)).toMatchObject({
+          status: 'approved',
+          awaitingSecondApproval: false,
+        });
+
+        // Wer selbst einreicht, gibt nicht mit frei
+        const own = await claim(kasse.token, { kind: 'expense', amountCents: 4000 });
+        const ownId = own.body.claims.find((c) => c.amountCents === 4000)!.id;
+        expect((await send('POST', `/club-cash/claims/${ownId}/approve`, kasse.token)).status).toBe(
+          403,
+        );
+        await send('POST', `/club-cash/claims/${ownId}/reject`, admin.token, { reason: 'Test' });
+        // Kleine Beträge brauchen nur eine Freigabe
+        const small = await claim(player.token, { kind: 'expense', amountCents: 900 });
+        const smallId = small.body.claims.find((c) => c.amountCents === 900)!.id;
+        const ok = await send<ClubExpenseClaims>(
+          'POST',
+          `/club-cash/claims/${smallId}/approve`,
+          kasse.token,
+        );
+        expect(ok.body.claims.find((c) => c.id === smallId)!.status).toBe('approved');
+      } finally {
+        await rules(kasse.token, { claimReceiptRequired: false, claimSecondApprovalCents: null });
+      }
+    });
+
+    it('Haushaltsjahr: wählbar, solange kein Jahr abgeschlossen ist', async () => {
+      const { kasse } = await setup();
+      const set = await send<ClubCash>('PUT', '/club-cash/rules', kasse.token, {
+        fiscalYear: 'season',
+      });
+      if (set.status === 409) {
+        expect((set.body as unknown as { error: string }).error).toBe('fiscal_locked');
+        return;
+      }
+      expect(set.body.fiscalYear).toBe('season');
+      expect((await get<ClubCash>('/club-cash', kasse.token)).fiscalYear).toBe('season');
+      const back = await send<ClubCash>('PUT', '/club-cash/rules', kasse.token, {
+        fiscalYear: 'calendar',
+      });
+      expect(back.body.fiscalYear).toBe('calendar');
+    });
+
     it('Pauschalen: Freibetrag je Person und Jahr wird überwacht', async () => {
       const { kasse, giro, expense } = await setup();
       const coach = await login('trainer');
