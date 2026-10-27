@@ -2,7 +2,11 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import {
   isLocale,
   TILE_HUBS,
+  GUARDIAN_ACCESS,
+  type ChildAccessInfo,
   type HomeResponse,
+  type InviteLink,
+  type MyGuardianAccess,
   type Locale,
   type MeResponse,
   type SearchResponse,
@@ -12,6 +16,15 @@ import { z } from 'zod';
 import { search } from '../services/search';
 import { loadHome } from '../services/home';
 import { getTileInfo } from '../services/tile-info';
+import {
+  answerGuardianRequest,
+  getChildAccess,
+  getMyGuardianAccess,
+  inviteChild,
+  revokeChildInvite,
+  setChildAccess,
+  setMyGuardianAccess,
+} from '../services/child-access';
 import { buildMe, markSeen, setPreferences } from '../services/me';
 
 export const meRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -42,6 +55,83 @@ export const meRoutes: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request): Promise<MeResponse> => setPreferences(app.db, request.actor!, request.body),
+  );
+
+  // ── Eigener Zugang für Kinder ───────────────────────────────────────────────────────────
+  const childParams = z.object({ childId: z.uuid() });
+  const access = z.enum(GUARDIAN_ACCESS);
+  const ctx = { config: app.config, mailer: app.mailer };
+
+  app.get(
+    '/me/children/:childId/access',
+    { schema: { params: childParams } },
+    async (request): Promise<ChildAccessInfo> =>
+      getChildAccess(app.db, request.actor!, request.params.childId, app.now()),
+  );
+
+  app.post(
+    '/me/children/:childId/access/invitation',
+    {
+      schema: {
+        params: childParams,
+        body: z.object({
+          email: z.string().trim().max(120).email(),
+          access,
+          send: z.boolean().default(false),
+        }),
+      },
+    },
+    async (request, reply): Promise<InviteLink> => {
+      reply.code(201);
+      return inviteChild(
+        app.db,
+        request.actor!,
+        ctx,
+        request.params.childId,
+        request.body,
+        app.now(),
+      );
+    },
+  );
+
+  app.delete(
+    '/me/children/:childId/access/invitation',
+    { schema: { params: childParams } },
+    async (request, reply) => {
+      await revokeChildInvite(app.db, request.actor!, request.params.childId, app.now());
+      return reply.code(204).send();
+    },
+  );
+
+  app.put(
+    '/me/children/:childId/access',
+    { schema: { params: childParams, body: z.object({ access }) } },
+    async (request): Promise<ChildAccessInfo> =>
+      setChildAccess(
+        app.db,
+        request.actor!,
+        request.params.childId,
+        request.body.access,
+        app.now(),
+      ),
+  );
+
+  app.get('/me/guardian-access', async (request): Promise<MyGuardianAccess> =>
+    getMyGuardianAccess(app.db, request.actor!),
+  );
+
+  app.put(
+    '/me/guardian-access',
+    { schema: { body: z.object({ access }) } },
+    async (request): Promise<MyGuardianAccess> =>
+      setMyGuardianAccess(app.db, request.actor!, request.body.access, app.now()),
+  );
+
+  app.post(
+    '/me/guardian-access/answer',
+    { schema: { body: z.object({ approve: z.boolean() }) } },
+    async (request): Promise<MyGuardianAccess> =>
+      answerGuardianRequest(app.db, request.actor!, request.body.approve, app.now()),
   );
 
   app.get(

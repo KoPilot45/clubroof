@@ -7,6 +7,8 @@ import type {
   Absence,
   AdminOverview,
   ArchiveOverview,
+  ChildAccessInfo,
+  MyGuardianAccess,
   PurgeArchiveResult,
   AuditEntry,
   ClubCash,
@@ -10844,6 +10846,248 @@ describe.skipIf(!url)('API', () => {
       } finally {
         await send('PUT', `/teams/${team.id}/profile`, admin.token, { responsesVisible: true });
       }
+    });
+  });
+
+  describe('Eigener Zugang für Kinder (KIND-EIGENER-ZUGANG)', () => {
+    const miaAddress = 'mia.neumann@kinder.example';
+    const PW = 'Flutlicht-Abend-2026';
+    const tokenOf = (url: string) => url.split('/join/')[1]!;
+    const pub = (method: 'GET' | 'POST', url: string, payload?: object) =>
+      app.inject({ method, url, ...(payload ? { payload } : {}) });
+    let parent: LoginResponse;
+    let mia: { id: string; token: string; me: MeResponse };
+    let miaId: string;
+    let leonId: string;
+
+    const events = async (token: string) => {
+      const res = await get<EventSummary[]>('/events', token);
+      return res.filter((e) => e.status === 'scheduled' && e.myResponses.length > 0);
+    };
+    const levelOf = async () =>
+      (await login('eltern')).me.managedPersons.find((m) => m.id === miaId)?.access ?? null;
+
+    it('Eltern laden ihr Kind ein; fremde Personen und bestehende Konten werden abgelehnt', async () => {
+      parent = await login('eltern');
+      miaId = parent.me.managedPersons.find((m) => m.firstName === 'Mia')!.id;
+      leonId = parent.me.managedPersons.find((m) => m.firstName === 'Leon')!.id;
+      const info = await get<ChildAccessInfo>(`/me/children/${miaId}/access`, parent.token);
+      expect(info).toMatchObject({ account: 'none', access: 'manage' });
+
+      // Fremde sehen das Kind nicht
+      const coach = await login('trainer');
+      const foreign = await send('POST', `/me/children/${miaId}/access/invitation`, coach.token, {
+        email: miaAddress,
+        access: 'view',
+      });
+      expect(foreign.status).toBe(404);
+      expect((await send('GET', `/me/children/${miaId}/access`, coach.token)).status).toBe(404);
+      // Regel F01: keine Übernahme bestehender Konten (auch nicht das der Eltern)
+      const taken = await send('POST', `/me/children/${miaId}/access/invitation`, parent.token, {
+        email: email('eltern'),
+        access: 'view',
+      });
+      expect(taken.status).toBe(409);
+      // Kind mit Konto (Leon) kann nicht noch einmal eingeladen werden
+      const hasAccount = await send(
+        'POST',
+        `/me/children/${leonId}/access/invitation`,
+        parent.token,
+        { email: 'leon.zwei@kinder.example', access: 'view' },
+      );
+      expect(hasAccount.status).toBe(409);
+
+      // Einladung widerrufen: Link ungültig
+      const first = await send<InviteLink>(
+        'POST',
+        `/me/children/${miaId}/access/invitation`,
+        parent.token,
+        { email: miaAddress, access: 'view', send: true },
+      );
+      expect(first.status).toBe(201);
+      expect(mailer.outbox.at(-1)!.to).toBe(miaAddress);
+      expect(
+        await get<ChildAccessInfo>(`/me/children/${miaId}/access`, parent.token),
+      ).toMatchObject({ account: 'invited', invitedAccess: 'view', invitedEmail: miaAddress });
+      expect(
+        (await send('DELETE', `/me/children/${miaId}/access/invitation`, parent.token)).status,
+      ).toBe(204);
+      expect((await pub('GET', `/join/${tokenOf(first.body.url)}`)).statusCode).toBe(410);
+      // Vor der Annahme ändert sich für die Eltern nichts
+      expect(await levelOf()).toBe('manage');
+
+      const second = await send<InviteLink>(
+        'POST',
+        `/me/children/${miaId}/access/invitation`,
+        parent.token,
+        { email: miaAddress, access: 'view' },
+      );
+      const accepted = await pub('POST', `/join/${tokenOf(second.body.url)}/accept`, {
+        email: miaAddress,
+        password: PW,
+      });
+      expect(accepted.statusCode).toBe(200);
+      const login2 = accepted.json<LoginResponse>();
+      expect(login2.me.person.id).toBe(miaId);
+      mia = { id: miaId, token: login2.token, me: login2.me };
+      // Das Elternkonto bleibt unverändert, die Stufe gilt ab der Annahme
+      expect(await levelOf()).toBe('view');
+      expect(
+        (await get<MyGuardianAccess>('/me/guardian-access', mia.token)).guardians[0],
+      ).toMatchObject({
+        access: 'view',
+      });
+      const audit = await db.select().from(s.auditLog).where(eq(s.auditLog.entityId, miaId));
+      expect(audit.map((a) => a.action)).toEqual(
+        expect.arrayContaining(['child_access.invited', 'child_access.revoked']),
+      );
+    });
+
+    it('Stufe 2 (nur Mitsicht): Eltern sehen, handeln aber nicht', async () => {
+      const list = await events(parent.token);
+      const ev = list.find((e) => e.myResponses.some((r) => r.personId === miaId))!;
+      expect(ev).toBeDefined();
+      const r = ev.myResponses.find((x) => x.personId === miaId)!;
+      expect(r.canRespond).toBe(false);
+      const put = await send('PUT', `/events/${ev.id}/responses/${miaId}`, parent.token, {
+        status: 'yes',
+        reason: null,
+      });
+      expect(put.status).toBe(403);
+      expect(
+        (
+          await send('POST', '/absences', parent.token, {
+            personId: miaId,
+            kind: 'vacation',
+            startsOn: '2027-03-01',
+            endsOn: '2027-03-02',
+          })
+        ).status,
+      ).toBe(403);
+      // Das Kind antwortet selbst
+      expect(
+        (
+          await send('PUT', `/events/${ev.id}/responses/${miaId}`, mia.token, {
+            status: 'yes',
+            reason: null,
+          })
+        ).status,
+      ).toBe(200);
+      const after = (await events(parent.token)).find((e) => e.id === ev.id)!;
+      expect(after.myResponses.find((x) => x.personId === miaId)).toMatchObject({
+        status: 'yes',
+        respondedBy: 'Mia',
+      });
+      // Eltern können Leon weiter verwalten
+      expect(
+        (await get<MeResponse>('/me', parent.token)).managedPersons.find((m) => m.id === leonId)
+          ?.access,
+      ).toBe('manage');
+    });
+
+    it('Eltern erhöhen nur mit Zustimmung des Kindes; Antwortkonflikt: letzte Antwort gilt', async () => {
+      const up = await send<ChildAccessInfo>('PUT', `/me/children/${miaId}/access`, parent.token, {
+        access: 'manage',
+      });
+      expect(up.status).toBe(200);
+      expect(up.body).toMatchObject({ access: 'view', requestedAccess: 'manage' });
+      expect(await levelOf()).toBe('view');
+      // Ablehnen
+      const no = await send<MyGuardianAccess>('POST', '/me/guardian-access/answer', mia.token, {
+        approve: false,
+      });
+      expect(no.body.guardians[0]).toMatchObject({ access: 'view', requestedAccess: null });
+      // Erneut anfragen und zustimmen
+      await send('PUT', `/me/children/${miaId}/access`, parent.token, { access: 'manage' });
+      const yes = await send<MyGuardianAccess>('POST', '/me/guardian-access/answer', mia.token, {
+        approve: true,
+      });
+      expect(yes.body.guardians[0]).toMatchObject({ access: 'manage', requestedAccess: null });
+      expect(await levelOf()).toBe('manage');
+      // Ohne offene Anfrage gibt es nichts zu beantworten
+      expect(
+        (await send('POST', '/me/guardian-access/answer', mia.token, { approve: true })).status,
+      ).toBe(409);
+
+      // Die Eltern antworten nach dem Kind: es gilt die letzte Antwort
+      const ev = (await events(parent.token)).find((e) =>
+        e.myResponses.some((r) => r.personId === miaId),
+      )!;
+      expect(
+        (
+          await send('PUT', `/events/${ev.id}/responses/${miaId}`, parent.token, {
+            status: 'no',
+            reason: 'Krank',
+          })
+        ).status,
+      ).toBe(200);
+      const mine = (await events(mia.token))
+        .find((e) => e.id === ev.id)!
+        .myResponses.find((r) => r.personId === miaId)!;
+      expect(mine).toMatchObject({ status: 'no', respondedBy: parent.me.person.firstName });
+    });
+
+    it('Stufe 3 (eigenständig): Eltern sehen und tun nichts mehr; Kind setzt Stufe selbst', async () => {
+      const down = await send<ChildAccessInfo>(
+        'PUT',
+        `/me/children/${miaId}/access`,
+        parent.token,
+        {
+          access: 'none',
+        },
+      );
+      expect(down.body).toMatchObject({ access: 'none', requestedAccess: null });
+      const me = await get<MeResponse>('/me', parent.token);
+      expect(me.managedPersons.some((m) => m.id === miaId)).toBe(false);
+      expect(me.teams.some((t) => t.personId === miaId)).toBe(false);
+      const list = await events(parent.token);
+      expect(list.some((e) => e.myResponses.some((r) => r.personId === miaId))).toBe(false);
+      const ev = (await events(mia.token))[0]!;
+      // Der Termin ist für die Eltern nicht mehr sichtbar bzw. das Kind nicht mehr ihres
+      expect([403, 404]).toContain(
+        (
+          await send('PUT', `/events/${ev.id}/responses/${miaId}`, parent.token, {
+            status: 'yes',
+            reason: null,
+          })
+        ).status,
+      );
+      expect(
+        (
+          await send('POST', '/absences', parent.token, {
+            personId: miaId,
+            kind: 'vacation',
+            startsOn: '2027-03-01',
+            endsOn: '2027-03-02',
+          })
+        ).status,
+      ).toBe(403);
+      expect(
+        (await get<HomeResponse>('/home', parent.token)).actions.some((a) =>
+          a.title.includes('Mia'),
+        ),
+      ).toBe(false);
+      // Eltern können nicht von sich aus wieder mitsehen, sondern fragen an
+      const ask = await send<ChildAccessInfo>('PUT', `/me/children/${miaId}/access`, parent.token, {
+        access: 'view',
+      });
+      expect(ask.body).toMatchObject({ access: 'none', requestedAccess: 'view' });
+      expect(await levelOf()).toBeNull();
+      // Das Kind kann die Stufe jederzeit selbst setzen
+      const back = await send<MyGuardianAccess>('PUT', '/me/guardian-access', mia.token, {
+        access: 'view',
+      });
+      expect(back.body.guardians[0]).toMatchObject({ access: 'view', requestedAccess: null });
+      expect(await levelOf()).toBe('view');
+      const lower = await send<MyGuardianAccess>('PUT', '/me/guardian-access', mia.token, {
+        access: 'none',
+      });
+      expect(lower.body.guardians[0]!.access).toBe('none');
+      expect(await levelOf()).toBeNull();
+      // Eltern ohne Konto-Kind: nur eigene Kinder haben die Stufe
+      expect(
+        (await send('PUT', '/me/guardian-access', parent.token, { access: 'view' })).status,
+      ).toBe(404);
     });
   });
 });
