@@ -67,6 +67,8 @@ export const pl: Record<string, string> = {
     '{0} {1} zapłacił(a) przelewem – potwierdź.',
   '{0} {1} lädt dich in die Vereins-App von {2} ein.':
     '{0} {1} zaprasza cię do aplikacji klubu {2}.',
+  '{0} {1} richtet dir einen eigenen Zugang zur Vereins-App von {2} ein.':
+    '{0} {1} konfiguruje dla ciebie własny dostęp do aplikacji klubu {2}.',
   '{0} {1}: {2}, {3} offen, fällig seit {4}.': '{0} {1}: {2}, do zapłaty {3}, wymagalne od {4}.',
   '{0} / {1} Helfer': '{0} / {1} pomocników',
   '{0} abgewählt': 'Odznaczono: {0}',
@@ -97,6 +99,8 @@ export const pl: Record<string, string> = {
   '{0} Beiträge sind überfällig ({1}).': 'Zaległych składek: {0} ({1}).',
   '{0} Beitrittsanfrage': '{0} prośba o dołączenie',
   '{0} Beitrittsanfragen': 'Próśb o dołączenie: {0}',
+  '{0} bekommt ein eigenes Konto mit einer eigenen E-Mail-Adresse. Nicht eure: Jede Adresse gehört zu genau einem Konto.':
+    '{0} dostaje własne konto z własnym adresem e-mail. Nie waszym: każdy adres należy do dokładnie jednego konta.',
   '{0} Belegungen überschneiden sich': 'Nakładających się rezerwacji: {0}',
   '{0} benachrichtigen': 'Powiadom: {0}',
   '{0} bestehende Spiele wurden angepasst.': 'Dostosowano istniejące mecze: {0}.',
@@ -144,10 +148,13 @@ export const pl: Record<string, string> = {
   '{0} gewählt': 'Wybrano: {0}',
   '{0} gewählt. Tippe auf eine Position oder einen Bankplatz.':
     'Wybrano: {0}. Dotknij pozycji lub miejsca na ławce.',
+  '{0} hat abgelehnt: {1}': '{0} odrzucił(a): {1}',
+  '{0} hat die Mitsicht geändert: {1}': '{0} zmienił(a) poziom podglądu: {1}',
   '{0} hat für das Spiel abgesagt.': '{0} odwołał(a) udział w meczu.',
   '{0} hat heute Geburtstag': '{0} ma dziś urodziny',
   '{0} hat mit {1} die meisten Ausgaben.': '{0} ma najwięcej wydatków: {1}.',
   '{0} hat mit {1} Getränken am meisten.': '{0} ma najwięcej napojów: {1}.',
+  '{0} hat zugestimmt: {1}': '{0} wyraził(a) zgodę: {1}',
   '{0} Helfer fehlen': 'Brakuje pomocników: {0}',
   '{0} heute 🎉': '{0} dziś 🎉',
   '{0} hinzufügen': 'Dodaj: {0}',
@@ -171,6 +178,8 @@ export const pl: Record<string, string> = {
   '{0} min länger als das Training': '{0} min dłużej niż trening',
   '{0} Min.': '{0} min',
   '{0} Mitgliedern wurde eine Beitragsart zugeordnet.': 'Rodzaj składki przypisano członkom: {0}.',
+  '{0} möchte wieder mitsehen ({1}). Du entscheidest unter „Ich“.':
+    '{0} chce znów patrzeć razem ({1}). Ty decydujesz w „Ja”.',
   '{0} neu': '{0} nowych',
   '{0} neu angelegt, {1} aktualisiert, {2} übersprungen.':
     'Nowych: {0}, zaktualizowanych: {1}, pominiętych: {2}.',
@@ -181,6 +190,8 @@ export const pl: Record<string, string> = {
   '{0} offen': '{0} do zapłaty',
   '{0} offene Aufgabe': '{0} otwarte zadanie',
   '{0} offene Aufgaben': 'Otwartych zadań: {0}',
+  '{0} öffnet den Link und legt ein eigenes Passwort fest.':
+    '{0} otwiera link i ustawia własne hasło.',
   '{0} ohne Mannschaft': '{0} bez drużyny',
   '{0} ohne Rückmeldung': '{0} bez odpowiedzi',
   '{0} per WhatsApp': '{0} przez WhatsApp',
@@ -1261,9 +1272,14 @@ export const pl: Record<string, string> = {
   'Das Jahr {0} ist noch abgeschlossen. Öffne zuerst die späteren Jahre.':
     'Rok {0} jest nadal zamknięty. Najpierw otwórz późniejsze lata.',
   'Das Jahr ist ungültig.': 'Rok jest nieprawidłowy.',
+  'Das Kind': 'Dziecko',
+  'Das Kind hat die Einladung angenommen. Das Konto gehört dem Kind; du kannst deine Stufe ändern.':
+    'Dziecko przyjęło zaproszenie. Konto należy do dziecka; możecie zmienić swój poziom.',
   'Das Kind zu „Elternteil von“ wurde nicht gefunden: {0}. Bitte Namen oder Mitgliedsnummer prüfen.':
     'Nie znaleziono dziecka dla „Rodzic dziecka“: {0}. Sprawdź imię i nazwisko lub numer członkowski.',
   'Das Konto': 'Konto',
+  'Das Konto gehört dem Kind. Ihr könnt die Stufe jederzeit senken; wieder erhöhen geht nur mit Zustimmung des Kindes.':
+    'Konto należy do dziecka. Możesz obniżyć poziom w dowolnym momencie; ponowne podwyższenie jest możliwe tylko za zgodą dziecka.',
   'Das Konto ist archiviert.': 'Konto jest zarchiwizowane.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.': 'Skrót „{0}“ jest w tym sezonie zajęty.',
   'Das Kürzel (2 bis 4 Zeichen, z. B. „SGW“) steht groß im Plakat der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist. Die Vereinsadministration ändert es unter „Verwaltung → Verein & Design“, mit Vorschau. Die Vibration bei Auswahl und Bestätigung schaltest du auf dem Handy unter „Ich → Konto & Einstellungen → Vibration“ aus; bei eingestellter „Bewegung reduzieren“ des Geräts bleiben auch die Animationen aus.':
@@ -1394,6 +1410,14 @@ export const pl: Record<string, string> = {
     'Twoja prośba o dołączenie czeka jeszcze na zatwierdzenie przez klub.',
   'Deine Beitrittsanfrage wurde nicht freigegeben.':
     'Twoja prośba o dołączenie nie została zatwierdzona.',
+  'Deine Eltern fragen an': 'Twoi rodzice pytają',
+  'Deine Eltern fragen um Mitsicht': 'Twoi rodzice proszą o współoglądanie',
+  'Deine Eltern sehen deine Termine und antworten, melden Abwesenheiten und buchen Fahrten für dich.':
+    'Twoi rodzice widzą twoje terminy oraz odpowiadają, zgłaszają nieobecności i rezerwują przejazdy za ciebie.',
+  'Deine Eltern sehen deine Termine, können aber nichts für dich tun. Du antwortest selbst.':
+    'Twoi rodzice widzą twoje terminy, ale nic nie mogą dla ciebie zrobić. Odpowiadasz sam(a).',
+  'Deine Eltern sehen nichts mehr von dir und tun nichts für dich.':
+    'Twoi rodzice nie widzą już niczego o tobie i nic dla ciebie nie robią.',
   'Deine Kinder': 'Twoje dzieci',
   'Deine Mitgliedschaft ist beendet.': 'Twoje członkostwo zostało zakończone.',
   'Deine News ist veröffentlicht': 'Twoja aktualność została opublikowana',
@@ -1469,6 +1493,7 @@ export const pl: Record<string, string> = {
   'Der Einrichtungscode konnte nicht geprüft werden.': 'Nie udało się sprawdzić kodu konfiguracji.',
   'Der Einrichtungscode stimmt nicht.': 'Kod konfiguracji jest nieprawidłowy.',
   'Der Einsatz': 'Dyżur',
+  'Der Elternzugang': 'Dostęp rodziców',
   'Der Export des Archivs steht in der Web-Verwaltung bereit.':
     'Eksport archiwum jest dostępny w administracji webowej.',
   'Der Export hat nicht geklappt.': 'Eksport się nie udał.',
@@ -1597,6 +1622,7 @@ export const pl: Record<string, string> = {
   'Die Abwesenheit konnte nicht gespeichert werden.': 'Nie udało się zapisać nieobecności.',
   'Die Änderung hat nicht geklappt.': 'Zmiana się nie udała.',
   'Die Änderung konnte nicht gespeichert werden.': 'Nie udało się zapisać zmiany.',
+  'Die Änderung wurde nicht gespeichert.': 'Zmiana nie została zapisana.',
   'Die Änderungen konnten nicht gespeichert werden.': 'Nie udało się zapisać zmian.',
   'Die Anfrage': 'Prośba',
   'Die Anmeldung ist abgelaufen. Bitte erneut anmelden.':
@@ -1657,6 +1683,9 @@ export const pl: Record<string, string> = {
   'Die eigenen individuellen Rechte kann nur eine andere Person ändern.':
     'Własne uprawnienia indywidualne może zmienić tylko inna osoba.',
   'Die Eingabe ist unvollständig oder ungültig.': 'Dane są niekompletne lub nieprawidłowe.',
+  'Die Einladung an {0} ist offen. Sobald {1} sie annimmt, gilt: {2}.':
+    'Zaproszenie dla {0} jest otwarte. Gdy {1} je przyjmie, obowiązuje: {2}.',
+  'Die Einladung wurde nicht erstellt.': 'Zaproszenie nie zostało utworzone.',
   'Die Einrichtung hat nicht geklappt.': 'Konfiguracja się nie udała.',
   'Die Einstellung gilt für alle Mannschaften der Abteilung. Ist ein Modul hier aus, kann es keine Mannschaft darin einschalten. „Wie Verein“ übernimmt die Vereinseinstellung.':
     'Ustawienie dotyczy wszystkich drużyn sekcji. Jeśli moduł jest tu wyłączony, żadna drużyna w niej nie może go włączyć. „Jak klub“ przejmuje ustawienie klubu.',
@@ -1937,6 +1966,7 @@ export const pl: Record<string, string> = {
   'Dieser Vorgang gehört zu einer anderen Forderung.': 'Ta operacja dotyczy innej należności.',
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'Ta dopłata widnieje także w kasie drużyny i nie można jej tutaj anulować.',
+  'Dieses Kind hat bereits einen eigenen Zugang.': 'To dziecko ma już własny dostęp.',
   'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.':
     'To dziecko ma własne konto i nie można go powiązać przez prośbę o dołączenie. Zajmuje się tym administracja członków.',
   'Dieses Passwort ist zu leicht zu erraten.': 'To hasło jest zbyt łatwe do odgadnięcia.',
@@ -1976,6 +2006,8 @@ export const pl: Record<string, string> = {
   'Du hast nicht geantwortet': 'Nie odpowiedziałeś(-aś)',
   'Du kannst Abwesenheiten nur für dich oder deine Kinder eintragen.':
     'Nieobecności możesz wpisywać tylko dla siebie lub swoich dzieci.',
+  'Du kannst das jederzeit selbst ändern. Deine Eltern erfahren davon.':
+    'Możesz to zmienić w każdej chwili. Twoi rodzice się o tym dowiedzą.',
   'Du kannst deine Stimme bis zum Ende ändern.': 'Swój głos możesz zmienić do końca.',
   'Du kannst dich nicht selbst aus dem Kader nehmen.': 'Nie możesz sam(a) usunąć się z kadry.',
   'Du kannst es später in der Kasse angeben': 'Możesz to podać później w kasie',
@@ -2032,6 +2064,7 @@ export const pl: Record<string, string> = {
   'E-Mail-Adresse': 'Adres e-mail',
   'E-Mail-Adresse „{0}“ ist ungültig.': 'Adres e-mail „{0}“ jest nieprawidłowy.',
   'E-Mail-Adresse bestätigt': 'Adres e-mail potwierdzony',
+  'E-Mail-Adresse des Kindes': 'Adres e-mail dziecka',
   'E-Mail-Adresse oder Passwort ist nicht korrekt.': 'Adres e-mail lub hasło jest nieprawidłowe.',
   'E-Mail: kontakt@clubroof.example\nTelefon: 01234 567890':
     'E-mail: kontakt@clubroof.example\nTelefon: 01234 567890',
@@ -2041,8 +2074,11 @@ export const pl: Record<string, string> = {
   'Eigene Kasse anlegen': 'Utwórz własną kasę',
   'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik, Dokumente, News':
     'Własna drużyna, terminy, kadra, trening, zapotrzebowanie/oferty, statystyka, dokumenty, aktualności',
+  'Eigenen Zugang einrichten': 'Skonfiguruj własny dostęp',
   'Eigener Programmpunkt': 'Własny punkt programu',
   'Eigener Zeitraum': 'Własny okres',
+  'Eigener Zugang': 'Własny dostęp',
+  Eigenständig: 'Samodzielnie',
   'Eigentor des Gegners': 'Samobój przeciwnika',
   'Ein abgeschlossenes Jahr öffnet nur die Administration.':
     'Zamknięty rok może otworzyć tylko administracja.',
@@ -2098,6 +2134,7 @@ export const pl: Record<string, string> = {
   'Eingegangen am': 'Wpłynęło dnia',
   'Eingegangen in diesem Jahr: {0}': 'Wpłynęło w tym roku: {0}',
   'Eingehen kann nur ein bewilligter Zuschuss.': 'Wpłynąć może tylko przyznana dopłata.',
+  Eingeladen: 'Zaproszono',
   'eingeladen {0}': 'zaproszono {0}',
   'Eingeladen: {0}': 'Zaproszono: {0}',
   Eingereicht: 'Złożono',
@@ -2106,9 +2143,13 @@ export const pl: Record<string, string> = {
   Einladen: 'Zaproś',
   'Einladen dürfen Trainerteams und die Mitgliederverwaltung.':
     'Zapraszać mogą sztaby szkoleniowe i administracja członków.',
+  Einladung: 'Zaproszenie',
+  'Einladung bereit': 'Zaproszenie gotowe',
   'Einladung für {0}': 'Zaproszenie dla {0}',
   'Einladung in die App von {0}': 'Zaproszenie do aplikacji {0}',
   'Einladung nicht gültig': 'Zaproszenie nieważne',
+  'Einladung per E-Mail senden': 'Wyślij zaproszenie e-mailem',
+  'Einladung widerrufen': 'Wycofaj zaproszenie',
   Einladungen: 'Zaproszenia',
   'Einladungen verschickst du unter Verwaltung → Einladungen. Rückgängig geht 24 Stunden lang.':
     'Zaproszenia wysyłasz w Administracja → Zaproszenia. Cofnąć można przez 24 godziny.',
@@ -2275,6 +2316,8 @@ export const pl: Record<string, string> = {
   'Es gibt keine Einnahmekategorie für Beiträge. Lege sie in der Vereinskasse an.':
     'Brak kategorii przychodu dla składek. Utwórz ją w kasie klubu.',
   'Es gibt keine neuen Mitglieder zu übernehmen.': 'Nie ma nowych członków do przejęcia.',
+  'Es gibt keine offene Anfrage.': 'Brak otwartej prośby.',
+  'Es gibt keine offene Einladung.': 'Brak otwartego zaproszenia.',
   'Es gibt nichts zu übernehmen.': 'Nie ma nic do przejęcia.',
   'Es gibt noch fehlerhafte Zeilen. Bitte korrigieren oder abwählen.':
     'Są jeszcze błędne wiersze. Popraw je lub odznacz.',
@@ -2710,6 +2753,20 @@ export const pl: Record<string, string> = {
   'Ich und Familie': 'Ja i rodzina',
   'Ich, Einstellungen und Hilfe': 'Ja, ustawienia i pomoc',
   'Ideeller Bereich': 'Sfera ideowa',
+  'Ihr antwortet, meldet Abwesenheiten und bucht Fahrten für das Kind und seht die Kasse weiter.':
+    'Wy odpowiadacie, zgłaszacie nieobecności i rezerwujecie przejazdy dla dziecka oraz nadal widzicie kasę.',
+  'Ihr habt „{0}“ angefragt. {1} entscheidet in der App.':
+    'Poprosiliście o „{0}”. {1} decyduje w aplikacji.',
+  'Ihr könnt die Stufe später jederzeit senken.':
+    'Poziom możecie później obniżyć w dowolnym momencie.',
+  'Ihr seht Termine, Zusagen und Kasse, könnt aber nichts für das Kind tun.':
+    'Widzicie terminy, odpowiedzi i kasę, ale nie możecie nic zrobić dla dziecka.',
+  'Ihr seht und tut danach nichts mehr für {0}. Das Kind taucht bei euch nicht mehr auf. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'Po tym nie będziecie już niczego widzieć ani robić dla {0}. Dziecko nie będzie się już u was pojawiać. Ponowne współoglądanie jest możliwe tylko, jeśli dziecko na to pozwoli.',
+  'Ihr seht und tut danach nichts mehr für {0}. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'Po tym nie będziecie już niczego widzieć ani robić dla {0}. Ponowne współoglądanie jest możliwe tylko, jeśli dziecko na to pozwoli.',
+  'Ihr seht und tut nichts mehr für das Kind. Das Kind entscheidet allein.':
+    'Nie widzicie ani nie robicie już nic dla dziecka. Dziecko decyduje samo.',
   'Im „Änderungsprotokoll“ (Verwaltung): Rollenvergaben, Absagen, Modulwechsel, Kassenbuchungen und Stornos mit Person und Zeitpunkt.':
     'W „Dzienniku zmian“ (administracja): nadania ról, odwołania, zmiany modułów, księgowania kasowe i storna z osobą i czasem.',
   'Im echten Betrieb erscheint hier das vom Verein hochgeladene Dokument.':
@@ -2833,6 +2890,8 @@ export const pl: Record<string, string> = {
     'Tak. Przy otwartych terminach i nieprzeczytanych powiadomieniach przesuń wiersz w lewo: pojawi się „Potwierdź“ lub „Przeczytane“. Dotknij tego – albo przesuń do końca, wtedy stanie się to od razu. Wszystko działa też bez przesuwania, przyciskami w wierszu.',
   'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.':
     'Tak. Twoja odpowiedź jest zapamiętywana na urządzeniu, od razu wyświetlana („Wysyłanie“) i wysyłana automatycznie, gdy tylko znów będziesz online. Jeśli serwer ją odrzuci – np. bo termin minął – dostaniesz komunikat.',
+  'Ja. Öffne „Ich → Meine Kinder → Kind → Eigener Zugang“, gib die eigene E-Mail-Adresse des Kindes an und wähle die Stufe: „Mitsicht und Mitentscheiden“ (wie bisher), „Nur Mitsicht“ (ihr seht, tut aber nichts) oder „Eigenständig“ (ihr seht und tut nichts mehr). Das Kind legt über den Link ein eigenes Passwort fest; euer Konto bleibt unverändert. Ihr könnt die Stufe jederzeit senken. Wieder erhöhen geht nur, wenn das Kind zustimmt. Antworten Eltern und Kind für denselben Termin, gilt die letzte Antwort.':
+    'Tak. Otwórzcie „Ja → Moje dzieci → Dziecko → Własny dostęp”, wpiszcie własny adres e-mail dziecka i wybierzcie poziom: „Współoglądanie i współdecydowanie” (jak dotąd), „Tylko podgląd” (widzicie, ale nic nie robicie) lub „Samodzielnie” (nic już nie widzicie ani nie robicie). Dziecko ustawia własne hasło przez link; wasze konto się nie zmienia. Poziom możecie obniżyć w każdej chwili. Ponowne podwyższenie jest możliwe tylko za zgodą dziecka. Jeśli rodzice i dziecko odpowiedzą na ten sam termin, obowiązuje ostatnia odpowiedź.',
   'Ja. Unter „Ich → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.':
     'Tak. W „Ja → Konto i ustawienia → Wygląd“ wybierasz Jasny, Ciemny lub „Jak urządzenie“. Wybór obowiązuje na wszystkich twoich urządzeniach.',
   'Ja. Unter „Ich → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.':
@@ -2843,6 +2902,8 @@ export const pl: Record<string, string> = {
     'Tak. W „Ja → Konto i ustawienia → Język” wybierasz Deutsch, English, Türkçe, Українська, Polski, Español, Français, العربية albo „Automatycznie” (język urządzenia). Wybór obowiązuje na wszystkich Twoich urządzeniach, także w powiadomieniach push. Teksty, które trenerzy lub zarząd piszą sami (np. aktualności), pozostają w języku autora.',
   'Ja. Unter „Ich → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Tak. W „Ja → Konto i ustawienia“ ustawiasz rozmiar czcionki (Normalny, Duży, Bardzo duży) i możesz zablokować aplikację przez Face ID, odcisk palca lub kod urządzenia. Bez internetu aplikacja pokazuje ostatnio wczytane terminy, aktualności i kadry; u góry pojawia się wtedy wskazówka. Odpowiedzi i zmiany są możliwe dopiero z połączeniem.',
+  'Ja. Unter „Ich → Wer darf für mich mitsehen?“ stehen drei Stufen: „Mitsicht und Mitentscheiden“ (Eltern antworten und melden für dich), „Nur Mitsicht“ (sie sehen nur) und „Eigenständig“ (sie sehen und tun nichts mehr). Du kannst jede Stufe selbst setzen. Fragen deine Eltern nach mehr Mitsicht, entscheidest du mit „Zustimmen“ oder „Ablehnen“. Deine Eltern erfahren von jeder Änderung.':
+    'Tak. W „Ja → Kto może patrzeć razem ze mną?” są trzy poziomy: „Współoglądanie i współdecydowanie” (rodzice odpowiadają i zgłaszają za ciebie), „Tylko podgląd” (tylko widzą) i „Samodzielnie” (nic już nie widzą ani nie robią). Każdy poziom możesz ustawić sam(a). Jeśli rodzice proszą o większy wgląd, decydujesz: „Zgadzam się” lub „Odrzuć”. Rodzice dowiadują się o każdej zmianie.',
   'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch), außerdem Forum-Themen und eigene Antworten, Kommentare (auch löschen), Übungen, Aushänge im Fundbüro und Marktplatz, Spielerbedarf und Angebote der Spielerbörse (die Anzahl nicht unter die schon eingetragenen Spieler) Platzsperrungen, Beitragsarten und Rücklagen der Vereinskasse (ein geänderter Betrag einer Beitragsart gilt für künftige Beiträge), Ausrüstung (Bezeichnung, Anzahl, Lagerort, Zustand) und deine Schiedsrichter-Einsätze. Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
     'Tak. To, co utworzyłeś(-aś), można później edytować – przez „Edytuj“ w menu „…“ lub przycisk w szczegółach: ankiety (pytanie, opis i termin; odpowiedzi tylko dopóki nikt nie zagłosował), wydarzenia ze zmianami pomocników, nieobecności i dokumenty (tytuł, rodzaj i widoczność – plik pozostaje, aby go wymienić, usuń go i wgraj ponownie), ponadto tematy forum i własne odpowiedzi, komentarze (także usuwanie), ćwiczenia, ogłoszenia w rzeczach znalezionych i na giełdzie, zapotrzebowanie na zawodników i oferty giełdy zawodników (liczba nie poniżej już wpisanych zawodników), blokady boisk, rodzaje składek i rezerwy kasy klubu (zmieniona kwota rodzaju składki dotyczy przyszłych składek), wyposażenie (nazwa, liczba, miejsce przechowywania, stan) i twoje dyżury sędziowskie. Formularz jest taki sam jak przy tworzeniu, tylko wstępnie wypełniony. Zmienione treści mają adnotację „edytowano“ z czasem. O ważnych zmianach, takich jak godzina, miejsce lub termin, informujemy zainteresowanych. Księgowań kasowych się nie zmienia: błędy korygujesz przez anulowanie i ponowne księgowanie – dzięki temu wszystko pozostaje do prześledzenia.',
   Jahr: 'Rok',
@@ -2940,6 +3001,7 @@ export const pl: Record<string, string> = {
   'Kann ich ohne Internet zu- oder absagen?': 'Czy mogę potwierdzać lub odwoływać bez internetu?',
   'Kann ich Trainings und Spiele aus einer Datei anlegen?':
     'Czy mogę tworzyć treningi i mecze z pliku?',
+  'Kann mein Kind einen eigenen Zugang bekommen?': 'Czy moje dziecko może dostać własny dostęp?',
   'Karte {0} von {1}': 'Karta {0} z {1}',
   Karten: 'Karty',
   'Karten und Listen': 'Karty i listy',
@@ -2997,6 +3059,7 @@ export const pl: Record<string, string> = {
     'Kategorie porządkują przychody i wydatki (składki, darowizny, utrzymanie boisk …).',
   'Kein aktiver Link.': 'Brak aktywnego linku.',
   'Kein automatisches Treffen': 'Brak automatycznej zbiórki',
+  'Kein eigener Zugang': 'Brak własnego dostępu',
   'Kein Mitglied mit offenem Beitrag erkannt': 'Nie rozpoznano członka z zaległą składką',
   'Kein Push in der Ruhezeit': 'Brak push w czasie ciszy',
   'Kein Spiel einer eigenen Mannschaft.': 'Brak meczu własnej drużyny.',
@@ -3300,6 +3363,8 @@ export const pl: Record<string, string> = {
   'Meine Daten und Exporte für dein Team': 'Moje dane i eksporty dla twojego zespołu',
   'Meine Einsätze': 'Moje dyżury',
   'Meine Einsätze und Vereins-Soll': 'Moje dyżury i wymagania klubu',
+  'Meine Eltern sehen mit – kann ich das ändern?':
+    'Moi rodzice patrzą razem ze mną – czy mogę to zmienić?',
   'Meine Entwürfe': 'Moje szkice',
   'Meine Kinder': 'Moje dzieci',
   'Meine Mannschaft': 'Moja drużyna',
@@ -3338,6 +3403,8 @@ export const pl: Record<string, string> = {
     'Przy logowaniu dwuskładnikowym każde nowe logowanie wymaga dodatkowo kodu. Dla konta administracji zalecamy je.',
   'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Bitte melde dich an oder nutze „Passwort vergessen“.':
     'Z tym adresem e-mail istnieje już konto. Zaloguj się lub użyj „Zapomniałem(-am) hasła“.',
+  'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Das Kind braucht eine eigene Adresse.':
+    'Z tym adresem e-mail istnieje już konto. Dziecko potrzebuje własnego adresu.',
   'Mit Einladungslink oder Einladungscode (auch per QR-Code scannen) trittst du deinem Verein bei – der Verein wird danach auf diesem Gerät gemerkt. Hast du schon ein Konto, melde dich mit E-Mail und Passwort an („Zeigen“ macht das Passwort sichtbar). Einen neuen Verein richtest du mit dem Einrichtungscode (Format CR-XXXX-XXXX) ein, den du von Clubroof nach Zahlungseingang erhältst; er gilt einmal.':
     'Przez link zaproszenia lub kod zaproszenia (także przez zeskanowanie kodu QR) dołączasz do swojego klubu – klub jest potem zapamiętywany na tym urządzeniu. Jeśli masz już konto, zaloguj się adresem e-mail i hasłem („Pokaż“ odsłania hasło). Nowy klub konfigurujesz kodem konfiguracji (format CR-XXXX-XXXX), który dostaniesz od Clubroof po wpłynięciu płatności; jest jednorazowy.',
   'Mit Face ID oder Fingerabdruck entsperren': 'Odblokuj przez Face ID lub odcisk palca',
@@ -3349,6 +3416,7 @@ export const pl: Record<string, string> = {
     'Ze sztabem szkoleniowym, kadrą i terminami odpowiedzi',
   'Mit Treffpunkt und Antwortfrist der Mannschaft':
     'Z miejscem zbiórki i terminem odpowiedzi drużyny',
+  'Mit Zustimmung': 'Za zgodą',
   Mitfahren: 'Jadę z kimś',
   'Mitfahrt angeboten': 'Zaoferowano podwózkę',
   'Mitfahrt für {0} suchen': 'Szukaj podwózki dla {0}',
@@ -3388,6 +3456,7 @@ export const pl: Record<string, string> = {
   'Mitgliedsnummer (optional)': 'Numer członkowski (opcjonalnie)',
   'Mitgliedsnummer oder „Vorname Nachname“': 'Numer członkowski lub „Imię Nazwisko“',
   Mitgliedsstatus: 'Status członkostwa',
+  'Mitsicht und Mitentscheiden': 'Współoglądanie i współdecydowanie',
   Mitteilungen: 'Komunikaty',
   Mittelfeld: 'Pomoc',
   'Mittelfeld {0}': 'Pomoc {0}',
@@ -3679,6 +3748,8 @@ export const pl: Record<string, string> = {
   'Nur genehmigte Auslagen werden erstattet.': 'Zwracane są tylko zatwierdzone wydatki.',
   'nur https://': 'tylko https://',
   'Nur Kassenführung': 'Tylko zarząd kasy',
+  'Nur Link und QR-Code zeigen': 'Pokaż tylko link i kod QR',
+  'Nur Mitsicht': 'Tylko podgląd',
   'Nur Spieler der Mannschaft oder Gastspieler.': 'Tylko zawodnicy drużyny lub gościnni zawodnicy.',
   'Nur Spieler der Mannschaft.': 'Tylko zawodnicy drużyny.',
   'Nur Teilnehmer des Termins können mitfahren.': 'Jechać mogą tylko uczestnicy terminu.',
@@ -4053,6 +4124,7 @@ export const pl: Record<string, string> = {
   Schriftführer: 'Sekretarz',
   Schriftgröße: 'Rozmiar czcionki',
   'Schritt {0} von {1}': 'Krok {0} z {1}',
+  'Schritt {0} von 3': 'Krok {0} z 3',
   Schule: 'Szkoła',
   'Schule noch unklar': 'Szkoła jeszcze niejasna',
   'Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail.':
@@ -4081,6 +4153,8 @@ export const pl: Record<string, string> = {
   'Sichtbarkeit der Kontaktdaten': 'Widoczność danych kontaktowych',
   'Sichtbarkeit der Kontaktdaten neuer Personen': 'Widoczność danych kontaktowych nowych osób',
   'Sichtbarkeit meiner Kontaktdaten': 'Widoczność moich danych kontaktowych',
+  'Sie möchten wieder mitsehen: {0}. Du entscheidest.':
+    'Chcą znów patrzeć razem: {0}. Ty decydujesz.',
   Sieg: 'Zwycięstwo',
   'Sieht nur die eigene Mannschaft – beim Bezahlen im persönlichen Konto.':
     'Widzi tylko własna drużyna – przy płaceniu na koncie osobistym.',
@@ -4352,6 +4426,8 @@ export const pl: Record<string, string> = {
   'Stufe {0} vermerkt – das Mitglied hat keinen App-Zugang, bitte anders informieren.':
     'Odnotowano stopień {0} – członek nie ma dostępu do aplikacji, poinformuj go w inny sposób.',
   'Stufe {0}: Erinnerung verschickt.': 'Stopień {0}: przypomnienie wysłane.',
+  'Stufe ändern': 'Zmień poziom',
+  'Stufe geändert am {0}': 'Poziom zmieniono {0}',
   'Stufe offen': 'Stopień otwarty',
   Stumm: 'Wyciszone',
   'Stummgeschaltete Mannschaften melden sich nur noch bei Dringendem.':
@@ -4915,6 +4991,7 @@ export const pl: Record<string, string> = {
   'Wann trainiert die Mannschaft?': 'Kiedy trenuje drużyna?',
   'War da': 'Był(a)',
   'Wartet auf Freigabe': 'Czeka na zatwierdzenie',
+  'Wartet auf Zustimmung': 'Oczekuje na zgodę',
   'Warum bist du unsicher?': 'Dlaczego jesteś niepewny(-a)?',
   'Warum kannst du nicht?': 'Dlaczego nie możesz?',
   'Warum wir das fragen': 'Dlaczego o to pytamy',
@@ -5005,6 +5082,7 @@ export const pl: Record<string, string> = {
     'Po włączeniu wszyscy z uprawnieniami administracyjnymi (zarząd, administratorzy, kierownictwo młodzieży …) potrzebują logowania dwuskładnikowego, zanim będą mogli edytować dane członków.',
   Wer: 'Kto',
   'Wer darf die Kasse einsehen?': 'Kto może przeglądać kasę?',
+  'Wer darf für mich mitsehen?': 'Kto może patrzeć razem ze mną?',
   'Wer deine Daten sieht': 'Kto widzi twoje dane',
   'Wer die Vereinskasse einsehen darf, bestimmt die Vereinsadministration.':
     'Kto może przeglądać kasę klubu, określa administracja klubu.',
@@ -5329,6 +5407,8 @@ export const pl: Record<string, string> = {
   'Zugangsdaten sind geheim zu halten. Inhalte, die gegen Gesetze oder Rechte Dritter verstoßen, dürfen nicht eingestellt werden.':
     'Dane dostępowe należy zachować w tajemnicy. Nie wolno zamieszczać treści naruszających prawo lub prawa osób trzecich.',
   Zugesagt: 'Potwierdzono',
+  'Zugriff beenden': 'Zakończ dostęp',
+  'Zugriff endet': 'Dostęp wygasa',
   Zuletzt: 'Ostatnio',
   'zuletzt {0}': 'ostatnio {0}',
   'Zuletzt abgerufen {0}': 'Ostatnio pobrano {0}',
@@ -5394,6 +5474,7 @@ export const pl: Record<string, string> = {
   'Zuschüsse: Unter „Vereinskasse → Buchung → Zuschüsse“ legst du Förderungen mit Geber, Betrag und Frist für den Verwendungsnachweis an und führst sie von „Geplant“ über „Beantragt“ und „Bewilligt“ bis zum Eingang (Buchung als Einnahme); überfällige Nachweise sind rot. Sponsoren: Beim Buchen einer Einnahme wählst du den Sponsor; unter „Sponsoren“ siehst du die Einnahmen je Sponsor und Jahr. Mannschaftszuschuss: Ausgabe der Vereinskasse und Einnahme der Mannschaftskasse in einem Schritt. Inventar: Unter „Planung → Inventar“ erfasst du Anschaffungen mit Wert und Standort; Gegenstände werden mit Grund ausgesondert, nicht gelöscht.':
     'Dopłaty: w „Kasa klubu → Księgowanie → Dopłaty“ tworzysz dofinansowania z darczyńcą, kwotą i terminem rozliczenia wykorzystania i prowadzisz je od „Zaplanowano“ przez „Złożono wniosek“ i „Przyznano“ aż do wpływu (księgowanie jako przychód); zaległe rozliczenia są czerwone. Sponsorzy: przy księgowaniu przychodu wybierasz sponsora; w „Sponsorzy“ widzisz przychody wg sponsora i roku. Dopłata dla drużyny: wydatek kasy klubu i przychód kasy drużyny w jednym kroku. Inwentarz: w „Planowanie → Inwentarz“ zapisujesz zakupy z wartością i lokalizacją; przedmioty są wycofywane z uzasadnieniem, nie usuwane.',
   'Zustand / Hinweis (optional)': 'Stan / uwaga (opcjonalnie)',
+  Zustimmen: 'Zgadzam się',
   'Zuwendungsbestätigungen haben gesetzliche Pflichtangaben und Formulierungen. Lass die Vorlage von deiner Steuerberatung oder deinem Verband prüfen, bevor du sie freigibst. Die App ersetzt keine Steuerberatung.':
     'Potwierdzenia darowizn mają ustawowo wymagane dane i sformułowania. Daj szablon do sprawdzenia swojemu doradcy podatkowemu lub związkowi, zanim go zatwierdzisz. Aplikacja nie zastępuje doradztwa podatkowego.',
   'Zuwendungsbestätigungen noch nicht freigegeben':

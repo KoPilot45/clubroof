@@ -63,6 +63,8 @@ export const ar: Record<string, string> = {
   '{0} {1} hat per Überweisung bezahlt – bitte bestätigen.':
     '{0} {1} دفع بالتحويل المصرفي – يرجى التأكيد.',
   '{0} {1} lädt dich in die Vereins-App von {2} ein.': '{0} {1} يدعوك إلى تطبيق نادي {2}.',
+  '{0} {1} richtet dir einen eigenen Zugang zur Vereins-App von {2} ein.':
+    '{0} {1} يُعدّ لك وصولًا خاصًا إلى تطبيق النادي {2}.',
   '{0} {1}: {2}, {3} offen, fällig seit {4}.': '{0} {1}: {2}، المتبقي {3}، مستحق منذ {4}.',
   '{0} / {1} Helfer': '{0} / {1} مساعدين',
   '{0} abgewählt': 'تم إلغاء تحديد {0}',
@@ -92,6 +94,8 @@ export const ar: Record<string, string> = {
   '{0} Beiträge sind überfällig ({1}).': '{0} اشتراكات متأخرة ({1}).',
   '{0} Beitrittsanfrage': '{0} طلب انضمام',
   '{0} Beitrittsanfragen': '{0} طلبات انضمام',
+  '{0} bekommt ein eigenes Konto mit einer eigenen E-Mail-Adresse. Nicht eure: Jede Adresse gehört zu genau einem Konto.':
+    'يحصل {0} على حساب خاص بعنوان بريد إلكتروني خاص به. ليس عنوانكم: كل عنوان يخص حسابًا واحدًا فقط.',
   '{0} Belegungen überschneiden sich': '{0} حجوزات متداخلة',
   '{0} benachrichtigen': 'إشعار {0}',
   '{0} bestehende Spiele wurden angepasst.': 'تم تعديل {0} مباريات قائمة.',
@@ -139,10 +143,13 @@ export const ar: Record<string, string> = {
   '{0} gewählt': 'تم اختيار {0}',
   '{0} gewählt. Tippe auf eine Position oder einen Bankplatz.':
     'تم اختيار {0}. اضغط على مركز أو مقعد على دكة البدلاء.',
+  '{0} hat abgelehnt: {1}': '{0} رفض: {1}',
+  '{0} hat die Mitsicht geändert: {1}': '{0} غيّر مستوى المتابعة: {1}',
   '{0} hat für das Spiel abgesagt.': '{0} اعتذر عن المباراة.',
   '{0} hat heute Geburtstag': 'اليوم عيد ميلاد {0}',
   '{0} hat mit {1} die meisten Ausgaben.': '{0} لديه أكبر المصروفات بمبلغ {1}.',
   '{0} hat mit {1} Getränken am meisten.': '{0} لديه أكبر عدد من المشروبات بـ {1}.',
+  '{0} hat zugestimmt: {1}': '{0} وافق: {1}',
   '{0} Helfer fehlen': 'ينقص {0} مساعدين',
   '{0} heute 🎉': '{0} اليوم 🎉',
   '{0} hinzufügen': 'إضافة {0}',
@@ -164,6 +171,8 @@ export const ar: Record<string, string> = {
   '{0} min länger als das Training': 'أطول من التدريب بـ {0} دقيقة',
   '{0} Min.': '{0} د',
   '{0} Mitgliedern wurde eine Beitragsart zugeordnet.': 'تم تعيين نوع اشتراك لـ {0} أعضاء.',
+  '{0} möchte wieder mitsehen ({1}). Du entscheidest unter „Ich“.':
+    '{0} يرغب في المتابعة معك مجددًا ({1}). القرار لك تحت «أنا».',
   '{0} neu': '{0} جديد',
   '{0} neu angelegt, {1} aktualisiert, {2} übersprungen.':
     'تم إنشاء {0} جديد، وتحديث {1}، وتخطي {2}.',
@@ -174,6 +183,8 @@ export const ar: Record<string, string> = {
   '{0} offen': '{0} متبقٍ',
   '{0} offene Aufgabe': '{0} مهمة مفتوحة',
   '{0} offene Aufgaben': '{0} مهام مفتوحة',
+  '{0} öffnet den Link und legt ein eigenes Passwort fest.':
+    'يفتح {0} الرابط ويحدد كلمة مروره الخاصة.',
   '{0} ohne Mannschaft': '{0} بلا فريق',
   '{0} ohne Rückmeldung': '{0} دون رد',
   '{0} per WhatsApp': '{0} عبر WhatsApp',
@@ -1237,9 +1248,14 @@ export const ar: Record<string, string> = {
   'Das Jahr {0} ist noch abgeschlossen. Öffne zuerst die späteren Jahre.':
     'سنة {0} لا تزال مغلقة. افتح السنوات اللاحقة أولًا.',
   'Das Jahr ist ungültig.': 'السنة غير صالحة.',
+  'Das Kind': 'الطفل',
+  'Das Kind hat die Einladung angenommen. Das Konto gehört dem Kind; du kannst deine Stufe ändern.':
+    'قبل الطفل الدعوة. الحساب ملك للطفل؛ يمكنكم تغيير مستواكم.',
   'Das Kind zu „Elternteil von“ wurde nicht gefunden: {0}. Bitte Namen oder Mitgliedsnummer prüfen.':
     'لم يتم العثور على الطفل المقابل لـ«ولي أمر» : {0}. يرجى التحقق من الاسم أو رقم العضوية.',
   'Das Konto': 'الحساب',
+  'Das Konto gehört dem Kind. Ihr könnt die Stufe jederzeit senken; wieder erhöhen geht nur mit Zustimmung des Kindes.':
+    'الحساب ملك للطفل. يمكنكم خفض المستوى في أي وقت؛ أما رفعه مجددًا فلا يمكن إلا بموافقة الطفل.',
   'Das Konto ist archiviert.': 'الحساب مؤرشف.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.': 'الاختصار «{0}» مستخدم في هذا الموسم.',
   'Das Kürzel (2 bis 4 Zeichen, z. B. „SGW“) steht groß im Plakat der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist. Die Vereinsadministration ändert es unter „Verwaltung → Verein & Design“, mit Vorschau. Die Vibration bei Auswahl und Bestätigung schaltest du auf dem Handy unter „Ich → Konto & Einstellungen → Vibration“ aus; bei eingestellter „Bewegung reduzieren“ des Geräts bleiben auch die Animationen aus.':
@@ -1370,6 +1386,14 @@ export const ar: Record<string, string> = {
   'Deine Beitrittsanfrage wartet noch auf Freigabe durch den Verein.':
     'لا يزال طلب انضمامك بانتظار موافقة النادي.',
   'Deine Beitrittsanfrage wurde nicht freigegeben.': 'لم تتم الموافقة على طلب انضمامك.',
+  'Deine Eltern fragen an': 'والداك يسألان',
+  'Deine Eltern fragen um Mitsicht': 'والداك يطلبان المتابعة معك',
+  'Deine Eltern sehen deine Termine und antworten, melden Abwesenheiten und buchen Fahrten für dich.':
+    'يرى والداك مواعيدك ويجيبان ويبلغان عن غيابك ويحجزان الرحلات من أجلك.',
+  'Deine Eltern sehen deine Termine, können aber nichts für dich tun. Du antwortest selbst.':
+    'يرى والداك مواعيدك لكن لا يمكنهما فعل شيء من أجلك. تجيب بنفسك.',
+  'Deine Eltern sehen nichts mehr von dir und tun nichts für dich.':
+    'لم يعد والداك يريان شيئًا عنك ولا يفعلان شيئًا من أجلك.',
   'Deine Kinder': 'أطفالك',
   'Deine Mitgliedschaft ist beendet.': 'انتهت عضويتك.',
   'Deine News ist veröffentlicht': 'تم نشر خبرك',
@@ -1444,6 +1468,7 @@ export const ar: Record<string, string> = {
   'Der Einrichtungscode konnte nicht geprüft werden.': 'تعذّر التحقق من رمز الإعداد.',
   'Der Einrichtungscode stimmt nicht.': 'رمز الإعداد غير صحيح.',
   'Der Einsatz': 'المهمة',
+  'Der Elternzugang': 'وصول الوالدين',
   'Der Export des Archivs steht in der Web-Verwaltung bereit.':
     'تصدير الأرشيف متاح في إدارة الويب.',
   'Der Export hat nicht geklappt.': 'فشل التصدير.',
@@ -1569,6 +1594,7 @@ export const ar: Record<string, string> = {
   'Die Abwesenheit konnte nicht gespeichert werden.': 'تعذّر حفظ الغياب.',
   'Die Änderung hat nicht geklappt.': 'فشل التغيير.',
   'Die Änderung konnte nicht gespeichert werden.': 'تعذّر حفظ التغيير.',
+  'Die Änderung wurde nicht gespeichert.': 'لم يتم حفظ التغيير.',
   'Die Änderungen konnten nicht gespeichert werden.': 'تعذّر حفظ التغييرات.',
   'Die Anfrage': 'الطلب',
   'Die Anmeldung ist abgelaufen. Bitte erneut anmelden.':
@@ -1629,6 +1655,9 @@ export const ar: Record<string, string> = {
   'Die eigenen individuellen Rechte kann nur eine andere Person ändern.':
     'لا يمكن لغيرك فقط تغيير صلاحياتك الفردية.',
   'Die Eingabe ist unvollständig oder ungültig.': 'الإدخال ناقص أو غير صالح.',
+  'Die Einladung an {0} ist offen. Sobald {1} sie annimmt, gilt: {2}.':
+    'الدعوة إلى {0} مفتوحة. بمجرد أن يقبلها {1} يسري ما يلي: {2}.',
+  'Die Einladung wurde nicht erstellt.': 'لم يتم إنشاء الدعوة.',
   'Die Einrichtung hat nicht geklappt.': 'فشل الإعداد.',
   'Die Einstellung gilt für alle Mannschaften der Abteilung. Ist ein Modul hier aus, kann es keine Mannschaft darin einschalten. „Wie Verein“ übernimmt die Vereinseinstellung.':
     'يسري الإعداد على جميع فرق القسم. إذا كانت وحدة معطّلة هنا فلا يمكن لأي فريق فيه تفعيلها. «مثل النادي» يعتمد إعداد النادي.',
@@ -1895,6 +1924,7 @@ export const ar: Record<string, string> = {
   'Dieser Vorgang gehört zu einer anderen Forderung.': 'هذه العملية تخص مطالبة أخرى.',
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'هذا الدعم مسجّل أيضًا في صندوق الفريق ولا يمكن إلغاؤه من هنا.',
+  'Dieses Kind hat bereits einen eigenen Zugang.': 'لدى هذا الطفل وصول خاص بالفعل.',
   'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.':
     'لهذا الطفل حساب خاص ولا يمكن ربطه عبر طلب انضمام. تتولى إدارة الأعضاء ذلك.',
   'Dieses Passwort ist zu leicht zu erraten.': 'كلمة المرور هذه سهلة التخمين.',
@@ -1932,6 +1962,8 @@ export const ar: Record<string, string> = {
   'Du hast nicht geantwortet': 'لم ترد',
   'Du kannst Abwesenheiten nur für dich oder deine Kinder eintragen.':
     'يمكنك تسجيل الغياب لنفسك أو لأطفالك فقط.',
+  'Du kannst das jederzeit selbst ändern. Deine Eltern erfahren davon.':
+    'يمكنك تغيير ذلك بنفسك في أي وقت. سيعلم والداك بذلك.',
   'Du kannst deine Stimme bis zum Ende ändern.': 'يمكنك تغيير صوتك حتى النهاية.',
   'Du kannst dich nicht selbst aus dem Kader nehmen.': 'لا يمكنك إزالة نفسك من التشكيلة.',
   'Du kannst es später in der Kasse angeben': 'يمكنك تحديده لاحقًا في الصندوق',
@@ -1981,6 +2013,7 @@ export const ar: Record<string, string> = {
   'E-Mail-Adresse': 'عنوان البريد الإلكتروني',
   'E-Mail-Adresse „{0}“ ist ungültig.': 'عنوان البريد الإلكتروني «{0}» غير صالح.',
   'E-Mail-Adresse bestätigt': 'تم تأكيد البريد الإلكتروني',
+  'E-Mail-Adresse des Kindes': 'البريد الإلكتروني للطفل',
   'E-Mail-Adresse oder Passwort ist nicht korrekt.': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
   'E-Mail: kontakt@clubroof.example\nTelefon: 01234 567890':
     'البريد الإلكتروني: kontakt@clubroof.example\nالهاتف: 01234 567890',
@@ -1990,8 +2023,11 @@ export const ar: Record<string, string> = {
   'Eigene Kasse anlegen': 'إنشاء صندوق خاص',
   'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik, Dokumente, News':
     'الفريق الخاص، المواعيد، التشكيلة، التدريب، الاحتياجات/العروض، الإحصاءات، المستندات، الأخبار',
+  'Eigenen Zugang einrichten': 'إعداد وصول خاص',
   'Eigener Programmpunkt': 'بند برنامج خاص',
   'Eigener Zeitraum': 'فترة مخصصة',
+  'Eigener Zugang': 'وصول خاص',
+  Eigenständig: 'مستقل',
   'Eigentor des Gegners': 'هدف الخصم في مرماه',
   'Ein abgeschlossenes Jahr öffnet nur die Administration.':
     'لا يعيد فتح السنة المغلقة إلا الإدارة.',
@@ -2043,6 +2079,7 @@ export const ar: Record<string, string> = {
   'Eingegangen am': 'ورد في',
   'Eingegangen in diesem Jahr: {0}': 'الوارد هذه السنة: {0}',
   'Eingehen kann nur ein bewilligter Zuschuss.': 'لا يمكن أن يرد إلا دعم تمت الموافقة عليه.',
+  Eingeladen: 'تمت الدعوة',
   'eingeladen {0}': 'تمت دعوة {0}',
   'Eingeladen: {0}': 'المدعوون: {0}',
   Eingereicht: 'مقدَّم',
@@ -2051,9 +2088,13 @@ export const ar: Record<string, string> = {
   Einladen: 'دعوة',
   'Einladen dürfen Trainerteams und die Mitgliederverwaltung.':
     'يحق للأطقم التدريبية وإدارة الأعضاء الدعوة.',
+  Einladung: 'دعوة',
+  'Einladung bereit': 'الدعوة جاهزة',
   'Einladung für {0}': 'دعوة لـ {0}',
   'Einladung in die App von {0}': 'دعوة إلى تطبيق {0}',
   'Einladung nicht gültig': 'الدعوة غير صالحة',
+  'Einladung per E-Mail senden': 'إرسال الدعوة بالبريد الإلكتروني',
+  'Einladung widerrufen': 'سحب الدعوة',
   Einladungen: 'الدعوات',
   'Einladungen verschickst du unter Verwaltung → Einladungen. Rückgängig geht 24 Stunden lang.':
     'ترسل الدعوات ضمن الإدارة ← الدعوات. يمكن التراجع خلال 24 ساعة.',
@@ -2216,6 +2257,8 @@ export const ar: Record<string, string> = {
   'Es gibt keine Einnahmekategorie für Beiträge. Lege sie in der Vereinskasse an.':
     'لا توجد فئة إيرادات للاشتراكات. أنشئها في صندوق النادي.',
   'Es gibt keine neuen Mitglieder zu übernehmen.': 'لا يوجد أعضاء جدد لاعتمادهم.',
+  'Es gibt keine offene Anfrage.': 'لا يوجد طلب مفتوح.',
+  'Es gibt keine offene Einladung.': 'لا توجد دعوة مفتوحة.',
   'Es gibt nichts zu übernehmen.': 'لا يوجد ما يُعتمد.',
   'Es gibt noch fehlerhafte Zeilen. Bitte korrigieren oder abwählen.':
     'لا تزال هناك أسطر بها أخطاء. يرجى تصحيحها أو إلغاء تحديدها.',
@@ -2635,6 +2678,18 @@ export const ar: Record<string, string> = {
   'Ich und Familie': 'أنا والعائلة',
   'Ich, Einstellungen und Hilfe': 'أنا والإعدادات والمساعدة',
   'Ideeller Bereich': 'المجال المعنوي',
+  'Ihr antwortet, meldet Abwesenheiten und bucht Fahrten für das Kind und seht die Kasse weiter.':
+    'تجيبون وتبلغون عن الغياب وتحجزون الرحلات للطفل، وما زلتم ترون الصندوق.',
+  'Ihr habt „{0}“ angefragt. {1} entscheidet in der App.': 'لقد طلبتم «{0}». يقرر {1} في التطبيق.',
+  'Ihr könnt die Stufe später jederzeit senken.': 'يمكنكم خفض المستوى في أي وقت لاحقًا.',
+  'Ihr seht Termine, Zusagen und Kasse, könnt aber nichts für das Kind tun.':
+    'ترون المواعيد والردود والصندوق، لكن لا يمكنكم فعل شيء من أجل الطفل.',
+  'Ihr seht und tut danach nichts mehr für {0}. Das Kind taucht bei euch nicht mehr auf. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'بعد ذلك لن تروا أو تفعلوا شيئًا بعد الآن من أجل {0}. لن يظهر الطفل لديكم. لا يمكن المتابعة معه مجددًا إلا إذا سمح الطفل بذلك.',
+  'Ihr seht und tut danach nichts mehr für {0}. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'بعد ذلك لن تروا أو تفعلوا شيئًا بعد الآن من أجل {0}. لا يمكن المتابعة معه مجددًا إلا إذا سمح الطفل بذلك.',
+  'Ihr seht und tut nichts mehr für das Kind. Das Kind entscheidet allein.':
+    'لم تعودوا ترون أو تفعلون شيئًا من أجل الطفل. الطفل يقرر وحده.',
   'Im „Änderungsprotokoll“ (Verwaltung): Rollenvergaben, Absagen, Modulwechsel, Kassenbuchungen und Stornos mit Person und Zeitpunkt.':
     'في «سجل التغييرات» (الإدارة): منح الأدوار، الاعتذارات، تبديل الوحدات، قيود الصندوق والإلغاءات مع الشخص والوقت.',
   'Im echten Betrieb erscheint hier das vom Verein hochgeladene Dokument.':
@@ -2755,12 +2810,16 @@ export const ar: Record<string, string> = {
     'نعم. عند المواعيد المفتوحة والإشعارات غير المقروءة اسحب السطر إلى اليسار: يظهر «تأكيد» أو «مقروء». انقر عليه، أو اسحب حتى النهاية فيتم الأمر فورًا. ويمكن فعل كل شيء دون سحب عبر الأزرار في السطر.',
   'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.':
     'نعم. يُحفظ ردك على الجهاز ويظهر فورًا («جارٍ الإرسال») ويُرسل تلقائيًا بمجرد عودتك إلى الاتصال. وإذا رفضه الخادم، مثلًا لانتهاء المهلة، يصلك إشعار.',
+  'Ja. Öffne „Ich → Meine Kinder → Kind → Eigener Zugang“, gib die eigene E-Mail-Adresse des Kindes an und wähle die Stufe: „Mitsicht und Mitentscheiden“ (wie bisher), „Nur Mitsicht“ (ihr seht, tut aber nichts) oder „Eigenständig“ (ihr seht und tut nichts mehr). Das Kind legt über den Link ein eigenes Passwort fest; euer Konto bleibt unverändert. Ihr könnt die Stufe jederzeit senken. Wieder erhöhen geht nur, wenn das Kind zustimmt. Antworten Eltern und Kind für denselben Termin, gilt die letzte Antwort.':
+    'نعم. افتحوا «أنا ← أطفالي ← الطفل ← وصول خاص»، وأدخلوا البريد الإلكتروني الخاص بالطفل واختاروا المستوى: «المتابعة والقرار معًا» (كما كان)، أو «عرض فقط» (ترون ولا تفعلون شيئًا)، أو «مستقل» (لا ترون ولا تفعلون شيئًا). يحدد الطفل كلمة مروره الخاصة عبر الرابط؛ ويبقى حسابكم دون تغيير. يمكنكم خفض المستوى في أي وقت. أما رفعه مجددًا فلا يمكن إلا إذا وافق الطفل. إذا أجاب الوالدان والطفل عن الموعد نفسه، تُعتمد الإجابة الأخيرة.',
   'Ja. Unter „Ich → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.':
     'نعم. من «أنا ← الحساب والإعدادات ← المظهر» تختار فاتح أو داكن أو «مثل الجهاز». ويسري اختيارك على جميع أجهزتك.',
   'Ja. Unter „Ich → Konto & Einstellungen → Sprache“ wählst du Deutsch, English, Türkçe, Українська, Polski, Español, Français, العربية oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.':
     'نعم. من «أنا ← الحساب والإعدادات ← اللغة» تختار Deutsch أو English أو Türkçe أو Українська أو Polski أو Español أو Français أو العربية أو «تلقائي» (لغة جهازك). ويسري اختيارك على جميع أجهزتك، وكذلك على إشعارات الدفع. أما النصوص التي يكتبها المدربون أو مجلس الإدارة بأنفسهم (مثل الأخبار) فتبقى بلغة كاتبها.',
   'Ja. Unter „Ich → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'نعم. من «أنا ← الحساب والإعدادات» تضبط حجم الخط (عادي، كبير، كبير جدًا) ويمكنك قفل التطبيق ببصمة الوجه أو بصمة الإصبع أو رمز الجهاز. بدون إنترنت يعرض التطبيق آخر المواعيد والأخبار والتشكيلات المحمّلة، ويظهر تنبيه في الأعلى. الردود والتغييرات لا تتاح إلا مع الاتصال.',
+  'Ja. Unter „Ich → Wer darf für mich mitsehen?“ stehen drei Stufen: „Mitsicht und Mitentscheiden“ (Eltern antworten und melden für dich), „Nur Mitsicht“ (sie sehen nur) und „Eigenständig“ (sie sehen und tun nichts mehr). Du kannst jede Stufe selbst setzen. Fragen deine Eltern nach mehr Mitsicht, entscheidest du mit „Zustimmen“ oder „Ablehnen“. Deine Eltern erfahren von jeder Änderung.':
+    'نعم. تحت «أنا ← من يمكنه المتابعة معي؟» ثلاثة مستويات: «المتابعة والقرار معًا» (يجيب والداك ويبلغان نيابةً عنك)، و«عرض فقط» (يريان فقط)، و«مستقل» (لا يريان ولا يفعلان شيئًا). يمكنك ضبط أي مستوى بنفسك. إذا طلب والداك اطلاعًا أكبر، فأنت تقرر بـ«موافقة» أو «رفض». يعلم والداك بكل تغيير.',
   'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch), außerdem Forum-Themen und eigene Antworten, Kommentare (auch löschen), Übungen, Aushänge im Fundbüro und Marktplatz, Spielerbedarf und Angebote der Spielerbörse (die Anzahl nicht unter die schon eingetragenen Spieler) Platzsperrungen, Beitragsarten und Rücklagen der Vereinskasse (ein geänderter Betrag einer Beitragsart gilt für künftige Beiträge), Ausrüstung (Bezeichnung, Anzahl, Lagerort, Zustand) und deine Schiedsrichter-Einsätze. Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
     'نعم. يمكن تعديل ما أنشأته لاحقًا عبر «تعديل» في قائمة «…» أو الزر في صفحة التفاصيل: الاستطلاعات (السؤال والوصف والمهلة؛ والإجابات فقط ما دام لم يصوّت أحد)، والفعاليات مع مناوبات المساعدين، والغيابات، والمستندات (العنوان والنوع والظهور؛ يبقى الملف، ولاستبداله احذفه وارفع ملفًا جديدًا)، وكذلك مواضيع المنتدى وردودك، والتعليقات (مع إمكانية الحذف)، والتمارين، والإعلانات في المفقودات والسوق، وطلبات اللاعبين وعروض بورصة اللاعبين (على ألا يقل العدد عن اللاعبين المسجلين بالفعل)، وحظر الملاعب، وأنواع الاشتراكات والاحتياطيات في صندوق النادي (المبلغ المعدّل لنوع اشتراك يسري على الاشتراكات المستقبلية)، والمعدات (التسمية والعدد ومكان التخزين والحالة)، ومهامك كحكم. النموذج هو نفسه عند الإنشاء لكنه معبّأ مسبقًا. تحمل المحتويات المعدّلة علامة «معدّل» مع الوقت. نُعلم المعنيين بالتغييرات المهمة كالوقت أو المكان أو المهلة. لا تُعدَّل قيود الصندوق: تصحح الخطأ بالإلغاء ثم التسجيل من جديد، وبذلك يبقى كل شيء قابلًا للتتبع.',
   Jahr: 'السنة',
@@ -2854,6 +2913,7 @@ export const ar: Record<string, string> = {
   'Kann ich ohne Internet zu- oder absagen?': 'هل أستطيع التأكيد أو الاعتذار دون إنترنت؟',
   'Kann ich Trainings und Spiele aus einer Datei anlegen?':
     'هل أستطيع إنشاء التدريبات والمباريات من ملف؟',
+  'Kann mein Kind einen eigenen Zugang bekommen?': 'هل يمكن لطفلي الحصول على وصول خاص؟',
   'Karte {0} von {1}': 'البطاقة {0} من {1}',
   Karten: 'البطاقات',
   'Karten und Listen': 'البطاقات والقوائم',
@@ -2912,6 +2972,7 @@ export const ar: Record<string, string> = {
     'تصنّف الفئات الإيرادات والمصروفات (الاشتراكات، التبرعات، صيانة الملعب …).',
   'Kein aktiver Link.': 'لا يوجد رابط نشط.',
   'Kein automatisches Treffen': 'لا لقاء تلقائي',
+  'Kein eigener Zugang': 'لا يوجد وصول خاص',
   'Kein Mitglied mit offenem Beitrag erkannt': 'لم يُعثر على عضو باشتراك مفتوح',
   'Kein Push in der Ruhezeit': 'لا إشعارات دفع في وقت الراحة',
   'Kein Spiel einer eigenen Mannschaft.': 'لا مباراة لفريق من فرقك.',
@@ -3213,6 +3274,7 @@ export const ar: Record<string, string> = {
   'Meine Daten und Exporte für dein Team': 'بياناتي وصادراتي لفريقك',
   'Meine Einsätze': 'مهامي',
   'Meine Einsätze und Vereins-Soll': 'مهامي والمطلوب من النادي',
+  'Meine Eltern sehen mit – kann ich das ändern?': 'والداي يتابعان معي – هل يمكنني تغيير ذلك؟',
   'Meine Entwürfe': 'مسوداتي',
   'Meine Kinder': 'أطفالي',
   'Meine Mannschaft': 'فريقي',
@@ -3250,6 +3312,8 @@ export const ar: Record<string, string> = {
     'مع تسجيل الدخول بخطوتين يحتاج كل تسجيل دخول جديد إلى رمز إضافي. ننصح به لحساب الإدارة.',
   'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Bitte melde dich an oder nutze „Passwort vergessen“.':
     'يوجد حساب بهذا البريد الإلكتروني بالفعل. سجّل الدخول أو استخدم «نسيت كلمة المرور».',
+  'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Das Kind braucht eine eigene Adresse.':
+    'يوجد حساب بهذا البريد الإلكتروني بالفعل. يحتاج الطفل إلى عنوان خاص به.',
   'Mit Einladungslink oder Einladungscode (auch per QR-Code scannen) trittst du deinem Verein bei – der Verein wird danach auf diesem Gerät gemerkt. Hast du schon ein Konto, melde dich mit E-Mail und Passwort an („Zeigen“ macht das Passwort sichtbar). Einen neuen Verein richtest du mit dem Einrichtungscode (Format CR-XXXX-XXXX) ein, den du von Clubroof nach Zahlungseingang erhältst; er gilt einmal.':
     'برابط الدعوة أو رمز الدعوة (ويمكن أيضًا مسح رمز QR) تنضم إلى ناديك، ثم يُحفظ النادي على هذا الجهاز. إذا كان لديك حساب فسجّل الدخول بالبريد الإلكتروني وكلمة المرور («إظهار» يُظهر كلمة المرور). أما لإعداد نادٍ جديد فتستخدم رمز الإعداد (بالصيغة CR-XXXX-XXXX) الذي تتلقاه من Clubroof بعد استلام الدفع؛ وهو صالح لمرة واحدة.',
   'Mit Face ID oder Fingerabdruck entsperren': 'فتح القفل ببصمة الوجه أو بصمة الإصبع',
@@ -3259,6 +3323,7 @@ export const ar: Record<string, string> = {
   'Mit Rückmeldung zurückgeben': 'إعادة مع ملاحظة',
   'Mit Trainerteam, Kader und Antwortfristen': 'مع الجهاز التدريبي والتشكيلة ومهل الرد',
   'Mit Treffpunkt und Antwortfrist der Mannschaft': 'مع مكان التجمع ومهلة رد الفريق',
+  'Mit Zustimmung': 'بموافقة',
   Mitfahren: 'مرافقة',
   'Mitfahrt angeboten': 'تم عرض رحلة مشتركة',
   'Mitfahrt für {0} suchen': 'البحث عن رحلة مشتركة لـ {0}',
@@ -3298,6 +3363,7 @@ export const ar: Record<string, string> = {
   'Mitgliedsnummer (optional)': 'رقم العضوية (اختياري)',
   'Mitgliedsnummer oder „Vorname Nachname“': 'رقم العضوية أو «الاسم الأول اسم العائلة»',
   Mitgliedsstatus: 'حالة العضوية',
+  'Mitsicht und Mitentscheiden': 'المتابعة والقرار معًا',
   Mitteilungen: 'الرسائل',
   Mittelfeld: 'خط الوسط',
   'Mittelfeld {0}': 'خط الوسط {0}',
@@ -3580,6 +3646,8 @@ export const ar: Record<string, string> = {
   'Nur genehmigte Auslagen werden erstattet.': 'لا تُسدَّد إلا النفقات المعتمدة.',
   'nur https://': 'https:// فقط',
   'Nur Kassenführung': 'إدارة الصندوق فقط',
+  'Nur Link und QR-Code zeigen': 'عرض الرابط ورمز QR فقط',
+  'Nur Mitsicht': 'عرض فقط',
   'Nur Spieler der Mannschaft oder Gastspieler.': 'لاعبو الفريق أو اللاعبون الضيوف فقط.',
   'Nur Spieler der Mannschaft.': 'لاعبو الفريق فقط.',
   'Nur Teilnehmer des Termins können mitfahren.': 'لا يستطيع المرافقة إلا المشاركون في الموعد.',
@@ -3949,6 +4017,7 @@ export const ar: Record<string, string> = {
   Schriftführer: 'أمين السر',
   Schriftgröße: 'حجم الخط',
   'Schritt {0} von {1}': 'الخطوة {0} من {1}',
+  'Schritt {0} von 3': 'الخطوة {0} من 3',
   Schule: 'المدرسة',
   'Schule noch unklar': 'المدرسة غير محددة بعد',
   'Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail.':
@@ -3976,6 +4045,8 @@ export const ar: Record<string, string> = {
   'Sichtbarkeit der Kontaktdaten': 'ظهور بيانات الاتصال',
   'Sichtbarkeit der Kontaktdaten neuer Personen': 'ظهور بيانات اتصال الأشخاص الجدد',
   'Sichtbarkeit meiner Kontaktdaten': 'ظهور بيانات اتصالي',
+  'Sie möchten wieder mitsehen: {0}. Du entscheidest.':
+    'يرغبان في المتابعة معك مجددًا: {0}. القرار لك.',
   Sieg: 'فوز',
   'Sieht nur die eigene Mannschaft – beim Bezahlen im persönlichen Konto.':
     'يراه فريقك فقط، وعند الدفع في الحساب الشخصي.',
@@ -4237,6 +4308,8 @@ export const ar: Record<string, string> = {
   'Stufe {0} vermerkt – das Mitglied hat keinen App-Zugang, bitte anders informieren.':
     'تم تسجيل المرحلة {0}، وليس لدى العضو دخول إلى التطبيق، يُرجى إبلاغه بطريقة أخرى.',
   'Stufe {0}: Erinnerung verschickt.': 'المرحلة {0}: تم إرسال التذكير.',
+  'Stufe ändern': 'تغيير المستوى',
+  'Stufe geändert am {0}': 'تم تغيير المستوى في {0}',
   'Stufe offen': 'المرحلة مفتوحة',
   Stumm: 'مكتوم',
   'Stummgeschaltete Mannschaften melden sich nur noch bei Dringendem.':
@@ -4792,6 +4865,7 @@ export const ar: Record<string, string> = {
   'Wann trainiert die Mannschaft?': 'متى يتدرب الفريق؟',
   'War da': 'كان حاضرًا',
   'Wartet auf Freigabe': 'بانتظار الاعتماد',
+  'Wartet auf Zustimmung': 'بانتظار الموافقة',
   'Warum bist du unsicher?': 'لماذا أنت غير متأكد؟',
   'Warum kannst du nicht?': 'لماذا لا تستطيع؟',
   'Warum wir das fragen': 'لماذا نسأل عن هذا',
@@ -4881,6 +4955,7 @@ export const ar: Record<string, string> = {
     'عند التفعيل يحتاج كل من لديه صلاحيات إدارية (مجلس الإدارة، المسؤولون، إدارة الشباب …) إلى تسجيل الدخول بخطوتين قبل أن يتمكنوا من تعديل بيانات الأعضاء.',
   Wer: 'من',
   'Wer darf die Kasse einsehen?': 'من يحق له الاطلاع على الصندوق؟',
+  'Wer darf für mich mitsehen?': 'من يمكنه المتابعة معي؟',
   'Wer deine Daten sieht': 'من يرى بياناتك',
   'Wer die Vereinskasse einsehen darf, bestimmt die Vereinsadministration.':
     'تحدد إدارة النادي من يحق له الاطلاع على صندوق النادي.',
@@ -5200,6 +5275,8 @@ export const ar: Record<string, string> = {
   'Zugangsdaten sind geheim zu halten. Inhalte, die gegen Gesetze oder Rechte Dritter verstoßen, dürfen nicht eingestellt werden.':
     'يجب إبقاء بيانات الدخول سرية. ولا يجوز نشر محتوى يخالف القوانين أو حقوق الغير.',
   Zugesagt: 'مؤكَّد',
+  'Zugriff beenden': 'إنهاء الوصول',
+  'Zugriff endet': 'ينتهي الوصول',
   Zuletzt: 'الأخير',
   'zuletzt {0}': 'آخر مرة {0}',
   'Zuletzt abgerufen {0}': 'آخر استدعاء {0}',
@@ -5264,6 +5341,7 @@ export const ar: Record<string, string> = {
   'Zuschüsse: Unter „Vereinskasse → Buchung → Zuschüsse“ legst du Förderungen mit Geber, Betrag und Frist für den Verwendungsnachweis an und führst sie von „Geplant“ über „Beantragt“ und „Bewilligt“ bis zum Eingang (Buchung als Einnahme); überfällige Nachweise sind rot. Sponsoren: Beim Buchen einer Einnahme wählst du den Sponsor; unter „Sponsoren“ siehst du die Einnahmen je Sponsor und Jahr. Mannschaftszuschuss: Ausgabe der Vereinskasse und Einnahme der Mannschaftskasse in einem Schritt. Inventar: Unter „Planung → Inventar“ erfasst du Anschaffungen mit Wert und Standort; Gegenstände werden mit Grund ausgesondert, nicht gelöscht.':
     'الدعم المالي: في «صندوق النادي ← قيد ← الدعم المالي» تنشئ الإعانات مع الجهة المانحة والمبلغ ومهلة إثبات الاستخدام، وتنقلها من «مخطط» إلى «تم التقديم» ثم «تمت الموافقة» حتى الاستلام (يُسجَّل كإيراد)؛ والإثباتات المتأخرة حمراء. الرعاة: عند تسجيل إيراد تختار الراعي؛ وفي «الرعاة» ترى الإيرادات لكل راعٍ وسنة. دعم الفريق: مصروف من صندوق النادي وإيراد في صندوق الفريق في خطوة واحدة. الجرد: في «التخطيط ← الجرد» تسجل المشتريات مع القيمة والموقع؛ وتُستبعد الأغراض مع ذكر السبب ولا تُحذف.',
   'Zustand / Hinweis (optional)': 'الحالة / ملاحظة (اختياري)',
+  Zustimmen: 'موافقة',
   'Zuwendungsbestätigungen haben gesetzliche Pflichtangaben und Formulierungen. Lass die Vorlage von deiner Steuerberatung oder deinem Verband prüfen, bevor du sie freigibst. Die App ersetzt keine Steuerberatung.':
     'لإيصالات التبرع بيانات وصياغات إلزامية قانونًا. اطلب من مستشارك الضريبي أو اتحادك مراجعة القالب قبل اعتماده. والتطبيق لا يغني عن الاستشارة الضريبية.',
   'Zuwendungsbestätigungen noch nicht freigegeben': 'إيصالات التبرع لم تُعتمد بعد',

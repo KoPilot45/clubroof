@@ -223,7 +223,8 @@ function InviteSteps({
     );
 
   return (
-    <Section title={t(`Eigenen Zugang einrichten · Schritt ${step} von 3`)}>
+    <Section title="Eigenen Zugang einrichten">
+      <T variant="caption">{t(`Schritt ${step} von 3`)}</T>
       {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
       {step === 1 ? (
         <Card style={{ gap: 12 }}>

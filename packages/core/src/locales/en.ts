@@ -73,6 +73,8 @@ export const en: Record<string, string> = {
   '{0} {1} kann den Einsatz nicht übernehmen.': '{0} {1} cannot take the assignment.',
   '{0} {1} lädt dich in die Vereins-App von {2} ein.':
     '{0} {1} is inviting you to the {2} club app.',
+  '{0} {1} richtet dir einen eigenen Zugang zur Vereins-App von {2} ein.':
+    '{0} {1} is setting up your own access to the {2} club app.',
   '{0} {1}: {2}, {3} offen, fällig seit {4}.': '{0} {1}: {2}, {3} open, due since {4}.',
   '{0} / {1} Helfer': '{0} / {1} helpers',
   '{0} abgewählt': '{0} deselected',
@@ -106,6 +108,8 @@ export const en: Record<string, string> = {
   '{0} Beiträge sind überfällig ({1}).': '{0} fees are overdue ({1}).',
   '{0} Beitrittsanfrage': '{0} join request',
   '{0} Beitrittsanfragen': '{0} join requests',
+  '{0} bekommt ein eigenes Konto mit einer eigenen E-Mail-Adresse. Nicht eure: Jede Adresse gehört zu genau einem Konto.':
+    '{0} gets their own account with their own email address. Not yours: every address belongs to exactly one account.',
   '{0} Belegungen überschneiden sich': '{0} bookings overlap',
   '{0} benachrichtigen': 'Notify {0}',
   '{0} bestehende Spiele wurden angepasst.': '{0} existing matches were updated.',
@@ -156,10 +160,13 @@ export const en: Record<string, string> = {
   '{0} gewählt': '{0} selected',
   '{0} gewählt. Tippe auf eine Position oder einen Bankplatz.':
     '{0} selected. Tap a position or a bench spot.',
+  '{0} hat abgelehnt: {1}': '{0} declined: {1}',
+  '{0} hat die Mitsicht geändert: {1}': '{0} changed the viewing level: {1}',
   '{0} hat für das Spiel abgesagt.': '{0} has declined the match.',
   '{0} hat heute Geburtstag': '{0} has a birthday today',
   '{0} hat mit {1} die meisten Ausgaben.': '{0} has the highest expenses at {1}.',
   '{0} hat mit {1} Getränken am meisten.': '{0} has the most with {1} drinks.',
+  '{0} hat zugestimmt: {1}': '{0} agreed: {1}',
   '{0} Helfer fehlen': '{0} helpers missing',
   '{0} heute 🎉': '{0} today 🎉',
   '{0} hinzufügen': 'Add {0}',
@@ -183,6 +190,8 @@ export const en: Record<string, string> = {
   '{0} Mitglieder übernehmen': 'Import {0} members',
   '{0} Mitglieder übernommen': '{0} members imported',
   '{0} Mitgliedern wurde eine Beitragsart zugeordnet.': 'A fee type was assigned to {0} members.',
+  '{0} möchte wieder mitsehen ({1}). Du entscheidest unter „Ich“.':
+    '{0} would like to look along again ({1}). You decide under “Me”.',
   '{0} neu': '{0} new',
   '{0} neu angelegt, {1} aktualisiert, {2} übersprungen.':
     '{0} newly created, {1} updated, {2} skipped.',
@@ -193,6 +202,8 @@ export const en: Record<string, string> = {
   '{0} offen': '{0} open',
   '{0} offene Aufgabe': '{0} open task',
   '{0} offene Aufgaben': '{0} open tasks',
+  '{0} öffnet den Link und legt ein eigenes Passwort fest.':
+    '{0} opens the link and sets their own password.',
   '{0} ohne Mannschaft': '{0} without a team',
   '{0} ohne Rückmeldung': '{0} without response',
   '{0} per WhatsApp': '{0} via WhatsApp',
@@ -1330,9 +1341,14 @@ export const en: Record<string, string> = {
   'Das Jahr {0} ist noch abgeschlossen. Öffne zuerst die späteren Jahre.':
     'The year {0} is still closed. Reopen the later years first.',
   'Das Jahr ist ungültig.': 'The year is invalid.',
+  'Das Kind': 'The child',
+  'Das Kind hat die Einladung angenommen. Das Konto gehört dem Kind; du kannst deine Stufe ändern.':
+    'The child accepted the invitation. The account belongs to the child; you can change your level.',
   'Das Kind zu „Elternteil von“ wurde nicht gefunden: {0}. Bitte Namen oder Mitgliedsnummer prüfen.':
     'The child for “Parent of” was not found: {0}. Please check name or member number.',
   'Das Konto': 'The account',
+  'Das Konto gehört dem Kind. Ihr könnt die Stufe jederzeit senken; wieder erhöhen geht nur mit Zustimmung des Kindes.':
+    "The account belongs to the child. You can lower the level at any time; raising it again only works with the child's consent.",
   'Das Konto ist archiviert.': 'The account is archived.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.':
     'The abbreviation “{0}” is already taken this season.',
@@ -1476,6 +1492,14 @@ export const en: Record<string, string> = {
   'Deine Beitrittsanfrage wartet noch auf Freigabe durch den Verein.':
     'Your join request is still awaiting approval by the club.',
   'Deine Beitrittsanfrage wurde nicht freigegeben.': 'Your join request was not approved.',
+  'Deine Eltern fragen an': 'Your parents are asking',
+  'Deine Eltern fragen um Mitsicht': 'Your parents ask to look along',
+  'Deine Eltern sehen deine Termine und antworten, melden Abwesenheiten und buchen Fahrten für dich.':
+    'Your parents see your events and reply, report absences and book rides for you.',
+  'Deine Eltern sehen deine Termine, können aber nichts für dich tun. Du antwortest selbst.':
+    'Your parents see your events but cannot do anything for you. You reply yourself.',
+  'Deine Eltern sehen nichts mehr von dir und tun nichts für dich.':
+    'Your parents no longer see anything about you and do nothing for you.',
   'Deine Kinder': 'Your children',
   'Deine Mitgliedschaft ist beendet.': 'Your membership has ended.',
   'Deine News ist veröffentlicht': 'Your news is published',
@@ -1557,6 +1581,7 @@ export const en: Record<string, string> = {
   'Der Einrichtungscode konnte nicht geprüft werden.': 'The setup code could not be checked.',
   'Der Einrichtungscode stimmt nicht.': 'The setup code is incorrect.',
   'Der Einsatz': 'The assignment',
+  'Der Elternzugang': 'The parental access',
   'Der Export des Archivs steht in der Web-Verwaltung bereit.':
     'The archive export is available in the web administration.',
   'Der Export hat nicht geklappt.': 'The export did not work.',
@@ -1691,6 +1716,7 @@ export const en: Record<string, string> = {
   'Die Abwesenheit konnte nicht gespeichert werden.': 'The absence could not be saved.',
   'Die Änderung hat nicht geklappt.': "The change didn't work.",
   'Die Änderung konnte nicht gespeichert werden.': 'The change could not be saved.',
+  'Die Änderung wurde nicht gespeichert.': 'The change was not saved.',
   'Die Änderungen konnten nicht gespeichert werden.': 'The changes could not be saved.',
   'Die Anfrage': 'The request',
   'Die Anmeldung ist abgelaufen. Bitte erneut anmelden.':
@@ -1751,6 +1777,9 @@ export const en: Record<string, string> = {
   'Die eigenen individuellen Rechte kann nur eine andere Person ändern.':
     'Only someone else can change your own individual permissions.',
   'Die Eingabe ist unvollständig oder ungültig.': 'The input is incomplete or invalid.',
+  'Die Einladung an {0} ist offen. Sobald {1} sie annimmt, gilt: {2}.':
+    'The invitation to {0} is open. As soon as {1} accepts it, this applies: {2}.',
+  'Die Einladung wurde nicht erstellt.': 'The invitation was not created.',
   'Die Einrichtung hat nicht geklappt.': 'Setup failed.',
   'Die Einstellung gilt für alle Mannschaften der Abteilung. Ist ein Modul hier aus, kann es keine Mannschaft darin einschalten. „Wie Verein“ übernimmt die Vereinseinstellung.':
     'The setting applies to all teams in the section. If a module is off here, no team in it can switch it on. “Like club” adopts the club setting.',
@@ -2042,6 +2071,7 @@ export const en: Record<string, string> = {
     'This operation belongs to a different claim.',
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'This grant is also in the team fund and cannot be cancelled here.',
+  'Dieses Kind hat bereits einen eigenen Zugang.': 'This child already has their own access.',
   'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.':
     'This child has their own account and cannot be linked through a join request. Member administration handles that.',
   'Dieses Passwort ist zu leicht zu erraten.': 'This password is too easy to guess.',
@@ -2082,6 +2112,8 @@ export const en: Record<string, string> = {
   'Du hast nicht geantwortet': 'You did not answer',
   'Du kannst Abwesenheiten nur für dich oder deine Kinder eintragen.':
     'You can only enter absences for yourself or your children.',
+  'Du kannst das jederzeit selbst ändern. Deine Eltern erfahren davon.':
+    'You can change this yourself at any time. Your parents will be told.',
   'Du kannst deine Stimme bis zum Ende ändern.': 'You can change your vote until the end.',
   'Du kannst dich nicht selbst aus dem Kader nehmen.': 'You cannot remove yourself from the squad.',
   'Du kannst es später in der Kasse angeben': 'You can enter it later in the treasury',
@@ -2143,6 +2175,7 @@ export const en: Record<string, string> = {
   'E-Mail-Adresse': 'Email address',
   'E-Mail-Adresse „{0}“ ist ungültig.': 'Email address “{0}” is invalid.',
   'E-Mail-Adresse bestätigt': 'E-mail address confirmed',
+  'E-Mail-Adresse des Kindes': "Child's email address",
   'E-Mail-Adresse oder Passwort ist nicht korrekt.': 'Email address or password is incorrect.',
   'E-Mail: kontakt@clubroof.example\nTelefon: 01234 567890':
     'Email: kontakt@clubroof.example\nPhone: 01234 567890',
@@ -2152,8 +2185,11 @@ export const en: Record<string, string> = {
   'Eigene Kasse anlegen': 'Create own fund',
   'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik, Dokumente, News':
     'Own team, events, squad, training, needs/offers, statistics, documents, news',
+  'Eigenen Zugang einrichten': 'Set up own access',
   'Eigener Programmpunkt': 'Custom item',
   'Eigener Zeitraum': 'Custom period',
+  'Eigener Zugang': 'Own access',
+  Eigenständig: 'Independent',
   'Eigentor des Gegners': "Opponent's own goal",
   'Ein abgeschlossenes Jahr öffnet nur die Administration.':
     'Only the administration reopens a closed year.',
@@ -2210,6 +2246,7 @@ export const en: Record<string, string> = {
   'Eingegangen am': 'Received on',
   'Eingegangen in diesem Jahr: {0}': 'Received this year: {0}',
   'Eingehen kann nur ein bewilligter Zuschuss.': 'Only an approved grant can be received.',
+  Eingeladen: 'Invited',
   'eingeladen {0}': 'invited {0}',
   'Eingeladen: {0}': 'Invited: {0}',
   Eingereicht: 'Submitted',
@@ -2219,9 +2256,13 @@ export const en: Record<string, string> = {
   Einladen: 'Invite',
   'Einladen dürfen Trainerteams und die Mitgliederverwaltung.':
     'Coaching staff and member administration may send invitations.',
+  Einladung: 'Invitation',
+  'Einladung bereit': 'Invitation ready',
   'Einladung für {0}': 'Invitation for {0}',
   'Einladung in die App von {0}': 'Invitation to the {0} app',
   'Einladung nicht gültig': 'Invitation not valid',
+  'Einladung per E-Mail senden': 'Send invitation by email',
+  'Einladung widerrufen': 'Withdraw invitation',
   Einladungen: 'Invitations',
   'Einladungen verschickst du unter Verwaltung → Einladungen.':
     'You send invitations under Administration → Invitations.',
@@ -2403,6 +2444,8 @@ export const en: Record<string, string> = {
   'Es gibt keine Einnahmekategorie für Beiträge. Lege sie in der Vereinskasse an.':
     'There is no income category for fees. Create one in the club treasury.',
   'Es gibt keine neuen Mitglieder zu übernehmen.': 'There are no new members to import.',
+  'Es gibt keine offene Anfrage.': 'There is no open request.',
+  'Es gibt keine offene Einladung.': 'There is no open invitation.',
   'Es gibt nichts zu übernehmen.': 'There is nothing to import.',
   'Es gibt noch fehlerhafte Zeilen. Bitte korrigieren oder abwählen.':
     'There are still rows with errors. Please correct or deselect them.',
@@ -2865,6 +2908,19 @@ export const en: Record<string, string> = {
   'Ich und Familie': 'Me and family',
   'Ich, Einstellungen und Hilfe': 'Me, settings and help',
   'Ideeller Bereich': 'Non-profit area',
+  'Ihr antwortet, meldet Abwesenheiten und bucht Fahrten für das Kind und seht die Kasse weiter.':
+    'You reply, report absences and book rides for the child, and still see the cash.',
+  'Ihr habt „{0}“ angefragt. {1} entscheidet in der App.':
+    'You asked for “{0}”. {1} decides in the app.',
+  'Ihr könnt die Stufe später jederzeit senken.': 'You can lower the level at any time later.',
+  'Ihr seht Termine, Zusagen und Kasse, könnt aber nichts für das Kind tun.':
+    'You see events, responses and cash but cannot do anything for the child.',
+  'Ihr seht und tut danach nichts mehr für {0}. Das Kind taucht bei euch nicht mehr auf. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'After this you will no longer see or do anything for {0}. The child will no longer appear for you. Seeing along again is only possible if the child allows it.',
+  'Ihr seht und tut danach nichts mehr für {0}. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'After this you will no longer see or do anything for {0}. Seeing along again is only possible if the child allows it.',
+  'Ihr seht und tut nichts mehr für das Kind. Das Kind entscheidet allein.':
+    'You no longer see or do anything for the child. The child decides alone.',
   'Im „Änderungsprotokoll“ (Verwaltung): Rollenvergaben, Absagen, Modulwechsel, Kassenbuchungen und Stornos mit Person und Zeitpunkt.':
     'In the “Change log” (Administration): role assignments, cancellations, module changes, team fund entries and reversals with person and time.',
   'Im echten Betrieb erscheint hier das vom Verein hochgeladene Dokument.':
@@ -3007,6 +3063,8 @@ export const en: Record<string, string> = {
     'Yes. For open events and unread notifications, swipe the row to the left: “Confirm” or “Read” appears. Tap it – or swipe all the way and it happens immediately. Everything also works without swiping via the buttons in the row.',
   'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.':
     "Yes. Your answer is kept on the device, shown immediately (“Sending”) and sent automatically as soon as you're back online. If the server rejects it – e.g. because the deadline has passed – you'll get a message.",
+  'Ja. Öffne „Ich → Meine Kinder → Kind → Eigener Zugang“, gib die eigene E-Mail-Adresse des Kindes an und wähle die Stufe: „Mitsicht und Mitentscheiden“ (wie bisher), „Nur Mitsicht“ (ihr seht, tut aber nichts) oder „Eigenständig“ (ihr seht und tut nichts mehr). Das Kind legt über den Link ein eigenes Passwort fest; euer Konto bleibt unverändert. Ihr könnt die Stufe jederzeit senken. Wieder erhöhen geht nur, wenn das Kind zustimmt. Antworten Eltern und Kind für denselben Termin, gilt die letzte Antwort.':
+    "Yes. Open “Me → My children → Child → Own access”, enter the child's own email address and choose the level: “Look along and decide along” (as before), “View only” (you see but do nothing) or “Independent” (you no longer see or do anything). The child sets their own password via the link; your account stays unchanged. You can lower the level at any time. Raising it again only works if the child agrees. If parents and child answer for the same event, the latest answer counts.",
   'Ja. Tippe unter „Verein“ auf die Kachel „Anpassen“: Blende Kacheln aus, die du nicht brauchst, und verschiebe die wichtigen nach oben. „Zurücksetzen“ zeigt wieder alle in der Standardreihenfolge. Die Auswahl gilt auf allen deinen Geräten.':
     "Yes. Under “Club”, tap the “Customise” tile: hide tiles you don't need and move the important ones to the top. “Reset” shows all of them again in the default order. Your choice applies on all your devices.",
   'Ja. Unter „Ich → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.':
@@ -3019,6 +3077,8 @@ export const en: Record<string, string> = {
     'Yes. Under “Me → Account & settings → Language” you choose Deutsch, English, Türkçe, Українська, Polski, Español, Français, العربية or “Automatic” (your device’s language). Your choice applies on all your devices, including push notifications. Texts that coaches or the board write themselves (e.g. news) stay in the author’s language.',
   'Ja. Unter „Ich → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Yes. Under “Me → Account & settings” you set the font size (Normal, Large, Extra large) and can lock the app with Face ID, fingerprint or device code. Without internet the app shows the most recently loaded events, news and squad; a notice appears at the top. Replies and changes are only possible with a connection.',
+  'Ja. Unter „Ich → Wer darf für mich mitsehen?“ stehen drei Stufen: „Mitsicht und Mitentscheiden“ (Eltern antworten und melden für dich), „Nur Mitsicht“ (sie sehen nur) und „Eigenständig“ (sie sehen und tun nichts mehr). Du kannst jede Stufe selbst setzen. Fragen deine Eltern nach mehr Mitsicht, entscheidest du mit „Zustimmen“ oder „Ablehnen“. Deine Eltern erfahren von jeder Änderung.':
+    'Yes. Under “Me → Who may look along for me?” there are three levels: “Look along and decide along” (parents reply and report for you), “View only” (they only see) and “Independent” (they no longer see or do anything). You can set any level yourself. If your parents ask for more insight, you decide with “Agree” or “Decline”. Your parents are told about every change.',
   'Ja. Unter „Mehr → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.':
     'Yes. Under “More → Account & settings → Appearance” choose Light, Dark or “Same as device”. Your choice applies on all your devices.',
   'Ja. Unter „Mehr → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.':
@@ -3133,6 +3193,7 @@ export const en: Record<string, string> = {
   'Kann ich ohne Internet zu- oder absagen?': 'Can I confirm or decline without internet?',
   'Kann ich Trainings und Spiele aus einer Datei anlegen?':
     'Can I create trainings and matches from a file?',
+  'Kann mein Kind einen eigenen Zugang bekommen?': 'Can my child get their own access?',
   'Kann nicht': "Can't",
   'Karte {0} von {1}': 'Card {0} of {1}',
   Karten: 'Cards',
@@ -3195,6 +3256,7 @@ export const en: Record<string, string> = {
     'Categories sort income and expenses (fees, donations, pitch maintenance …).',
   'Kein aktiver Link.': 'No active link.',
   'Kein automatisches Treffen': 'No automatic meeting',
+  'Kein eigener Zugang': 'No own access',
   'Kein Mitglied mit offenem Beitrag erkannt': 'No member with an open fee recognized',
   'Kein Push in der Ruhezeit': 'No push during quiet hours',
   'Kein Spiel einer eigenen Mannschaft.': 'Not a match of one of our teams.',
@@ -3517,6 +3579,7 @@ export const en: Record<string, string> = {
   'Meine Daten und Exporte für dein Team': 'My data and exports for your team',
   'Meine Einsätze': 'My assignments',
   'Meine Einsätze und Vereins-Soll': 'My assignments and club quota',
+  'Meine Eltern sehen mit – kann ich das ändern?': 'My parents look along – can I change that?',
   'Meine Entwürfe': 'My drafts',
   'Meine Entwürfe und Einreichungen': 'My drafts and submissions',
   'Meine Kinder': 'My children',
@@ -3561,6 +3624,8 @@ export const en: Record<string, string> = {
     'With two-factor sign-in, every new sign-in additionally requires a code. We recommend it for the administration account.',
   'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Bitte melde dich an oder nutze „Passwort vergessen“.':
     'An account already exists with this email address. Please log in or use “Forgot password”.',
+  'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Das Kind braucht eine eigene Adresse.':
+    'There is already an account with this email address. The child needs their own address.',
   'Mit Einladungslink oder Einladungscode (auch per QR-Code scannen) trittst du deinem Verein bei – der Verein wird danach auf diesem Gerät gemerkt. Hast du schon ein Konto, melde dich mit E-Mail und Passwort an („Zeigen“ macht das Passwort sichtbar). Einen neuen Verein richtest du mit dem Einrichtungscode (Format CR-XXXX-XXXX) ein, den du von Clubroof nach Zahlungseingang erhältst; er gilt einmal.':
     'You join your club with an invitation link or invitation code (you can also scan the QR code) – the club is then remembered on this device. If you already have an account, sign in with your email and password (“Show” reveals the password). You set up a new club with the setup code (format CR-XXXX-XXXX) that you receive from Clubroof after payment; it can be used once.',
   'Mit Face ID oder Fingerabdruck entsperren': 'Unlock with Face ID or fingerprint',
@@ -3571,6 +3636,7 @@ export const en: Record<string, string> = {
   'Mit Trainerteam, Kader und Antwortfristen': 'With coaching staff, squad and response deadlines',
   'Mit Treffpunkt und Antwortfrist der Mannschaft':
     "With the team's meeting point and response deadline",
+  'Mit Zustimmung': 'With consent',
   Mitfahren: 'Join ride',
   'Mitfahrt angeboten': 'Ride offered',
   'Mitfahrt für {0} suchen': 'Look for a ride for {0}',
@@ -3611,6 +3677,7 @@ export const en: Record<string, string> = {
   'Mitgliedsnummer (optional)': 'Membership number (optional)',
   'Mitgliedsnummer oder „Vorname Nachname“': 'Member number or “First name Last name”',
   Mitgliedsstatus: 'Membership status',
+  'Mitsicht und Mitentscheiden': 'Look along and decide along',
   Mitteilungen: 'Messages',
   'mittel {0}–{1} %': 'medium {0}–{1} %',
   Mittelfeld: 'Midfield',
@@ -3915,6 +3982,8 @@ export const en: Record<string, string> = {
   'Nur genehmigte Auslagen werden erstattet.': 'Only approved claims are reimbursed.',
   'nur https://': 'https:// only',
   'Nur Kassenführung': 'Treasury management only',
+  'Nur Link und QR-Code zeigen': 'Only show link and QR code',
+  'Nur Mitsicht': 'View only',
   'Nur Spieler der Mannschaft oder Gastspieler.': 'Only team players or guest players.',
   'Nur Spieler der Mannschaft.': 'Team players only.',
   'Nur Teilnehmer des Termins können mitfahren.': 'Only participants of the event can ride along.',
@@ -4328,6 +4397,7 @@ export const en: Record<string, string> = {
   Schriftgröße: 'Font size',
   'Schritt {0} von {1}': 'Step {0} of {1}',
   'Schritt {0} von {1}: {2}': 'Step {0} of {1}: {2}',
+  'Schritt {0} von 3': 'Step {0} of 3',
   Schule: 'School',
   'Schule noch unklar': 'School still unclear',
   'Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail.':
@@ -4359,6 +4429,8 @@ export const en: Record<string, string> = {
   'Sichtbarkeit der Kontaktdaten neuer Personen': 'Visibility of contact details of new people',
   'Sichtbarkeit meiner Kontaktdaten': 'Visibility of my contact details',
   'Sichtbarkeit und Erinnerungen': 'Visibility and reminders',
+  'Sie möchten wieder mitsehen: {0}. Du entscheidest.':
+    'They would like to look along again: {0}. You decide.',
   Sieg: 'Win',
   'Sieht nur die eigene Mannschaft – beim Bezahlen im persönlichen Konto.':
     'Only visible to your own team – when paying in the personal account.',
@@ -4637,6 +4709,8 @@ export const en: Record<string, string> = {
   'Stufe {0} vermerkt – das Mitglied hat keinen App-Zugang, bitte anders informieren.':
     'Level {0} noted – the member has no app access, please inform them another way.',
   'Stufe {0}: Erinnerung verschickt.': 'Level {0}: reminder sent.',
+  'Stufe ändern': 'Change level',
+  'Stufe geändert am {0}': 'Level changed on {0}',
   'Stufe offen': 'Level open',
   Stumm: 'Muted',
   'Stummgeschaltete Mannschaften melden sich nur noch bei Dringendem.':
@@ -5273,6 +5347,7 @@ export const en: Record<string, string> = {
   'War da': 'Attended',
   'Wartet auf deine Freigabe ({0})': 'Awaiting your approval ({0})',
   'Wartet auf Freigabe': 'Awaiting approval',
+  'Wartet auf Zustimmung': 'Waiting for consent',
   'Warum bist du unsicher?': 'Why are you unsure?',
   'Warum kannst du nicht?': "Why can't you make it?",
   'Warum wir das fragen': 'Why we ask',
@@ -5381,6 +5456,7 @@ export const en: Record<string, string> = {
     'When turned on, everyone with administration rights (board, admins, youth leadership …) needs two-factor login before they can edit member data.',
   Wer: 'Who',
   'Wer darf die Kasse einsehen?': 'Who may view the treasury?',
+  'Wer darf für mich mitsehen?': 'Who may look along for me?',
   'Wer deine Daten sieht': 'Who sees your data',
   'Wer die Vereinskasse einsehen darf, bestimmt die Vereinsadministration.':
     'The club administration decides who may view the club treasury.',
@@ -5714,6 +5790,8 @@ export const en: Record<string, string> = {
     'Access data must be kept secret. Content that violates laws or the rights of third parties must not be posted.',
   zugesagt: 'confirmed',
   Zugesagt: 'Confirmed',
+  'Zugriff beenden': 'End access',
+  'Zugriff endet': 'Access ends',
   Zuletzt: 'Recent',
   'zuletzt {0}': 'last {0}',
   'Zuletzt abgerufen {0}': 'Last accessed {0}',
@@ -5783,6 +5861,7 @@ export const en: Record<string, string> = {
   'Zuschüsse: Unter „Vereinskasse → Buchung → Zuschüsse“ legst du Förderungen mit Geber, Betrag und Frist für den Verwendungsnachweis an und führst sie von „Geplant“ über „Beantragt“ und „Bewilligt“ bis zum Eingang (Buchung als Einnahme); überfällige Nachweise sind rot. Sponsoren: Beim Buchen einer Einnahme wählst du den Sponsor; unter „Sponsoren“ siehst du die Einnahmen je Sponsor und Jahr. Mannschaftszuschuss: Ausgabe der Vereinskasse und Einnahme der Mannschaftskasse in einem Schritt. Inventar: Unter „Planung → Inventar“ erfasst du Anschaffungen mit Wert und Standort; Gegenstände werden mit Grund ausgesondert, nicht gelöscht.':
     'Grants: under “Club treasury → Booking → Grants” you create funding with grantor, amount and deadline for the proof of use and move it from “Planned” through “Applied for” and “Approved” to receipt (booked as income); overdue proofs are red. Sponsors: when booking income you choose the sponsor; under “Sponsors” you see the income per sponsor and year. Team fund grant: expense of the club treasury and income of the team fund in one step. Inventory: under “Planning → Inventory” you record purchases with value and location; items are disposed of with a reason, not deleted.',
   'Zustand / Hinweis (optional)': 'Condition / note (optional)',
+  Zustimmen: 'Agree',
   'Zuwendungsbestätigungen haben gesetzliche Pflichtangaben und Formulierungen. Lass die Vorlage von deiner Steuerberatung oder deinem Verband prüfen, bevor du sie freigibst. Die App ersetzt keine Steuerberatung.':
     'Donation receipts have statutory mandatory details and wording. Have the template reviewed by your tax adviser or association before you release it. The app does not replace tax advice.',
   'Zuwendungsbestätigungen noch nicht freigegeben': 'Donation receipts not yet released',
