@@ -68,6 +68,8 @@ export const uk: Record<string, string> = {
     '{0} {1} заплатив(ла) переказом – підтверди, будь ласка.',
   '{0} {1} lädt dich in die Vereins-App von {2} ein.':
     '{0} {1} запрошує тебе до клубного застосунку {2}.',
+  '{0} {1} richtet dir einen eigenen Zugang zur Vereins-App von {2} ein.':
+    '{0} {1} налаштовує для тебе власний доступ до клубного застосунку {2}.',
   '{0} {1}: {2}, {3} offen, fällig seit {4}.': '{0} {1}: {2}, не сплачено {3}, строк минув {4}.',
   '{0} / {1} Helfer': '{0} / {1} помічників',
   '{0} abgewählt': '{0} знято з вибору',
@@ -97,6 +99,8 @@ export const uk: Record<string, string> = {
   '{0} Beiträge sind überfällig ({1}).': 'Прострочених внесків: {0} ({1}).',
   '{0} Beitrittsanfrage': '{0} запит на вступ',
   '{0} Beitrittsanfragen': 'Запитів на вступ: {0}',
+  '{0} bekommt ein eigenes Konto mit einer eigenen E-Mail-Adresse. Nicht eure: Jede Adresse gehört zu genau einem Konto.':
+    '{0} отримує власний обліковий запис із власною електронною адресою. Не вашою: кожна адреса належить рівно одному обліковому запису.',
   '{0} Belegungen überschneiden sich': 'Бронювань, що перетинаються: {0}',
   '{0} benachrichtigen': 'Сповістити: {0}',
   '{0} bestehende Spiele wurden angepasst.': 'Наявних матчів змінено: {0}.',
@@ -144,10 +148,13 @@ export const uk: Record<string, string> = {
   '{0} gewählt': 'Вибрано: {0}',
   '{0} gewählt. Tippe auf eine Position oder einen Bankplatz.':
     'Вибрано: {0}. Торкнись позиції або місця на лаві запасних.',
+  '{0} hat abgelehnt: {1}': '{0} відхилив(ла): {1}',
+  '{0} hat die Mitsicht geändert: {1}': '{0} змінив(ла) рівень перегляду: {1}',
   '{0} hat für das Spiel abgesagt.': '{0} відмовився(лась) від матчу.',
   '{0} hat heute Geburtstag': '{0} сьогодні має день народження',
   '{0} hat mit {1} die meisten Ausgaben.': '{0} має найбільше витрат: {1}.',
   '{0} hat mit {1} Getränken am meisten.': '{0} має найбільше напоїв: {1}.',
+  '{0} hat zugestimmt: {1}': '{0} погодився(лась): {1}',
   '{0} Helfer fehlen': 'Бракує помічників: {0}',
   '{0} heute 🎉': '{0} сьогодні 🎉',
   '{0} hinzufügen': 'Додати {0}',
@@ -169,6 +176,8 @@ export const uk: Record<string, string> = {
   '{0} min länger als das Training': 'На {0} хв довше за тренування',
   '{0} Min.': '{0} хв',
   '{0} Mitgliedern wurde eine Beitragsart zugeordnet.': 'Членам клубу призначено вид внеску: {0}.',
+  '{0} möchte wieder mitsehen ({1}). Du entscheidest unter „Ich“.':
+    '{0} хоче знову дивитися разом ({1}). Ти вирішуєш у розділі «Я».',
   '{0} neu': '{0} нових',
   '{0} neu angelegt, {1} aktualisiert, {2} übersprungen.':
     'Створено нових: {0}, оновлено: {1}, пропущено: {2}.',
@@ -179,6 +188,8 @@ export const uk: Record<string, string> = {
   '{0} offen': 'Відкрито: {0}',
   '{0} offene Aufgabe': '{0} відкрите завдання',
   '{0} offene Aufgaben': 'Відкритих завдань: {0}',
+  '{0} öffnet den Link und legt ein eigenes Passwort fest.':
+    '{0} відкриває посилання й встановлює власний пароль.',
   '{0} ohne Mannschaft': 'Без команди: {0}',
   '{0} ohne Rückmeldung': 'Без відповіді: {0}',
   '{0} per WhatsApp': '{0} через WhatsApp',
@@ -1259,9 +1270,14 @@ export const uk: Record<string, string> = {
   'Das Jahr {0} ist noch abgeschlossen. Öffne zuerst die späteren Jahre.':
     '{0} рік ще завершений. Спершу відкрий пізніші роки.',
   'Das Jahr ist ungültig.': 'Рік недійсний.',
+  'Das Kind': 'Дитина',
+  'Das Kind hat die Einladung angenommen. Das Konto gehört dem Kind; du kannst deine Stufe ändern.':
+    'Дитина прийняла запрошення. Обліковий запис належить дитині; ви можете змінити свій рівень.',
   'Das Kind zu „Elternteil von“ wurde nicht gefunden: {0}. Bitte Namen oder Mitgliedsnummer prüfen.':
     'Дитину для «Один із батьків» не знайдено: {0}. Перевір ім’я або номер члена клубу.',
   'Das Konto': 'Рахунок',
+  'Das Konto gehört dem Kind. Ihr könnt die Stufe jederzeit senken; wieder erhöhen geht nur mit Zustimmung des Kindes.':
+    'Обліковий запис належить дитині. Ви можете знизити рівень будь-коли; підвищити його знову можна лише за згодою дитини.',
   'Das Konto ist archiviert.': 'Рахунок заархівовано.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.': 'Скорочення «{0}» у цьому сезоні вже зайняте.',
   'Das Kürzel (2 bis 4 Zeichen, z. B. „SGW“) steht groß im Plakat der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist. Die Vereinsadministration ändert es unter „Verwaltung → Verein & Design“, mit Vorschau. Die Vibration bei Auswahl und Bestätigung schaltest du auf dem Handy unter „Ich → Konto & Einstellungen → Vibration“ aus; bei eingestellter „Bewegung reduzieren“ des Geräts bleiben auch die Animationen aus.':
@@ -1395,6 +1411,14 @@ export const uk: Record<string, string> = {
   'Deine Beitrittsanfrage wartet noch auf Freigabe durch den Verein.':
     'Твій запит на вступ ще очікує схвалення клубом.',
   'Deine Beitrittsanfrage wurde nicht freigegeben.': 'Твій запит на вступ не схвалено.',
+  'Deine Eltern fragen an': 'Ваші батьки запитують',
+  'Deine Eltern fragen um Mitsicht': 'Ваші батьки просять дивитися разом',
+  'Deine Eltern sehen deine Termine und antworten, melden Abwesenheiten und buchen Fahrten für dich.':
+    'Ваші батьки бачать ваші заходи, відповідають, повідомляють про відсутність і бронюють поїздки для вас.',
+  'Deine Eltern sehen deine Termine, können aber nichts für dich tun. Du antwortest selbst.':
+    'Ваші батьки бачать ваші заходи, але нічого не можуть зробити для вас. Ви відповідаєте самі.',
+  'Deine Eltern sehen nichts mehr von dir und tun nichts für dich.':
+    'Ваші батьки більше нічого про вас не бачать і нічого для вас не роблять.',
   'Deine Kinder': 'Твої діти',
   'Deine Mitgliedschaft ist beendet.': 'Твоє членство завершено.',
   'Deine News ist veröffentlicht': 'Твою новину опубліковано',
@@ -1470,6 +1494,7 @@ export const uk: Record<string, string> = {
   'Der Einrichtungscode konnte nicht geprüft werden.': 'Код налаштування не вдалося перевірити.',
   'Der Einrichtungscode stimmt nicht.': 'Код налаштування невірний.',
   'Der Einsatz': 'Залучення',
+  'Der Elternzugang': 'Доступ батьків',
   'Der Export des Archivs steht in der Web-Verwaltung bereit.':
     'Експорт архіву доступний у веб-адмініструванні.',
   'Der Export hat nicht geklappt.': 'Експорт не вдався.',
@@ -1597,6 +1622,7 @@ export const uk: Record<string, string> = {
   'Die Abwesenheit konnte nicht gespeichert werden.': 'Відсутність не вдалося зберегти.',
   'Die Änderung hat nicht geklappt.': 'Зміна не вдалася.',
   'Die Änderung konnte nicht gespeichert werden.': 'Зміну не вдалося зберегти.',
+  'Die Änderung wurde nicht gespeichert.': 'Зміну не збережено.',
   'Die Änderungen konnten nicht gespeichert werden.': 'Зміни не вдалося зберегти.',
   'Die Anfrage': 'Запит',
   'Die Anmeldung ist abgelaufen. Bitte erneut anmelden.': 'Сесія входу завершилася. Увійди знову.',
@@ -1656,6 +1682,9 @@ export const uk: Record<string, string> = {
   'Die eigenen individuellen Rechte kann nur eine andere Person ändern.':
     'Власні індивідуальні права може змінити лише інша особа.',
   'Die Eingabe ist unvollständig oder ungültig.': 'Введення неповне або недійсне.',
+  'Die Einladung an {0} ist offen. Sobald {1} sie annimmt, gilt: {2}.':
+    'Запрошення для {0} відкрите. Щойно {1} його прийме, діятиме: {2}.',
+  'Die Einladung wurde nicht erstellt.': 'Запрошення не створено.',
   'Die Einrichtung hat nicht geklappt.': 'Налаштування не вдалося.',
   'Die Einstellung gilt für alle Mannschaften der Abteilung. Ist ein Modul hier aus, kann es keine Mannschaft darin einschalten. „Wie Verein“ übernimmt die Vereinseinstellung.':
     'Налаштування діє для всіх команд відділення. Якщо модуль тут вимкнено, жодна команда в ньому не може його ввімкнути. «Як у клубі» переймає налаштування клубу.',
@@ -1933,6 +1962,7 @@ export const uk: Record<string, string> = {
   'Dieser Vorgang gehört zu einer anderen Forderung.': 'Ця операція належить до іншої вимоги.',
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'Ця дотація також відображена в касі команди й не може бути сторнована тут.',
+  'Dieses Kind hat bereits einen eigenen Zugang.': 'Ця дитина вже має власний доступ.',
   'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.':
     'Ця дитина має власний обліковий запис і не може бути прив’язана через запит на вступ. Це виконує керування членами клубу.',
   'Dieses Passwort ist zu leicht zu erraten.': 'Цей пароль занадто легко вгадати.',
@@ -1971,6 +2001,8 @@ export const uk: Record<string, string> = {
   'Du hast nicht geantwortet': 'Ти не відповів(ла)',
   'Du kannst Abwesenheiten nur für dich oder deine Kinder eintragen.':
     'Відсутності можна вносити лише для себе або своїх дітей.',
+  'Du kannst das jederzeit selbst ändern. Deine Eltern erfahren davon.':
+    'Ви можете змінити це будь-коли самі. Ваші батьки про це дізнаються.',
   'Du kannst deine Stimme bis zum Ende ändern.': 'Свій голос можна змінити до завершення.',
   'Du kannst dich nicht selbst aus dem Kader nehmen.':
     'Ти не можеш сам(а) виключити себе зі складу.',
@@ -2025,6 +2057,7 @@ export const uk: Record<string, string> = {
   'E-Mail-Adresse': 'Адреса електронної пошти',
   'E-Mail-Adresse „{0}“ ist ungültig.': 'Адреса електронної пошти «{0}» недійсна.',
   'E-Mail-Adresse bestätigt': 'Адресу електронної пошти підтверджено',
+  'E-Mail-Adresse des Kindes': 'Електронна адреса дитини',
   'E-Mail-Adresse oder Passwort ist nicht korrekt.': 'Адреса електронної пошти або пароль невірні.',
   'E-Mail: kontakt@clubroof.example\nTelefon: 01234 567890':
     'Електронна пошта: kontakt@clubroof.example\nТелефон: 01234 567890',
@@ -2034,8 +2067,11 @@ export const uk: Record<string, string> = {
   'Eigene Kasse anlegen': 'Створити власну касу',
   'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik, Dokumente, News':
     'Своя команда, події, склад, тренування, потреби/пропозиції, статистика, документи, новини',
+  'Eigenen Zugang einrichten': 'Налаштувати власний доступ',
   'Eigener Programmpunkt': 'Власний пункт програми',
   'Eigener Zeitraum': 'Власний період',
+  'Eigener Zugang': 'Власний доступ',
+  Eigenständig: 'Самостійно',
   'Eigentor des Gegners': 'Автогол суперника',
   'Ein abgeschlossenes Jahr öffnet nur die Administration.':
     'Завершений рік може відкрити лише адміністрація.',
@@ -2087,6 +2123,7 @@ export const uk: Record<string, string> = {
   'Eingegangen am': 'Надійшло',
   'Eingegangen in diesem Jahr: {0}': 'Надійшло цього року: {0}',
   'Eingehen kann nur ein bewilligter Zuschuss.': 'Надійти може лише схвалена дотація.',
+  Eingeladen: 'Запрошено',
   'eingeladen {0}': 'запрошено {0}',
   'Eingeladen: {0}': 'Запрошено: {0}',
   Eingereicht: 'Подано',
@@ -2095,9 +2132,13 @@ export const uk: Record<string, string> = {
   Einladen: 'Запросити',
   'Einladen dürfen Trainerteams und die Mitgliederverwaltung.':
     'Запрошувати можуть тренерські штаби та керування членами клубу.',
+  Einladung: 'Запрошення',
+  'Einladung bereit': 'Запрошення готове',
   'Einladung für {0}': 'Запрошення для {0}',
   'Einladung in die App von {0}': 'Запрошення до застосунку {0}',
   'Einladung nicht gültig': 'Запрошення недійсне',
+  'Einladung per E-Mail senden': 'Надіслати запрошення електронною поштою',
+  'Einladung widerrufen': 'Відкликати запрошення',
   Einladungen: 'Запрошення',
   'Einladungen verschickst du unter Verwaltung → Einladungen. Rückgängig geht 24 Stunden lang.':
     'Запрошення надсилаються в Адміністрування → Запрошення. Скасувати можна протягом 24 годин.',
@@ -2265,6 +2306,8 @@ export const uk: Record<string, string> = {
   'Es gibt keine Einnahmekategorie für Beiträge. Lege sie in der Vereinskasse an.':
     'Немає категорії надходжень для внесків. Створи її в касі клубу.',
   'Es gibt keine neuen Mitglieder zu übernehmen.': 'Немає нових членів клубу для імпорту.',
+  'Es gibt keine offene Anfrage.': 'Немає відкритого запиту.',
+  'Es gibt keine offene Einladung.': 'Немає відкритого запрошення.',
   'Es gibt nichts zu übernehmen.': 'Немає чого застосовувати.',
   'Es gibt noch fehlerhafte Zeilen. Bitte korrigieren oder abwählen.':
     'Ще є рядки з помилками. Виправ їх або зніми вибір.',
@@ -2700,6 +2743,19 @@ export const uk: Record<string, string> = {
   'Ich und Familie': 'Я та сім’я',
   'Ich, Einstellungen und Hilfe': 'Я, налаштування та довідка',
   'Ideeller Bereich': 'Ідеальна сфера',
+  'Ihr antwortet, meldet Abwesenheiten und bucht Fahrten für das Kind und seht die Kasse weiter.':
+    'Ви відповідаєте, повідомляєте про відсутність і бронюєте поїздки для дитини, а також далі бачите касу.',
+  'Ihr habt „{0}“ angefragt. {1} entscheidet in der App.':
+    'Ви запросили рівень «{0}». {1} вирішує в застосунку.',
+  'Ihr könnt die Stufe später jederzeit senken.': 'Ви можете будь-коли пізніше знизити рівень.',
+  'Ihr seht Termine, Zusagen und Kasse, könnt aber nichts für das Kind tun.':
+    'Ви бачите заходи, відповіді та касу, але нічого не можете зробити для дитини.',
+  'Ihr seht und tut danach nichts mehr für {0}. Das Kind taucht bei euch nicht mehr auf. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'Після цього ви більше нічого не бачитимете і не робитимете для {0}. Дитина більше не відображатиметься у вас. Знову бачити разом можна лише якщо дитина дозволить.',
+  'Ihr seht und tut danach nichts mehr für {0}. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'Після цього ви більше нічого не бачитимете і не робитимете для {0}. Знову бачити разом можна лише якщо дитина дозволить.',
+  'Ihr seht und tut nichts mehr für das Kind. Das Kind entscheidet allein.':
+    'Ви більше нічого не бачите і не робите для дитини. Дитина вирішує сама.',
   'Im „Änderungsprotokoll“ (Verwaltung): Rollenvergaben, Absagen, Modulwechsel, Kassenbuchungen und Stornos mit Person und Zeitpunkt.':
     'У «Журналі змін» (адміністрування): призначення ролей, відмови, зміни модулів, касові проводки й сторно з особою та часом.',
   'Im echten Betrieb erscheint hier das vom Verein hochgeladene Dokument.':
@@ -2821,6 +2877,8 @@ export const uk: Record<string, string> = {
     'Так. Для відкритих подій і непрочитаних сповіщень свайпни рядок уліво: з’явиться «Підтвердити» або «Прочитано». Торкнись цього – або свайпни до кінця, тоді дія відбудеться одразу. Усе можна зробити й без свайпу кнопками в рядку.',
   'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.':
     'Так. Твоя відповідь запам’ятовується на пристрої, одразу відображається («Надсилається») і автоматично надсилається, щойно ти знову будеш онлайн. Якщо сервер її відхилить – наприклад, через минулий строк – ти отримаєш повідомлення.',
+  'Ja. Öffne „Ich → Meine Kinder → Kind → Eigener Zugang“, gib die eigene E-Mail-Adresse des Kindes an und wähle die Stufe: „Mitsicht und Mitentscheiden“ (wie bisher), „Nur Mitsicht“ (ihr seht, tut aber nichts) oder „Eigenständig“ (ihr seht und tut nichts mehr). Das Kind legt über den Link ein eigenes Passwort fest; euer Konto bleibt unverändert. Ihr könnt die Stufe jederzeit senken. Wieder erhöhen geht nur, wenn das Kind zustimmt. Antworten Eltern und Kind für denselben Termin, gilt die letzte Antwort.':
+    'Так. Відкрийте «Я → Мої діти → Дитина → Власний доступ», введіть власну електронну адресу дитини та виберіть рівень: «Бачити разом і вирішувати разом» (як раніше), «Лише перегляд» (ви бачите, але нічого не робите) або «Самостійно» (ви більше нічого не бачите і не робите). Дитина встановлює власний пароль за посиланням; ваш обліковий запис не змінюється. Ви можете будь-коли знизити рівень. Підвищити його знову можна лише за згодою дитини. Якщо батьки й дитина відповідають на той самий захід, діє остання відповідь.',
   'Ja. Unter „Ich → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.':
     'Так. У «Я → Обліковий запис і налаштування → Вигляд» ти вибираєш «Світла», «Темна» або «Як на пристрої». Вибір діє на всіх твоїх пристроях.',
   'Ja. Unter „Ich → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.':
@@ -2831,6 +2889,8 @@ export const uk: Record<string, string> = {
     'Так. У розділі «Я → Обліковий запис і налаштування → Мова» можна вибрати Deutsch, English, Türkçe, Українська, Polski, Español, Français, العربية або «Автоматично» (мова твого пристрою). Вибір діє на всіх твоїх пристроях, зокрема для push-сповіщень. Тексти, які тренери чи правління пишуть самі (наприклад, новини), залишаються мовою автора.',
   'Ja. Unter „Ich → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Так. У «Я → Обліковий запис і налаштування» ти встановлюєш розмір шрифту (звичайний, великий, дуже великий) і можеш заблокувати застосунок через Face ID, відбиток пальця або код пристрою. Без інтернету застосунок показує останні завантажені події, новини та склад; вгорі з’являється повідомлення. Відповіді та зміни можливі лише з підключенням.',
+  'Ja. Unter „Ich → Wer darf für mich mitsehen?“ stehen drei Stufen: „Mitsicht und Mitentscheiden“ (Eltern antworten und melden für dich), „Nur Mitsicht“ (sie sehen nur) und „Eigenständig“ (sie sehen und tun nichts mehr). Du kannst jede Stufe selbst setzen. Fragen deine Eltern nach mehr Mitsicht, entscheidest du mit „Zustimmen“ oder „Ablehnen“. Deine Eltern erfahren von jeder Änderung.':
+    'Так. У розділі «Я → Хто може дивитися разом зі мною?» є три рівні: «Бачити разом і вирішувати разом» (батьки відповідають і повідомляють за тебе), «Лише перегляд» (вони лише бачать) та «Самостійно» (вони більше нічого не бачать і не роблять). Ти можеш сам встановити будь-який рівень. Якщо батьки просять більше доступу, ти вирішуєш: «Погодитися» або «Відхилити». Батьки дізнаються про кожну зміну.',
   'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch), außerdem Forum-Themen und eigene Antworten, Kommentare (auch löschen), Übungen, Aushänge im Fundbüro und Marktplatz, Spielerbedarf und Angebote der Spielerbörse (die Anzahl nicht unter die schon eingetragenen Spieler) Platzsperrungen, Beitragsarten und Rücklagen der Vereinskasse (ein geänderter Betrag einer Beitragsart gilt für künftige Beiträge), Ausrüstung (Bezeichnung, Anzahl, Lagerort, Zustand) und deine Schiedsrichter-Einsätze. Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
     'Так. Те, що ти створив(ла), можна пізніше редагувати – через «Редагувати» в меню «…» або кнопку в деталях: опитування (запитання, опис і строк; відповіді – лише доки ніхто не проголосував), заходи зі змінами помічників, відсутності та документи (назва, вид і видимість – файл залишається, для заміни видали його й завантаж заново), а також теми форуму та власні відповіді, коментарі (також видаляти), вправи, оголошення в бюро знахідок і на ярмарку, потреби в гравцях і пропозиції біржі гравців (кількість не менша за вже внесених гравців), блокування полів, види внесків і резерви каси клубу (змінена сума виду внеску діє для майбутніх внесків), спорядження (назва, кількість, місце зберігання, стан) і твої залучення як судді. Форма та сама, що й під час створення, лише попередньо заповнена. Змінений вміст має примітку «відредаговано» з часом. Про важливі зміни, як-от час, місце чи строк, ми повідомляємо учасників. Касові проводки не змінюються: помилки виправляються сторнуванням і новою проводкою – так усе залишається простежуваним.',
   Jahr: 'Рік',
@@ -2929,6 +2989,7 @@ export const uk: Record<string, string> = {
     'Чи можу я підтверджувати чи відмовлятися без інтернету?',
   'Kann ich Trainings und Spiele aus einer Datei anlegen?':
     'Чи можна створити тренування й матчі з файлу?',
+  'Kann mein Kind einen eigenen Zugang bekommen?': 'Чи може моя дитина отримати власний доступ?',
   'Karte {0} von {1}': 'Картка {0} з {1}',
   Karten: 'Картки',
   'Karten und Listen': 'Картки й списки',
@@ -2988,6 +3049,7 @@ export const uk: Record<string, string> = {
     'Категорії упорядковують надходження й витрати (внески, пожертви, догляд за полем …).',
   'Kein aktiver Link.': 'Немає активного посилання.',
   'Kein automatisches Treffen': 'Без автоматичного збору',
+  'Kein eigener Zugang': 'Немає власного доступу',
   'Kein Mitglied mit offenem Beitrag erkannt':
     'Не розпізнано жодного члена клубу з відкритим внеском',
   'Kein Push in der Ruhezeit': 'Без push у години тиші',
@@ -3291,6 +3353,8 @@ export const uk: Record<string, string> = {
   'Meine Daten und Exporte für dein Team': 'Мої дані й експорти для твоєї команди',
   'Meine Einsätze': 'Мої залучення',
   'Meine Einsätze und Vereins-Soll': 'Мої залучення й норма клубу',
+  'Meine Eltern sehen mit – kann ich das ändern?':
+    'Мої батьки дивляться разом – чи можу я це змінити?',
   'Meine Entwürfe': 'Мої чернетки',
   'Meine Kinder': 'Мої діти',
   'Meine Mannschaft': 'Моя команда',
@@ -3329,6 +3393,8 @@ export const uk: Record<string, string> = {
     'Із двофакторним входом кожен новий вхід додатково потребує коду. Для облікового запису адміністрації ми рекомендуємо його.',
   'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Bitte melde dich an oder nutze „Passwort vergessen“.':
     'Із цією адресою електронної пошти вже є обліковий запис. Увійди або скористайся «Забули пароль».',
+  'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Das Kind braucht eine eigene Adresse.':
+    'З цією електронною адресою вже є обліковий запис. Дитині потрібна власна адреса.',
   'Mit Einladungslink oder Einladungscode (auch per QR-Code scannen) trittst du deinem Verein bei – der Verein wird danach auf diesem Gerät gemerkt. Hast du schon ein Konto, melde dich mit E-Mail und Passwort an („Zeigen“ macht das Passwort sichtbar). Einen neuen Verein richtest du mit dem Einrichtungscode (Format CR-XXXX-XXXX) ein, den du von Clubroof nach Zahlungseingang erhältst; er gilt einmal.':
     'За посиланням-запрошенням або кодом запрошення (також скануванням QR-коду) ти вступаєш до свого клубу – клуб після цього запам’ятовується на цьому пристрої. Якщо в тебе вже є обліковий запис, увійди за допомогою електронної пошти й пароля («Показати» робить пароль видимим). Новий клуб ти налаштовуєш за допомогою коду налаштування (формат CR-XXXX-XXXX), який ти отримаєш від Clubroof після надходження оплати; він дійсний один раз.',
   'Mit Face ID oder Fingerabdruck entsperren':
@@ -3339,6 +3405,7 @@ export const uk: Record<string, string> = {
   'Mit Rückmeldung zurückgeben': 'Повернути з відповіддю',
   'Mit Trainerteam, Kader und Antwortfristen': 'З тренерським штабом, складом і строками відповіді',
   'Mit Treffpunkt und Antwortfrist der Mannschaft': 'З місцем збору та строком відповіді команди',
+  'Mit Zustimmung': 'За згодою',
   Mitfahren: 'Поїхати разом',
   'Mitfahrt angeboten': 'Поїздку запропоновано',
   'Mitfahrt für {0} suchen': 'Шукати попутників для {0}',
@@ -3378,6 +3445,7 @@ export const uk: Record<string, string> = {
   'Mitgliedsnummer (optional)': 'Номер члена клубу (необов’язково)',
   'Mitgliedsnummer oder „Vorname Nachname“': 'Номер члена клубу або «Ім’я Прізвище»',
   Mitgliedsstatus: 'Статус членства',
+  'Mitsicht und Mitentscheiden': 'Бачити разом і вирішувати разом',
   Mitteilungen: 'Повідомлення',
   Mittelfeld: 'Півзахист',
   'Mittelfeld {0}': 'Півзахист {0}',
@@ -3667,6 +3735,8 @@ export const uk: Record<string, string> = {
   'Nur genehmigte Auslagen werden erstattet.': 'Відшкодовуються лише схвалені витрати.',
   'nur https://': 'лише https://',
   'Nur Kassenführung': 'Лише керівництво каси',
+  'Nur Link und QR-Code zeigen': 'Показати лише посилання та QR-код',
+  'Nur Mitsicht': 'Лише перегляд',
   'Nur Spieler der Mannschaft oder Gastspieler.': 'Лише гравці команди або запрошені гравці.',
   'Nur Spieler der Mannschaft.': 'Лише гравці команди.',
   'Nur Teilnehmer des Termins können mitfahren.': 'Поїхати разом можуть лише учасники події.',
@@ -4041,6 +4111,7 @@ export const uk: Record<string, string> = {
   Schriftführer: 'Секретар',
   Schriftgröße: 'Розмір шрифту',
   'Schritt {0} von {1}': 'Крок {0} з {1}',
+  'Schritt {0} von 3': 'Крок {0} з 3',
   Schule: 'Школа',
   'Schule noch unklar': 'Школа ще не визначена',
   'Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail.':
@@ -4070,6 +4141,8 @@ export const uk: Record<string, string> = {
   'Sichtbarkeit der Kontaktdaten': 'Видимість контактних даних',
   'Sichtbarkeit der Kontaktdaten neuer Personen': 'Видимість контактних даних нових осіб',
   'Sichtbarkeit meiner Kontaktdaten': 'Видимість моїх контактних даних',
+  'Sie möchten wieder mitsehen: {0}. Du entscheidest.':
+    'Вони хочуть знову дивитися разом: {0}. Ви вирішуєте.',
   Sieg: 'Перемога',
   'Sieht nur die eigene Mannschaft – beim Bezahlen im persönlichen Konto.':
     'Бачить лише власна команда – під час оплати в особистому рахунку.',
@@ -4338,6 +4411,8 @@ export const uk: Record<string, string> = {
   'Stufe {0} vermerkt – das Mitglied hat keinen App-Zugang, bitte anders informieren.':
     'Рівень {0} зафіксовано – у члена клубу немає доступу до застосунку, повідом його іншим способом.',
   'Stufe {0}: Erinnerung verschickt.': 'Рівень {0}: нагадування надіслано.',
+  'Stufe ändern': 'Змінити рівень',
+  'Stufe geändert am {0}': 'Рівень змінено {0}',
   'Stufe offen': 'Рівень відкритий',
   Stumm: 'Без звуку',
   'Stummgeschaltete Mannschaften melden sich nur noch bei Dringendem.':
@@ -4901,6 +4976,7 @@ export const uk: Record<string, string> = {
   'Wann trainiert die Mannschaft?': 'Коли тренується команда?',
   'War da': 'Був',
   'Wartet auf Freigabe': 'Очікує схвалення',
+  'Wartet auf Zustimmung': 'Очікує згоди',
   'Warum bist du unsicher?': 'Чому ти не впевнений(а)?',
   'Warum kannst du nicht?': 'Чому ти не можеш?',
   'Warum wir das fragen': 'Чому ми це запитуємо',
@@ -4990,6 +5066,7 @@ export const uk: Record<string, string> = {
     'Якщо увімкнено, усі з правами адміністрування (правління, адміністратори, керівництво молоддю …) потребують двофакторного входу, перш ніж зможуть редагувати дані членів клубу.',
   Wer: 'Хто',
   'Wer darf die Kasse einsehen?': 'Хто може переглядати касу?',
+  'Wer darf für mich mitsehen?': 'Хто може дивитися разом зі мною?',
   'Wer deine Daten sieht': 'Хто бачить твої дані',
   'Wer die Vereinskasse einsehen darf, bestimmt die Vereinsadministration.':
     'Хто може переглядати касу клубу, визначає адміністрація клубу.',
@@ -5316,6 +5393,8 @@ export const uk: Record<string, string> = {
   'Zugangsdaten sind geheim zu halten. Inhalte, die gegen Gesetze oder Rechte Dritter verstoßen, dürfen nicht eingestellt werden.':
     'Дані для входу необхідно тримати в таємниці. Вміст, що порушує закони чи права третіх осіб, публікувати заборонено.',
   Zugesagt: 'Підтверджено',
+  'Zugriff beenden': 'Завершити доступ',
+  'Zugriff endet': 'Доступ закінчується',
   Zuletzt: 'Останнє',
   'zuletzt {0}': 'востаннє {0}',
   'Zuletzt abgerufen {0}': 'Востаннє отримано {0}',
@@ -5381,6 +5460,7 @@ export const uk: Record<string, string> = {
   'Zuschüsse: Unter „Vereinskasse → Buchung → Zuschüsse“ legst du Förderungen mit Geber, Betrag und Frist für den Verwendungsnachweis an und führst sie von „Geplant“ über „Beantragt“ und „Bewilligt“ bis zum Eingang (Buchung als Einnahme); überfällige Nachweise sind rot. Sponsoren: Beim Buchen einer Einnahme wählst du den Sponsor; unter „Sponsoren“ siehst du die Einnahmen je Sponsor und Jahr. Mannschaftszuschuss: Ausgabe der Vereinskasse und Einnahme der Mannschaftskasse in einem Schritt. Inventar: Unter „Planung → Inventar“ erfasst du Anschaffungen mit Wert und Standort; Gegenstände werden mit Grund ausgesondert, nicht gelöscht.':
     'Дотації: у «Каса клубу → Проводка → Дотації» ти створюєш фінансування з донором, сумою та строком для звіту про використання коштів і ведеш його від «Заплановано» через «Подано» та «Схвалено» до надходження (проводка як надходження); прострочені звіти червоні. Спонсори: під час запису надходження ти вибираєш спонсора; у «Спонсори» ти бачиш надходження за спонсором і роком. Дотація команді: витрата каси клубу й надходження каси команди за один крок. Інвентар: у «Планування → Інвентар» ти фіксуєш придбання із вартістю й розташуванням; предмети списуються з причиною, а не видаляються.',
   'Zustand / Hinweis (optional)': 'Стан / примітка (необов’язково)',
+  Zustimmen: 'Погодитися',
   'Zuwendungsbestätigungen haben gesetzliche Pflichtangaben und Formulierungen. Lass die Vorlage von deiner Steuerberatung oder deinem Verband prüfen, bevor du sie freigibst. Die App ersetzt keine Steuerberatung.':
     'Підтвердження пожертв мають обов’язкові законодавчі відомості та формулювання. Дай перевірити шаблон своєму податковому консультанту або федерації, перш ніж відкривати його. Застосунок не замінює податкову консультацію.',
   'Zuwendungsbestätigungen noch nicht freigegeben': 'Підтвердження пожертв ще не відкрито',

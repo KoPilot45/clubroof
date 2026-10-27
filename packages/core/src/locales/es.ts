@@ -68,6 +68,8 @@ export const es: Record<string, string> = {
     '{0} {1} ha pagado por transferencia; confírmalo, por favor.',
   '{0} {1} lädt dich in die Vereins-App von {2} ein.':
     '{0} {1} te invita a la app del club de {2}.',
+  '{0} {1} richtet dir einen eigenen Zugang zur Vereins-App von {2} ein.':
+    '{0} {1} te configura un acceso propio a la app del club {2}.',
   '{0} {1}: {2}, {3} offen, fällig seit {4}.': '{0} {1}: {2}, {3} pendiente, vencido desde {4}.',
   '{0} / {1} Helfer': '{0} / {1} ayudantes',
   '{0} abgewählt': '{0} desmarcado',
@@ -97,6 +99,8 @@ export const es: Record<string, string> = {
   '{0} Beiträge sind überfällig ({1}).': '{0} cuotas están vencidas ({1}).',
   '{0} Beitrittsanfrage': '{0} solicitud de ingreso',
   '{0} Beitrittsanfragen': '{0} solicitudes de ingreso',
+  '{0} bekommt ein eigenes Konto mit einer eigenen E-Mail-Adresse. Nicht eure: Jede Adresse gehört zu genau einem Konto.':
+    '{0} recibe su propia cuenta con su propia dirección de correo. No la vuestra: cada dirección pertenece a una única cuenta.',
   '{0} Belegungen überschneiden sich': '{0} reservas se solapan',
   '{0} benachrichtigen': 'Avisar a {0}',
   '{0} bestehende Spiele wurden angepasst.': '{0} partidos existentes se han ajustado.',
@@ -144,10 +148,13 @@ export const es: Record<string, string> = {
   '{0} gewählt': '{0} elegido',
   '{0} gewählt. Tippe auf eine Position oder einen Bankplatz.':
     '{0} elegido. Toca una posición o un puesto en el banquillo.',
+  '{0} hat abgelehnt: {1}': '{0} ha rechazado: {1}',
+  '{0} hat die Mitsicht geändert: {1}': '{0} ha cambiado el nivel de visualización: {1}',
   '{0} hat für das Spiel abgesagt.': '{0} ha cancelado para el partido.',
   '{0} hat heute Geburtstag': '{0} cumple años hoy',
   '{0} hat mit {1} die meisten Ausgaben.': '{0} tiene los mayores gastos con {1}.',
   '{0} hat mit {1} Getränken am meisten.': '{0} ha tomado más bebidas, con {1}.',
+  '{0} hat zugestimmt: {1}': '{0} ha aceptado: {1}',
   '{0} Helfer fehlen': 'Faltan {0} ayudantes',
   '{0} heute 🎉': '{0} hoy 🎉',
   '{0} hinzufügen': 'Añadir {0}',
@@ -171,6 +178,8 @@ export const es: Record<string, string> = {
   '{0} Min.': '{0} min',
   '{0} Mitgliedern wurde eine Beitragsart zugeordnet.':
     'Se ha asignado un tipo de cuota a {0} socios.',
+  '{0} möchte wieder mitsehen ({1}). Du entscheidest unter „Ich“.':
+    '{0} quiere volver a ver contigo ({1}). Tú decides en «Yo».',
   '{0} neu': '{0} nuevos',
   '{0} neu angelegt, {1} aktualisiert, {2} übersprungen.':
     '{0} creados, {1} actualizados, {2} omitidos.',
@@ -181,6 +190,8 @@ export const es: Record<string, string> = {
   '{0} offen': '{0} pendientes',
   '{0} offene Aufgabe': '{0} tarea pendiente',
   '{0} offene Aufgaben': '{0} tareas pendientes',
+  '{0} öffnet den Link und legt ein eigenes Passwort fest.':
+    '{0} abre el enlace y establece su propia contraseña.',
   '{0} ohne Mannschaft': '{0} sin equipo',
   '{0} ohne Rückmeldung': '{0} sin respuesta',
   '{0} per WhatsApp': '{0} por WhatsApp',
@@ -1270,9 +1281,14 @@ export const es: Record<string, string> = {
   'Das Jahr {0} ist noch abgeschlossen. Öffne zuerst die späteren Jahre.':
     'El año {0} sigue cerrado. Reabre primero los años posteriores.',
   'Das Jahr ist ungültig.': 'El año no es válido.',
+  'Das Kind': 'El niño',
+  'Das Kind hat die Einladung angenommen. Das Konto gehört dem Kind; du kannst deine Stufe ändern.':
+    'El niño ha aceptado la invitación. La cuenta pertenece al niño; podéis cambiar vuestro nivel.',
   'Das Kind zu „Elternteil von“ wurde nicht gefunden: {0}. Bitte Namen oder Mitgliedsnummer prüfen.':
     'No se ha encontrado al niño de «Padre/madre de»: {0}. Revisa el nombre o el número de socio.',
   'Das Konto': 'La cuenta',
+  'Das Konto gehört dem Kind. Ihr könnt die Stufe jederzeit senken; wieder erhöhen geht nur mit Zustimmung des Kindes.':
+    'La cuenta pertenece al niño. Podéis bajar el nivel en cualquier momento; volver a subirlo solo es posible con el consentimiento del niño.',
   'Das Konto ist archiviert.': 'La cuenta está archivada.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.':
     'La abreviatura «{0}» ya está en uso esta temporada.',
@@ -1406,6 +1422,14 @@ export const es: Record<string, string> = {
   'Deine Beitrittsanfrage wartet noch auf Freigabe durch den Verein.':
     'Tu solicitud de ingreso aún espera la aprobación del club.',
   'Deine Beitrittsanfrage wurde nicht freigegeben.': 'Tu solicitud de ingreso no ha sido aprobada.',
+  'Deine Eltern fragen an': 'Tus padres preguntan',
+  'Deine Eltern fragen um Mitsicht': 'Tus padres piden ver contigo',
+  'Deine Eltern sehen deine Termine und antworten, melden Abwesenheiten und buchen Fahrten für dich.':
+    'Tus padres ven tus eventos y responden, comunican ausencias y reservan viajes por ti.',
+  'Deine Eltern sehen deine Termine, können aber nichts für dich tun. Du antwortest selbst.':
+    'Tus padres ven tus eventos, pero no pueden hacer nada por ti. Respondes tú mismo.',
+  'Deine Eltern sehen nichts mehr von dir und tun nichts für dich.':
+    'Tus padres ya no ven nada de ti y no hacen nada por ti.',
   'Deine Kinder': 'Tus hijos',
   'Deine Mitgliedschaft ist beendet.': 'Tu condición de socio ha terminado.',
   'Deine News ist veröffentlicht': 'Tu noticia está publicada',
@@ -1489,6 +1513,7 @@ export const es: Record<string, string> = {
     'No se pudo comprobar el código de configuración.',
   'Der Einrichtungscode stimmt nicht.': 'El código de configuración no es correcto.',
   'Der Einsatz': 'La asignación',
+  'Der Elternzugang': 'El acceso de los padres',
   'Der Export des Archivs steht in der Web-Verwaltung bereit.':
     'La exportación del archivo está disponible en la administración web.',
   'Der Export hat nicht geklappt.': 'La exportación no ha funcionado.',
@@ -1618,6 +1643,7 @@ export const es: Record<string, string> = {
   'Die Abwesenheit konnte nicht gespeichert werden.': 'No se pudo guardar la ausencia.',
   'Die Änderung hat nicht geklappt.': 'El cambio no ha funcionado.',
   'Die Änderung konnte nicht gespeichert werden.': 'No se pudo guardar el cambio.',
+  'Die Änderung wurde nicht gespeichert.': 'El cambio no se ha guardado.',
   'Die Änderungen konnten nicht gespeichert werden.': 'No se pudieron guardar los cambios.',
   'Die Anfrage': 'La solicitud',
   'Die Anmeldung ist abgelaufen. Bitte erneut anmelden.':
@@ -1678,6 +1704,9 @@ export const es: Record<string, string> = {
   'Die eigenen individuellen Rechte kann nur eine andere Person ändern.':
     'Los propios derechos individuales solo puede cambiarlos otra persona.',
   'Die Eingabe ist unvollständig oder ungültig.': 'La entrada está incompleta o no es válida.',
+  'Die Einladung an {0} ist offen. Sobald {1} sie annimmt, gilt: {2}.':
+    'La invitación a {0} está abierta. En cuanto {1} la acepte, se aplicará: {2}.',
+  'Die Einladung wurde nicht erstellt.': 'No se ha creado la invitación.',
   'Die Einrichtung hat nicht geklappt.': 'La configuración no ha funcionado.',
   'Die Einstellung gilt für alle Mannschaften der Abteilung. Ist ein Modul hier aus, kann es keine Mannschaft darin einschalten. „Wie Verein“ übernimmt die Vereinseinstellung.':
     'El ajuste vale para todos los equipos de la sección. Si un módulo está desactivado aquí, ningún equipo puede activarlo. «Como el club» adopta el ajuste del club.',
@@ -1963,6 +1992,7 @@ export const es: Record<string, string> = {
   'Dieser Vorgang gehört zu einer anderen Forderung.': 'Esta operación pertenece a otro cobro.',
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'Esta subvención figura también en la caja del equipo y no se puede anular aquí.',
+  'Dieses Kind hat bereits einen eigenen Zugang.': 'Este niño ya tiene su propio acceso.',
   'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.':
     'Este niño tiene cuenta propia y no se puede vincular mediante una solicitud de ingreso. Eso lo hace la administración de socios.',
   'Dieses Passwort ist zu leicht zu erraten.': 'Esta contraseña es demasiado fácil de adivinar.',
@@ -2001,6 +2031,8 @@ export const es: Record<string, string> = {
   'Du hast nicht geantwortet': 'No has respondido',
   'Du kannst Abwesenheiten nur für dich oder deine Kinder eintragen.':
     'Solo puedes registrar ausencias para ti o para tus hijos.',
+  'Du kannst das jederzeit selbst ändern. Deine Eltern erfahren davon.':
+    'Puedes cambiarlo tú mismo en cualquier momento. Tus padres lo sabrán.',
   'Du kannst deine Stimme bis zum Ende ändern.': 'Puedes cambiar tu voto hasta el final.',
   'Du kannst dich nicht selbst aus dem Kader nehmen.':
     'No puedes quitarte a ti mismo de la plantilla.',
@@ -2056,6 +2088,7 @@ export const es: Record<string, string> = {
   'E-Mail-Adresse': 'Dirección de correo electrónico',
   'E-Mail-Adresse „{0}“ ist ungültig.': 'El correo electrónico «{0}» no es válido.',
   'E-Mail-Adresse bestätigt': 'Correo electrónico verificado',
+  'E-Mail-Adresse des Kindes': 'Correo electrónico del niño',
   'E-Mail-Adresse oder Passwort ist nicht korrekt.':
     'El correo electrónico o la contraseña no son correctos.',
   'E-Mail: kontakt@clubroof.example\nTelefon: 01234 567890':
@@ -2066,8 +2099,11 @@ export const es: Record<string, string> = {
   'Eigene Kasse anlegen': 'Crear caja propia',
   'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik, Dokumente, News':
     'Equipo propio, eventos, plantilla, entrenamiento, necesidades/ofertas, estadísticas, documentos, noticias',
+  'Eigenen Zugang einrichten': 'Configurar acceso propio',
   'Eigener Programmpunkt': 'Punto de programa propio',
   'Eigener Zeitraum': 'Periodo personalizado',
+  'Eigener Zugang': 'Acceso propio',
+  Eigenständig: 'Independiente',
   'Eigentor des Gegners': 'Gol en propia puerta del rival',
   'Ein abgeschlossenes Jahr öffnet nur die Administration.':
     'Un año cerrado solo lo reabre la administración.',
@@ -2125,6 +2161,7 @@ export const es: Record<string, string> = {
   'Eingegangen am': 'Recibido el',
   'Eingegangen in diesem Jahr: {0}': 'Recibido este año: {0}',
   'Eingehen kann nur ein bewilligter Zuschuss.': 'Solo puede ingresarse una subvención concedida.',
+  Eingeladen: 'Invitado',
   'eingeladen {0}': 'invitado {0}',
   'Eingeladen: {0}': 'Invitados: {0}',
   Eingereicht: 'Presentado',
@@ -2133,9 +2170,13 @@ export const es: Record<string, string> = {
   Einladen: 'Invitar',
   'Einladen dürfen Trainerteams und die Mitgliederverwaltung.':
     'Pueden invitar los cuerpos técnicos y la administración de socios.',
+  Einladung: 'Invitación',
+  'Einladung bereit': 'Invitación lista',
   'Einladung für {0}': 'Invitación para {0}',
   'Einladung in die App von {0}': 'Invitación a la app de {0}',
   'Einladung nicht gültig': 'Invitación no válida',
+  'Einladung per E-Mail senden': 'Enviar invitación por correo',
+  'Einladung widerrufen': 'Retirar invitación',
   Einladungen: 'Invitaciones',
   'Einladungen verschickst du unter Verwaltung → Einladungen. Rückgängig geht 24 Stunden lang.':
     'Las invitaciones las envías en Administración → Invitaciones. Se pueden deshacer durante 24 horas.',
@@ -2306,6 +2347,8 @@ export const es: Record<string, string> = {
   'Es gibt keine Einnahmekategorie für Beiträge. Lege sie in der Vereinskasse an.':
     'No hay categoría de ingresos para cuotas. Créala en la caja del club.',
   'Es gibt keine neuen Mitglieder zu übernehmen.': 'No hay socios nuevos que aplicar.',
+  'Es gibt keine offene Anfrage.': 'No hay ninguna solicitud abierta.',
+  'Es gibt keine offene Einladung.': 'No hay ninguna invitación abierta.',
   'Es gibt nichts zu übernehmen.': 'No hay nada que aplicar.',
   'Es gibt noch fehlerhafte Zeilen. Bitte korrigieren oder abwählen.':
     'Aún hay filas con errores. Corrígelas o desmárcalas.',
@@ -2743,6 +2786,20 @@ export const es: Record<string, string> = {
   'Ich und Familie': 'Yo y mi familia',
   'Ich, Einstellungen und Hilfe': 'Yo, ajustes y ayuda',
   'Ideeller Bereich': 'Ámbito ideal',
+  'Ihr antwortet, meldet Abwesenheiten und bucht Fahrten für das Kind und seht die Kasse weiter.':
+    'Vosotros respondéis, comunicáis ausencias y reserváis viajes por el niño, y seguís viendo la caja.',
+  'Ihr habt „{0}“ angefragt. {1} entscheidet in der App.':
+    'Habéis solicitado «{0}». {1} decide en la app.',
+  'Ihr könnt die Stufe später jederzeit senken.':
+    'Podéis bajar el nivel en cualquier momento más adelante.',
+  'Ihr seht Termine, Zusagen und Kasse, könnt aber nichts für das Kind tun.':
+    'Veis eventos, respuestas y caja, pero no podéis hacer nada por el niño.',
+  'Ihr seht und tut danach nichts mehr für {0}. Das Kind taucht bei euch nicht mehr auf. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'Después ya no veréis ni haréis nada por {0}. El niño dejará de aparecer en vuestra cuenta. Volver a ver con él solo es posible si el niño lo permite.',
+  'Ihr seht und tut danach nichts mehr für {0}. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'Después ya no veréis ni haréis nada por {0}. Volver a ver con él solo es posible si el niño lo permite.',
+  'Ihr seht und tut nichts mehr für das Kind. Das Kind entscheidet allein.':
+    'Ya no veis ni hacéis nada por el niño. El niño decide solo.',
   'Im „Änderungsprotokoll“ (Verwaltung): Rollenvergaben, Absagen, Modulwechsel, Kassenbuchungen und Stornos mit Person und Zeitpunkt.':
     'En el «Registro de cambios» (administración): asignaciones de roles, cancelaciones, cambios de módulos, movimientos de caja y anulaciones con persona y momento.',
   'Im echten Betrieb erscheint hier das vom Verein hochgeladene Dokument.':
@@ -2867,6 +2924,8 @@ export const es: Record<string, string> = {
     'Sí. En eventos pendientes y notificaciones sin leer, desliza la fila hacia la izquierda: aparece «Confirmar» o «Leído». Tócalo, o desliza del todo y se hace al instante. Todo se puede hacer también sin deslizar, con los botones de la fila.',
   'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.':
     'Sí. Tu respuesta se guarda en el dispositivo, se muestra al instante («Enviando») y se envía automáticamente en cuanto vuelvas a tener conexión. Si el servidor la rechaza, por ejemplo porque el plazo ha terminado, recibes un aviso.',
+  'Ja. Öffne „Ich → Meine Kinder → Kind → Eigener Zugang“, gib die eigene E-Mail-Adresse des Kindes an und wähle die Stufe: „Mitsicht und Mitentscheiden“ (wie bisher), „Nur Mitsicht“ (ihr seht, tut aber nichts) oder „Eigenständig“ (ihr seht und tut nichts mehr). Das Kind legt über den Link ein eigenes Passwort fest; euer Konto bleibt unverändert. Ihr könnt die Stufe jederzeit senken. Wieder erhöhen geht nur, wenn das Kind zustimmt. Antworten Eltern und Kind für denselben Termin, gilt die letzte Antwort.':
+    'Sí. Abre «Yo → Mis hijos → Niño → Acceso propio», introduce el correo electrónico propio del niño y elige el nivel: «Ver y decidir juntos» (como hasta ahora), «Solo lectura» (veis pero no hacéis nada) o «Independiente» (ya no veis ni hacéis nada). El niño establece su propia contraseña mediante el enlace; vuestra cuenta no cambia. Podéis bajar el nivel en cualquier momento. Volver a subirlo solo es posible si el niño está de acuerdo. Si padres y niño responden al mismo evento, cuenta la última respuesta.',
   'Ja. Unter „Ich → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.':
     'Sí. En «Yo → Cuenta y ajustes → Apariencia» eliges Claro, Oscuro o «Como el dispositivo». La elección vale para todos tus dispositivos.',
   'Ja. Unter „Ich → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.':
@@ -2877,6 +2936,8 @@ export const es: Record<string, string> = {
     'Sí. En «Yo → Cuenta y ajustes → Idioma» eliges Deutsch, English, Türkçe, Українська, Polski, Español, Français, العربية o «Automático» (el idioma de tu dispositivo). La elección vale en todos tus dispositivos, también para las notificaciones push. Los textos que escriben los entrenadores o la directiva (p. ej. noticias) se quedan en el idioma de su autor.',
   'Ja. Unter „Ich → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Sí. En «Yo → Cuenta y ajustes» configuras el tamaño de letra (Normal, Grande, Muy grande) y puedes bloquear la app con Face ID, huella o código del dispositivo. Sin internet, la app muestra los últimos eventos, noticias y plantillas cargados; arriba aparece entonces un aviso. Responder y hacer cambios solo es posible con conexión.',
+  'Ja. Unter „Ich → Wer darf für mich mitsehen?“ stehen drei Stufen: „Mitsicht und Mitentscheiden“ (Eltern antworten und melden für dich), „Nur Mitsicht“ (sie sehen nur) und „Eigenständig“ (sie sehen und tun nichts mehr). Du kannst jede Stufe selbst setzen. Fragen deine Eltern nach mehr Mitsicht, entscheidest du mit „Zustimmen“ oder „Ablehnen“. Deine Eltern erfahren von jeder Änderung.':
+    'Sí. En «Yo → ¿Quién puede ver conmigo?» hay tres niveles: «Ver y decidir juntos» (tus padres responden y comunican por ti), «Solo lectura» (solo ven) e «Independiente» (ya no ven ni hacen nada). Puedes fijar cualquier nivel tú mismo. Si tus padres piden más acceso, decides tú con «Aceptar» o «Rechazar». Tus padres se enteran de cada cambio.',
   'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch), außerdem Forum-Themen und eigene Antworten, Kommentare (auch löschen), Übungen, Aushänge im Fundbüro und Marktplatz, Spielerbedarf und Angebote der Spielerbörse (die Anzahl nicht unter die schon eingetragenen Spieler) Platzsperrungen, Beitragsarten und Rücklagen der Vereinskasse (ein geänderter Betrag einer Beitragsart gilt für künftige Beiträge), Ausrüstung (Bezeichnung, Anzahl, Lagerort, Zustand) und deine Schiedsrichter-Einsätze. Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
     'Sí. Lo que has creado se puede editar después, mediante «Editar» en el menú «…» o con el botón en el detalle: encuestas (pregunta, descripción y plazo; las respuestas solo mientras nadie haya votado), actos con turnos de ayuda, ausencias y documentos (título, tipo y visibilidad; el archivo se mantiene, para sustituirlo lo eliminas y subes uno nuevo), además de temas del foro y tus propias respuestas, comentarios (también eliminar), ejercicios, anuncios de objetos perdidos y mercadillo, necesidades de jugadores y ofertas de la bolsa de jugadores (la cantidad no puede ser inferior a los jugadores ya registrados), bloqueos de campos, tipos de cuota y reservas de la caja del club (un importe modificado de un tipo de cuota vale para cuotas futuras), equipamiento (denominación, cantidad, lugar de almacenaje, estado) y tus designaciones como árbitro. El formulario es el mismo que al crear, solo que rellenado. Los contenidos modificados llevan la nota «editado» con la hora. Los cambios importantes como hora, lugar o plazo los comunicamos a los participantes. Los movimientos de caja no se modifican: los errores los corriges anulando y registrando de nuevo, así todo queda trazable.',
   Jahr: 'Año',
@@ -2973,6 +3034,7 @@ export const es: Record<string, string> = {
   'Kann ich ohne Internet zu- oder absagen?': '¿Puedo confirmar o cancelar sin internet?',
   'Kann ich Trainings und Spiele aus einer Datei anlegen?':
     '¿Puedo crear entrenamientos y partidos desde un archivo?',
+  'Kann mein Kind einen eigenen Zugang bekommen?': '¿Puede mi hijo tener su propio acceso?',
   'Karte {0} von {1}': 'Tarjeta {0} de {1}',
   Karten: 'Tarjetas',
   'Karten und Listen': 'Tarjetas y listas',
@@ -3032,6 +3094,7 @@ export const es: Record<string, string> = {
     'Las categorías clasifican ingresos y gastos (cuotas, donaciones, mantenimiento de campos…).',
   'Kein aktiver Link.': 'Ningún enlace activo.',
   'Kein automatisches Treffen': 'Sin quedada automática',
+  'Kein eigener Zugang': 'Sin acceso propio',
   'Kein Mitglied mit offenem Beitrag erkannt':
     'No se ha reconocido ningún socio con cuota pendiente',
   'Kein Push in der Ruhezeit': 'Sin notificaciones push en el horario de descanso',
@@ -3337,6 +3400,7 @@ export const es: Record<string, string> = {
   'Meine Daten und Exporte für dein Team': 'Mis datos y exportaciones para tu equipo',
   'Meine Einsätze': 'Mis designaciones',
   'Meine Einsätze und Vereins-Soll': 'Mis designaciones y objetivo del club',
+  'Meine Eltern sehen mit – kann ich das ändern?': 'Mis padres ven conmigo: ¿puedo cambiarlo?',
   'Meine Entwürfe': 'Mis borradores',
   'Meine Kinder': 'Mis hijos',
   'Meine Mannschaft': 'Mi equipo',
@@ -3375,6 +3439,8 @@ export const es: Record<string, string> = {
     'Con la autenticación en dos pasos, cada nuevo inicio de sesión necesita además un código. La recomendamos para la cuenta de administración.',
   'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Bitte melde dich an oder nutze „Passwort vergessen“.':
     'Ya existe una cuenta con este correo electrónico. Inicia sesión o usa «Olvidé mi contraseña».',
+  'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Das Kind braucht eine eigene Adresse.':
+    'Ya existe una cuenta con este correo electrónico. El niño necesita su propia dirección.',
   'Mit Einladungslink oder Einladungscode (auch per QR-Code scannen) trittst du deinem Verein bei – der Verein wird danach auf diesem Gerät gemerkt. Hast du schon ein Konto, melde dich mit E-Mail und Passwort an („Zeigen“ macht das Passwort sichtbar). Einen neuen Verein richtest du mit dem Einrichtungscode (Format CR-XXXX-XXXX) ein, den du von Clubroof nach Zahlungseingang erhältst; er gilt einmal.':
     'Con el enlace o el código de invitación (también escaneando un código QR) te unes a tu club; después el club se recuerda en este dispositivo. Si ya tienes una cuenta, inicia sesión con correo electrónico y contraseña («Mostrar» hace visible la contraseña). Un club nuevo se configura con el código de configuración (formato CR-XXXX-XXXX) que recibes de Clubroof tras recibirse el pago; es de un solo uso.',
   'Mit Face ID oder Fingerabdruck entsperren': 'Desbloquear con Face ID o huella',
@@ -3386,6 +3452,7 @@ export const es: Record<string, string> = {
     'Con cuerpo técnico, plantilla y plazos de respuesta',
   'Mit Treffpunkt und Antwortfrist der Mannschaft':
     'Con punto de encuentro y plazo de respuesta del equipo',
+  'Mit Zustimmung': 'Con consentimiento',
   Mitfahren: 'Ir en este coche',
   'Mitfahrt angeboten': 'Viaje ofrecido',
   'Mitfahrt für {0} suchen': 'Buscar viaje para {0}',
@@ -3425,6 +3492,7 @@ export const es: Record<string, string> = {
   'Mitgliedsnummer (optional)': 'Número de socio (opcional)',
   'Mitgliedsnummer oder „Vorname Nachname“': 'Número de socio o «Nombre Apellidos»',
   Mitgliedsstatus: 'Estado de socio',
+  'Mitsicht und Mitentscheiden': 'Ver y decidir juntos',
   Mitteilungen: 'Mensajes',
   Mittelfeld: 'Centrocampista',
   'Mittelfeld {0}': 'Centrocampista {0}',
@@ -3718,6 +3786,8 @@ export const es: Record<string, string> = {
     'Solo se reembolsan los gastos adelantados aprobados.',
   'nur https://': 'solo https://',
   'Nur Kassenführung': 'Solo gestión de caja',
+  'Nur Link und QR-Code zeigen': 'Mostrar solo enlace y código QR',
+  'Nur Mitsicht': 'Solo lectura',
   'Nur Spieler der Mannschaft oder Gastspieler.':
     'Solo jugadores del equipo o jugadores invitados.',
   'Nur Spieler der Mannschaft.': 'Solo jugadores del equipo.',
@@ -4100,6 +4170,7 @@ export const es: Record<string, string> = {
   Schriftführer: 'Secretario',
   Schriftgröße: 'Tamaño de letra',
   'Schritt {0} von {1}': 'Paso {0} de {1}',
+  'Schritt {0} von 3': 'Paso {0} de 3',
   Schule: 'Colegio',
   'Schule noch unklar': 'Colegio aún por aclarar',
   'Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail.':
@@ -4130,6 +4201,8 @@ export const es: Record<string, string> = {
   'Sichtbarkeit der Kontaktdaten neuer Personen':
     'Visibilidad de los datos de contacto de personas nuevas',
   'Sichtbarkeit meiner Kontaktdaten': 'Visibilidad de mis datos de contacto',
+  'Sie möchten wieder mitsehen: {0}. Du entscheidest.':
+    'Quieren volver a ver contigo: {0}. Tú decides.',
   Sieg: 'Victoria',
   'Sieht nur die eigene Mannschaft – beim Bezahlen im persönlichen Konto.':
     'Solo lo ve el propio equipo; al pagar, en la cuenta personal.',
@@ -4402,6 +4475,8 @@ export const es: Record<string, string> = {
   'Stufe {0} vermerkt – das Mitglied hat keinen App-Zugang, bitte anders informieren.':
     'Nivel {0} anotado: el socio no tiene acceso a la app; infórmalo por otro medio.',
   'Stufe {0}: Erinnerung verschickt.': 'Nivel {0}: recordatorio enviado.',
+  'Stufe ändern': 'Cambiar nivel',
+  'Stufe geändert am {0}': 'Nivel cambiado el {0}',
   'Stufe offen': 'Nivel pendiente',
   Stumm: 'Silenciado',
   'Stummgeschaltete Mannschaften melden sich nur noch bei Dringendem.':
@@ -4970,6 +5045,7 @@ export const es: Record<string, string> = {
   'Wann trainiert die Mannschaft?': '¿Cuándo entrena el equipo?',
   'War da': 'Estuvo',
   'Wartet auf Freigabe': 'Pendiente de aprobación',
+  'Wartet auf Zustimmung': 'Esperando consentimiento',
   'Warum bist du unsicher?': '¿Por qué estás dudoso?',
   'Warum kannst du nicht?': '¿Por qué no puedes?',
   'Warum wir das fragen': 'Por qué lo preguntamos',
@@ -5060,6 +5136,7 @@ export const es: Record<string, string> = {
     'Si está activado, todos los que tienen derechos de administración (junta directiva, administradores, dirección juvenil…) necesitan la autenticación en dos pasos antes de poder editar datos de socios.',
   Wer: 'Quién',
   'Wer darf die Kasse einsehen?': '¿Quién puede consultar la caja?',
+  'Wer darf für mich mitsehen?': '¿Quién puede ver conmigo?',
   'Wer deine Daten sieht': 'Quién ve tus datos',
   'Wer die Vereinskasse einsehen darf, bestimmt die Vereinsadministration.':
     'Quién puede consultar la caja del club lo determina la administración del club.',
@@ -5388,6 +5465,8 @@ export const es: Record<string, string> = {
   'Zugangsdaten sind geheim zu halten. Inhalte, die gegen Gesetze oder Rechte Dritter verstoßen, dürfen nicht eingestellt werden.':
     'Los datos de acceso deben mantenerse secretos. No se pueden publicar contenidos que infrinjan leyes o derechos de terceros.',
   Zugesagt: 'Confirmado',
+  'Zugriff beenden': 'Finalizar acceso',
+  'Zugriff endet': 'El acceso termina',
   Zuletzt: 'Último',
   'zuletzt {0}': 'último {0}',
   'Zuletzt abgerufen {0}': 'Última consulta {0}',
@@ -5452,6 +5531,7 @@ export const es: Record<string, string> = {
   'Zuschüsse: Unter „Vereinskasse → Buchung → Zuschüsse“ legst du Förderungen mit Geber, Betrag und Frist für den Verwendungsnachweis an und führst sie von „Geplant“ über „Beantragt“ und „Bewilligt“ bis zum Eingang (Buchung als Einnahme); überfällige Nachweise sind rot. Sponsoren: Beim Buchen einer Einnahme wählst du den Sponsor; unter „Sponsoren“ siehst du die Einnahmen je Sponsor und Jahr. Mannschaftszuschuss: Ausgabe der Vereinskasse und Einnahme der Mannschaftskasse in einem Schritt. Inventar: Unter „Planung → Inventar“ erfasst du Anschaffungen mit Wert und Standort; Gegenstände werden mit Grund ausgesondert, nicht gelöscht.':
     'Subvenciones: en «Caja del club → Movimientos → Subvenciones» creas ayudas con concedente, importe y plazo para la justificación del uso y las llevas de «Previsto» pasando por «Solicitado» y «Concedido» hasta el ingreso (movimiento como ingreso); las justificaciones vencidas aparecen en rojo. Patrocinadores: al registrar un ingreso eliges el patrocinador; en «Patrocinadores» ves los ingresos por patrocinador y año. Subvención al equipo: gasto de la caja del club e ingreso de la caja del equipo en un solo paso. Inventario: en «Planificación → Inventario» registras adquisiciones con valor y ubicación; los objetos se dan de baja con un motivo, no se eliminan.',
   'Zustand / Hinweis (optional)': 'Estado / aviso (opcional)',
+  Zustimmen: 'Aceptar',
   'Zuwendungsbestätigungen haben gesetzliche Pflichtangaben und Formulierungen. Lass die Vorlage von deiner Steuerberatung oder deinem Verband prüfen, bevor du sie freigibst. Die App ersetzt keine Steuerberatung.':
     'Los certificados de donación tienen datos y formulaciones obligatorios por ley. Haz que tu asesoría fiscal o tu federación revise la plantilla antes de aprobarla. La app no sustituye el asesoramiento fiscal.',
   'Zuwendungsbestätigungen noch nicht freigegeben': 'Certificados de donación aún no aprobados',

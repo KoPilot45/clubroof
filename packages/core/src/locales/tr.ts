@@ -66,6 +66,8 @@ export const tr: Record<string, string> = {
     '{0} {1} havale ile ödedi – lütfen onayla.',
   '{0} {1} lädt dich in die Vereins-App von {2} ein.':
     '{0} {1} seni {2} kulüp uygulamasına davet ediyor.',
+  '{0} {1} richtet dir einen eigenen Zugang zur Vereins-App von {2} ein.':
+    '{0} {1}, sana {2} kulüp uygulaması için kendi erişimini kuruyor.',
   '{0} {1}: {2}, {3} offen, fällig seit {4}.':
     '{0} {1}: {2}, {3} açık, vadesi {4} tarihinden beri geldi.',
   '{0} / {1} Helfer': '{0} / {1} yardımcı',
@@ -96,6 +98,8 @@ export const tr: Record<string, string> = {
   '{0} Beiträge sind überfällig ({1}).': '{0} aidatın vadesi geçti ({1}).',
   '{0} Beitrittsanfrage': '{0} katılım isteği',
   '{0} Beitrittsanfragen': '{0} katılım isteği',
+  '{0} bekommt ein eigenes Konto mit einer eigenen E-Mail-Adresse. Nicht eure: Jede Adresse gehört zu genau einem Konto.':
+    '{0} kendi e-posta adresiyle kendi hesabını alır. Sizinki değil: Her adres tam olarak bir hesaba aittir.',
   '{0} Belegungen überschneiden sich': '{0} rezervasyon çakışıyor',
   '{0} benachrichtigen': '{0} bilgilendir',
   '{0} bestehende Spiele wurden angepasst.': '{0} mevcut maç güncellendi.',
@@ -143,10 +147,13 @@ export const tr: Record<string, string> = {
   '{0} gewählt': '{0} seçildi',
   '{0} gewählt. Tippe auf eine Position oder einen Bankplatz.':
     '{0} seçildi. Bir pozisyona veya yedek yerine dokun.',
+  '{0} hat abgelehnt: {1}': '{0} reddetti: {1}',
+  '{0} hat die Mitsicht geändert: {1}': '{0} görme düzeyini değiştirdi: {1}',
   '{0} hat für das Spiel abgesagt.': '{0} maça katılamayacağını bildirdi.',
   '{0} hat heute Geburtstag': '{0} bugün doğum günü',
   '{0} hat mit {1} die meisten Ausgaben.': '{0}, {1} ile en çok gidere sahip.',
   '{0} hat mit {1} Getränken am meisten.': '{0}, {1} içecekle en çok içeceğe sahip.',
+  '{0} hat zugestimmt: {1}': '{0} onayladı: {1}',
   '{0} Helfer fehlen': '{0} yardımcı eksik',
   '{0} heute 🎉': '{0} bugün 🎉',
   '{0} hinzufügen': '{0} ekle',
@@ -168,6 +175,8 @@ export const tr: Record<string, string> = {
   '{0} min länger als das Training': 'Antrenmandan {0} dk uzun',
   '{0} Min.': '{0} dk.',
   '{0} Mitgliedern wurde eine Beitragsart zugeordnet.': '{0} üyeye bir aidat türü atandı.',
+  '{0} möchte wieder mitsehen ({1}). Du entscheidest unter „Ich“.':
+    '{0} yeniden birlikte görmek istiyor ({1}). “Ben” bölümünde karar verirsin.',
   '{0} neu': '{0} yeni',
   '{0} neu angelegt, {1} aktualisiert, {2} übersprungen.':
     '{0} yeni oluşturuldu, {1} güncellendi, {2} atlandı.',
@@ -178,6 +187,8 @@ export const tr: Record<string, string> = {
   '{0} offen': '{0} açık',
   '{0} offene Aufgabe': '{0} açık görev',
   '{0} offene Aufgaben': '{0} açık görev',
+  '{0} öffnet den Link und legt ein eigenes Passwort fest.':
+    '{0} bağlantıyı açar ve kendi şifresini belirler.',
   '{0} ohne Mannschaft': '{0} takımsız',
   '{0} ohne Rückmeldung': '{0} yanıtsız',
   '{0} per WhatsApp': '{0} WhatsApp ile',
@@ -1250,9 +1261,14 @@ export const tr: Record<string, string> = {
   'Das Jahr {0} ist noch abgeschlossen. Öffne zuerst die späteren Jahre.':
     '{0} yılı hâlâ kapalı. Önce sonraki yılları aç.',
   'Das Jahr ist ungültig.': 'Yıl geçersiz.',
+  'Das Kind': 'Çocuk',
+  'Das Kind hat die Einladung angenommen. Das Konto gehört dem Kind; du kannst deine Stufe ändern.':
+    'Çocuk daveti kabul etti. Hesap çocuğa aittir; kendi düzeyinizi değiştirebilirsiniz.',
   'Das Kind zu „Elternteil von“ wurde nicht gefunden: {0}. Bitte Namen oder Mitgliedsnummer prüfen.':
     '„Ebeveyni olduğu“ çocuk bulunamadı: {0}. Lütfen adı veya üye numarasını kontrol et.',
   'Das Konto': 'Hesap',
+  'Das Konto gehört dem Kind. Ihr könnt die Stufe jederzeit senken; wieder erhöhen geht nur mit Zustimmung des Kindes.':
+    'Hesap çocuğa aittir. Düzeyi istediğiniz zaman düşürebilirsiniz; tekrar yükseltmek yalnızca çocuğun onayıyla mümkündür.',
   'Das Konto ist archiviert.': 'Hesap arşivlenmiş.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.': '„{0}“ kısaltması bu sezonda kullanılıyor.',
   'Das Kürzel (2 bis 4 Zeichen, z. B. „SGW“) steht groß im Plakat der Startseite und ersetzt das Wappen, solange kein Logo hochgeladen ist. Die Vereinsadministration ändert es unter „Verwaltung → Verein & Design“, mit Vorschau. Die Vibration bei Auswahl und Bestätigung schaltest du auf dem Handy unter „Ich → Konto & Einstellungen → Vibration“ aus; bei eingestellter „Bewegung reduzieren“ des Geräts bleiben auch die Animationen aus.':
@@ -1383,6 +1399,14 @@ export const tr: Record<string, string> = {
   'Deine Beitrittsanfrage wartet noch auf Freigabe durch den Verein.':
     'Katılım isteğin hâlâ kulübün onayını bekliyor.',
   'Deine Beitrittsanfrage wurde nicht freigegeben.': 'Katılım isteğin onaylanmadı.',
+  'Deine Eltern fragen an': 'Ebeveynleriniz soruyor',
+  'Deine Eltern fragen um Mitsicht': 'Ebeveynlerin birlikte görmeyi istiyor',
+  'Deine Eltern sehen deine Termine und antworten, melden Abwesenheiten und buchen Fahrten für dich.':
+    'Ebeveynleriniz etkinliklerinizi görür; sizin için yanıt verir, devamsızlık bildirir ve yolculuk ayarlar.',
+  'Deine Eltern sehen deine Termine, können aber nichts für dich tun. Du antwortest selbst.':
+    'Ebeveynleriniz etkinliklerinizi görür ama sizin için hiçbir şey yapamaz. Yanıtı kendiniz verirsiniz.',
+  'Deine Eltern sehen nichts mehr von dir und tun nichts für dich.':
+    'Ebeveynleriniz sizinle ilgili artık hiçbir şey görmez ve sizin için hiçbir şey yapmaz.',
   'Deine Kinder': 'Çocukların',
   'Deine Mitgliedschaft ist beendet.': 'Üyeliğin sona erdi.',
   'Deine News ist veröffentlicht': 'Haberin yayınlandı',
@@ -1459,6 +1483,7 @@ export const tr: Record<string, string> = {
   'Der Einrichtungscode konnte nicht geprüft werden.': 'Kurulum kodu doğrulanamadı.',
   'Der Einrichtungscode stimmt nicht.': 'Kurulum kodu yanlış.',
   'Der Einsatz': 'Görev',
+  'Der Elternzugang': 'Ebeveyn erişimi',
   'Der Export des Archivs steht in der Web-Verwaltung bereit.':
     'Arşivin dışa aktarımı web yönetiminde hazır.',
   'Der Export hat nicht geklappt.': 'Dışa aktarma olmadı.',
@@ -1586,6 +1611,7 @@ export const tr: Record<string, string> = {
   'Die Abwesenheit konnte nicht gespeichert werden.': 'Yokluk kaydedilemedi.',
   'Die Änderung hat nicht geklappt.': 'Değişiklik olmadı.',
   'Die Änderung konnte nicht gespeichert werden.': 'Değişiklik kaydedilemedi.',
+  'Die Änderung wurde nicht gespeichert.': 'Değişiklik kaydedilmedi.',
   'Die Änderungen konnten nicht gespeichert werden.': 'Değişiklikler kaydedilemedi.',
   'Die Anfrage': 'İstek',
   'Die Anmeldung ist abgelaufen. Bitte erneut anmelden.':
@@ -1646,6 +1672,9 @@ export const tr: Record<string, string> = {
   'Die eigenen individuellen Rechte kann nur eine andere Person ändern.':
     'Kendi bireysel yetkilerini yalnızca başka biri değiştirebilir.',
   'Die Eingabe ist unvollständig oder ungültig.': 'Giriş eksik veya geçersiz.',
+  'Die Einladung an {0} ist offen. Sobald {1} sie annimmt, gilt: {2}.':
+    '{0} kişisine gönderilen davet açık. {1} daveti kabul ettiği anda şu geçerli olur: {2}.',
+  'Die Einladung wurde nicht erstellt.': 'Davet oluşturulamadı.',
   'Die Einrichtung hat nicht geklappt.': 'Kurulum olmadı.',
   'Die Einstellung gilt für alle Mannschaften der Abteilung. Ist ein Modul hier aus, kann es keine Mannschaft darin einschalten. „Wie Verein“ übernimmt die Vereinseinstellung.':
     'Ayar bölümün tüm takımları için geçerlidir. Bir modül burada kapalıysa içindeki hiçbir takım onu açamaz. „Kulüp gibi“ kulüp ayarını devralır.',
@@ -1921,6 +1950,7 @@ export const tr: Record<string, string> = {
   'Dieser Vorgang gehört zu einer anderen Forderung.': 'Bu işlem başka bir alacağa ait.',
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'Bu destek takım kasasında da yer alıyor ve burada iptal edilemez.',
+  'Dieses Kind hat bereits einen eigenen Zugang.': 'Bu çocuğun zaten kendi erişimi var.',
   'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.':
     'Bu çocuğun kendi hesabı var ve katılım isteğiyle bağlanamaz. Bunu üye yönetimi yapar.',
   'Dieses Passwort ist zu leicht zu erraten.': 'Bu şifre tahmin edilmesi çok kolay.',
@@ -1959,6 +1989,8 @@ export const tr: Record<string, string> = {
   'Du hast nicht geantwortet': 'Yanıt vermedin',
   'Du kannst Abwesenheiten nur für dich oder deine Kinder eintragen.':
     'Yokluğu yalnızca kendin veya çocukların için girebilirsin.',
+  'Du kannst das jederzeit selbst ändern. Deine Eltern erfahren davon.':
+    'Bunu istediğiniz zaman kendiniz değiştirebilirsiniz. Ebeveynleriniz haberdar edilir.',
   'Du kannst deine Stimme bis zum Ende ändern.': 'Oyunu sona kadar değiştirebilirsin.',
   'Du kannst dich nicht selbst aus dem Kader nehmen.': 'Kendini kadrodan çıkaramazsın.',
   'Du kannst es später in der Kasse angeben': 'Bunu daha sonra kasada belirtebilirsin',
@@ -2015,6 +2047,7 @@ export const tr: Record<string, string> = {
   'E-Mail-Adresse': 'E-posta adresi',
   'E-Mail-Adresse „{0}“ ist ungültig.': '„{0}“ e-posta adresi geçersiz.',
   'E-Mail-Adresse bestätigt': 'E-posta adresi doğrulandı',
+  'E-Mail-Adresse des Kindes': 'Çocuğun e-posta adresi',
   'E-Mail-Adresse oder Passwort ist nicht korrekt.': 'E-posta adresi veya şifre doğru değil.',
   'E-Mail: kontakt@clubroof.example\nTelefon: 01234 567890':
     'E-posta: kontakt@clubroof.example\nTelefon: 01234 567890',
@@ -2024,8 +2057,11 @@ export const tr: Record<string, string> = {
   'Eigene Kasse anlegen': 'Kendi kasasını oluştur',
   'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik, Dokumente, News':
     'Kendi takımı, etkinlikler, kadro, antrenman, ihtiyaç/teklifler, istatistik, belgeler, haberler',
+  'Eigenen Zugang einrichten': 'Kendi erişimini kur',
   'Eigener Programmpunkt': 'Kendi program maddesi',
   'Eigener Zeitraum': 'Özel dönem',
+  'Eigener Zugang': 'Kendi erişimi',
+  Eigenständig: 'Bağımsız',
   'Eigentor des Gegners': 'Rakibin kendi kalesine golü',
   'Ein abgeschlossenes Jahr öffnet nur die Administration.':
     'Kapatılmış bir yılı yalnızca yönetici açabilir.',
@@ -2080,6 +2116,7 @@ export const tr: Record<string, string> = {
   'Eingegangen am': 'Ulaşma tarihi',
   'Eingegangen in diesem Jahr: {0}': 'Bu yıl ulaşan: {0}',
   'Eingehen kann nur ein bewilligter Zuschuss.': 'Yalnızca onaylanmış bir destek ulaşabilir.',
+  Eingeladen: 'Davet edildi',
   'eingeladen {0}': 'davet edildi {0}',
   'Eingeladen: {0}': 'Davet edilen: {0}',
   Eingereicht: 'Gönderildi',
@@ -2088,9 +2125,13 @@ export const tr: Record<string, string> = {
   Einladen: 'Davet et',
   'Einladen dürfen Trainerteams und die Mitgliederverwaltung.':
     'Antrenör ekipleri ve üye yönetimi davet edebilir.',
+  Einladung: 'Davet',
+  'Einladung bereit': 'Davet hazır',
   'Einladung für {0}': '{0} için davet',
   'Einladung in die App von {0}': '{0} uygulamasına davet',
   'Einladung nicht gültig': 'Davet geçerli değil',
+  'Einladung per E-Mail senden': 'Daveti e-postayla gönder',
+  'Einladung widerrufen': 'Daveti geri çek',
   Einladungen: 'Davetler',
   'Einladungen verschickst du unter Verwaltung → Einladungen. Rückgängig geht 24 Stunden lang.':
     'Davetleri Yönetim → Davetler altında gönderirsin. 24 saat boyunca geri alınabilir.',
@@ -2255,6 +2296,8 @@ export const tr: Record<string, string> = {
   'Es gibt keine Einnahmekategorie für Beiträge. Lege sie in der Vereinskasse an.':
     'Aidatlar için gelir kategorisi yok. Kulüp kasasında oluştur.',
   'Es gibt keine neuen Mitglieder zu übernehmen.': 'Uygulanacak yeni üye yok.',
+  'Es gibt keine offene Anfrage.': 'Açık talep yok.',
+  'Es gibt keine offene Einladung.': 'Açık davet yok.',
   'Es gibt nichts zu übernehmen.': 'Uygulanacak bir şey yok.',
   'Es gibt noch fehlerhafte Zeilen. Bitte korrigieren oder abwählen.':
     'Hâlâ hatalı satırlar var. Lütfen düzelt veya seçimi kaldır.',
@@ -2690,6 +2733,20 @@ export const tr: Record<string, string> = {
   'Ich und Familie': 'Ben ve aile',
   'Ich, Einstellungen und Hilfe': 'Ben, ayarlar ve yardım',
   'Ideeller Bereich': 'İdeal alan',
+  'Ihr antwortet, meldet Abwesenheiten und bucht Fahrten für das Kind und seht die Kasse weiter.':
+    'Siz yanıtlar, devamsızlık bildirir ve çocuk için yolculuk ayarlarsınız; kasayı da görmeye devam edersiniz.',
+  'Ihr habt „{0}“ angefragt. {1} entscheidet in der App.':
+    '“{0}” düzeyini talep ettiniz. {1} uygulamada karar verir.',
+  'Ihr könnt die Stufe später jederzeit senken.':
+    'Düzeyi daha sonra istediğiniz zaman düşürebilirsiniz.',
+  'Ihr seht Termine, Zusagen und Kasse, könnt aber nichts für das Kind tun.':
+    'Etkinlikleri, katılım yanıtlarını ve kasayı görürsünüz ama çocuk için hiçbir şey yapamazsınız.',
+  'Ihr seht und tut danach nichts mehr für {0}. Das Kind taucht bei euch nicht mehr auf. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'Bundan sonra {0} için hiçbir şey görmez ve yapmazsınız. Çocuk sizde artık görünmez. Tekrar birlikte görmek yalnızca çocuk izin verirse mümkündür.',
+  'Ihr seht und tut danach nichts mehr für {0}. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'Bundan sonra {0} için hiçbir şey görmez ve yapmazsınız. Tekrar birlikte görmek yalnızca çocuk izin verirse mümkündür.',
+  'Ihr seht und tut nichts mehr für das Kind. Das Kind entscheidet allein.':
+    'Çocuk için artık hiçbir şey görmez ve yapmazsınız. Çocuk tek başına karar verir.',
   'Im „Änderungsprotokoll“ (Verwaltung): Rollenvergaben, Absagen, Modulwechsel, Kassenbuchungen und Stornos mit Person und Zeitpunkt.':
     '„Değişiklik kaydı“nda (Yönetim): rol atamaları, retler, modül değişiklikleri, kasa kayıtları ve iptaller; kişi ve zamanla birlikte.',
   'Im echten Betrieb erscheint hier das vom Verein hochgeladene Dokument.':
@@ -2812,6 +2869,8 @@ export const tr: Record<string, string> = {
     'Evet. Açık etkinliklerde ve okunmamış bildirimlerde satırı sola kaydırırsın: „Katıl“ veya „Okundu“ görünür. Ona dokun – ya da sonuna kadar kaydır, hemen gerçekleşir. Her şey kaydırmadan da satırdaki düğmelerle yapılabilir.',
   'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.':
     'Evet. Yanıtın cihazda saklanır, hemen gösterilir („Gönderiliyor“) ve tekrar çevrimiçi olunca otomatik gönderilir. Sunucu reddederse – ör. süre dolduğu için – bir bildirim alırsın.',
+  'Ja. Öffne „Ich → Meine Kinder → Kind → Eigener Zugang“, gib die eigene E-Mail-Adresse des Kindes an und wähle die Stufe: „Mitsicht und Mitentscheiden“ (wie bisher), „Nur Mitsicht“ (ihr seht, tut aber nichts) oder „Eigenständig“ (ihr seht und tut nichts mehr). Das Kind legt über den Link ein eigenes Passwort fest; euer Konto bleibt unverändert. Ihr könnt die Stufe jederzeit senken. Wieder erhöhen geht nur, wenn das Kind zustimmt. Antworten Eltern und Kind für denselben Termin, gilt die letzte Antwort.':
+    'Evet. “Ben → Çocuklarım → Çocuk → Kendi erişimi” bölümünü açın, çocuğun kendi e-posta adresini girin ve düzeyi seçin: “Birlikte görme ve birlikte karar verme” (şimdiki gibi), “Yalnızca görüntüleme” (görürsünüz ama bir şey yapmazsınız) veya “Bağımsız” (artık görmez ve yapmazsınız). Çocuk bağlantı üzerinden kendi şifresini belirler; sizin hesabınız değişmez. Düzeyi istediğiniz zaman düşürebilirsiniz. Tekrar yükseltmek yalnızca çocuk kabul ederse mümkündür. Ebeveynler ve çocuk aynı etkinlik için yanıt verirse son yanıt geçerlidir.',
   'Ja. Unter „Ich → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.':
     'Evet. „Ben → Hesap ve ayarlar → Görünüm“ altında Açık, Koyu veya „Cihaz gibi“ seçersin. Seçim tüm cihazlarında geçerlidir.',
   'Ja. Unter „Ich → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.':
@@ -2822,6 +2881,8 @@ export const tr: Record<string, string> = {
     'Evet. “Ben → Hesap ve ayarlar → Dil” bölümünden Deutsch, English, Türkçe, Українська, Polski, Español, Français, العربية veya “Otomatik” (cihazının dili) seçebilirsin. Seçim tüm cihazlarında ve anlık bildirimlerde geçerlidir. Antrenörlerin veya yönetimin kendi yazdığı metinler (ör. haberler) yazarın dilinde kalır.',
   'Ja. Unter „Ich → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Evet. „Ben → Hesap ve ayarlar“ altında yazı boyutunu ayarlarsın (Normal, Büyük, Çok büyük) ve uygulamayı Face ID, parmak izi veya cihaz koduyla kilitleyebilirsin. İnternet yokken uygulama en son yüklenen etkinlikleri, haberleri ve kadroyu gösterir; üstte bir not belirir. Yanıtlar ve değişiklikler ancak bağlantıyla mümkündür.',
+  'Ja. Unter „Ich → Wer darf für mich mitsehen?“ stehen drei Stufen: „Mitsicht und Mitentscheiden“ (Eltern antworten und melden für dich), „Nur Mitsicht“ (sie sehen nur) und „Eigenständig“ (sie sehen und tun nichts mehr). Du kannst jede Stufe selbst setzen. Fragen deine Eltern nach mehr Mitsicht, entscheidest du mit „Zustimmen“ oder „Ablehnen“. Deine Eltern erfahren von jeder Änderung.':
+    'Evet. “Ben → Benim için kimler birlikte görebilir?” altında üç düzey vardır: “Birlikte görme ve birlikte karar verme” (ebeveynler senin için yanıt verir ve bildirir), “Yalnızca görüntüleme” (sadece görürler) ve “Bağımsız” (artık görmezler ve yapmazlar). Her düzeyi kendin belirleyebilirsin. Ebeveynlerin daha fazla görme talep ederse “Onayla” veya “Reddet” ile sen karar verirsin. Ebeveynlerin her değişiklikten haberdar olur.',
   'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch), außerdem Forum-Themen und eigene Antworten, Kommentare (auch löschen), Übungen, Aushänge im Fundbüro und Marktplatz, Spielerbedarf und Angebote der Spielerbörse (die Anzahl nicht unter die schon eingetragenen Spieler) Platzsperrungen, Beitragsarten und Rücklagen der Vereinskasse (ein geänderter Betrag einer Beitragsart gilt für künftige Beiträge), Ausrüstung (Bezeichnung, Anzahl, Lagerort, Zustand) und deine Schiedsrichter-Einsätze. Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
     'Evet. Oluşturduğun şeyler daha sonra düzenlenebilir – „…“ menüsündeki „Düzenle“ veya ayrıntıdaki düğmeyle: anketler (soru, açıklama ve süre; yanıtlar yalnızca henüz kimse oy vermediyse), yardımcı vardiyalı organizasyonlar, yokluklar ve belgeler (başlık, tür ve görünürlük – dosya kalır, değiştirmek için silip yeniden yüklersin), ayrıca forum konuları ve kendi yanıtların, yorumlar (silme dahil), alıştırmalar, kayıp eşya bürosu ve pazar yerindeki ilanlar, oyuncu borsasındaki oyuncu ihtiyacı ve teklifler (sayı, zaten kayıtlı oyuncuların altına düşemez), saha engellemeleri, kulüp kasasının aidat türleri ve yedek akçeleri (bir aidat türünün değiştirilen tutarı gelecekteki aidatlar için geçerlidir), ekipman (ad, adet, depo yeri, durum) ve hakem görevlerin. Form oluştururkenkiyle aynıdır, yalnızca önceden doldurulmuştur. Değiştirilen içerikler zamanıyla birlikte „düzenlendi“ notunu taşır. Zaman, yer veya süre gibi önemli değişiklikleri ilgililere bildiririz. Kasa kayıtları değiştirilmez: hataları iptal edip yeniden kaydederek düzeltirsin – böylece her şey izlenebilir kalır.',
   Jahr: 'Yıl',
@@ -2919,6 +2980,7 @@ export const tr: Record<string, string> = {
     'İnternet olmadan katılabilir veya reddedebilir miyim?',
   'Kann ich Trainings und Spiele aus einer Datei anlegen?':
     'Antrenmanları ve maçları bir dosyadan oluşturabilir miyim?',
+  'Kann mein Kind einen eigenen Zugang bekommen?': 'Çocuğum kendi erişimini alabilir mi?',
   'Karte {0} von {1}': 'Kart {0} / {1}',
   Karten: 'Kartlar',
   'Karten und Listen': 'Kartlar ve listeler',
@@ -2977,6 +3039,7 @@ export const tr: Record<string, string> = {
     'Kategoriler gelirleri ve giderleri sınıflandırır (aidatlar, bağışlar, saha bakımı …).',
   'Kein aktiver Link.': 'Aktif bağlantı yok.',
   'Kein automatisches Treffen': 'Otomatik buluşma yok',
+  'Kein eigener Zugang': 'Kendi erişimi yok',
   'Kein Mitglied mit offenem Beitrag erkannt': 'Açık aidatı olan üye tanınmadı',
   'Kein Push in der Ruhezeit': 'Sessiz saatlerde push yok',
   'Kein Spiel einer eigenen Mannschaft.': 'Kendi takımlarından birinin maçı değil.',
@@ -3278,6 +3341,8 @@ export const tr: Record<string, string> = {
   'Meine Daten und Exporte für dein Team': 'Verilerim ve takımın için dışa aktarımlar',
   'Meine Einsätze': 'Görevlerim',
   'Meine Einsätze und Vereins-Soll': 'Görevlerim ve kulüp hedefi',
+  'Meine Eltern sehen mit – kann ich das ändern?':
+    'Ebeveynlerim birlikte görüyor – bunu değiştirebilir miyim?',
   'Meine Entwürfe': 'Taslaklarım',
   'Meine Kinder': 'Çocuklarım',
   'Meine Mannschaft': 'Takımım',
@@ -3316,6 +3381,8 @@ export const tr: Record<string, string> = {
     'İki faktörlü girişle her yeni giriş ek olarak bir kod gerektirir. Yönetici hesabı için öneriyoruz.',
   'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Bitte melde dich an oder nutze „Passwort vergessen“.':
     'Bu e-posta adresiyle zaten bir hesap var. Lütfen giriş yap veya „Şifremi unuttum“u kullan.',
+  'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Das Kind braucht eine eigene Adresse.':
+    'Bu e-posta adresiyle zaten bir hesap var. Çocuğun kendi adresine ihtiyacı var.',
   'Mit Einladungslink oder Einladungscode (auch per QR-Code scannen) trittst du deinem Verein bei – der Verein wird danach auf diesem Gerät gemerkt. Hast du schon ein Konto, melde dich mit E-Mail und Passwort an („Zeigen“ macht das Passwort sichtbar). Einen neuen Verein richtest du mit dem Einrichtungscode (Format CR-XXXX-XXXX) ein, den du von Clubroof nach Zahlungseingang erhältst; er gilt einmal.':
     "Davet bağlantısı veya davet koduyla (QR kodu tarayarak da) kulübüne katılırsın – kulüp sonra bu cihazda hatırlanır. Zaten hesabın varsa e-posta ve şifreyle giriş yap („Göster“ şifreyi görünür yapar). Yeni bir kulübü, ödeme ulaştıktan sonra Clubroof'tan aldığın kurulum koduyla (biçim CR-XXXX-XXXX) kurarsın; bir kez geçerlidir.",
   'Mit Face ID oder Fingerabdruck entsperren': 'Face ID veya parmak iziyle kilidi aç',
@@ -3325,6 +3392,7 @@ export const tr: Record<string, string> = {
   'Mit Rückmeldung zurückgeben': 'Geri bildirimle iade et',
   'Mit Trainerteam, Kader und Antwortfristen': 'Antrenör ekibi, kadro ve yanıt süreleriyle',
   'Mit Treffpunkt und Antwortfrist der Mannschaft': 'Takımın buluşma yeri ve yanıt süresiyle',
+  'Mit Zustimmung': 'Onayla',
   Mitfahren: 'Birlikte git',
   'Mitfahrt angeboten': 'Yolculuk teklif edildi',
   'Mitfahrt für {0} suchen': '{0} için yolculuk ara',
@@ -3364,6 +3432,7 @@ export const tr: Record<string, string> = {
   'Mitgliedsnummer (optional)': 'Üye numarası (isteğe bağlı)',
   'Mitgliedsnummer oder „Vorname Nachname“': 'Üye numarası veya „Ad Soyad“',
   Mitgliedsstatus: 'Üyelik durumu',
+  'Mitsicht und Mitentscheiden': 'Birlikte görme ve birlikte karar verme',
   Mitteilungen: 'Mesajlar',
   Mittelfeld: 'Orta saha',
   'Mittelfeld {0}': 'Orta saha {0}',
@@ -3652,6 +3721,8 @@ export const tr: Record<string, string> = {
   'Nur genehmigte Auslagen werden erstattet.': 'Yalnızca onaylanan harcamalar iade edilir.',
   'nur https://': 'yalnızca https://',
   'Nur Kassenführung': 'Yalnızca kasa yönetimi',
+  'Nur Link und QR-Code zeigen': 'Yalnızca bağlantıyı ve QR kodunu göster',
+  'Nur Mitsicht': 'Yalnızca görüntüleme',
   'Nur Spieler der Mannschaft oder Gastspieler.':
     'Yalnızca takımın oyuncuları veya konuk oyuncular.',
   'Nur Spieler der Mannschaft.': 'Yalnızca takımın oyuncuları.',
@@ -4030,6 +4101,7 @@ export const tr: Record<string, string> = {
   Schriftführer: 'Sekreter',
   Schriftgröße: 'Yazı boyutu',
   'Schritt {0} von {1}': 'Adım {0} / {1}',
+  'Schritt {0} von 3': 'Adım {0} / 3',
   Schule: 'Okul',
   'Schule noch unklar': 'Okul henüz belirsiz',
   'Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail.':
@@ -4058,6 +4130,8 @@ export const tr: Record<string, string> = {
   'Sichtbarkeit der Kontaktdaten neuer Personen':
     'Yeni kişilerin iletişim bilgilerinin görünürlüğü',
   'Sichtbarkeit meiner Kontaktdaten': 'İletişim bilgilerimin görünürlüğü',
+  'Sie möchten wieder mitsehen: {0}. Du entscheidest.':
+    'Yeniden birlikte görmek istiyorlar: {0}. Karar sizin.',
   Sieg: 'Galibiyet',
   'Sieht nur die eigene Mannschaft – beim Bezahlen im persönlichen Konto.':
     'Yalnızca kendi takımı görür – ödemede kişisel hesapta.',
@@ -4325,6 +4399,8 @@ export const tr: Record<string, string> = {
   'Stufe {0} vermerkt – das Mitglied hat keinen App-Zugang, bitte anders informieren.':
     'Seviye {0} not edildi – üyenin uygulama erişimi yok, lütfen başka yolla bilgilendir.',
   'Stufe {0}: Erinnerung verschickt.': 'Seviye {0}: hatırlatma gönderildi.',
+  'Stufe ändern': 'Düzeyi değiştir',
+  'Stufe geändert am {0}': 'Düzey {0} tarihinde değiştirildi',
   'Stufe offen': 'Seviye açık',
   Stumm: 'Sessiz',
   'Stummgeschaltete Mannschaften melden sich nur noch bei Dringendem.':
@@ -4885,6 +4961,7 @@ export const tr: Record<string, string> = {
   'Wann trainiert die Mannschaft?': 'Takım ne zaman antrenman yapıyor?',
   'War da': 'Oradaydı',
   'Wartet auf Freigabe': 'Onay bekliyor',
+  'Wartet auf Zustimmung': 'Onay bekleniyor',
   'Warum bist du unsicher?': 'Neden emin değilsin?',
   'Warum kannst du nicht?': 'Neden katılamıyorsun?',
   'Warum wir das fragen': 'Bunu neden soruyoruz',
@@ -4973,6 +5050,7 @@ export const tr: Record<string, string> = {
     'Açıksa yönetim yetkisi olan herkes (yönetim kurulu, yöneticiler, gençlik yönetimi …) üye verilerini düzenlemeden önce iki faktörlü girişe ihtiyaç duyar.',
   Wer: 'Kim',
   'Wer darf die Kasse einsehen?': 'Kasayı kimler görüntüleyebilir?',
+  'Wer darf für mich mitsehen?': 'Benim için kimler birlikte görebilir?',
   'Wer deine Daten sieht': 'Verilerini kimler görür',
   'Wer die Vereinskasse einsehen darf, bestimmt die Vereinsadministration.':
     'Kulüp kasasını kimlerin görüntüleyebileceğini kulüp yönetimi belirler.',
@@ -5301,6 +5379,8 @@ export const tr: Record<string, string> = {
   'Zugangsdaten sind geheim zu halten. Inhalte, die gegen Gesetze oder Rechte Dritter verstoßen, dürfen nicht eingestellt werden.':
     'Giriş bilgileri gizli tutulmalıdır. Yasalara veya üçüncü kişilerin haklarına aykırı içerikler yayınlanamaz.',
   Zugesagt: 'Katılıyor',
+  'Zugriff beenden': 'Erişimi sonlandır',
+  'Zugriff endet': 'Erişim sona eriyor',
   Zuletzt: 'En son',
   'zuletzt {0}': 'en son {0}',
   'Zuletzt abgerufen {0}': 'En son alındı {0}',
@@ -5365,6 +5445,7 @@ export const tr: Record<string, string> = {
   'Zuschüsse: Unter „Vereinskasse → Buchung → Zuschüsse“ legst du Förderungen mit Geber, Betrag und Frist für den Verwendungsnachweis an und führst sie von „Geplant“ über „Beantragt“ und „Bewilligt“ bis zum Eingang (Buchung als Einnahme); überfällige Nachweise sind rot. Sponsoren: Beim Buchen einer Einnahme wählst du den Sponsor; unter „Sponsoren“ siehst du die Einnahmen je Sponsor und Jahr. Mannschaftszuschuss: Ausgabe der Vereinskasse und Einnahme der Mannschaftskasse in einem Schritt. Inventar: Unter „Planung → Inventar“ erfasst du Anschaffungen mit Wert und Standort; Gegenstände werden mit Grund ausgesondert, nicht gelöscht.':
     'Destekler: „Kulüp kasası → Kayıt → Destekler“ altında teşvikleri veren, tutar ve kullanım belgesi süresiyle oluşturur ve „Planlandı“dan „Talep edildi“ ve „Onaylandı“ üzerinden ulaşmaya kadar (gelir olarak kayıt) ilerletirsin; gecikmiş belgeler kırmızıdır. Sponsorlar: Bir gelir kaydederken sponsoru seçersin; „Sponsorlar“ altında sponsor ve yıl başına gelirleri görürsün. Takım desteği: kulüp kasasının gideri ve takım kasasının geliri tek adımda. Envanter: „Planlama → Envanter“ altında alımları değer ve konumla girersin; eşyalar silinmez, nedenle ayıklanır.',
   'Zustand / Hinweis (optional)': 'Durum / not (isteğe bağlı)',
+  Zustimmen: 'Onayla',
   'Zuwendungsbestätigungen haben gesetzliche Pflichtangaben und Formulierungen. Lass die Vorlage von deiner Steuerberatung oder deinem Verband prüfen, bevor du sie freigibst. Die App ersetzt keine Steuerberatung.':
     'Bağış onay belgelerinin yasal zorunlu bilgileri ve ifadeleri vardır. Onaylamadan önce şablonu vergi danışmanına veya federasyonuna kontrol ettir. Uygulama vergi danışmanlığının yerini almaz.',
   'Zuwendungsbestätigungen noch nicht freigegeben': 'Bağış onay belgeleri henüz onaylanmadı',

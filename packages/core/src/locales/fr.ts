@@ -66,6 +66,8 @@ export const fr: Record<string, string> = {
   '{0} {1} hat per Überweisung bezahlt – bitte bestätigen.':
     '{0} {1} a payé par virement – merci de confirmer.',
   '{0} {1} lädt dich in die Vereins-App von {2} ein.': '{0} {1} t’invite dans l’app du club {2}.',
+  '{0} {1} richtet dir einen eigenen Zugang zur Vereins-App von {2} ein.':
+    '{0} {1} te configure un accès personnel à l’application du club {2}.',
   '{0} {1}: {2}, {3} offen, fällig seit {4}.': '{0} {1} : {2}, {3} en attente, échu depuis le {4}.',
   '{0} / {1} Helfer': '{0} / {1} bénévoles',
   '{0} abgewählt': '{0} désélectionné',
@@ -95,6 +97,8 @@ export const fr: Record<string, string> = {
   '{0} Beiträge sind überfällig ({1}).': '{0} cotisations sont en retard ({1}).',
   '{0} Beitrittsanfrage': '{0} demande d’adhésion',
   '{0} Beitrittsanfragen': '{0} demandes d’adhésion',
+  '{0} bekommt ein eigenes Konto mit einer eigenen E-Mail-Adresse. Nicht eure: Jede Adresse gehört zu genau einem Konto.':
+    '{0} reçoit son propre compte avec sa propre adresse e-mail. Pas la vôtre : chaque adresse correspond à un seul compte.',
   '{0} Belegungen überschneiden sich': '{0} réservations se chevauchent',
   '{0} benachrichtigen': 'Notifier {0}',
   '{0} bestehende Spiele wurden angepasst.': '{0} matchs existants ont été adaptés.',
@@ -142,10 +146,13 @@ export const fr: Record<string, string> = {
   '{0} gewählt': '{0} choisi',
   '{0} gewählt. Tippe auf eine Position oder einen Bankplatz.':
     '{0} choisi. Touche un poste ou une place sur le banc.',
+  '{0} hat abgelehnt: {1}': '{0} a refusé : {1}',
+  '{0} hat die Mitsicht geändert: {1}': '{0} a modifié le niveau de visibilité : {1}',
   '{0} hat für das Spiel abgesagt.': '{0} s’est désisté pour le match.',
   '{0} hat heute Geburtstag': 'C’est l’anniversaire de {0} aujourd’hui',
   '{0} hat mit {1} die meisten Ausgaben.': '{0} a le plus de dépenses avec {1}.',
   '{0} hat mit {1} Getränken am meisten.': '{0} a le plus de boissons avec {1}.',
+  '{0} hat zugestimmt: {1}': '{0} a accepté : {1}',
   '{0} Helfer fehlen': '{0} bénévoles manquent',
   '{0} heute 🎉': '{0} aujourd’hui 🎉',
   '{0} hinzufügen': 'Ajouter {0}',
@@ -168,6 +175,8 @@ export const fr: Record<string, string> = {
   '{0} Min.': '{0} min',
   '{0} Mitgliedern wurde eine Beitragsart zugeordnet.':
     'Un type de cotisation a été attribué à {0} membres.',
+  '{0} möchte wieder mitsehen ({1}). Du entscheidest unter „Ich“.':
+    '{0} souhaite de nouveau regarder avec toi ({1}). Tu décides sous « Moi ».',
   '{0} neu': '{0} nouveau(x)',
   '{0} neu angelegt, {1} aktualisiert, {2} übersprungen.':
     '{0} créés, {1} mis à jour, {2} ignorés.',
@@ -178,6 +187,8 @@ export const fr: Record<string, string> = {
   '{0} offen': '{0} en attente',
   '{0} offene Aufgabe': '{0} tâche en cours',
   '{0} offene Aufgaben': '{0} tâches en cours',
+  '{0} öffnet den Link und legt ein eigenes Passwort fest.':
+    '{0} ouvre le lien et choisit son propre mot de passe.',
   '{0} ohne Mannschaft': '{0} sans équipe',
   '{0} ohne Rückmeldung': '{0} sans réponse',
   '{0} per WhatsApp': '{0} par WhatsApp',
@@ -1282,9 +1293,14 @@ export const fr: Record<string, string> = {
   'Das Jahr {0} ist noch abgeschlossen. Öffne zuerst die späteren Jahre.':
     'L’année {0} est encore clôturée. Rouvre d’abord les années suivantes.',
   'Das Jahr ist ungültig.': 'L’année est invalide.',
+  'Das Kind': 'L’enfant',
+  'Das Kind hat die Einladung angenommen. Das Konto gehört dem Kind; du kannst deine Stufe ändern.':
+    'L’enfant a accepté l’invitation. Le compte appartient à l’enfant ; vous pouvez modifier votre niveau.',
   'Das Kind zu „Elternteil von“ wurde nicht gefunden: {0}. Bitte Namen oder Mitgliedsnummer prüfen.':
     'L’enfant indiqué sous « Parent de » est introuvable : {0}. Merci de vérifier le nom ou le numéro de membre.',
   'Das Konto': 'Le compte',
+  'Das Konto gehört dem Kind. Ihr könnt die Stufe jederzeit senken; wieder erhöhen geht nur mit Zustimmung des Kindes.':
+    'Le compte appartient à l’enfant. Vous pouvez baisser le niveau à tout moment ; le remonter n’est possible qu’avec l’accord de l’enfant.',
   'Das Konto ist archiviert.': 'Le compte est archivé.',
   'Das Kürzel „{0}“ ist in dieser Saison vergeben.':
     'L’abréviation « {0} » est déjà prise cette saison.',
@@ -1418,6 +1434,14 @@ export const fr: Record<string, string> = {
   'Deine Beitrittsanfrage wartet noch auf Freigabe durch den Verein.':
     'Ta demande d’adhésion attend encore la validation du club.',
   'Deine Beitrittsanfrage wurde nicht freigegeben.': 'Ta demande d’adhésion n’a pas été validée.',
+  'Deine Eltern fragen an': 'Tes parents demandent',
+  'Deine Eltern fragen um Mitsicht': 'Tes parents demandent à regarder avec toi',
+  'Deine Eltern sehen deine Termine und antworten, melden Abwesenheiten und buchen Fahrten für dich.':
+    'Tes parents voient tes événements et répondent, signalent tes absences et réservent des trajets pour toi.',
+  'Deine Eltern sehen deine Termine, können aber nichts für dich tun. Du antwortest selbst.':
+    'Tes parents voient tes événements, mais ne peuvent rien faire pour toi. Tu réponds toi-même.',
+  'Deine Eltern sehen nichts mehr von dir und tun nichts für dich.':
+    'Tes parents ne voient plus rien de toi et ne font plus rien pour toi.',
   'Deine Kinder': 'Tes enfants',
   'Deine Mitgliedschaft ist beendet.': 'Ton adhésion est terminée.',
   'Deine News ist veröffentlicht': 'Ton actualité est publiée',
@@ -1501,6 +1525,7 @@ export const fr: Record<string, string> = {
     'Le code de configuration n’a pas pu être vérifié.',
   'Der Einrichtungscode stimmt nicht.': 'Le code de configuration est incorrect.',
   'Der Einsatz': 'L’engagement',
+  'Der Elternzugang': 'L’accès des parents',
   'Der Export des Archivs steht in der Web-Verwaltung bereit.':
     'L’export des archives est disponible dans l’administration web.',
   'Der Export hat nicht geklappt.': 'L’export n’a pas fonctionné.',
@@ -1629,6 +1654,7 @@ export const fr: Record<string, string> = {
   'Die Abwesenheit konnte nicht gespeichert werden.': 'L’absence n’a pas pu être enregistrée.',
   'Die Änderung hat nicht geklappt.': 'La modification n’a pas fonctionné.',
   'Die Änderung konnte nicht gespeichert werden.': 'La modification n’a pas pu être enregistrée.',
+  'Die Änderung wurde nicht gespeichert.': 'La modification n’a pas été enregistrée.',
   'Die Änderungen konnten nicht gespeichert werden.':
     'Les modifications n’ont pas pu être enregistrées.',
   'Die Anfrage': 'La demande',
@@ -1690,6 +1716,9 @@ export const fr: Record<string, string> = {
   'Die eigenen individuellen Rechte kann nur eine andere Person ändern.':
     'Seule une autre personne peut modifier tes propres droits individuels.',
   'Die Eingabe ist unvollständig oder ungültig.': 'La saisie est incomplète ou invalide.',
+  'Die Einladung an {0} ist offen. Sobald {1} sie annimmt, gilt: {2}.':
+    'L’invitation de {0} est ouverte. Dès que {1} l’accepte, ceci s’applique : {2}.',
+  'Die Einladung wurde nicht erstellt.': 'L’invitation n’a pas été créée.',
   'Die Einrichtung hat nicht geklappt.': 'La configuration n’a pas fonctionné.',
   'Die Einstellung gilt für alle Mannschaften der Abteilung. Ist ein Modul hier aus, kann es keine Mannschaft darin einschalten. „Wie Verein“ übernimmt die Vereinseinstellung.':
     'Le réglage s’applique à toutes les équipes de la section. Si un module est désactivé ici, aucune équipe ne peut l’activer. « Comme le club » reprend le réglage du club.',
@@ -1978,6 +2007,7 @@ export const fr: Record<string, string> = {
     'Cette opération appartient à une autre créance.',
   'Dieser Zuschuss steht auch in der Mannschaftskasse und kann hier nicht storniert werden.':
     'Cette subvention figure aussi dans la caisse de l’équipe et ne peut pas être annulée ici.',
+  'Dieses Kind hat bereits einen eigenen Zugang.': 'Cet enfant a déjà son propre accès.',
   'Dieses Kind hat ein eigenes Konto und kann nicht über eine Beitrittsanfrage verknüpft werden. Das übernimmt die Mitgliederverwaltung.':
     'Cet enfant a son propre compte et ne peut pas être lié via une demande d’adhésion. La gestion des membres s’en charge.',
   'Dieses Passwort ist zu leicht zu erraten.': 'Ce mot de passe est trop facile à deviner.',
@@ -2016,6 +2046,8 @@ export const fr: Record<string, string> = {
   'Du hast nicht geantwortet': 'Tu n’as pas répondu',
   'Du kannst Abwesenheiten nur für dich oder deine Kinder eintragen.':
     'Tu ne peux saisir des absences que pour toi ou tes enfants.',
+  'Du kannst das jederzeit selbst ändern. Deine Eltern erfahren davon.':
+    'Tu peux le modifier toi-même à tout moment. Tes parents en seront informés.',
   'Du kannst deine Stimme bis zum Ende ändern.': 'Tu peux modifier ton vote jusqu’à la fin.',
   'Du kannst dich nicht selbst aus dem Kader nehmen.':
     'Tu ne peux pas te retirer toi-même de l’effectif.',
@@ -2072,6 +2104,7 @@ export const fr: Record<string, string> = {
   'E-Mail-Adresse': 'Adresse e-mail',
   'E-Mail-Adresse „{0}“ ist ungültig.': 'L’adresse e-mail « {0} » est invalide.',
   'E-Mail-Adresse bestätigt': 'Adresse e-mail confirmée',
+  'E-Mail-Adresse des Kindes': 'Adresse e-mail de l’enfant',
   'E-Mail-Adresse oder Passwort ist nicht korrekt.':
     'L’adresse e-mail ou le mot de passe est incorrect.',
   'E-Mail: kontakt@clubroof.example\nTelefon: 01234 567890':
@@ -2082,8 +2115,11 @@ export const fr: Record<string, string> = {
   'Eigene Kasse anlegen': 'Créer une caisse propre',
   'Eigene Mannschaft, Termine, Kader, Training, Bedarf/Angebote, Statistik, Dokumente, News':
     'Propre équipe, événements, effectif, entraînement, besoins/offres, statistiques, documents, actualités',
+  'Eigenen Zugang einrichten': 'Configurer l’accès personnel',
   'Eigener Programmpunkt': 'Point de programme personnalisé',
   'Eigener Zeitraum': 'Période personnalisée',
+  'Eigener Zugang': 'Accès personnel',
+  Eigenständig: 'Autonome',
   'Eigentor des Gegners': 'But contre son camp de l’adversaire',
   'Ein abgeschlossenes Jahr öffnet nur die Administration.':
     'Seule l’administration peut rouvrir une année clôturée.',
@@ -2143,6 +2179,7 @@ export const fr: Record<string, string> = {
   'Eingegangen in diesem Jahr: {0}': 'Reçu cette année : {0}',
   'Eingehen kann nur ein bewilligter Zuschuss.':
     'Seule une subvention approuvée peut être encaissée.',
+  Eingeladen: 'Invité',
   'eingeladen {0}': 'invité {0}',
   'Eingeladen: {0}': 'Invités : {0}',
   Eingereicht: 'Soumis',
@@ -2151,9 +2188,13 @@ export const fr: Record<string, string> = {
   Einladen: 'Inviter',
   'Einladen dürfen Trainerteams und die Mitgliederverwaltung.':
     'Les staffs d’entraîneurs et la gestion des membres peuvent inviter.',
+  Einladung: 'Invitation',
+  'Einladung bereit': 'Invitation prête',
   'Einladung für {0}': 'Invitation pour {0}',
   'Einladung in die App von {0}': 'Invitation dans l’app de {0}',
   'Einladung nicht gültig': 'Invitation non valide',
+  'Einladung per E-Mail senden': 'Envoyer l’invitation par e-mail',
+  'Einladung widerrufen': 'Retirer l’invitation',
   Einladungen: 'Invitations',
   'Einladungen verschickst du unter Verwaltung → Einladungen. Rückgängig geht 24 Stunden lang.':
     'Tu envoies les invitations sous Administration → Invitations. L’annulation est possible pendant 24 heures.',
@@ -2326,6 +2367,8 @@ export const fr: Record<string, string> = {
   'Es gibt keine Einnahmekategorie für Beiträge. Lege sie in der Vereinskasse an.':
     'Il n’y a pas de catégorie de recettes pour les cotisations. Crée-la dans la caisse du club.',
   'Es gibt keine neuen Mitglieder zu übernehmen.': 'Il n’y a aucun nouveau membre à reprendre.',
+  'Es gibt keine offene Anfrage.': 'Il n’y a aucune demande ouverte.',
+  'Es gibt keine offene Einladung.': 'Il n’y a aucune invitation ouverte.',
   'Es gibt nichts zu übernehmen.': 'Il n’y a rien à reprendre.',
   'Es gibt noch fehlerhafte Zeilen. Bitte korrigieren oder abwählen.':
     'Il reste des lignes erronées. Merci de les corriger ou de les désélectionner.',
@@ -2768,6 +2811,20 @@ export const fr: Record<string, string> = {
   'Ich und Familie': 'Moi et ma famille',
   'Ich, Einstellungen und Hilfe': 'Moi, paramètres et aide',
   'Ideeller Bereich': 'Activité non lucrative',
+  'Ihr antwortet, meldet Abwesenheiten und bucht Fahrten für das Kind und seht die Kasse weiter.':
+    'Vous répondez, signalez les absences et réservez les trajets pour l’enfant, et vous voyez toujours la caisse.',
+  'Ihr habt „{0}“ angefragt. {1} entscheidet in der App.':
+    'Vous avez demandé « {0} ». {1} décide dans l’application.',
+  'Ihr könnt die Stufe später jederzeit senken.':
+    'Vous pourrez baisser le niveau à tout moment par la suite.',
+  'Ihr seht Termine, Zusagen und Kasse, könnt aber nichts für das Kind tun.':
+    'Vous voyez les événements, les réponses et la caisse, mais vous ne pouvez rien faire pour l’enfant.',
+  'Ihr seht und tut danach nichts mehr für {0}. Das Kind taucht bei euch nicht mehr auf. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'Ensuite, vous ne verrez ni ne ferez plus rien pour {0}. L’enfant n’apparaîtra plus chez vous. Revoir avec lui n’est possible que si l’enfant l’autorise.',
+  'Ihr seht und tut danach nichts mehr für {0}. Wieder mitsehen geht nur, wenn das Kind es erlaubt.':
+    'Ensuite, vous ne verrez ni ne ferez plus rien pour {0}. Revoir avec lui n’est possible que si l’enfant l’autorise.',
+  'Ihr seht und tut nichts mehr für das Kind. Das Kind entscheidet allein.':
+    'Vous ne voyez ni ne faites plus rien pour l’enfant. L’enfant décide seul.',
   'Im „Änderungsprotokoll“ (Verwaltung): Rollenvergaben, Absagen, Modulwechsel, Kassenbuchungen und Stornos mit Person und Zeitpunkt.':
     'Dans le « Journal des modifications » (administration) : attributions de rôles, désistements, changements de modules, écritures de caisse et annulations avec personne et horodatage.',
   'Im echten Betrieb erscheint hier das vom Verein hochgeladene Dokument.':
@@ -2892,6 +2949,8 @@ export const fr: Record<string, string> = {
     'Oui. Pour les événements en attente et les notifications non lues, balaye la ligne vers la gauche : « Confirmer » ou « Lu » apparaît. Touche-le – ou balaye jusqu’au bout, l’action est alors immédiate. Tout fonctionne aussi sans balayer, via les boutons de la ligne.',
   'Ja. Deine Antwort wird auf dem Gerät gemerkt, sofort angezeigt („Wird gesendet“) und automatisch gesendet, sobald du wieder online bist. Lehnt der Server sie ab – z. B. weil die Frist abgelaufen ist –, bekommst du eine Meldung.':
     'Oui. Ta réponse est mémorisée sur l’appareil, affichée immédiatement (« Envoi en cours ») et envoyée automatiquement dès que tu es de nouveau en ligne. Si le serveur la refuse – p. ex. parce que le délai est expiré –, tu reçois un message.',
+  'Ja. Öffne „Ich → Meine Kinder → Kind → Eigener Zugang“, gib die eigene E-Mail-Adresse des Kindes an und wähle die Stufe: „Mitsicht und Mitentscheiden“ (wie bisher), „Nur Mitsicht“ (ihr seht, tut aber nichts) oder „Eigenständig“ (ihr seht und tut nichts mehr). Das Kind legt über den Link ein eigenes Passwort fest; euer Konto bleibt unverändert. Ihr könnt die Stufe jederzeit senken. Wieder erhöhen geht nur, wenn das Kind zustimmt. Antworten Eltern und Kind für denselben Termin, gilt die letzte Antwort.':
+    'Oui. Ouvrez « Moi → Mes enfants → Enfant → Accès personnel », saisissez l’adresse e-mail propre de l’enfant et choisissez le niveau : « Regarder et décider ensemble » (comme jusqu’ici), « Lecture seule » (vous voyez mais ne faites rien) ou « Autonome » (vous ne voyez et ne faites plus rien). L’enfant choisit son propre mot de passe via le lien ; votre compte reste inchangé. Vous pouvez baisser le niveau à tout moment. Le remonter n’est possible que si l’enfant est d’accord. Si parents et enfant répondent pour le même événement, la dernière réponse compte.',
   'Ja. Unter „Ich → Konto & Einstellungen → Darstellung“ wählst du Hell, Dunkel oder „Wie Gerät“. Die Wahl gilt auf allen deinen Geräten.':
     'Oui. Sous « Moi → Compte & paramètres → Apparence », tu choisis Clair, Sombre ou « Comme l’appareil ». Ton choix s’applique sur tous tes appareils.',
   'Ja. Unter „Ich → Konto & Einstellungen → Sprache“ wählst du Deutsch, English oder „Automatisch“ (Sprache deines Geräts). Die Wahl gilt auf allen deinen Geräten, auch für Push-Nachrichten. Texte, die Trainer oder Vorstand selbst schreiben (z. B. News), bleiben in der Sprache der Verfasser.':
@@ -2902,6 +2961,8 @@ export const fr: Record<string, string> = {
     'Oui. Sous « Moi → Compte et réglages → Langue », tu choisis Deutsch, English, Türkçe, Українська, Polski, Español, Français, العربية ou « Automatique » (la langue de ton appareil). Ce choix vaut sur tous tes appareils, y compris pour les notifications push. Les textes que les entraîneurs ou le comité écrivent eux-mêmes (p. ex. les actualités) restent dans la langue de leur auteur.',
   'Ja. Unter „Ich → Konto & Einstellungen“ stellst du die Schriftgröße ein (Normal, Groß, Sehr groß) und kannst die App mit Face ID, Fingerabdruck oder Gerätecode sperren. Ohne Internet zeigt die App die zuletzt geladenen Termine, News und Kader; oben erscheint dann ein Hinweis. Antworten und Änderungen sind erst mit Verbindung möglich.':
     'Oui. Sous « Moi → Compte & paramètres », tu règles la taille du texte (Normal, Grand, Très grand) et peux verrouiller l’app avec Face ID, empreinte digitale ou code de l’appareil. Sans internet, l’app affiche les derniers événements, actualités et effectifs chargés ; une remarque apparaît alors en haut. Réponses et modifications ne sont possibles qu’avec une connexion.',
+  'Ja. Unter „Ich → Wer darf für mich mitsehen?“ stehen drei Stufen: „Mitsicht und Mitentscheiden“ (Eltern antworten und melden für dich), „Nur Mitsicht“ (sie sehen nur) und „Eigenständig“ (sie sehen und tun nichts mehr). Du kannst jede Stufe selbst setzen. Fragen deine Eltern nach mehr Mitsicht, entscheidest du mit „Zustimmen“ oder „Ablehnen“. Deine Eltern erfahren von jeder Änderung.':
+    'Oui. Sous « Moi → Qui peut regarder avec moi ? », il y a trois niveaux : « Regarder et décider ensemble » (tes parents répondent et signalent pour toi), « Lecture seule » (ils voient seulement) et « Autonome » (ils ne voient et ne font plus rien). Tu peux définir chaque niveau toi-même. Si tes parents demandent plus de visibilité, tu décides avec « Accepter » ou « Refuser ». Tes parents sont informés de chaque changement.',
   'Ja. Was du angelegt hast, lässt sich später bearbeiten – über „Bearbeiten“ im „…“-Menü oder den Knopf im Detail: Umfragen (Frage, Beschreibung und Frist; die Antworten nur, solange noch niemand abgestimmt hat), Veranstaltungen mit Helferschichten, Abwesenheiten und Dokumente (Titel, Art und Sichtbarkeit – die Datei bleibt, zum Austauschen löschst du sie und lädst neu hoch), außerdem Forum-Themen und eigene Antworten, Kommentare (auch löschen), Übungen, Aushänge im Fundbüro und Marktplatz, Spielerbedarf und Angebote der Spielerbörse (die Anzahl nicht unter die schon eingetragenen Spieler) Platzsperrungen, Beitragsarten und Rücklagen der Vereinskasse (ein geänderter Betrag einer Beitragsart gilt für künftige Beiträge), Ausrüstung (Bezeichnung, Anzahl, Lagerort, Zustand) und deine Schiedsrichter-Einsätze. Das Formular ist dasselbe wie beim Anlegen, nur vorausgefüllt. Geänderte Inhalte tragen den Vermerk „bearbeitet“ mit der Zeit. Wichtige Änderungen wie Zeit, Ort oder Frist melden wir den Beteiligten. Kassenbuchungen werden nicht geändert: Fehler korrigierst du mit Stornieren und neu Buchen – so bleibt alles nachvollziehbar.':
     'Oui. Ce que tu as créé peut être modifié plus tard – via « Modifier » dans le menu « … » ou le bouton dans le détail : sondages (question, description et délai ; les réponses seulement tant que personne n’a voté), manifestations avec créneaux de bénévoles, absences et documents (titre, type et visibilité – le fichier reste, pour le remplacer tu le supprimes et en envoies un nouveau), ainsi que sujets de forum et propres réponses, commentaires (aussi supprimer), exercices, annonces dans objets trouvés et petites annonces, besoins en joueurs et offres de la bourse aux joueurs (le nombre ne peut pas descendre sous les joueurs déjà inscrits), fermetures de terrains, types de cotisation et réserves de la caisse du club (un montant modifié d’un type de cotisation vaut pour les cotisations futures), équipement (désignation, nombre, lieu de stockage, état) et tes engagements d’arbitre. Le formulaire est le même qu’à la création, simplement prérempli. Les contenus modifiés portent la mention « modifié » avec l’heure. Nous signalons aux personnes concernées les modifications importantes comme l’heure, le lieu ou le délai. Les écritures de caisse ne sont pas modifiées : tu corriges une erreur en annulant puis en enregistrant à nouveau – tout reste ainsi traçable.',
   Jahr: 'Année',
@@ -2998,6 +3059,7 @@ export const fr: Record<string, string> = {
   'Kann ich ohne Internet zu- oder absagen?': 'Puis-je confirmer ou me désister sans internet ?',
   'Kann ich Trainings und Spiele aus einer Datei anlegen?':
     'Puis-je créer des entraînements et des matchs depuis un fichier ?',
+  'Kann mein Kind einen eigenen Zugang bekommen?': 'Mon enfant peut-il avoir son propre accès ?',
   'Karte {0} von {1}': 'Carte {0} sur {1}',
   Karten: 'Cartes',
   'Karten und Listen': 'Cartes et listes',
@@ -3058,6 +3120,7 @@ export const fr: Record<string, string> = {
     'Les catégories classent recettes et dépenses (cotisations, dons, entretien des terrains …).',
   'Kein aktiver Link.': 'Aucun lien actif.',
   'Kein automatisches Treffen': 'Pas de rendez-vous automatique',
+  'Kein eigener Zugang': 'Pas d’accès personnel',
   'Kein Mitglied mit offenem Beitrag erkannt': 'Aucun membre avec cotisation en attente reconnu',
   'Kein Push in der Ruhezeit': 'Pas de notification push pendant la plage de repos',
   'Kein Spiel einer eigenen Mannschaft.': 'Aucun match d’une de tes équipes.',
@@ -3365,6 +3428,8 @@ export const fr: Record<string, string> = {
   'Meine Daten und Exporte für dein Team': 'Mes données et exports pour ton équipe',
   'Meine Einsätze': 'Mes engagements',
   'Meine Einsätze und Vereins-Soll': 'Mes engagements et objectif du club',
+  'Meine Eltern sehen mit – kann ich das ändern?':
+    'Mes parents regardent avec moi – puis-je le changer ?',
   'Meine Entwürfe': 'Mes brouillons',
   'Meine Kinder': 'Mes enfants',
   'Meine Mannschaft': 'Mon équipe',
@@ -3403,6 +3468,8 @@ export const fr: Record<string, string> = {
     'Avec la connexion à deux facteurs, chaque nouvelle connexion nécessite en plus un code. Nous la recommandons pour le compte d’administration.',
   'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Bitte melde dich an oder nutze „Passwort vergessen“.':
     'Un compte existe déjà avec cette adresse e-mail. Merci de te connecter ou d’utiliser « Mot de passe oublié ».',
+  'Mit dieser E-Mail-Adresse gibt es bereits ein Konto. Das Kind braucht eine eigene Adresse.':
+    'Il existe déjà un compte avec cette adresse e-mail. L’enfant a besoin de sa propre adresse.',
   'Mit Einladungslink oder Einladungscode (auch per QR-Code scannen) trittst du deinem Verein bei – der Verein wird danach auf diesem Gerät gemerkt. Hast du schon ein Konto, melde dich mit E-Mail und Passwort an („Zeigen“ macht das Passwort sichtbar). Einen neuen Verein richtest du mit dem Einrichtungscode (Format CR-XXXX-XXXX) ein, den du von Clubroof nach Zahlungseingang erhältst; er gilt einmal.':
     'Avec un lien ou un code d’invitation (aussi par scan de code QR), tu rejoins ton club – le club est ensuite mémorisé sur cet appareil. Si tu as déjà un compte, connecte-toi avec e-mail et mot de passe (« Afficher » rend le mot de passe visible). Tu configures un nouveau club avec le code de configuration (format CR-XXXX-XXXX) que tu reçois de Clubroof après réception du paiement ; il n’est valable qu’une fois.',
   'Mit Face ID oder Fingerabdruck entsperren': 'Déverrouiller avec Face ID ou l’empreinte digitale',
@@ -3414,6 +3481,7 @@ export const fr: Record<string, string> = {
     'Avec staff d’entraîneurs, effectif et délais de réponse',
   'Mit Treffpunkt und Antwortfrist der Mannschaft':
     'Avec lieu de rendez-vous et délai de réponse de l’équipe',
+  'Mit Zustimmung': 'Avec accord',
   Mitfahren: 'Monter',
   'Mitfahrt angeboten': 'Covoiturage proposé',
   'Mitfahrt für {0} suchen': 'Chercher un covoiturage pour {0}',
@@ -3453,6 +3521,7 @@ export const fr: Record<string, string> = {
   'Mitgliedsnummer (optional)': 'Numéro de membre (facultatif)',
   'Mitgliedsnummer oder „Vorname Nachname“': 'Numéro de membre ou « Prénom Nom »',
   Mitgliedsstatus: 'Statut de membre',
+  'Mitsicht und Mitentscheiden': 'Regarder et décider ensemble',
   Mitteilungen: 'Messages',
   Mittelfeld: 'Milieu',
   'Mittelfeld {0}': 'Milieu {0}',
@@ -3746,6 +3815,8 @@ export const fr: Record<string, string> = {
     'Seuls les remboursements de frais approuvés sont remboursés.',
   'nur https://': 'https:// uniquement',
   'Nur Kassenführung': 'Direction de la caisse uniquement',
+  'Nur Link und QR-Code zeigen': 'Afficher seulement le lien et le code QR',
+  'Nur Mitsicht': 'Lecture seule',
   'Nur Spieler der Mannschaft oder Gastspieler.':
     'Uniquement des joueurs de l’équipe ou des joueurs invités.',
   'Nur Spieler der Mannschaft.': 'Uniquement des joueurs de l’équipe.',
@@ -4134,6 +4205,7 @@ export const fr: Record<string, string> = {
   Schriftführer: 'Secrétaire',
   Schriftgröße: 'Taille du texte',
   'Schritt {0} von {1}': 'Étape {0} sur {1}',
+  'Schritt {0} von 3': 'Étape {0} sur 3',
   Schule: 'École',
   'Schule noch unklar': 'École encore incertaine',
   'Schützt dein Konto zusätzlich: Nach dem Passwort fragt die App einen Code ab – aus einer Authenticator-App oder per E-Mail.':
@@ -4164,6 +4236,8 @@ export const fr: Record<string, string> = {
   'Sichtbarkeit der Kontaktdaten neuer Personen':
     'Visibilité des coordonnées des nouvelles personnes',
   'Sichtbarkeit meiner Kontaktdaten': 'Visibilité de mes coordonnées',
+  'Sie möchten wieder mitsehen: {0}. Du entscheidest.':
+    'Ils souhaitent de nouveau regarder avec toi : {0}. C’est toi qui décides.',
   Sieg: 'Victoire',
   'Sieht nur die eigene Mannschaft – beim Bezahlen im persönlichen Konto.':
     'Seule sa propre équipe le voit – lors du paiement dans le compte personnel.',
@@ -4435,6 +4509,8 @@ export const fr: Record<string, string> = {
   'Stufe {0} vermerkt – das Mitglied hat keinen App-Zugang, bitte anders informieren.':
     'Niveau {0} consigné – le membre n’a pas d’accès à l’app, merci de l’informer autrement.',
   'Stufe {0}: Erinnerung verschickt.': 'Niveau {0} : rappel envoyé.',
+  'Stufe ändern': 'Changer de niveau',
+  'Stufe geändert am {0}': 'Niveau modifié le {0}',
   'Stufe offen': 'Niveau en attente',
   Stumm: 'Muet',
   'Stummgeschaltete Mannschaften melden sich nur noch bei Dringendem.':
@@ -5011,6 +5087,7 @@ export const fr: Record<string, string> = {
   'Wann trainiert die Mannschaft?': 'Quand l’équipe s’entraîne-t-elle ?',
   'War da': 'Était présent',
   'Wartet auf Freigabe': 'En attente de validation',
+  'Wartet auf Zustimmung': 'En attente d’accord',
   'Warum bist du unsicher?': 'Pourquoi es-tu incertain ?',
   'Warum kannst du nicht?': 'Pourquoi ne peux-tu pas ?',
   'Warum wir das fragen': 'Pourquoi nous demandons cela',
@@ -5102,6 +5179,7 @@ export const fr: Record<string, string> = {
     'Si activé, toutes les personnes avec des droits d’administration (comité directeur, admins, direction des jeunes …) ont besoin de la connexion à deux facteurs avant de pouvoir modifier des données de membres.',
   Wer: 'Qui',
   'Wer darf die Kasse einsehen?': 'Qui peut consulter la caisse ?',
+  'Wer darf für mich mitsehen?': 'Qui peut regarder avec moi ?',
   'Wer deine Daten sieht': 'Qui voit tes données',
   'Wer die Vereinskasse einsehen darf, bestimmt die Vereinsadministration.':
     'L’administration du club détermine qui peut consulter la caisse du club.',
@@ -5441,6 +5519,8 @@ export const fr: Record<string, string> = {
   'Zugangsdaten sind geheim zu halten. Inhalte, die gegen Gesetze oder Rechte Dritter verstoßen, dürfen nicht eingestellt werden.':
     'Les identifiants doivent rester secrets. Les contenus contraires aux lois ou aux droits de tiers ne doivent pas être publiés.',
   Zugesagt: 'Confirmé',
+  'Zugriff beenden': 'Mettre fin à l’accès',
+  'Zugriff endet': 'L’accès prend fin',
   Zuletzt: 'Dernièrement',
   'zuletzt {0}': 'dernièrement {0}',
   'Zuletzt abgerufen {0}': 'Dernière consultation {0}',
@@ -5506,6 +5586,7 @@ export const fr: Record<string, string> = {
   'Zuschüsse: Unter „Vereinskasse → Buchung → Zuschüsse“ legst du Förderungen mit Geber, Betrag und Frist für den Verwendungsnachweis an und führst sie von „Geplant“ über „Beantragt“ und „Bewilligt“ bis zum Eingang (Buchung als Einnahme); überfällige Nachweise sind rot. Sponsoren: Beim Buchen einer Einnahme wählst du den Sponsor; unter „Sponsoren“ siehst du die Einnahmen je Sponsor und Jahr. Mannschaftszuschuss: Ausgabe der Vereinskasse und Einnahme der Mannschaftskasse in einem Schritt. Inventar: Unter „Planung → Inventar“ erfasst du Anschaffungen mit Wert und Standort; Gegenstände werden mit Grund ausgesondert, nicht gelöscht.':
     'Subventions : sous « Caisse du club → Écriture → Subventions », tu crées des aides avec donateur, montant et délai pour le justificatif d’utilisation et les fais passer de « Planifié » à « Demandé » et « Approuvé » jusqu’à l’encaissement (enregistré comme recette) ; les justificatifs en retard sont en rouge. Sponsors : lors de l’enregistrement d’une recette, tu choisis le sponsor ; sous « Sponsors », tu vois les recettes par sponsor et par année. Subvention d’équipe : dépense de la caisse du club et recette de la caisse de l’équipe en une seule étape. Inventaire : sous « Planification → Inventaire », tu saisis les acquisitions avec valeur et emplacement ; les objets sont mis au rebut avec un motif, pas supprimés.',
   'Zustand / Hinweis (optional)': 'État / remarque (facultatif)',
+  Zustimmen: 'Accepter',
   'Zuwendungsbestätigungen haben gesetzliche Pflichtangaben und Formulierungen. Lass die Vorlage von deiner Steuerberatung oder deinem Verband prüfen, bevor du sie freigibst. Die App ersetzt keine Steuerberatung.':
     'Les reçus de dons comportent des mentions et formulations légales obligatoires. Fais vérifier le modèle par ton conseil fiscal ou ta fédération avant de le valider. L’app ne remplace pas un conseil fiscal.',
   'Zuwendungsbestätigungen noch nicht freigegeben': 'Reçus de dons pas encore validés',

@@ -491,6 +491,12 @@ export const HELP_SECTIONS: HelpSection[] = [
           'Unter „Ich → Hilfe und Informationen“: AGB, Datenschutzerklärung, Privatsphäre-Einstellungen, Impressum, Neuigkeiten (Changelog) sowie Links zu Support und „Funktion anfragen“ auf der Webseite.',
         link: { label: 'Privatsphäre-Einstellungen', href: '/about/privacy' },
       },
+      {
+        id: 'guardian-view',
+        question: 'Meine Eltern sehen mit – kann ich das ändern?',
+        answer:
+          'Ja. Unter „Ich → Wer darf für mich mitsehen?“ stehen drei Stufen: „Mitsicht und Mitentscheiden“ (Eltern antworten und melden für dich), „Nur Mitsicht“ (sie sehen nur) und „Eigenständig“ (sie sehen und tun nichts mehr). Du kannst jede Stufe selbst setzen. Fragen deine Eltern nach mehr Mitsicht, entscheidest du mit „Zustimmen“ oder „Ablehnen“. Deine Eltern erfahren von jeder Änderung.',
+      },
     ],
   },
   {
@@ -503,6 +509,12 @@ export const HELP_SECTIONS: HelpSection[] = [
         question: 'Wie verwalte ich mein Kind?',
         answer:
           'Unter „Ich → Meine Kinder“ (und auf Start und Termine) siehst du Termine, Zusagen und Abwesenheiten deiner Kinder. Du sagst für sie zu oder ab, trägst Abwesenheiten ein und bekommst ihre Benachrichtigungen. Das Kind braucht dafür kein eigenes Login.',
+      },
+      {
+        id: 'child-access',
+        question: 'Kann mein Kind einen eigenen Zugang bekommen?',
+        answer:
+          'Ja. Öffne „Ich → Meine Kinder → Kind → Eigener Zugang“, gib die eigene E-Mail-Adresse des Kindes an und wähle die Stufe: „Mitsicht und Mitentscheiden“ (wie bisher), „Nur Mitsicht“ (ihr seht, tut aber nichts) oder „Eigenständig“ (ihr seht und tut nichts mehr). Das Kind legt über den Link ein eigenes Passwort fest; euer Konto bleibt unverändert. Ihr könnt die Stufe jederzeit senken. Wieder erhöhen geht nur, wenn das Kind zustimmt. Antworten Eltern und Kind für denselben Termin, gilt die letzte Antwort.',
       },
       {
         id: 'children-pay',
