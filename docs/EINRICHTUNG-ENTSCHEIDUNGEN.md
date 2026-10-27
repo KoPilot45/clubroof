@@ -110,3 +110,9 @@ Der Nutzer hat die Bildschirme des bestehenden Vereinsassistenten (20 Schritte) 
 - **Beitragsarten:** Erklärung fehlt, die Vorschläge (Erwachsene, Jugend, Passive; 120/60/30 €) sind Beispielwerte und müssen so beschriftet werden. **Es gibt keine Fälligkeit je Beitragsart**, Name, Betrag und Rhythmus sind die einzigen Felder; die Erinnerung („Tage nach Fälligkeit“) steht deshalb im Leeren.
 - **Zuordnungsregeln:** Die drei Gruppen (unter n Jahre, passiv, übrige) sind fest im Server (`assignByRules`); Vereine mit weiteren Unterscheidungen können sie nicht abbilden. Regelliste frei definierbar.
 - **Haushaltsjahr:** nicht an „Saison“ koppeln (Saisonwechsel ist manuell), sondern Kalenderjahr oder Startmonat.
+
+### Zweite Durchsicht, Mannschaftskasse (27.10.2026)
+
+- **Strafenkatalog:** Erst Frage, dann eine Beispielzeile und eigene Strafen mit Beträgen (statt fester Sechser-Vorlage ohne Beträge).
+- **Getränke:** Erst Frage, ob die Kasse Getränke vorstreckt, dann nur das Preisfeld (Schnellauswahl entfällt).
+- **Fehler:** Schalter ohne sichtbaren Text in `cash-setup.tsx` (drei Stellen) und `club-cash/setup.tsx` (eine Stelle), Ursache: `Toggle` zeigt nur den Schalter. Baustein `ToggleRow` mit sichtbarer Beschriftung.
