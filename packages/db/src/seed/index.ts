@@ -448,6 +448,44 @@ export async function seed(
       birthdayKid.person.birthDate = `${birthdayKid.person.birthDate!.slice(0, 4)}${soon.slice(4)}`;
     }
 
+    // Eigener Zugang für Kinder (Paket KIND-EIGENER-ZUGANG): je Stufe ein Kind mit Konto
+    const kindZugaenge: { child: PersonRow; email: string; access: 'manage' | 'view' | 'none' }[] =
+      [{ child: leon, email: `leon@${DEMO_EMAIL_DOMAIN}`, access: 'manage' }];
+    const andereKinder = guardianships
+      .map((g) => persons.find((p) => p.id === g.childPersonId)!)
+      .filter((c, i, all) => c !== leon && c !== mia && all.indexOf(c) === i && !c.userId)
+      .filter((c) => Number(c.birthDate!.slice(0, 4)) <= 2011);
+    if (andereKinder[0])
+      kindZugaenge.push({
+        child: andereKinder[0],
+        email: `kind-mitsicht@${DEMO_EMAIL_DOMAIN}`,
+        access: 'view',
+      });
+    if (andereKinder[1])
+      kindZugaenge.push({
+        child: andereKinder[1],
+        email: `kind-eigenstaendig@${DEMO_EMAIL_DOMAIN}`,
+        access: 'none',
+      });
+    for (const z of kindZugaenge) {
+      const userId = randomUUID();
+      await tx.insert(s.users).values({
+        id: userId,
+        email: z.email,
+        displayName: `${z.child.firstName} ${z.child.lastName}`,
+        passwordHash,
+      });
+      z.child.userId = userId;
+      z.child.email = z.email;
+      for (const g of guardianships) {
+        if (g.childPersonId === z.child.id)
+          Object.assign(g, {
+            access: z.access,
+            accessChangedAt: z.access === 'manage' ? null : addDays(today, -3),
+          });
+      }
+    }
+
     await insertChunked(tx, s.persons, persons);
     await insertChunked(tx, s.guardianships, guardianships);
 

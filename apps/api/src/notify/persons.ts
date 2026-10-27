@@ -1,6 +1,7 @@
 /** Logins zu Personen: die Person selbst und – bei Kindern ohne Login – ihre Eltern. */
+import { guardianSeesChild } from '../guardian-access';
 import { schema as s, type Db } from '@clubroof/db';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 
@@ -13,7 +14,7 @@ export async function usersOfPersons(db: Db | Tx, personIds: string[]): Promise<
       .select({ userId: s.persons.userId })
       .from(s.guardianships)
       .innerJoin(s.persons, eq(s.persons.id, s.guardianships.guardianPersonId))
-      .where(inArray(s.guardianships.childPersonId, ids)),
+      .where(and(inArray(s.guardianships.childPersonId, ids), guardianSeesChild)),
   ]);
   return [...new Set([...own, ...guardians].map((r) => r.userId).filter((u): u is string => !!u))];
 }
@@ -35,7 +36,7 @@ export async function usersByPerson(
       .select({ personId: s.guardianships.childPersonId, userId: s.persons.userId })
       .from(s.guardianships)
       .innerJoin(s.persons, eq(s.persons.id, s.guardianships.guardianPersonId))
-      .where(inArray(s.guardianships.childPersonId, ids)),
+      .where(and(inArray(s.guardianships.childPersonId, ids), guardianSeesChild)),
   ]);
   for (const r of [...own, ...guardians]) {
     if (!r.userId) continue;

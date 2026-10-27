@@ -227,7 +227,7 @@ async function loadTask(db: Db, actor: Actor, id: string) {
 /** Offene Aufgabe für sich selbst oder ein eigenes Kind übernehmen. */
 export async function takeTask(db: Db, actor: Actor, id: string, personId: string, now: Date) {
   const { task, team } = await loadTask(db, actor, id);
-  if (!actor.managedIds.includes(personId))
+  if (!actor.actIds.includes(personId))
     throw forbidden('Du kannst nur für dich oder dein Kind übernehmen.');
   if (task.doneAt) throw new HttpError(409, 'done', 'Die Aufgabe ist schon erledigt.');
   // Gleichzeitiges Übernehmen: nur wer zuerst kommt, bekommt die Aufgabe
@@ -242,7 +242,7 @@ export async function takeTask(db: Db, actor: Actor, id: string, personId: strin
 
 export async function completeTask(db: Db, actor: Actor, id: string, now: Date) {
   const { task, team, manage } = await loadTask(db, actor, id);
-  const mine = !!task.assigneePersonId && actor.managedIds.includes(task.assigneePersonId);
+  const mine = !!task.assigneePersonId && actor.actIds.includes(task.assigneePersonId);
   if (!mine && !manage) throw forbidden('Abhaken kann, wer die Aufgabe übernommen hat.');
   if (!task.doneAt)
     await db
@@ -319,11 +319,11 @@ export async function deleteTask(db: Db, actor: Actor, id: string, now: Date) {
 
 /** Offene Aufgaben für Startseite und „Meine Teams“. */
 export async function openTasksFor(db: Db, actor: Actor) {
-  if (actor.managedIds.length === 0) return [];
+  if (actor.actIds.length === 0) return [];
   return db
     .select({ task: s.teamTasks, team: s.teams })
     .from(s.teamTasks)
     .innerJoin(s.teams, eq(s.teams.id, s.teamTasks.teamId))
-    .where(and(inArray(s.teamTasks.assigneePersonId, actor.managedIds), isNull(s.teamTasks.doneAt)))
+    .where(and(inArray(s.teamTasks.assigneePersonId, actor.actIds), isNull(s.teamTasks.doneAt)))
     .orderBy(asc(s.teamTasks.dueOn));
 }

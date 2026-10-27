@@ -229,6 +229,25 @@ export async function summarizeEvents(
       : Promise.resolve([] as (typeof s.teamDeadlineRules.$inferSelect)[]),
   ]);
 
+  // „beantwortet von …“: wer zuletzt geantwortet hat, wenn nicht ich selbst
+  const responderIds = [
+    ...new Set(
+      mine
+        .filter((p) => p.respondedByPersonId && p.respondedByPersonId !== actor.person.id)
+        .map((p) => p.respondedByPersonId!),
+    ),
+  ];
+  const responderNames = new Map(
+    responderIds.length
+      ? (
+          await db
+            .select({ id: s.persons.id, firstName: s.persons.firstName })
+            .from(s.persons)
+            .where(inArray(s.persons.id, responderIds))
+        ).map((r) => [r.id, r.firstName] as const)
+      : [],
+  );
+
   return rows.map((row) => {
     const { event } = row;
     const allCounts: AttendanceCounts = { yes: 0, no: 0, maybe: 0, pending: 0 };
@@ -257,7 +276,11 @@ export async function summarizeEvents(
           role: p.role as MyResponse['role'],
           status: p.status,
           reason: p.reason,
-          canRespond: regularOpen || overrideOpen,
+          canRespond: (regularOpen || overrideOpen) && (overrideOpen || person.access !== 'view'),
+          respondedBy:
+            p.respondedAt && p.respondedByPersonId && p.respondedByPersonId !== actor.person.id
+              ? (responderNames.get(p.respondedByPersonId) ?? null)
+              : null,
           // bewusste Antworten tragen einen Zeitstempel und keine Abwesenheits-Verknüpfung (siehe participation.ts)
           automatic: p.respondedAt === null && p.absenceId === null && p.status !== 'pending',
           absent: p.absenceId !== null,
@@ -634,7 +657,7 @@ export async function respondToEvent(
   now: Date,
 ): Promise<EventSummary> {
   const row = await loadVisibleEvent(db, actor, input.eventId);
-  const isOwn = actor.managedIds.includes(input.personId);
+  const isOwn = actor.actIds.includes(input.personId);
   const override = canOverride(actor, row);
   if (!isOwn && !override) throw forbidden('Du kannst nur für dich oder deine Kinder antworten.');
 

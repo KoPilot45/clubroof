@@ -228,7 +228,7 @@ export async function updateProfile(
   now: Date,
 ): Promise<PersonProfile> {
   // Bearbeiten dürfen nur die Person selbst und ihre Eltern
-  if (!actor.managedIds.includes(personId)) throw notFound('Das Profil');
+  if (!actor.actIds.includes(personId)) throw notFound('Das Profil');
   const patch: Partial<typeof s.persons.$inferInsert> = {};
   if (input.phone !== undefined) patch.phone = input.phone?.trim() || null;
   if (input.email !== undefined) patch.email = input.email?.trim().toLowerCase() || null;

@@ -13,7 +13,7 @@ import {
   type TeamFunction,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, eq, gte, inArray, isNull, or } from 'drizzle-orm';
+import { and, eq, gte, inArray, isNull, ne, or } from 'drizzle-orm';
 import { forbidden } from './errors';
 import type { SessionUser } from './auth/session';
 import type { LinkSigner } from './storage/files';
@@ -32,7 +32,10 @@ export type Actor = {
   club: typeof s.clubs.$inferSelect;
   person: typeof s.persons.$inferSelect;
   managed: ManagedPerson[];
+  /** Ich selbst und Kinder mit Mitsicht oder Mitentscheiden (Stufe 1 und 2): was ich sehe */
   managedIds: string[];
+  /** Ich selbst und Kinder mit Mitentscheiden (Stufe 1): wofür ich handeln darf */
+  actIds: string[];
   memberships: Membership[];
   /** Mannschaften, in denen der Nutzer selbst oder ein Kind Mitglied ist */
   teamIds: string[];
@@ -63,10 +66,12 @@ export async function loadActor(
       firstName: s.persons.firstName,
       lastName: s.persons.lastName,
       avatarUrl: s.persons.avatarUrl,
+      access: s.guardianships.access,
     })
     .from(s.guardianships)
     .innerJoin(s.persons, eq(s.persons.id, s.guardianships.childPersonId))
-    .where(eq(s.guardianships.guardianPersonId, person.id))
+    // Eigenständige Kinder (Stufe 3) sind für die Eltern unsichtbar
+    .where(and(eq(s.guardianships.guardianPersonId, person.id), ne(s.guardianships.access, 'none')))
     .orderBy(s.persons.birthDate);
 
   const managed: ManagedPerson[] = [
@@ -78,9 +83,14 @@ export async function loadActor(
       // Medienverweis; `me.ts` macht daraus den signierten Link
       avatarUrl: person.avatarUrl,
     },
-    ...children.map((c) => ({ ...c, relation: 'child' as const })),
+    ...children.map(({ access, ...c }) => ({
+      ...c,
+      relation: 'child' as const,
+      access: access === 'view' ? ('view' as const) : ('manage' as const),
+    })),
   ];
   const managedIds = managed.map((m) => m.id);
+  const actIds = managed.filter((m) => m.access !== 'view').map((m) => m.id);
   const today = now.toISOString().slice(0, 10);
 
   const membershipRows = await db
@@ -171,6 +181,7 @@ export async function loadActor(
     person,
     managed,
     managedIds,
+    actIds,
     memberships,
     teamIds: [...new Set(memberships.map((m) => m.teamId))],
     orgUnitIds: [...new Set(memberships.map((m) => m.team.orgUnitId))],

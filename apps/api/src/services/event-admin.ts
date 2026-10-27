@@ -2,6 +2,7 @@
  * Trainer-Funktionen in der App: Termine anlegen und absagen. Neue Termine erhalten sofort
  * Teilnehmer nach dem Teilnahme-Modell der Mannschaft und berücksichtigen Abwesenheiten.
  */
+import { guardianSeesChild } from '../guardian-access';
 import {
   can,
   addDays,
@@ -68,7 +69,7 @@ export async function recipientsFor(
       .select({ userId: s.persons.userId })
       .from(s.guardianships)
       .innerJoin(s.persons, eq(s.persons.id, s.guardianships.guardianPersonId))
-      .where(inArray(s.guardianships.childPersonId, personIds)),
+      .where(and(inArray(s.guardianships.childPersonId, personIds), guardianSeesChild)),
   ]);
   return [
     ...new Set([...own, ...guardians].map((r) => r.userId).filter((id): id is string => !!id)),

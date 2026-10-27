@@ -42,6 +42,8 @@ export type ManagedPerson = {
   lastName: string;
   relation: 'self' | 'child';
   avatarUrl: string | null;
+  /** Nur bei Kindern: `view` = nur Mitsicht (keine Aktionen), `manage` = Mitsicht und Mitentscheiden */
+  access?: 'manage' | 'view';
 };
 
 export type MyTeam = {
@@ -141,6 +143,8 @@ export type MyResponse = {
   reason: string | null;
   /** Ob diese Person jetzt noch zu- oder absagen kann */
   canRespond: boolean;
+  /** Vorname, wenn zuletzt jemand anderes als ich geantwortet hat (Eltern ↔ Kind), sonst null */
+  respondedBy: string | null;
   /** Der Status ist nicht bewusst gegeben (Standard der Mannschaft, z. B. automatische Zusage) */
   automatic: boolean;
   /** Der Status „abgesagt“ folgt einer eingetragenen Abwesenheit (automatisch) */

@@ -11,6 +11,7 @@
  *  - Audit-Log: `club.audit.read`.
  * Jede Änderung wird im Audit-Log festgehalten.
  */
+import { guardianSeesChild } from '../guardian-access';
 import {
   ALL_PERMISSIONS,
   SYSTEM_ROLES,
@@ -187,7 +188,7 @@ async function visiblePersonIds(db: Db, actor: Actor, now: Date): Promise<Set<st
     const guardians = await db
       .select({ id: s.guardianships.guardianPersonId })
       .from(s.guardianships)
-      .where(inArray(s.guardianships.childPersonId, [...ids]));
+      .where(and(inArray(s.guardianships.childPersonId, [...ids]), guardianSeesChild));
     for (const g of guardians) ids.add(g.id);
   }
   return ids;

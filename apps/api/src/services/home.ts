@@ -164,7 +164,7 @@ async function loadActions(db: Db, actor: Actor, now: Date): Promise<ActionItem[
           .from(s.eventParticipants)
           .where(
             and(
-              inArray(s.eventParticipants.personId, actor.managedIds),
+              inArray(s.eventParticipants.personId, actor.actIds),
               eq(s.eventParticipants.status, 'pending'),
             ),
           ),
