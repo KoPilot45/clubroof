@@ -82,13 +82,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'team-cash-setup',
         question: 'Wie richte ich die Mannschaftskasse ein?',
         answer:
-          'In der leeren Kasse der Mannschaft startet „Kasse einrichten“ einen kurzen Assistenten (auch am Ende des Mannschaftsassistenten, wenn die Mannschaftskasse an ist): Kassenwart wählen, Anfangsbestand, Strafenkatalog aus einer Vorlage, Getränkepreis, Mannschaftsbeitrag und was die Mannschaft sehen darf. Angelegt wird erst in der Zusammenfassung; alles lässt sich später in der Mannschaftskasse ändern.',
+          'In der leeren Kasse der Mannschaft startet „Kasse einrichten“ einen kurzen Assistenten (auch am Ende des Mannschaftsassistenten, wenn die Mannschaftskasse an ist): Kassenwart wählen, Anfangsbestand, Strafenkatalog aus einer Vorlage, Getränkepreis, Mannschaftsbeitrag und was die Mannschaft sehen darf. Im ausführlichen Weg legst du außerdem fest, wer buchen darf (Kassenwart und Trainerteam oder nur der Kassenwart), wie eingezahlt wird, was zum Saisonende passiert und ob das Geld dem Verein gehört. Angelegt wird erst in der Zusammenfassung; alles lässt sich später in der Mannschaftskasse ändern.',
       },
       {
         id: 'cash-setup',
         question: 'Wie richte ich die Vereinskasse ein?',
         answer:
-          'In der leeren Vereinskasse (Übersicht, Karte „Konten“) startet „Kasse einrichten“ einen Assistenten: Gemeinnützigkeit, Konten mit Anfangsbestand, Kategorien aus einer Vorlage, Beitragsarten, Kassenwart und – im ausführlichen Weg – Zuordnungsregeln für Mitglieder (zum Beispiel „unter 18 Jahre: Jugend“), Erinnerungen und Sichtbarkeit. Angelegt wird erst in der Zusammenfassung; alles lässt sich später in der Vereinskasse ändern.',
+          'In der leeren Vereinskasse (Übersicht, Karte „Konten“) startet „Kasse einrichten“ einen Assistenten: Gemeinnützigkeit, Haushaltsjahr (Kalenderjahr oder Saison), Konten mit Anfangsbestand, Kategorien aus einer Vorlage (bei Gemeinnützigkeit mit den vier steuerlichen Bereichen), Beitragsarten, Kassenwart und Kassenprüfer sowie – im ausführlichen Weg – Abteilungskassen, Auslagenregeln (Belegpflicht, zweite Freigabe ab einem Betrag) und die Steuerdaten für Spendenbescheinigungen. Die Zuordnungsregeln nach Alter gibt es erst, wenn Geburtsdaten vorhanden sind (zuerst Mitglieder importieren). Dazu kommen Zahlungserinnerungen und die Sichtbarkeit; die Zuordnungsregeln lauten zum Beispiel „unter 18 Jahre: Jugend“. Angelegt wird erst in der Zusammenfassung; alles lässt sich später in der Vereinskasse ändern.',
       },
       {
         id: 'cash-overview',
@@ -521,7 +521,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'team-wizard',
         question: 'Wie lege ich eine neue Mannschaft an?',
         answer:
-          'In der Verwaltung unter „Mannschaften & Saison“ führt dich der Assistent: im Schnellstart (ca. 5 Minuten, Empfehlungen vorausgewählt) oder ausführlich (ca. 15 Minuten, jeder Schritt erklärt). Du legst Name, Abteilung, Altersklasse, Spielform und Liga fest, wählst „Automatisch zugesagt“ (empfohlen) oder „Aktive Zu-/Absage“ mit Fristen (Training 24 Std., Spiele 48 Std. vorbelegt), planst wöchentliche Trainings mit Zeitraum und Platz, wählst Trainerteam und Kader und stellst Funktionen, Sichtbarkeit und einen Willkommenstext ein. In der Zusammenfassung springst du mit „Ändern“ in jeden Schritt. Erst dort wird die Mannschaft angelegt – danach bekommst du einen fertigen Einladungstext zum Weiterschicken.',
+          'In der Verwaltung unter „Mannschaften & Saison“ führt dich der Assistent: im Schnellstart (ca. 5 Minuten, Empfehlungen vorausgewählt) oder ausführlich (ca. 15 Minuten, jeder Schritt erklärt). Du legst Name, Abteilung, Altersklasse, Spielform und Liga fest, wählst für Training und Spiele getrennt „Automatisch zugesagt“ (empfohlen) oder „Aktive Zu-/Absage“ mit Fristen (Training 24 Std., Spiele 48 Std. vorbelegt), planst wöchentliche Trainings mit Zeitraum und Platz, wählst das Trainerteam, den Kader (bei Jugendmannschaften auch die Eltern der Kinder) und legst fest, wer was sieht (Abwesenheitsgründe, Beteiligung, Aufstellung). Zum Schluss stellst Funktionen, Sichtbarkeit und einen Willkommenstext ein. In der Zusammenfassung springst du mit „Ändern“ in jeden Schritt. Erst dort wird die Mannschaft angelegt – danach bekommst du einen fertigen Einladungstext zum Weiterschicken.',
         link: { label: 'Mannschaft anlegen', href: '/admin/team-new' },
       },
       {
@@ -750,6 +750,12 @@ export const HELP_SECTIONS: HelpSection[] = [
         question: 'Wo ist die Verwaltung?',
         answer:
           'Über das Schild-Symbol oben rechts oder „Ich → Admin-Verwaltung“ oder „Verein → Meine Vereinsaufgaben → Verwaltung“. Mit „Zur App“ kehrst du zur normalen App zurück. Unten wechselst du zwischen Übersicht, Mitgliedern, Teams, Festen und News.',
+      },
+      {
+        id: 'admin-join-approval',
+        question: 'Wer gibt Beitrittsanfragen frei?',
+        answer:
+          'Wer über einen Einladungslink oder QR-Code beitreten will, stellt eine Anfrage. Unter „Verwaltung › Verein & Design › Angaben zum Verein“ legst du fest, ob das Trainerteam der Mannschaft entscheidet (Standard; die Verwaltung kann immer freigeben) oder nur die Verwaltung. Die Regel gilt serverseitig: Trainer sehen dann keine Anfragen mehr. Eine Vertretung mit Administrationsrechten bestimmst du im Einrichtungsassistenten oder unter „Rollen & Aufgaben“.',
       },
       {
         id: 'admin-roles',
