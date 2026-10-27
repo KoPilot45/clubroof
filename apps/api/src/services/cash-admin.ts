@@ -224,6 +224,11 @@ export async function updateCashSettings(
     autoReminder: boolean;
     savingsGoalName: string | null;
     savingsGoalCents: number | null;
+    bookingBy: 'staff' | 'treasurer';
+    paymentNote: string | null;
+    cashPayment: boolean;
+    seasonEnd: 'carry' | 'payout';
+    clubOwned: boolean;
   }>,
   now: Date,
 ): Promise<TeamCash> {
@@ -241,6 +246,11 @@ export async function updateCashSettings(
         autoReminder: input.autoReminder,
         savingsGoalName: clean(input.savingsGoalName),
         savingsGoalCents: input.savingsGoalCents,
+        bookingBy: input.bookingBy,
+        paymentNote: clean(input.paymentNote),
+        cashPayment: input.cashPayment,
+        seasonEnd: input.seasonEnd,
+        clubOwned: input.clubOwned,
       }).filter(([, v]) => v !== undefined),
     ),
   };

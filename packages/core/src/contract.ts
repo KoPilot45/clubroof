@@ -677,6 +677,15 @@ export type CashSettings = {
   /** Sparziel der Mannschaft (Name und Betrag), z. B. „Mannschaftsfahrt“ */
   savingsGoalName: string | null;
   savingsGoalCents: number | null;
+  /** Wer buchen darf: Kassenwart und Trainerteam (Standard) oder nur der Kassenwart */
+  bookingBy: 'staff' | 'treasurer';
+  /** Hinweis an Eltern zum Einzahlen und ob Barzahlung möglich ist */
+  paymentNote: string | null;
+  cashPayment: boolean;
+  /** Zum Saisonende: Rest in die neue Saison übertragen oder auszahlen */
+  seasonEnd: 'carry' | 'payout';
+  /** Das Geld der Kasse gehört dem Verein (Hinweis) */
+  clubOwned: boolean;
 };
 
 export type PaymentNotice = {

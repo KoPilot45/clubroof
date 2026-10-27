@@ -1832,6 +1832,59 @@ describe.skipIf(!url)('API', () => {
       expect(finesOff.status).toBe(400);
     });
 
+    it('Kasse: „nur Kassenwart bucht“ nimmt dem Trainerteam das Buchen, Einsicht bleibt', async () => {
+      const b1 = await teamId('B1');
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const settings = (token: string, body: object) =>
+        send<TeamCash>('PUT', `/teams/${b1}/cash/settings`, token, body);
+      const book = () =>
+        send('POST', `/teams/${b1}/cash/bookings`, coach.token, {
+          kind: 'income',
+          amountCents: 100,
+          description: 'Buchungsrecht-Test',
+        });
+      try {
+        const set = await settings(admin.token, {
+          bookingBy: 'treasurer',
+          paymentNote: ' Bar beim Training ',
+          cashPayment: true,
+          seasonEnd: 'payout',
+          clubOwned: true,
+        });
+        expect(set.status).toBe(200);
+        expect(set.body.settings).toMatchObject({
+          bookingBy: 'treasurer',
+          paymentNote: 'Bar beim Training',
+          cashPayment: true,
+          seasonEnd: 'payout',
+          clubOwned: true,
+        });
+        const seen = await get<TeamCash>(`/teams/${b1}/cash`, coach.token);
+        expect(seen.permissions).toMatchObject({ manageCash: false, manageFines: false });
+        expect(seen.balanceCents).not.toBeNull();
+        expect((await book()).status).toBe(403);
+        expect((await settings(coach.token, { bookingBy: 'staff' })).status).toBe(403);
+        // Vereinsweite Rechte (Administration) buchen weiter
+        const adminCash = await get<TeamCash>(`/teams/${b1}/cash`, admin.token);
+        expect(adminCash.permissions.manageCash).toBe(true);
+        expect((await settings(admin.token, { bookingBy: 'staff' })).status).toBe(200);
+        expect((await book()).status).toBe(201);
+      } finally {
+        await settings(admin.token, {
+          bookingBy: 'staff',
+          paymentNote: null,
+          cashPayment: false,
+          seasonEnd: 'carry',
+          clubOwned: false,
+        });
+      }
+      expect(
+        (await send('PUT', `/teams/${b1}/cash/settings`, admin.token, { bookingBy: 'alle' }))
+          .status,
+      ).toBe(400);
+    });
+
     it('Strafenkatalog: Trainer pflegt ihn und vergibt Strafen an mehrere Spieler', async () => {
       const b1 = await teamId('B1');
       const coach = await login('trainer');

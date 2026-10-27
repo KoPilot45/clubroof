@@ -4,6 +4,7 @@ import { ActionError, centsToInput, useCash, useCashAction } from '@/components/
 import {
   Button,
   Card,
+  ChoiceChips,
   ListRow,
   Loading,
   Screen,
@@ -45,6 +46,11 @@ function Form({
   );
   const [showBalances, setShowBalances] = useState(settings.showMemberBalances);
   const [autoReminder, setAutoReminder] = useState(settings.autoReminder);
+  const [bookingBy, setBookingBy] = useState(settings.bookingBy);
+  const [cashPayment, setCashPayment] = useState(settings.cashPayment);
+  const [note, setNote] = useState(settings.paymentNote ?? '');
+  const [seasonEnd, setSeasonEnd] = useState(settings.seasonEnd);
+  const [clubOwned, setClubOwned] = useState(settings.clubOwned);
   return (
     <Screen edges={[]}>
       <Section title="Bezahlinfos">
@@ -63,6 +69,20 @@ function Form({
             onChangeText={setPaypal}
             placeholder={t('https://paypal.me/…')}
             maxLength={200}
+          />
+          <TextField
+            label="Hinweis für Eltern (optional)"
+            value={note}
+            onChangeText={setNote}
+            multiline
+            maxLength={300}
+          />
+          <ListRow
+            first
+            title="Barzahlung möglich"
+            trailing={
+              <Toggle label="Barzahlung möglich" value={cashPayment} onChange={setCashPayment} />
+            }
           />
           <T variant="caption">
             Sieht nur die eigene Mannschaft – beim Bezahlen im persönlichen Konto.
@@ -99,6 +119,43 @@ function Form({
           <T variant="caption">
             Erscheint als Zielbalken in der Kassenstatistik. Leer lassen, wenn es kein Ziel gibt.
           </T>
+        </Card>
+      </Section>
+      <Section title="Wer darf buchen?">
+        <Card style={{ gap: 12 }}>
+          <ChoiceChips
+            options={[
+              { value: 'staff' as const, label: t('Kassenwart und Trainerteam') },
+              { value: 'treasurer' as const, label: t('Nur der Kassenwart') },
+            ]}
+            selected={[bookingBy]}
+            onToggle={setBookingBy}
+          />
+          <T variant="caption">
+            Bei „Nur der Kassenwart“ dürfen Trainer ohne Kassenwart-Aufgabe nichts mehr buchen und
+            keine Strafen vergeben; sie sehen die Kasse weiterhin.
+          </T>
+        </Card>
+      </Section>
+      <Section title="Saisonende und Verein">
+        <Card style={{ gap: 12 }}>
+          <ChoiceChips
+            label="Am Saisonende"
+            options={[
+              { value: 'carry' as const, label: t('Übertragen') },
+              { value: 'payout' as const, label: t('Auszahlen') },
+            ]}
+            selected={[seasonEnd]}
+            onToggle={setSeasonEnd}
+          />
+          <ListRow
+            first
+            title="Das Geld gehört dem Verein"
+            subtitle="Hinweis für Kassenprüfung und Gemeinnützigkeit"
+            trailing={
+              <Toggle label="Geld gehört dem Verein" value={clubOwned} onChange={setClubOwned} />
+            }
+          />
         </Card>
       </Section>
       <Section title="Sichtbarkeit">
@@ -142,6 +199,11 @@ function Form({
               savingsGoalCents: goalName.trim() ? parseEuro(goalAmount) : null,
               showMemberBalances: showBalances,
               autoReminder,
+              bookingBy,
+              cashPayment,
+              paymentNote: note.trim() || null,
+              seasonEnd,
+              clubOwned,
             },
           })
         }

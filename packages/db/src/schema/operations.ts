@@ -82,6 +82,15 @@ export const cashAccounts = pgTable(
         /** Sparziel der Mannschaft (z. B. Mannschaftsfahrt), Paket ST */
         savingsGoalName?: string | null;
         savingsGoalCents?: number | null;
+        /** Wer buchen darf: `staff` = Kassenwart und Trainerteam (Standard), `treasurer` = nur der Kassenwart */
+        bookingBy?: 'staff' | 'treasurer';
+        /** Hinweis an Eltern, wie sie einzahlen; bar möglich */
+        paymentNote?: string | null;
+        cashPayment?: boolean;
+        /** Zum Saisonende: Rest übertragen oder an die Mitglieder auszahlen (Hinweis fürs Kassenwart-Team) */
+        seasonEnd?: 'carry' | 'payout';
+        /** Das Geld der Kasse gehört zum Verein (Hinweis für Kassenprüfung und Gemeinnützigkeit) */
+        clubOwned?: boolean;
       }>()
       .notNull()
       .default({}),
