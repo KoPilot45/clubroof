@@ -13,12 +13,13 @@ import {
   type SetupInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { count } from 'drizzle-orm';
+import { and, count, eq, isNull } from 'drizzle-orm';
 import type { Config } from '../config';
 import type { Mailer } from '../security/mailer';
 import type { LinkSigner } from '../storage/files';
 import { HttpError } from '../errors';
 import { checkPassword, hashPassword } from './account';
+import { codeHash } from './codes';
 
 /** Optionale Module starten „verfügbar“ und erscheinen im Update-Center. */
 const OPTIONAL = new Set([
@@ -33,22 +34,46 @@ const OPTIONAL = new Set([
 ]);
 
 /** Prüft den Einrichtungscode des Servers (zeitkonstant). */
-function checkSetupToken(config: Config, token: string) {
+function isServerToken(config: Config, token: string): boolean {
   const expected = config.setupToken;
   const given = Buffer.from(token);
-  if (
-    !expected ||
-    given.length !== Buffer.byteLength(expected) ||
-    !timingSafeEqual(given, Buffer.from(expected))
-  )
-    throw new HttpError(403, 'setup_token', 'Der Einrichtungscode stimmt nicht.');
+  return !!(
+    expected &&
+    given.length === Buffer.byteLength(expected) &&
+    timingSafeEqual(given, Buffer.from(expected))
+  );
 }
 
-/** Prüft den Einrichtungscode schon beim Einstieg in den Assistenten (Code stimmt, Server noch leer). */
-export async function checkSetupCode(db: Db, config: Config, token: string) {
-  checkSetupToken(config, token);
-  if (!(await needsSetup(db)))
-    throw new HttpError(409, 'already_set_up', 'Dieser Verein ist bereits eingerichtet.');
+type SetupAccess = { invite: typeof s.clubSetupInvites.$inferSelect | null };
+
+/**
+ * Berechtigung zur Einrichtung: entweder der Servercode (nur solange es noch keinen Verein gibt – der erste
+ * Verein) oder ein Einrichtungscode des Betreibers für einen weiteren Verein (einmalig, befristet, an eine
+ * E-Mail-Adresse gebunden).
+ */
+async function authorizeSetup(
+  db: Db,
+  config: Config,
+  token: string,
+  now: Date,
+): Promise<SetupAccess> {
+  if (isServerToken(config, token)) {
+    if (!(await needsSetup(db)))
+      throw new HttpError(409, 'already_set_up', 'Dieser Verein ist bereits eingerichtet.');
+    return { invite: null };
+  }
+  const [invite] = await db
+    .select()
+    .from(s.clubSetupInvites)
+    .where(eq(s.clubSetupInvites.codeHash, codeHash(token)));
+  if (!invite || invite.usedAt || invite.revokedAt || invite.expiresAt <= now)
+    throw new HttpError(403, 'setup_token', 'Der Einrichtungscode stimmt nicht.');
+  return { invite };
+}
+
+/** Prüft den Einrichtungscode schon beim Einstieg in den Assistenten (ohne etwas anzulegen). */
+export async function checkSetupCode(db: Db, config: Config, token: string, now: Date) {
+  await authorizeSetup(db, config, token, now);
 }
 
 /**
@@ -66,10 +91,14 @@ export async function sendSetupEmailCode(
   input: { setupToken: string; email: string },
   now: Date,
 ) {
-  checkSetupToken(config, input.setupToken);
-  if (!(await needsSetup(db)))
-    throw new HttpError(409, 'already_set_up', 'Der Verein ist bereits eingerichtet.');
+  const access = await authorizeSetup(db, config, input.setupToken, now);
   const email = input.email.trim().toLowerCase();
+  if (access.invite && access.invite.adminEmail !== email)
+    throw new HttpError(
+      403,
+      'setup_email',
+      'Dieser Einrichtungscode gilt für eine andere E-Mail-Adresse.',
+    );
   const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
   emailCodes.set(email, { code, expiresAt: now.getTime() + 15 * 60_000, attempts: 0 });
   await mailer.send({
@@ -127,6 +156,18 @@ const slugOf = (name: string) =>
     .replace(/^-|-$/g, '')
     .slice(0, 50) || 'verein';
 
+/** Eindeutiges Kürzel für die Adresse; bei Namensgleichheit mit Zähler. */
+async function freeSlug(tx: Pick<Db, 'select'>, base: string): Promise<string> {
+  for (let i = 1; ; i++) {
+    const candidate = i === 1 ? base : `${base}-${i}`;
+    const [taken] = await tx
+      .select({ id: s.clubs.id })
+      .from(s.clubs)
+      .where(eq(s.clubs.slug, candidate));
+    if (!taken) return candidate;
+  }
+}
+
 export async function setupClub(
   db: Db,
   config: Config,
@@ -134,10 +175,14 @@ export async function setupClub(
   input: SetupInput,
   now: Date,
 ): Promise<{ userId: string }> {
-  checkSetupToken(config, input.setupToken);
-  if (!(await needsSetup(db)))
-    throw new HttpError(409, 'already_set_up', 'Der Verein ist bereits eingerichtet.');
+  const access = await authorizeSetup(db, config, input.setupToken, now);
   const email = input.admin.email.trim().toLowerCase();
+  if (access.invite && access.invite.adminEmail !== email)
+    throw new HttpError(
+      403,
+      'setup_email',
+      'Dieser Einrichtungscode gilt für eine andere E-Mail-Adresse.',
+    );
   if (links.verify(input.emailProof, now) !== `${PROOF_PREFIX}${email}`)
     throw new HttpError(
       400,
@@ -168,7 +213,7 @@ export async function setupClub(
         name: input.club.name.trim(),
         shortName: input.club.shortName.trim(),
         shortCode: input.club.shortCode ? normalizeClubCode(input.club.shortCode) : null,
-        slug: slugOf(input.club.name),
+        slug: await freeSlug(tx, slugOf(input.club.name)),
         colorTheme: input.club.colorTheme,
         colorMode: input.club.colorMode ?? 'system',
         timezone: input.club.timezone ?? 'Europe/Berlin',
@@ -259,6 +304,15 @@ export async function setupClub(
             sortOrder: order++,
           })),
         );
+    }
+    // Einrichtungscode verbrauchen (atomar: ein Code richtet genau einen Verein ein)
+    if (access.invite) {
+      const [used] = await tx
+        .update(s.clubSetupInvites)
+        .set({ usedAt: now, clubId })
+        .where(and(eq(s.clubSetupInvites.id, access.invite.id), isNull(s.clubSetupInvites.usedAt)))
+        .returning({ id: s.clubSetupInvites.id });
+      if (!used) throw new HttpError(403, 'setup_token', 'Der Einrichtungscode stimmt nicht.');
     }
     const [user] = await tx
       .insert(s.users)

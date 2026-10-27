@@ -218,3 +218,27 @@ export const supportGrants = pgTable(
   },
   (t) => [index().on(t.clubId)],
 );
+
+/**
+ * Einrichtungseinladung für einen neuen Verein (Betreiber-Konsole). Der Admin löst den Code im
+ * Einrichtungsassistenten ein und legt Verein und Zugang selbst an. Gespeichert wird nur der Hash.
+ */
+export const clubSetupInvites = pgTable(
+  'club_setup_invites',
+  {
+    id: id(),
+    codeHash: text().notNull().unique(),
+    /** Der Code gilt nur für diese E-Mail-Adresse (Admin des neuen Vereins) */
+    adminEmail: text().notNull(),
+    /** Vorgeschlagener Vereinsname, nur zur Anzeige in der Konsole */
+    clubNameHint: text().notNull(),
+    createdByUserId: uuid().references(() => users.id, { onDelete: 'set null' }),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    revokedAt: timestamp({ withTimezone: true }),
+    usedAt: timestamp({ withTimezone: true }),
+    /** Verein, der mit dem Code eingerichtet wurde */
+    clubId: uuid().references(() => clubs.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+  },
+  (t) => [index().on(t.adminEmail)],
+);

@@ -484,6 +484,13 @@
       "when": 1793102937630,
       "tag": "0068_konto_letzter_verein",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1793103214796,
+      "tag": "0069_vereins_einrichtungscodes",
+      "breakpoints": true
     }
   ]
 }

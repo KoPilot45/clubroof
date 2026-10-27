@@ -2800,3 +2800,34 @@ export type ExportAreasResponse = { areas: ExportAreaInfo[] };
 
 /** Exportdatei wie die Importvorlagen: Name, Medientyp, Inhalt in Base64. */
 export type ExportFile = ImportTemplateFile;
+
+// ── Betreiber-Konsole (Mandantenbetrieb) ─────────────────────────────────
+
+export type ClubStatus = 'setup' | 'active' | 'suspended' | 'archived';
+
+/** Ein Verein in der Betreiber-Konsole: nur Kennzahlen, nie Vereinsdaten. */
+export type OperatorClub = {
+  id: string;
+  name: string;
+  shortName: string;
+  status: ClubStatus;
+  members: number;
+  teams: number;
+  lastLoginAt: string | null;
+  createdAt: string;
+};
+
+export type OperatorInvite = {
+  id: string;
+  adminEmail: string;
+  clubNameHint: string;
+  expiresAt: string;
+  status: 'open' | 'used' | 'expired' | 'revoked';
+  clubId: string | null;
+  createdAt: string;
+};
+
+export type OperatorOverview = { clubs: OperatorClub[]; invites: OperatorInvite[] };
+
+/** Der Code wird nur einmal angezeigt (und per Mail an den Admin geschickt). */
+export type OperatorInviteResult = { invite: OperatorInvite; code: string };

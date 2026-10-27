@@ -103,7 +103,7 @@ export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: { body: z.object({ setupToken: z.string().min(1).max(200) }) },
     },
     async (request, reply) => {
-      await checkSetupCode(app.db, app.config, request.body.setupToken);
+      await checkSetupCode(app.db, app.config, request.body.setupToken, app.now());
       reply.code(204);
     },
   );

@@ -20,6 +20,7 @@ import { diskStorage, linkSigner, type FileStorage } from './storage/files';
 import { communityRoutes } from './routes/community';
 import { eventRoutes } from './routes/events';
 import { meRoutes } from './routes/me';
+import { operatorRoutes } from './routes/operator';
 import { notificationRoutes } from './routes/notifications';
 import { adminRoutes } from './routes/admin';
 import { importRoutes } from './routes/imports';
@@ -157,6 +158,7 @@ export async function buildApp({
   app.get('/health', async () => ({ status: 'ok' }));
   await app.register(authRoutes);
   await app.register(meRoutes);
+  await app.register(operatorRoutes);
   await app.register(eventRoutes);
   await app.register(notificationRoutes);
   await app.register(communityRoutes);

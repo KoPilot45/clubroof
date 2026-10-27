@@ -21,5 +21,7 @@ declare module 'fastify' {
   interface FastifyRequest {
     sessionUser: SessionUser | null;
     actor: Actor | null;
+    /** Nur in den Betreiber-Routen gesetzt */
+    operatorUserId: string;
   }
 }
