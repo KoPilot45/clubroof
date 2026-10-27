@@ -113,6 +113,6 @@ Der Nutzer hat die Bildschirme des bestehenden Vereinsassistenten (20 Schritte) 
 
 ### Zweite Durchsicht, Mannschaftskasse (27.10.2026)
 
-- **Strafenkatalog:** Erst Frage, dann eine Beispielzeile und eigene Strafen mit Beträgen (statt fester Sechser-Vorlage ohne Beträge).
+- **Strafenkatalog:** Erst Frage, das Beispiel steht nur im Beschreibungstext, danach beginnt das Anlegen leer mit eigenen Strafen und Beträgen (statt fester Sechser-Vorlage ohne Beträge).
 - **Getränke:** Erst Frage, ob die Kasse Getränke vorstreckt, dann nur das Preisfeld (Schnellauswahl entfällt).
 - **Fehler:** Schalter ohne sichtbaren Text in `cash-setup.tsx` (drei Stellen) und `club-cash/setup.tsx` (eine Stelle), Ursache: `Toggle` zeigt nur den Schalter. Baustein `ToggleRow` mit sichtbarer Beschriftung.
