@@ -11,9 +11,11 @@ Die drei Assistenten (vier Abläufe): **Verein** (Admin), **Mannschaft** (Traine
 | Name, Kurzname, Kürzel, Gründungsjahr, Anschrift, Kontakt, Webseite, Zeitzone | ✅ | |
 | Spielstätte, Plätze, Kabinen, Untergrund | ✅ | |
 | Logo, Vereinsfarbe, Standard-Darstellung (hell, dunkel, automatisch) | ✅ | Sprache bleibt Geräteeinstellung (bewusst) |
-| Aufbau (Abteilungen), Saisonbeginn | ✅ | |
+| Aufbau (Abteilungen) | ✅ | |
+| Saisonbeginn | ❌ entfällt (27.10.) | Wechsel immer manuell durch den Verein; erste Saison wird still angelegt |
 | Vorstand und Aufgaben (Rollen vergeben, Einladung nach der Einrichtung) | ✅ | auch Kassenwart (`club_treasurer`), siehe Doppelabfrage unten |
-| Module für Mannschaften und Verein (vorbelegt nach Vereinsgröße) | ✅ | Konfiguration je Modul später |
+| Module für den Verein (vorbelegt nach Vereinsgröße) | ✅ | Konfiguration je Modul später |
+| Module für Mannschaften im Vereinsassistenten | ❌ entfällt (27.10.) | widerspricht „Mannschaftsregeln bleiben in der Mannschaft“; jede Mannschaft wählt selbst |
 | Mitglieder: später, Import oder Einladung | ✅ | |
 | Standard-Sichtbarkeit der Kontaktdaten | ✅ | |
 | Konto, Passwort, Zwei-Faktor | ✅ | 2FA-Pflicht für die Verwaltung (`requireTwoFactor`) wird gefragt |
@@ -86,3 +88,7 @@ Die drei Assistenten (vier Abläufe): **Verein** (Admin), **Mannschaft** (Traine
 ## Vorschlag für ein Paket EINRICHTUNG-ENTSCHEIDUNGEN (noch nicht beschlossen)
 
 Reihenfolge nach Nutzen: (1) Doppelabfrage Kassenwart beheben, Hinweis zur Importreihenfolge; (2) Mannschaftsassistent um „Wer sieht was“ (Abwesenheitsgründe, Trainingsbeteiligung), Rückennummern, Eltern-Verknüpfung erweitern; (3) Vereinsassistent um zweiten Admin und Vereinsvorgaben für Mannschaften erweitern; (4) Vereinskasse um Haushaltsjahr, Spenden-Angaben, Erstattungsregeln; (5) Mannschaftskasse um Buchungsrechte und Abgrenzung zur Vereinskasse. Vor Umsetzung klären: Soll das Teilnahme-Modell je Terminart wählbar sein? Gibt es Vereinsvorgaben, die Mannschaften überschreiben dürfen?
+
+## Korrekturen nach Durchsicht des Vereinsassistenten (27.10.2026)
+
+Der Nutzer hat die Bildschirme des bestehenden Vereinsassistenten (20 Schritte) angesehen und fünf Punkte bemängelt, die in der obigen Analyse fälschlich als ✅ standen: **Saisonbeginn** (der Wechsel ist immer manuell, der Schritt ist überflüssig), **Mannschaftsmodule im Vereinsassistenten** (widersprechen der Festlegung, dass jede Mannschaft ihre Regeln selbst bestimmt), **Schiedsrichter-Beschreibung** („Vereinsschiedsrichter für Heimspiele einteilen“ ist veraltet: Der Verband setzt Schiedsrichter bei fremden Spielen ein, die Einteilung zu Heimspielen ist entfallen), **„Per Code oder QR einladen“ als Auswahl** (Grundfunktion), **Kontaktdaten-Standard** (getrennt für Jugend und Erwachsene nötig). Umsetzung als Punkte 1 bis 5 im Abschnitt B des Übergabeprompts; Punkt 6 ist eine Rückfrage zu „Elternzugänge“. Die Analyse hat diese Widersprüche übersehen, weil sie den Bestand nur über Doku und Code gelesen hat; für künftige Durchsichten Bildschirme vergleichen.
