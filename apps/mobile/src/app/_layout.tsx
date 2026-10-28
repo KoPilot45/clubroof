@@ -207,6 +207,10 @@ function Navigator() {
                   options={{ headerShown: true, title: 'Abwesenheit eintragen' }}
                 />
                 <Stack.Screen
+                  name="child-access/[id]"
+                  options={{ headerShown: true, title: 'Eigener Zugang' }}
+                />
+                <Stack.Screen
                   name="profile/[id]"
                   options={{ headerShown: true, title: 'Profil' }}
                 />

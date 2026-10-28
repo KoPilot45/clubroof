@@ -2,6 +2,7 @@
  * Fahrgemeinschaften zu Auswärtsspielen und Turnieren: Eltern bzw. Spieler bieten Plätze an,
  * buchen sich (oder ihr Kind) ein oder melden „Mitfahrt gesucht“.
  */
+import { guardianSeesChild } from '../guardian-access';
 import type { Carpool } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, eq, inArray } from 'drizzle-orm';
@@ -70,7 +71,7 @@ export async function carpoolFor(
       ),
   ]);
   const manage = actorCan(actor, 'events.manage', row.team!);
-  const mine = (personId: string) => actor.managedIds.includes(personId);
+  const mine = (personId: string) => actor.actIds.includes(personId);
   return {
     offers: offers.map(({ offer, firstName, lastName }) => {
       const riding = passengers.filter((p) => p.offerId === offer.id);
@@ -96,6 +97,7 @@ export async function carpoolFor(
       mine: mine(r.personId),
     })),
     riders: actor.managed
+      .filter((m) => m.access !== 'view')
       .filter((m) => participants.some((p) => p.personId === m.id))
       .map((m) => ({ personId: m.id, firstName: m.firstName })),
     open: row.event.startsAt > now,
@@ -122,7 +124,7 @@ async function usersOf(db: Db, personIds: string[]): Promise<string[]> {
       .select({ userId: s.persons.userId })
       .from(s.guardianships)
       .innerJoin(s.persons, eq(s.persons.id, s.guardianships.guardianPersonId))
-      .where(inArray(s.guardianships.childPersonId, personIds)),
+      .where(and(inArray(s.guardianships.childPersonId, personIds), guardianSeesChild)),
   ]);
   return [...new Set([...own, ...guardians].map((r) => r.userId).filter((id) => id !== null))];
 }
@@ -215,7 +217,7 @@ export async function joinRide(
   personId: string,
   now: Date,
 ): Promise<Carpool> {
-  if (!actor.managedIds.includes(personId)) {
+  if (!actor.actIds.includes(personId)) {
     throw forbidden('Du kannst nur dich oder deine Kinder eintragen.');
   }
   const [offer] = await db
@@ -304,7 +306,7 @@ export async function leaveRide(
     .where(and(eq(s.carpoolOffers.id, offerId), eq(s.carpoolOffers.clubId, actor.club.id)));
   if (!offer) throw notFound('Die Mitfahrgelegenheit');
   const row = await loadVisibleEvent(db, actor, offer.eventId);
-  if (!actor.managedIds.includes(personId) && offer.driverPersonId !== actor.person.id) {
+  if (!actor.actIds.includes(personId) && offer.driverPersonId !== actor.person.id) {
     throw forbidden('Du kannst nur dich oder deine Kinder austragen.');
   }
   await db
@@ -323,7 +325,7 @@ export async function setRideRequest(
   input: { looking: boolean; note?: string | null },
   now: Date,
 ): Promise<Carpool> {
-  if (!actor.managedIds.includes(personId)) {
+  if (!actor.actIds.includes(personId)) {
     throw forbidden('Du kannst nur für dich oder deine Kinder suchen.');
   }
   const row = await loadOpen(db, actor, eventId, now);

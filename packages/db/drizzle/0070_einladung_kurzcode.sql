@@ -1,1 +1,0 @@
-ALTER TABLE "invitations" ADD COLUMN "code_encrypted" text;

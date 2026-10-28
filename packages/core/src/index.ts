@@ -1,4 +1,5 @@
 export * from './access';
+export * from './guardian-access';
 export * from './archive';
 export * from './club-code';
 export * from './contract';

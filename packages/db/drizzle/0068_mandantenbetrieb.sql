@@ -46,3 +46,46 @@ ALTER TABLE "sessions" ADD CONSTRAINT "sessions_active_club_id_clubs_id_fk" FORE
 ALTER TABLE "user_seen" ADD CONSTRAINT "user_seen_club_id_clubs_id_fk" FOREIGN KEY ("club_id") REFERENCES "public"."clubs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "push_devices_club_id_index" ON "push_devices" USING btree ("club_id");--> statement-breakpoint
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_codeHash_unique" UNIQUE("code_hash");
+--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN "last_club_id" uuid;--> statement-breakpoint
+ALTER TABLE "users" ADD CONSTRAINT "users_last_club_id_clubs_id_fk" FOREIGN KEY ("last_club_id") REFERENCES "public"."clubs"("id") ON DELETE set null ON UPDATE no action;
+--> statement-breakpoint
+CREATE TABLE "club_setup_invites" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"code_hash" text NOT NULL,
+	"admin_email" text NOT NULL,
+	"club_name_hint" text NOT NULL,
+	"created_by_user_id" uuid,
+	"expires_at" timestamp with time zone NOT NULL,
+	"revoked_at" timestamp with time zone,
+	"used_at" timestamp with time zone,
+	"club_id" uuid,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "club_setup_invites_codeHash_unique" UNIQUE("code_hash")
+);
+--> statement-breakpoint
+ALTER TABLE "club_setup_invites" ADD CONSTRAINT "club_setup_invites_created_by_user_id_users_id_fk" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "club_setup_invites" ADD CONSTRAINT "club_setup_invites_club_id_clubs_id_fk" FOREIGN KEY ("club_id") REFERENCES "public"."clubs"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "club_setup_invites_admin_email_index" ON "club_setup_invites" USING btree ("admin_email");
+--> statement-breakpoint
+ALTER TABLE "invitations" ADD COLUMN "code_encrypted" text;
+--> statement-breakpoint
+CREATE TABLE "admin_recoveries" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"club_id" uuid NOT NULL,
+	"first_name" text NOT NULL,
+	"last_name" text NOT NULL,
+	"email" text NOT NULL,
+	"note" text,
+	"created_by_user_id" uuid,
+	"not_before" timestamp with time zone NOT NULL,
+	"objected_at" timestamp with time zone,
+	"objected_by_person_id" uuid,
+	"completed_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+ALTER TABLE "admin_recoveries" ADD CONSTRAINT "admin_recoveries_club_id_clubs_id_fk" FOREIGN KEY ("club_id") REFERENCES "public"."clubs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "admin_recoveries" ADD CONSTRAINT "admin_recoveries_created_by_user_id_users_id_fk" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "admin_recoveries" ADD CONSTRAINT "admin_recoveries_objected_by_person_id_persons_id_fk" FOREIGN KEY ("objected_by_person_id") REFERENCES "public"."persons"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "admin_recoveries_club_id_index" ON "admin_recoveries" USING btree ("club_id");

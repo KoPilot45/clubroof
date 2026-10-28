@@ -8,7 +8,7 @@ import {
   type UploadedImage,
 } from '@clubroof/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import {
@@ -333,6 +333,15 @@ export default function ProfileScreen() {
                     />
                   </Card>
                 </Section>
+              ) : null}
+
+              {p.relation === 'child' ? (
+                <Button
+                  label="Eigener Zugang"
+                  variant="outline"
+                  icon="key-outline"
+                  onPress={() => router.push(`/child-access/${id}`)}
+                />
               ) : null}
 
               {p.canEdit ? (

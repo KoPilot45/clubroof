@@ -113,3 +113,18 @@ Paket R ist umgesetzt: Vorstand ohne `cash.read` (Migration 0032 entfernt es auc
 ## 9. Umsetzungsstand ROLLEN-VERWALTUNG (19.10.2026)
 
 Eigene Rollen je Verein sind umgesetzt (Migration 0065: `roles.scope_default`, `archived_at`, `known_permissions`; `teams.absence_reasons_visible_to`). **Server** (`services/role-admin.ts`, Routen `POST/PUT/DELETE /admin/roles`, `POST /admin/roles/:key/restore`, `GET /admin/members/:id/effective-permissions`): nur `club.roles.manage`; nur Rechte, die man selbst vereinsweit hat; Standardrollen schreibgeschützt (Kopie anpassen); vereinsweite Rechte (`club.*`, `clubcash.*`, `members.*`) nicht in Abteilungs- oder Mannschaftsrollen (auch beim Vergeben geprüft); Name 3–40 Zeichen und eindeutig; Löschen archiviert, stellt Personen optional auf eine andere Rolle um und lässt sich wiederherstellen; man sperrt sich nicht selbst aus. Neue Rechte aus Updates erscheinen als `newPermissions` und sind in eigenen Rollen zunächst aus. Vergabe und Entzug benachrichtigen die Person (Thema „admin“); Anlegen, Ändern, Löschen, Wiederherstellen stehen im Protokoll. **App:** Übersicht mit Reitern Rollen · Personen · Matrix, Hinweise (nur ein Fulladmin, Mannschaften ohne Kassenwart), Rolle bearbeiten (Formular mit Rechten in Klartext nach Gruppen, 🔒 für sensible Rechte, Kopie als Startpunkt), „Was darf diese Person?“, Vorschau „Danach darf …“ beim Vergeben. **Abwesenheitsgründe:** Mannschaftseinstellung `absenceReasonsVisibleTo` (`staff` Standard, `team`), serverseitig in Termin-Teilnehmerliste und Kader; Schalter in „Mannschaft bearbeiten“. Abweichungen: Rolle anlegen und bearbeiten ist ein Formular statt drei Schritten, ohne Reiter „Personen/Verlauf“ (Personen stehen auf der Rollenseite, das Protokoll im Admin-Protokoll); gelöschte Rollen werden in der Rollenübersicht wiederhergestellt statt im Archiv-Bildschirm; Rechte, die man selbst nicht besitzt, lehnt der Server mit Meldung ab (der Bildschirm sperrt sie nicht vorab).
+
+## Elternzugang je Stufe (KIND-EIGENER-ZUGANG)
+
+Stufe je Kind in `guardianships.access`; Eltern sehen über `Actor.managedIds`, handeln über `Actor.actIds` (geprüft in `api.test.ts` „Eigener Zugang für Kinder“).
+
+| Was                                                              | 1 Mitsicht und Mitentscheiden | 2 Nur Mitsicht | 3 Eigenständig |
+| ---------------------------------------------------------------- | ----------------------------- | -------------- | -------------- |
+| Kind in „Meine Kinder“, Start, Termine, Kalenderabo, Suche       | ✅                            | ✅             | ❌             |
+| Benachrichtigungen zum Kind                                      | ✅                            | ✅             | ❌             |
+| Erinnerung „Zusage offen“ und Wischkarten                        | ✅                            | ❌             | ❌             |
+| Zu-/Absage, Abwesenheit, Fahrt buchen, Zahlung melden, Profil    | ✅                            | ❌ (403)       | ❌             |
+| Kasse des Kindes sehen                                           | ✅                            | ✅             | ❌             |
+| Stufe senken (Eltern)                                            | ✅ sofort                     | ✅ sofort      | –              |
+| Stufe erhöhen (Eltern)                                           | mit Zustimmung des Kindes     | mit Zustimmung | mit Zustimmung |
+| Stufe setzen (Kind selbst)                                       | jede Stufe, sofort            | jede Stufe     | jede Stufe     |

@@ -115,6 +115,16 @@ export const guardianships = pgTable(
     childPersonId: uuid()
       .notNull()
       .references(() => persons.id, { onDelete: 'cascade' }),
+    /**
+     * Stufe des Elternzugangs (Paket KIND-EIGENER-ZUGANG): `manage` = Mitsicht und Mitentscheiden,
+     * `view` = nur Mitsicht, `none` = eigenständiges Kind (Eltern sehen und tun nichts mehr).
+     */
+    access: text().notNull().default('manage'),
+    /** Zeitpunkt der letzten Stufenänderung (technischer Haken, z. B. für Volljährigkeit) */
+    accessChangedAt: timestamp({ withTimezone: true }),
+    /** Gewünschte höhere Stufe, wartet auf Zustimmung des Kindes */
+    requestedAccess: text(),
+    requestedAt: timestamp({ withTimezone: true }),
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.guardianPersonId, t.childPersonId] }), index().on(t.clubId)],

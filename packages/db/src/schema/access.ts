@@ -138,6 +138,8 @@ export const invitations = pgTable(
     teamId: uuid().references(() => teams.id, { onDelete: 'cascade' }),
     email: text(),
     createdByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
+    /** Eigener Zugang für ein Kind: Stufe des Elternzugangs, die nach der Annahme gilt */
+    guardianAccess: text(),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
     maxUses: integer(),
     useCount: integer().notNull().default(0),

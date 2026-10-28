@@ -17,6 +17,7 @@ import {
   scopesWith,
   toIsoDate,
   effectiveClubCode,
+  isGuardianAccess,
   type AcceptInviteInput,
   type ApproveJoinInput,
   type InviteLink,
@@ -509,6 +510,13 @@ export async function acceptInvite(
       .update(s.persons)
       .set({ userId: user!.id, email: row.person!.email ?? email })
       .where(eq(s.persons.id, row.person!.id));
+    // Eigener Zugang für ein Kind: die von den Eltern gewählte Stufe gilt ab jetzt
+    if (isGuardianAccess(row.invitation.guardianAccess)) {
+      await tx
+        .update(s.guardianships)
+        .set({ access: row.invitation.guardianAccess, accessChangedAt: now })
+        .where(eq(s.guardianships.childPersonId, row.person!.id));
+    }
     await tx.insert(s.auditLog).values({
       clubId: row.club.id,
       actorUserId: user!.id,
