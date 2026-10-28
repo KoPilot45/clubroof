@@ -9,7 +9,7 @@ import { Ionicons } from '@/components/icon';
 import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { formatDateTile, formatTime } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { queuedFor, useOutbox } from '@/lib/outbox';
@@ -146,12 +146,7 @@ function TableRow({
   const total = counts ? counts.yes + counts.maybe + counts.no + counts.pending : 0;
   return (
     <View style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
-      <Pressable
-        ref={(node) => register(node as unknown as { focus: () => void } | null)}
-        accessibilityRole="button"
-        accessibilityLabel={`${event.title}, ${formatTime(event.startsAt)}`}
-        onPress={() => router.push(`/events/${event.id}`)}
-        {...({ onKeyDown: onKey } as object)}
+      <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -161,10 +156,20 @@ function TableRow({
           opacity: cancelled ? 0.7 : 1,
         }}
       >
-        <T verbatim style={{ width: COLS.date, fontSize: 13.5 }}>
+        {/* Die ganze Zeile öffnet den Termin. Die Fläche liegt hinter den Spalten, weil Antwort und
+            Teilnehmer eigene Schaltflächen sind (HTML erlaubt keine Schaltfläche in einer Schaltfläche). */}
+        <Pressable
+          ref={(node) => register(node as unknown as { focus: () => void } | null)}
+          accessibilityRole="button"
+          accessibilityLabel={`${event.title}, ${formatTime(event.startsAt)}`}
+          onPress={() => router.push(`/events/${event.id}`)}
+          {...({ onKeyDown: onKey } as object)}
+          style={StyleSheet.absoluteFill}
+        />
+        <T verbatim style={{ width: COLS.date, fontSize: 13.5, pointerEvents: 'none' }}>
           {`${tile.weekday.replace('.', '')} ${tile.day}. · ${formatTime(event.startsAt)}`}
         </T>
-        <View style={{ flex: 1, minWidth: 0 }}>
+        <View style={{ flex: 1, minWidth: 0, pointerEvents: 'none' }}>
           <T
             verbatim
             numberOfLines={1}
@@ -180,7 +185,7 @@ function TableRow({
             {cancelled ? (event.cancelledReason ?? t('Termin abgesagt')) : (event.location ?? '')}
           </T>
         </View>
-        <T verbatim style={{ width: COLS.team, fontSize: 13.5 }}>
+        <T verbatim style={{ width: COLS.team, fontSize: 13.5, pointerEvents: 'none' }}>
           {event.team?.badge ?? t('Verein')}
         </T>
         <View style={{ width: COLS.answer }}>
@@ -252,7 +257,7 @@ function TableRow({
             </Pressable>
           ) : null}
         </View>
-      </Pressable>
+      </View>
       {flow.sheet}
       {open && counts ? <ExpandedGroups event={event} /> : null}
     </View>
