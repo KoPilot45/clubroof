@@ -14,9 +14,10 @@ export type Fiscal = { startMonth: number };
 
 export async function fiscalOf(db: Db, clubId: string): Promise<Fiscal> {
   const [club] = await db
-    .select({ kind: s.clubs.fiscalYearKind })
+    .select({ kind: s.clubs.fiscalYearKind, month: s.clubs.fiscalYearStartMonth })
     .from(s.clubs)
     .where(eq(s.clubs.id, clubId));
+  if (club?.kind === 'month') return { startMonth: club.month };
   if (club?.kind !== 'season') return { startMonth: 1 };
   const [season] = await db
     .select({ startsOn: s.seasons.startsOn })

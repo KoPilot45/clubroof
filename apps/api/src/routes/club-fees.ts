@@ -75,6 +75,9 @@ export const clubFeeRoutes: FastifyPluginAsyncZod = async (app) => {
           name: z.string().trim().min(2).max(60),
           amountCents: cents,
           interval: z.enum(CLUB_FEE_INTERVALS),
+          dueDay: z.number().int().min(1).max(31).optional(),
+          dueMonth: z.number().int().min(1).max(12).optional(),
+          dueOn: day.nullish(),
           categoryId: z.uuid().nullish(),
           fundId: z.uuid().nullish(),
         }),
@@ -94,6 +97,9 @@ export const clubFeeRoutes: FastifyPluginAsyncZod = async (app) => {
         body: z.object({
           name: z.string().trim().min(2).max(60).optional(),
           amountCents: cents.optional(),
+          dueDay: z.number().int().min(1).max(31).optional(),
+          dueMonth: z.number().int().min(1).max(12).optional(),
+          dueOn: day.nullable().optional(),
           categoryId: z.uuid().nullable().optional(),
           fundId: z.uuid().nullable().optional(),
           archived: z.boolean().optional(),
@@ -214,13 +220,15 @@ export const clubFeeRoutes: FastifyPluginAsyncZod = async (app) => {
           rules: z
             .array(
               z.object({
-                when: z.enum(['under_age', 'inactive', 'rest']),
+                when: z.enum(['age_range', 'under_age', 'inactive', 'rest']),
                 age: z.number().int().min(1).max(99).optional(),
+                fromAge: z.number().int().min(0).max(120).optional(),
+                toAge: z.number().int().min(0).max(120).optional(),
                 feeTypeId: z.uuid(),
               }),
             )
             .min(1)
-            .max(3),
+            .max(12),
         }),
       },
     },

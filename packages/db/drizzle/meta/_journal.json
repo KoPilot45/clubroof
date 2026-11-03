@@ -498,6 +498,20 @@
       "when": 1793714454591,
       "tag": "0070_abteilung_kontaktstandard",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1793714601679,
+      "tag": "0071_beitragsart_faelligkeit",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1793714658054,
+      "tag": "0072_haushaltsjahr_startmonat",
+      "breakpoints": true
     }
   ]
 }

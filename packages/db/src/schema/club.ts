@@ -57,6 +57,8 @@ export const clubs = pgTable('clubs', {
   joinApproval: text().notNull().default('team_staff'),
   /** Haushaltsjahr der Vereinskasse: `calendar` = Kalenderjahr, `season` = Saison (Beginn wie die laufende Saison) */
   fiscalYearKind: text().notNull().default('calendar'),
+  /** Startmonat des Haushaltsjahres bei fiscalYearKind = 'month' (1–12) */
+  fiscalYearStartMonth: integer().notNull().default(1),
   /** Auslagen brauchen einen Beleg (Fahrtkosten nicht) */
   claimReceiptRequired: boolean().notNull().default(false),
   /** Ab diesem Betrag (Cent) muss eine zweite Person eine Auslage freigeben; leer = keine Grenze */

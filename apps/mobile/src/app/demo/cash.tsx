@@ -12,6 +12,7 @@ const CASH: ClubCash = {
   visibility: 'treasury',
   nonprofit: null,
   fiscalYear: 'calendar',
+  fiscalStartMonth: 1,
   memberStats: { total: 3, withBirthDate: 3 },
   claimRules: { receiptRequired: false, secondApprovalCents: null },
   year: new Date().getFullYear(),

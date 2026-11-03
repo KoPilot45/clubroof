@@ -239,7 +239,13 @@ export async function getClubCash(
       (await db.select({ n: s.clubs.nonprofit }).from(s.clubs).where(eq(s.clubs.id, clubId)))[0]
         ?.n ?? null,
     visibility: actor.club.clubCashVisibility as ClubCashVisibility,
-    fiscalYear: actor.club.fiscalYearKind === 'season' ? 'season' : 'calendar',
+    fiscalYear:
+      actor.club.fiscalYearKind === 'season'
+        ? 'season'
+        : actor.club.fiscalYearKind === 'month'
+          ? 'month'
+          : 'calendar',
+    fiscalStartMonth: actor.club.fiscalYearStartMonth,
     memberStats: await memberStats(db, clubId),
     claimRules: {
       receiptRequired: actor.club.claimReceiptRequired,
@@ -879,7 +885,9 @@ export async function setCashRules(
   db: Db,
   actor: Actor,
   input: {
-    fiscalYear?: 'calendar' | 'season';
+    fiscalYear?: 'calendar' | 'season' | 'month';
+    /** Startmonat bei fiscalYear = 'month' */
+    fiscalStartMonth?: number;
     claimReceiptRequired?: boolean;
     claimSecondApprovalCents?: number | null;
   },
@@ -887,7 +895,12 @@ export async function setCashRules(
 ): Promise<void> {
   requireManage(actor);
   const patch: Partial<typeof s.clubs.$inferInsert> = {};
-  if (input.fiscalYear !== undefined && input.fiscalYear !== actor.club.fiscalYearKind) {
+  const changesFiscal =
+    (input.fiscalYear !== undefined && input.fiscalYear !== actor.club.fiscalYearKind) ||
+    (input.fiscalStartMonth !== undefined &&
+      (input.fiscalYear ?? actor.club.fiscalYearKind) === 'month' &&
+      input.fiscalStartMonth !== actor.club.fiscalYearStartMonth);
+  if (changesFiscal) {
     const [locked] = await db
       .select({ id: s.clubPeriodLocks.id })
       .from(s.clubPeriodLocks)
@@ -899,7 +912,8 @@ export async function setCashRules(
         'fiscal_locked',
         'Das Haushaltsjahr lässt sich nicht mehr ändern, weil schon ein Jahr abgeschlossen wurde.',
       );
-    patch.fiscalYearKind = input.fiscalYear;
+    if (input.fiscalYear !== undefined) patch.fiscalYearKind = input.fiscalYear;
+    if (input.fiscalStartMonth !== undefined) patch.fiscalYearStartMonth = input.fiscalStartMonth;
   }
   if (input.claimReceiptRequired !== undefined)
     patch.claimReceiptRequired = input.claimReceiptRequired;

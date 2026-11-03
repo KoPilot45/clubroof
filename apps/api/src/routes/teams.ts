@@ -417,6 +417,8 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
           cashPayment: z.boolean().optional(),
           seasonEnd: z.enum(['carry', 'payout']).optional(),
           clubOwned: z.boolean().optional(),
+          fines: z.boolean().optional(),
+          drinks: z.boolean().optional(),
         }),
       },
     },

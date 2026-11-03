@@ -19,21 +19,11 @@ import {
   useWizardDraft,
   type SetupMode,
 } from '@/components/wizard';
-import { Card, ChoiceChips, Chip, Loading, T, TextField, Toggle } from '@/components/ui';
+import { Button, Card, Chip, ChoiceChips, Loading, T, TextField, ToggleRow } from '@/components/ui';
 import { RequestError } from '@/lib/api';
 import { formatEuro, parseEuro } from '@/lib/format';
 import { t } from '@/lib/i18n';
 import { useSignedIn } from '@/lib/session';
-
-/** Übliche Strafen einer Mannschaftskasse (Vorlage, danach frei änderbar) */
-export const TEAM_FINE_TEMPLATE: { name: string; amountCents: number }[] = [
-  { name: 'Zu spät zum Training', amountCents: 500 },
-  { name: 'Zu spät zum Spiel', amountCents: 1000 },
-  { name: 'Unentschuldigt gefehlt', amountCents: 1500 },
-  { name: 'Handy in der Kabine', amountCents: 200 },
-  { name: 'Trikot vergessen', amountCents: 500 },
-  { name: 'Kabinendienst vergessen', amountCents: 1000 },
-];
 
 type Interval = 'monthly' | 'season' | 'once';
 const INTERVALS: { value: Interval; label: string }[] = [
@@ -56,7 +46,12 @@ type Draft = {
   seasonEnd: 'carry' | 'payout';
   clubOwned: boolean;
   opening: string;
-  fines: string[];
+  /** Strafenkatalog: null = noch nicht beantwortet (dann gilt der bestehende Stand) */
+  finesOn: boolean | null;
+  /** Eigene Strafen mit Betrag – das Anlegen beginnt leer */
+  fines: { name: string; amount: string }[];
+  /** Getränke vorstrecken: null = noch nicht beantwortet */
+  drinksOn: boolean | null;
   drinkPrice: string;
   fee: boolean;
   feeName: string;
@@ -78,8 +73,10 @@ const INITIAL: Draft = {
   seasonEnd: 'carry',
   clubOwned: true,
   opening: '',
-  fines: TEAM_FINE_TEMPLATE.map((f) => f.name),
-  drinkPrice: '1,50',
+  finesOn: null,
+  fines: [],
+  drinksOn: null,
+  drinkPrice: '',
   fee: false,
   feeName: 'Mannschaftsbeitrag',
   feeAmount: '',
@@ -157,8 +154,8 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
     'booking',
     'opening',
     ...(d.flow === 'full' ? (['payment'] as const) : []),
-    ...(cash.config.fines ? (['fines'] as const) : []),
-    ...(cash.config.drinks ? (['drinks'] as const) : []),
+    'fines',
+    'drinks',
     'fee',
     'visibility',
     ...(d.flow === 'full' ? (['season', 'club'] as const) : []),
@@ -187,12 +184,20 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
   const toggle = (list: string[], v: string) =>
     list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
   const opening = d.opening.trim() ? parseEuro(d.opening) : 0;
-  const drinkCents = parseEuro(d.drinkPrice);
+  const finesOn = d.finesOn ?? cash.config.fines;
+  const drinksOn = d.drinksOn ?? cash.config.drinks;
+  const drinkCents = d.drinkPrice.trim() ? parseEuro(d.drinkPrice) : null;
   const feeCents = parseEuro(d.feeAmount);
   const alreadyTreasurer = new Set((cash.treasurers ?? []).map((x) => x.personId));
-  const newFines = TEAM_FINE_TEMPLATE.filter(
-    (f) => d.fines.includes(f.name) && !cash.fineCatalog.some((x) => x.name === f.name),
-  );
+  const newFines = d.fines
+    .map((f) => ({ name: f.name.trim(), amountCents: f.amount.trim() ? parseEuro(f.amount) : null }))
+    .filter(
+      (f): f is { name: string; amountCents: number } =>
+        f.name.length >= 2 &&
+        f.amountCents !== null &&
+        f.amountCents > 0 &&
+        !cash.fineCatalog.some((x) => x.name === f.name),
+    );
 
   const create = async () => {
     setBusy(true);
@@ -210,12 +215,18 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
             method: 'POST',
             body: { kind: 'income', amountCents: opening, description: 'Anfangsbestand' },
           });
-        if (cash.config.fines)
+        // Strafen und Getränke zuerst ein- oder ausschalten, danach Katalog und Preis
+        if (finesOn !== cash.config.fines || drinksOn !== cash.config.drinks)
+          await api(`${base}/settings`, {
+            method: 'PUT',
+            body: { fines: finesOn, drinks: drinksOn },
+          });
+        if (finesOn)
           for (const f of newFines) await api(`${base}/fine-types`, { method: 'POST', body: f });
         await api(`${base}/settings`, {
           method: 'PUT',
           body: {
-            ...(cash.config.drinks && drinkCents ? { drinkPriceCents: drinkCents } : {}),
+            ...(drinksOn && drinkCents ? { drinkPriceCents: drinkCents } : {}),
             showMemberBalances: d.showBalances,
             autoReminder: d.autoReminder,
             ...(d.flow === 'full'
@@ -373,7 +384,7 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
         explanation="Wie zahlen Spieler und Eltern ein? Die Angaben stehen in der Kasse bei „Bezahlen“."
         onSkip={next}
       >
-        <Toggle
+        <ToggleRow
           label="Barzahlung möglich"
           value={d.cashPayment}
           onChange={(cashPayment) => patch({ cashPayment })}
@@ -494,25 +505,67 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
       <WizardShell
         {...shell}
         title="Strafenkatalog"
-        explanation="Übliche Strafen als Vorlage – abwählen, was ihr nicht wollt. Beträge und weitere Strafen änderst du später."
+        explanation="Gibt es bei euch einen Strafenkatalog? Zum Beispiel „Zu spät zum Spiel“ mit einem festen Betrag. Der Katalog legt fest, welche Strafen das Trainerteam oder der Kassenwart vergeben kann."
+        nextDisabled={finesOn && d.fines.some((f) => f.name.trim() && !f.amount.trim())}
         onSkip={next}
       >
-        <View style={{ gap: 10 }}>
-          {TEAM_FINE_TEMPLATE.map((f) => {
-            const have = cash.fineCatalog.some((x) => x.name === f.name);
-            return (
-              <ChoiceCard
-                key={f.name}
-                icon="alert-circle"
-                title={f.name}
-                text={have ? 'Schon im Katalog' : formatEuro(f.amountCents)}
-                multi
-                selected={have || d.fines.includes(f.name)}
-                onPress={() => (have ? undefined : patch({ fines: toggle(d.fines, f.name) }))}
+        <OptionCard
+          icon="alert-circle"
+          title="Ja, wir haben einen Strafenkatalog"
+          text="Du legst die Strafen mit Betrag selbst an"
+          selected={finesOn}
+          onPress={() => patch({ finesOn: true })}
+        />
+        <OptionCard
+          icon="close-circle"
+          title="Nein"
+          text="Die Strafenfunktion bleibt aus"
+          selected={!finesOn}
+          onPress={() => patch({ finesOn: false })}
+        />
+        {finesOn ? (
+          <View style={{ gap: 10 }}>
+            {cash.fineCatalog.length > 0 ? (
+              <Chip
+                tone="neutral"
+                icon="checkmark-circle"
+                label={t(`${cash.fineCatalog.length} Strafen sind schon im Katalog`)}
               />
-            );
-          })}
-        </View>
+            ) : null}
+            {d.fines.map((f, i) => (
+              <Card key={i} style={{ gap: 10 }}>
+                <TextField
+                  label="Name der Strafe"
+                  value={f.name}
+                  onChangeText={(name) =>
+                    patch({ fines: d.fines.map((x, n) => (n === i ? { ...x, name } : x)) })
+                  }
+                  maxLength={60}
+                />
+                <TextField
+                  label="Betrag in €"
+                  value={f.amount}
+                  onChangeText={(amount) =>
+                    patch({ fines: d.fines.map((x, n) => (n === i ? { ...x, amount } : x)) })
+                  }
+                  placeholder="0,00"
+                />
+                <Button
+                  label="Entfernen"
+                  variant="outline"
+                  icon="trash-outline"
+                  onPress={() => patch({ fines: d.fines.filter((_, n) => n !== i) })}
+                />
+              </Card>
+            ))}
+            <Button
+              label="Strafe hinzufügen"
+              icon="add"
+              variant="outline"
+              onPress={() => patch({ fines: [...d.fines, { name: '', amount: '' }] })}
+            />
+          </View>
+        ) : null}
         <LaterHint where="Mannschaftskasse › Strafen" />
       </WizardShell>
     );
@@ -521,21 +574,33 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
     return (
       <WizardShell
         {...shell}
-        title="Getränkepreis"
-        explanation="Der Preis je Getränk für die Getränkeliste."
-        nextDisabled={drinkCents === null}
+        title="Getränke"
+        explanation="Streckt die Mannschaft Getränke aus der Kasse vor und schreibt sie den Spielern an? Dann führst du eine Getränkeliste, jeder zahlt, was er getrunken hat."
+        nextDisabled={drinksOn && d.drinkPrice.trim() !== '' && drinkCents === null}
         onSkip={next}
       >
-        <ChoiceChips
-          options={['1,00', '1,50', '2,00'].map((v) => ({ value: v, label: `${v} €` }))}
-          selected={[d.drinkPrice]}
-          onToggle={(drinkPrice) => patch({ drinkPrice })}
+        <OptionCard
+          icon="beer"
+          title="Ja, Getränke werden angeschrieben"
+          text="Die Kasse streckt vor, die Spieler zahlen später"
+          selected={drinksOn}
+          onPress={() => patch({ drinksOn: true })}
         />
-        <TextField
-          label="Preis in €"
-          value={d.drinkPrice}
-          onChangeText={(drinkPrice) => patch({ drinkPrice })}
+        <OptionCard
+          icon="close-circle"
+          title="Nein"
+          text="Die Getränkeliste bleibt aus"
+          selected={!drinksOn}
+          onPress={() => patch({ drinksOn: false })}
         />
+        {drinksOn ? (
+          <TextField
+            label="Preis je Getränk in €"
+            value={d.drinkPrice}
+            onChangeText={(drinkPrice) => patch({ drinkPrice })}
+            placeholder="z. B. 1,50"
+          />
+        ) : null}
         <LaterHint where="Mannschaftskasse › Einstellungen" />
       </WizardShell>
     );
@@ -548,7 +613,7 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
         explanation="Soll jedes Mitglied der Mannschaft regelmäßig einen Betrag zahlen? Einmalige Umlagen legst du später an."
         nextDisabled={d.fee && (feeCents === null || d.feeName.trim().length < 2)}
       >
-        <Toggle
+        <ToggleRow
           label="Mannschaftsbeitrag erheben"
           value={d.fee}
           onChange={(fee) => patch({ fee })}
@@ -583,16 +648,18 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
         title="Was darf die Mannschaft sehen?"
         explanation="Kassenstand, Einnahmen und Ausgaben sieht immer die ganze Mannschaft. Die Beträge der einzelnen Personen zeigst du nur, wenn ihr das wollt – sonst sieht jeder nur die eigenen."
       >
-        <Toggle
-          label="Beträge aller Beteiligten anzeigen"
-          value={d.showBalances}
-          onChange={(showBalances) => patch({ showBalances })}
-        />
-        <Toggle
-          label="Am Monatsanfang an offene Beträge erinnern"
-          value={d.autoReminder}
-          onChange={(autoReminder) => patch({ autoReminder })}
-        />
+        <Card style={{ gap: 14 }}>
+          <ToggleRow
+            label="Beträge aller Beteiligten anzeigen"
+            value={d.showBalances}
+            onChange={(showBalances) => patch({ showBalances })}
+          />
+          <ToggleRow
+            label="Am Monatsanfang an offene Beträge erinnern"
+            value={d.autoReminder}
+            onChange={(autoReminder) => patch({ autoReminder })}
+          />
+        </Card>
         <LaterHint where="Mannschaftskasse › Einstellungen" />
       </WizardShell>
     );
@@ -601,24 +668,22 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
   const rows: { label: string; value: string; key: StepKey }[] = [
     { label: t('Kassenwart'), value: people.join(' · '), key: 'treasurers' },
     { label: t('Anfangsbestand'), value: opening ? formatEuro(opening) : '', key: 'opening' },
-    ...(cash.config.fines
-      ? [
-          {
-            label: t('Strafen'),
-            value: newFines.map((f) => f.name).join(' · '),
-            key: 'fines' as const,
-          },
-        ]
-      : []),
-    ...(cash.config.drinks
-      ? [
-          {
-            label: t('Getränkepreis'),
-            value: drinkCents ? formatEuro(drinkCents) : '',
-            key: 'drinks' as const,
-          },
-        ]
-      : []),
+    {
+      label: t('Strafen'),
+      value: finesOn
+        ? (newFines.map((f) => `${f.name} ${formatEuro(f.amountCents)}`).join(' · ') || t('ja'))
+        : t('kein Strafenkatalog'),
+      key: 'fines' as const,
+    },
+    {
+      label: t('Getränke'),
+      value: drinksOn
+        ? drinkCents
+          ? t(`ja, ${formatEuro(drinkCents)} je Getränk`)
+          : t('ja')
+        : t('nicht angeschrieben'),
+      key: 'drinks' as const,
+    },
     {
       label: t('Beitrag'),
       value:

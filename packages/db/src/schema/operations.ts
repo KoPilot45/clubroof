@@ -935,6 +935,10 @@ export const clubFeeTypes = pgTable(
     amountCents: integer().notNull(),
     /** monthly | quarterly | yearly | once */
     interval: text().notNull(),
+    /** Fälligkeit: Tag im Monat, erster Fälligkeitsmonat (jährlich/vierteljährlich) und Datum (einmalig) */
+    dueDay: integer().notNull().default(1),
+    dueMonth: integer().notNull().default(1),
+    dueOn: date(),
     /** Einnahmekategorie der Vereinskasse, in die Zahlungen gebucht werden */
     categoryId: uuid().references(() => clubCashCategories.id),
     /** Zielkasse der Beiträge (Paket K6); leer = Hauptkasse */

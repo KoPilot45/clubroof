@@ -15,6 +15,7 @@ import {
   type TeamCash,
   type TreasurerCandidates,
 } from '@clubroof/core';
+import { resolveModule } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lte, or } from 'drizzle-orm';
 import type { Actor } from '../actor';
@@ -212,6 +213,64 @@ export async function cashAdminView(
 
 // ── Einstellungen ───────────────────────────────────────────────────────────
 
+/**
+ * Strafenkatalog und Getränke sind Optionen des Moduls „Mannschaftskasse“ für diese Mannschaft:
+ * die Einstellung wird in der Modul-Einstellung der Mannschaft abgelegt (und gilt sofort).
+ */
+async function setCashFeatures(
+  db: Db,
+  actor: Actor,
+  team: TeamRow,
+  input: { fines?: boolean; drinks?: boolean },
+): Promise<void> {
+  const effective = resolveModule(actor.modules, 'team_cash', {
+    teamId: team.id,
+    orgUnitId: team.orgUnitId,
+  });
+  const [own] = await db
+    .select()
+    .from(s.moduleSettings)
+    .where(
+      and(
+        eq(s.moduleSettings.clubId, actor.club.id),
+        eq(s.moduleSettings.moduleKey, 'team_cash'),
+        eq(s.moduleSettings.scopeType, 'team'),
+        eq(s.moduleSettings.scopeId, team.id),
+      ),
+    );
+  const config: Record<string, unknown> = { ...(own?.config ?? {}) };
+  if (input.fines !== undefined) config.fines = input.fines;
+  if (input.drinks !== undefined) config.drinks = input.drinks;
+  if (own) {
+    await db.update(s.moduleSettings).set({ config }).where(eq(s.moduleSettings.id, own.id));
+  } else {
+    await db.insert(s.moduleSettings).values({
+      clubId: actor.club.id,
+      scopeType: 'team',
+      scopeId: team.id,
+      moduleKey: 'team_cash',
+      state: effective.state,
+      level: effective.level,
+      config,
+    });
+  }
+  // Der Actor trägt noch die alten Modul-Einstellungen – für den Rest der Anfrage nachziehen
+  const row = {
+    clubId: actor.club.id,
+    scopeType: 'team' as const,
+    scopeId: team.id,
+    moduleKey: 'team_cash',
+    state: own?.state ?? effective.state,
+    level: own?.level ?? effective.level,
+    config,
+  };
+  const i = actor.modules.findIndex(
+    (m) => m.moduleKey === 'team_cash' && m.scopeType === 'team' && m.scopeId === team.id,
+  );
+  if (i >= 0) actor.modules[i] = { ...actor.modules[i]!, ...row };
+  else actor.modules.push(row as never);
+}
+
 export async function updateCashSettings(
   db: Db,
   actor: Actor,
@@ -230,10 +289,15 @@ export async function updateCashSettings(
     cashPayment: boolean;
     seasonEnd: 'carry' | 'payout';
     clubOwned: boolean;
+    /** Strafenkatalog bzw. Getränke der Mannschaftskasse ein- oder ausschalten */
+    fines: boolean;
+    drinks: boolean;
   }>,
   now: Date,
 ): Promise<TeamCash> {
-  const { account } = await loadManaged(db, actor, teamId);
+  const { team, account } = await loadManaged(db, actor, teamId);
+  if (input.fines !== undefined || input.drinks !== undefined)
+    await setCashFeatures(db, actor, team, { fines: input.fines, drinks: input.drinks });
   const clean = (v: string | null | undefined) => (v === undefined ? undefined : v?.trim() || null);
   const next = {
     ...account.settings,

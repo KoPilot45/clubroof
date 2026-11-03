@@ -169,6 +169,9 @@ export async function getClubFees(
     name: r.type.name,
     amountCents: r.type.amountCents,
     interval: r.type.interval as ClubFeeInterval,
+    dueDay: r.type.dueDay,
+    dueMonth: r.type.dueMonth,
+    dueOn: r.type.dueOn,
     categoryId: r.type.categoryId,
     categoryName: r.categoryName,
     archived: !!r.type.archivedAt,
@@ -353,6 +356,9 @@ export async function createFeeType(
       name: input.name.trim(),
       amountCents: input.amountCents,
       interval: input.interval,
+      dueDay: input.dueDay ?? 1,
+      dueMonth: input.dueMonth ?? 1,
+      dueOn: input.dueOn ?? null,
       categoryId: category?.id ?? null,
       fundId: fund?.id ?? null,
       createdAt: now,
@@ -376,6 +382,9 @@ export async function updateFeeType(
   input: {
     name?: string;
     amountCents?: number;
+    dueDay?: number;
+    dueMonth?: number;
+    dueOn?: string | null;
     categoryId?: string | null;
     fundId?: string | null;
     archived?: boolean;
@@ -391,6 +400,9 @@ export async function updateFeeType(
   const patch: Partial<typeof s.clubFeeTypes.$inferInsert> = {};
   if (input.name !== undefined) patch.name = input.name.trim();
   if (input.amountCents !== undefined) patch.amountCents = input.amountCents;
+  if (input.dueDay !== undefined) patch.dueDay = input.dueDay;
+  if (input.dueMonth !== undefined) patch.dueMonth = input.dueMonth;
+  if (input.dueOn !== undefined) patch.dueOn = input.dueOn;
   if (input.categoryId !== undefined)
     patch.categoryId = (await incomeCategory(db, actor, input.categoryId))?.id ?? null;
   if (input.fundId !== undefined)
@@ -512,25 +524,28 @@ export function dueDates(
   validTo: string | null,
   upTo: string,
   notBefore: string,
+  due: { day: number; month: number; on: string | null } = { day: 1, month: 1, on: null },
 ): { dueOn: string; label: string }[] {
   const last = validTo && validTo < upTo ? validTo : upTo;
   const result: { dueOn: string; label: string }[] = [];
   if (interval === 'once') {
-    if (validFrom <= last && validFrom >= notBefore) result.push({ dueOn: validFrom, label: '' });
+    const on = due.on ?? validFrom;
+    if (on >= validFrom && on <= last && on >= notBefore) result.push({ dueOn: on, label: '' });
     return result;
   }
   const [fy, fm] = validFrom.split('-').map(Number) as [number, number];
   let year = fy;
   let month = fm;
   for (let guard = 0; guard < 600; guard++) {
-    const dueOn = `${year}-${String(month).padStart(2, '0')}-01`;
-    if (dueOn > last) break;
-    const quarterStart = (month - 1) % 3 === 0;
+    const monthEnd = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const dueOn = `${year}-${String(month).padStart(2, '0')}-${String(Math.min(due.day, monthEnd)).padStart(2, '0')}`;
+    if (`${year}-${String(month).padStart(2, '0')}-01` > last) break;
+    const quarterStart = (month - due.month) % 3 === 0;
     const include =
       interval === 'monthly' ||
       (interval === 'quarterly' && quarterStart) ||
-      (interval === 'yearly' && month === 1);
-    if (include && dueOn >= validFrom && dueOn >= notBefore) {
+      (interval === 'yearly' && month === due.month);
+    if (include && dueOn <= last && dueOn >= validFrom && dueOn >= notBefore) {
       const label =
         interval === 'monthly'
           ? `${MONTHS[month - 1]} ${year}`
@@ -578,6 +593,7 @@ export async function generateDues(
       r.a.validTo,
       upTo,
       notBefore,
+      { day: r.type.dueDay, month: r.type.dueMonth, on: r.type.dueOn },
     );
     if (dates.length === 0) continue;
     const inserted = await db
@@ -1145,9 +1161,7 @@ export async function assignByRules(
     const years = Number(day.slice(0, 4)) - Number(birth.slice(0, 4));
     return day.slice(5) < birth.slice(5) ? years - 1 : years;
   };
-  const under = input.rules.find((r) => r.when === 'under_age');
-  const inactive = input.rules.find((r) => r.when === 'inactive');
-  const rest = input.rules.find((r) => r.when === 'rest');
+  const hasAgeRules = input.rules.some((r) => r.when === 'age_range' || r.when === 'under_age');
   const plan = new Map<string, string>();
   let missingBirthDate = 0;
   let alreadyAssigned = 0;
@@ -1156,17 +1170,21 @@ export async function assignByRules(
       alreadyAssigned += 1;
       continue;
     }
-    let typeId: string | undefined;
-    if (under) {
-      if (!p.birthDate) {
-        missingBirthDate += 1;
-        continue;
-      }
-      if (ageOf(p.birthDate) < (under.age ?? 18)) typeId = under.feeTypeId;
+    // Ohne Geburtsdatum greift keine Altersregel: Person wird übersprungen (später nach dem Import)
+    if (hasAgeRules && !p.birthDate) {
+      missingBirthDate += 1;
+      continue;
     }
-    if (!typeId && p.status === 'inactive' && inactive) typeId = inactive.feeTypeId;
-    if (!typeId && rest) typeId = rest.feeTypeId;
-    if (typeId) plan.set(p.id, typeId);
+    // Reihenfolge von oben nach unten, die erste passende Regel gilt
+    const age = p.birthDate ? ageOf(p.birthDate) : null;
+    const match = input.rules.find((r) => {
+      if (r.when === 'rest') return true;
+      if (r.when === 'inactive') return p.status === 'inactive';
+      if (age === null) return false;
+      if (r.when === 'under_age') return age < (r.age ?? 18);
+      return age >= (r.fromAge ?? 0) && age <= (r.toAge ?? 200);
+    });
+    if (match) plan.set(p.id, match.feeTypeId);
   }
   const typeIds = [...new Set(plan.values())];
   const counts = typeIds.map((feeTypeId) => ({

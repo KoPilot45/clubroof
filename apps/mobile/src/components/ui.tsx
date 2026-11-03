@@ -1122,6 +1122,31 @@ export function Toggle({
   );
 }
 
+/** Schalter mit sichtbarer Beschriftung: Text links, Schalter rechts (optional mit Erklärung darunter). */
+export function ToggleRow({
+  label,
+  hint,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  hint?: string;
+  value: boolean;
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <View style={{ flex: 1, gap: 2 }}>
+        <T style={{ fontWeight: '600' }}>{label}</T>
+        {hint ? <T variant="caption">{hint}</T> : null}
+      </View>
+      <Toggle label={label} value={value} onChange={onChange} disabled={disabled} />
+    </View>
+  );
+}
+
 // ── Wappen & Avatar ───────────────────────────────────────────────────────────
 
 /** Vereinswappen. Solange kein Logo hochgeladen ist, ein Schild mit Kürzel in Vereinsfarbe. */

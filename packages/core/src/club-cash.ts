@@ -180,7 +180,9 @@ export type ClubCash = {
   /** Gemeinnützig im Sinne der Abgabenordnung; leer = noch nicht angegeben (Paket E2) */
   nonprofit: boolean | null;
   /** Haushaltsjahr: Kalenderjahr oder Saison (Paket EINRICHTUNG-ENTSCHEIDUNGEN) */
-  fiscalYear: 'calendar' | 'season';
+  fiscalYear: 'calendar' | 'season' | 'month';
+  /** Startmonat des Haushaltsjahres (bei „month“; sonst 1 bzw. Beginn der Saison) */
+  fiscalStartMonth: number;
   /** Mitglieder insgesamt und mit Geburtsdatum (Beitragsregeln nach Alter brauchen es); nur Zahlen */
   memberStats: { total: number; withBirthDate: number };
   /** Regeln für Auslagen: Belegpflicht und Betrag ab dem eine zweite Person freigibt */
@@ -254,6 +256,11 @@ export type ClubFeeType = {
   name: string;
   amountCents: number;
   interval: ClubFeeInterval;
+  /** Fälligkeit: Tag im Monat (1–31) und – bei jährlich/vierteljährlich – erster Fälligkeitsmonat (1–12) */
+  dueDay: number;
+  dueMonth: number;
+  /** nur bei „einmalig“: Fälligkeitsdatum (JJJJ-MM-TT); leer = Beginn der Zuordnung */
+  dueOn: string | null;
   categoryId: string | null;
   categoryName: string | null;
   /** Zielkasse der Beiträge; null = Hauptkasse */
@@ -326,6 +333,10 @@ export type ClubFeeTypeInput = {
   name: string;
   amountCents: number;
   interval: ClubFeeInterval;
+  /** Fälligkeit, siehe `ClubFeeType`; ohne Angabe der 1. Januar bzw. der 1. des Monats */
+  dueDay?: number;
+  dueMonth?: number;
+  dueOn?: string | null;
   categoryId?: string | null;
   /** Zielkasse; leer = Hauptkasse */
   fundId?: string | null;
@@ -854,9 +865,15 @@ export type ClubTeamGrants = {
 
 /** Zuordnung der Beitragsarten nach Regeln (Paket E2): erste passende Regel je Mitglied. */
 export type ClubFeeRule = {
-  /** unter: jünger als `age` Jahre; inactive: Status passiv; rest: alle übrigen */
-  when: 'under_age' | 'inactive' | 'rest';
+  /**
+   * age_range: Alter von `fromAge` bis `toAge` (einschließlich, jeweils offen möglich);
+   * under_age: jünger als `age` Jahre (ältere Schreibweise); inactive: Status passiv; rest: alle übrigen.
+   * Die Regeln gelten von oben nach unten, die erste passende gilt.
+   */
+  when: 'age_range' | 'under_age' | 'inactive' | 'rest';
   age?: number;
+  fromAge?: number;
+  toAge?: number;
   feeTypeId: string;
 };
 export type ClubFeeRuleResult = {

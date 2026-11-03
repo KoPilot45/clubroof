@@ -1,0 +1,1 @@
+ALTER TABLE "clubs" ADD COLUMN "fiscal_year_start_month" integer DEFAULT 1 NOT NULL;
