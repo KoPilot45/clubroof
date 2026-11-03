@@ -239,7 +239,13 @@ export async function setupClub(
     await tx
       .insert(s.orgUnits)
       .values(
-        input.orgUnits.map((u, i) => ({ clubId, name: u.name.trim(), kind: u.kind, sortOrder: i })),
+        input.orgUnits.map((u, i) => ({
+          clubId,
+          name: u.name.trim(),
+          kind: u.kind,
+          defaultContactVisibility: u.defaultContactVisibility ?? null,
+          sortOrder: i,
+        })),
       );
     const roles = await tx
       .insert(s.roles)

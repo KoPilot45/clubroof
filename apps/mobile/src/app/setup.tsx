@@ -55,10 +55,8 @@ type StepKey =
   | 'logo'
   | 'color'
   | 'units'
-  | 'season'
   | 'board'
   | 'deputy'
-  | 'team-modules'
   | 'club-modules'
   | 'joins'
   | 'members'
@@ -80,10 +78,8 @@ const FULL: StepKey[] = [
   'logo',
   'color',
   'units',
-  'season',
   'board',
   'deputy',
-  'team-modules',
   'club-modules',
   'comms',
   'joins',
@@ -119,12 +115,6 @@ const BOARD_ROLES: { key: string; role: string; label: string; unit?: 'youth' }[
 ];
 type BoardEntry = { name: string; email: string };
 
-const SEASON_STARTS: { value: string; label: string; text: string }[] = [
-  { value: '7', label: 'Juli', text: '1. Juli bis 30. Juni – üblich im Fußball' },
-  { value: '8', label: 'August', text: '1. August bis 31. Juli' },
-  { value: '9', label: 'September', text: '1. September bis 31. August' },
-  { value: '1', label: 'Januar', text: 'Kalenderjahr, 1. Januar bis 31. Dezember' },
-];
 const TIMEZONES: { value: string; label: string }[] = [
   { value: 'Europe/Berlin', label: 'Deutschland' },
   { value: 'Europe/Vienna', label: 'Österreich' },
@@ -154,17 +144,7 @@ const SURFACES: { value: PitchSurface; label: string }[] = [
   { value: 'hard', label: 'Hartplatz' },
 ];
 
-/** Optionale Module in den zwei Auswahlschritten; Kernmodule sind immer an. */
-const TEAM_MODULES = [
-  'squad',
-  'statistics',
-  'team_cash',
-  'team_tasks',
-  'jersey_numbers',
-  'parent_access',
-  'training_planning',
-  'guest_players',
-];
+/** Optionale Vereinsmodule im Auswahlschritt; Kernmodule sind immer an. Mannschaftsmodule wählt jede Mannschaft selbst. */
 const CLUB_MODULES = [
   'club_cash',
   'sponsors',
@@ -178,22 +158,10 @@ const CLUB_MODULES = [
   'calendar_export',
   'lost_and_found',
   'equipment',
-  'referees',
   'marketplace',
   'wiki',
 ];
-const RECOMMENDED = new Set([
-  'squad',
-  'statistics',
-  'team_cash',
-  'team_tasks',
-  'parent_access',
-  'polls',
-  'club_events',
-  'helpers',
-  'documents',
-  'calendar_export',
-]);
+const RECOMMENDED = new Set(['polls', 'club_events', 'helpers', 'documents', 'calendar_export']);
 const MODULE_ICON: Record<string, IconName> = {
   club_cash: 'wallet',
   sponsors: 'heart',
@@ -260,8 +228,10 @@ type Draft = {
   seasonStartMonth: string;
   board: Record<string, BoardEntry>;
   /** Daten, die nach der Einrichtung übernommen werden sollen (Paket IMPORT-EXPORT, Stufe 5) */
-  importPlan: ('members' | 'roster' | 'events' | 'fees' | 'invite')[];
+  importPlan: ('members' | 'roster' | 'events' | 'fees')[];
+  /** Kontaktdaten-Standard je Abteilung: Senioren und übrige / Jugend */
   contactVisibility: 'club' | 'team_and_coaches' | 'coaches_only';
+  contactYouth: 'club' | 'team_and_coaches' | 'coaches_only';
   /** Wer Beitrittsanfragen freigibt */
   joinApproval: 'team_staff' | 'admin_only';
   /** Vertretung: zweite Person mit Administrationsrechten (Einladung nach der Einrichtung) */
@@ -294,6 +264,7 @@ const INITIAL: Draft = {
   board: {},
   importPlan: [],
   contactVisibility: 'team_and_coaches',
+  contactYouth: 'coaches_only',
   joinApproval: 'team_staff',
   deputy: { name: '', email: '' },
   firstName: '',
@@ -337,7 +308,7 @@ function Wizard({ demo }: { demo?: boolean }) {
     patch,
     loaded,
     clear,
-  } = useWizardDraft<Draft>(demo ? 'setupDraftDemo3' : 'setupDraft3', INITIAL);
+  } = useWizardDraft<Draft>(demo ? 'setupDraftDemo4' : 'setupDraft4', INITIAL);
   // Geheimnisse und Dateien bleiben im Speicher und nie im Entwurf
   const [token, setToken] = useState(demo ? 'demo' : '');
   const [password, setPassword] = useState('');
@@ -500,10 +471,16 @@ function Wizard({ demo }: { demo?: boolean }) {
         orgUnits:
           d.orgMode === 'split'
             ? [
-                { name: 'Senioren', kind: 'seniors' },
-                { name: 'Jugend', kind: 'youth' },
+                { name: 'Senioren', kind: 'seniors', defaultContactVisibility: d.contactVisibility },
+                { name: 'Jugend', kind: 'youth', defaultContactVisibility: d.contactYouth },
               ]
-            : [{ name: 'Mannschaften', kind: 'other' }],
+            : [
+                {
+                  name: 'Mannschaften',
+                  kind: 'other',
+                  defaultContactVisibility: d.contactVisibility,
+                },
+              ],
         venues: venues
           .filter((v) => v.name.trim())
           .map((v) => ({
@@ -634,7 +611,6 @@ function Wizard({ demo }: { demo?: boolean }) {
               icon="person-add"
               title="Personen einladen"
               text="Link oder QR-Code teilen"
-              badge={d.importPlan.includes('invite') ? 'Geplant' : undefined}
               selected={false}
               onPress={() => router.replace('/admin/invites')}
             />
@@ -746,14 +722,13 @@ function Wizard({ demo }: { demo?: boolean }) {
                 orgMode: o.v === 'single' ? 'single' : 'split',
                 modules:
                   o.v === 'single'
-                    ? ['squad', 'team_cash', 'team_tasks', 'parent_access']
+                    ? ['documents', 'calendar_export']
                     : o.v === 'large'
                       ? [
                           ...RECOMMENDED,
                           'club_cash',
                           'forum',
                           'facility_booking',
-                          'referees',
                           'equipment',
                           'sponsors',
                         ]
@@ -1090,33 +1065,6 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
 
-  // ── Saison ───────────────────────────────────────────────────────────────
-  if (key === 'season')
-    return (
-      <WizardShell
-        {...shell}
-        title="Wann beginnt eure Saison?"
-        explanation="Mannschaften, Beiträge und Statistiken laufen je Saison. Der Beginn legt fest, wann sie wechselt."
-      >
-        {SEASON_STARTS.map((o) => (
-          <OptionCard
-            key={o.value}
-            icon="calendar"
-            title={o.label}
-            text={o.text}
-            recommended={o.value === '7'}
-            selected={d.seasonStartMonth === o.value}
-            onPress={() => patch({ seasonStartMonth: o.value })}
-          />
-        ))}
-        <WhyBox>
-          Zum Saisonwechsel übernimmt Clubroof Mannschaften samt Kasse und Verlauf in die neue
-          Saison.
-        </WhyBox>
-        <LaterHint where="Verwaltung › Mannschaften & Saison" />
-      </WizardShell>
-    );
-
   // ── Vorstand und Aufgaben ────────────────────────────────────────────────
   if (key === 'board')
     return (
@@ -1192,25 +1140,16 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
 
-  // ── Wofür nutzt ihr Clubroof ─────────────────────────────────────────────
-  if (key === 'team-modules' || key === 'club-modules') {
-    const list = key === 'team-modules' ? TEAM_MODULES : CLUB_MODULES;
+  // ── Wofür nutzt ihr Clubroof – im Verein ─────────────────────────────────
+  if (key === 'club-modules')
     return (
       <WizardShell
         {...shell}
-        title={
-          key === 'team-modules'
-            ? 'Wofür nutzt ihr Clubroof – in der Mannschaft?'
-            : 'Und im Verein?'
-        }
-        explanation={
-          key === 'team-modules'
-            ? 'Termine, News und Abwesenheiten sind immer dabei. Wähle, was eure Mannschaften zusätzlich brauchen.'
-            : 'Was soll der ganze Verein nutzen können? Empfohlenes ist vorausgewählt. „Vereinskasse“ ist nur der Schalter – eingerichtet wird sie danach in einem eigenen Assistenten.'
-        }
+        title="Und im Verein?"
+        explanation="Was soll der ganze Verein nutzen können? Empfohlenes ist vorausgewählt. „Vereinskasse“ ist nur der Schalter – eingerichtet wird sie danach in einem eigenen Assistenten. Funktionen der Mannschaften (Kasse, Statistik, Aufgaben …) wählt jede Mannschaft selbst, wenn sie angelegt wird."
         hint="Funktionen aktivierst oder deaktivierst du später unter Verwaltung › Module."
       >
-        {MODULES.filter((m) => list.includes(m.key)).map((m) => (
+        {MODULES.filter((m) => CLUB_MODULES.includes(m.key)).map((m) => (
           <ChoiceCard
             key={m.key}
             multi
@@ -1224,7 +1163,6 @@ function Wizard({ demo }: { demo?: boolean }) {
         ))}
       </WizardShell>
     );
-  }
 
   // ── Neue Mitglieder ──────────────────────────────────────────────────────
   if (key === 'joins')
@@ -1306,14 +1244,10 @@ function Wizard({ demo }: { demo?: boolean }) {
             onPress={() => plan('fees')}
           />
         ) : null}
-        <OptionCard
-          icon="qr-code"
-          title="Per Code oder QR einladen"
-          text="Eltern und Spieler treten mit einem Link bei und werden von dir freigegeben."
-          multi
-          selected={d.importPlan.includes('invite')}
-          onPress={() => plan('invite')}
-        />
+        <T variant="caption">
+          Per Link oder QR einladen kannst du jederzeit unter Verwaltung › Einladungen – das ist
+          eine Grundfunktion und braucht keine Auswahl.
+        </T>
         <LaterHint where="Verwaltung › Importieren und Einladungen" />
       </WizardShell>
     );
@@ -1325,18 +1259,29 @@ function Wizard({ demo }: { demo?: boolean }) {
       <WizardShell
         {...shell}
         title="Wer sieht was?"
-        explanation="Wer sieht die Kontaktdaten neuer Personen? Jede Person kann das für sich ändern."
+        explanation="Wer sieht die Kontaktdaten neuer Personen? Du legst es je Abteilung fest – es gilt für neue Personen nach der Abteilung ihrer Mannschaft. Jede Person kann es für sich ändern."
       >
-        {VISIBILITIES.map((o) => (
-          <OptionCard
-            key={o.value}
-            icon="eye"
-            title={o.label}
-            text={o.text}
-            recommended={o.value === 'team_and_coaches'}
-            selected={d.contactVisibility === o.value}
-            onPress={() => patch({ contactVisibility: o.value })}
-          />
+        {(d.orgMode === 'split'
+          ? ([
+              ['Jugend', 'contactYouth', 'coaches_only'],
+              ['Senioren', 'contactVisibility', 'team_and_coaches'],
+            ] as const)
+          : ([['Mannschaften', 'contactVisibility', 'team_and_coaches']] as const)
+        ).map(([unit, field, recommended]) => (
+          <View key={field} style={{ gap: 10 }}>
+            {d.orgMode === 'split' ? <T variant="section">{unit}</T> : null}
+            {VISIBILITIES.map((o) => (
+              <OptionCard
+                key={o.value}
+                icon="eye"
+                title={o.label}
+                text={o.text}
+                recommended={o.value === recommended}
+                selected={d[field] === o.value}
+                onPress={() => patch({ [field]: o.value })}
+              />
+            ))}
+          </View>
         ))}
         <T variant="section">Gut zu wissen</T>
         <RuleList
@@ -1346,7 +1291,7 @@ function Wizard({ demo }: { demo?: boolean }) {
             'Datenschutzerklärung und Impressum findest du in der App unter Ich › Hilfe und Informationen.',
           ]}
         />
-        <LaterHint where="Verwaltung › Verein & Design und Rollen & Aufgaben" />
+        <LaterHint where="Verwaltung › Verein & Design" />
       </WizardShell>
     );
 
@@ -1491,7 +1436,6 @@ function Wizard({ demo }: { demo?: boolean }) {
     );
 
   // ── Zusammenfassung ──────────────────────────────────────────────────────
-  const seasonLabel = SEASON_STARTS.find((o) => o.value === d.seasonStartMonth)?.label ?? '';
   const boardCount = BOARD_ROLES.filter(
     (r) => d.board[r.key]?.name.trim() && d.board[r.key]?.email.includes('@'),
   ).length;
@@ -1518,7 +1462,7 @@ function Wizard({ demo }: { demo?: boolean }) {
     {
       label: 'Funktionen',
       value: t(`${d.modules.length} gewählt`),
-      key: d.flow === 'full' ? 'team-modules' : 'units',
+      key: d.flow === 'full' ? 'club-modules' : 'units',
     },
     {
       label: 'Konto',
@@ -1542,7 +1486,6 @@ function Wizard({ demo }: { demo?: boolean }) {
           .join(', '),
         key: 'details',
       },
-      { label: 'Saison', value: t(`Beginn im ${t(seasonLabel)}`), key: 'season' },
       { label: 'Vorstand', value: boardCount ? t(`${boardCount} Einladungen`) : '', key: 'board' },
       {
         label: 'Beitrittsanfragen',

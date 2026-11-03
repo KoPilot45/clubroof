@@ -79,9 +79,14 @@ export const settingsRoutes: FastifyPluginAsyncZod = async (app) => {
 
   app.patch(
     '/admin/org-units/:id',
-    { schema: { params: z.object({ id: z.uuid() }), body: z.object({ name: unitName }) } },
+    { schema: { params: z.object({ id: z.uuid() }), body: z.object({
+          name: unitName.optional(),
+          defaultContactVisibility: z.enum(CONTACT_VISIBILITIES).nullable().optional(),
+        }),
+      },
+    },
     async (request): Promise<ClubSettings> =>
-      renameOrgUnit(app.db, request.actor!, request.params.id, request.body.name, app.now()),
+      renameOrgUnit(app.db, request.actor!, request.params.id, request.body, app.now()),
   );
 
   app.delete(
@@ -188,7 +193,13 @@ export const setupRoutes: FastifyPluginAsyncZod = async (app) => {
             joinApproval: z.enum(['team_staff', 'admin_only']).optional(),
           }),
           orgUnits: z
-            .array(z.object({ name: unitName, kind: z.enum(KINDS) }))
+            .array(
+              z.object({
+                name: unitName,
+                kind: z.enum(KINDS),
+                defaultContactVisibility: z.enum(CONTACT_VISIBILITIES).optional(),
+              }),
+            )
             .min(1)
             .max(12),
           venues: z

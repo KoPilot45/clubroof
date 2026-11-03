@@ -9,6 +9,7 @@ import type {
   AttachAccountInput,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
+import { contactVisibilityForTeam } from './admin';
 import { and, desc, eq, gt, gte, isNull, ne } from 'drizzle-orm';
 import QRCode from 'qrcode';
 import { calendarDayOf, scopesWith, toIsoDate } from '@clubroof/core';
@@ -179,6 +180,7 @@ export async function attachAccount(
         lastName: input.lastName.trim(),
         birthDate: input.birthDate ?? null,
         email: user.email,
+        contactVisibility: await contactVisibilityForTeam(tx, actor.club.id, team?.id),
         memberSince: today,
       })
       .returning({ id: s.persons.id });

@@ -29,6 +29,7 @@ import {
   participationModeFor,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
+import { contactVisibilityForTeam } from './admin';
 import { and, asc, desc, eq, gt, gte, inArray, isNull, ne, or, sql } from 'drizzle-orm';
 import QRCode from 'qrcode';
 import { actorCan, type Actor } from '../actor';
@@ -899,6 +900,7 @@ export async function approveJoin(
           lastName: r.lastName,
           birthDate: r.birthDate,
           email: user.email,
+          contactVisibility: await contactVisibilityForTeam(tx, actor.club.id, team?.id),
           memberSince: today,
         })
         .returning({ id: s.persons.id });
@@ -919,6 +921,7 @@ export async function approveJoin(
             firstName: r.childFirstName!,
             lastName: r.childLastName!,
             birthDate: r.childBirthDate,
+            contactVisibility: await contactVisibilityForTeam(tx, actor.club.id, team?.id),
             memberSince: today,
           })
           .returning({ id: s.persons.id });

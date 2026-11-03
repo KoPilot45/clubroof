@@ -157,7 +157,15 @@ export async function seed(
     await tx.insert(s.orgUnits).values(
       ORG_UNITS.map((u, i) => {
         orgUnitIds[u.key] = randomUUID();
-        return { id: orgUnitIds[u.key], clubId, name: u.name, kind: u.key, sortOrder: i };
+        return {
+          id: orgUnitIds[u.key],
+          clubId,
+          name: u.name,
+          kind: u.key,
+          // Jugend: Kontaktdaten neuer Personen nur für Trainer (übrige: Vorgabe des Vereins)
+          defaultContactVisibility: u.key === 'youth' ? 'coaches_only' : null,
+          sortOrder: i,
+        };
       }),
     );
 

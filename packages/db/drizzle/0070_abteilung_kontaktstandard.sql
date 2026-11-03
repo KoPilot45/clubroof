@@ -1,0 +1,1 @@
+ALTER TABLE "org_units" ADD COLUMN "default_contact_visibility" text;

@@ -1896,7 +1896,14 @@ export type ClubSettings = {
   joinApproval: 'team_staff' | 'admin_only';
   /** Vorgabe nur einschaltbar, wenn man selbst 2-Faktor nutzt (Schutz vor Aussperren) */
   canRequireTwoFactor: boolean;
-  orgUnits: { id: string; name: string; kind: OrgUnitKind; teams: number }[];
+  orgUnits: {
+    id: string;
+    name: string;
+    kind: OrgUnitKind;
+    teams: number;
+    /** Kontaktdaten-Standard dieser Abteilung; null = Vorgabe des Vereins */
+    defaultContactVisibility: 'club' | 'team_and_coaches' | 'coaches_only' | null;
+  }[];
 };
 
 export type UpdateClubInput = Partial<{
@@ -1953,7 +1960,11 @@ export type SetupInput = {
     defaultContactVisibility?: 'club' | 'team_and_coaches' | 'coaches_only';
     joinApproval?: 'team_staff' | 'admin_only';
   };
-  orgUnits: { name: string; kind: OrgUnitKind }[];
+  orgUnits: {
+    name: string;
+    kind: OrgUnitKind;
+    defaultContactVisibility?: 'club' | 'team_and_coaches' | 'coaches_only';
+  }[];
   venues?: SetupVenue[];
   /** Gewählte optionale Module (Schlüssel aus `MODULES`); ohne Angabe die bisherige Voreinstellung */
   modules?: string[];

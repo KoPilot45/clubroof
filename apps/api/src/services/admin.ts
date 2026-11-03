@@ -557,6 +557,27 @@ export async function defaultContactVisibility(
   return club?.v === 'club' || club?.v === 'coaches_only' ? club.v : 'team_and_coaches';
 }
 
+/**
+ * Kontaktdaten-Standard für eine neue Person: Vorgabe der Abteilung ihrer Mannschaft,
+ * sonst (oder ohne Mannschaft) die Vorgabe des Vereins.
+ */
+export async function contactVisibilityForTeam(
+  db: Db | Tx,
+  clubId: string,
+  teamId: string | null | undefined,
+): Promise<'club' | 'team_and_coaches' | 'coaches_only'> {
+  if (teamId) {
+    const [unit] = await db
+      .select({ v: s.orgUnits.defaultContactVisibility })
+      .from(s.teams)
+      .innerJoin(s.orgUnits, eq(s.orgUnits.id, s.teams.orgUnitId))
+      .where(and(eq(s.teams.id, teamId), eq(s.teams.clubId, clubId)));
+    if (unit?.v === 'club' || unit?.v === 'team_and_coaches' || unit?.v === 'coaches_only')
+      return unit.v;
+  }
+  return defaultContactVisibility(db, clubId);
+}
+
 export async function createMember(
   db: Db,
   actor: Actor,

@@ -76,6 +76,8 @@ export const orgUnits = pgTable(
     parentId: uuid(),
     name: text().notNull(),
     kind: orgUnitKindEnum().notNull(),
+    /** Kontaktdaten-Standard neuer Personen dieser Abteilung; leer = Vorgabe des Vereins */
+    defaultContactVisibility: text(),
     sortOrder: integer().notNull().default(0),
     createdAt: createdAt(),
   },

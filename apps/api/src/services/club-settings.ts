@@ -15,6 +15,8 @@ import { and, asc, count, eq } from 'drizzle-orm';
 import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 
+const toVisibilityOrNull = (v: string | null) =>
+  v === 'club' || v === 'team_and_coaches' || v === 'coaches_only' ? v : null;
 const toVisibility = (v: string): ClubSettings['defaultContactVisibility'] =>
   v === 'club' || v === 'coaches_only' ? v : 'team_and_coaches';
 
@@ -68,6 +70,7 @@ export async function getClubSettings(db: Db, actor: Actor): Promise<ClubSetting
       name: u.unit.name,
       kind: u.unit.kind as OrgUnitKind,
       teams: Number(u.teams),
+      defaultContactVisibility: toVisibilityOrNull(u.unit.defaultContactVisibility),
     })),
   };
 }
@@ -159,15 +162,36 @@ export async function addOrgUnit(
   return getClubSettings(db, actor);
 }
 
-export async function renameOrgUnit(db: Db, actor: Actor, id: string, name: string, now: Date) {
+export async function renameOrgUnit(
+  db: Db,
+  actor: Actor,
+  id: string,
+  input: {
+    name?: string;
+    defaultContactVisibility?: 'club' | 'team_and_coaches' | 'coaches_only' | null;
+  },
+  now: Date,
+) {
   requireSettings(actor);
+  const patch: Partial<typeof s.orgUnits.$inferInsert> = {};
+  if (input.name !== undefined) patch.name = input.name.trim();
+  if (input.defaultContactVisibility !== undefined)
+    patch.defaultContactVisibility = input.defaultContactVisibility;
+  if (!Object.keys(patch).length) return getClubSettings(db, actor);
   const updated = await db
     .update(s.orgUnits)
-    .set({ name: name.trim() })
+    .set(patch)
     .where(and(eq(s.orgUnits.id, id), eq(s.orgUnits.clubId, actor.club.id)))
-    .returning({ id: s.orgUnits.id });
+    .returning({ id: s.orgUnits.id, name: s.orgUnits.name });
   if (!updated.length) throw notFound('Die Abteilung');
-  await audit(db, actor, `Abteilung umbenannt: ${name.trim()}`, now);
+  await audit(
+    db,
+    actor,
+    input.name !== undefined
+      ? `Abteilung umbenannt: ${updated[0]!.name}`
+      : `Kontaktdaten-Standard der Abteilung ${updated[0]!.name} geändert`,
+    now,
+  );
   return getClubSettings(db, actor);
 }
 
