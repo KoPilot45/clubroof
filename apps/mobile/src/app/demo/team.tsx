@@ -9,8 +9,8 @@ const OVERVIEW: TeamAdminOverview = {
   teams: [],
   nextTeams: [],
   orgUnits: [
-    { id: 'demo-youth', name: 'Jugend', canManage: true },
-    { id: 'demo-seniors', name: 'Senioren', canManage: true },
+    { id: 'demo-youth', name: 'Jugend', kind: 'youth', canManage: true },
+    { id: 'demo-seniors', name: 'Senioren', kind: 'seniors', canManage: true },
   ],
 };
 

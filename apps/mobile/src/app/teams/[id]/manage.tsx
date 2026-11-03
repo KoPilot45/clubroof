@@ -370,7 +370,7 @@ function ProfileEditor({
           welcomeText: welcome.trim() || null,
           absenceReasonsVisibleTo: reasonsTeam ? 'team' : 'staff',
           importAliases: aliases
-            .split(',')
+            .split(/[;,\n]/)
             .map((a) => a.trim())
             .filter(Boolean),
         },
@@ -414,7 +414,7 @@ function ProfileEditor({
           maxLength={120}
         />
         <TextField
-          label="Schreibweisen im DFBnet (durch Komma getrennt)"
+          label="Name im DFBnet (weitere Schreibweisen, mit Semikolon, Komma oder Zeilenumbruch getrennt)"
           value={aliases}
           onChangeText={setAliases}
           placeholder="z. B. SV Grün-Weiß II"

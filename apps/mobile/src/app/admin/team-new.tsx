@@ -4,16 +4,15 @@
  * dort – bis dahin entstehen keine halben Daten; der Zwischenstand bleibt auf dem Gerät.
  */
 import {
-  TEAM_TEMPLATE_INFO,
   at,
   defaultLineupSize,
   fromIsoDate,
   type AttendanceVisibility,
   type MemberListItem,
   type ParticipationMode,
+  type OrgUnitKind,
   type TeamAdminOverview,
   type TeamDetailAdmin,
-  type TeamTemplate,
 } from '@clubroof/core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Clipboard from 'expo-clipboard';
@@ -69,7 +68,6 @@ export type Draft = {
   league: string;
   /** Spielform im Aufstellungsplaner; leer = nach Altersklasse */
   format: 7 | 9 | 11 | null;
-  template: TeamTemplate;
   /** Teilnahme-Modell Training / Spiele (getrennt wählbar) */
   mode: ParticipationMode;
   matchMode: ParticipationMode;
@@ -80,18 +78,18 @@ export type Draft = {
   reminder: number | null;
   reasonRequired: boolean;
   allowMaybe: boolean;
-  meetingPoint: string;
   trainingMeeting: number | null;
   matchMeeting: number | null;
   aliases: string;
   trainings: TrainingSlot[];
   trainFrom: string;
   trainTo: string;
-  /** Team-Funktionen (Schlüssel aus `MODULES`), die eingeschaltet werden */
-  modules: string[];
+  /** Team-Funktionen (Schlüssel aus `MODULES`), die eingeschaltet werden; null = Vorbelegung nach Abteilung */
+  modules: string[] | null;
+  /** Elternzugänge (Eltern verwalten die Termine ihrer Kinder); null = Vorbelegung nach Abteilung und Altersklasse */
+  parentAccess: boolean | null;
   responsesVisible: boolean;
   lineupVisible: boolean;
-  welcome: string;
   /** Eltern je Kind (Schlüssel: Personen-ID des Kindes) – nur Jugend */
   parents: Record<string, Person[]>;
   /** Rückennummern: aus, je Spiel oder fest (nur wenn die Funktion gewählt ist) */
@@ -110,7 +108,6 @@ const INITIAL: Draft = {
   ageGroup: '',
   league: '',
   format: null,
-  template: 'classic',
   // Empfehlung: am wenigsten Aufwand
   mode: 'auto_accept',
   matchMode: 'auto_accept',
@@ -121,17 +118,16 @@ const INITIAL: Draft = {
   reminder: null,
   reasonRequired: false,
   allowMaybe: true,
-  meetingPoint: '',
   trainingMeeting: null,
   matchMeeting: null,
   aliases: '',
   trainings: [],
   trainFrom: '',
   trainTo: '',
-  modules: ['training_planning'],
+  modules: null,
+  parentAccess: null,
   responsesVisible: true,
   lineupVisible: false,
-  welcome: '',
   parents: {},
   jerseyMode: 'off',
   absenceTeam: false,
@@ -143,7 +139,6 @@ type StepKey =
   | 'basics'
   | 'unit'
   | 'age'
-  | 'template'
   | 'responses'
   | 'meeting'
   | 'training'
@@ -153,7 +148,6 @@ type StepKey =
   | 'features'
   | 'privacy'
   | 'schedule'
-  | 'info'
   | 'summary';
 
 const FULL: StepKey[] = [
@@ -161,17 +155,15 @@ const FULL: StepKey[] = [
   'basics',
   'unit',
   'age',
-  'template',
   'coaches',
+  'features',
   'responses',
   'meeting',
   'training',
   'squad',
   'parents',
-  'features',
   'privacy',
   'schedule',
-  'info',
   'summary',
 ];
 const QUICK: StepKey[] = [
@@ -188,9 +180,24 @@ const QUICK: StepKey[] = [
   'summary',
 ];
 
-/** Jugend-Mannschaft? Dann fragt der Assistent nach den Eltern der Kinder. */
-const isYouth = (d: Pick<Draft, 'template' | 'ageGroup'>) =>
-  d.template === 'youth' || /^\s*[UuJj]\s?\d{1,2}\b|jugend|bambini|minis/i.test(d.ageGroup);
+/** Altersklassen zur Auswahl (Format „U7“ bis „U19“) – schlägt nur die Spielform vor */
+const AGE_GROUPS = Array.from({ length: 13 }, (_, i) => `U${i + 7}`);
+
+type UnitKind = OrgUnitKind | null;
+
+/** Vorbelegung der Funktionsfragen nach der Abteilung (Jugend: ohne Strafen; Senioren: Kasse und Statistik) */
+function defaultModules(kind: UnitKind): string[] {
+  return kind === 'youth'
+    ? ['training_planning', 'team_tasks', 'polls']
+    : ['team_cash', 'training_planning', 'statistics', 'team_tasks'];
+}
+
+/** Elternzugänge: Jugend an bis U17, aus ab U18; ohne Altersklasse in der Jugend an; sonst aus */
+function defaultParentAccess(kind: UnitKind, ageGroup: string): boolean {
+  if (kind !== 'youth') return false;
+  const m = /^\s*U\s?(\d{1,2})\b/i.exec(ageGroup);
+  return m ? Number(m[1]) <= 17 : true;
+}
 
 const MODE_ICON: Record<ParticipationMode, IconName> = {
   auto_accept: 'checkmark-done',
@@ -204,12 +211,6 @@ const MODE_EXAMPLE: Record<ParticipationMode, string> = {
   auto_accept: 'z. B. Senioren, Alte Herren',
   active_response: 'z. B. Jugend, wenn Plätze knapp sind',
 };
-const TEMPLATE_ICON: Record<TeamTemplate, IconName> = {
-  performance: 'trophy',
-  classic: 'football',
-  youth: 'happy',
-  leisure: 'cafe',
-};
 const WEEKDAYS: { value: number; label: string }[] = [
   { value: 1, label: 'Mo' },
   { value: 2, label: 'Di' },
@@ -219,43 +220,49 @@ const WEEKDAYS: { value: number; label: string }[] = [
   { value: 6, label: 'Sa' },
   { value: 7, label: 'So' },
 ];
-/** Team-Funktionen, die der Assistent ein- oder ausschaltet */
-const FEATURES: { key: string; icon: IconName; title: string; text: string }[] = [
+/** Fragen zu den Funktionen: je Funktion Ja/Nein in einfacher Sprache mit Beispiel */
+const FEATURES: { key: string; icon: IconName; title: string; question: string; text: string }[] = [
   {
     key: 'team_cash',
     icon: 'cash',
     title: 'Mannschaftskasse',
-    text: 'Strafen, Getränke und Einzahlungen der Mannschaft – mit Strafenkatalog',
-  },
-  {
-    key: 'training_planning',
-    icon: 'clipboard',
-    title: 'Trainingsplanung',
-    text: 'Schwerpunkt, Ablauf und Material je Training',
-  },
-  {
-    key: 'team_tasks',
-    icon: 'checkbox',
-    title: 'Aufgaben',
-    text: 'Trikots waschen, Bälle mitbringen – fair verteilt',
+    question: 'Wollt ihr die Mannschaftskasse in der App verwalten?',
+    text: 'z. B. Strafen, Getränke und Einzahlungen der Mannschaft',
   },
   {
     key: 'statistics',
     icon: 'stats-chart',
     title: 'Statistik',
-    text: 'Tore und Karten erfassen – das Trainerteam trägt sie nach dem Spiel ein',
+    question: 'Soll die Statistik Tore und Einsätze erfassen?',
+    text: 'Das Trainerteam trägt Tore und Karten nach dem Spiel ein.',
+  },
+  {
+    key: 'team_tasks',
+    icon: 'checkbox',
+    title: 'Aufgaben',
+    question: 'Wollt ihr Aufgaben verteilen?',
+    text: 'z. B. Fahrdienst oder Trikotwäsche – fair verteilt',
+  },
+  {
+    key: 'training_planning',
+    icon: 'clipboard',
+    title: 'Trainingsplanung',
+    question: 'Plant ihr Trainingseinheiten in der App?',
+    text: 'Schwerpunkt, Ablauf und Material je Training',
+  },
+  {
+    key: 'polls',
+    icon: 'help-circle',
+    title: 'Umfragen',
+    question: 'Wollt ihr Umfragen nutzen?',
+    text: 'z. B. schnell abstimmen zur Weihnachtsfeier',
   },
   {
     key: 'guest_players',
     icon: 'swap-horizontal',
     title: 'Gastspieler',
-    text: 'Spieler anderer Mannschaften einzelnen Terminen zuordnen und Spielerbedarf melden',
-  },
-  {
-    key: 'polls',
-    icon: 'stats-chart',
-    title: 'Umfragen',
-    text: 'Schnell abstimmen, z. B. zur Weihnachtsfeier',
+    question: 'Dürfen Spieler anderer Mannschaften aushelfen?',
+    text: 'Sie werden einzelnen Terminen zugeordnet; der Spielerbedarf lässt sich melden.',
   },
 ];
 
@@ -333,7 +340,7 @@ export default function NewTeamScreen() {
           ageGroup: d.ageGroup.trim() || null,
           league: d.league.trim() || null,
           orgUnitId: unitId,
-          template: d.template,
+          template: 'classic',
           participationMode: d.mode,
           matchParticipationMode: d.matchMode,
           seasonId,
@@ -344,7 +351,6 @@ export default function NewTeamScreen() {
         await api(`/teams/${team.id}/profile`, {
           method: 'PUT',
           body: {
-            defaultMeetingPoint: d.meetingPoint.trim() || null,
             trainingMeetingMinutes: d.trainingMeeting,
             matchMeetingMinutes: d.matchMeeting,
             trainingDeadlineHours: d.trainingDeadline,
@@ -355,11 +361,10 @@ export default function NewTeamScreen() {
             matchFormat: d.format,
             responsesVisible: d.responsesVisible,
             lineupVisible: d.lineupVisible,
-            welcomeText: d.welcome.trim() || null,
             absenceReasonsVisibleTo: d.absenceTeam ? 'team' : 'staff',
             attendanceVisibility: d.attendance,
             importAliases: d.aliases
-              .split(/[;\n]/)
+              .split(/[;,\n]/)
               .map((a) => a.trim())
               .filter(Boolean)
               .slice(0, 10),
@@ -368,7 +373,7 @@ export default function NewTeamScreen() {
         for (const f of FEATURES) {
           await api(`/teams/${team.id}/modules/${f.key}`, {
             method: 'PUT',
-            body: { enabled: d.modules.includes(f.key) },
+            body: { enabled: (d.modules ?? []).includes(f.key) },
           }).catch(() => undefined);
         }
         if (d.jerseyMode !== 'off')
@@ -441,7 +446,7 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
     patch,
     loaded,
     clear,
-  } = useWizardDraft(backend.demo ? 'team-wizard-demo-3' : 'team-wizard-3', INITIAL);
+  } = useWizardDraft(backend.demo ? 'team-wizard-demo-4' : 'team-wizard-4', INITIAL);
   const [step, setStep] = useState(0);
   /** Nach „Ändern“ in der Zusammenfassung geht es von dort aus direkt dorthin zurück */
   const [fromSummary, setFromSummary] = useState(false);
@@ -456,8 +461,12 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
 
   const o = backend.overview;
   if (!o || !loaded) return <Loading />;
-  const youth = isYouth(d);
-  const keys = (d.flow === 'quick' ? QUICK : FULL).filter((k) => k !== 'parents' || youth);
+  const unitsAll = o.orgUnits.filter((u) => u.canManage);
+  const unitKind: UnitKind =
+    unitsAll.find((u) => u.id === (d.unitId ?? unitsAll[0]?.id))?.kind ?? null;
+  const modules = d.modules ?? defaultModules(unitKind);
+  const parentAccess = d.parentAccess ?? defaultParentAccess(unitKind, d.ageGroup);
+  const keys = (d.flow === 'quick' ? QUICK : FULL).filter((k) => k !== 'parents' || parentAccess);
   const key = keys[Math.min(step, keys.length - 1)]!;
   const units = o.orgUnits.filter((u) => u.canManage);
   const unitId =
@@ -492,7 +501,7 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
     setError(null);
     try {
       const res = await backend.create(
-        { ...d, trainFrom, trainTo, trainings: d.trainings },
+        { ...d, modules, parentAccess, trainFrom, trainTo, trainings: d.trainings },
         unitId,
         seasonId,
       );
@@ -576,7 +585,7 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
               selected={false}
               onPress={() => router.replace(`/schedule-import?teamId=${created.id}`)}
             />
-            {d.modules.includes('team_cash') ? (
+            {modules.includes('team_cash') ? (
               <ChoiceCard
                 icon="cash"
                 title="Mannschaftskasse einrichten"
@@ -689,17 +698,19 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
       <WizardShell
         {...shell}
         title="Altersklasse, Spielform und Liga"
-        explanation="Alles ist freiwillig. Die Spielform bestimmt das Feld im Aufstellungsplaner."
+        explanation="Alles ist freiwillig. Die Altersklasse erscheint als Zusatz in Übersicht, Listen und Export und schlägt nur die Spielform vor – sie steuert keine Rechte und keine Sichtbarkeit."
         onSkip={next}
       >
         <View style={{ gap: 12 }}>
-          <TextField
+          <ChoiceChips
             label="Altersklasse"
-            value={d.ageGroup}
-            onChangeText={(ageGroup) => patch({ ageGroup })}
-            placeholder={t('z. B. U17')}
-            maxLength={30}
+            options={AGE_GROUPS.map((a) => ({ value: a, label: a }))}
+            selected={d.ageGroup ? [d.ageGroup] : []}
+            onToggle={(a) => patch({ ageGroup: d.ageGroup === a ? '' : a })}
           />
+          <T variant="caption">
+            Bis U11 schlagen wir die 7er-Form vor, U12 und U13 die 9er-Form, sonst die 11er-Form.
+          </T>
           <ChoiceChips
             label="Spielform"
             options={[
@@ -722,7 +733,7 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
             maxLength={80}
           />
           <TextField
-            label="Name im DFBnet (weitere Schreibweisen, mit Semikolon getrennt)"
+            label="Name im DFBnet (weitere Schreibweisen, mit Semikolon, Komma oder Zeilenumbruch getrennt)"
             value={d.aliases}
             onChangeText={(aliases) => patch({ aliases })}
             placeholder={t('z. B. SV Grün-Weiß B2; SV GW II')}
@@ -734,30 +745,6 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
           </WhyBox>
         ) : null}
         <LaterHint where="Mannschaft bearbeiten" />
-      </WizardShell>
-    );
-
-  if (key === 'template')
-    return (
-      <WizardShell
-        {...shell}
-        title="Welche Vorlage passt?"
-        explanation="Die Vorlage schaltet passende Funktionen für die Mannschaft ein."
-      >
-        <View style={{ gap: 10 }}>
-          {(Object.keys(TEAM_TEMPLATE_INFO) as TeamTemplate[]).map((k) => (
-            <OptionCard
-              key={k}
-              icon={TEMPLATE_ICON[k]}
-              title={TEAM_TEMPLATE_INFO[k].name}
-              text={TEAM_TEMPLATE_INFO[k].description}
-              recommended={k === 'classic'}
-              selected={d.template === k}
-              onPress={() => patch({ template: k })}
-            />
-          ))}
-        </View>
-        <LaterHint where="Mannschaft › Module" />
       </WizardShell>
     );
 
@@ -829,43 +816,23 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
     return (
       <WizardShell
         {...shell}
-        title="Treffpunkt und Treffzeit"
-        explanation="Der Standard-Treffpunkt und die Minuten vor Beginn werden bei neuen Terminen vorbelegt."
+        title="Treffzeit"
+        explanation="Wie viele Minuten vor Beginn trifft sich die Mannschaft? Die Zeit wird bei neuen Terminen vorbelegt."
         onSkip={next}
       >
-        <View style={{ gap: 14 }}>
-          <TextField
-            label="Treffpunkt"
-            value={d.meetingPoint}
-            onChangeText={(meetingPoint) => patch({ meetingPoint })}
-            placeholder={t('z. B. Eingang Kabinengang')}
-            maxLength={120}
+        <Card style={{ gap: 16 }}>
+          <MinutesRow
+            label="Training: Treffen vor Beginn"
+            value={d.trainingMeeting}
+            onChange={(trainingMeeting) => patch({ trainingMeeting })}
           />
-          {backend.places.length > 0 ? (
-            <View style={{ gap: 8 }}>
-              <T variant="caption">Vorschläge aus eurer Vereinseinrichtung</T>
-              <ChoiceChips
-                label="Treffpunkt wählen"
-                options={backend.places.map((p) => ({ value: p.label, label: p.label }))}
-                selected={d.meetingPoint ? [d.meetingPoint] : []}
-                onToggle={(meetingPoint) => patch({ meetingPoint })}
-              />
-            </View>
-          ) : null}
-          <Card style={{ gap: 16 }}>
-            <MinutesRow
-              label="Training: Treffen vor Beginn"
-              value={d.trainingMeeting}
-              onChange={(trainingMeeting) => patch({ trainingMeeting })}
-            />
-            <MinutesRow
-              label="Spiele: Treffen vor Beginn"
-              value={d.matchMeeting}
-              onChange={(matchMeeting) => patch({ matchMeeting })}
-            />
-          </Card>
-        </View>
-        <LaterHint where="Mannschaft bearbeiten" />
+          <MinutesRow
+            label="Spiele: Treffen vor Beginn"
+            value={d.matchMeeting}
+            onChange={(matchMeeting) => patch({ matchMeeting })}
+          />
+        </Card>
+        <LaterHint where="Mannschaft bearbeiten (dort steht auch der Treffpunkt)" />
       </WizardShell>
     );
 
@@ -958,6 +925,9 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
               ]}
             />
             <Chip tone="primary" icon="calendar" label={t(`${total} Trainingstermine`)} />
+            <T variant="caption">
+              Einzelne Termine innerhalb des Zeitraums kannst du später löschen oder ändern.
+            </T>
           </>
         ) : null}
         {d.flow === 'full' ? (
@@ -1013,45 +983,62 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
     return (
       <WizardShell
         {...shell}
-        title="Funktionen"
-        explanation="Schalte ein, was die Mannschaft nutzt."
+        title="Was nutzt eure Mannschaft?"
+        explanation="Beantworte die Fragen mit Ja oder Nein. Vorausgewählt ist, was zur Abteilung passt – mit „Empfohlen“ markiert. Termine, News, Abwesenheiten und die Einladung per Link oder QR gehören immer dazu."
         onSkip={next}
       >
         <View style={{ gap: 10 }}>
-          {FEATURES.map((f) => (
-            <ChoiceCard
-              key={f.key}
-              icon={f.icon}
-              title={f.title}
-              text={f.text}
-              multi
-              selected={d.modules.includes(f.key)}
-              onPress={() =>
-                patch({
-                  modules: d.modules.includes(f.key)
-                    ? d.modules.filter((m) => m !== f.key)
-                    : [...d.modules, f.key],
-                })
-              }
-            />
-          ))}
-        </View>
-        <Card style={{ gap: 10 }}>
-          <ChoiceChips
-            label="Rückennummern"
-            options={[
-              { value: 'off', label: 'Aus' },
-              { value: 'match', label: 'Je Spiel' },
-              { value: 'season', label: 'Fest' },
-            ]}
-            selected={[d.jerseyMode]}
-            onToggle={(jerseyMode) => patch({ jerseyMode: jerseyMode as Draft['jerseyMode'] })}
+          {FEATURES.map((f) => {
+            const rec = defaultModules(unitKind).includes(f.key);
+            const on = modules.includes(f.key);
+            return (
+              <FunctionQuestion
+                key={f.key}
+                icon={f.icon}
+                question={f.question}
+                text={f.text}
+                recommended={rec}
+                value={on}
+                onChange={(yes) =>
+                  patch({ modules: yes ? [...modules, f.key] : modules.filter((m) => m !== f.key) })
+                }
+              />
+            );
+          })}
+          <FunctionQuestion
+            icon="shirt"
+            question="Habt ihr feste Rückennummern?"
+            text="z. B. jeder Spieler hat seine Nummer für die ganze Saison"
+            recommended={false}
+            value={d.jerseyMode !== 'off'}
+            onChange={(yes) => patch({ jerseyMode: yes ? 'season' : 'off' })}
           />
-          <T variant="caption">
-            Je Spiel: die Nummer wird bei jeder Aufstellung neu vergeben. Fest: eine Nummer pro
-            Spieler für die ganze Saison.
-          </T>
-        </Card>
+          {d.jerseyMode !== 'off' ? (
+            <Card style={{ gap: 10 }}>
+              <ChoiceChips
+                label="Rückennummern-Modus"
+                options={[
+                  { value: 'match', label: 'Je Spiel' },
+                  { value: 'season', label: 'Fest' },
+                ]}
+                selected={[d.jerseyMode]}
+                onToggle={(jerseyMode) => patch({ jerseyMode: jerseyMode as Draft['jerseyMode'] })}
+              />
+              <T variant="caption">
+                Je Spiel: die Nummer wird bei jeder Aufstellung neu vergeben. Fest: eine Nummer pro
+                Spieler für die ganze Saison.
+              </T>
+            </Card>
+          ) : null}
+          <FunctionQuestion
+            icon="people"
+            question="Sollen Eltern die Termine ihrer Kinder verwalten?"
+            text="Elternzugänge: Eltern antworten für ihr Kind. Das Trainerteam entscheidet – ältere Jahrgänge (ab U18) brauchen es meist nicht."
+            recommended={defaultParentAccess(unitKind, d.ageGroup)}
+            value={parentAccess}
+            onChange={(yes) => patch({ parentAccess: yes })}
+          />
+        </View>
         <LaterHint where="Mannschaft › Module" />
       </WizardShell>
     );
@@ -1185,28 +1172,6 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
       </WizardShell>
     );
 
-  if (key === 'info')
-    return (
-      <WizardShell
-        {...shell}
-        title="Information für Eltern und Spieler"
-        explanation="Ein kurzer Willkommenstext erscheint im Team-Tab – zum Beispiel zu Kleidung, Treffpunkten und Regeln."
-        onSkip={next}
-      >
-        <TextField
-          label="Willkommenstext"
-          value={d.welcome}
-          onChangeText={(welcome) => patch({ welcome })}
-          multiline
-          maxLength={1500}
-          placeholder={t(
-            'z. B. Bitte 15 Minuten vor Beginn da sein, Schienbeinschoner nicht vergessen.',
-          )}
-        />
-        <LaterHint where="Mannschaft bearbeiten" />
-      </WizardShell>
-    );
-
   // ── Zusammenfassung ──────────────────────────────────────────────────────
   const modeLabelOf = (m: ParticipationMode) =>
     PARTICIPATION_OPTIONS.find((p) => p.value === m)?.label ?? '';
@@ -1246,7 +1211,7 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
       key: 'coaches',
     },
   ];
-  if (youth)
+  if (parentAccess)
     rows.push({
       label: 'Eltern und Kinder',
       value: t(
@@ -1266,13 +1231,21 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
     rows.push(
       {
         label: 'Funktionen',
-        value: FEATURES.filter((f) => d.modules.includes(f.key))
+        value: FEATURES.filter((f) => modules.includes(f.key))
           .map((f) => t(f.title))
           .join(' · '),
         key: 'features',
       },
-      { label: 'Treffpunkt', value: d.meetingPoint.trim(), key: 'meeting' },
-      { label: 'Information', value: d.welcome.trim().slice(0, 80), key: 'info' },
+      {
+        label: 'Treffzeit',
+        value: [
+          d.trainingMeeting !== null ? t(`Training ${d.trainingMeeting} Min.`) : '',
+          d.matchMeeting !== null ? t(`Spiele ${d.matchMeeting} Min.`) : '',
+        ]
+          .filter(Boolean)
+          .join(' · '),
+        key: 'meeting',
+      },
     );
   return (
     <WizardShell
@@ -1285,7 +1258,6 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
     >
       <SummaryList rows={rows.map((r) => ({ ...r, onEdit: () => goKey(r.key) }))} />
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-        <Chip tone="primary" label={TEAM_TEMPLATE_INFO[d.template].name} />
         {aliasCount > 0 ? <Chip tone="neutral" label={t(`DFBnet-Namen: ${aliasCount}`)} /> : null}
       </View>
       <RuleList
@@ -1355,6 +1327,39 @@ function ResponseKind({
         </View>
       </Card>
     </View>
+  );
+}
+
+/** Eine Frage zu einer Funktion: Ja/Nein, die empfohlene Antwort ist markiert */
+function FunctionQuestion({
+  icon,
+  question,
+  text,
+  recommended,
+  value,
+  onChange,
+}: {
+  icon: IconName;
+  question: string;
+  text: string;
+  recommended: boolean;
+  value: boolean;
+  onChange: (yes: boolean) => void;
+}) {
+  return (
+    <Card style={{ gap: 10 }}>
+      <T style={{ fontWeight: '700' }}>{question}</T>
+      <T variant="caption">{text}</T>
+      <ChoiceChips
+        label={question}
+        options={[
+          { value: 'yes', label: recommended ? 'Ja (empfohlen)' : 'Ja' },
+          { value: 'no', label: recommended ? 'Nein' : 'Nein (empfohlen)' },
+        ]}
+        selected={[value ? 'yes' : 'no']}
+        onToggle={(v) => onChange(v === 'yes')}
+      />
+    </Card>
   );
 }
 

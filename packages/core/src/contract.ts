@@ -1610,7 +1610,7 @@ export type TeamAdminOverview = {
   next: SeasonInfo | null;
   teams: AdminTeam[];
   nextTeams: AdminTeam[];
-  orgUnits: { id: string; name: string; canManage: boolean }[];
+  orgUnits: { id: string; name: string; kind: OrgUnitKind; canManage: boolean }[];
 };
 
 export type TeamInput = {

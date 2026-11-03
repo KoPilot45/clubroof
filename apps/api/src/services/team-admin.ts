@@ -152,6 +152,7 @@ export async function getTeamAdmin(db: Db, actor: Actor, now: Date): Promise<Tea
     orgUnits: units.map((u) => ({
       id: u.id,
       name: u.name,
+      kind: u.kind,
       canManage: can(actor.grants, 'teams.manage', { orgUnitId: u.id }),
     })),
   };
