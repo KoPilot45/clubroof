@@ -18,10 +18,11 @@ import {
   type FineType,
   type SaveFineTypeInput,
   type TeamCash,
+  type TeamPermissions,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, count, desc, eq, inArray, isNull, lte } from 'drizzle-orm';
-import type { Actor } from '../actor';
+import { actorCan, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { resolveMediaUrl } from '../storage/media-links';
 import { SimplePdf } from '../storage/pdf';
@@ -72,7 +73,32 @@ export async function accountFor(db: Db, actor: Actor, team: TeamRow, create = f
 export async function loadCashTeam(db: Db, actor: Actor, teamId: string) {
   const loaded = await loadTeamForActor(db, actor, teamId);
   requireModule(actor, 'team_cash', loaded.team);
-  return { ...loaded, seesAll: loaded.isMember || loaded.permissions.readCash };
+  const permissions = await restrictBooking(db, actor, loaded.team, loaded.permissions);
+  return { ...loaded, permissions, seesAll: loaded.isMember || permissions.readCash };
+}
+
+/**
+ * Hat die Mannschaft festgelegt, dass nur der Kassenwart bucht, verlieren Trainer ohne vereinsweites Recht
+ * das Buchen und Vergeben von Strafen; Einsicht bleibt.
+ */
+async function restrictBooking(db: Db, actor: Actor, team: TeamRow, permissions: TeamPermissions) {
+  if (!permissions.manageCash && !permissions.manageFines) return permissions;
+  if (actorCan(actor, 'cash.manage')) return permissions;
+  const account = await accountFor(db, actor, team);
+  if (cashSettings(account).bookingBy !== 'treasurer') return permissions;
+  const [mine] = await db
+    .select({ id: s.roleAssignments.id })
+    .from(s.roleAssignments)
+    .innerJoin(s.roles, eq(s.roles.id, s.roleAssignments.roleId))
+    .where(
+      and(
+        eq(s.roleAssignments.personId, actor.person.id),
+        eq(s.roles.key, 'treasurer'),
+        eq(s.roleAssignments.scopeType, 'team'),
+        eq(s.roleAssignments.scopeId, team.id),
+      ),
+    );
+  return mine ? permissions : { ...permissions, manageCash: false, manageFines: false };
 }
 
 export function cashSettings(account: { settings: AccountSettings } | null): CashSettings {
@@ -87,6 +113,11 @@ export function cashSettings(account: { settings: AccountSettings } | null): Cas
     autoReminder: v.autoReminder === true,
     savingsGoalName: v.savingsGoalName ?? null,
     savingsGoalCents: v.savingsGoalCents ?? null,
+    bookingBy: v.bookingBy === 'treasurer' ? 'treasurer' : 'staff',
+    paymentNote: v.paymentNote ?? null,
+    cashPayment: v.cashPayment === true,
+    seasonEnd: v.seasonEnd === 'payout' ? 'payout' : 'carry',
+    clubOwned: v.clubOwned === true,
   };
 }
 
@@ -604,8 +635,7 @@ export async function createBooking(
   input: CreateCashBookingInput,
   now: Date,
 ): Promise<TeamCash> {
-  const { team, permissions } = await loadTeamForActor(db, actor, teamId);
-  requireModule(actor, 'team_cash', team);
+  const { team, permissions } = await loadCashTeam(db, actor, teamId);
   if (!permissions.manageCash)
     throw forbidden('Buchungen dürfen nur Kassenverantwortliche erfassen.');
 

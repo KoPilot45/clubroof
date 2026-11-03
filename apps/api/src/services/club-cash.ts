@@ -10,6 +10,8 @@ import {
   CLUB_CASH_VISIBILITIES,
   CLUB_CASH_VISIBILITY_INFO,
   CLUB_COST_CENTER_KINDS,
+  calendarDayOf,
+  toIsoDate,
   type ClubCash,
   type ClubCashAccount,
   type ClubCashAccountKind,
@@ -24,12 +26,19 @@ import {
   scopesWith,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
-import { and, asc, desc, eq, gte, ilike, inArray, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, ilike, inArray, isNull, lte, or, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { actorCan, moduleEnabled, type Actor } from '../actor';
 import { HttpError, forbidden, notFound } from '../errors';
 import { assertFund, ensureMainFund, fundScope, listFunds } from './club-funds';
-import { assertNoReceipt, assertNotLinked, assertPeriodOpen } from './club-periods';
+import {
+  assertNoReceipt,
+  assertNotLinked,
+  assertPeriodOpen,
+  fiscalOf,
+  fiscalRange,
+  fiscalYearOf,
+} from './club-periods';
 import { mediaReference } from './uploads';
 import { resolveMediaUrl } from '../storage/media-links';
 
@@ -129,7 +138,9 @@ export async function getClubCash(
 ): Promise<ClubCash> {
   const level = requireLevel(actor);
   const clubId = actor.club.id;
-  const year = now.getUTCFullYear();
+  const fiscal = await fiscalOf(db, clubId);
+  const year = fiscalYearOf(fiscal, toIsoDate(calendarDayOf(now, actor.club.timezone)));
+  const range = fiscalRange(fiscal, year);
 
   await ensureMainFund(db, clubId, now);
   const funds = await listFunds(
@@ -204,8 +215,8 @@ export async function getClubCash(
         eq(s.clubCashEntries.clubId, clubId),
         isNull(s.clubCashEntries.cancelledAt),
         inArray(s.clubCashEntries.accountId, accounts.map((a) => a.id).concat(NO_ID)),
-        gte(s.clubCashEntries.bookedOn, `${year}-01-01`),
-        lte(s.clubCashEntries.bookedOn, `${year}-12-31`),
+        gte(s.clubCashEntries.bookedOn, range.from),
+        lte(s.clubCashEntries.bookedOn, range.to),
       ),
     )
     .groupBy(s.clubCashCategories.area, s.clubCashEntries.kind);
@@ -228,6 +239,12 @@ export async function getClubCash(
       (await db.select({ n: s.clubs.nonprofit }).from(s.clubs).where(eq(s.clubs.id, clubId)))[0]
         ?.n ?? null,
     visibility: actor.club.clubCashVisibility as ClubCashVisibility,
+    fiscalYear: actor.club.fiscalYearKind === 'season' ? 'season' : 'calendar',
+    memberStats: await memberStats(db, clubId),
+    claimRules: {
+      receiptRequired: actor.club.claimReceiptRequired,
+      secondApprovalCents: actor.club.claimSecondApprovalCents,
+    },
     year,
     funds,
     units: await db
@@ -817,6 +834,17 @@ export async function updateCostCenter(
   );
 }
 
+async function memberStats(db: Db, clubId: string) {
+  const [row] = await db
+    .select({
+      total: count(),
+      withBirthDate: count(s.persons.birthDate),
+    })
+    .from(s.persons)
+    .where(and(eq(s.persons.clubId, clubId), eq(s.persons.membershipStatus, 'active')));
+  return { total: Number(row?.total ?? 0), withBirthDate: Number(row?.withBirthDate ?? 0) };
+}
+
 /** „Wer darf die Kasse einsehen?“ – nur die Vereinsadministration. */
 export async function setVisibility(
   db: Db,
@@ -839,6 +867,53 @@ export async function setVisibility(
     'club',
     actor.club.id,
     `Vereinskasse: Einsicht geändert (${CLUB_CASH_VISIBILITY_INFO[visibility].name})`,
+    now,
+  );
+}
+
+/**
+ * Regeln der Vereinskasse (Kassen-Assistent): Haushaltsjahr, Belegpflicht und Vier-Augen-Grenze für Auslagen.
+ * Das Haushaltsjahr lässt sich nur ändern, solange noch kein Jahr abgeschlossen ist.
+ */
+export async function setCashRules(
+  db: Db,
+  actor: Actor,
+  input: {
+    fiscalYear?: 'calendar' | 'season';
+    claimReceiptRequired?: boolean;
+    claimSecondApprovalCents?: number | null;
+  },
+  now: Date,
+): Promise<void> {
+  requireManage(actor);
+  const patch: Partial<typeof s.clubs.$inferInsert> = {};
+  if (input.fiscalYear !== undefined && input.fiscalYear !== actor.club.fiscalYearKind) {
+    const [locked] = await db
+      .select({ id: s.clubPeriodLocks.id })
+      .from(s.clubPeriodLocks)
+      .where(eq(s.clubPeriodLocks.clubId, actor.club.id))
+      .limit(1);
+    if (locked)
+      throw new HttpError(
+        409,
+        'fiscal_locked',
+        'Das Haushaltsjahr lässt sich nicht mehr ändern, weil schon ein Jahr abgeschlossen wurde.',
+      );
+    patch.fiscalYearKind = input.fiscalYear;
+  }
+  if (input.claimReceiptRequired !== undefined)
+    patch.claimReceiptRequired = input.claimReceiptRequired;
+  if (input.claimSecondApprovalCents !== undefined)
+    patch.claimSecondApprovalCents = input.claimSecondApprovalCents;
+  if (Object.keys(patch).length === 0) return;
+  await db.update(s.clubs).set(patch).where(eq(s.clubs.id, actor.club.id));
+  await audit(
+    db,
+    actor,
+    'clubcash.settings',
+    'club',
+    actor.club.id,
+    'Vereinskasse: Haushaltsjahr oder Auslagenregeln geändert',
     now,
   );
 }

@@ -82,6 +82,15 @@ export const cashAccounts = pgTable(
         /** Sparziel der Mannschaft (z. B. Mannschaftsfahrt), Paket ST */
         savingsGoalName?: string | null;
         savingsGoalCents?: number | null;
+        /** Wer buchen darf: `staff` = Kassenwart und Trainerteam (Standard), `treasurer` = nur der Kassenwart */
+        bookingBy?: 'staff' | 'treasurer';
+        /** Hinweis an Eltern, wie sie einzahlen; bar möglich */
+        paymentNote?: string | null;
+        cashPayment?: boolean;
+        /** Zum Saisonende: Rest übertragen oder an die Mitglieder auszahlen (Hinweis fürs Kassenwart-Team) */
+        seasonEnd?: 'carry' | 'payout';
+        /** Das Geld der Kasse gehört zum Verein (Hinweis für Kassenprüfung und Gemeinnützigkeit) */
+        clubOwned?: boolean;
       }>()
       .notNull()
       .default({}),
@@ -801,6 +810,8 @@ export const clubExpenseClaims = pgTable(
     status: text().notNull().default('submitted'),
     decidedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     decidedAt: timestamp({ withTimezone: true }),
+    /** Erste Freigabe bei Beträgen über der Grenze (Vier-Augen-Prinzip); die zweite Person schließt ab */
+    firstApprovedByPersonId: uuid().references(() => persons.id, { onDelete: 'set null' }),
     rejectReason: text(),
     /** Ausgabe im Kassenbuch nach der Zahlung */
     entryId: uuid().references(() => clubCashEntries.id),

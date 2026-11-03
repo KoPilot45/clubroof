@@ -57,8 +57,10 @@ type StepKey =
   | 'units'
   | 'season'
   | 'board'
+  | 'deputy'
   | 'team-modules'
   | 'club-modules'
+  | 'joins'
   | 'members'
   | 'comms'
   | 'account'
@@ -80,10 +82,12 @@ const FULL: StepKey[] = [
   'units',
   'season',
   'board',
+  'deputy',
   'team-modules',
   'club-modules',
-  'members',
   'comms',
+  'joins',
+  'members',
   'account',
   'password',
   'security',
@@ -98,6 +102,7 @@ const QUICK: StepKey[] = [
   'logo',
   'color',
   'units',
+  'deputy',
   'account',
   'password',
   'security',
@@ -108,7 +113,6 @@ const QUICK: StepKey[] = [
 const BOARD_ROLES: { key: string; role: string; label: string; unit?: 'youth' }[] = [
   { key: 'chair', role: 'board', label: 'Vorsitzende' },
   { key: 'youth', role: 'youth_director', label: 'Jugendleitung', unit: 'youth' },
-  { key: 'treasurer', role: 'club_treasurer', label: 'Kassenwart' },
   { key: 'secretary', role: 'member_admin', label: 'Schriftführer' },
   { key: 'groundskeeper', role: 'facility_manager', label: 'Platzwart' },
   { key: 'auditor', role: 'cash_auditor', label: 'Kassenprüfer' },
@@ -258,6 +262,10 @@ type Draft = {
   /** Daten, die nach der Einrichtung übernommen werden sollen (Paket IMPORT-EXPORT, Stufe 5) */
   importPlan: ('members' | 'roster' | 'events' | 'fees' | 'invite')[];
   contactVisibility: 'club' | 'team_and_coaches' | 'coaches_only';
+  /** Wer Beitrittsanfragen freigibt */
+  joinApproval: 'team_staff' | 'admin_only';
+  /** Vertretung: zweite Person mit Administrationsrechten (Einladung nach der Einrichtung) */
+  deputy: BoardEntry;
   firstName: string;
   lastName: string;
   email: string;
@@ -286,6 +294,8 @@ const INITIAL: Draft = {
   board: {},
   importPlan: [],
   contactVisibility: 'team_and_coaches',
+  joinApproval: 'team_staff',
+  deputy: { name: '', email: '' },
   firstName: '',
   lastName: '',
   email: '',
@@ -327,7 +337,7 @@ function Wizard({ demo }: { demo?: boolean }) {
     patch,
     loaded,
     clear,
-  } = useWizardDraft<Draft>(demo ? 'setupDraftDemo2' : 'setupDraft2', INITIAL);
+  } = useWizardDraft<Draft>(demo ? 'setupDraftDemo3' : 'setupDraft3', INITIAL);
   // Geheimnisse und Dateien bleiben im Speicher und nie im Entwurf
   const [token, setToken] = useState(demo ? 'demo' : '');
   const [password, setPassword] = useState('');
@@ -420,8 +430,11 @@ function Wizard({ demo }: { demo?: boolean }) {
     } catch {
       // Jugendleitung gilt dann im ganzen Verein
     }
-    for (const r of BOARD_ROLES) {
-      const entry = d.board[r.key];
+    const people: { entry: BoardEntry | undefined; r: (typeof BOARD_ROLES)[number] }[] = [
+      ...BOARD_ROLES.map((r) => ({ entry: d.board[r.key], r })),
+      { entry: d.deputy, r: { key: 'deputy', role: 'fulladmin', label: 'Vertretung' } },
+    ];
+    for (const { entry, r } of people) {
       if (!entry?.name.trim() || !entry.email.includes('@')) continue;
       const parts = entry.name.trim().split(/\s+/);
       const lastName = parts.length > 1 ? parts.pop()! : parts[0]!;
@@ -482,6 +495,7 @@ function Wizard({ demo }: { demo?: boolean }) {
           timezone: d.timezone,
           seasonStartMonth: Number(d.seasonStartMonth),
           defaultContactVisibility: d.contactVisibility,
+          joinApproval: d.joinApproval,
         },
         orgUnits:
           d.orgMode === 'split'
@@ -559,11 +573,19 @@ function Wizard({ demo }: { demo?: boolean }) {
       >
         {demo ? null : (
           <View style={{ gap: 10 }}>
+            <ChoiceCard
+              icon="people"
+              title="Mitglieder importieren"
+              text="Aus Excel oder CSV, mit Vorlage zum Herunterladen"
+              badge={d.importPlan.includes('members') ? 'Geplant' : undefined}
+              selected={false}
+              onPress={() => router.replace('/admin/import')}
+            />
             {d.modules.includes('club_cash') ? (
               <ChoiceCard
                 icon="wallet"
                 title="Vereinskasse einrichten"
-                text="Konten, Beitragsarten und Haushaltsplan"
+                text="Konten, Beitragsarten und Haushaltsplan – nach dem Mitgliederimport, dann greifen die Beitragsregeln"
                 selected={false}
                 onPress={() => router.replace('/club-cash')}
               />
@@ -574,14 +596,6 @@ function Wizard({ demo }: { demo?: boolean }) {
               text="Mit Trainerteam, Kader und Antwortfristen"
               selected={false}
               onPress={() => router.replace('/admin/team-new')}
-            />
-            <ChoiceCard
-              icon="people"
-              title="Mitglieder importieren"
-              text="Aus Excel oder CSV, mit Vorlage zum Herunterladen"
-              badge={d.importPlan.includes('members') ? 'Geplant' : undefined}
-              selected={false}
-              onPress={() => router.replace('/admin/import')}
             />
             <ChoiceCard
               icon="shirt"
@@ -1111,6 +1125,7 @@ function Wizard({ demo }: { demo?: boolean }) {
         title="Vorstand und Aufgaben"
         explanation="Wer soll von Anfang an dabei sein? Jede Person bekommt ihre Rolle und eine Einladung per E-Mail, sobald der Verein eingerichtet ist."
         onSkip={next}
+        hint="Kassenwart und Kassenprüfer bestimmst du später im Assistenten der Vereinskasse."
       >
         {BOARD_ROLES.map((r) => (
           <Card key={r.key} style={{ gap: 10 }}>
@@ -1141,6 +1156,39 @@ function Wizard({ demo }: { demo?: boolean }) {
           Administrationsrechten. Weitere Rollen vergibst du später unter Verwaltung › Rollen &
           Aufgaben.
         </WhyBox>
+      </WizardShell>
+    );
+
+  // ── Vertretung ───────────────────────────────────────────────────────────
+  if (key === 'deputy')
+    return (
+      <WizardShell
+        {...shell}
+        title="Wer vertritt dich?"
+        explanation="Ein Verein mit nur einer Administration ist ein Risiko: Fällt die Person aus, kommt niemand mehr an die Einstellungen. Bestimme eine zweite Person mit denselben Rechten."
+        onSkip={next}
+      >
+        <Card style={{ gap: 10 }}>
+          <TextField
+            label="Name"
+            value={d.deputy.name}
+            onChangeText={(name) => patch({ deputy: { ...d.deputy, name } })}
+            maxLength={80}
+          />
+          <TextField
+            label="E-Mail-Adresse"
+            kind="email"
+            value={d.deputy.email}
+            onChangeText={(email) => patch({ deputy: { ...d.deputy, email } })}
+            maxLength={120}
+          />
+        </Card>
+        <WhyBox>
+          Die Person bekommt nach der Einrichtung eine Einladung und die Rolle
+          „Vereinsadministration“. Du kannst sie jederzeit unter Verwaltung › Rollen & Aufgaben
+          ändern.
+        </WhyBox>
+        <LaterHint where="Verwaltung › Rollen & Aufgaben" />
       </WizardShell>
     );
 
@@ -1177,6 +1225,33 @@ function Wizard({ demo }: { demo?: boolean }) {
       </WizardShell>
     );
   }
+
+  // ── Neue Mitglieder ──────────────────────────────────────────────────────
+  if (key === 'joins')
+    return (
+      <WizardShell
+        {...shell}
+        title="Neue Mitglieder: Wer gibt Beitrittsanfragen frei?"
+        explanation="Wer über einen Einladungslink oder QR-Code beitreten will, stellt eine Anfrage. Jemand muss sie freigeben."
+      >
+        <OptionCard
+          icon="shirt"
+          title="Trainerteam der Mannschaft"
+          text="Trainer entscheiden für ihre Mannschaft, die Verwaltung kann immer freigeben"
+          recommended
+          selected={d.joinApproval === 'team_staff'}
+          onPress={() => patch({ joinApproval: 'team_staff' })}
+        />
+        <OptionCard
+          icon="shield-checkmark"
+          title="Nur die Verwaltung"
+          text="Alle Anfragen laufen bei der Verwaltung zusammen – mehr Kontrolle, mehr Aufwand"
+          selected={d.joinApproval === 'admin_only'}
+          onPress={() => patch({ joinApproval: 'admin_only' })}
+        />
+        <LaterHint where="Verwaltung › Verein & Design" />
+      </WizardShell>
+    );
 
   // ── Daten übernehmen ─────────────────────────────────────────────────────
   if (key === 'members') {
@@ -1249,7 +1324,7 @@ function Wizard({ demo }: { demo?: boolean }) {
     return (
       <WizardShell
         {...shell}
-        title="Kommunikation und Datenschutz"
+        title="Wer sieht was?"
         explanation="Wer sieht die Kontaktdaten neuer Personen? Jede Person kann das für sich ändern."
       >
         {VISIBILITIES.map((o) => (
@@ -1450,6 +1525,11 @@ function Wizard({ demo }: { demo?: boolean }) {
       value: [d.firstName.trim(), d.lastName.trim(), d.email.trim()].filter(Boolean).join(' · '),
       key: 'account',
     },
+    {
+      label: 'Vertretung',
+      value: d.deputy.email.includes('@') ? d.deputy.name.trim() || d.deputy.email.trim() : '',
+      key: 'deputy',
+    },
   ];
   if (d.flow === 'full')
     rows.splice(
@@ -1464,6 +1544,14 @@ function Wizard({ demo }: { demo?: boolean }) {
       },
       { label: 'Saison', value: t(`Beginn im ${t(seasonLabel)}`), key: 'season' },
       { label: 'Vorstand', value: boardCount ? t(`${boardCount} Einladungen`) : '', key: 'board' },
+      {
+        label: 'Beitrittsanfragen',
+        value:
+          d.joinApproval === 'admin_only'
+            ? t('Nur die Verwaltung')
+            : t('Trainerteam der Mannschaft'),
+        key: 'joins',
+      },
     );
   return (
     <WizardShell

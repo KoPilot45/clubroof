@@ -13,6 +13,7 @@ import {
   type CreateTransferInput,
   type TransferItem,
   type TransferOverview,
+  participationModeFor,
 } from '@clubroof/core';
 import { schema as s, type Db } from '@clubroof/db';
 import { and, asc, desc, eq, gt, gte, inArray, isNull, lte, or } from 'drizzle-orm';
@@ -100,7 +101,7 @@ async function syncFuture(
   until?: string | null,
 ) {
   const events = await tx
-    .select({ id: s.events.id, startsAt: s.events.startsAt })
+    .select({ id: s.events.id, startsAt: s.events.startsAt, type: s.events.type })
     .from(s.events)
     .where(
       and(
@@ -109,9 +110,11 @@ async function syncFuture(
         gt(s.events.startsAt, now),
       ),
     );
-  const ids = events
-    .filter((e) => !until || toIsoDate(calendarDayOf(e.startsAt, actor.club.timezone)) <= until)
-    .map((e) => e.id);
+  const inRange = events.filter(
+    (e) => !until || toIsoDate(calendarDayOf(e.startsAt, actor.club.timezone)) <= until,
+  );
+  const ids = inRange.map((e) => e.id);
+  const typeOf = new Map(inRange.map((e) => [e.id, e.type]));
   if (ids.length === 0) return;
   if (!add) {
     await tx
@@ -134,7 +137,9 @@ async function syncFuture(
         personId,
         role: 'player' as const,
         status:
-          team.participationMode === 'active_response' ? ('pending' as const) : ('yes' as const),
+          participationModeFor(team, typeOf.get(eventId)!) === 'active_response'
+            ? ('pending' as const)
+            : ('yes' as const),
       })),
     )
     .onConflictDoNothing();

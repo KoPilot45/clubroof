@@ -100,6 +100,13 @@ export default function ClaimsAdminScreen() {
           .filter(Boolean)
           .join(' · ')}
       </T>
+      {c.awaitingSecondApproval ? (
+        <Chip
+          tone="action"
+          icon="people"
+          label="Erste Freigabe liegt vor – eine zweite Person muss bestätigen"
+        />
+      ) : null}
       {c.receiptUrl ? (
         <Button
           label="Beleg ansehen"

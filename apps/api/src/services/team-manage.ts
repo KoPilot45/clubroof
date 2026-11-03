@@ -54,6 +54,8 @@ export function profileOf(
   team: typeof s.teams.$inferSelect,
 ): Omit<TeamProfile, 'trainingDeadlineHours' | 'matchDeadlineHours'> {
   return {
+    participationMode: team.participationMode,
+    matchParticipationMode: team.matchParticipationMode,
     matchMeetingMinutes: team.matchMeetingMinutes,
     trainingMeetingMinutes: team.trainingMeetingMinutes,
     defaultMeetingPoint: team.defaultMeetingPoint,
@@ -343,6 +345,9 @@ export async function updateTeamProfile(
   if (!actorCan(actor, 'events.manage', team))
     throw forbidden('Das Mannschaftsprofil bearbeitet nur das Trainerteam.');
   const patch: Partial<typeof s.teams.$inferInsert> = {};
+  if (input.participationMode !== undefined) patch.participationMode = input.participationMode;
+  if (input.matchParticipationMode !== undefined)
+    patch.matchParticipationMode = input.matchParticipationMode;
   if (input.matchMeetingMinutes !== undefined)
     patch.matchMeetingMinutes = input.matchMeetingMinutes;
   if (input.trainingMeetingMinutes !== undefined)

@@ -11,10 +11,13 @@ import { View } from 'react-native';
 import {
   ChoiceCard,
   LaterHint,
+  ModeChoice,
+  OptionCard,
   SummaryList,
   WhyBox,
   WizardShell,
   useWizardDraft,
+  type SetupMode,
 } from '@/components/wizard';
 import { Card, ChoiceChips, Chip, Loading, T, TextField, Toggle } from '@/components/ui';
 import { RequestError } from '@/lib/api';
@@ -40,7 +43,18 @@ const INTERVALS: { value: Interval; label: string }[] = [
 ];
 
 type Draft = {
+  flow: SetupMode;
   treasurers: string[];
+  /** Wer buchen darf: Kassenwart und Trainerteam (empfohlen) oder nur der Kassenwart */
+  bookingBy: 'staff' | 'treasurer';
+  /** Einzahlungsweg (ausführlich) */
+  cashPayment: boolean;
+  iban: string;
+  accountHolder: string;
+  paypal: string;
+  paymentNote: string;
+  seasonEnd: 'carry' | 'payout';
+  clubOwned: boolean;
   opening: string;
   fines: string[];
   drinkPrice: string;
@@ -53,7 +67,16 @@ type Draft = {
 };
 
 const INITIAL: Draft = {
+  flow: 'quick',
   treasurers: [],
+  bookingBy: 'staff',
+  cashPayment: true,
+  iban: '',
+  accountHolder: '',
+  paypal: '',
+  paymentNote: '',
+  seasonEnd: 'carry',
+  clubOwned: true,
   opening: '',
   fines: TEAM_FINE_TEMPLATE.map((f) => f.name),
   drinkPrice: '1,50',
@@ -66,7 +89,18 @@ const INITIAL: Draft = {
 };
 
 type StepKey =
-  'intro' | 'treasurers' | 'opening' | 'fines' | 'drinks' | 'fee' | 'visibility' | 'summary';
+  | 'intro'
+  | 'treasurers'
+  | 'booking'
+  | 'opening'
+  | 'payment'
+  | 'fines'
+  | 'drinks'
+  | 'fee'
+  | 'visibility'
+  | 'season'
+  | 'club'
+  | 'summary';
 
 export type TeamCashWizardBackend = {
   demo?: boolean;
@@ -120,11 +154,14 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
   const keys: StepKey[] = [
     'intro',
     'treasurers',
+    'booking',
     'opening',
+    ...(d.flow === 'full' ? (['payment'] as const) : []),
     ...(cash.config.fines ? (['fines'] as const) : []),
     ...(cash.config.drinks ? (['drinks'] as const) : []),
     'fee',
     'visibility',
+    ...(d.flow === 'full' ? (['season', 'club'] as const) : []),
     'summary',
   ];
   const key = keys[Math.min(step, keys.length - 1)]!;
@@ -181,6 +218,17 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
             ...(cash.config.drinks && drinkCents ? { drinkPriceCents: drinkCents } : {}),
             showMemberBalances: d.showBalances,
             autoReminder: d.autoReminder,
+            ...(d.flow === 'full'
+              ? {
+                  cashPayment: d.cashPayment,
+                  paymentNote: d.paymentNote.trim() || null,
+                  iban: d.iban.trim() || null,
+                  accountHolder: d.accountHolder.trim() || null,
+                  paypalLink: d.paypal.trim() || null,
+                  seasonEnd: d.seasonEnd,
+                  clubOwned: d.clubOwned,
+                }
+              : {}),
           },
         });
         if (d.fee && feeCents && d.feeName.trim().length >= 2)
@@ -188,6 +236,9 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
             method: 'POST',
             body: { name: d.feeName.trim(), amountCents: feeCents, interval: d.feeInterval },
           });
+        // Zuletzt: verlangt die Wahl „nur Kassenwart“, verliert das Trainerteam danach das Buchen
+        if (d.bookingBy !== cash.settings.bookingBy)
+          await api(`${base}/settings`, { method: 'PUT', body: { bookingBy: d.bookingBy } });
         void queryClient.invalidateQueries({ queryKey: ['cash', backend.teamId] });
       }
       clear();
@@ -237,8 +288,9 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
       <WizardShell
         {...shell}
         title="Die Mannschaftskasse einrichten"
-        explanation="In etwa fünf Minuten: wer die Kasse führt, Anfangsbestand, Strafenkatalog, Getränkepreis, Beitrag und was die Mannschaft sehen darf. Angelegt wird erst am Ende."
+        explanation="In etwa fünf Minuten: wer die Kasse führt und bucht, Anfangsbestand, Strafenkatalog, Getränkepreis, Beitrag und was die Mannschaft sehen darf. Angelegt wird erst am Ende."
       >
+        <ModeChoice value={d.flow} onChange={(flow) => patch({ flow })} />
         <WhyBox>
           Die Mannschaftskasse ist getrennt von der Vereinskasse: Sie gehört der Mannschaft, Trainer
           oder Kassenwart führen sie.
@@ -277,6 +329,144 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
           </View>
         )}
         <LaterHint where="Mannschaftskasse › Kassenwart" />
+      </WizardShell>
+    );
+
+  if (key === 'booking')
+    return (
+      <WizardShell
+        {...shell}
+        title="Wer darf buchen?"
+        explanation="Buchungen, Strafen und Getränke erfassen. Lesen darf die Mannschaft ohnehin nach den Einstellungen unter „Was darf die Mannschaft sehen?“."
+      >
+        <OptionCard
+          icon="people"
+          title="Kassenwart und Trainerteam"
+          text="Das Trainerteam kann mitbuchen – wenig Aufwand, die Kasse hängt nicht an einer Person"
+          recommended
+          selected={d.bookingBy === 'staff'}
+          onPress={() => patch({ bookingBy: 'staff' })}
+        />
+        <OptionCard
+          icon="shield-checkmark"
+          title="Nur der Kassenwart"
+          text="Nur die Kassenwarte der Mannschaft buchen – klare Verantwortung"
+          selected={d.bookingBy === 'treasurer'}
+          onPress={() => patch({ bookingBy: 'treasurer' })}
+        />
+        {d.bookingBy === 'treasurer' && d.treasurers.length === 0 && !cash.treasurers.length ? (
+          <Chip
+            tone="action"
+            icon="alert-circle"
+            label="Bestimme im ersten Schritt mindestens einen Kassenwart, sonst bucht niemand."
+          />
+        ) : null}
+        <LaterHint where="Mannschaftskasse › Einstellungen" />
+      </WizardShell>
+    );
+
+  if (key === 'payment')
+    return (
+      <WizardShell
+        {...shell}
+        title="Einzahlungsweg"
+        explanation="Wie zahlen Spieler und Eltern ein? Die Angaben stehen in der Kasse bei „Bezahlen“."
+        onSkip={next}
+      >
+        <Toggle
+          label="Barzahlung möglich"
+          value={d.cashPayment}
+          onChange={(cashPayment) => patch({ cashPayment })}
+        />
+        <Card style={{ gap: 12 }}>
+          <TextField
+            label="IBAN (für Überweisungen)"
+            value={d.iban}
+            onChangeText={(iban) => patch({ iban })}
+            maxLength={42}
+          />
+          <TextField
+            label="Kontoinhaber"
+            value={d.accountHolder}
+            onChangeText={(accountHolder) => patch({ accountHolder })}
+            maxLength={80}
+          />
+          <TextField
+            label="PayPal-Link (optional)"
+            value={d.paypal}
+            onChangeText={(paypal) => patch({ paypal })}
+            placeholder="https://paypal.me/…"
+            maxLength={200}
+          />
+          <TextField
+            label="Hinweis für Eltern (optional)"
+            value={d.paymentNote}
+            onChangeText={(paymentNote) => patch({ paymentNote })}
+            multiline
+            maxLength={300}
+            placeholder={t(
+              'z. B. Bitte bar beim Training oder per Überweisung mit dem Namen des Kindes.',
+            )}
+          />
+        </Card>
+        <LaterHint where="Mannschaftskasse › Einstellungen" />
+      </WizardShell>
+    );
+
+  if (key === 'season')
+    return (
+      <WizardShell
+        {...shell}
+        title="Saisonabschluss"
+        explanation="Was passiert am Ende der Saison mit dem Geld? Das ist ein Hinweis für den Kassenwart; gebucht wird nichts automatisch."
+        onSkip={next}
+      >
+        <OptionCard
+          icon="arrow-forward-circle"
+          title="In die neue Saison übertragen"
+          text="Der Kassenstand geht mit in die Nachfolgemannschaft"
+          recommended
+          selected={d.seasonEnd === 'carry'}
+          onPress={() => patch({ seasonEnd: 'carry' })}
+        />
+        <OptionCard
+          icon="cash"
+          title="An die Mitglieder auszahlen"
+          text="Zum Saisonende wird abgerechnet und der Rest ausgezahlt"
+          selected={d.seasonEnd === 'payout'}
+          onPress={() => patch({ seasonEnd: 'payout' })}
+        />
+        <LaterHint where="Mannschaftskasse › Abschluss" />
+      </WizardShell>
+    );
+
+  if (key === 'club')
+    return (
+      <WizardShell
+        {...shell}
+        title="Gehört die Kasse zum Verein?"
+        explanation="Das ist für Gemeinnützigkeit und Kassenprüfung wichtig. Die Einbindung in die Vereinskasse ist ein eigener Schritt für später."
+        onSkip={next}
+      >
+        <OptionCard
+          icon="business"
+          title="Ja, das Geld gehört dem Verein"
+          text="Die Kasse wird bei der Kassenprüfung des Vereins berücksichtigt"
+          selected={d.clubOwned}
+          onPress={() => patch({ clubOwned: true })}
+        />
+        <OptionCard
+          icon="people-circle"
+          title="Nein, es gehört der Mannschaft"
+          text="Eine private Mannschaftskasse, unabhängig vom Verein"
+          selected={!d.clubOwned}
+          onPress={() => patch({ clubOwned: false })}
+        />
+        <WhyBox>
+          Gehört das Geld dem Verein, muss es in dessen Büchern auftauchen. Klärt das bitte mit dem
+          Kassenwart des Vereins.
+        </WhyBox>
+        <LaterHint where="Mannschaftskasse › Einstellungen" />
       </WizardShell>
     );
 
@@ -438,10 +628,29 @@ export function TeamCashWizard({ backend }: { backend: TeamCashWizardBackend }) 
       key: 'fee',
     },
     {
+      label: t('Buchen'),
+      value: d.bookingBy === 'treasurer' ? t('nur Kassenwart') : t('Kassenwart und Trainerteam'),
+      key: 'booking',
+    },
+    {
       label: t('Sichtbarkeit'),
       value: [d.showBalances ? t('Stände sichtbar') : t('nur eigener Stand')].join(' · '),
       key: 'visibility',
     },
+    ...(d.flow === 'full'
+      ? [
+          {
+            label: t('Saisonende'),
+            value: d.seasonEnd === 'payout' ? t('Auszahlung') : t('Übertrag'),
+            key: 'season' as const,
+          },
+          {
+            label: t('Verhältnis zum Verein'),
+            value: d.clubOwned ? t('gehört dem Verein') : t('gehört der Mannschaft'),
+            key: 'club' as const,
+          },
+        ]
+      : []),
   ];
   return (
     <WizardShell

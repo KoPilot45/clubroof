@@ -7,6 +7,14 @@ export type TeamTemplate = (typeof TEAM_TEMPLATES)[number];
 export const PARTICIPATION_MODES = ['auto_accept', 'active_response'] as const;
 export type ParticipationMode = (typeof PARTICIPATION_MODES)[number];
 
+/** Teilnahme-Modell einer Mannschaft für eine Terminart: Spiele haben ein eigenes, alles andere folgt dem Training. */
+export function participationModeFor(
+  team: { participationMode: ParticipationMode; matchParticipationMode: ParticipationMode },
+  eventType: string,
+): ParticipationMode {
+  return eventType === 'match' ? team.matchParticipationMode : team.participationMode;
+}
+
 export const EVENT_TYPES = [
   'training',
   'match',

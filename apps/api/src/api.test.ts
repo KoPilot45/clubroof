@@ -1834,6 +1834,59 @@ describe.skipIf(!url)('API', () => {
       expect(finesOff.status).toBe(400);
     });
 
+    it('Kasse: „nur Kassenwart bucht“ nimmt dem Trainerteam das Buchen, Einsicht bleibt', async () => {
+      const b1 = await teamId('B1');
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const settings = (token: string, body: object) =>
+        send<TeamCash>('PUT', `/teams/${b1}/cash/settings`, token, body);
+      const book = () =>
+        send('POST', `/teams/${b1}/cash/bookings`, coach.token, {
+          kind: 'income',
+          amountCents: 100,
+          description: 'Buchungsrecht-Test',
+        });
+      try {
+        const set = await settings(admin.token, {
+          bookingBy: 'treasurer',
+          paymentNote: ' Bar beim Training ',
+          cashPayment: true,
+          seasonEnd: 'payout',
+          clubOwned: true,
+        });
+        expect(set.status).toBe(200);
+        expect(set.body.settings).toMatchObject({
+          bookingBy: 'treasurer',
+          paymentNote: 'Bar beim Training',
+          cashPayment: true,
+          seasonEnd: 'payout',
+          clubOwned: true,
+        });
+        const seen = await get<TeamCash>(`/teams/${b1}/cash`, coach.token);
+        expect(seen.permissions).toMatchObject({ manageCash: false, manageFines: false });
+        expect(seen.balanceCents).not.toBeNull();
+        expect((await book()).status).toBe(403);
+        expect((await settings(coach.token, { bookingBy: 'staff' })).status).toBe(403);
+        // Vereinsweite Rechte (Administration) buchen weiter
+        const adminCash = await get<TeamCash>(`/teams/${b1}/cash`, admin.token);
+        expect(adminCash.permissions.manageCash).toBe(true);
+        expect((await settings(admin.token, { bookingBy: 'staff' })).status).toBe(200);
+        expect((await book()).status).toBe(201);
+      } finally {
+        await settings(admin.token, {
+          bookingBy: 'staff',
+          paymentNote: null,
+          cashPayment: false,
+          seasonEnd: 'carry',
+          clubOwned: false,
+        });
+      }
+      expect(
+        (await send('PUT', `/teams/${b1}/cash/settings`, admin.token, { bookingBy: 'alle' }))
+          .status,
+      ).toBe(400);
+    });
+
     it('Strafenkatalog: Trainer pflegt ihn und vergibt Strafen an mehrere Spieler', async () => {
       const b1 = await teamId('B1');
       const coach = await login('trainer');
@@ -4696,6 +4749,44 @@ describe.skipIf(!url)('API', () => {
       // Link zurückziehen
       await send('DELETE', `/teams/${b1.id}/invite-link`, coach.token);
       expect((await pub('GET', `/join/${token}`)).statusCode).toBe(410);
+    });
+
+    it('Freigabe „nur Verwaltung“: das Trainerteam sieht und entscheidet nichts', async () => {
+      const admin = await login('admin');
+      const coach = await login('trainer');
+      const b1 = coach.me.teams.find((t) => t.badge === 'B1')!;
+      expect((await get<ClubSettings>('/admin/club', admin.token)).joinApproval).toBe('team_staff');
+      const set = await send<ClubSettings>('PATCH', '/admin/club', admin.token, {
+        joinApproval: 'admin_only',
+      });
+      expect(set.body.joinApproval).toBe('admin_only');
+      expect(
+        (await send('PATCH', '/admin/club', coach.token, { joinApproval: 'team_staff' })).status,
+      ).toBe(403);
+      try {
+        const link = await send<InviteLink>('POST', `/teams/${b1.id}/invite-link`, coach.token);
+        await pub('POST', `/join/${tokenOf(link.body.url)}/request`, {
+          email: 'nur.verwaltung@example.org',
+          password: PW,
+          relation: 'player',
+          firstName: 'Vera',
+          lastName: 'Verwaltung',
+        });
+        expect((await get<InviteOverview>('/invitations', coach.token)).requests).toHaveLength(0);
+        const adminView = (await get<InviteOverview>('/invitations', admin.token)).requests;
+        const req = adminView.find((r) => r.name === 'Vera Verwaltung')!;
+        expect(req).toBeDefined();
+        expect(
+          (await send('POST', `/join-requests/${req.id}/approve`, coach.token, {})).status,
+        ).toBe(404);
+        expect(
+          (await send('POST', `/join-requests/${req.id}/reject`, admin.token, { note: 'Test' }))
+            .status,
+        ).toBe(200);
+      } finally {
+        await send('PATCH', '/admin/club', admin.token, { joinApproval: 'team_staff' });
+        await send('DELETE', `/teams/${b1.id}/invite-link`, coach.token);
+      }
     });
   });
 
@@ -8901,6 +8992,99 @@ describe.skipIf(!url)('API', () => {
       expect(cancel.body.error).toBe('linked_claim');
     });
 
+    it('Kassenregeln: Belegpflicht, Vier-Augen-Grenze und Rechte', async () => {
+      const { kasse } = await setup();
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const rules = (token: string, body: object) =>
+        send<ClubCash>('PUT', '/club-cash/rules', token, body);
+      const claim = (token: string, body: object) =>
+        send<ClubExpenseClaims>('POST', '/club-cash/claims', token, {
+          description: 'Regeltest',
+          expenseDate: '2026-10-04',
+          ...body,
+        });
+
+      // Nur die Kassenführung stellt die Regeln ein
+      expect((await rules(player.token, { claimReceiptRequired: true })).status).toBe(403);
+      expect((await rules(kasse.token, { claimSecondApprovalCents: 50 })).status).toBe(400);
+
+      try {
+        // Belegpflicht gilt für Auslagen, nicht für Fahrtkosten
+        const on = await rules(kasse.token, { claimReceiptRequired: true });
+        expect(on.body.claimRules.receiptRequired).toBe(true);
+        const noReceipt = await claim(player.token, { kind: 'expense', amountCents: 800 });
+        expect(noReceipt.status).toBe(400);
+        expect((noReceipt.body as unknown as { error: string }).error).toBe('receipt_required');
+        expect((await claim(player.token, { kind: 'mileage', kilometers: 10 })).status).toBe(201);
+        await rules(kasse.token, { claimReceiptRequired: false });
+
+        // Vier-Augen-Prinzip ab 20 €
+        const limit = await rules(kasse.token, { claimSecondApprovalCents: 2000 });
+        expect(limit.body.claimRules.secondApprovalCents).toBe(2000);
+        const big = await claim(player.token, { kind: 'expense', amountCents: 3000 });
+        expect(big.status).toBe(201);
+        const id = big.body.claims.find((c) => c.amountCents === 3000)!.id;
+        const first = await send<ClubExpenseClaims>(
+          'POST',
+          `/club-cash/claims/${id}/approve`,
+          kasse.token,
+        );
+        expect(first.status).toBe(200);
+        expect(first.body.claims.find((c) => c.id === id)).toMatchObject({
+          status: 'submitted',
+          awaitingSecondApproval: true,
+        });
+        const again = await send('POST', `/club-cash/claims/${id}/approve`, kasse.token);
+        expect(again.status).toBe(409);
+        const second = await send<ClubExpenseClaims>(
+          'POST',
+          `/club-cash/claims/${id}/approve`,
+          admin.token,
+        );
+        expect(second.body.claims.find((c) => c.id === id)).toMatchObject({
+          status: 'approved',
+          awaitingSecondApproval: false,
+        });
+
+        // Wer selbst einreicht, gibt nicht mit frei
+        const own = await claim(kasse.token, { kind: 'expense', amountCents: 4000 });
+        const ownId = own.body.claims.find((c) => c.amountCents === 4000)!.id;
+        expect((await send('POST', `/club-cash/claims/${ownId}/approve`, kasse.token)).status).toBe(
+          403,
+        );
+        await send('POST', `/club-cash/claims/${ownId}/reject`, admin.token, { reason: 'Test' });
+        // Kleine Beträge brauchen nur eine Freigabe
+        const small = await claim(player.token, { kind: 'expense', amountCents: 900 });
+        const smallId = small.body.claims.find((c) => c.amountCents === 900)!.id;
+        const ok = await send<ClubExpenseClaims>(
+          'POST',
+          `/club-cash/claims/${smallId}/approve`,
+          kasse.token,
+        );
+        expect(ok.body.claims.find((c) => c.id === smallId)!.status).toBe('approved');
+      } finally {
+        await rules(kasse.token, { claimReceiptRequired: false, claimSecondApprovalCents: null });
+      }
+    });
+
+    it('Haushaltsjahr: wählbar, solange kein Jahr abgeschlossen ist', async () => {
+      const { kasse } = await setup();
+      const set = await send<ClubCash>('PUT', '/club-cash/rules', kasse.token, {
+        fiscalYear: 'season',
+      });
+      if (set.status === 409) {
+        expect((set.body as unknown as { error: string }).error).toBe('fiscal_locked');
+        return;
+      }
+      expect(set.body.fiscalYear).toBe('season');
+      expect((await get<ClubCash>('/club-cash', kasse.token)).fiscalYear).toBe('season');
+      const back = await send<ClubCash>('PUT', '/club-cash/rules', kasse.token, {
+        fiscalYear: 'calendar',
+      });
+      expect(back.body.fiscalYear).toBe('calendar');
+    });
+
     it('Pauschalen: Freibetrag je Person und Jahr wird überwacht', async () => {
       const { kasse, giro, expense } = await setup();
       const coach = await login('trainer');
@@ -9944,6 +10128,96 @@ describe.skipIf(!url)('API', () => {
           })
         ).status,
       ).toBe(403);
+    });
+  });
+
+  describe('Teilnahme-Modell je Terminart (EINRICHTUNG-ENTSCHEIDUNGEN)', () => {
+    it('wendet Training und Spiele getrennt an; nur das Trainerteam stellt um', async () => {
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const team = player.me.teams[0]!;
+      const statusOf = async (type: 'training' | 'match', startsAt: string) => {
+        const made = await send<EventDetail>('POST', `/teams/${team.id}/events`, admin.token, {
+          type,
+          startsAt,
+          ...(type === 'match' ? { opponentName: 'TSV Modelltest' } : {}),
+        });
+        expect(made.status).toBe(201);
+        const mine = await get<EventDetail>(`/events/${made.body.id}`, player.token);
+        await send('POST', `/events/${made.body.id}/cancel`, admin.token, { reason: 'Test' });
+        return mine.myResponses[0]!.status;
+      };
+
+      const saved = await send<TeamProfile>('PUT', `/teams/${team.id}/profile`, admin.token, {
+        participationMode: 'auto_accept',
+        matchParticipationMode: 'active_response',
+      });
+      expect(saved.status).toBe(200);
+      expect(saved.body).toMatchObject({
+        participationMode: 'auto_accept',
+        matchParticipationMode: 'active_response',
+      });
+      expect(await statusOf('training', '2026-12-02T18:00:00.000Z')).toBe('yes');
+      expect(await statusOf('match', '2026-12-05T12:00:00.000Z')).toBe('pending');
+
+      // Umgekehrt
+      await send('PUT', `/teams/${team.id}/profile`, admin.token, {
+        participationMode: 'active_response',
+        matchParticipationMode: 'auto_accept',
+      });
+      expect(await statusOf('training', '2026-12-03T18:00:00.000Z')).toBe('pending');
+      expect(await statusOf('match', '2026-12-06T12:00:00.000Z')).toBe('yes');
+
+      // Spieler dürfen das Modell nicht ändern, ungültige Werte werden abgelehnt
+      expect(
+        (
+          await send('PUT', `/teams/${team.id}/profile`, player.token, {
+            matchParticipationMode: 'active_response',
+          })
+        ).status,
+      ).toBe(403);
+      expect(
+        (
+          await send('PUT', `/teams/${team.id}/profile`, admin.token, {
+            participationMode: 'absences_only',
+          })
+        ).status,
+      ).toBe(400);
+
+      // Zurück auf den Ausgangszustand
+      await send('PUT', `/teams/${team.id}/profile`, admin.token, {
+        participationMode: team.participationMode,
+        matchParticipationMode: team.matchParticipationMode,
+      });
+    });
+  });
+
+  describe('Eltern mit Kindern verknüpfen (Mannschaftsassistent)', () => {
+    it('verknüpft nur mit dem Recht „Mitglieder verwalten“ und nur im eigenen Verein', async () => {
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const child = await send<MemberDetail>('POST', '/admin/members', admin.token, {
+        firstName: 'Kind',
+        lastName: 'Verknüpfungstest',
+      });
+      const parent = await send<MemberDetail>('POST', '/admin/members', admin.token, {
+        firstName: 'Eltern',
+        lastName: 'Verknüpfungstest',
+      });
+      const link = (token: string, childId: string, guardianPersonId: string) =>
+        send<MemberDetail>('POST', `/admin/members/${childId}/guardians`, token, {
+          guardianPersonId,
+        });
+      expect((await link(player.token, child.body.id, parent.body.id)).status).toBe(403);
+      const ok = await link(admin.token, child.body.id, parent.body.id);
+      expect(ok.status).toBe(200);
+      expect(ok.body.guardians.map((g) => g.id)).toEqual([parent.body.id]);
+      // wiederholen ist unschädlich
+      expect((await link(admin.token, child.body.id, parent.body.id)).status).toBe(200);
+      expect((await link(admin.token, child.body.id, child.body.id)).status).toBe(400);
+      expect(
+        (await link(admin.token, child.body.id, '00000000-0000-4000-8000-000000000000')).status,
+      ).toBe(404);
     });
   });
 

@@ -64,7 +64,10 @@ export type MyTeam = {
   badge: string;
   ageGroup: string | null;
   league: string | null;
+  /** Teilnahme-Modell fürs Training */
   participationMode: ParticipationMode;
+  /** Teilnahme-Modell für Spiele */
+  matchParticipationMode: ParticipationMode;
   /** Person (ich selbst oder mein Kind), über die ich zu dieser Mannschaft gehöre */
   personId: string;
   functions: TeamFunction[];
@@ -722,6 +725,15 @@ export type CashSettings = {
   /** Sparziel der Mannschaft (Name und Betrag), z. B. „Mannschaftsfahrt“ */
   savingsGoalName: string | null;
   savingsGoalCents: number | null;
+  /** Wer buchen darf: Kassenwart und Trainerteam (Standard) oder nur der Kassenwart */
+  bookingBy: 'staff' | 'treasurer';
+  /** Hinweis an Eltern zum Einzahlen und ob Barzahlung möglich ist */
+  paymentNote: string | null;
+  cashPayment: boolean;
+  /** Zum Saisonende: Rest in die neue Saison übertragen oder auszahlen */
+  seasonEnd: 'carry' | 'payout';
+  /** Das Geld der Kasse gehört dem Verein (Hinweis) */
+  clubOwned: boolean;
 };
 
 export type PaymentNotice = {
@@ -1358,6 +1370,10 @@ export type AddMembershipInput = {
 
 /** Mannschaftsprofil, das Trainer selbst pflegen (Treffpunkt-Regeln, DFBnet-Schreibweisen) */
 export type TeamProfile = {
+  /** Teilnahme-Modell fürs Training (Standard: automatisch zugesagt) */
+  participationMode: ParticipationMode;
+  /** Teilnahme-Modell für Spiele */
+  matchParticipationMode: ParticipationMode;
   /** Minuten vor Spielbeginn (leer = kein automatisches Treffen) */
   matchMeetingMinutes: number | null;
   /** Minuten vor Trainingsbeginn */
@@ -1580,6 +1596,7 @@ export type AdminTeam = {
   league: string | null;
   template: TeamTemplate;
   participationMode: ParticipationMode;
+  matchParticipationMode: ParticipationMode;
   orgUnit: { id: string; name: string };
   seasonId: string;
   players: number;
@@ -1603,7 +1620,10 @@ export type TeamInput = {
   league?: string | null;
   orgUnitId: string;
   template: TeamTemplate;
+  /** Training */
   participationMode: ParticipationMode;
+  /** Spiele; ohne Angabe wie das Training */
+  matchParticipationMode?: ParticipationMode;
   /** Ohne Angabe: laufende Saison */
   seasonId?: string | null;
 };
@@ -1872,6 +1892,8 @@ export type ClubSettings = {
   timezone: string;
   /** Wer die Kontaktdaten neuer Personen standardmäßig sieht */
   defaultContactVisibility: 'club' | 'team_and_coaches' | 'coaches_only';
+  /** Wer Beitrittsanfragen freigibt: Trainerteam der Mannschaft (Standard) oder nur die Verwaltung */
+  joinApproval: 'team_staff' | 'admin_only';
   /** Vorgabe nur einschaltbar, wenn man selbst 2-Faktor nutzt (Schutz vor Aussperren) */
   canRequireTwoFactor: boolean;
   orgUnits: { id: string; name: string; kind: OrgUnitKind; teams: number }[];
@@ -1892,6 +1914,7 @@ export type UpdateClubInput = Partial<{
   phone: string | null;
   website: string | null;
   defaultContactVisibility: 'club' | 'team_and_coaches' | 'coaches_only';
+  joinApproval: 'team_staff' | 'admin_only';
 }>;
 
 /** Untergrund eines Platzes (Einrichtungsassistent) */
@@ -1928,6 +1951,7 @@ export type SetupInput = {
     /** Monat, in dem die Saison beginnt (1–12, Standard 7 = Juli) */
     seasonStartMonth?: number;
     defaultContactVisibility?: 'club' | 'team_and_coaches' | 'coaches_only';
+    joinApproval?: 'team_staff' | 'admin_only';
   };
   orgUnits: { name: string; kind: OrgUnitKind }[];
   venues?: SetupVenue[];

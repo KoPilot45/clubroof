@@ -179,6 +179,12 @@ export type ClubCash = {
   visibility: ClubCashVisibility;
   /** Gemeinnützig im Sinne der Abgabenordnung; leer = noch nicht angegeben (Paket E2) */
   nonprofit: boolean | null;
+  /** Haushaltsjahr: Kalenderjahr oder Saison (Paket EINRICHTUNG-ENTSCHEIDUNGEN) */
+  fiscalYear: 'calendar' | 'season';
+  /** Mitglieder insgesamt und mit Geburtsdatum (Beitragsregeln nach Alter brauchen es); nur Zahlen */
+  memberStats: { total: number; withBirthDate: number };
+  /** Regeln für Auslagen: Belegpflicht und Betrag ab dem eine zweite Person freigibt */
+  claimRules: { receiptRequired: boolean; secondApprovalCents: number | null };
   year: number;
   /** Kassen, die der Nutzer sehen darf (bei Rechten nur für einzelne Kassen weniger als alle) */
   funds: ClubCashFund[];
@@ -681,6 +687,8 @@ export type ClubExpenseClaim = {
   expenseDate: string;
   receiptUrl: string | null;
   status: ClubClaimStatus;
+  /** Über der Vier-Augen-Grenze: die erste Freigabe liegt vor, eine zweite Person fehlt noch */
+  awaitingSecondApproval: boolean;
   decidedByName: string | null;
   decidedAt: string | null;
   rejectReason: string | null;

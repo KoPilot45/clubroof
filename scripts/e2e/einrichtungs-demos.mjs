@@ -33,6 +33,10 @@ await text(page, 'Eure Vereinsfarbe').waitFor();
 await next();
 await text(page, 'Wie ist euer Verein aufgebaut?').waitFor();
 await next();
+await text(page, 'Wer vertritt dich?').waitFor();
+await page.getByLabel('Name', { exact: true }).fill('Max Vertretung');
+await page.getByLabel('E-Mail-Adresse', { exact: true }).fill('max@demo.example');
+await next();
 await text(page, 'Dein Konto').waitFor();
 await page.getByLabel('Vorname').fill('Erika');
 await page.getByLabel('Nachname').fill('Muster');
@@ -90,16 +94,26 @@ await next();
 await text(page, 'Wann beginnt eure Saison?').waitFor();
 await next();
 await text(page, 'Vorstand und Aufgaben').waitFor();
+ok(
+  (await text(page, 'Kassenwart', { exact: true }).filter({ visible: true }).count()) === 0,
+  'Vereins-Demo: Kassenwart wird im Vereinsassistenten nicht abgefragt',
+);
+await next();
+await text(page, 'Wer vertritt dich?').waitFor();
 await next();
 await text(page, 'Wofür nutzt ihr Clubroof – in der Mannschaft?').waitFor();
 await next();
 await text(page, 'Und im Verein?').waitFor();
 await next();
-await text(page, 'Jetzt oder später')
-  .waitFor({ timeout: 2000 })
-  .catch(() => undefined);
+await text(page, 'Wer sieht was?').waitFor();
 await next();
-await text(page, 'Kommunikation und Datenschutz').waitFor();
+await text(page, 'Neue Mitglieder: Wer gibt Beitrittsanfragen frei?').waitFor();
+ok(
+  (await page.getByText('Empfohlen').filter({ visible: true }).count()) > 0,
+  'Vereins-Demo: Freigabe durch das Trainerteam ist als empfohlen markiert',
+);
+await next();
+await text(page, 'Daten übernehmen').waitFor();
 await next();
 await text(page, 'Dein Konto').waitFor();
 ok(true, 'Vereins-Demo (ausführlich): neue Schritte durchlaufen');
@@ -112,8 +126,8 @@ await text(page, 'Wie heißt die Mannschaft?').waitFor();
 await page.getByLabel('Name', { exact: true }).fill('B-Jugend II');
 await page.getByLabel('Kürzel', { exact: true }).fill('B2');
 await next();
-// Abteilung, Altersklasse, Zusagen, Training, Trainer, Kader
-for (let i = 0; i < 6; i++) await next();
+// Abteilung, Altersklasse, Trainerteam, Zusagen, Training, Kader, Wer sieht was?
+for (let i = 0; i < 7; i++) await next();
 await text(page, 'Alles bereit?').waitFor();
 // „Ändern“ springt in den Schritt und danach zurück zur Zusammenfassung
 await page
@@ -140,15 +154,15 @@ await text(page, 'Wie heißt die Mannschaft?').waitFor();
 await page.getByLabel('Name', { exact: true }).fill('A-Jugend');
 await page.getByLabel('Kürzel', { exact: true }).fill('A1');
 await next();
-// Abteilung, Altersklasse, Vorlage
-for (let i = 0; i < 3; i++) await next();
+// Abteilung, Altersklasse, Vorlage, Trainerteam
+for (let i = 0; i < 4; i++) await next();
 await text(page, 'Wie sagen Spieler zu und ab?').waitFor();
 ok(
-  (await page.getByText('Empfohlen').filter({ visible: true }).count()) > 0,
-  'Mannschafts-Demo: „Automatisch zugesagt“ ist als empfohlen markiert',
+  (await page.getByText('Empfohlen').filter({ visible: true }).count()) >= 2,
+  'Mannschafts-Demo: „Automatisch zugesagt“ ist für Training und Spiele als empfohlen markiert',
 );
 await next();
-// Treffpunkt, Training (mit einem Termin), Trainer, Kader, Funktionen, Spielplan, Information
+// Treffpunkt, Training (mit einem Termin), Kader, Funktionen, Wer sieht was?, Spielplan, Information
 await next();
 await text(page, 'Wann trainiert die Mannschaft?').waitFor();
 await button(page, 'Trainingstermin hinzufügen').click();
@@ -174,6 +188,12 @@ await text(page, 'Die Vereinskasse einrichten').waitFor({ timeout: 20_000 });
 await next();
 await text(page, 'Ist der Verein gemeinnützig?').waitFor();
 await page.getByText('Ja, gemeinnützig').click();
+await next();
+await text(page, 'Haushaltsjahr').first().waitFor();
+ok(
+  (await page.getByText('Empfohlen').filter({ visible: true }).count()) > 0,
+  'Kassen-Demo: Kalenderjahr ist als empfohlen markiert',
+);
 await next();
 await text(page, 'Welche Konten und Kassen gibt es?').waitFor();
 await page.getByLabel('Anfangsbestand in €').fill('1500');
@@ -207,6 +227,7 @@ await page.getByText('Ausführlich', { exact: true }).first().click();
 await next();
 for (const title of [
   'Ist der Verein gemeinnützig?',
+  'Haushaltsjahr',
   'Welche Konten und Kassen gibt es?',
   'Kategorien für Buchungen',
   'Kostenstellen',
@@ -214,6 +235,7 @@ for (const title of [
   'Wer zahlt welchen Beitrag?',
   'Zahlungserinnerungen',
   'Wer führt die Kasse?',
+  'Auslagen und Freigaben',
   'Wer darf die Kasse einsehen?',
 ]) {
   await text(page, title).first().waitFor();
@@ -231,6 +253,12 @@ await a.goto('/demo/team-cash');
 await text(page, 'Die Mannschaftskasse einrichten').waitFor({ timeout: 20_000 });
 await next();
 await text(page, 'Wer führt die Kasse?').waitFor();
+await next();
+await text(page, 'Wer darf buchen?').first().waitFor();
+ok(
+  (await page.getByText('Empfohlen').filter({ visible: true }).count()) > 0,
+  'Mannschaftskasse-Demo: „Kassenwart und Trainerteam“ ist als empfohlen markiert',
+);
 await next();
 await text(page, 'Wie viel ist schon in der Kasse?').waitFor();
 await page.getByLabel('Anfangsbestand in €').fill('250');
@@ -255,6 +283,33 @@ ok(true, 'Mannschaftskasse-Demo: Zusammenfassung mit „Ändern“');
 await next('Kasse einrichten');
 await text(page, 'Mannschaftskasse eingerichtet').waitFor({ timeout: 10_000 });
 ok(true, 'Mannschaftskasse-Demo: alle Schritte bis zum Abschluss');
+await button(page, 'Verlassen').click();
+await page.waitForURL(/\/login/, { timeout: 10_000 });
+
+// ── Mannschaftskasse: ausführlich (Einzahlungsweg, Saisonabschluss, Verhältnis zum Verein) ──
+await a.goto('/demo/team-cash');
+await text(page, 'Die Mannschaftskasse einrichten').waitFor({ timeout: 20_000 });
+await page.getByRole('radio', { name: /Ausführlich/ }).click();
+await next();
+for (const title of [
+  'Wer führt die Kasse?',
+  'Wer darf buchen?',
+  'Wie viel ist schon in der Kasse?',
+  'Einzahlungsweg',
+  'Strafenkatalog',
+  'Getränkepreis',
+  'Beitrag oder Umlage',
+  'Was darf die Mannschaft sehen?',
+  'Saisonabschluss',
+  'Gehört die Kasse zum Verein?',
+]) {
+  await text(page, title).first().waitFor();
+  await next();
+}
+await text(page, 'Alles bereit?').waitFor();
+await next('Kasse einrichten');
+await text(page, 'Mannschaftskasse eingerichtet').waitFor({ timeout: 10_000 });
+ok(true, 'Mannschaftskasse-Demo (ausführlich): alle Schritte bis zum Abschluss');
 await button(page, 'Verlassen').click();
 await page.waitForURL(/\/login/, { timeout: 10_000 });
 
