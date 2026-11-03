@@ -69,7 +69,7 @@ await button(page, 'Verlassen').click();
 await page.waitForURL(/\/login/, { timeout: 10_000 });
 ok(page.url().includes('/login'), 'Vereins-Demo: „Verlassen“ führt zur Anmeldung');
 
-// ── Verein: ausführlich (mit den Schritten Größe, Euer Verein, Saison, Vorstand, Mitglieder, Kommunikation) ──
+// ── Verein: ausführlich (mit den Schritten Größe, Euer Verein, Vorstand, Mitglieder, Kommunikation; ohne Saison) ──
 await a.goto('/demo/club');
 await text(page, 'Willkommen bei Clubroof').waitFor({ timeout: 20_000 });
 await page.getByRole('radio', { name: /Ausführlich/ }).click();
@@ -91,8 +91,10 @@ for (let i = 0; i < 3; i++) await next();
 await next('Ohne Logo weiter');
 await next();
 await next();
-await text(page, 'Wann beginnt eure Saison?').waitFor();
-await next();
+ok(
+  (await text(page, 'Wann beginnt eure Saison?').count()) === 0,
+  'Vereins-Demo: kein Schritt „Saison“ mehr',
+);
 await text(page, 'Vorstand und Aufgaben').waitFor();
 ok(
   (await text(page, 'Kassenwart', { exact: true }).filter({ visible: true }).count()) === 0,
@@ -101,11 +103,21 @@ ok(
 await next();
 await text(page, 'Wer vertritt dich?').waitFor();
 await next();
-await text(page, 'Wofür nutzt ihr Clubroof – in der Mannschaft?').waitFor();
-await next();
+ok(
+  (await text(page, 'Wofür nutzt ihr Clubroof – in der Mannschaft?').count()) === 0,
+  'Vereins-Demo: kein Schritt „Mannschaftsmodule“ mehr',
+);
 await text(page, 'Und im Verein?').waitFor();
+ok(
+  (await text(page, 'Schiedsrichter', { exact: true }).filter({ visible: true }).count()) === 0,
+  'Vereins-Demo: Schiedsrichter wird nicht angeboten',
+);
 await next();
 await text(page, 'Wer sieht was?').waitFor();
+ok(
+  (await text(page, 'Nur Trainer', { exact: true }).filter({ visible: true }).count()) > 0,
+  'Vereins-Demo: Kontaktdaten-Standard je Abteilung (Jugend: Nur Trainer)',
+);
 await next();
 await text(page, 'Neue Mitglieder: Wer gibt Beitrittsanfragen frei?').waitFor();
 ok(
@@ -126,8 +138,8 @@ await text(page, 'Wie heißt die Mannschaft?').waitFor();
 await page.getByLabel('Name', { exact: true }).fill('B-Jugend II');
 await page.getByLabel('Kürzel', { exact: true }).fill('B2');
 await next();
-// Abteilung, Altersklasse, Trainerteam, Zusagen, Training, Kader, Wer sieht was?
-for (let i = 0; i < 7; i++) await next();
+// Abteilung, Altersklasse, Trainerteam, Zusagen, Training, Kader, Eltern und Kinder, Wer sieht was?
+for (let i = 0; i < 8; i++) await next();
 await text(page, 'Alles bereit?').waitFor();
 // „Ändern“ springt in den Schritt und danach zurück zur Zusammenfassung
 await page
@@ -154,15 +166,22 @@ await text(page, 'Wie heißt die Mannschaft?').waitFor();
 await page.getByLabel('Name', { exact: true }).fill('A-Jugend');
 await page.getByLabel('Kürzel', { exact: true }).fill('A1');
 await next();
-// Abteilung, Altersklasse, Vorlage, Trainerteam
-for (let i = 0; i < 4; i++) await next();
+// Abteilung, Altersklasse, Trainerteam, Fragen zu den Funktionen
+for (let i = 0; i < 3; i++) await next();
+await text(page, 'Was nutzt eure Mannschaft?').waitFor();
+ok(
+  (await text(page, 'Habt ihr feste Rückennummern?').count()) > 0,
+  'Mannschafts-Demo: Fragenkatalog statt Vorlage (Rückennummern, Elternzugänge)',
+);
+await next();
 await text(page, 'Wie sagen Spieler zu und ab?').waitFor();
 ok(
   (await page.getByText('Empfohlen').filter({ visible: true }).count()) >= 2,
   'Mannschafts-Demo: „Automatisch zugesagt“ ist für Training und Spiele als empfohlen markiert',
 );
 await next();
-// Treffpunkt, Training (mit einem Termin), Kader, Funktionen, Wer sieht was?, Spielplan, Information
+// Treffzeit, Training (mit einem Termin), Kader, Eltern und Kinder, Wer sieht was?, Spielplan
+await text(page, 'Treffzeit').first().waitFor();
 await next();
 await text(page, 'Wann trainiert die Mannschaft?').waitFor();
 await button(page, 'Trainingstermin hinzufügen').click();
@@ -174,7 +193,7 @@ ok(
     .count()) > 0,
   'Mannschafts-Demo: Anzahl der Trainingstermine wird angezeigt',
 );
-for (let i = 0; i < 6; i++) await next();
+for (let i = 0; i < 5; i++) await next();
 await text(page, 'Alles bereit?').waitFor();
 await next('Mannschaft anlegen');
 await text(page, 'Mannschaft angelegt').waitFor({ timeout: 10_000 });
@@ -201,7 +220,7 @@ await next();
 await text(page, 'Kategorien für Buchungen').waitFor();
 await next();
 await text(page, 'Mitgliedsbeiträge').waitFor();
-await button(page, 'Vorschläge einfügen').click();
+await button(page, 'Beispiele einfügen').click();
 await next();
 await text(page, 'Wer führt die Kasse?').waitFor();
 await next();
@@ -265,7 +284,7 @@ await page.getByLabel('Anfangsbestand in €').fill('250');
 await next();
 await text(page, 'Strafenkatalog').first().waitFor();
 await next();
-await text(page, 'Getränkepreis').first().waitFor();
+await text(page, 'Getränke').first().waitFor();
 await next();
 await text(page, 'Beitrag oder Umlage').waitFor();
 await next();
@@ -297,7 +316,7 @@ for (const title of [
   'Wie viel ist schon in der Kasse?',
   'Einzahlungsweg',
   'Strafenkatalog',
-  'Getränkepreis',
+  'Getränke',
   'Beitrag oder Umlage',
   'Was darf die Mannschaft sehen?',
   'Saisonabschluss',

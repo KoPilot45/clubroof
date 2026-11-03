@@ -50,12 +50,11 @@ async function run(width, height, suffix) {
   await click(page, 'Ohne Logo weiter');
   await next();
   await next();
-  await text(page, 'Wann beginnt eure Saison?').waitFor();
-  await next();
+  await text(page, 'Vorstand und Aufgaben').waitFor();
   await next();
   await text(page, 'Wer vertritt dich?').waitFor();
   await snap('3-verein-vertretung');
-  for (let i = 0; i < 4; i++) await next();
+  for (let i = 0; i < 3; i++) await next();
   await text(page, 'Neue Mitglieder: Wer gibt Beitrittsanfragen frei?').waitFor();
   await snap('4-verein-beitritt');
 

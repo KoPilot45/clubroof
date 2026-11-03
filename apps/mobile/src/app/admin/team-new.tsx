@@ -994,7 +994,6 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
             return (
               <FunctionQuestion
                 key={f.key}
-                icon={f.icon}
                 question={f.question}
                 text={f.text}
                 recommended={rec}
@@ -1006,7 +1005,6 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
             );
           })}
           <FunctionQuestion
-            icon="shirt"
             question="Habt ihr feste Rückennummern?"
             text="z. B. jeder Spieler hat seine Nummer für die ganze Saison"
             recommended={false}
@@ -1031,7 +1029,6 @@ export function TeamWizard({ backend }: { backend: TeamWizardBackend }) {
             </Card>
           ) : null}
           <FunctionQuestion
-            icon="people"
             question="Sollen Eltern die Termine ihrer Kinder verwalten?"
             text="Elternzugänge: Eltern antworten für ihr Kind. Das Trainerteam entscheidet – ältere Jahrgänge (ab U18) brauchen es meist nicht."
             recommended={defaultParentAccess(unitKind, d.ageGroup)}
@@ -1332,14 +1329,12 @@ function ResponseKind({
 
 /** Eine Frage zu einer Funktion: Ja/Nein, die empfohlene Antwort ist markiert */
 function FunctionQuestion({
-  icon,
   question,
   text,
   recommended,
   value,
   onChange,
 }: {
-  icon: IconName;
   question: string;
   text: string;
   recommended: boolean;

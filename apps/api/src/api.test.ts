@@ -1834,6 +1834,45 @@ describe.skipIf(!url)('API', () => {
       expect(finesOff.status).toBe(400);
     });
 
+    it('Kasse: Strafen und Getränke lassen sich je Mannschaft ein- und ausschalten (Assistent)', async () => {
+      const a1 = await teamId('A1');
+      const admin = await login('admin');
+      const player = await login('spieler');
+      const before = await get<TeamCash>(`/teams/${a1}/cash`, admin.token);
+      expect(before.config).toEqual({ fines: false, drinks: false });
+      // Nicht-Berechtigte dürfen das nicht
+      expect([403, 404]).toContain(
+        (await send('PUT', `/teams/${a1}/cash/settings`, player.token, { fines: true })).status,
+      );
+      try {
+        const on = await send<TeamCash>('PUT', `/teams/${a1}/cash/settings`, admin.token, {
+          fines: true,
+          drinks: true,
+        });
+        expect(on.status).toBe(200);
+        expect(on.body.config).toEqual({ fines: true, drinks: true });
+        expect((await get<TeamCash>(`/teams/${a1}/cash`, admin.token)).config.fines).toBe(true);
+        const fine = await send('POST', `/teams/${a1}/cash/fine-types`, admin.token, {
+          name: 'Assistent-Test',
+          amountCents: 250,
+        });
+        expect(fine.status).toBe(200);
+        const off = await send<TeamCash>('PUT', `/teams/${a1}/cash/settings`, admin.token, {
+          fines: false,
+        });
+        expect(off.body.config).toEqual({ fines: false, drinks: true });
+      } finally {
+        await send('PUT', `/teams/${a1}/cash/settings`, admin.token, {
+          fines: false,
+          drinks: false,
+        });
+      }
+      expect((await get<TeamCash>(`/teams/${a1}/cash`, admin.token)).config).toEqual({
+        fines: false,
+        drinks: false,
+      });
+    });
+
     it('Kasse: „nur Kassenwart bucht“ nimmt dem Trainerteam das Buchen, Einsicht bleibt', async () => {
       const b1 = await teamId('B1');
       const admin = await login('admin');
@@ -7750,6 +7789,73 @@ describe.skipIf(!url)('API', () => {
       const family2 = mine.dues.filter((d) => d.feeTypeName === 'Familie');
       expect(family2.map((d) => d.periodLabel)).toEqual(['3. Quartal 2026', '4. Quartal 2026']);
       expect(family2.every((d) => d.status === 'overdue')).toBe(true);
+    });
+
+    it('Beitragsart mit Fälligkeit und Regelliste mit mehreren Altersstufen', async () => {
+      const { token } = await treasurer();
+      const player = await login('spieler');
+      const made = await send<ClubFees>('POST', '/club-cash/fees/types', token, {
+        name: 'Stichtag',
+        amountCents: 6000,
+        interval: 'yearly',
+        dueDay: 15,
+        dueMonth: 3,
+      });
+      expect(made.status).toBe(201);
+      const type = made.body.types.find((x) => x.name === 'Stichtag')!;
+      expect(type).toMatchObject({ dueDay: 15, dueMonth: 3, dueOn: null });
+      const patched = await send<ClubFees>('PATCH', `/club-cash/fees/types/${type.id}`, token, {
+        dueDay: 20,
+      });
+      expect(patched.body.types.find((x) => x.id === type.id)).toMatchObject({
+        dueDay: 20,
+        dueMonth: 3,
+      });
+      expect(
+        (
+          await send('POST', '/club-cash/fees/types', token, {
+            name: 'Falsch',
+            amountCents: 100,
+            interval: 'monthly',
+            dueDay: 40,
+          })
+        ).status,
+      ).toBe(400);
+      // Standard ohne Angabe: der 1. Januar
+      const plain = await send<ClubFees>('POST', '/club-cash/fees/types', token, {
+        name: 'Standardtag',
+        amountCents: 1000,
+        interval: 'yearly',
+      });
+      expect(plain.body.types.find((x) => x.name === 'Standardtag')).toMatchObject({
+        dueDay: 1,
+        dueMonth: 1,
+      });
+
+      // Regelliste: mehrere Altersstufen, die erste passende gilt (nur Vorschau)
+      const rules = [
+        { when: 'age_range', fromAge: 0, toAge: 11, feeTypeId: type.id },
+        { when: 'age_range', fromAge: 12, toAge: 17, feeTypeId: type.id },
+        { when: 'age_range', fromAge: 65, feeTypeId: type.id },
+        { when: 'inactive', feeTypeId: type.id },
+        { when: 'rest', feeTypeId: type.id },
+      ];
+      const preview = await send<ClubFeeRuleResult>(
+        'POST',
+        '/club-cash/fees/assign-by-rules',
+        token,
+        { apply: false, rules },
+      );
+      expect(preview.status).toBe(200);
+      expect(preview.body.created).toBeNull();
+      expect(
+        (
+          await send('POST', '/club-cash/fees/assign-by-rules', player.token, {
+            apply: false,
+            rules,
+          })
+        ).status,
+      ).toBe(403);
     });
 
     it('Zahlung bucht ins Kassenbuch, Überzahlung wird abgelehnt, Storno nur ohne Zahlung', async () => {

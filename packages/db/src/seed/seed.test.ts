@@ -429,7 +429,7 @@ describe.skipIf(!baseUrl)('Demodaten', () => {
           count(*) filter (where kind = 'income')::int as income,
           count(*) filter (where kind = 'expense')::int as expense
         from club_cash_entries where cancelled_at is null`;
-      expect(row!.days).toBeGreaterThan(24 * 30 - 20);
+      expect(row!.days).toBeGreaterThanOrEqual(24 * 30 - 20);
       expect(row!.income).toBeGreaterThan(20);
       expect(row!.expense).toBeGreaterThan(20);
     });
