@@ -239,12 +239,7 @@ export async function getClubCash(
       (await db.select({ n: s.clubs.nonprofit }).from(s.clubs).where(eq(s.clubs.id, clubId)))[0]
         ?.n ?? null,
     visibility: actor.club.clubCashVisibility as ClubCashVisibility,
-    fiscalYear:
-      actor.club.fiscalYearKind === 'season'
-        ? 'season'
-        : actor.club.fiscalYearKind === 'month'
-          ? 'month'
-          : 'calendar',
+    fiscalYear: actor.club.fiscalYearKind === 'month' ? 'month' : 'calendar',
     fiscalStartMonth: actor.club.fiscalYearStartMonth,
     memberStats: await memberStats(db, clubId),
     claimRules: {
@@ -885,7 +880,7 @@ export async function setCashRules(
   db: Db,
   actor: Actor,
   input: {
-    fiscalYear?: 'calendar' | 'season' | 'month';
+    fiscalYear?: 'calendar' | 'month';
     /** Startmonat bei fiscalYear = 'month' */
     fiscalStartMonth?: number;
     claimReceiptRequired?: boolean;

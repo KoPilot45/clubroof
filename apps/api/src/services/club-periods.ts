@@ -9,7 +9,7 @@ import { HttpError } from '../errors';
 const yearOf = (day: string) => Number(day.slice(0, 4));
 const pad = (n: number) => String(n).padStart(2, '0');
 
-/** Haushaltsjahr des Vereins: Beginnmonat (1 = Kalenderjahr; bei „Saison“ der Beginn der laufenden Saison). */
+/** Haushaltsjahr des Vereins: Beginnmonat (1 = Kalenderjahr). */
 export type Fiscal = { startMonth: number };
 
 export async function fiscalOf(db: Db, clubId: string): Promise<Fiscal> {
@@ -17,13 +17,7 @@ export async function fiscalOf(db: Db, clubId: string): Promise<Fiscal> {
     .select({ kind: s.clubs.fiscalYearKind, month: s.clubs.fiscalYearStartMonth })
     .from(s.clubs)
     .where(eq(s.clubs.id, clubId));
-  if (club?.kind === 'month') return { startMonth: club.month };
-  if (club?.kind !== 'season') return { startMonth: 1 };
-  const [season] = await db
-    .select({ startsOn: s.seasons.startsOn })
-    .from(s.seasons)
-    .where(and(eq(s.seasons.clubId, clubId), eq(s.seasons.isCurrent, true)));
-  return { startMonth: season ? Number(season.startsOn.slice(5, 7)) : 1 };
+  return { startMonth: club?.kind === 'month' ? club.month : 1 };
 }
 
 /** Haushaltsjahr (Nummer = Jahr des Beginns) zu einem Datum. */

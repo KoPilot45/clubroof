@@ -9177,14 +9177,15 @@ describe.skipIf(!url)('API', () => {
     it('Haushaltsjahr: wählbar, solange kein Jahr abgeschlossen ist', async () => {
       const { kasse } = await setup();
       const set = await send<ClubCash>('PUT', '/club-cash/rules', kasse.token, {
-        fiscalYear: 'season',
+        fiscalYear: 'month',
+        fiscalStartMonth: 7,
       });
       if (set.status === 409) {
         expect((set.body as unknown as { error: string }).error).toBe('fiscal_locked');
         return;
       }
-      expect(set.body.fiscalYear).toBe('season');
-      expect((await get<ClubCash>('/club-cash', kasse.token)).fiscalYear).toBe('season');
+      expect(set.body).toMatchObject({ fiscalYear: 'month', fiscalStartMonth: 7 });
+      expect((await get<ClubCash>('/club-cash', kasse.token)).fiscalYear).toBe('month');
       const back = await send<ClubCash>('PUT', '/club-cash/rules', kasse.token, {
         fiscalYear: 'calendar',
       });
@@ -10378,8 +10379,6 @@ describe.skipIf(!url)('API', () => {
       });
       expect(proxy.status).toBe(200);
 
-      const overview = await get<TeamOverview>(`/teams/${team.id}`, player.token);
-      expect('welcomeText' in overview.team).toBe(false);
       const after = await get<EventDetail>(`/events/${mine.id}`, player.token);
       expect(after.responseRules).toEqual({ allowMaybe: false, declineReasonRequired: true });
 

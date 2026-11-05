@@ -307,7 +307,7 @@ export const clubCashRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         body: z.object({
-          fiscalYear: z.enum(['calendar', 'season', 'month']).optional(),
+          fiscalYear: z.enum(['calendar', 'month']).optional(),
           fiscalStartMonth: z.number().int().min(1).max(12).optional(),
           claimReceiptRequired: z.boolean().optional(),
           claimSecondApprovalCents: z.number().int().min(100).max(10_000_000).nullable().optional(),

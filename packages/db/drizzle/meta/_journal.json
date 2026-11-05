@@ -512,6 +512,13 @@
       "when": 1793714658054,
       "tag": "0072_haushaltsjahr_startmonat",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1793881755557,
+      "tag": "0073_willkommenstext_entfernt",
+      "breakpoints": true
     }
   ]
 }

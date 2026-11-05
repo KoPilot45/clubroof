@@ -69,8 +69,6 @@ export const teams = pgTable(
     /** „Unsicher“ als Antwort erlauben (Paket E2, Standard an) */
     allowMaybe: boolean().notNull().default(true),
     /** Willkommenstext für Eltern und Spieler (Kleidung, Regeln, Ansprechpersonen) */
-    /** nicht mehr verwendet (Willkommenstext entfernt); Spalte bleibt, damit keine Daten verloren gehen */
-    welcomeText: text(),
     /** Wer Abwesenheitsgründe sieht: `staff` = nur Trainerteam (Standard), `team` = ganze Mannschaft */
     absenceReasonsVisibleTo: text().notNull().default('staff'),
     /** Standard-Spielform im Aufstellungsplaner (7, 9 oder 11); leer = nach Altersklasse */

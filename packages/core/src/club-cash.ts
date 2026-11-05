@@ -180,8 +180,8 @@ export type ClubCash = {
   /** Gemeinnützig im Sinne der Abgabenordnung; leer = noch nicht angegeben (Paket E2) */
   nonprofit: boolean | null;
   /** Haushaltsjahr: Kalenderjahr oder Saison (Paket EINRICHTUNG-ENTSCHEIDUNGEN) */
-  fiscalYear: 'calendar' | 'season' | 'month';
-  /** Startmonat des Haushaltsjahres (bei „month“; sonst 1 bzw. Beginn der Saison) */
+  fiscalYear: 'calendar' | 'month';
+  /** Startmonat des Haushaltsjahres (bei „month“, sonst 1) */
   fiscalStartMonth: number;
   /** Mitglieder insgesamt und mit Geburtsdatum (Beitragsregeln nach Alter brauchen es); nur Zahlen */
   memberStats: { total: number; withBirthDate: number };
