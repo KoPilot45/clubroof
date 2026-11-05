@@ -239,11 +239,12 @@ export type ClubCashEntryQuery = {
 
 // ── Mitgliedsbeiträge (Paket K2) ────────────────────────────────────────────
 
-export const CLUB_FEE_INTERVALS = ['monthly', 'quarterly', 'yearly', 'once'] as const;
+export const CLUB_FEE_INTERVALS = ['monthly', 'quarterly', 'halfyearly', 'yearly', 'once'] as const;
 export type ClubFeeInterval = (typeof CLUB_FEE_INTERVALS)[number];
 export const CLUB_FEE_INTERVAL_LABEL: Record<ClubFeeInterval, string> = {
   monthly: 'monatlich',
   quarterly: 'vierteljährlich',
+  halfyearly: 'halbjährlich',
   yearly: 'jährlich',
   once: 'einmalig',
 };

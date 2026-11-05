@@ -575,8 +575,6 @@ export type TeamOverview = {
     badge: string;
     league: string | null;
     ageGroup: string | null;
-    /** Willkommenstext für Eltern und Spieler (Paket E2) */
-    welcomeText?: string | null;
   };
   permissions: TeamPermissions;
   /** Mannschaftskasse mit Strafenkatalog aktiv */
@@ -1397,8 +1395,6 @@ export type TeamProfile = {
   declineReasonRequired: boolean;
   /** „Unsicher“ als Antwort erlaubt (Paket E2, Standard an) */
   allowMaybe: boolean;
-  /** Willkommenstext für Eltern und Spieler */
-  welcomeText: string | null;
   /** Wer Abwesenheitsgründe sieht: nur das Trainerteam (Standard) oder die ganze Mannschaft */
   absenceReasonsVisibleTo: 'staff' | 'team';
   /** Standard-Spielform im Aufstellungsplaner; leer = nach Altersklasse */

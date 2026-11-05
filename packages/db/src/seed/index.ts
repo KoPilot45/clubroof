@@ -508,15 +508,12 @@ export async function seed(
       h2: { attendanceVisibility: 'staff' },
       ah: {
         attendanceVisibility: 'named',
-        welcomeText:
-          'Willkommen bei den Alten Herren! Nach dem Training sitzen wir im Vereinsheim.',
       },
       f1: {
         attendanceVisibility: 'named',
         declineReasonRequired: true,
         reminderHours: 48,
         absenceReasonsVisibleTo: 'team',
-        welcomeText: 'Schön, dass du dabei bist! Bei Fragen melde dich bei der Trainerin.',
       },
       a1: {
         attendanceVisibility: 'staff',
@@ -528,13 +525,10 @@ export async function seed(
       d1: {
         attendanceVisibility: 'named',
         reminderHours: 36,
-        welcomeText: 'Willkommen in der D-Jugend! Bitte meldet euch bis zum Vorabend an.',
       },
       bam: {
         allowMaybe: false,
         reminderHours: 24,
-        welcomeText:
-          'Willkommen bei den Bambini! Bringt bitte Hallenschuhe und etwas zu trinken mit.',
       },
     };
     const teamIds = {} as Record<TeamKey, string>;

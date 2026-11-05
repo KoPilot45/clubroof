@@ -908,7 +908,11 @@ export function CashWizard({ backend }: { backend: CashWizardBackend }) {
                     ? t(
                         `Vierteljährlich, erstmals am ${f.dueDay}. ${t(MONTH_NAMES[f.dueMonth - 1]!)}`,
                       )
-                    : 'Einmalig zum gewählten Datum.'}
+                    : f.interval === 'halfyearly'
+                      ? t(
+                          `Halbjährlich, erstmals am ${f.dueDay}. ${t(MONTH_NAMES[f.dueMonth - 1]!)}`,
+                        )
+                      : 'Einmalig zum gewählten Datum.'}
             </T>
             <Button
               label="Entfernen"

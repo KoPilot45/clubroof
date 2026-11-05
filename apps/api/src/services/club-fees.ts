@@ -544,6 +544,7 @@ export function dueDates(
     const include =
       interval === 'monthly' ||
       (interval === 'quarterly' && quarterStart) ||
+      (interval === 'halfyearly' && (month - due.month) % 6 === 0) ||
       (interval === 'yearly' && month === due.month);
     if (include && dueOn <= last && dueOn >= validFrom && dueOn >= notBefore) {
       const label =
@@ -551,7 +552,9 @@ export function dueDates(
           ? `${MONTHS[month - 1]} ${year}`
           : interval === 'quarterly'
             ? `${Math.floor((month - 1) / 3) + 1}. Quartal ${year}`
-            : `${year}`;
+            : interval === 'halfyearly'
+              ? `${month <= 6 ? 1 : 2}. Halbjahr ${year}`
+              : `${year}`;
       result.push({ dueOn, label });
     }
     month += 1;

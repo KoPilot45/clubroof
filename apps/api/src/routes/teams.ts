@@ -230,7 +230,6 @@ export const teamRoutes: FastifyPluginAsyncZod = async (app) => {
           reminderHours: z.number().int().min(0).max(168).nullable().optional(),
           declineReasonRequired: z.boolean().optional(),
           allowMaybe: z.boolean().optional(),
-          welcomeText: z.string().max(1500).nullable().optional(),
           absenceReasonsVisibleTo: z.enum(['staff', 'team']).optional(),
           matchFormat: z
             .union([z.literal(7), z.literal(9), z.literal(11)])

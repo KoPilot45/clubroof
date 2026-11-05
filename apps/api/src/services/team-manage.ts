@@ -66,7 +66,6 @@ export function profileOf(
     reminderHours: team.reminderHours,
     declineReasonRequired: team.declineReasonRequired,
     allowMaybe: team.allowMaybe,
-    welcomeText: team.welcomeText,
     absenceReasonsVisibleTo: team.absenceReasonsVisibleTo === 'team' ? 'team' : 'staff',
     matchFormat:
       team.matchFormat === 7 || team.matchFormat === 9 || team.matchFormat === 11
@@ -360,7 +359,6 @@ export async function updateTeamProfile(
   if (input.declineReasonRequired !== undefined)
     patch.declineReasonRequired = input.declineReasonRequired;
   if (input.allowMaybe !== undefined) patch.allowMaybe = input.allowMaybe;
-  if (input.welcomeText !== undefined) patch.welcomeText = input.welcomeText?.trim() || null;
   if (input.absenceReasonsVisibleTo !== undefined)
     patch.absenceReasonsVisibleTo = input.absenceReasonsVisibleTo;
   if (input.matchFormat !== undefined) patch.matchFormat = input.matchFormat;

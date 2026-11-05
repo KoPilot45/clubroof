@@ -10348,7 +10348,6 @@ describe.skipIf(!url)('API', () => {
         allowMaybe: false,
         reminderHours: 6,
         matchFormat: 9,
-        welcomeText: '  Bitte 10 Minuten früher da sein.  ',
       });
       expect(saved.status).toBe(200);
       expect(saved.body).toMatchObject({
@@ -10356,7 +10355,6 @@ describe.skipIf(!url)('API', () => {
         allowMaybe: false,
         reminderHours: 6,
         matchFormat: 9,
-        welcomeText: 'Bitte 10 Minuten früher da sein.',
       });
       const bad = await send('PUT', `/teams/${team.id}/profile`, admin.token, { matchFormat: 8 });
       expect(bad.status).toBe(400);
@@ -10381,7 +10379,7 @@ describe.skipIf(!url)('API', () => {
       expect(proxy.status).toBe(200);
 
       const overview = await get<TeamOverview>(`/teams/${team.id}`, player.token);
-      expect(overview.team.welcomeText).toBe('Bitte 10 Minuten früher da sein.');
+      expect('welcomeText' in overview.team).toBe(false);
       const after = await get<EventDetail>(`/events/${mine.id}`, player.token);
       expect(after.responseRules).toEqual({ allowMaybe: false, declineReasonRequired: true });
 
@@ -10391,7 +10389,6 @@ describe.skipIf(!url)('API', () => {
         allowMaybe: true,
         reminderHours: null,
         matchFormat: null,
-        welcomeText: null,
       });
       await send('POST', `/events/${mine.id}/cancel`, admin.token, { reason: 'Test beendet' });
     });

@@ -44,6 +44,19 @@ describe('Fälligkeit je Beitragsart', () => {
     ).toEqual(['2026-02-10', '2026-05-10', '2026-08-10', '2026-11-10']);
   });
 
+  it('halbjährlich ab dem ersten Fälligkeitsmonat', () => {
+    expect(
+      dueDates('halfyearly', '2026-01-01', null, '2026-12-31', '2020-01-01', {
+        day: 15,
+        month: 4,
+        on: null,
+      }),
+    ).toEqual([
+      { dueOn: '2026-04-15', label: '1. Halbjahr 2026' },
+      { dueOn: '2026-10-15', label: '2. Halbjahr 2026' },
+    ]);
+  });
+
   it('einmalig: gewähltes Datum, sonst Beginn der Zuordnung; nicht vor Beginn', () => {
     expect(
       dueDates('once', '2026-01-01', null, '2026-12-31', '2020-01-01', {

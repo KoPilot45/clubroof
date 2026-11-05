@@ -343,7 +343,6 @@ function ProfileEditor({
   const [format, setFormat] = useState<'auto' | '7' | '9' | '11'>(
     profile.matchFormat ? (String(profile.matchFormat) as '7' | '9' | '11') : 'auto',
   );
-  const [welcome, setWelcome] = useState(profile.welcomeText ?? '');
   const [reasonsTeam, setReasonsTeam] = useState(profile.absenceReasonsVisibleTo === 'team');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -367,7 +366,6 @@ function ProfileEditor({
           declineReasonRequired: reasonRequired,
           allowMaybe,
           matchFormat: format === 'auto' ? null : Number(format),
-          welcomeText: welcome.trim() || null,
           absenceReasonsVisibleTo: reasonsTeam ? 'team' : 'staff',
           importAliases: aliases
             .split(/[;,\n]/)
@@ -526,14 +524,6 @@ function ProfileEditor({
           onChangeText={(v) => setReminder(digits(v))}
           maxLength={3}
           hint="Leer = Standard (24 Stunden). Eine persönliche Einstellung der Spieler geht vor."
-        />
-        <TextField
-          label="Willkommenstext für Eltern und Spieler"
-          value={welcome}
-          onChangeText={setWelcome}
-          multiline
-          maxLength={1500}
-          hint="Zum Beispiel Kleidung, Treffpunkte, Regeln. Erscheint im Team-Tab."
         />
         {error ? <Chip tone="urgent" icon="alert-circle" label={error} /> : null}
         <Button label="Speichern" icon="checkmark" loading={busy} onPress={() => void save()} />
