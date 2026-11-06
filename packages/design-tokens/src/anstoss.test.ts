@@ -91,7 +91,7 @@ describe('Dringend bei roter Vereinsfarbe', () => {
   });
 });
 
-describe.each(CLUB_COLOR_KEYS)('Anstoß hell, Kontrast %s', (key) => {
+describe.each(KEYS)('Anstoß hell, Kontrast %s', (key) => {
   const t = anstossLightTheme(key);
   const bg = t.background;
 

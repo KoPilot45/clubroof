@@ -2527,6 +2527,7 @@ export const en: Record<string, string> = {
   "Helferdienste und Aufgaben planen": "Plan helper duties and tasks",
   "Helferschichten (optional)": "Helper shifts (optional)",
   "Hell": "Light",
+  "Hell (empfohlen)": "Light (recommended)",
   "Hell ist voreingestellt. Die Wahl gilt auf allen deinen Geräten.": "Light is the default. Your choice applies on all your devices.",
   "Herunterladen": "Download",
   "heute": "today",

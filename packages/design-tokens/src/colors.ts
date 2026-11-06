@@ -606,15 +606,16 @@ function darkenFor(hex: string, on: string, min: number): string {
  * Rand, Akzent = Vereinsfarbe (bei hellen Farben abgedunkelt, damit Text und Knöpfe ≥ 4,5 : 1 erreichen).
  * Hero und Plakat bleiben farbig (gleiche Verläufe wie dunkel).
  */
-export function anstossLightTheme(key: ClubColorKey): ThemeColors {
-  const base = completeAnstossBase(
-    ANSTOSS_FIXED[key] ?? deriveAnstossBase(clubColors[key].light.primary),
-  );
-  const BG = '#F2F5F3';
+export function anstossLightTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
+  const brand = key === 'clubroof';
+  const primarySource = brand ? '#0B3BEF' : clubColors[key].light.primary;
+  const base = completeAnstossBase(ANSTOSS_FIXED[key] ?? deriveAnstossBase(primarySource));
+  // Clubroof-Marke (Anmeldung, Einrichtung): Hintergrund `#F5F8FF`, Text `#0A1230`, Akzent `#0B3BEF`
+  const BG = brand ? '#F5F8FF' : '#F2F5F3';
   const WHITE = '#FFFFFF';
-  const INK = '#0F1A14';
+  const INK = brand ? '#0A1230' : '#0F1A14';
   const amber = key === 'red';
-  const accent = darkenFor(clubColors[key].light.primary, BG, MIN_CONTRAST.text + 0.2);
+  const accent = darkenFor(primarySource, BG, MIN_CONTRAST.text + 0.2);
   const onAccent = contrastRatio(WHITE, accent) >= MIN_CONTRAST.text ? WHITE : INK;
   const status: Record<StatusKey, StatusColorRoles> = {
     urgent: amber
@@ -693,7 +694,7 @@ export function anstossLightTheme(key: ClubColorKey): ThemeColors {
 /**
  * Liefert das vollständige Farbthema für eine Vereinsfarbe und einen Modus (Stil „Anstoß“, hell und dunkel).
  */
-export function getThemeColors(clubColor: ClubColorKey, scheme: ColorScheme): ThemeColors {
+export function getThemeColors(clubColor: ClubColorKey | 'clubroof', scheme: ColorScheme): ThemeColors {
   return scheme === 'dark' ? anstossTheme(clubColor) : anstossLightTheme(clubColor);
 }
 

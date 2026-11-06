@@ -2405,6 +2405,7 @@ export const tr: Record<string, string> = {
   "Helfer komplett": "Yardımcılar tamam",
   "Helferdienste und Aufgaben planen": "Yardımcı hizmetlerini ve görevleri planla",
   "Hell": "Açık",
+  "Hell (empfohlen)": "Açık (önerilen)",
   "Herunterladen": "İndir",
   "heute": "bugün",
   "Heute": "Bugün",

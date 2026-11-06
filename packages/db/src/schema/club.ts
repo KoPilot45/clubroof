@@ -32,7 +32,7 @@ export const clubs = pgTable('clubs', {
   foundedYear: integer(),
   logoUrl: text(),
   colorTheme: clubColorEnum().notNull().default('green'),
-  colorMode: colorModeEnum().notNull().default('system'),
+  colorMode: colorModeEnum().notNull().default('light'),
   timezone: text().notNull().default('Europe/Berlin'),
   /** Vorstand, Verwaltung und Admins müssen die 2-Faktor-Anmeldung nutzen */
   requireTwoFactor: boolean().notNull().default(false),

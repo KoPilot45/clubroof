@@ -249,7 +249,7 @@ const INITIAL: Draft = {
   code: '',
   venues: [emptyVenue()],
   color: 'green',
-  colorMode: 'system',
+  colorMode: 'light',
   orgMode: 'split',
   modules: [...RECOMMENDED],
   foundedYear: '',
@@ -1026,9 +1026,9 @@ function Wizard({ demo }: { demo?: boolean }) {
             <ChoiceChips
               label="Standard-Darstellung"
               options={[
-                { value: 'system' as const, label: 'Wie Gerät' },
-                { value: 'light' as const, label: 'Hell' },
+                { value: 'light' as const, label: 'Hell (empfohlen)' },
                 { value: 'dark' as const, label: 'Dunkel' },
+                { value: 'system' as const, label: 'Wie Gerät' },
               ]}
               selected={[d.colorMode]}
               onToggle={(colorMode) => patch({ colorMode })}

@@ -2405,6 +2405,7 @@ export const fr: Record<string, string> = {
   "Helfer komplett": "Bénévoles au complet",
   "Helferdienste und Aufgaben planen": "Planifier services de bénévoles et tâches",
   "Hell": "Clair",
+  "Hell (empfohlen)": "Clair (recommandé)",
   "Herunterladen": "Télécharger",
   "heute": "aujourd’hui",
   "Heute": "Aujourd’hui",

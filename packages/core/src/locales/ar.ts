@@ -2405,6 +2405,7 @@ export const ar: Record<string, string> = {
   "Helfer komplett": "المساعدون مكتملون",
   "Helferdienste und Aufgaben planen": "تخطيط مناوبات المساعدين والمهام",
   "Hell": "فاتح",
+  "Hell (empfohlen)": "فاتح (موصى به)",
   "Herunterladen": "تنزيل",
   "heute": "اليوم",
   "Heute": "اليوم",

@@ -2405,6 +2405,7 @@ export const uk: Record<string, string> = {
   "Helfer komplett": "Помічників достатньо",
   "Helferdienste und Aufgaben planen": "Планувати чергування помічників і завдання",
   "Hell": "Світла",
+  "Hell (empfohlen)": "Світла (рекомендовано)",
   "Herunterladen": "Завантажити",
   "heute": "сьогодні",
   "Heute": "Сьогодні",

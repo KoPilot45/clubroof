@@ -215,7 +215,7 @@ export async function setupClub(
         shortCode: input.club.shortCode ? normalizeClubCode(input.club.shortCode) : null,
         slug: await freeSlug(tx, slugOf(input.club.name)),
         colorTheme: input.club.colorTheme,
-        colorMode: input.club.colorMode ?? 'system',
+        colorMode: input.club.colorMode ?? 'light',
         timezone: input.club.timezone ?? 'Europe/Berlin',
         foundedYear: input.club.foundedYear ?? null,
         street: text(input.club.street),

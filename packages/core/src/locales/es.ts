@@ -2405,6 +2405,7 @@ export const es: Record<string, string> = {
   "Helfer komplett": "Ayudantes completos",
   "Helferdienste und Aufgaben planen": "Planificar servicios de ayuda y tareas",
   "Hell": "Claro",
+  "Hell (empfohlen)": "Claro (recomendado)",
   "Herunterladen": "Descargar",
   "heute": "hoy",
   "Heute": "Hoy",

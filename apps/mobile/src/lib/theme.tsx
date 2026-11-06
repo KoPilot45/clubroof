@@ -1,5 +1,4 @@
 import {
-  anstossTheme,
   fontSizes,
   fontWeights,
   getThemeColors,
@@ -44,7 +43,7 @@ export function ThemeProvider({
   children,
 }: {
   clubColor?: string | null;
-  /** ohne Angabe gilt die gewählte Darstellung des Geräts (Standard: wie das Gerät) */
+  /** ohne Angabe gilt die gewählte Darstellung des Geräts (Standard: hell) */
   mode?: 'light' | 'dark' | 'system';
   children: ReactNode;
 }) {
@@ -59,13 +58,13 @@ export function ThemeProvider({
         ? clubColor
         : 'clubroof';
 
-  // Ohne Vereinsfarbe (Start ohne Verein, Einrichtung) gelten die dunklen Clubroof-Farben
-  const scheme: ColorScheme = key === 'clubroof' ? 'dark' : wanted;
+  // Auch ohne Vereinsfarbe (Anmeldung, Einrichtung) folgt das Thema der gewählten Darstellung
+  const scheme: ColorScheme = wanted;
   const theme = useMemo<Theme>(
     () => ({
       scheme,
       clubColor: key,
-      colors: key === 'clubroof' ? anstossTheme('clubroof') : getThemeColors(key, scheme),
+      colors: getThemeColors(key, scheme),
       spacing,
       radii,
       sizes,

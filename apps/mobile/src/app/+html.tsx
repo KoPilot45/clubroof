@@ -15,9 +15,9 @@ export default function Root({ children }: PropsWithChildren) {
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
         />
-        <meta name="theme-color" content="#0B120E" />
+        <meta name="theme-color" content="#F2F5F3" />
         <ScrollViewStyleReset />
-        <style dangerouslySetInnerHTML={{ __html: 'html,body{background-color:#0B120E}' }} />
+        <style dangerouslySetInnerHTML={{ __html: 'html,body{background-color:#F2F5F3}' }} />
       </head>
       <body>{children}</body>
     </html>

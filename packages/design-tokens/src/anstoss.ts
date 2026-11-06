@@ -147,6 +147,8 @@ export const CLUBROOF_BRAND = {
   gradient: ['#002AFA', '#00C3FF'] as const,
   accent: '#4DC3FF',
   background: '#070B14',
+  /** helle Fassung: Akzent, Hintergrund, Text */
+  light: { accent: '#0B3BEF', background: '#F5F8FF', text: '#0A1230' },
 } as const;
 
 const WHITE = '#FFFFFF';
