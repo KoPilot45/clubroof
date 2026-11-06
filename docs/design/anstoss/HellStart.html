@@ -1,0 +1,250 @@
+<title>Helle Darstellung Mockup</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Saira+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Layout: Vorher/Nachher-Telefone der Startseite, darunter Detailstreifen und Rückfragen. Seitenfarben folgen dem Betrachter, die App-Bildschirme tragen die Anstoß-Farben (Hell/Dunkel schaltbar). */
+:root{
+  --pg:#F4F6F5;--pg2:#E8EDEA;--pgfg:#0F1A14;--pgfg2:#4B5B52;--pgline:rgba(15,26,20,.14);--pgacc:#1E7A44;--pgcard:#FFFFFF;
+  --display:'Saira Condensed','Arial Narrow',sans-serif;--body:'Open Sans',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pg:#0B120E;--pg2:#121C16;--pgfg:#EEF4F0;--pgfg2:#A9BAAF;--pgline:rgba(255,255,255,.14);--pgacc:#4CD983;--pgcard:#16211A;color-scheme:dark}}
+:root[data-theme="dark"]{--pg:#0B120E;--pg2:#121C16;--pgfg:#EEF4F0;--pgfg2:#A9BAAF;--pgline:rgba(255,255,255,.14);--pgacc:#4CD983;--pgcard:#16211A;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--pg);color:var(--pgfg);font:15px/1.55 var(--body);padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.w{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.05;text-wrap:balance;text-transform:uppercase}
+h1{font-size:clamp(38px,6vw,60px);font-weight:800}
+h2{font-size:clamp(26px,3.6vw,36px);font-weight:700}
+h3{font-size:20px;font-weight:700}
+p{margin:0;max-width:64ch}
+.lead{color:var(--pgfg2);font-size:17px}
+.eyebrow{font:700 12px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--pgacc)}
+.head{display:flex;flex-direction:column;gap:12px}
+.ctrl{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1.5px solid var(--pgline);border-radius:999px;padding:3px;background:var(--pgcard);gap:2px}
+.seg button{font:700 13px var(--body);border:0;background:transparent;color:var(--pgfg2);border-radius:999px;padding:8px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pgacc);color:var(--pg)}
+.cl{font:700 12px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--pgfg2)}
+:focus-visible{outline:3px solid var(--pgacc);outline-offset:2px}
+
+/* Telefone */
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,350px));gap:36px;justify-content:center}
+.col{display:flex;flex-direction:column;gap:14px;align-items:center;min-width:0}
+.tag{font:700 13px var(--body);letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;border-radius:999px;border:1.5px solid var(--pgline)}
+.tag.bad{color:#B3261E;border-color:#B3261E}.tag.good{color:var(--pgacc);border-color:var(--pgacc)}
+.phone{width:350px;max-width:100%;height:740px;border-radius:42px;background:#0B1210;padding:9px;box-shadow:0 40px 80px -40px rgba(0,0,0,.55)}
+.scr{position:relative;height:100%;border-radius:34px;overflow:hidden}
+.app{--bg:#F1F4F2;--card:#FFFFFF;--fg:#0F1A14;--fg2:#4B5B52;--line:rgba(15,26,20,.1);--p1:#1E7A44;--p2:#0F3D24;--acc:#1E7A44;--hl:#8AF2AF;--amb:#FFB547;--red:#FF8A80;--tabbg:#FFFFFF;--chip:#E7F3EC;--chipfg:#1E7A44;--shadow:0 6px 18px -8px rgba(15,60,35,.35);
+  background:var(--bg);color:var(--fg);font:13px/1.4 var(--body)}
+.app.dk{--bg:#0A110D;--card:#141D18;--fg:#F2F7F3;--fg2:#B5C6BB;--line:rgba(255,255,255,.1);--acc:#2EDB6B;--tabbg:#18231D;--chip:#1B2B22;--chipfg:#2EDB6B;--shadow:0 6px 18px -8px rgba(0,0,0,.7)}
+.body{height:100%;overflow-y:auto;scrollbar-width:none}.body::-webkit-scrollbar{display:none}
+.top{position:absolute;inset:0 0 auto;z-index:3;display:flex;align-items:center;gap:10px;padding:16px 16px 0;color:#fff}
+.crest{width:36px;height:42px;background:#fff;border-radius:8px 8px 18px 18px;display:grid;place-items:center;font:800 9px var(--display);color:#0F3D24;text-align:center;line-height:1}
+.greet{flex:1;min-width:0}.greet small{display:block;font-size:11px;opacity:.9}.greet b{font:800 20px/1 var(--display);text-transform:none}
+.ib{position:relative;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.28);display:grid;place-items:center;font-size:15px}
+.ib i{position:absolute;top:-3px;right:-3px;background:#C62828;color:#fff;font:700 9px var(--body);font-style:normal;border-radius:99px;min-width:16px;height:16px;display:grid;place-items:center}
+
+/* Plakat: Vorher */
+.poster{position:relative;padding:74px 16px 16px;color:#fff;overflow:hidden}
+.poster:before{content:"";position:absolute;inset:0;background:var(--decor);opacity:.12;pointer-events:none}
+.poster .tg{display:inline-block;background:rgba(0,0,0,.28);border-radius:999px;padding:5px 11px;font:700 10px var(--body);letter-spacing:.1em;text-transform:uppercase}
+.poster .rt{position:absolute;right:16px;top:78px;font:700 12px var(--body)}
+.big{font:800 82px/.9 var(--display);margin-top:12px;display:flex;align-items:flex-end;gap:6px}.big small{font:700 22px var(--display);padding-bottom:8px;letter-spacing:.02em}
+.vs{font:800 27px/1.05 var(--display);margin-top:10px}.vs em{font-style:normal;color:var(--hl)}
+.meta{margin-top:8px;opacity:.9;font-size:12px}
+.mine{display:flex;justify-content:space-between;margin-top:10px;font:700 10px var(--body);letter-spacing:.1em;text-transform:uppercase}.mine span:last-child{letter-spacing:0;text-transform:none;font-size:11px}
+.bar{display:flex;height:7px;border-radius:99px;overflow:hidden;margin-top:6px;gap:2px}.bar i{display:block}
+.leg{display:flex;gap:10px;margin-top:7px;font-size:11px;flex-wrap:wrap}.leg span:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:var(--c)}
+.dots{display:flex;gap:6px;align-items:center}.dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.45)}.dots i:first-child{width:26px;border-radius:99px;background:#fff}
+.nxt{position:absolute;right:12px;top:200px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.3);display:grid;place-items:center;font-size:15px;color:#fff}
+.chev{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.3);display:grid;place-items:center;position:absolute;right:14px;bottom:128px}
+
+.bad .poster{background:linear-gradient(180deg,#1E7A44 0%,#14572F 38%,#7FA38D 66%,#F1F4F2 100%);padding-bottom:84px;--decor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpath d='M15 0l15 8.6v17.3L15 34.5 0 25.9V8.6zM45 26l15 8.6v17.3L45 60.5 30 51.9V34.6z' fill='none' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E")}
+.bad .poster .foot{display:flex;justify-content:space-between;align-items:center;margin-top:48px;font:700 12px var(--body);color:#fff}
+.bad .rt{color:#33E07A}
+.bad .bar .z{background:#1F7B45}.bad .bar .u{background:#B8581A}.bad .bar .a{background:#B3261E}.bad .bar .o{background:rgba(255,255,255,.55)}
+
+/* Plakat: Nachher */
+.good .poster{background:linear-gradient(165deg,var(--p1) 0%,var(--p2) 100%);border-radius:0;padding-bottom:16px;--decor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpath d='M15 0l15 8.6v17.3L15 34.5 0 25.9V8.6zM45 26l15 8.6v17.3L45 60.5 30 51.9V34.6z' fill='none' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E")}
+.good .rt{color:#fff}
+.good .bar .z{background:var(--hl)}.good .bar .u{background:var(--amb)}.good .bar .a{background:var(--red)}.good .bar .o{background:rgba(255,255,255,.38)}
+.good .leg span{color:#fff}
+.good .foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.22)}
+.good .foot .lnk{font:700 13px var(--body);color:#fff}
+.good .cta-btn{display:none;font:700 13px var(--body);background:#fff;color:#0F3D24;border-radius:999px;padding:9px 16px}
+[data-cta="btn"] .good .lnk{display:none}[data-cta="btn"] .good .cta-btn{display:inline-block}
+.good .arrow{position:absolute;right:14px;top:104px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.28);display:grid;place-items:center;color:#fff}
+.good .mine,.good .meta,.good .vs,.good .big{padding-right:0}
+.good .chevb{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:13px}
+
+/* Inhalt */
+.sec{display:flex;justify-content:space-between;align-items:baseline;padding:20px 16px 8px}
+.sec b{font:800 17px var(--display);letter-spacing:.04em;text-transform:uppercase;border-left:3px solid var(--acc);padding-left:8px}
+.sec a{font:700 12px var(--body);color:var(--acc)}
+.cards{display:flex;gap:10px;padding:0 16px;overflow:hidden}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:var(--shadow);min-width:0}
+.card.k{flex:0 0 220px;display:flex;flex-direction:column;gap:6px}.card.k.o{border:2px solid #B45309}
+.card .row2{display:flex;gap:10px;align-items:center}.ico{width:34px;height:34px;border-radius:10px;background:#ECE7FB;display:grid;place-items:center;font-size:15px;flex:none}
+.pill{align-self:flex-start;background:#FDEBD3;color:#8A4A00;border-radius:99px;padding:4px 9px;font:700 11px var(--body)}
+.week{margin:0 16px;display:flex;gap:10px;align-items:center}.dt{width:42px;text-align:center;background:var(--chip);color:var(--chipfg);border-radius:10px;padding:4px 0;font:800 18px/1 var(--display)}.dt small{display:block;font:700 9px var(--body)}
+.week b{font-size:13px}.week span{color:var(--fg2);font-size:12px}
+.pad{height:22px}.good .pad{height:110px}
+
+/* Tab-Leiste */
+.tabs{position:absolute;left:14px;right:14px;bottom:14px;height:58px;border-radius:30px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:4;font-size:16px;color:var(--fg2)}
+.tabs .on{display:flex;gap:6px;align-items:center;background:#1E7A44;color:#fff;border-radius:99px;padding:10px 16px;font:700 13px var(--body)}.dk .tabs .on{background:#2EDB6B;color:#06210F}
+.bad .tabs{background:rgba(255,255,255,.62);backdrop-filter:blur(2px);border:1px solid rgba(255,255,255,.7)}
+.good .tabs{background:var(--tabbg);border:1px solid var(--line);box-shadow:0 10px 28px -10px rgba(10,40,25,.45)}
+.mark{position:absolute;z-index:6;width:22px;height:22px;border-radius:50%;background:#1E7A44;color:#fff;font:700 11px var(--body);display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+
+/* Liste der Änderungen */
+.chg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;list-style:none;margin:0;padding:0}
+.chg li{display:flex;gap:12px;background:var(--pgcard);border:1px solid var(--pgline);border-radius:16px;padding:14px;min-width:0}
+.chg .n{flex:none;width:24px;height:24px;border-radius:50%;background:#1E7A44;color:#fff;font:700 12px var(--body);display:grid;place-items:center}
+.chg b{display:block;font-size:14px}.chg span{color:var(--pgfg2);font-size:13px}
+
+/* Streifen */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.ba{background:var(--pgcard);border:1px solid var(--pgline);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pair>div{display:flex;flex-direction:column;gap:8px;align-items:stretch;min-width:0}
+.mini{border-radius:16px;padding:14px;min-height:96px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.hv{background:linear-gradient(165deg,#1E7A44,#0F3D24);color:#fff}
+.chipx{display:inline-block;border-radius:99px;padding:4px 10px;font:700 11px var(--body)}
+.hv.bad .chipx{background:#0F3D24;color:#3A6A4B}.hv.good .chipx{background:rgba(255,255,255,.2);color:#fff}
+.btnx{border-radius:99px;padding:12px;font:700 13px var(--body);text-align:center}
+.btnx.b1{background:#A8D9BC;color:#fff}.btnx.g1{background:#1E7A44;color:#fff}.btnx.g2{background:transparent;border:1.5px solid #1E7A44;color:#1E7A44}
+.tile{background:#fff;border:1px solid rgba(15,26,20,.12);border-radius:14px;padding:12px;color:#0F1A14;width:104px;display:flex;flex-direction:column;gap:4px;font-size:11px}
+.tile b{font:800 20px var(--display)}.tile .lb{font-size:11px;color:#4B5B52;word-break:break-all;line-height:1.2}
+.tile.ok .lb{word-break:normal}
+.under{position:relative;height:150px;border-radius:16px;overflow:hidden;background:var(--bg);--bg:#F1F4F2;font:13px/1.4 var(--body);color:#0F1A14;padding:12px}
+.under p{font:800 16px var(--display);text-transform:uppercase;letter-spacing:.04em;margin:0;border-left:3px solid #1E7A44;padding-left:8px}
+.under .bar2{position:absolute;left:12px;right:12px;bottom:12px;height:46px;border-radius:24px;display:flex;align-items:center;justify-content:center;font:700 12px var(--body);color:#4B5B52}
+.under.bad .bar2{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.7)}
+.under.good .bar2{background:#fff;border:1px solid rgba(15,26,20,.12);box-shadow:0 10px 24px -10px rgba(10,40,25,.45)}
+.under .ghost{position:absolute;left:12px;right:12px;bottom:26px;font:800 15px var(--display);text-transform:uppercase;letter-spacing:.04em;border-left:3px solid #1E7A44;padding-left:8px;color:#0F1A14}
+.q{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.qc{background:var(--pgcard);border:1px solid var(--pgline);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px}
+@media (max-width:860px){.row{grid-template-columns:minmax(0,350px)}.pair{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="w">
+ <header class="head">
+  <span class="eyebrow">Mockup · Paket HELLE-DARSTELLUNG</span>
+  <h1>Helle Startseite, geschlossen und lesbar</h1>
+  <p class="lead">Links der heutige Stand der hellen Variante, rechts der Vorschlag. Das Telefon rechts ist bedienbar: scrollen, Darstellung umschalten, „Spiel ansehen“ ist als Knopf entschieden, der Textlink steht zum Vergleich daneben.</p>
+ </header>
+
+ <section class="head" id="start" style="gap:22px">
+  <div class="ctrl">
+   <span class="cl">Darstellung (Nachher)</span>
+   <div class="seg" role="group" aria-label="Darstellung"><button type="button" id="mh" aria-pressed="true">Hell</button><button type="button" id="md" aria-pressed="false">Dunkel</button></div>
+   <span class="cl">Spiel ansehen</span>
+   <div class="seg" role="group" aria-label="Spiel ansehen"><button type="button" id="cl" aria-pressed="false">Textlink</button><button type="button" id="cb" aria-pressed="true">Knopf</button></div>
+  </div>
+
+  <div class="row" id="stage" data-cta="btn">
+   <!-- VORHER -->
+   <div class="col bad">
+    <span class="tag bad">Vorher</span>
+    <div class="phone"><div class="scr"><div class="app"><div class="body">
+     <div class="top"><div class="crest">SV GW<br>1920</div><div class="greet"><small>Freitag, 6. November</small><b>Hallo, Max</b></div><div class="ib">⌕</div><div class="ib">🔔<i>3</i></div></div>
+     <div class="poster">
+      <span class="tg">Nächstes Spiel · C-Jugend</span><span class="rt">Zum Spiel ›</span>
+      <div class="big">1<small>TAG</small></div>
+      <div class="vs">SV Grün-Weiß C1<br><em>vs.</em> TSV Blauen</div>
+      <div class="meta">Sa., 07.11. · 13:00 Uhr · Sportplatz Blauen · Auswärts · Liga</div>
+      <div class="mine"><span>Du als Trainer</span><span>✎ automatisch eingeplant</span></div>
+      <div class="bar"><i class="z" style="flex:9"></i><i class="u" style="flex:2"></i><i class="a" style="flex:3"></i><i class="o" style="flex:5"></i></div>
+      <div class="leg"><span style="--c:#1F7B45">9 Zusagen</span><span style="--c:#B8581A">2 Unsicher</span><span style="--c:#B3261E">3 Absagen</span><span style="--c:#bbb">5 offen</span></div>
+      <div class="foot"><div class="dots"><i></i><i></i><i></i></div><span>Spiel ansehen ›</span></div>
+      <div class="nxt">›</div>
+     </div>
+     <div class="sec"><b>Offen</b></div>
+     <div class="cards"><div class="card k o"><div class="row2"><div class="ico">📊</div><div><b>Umfrage beantworten</b><br><span style="color:#4B5B52">Saisonabschlussfahrt: Wohin soll es gehen?</span></div></div><span class="pill">Noch 13 Tage</span></div><div class="card k"><b>Anwesenheit erfassen</b><span style="color:#4B5B52">B1 · Training vom 05.11.</span></div></div>
+     <div class="sec"><b>Diese Woche</b><a>Alle anzeigen ›</a></div>
+     <div class="week"><div class="dt"><small>SA</small>7</div><div><b>TSV Blauen – SV Grün-Weiß C1</b><br><span>C1 · 13:00 · Sportplatz Blauen · Liga</span></div></div>
+     <div class="pad"></div>
+    </div>
+    <div class="tabs"><span class="on">⌂ Start</span><span>▦</span><span>👥</span><span>🛡</span><span>⊞</span></div>
+    <span class="mark" style="left:14px;top:392px">1</span><span class="mark" style="right:108px;top:78px">3</span><span class="mark" style="left:14px;top:630px">5</span>
+    </div></div></div>
+   </div>
+
+   <!-- NACHHER -->
+   <div class="col good" id="after">
+    <span class="tag good">Nachher</span>
+    <div class="phone"><div class="scr"><div class="app" id="app2"><div class="body">
+     <div class="top"><div class="crest">SV GW<br>1920</div><div class="greet"><small>Freitag, 6. November</small><b>Hallo, Max</b></div><div class="ib">⌕</div><div class="ib">🔔<i>3</i></div></div>
+     <div class="poster">
+      <span class="tg">Nächstes Spiel · C-Jugend</span><span class="rt">Zum Spiel ›</span>
+      <div class="big">1<small>TAG</small></div>
+      <div class="vs">SV Grün-Weiß C1<br><em>vs.</em> TSV Blauen</div>
+      <div class="meta">Sa., 07.11. · 13:00 Uhr · Sportplatz Blauen · Auswärts · Liga</div>
+      <div class="mine"><span>Du als Trainer</span><span>✎ automatisch eingeplant</span></div>
+      <div class="bar"><i class="z" style="flex:9"></i><i class="u" style="flex:2"></i><i class="a" style="flex:3"></i><i class="o" style="flex:5"></i></div>
+      <div class="leg"><span style="--c:#8AF2AF">9 Zusagen</span><span style="--c:#FFB547">2 Unsicher</span><span style="--c:#FF8A80">3 Absagen</span><span style="--c:rgba(255,255,255,.5)">5 offen</span></div>
+      <div class="foot"><div class="dots"><i></i><i></i><i></i></div><span class="lnk">Spiel ansehen ›</span><span class="cta-btn">Spiel ansehen ›</span></div>
+     </div>
+     <div class="sec"><b>Offen</b></div>
+     <div class="cards"><div class="card k o"><div class="row2"><div class="ico">📊</div><div><b>Umfrage beantworten</b><br><span style="color:var(--fg2)">Saisonabschlussfahrt: Wohin soll es gehen?</span></div></div><span class="pill">Noch 13 Tage</span></div><div class="card k"><b>Anwesenheit erfassen</b><span style="color:var(--fg2)">B1 · Training vom 05.11.</span></div></div>
+     <div class="sec"><b>Diese Woche</b><a>Alle anzeigen ›</a></div>
+     <div class="week"><div class="dt"><small>SA</small>7</div><div><b>TSV Blauen – SV Grün-Weiß C1</b><br><span>C1 · 13:00 · Sportplatz Blauen · Liga</span></div></div>
+     <div class="sec"><b>Neuigkeiten</b></div>
+     <div class="week"><div class="dt"><small>NEU</small>2</div><div><b>Kunstrasen am Donnerstag gesperrt</b><br><span>Verein · vor 2 Std.</span></div></div>
+     <div class="pad"></div>
+    </div>
+    <div class="tabs"><span class="on">⌂ Start</span><span>▦</span><span>👥</span><span>🛡</span><span>⊞</span></div>
+    </div></div></div>
+   </div>
+  </div>
+ </section>
+
+ <section class="head" style="gap:18px">
+  <h2>Was sich ändert</h2>
+  <ol class="chg">
+   <li><span class="n">1</span><div><b>Plakat bleibt geschlossen</b><span>Der Verlauf läuft nicht mehr in die helle Seitenfarbe aus. Das Plakat endet mit gerader Unterkante, weiße Schrift steht immer auf Vereinsgrün.</span></div></li>
+   <li><span class="n">2</span><div><b>Keine Leerfläche</b><span>Die Fußzeile mit Seitenpunkten und „Spiel ansehen“ rückt direkt unter die Legende.</span></div></li>
+   <li><span class="n">3</span><div><b>„Zum Spiel ›“ lesbar</b><span>Weiß statt Hellgrün, der Wischpfeil sitzt tiefer und überdeckt nichts.</span></div></li>
+   <li><span class="n">4</span><div><b>Balken mit Abstand zum Grund</b><span>Zusagen in hellem Mintgrün, Unsicher und Absagen heller, offen als halbtransparentes Weiß.</span></div></li>
+   <li><span class="n">5</span><div><b>Tab-Leiste deckend</b><span>Weiße Fläche mit Rand und Schatten, darunter genug Platz am Seitenende.</span></div></li>
+  </ol>
+ </section>
+
+ <section class="head" style="gap:18px">
+  <h2>Tab-Leiste im Detail</h2>
+  <div class="strip">
+   <div class="ba"><span class="cl">Vorher · halbtransparent</span><div class="under bad"><p>Aktuelles und Mitmachen</p><div class="ghost">Aktuelles und Mitmachen</div><div class="bar2">⌂ Start ▦ 👥 🛡 ⊞</div></div></div>
+   <div class="ba"><span class="cl">Nachher · deckend</span><div class="under good"><p>Aktuelles und Mitmachen</p><div class="bar2">⌂ Start ▦ 👥 🛡 ⊞</div></div></div>
+  </div>
+ </section>
+
+ <section class="head" style="gap:18px">
+  <h2>Weitere Stellen</h2>
+  <div class="strip">
+   <div class="ba"><h3>6 · Termin-Detail</h3><div class="pair"><div><span class="cl">Vorher</span><div class="mini hv bad"><span><span class="chipx">C1</span> <span class="chipx">Spiel</span></span><b style="font:800 22px var(--display)">TSV Blauen 13:00</b></div></div><div><span class="cl">Nachher</span><div class="mini hv good"><span><span class="chipx">C1</span> <span class="chipx">Spiel</span></span><b style="font:800 22px var(--display)">TSV Blauen 13:00</b></div></div></div></div>
+   <div class="ba"><h3>7 · Aufstellung</h3><div class="pair"><div><span class="cl">Vorher</span><div class="btnx b1">Veröffentlichen</div></div><div><span class="cl">Nachher: bereit / noch nicht</span><div class="btnx g1">Veröffentlichen</div><div class="btnx g2">Veröffentlichen</div></div></div></div>
+   <div class="ba"><h3>8 · Vereinskasse</h3><div class="pair"><div><span class="cl">Vorher</span><div class="tile"><span class="lb">Beitragseingang</span><b>67 %</b><span>39 überfällig</span></div></div><div><span class="cl">Nachher</span><div class="tile ok"><span class="lb">Beiträge</span><b>67 %</b><span>39 überfällig</span></div></div></div></div>
+  </div>
+ </section>
+
+ <section class="head" style="gap:18px">
+  <h2>Entschieden am 06.11.2026</h2>
+  <div class="q">
+   <div class="qc"><h3>Anmeldung und Einrichtung: auch hell</h3><p style="color:var(--pgfg2)">Beide bekommen eine helle Fassung des Clubroof-Themas (heute immer dunkel). Der Wechsel auf Dunkel bleibt möglich.</p></div>
+   <div class="qc"><h3>Demoverein auf hell</h3><p style="color:var(--pgfg2)">Außer dem Demoverein gibt es noch keine Vereine. Er wird auf hell umgestellt, neue Vereine starten hell.</p></div>
+  </div>
+ </section>
+</div>
+
+<script>
+(function(){
+ const app=document.getElementById('app2'),stage=document.getElementById('stage');
+ function pair(a,b,fa,fb){document.getElementById(a).addEventListener('click',fa);document.getElementById(b).addEventListener('click',fb)}
+ function set(on,off){document.getElementById(on).setAttribute('aria-pressed','true');document.getElementById(off).setAttribute('aria-pressed','false')}
+ pair('mh','md',function(){app.classList.remove('dk');set('mh','md')},function(){app.classList.add('dk');set('md','mh')});
+ pair('cl','cb',function(){stage.dataset.cta='link';set('cl','cb')},function(){stage.dataset.cta='btn';set('cb','cl')});
+ document.querySelectorAll('[data-q]').forEach(function(b){b.addEventListener('click',function(){b.parentNode.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)})})});
+})();
+</script>
