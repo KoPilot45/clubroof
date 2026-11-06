@@ -301,3 +301,5 @@ Stand: 07.10.2026
 | Sicherheit, Betrieb, Integrationen |       6 |     0 |     2 |
 | Vertrieb (mehrere Vereine, Abo)    |       0 |     0 |     6 |
 | **Gesamt**                         | **106** | **3** | **8** |
+
+| Terminkarte Variante D (Paket DESIGN-HELL-TERMINKARTE-HERO, C) | `apps/mobile/src/components/events.tsx` (`EventRow`), `event-card-parts.tsx` | ✅ | Kompakte Karte in allen Listen: Datumskachel in der **Farbe der Terminart** (Tokens `EVENT_TYPE_COLORS`, Kontrasttest) mit Beginn, Marke der Art, Mannschaftspunkt mit Kürzel (Eltern: Kindname), „Treffen hh:mm · Treffpunkt“ statt Ort; ganzer Kopf öffnet den Termin. Chip zur eigenen Antwort („Du: Zugesagt ✓“, „Antwort bis …“, roter Chip bei abgelaufener Frist, „Automatisch eingeplant“), Rahmen in der Farbe der Antwort, Verteilungsbalken (6 px) und Zählerleiste ✓ ? ✕ als Antwortknöpfe; vierter Knopf „n offen ›“ öffnet die Teilnehmerliste. Ohne freigegebene Zahlen bleiben die drei Antwortknöpfe. Desktop-Tabelle trägt die Marke der Art. Bausteine mit Variante „auf Hero“ (`onHero`). Prüfung: `scripts/e2e/terminkarte.mjs`. |

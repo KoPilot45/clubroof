@@ -268,13 +268,13 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'respond',
         question: 'Wie sage ich zu oder ab?',
         answer:
-          'In jeder Terminliste (Start, Termine, Team, Kalender) und auf dem Plakat der Startseite stehen drei Knöpfe: ✓ Zusage, ? Vielleicht und ✕ Absage. Ein Tipp auf Zusage oder Vielleicht speichert sofort; die Bestätigung nennt die Person und bietet „Rückgängig“ an. Bei „Absage“ öffnet sich ein Fenster, in dem du einen Grund wählen oder schreiben kannst – ob er nötig ist, bestimmt die Mannschaft; den Grund sehen nur das Trainerteam und du selbst. Der Status steht immer auch als Text unter dem Titel („Du: Zugesagt“). Ist die Frist abgelaufen, bleibt deine Antwort sichtbar, die Knöpfe sind gesperrt, und das Trainerteam kann noch ändern. Eltern sehen die Karte je Kind mit dem Namen darüber.',
+          'In jeder Terminliste (Start, Termine, Team, Kalender) und auf dem Plakat der Startseite steht unten in der Karte eine Leiste mit ✓ Zusage, ? Vielleicht und ✕ Absage – die Zahlen darin zeigen, wie viele schon geantwortet haben. Ein Tipp auf Zusage oder Vielleicht speichert sofort; die Bestätigung nennt die Person und bietet „Rückgängig“ an. Bei „Absage“ öffnet sich ein Fenster, in dem du einen Grund wählen oder schreiben kannst – ob er nötig ist, bestimmt die Mannschaft; den Grund sehen nur das Trainerteam und du selbst. Deine Antwort steht auch als Chip unter dem Titel („Du: Zugesagt ✓“), die Karte bekommt einen Rahmen in der Farbe deiner Antwort. Ist die Frist abgelaufen, bleibt deine Antwort sichtbar, die Knöpfe sind gesperrt, und das Trainerteam kann noch ändern. Eltern sehen die Karte je Kind mit dem Namen darüber.',
       },
       {
         id: 'participants',
         question: 'Wie sehe ich, wer zugesagt hat?',
         answer:
-          'Unter jedem Termin zeigt ein Balken mit Zahlen den Stand. Der Pfeil rechts daneben klappt die Teilnehmerliste auf: Zusagen, Vielleicht, Offen und Absagen, ganz unten Abwesend (zählt zu den Absagen). Pro Gruppe stehen bis zu vier Namen, „Alle anzeigen“ öffnet den ganzen Kader; deine Zeile ist markiert. Gründe von Absagen sieht nur das Trainerteam, und es kann nach dem Antippen einer Person deren Antwort ändern. Gibt die Mannschaft die Liste nicht frei, steht dort ein Hinweis. Am Computer ist die Terminliste eine Tabelle: Pfeiltasten wechseln die Zeile, die Leertaste klappt auf, 1/2/3 (oder Z/V/A) setzen die Antwort.',
+          'Unter jedem Termin zeigt ein schlanker Balken die Verteilung der Antworten, die Zähler darunter die Zahlen. Der Knopf „n offen ›“ öffnet die Teilnehmerliste: Zusagen, Vielleicht, Offen und Absagen, ganz unten Abwesend (zählt zu den Absagen); deine Zeile ist markiert. Gründe von Absagen sieht nur das Trainerteam, und es kann nach dem Antippen einer Person deren Antwort ändern. Gibt die Mannschaft die Liste nicht frei, steht dort ein Hinweis. Am Computer ist die Terminliste eine Tabelle: Pfeiltasten wechseln die Zeile, die Leertaste klappt auf, 1/2/3 (oder Z/V/A) setzen die Antwort.',
       },
       {
         id: 'responses-overview',

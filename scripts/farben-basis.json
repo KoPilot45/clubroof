@@ -14,6 +14,7 @@
   "apps/mobile/src/components/attendance-bar.tsx": 1,
   "apps/mobile/src/components/brand-header.tsx": 8,
   "apps/mobile/src/components/brand-splash.tsx": 9,
+  "apps/mobile/src/components/event-card-parts.tsx": 12,
   "apps/mobile/src/components/event-hero.tsx": 5,
   "apps/mobile/src/components/events.tsx": 2,
   "apps/mobile/src/components/home.tsx": 14,

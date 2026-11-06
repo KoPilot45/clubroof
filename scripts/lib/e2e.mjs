@@ -69,16 +69,18 @@ export async function launch() {
         viewport: { width, height },
         timezoneId: 'Europe/Berlin',
         locale: 'de-DE',
-        // Darstellung „Wie Gerät“: SCHEME=light für den hellen Stil, sonst dunkel
+        // Darstellung wird per Einstellung gesetzt (siehe unten); colorScheme nur für Browser-Elemente
         colorScheme: process.env.SCHEME === 'light' ? 'light' : 'dark',
       });
       await ctx.addInitScript(
-        ([t, id, skipTour]) => {
+        ([t, id, skipTour, scheme]) => {
+          // Hell ist Standard der App; SCHEME bestimmt die gewählte Darstellung (ohne SCHEME: dunkel)
+          localStorage.setItem('clubroof.setting.appearance', scheme);
           localStorage.setItem('clubroof.session', t);
           // Willkommens-Tour überspringen, sonst verdeckt sie Home in den Browserprüfungen
           if (skipTour) localStorage.setItem(`clubroof.flag.tour.${id}`, '1');
         },
-        [login.token, login.me.user.id, !tour],
+        [login.token, login.me.user.id, !tour, process.env.SCHEME === 'light' ? 'light' : 'dark'],
       );
       const page = await ctx.newPage();
       page.on('pageerror', (e) => errors.push(`${who}: ${e.message}`));
@@ -95,9 +97,12 @@ export async function launch() {
         viewport: { width, height },
         timezoneId: 'Europe/Berlin',
         locale: 'de-DE',
-        // Darstellung „Wie Gerät“: SCHEME=light für den hellen Stil, sonst dunkel
+        // Darstellung wird per Einstellung gesetzt (siehe unten); colorScheme nur für Browser-Elemente
         colorScheme: process.env.SCHEME === 'light' ? 'light' : 'dark',
       });
+      await ctx.addInitScript((scheme) => {
+        localStorage.setItem('clubroof.setting.appearance', scheme);
+      }, process.env.SCHEME === 'light' ? 'light' : 'dark');
       const page = await ctx.newPage();
       page.on('pageerror', (e) => errors.push(`anonym: ${e.message}`));
       page.on('console', (m) => {

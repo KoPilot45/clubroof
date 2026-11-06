@@ -8,7 +8,6 @@ import { RequestError } from '@/lib/api';
 import {
   clubInitials,
   countdown,
-  formatDateTile,
   formatDay,
   formatLongDate,
   formatRemaining,
@@ -17,8 +16,6 @@ import {
 import {
   ATTENDANCE_LABELS,
   DECLINE_REASONS,
-  EVENT_TYPE_LABELS,
-  MATCH_KIND_LABELS,
 } from '@/lib/labels';
 import { hapticSelect } from '@/lib/haptics';
 import { PressScale } from '@/lib/motion';
@@ -33,7 +30,6 @@ import {
   ChoiceChips,
   Chip,
   Crest,
-  DateTile,
   HeroCard,
   T,
   Sheet,
@@ -43,17 +39,25 @@ import {
   type IconName,
 } from './ui';
 import { useToast } from '@/lib/toast';
-import { AttendanceBar } from './attendance-bar';
+import {
+  AnswerChip,
+  CounterBar,
+  DistBar,
+  EventMeta,
+  TypeDateTile,
+  TypeMark,
+  frameFor,
+} from './event-card-parts';
 import {
   AnswerKnobs,
   AnswerLine,
   NotReleasedHint,
-  ParticipantPanel,
   answerState,
   useAnswerFlow,
   type AnswerState,
 } from './event-answer';
 import { t } from '@/lib/i18n';
+import { SquadSheet } from './squad-sheet';
 
 const STATUS_TONE: Record<AttendanceStatus, 'success' | 'urgent' | 'action' | 'archived'> = {
   yes: 'success',
@@ -189,6 +193,8 @@ function AnswerUnit({
     line: React.ReactNode;
     knobs: React.ReactNode;
     sheet: React.ReactNode;
+    flow: ReturnType<typeof useAnswerFlow>;
+    shown: MyResponse;
   }) => React.ReactNode;
 }) {
   const outbox = useOutbox();
@@ -198,6 +204,8 @@ function AnswerUnit({
   const state = answerState(event, shown, { past, queued: !!queued });
   return children({
     state,
+    flow,
+    shown,
     line: <AnswerLine state={state} />,
     sheet: flow.sheet,
     knobs: state.knobs ? (
@@ -213,10 +221,12 @@ function AnswerUnit({
 }
 
 /**
- * Gemeinsame Terminkarte (Paket TERMIN-ANTWORT-UND-TEILNEHMER): Datumsblock, Titel, „Mannschaft · Uhrzeit · Ort“,
- * Statuszeile als Text, drei Antwortknöpfe, Summenzeile mit Balken und Pfeil, aufklappbare Teilnehmerliste.
- * Tippen auf Titel oder freie Fläche öffnet den Termin, ein Antwortknopf führt nur die Antwort aus, der Pfeil klappt nur auf.
- * Abgesagte Termine sind durchgestrichen mit Grund; vergangene zeigen Ergebnis bzw. Anwesenheit statt Knöpfen.
+ * Gemeinsame Terminkarte in kompakter Dichte, Variante D (Paket DESIGN-HELL-TERMINKARTE-HERO): der ganze Kopf ist antippbar
+ * und öffnet den Termin (Datumskachel in der Farbe der Terminart mit Beginn, Marke, Titel, Mannschaft, „Treffen · Treffpunkt“,
+ * Pfeil), darunter der Chip zum Stand der eigenen Antwort, die Verteilung als Balken und die Zählerleiste: ✓ ? ✕ setzen die
+ * eigene Antwort (Absage und Vielleicht öffnen das Formular), der vierte Knopf öffnet die Teilnehmerliste. Die eigene Antwort
+ * färbt die Zähler und den Rahmen der Karte. Abgesagte Termine sind durchgestrichen mit Grund; vergangene zeigen Ergebnis
+ * bzw. Anwesenheit statt Knöpfen.
  */
 export function EventRow({
   event,
@@ -232,15 +242,12 @@ export function EventRow({
   const { me } = useSignedIn();
   const cancelled = event.status === 'cancelled';
   const teamColor = useTeamColor(event.team?.id);
-  const [expanded, setExpanded] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
   const responses = event.myResponses;
   const mine = responses[0];
-  // mehrere eigene Personen bei demselben Termin: je Person eine Zeile; ein Kind allein: Etikett über dem Titel
+  // mehrere eigene Personen bei demselben Termin: je Person eine Zeile; ein Kind allein: Name im Chip und in der Meta-Zeile
   const multi = responses.length > 1;
-  const childLabel =
-    responses.length === 1 && mine?.relation === 'child'
-      ? [mine.firstName, event.team?.badge].filter(Boolean).join(' · ')
-      : null;
+  const childName = responses.length === 1 && mine?.relation === 'child' ? mine.firstName : null;
   const outbox = useOutbox();
   const queued = mine ? queuedFor(outbox, event.id, mine.personId) : undefined;
   const quick = useQuickYes(event, mine?.personId ?? '');
@@ -262,172 +269,172 @@ export function EventRow({
           t.id === event.team!.id &&
           t.functions.some((f) => f === 'coach' || f === 'assistant_coach'),
       ));
-  const place = event.location ?? EVENT_TYPE_LABELS[event.type];
-  const text = cancelled
-    ? event.cancelledReason
-      ? `Grund: ${event.cancelledReason}`
-      : formatTime(event.startsAt)
-    : [
-        event.team?.badge ?? t('Verein'),
-        formatTime(event.startsAt),
-        place,
-        event.match ? MATCH_KIND_LABELS[event.match.kind] : null,
-      ]
-        .filter(Boolean)
-        .join(' · ');
   const result = past && !cancelled ? pastChip(event) : null;
-  // Termine ohne Antwortmodell (z. B. Vereinstermine ohne Anmeldung): keine Summenzeile
+  const hiddenList = !cancelled && event.counts === null && !!event.team && !!mine && !canCorrect;
+  // Termine ohne Antwortmodell (z. B. Vereinstermine ohne Anmeldung): keine Zählerleiste
   const hasModel =
     !!mine || (event.counts !== null && Object.values(event.counts).some((n) => n > 0));
-  const showSummary = !cancelled && event.counts !== null && hasModel;
-  const hiddenList = !cancelled && event.counts === null && !!event.team && !!mine && !canCorrect;
+  const showCounters = !cancelled && !past && event.counts !== null && hasModel;
+  const hideTypeMark = event.type === 'training' && event.title.trim() === t('Training');
 
-  const head = (extra: React.ReactNode, line: React.ReactNode, sheet: React.ReactNode) => (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <Pressable
-        accessibilityRole={openable ? 'button' : undefined}
-        accessibilityLabel={`${event.title}, ${text}`}
-        disabled={!openable}
-        onPress={() => router.push(`/events/${event.id}`)}
-        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, minWidth: 0 }}
-      >
-        <DateTile
-          {...formatDateTile(event.startsAt)}
-          muted={cancelled}
-          color={teamColor ?? undefined}
-        />
-        <View style={{ flex: 1, gap: 2, minWidth: 0 }}>
-          {childLabel ? (
-            <View
-              style={{
-                alignSelf: 'flex-start',
-                borderRadius: 8,
-                paddingHorizontal: 7,
-                paddingVertical: 1,
-                backgroundColor: withAlpha(colors.status.info.solid, 0.18),
-              }}
-            >
-              <T
-                variant="caption"
-                color={colors.status.info.onContainer}
-                verbatim
-                style={{ fontSize: 10.5, fontWeight: '800' }}
-              >
-                {childLabel}
-              </T>
-            </View>
-          ) : null}
-          <T
-            variant="title"
-            numberOfLines={2}
-            style={{
-              fontSize: 15,
-              lineHeight: 19,
-              ...(cancelled ? { textDecorationLine: 'line-through' as const } : null),
-            }}
-            verbatim
-          >
-            {event.title}
+  const head = (
+    <Pressable
+      accessibilityRole={openable ? 'link' : undefined}
+      accessibilityLabel={event.title}
+      disabled={!openable}
+      onPress={() => router.push(`/events/${event.id}`)}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 11, minWidth: 0 }}
+    >
+      <TypeDateTile event={event} muted={cancelled} />
+      <View style={{ flex: 1, gap: 3, minWidth: 0 }}>
+        <T
+          variant="title"
+          numberOfLines={2}
+          style={{
+            fontSize: 14.5,
+            lineHeight: 18,
+            ...(cancelled ? { textDecorationLine: 'line-through' as const } : null),
+          }}
+          verbatim
+        >
+          {hideTypeMark ? null : (
+            <>
+              <TypeMark type={event.type} />
+              {'  '}
+            </>
+          )}
+          {event.title}
+        </T>
+        {cancelled ? (
+          <T variant="caption" numberOfLines={2} verbatim>
+            {event.cancelledReason ? `${t('Grund')}: ${event.cancelledReason}` : formatTime(event.startsAt)}
           </T>
-          <T variant="caption" numberOfLines={cancelled ? 2 : 1} verbatim>
-            {text}
-          </T>
-          {line}
-        </View>
-      </Pressable>
-      {extra}
-      {sheet}
-    </View>
+        ) : (
+          <EventMeta event={event} childName={childName} teamColor={teamColor} />
+        )}
+      </View>
+      {openable ? (
+        <Ionicons name="chevron-forward" size={20} color={colors.onSurfaceMuted} />
+      ) : null}
+    </Pressable>
   );
 
-  const card = (
+  /** Inhalt unterhalb des Kopfes für eine einzelne Person (oder ohne eigene Antwort). */
+  const body = (
+    u: {
+      state: AnswerState;
+      flow: ReturnType<typeof useAnswerFlow>;
+      shown: MyResponse;
+    } | null,
+  ) => {
+    const answerable = !!u && u.state.knobs && !multi;
+    return (
+      <>
+        {cancelled ? (
+          <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
+        ) : (
+          <>
+            {u && mine ? <AnswerChip event={event} r={u.shown} state={u.state} /> : null}
+            {result}
+            {u?.state.hint && !past ? (
+              <T variant="caption" style={{ fontSize: 11 }}>
+                {u.state.hint}
+              </T>
+            ) : null}
+          </>
+        )}
+        {showCounters ? (
+          <View style={{ gap: 8 }}>
+            <DistBar counts={event.counts!} />
+            <CounterBar
+              counts={event.counts!}
+              value={answerable ? u!.shown.status : undefined}
+              onAnswer={answerable ? u!.flow.answer : undefined}
+              locked={!!u && (u.state.locked || u.flow.pending)}
+              allowMaybe={event.responseRules?.allowMaybe ?? true}
+              onOpenList={() => setListOpen(true)}
+            />
+          </View>
+        ) : null}
+        {!showCounters && answerable && !cancelled ? (
+          <AnswerKnobs
+            wide
+            value={u!.shown.status}
+            needsAnswer={u!.state.needsAnswer}
+            locked={u!.state.locked || u!.flow.pending}
+            allowMaybe={event.responseRules?.allowMaybe ?? true}
+            onAnswer={u!.flow.answer}
+          />
+        ) : null}
+        {hiddenList ? <NotReleasedHint /> : null}
+      </>
+    );
+  };
+
+  const wrap = (frame: { color: string; width: number } | null, children: React.ReactNode) => (
     <View
       style={{
         borderRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.anstoss.cardBorder,
+        borderWidth: frame?.width ?? 1,
+        borderColor: frame?.color ?? colors.anstoss.cardBorder,
         backgroundColor: colors.anstoss.card,
-        paddingVertical: 12,
-        paddingHorizontal: 14,
-        gap: 10,
+        padding: 11,
+        gap: 9,
         opacity: cancelled ? 0.85 : 1,
       }}
     >
-      {cancelled ? (
-        head(
-          // der Chip steht sonst oben (eigenes alignSelf) statt auf der Mittellinie der Karte
-          <View style={{ alignSelf: 'center' }}>
-            <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" />
-          </View>,
-          null,
-          null,
-        )
-      ) : mine && !multi ? (
-        <AnswerUnit event={event} r={mine} past={past}>
-          {(u) => head(u.knobs ?? result, u.line, u.sheet)}
-        </AnswerUnit>
-      ) : (
-        head(result, null, null)
-      )}
-      {!cancelled && multi
-        ? responses.map((r) => (
-            <AnswerUnit key={r.personId} event={event} r={r} past={past}>
-              {(u) => (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <View style={{ flex: 1, gap: 2 }}>
-                    <T
-                      variant="caption"
-                      color={colors.status.info.onContainer}
-                      verbatim
-                      style={{ fontSize: 10.5, fontWeight: '800' }}
-                    >
-                      {[r.relation === 'self' ? t('Ich') : r.firstName, event.team?.badge]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </T>
-                    {u.line}
-                  </View>
-                  {u.knobs}
-                  {u.sheet}
-                </View>
-              )}
-            </AnswerUnit>
-          ))
-        : null}
-      {showSummary ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <AttendanceBar counts={event.counts!} compact />
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t(expanded ? 'Teilnehmer ausblenden' : 'Teilnehmer anzeigen')}
-            accessibilityState={{ expanded }}
-            hitSlop={8}
-            onPress={() => setExpanded(!expanded)}
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 14,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: colors.anstoss.overlay,
-            }}
-          >
-            <Ionicons
-              name={expanded ? 'chevron-up' : 'chevron-down'}
-              size={16}
-              color={colors.onSurface}
-            />
-          </Pressable>
-        </View>
-      ) : null}
-      {hiddenList ? <NotReleasedHint /> : null}
-      {showSummary ? (
-        <ParticipantPanel event={event} open={expanded} canCorrect={canCorrect} />
-      ) : null}
+      {head}
+      {children}
+      <SquadSheet eventId={event.id} visible={listOpen} onClose={() => setListOpen(false)} />
     </View>
   );
+
+  const card =
+    mine && !multi && !cancelled ? (
+      <AnswerUnit event={event} r={mine} past={past}>
+        {(u) =>
+          wrap(
+            frameFor(colors, event, u.shown, u.state),
+            <>
+              {body({ state: u.state, flow: u.flow, shown: u.shown })}
+              {u.sheet}
+            </>,
+          )
+        }
+      </AnswerUnit>
+    ) : (
+      wrap(
+        null,
+        <>
+          {body(null)}
+          {!cancelled && multi
+            ? responses.map((r) => (
+                <AnswerUnit key={r.personId} event={event} r={r} past={past}>
+                  {(u) => (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                      <View style={{ flex: 1, gap: 2 }}>
+                        <T
+                          variant="caption"
+                          color={colors.status.info.onContainer}
+                          verbatim
+                          style={{ fontSize: 10.5, fontWeight: '800' }}
+                        >
+                          {[r.relation === 'self' ? t('Ich') : r.firstName, event.team?.badge]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </T>
+                        {u.line}
+                      </View>
+                      {u.knobs}
+                      {u.sheet}
+                    </View>
+                  )}
+                </AnswerUnit>
+              ))
+            : null}
+        </>,
+      )
+    );
   return swipeable ? (
     <SwipeRow label="Zusagen" icon="checkmark" onAction={quick.yes}>
       {card}

@@ -16,6 +16,7 @@ import { queuedFor, useOutbox } from '@/lib/outbox';
 import { useSignedIn } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { AnswerKnobs, answerState, useAnswerFlow } from './event-answer';
+import { TypeMark } from './event-card-parts';
 import { EventRow } from './events';
 import { SquadSheet } from './squad-sheet';
 import { Avatar, Loading, T } from './ui';
@@ -171,17 +172,21 @@ function TableRow({
           {`${tile.weekday.replace('.', '')} ${tile.day}. · ${formatTime(event.startsAt)}`}
         </T>
         <View style={{ flex: 1, minWidth: 0, pointerEvents: 'none' }}>
-          <T
-            verbatim
-            numberOfLines={1}
-            style={{
-              fontWeight: '800',
-              fontSize: 14,
-              ...(cancelled ? { textDecorationLine: 'line-through' as const } : null),
-            }}
-          >
-            {event.title}
-          </T>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+            <TypeMark type={event.type} />
+            <T
+              verbatim
+              numberOfLines={1}
+              style={{
+                flexShrink: 1,
+                fontWeight: '800',
+                fontSize: 14,
+                ...(cancelled ? { textDecorationLine: 'line-through' as const } : null),
+              }}
+            >
+              {event.title}
+            </T>
+          </View>
           <T variant="caption" verbatim numberOfLines={1}>
             {cancelled ? (event.cancelledReason ?? t('Termin abgesagt')) : (event.location ?? '')}
           </T>
