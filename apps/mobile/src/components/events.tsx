@@ -13,10 +13,7 @@ import {
   formatRemaining,
   formatTime,
 } from '@/lib/format';
-import {
-  ATTENDANCE_LABELS,
-  DECLINE_REASONS,
-} from '@/lib/labels';
+import { ATTENDANCE_LABELS, DECLINE_REASONS } from '@/lib/labels';
 import { hapticSelect } from '@/lib/haptics';
 import { PressScale } from '@/lib/motion';
 import { useTeamColor } from '@/lib/team-colors';
@@ -57,6 +54,7 @@ import {
   type AnswerState,
 } from './event-answer';
 import { t } from '@/lib/i18n';
+import { HeroEventBody } from './hero-event-card';
 import { SquadSheet } from './squad-sheet';
 
 const STATUS_TONE: Record<AttendanceStatus, 'success' | 'urgent' | 'action' | 'archived'> = {
@@ -87,67 +85,11 @@ export function AttendanceChip({ status }: { status: AttendanceStatus }) {
   return <Chip tone={STATUS_TONE[status]} label={ATTENDANCE_LABELS[status]} />;
 }
 
-/** Blickfang „Als Nächstes“ (Termine): der nächste Termin als Hero, Uhrzeit groß. */
+/** Blickfang „Als Nächstes“ (Termine): der nächste Termin als Hero, gleiche Karte wie auf dem Start-Plakat. */
 export function FeaturedEventCard({ event }: { event: EventSummary }) {
-  const { colors } = useTheme();
-  const on = colors.hero.onHero;
-  const mine = event.myResponses[0];
-  const multi = event.myResponses.length > 1 || mine?.relation === 'child';
-  const c = countdown(event.startsAt);
-  const left =
-    c.days >= 1
-      ? c.days === 1
-        ? 'In 1 Tag'
-        : `In ${c.days} Tagen`
-      : c.hours >= 1
-        ? `In ${c.hours} Std.`
-        : `In ${Math.max(1, c.minutes)} Min.`;
   return (
-    <HeroCard onPress={() => router.push(`/events/${event.id}`)} accessibilityLabel={event.title}>
-      <T variant="overline" color={on}>
-        {[t('Als Nächstes'), t(left)].join(' · ')}
-      </T>
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-        <T variant="figure" color={on} style={{ fontSize: 72, lineHeight: 72 }}>
-          {formatTime(event.startsAt)}
-        </T>
-        <T variant="headline" color={on} numberOfLines={2} style={{ fontSize: 28, flexShrink: 1 }}>
-          {event.title}
-        </T>
-      </View>
-      <T color="rgba(255,255,255,0.85)" style={{ fontSize: 13.5 }}>
-        {[formatDay(event.startsAt), event.location].filter(Boolean).join(' · ')}
-      </T>
-      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-        <View
-          style={{
-            borderRadius: 999,
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            backgroundColor: colors.primary,
-          }}
-        >
-          <T variant="caption" color={colors.onPrimary} style={{ fontWeight: '800', fontSize: 12 }}>
-            {[event.team ? event.team.badge : 'Verein', multi && mine ? mine.firstName : null]
-              .filter(Boolean)
-              .join(' · ')}
-          </T>
-        </View>
-        {mine ? (
-          <View
-            style={{
-              borderRadius: 999,
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              backgroundColor: 'rgba(255,255,255,0.2)',
-            }}
-          >
-            <T variant="caption" color={on} style={{ fontWeight: '800', fontSize: 12 }}>
-              {mine.status === 'pending' ? 'Zusage offen' : ATTENDANCE_LABELS[mine.status]}
-            </T>
-          </View>
-        ) : null}
-      </View>
+    <HeroCard>
+      <HeroEventBody event={event} />
     </HeroCard>
   );
 }
@@ -307,7 +249,9 @@ export function EventRow({
         </T>
         {cancelled ? (
           <T variant="caption" numberOfLines={2} verbatim>
-            {event.cancelledReason ? `${t('Grund')}: ${event.cancelledReason}` : formatTime(event.startsAt)}
+            {event.cancelledReason
+              ? `${t('Grund')}: ${event.cancelledReason}`
+              : formatTime(event.startsAt)}
           </T>
         ) : (
           <EventMeta event={event} childName={childName} teamColor={teamColor} />

@@ -240,11 +240,15 @@ export function answerChipText(
       kind: 'warn',
     };
   }
-  if (r.absent) return { text: named(t('Du: Abwesend ✕'), (n) => t(`${n}: Abwesend ✕`)), kind: 'no' };
+  if (r.absent)
+    return { text: named(t('Du: Abwesend ✕'), (n) => t(`${n}: Abwesend ✕`)), kind: 'no' };
   const auto = r.automatic;
   if (r.status === 'yes')
     return auto
-      ? { text: named(t('Du: Zugesagt (automatisch)'), (n) => t(`${n}: Zugesagt (automatisch)`)), kind: 'yes' }
+      ? {
+          text: named(t('Du: Zugesagt (automatisch)'), (n) => t(`${n}: Zugesagt (automatisch)`)),
+          kind: 'yes',
+        }
       : { text: named(t('Du: Zugesagt ✓'), (n) => t(`${n}: Zugesagt ✓`)), kind: 'yes' };
   if (r.status === 'maybe')
     return { text: named(t('Du: Vielleicht ?'), (n) => t(`${n}: Vielleicht ?`)), kind: 'maybe' };
@@ -435,7 +439,11 @@ export function CounterBar({
             ) : (
               <Text
                 verbatim
-                style={{ fontSize: 15, fontWeight: '800', color: selected ? p.onFill[a] : p.num[a] }}
+                style={{
+                  fontSize: 15,
+                  fontWeight: '800',
+                  color: selected ? p.onFill[a] : p.num[a],
+                }}
               >
                 ?
               </Text>

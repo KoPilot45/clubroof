@@ -1,7 +1,9 @@
 import type { EventDetail } from '@clubroof/core';
 import { Ionicons } from '@/components/icon';
 import { Linking, Pressable, View } from 'react-native';
-import { AttendanceOverview } from '@/components/squad-sheet';
+import { useState } from 'react';
+import { CounterBar, DistBar } from '@/components/event-card-parts';
+import { SquadSheet } from '@/components/squad-sheet';
 import { Chip, HeroCard, T, TeamBadge } from '@/components/ui';
 import { formatLongDate, formatTime } from '@/lib/format';
 import { t } from '@/lib/i18n';
@@ -168,47 +170,7 @@ export function EventHero({
         </View>
       ) : null}
 
-      {showBar ? (
-        <View
-          style={{
-            gap: 8,
-            padding: 14,
-            borderRadius: 16,
-            backgroundColor: 'rgba(0,0,0,0.25)',
-          }}
-        >
-          <AttendanceOverview
-            event={e}
-            counts={e.counts}
-            hero
-            link={false}
-            inEventScreen
-            renderTitleLink={(open) => (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <T variant="overline" color={on}>
-                  Zu- und Absagen
-                </T>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t('Kader anzeigen')}
-                  hitSlop={12}
-                  onPress={open}
-                >
-                  <T style={{ fontWeight: '800', fontSize: 13 }} color={on}>
-                    Kader ›
-                  </T>
-                </Pressable>
-              </View>
-            )}
-          />
-        </View>
-      ) : null}
+      {showBar ? <DetailCounters eventId={e.id} counts={e.counts!} /> : null}
 
       {e.invited ? (
         <T variant="caption" color="rgba(255,255,255,0.8)" verbatim>
@@ -225,5 +187,23 @@ export function EventHero({
         </T>
       ) : null}
     </HeroCard>
+  );
+}
+
+/** Verteilung und Zählerleiste im Termin-Hero (nur Anzeige; geantwortet wird darunter), Teilnehmerknopf öffnet die Liste. */
+function DetailCounters({
+  eventId,
+  counts,
+}: {
+  eventId: string;
+  counts: NonNullable<EventDetail['counts']>;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <View style={{ gap: 8 }}>
+      <DistBar counts={counts} onHero />
+      <CounterBar counts={counts} onHero onOpenList={() => setOpen(true)} />
+      <SquadSheet eventId={eventId} visible={open} onClose={() => setOpen(false)} inEventScreen />
+    </View>
   );
 }

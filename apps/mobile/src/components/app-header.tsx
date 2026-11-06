@@ -131,7 +131,10 @@ export function AppHeader({
   subtitle,
   onSearch,
   overlay,
+  safeTop,
 }: {
+  /** Kopfzeile ganz oben ohne eigenen Seitenrand-Abstand (Home): Abstand zur Statusleiste */
+  safeTop?: boolean;
   /** liegt auf dem Plakat (Home): durchsichtig, Titel 26 ohne Schrumpfen */
   overlay?: boolean;
   title?: string;
@@ -165,7 +168,7 @@ export function AppHeader({
         alignItems: 'center',
         gap: 10,
         paddingHorizontal: spacing.lg + 4,
-        paddingTop: overlay ? insets.top + 22 : spacing.md,
+        paddingTop: overlay ? insets.top + 22 : safeTop ? insets.top + 12 : spacing.md,
         paddingBottom: spacing.sm,
         backgroundColor: overlay ? 'transparent' : colors.background,
       }}

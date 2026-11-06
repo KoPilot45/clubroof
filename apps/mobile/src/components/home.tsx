@@ -27,7 +27,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { EventRow, ResponseControls } from '@/components/events';
-import { HeroAnswer } from '@/components/event-answer';
+import { HeroEventBody } from '@/components/hero-event-card';
 import { useTeamColorOf } from '@/lib/team-colors';
 import { Text } from '@/components/app-text';
 import {
@@ -51,7 +51,7 @@ import {
   type IconName,
 } from '@/components/ui';
 import { clubInitials, formatAgo, formatDay, formatRemaining, formatTime } from '@/lib/format';
-import { Counted, PressScale, useCountUp } from '@/lib/motion';
+import { Counted, PressScale } from '@/lib/motion';
 import { t } from '@/lib/i18n';
 import { ReorderList } from '@/components/reorder';
 import { openLink } from '@/lib/links';
@@ -374,7 +374,7 @@ const ACTION_ICON: Record<ActionItem['kind'], IconName> = {
 };
 const ACTION_TINT: Record<ActionItem['kind'], TintKey> = {
   attendance: 'blue',
-  poll: 'violet',
+  poll: 'blue',
   approval: 'green',
   task: 'orange',
 };
@@ -726,138 +726,31 @@ function QuickAccessEditor({
 
 // ── Plakat „Nächstes Spiel“ (Stil „Anstoß“) ───────────────────────────────────
 
-/** Kalendertage bis zum Beginn (Vereinszeit), 0 = heute */
-function daysUntil(iso: string): number {
-  const dayOf = (d: Date) =>
-    new Date(
-      new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(d) + 'T00:00:00Z',
-    ).getTime();
-  return Math.max(0, Math.round((dayOf(new Date(iso)) - dayOf(new Date())) / 86_400_000));
-}
-
-/** Eine Seite des Plakats: Countdown, Paarung und Ort eines Spiels (oder der Hinweis ohne Spiel). */
+/** Eine Karte des Plakats: Marke, Ring-Countdown, Kopf, Antwortstand und Zähler eines Spiels (oder der Hinweis ohne Spiel). */
 function PosterSlide({
   event,
-  club,
+  index,
+  count,
   hasTeam,
-  width,
   clubName,
   overview,
 }: {
   event: EventSummary | undefined;
-  club: string;
+  index: number;
+  count: number;
   hasTeam: boolean;
-  width: number;
   clubName: string;
   overview: ClubOverview | null;
 }) {
   const { colors } = useTheme();
-  const days = event ? daysUntil(event.startsAt) : 0;
-  const counted = useCountUp(days);
   const on = colors.hero.onHero;
   const soft = withAlpha(on, 0.82);
+  // die nächste Karte trägt die zweite Farbe (Blau), damit das Wischen sichtbar wird
+  const palette = index > 0 ? colors.anstoss.areaHeroes.cash : undefined;
   return (
-    <View style={{ width, paddingHorizontal: 22, paddingTop: 38, gap: 10 }}>
+    <HeroCard palette={palette} style={{ flex: 1 }}>
       {event ? (
-        <View style={{ gap: 6 }}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={event.title}
-            onPress={() => router.push(`/events/${event.id}`)}
-            style={{ gap: 6 }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <View
-                style={{
-                  flexShrink: 1,
-                  backgroundColor: colors.primary,
-                  borderRadius: 999,
-                  paddingVertical: 5,
-                  paddingHorizontal: 12,
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    fontSize: 11.5,
-                    fontWeight: '800',
-                    letterSpacing: 1,
-                    color: colors.onPrimary,
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  {[
-                    t(event.type === 'tournament' ? 'Nächstes Spielfest' : 'Nächstes Spiel'),
-                    event.team?.name,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </Text>
-              </View>
-              <View style={{ flex: 1 }} />
-              <Text
-                style={{
-                  fontSize: 12.5,
-                  fontWeight: '800',
-                  color: colors.anstoss.posterAccent,
-                  flexShrink: 0,
-                }}
-              >
-                {`${t('Zum Spiel')} ›`}
-              </Text>
-            </View>
-            {days > 0 ? (
-              <T
-                variant="figure"
-                color={on}
-                style={{ fontSize: 108, lineHeight: 103, letterSpacing: -1 }}
-              >
-                {counted}
-                <T variant="headline" color={on} style={{ fontSize: 32, letterSpacing: 2 }}>
-                  {` ${t(days === 1 ? 'Tag' : 'Tage').toUpperCase()}`}
-                </T>
-              </T>
-            ) : (
-              <T variant="figure" color={on} style={{ fontSize: 84, lineHeight: 88 }}>
-                {t('Heute').toUpperCase()}
-              </T>
-            )}
-            {event.match ? (
-              <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
-                {`${club}${event.team ? ` ${event.team.badge}` : ''}\n`}
-                <T variant="headline" color={colors.anstoss.posterAccent} style={{ fontSize: 32 }}>
-                  vs.
-                </T>
-                {` ${event.match.opponentName}`}
-              </T>
-            ) : (
-              <T
-                variant="headline"
-                color={on}
-                numberOfLines={3}
-                style={{ fontSize: 32, lineHeight: 34 }}
-              >
-                {event.title}
-              </T>
-            )}
-            <T color={soft} style={{ fontSize: 13.5, lineHeight: 20, marginTop: 4 }}>
-              {[
-                formatDay(event.startsAt),
-                `${formatTime(event.startsAt)} ${t('Uhr')}`,
-                event.location,
-                event.match
-                  ? [
-                      event.match.isHome ? t('Heimspiel') : t('Auswärts'),
-                      t(MATCH_KIND_LABELS[event.match.kind]),
-                    ].join(' · ')
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </T>
-          </Pressable>
-          <HeroAnswer event={event} />
-        </View>
+        <HeroEventBody event={event} index={index} count={count} />
       ) : hasTeam ? (
         <View style={{ gap: 8 }}>
           <T variant="headline" color={on} style={{ fontSize: 32, lineHeight: 34 }}>
@@ -908,19 +801,19 @@ function PosterSlide({
           </T>
         </View>
       )}
-    </View>
+    </HeroCard>
   );
 }
 
 /**
- * Blickfang der Startseite: großes Plakat; nach links wischen zeigt die nächsten drei Spiele
- * (Pager-Punkte und „Spiel 1 von 3 · wischen“ unten). Darüber die Kopfzeile.
- * Ohne Spiel steht hier „Kein Spiel in Sicht“, ohne Mannschaft die kleine Vereinsübersicht.
+ * Blickfang der Startseite (Variante C „Karte mit Vorschau“): Kopfzeile der Seite auf dem Seitengrund, darunter eine
+ * abgesetzte Karte in der Vereinsfarbe; die nächste Karte schaut am rechten Rand hervor, nach links wischen zeigt die
+ * nächsten drei Spiele. Ohne Spiel steht hier „Kein Spiel in Sicht“, ohne Mannschaft die kleine Vereinsübersicht.
  */
 export function HomePoster({
   header,
   events,
-  club,
+  club: _club,
   hasTeam,
   clubName,
   overview,
@@ -935,154 +828,58 @@ export function HomePoster({
   /** meldet den sichtbaren Termin, damit Personenkarten und Rückmeldung demselben Termin folgen (U05) */
   onCurrent?: (index: number) => void;
 }) {
-  const { colors } = useTheme();
   const desktop = useIsDesktop();
   const [width, setWidth] = useState(0);
-  const [raw, setRaw] = useState(1);
-  const scroller = useRef<ScrollView>(null);
-  const dragging = useRef(false);
+  const [current, setCurrent] = useState(0);
   const slides = events.slice(0, 3);
   const n = slides.length;
-  const loop = n > 1;
-  // Endlosschleife: letzte Karte vor die erste, erste hinter die letzte setzen; am Rand unsichtbar springen
-  const items = loop
-    ? [slides[n - 1]!, ...slides, slides[0]!]
-    : slides.length
-      ? slides
-      : [undefined];
-  const current = loop ? (((raw - 1) % n) + n) % n : 0;
+  const items = n ? slides : [undefined];
+  const peek = n > 1;
+  const gap = 8;
+  const cardW = Math.max(0, width - 14 - (peek ? 30 : 14));
   useEffect(() => {
     onCurrent?.(current);
   }, [current, onCurrent]);
-  useEffect(() => {
-    if (loop && width > 0) scroller.current?.scrollTo({ x: width, animated: false });
-  }, [loop, width, n]);
-  const settle = (x: number) => {
-    if (!loop || width <= 0) return;
-    const i = Math.round(x / width);
-    if (i === 0) scroller.current?.scrollTo({ x: n * width, animated: false });
-    else if (i === n + 1) scroller.current?.scrollTo({ x: width, animated: false });
-  };
-  const next = () => scroller.current?.scrollTo({ x: (raw + 1) * width, animated: true });
   return (
-    <HeroCard poster style={{ marginHorizontal: desktop ? -28 : -22 }}>
-      <View
-        style={{
-          minHeight: desktop && !hasTeam ? 330 : 400,
-          paddingBottom: slides.length > 0 ? 30 : 0,
-        }}
-        onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
-      >
-        {header}
-        {width > 0 ? (
-          <ScrollView
-            ref={scroller}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            scrollEnabled={loop}
-            scrollEventThrottle={32}
-            onScrollBeginDrag={() => {
-              dragging.current = true;
-            }}
-            onScroll={(e) => {
-              const x = e.nativeEvent.contentOffset.x;
-              setRaw(Math.round(x / width));
-              // Pfeil oder Programm: am Rand der Klone sofort springen (beim Ziehen erst nach dem Loslassen)
-              if (!dragging.current) settle(x);
-            }}
-            onScrollEndDrag={(e) => {
-              dragging.current = false;
-              settle(e.nativeEvent.contentOffset.x);
-            }}
-            onMomentumScrollEnd={(e) => settle(e.nativeEvent.contentOffset.x)}
-          >
-            {items.map((ev, i) => (
+    <View
+      style={{ marginHorizontal: desktop ? -28 : -22, gap: 6 }}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+    >
+      {header}
+      {width > 0 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          scrollEnabled={peek}
+          snapToInterval={cardW + gap}
+          snapToAlignment="start"
+          decelerationRate="fast"
+          scrollEventThrottle={32}
+          onScroll={(e) =>
+            setCurrent(
+              Math.max(
+                0,
+                Math.min(n - 1, Math.round(e.nativeEvent.contentOffset.x / (cardW + gap))),
+              ),
+            )
+          }
+          contentContainerStyle={{ paddingLeft: 14, paddingRight: peek ? 44 : 14, gap }}
+        >
+          {items.map((ev, i) => (
+            <View key={`${ev?.id ?? 'leer'}-${i}`} style={{ width: cardW }}>
               <PosterSlide
-                key={`${ev?.id ?? 'leer'}-${i}`}
                 event={ev}
-                club={club}
+                index={i}
+                count={n}
                 hasTeam={hasTeam}
-                width={width}
                 clubName={clubName}
                 overview={overview}
               />
-            ))}
-          </ScrollView>
-        ) : null}
-        {slides[current] ? (
-          <Pressable
-            accessibilityRole="link"
-            accessibilityLabel={t('Spiel ansehen')}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            onPress={() => router.push(`/events/${slides[current]!.id}`)}
-            style={{
-              position: 'absolute',
-              right: 22,
-              bottom: 0,
-              height: 30,
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ fontSize: 12.5, fontWeight: '800', color: colors.hero.onHero }}>
-              {`${t('Spiel ansehen')} ›`}
-            </Text>
-          </Pressable>
-        ) : null}
-        {loop ? (
-          <>
-            {/* Punkte in eigener Zeile unter dem Inhalt: überlagern weder Legende noch Kader-Link */}
-            <View
-              testID="poster-dots"
-              pointerEvents="none"
-              style={{
-                position: 'absolute',
-                left: 22,
-                right: 22,
-                bottom: 0,
-                height: 30,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              {slides.map((ev, i) => (
-                <View
-                  key={ev.id}
-                  style={{
-                    width: i === current ? 22 : 6,
-                    height: 6,
-                    borderRadius: 3,
-                    backgroundColor: i === current ? colors.primary : colors.anstoss.textTertiary,
-                    opacity: i === current ? 1 : 0.5,
-                  }}
-                />
-              ))}
             </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('Nächstes Spiel')}
-              onPress={next}
-              style={{
-                position: 'absolute',
-                right: 10,
-                top: 128,
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0,0,0,0.28)',
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.16)',
-              }}
-            >
-              <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
-            </Pressable>
-          </>
-        ) : null}
-      </View>
-    </HeroCard>
+          ))}
+        </ScrollView>
+      ) : null}
+    </View>
   );
 }
 

@@ -104,7 +104,7 @@ export default function HomeScreen() {
       }}
     >
       <HomePoster
-        header={<AppHeader overlay />}
+        header={<AppHeader safeTop />}
         events={data?.matches ?? []}
         club={me.club.shortName}
         hasTeam={me.teams.length > 0}
