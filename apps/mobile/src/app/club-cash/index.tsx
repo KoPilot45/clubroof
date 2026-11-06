@@ -223,7 +223,7 @@ function KeyFigures({ st, year }: { st: ClubCashStats; year: number }) {
         ? tile(
             'fees',
             formatPercent(rate),
-            t('Beitragseingang'),
+            t('Beiträge'),
             st.fees!.overdueCount
               ? t(`${st.fees!.overdueCount} überfällig`)
               : t('nichts überfällig'),

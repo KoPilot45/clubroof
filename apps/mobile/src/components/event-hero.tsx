@@ -52,10 +52,10 @@ export function EventHero({
   return (
     <HeroCard style={{ gap: 12 }}>
       <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-        {e.team ? <TeamBadge badge={e.team.badge} /> : <Chip tone="info" label="Verein" />}
-        <Chip tone="neutral" label={EVENT_TYPE_LABELS[e.type]} />
-        {cancelled ? <Chip tone="urgent" icon="close-circle" label="Termin abgesagt" /> : null}
-        {past ? <Chip tone="archived" icon="time-outline" label="Vergangener Termin" /> : null}
+        {e.team ? <TeamBadge badge={e.team.badge} onHero /> : <Chip onHero label="Verein" />}
+        <Chip onHero label={EVENT_TYPE_LABELS[e.type]} />
+        {cancelled ? <Chip onHero icon="close-circle" label="Termin abgesagt" /> : null}
+        {past ? <Chip onHero icon="time-outline" label="Vergangener Termin" /> : null}
       </View>
 
       {match ? (

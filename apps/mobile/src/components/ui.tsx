@@ -857,16 +857,20 @@ export function Chip({
   tone = 'primary',
   icon,
   size = 'sm',
+  onHero,
 }: {
   label: string;
   tone?: StatusKey | 'primary' | 'neutral' | TintKey;
   icon?: IconName;
+  /** auf der Blickfangkarte: dunkle, leicht transparente Fläche mit hellem Rand, Schrift `onHero` */
+  onHero?: boolean;
   /** sm = Statusmarke (Radius 8, 11,5 px) in Listen und Karten, md = Pille (12 px) für eigenständige Marken */
   size?: 'sm' | 'md';
 }) {
   const { colors, radii } = useTheme();
-  const palette =
-    tone === 'primary'
+  const palette = onHero
+    ? { bg: colors.hero.glass, fg: colors.hero.onHero }
+    : tone === 'primary'
       ? { bg: colors.primaryContainer, fg: colors.onPrimaryContainer }
       : tone === 'neutral'
         ? { bg: colors.anstoss.overlay, fg: colors.onSurfaceMuted }
@@ -891,6 +895,7 @@ export function Chip({
         maxWidth: '100%',
         minHeight: md ? 28 : 22,
         backgroundColor: palette.bg,
+        ...(onHero ? { borderWidth: 1, borderColor: colors.hero.glassBorder } : null),
         borderRadius: md ? radii.pill : 8,
         paddingHorizontal: md ? 11 : 8,
         paddingVertical: md ? 5 : 2,
@@ -912,7 +917,7 @@ export function Chip({
 }
 
 /** Mannschafts-Badge wie „B1“, „1.“, „AH“ (Konzept §2). */
-export function TeamBadge({ badge }: { badge: string }) {
+export function TeamBadge({ badge, onHero }: { badge: string; onHero?: boolean }) {
   const { colors } = useTheme();
   return (
     <View
@@ -923,10 +928,19 @@ export function TeamBadge({ badge }: { badge: string }) {
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: colors.anstoss.overlay,
+        backgroundColor: onHero ? colors.hero.glass : colors.anstoss.overlay,
+        ...(onHero ? { borderWidth: 1, borderColor: colors.hero.glassBorder } : null),
       }}
     >
-      <Text style={{ fontSize: 11.5, fontWeight: '800', color: colors.onSurface }}>{badge}</Text>
+      <Text
+        style={{
+          fontSize: 11.5,
+          fontWeight: '800',
+          color: onHero ? colors.hero.onHero : colors.onSurface,
+        }}
+      >
+        {badge}
+      </Text>
     </View>
   );
 }
@@ -1042,6 +1056,14 @@ export function Button({
   }[variant];
   const small = size === 'sm';
   const border = variant === 'heroOutline' ? 2 : 1;
+  // Gefüllte Knöpfe: deaktiviert als graue Fläche mit lesbarer Schrift statt blasser Vereinsfarbe
+  const filled = variant === 'primary' || variant === 'dangerSolid' || variant === 'actionSolid';
+  if (disabled && filled) {
+    palette.bg = colors.surfaceVariant;
+    palette.pressed = colors.surfaceVariant;
+    palette.fg = colors.onSurfaceMuted;
+    palette.border = colors.anstoss.fieldBorder;
+  }
   return (
     <PressScale
       accessibilityRole="button"
@@ -1061,7 +1083,7 @@ export function Button({
           borderWidth: border,
           borderColor: palette.border,
           backgroundColor: pressed ? palette.pressed : palette.bg,
-          opacity: disabled ? 0.5 : 1,
+          opacity: disabled && !filled ? 0.5 : 1,
         },
         style,
       ]}

@@ -107,7 +107,28 @@ export type HeroColorRoles = {
   onHero: string;
   /** halbtransparente Wellen und Kreise im Hintergrund */
   decor: string;
+  /** dunkle, leicht transparente Flächen auf dem Hero (Kacheln, Chips, Zählerleiste) mit hellem Rand */
+  glass: string;
+  glassStrong: string;
+  glassBorder: string;
+  /** Spur von Balken und Ring auf dem Hero */
+  track: string;
+  /** helle Zahlen- und Balkenfarben auf dem Hero (Zusage, Vielleicht, Absage) */
+  yes: string;
+  maybe: string;
+  no: string;
 };
+
+/** Gemeinsame Werte der dunklen Glasflächen auf dem Hero (Paket DESIGN-HELL-TERMINKARTE-HERO). */
+export const HERO_GLASS_ROLES = {
+  glass: 'rgba(0,0,0,0.24)',
+  glassStrong: 'rgba(0,0,0,0.36)',
+  glassBorder: 'rgba(255,255,255,0.2)',
+  track: 'rgba(255,255,255,0.22)',
+  yes: '#8AF2AF',
+  maybe: '#FFB547',
+  no: '#FF8A80',
+} as const;
 
 /** Zusätzliche Rollen des Stils „Anstoß“ (docs/DESIGN-ANSTOSS.md). */
 export type AnstossRoles = {
@@ -423,9 +444,16 @@ export function heroColors(roles: ClubColorRoles, scheme: ColorScheme): HeroColo
         to: shade(roles.primary, 0.25),
         onHero: roles.onPrimary,
         decor,
+        ...HERO_GLASS_ROLES,
       };
     }
-    return { from: shade(roles.primary, -0.3), to: roles.primary, onHero: '#FFFFFF', decor };
+    return {
+      from: shade(roles.primary, -0.3),
+      to: roles.primary,
+      onHero: '#FFFFFF',
+      decor,
+      ...HERO_GLASS_ROLES,
+    };
   }
   let factor = 0.35;
   while (
@@ -438,6 +466,7 @@ export function heroColors(roles: ClubColorRoles, scheme: ColorScheme): HeroColo
     to: shade(roles.primary, -factor),
     onHero: '#FFFFFF',
     decor,
+    ...HERO_GLASS_ROLES,
   };
 }
 
@@ -527,6 +556,7 @@ export function anstossTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
       to: base.posterTo,
       onHero: '#FFFFFF',
       decor: 'rgba(255,255,255,0.08)',
+      ...HERO_GLASS_ROLES,
     },
     anstoss: {
       posterAccent: base.accent,
@@ -542,7 +572,7 @@ export function anstossTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
       sheetBorder: 'rgba(255,255,255,0.12)',
       scrim: 'rgba(0,0,0,0.6)',
       scrimDialog: 'rgba(0,0,0,0.7)',
-      tabBar: hexAlpha(base.tabBar, 0.86),
+      tabBar: base.tabBar,
       tabBarBorder: 'rgba(255,255,255,0.1)',
       poster: { from: base.posterFrom, to: base.posterTo },
       categories: { ...ANSTOSS_CATEGORIES },
@@ -554,11 +584,6 @@ export function anstossTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
       pitch: PITCH,
     },
   };
-}
-
-function hexAlpha(hex: string, alpha: number): string {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
 }
 
 /** Kategoriefarben im hellen Stil: dunkel genug für Symbol und Zahl auf Pastellgrund (≥ 4,5 : 1). */
@@ -662,6 +687,7 @@ export function anstossLightTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
       to: base.posterTo,
       onHero: WHITE,
       decor: 'rgba(255,255,255,0.08)',
+      ...HERO_GLASS_ROLES,
     },
     anstoss: {
       posterAccent: base.accent,
@@ -677,7 +703,7 @@ export function anstossLightTheme(key: ClubColorKey | 'clubroof'): ThemeColors {
       sheetBorder: '#E2E8E4',
       scrim: 'rgba(15,26,20,0.45)',
       scrimDialog: 'rgba(15,26,20,0.5)',
-      tabBar: 'rgba(255,255,255,0.94)',
+      tabBar: WHITE,
       tabBarBorder: '#E2E8E4',
       poster: { from: base.posterFrom, to: base.posterTo },
       categories: { ...cat },
