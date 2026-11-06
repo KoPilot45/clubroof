@@ -1,0 +1,249 @@
+<title>Startseite Hero Anordnungen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Saira+Condensed:wght@600;700;800&display=swap">
+<style>
+/* Layout: links ein bedienbares Telefon mit der gewählten Terminkarte (Variante D), rechts Aufbau der Karte, Farben der Terminarten und Zustände. Seite folgt dem Betrachter, die App trägt die Anstoß-Farben. */
+:root{
+  --pg:#F4F6F5;--pgfg:#0F1A14;--pgfg2:#4B5B52;--pgline:rgba(15,26,20,.14);--pgacc:#1E7A44;--pgcard:#FFFFFF;
+  --display:'Saira Condensed','Arial Narrow',sans-serif;--body:'Open Sans',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pg:#0B120E;--pgfg:#EEF4F0;--pgfg2:#A9BAAF;--pgline:rgba(255,255,255,.14);--pgacc:#4CD983;--pgcard:#16211A;color-scheme:dark}}
+:root[data-theme="dark"]{--pg:#0B120E;--pgfg:#EEF4F0;--pgfg2:#A9BAAF;--pgline:rgba(255,255,255,.14);--pgacc:#4CD983;--pgcard:#16211A;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--pg);color:var(--pgfg);font:15px/1.55 var(--body);padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.w{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.05;text-wrap:balance;text-transform:uppercase}
+h1{font-size:clamp(36px,5.4vw,56px);font-weight:800}h2{font-size:clamp(24px,3.2vw,32px);font-weight:700}
+p{margin:0;max-width:66ch}.lead{color:var(--pgfg2);font-size:17px}
+.eyebrow{font:700 12px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--pgacc)}
+.head{display:flex;flex-direction:column;gap:12px}
+.ctrl{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1.5px solid var(--pgline);border-radius:999px;padding:3px;background:var(--pgcard);gap:2px}
+.seg button{font:700 13px var(--body);border:0;background:transparent;color:var(--pgfg2);border-radius:999px;padding:8px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pgacc);color:var(--pg)}
+.cl{font:700 12px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--pgfg2)}
+:focus-visible{outline:3px solid var(--pgacc);outline-offset:2px}
+.main{display:grid;grid-template-columns:minmax(0,370px) minmax(0,1fr);gap:40px;align-items:start}
+.panel{display:flex;flex-direction:column;gap:30px;min-width:0}
+.box{background:var(--pgcard);border:1px solid var(--pgline);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.phone{width:370px;max-width:100%;height:740px;border-radius:42px;background:#0B1210;padding:9px;box-shadow:0 40px 80px -40px rgba(0,0,0,.55);position:sticky;top:20px}
+.scr{position:relative;height:100%;border-radius:34px;overflow:hidden}
+.app{--bg:#F1F4F2;--card:#FFFFFF;--fg:#0F1A14;--fg2:#4B5B52;--line:rgba(15,26,20,.12);--acc:#1E7A44;--ok:#1E7A44;--amb:#B45309;--red:#B3261E;--chip:#E7F3EC;--chipfg:#1E7A44;--ambbg:#FDEBD3;--redbg:#FBE4E1;--tabbg:#FFFFFF;--shadow:0 6px 18px -10px rgba(15,60,35,.35);--onacc:#fff;--seg:#F6F8F7;
+ background:var(--bg);color:var(--fg);font:13px/1.4 var(--body);position:relative}
+.scr .app{height:100%}
+.app.dk{--bg:#0A110D;--card:#141D18;--fg:#F2F7F3;--fg2:#B5C6BB;--line:rgba(255,255,255,.12);--acc:#2EDB6B;--ok:#3CCB78;--amb:#FFB547;--red:#FF8A80;--chip:#1B2B22;--chipfg:#2EDB6B;--ambbg:#3A2A10;--redbg:#3A1A18;--tabbg:#18231D;--shadow:0 6px 18px -10px rgba(0,0,0,.7);--onacc:#06210F;--seg:#101914}
+.body{height:100%;overflow-y:auto;scrollbar-width:none;padding:18px 0 96px}.body::-webkit-scrollbar{display:none}
+.ttl{display:flex;justify-content:space-between;align-items:baseline;padding:6px 16px 10px}
+.ttl b{font:800 18px var(--display);letter-spacing:.04em;text-transform:uppercase;border-left:3px solid var(--acc);padding-left:8px}
+.ttl a{font:700 12px var(--body);color:var(--acc)}
+.tabs{position:absolute;left:14px;right:14px;bottom:14px;height:56px;border-radius:30px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;background:var(--tabbg);border:1px solid var(--line);box-shadow:0 10px 26px -10px rgba(10,40,25,.45);z-index:3;color:var(--fg2);font-size:16px}
+.tabs .on{display:flex;gap:6px;align-items:center;background:var(--acc);color:var(--onacc);border-radius:99px;padding:9px 15px;font:700 13px var(--body)}
+.toast{position:absolute;left:50%;bottom:84px;transform:translateX(-50%);background:#0F1A14;color:#fff;border-radius:99px;padding:9px 16px;font:700 12px var(--body);z-index:5;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1}
+
+/* Terminkarte */
+.cards{display:flex;flex-direction:column;gap:10px;padding:0 14px}
+.cd{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:11px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow);position:relative}
+.cd.ja{border-color:var(--ok)}.cd.nein{border-color:var(--red)}.cd.vlt{border-color:var(--amb)}
+.cd.fehlt{border-color:var(--amb);border-width:2px}
+.top{display:flex;gap:11px;align-items:center;text-decoration:none;color:inherit;cursor:pointer;border-radius:14px;position:relative}
+.top:active{background:var(--seg)}
+.dt{flex:none;width:56px;border-radius:14px;text-align:center;padding:6px 0 5px;background:var(--tc);color:#fff;display:flex;flex-direction:column;align-items:center;position:relative}
+.dt small{font:700 10.5px var(--body);letter-spacing:.05em;opacity:.95}.dt b{font:800 25px/1 var(--display)}
+.dt span{font:700 11.5px var(--body);margin-top:3px;padding-top:3px;border-top:1px solid rgba(255,255,255,.45);width:78%}
+.tx{flex:1;min-width:0}
+.nm{font-weight:700;font-size:13.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.art{display:inline-block;background:var(--tc);color:#fff;border-radius:6px;padding:1px 6px;font:700 10px var(--body);margin-right:6px;vertical-align:1px;text-transform:uppercase;letter-spacing:.04em}
+.mt{color:var(--fg2);font-size:11.5px;margin-top:2px;display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.tcdot{width:8px;height:8px;border-radius:50%;background:var(--team);display:inline-block}
+.go{flex:none;color:var(--fg2);font-size:22px;line-height:1;padding-left:2px;position:relative}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;gap:5px;align-items:center;border-radius:99px;padding:3px 9px;font:700 11px var(--body)}
+.chip.ok{background:var(--chip);color:var(--chipfg)}.chip.fe{background:var(--ambbg);color:var(--amb)}.chip.ab{background:var(--redbg);color:var(--red)}.chip.mu{background:var(--seg);color:var(--fg2);border:1px solid var(--line)}
+.sg{display:grid;grid-template-columns:1fr 1fr 1fr 1.55fr;border:1px solid var(--line);border-radius:14px;background:var(--seg);position:relative}
+.s{border:0;background:var(--card);color:var(--fg);font:600 13px var(--body);padding:10px 4px;cursor:pointer;border-right:1px solid var(--line);display:flex;gap:5px;align-items:center;justify-content:center;position:relative}
+.s:first-child{border-radius:13px 0 0 13px}.s.p{border-radius:0 13px 13px 0}
+.s b{font:800 15px var(--display)}
+.s.p{background:var(--seg);border-right:0;color:var(--acc);font-weight:700;font-size:12px;gap:4px}.s.p small{font-weight:600;color:var(--fg2);font-size:11px}
+.s.y.on{background:var(--ok);color:#fff}.s.m.on{background:var(--amb);color:#fff}.s.n.on{background:var(--red);color:#fff}
+.sg.lock .s:not(.p){cursor:default}
+.sg.exp .s:not(.p){opacity:.5;cursor:not-allowed}.sg.exp .s.on{opacity:.9}
+
+/* Seite rechts */
+.no{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#1E7A44;color:#fff;font:700 11px var(--body);font-style:normal;margin-left:6px;flex:none;box-shadow:0 0 0 2px var(--card)}
+.no.abs{position:absolute;margin:0;z-index:2}
+.ann{border-radius:16px;padding:14px}.ann .cards{padding:0}
+.legl{display:grid;gap:10px;margin:0;padding:0}.legl li{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;list-style:none}
+.legl b{display:block;font-size:14px}.legl span{color:var(--pgfg2);font-size:13px}
+.legl .n{width:24px;height:24px;border-radius:50%;background:#1E7A44;color:#fff;font:700 12px var(--body);display:grid;place-items:center}
+.types{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.ty{display:flex;gap:10px;align-items:center;border:1px solid var(--pgline);border-radius:14px;padding:10px}
+.ty i{width:30px;height:30px;border-radius:9px;background:var(--tc);flex:none}.ty b{display:block;font-size:13.5px}.ty span{font-size:12px;color:var(--pgfg2)}
+.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.states .app{border-radius:20px;padding:14px}
+.cap{font:700 12px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--pgfg2);margin-bottom:8px;display:block}
+.stw{display:flex;flex-direction:column;min-width:0}
+@media (max-width:900px){.main{grid-template-columns:minmax(0,1fr)}.phone{position:static;margin:0 auto}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Verteilung der Antworten */
+.dist{display:flex;height:6px;border-radius:99px;overflow:hidden;gap:2px;background:var(--seg)}
+.dist i{display:block;min-width:0}.dist .z{background:var(--zc)}.dist .u{background:var(--uc)}.dist .a{background:var(--ac)}.dist .o{background:var(--oc)}
+.app{--zc:var(--ok);--uc:var(--amb);--ac:var(--red);--oc:var(--line)}
+.sg.d-bar .s.y,.sg.d-fill .s.y{color:var(--ok)}.sg.d-bar .s.m,.sg.d-fill .s.m{color:var(--amb)}.sg.d-bar .s.n,.sg.d-fill .s.n{color:var(--red)}
+.sg.d-prop .s.y{background:color-mix(in srgb,var(--ok) 15%,var(--card))}.sg.d-prop .s.m{background:color-mix(in srgb,var(--amb) 18%,var(--card))}.sg.d-prop .s.n{background:color-mix(in srgb,var(--red) 15%,var(--card))}
+.sg.d-prop .s.y.on{background:var(--ok)}.sg.d-prop .s.m.on{background:var(--amb)}.sg.d-prop .s.n.on{background:var(--red)}
+.sg .s.on{color:#fff}
+/* Hero im Stil der Terminkarte */
+.hero{--tc:#0F5B3A;background:linear-gradient(165deg,#1E7A44 0%,#0F3D24 100%);color:#fff;padding:18px 16px 16px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;--zc:#8AF2AF;--uc:#FFB547;--ac:#FF8A80;--oc:rgba(255,255,255,.4)}
+.hero:before{content:"";position:absolute;inset:0;opacity:.1;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='52'%3E%3Cpath d='M15 0l15 8.6v17.3L15 34.5 0 25.9V8.6zM45 26l15 8.6v17.3L45 60.5 30 51.9V34.6z' fill='none' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E");pointer-events:none}
+.hero>*{position:relative}
+.hero .tg{display:flex;gap:8px;align-items:center;font:700 10.5px var(--body);letter-spacing:.1em;text-transform:uppercase}
+.hero .tg .art{background:transparent;border:1.5px solid rgba(255,255,255,.8);color:#fff;margin:0}
+.hero .big{font:800 76px/.9 var(--display);display:flex;align-items:flex-end;gap:6px}.hero .big small{font:700 22px var(--display);padding-bottom:7px}
+.hero .top{align-items:flex-start}
+.hero .dt{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);width:60px}
+.hero .nm{font:800 22px/1.05 var(--display);display:block}.hero .nm .art{display:none}
+.hero .mt{color:rgba(255,255,255,.92);font-size:12px}.hero .mt b{color:#fff!important}
+.hero .go{color:#fff;padding-top:14px}
+.hero .chip{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.hero .chip.fe{background:#FFE7BF;color:#7A3E00;border-color:transparent}
+.hero .sg{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.35)}
+.hero .s{background:rgba(255,255,255,.14);color:#fff;border-right-color:rgba(255,255,255,.3)}
+.hero .s.p{background:rgba(0,0,0,.2);color:#fff}.hero .s.p small{color:rgba(255,255,255,.85)}
+.hero .sg .s.on{background:#fff;color:#0F3D24}
+.hero .sg.d-bar .s.y,.hero .sg.d-fill .s.y{color:#8AF2AF}.hero .sg.d-bar .s.m,.hero .sg.d-fill .s.m{color:#FFC76B}.hero .sg.d-bar .s.n,.hero .sg.d-fill .s.n{color:#FFA9A1}
+.hero .sg.d-prop .s.y{background:rgba(138,242,175,.26)}.hero .sg.d-prop .s.m{background:rgba(255,181,71,.28)}.hero .sg.d-prop .s.n{background:rgba(255,138,128,.28)}
+.hero .sg .s.on{color:#0F3D24}
+.hero .foot{display:flex;justify-content:space-between;align-items:center}
+.hero .dots{display:flex;gap:6px}.hero .dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.45)}.hero .dots i:first-child{width:26px;border-radius:99px;background:#fff}
+.hero .btn{background:#fff;color:#0F3D24;border-radius:99px;padding:9px 16px;font:700 13px var(--body)}
+.heroframe{width:100%;max-width:390px;border-radius:26px;overflow:hidden;background:var(--bg);border:1px solid var(--pgline)}
+.heroframe .pad{padding:14px;color:var(--fg2);font-size:12px}
+.hc{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;align-items:start}
+.compare{margin:0;padding:0;display:grid;gap:8px}.compare li{list-style:none;display:grid;grid-template-columns:24px 1fr;gap:10px}.compare .n{width:24px;height:24px;border-radius:50%;background:#1E7A44;color:#fff;font:700 12px var(--body);display:grid;place-items:center}
+.compare b{display:block;font-size:14px}.compare span{color:var(--pgfg2);font-size:13px}
+.sg .s.y.on,.sg .s.m.on,.sg .s.n.on{color:#fff!important}.hero .sg .s.y.on,.hero .sg .s.m.on,.hero .sg .s.n.on{color:#0F3D24!important;background:#fff!important}
+
+/* Hero: dunkle, leicht transparente Flächen statt heller */
+.hero .dt{background:rgba(0,0,0,.28)!important;border:1px solid rgba(255,255,255,.18)!important}
+.hero .chip{background:rgba(0,0,0,.28)!important;border:1px solid rgba(255,255,255,.2)!important;color:#fff}
+.hero .chip.fe{background:#FFE7BF!important;color:#7A3E00!important;border-color:transparent!important}
+.hero .sg{background:rgba(0,0,0,.2)!important;border-color:rgba(255,255,255,.22)!important}
+.hero .s{background:rgba(0,0,0,.2)!important;border-right-color:rgba(255,255,255,.18)!important}
+.hero .s.p{background:rgba(0,0,0,.36)!important}
+.hero .sg.d-prop .s.y{background:rgba(138,242,175,.24)!important}.hero .sg.d-prop .s.m{background:rgba(255,181,71,.26)!important}.hero .sg.d-prop .s.n{background:rgba(255,138,128,.26)!important}
+.hero .sg .s.y.on,.hero .sg .s.m.on,.hero .sg .s.n.on{background:#fff!important}
+.ic{flex:none}.s.p .ic{width:16px;height:16px}.tabs .ic{width:18px;height:18px}
+
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:34px 26px;justify-items:center;align-items:start}
+.col{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%;max-width:372px;min-width:0}
+.tagx{font:700 13px var(--body);letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:999px;border:1.5px solid var(--pgacc);color:var(--pgacc);text-align:center}
+.cap{text-align:center;color:var(--pgfg2);font-size:13px}
+.phone{height:auto!important;position:static!important;width:372px}
+.scr .app{height:auto;min-height:0}
+.homebody{padding-bottom:88px;position:relative}
+.hd{display:flex;gap:10px;align-items:center;color:#fff}
+.hd .crest{width:36px;height:42px;background:#fff;border-radius:8px 8px 18px 18px;display:grid;place-items:center;font:800 9px var(--display);color:#0F3D24;text-align:center;line-height:1}
+.hd .gr{flex:1;min-width:0}.hd .gr small{display:block;font-size:11px;opacity:.92}.hd .gr b{font:800 20px/1 var(--display)}
+.hd .ib{position:relative;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.28);display:grid;place-items:center;font-size:15px}
+.hd .ib i{position:absolute;top:-3px;right:-3px;background:#C62828;color:#fff;font:700 9px var(--body);font-style:normal;border-radius:99px;min-width:16px;height:16px;display:grid;place-items:center}
+.out .hd{color:var(--fg);padding:16px 14px 12px}.out .hd .ib{background:var(--card);border:1px solid var(--line);color:var(--fg)}
+.h2 .nm{font:800 26px/1.05 var(--display)}
+.cdp{align-self:flex-start;display:inline-flex;gap:8px;align-items:center;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:6px 12px;font:700 12px var(--body)}
+.cdp b{font:800 17px var(--display)}
+.h3card{margin:0 14px;border-radius:26px}
+.h3row{display:flex;gap:10px;padding:0 0 0 14px;overflow:hidden}
+.h3row .hero{flex:0 0 calc(100% - 44px);border-radius:26px}
+.h3row .peek{flex:0 0 100%;border-radius:26px;background:linear-gradient(165deg,#2358B5,#14316B);opacity:.9;min-height:120px;padding:16px;color:#fff;font:700 12px var(--body)}
+.h3top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.cdbox{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:8px 12px;text-align:center;font:800 40px/.9 var(--display)}.cdbox small{display:block;font:700 11px var(--body);letter-spacing:.1em;margin-top:2px}
+.ic2{color:var(--acc)}
+.news{margin:0 14px;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.news div{padding:11px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:3px}.news div:last-child{border-bottom:0}
+.news b{font-size:13px}.news span{font-size:11.5px;color:var(--fg2)}
+.offen{display:flex;gap:10px;padding:0 14px;overflow:hidden}
+.oc2{flex:0 0 220px;background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.oc2.w{border-color:var(--amb)}.oc2 .r{display:flex;gap:10px;align-items:center}
+.oc2 .ico{width:34px;height:34px;border-radius:10px;background:var(--chip);color:var(--acc);display:grid;place-items:center;flex:none}
+.sp{height:12px}
+</style>
+<div class="w">
+ <header class="head">
+  <span class="eyebrow">Mockup · Startseite am Stück</span>
+  <h1>Drei Anordnungen für den Hero</h1>
+  <p class="lead">Dieselbe Startseite dreimal, nur der Hero unterscheidet sich. Alle drei nutzen die Bausteine der Terminkarte mit dunklen Glasflächen und dem Verteilungsbalken. Zähler, Kopf und Teilnehmerknopf sind bedienbar.</p>
+ </header>
+ <div class="ctrl">
+  <span class="cl">Rolle</span><div class="seg" role="group" aria-label="Rolle"><button type="button" data-r="T" aria-pressed="true">Trainer</button><button type="button" data-r="P" aria-pressed="false">Elternteil</button></div>
+  <span class="cl">Darstellung</span><div class="seg" role="group" aria-label="Darstellung"><button type="button" data-m="l" aria-pressed="true">Hell</button><button type="button" data-m="d" aria-pressed="false">Dunkel</button></div>
+ </div>
+ <div class="row3" id="row3"></div>
+</div>
+<div class="toast" id="toast" style="position:fixed;bottom:24px;z-index:9"></div>
+<script>
+(function(){
+ var TYPES={match:['Spiel','#0F5B3A','Liga, Pokal, Testspiel'],training:['Training','#2F6FB0','Einheiten der Mannschaft'],tournament:['Turnier','#7A3FA0','Mehrere Spiele an einem Tag'],team_event:['Mannschaftstermin','#C2570C','Feier, Ausflug, Elternabend'],club_event:['Vereinsveranstaltung','#B0206B','Fest, Versammlung'],meeting:['Sitzung','#55606B','Vorstand, Trainerrunde'],work_assignment:['Arbeitseinsatz','#8A6A00','Helferschichten, Platzpflege']};
+ var TEAMC={'C1':'#C2570C','B1':'#B0206B','2.':'#2358B5','E1':'#2E7D32','F1':'#7B3FA0','Verein':'#55606B'};
+ var TRAINER=[
+  {ty:'match',d:'Sa',n:7,t:'13:00',treff:'12:15',tp:'Vereinsheim',title:'TSV Blauen – SV Grün-Weiß C1',team:'C1',z:9,u:2,a:3,o:5,me:'t'},
+  {ty:'match',d:'Sa',n:7,t:'15:00',treff:'14:15',tp:'Kabine 2',title:'SV Grün-Weiß B1 – VfR Sonnenberg',team:'B1',z:15,u:0,a:2,o:4,me:'t'},
+  {ty:'match',d:'So',n:8,t:'13:00',treff:'12:15',tp:'Kabine 1',title:'SV Grün-Weiß 2. – FC Rosenhügel',team:'2.',z:21,u:0,a:2,o:0,me:'open',dl:'bis Sa, 12:00'},
+  {ty:'training',d:'Mo',n:9,t:'17:30',treff:'17:15',tp:'Rasenplatz 1',title:'Training',team:'C1',z:12,u:1,a:2,o:4,me:'t'},
+  {ty:'meeting',d:'Di',n:10,t:'19:30',treff:'19:15',tp:'Vereinsheim',title:'Trainerrunde',team:'Verein',z:7,u:1,a:1,o:3,me:'ja'},
+  {ty:'work_assignment',d:'Sa',n:14,t:'09:00',treff:'08:45',tp:'Sportplatz',title:'Arbeitseinsatz Platzpflege',team:'Verein',z:12,u:3,a:2,o:11,me:'expired'}];
+ var PARENT=[
+  {ty:'tournament',d:'Sa',n:7,t:'10:00',treff:'09:15',tp:'Sportplatz Blauen',title:'Turnier F-Jugend',team:'F1',kid:'Mia',z:11,u:1,a:0,o:2,me:'ja'},
+  {ty:'training',d:'Mo',n:9,t:'17:00',treff:'16:45',tp:'Rasenplatz 2',title:'Training E-Jugend',team:'E1',kid:'Leon',z:9,u:1,a:1,o:5,me:'open',dl:'bis Mo, 12:00'},
+  {ty:'training',d:'Di',n:10,t:'16:30',treff:'16:15',tp:'Rasenplatz 2',title:'Training F-Jugend',team:'F1',kid:'Mia',z:10,u:0,a:2,o:3,me:'nein'},
+  {ty:'team_event',d:'Fr',n:13,t:'18:00',treff:'18:00',tp:'Vereinsheim',title:'Elternabend F-Jugend',team:'F1',kid:'Mia',z:6,u:2,a:0,o:9,me:'vlt'},
+  {ty:'club_event',d:'Sa',n:14,t:'15:00',treff:'14:45',tp:'Festplatz',title:'Weihnachtsfeier',team:'Verein',kid:'Leon',z:40,u:5,a:3,o:60,me:'expired'}];
+ var role='T',dark=false,sel={},dist='bar';
+ var E=function(){return role==='T'?TRAINER:PARENT};
+ var TST={ja:'y',nein:'n',vlt:'m'};
+ function mk(n,a,pos){return a?'<i class="no'+(pos?' abs':'')+'" style="'+(pos||'')+'">'+n+'</i>':''}
+ function card(e,key,a){
+  var T=TYPES[e.ty],cls=e.me==='ja'?' ja':e.me==='nein'?' nein':e.me==='vlt'?' vlt':e.me==='open'?' fehlt':'';
+  var mine=sel[key]!==undefined?sel[key]:(TST[e.me]||''), who=e.kid?e.kid+': ':'Du: ';
+  if(sel[key])cls=' '+({y:'ja',m:'vlt',n:'nein'})[sel[key]]; else if(sel[key]==='')cls=e.me==='open'?' fehlt':'';
+  var chips='';
+  if(e.me==='open'&&!mine)chips+='<span class="chip fe">'+(e.kid?e.kid+': ':'')+'Antwort '+e.dl+'</span>';
+  else if(e.me==='expired')chips+='<span class="chip ab">⏱ Zeit zum Zu-/Absagen abgelaufen</span>';
+  else if(mine)chips+='<span class="chip '+(mine==='y'?'ok':mine==='m'?'fe':'ab')+'">'+who+({y:'Zugesagt ✓',m:'Vielleicht ?',n:'Abgesagt ✕'})[mine]+'</span>';
+  else if(e.me==='t')chips+='<span class="chip mu">Automatisch eingeplant</span>';
+  var lock=e.me==='t'?' lock':e.me==='expired'?' exp':'', dis=e.me==='expired'?' disabled':'';
+  var tt=e.z+e.u+e.a+e.o||1, sh=function(v){return Math.max(8,Math.round(v/tt*100))};
+  var dcls=dist==='none'?'':' d-'+dist;
+  var cols=dist==='prop'?' style="grid-template-columns:minmax(54px,'+Math.max(e.z,1)+'fr) minmax(54px,'+Math.max(e.u,1)+'fr) minmax(54px,'+Math.max(e.a,1)+'fr) 1.7fr"':'';
+  var fl=function(c,v,on){return dist==='fill'&&!on?' style="background:linear-gradient(to top,color-mix(in srgb,'+c+' 30%,transparent) '+sh(v)+'%,transparent '+sh(v)+'%),var(--card)"':''};
+  var bar=dist==='bar'?'<div class="dist" aria-hidden="true"><i class="z" style="flex:'+e.z+'"></i><i class="u" style="flex:'+e.u+'"></i><i class="a" style="flex:'+e.a+'"></i><i class="o" style="flex:'+e.o+'"></i></div>':'';
+  var seg=bar+'<div class="sg'+lock+dcls+'" data-k="'+key+'"'+cols+'>'+mk(6,a,'left:-8px;top:-9px')+'<button type="button" class="s y'+(mine==='y'?' on':'')+'"'+fl('var(--ok)',e.z,mine==='y')+' aria-label="Zusage, '+e.z+'"'+dis+'>✓ <b>'+e.z+'</b></button><button type="button" class="s m'+(mine==='m'?' on':'')+'"'+fl('var(--amb)',e.u,mine==='m')+' aria-label="Vielleicht, '+e.u+'"'+dis+'>? <b>'+e.u+'</b></button><button type="button" class="s n'+(mine==='n'?' on':'')+'"'+fl('var(--red)',e.a,mine==='n')+' aria-label="Absage, '+e.a+'"'+dis+'>✕ <b>'+e.a+'</b></button><button type="button" class="s p" data-go="Teilnehmerliste öffnen" aria-label="Teilnehmerliste, '+e.o+' offen"><svg class="ic" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14c3 0 5 2 5 5"/></svg> <small>'+e.o+' offen</small> ›'+mk(7,a,'right:-6px;top:-9px')+'</button></div>';
+  return '<div class="cd'+cls+'" style="--tc:'+T[1]+'"><a class="top" role="link" tabindex="0" data-go="Termin öffnen" aria-label="Termin öffnen: '+e.title+'"><div class="dt">'+mk(1,a,'left:-8px;top:-8px')+'<small>'+e.d.toUpperCase()+'</small><b>'+e.n+'</b><span>'+e.t+'</span></div><div class="tx"><div class="nm"><span class="art">'+T[0]+'</span>'+e.title+mk(2,a)+'</div><div class="mt"><span class="tcdot" style="--team:'+TEAMC[e.team]+'"></span>'+(e.kid?'<b style="color:var(--fg)">'+e.kid+'</b> · ':'')+e.team+' · Treffen '+e.treff+' · '+e.tp+mk(3,a)+'</div></div><span class="go">›'+mk(4,a,'left:-14px;top:-12px')+'</span></a>'+(chips?'<div class="chips">'+chips+mk(5,a)+'</div>':'')+seg+'</div>'}
+
+ var PEOPLE='';
+ function parts(e,key){var d=document.createElement('div');d.innerHTML=card(e,key,0);var mine=sel[key]!==undefined?sel[key]:(TST[e.me]||''),who=e.kid?e.kid+': ':'Du: ';
+  var chip=e.me==='t'?'<span class="chip">Du: Trainer · automatisch eingeplant</span>':e.me==='expired'?'<span class="chip ab">⏱ Zeit zum Zu-/Absagen abgelaufen</span>':mine?'<span class="chip">'+who+({y:'Zugesagt ✓',m:'Vielleicht ?',n:'Abgesagt ✕'})[mine]+'</span>':'<span class="chip fe">'+(e.kid?e.kid+': ':'')+'Antwort '+e.dl+'</span>';
+  return {top:d.querySelector('.top').outerHTML,seg:(d.querySelector('.dist')?d.querySelector('.dist').outerHTML:'')+d.querySelector('.sg').outerHTML,chip:'<div class="chips">'+chip+'</div>'}}
+ var HD='<div class="hd"><div class="crest">SV GW<br>1920</div><div class="gr"><small>Freitag, 6. November</small><b>Hallo, Max</b></div><div class="ib">⌕</div><div class="ib"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17V11a6 6 0 0112 0v6l1.5 2h-15zM10 21h4"/></svg><i>3</i></div></div>';
+ var HD2='<div class="hd"><div class="crest">SV GW<br>1920</div><div class="gr"><small>Freitag, 6. November</small><b>Hallo, Max</b></div><div class="ib">⌕</div><div class="ib"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17V11a6 6 0 0112 0v6l1.5 2h-15zM10 21h4"/></svg><i>3</i></div></div>';
+ function dots(){return '<div class="dots"><i></i><i></i><i></i></div>'}
+ function h1(e){var p=parts(e,'h0'),T=TYPES[e.ty];return '<div class="hero">'+HD+'<div class="tg"><span class="art">'+T[0]+'</span><span>Nächstes '+T[0]+' · '+(e.kid?e.kid+' · ':'')+e.team+'</span></div><div class="big">1<small>TAG</small></div>'+p.top+p.chip+p.seg+'<div class="foot">'+dots()+'<span class="btn">Spiel ansehen ›</span></div></div>'}
+ function h2(e){var p=parts(e,'h0'),T=TYPES[e.ty];return '<div class="hero h2">'+HD+'<div class="tg"><span class="art">'+T[0]+'</span><span>Nächstes '+T[0]+' · '+(e.kid?e.kid+' · ':'')+e.team+'</span></div>'+p.top+'<div class="cdp">⏱ Anpfiff in <b>1 Tag 1 Std</b></div>'+p.chip+p.seg+'<div class="foot">'+dots()+'<span class="btn">Spiel ansehen ›</span></div></div>'}
+ function h3(e){var p=parts(e,'h0'),T=TYPES[e.ty];return '<div class="out">'+HD+'</div><div class="h3row"><div class="hero"><div class="h3top"><div class="tg" style="flex-direction:column;align-items:flex-start;gap:6px"><span class="art">'+T[0]+'</span><span>'+(e.kid?e.kid+' · ':'')+e.team+'</span></div><div class="cdbox">1<small>TAG</small></div></div>'+p.top+p.chip+p.seg+'<div class="foot">'+dots()+'<span class="btn">Spiel ansehen ›</span></div></div><div class="peek">Nächstes Spiel<br><span style="font:800 20px var(--display)">Sa, 14.11. · 15:00</span></div></div>'}
+ function below(){var L=E().slice(1,4);
+  return '<div class="sp"></div><div class="ttl"><b>Offen</b><a>2 Aufgaben</a></div><div class="offen"><div class="oc2 w"><div class="r"><div class="ico"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></div><div><b>Umfrage beantworten</b><br><span style="color:var(--fg2)">Saisonabschlussfahrt</span></div></div><span class="chip fe" style="align-self:flex-start">Noch 13 Tage</span></div><div class="oc2"><b>Anwesenheit erfassen</b><span style="color:var(--fg2)">B1 · Training vom 05.11.</span></div></div>'
+  +'<div class="ttl" style="padding-top:16px"><b>Diese Woche</b><a>Alle anzeigen ›</a></div><div class="cards">'+L.map(function(x,i){return card(x,'p'+(i+1),0)}).join('')+'</div>'
+  +'<div class="ttl" style="padding-top:16px"><b>Neuigkeiten</b><a>Alle ›</a></div><div class="news"><div><b>Kunstrasen am Donnerstag gesperrt</b><span><span class="chip ab" style="padding:1px 7px">Dringend</span> Verein · vor 2 Std.</span></div><div><b>Helfer gesucht: Platzpflege am 14.11.</b><span>Verein · gestern</span></div></div>'}
+ function tabs(){return '<div class="tabs"><span class="on">⌂ Start</span><span>▦</span><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14c3 0 5 2 5 5"/></svg></span><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span><span>⊞</span></div>'}
+ var VAR=[['A · Plakat mit großem Countdown',h1,'Countdown „1 TAG“ groß oben, darunter der Kartenkopf. Am nächsten am heutigen Plakat.'],['B · Kopf zuerst, Countdown als Pille',h2,'Titel groß im Kartenkopf, der Countdown wird zur Pille „Anpfiff in 1 Tag 1 Std“. Ruhiger, mehr Platz für den Titel.'],['C · Karte mit Vorschau',h3,'Hero als abgesetzte Karte, Countdown als Kachel rechts oben, die nächste Karte schaut am Rand hervor und zeigt das Wischen.']];
+ function renderAll(){var e=E()[0];document.getElementById('row3').innerHTML=VAR.map(function(v){return '<div class="col"><span class="tagx">'+v[0]+'</span><div class="phone"><div class="scr"><div class="app'+(dark?' dk':'')+'"><div class="homebody">'+v[1](e)+below()+tabs()+'</div></div></div></div><span class="cap">'+v[2]+'</span></div>'}).join('')}
+ function render(){renderAll()}
+ renderAll();
+ var toast=document.getElementById('toast'),tm;
+ function say(t){toast.textContent='→ '+t;toast.className='toast on';toast.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:9';clearTimeout(tm);tm=setTimeout(function(){toast.classList.remove('on')},1600)}
+ document.getElementById('row3').addEventListener('click',function(ev){
+  var g=ev.target.closest('[data-go]');if(g){say(g.dataset.go);return}
+  var s=ev.target.closest('.s');if(s&&!s.disabled){var sg=s.closest('.sg');if(sg.classList.contains('lock')||sg.classList.contains('exp'))return;var v=s.classList.contains('y')?'y':s.classList.contains('m')?'m':'n',k=sg.dataset.k,e=E()[k==='h0'?0:+k.slice(1)];var was=sel[k]!==undefined?sel[k]:(TST[e.me]||'');sel[k]=was===v?'':v;render();say(sel[k]?({y:'Zusage gesetzt',m:'Vielleicht gesetzt',n:'Absage gesetzt'})[v]:'Antwort zurückgenommen')}});
+ document.querySelectorAll('[data-r]').forEach(function(b){b.addEventListener('click',function(){role=b.dataset.r;sel={};document.querySelectorAll('[data-r]').forEach(function(x){x.setAttribute('aria-pressed',x===b)});render()})});
+ document.querySelectorAll('[data-m]').forEach(function(b){b.addEventListener('click',function(){dark=b.dataset.m==='d';document.querySelectorAll('[data-m]').forEach(function(x){x.setAttribute('aria-pressed',x===b)});render()})});
+})();
+</script>
