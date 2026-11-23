@@ -247,4 +247,65 @@
       pill.className = 'pill ' + (ok ? 'ok' : 'bad');
     }).catch(function () { pill.textContent = 'nicht prüfbar'; });
   });
+
+  // ---- Passwortfelder: Anzeigen/Verbergen, Stärke, Feststelltaste ----
+  var EYE = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+  var EYE_OFF = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"></path><path d="M10.6 5.1A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4.4-1"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg>';
+  function strength(v) {
+    var variety = 0;
+    if (/[a-zäöüß]/.test(v)) variety++;
+    if (/[A-ZÄÖÜ]/.test(v)) variety++;
+    if (/[0-9]/.test(v)) variety++;
+    if (/[^A-Za-z0-9äöüÄÖÜß]/.test(v)) variety++;
+    var n = v.length;
+    if (n === 0) return [0, ''];
+    if (n < 12) return [1, 'Zu kurz – mindestens 12 Zeichen'];
+    if (n >= 20 && variety >= 2) return [4, 'Sehr gut'];
+    if (n >= 16 || (n >= 14 && variety >= 3)) return [3, 'Gut'];
+    return [2, variety >= 2 ? 'Ausreichend' : 'Ausreichend – mit Zahlen oder Sonderzeichen besser'];
+  }
+  $$('input[type=password]').forEach(function (inp) {
+    var wrap = document.createElement('div');
+    wrap.className = 'pwwrap';
+    inp.parentNode.insertBefore(wrap, inp);
+    wrap.appendChild(inp);
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pwtoggle';
+    b.setAttribute('aria-label', 'Passwort anzeigen');
+    b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = EYE;
+    b.addEventListener('click', function () {
+      var show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      b.innerHTML = show ? EYE_OFF : EYE;
+      b.setAttribute('aria-pressed', show ? 'true' : 'false');
+      b.setAttribute('aria-label', show ? 'Passwort verbergen' : 'Passwort anzeigen');
+      inp.focus();
+    });
+    wrap.appendChild(b);
+    var caps = document.createElement('small');
+    caps.className = 'pwcaps';
+    caps.textContent = 'Feststelltaste ist aktiv';
+    caps.hidden = true;
+    wrap.parentNode.insertBefore(caps, wrap.nextSibling);
+    inp.addEventListener('keyup', function (e) { caps.hidden = !(e.getModifierState && e.getModifierState('CapsLock')); });
+    inp.addEventListener('blur', function () { caps.hidden = true; });
+    if (inp.hasAttribute('data-strength')) {
+      var meter = document.createElement('div');
+      meter.className = 'pwmeter';
+      meter.innerHTML = '<span></span>';
+      var txt = document.createElement('small');
+      txt.className = 'pwtext';
+      txt.setAttribute('aria-live', 'polite');
+      caps.parentNode.insertBefore(meter, caps.nextSibling);
+      meter.parentNode.insertBefore(txt, meter.nextSibling);
+      inp.addEventListener('input', function () {
+        var s = strength(inp.value);
+        $('span', meter).style.width = (s[0] * 25) + '%';
+        meter.setAttribute('data-level', s[0]);
+        txt.textContent = s[1];
+      });
+    }
+  });
 })();

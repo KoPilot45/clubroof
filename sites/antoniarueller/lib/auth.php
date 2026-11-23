@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/mail.php';
+require_once __DIR__ . '/reset.php';
 
 const AR_COOKIE = 'ar_admin';
 
@@ -15,6 +16,9 @@ function find_user(string $email): ?array
 function login_request(string $email): void
 {
     $email = strtolower(trim($email));
+    if (login_lock_remaining($email) > 0) {
+        return;
+    }
     $ipb = 'ip:' . hmac(client_ip());
     if (!filter_var($email, FILTER_VALIDATE_EMAIL) || throttle_count($ipb, 3600) >= 12) {
         usleep(random_int(200000, 500000));
@@ -50,6 +54,9 @@ function login_request(string $email): void
 function login_verify(string $email, string $code, string $password = ''): bool
 {
     $email = strtolower(trim($email));
+    if (login_lock_remaining($email) > 0) {
+        return false;
+    }
     $code = preg_replace('~\D~', '', $code);
     $fb = 'fail:' . hmac(client_ip());
     if (throttle_count($fb, 3600) >= 20) {
@@ -59,6 +66,7 @@ function login_verify(string $email, string $code, string $password = ''): bool
     $user = find_user($email);
     if (!$row || !$user || strlen($code) !== 8) {
         throttle_hit($fb);
+        login_fail($email);
         return false;
     }
     q('UPDATE ar_login_codes SET attempts = attempts + 1 WHERE id = ?', [$row['id']]);
@@ -68,11 +76,13 @@ function login_verify(string $email, string $code, string $password = ''): bool
     if (!hash_equals((string)$row['code_hash'], hmac($email . '|' . $code))) {
         throttle_hit($fb);
         audit($email, 'login_failed');
+        login_fail($email);
         return false;
     }
     if (!empty($user['pw_hash']) && !password_verify($password, (string)$user['pw_hash'])) {
         throttle_hit($fb);
         audit($email, 'login_failed_pw');
+        login_fail($email);
         return false;
     }
     q('UPDATE ar_login_codes SET used = 1 WHERE id = ?', [$row['id']]);

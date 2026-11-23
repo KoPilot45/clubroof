@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/forms.php';
 require_once __DIR__ . '/views2.php';
+require_once __DIR__ . '/login_views.php';
 
 function a(string $q = ''): string
 {
@@ -86,44 +87,6 @@ function layout_end(): void
     admin_foot();
 }
 
-// ---------- Anmeldung ----------
-function view_login(string $step, string $email, string $error): void
-{
-    admin_head('Anmelden');
-    ?>
-<div class="login">
-<div class="card">
-<div class="brand-l"><span class="dot"></span>Verwaltung <small>antoniarueller.de</small></div>
-<?php if ($step === 'email'): ?>
-<h1>Anmelden</h1>
-<p>Gib deine E-Mail-Adresse ein. Wir senden dir einen Code, mit dem du dich anmeldest.</p>
-<form method="post" autocomplete="on">
-<input type="hidden" name="action" value="request">
-<label for="email">E-Mail-Adresse</label>
-<input id="email" name="email" type="email" required autofocus autocomplete="email" value="<?= e($email) ?>">
-<button class="btn">Code senden</button>
-</form>
-<?php else: ?>
-<h1>Code eingeben</h1>
-<p>Falls die Adresse für die Verwaltung freigegeben ist, haben wir einen 8-stelligen Code geschickt. Er ist <?= (int)cfg('code_valid_minutes', 10) ?> Minuten gültig. Keine Mail da? Bitte auch den Spam-Ordner prüfen.</p>
-<?php if ($error): ?><div class="flash err" role="alert"><?= e($error) ?></div><?php endif; ?>
-<form method="post">
-<input type="hidden" name="action" value="verify">
-<input type="hidden" name="email" value="<?= e($email) ?>">
-<label for="code">Code</label>
-<input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{8,9}" maxlength="9" required autofocus class="code">
-<label for="pw">Passwort <small>(nur falls eingerichtet)</small></label>
-<input id="pw" name="pw" type="password" autocomplete="current-password">
-<button class="btn">Anmelden</button>
-</form>
-<form method="post" class="again"><input type="hidden" name="action" value="request"><input type="hidden" name="email" value="<?= e($email) ?>"><button class="link">Neuen Code senden</button> · <a href="<?= a() ?>">Andere Adresse</a></form>
-<?php endif; ?>
-</div>
-</div>
-<?php
-    admin_foot();
-}
-
 // ---------- Papierkorb ----------
 function view_trash(array $user): void
 {
@@ -166,9 +129,19 @@ function view_users(array $user): void
     echo '<p class="lead">Wer sich anmelden darf. Jede Person erhält bei der Anmeldung einen Code per E-Mail. Das Postfach muss <strong>nicht</strong> auf der Domain der Seite liegen – und soll es auch nicht.</p><ul class="rows">';
     foreach ($rows as $r) {
         echo '<li class="row"><span class="r-main"><strong>' . e($r['name'] ?: $r['email']) . '</strong><small>' . e($r['email']) . ' · ' . ($r['role'] === 'owner' ? 'Inhaber' : 'Bearbeiter') . ' · letzte Anmeldung: ' . ($r['last_login'] ? e(date('d.m.Y H:i', (int)$r['last_login'])) : 'noch nie') . '</small></span>';
-        if ($r['role'] !== 'owner') {
-            echo '<span class="r-act"><form method="post" action="' . a() . '" class="inline" data-confirm="Zugang von ' . e($r['email']) . ' entfernen?">' . csrf_field($user) . '<input type="hidden" name="action" value="remove_user"><input type="hidden" name="id" value="' . $r['id'] . '"><button class="btn small danger-o">Entfernen</button></form></span>';
+        $lockRem = login_lock_remaining((string)$r['email']);
+        echo '<span class="r-act">';
+        echo '<span class="pill' . ($r['pw_hash'] ? ' ok' : '') . '">Passwort: ' . ($r['pw_hash'] ? 'ja' : 'nein') . '</span>';
+        if ($lockRem > 0) {
+            echo '<span class="pill bad">gesperrt</span><form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="user_unlock"><input type="hidden" name="id" value="' . $r['id'] . '"><button class="btn small">Sperre aufheben</button></form>';
         }
+        if ($r['pw_hash']) {
+            echo '<form method="post" action="' . a() . '" class="inline" data-confirm="Passwort von ' . e($r['email']) . ' entfernen? Die Person meldet sich danach nur mit dem E-Mail-Code an und kann ein neues Passwort festlegen.">' . csrf_field($user) . '<input type="hidden" name="action" value="user_pw_clear"><input type="hidden" name="id" value="' . $r['id'] . '"><button class="btn small ghost">Passwort zurücksetzen</button></form>';
+        }
+        if ($r['role'] !== 'owner') {
+            echo '<form method="post" action="' . a() . '" class="inline" data-confirm="Zugang von ' . e($r['email']) . ' entfernen?">' . csrf_field($user) . '<input type="hidden" name="action" value="remove_user"><input type="hidden" name="id" value="' . $r['id'] . '"><button class="btn small danger-o">Entfernen</button></form>';
+        }
+        echo '</span>';
         echo '</li>';
     }
     ?>

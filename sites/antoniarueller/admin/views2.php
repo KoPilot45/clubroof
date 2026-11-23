@@ -165,7 +165,7 @@ function view_account(array $user, array $errors = []): void
     if ($hasPw) {
         echo '<div class="field"><label for="cp">Aktuelles Passwort</label><input id="cp" type="password" name="current_pw" autocomplete="current-password"></div>';
     }
-    echo '<div class="field"><label for="np">' . ($hasPw ? 'Neues Passwort' : 'Passwort festlegen') . '</label><input id="np" type="password" name="new_pw" minlength="12" autocomplete="new-password"></div><div class="field"><label for="np2">Passwort wiederholen</label><input id="np2" type="password" name="new_pw2" autocomplete="new-password"></div>';
+    echo '<div class="field"><label for="np">' . ($hasPw ? 'Neues Passwort' : 'Passwort festlegen') . '</label><input id="np" type="password" name="new_pw" minlength="12" autocomplete="new-password" data-strength="1"></div><div class="field"><label for="np2">Passwort wiederholen</label><input id="np2" type="password" name="new_pw2" autocomplete="new-password"></div>';
     if ($hasPw) {
         echo '<div class="field check"><label><input type="checkbox" name="remove_pw" value="1"> Passwort wieder entfernen (nur E-Mail-Code)</label></div>';
     }

@@ -19,22 +19,50 @@ if (!$user) {
     $step = 'email';
     $email = '';
     $error = '';
+    $info = ($_GET['m'] ?? '') === 'reset' ? 'Passwort gespeichert. Bitte melde dich jetzt mit E-Mail-Code und neuem Passwort an.' : '';
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = (string)($_POST['action'] ?? '');
         $email = strtolower(trim((string)($_POST['email'] ?? '')));
         if ($action === 'request') {
-            login_request($email);
-            $step = 'code';
+            $rem = login_lock_remaining($email);
+            if ($rem > 0) {
+                $error = lock_message($rem);
+            } else {
+                login_request($email);
+                $step = 'code';
+            }
         } elseif ($action === 'verify') {
             if (login_verify($email, (string)($_POST['code'] ?? ''), (string)($_POST['pw'] ?? ''))) {
                 header('Location: ' . AR_BASE . '/admin/');
                 exit;
             }
             $step = 'code';
-            $error = 'Code oder Passwort ungültig bzw. Code abgelaufen. Bitte neuen Code anfordern.';
+            $rem = login_lock_remaining($email);
+            $error = $rem > 0 ? lock_message($rem) : 'Code oder Passwort ungültig bzw. Code abgelaufen. Bitte neuen Code anfordern.';
+        } elseif ($action === 'forgot') {
+            reset_request($email);
+            view_forgot(true, $email);
+            exit;
+        } elseif ($action === 'reset_apply') {
+            $tok = (string)($_POST['t'] ?? '');
+            [$ok, $msg] = reset_apply($email, $tok, (string)($_POST['pw1'] ?? ''), (string)($_POST['pw2'] ?? ''));
+            if ($ok) {
+                header('Location: ' . AR_BASE . '/admin/?m=reset');
+                exit;
+            }
+            view_reset($email, $tok, $msg);
+            exit;
         }
+    } elseif ($p === 'forgot') {
+        view_forgot(false, strtolower(trim((string)($_GET['e'] ?? ''))));
+        exit;
+    } elseif ($p === 'reset') {
+        $e = strtolower(trim((string)($_GET['e'] ?? '')));
+        $t = (string)($_GET['t'] ?? '');
+        view_reset($e, $t, reset_valid($e, $t) ? '' : 'Der Link ist ungültig oder abgelaufen. Bitte unter „Passwort vergessen?“ einen neuen anfordern.', true);
+        exit;
     }
-    view_login($step, $email, $error);
+    view_login($step, $email, $error, $info);
     exit;
 }
 
@@ -382,6 +410,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 audit($who, 'password_removed');
             }
             $back(AR_BASE . '/admin/?p=account', 'Gespeichert.');
+        }
+
+        case 'user_pw_clear': {
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf Zugänge verwalten.', 403);
+            }
+            $tu = q('SELECT * FROM ar_users WHERE id = ?', [(int)($_POST['id'] ?? 0)])->fetch();
+            if ($tu) {
+                q('UPDATE ar_users SET pw_hash = NULL WHERE id = ?', [(int)$tu['id']]);
+                q('DELETE FROM ar_sessions WHERE user_id = ? AND token_hash <> ?', [(int)$tu['id'], current_token_hash()]);
+                audit($who, 'password_cleared', $tu['email']);
+                send_mail((string)$tu['email'], 'Passwort in der Verwaltung zurückgesetzt', "Der Inhaber hat dein Passwort für die Verwaltung von antoniarueller.de entfernt. Du meldest dich jetzt nur mit dem E-Mail-Code an und kannst unter „Mein Konto“ ein neues Passwort festlegen.\n");
+                $back(AR_BASE . '/admin/?p=users', 'Passwort von ' . $tu['email'] . ' entfernt. Die Person wurde per Mail informiert.');
+            }
+            $back(AR_BASE . '/admin/?p=users', 'Zugang nicht gefunden.', 'err');
+        }
+
+        case 'user_unlock': {
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf Zugänge verwalten.', 403);
+            }
+            $tu = q('SELECT email FROM ar_users WHERE id = ?', [(int)($_POST['id'] ?? 0)])->fetch();
+            if ($tu) {
+                login_unlock((string)$tu['email']);
+                audit($who, 'login_unlock', $tu['email']);
+            }
+            $back(AR_BASE . '/admin/?p=users', 'Sperre aufgehoben.');
         }
 
         case 'test_mail':

@@ -40,6 +40,19 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'schema_v2';
     }
 
+    // Tabelle für „Passwort vergessen“
+    if (!in_array('resets_v1', $applied, true)) {
+        $my = db_is_mysql();
+        $id = $my ? 'INT AUTO_INCREMENT PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+        $tail = $my ? ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4' : '';
+        try {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS ar_resets (id $id, email VARCHAR(190) NOT NULL, token_hash VARCHAR(64) NOT NULL, expires INT NOT NULL, used INT NOT NULL DEFAULT 0, created_at INT NOT NULL)$tail");
+        } catch (Throwable $e) {
+            error_log('ar_resets: ' . $e->getMessage());
+        }
+        $applied[] = 'resets_v1';
+    }
+
     // Titel/Beschreibung/Vorschaubild wandern aus „Allgemein“ in den neuen Bereich „SEO“
     if (!in_array('seo_v1', $applied, true)) {
         $has = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = 'seo'")->fetchColumn();

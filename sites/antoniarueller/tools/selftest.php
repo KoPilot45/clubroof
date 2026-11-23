@@ -323,6 +323,72 @@ ok(str_contains(req('GET', "$base/admin/")['body'], 'Code senden'), 'Abgemeldet'
 ok(!str_contains(req('GET', "$base/admin/?p=trash")['body'], 'Papierkorb leeren'), 'ohne Login kein Zugriff');
 
 
+echo "Sperre nach Fehlversuchen\n";
+q('DELETE FROM ar_throttle');
+req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner]);
+$lockMsg = '';
+for ($i = 1; $i <= 5; $i++) {
+    $rr = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => '1234567' . $i, 'pw' => '']);
+}
+ok(str_contains($rr['body'], 'vorübergehend gesperrt'), 'nach 5 Fehlversuchen: Sperre mit Hinweis');
+@unlink("$root/data/mail.log");
+$rq = req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner]);
+ok(str_contains($rq['body'], 'vorübergehend gesperrt') && !is_file("$root/data/mail.log"), 'gesperrt: kein neuer Code per Mail');
+$pre = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => '00000000', 'pw' => '']);
+ok(str_contains($pre['body'], 'vorübergehend gesperrt'), 'gesperrt: auch richtige Eingaben werden nicht geprüft');
+for ($i = 1; $i <= 5; $i++) {
+    $ru = req('POST', "$base/admin/", ['action' => 'verify', 'email' => 'niemand@example.net', 'code' => '9999999' . $i, 'pw' => '']);
+}
+ok(str_contains($ru['body'], 'vorübergehend gesperrt'), 'unbekannte Adresse wird gleich behandelt (kein Rückschluss auf Konten)');
+q('DELETE FROM ar_throttle');
+ok(!str_contains(req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner])['body'], 'vorübergehend gesperrt'), 'nach Ablauf wieder möglich');
+q('DELETE FROM ar_throttle');
+
+echo "Passwort vergessen\n";
+@unlink("$root/data/mail.log");
+$rf = req('POST', "$base/admin/", ['action' => 'forgot', 'email' => 'niemand@example.net']);
+ok(str_contains($rf['body'], 'Mail unterwegs') && !is_file("$root/data/mail.log"), 'unbekannte Adresse: gleiche Antwort, keine Mail');
+$rf = req('POST', "$base/admin/", ['action' => 'forgot', 'email' => $owner]);
+$logTxt = (string)@file_get_contents("$root/data/mail.log");
+ok(str_contains($rf['body'], 'Mail unterwegs') && preg_match('~[?&]t=([a-f0-9]{48})~', $logTxt, $tm), 'Link zum Zurücksetzen per Mail');
+$rtok = $tm[1] ?? '';
+$gp = req('GET', "$base/admin/?p=reset&e=" . rawurlencode($owner) . "&t=$rtok");
+ok(str_contains($gp['body'], 'Neues Passwort festlegen'), 'Link öffnet das Formular');
+ok(str_contains(req('GET', "$base/admin/?p=reset&e=" . rawurlencode($owner) . "&t=" . str_repeat('a', 48))['body'], 'Link ungültig'), 'falscher Link wird abgelehnt');
+$bad = req('POST', "$base/admin/", ['action' => 'reset_apply', 'email' => $owner, 't' => $rtok, 'pw1' => 'zu-kurz', 'pw2' => 'zu-kurz']);
+ok(str_contains($bad['body'], 'mindestens 12'), 'zu kurzes Passwort wird abgelehnt');
+$bad = req('POST', "$base/admin/", ['action' => 'reset_apply', 'email' => $owner, 't' => $rtok, 'pw1' => 'passwort-nummer-eins', 'pw2' => 'passwort-nummer-zwei']);
+ok(str_contains($bad['body'], 'nicht überein'), 'ungleiche Passwörter werden abgelehnt');
+$okr = req('POST', "$base/admin/", ['action' => 'reset_apply', 'email' => $owner, 't' => $rtok, 'pw1' => 'neues-langes-passwort-42', 'pw2' => 'neues-langes-passwort-42']);
+ok($okr['code'] === 302, 'neues Passwort über den Link gesetzt');
+$again = req('POST', "$base/admin/", ['action' => 'reset_apply', 'email' => $owner, 't' => $rtok, 'pw1' => 'noch-ein-passwort-123', 'pw2' => 'noch-ein-passwort-123']);
+ok(str_contains($again['body'], 'ungültig'), 'Link ist nur einmal nutzbar');
+@unlink("$root/data/mail.log");
+req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner]);
+preg_match('~(\d{4}) (\d{4})~', (string)@file_get_contents("$root/data/mail.log"), $mr);
+$cr = ($mr[1] ?? '') . ($mr[2] ?? '');
+ok(req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => $cr, 'pw' => 'falsch-falsch-falsch'])['code'] !== 302, 'Anmeldung braucht nun das neue Passwort');
+@unlink("$root/data/mail.log");
+req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner]);
+preg_match('~(\d{4}) (\d{4})~', (string)@file_get_contents("$root/data/mail.log"), $mr);
+$cr = ($mr[1] ?? '') . ($mr[2] ?? '');
+$li = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => $cr, 'pw' => 'neues-langes-passwort-42']);
+ok($li['code'] === 302, 'Anmeldung mit Code und neuem Passwort');
+$tokX = csrf(req('GET', "$base/admin/")['body']);
+// Inhaber setzt das Passwort einer anderen Person zurück
+$otherId = (int)q("SELECT id FROM ar_users WHERE email <> ? AND role = 'owner' LIMIT 1", [$owner])->fetchColumn();
+if ($otherId) {
+    q('UPDATE ar_users SET pw_hash = ? WHERE id = ?', [password_hash('irgendein-passwort-1', PASSWORD_DEFAULT), $otherId]);
+    req('POST', "$base/admin/", ['_csrf' => $tokX, 'action' => 'user_pw_clear', 'id' => $otherId]);
+    ok(q('SELECT pw_hash FROM ar_users WHERE id = ?', [$otherId])->fetchColumn() === null, 'Inhaber kann Passwort einer Person zurücksetzen');
+}
+$ul = req('GET', "$base/admin/?p=users")['body'];
+ok(str_contains($ul, 'Passwort: ja'), 'Zugänge zeigen Passwort-Status');
+// eigenes Passwort wieder entfernen (für die folgenden Tests)
+q('UPDATE ar_users SET pw_hash = NULL WHERE email = ?', [$owner]);
+req('POST', "$base/admin/", ['_csrf' => $tokX, 'action' => 'logout']);
+q('DELETE FROM ar_throttle');
+
 echo "Zusätzliches Passwort\n";
 q('DELETE FROM ar_throttle');
 @unlink("$root/data/mail.log");

@@ -43,6 +43,8 @@ return [
     'session_idle_minutes' => 60,   // Abmeldung nach Inaktivität
     'session_max_hours'    => 12,   // maximale Sitzungsdauer
     'code_valid_minutes'   => 10,
+    'login_max_fails'      => 5,    // Fehlversuche, danach vorübergehende Sperre (pro Adresse)
+    'login_lock_minutes'   => 15,   // Dauer der Sperre / Zeitfenster für die Zählung
     'max_upload_mb'        => 8,
 
     // true = Systemcheck-Seite im Admin zeigt zusätzliche Details (nach Einrichtung auf false)
