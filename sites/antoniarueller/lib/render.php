@@ -106,12 +106,6 @@ function rec_dot(int $px = 10): string
     return '<span class="ar-rec" style="width:' . $px . 'px;height:' . $px . 'px"></span>';
 }
 
-/** Text mit rot gefärbtem i-Punkt (Kopie des „i“ nur im Punktbereich in Rot, darunter das „i“ ohne Punkt). */
-function rdot(string $t): string
-{
-    return str_replace('i', '<span class="rdot"><span class="rd-b">i</span><span class="rd-t">i</span></span>', e($t));
-}
-
 function sec_head(string $no, string $label, string $right, string $mb = '40px'): string
 {
     return '<div class="sec-head" style="margin-bottom:' . $mb . '"><span class="sec-l">' . rec_dot() . '<span class="rec-t">REC</span><span>' . e($no) . ' — ' . e(tr($label)) . '</span></span>'

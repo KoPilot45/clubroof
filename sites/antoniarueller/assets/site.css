@@ -256,9 +256,9 @@ a:hover{color:var(--accent)}
 .ar-redact:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
 /* Kontakt */
-.k-h{margin:24px 0 0;font-weight:400;line-height:.82}
-.ar-schreib{display:block;font-family:var(--anton);font-size:clamp(96px,17vw,250px);text-transform:uppercase}
-.k-h2{display:block;font-family:var(--serif);font-style:italic;font-size:clamp(110px,19vw,280px);color:var(--teal);padding-left:30%;margin-top:-.12em}
+.k-h{margin:24px 0 0;font-weight:400;line-height:.9}
+.ar-schreib{display:block;font-family:var(--serif);font-size:clamp(72px,10.4vw,148px);letter-spacing:-.025em;line-height:.9;text-transform:none}
+.k-h2{display:block;font-family:var(--serif);font-style:italic;font-size:clamp(72px,10.4vw,148px);letter-spacing:-.025em;line-height:.9;color:var(--ink);padding-left:.55em;margin-top:0}
 .k-intro{margin:32px 0 0;font-family:var(--serif);font-size:34px;line-height:1.2}
 .k-btns{display:flex;flex-wrap:wrap;gap:16px;margin-top:56px;align-items:center}
 .foot{margin-top:120px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
@@ -295,7 +295,7 @@ a:hover{color:var(--accent)}
   .ar-wall{font-size:clamp(26px,8vw,128px)}
   .ar-clip-title{font-size:28px}
   .ar-redact{font-size:22px}
-  .ar-schreib{font-size:84px}
+  .ar-schreib,.k-h2{font-size:clamp(64px,22vw,110px)}
   .ar-onair{right:-6px;bottom:-24px;width:96px;height:96px}
   .ar-root main>section:not(.ar-hero){padding-top:88px!important}
   .ar-hero{min-height:0}
@@ -446,17 +446,13 @@ a:hover{color:var(--accent)}
 .pl-dot{position:absolute;top:50%;left:clamp(6px,calc(var(--p,0) * 100%),calc(100% - 6px));width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--paper)}
 .pl-mark{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink);opacity:.35}
 /* Nach oben */
-.to-top{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));z-index:35;width:46px;height:46px;border-radius:50%;background:var(--paper);color:var(--ink);border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;text-decoration:none;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .25s,transform .25s,visibility 0s .25s}
+.to-top{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:calc(max(20px,env(safe-area-inset-bottom,0px)) + var(--lift,0px));z-index:35;width:46px;height:46px;border-radius:50%;background:var(--paper);color:var(--ink);border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;text-decoration:none;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .25s,transform .25s,visibility 0s .25s}
 .to-top.show{opacity:1;visibility:visible;transform:none;transition:opacity .25s,transform .25s}
 .to-top:hover{background:var(--ink);color:var(--paper)}
 .to-top:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
-@media (max-width:860px){.to-top{bottom:max(72px,calc(env(safe-area-inset-bottom,0px) + 56px));width:42px;height:42px}}
+@media (max-width:860px){.to-top{bottom:calc(max(72px,calc(env(safe-area-inset-bottom,0px) + 56px)) + var(--lift,0px));width:42px;height:42px}}
 @media (prefers-reduced-motion:reduce){.to-top{transition:none}}
 
-/* roter i-Punkt in der Überschrift „Schreib mir“ */
-.rdot{position:relative;display:inline-block;line-height:.82}
-.rd-b{display:inline-block;clip-path:inset(.185em -.3em -.4em -.3em)}
-.rd-t{position:absolute;left:0;top:0;color:var(--rec);clip-path:inset(-.1em -.3em calc(100% - .185em) -.3em)}
 
 
 /* ===== Weiche Bewegungen (alles nur Deckkraft/Verschiebung, ohne Bibliothek) ===== */

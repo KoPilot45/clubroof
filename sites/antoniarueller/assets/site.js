@@ -252,7 +252,13 @@
     ticking = false;
     var p = Math.min(1, Math.max(0, window.scrollY / scrollMax()));
     if (pl) pl.style.setProperty('--p', p.toFixed(4));
-    if (toTop) toTop.classList.toggle('show', window.scrollY > window.innerHeight * 1.5);
+    if (toTop) {
+      toTop.classList.toggle('show', window.scrollY > window.innerHeight * 1.5);
+      // Der Knopf schiebt sich über die Fußzeile, damit er Impressum und Datenschutz nicht verdeckt
+      var ft = $('footer.foot');
+      var lift = ft ? Math.max(0, window.innerHeight - ft.getBoundingClientRect().top) : 0;
+      toTop.style.setProperty('--lift', lift + 'px');
+    }
   }
   window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onProgress); } }, { passive: true });
   window.addEventListener('resize', function () { placeMarks(); onProgress(); });

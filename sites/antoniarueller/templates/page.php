@@ -302,7 +302,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <section id="kontakt" aria-label="<?= tr('Kontakt') ?>" style="padding-top:176px;padding-bottom:48px">
 <?= sec_head('05', 'Kontakt', $contact['right'], '0') ?>
-<h2 class="k-h" aria-label="<?= e(trim($contact['h1'] . ' ' . $contact['h2'])) ?>"><span class="ar-schreib" aria-hidden="true"><?= e($contact['h1']) ?></span><span class="k-h2" aria-hidden="true"><?= rdot($contact['h2']) ?><span style="color:var(--accent)">.</span></span></h2>
+<h2 class="k-h" aria-label="<?= e(trim($contact['h1'] . ' ' . $contact['h2'])) ?>"><span class="ar-schreib" aria-hidden="true"><?= e($contact['h1']) ?></span><span class="k-h2" aria-hidden="true"><?= e($contact['h2']) ?>.</span></h2>
 <p class="k-intro"><?= e($contact['intro']) ?></p>
 <div class="k-btns">
 <?php if ($hasMail): ?><a class="btn-solid btn-lg" id="mailbtn" href="#kontakt" data-ev="mail" data-k="kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php" data-note="<?= e(tr('Mailprogramm öffnet sich nicht? Adresse:')) ?>" data-copy="<?= e(tr('Kopieren')) ?>" data-copied="<?= e(tr('Kopiert')) ?>"><span><?= e($contact['mail_label'] !== '' ? $contact['mail_label'] : tr('E-Mail schreiben')) ?></span> <span aria-hidden="true">↗</span></a><noscript><span class="muted"><?= e(tr('Bitte JavaScript aktivieren, um die E-Mail-Adresse zu sehen – oder im Impressum nachsehen.')) ?></span></noscript><?php endif; ?>
