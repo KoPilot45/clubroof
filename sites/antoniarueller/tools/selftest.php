@@ -112,6 +112,17 @@ req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $newI
 req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $newId]);
 ok(!str_contains(req('GET', "$base/admin/?p=trash")['body'], 'Test-Referenz'), 'endgültig gelöscht');
 
+echo "Zwischenspeicher, Sicherung\n";
+req('GET', "$base/");
+ok(count(glob("$root/data/cache/home-*.html")) === 1, 'Startseite im Zwischenspeicher');
+$hp = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'hero', 'first' => 'Antonia', 'last' => 'Rüller', 'photo_alt' => 'x', 'lead' => 'CACHE-TEST-TEXT', 'meta' => '', 'now_label' => 'Aktuell'];
+req('POST', "$base/admin/", $hp);
+ok(count(glob("$root/data/cache/home-*.html")) === 0, 'Änderung leert den Zwischenspeicher');
+ok(str_contains(req('GET', "$base/")['body'], 'CACHE-TEST-TEXT'), 'Änderung sofort sichtbar');
+$ex = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'export']);
+ok(str_contains($ex['head'], 'attachment') && str_contains($ex['body'], '"eintraege"'), 'Sicherung als JSON');
+ok(str_contains(req('GET', "$base/admin/?p=check")['body'], 'Diagnose-Datei'), 'Systemcheck zeigt Hinweise');
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

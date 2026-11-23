@@ -104,6 +104,8 @@ function run_migrations(PDO $pdo): void
         } else {
             $pdo->prepare("INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES ('_migrations', ?, ?, 'system')")->execute([$json, time()]);
         }
+        require_once __DIR__ . '/render.php';
+        clear_page_cache();
         // robots.txt, sitemap.xml, llms.txt als echte Dateien bereitstellen
         require_once __DIR__ . '/seo_files.php';
         regenerate_seo_files();

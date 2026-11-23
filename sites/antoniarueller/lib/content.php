@@ -32,8 +32,45 @@ function items(string $coll, bool $trash = false): array
     if (!$def) {
         return [];
     }
-    $sql = 'SELECT * FROM ar_items WHERE coll = ? AND deleted_at ' . ($trash ? 'IS NOT NULL ORDER BY deleted_at DESC' : 'IS NULL ORDER BY sort ASC, id ASC');
-    return array_map(fn($r) => row_to_item($r, $def['fields']), q($sql, [$coll])->fetchAll());
+    if ($trash) {
+        $rows = q('SELECT * FROM ar_items WHERE coll = ? AND deleted_at IS NOT NULL ORDER BY deleted_at DESC', [$coll])->fetchAll();
+    } else {
+        $rows = items_rows()[$coll] ?? [];
+    }
+    return array_map(fn($r) => row_to_item($r, $def['fields']), $rows);
+}
+
+/** Alle sichtbaren Einträge in EINER Abfrage laden (statt einer pro Liste). */
+function items_rows(bool $reset = false): array
+{
+    static $all = null;
+    if ($reset) {
+        $all = null;
+        return [];
+    }
+    if ($all === null) {
+        $all = [];
+        foreach (q('SELECT * FROM ar_items WHERE deleted_at IS NULL ORDER BY sort ASC, id ASC')->fetchAll() as $r) {
+            $all[$r['coll']][] = $r;
+        }
+    }
+    return $all;
+}
+
+function settings_rows(bool $reset = false): array
+{
+    static $all = null;
+    if ($reset) {
+        $all = null;
+        return [];
+    }
+    if ($all === null) {
+        $all = [];
+        foreach (q('SELECT grp, data FROM ar_settings')->fetchAll() as $r) {
+            $all[$r['grp']] = $r['data'];
+        }
+    }
+    return $all;
 }
 
 function item(int $id): ?array
@@ -52,7 +89,7 @@ function setting(string $grp): array
     if (!$def) {
         return [];
     }
-    $r = q('SELECT data FROM ar_settings WHERE grp = ?', [$grp])->fetchColumn();
+    $r = settings_rows()[$grp] ?? null;
     $data = $r ? json_decode((string)$r, true) : [];
     return array_merge(field_defaults($def['fields']), is_array($data) ? $data : []);
 }
@@ -61,6 +98,8 @@ function setting(string $grp): array
 
 function save_item(string $coll, ?int $id, array $data, string $who): int
 {
+    items_rows(true);
+    settings_rows(true);
     $now = time();
     $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     if ($id) {
@@ -74,6 +113,8 @@ function save_item(string $coll, ?int $id, array $data, string $who): int
 
 function save_setting(string $grp, array $data, string $who): void
 {
+    items_rows(true);
+    settings_rows(true);
     $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $exists = q('SELECT 1 FROM ar_settings WHERE grp = ?', [$grp])->fetchColumn();
     if ($exists) {
@@ -85,11 +126,15 @@ function save_setting(string $grp, array $data, string $who): void
 
 function trash_item(int $id): void
 {
+    items_rows(true);
+    settings_rows(true);
     q('UPDATE ar_items SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL', [time(), $id]);
 }
 
 function restore_item(int $id): void
 {
+    items_rows(true);
+    settings_rows(true);
     $r = q('SELECT coll FROM ar_items WHERE id = ?', [$id])->fetch();
     if (!$r) {
         return;
@@ -100,12 +145,16 @@ function restore_item(int $id): void
 
 function purge_item(int $id): void
 {
+    items_rows(true);
+    settings_rows(true);
     q('DELETE FROM ar_items WHERE id = ? AND deleted_at IS NOT NULL', [$id]);
     cleanup_uploads();
 }
 
 function move_item(int $id, string $dir): void
 {
+    items_rows(true);
+    settings_rows(true);
     $r = q('SELECT coll FROM ar_items WHERE id = ? AND deleted_at IS NULL', [$id])->fetch();
     if (!$r) {
         return;

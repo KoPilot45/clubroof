@@ -3,6 +3,72 @@ declare(strict_types=1);
 
 // Hilfen für die öffentliche Seite
 
+function cache_dir(): string
+{
+    return AR_ROOT . '/data/cache';
+}
+
+/** Neue Dateiversionen (Code/CSS/JS/Konfiguration) erzeugen automatisch einen neuen Zwischenspeicher. */
+function page_build_id(): string
+{
+    $s = '';
+    foreach (['templates/page.php', 'templates/legal.php', 'templates/favicon.php', 'lib/render.php', 'lib/schema.php', 'lib/page.php', 'assets/site.css', 'assets/site.js', 'config.php'] as $f) {
+        $s .= (string)@filemtime(AR_ROOT . '/' . $f) . '|';
+    }
+    return substr(md5($s), 0, 10);
+}
+
+function clear_page_cache(): void
+{
+    foreach (glob(cache_dir() . '/*.html') ?: [] as $f) {
+        @unlink($f);
+    }
+}
+
+/** @return array{0: bool, 1: string}|null [noindex, html] */
+function read_page_cache(string $key): ?array
+{
+    $f = cache_dir() . '/' . $key . '-' . page_build_id() . '.html';
+    if (!is_file($f) || filemtime($f) < time() - 6 * 3600) {
+        return null;
+    }
+    $raw = (string)@file_get_contents($f);
+    $nl = strpos($raw, "\n");
+    if ($nl === false) {
+        return null;
+    }
+    $meta = json_decode(substr($raw, 0, $nl), true);
+    return [!empty($meta['noindex']), substr($raw, $nl + 1)];
+}
+
+function write_page_cache(string $key, string $html, bool $noindex): void
+{
+    $dir = cache_dir();
+    if (!is_dir($dir) && !@mkdir($dir, 0750, true)) {
+        return;
+    }
+    $build = page_build_id();
+    $tmp = $dir . '/.tmp-' . bin2hex(random_bytes(4));
+    if (@file_put_contents($tmp, json_encode(['noindex' => $noindex]) . "\n" . $html, LOCK_EX) === false) {
+        return;
+    }
+    @rename($tmp, $dir . '/' . $key . '-' . $build . '.html');
+    foreach (glob($dir . '/' . $key . '-*.html') ?: [] as $old) {
+        if (!str_ends_with($old, '-' . $build . '.html')) {
+            @unlink($old);
+        }
+    }
+}
+
+function img_attrs(string $name): string
+{
+    if (upload_url($name) === '') {
+        return '';
+    }
+    $i = @getimagesize(AR_ROOT . '/uploads/' . $name);
+    return $i ? ' width="' . (int)$i[0] . '" height="' . (int)$i[1] . '"' : '';
+}
+
 /** *kursiv*, **GROSS**, ==Akzent== → HTML (alles andere wird maskiert). */
 function mk(string $s): string
 {

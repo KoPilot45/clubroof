@@ -64,7 +64,17 @@
       }
     });
   });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && menu && !menu.hidden) setMenu(false); });
+  document.addEventListener('keydown', function (e) {
+    if (!menu || menu.hidden) return;
+    if (e.key === 'Escape') { setMenu(false); return; }
+    if (e.key === 'Tab') {
+      var f = $$('a[href],button', menu);
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
 
   // ---- E-Mail-Adresse erst im Browser zusammensetzen (Spam-Schutz) ----
   $$('[data-u]').forEach(function (el) {

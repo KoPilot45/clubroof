@@ -38,6 +38,9 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php endif; ?>
 <meta name="theme-color" content="#F3ECDF">
 <?php require __DIR__ . '/favicon.php'; ?>
+<link rel="preload" href="<?= AR_BASE ?>/assets/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="<?= AR_BASE ?>/assets/fonts/instrument-serif-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="<?= AR_BASE ?>/assets/fonts/inter-tight-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="<?= AR_BASE ?>/assets/fonts.css?v=1">
 <link rel="stylesheet" href="<?= AR_BASE ?>/assets/site.css?v=<?= @filemtime(AR_ROOT . '/assets/site.css') ?>">
 <style>:root{--accent:<?= e($acc) ?>;--rec:<?= e($rec) ?>}</style>
@@ -45,6 +48,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </head>
 <body>
 <div class="ar-root">
+<a class="skip" href="#inhalt">Zum Inhalt springen</a>
 
 <header class="top-wrap" id="topbar">
 <div class="top">
@@ -59,7 +63,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 </header>
 
-<section class="ar-hero" aria-label="Intro">
+<section class="ar-hero" id="inhalt" aria-label="Intro">
 <div class="sec-head" style="margin-bottom:0"><span class="sec-l"><?= rec_dot() ?><span class="rec-t">REC</span><span>00 — Intro</span></span>
 <span class="muted"><?= e($hero['meta']) ?></span><span class="muted">TC 00:00:00:01</span></div>
 <h1 aria-label="<?= e(trim($hero['first'] . ' ' . $hero['last'])) ?>">
@@ -74,7 +78,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 <div class="ar-hero-media">
 <span class="ar-hero-circle" aria-hidden="true"></span>
-<?php if (upload_url($hero['photo']) !== ''): ?><img class="ar-hero-img" src="<?= e(upload_url($hero['photo'])) ?>" alt="<?= e($hero['photo_alt']) ?>" fetchpriority="high"><?php endif; ?>
+<?php if (upload_url($hero['photo']) !== ''): ?><img class="ar-hero-img" src="<?= e(upload_url($hero['photo'])) ?>"<?= img_attrs($hero['photo']) ?> alt="<?= e($hero['photo_alt']) ?>" fetchpriority="high" decoding="async"><?php endif; ?>
 <div class="ar-hero-tag">
 <span class="tag-live"><span class="ar-rec" style="width:8px;height:8px;background:#F3ECDF"></span><?= e($hero['tag_live']) ?></span>
 <span class="tag-name"><?= e($hero['tag_name']) ?></span>
@@ -265,7 +269,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?= sec_head('03', 'Über mich', $about['right'], '48px') ?>
 <div class="about">
 <?php if (upload_url($about['portrait']) !== ''): ?>
-<div class="about-img"><img src="<?= e(upload_url($about['portrait'])) ?>" alt="<?= e($about['portrait_alt']) ?>" loading="lazy"><?php if ($about['onair'] !== ''): ?><span class="ar-onair"><?= e($about['onair']) ?></span><?php endif; ?></div>
+<div class="about-img"><img src="<?= e(upload_url($about['portrait'])) ?>"<?= img_attrs($about['portrait']) ?> alt="<?= e($about['portrait_alt']) ?>" loading="lazy" decoding="async"><?php if ($about['onair'] !== ''): ?><span class="ar-onair"><?= e($about['onair']) ?></span><?php endif; ?></div>
 <?php endif; ?>
 <div class="about-r">
 <?php if ($about['headline'] !== ''): ?><p class="about-h"><?= mk($about['headline']) ?></p><?php endif; ?>

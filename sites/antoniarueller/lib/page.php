@@ -6,12 +6,15 @@ require __DIR__ . '/render.php';
 
 security_headers();
 
-function send_html(string $html): never
+function emit_html(string $html, bool $noindex): never
 {
     $etag = '"' . md5($html) . '"';
     header('Content-Type: text/html; charset=utf-8');
     header('Cache-Control: no-cache');
     header('ETag: ' . $etag);
+    if ($noindex) {
+        header('X-Robots-Tag: noindex, nofollow');
+    }
     if (($_SERVER['HTTP_IF_NONE_MATCH'] ?? '') === $etag) {
         http_response_code(304);
         exit;
@@ -20,11 +23,26 @@ function send_html(string $html): never
     exit;
 }
 
+function send_html(string $html, bool $noindex = false, ?string $cacheKey = null): never
+{
+    if ($cacheKey !== null && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
+        write_page_cache($cacheKey, $html, $noindex);
+    }
+    emit_html($html, $noindex);
+}
+
+// Zwischenspeicher: Besucher belasten die Datenbank nicht (wird bei jeder Änderung im Admin geleert)
+$page = (string)($_GET['seite'] ?? '');
+$cacheKey = in_array($page, ['impressum', 'datenschutz'], true) ? $page : 'home';
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
+    $hit = read_page_cache($cacheKey);
+    if ($hit) {
+        emit_html($hit[1], $hit[0]);
+    }
+}
+
 $site = setting('site');
 $seo = setting('seo');
-if ($seo['noindex']) {
-    header('X-Robots-Tag: noindex, nofollow');
-}
 $hero = setting('hero');
 $sec = setting('sections');
 $about = setting('about');
@@ -32,14 +50,13 @@ $contact = setting('contact');
 $tl = setting('timeline');
 
 // Rechtliche Seiten
-$page = (string)($_GET['seite'] ?? '');
 if ($page === 'impressum' || $page === 'datenschutz') {
     $legal = setting('legal');
     $legalTitle = $page === 'impressum' ? 'Impressum' : 'Datenschutz';
     $legalBody = legal_html((string)$legal[$page]);
     ob_start();
     require dirname(__DIR__) . '/templates/legal.php';
-    send_html((string)ob_get_clean());
+    send_html((string)ob_get_clean(), (bool)$seo['noindex'], $cacheKey);
 }
 
 $nav = items('nav');
@@ -104,4 +121,4 @@ if (str_contains($contact['email'], '@')) {
 
 ob_start();
 require dirname(__DIR__) . '/templates/page.php';
-send_html((string)ob_get_clean());
+send_html((string)ob_get_clean(), (bool)$seo['noindex'], $cacheKey);

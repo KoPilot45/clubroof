@@ -42,7 +42,10 @@ if (!$user) {
 $flash = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check($user);
-    register_shutdown_function('regenerate_seo_files');
+    register_shutdown_function(function () {
+        clear_page_cache();
+        regenerate_seo_files();
+    });
     $act = (string)($_POST['action'] ?? '');
     $who = $user['email'];
     $back = function (string $to, string $msg, string $type = 'ok') {
@@ -174,6 +177,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             q('DELETE FROM ar_users WHERE id = ?', [$uid]);
             audit($who, 'remove_user', $tu['email']);
             $back(AR_BASE . '/admin/?p=users', 'Zugang entfernt.');
+
+        case 'export':
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf die Sicherung herunterladen.', 403);
+            }
+            $out = ['exportiert' => date('c'), 'einstellungen' => [], 'eintraege' => []];
+            foreach (q("SELECT grp, data FROM ar_settings WHERE grp <> '_migrations' ORDER BY grp")->fetchAll() as $r) {
+                $out['einstellungen'][$r['grp']] = json_decode((string)$r['data'], true);
+            }
+            foreach (q('SELECT coll, data, sort, deleted_at, created_at, updated_at FROM ar_items ORDER BY coll, sort, id')->fetchAll() as $r) {
+                $out['eintraege'][] = ['bereich' => $r['coll'], 'daten' => json_decode((string)$r['data'], true), 'reihenfolge' => (int)$r['sort'], 'im_papierkorb' => $r['deleted_at'] !== null, 'geaendert' => (int)$r['updated_at']];
+            }
+            audit($who, 'export');
+            header('Content-Type: application/json; charset=utf-8');
+            header('Content-Disposition: attachment; filename="sicherung-' . date('Y-m-d') . '.json"');
+            echo json_encode($out, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
 
         case 'test_mail':
             $ok = send_mail($user['email'], 'Testmail der Verwaltung', "Wenn du diese Mail liest, funktioniert der Mailversand.\n");
