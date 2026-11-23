@@ -1,0 +1,36 @@
+# Antonia Rüller – Apache-Konfiguration (Ionos)
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# HTTPS erzwingen
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Rechtliche Seiten
+RewriteRule ^impressum/?$ index.php?seite=impressum [L,QSA]
+RewriteRule ^datenschutz/?$ index.php?seite=datenschutz [L,QSA]
+</IfModule>
+
+# Interne Ordner und Dateien sperren
+<IfModule mod_authz_core.c>
+<FilesMatch "^(config(\.sample)?\.php|\.gitignore|README.*|.*\.sqlite.*|.*\.log)$">
+Require all denied
+</FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+<FilesMatch "^(config(\.sample)?\.php|\.gitignore|README.*|.*\.sqlite.*|.*\.log)$">
+Order allow,deny
+Deny from all
+</FilesMatch>
+</IfModule>
+
+# Zwischenspeicherung statischer Dateien
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresByType font/woff2 "access plus 1 year"
+ExpiresByType image/webp "access plus 1 month"
+ExpiresByType image/jpeg "access plus 1 month"
+</IfModule>
