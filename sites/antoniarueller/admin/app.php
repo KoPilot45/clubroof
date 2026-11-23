@@ -465,6 +465,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $back(AR_BASE . '/admin/?p=media', $r ? $r . ' von ' . $c . ' Bildern neu komprimiert, ' . round($b / 1048576, 1) . ' MB gespart.' : 'Alle ' . $c . ' Bilder sind bereits klein genug.');
         }
 
+        case 'upload_image': {
+            header('Content-Type: application/json');
+            try {
+                $name = store_image($_FILES['file'] ?? []);
+            } catch (RuntimeException $ex) {
+                echo json_encode(['ok' => false, 'error' => $ex->getMessage()]);
+                exit;
+            }
+            audit($who, 'media_upload', $name);
+            echo json_encode(['ok' => true, 'name' => $name, 'url' => upload_url($name)]);
+            exit;
+        }
+
         case 'media_delete': {
             $nm = (string)($_POST['name'] ?? '');
             if (!preg_match('~^[a-z0-9_-]+\.(jpg|png|webp)$~', $nm) || isset(media_usage()[$nm]) || !is_file(upload_dir() . '/' . $nm)) {

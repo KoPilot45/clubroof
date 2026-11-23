@@ -149,7 +149,7 @@
             var hid = document.getElementById('f_' + key + '_pick');
             if (hid) hid.value = it.name;
             var box = $('.focusbox[data-key="' + key + '"]');
-            if (box) { setPreview(box, it.url, 'Vorschau: Die Auswahl wird erst nach „Als Entwurf speichern“ bzw. „Veröffentlichen“ übernommen.'); resetFocus(box); var fi = document.querySelector('input[type=file][name="' + key + '"]'); if (fi) fi.value = ''; }
+            if (box) { var fi = document.querySelector('input[type=file][name="' + key + '"]'); if (fi) fi.value = ''; stagedDone(box, key, it.name, it.url, !!form && form.getAttribute('data-autosave') === '1'); }
             dirty = true;
             closeModal();
           });
@@ -479,6 +479,7 @@
       if (autosave) { clearTimeout(timer); timer = setTimeout(function () { save(false); }, 6000); }
     });
     form.addEventListener('submit', function () { clearTimeout(timer); });
+    form.addEventListener('ar:save', function () { clearTimeout(timer); save(false); });
     form.addEventListener('invalid', function (e) { var d = e.target.closest ? e.target.closest('details.adv') : null; if (d) d.open = true; }, true);
     if (lbtn && live && lframe && wrap) {
       lbtn.addEventListener('click', function () {
@@ -689,25 +690,41 @@
     if (inp) inp.value = '';
     var dot = $('.fdot', box); if (dot) { dot.style.left = '50%'; dot.style.top = '50%'; }
   }
+  function stagedBadge(box, text, bad) {
+    var b = box.parentNode.querySelector('.newbadge');
+    if (!b) { setPreview(box, $('img', box).getAttribute('src') || '', text); b = box.parentNode.querySelector('.newbadge'); }
+    b.textContent = text; b.hidden = !text; b.classList.toggle('bad', !!bad);
+  }
+  function stagedDone(box, key, name, url, hasAuto) {
+    var pick = document.getElementById('f_' + key + '_pick'); if (pick) pick.value = name;
+    setPreview(box, url, hasAuto ? 'Hochgeladen und als Entwurf gesichert. Auf der Seite erscheint das Bild erst nach „Veröffentlichen“.' : 'Hochgeladen. Das Bild wird mit „Als Entwurf speichern“ bzw. „Veröffentlichen“ übernommen und erscheint erst nach „Veröffentlichen“ auf der Seite.');
+    resetFocus(box);
+    var bd = box.parentNode.querySelector('.newbadge'); if (bd) bd.classList.remove('bad');
+    dirty = true;
+    if (form) { form.dispatchEvent(new Event('input', { bubbles: true })); if (hasAuto) form.dispatchEvent(new Event('ar:save')); }
+  }
   $$('input[type=file][accept^="image"]').forEach(function (inp) {
     inp.addEventListener('change', function () {
       var box = $('.focusbox[data-key="' + inp.name + '"]');
-      if (!box) return;
+      if (!box || !form) return;
       var f = inp.files && inp.files[0];
-      if (!f) {
-        var orig = box.getAttribute('data-orig');
-        if (orig !== null) {
-          if (orig) { $('img', box).src = orig; }
-          else { box.hidden = true; var h = box.parentNode.querySelector('.focushint'); if (h) h.hidden = true; }
-          var b = box.parentNode.querySelector('.newbadge'); if (b) b.hidden = true;
-        }
-        return;
-      }
+      if (!f) return;
       if (!/^image\//.test(f.type)) return;
-      var pick = document.getElementById('f_' + inp.name + '_pick'); if (pick) pick.value = '';
+      var hasAuto = form.getAttribute('data-autosave') === '1';
+      // sofortige lokale Vorschau, während das Bild hochgeladen wird
       var rd = new FileReader();
-      rd.onload = function () { setPreview(box, String(rd.result), 'Vorschau: Das Bild ist noch nicht gespeichert und erscheint erst nach „Als Entwurf speichern“ bzw. „Veröffentlichen“ auf der Seite.'); resetFocus(box); };
+      rd.onload = function () { setPreview(box, String(rd.result), 'Lädt hoch …'); };
       rd.readAsDataURL(f);
+      var fd = new FormData();
+      fd.set('_csrf', form.elements['_csrf'].value); fd.set('action', 'upload_image'); fd.set('file', f);
+      fetch(form.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+        if (!j.ok) throw new Error(j.error || 'Upload fehlgeschlagen');
+        inp.value = '';
+        stagedDone(box, inp.name, j.name, j.url, hasAuto);
+      }).catch(function (err) {
+        // Fallback: Datei bleibt im Feld und wird beim Speichern mit dem Formular hochgeladen
+        stagedBadge(box, 'Direkter Upload nicht möglich (' + (err && err.message ? err.message : 'Fehler') + '). Das Bild wird beim Speichern hochgeladen.', true);
+      });
     });
   });
   $$('.imgbox input[type=checkbox][name^="_remove_"]').forEach(function (cb) {

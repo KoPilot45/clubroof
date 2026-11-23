@@ -537,6 +537,26 @@ $lg = req('GET', "$base/admin/?p=group&g=legal")['body'];
 ok(substr_count($lg, 'data-rich="1"') === 2 && str_contains($lg, 'name="impressum"') && str_contains($lg, 'name="datenschutz"'), 'Editor für Impressum und Datenschutz');
 ok(!str_contains(req('GET', "$base/admin/?p=group&g=contact")['body'], 'data-rich'), 'andere Felder bleiben einfache Textfelder');
 
+echo "Bild sofort hochladen\n";
+$ui = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'file' => new CURLFile($root . '/seed-assets/antonia-portrait.jpg', 'image/jpeg', 'u.jpg')], true)['body'], true);
+ok(($ui['ok'] ?? false) === true && preg_match('~^[a-z0-9]+\.webp$~', (string)$ui['name']) && is_file("$root/uploads/{$ui['name']}"), 'Bild wird sofort hochgeladen (WebP)');
+ok(req('POST', "$base/admin/", ['action' => 'upload_image', 'file' => new CURLFile($root . '/seed-assets/antonia-portrait.jpg', 'image/jpeg', 'u.jpg')], true)['code'] === 403, 'Upload ohne CSRF-Token abgelehnt');
+$bad = tempnam(sys_get_temp_dir(), 'bad');
+file_put_contents($bad, 'kein Bild');
+$ub = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'file' => new CURLFile($bad, 'text/plain', 'x.png')], true)['body'], true);
+ok(($ub['ok'] ?? true) === false && !empty($ub['error']), 'Kein Bild: Fehlermeldung als JSON');
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Sofort-Upload-Test', 'medium' => 'text', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'draft', 'still_pick' => $ui['name']]);
+$row = q("SELECT draft FROM ar_items WHERE draft LIKE '%Sofort-Upload-Test%'")->fetch();
+ok($r['code'] === 302 && str_contains((string)($row['draft'] ?? ''), $ui['name']), 'hochgeladenes Bild wird über „Auswahl“ im Entwurf gespeichert');
+touch("$root/uploads/{$ui['name']}", time() - 3 * 86400);
+cleanup_uploads();
+ok(is_file("$root/uploads/{$ui['name']}"), 'Bild im Entwurf wird vom Aufräumen nicht gelöscht');
+foreach (q("SELECT id FROM ar_items WHERE draft LIKE '%Sofort-Upload-Test%'")->fetchAll() as $rw) {
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'discard_draft', 'kind' => 'item', 'id' => $rw['id']]);
+}
+@unlink($bad);
+@unlink("$root/uploads/{$ui['name']}");
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

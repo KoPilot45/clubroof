@@ -474,3 +474,4 @@ input[type=file]:focus-visible{outline:3px solid #f2b705;outline-offset:3px;bord
 .newbadge[hidden]{display:none}
 .focusbox.removing{opacity:.35}
 .focusbox.removing::after{content:'wird entfernt';position:absolute;left:8px;top:8px;background:var(--bad);color:#fff;font-size:12px;padding:2px 8px;border-radius:99px}
+.newbadge.bad{background:#fbe9e6;border-color:#e6a49c;color:#7d1d15}
