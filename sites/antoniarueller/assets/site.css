@@ -558,3 +558,6 @@ a:not([class]){text-decoration-thickness:1px;text-underline-offset:.2em;transiti
   .cl-fig.txt .cl-no{font-size:72px}
   .cl-kind{right:8px;bottom:8px;font-size:9px;padding:4px 7px}
 }
+
+.foot-credit{color:inherit;text-underline-offset:3px}
+.foot-credit:hover{color:var(--accent)}

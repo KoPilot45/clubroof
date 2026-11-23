@@ -309,7 +309,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 <p class="mailnote" id="mailnote" aria-live="polite" hidden></p>
 <footer class="foot">
-<span><?= e(implode(' · ', array_filter([$contact['copyright'], $contact['photo_credit']]))) ?></span>
+<span><?= e($contact['copyright']) ?><?php if (trim((string)$contact['photo_credit']) !== ''): ?><?= trim((string)$contact['copyright']) !== '' ? ' · ' : '' ?><?php $pcu = safe_url((string)$contact['photo_credit_url']); if ($pcu !== ''): ?><a class="foot-credit" href="<?= e($pcu) ?>" target="_blank" rel="noopener noreferrer"><?= e($contact['photo_credit']) ?></a><?php else: ?><?= e($contact['photo_credit']) ?><?php endif; endif; ?></span>
 <span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;background:var(--mute);display:inline-block"></span><?= e($contact['end_note']) ?></span>
 <span style="display:flex;gap:24px"><a href="<?= e(legal_url('impressum')) ?>"><?= tr('Impressum') ?></a><a href="<?= e(legal_url('datenschutz')) ?>"><?= tr('Datenschutz') ?></a></span>
 </footer>

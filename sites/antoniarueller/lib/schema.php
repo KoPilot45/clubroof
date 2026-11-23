@@ -298,6 +298,7 @@ function schema(): array
             f('pdf', 'cv_pdf', 'Lebenslauf als PDF'),
             f('text', 'copyright', 'Copyright-Zeile', ['max' => 120, 'default' => '© 2026 Antonia Rüller']),
             f('text', 'photo_credit', 'Fotonachweis', ['max' => 120, 'hint' => 'z. B. „Fotos: Name“ – leer = nichts anzeigen.']),
+            f('url', 'photo_credit_url', 'Fotonachweis: Link (optional)', ['hint' => 'Der Fotonachweis in der Fußzeile wird dann zum Link, z. B. auf die Seite der Fotografin. Öffnet in einem neuen Tab.']),
             f('text', 'end_note', 'Schlusszeile', ['max' => 60, 'default' => 'Stop — Ende Reel №1']),
         ],
     ];

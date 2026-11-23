@@ -512,6 +512,20 @@ foreach (q("SELECT id FROM ar_items WHERE coll = 'clips' AND data LIKE '%Vorscha
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
 }
 
+echo "Fotonachweis mit Link\n";
+$ctOrig = setting('contact', true);
+save_setting('contact', array_merge($ctOrig, ['photo_credit' => 'Fotos: Test <b>', 'photo_credit_url' => 'https://example.org/fotos']), 'test', true);
+clear_page_cache();
+$ft = req('GET', "$base/")['body'];
+ok(str_contains($ft, '<a class="foot-credit" href="https://example.org/fotos" target="_blank" rel="noopener noreferrer">Fotos: Test &lt;b&gt;</a>'), 'Fotonachweis wird zum Link (maskiert, neuer Tab)');
+save_setting('contact', array_merge($ctOrig, ['photo_credit' => 'Fotos: Test', 'photo_credit_url' => 'javascript:alert(1)']), 'test', true);
+clear_page_cache();
+$ft = req('GET', "$base/")['body'];
+ok(!str_contains($ft, 'javascript:alert') && str_contains($ft, 'Fotos: Test') && !str_contains($ft, 'foot-credit'), 'unsicherer Link wird nicht ausgegeben');
+save_setting('contact', $ctOrig, 'test', true);
+clear_page_cache();
+ok(str_contains(req('GET', "$base/admin/?p=group&g=contact")['body'], 'Fotonachweis: Link (optional)'), 'Backend-Feld für den Link');
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);
