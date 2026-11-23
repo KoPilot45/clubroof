@@ -531,3 +531,23 @@ a:not([class]){text-decoration-thickness:1px;text-underline-offset:.2em;transiti
 }
 
 .pod-desc{margin-top:4px;max-width:60ch;font-family:'Inter Tight',system-ui,sans-serif;font-size:15px;line-height:1.5;color:#C9DEDA}
+
+/* Hero: ruhiger Namensschriftzug in Instrument Serif (zweizeilig), Foto rechts */
+.ar-hero h1{margin:48px 0 0;line-height:.9}
+.ar-hero .h1-first{font-family:var(--serif);font-size:clamp(72px,10.4vw,148px);letter-spacing:-.025em;text-transform:none;line-height:.9}
+.ar-hero .h1-last{font-size:clamp(72px,10.4vw,148px);letter-spacing:-.025em;margin-top:0;padding-left:.55em;line-height:.9}
+.ar-hero .hero-lead{font-size:clamp(24px,2.3vw,32px);line-height:1.18;max-width:30ch}
+@media (min-width:861px){
+  .ar-hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);grid-template-rows:auto auto 1fr;column-gap:24px;min-height:660px;padding-bottom:0}
+  .ar-hero>.sec-head{grid-column:1/-1}
+  .ar-hero h1{grid-column:1;grid-row:2}
+  .ar-hero .hero-copy{grid-column:1;grid-row:3;align-self:end;max-width:none;margin-top:36px;padding-bottom:48px}
+  .ar-hero-media{grid-column:2;grid-row:2/4;position:relative;right:auto;bottom:auto;height:auto;aspect-ratio:auto;min-height:620px;align-self:stretch;margin-top:16px}
+  .ar-hero-circle{left:4%;top:4%;width:92%}
+  .ar-hero-img{left:50%;right:auto;transform:translateX(-50%);height:100%;max-height:720px}
+  .ar-hero-tag{left:-3%;right:auto;bottom:28px;z-index:3;box-shadow:6px 6px 0 var(--ink)}
+}
+@media (max-width:860px){
+  .ar-hero .h1-first,.ar-hero .h1-last{font-size:clamp(64px,22vw,110px)}
+  .ar-hero h1{margin-top:28px}
+}
