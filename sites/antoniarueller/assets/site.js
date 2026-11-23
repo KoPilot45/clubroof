@@ -60,7 +60,7 @@
     if (reduce) { applyClip(id); return; }
     var fe = $$('.ed-sel-l, .mob-panel');
     fe.forEach(function (e) { e.classList.add('fx-out'); });
-    fadeT = setTimeout(function () { applyClip(current); fe.forEach(function (e) { e.classList.remove('fx-out'); }); }, 130);
+    fadeT = setTimeout(function () { applyClip(current); fe.forEach(function (e) { e.classList.remove('fx-out'); }); }, 220);
   }
   $$('.ar-tlclip').forEach(function (b) {
     b.addEventListener('click', function () { select(b.getAttribute('data-id')); });
@@ -276,7 +276,7 @@
         var isCustom = custom.some(function (c) { return ch.classList.contains(c); });
         ch.classList.add(isCustom ? 'cx-pre' : 'rv-pre');
         if (isCustom) {
-          $$('.ar-tlclip', ch).forEach(function (c, i) { c.style.setProperty('--d', (150 + Math.min(i, 20) * 45) + 'ms'); });
+          $$('.ar-tlclip', ch).forEach(function (c, i) { c.style.setProperty('--d', (300 + Math.min(i, 20) * 80) + 'ms'); });
         }
         seen.push(ch);
       });
@@ -286,10 +286,10 @@
         var n = 0;
         entries.forEach(function (en) {
           if (!en.isIntersecting) return;
-          en.target.style.setProperty('--rd', (n++ * 80) + 'ms');
+          en.target.style.setProperty('--rd', (n++ * 140) + 'ms');
           en.target.classList.add('in');
           rio.unobserve(en.target);
-          (function (el) { setTimeout(function () { el.classList.remove('rv-pre', 'cx-pre', 'in'); el.style.removeProperty('--rd'); }, 2200); })(en.target);
+          (function (el) { setTimeout(function () { el.classList.remove('rv-pre', 'cx-pre', 'in'); el.style.removeProperty('--rd'); }, 4200); })(en.target);
         });
       }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
       seen.forEach(function (el) { rio.observe(el); });

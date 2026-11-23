@@ -22,6 +22,7 @@ a:hover{color:var(--accent)}
 .ar-track{animation:ar-marquee 28s linear infinite}
 .ar-rec{animation:ar-blink 1.4s steps(1) infinite;border-radius:50%;background:var(--rec);display:inline-block}
 .ar-outline,.ar-year-past{color:transparent;-webkit-text-stroke:1.5px var(--ink)}
+.ar-outline{-webkit-text-stroke-width:2px;text-rendering:geometricPrecision;paint-order:stroke fill}
 .ar-year-now{color:var(--accent)}
 
 /* Kopfzeile (bleibt beim Scrollen oben) */
@@ -497,31 +498,31 @@ a:not([class]){text-decoration-thickness:1px;text-underline-offset:.2em;transiti
 /* 3: gleitender Strich unter dem aktiven Menüpunkt */
 .ar-nav{position:relative}
 .ar-nav a.on{border-bottom-color:transparent}
-.nav-ind{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--accent);opacity:0;pointer-events:none;transition:transform .4s cubic-bezier(.4,0,.2,1),width .4s cubic-bezier(.4,0,.2,1),opacity .25s}
+.nav-ind{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--accent);opacity:0;pointer-events:none;transition:transform .6s cubic-bezier(.4,0,.2,1),width .6s cubic-bezier(.4,0,.2,1),opacity .35s}
 /* 6: Überblendung beim Wechsel des aktiven Beitrags */
-.ed-sel-l,.mob-panel{transition:opacity .16s ease}
+.ed-sel-l,.mob-panel{transition:opacity .24s ease}
 .fx-out{opacity:0}
 @media (prefers-reduced-motion:no-preference){
   /* 7: sanft pulsierender Aufnahme-Punkt */
   @keyframes ar-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
-  .ar-rec{animation:ar-pulse 2.4s ease-in-out infinite}
+  .ar-rec{animation:ar-pulse 3.2s ease-in-out infinite}
   /* 1: Abschnitte blenden beim Scrollen ein */
-  .rv-pre{opacity:0;transform:translateY(18px)}
-  .rv-pre.in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.2,.6,.2,1) var(--rd,0ms),transform .7s cubic-bezier(.2,.6,.2,1) var(--rd,0ms)}
+  .rv-pre{opacity:0;transform:translateY(14px)}
+  .rv-pre.in{opacity:1;transform:none;transition:opacity 1.2s cubic-bezier(.22,.61,.36,1) var(--rd,0ms),transform 1.3s cubic-bezier(.22,.61,.36,1) var(--rd,0ms)}
   /* 5: Clips laden nacheinander in die Spuren, danach erscheint die Abspielmarke */
   .cx-pre:not(.in) .ar-tlclip{opacity:0;transform:translateX(-26px)}
-  .cx-pre.in .ar-tlclip{transition:opacity .5s ease var(--d,0ms),transform .5s cubic-bezier(.2,.6,.2,1) var(--d,0ms)}
+  .cx-pre.in .ar-tlclip{transition:opacity .9s ease var(--d,0ms),transform .9s cubic-bezier(.22,.61,.36,1) var(--d,0ms)}
   .cx-pre:not(.in) .playhead{opacity:0}
-  .cx-pre.in .playhead{transition:opacity .5s ease .9s,left .35s ease}
+  .cx-pre.in .playhead{transition:opacity .8s ease 1.6s,left .45s ease}
   .ar-ed-desk.cx-pre:not(.in) .ed-ruler{opacity:0}
-  .ar-ed-desk.cx-pre.in .ed-ruler{transition:opacity .6s ease}
+  .ar-ed-desk.cx-pre.in .ed-ruler{transition:opacity 1s ease}
   /* 10: Aufmacher baut sich ruhig auf */
   .cx-pre:not(.in) .fa-mast,.cx-pre:not(.in) .fa-kick,.cx-pre:not(.in) .fa-stand,.cx-pre:not(.in) .fa-foot,.cx-pre:not(.in) .fa-no,.cx-pre:not(.in) .fa-img{opacity:0;transform:translateY(16px)}
   .cx-pre:not(.in) .ar-feat-h{opacity:0;transform:translateY(24px);clip-path:inset(0 0 100% 0)}
-  .cx-pre.in .ar-feat-h{clip-path:inset(-.3em -.3em -.3em -.3em);transition:opacity .6s ease .2s,transform .8s cubic-bezier(.2,.6,.2,1) .2s,clip-path .9s cubic-bezier(.2,.6,.2,1) .2s}
-  .cx-pre.in .fa-mast{transition:opacity .6s ease,transform .6s ease}
-  .cx-pre.in .fa-kick{transition:opacity .6s ease .1s,transform .6s ease .1s}
-  .cx-pre.in .fa-no,.cx-pre.in .fa-img{transition:opacity 1s ease .4s,transform 1s cubic-bezier(.2,.6,.2,1) .4s}
-  .cx-pre.in .fa-stand{transition:opacity .7s ease .55s,transform .7s ease .55s}
-  .cx-pre.in .fa-foot{transition:opacity .7s ease .7s,transform .7s ease .7s}
+  .cx-pre.in .ar-feat-h{clip-path:inset(-.3em -.3em -.3em -.3em);transition:opacity 1s ease .3s,transform 1.3s cubic-bezier(.22,.61,.36,1) .3s,clip-path 1.4s cubic-bezier(.22,.61,.36,1) .3s}
+  .cx-pre.in .fa-mast{transition:opacity 1s ease,transform 1s ease}
+  .cx-pre.in .fa-kick{transition:opacity 1s ease .15s,transform 1s ease .15s}
+  .cx-pre.in .fa-no,.cx-pre.in .fa-img{transition:opacity 1.5s ease .6s,transform 1.5s cubic-bezier(.22,.61,.36,1) .6s}
+  .cx-pre.in .fa-stand{transition:opacity 1.1s ease .85s,transform 1.1s ease .85s}
+  .cx-pre.in .fa-foot{transition:opacity 1.1s ease 1.1s,transform 1.1s ease 1.1s}
 }
