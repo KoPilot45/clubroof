@@ -62,7 +62,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php endforeach; ?>
 </nav>
 <span class="lang-switch" role="group" aria-label="<?= current_lang() === 'en' ? 'Language' : 'Sprache' ?>"><a href="<?= e(lang_url('de', $page)) ?>" hreflang="de" lang="de"<?= current_lang() === 'de' ? ' aria-current="true"' : '' ?>>DE</a><a href="<?= e(lang_url('en', $page)) ?>" hreflang="en" lang="en"<?= current_lang() === 'en' ? ' aria-current="true"' : '' ?>>EN</a></span>
-<?php if ($mailUser !== '' && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-nav ar-nav-cta" href="#kontakt" data-u="<?= e(base64_encode($mailUser)) ?>" data-d="<?= e(base64_encode($mailDomain)) ?>"><?= e($contact['cta_label']) ?> <span aria-hidden="true">↗</span></a><?php endif; ?>
+<?php if ($hasMail && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-nav ar-nav-cta" href="#kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php"><?= e($contact['cta_label']) ?> <span aria-hidden="true">↗</span></a><?php endif; ?>
 <button type="button" class="ar-burger" id="burger" aria-label="<?= tr('Menü öffnen') ?>" aria-expanded="false" aria-controls="menu"><svg aria-hidden="true" width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 2h18M1 12h18"></path></svg></button>
 </div>
 </header>
@@ -308,9 +308,10 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <h2 class="k-h"><span class="ar-schreib"><?= e($contact['h1']) ?></span><span class="k-h2"><?= e($contact['h2']) ?><span style="color:var(--accent)">.</span></span></h2>
 <p class="k-intro"><?= e($contact['intro']) ?></p>
 <div class="k-btns">
-<?php if ($mailUser !== ''): ?><a class="btn-solid btn-lg" id="mailbtn" href="#kontakt" data-u="<?= e(base64_encode($mailUser)) ?>" data-d="<?= e(base64_encode($mailDomain)) ?>"><span id="mailtxt"><?= tr('E-Mail schreiben') ?></span> <span aria-hidden="true">↗</span></a><noscript><span class="muted"><?= e($mailUser) ?> [at] <?= e($mailDomain) ?></span></noscript><?php endif; ?>
+<?php if ($hasMail): ?><a class="btn-solid btn-lg" id="mailbtn" href="#kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php" data-note="<?= e(tr('Mailprogramm öffnet sich nicht? Adresse:')) ?>" data-copy="<?= e(tr('Kopieren')) ?>" data-copied="<?= e(tr('Kopiert')) ?>"><span><?= e($contact['mail_label'] !== '' ? $contact['mail_label'] : tr('E-Mail schreiben')) ?></span> <span aria-hidden="true">↗</span></a><noscript><span class="muted"><?= e(tr('Bitte JavaScript aktivieren, um die E-Mail-Adresse zu sehen – oder im Impressum nachsehen.')) ?></span></noscript><?php endif; ?>
 <?php foreach ($social as $so): ?><a class="btn-ghost btn-lg" href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> <span aria-hidden="true">↗</span></a><?php endforeach; ?>
 </div>
+<p class="mailnote" id="mailnote" aria-live="polite" hidden></p>
 <footer class="foot">
 <span><?= e(implode(' · ', array_filter([$contact['copyright'], $contact['photo_credit']]))) ?></span>
 <span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;background:var(--mute);display:inline-block"></span><?= e($contact['end_note']) ?></span>
@@ -325,7 +326,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php foreach ($nav as $i => $n): ?><li><a href="#<?= e($n['anchor']) ?>"><span class="mn"><?= sprintf('%02d', $i + 1) ?></span><span class="ml"><?= e($n['label']) ?></span></a></li>
 <?php endforeach; ?>
 </ol></nav>
-<?php if ($mailUser !== '' && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-block menu-cta" href="#kontakt" data-u="<?= e(base64_encode($mailUser)) ?>" data-d="<?= e(base64_encode($mailDomain)) ?>" style="margin-top:28px"><?= e($contact['cta_label']) ?> ↗</a><?php endif; ?>
+<?php if ($hasMail && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-block menu-cta" href="#kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php" style="margin-top:28px"><?= e($contact['cta_label']) ?> ↗</a><?php endif; ?>
 <div class="menu-foot"><span class="lang-switch lang-menu"><a href="<?= e(lang_url('de', $page)) ?>" hreflang="de" lang="de">Deutsch</a> · <a href="<?= e(lang_url('en', $page)) ?>" hreflang="en" lang="en">English</a></span><span><?= e($hero['now_lines'] !== '' ? str_replace("\n", ' · ', trim(explode("\n", $hero['now_lines'])[0])) . ' · ' . $hero['tag_role'] : '') ?></span>
 <?php foreach ($social as $so): ?><a href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> ↗</a><?php endforeach; ?></div>
 </div>

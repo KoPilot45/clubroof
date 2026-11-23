@@ -13,7 +13,8 @@ function ui_en(): array
         'Impressum' => 'Imprint', 'Datenschutz' => 'Privacy', 'heute' => 'today', 'seit' => 'since', 'Zur Startseite' => 'Back to home', 'Clips' => 'clips',
         'öffnet in neuem Tab' => 'opens in a new tab', 'Beitrag öffnen' => 'Open story', 'Video / TV' => 'Video / TV', 'Text / Online' => 'Text / online', 'Radio' => 'Radio',
         'YouTube / Social' => 'YouTube / social', 'Social' => 'Social', 'Video' => 'Video', 'Text' => 'Text', 'Deutsche Version' => 'Deutsche Version', 'Sprache' => 'Language',
-        'Zum Inhalt' => 'To content',
+        'Zum Inhalt' => 'To content', 'Mailprogramm öffnet sich nicht? Adresse:' => 'Mail app not opening? Address:', 'Kopieren' => 'Copy', 'Kopiert' => 'Copied',
+        'Bitte JavaScript aktivieren, um die E-Mail-Adresse zu sehen – oder im Impressum nachsehen.' => 'Please enable JavaScript to see the email address – or check the imprint.',
     ];
 }
 

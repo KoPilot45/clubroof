@@ -212,9 +212,16 @@ function cv_when(array $r): string
     return $b !== '' ? $a . ' — ' . $b : $a;
 }
 
+function ent(string $s): string
+{
+    return implode('', array_map(fn($c) => '&#' . ord($c) . ';', str_split($s)));
+}
+
 function legal_inline(string $s): string
 {
     $s = e($s);
+    // E-Mail-Adressen als HTML-Zeichencodes (für Menschen lesbar und klickbar, für einfache Adress-Sammler nicht)
+    $s = preg_replace_callback('~[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}~', fn($m) => '<a href="' . ent('mailto:' . $m[0]) . '">' . ent($m[0]) . '</a>', $s);
     // URLs und www.-Adressen verlinken
     return preg_replace_callback('~\b((?:https?://|www\.)[^\s<]+[^\s<.,;:)\]])~u', function ($m) {
         $u = $m[1];

@@ -35,7 +35,7 @@ function en_dictionary(): array
         'Porträt von Antonia Rüller vor grüner Wand' => 'Portrait of Antonia Rüller in front of a green wall',
         'Deutsch' => 'German', 'Englisch' => 'English', 'Französisch' => 'French', 'Türkisch' => 'Turkish', '(im Aufbau)' => '(learning)',
         // Kontakt
-        'Schreib' => 'Write', 'mir' => 'me', 'Schreib mir' => 'Write to me',
+        'E-Mail schreiben' => 'Write an email', 'Schreib' => 'Write', 'mir' => 'me', 'Schreib mir' => 'Write to me',
         'Für Themen, Recherchen und Zusammenarbeit.' => 'For stories, investigations and collaboration.',
         'Stop — Ende Reel №1' => 'Stop — end of reel №1',
         // Referenzen

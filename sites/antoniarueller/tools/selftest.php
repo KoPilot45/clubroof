@@ -126,6 +126,35 @@ $ex = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'export']);
 ok(str_contains($ex['head'], 'attachment') && str_contains($ex['body'], '"eintraege"'), 'Sicherung als JSON');
 ok(str_contains(req('GET', "$base/admin/?p=check")['body'], 'Diagnose-Datei'), 'Systemcheck zeigt Hinweise');
 
+echo "E-Mail-Schutz\n";
+require_once $root . '/lib/render.php';
+$mailAddr = 'privat.test@example.org';
+$cOld = setting('contact', true);
+$lOld = setting('legal', true);
+save_setting('contact', array_merge($cOld, ['email' => $mailAddr]), 'test');
+save_setting('legal', array_merge($lOld, ['impressum' => "## Kontakt\n\nE-Mail: $mailAddr"]), 'test');
+clear_page_cache();
+$home = req('GET', "$base/")['body'];
+ok(!str_contains($home, $mailAddr) && !str_contains($home, 'privat.test') && !str_contains($home, base64_encode('privat.test')) && !str_contains($home, base64_encode('example.org')), 'Adresse steht nicht im Quelltext der Startseite');
+ok(str_contains($home, 'data-mail=') && str_contains($home, 'id="mailbtn"'), 'Mail-Button ohne Adresse im HTML');
+ok(!preg_match('~id="mailbtn"[^>]*>\s*<span>[^<]*@~', $home), 'Button-Text ist keine Adresse');
+$ch = function (string $method, array $headers) use ($base) {
+    $c = curl_init("$base/mail.php");
+    curl_setopt_array($c, [CURLOPT_RETURNTRANSFER => true, CURLOPT_CUSTOMREQUEST => $method, CURLOPT_HTTPHEADER => $headers, CURLOPT_USERAGENT => 'test-client']);
+    $b = (string)curl_exec($c);
+    return [curl_getinfo($c, CURLINFO_HTTP_CODE), $b];
+};
+q('DELETE FROM ar_throttle');
+ok($ch('GET', [])[0] === 403, 'mail.php: GET abgelehnt');
+ok($ch('POST', [])[0] === 403, 'mail.php: ohne Kopfzeile abgelehnt');
+[$mc, $mb] = $ch('POST', ['X-Requested-With: fetch']);
+ok($mc === 200 && (json_decode($mb, true)['m'] ?? '') === $mailAddr, 'mail.php liefert die Adresse auf Anfrage');
+$imp = req('GET', "$base/impressum/")['body'];
+ok(!str_contains($imp, $mailAddr) && str_contains($imp, '&#112;&#114;&#105;'), 'Impressum: Adresse als Zeichencodes');
+save_setting('contact', $cOld, 'test');
+save_setting('legal', $lOld, 'test');
+clear_page_cache();
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

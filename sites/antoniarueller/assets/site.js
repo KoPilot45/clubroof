@@ -76,13 +76,35 @@
     }
   });
 
-  // ---- E-Mail-Adresse erst im Browser zusammensetzen (Spam-Schutz) ----
-  $$('[data-u]').forEach(function (el) {
-    try {
-      var addr = atob(el.getAttribute('data-u')) + '@' + atob(el.getAttribute('data-d'));
-      el.setAttribute('href', 'mailto:' + addr);
-      if (el.id === 'mailbtn') { var t = $('#mailtxt'); if (t) t.textContent = addr; }
-    } catch (e) { /* ignorieren */ }
+  // ---- E-Mail: Adresse steht nicht im Quelltext, sondern wird erst beim Klick geladen ----
+  var note = $('#mailnote');
+  $$('[data-mail]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      fetch(el.getAttribute('data-mail'), { method: 'POST', headers: { 'X-Requested-With': 'fetch' }, credentials: 'omit' })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (d) {
+          if (!d || !d.m) return;
+          window.location.href = 'mailto:' + d.m;
+          var host = $('#mailbtn') || el;
+          if (note) {
+            note.hidden = false;
+            note.textContent = '';
+            var span = document.createElement('span');
+            span.textContent = (host.getAttribute('data-note') || '') + ' ' + d.m + ' ';
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'copybtn';
+            b.textContent = host.getAttribute('data-copy') || 'Copy';
+            b.addEventListener('click', function () {
+              if (navigator.clipboard) navigator.clipboard.writeText(d.m).then(function () { b.textContent = host.getAttribute('data-copied') || 'Copied'; });
+            });
+            note.appendChild(span);
+            note.appendChild(b);
+          }
+        })
+        .catch(function () { if (note) { note.hidden = false; note.textContent = '…'; } });
+    });
   });
 
   // ---- Kopfzeile: Linie beim Scrollen, aktiver Abschnitt ----

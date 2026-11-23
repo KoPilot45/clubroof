@@ -136,10 +136,7 @@ $cvMin = $cvYears ? min($cvYears) : '';
 
 $jsonld = $seo['jsonld'] ? build_jsonld($seo, $hero, array_column($social, 'url'), $langs, $clips) : '';
 
-$mailUser = $mailDomain = '';
-if (str_contains($contact['email'], '@')) {
-    [$mailUser, $mailDomain] = explode('@', $contact['email'], 2);
-}
+$hasMail = str_contains((string)$contact['email'], '@');
 
 ob_start();
 require dirname(__DIR__) . '/templates/page.php';

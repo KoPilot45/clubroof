@@ -104,73 +104,12 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'social_v1';
     }
 
-    // Englische Startübersetzungen
-    if (!in_array('en_v1', $applied, true)) {
-        require_once __DIR__ . '/en_seed.php';
-        $dict = en_dictionary();
-        $s = schema();
-        foreach (q('SELECT id, coll, data FROM ar_items')->fetchAll() as $r) {
-            $def = $s['collections'][$r['coll']] ?? null;
-            if (!$def) {
-                continue;
-            }
-            $d = json_arr($r['data']) ?? [];
-            $eff = array_merge(field_defaults($def['fields']), $d);
-            $ch = false;
-            foreach ($def['fields'] as $f) {
-                if ($f['type'] === 'section' || !field_translatable($f)) {
-                    continue;
-                }
-                $de = (string)($eff[$f['key']] ?? '');
-                if ($de !== '' && trim((string)($d[$f['key'] . '_en'] ?? '')) === '' && isset($dict[$de])) {
-                    $d[$f['key'] . '_en'] = $dict[$de];
-                    $ch = true;
-                }
-            }
-            if ($ch) {
-                q('UPDATE ar_items SET data = ? WHERE id = ?', [enc($d), (int)$r['id']]);
-            }
+    // Englische Startübersetzungen (erneut anwendbar: füllt nur leere Felder)
+    foreach (['en_v1', 'en_v2'] as $mid) {
+        if (!in_array($mid, $applied, true)) {
+            migrate_en_dictionary();
+            $applied[] = $mid;
         }
-        foreach ($s['groups'] as $g => $def) {
-            $row = q('SELECT data FROM ar_settings WHERE grp = ?', [$g])->fetch();
-            $d = $row ? (json_arr($row['data']) ?? []) : [];
-            $eff = array_merge(field_defaults($def['fields']), $d);
-            $ch = false;
-            foreach ($def['fields'] as $f) {
-                if ($f['type'] === 'section' || !field_translatable($f)) {
-                    continue;
-                }
-                $de = (string)($eff[$f['key']] ?? '');
-                if ($de !== '' && trim((string)($d[$f['key'] . '_en'] ?? '')) === '' && isset($dict[$de])) {
-                    $d[$f['key'] . '_en'] = $dict[$de];
-                    $ch = true;
-                }
-            }
-            if ($g === 'seo') {
-                foreach (en_seo_defaults() as $k => $v) {
-                    if (trim((string)($d[$k] ?? '')) === '') {
-                        $d[$k] = $v;
-                        $ch = true;
-                    }
-                }
-            }
-            if ($g === 'legal') {
-                foreach (legal_defaults_en() as $k => $v) {
-                    if (trim((string)($d[$k . '_en'] ?? '')) === '') {
-                        $d[$k . '_en'] = $v;
-                        $ch = true;
-                    }
-                }
-            }
-            if ($ch) {
-                if ($row) {
-                    q('UPDATE ar_settings SET data = ? WHERE grp = ?', [enc($d), $g]);
-                } else {
-                    q('INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES (?,?,?,?)', [$g, enc($d), time(), 'migration']);
-                }
-            }
-        }
-        $applied[] = 'en_v1';
     }
 
     // Datenschutz: Reichweitenmessung ergänzen
@@ -214,5 +153,73 @@ function run_migrations(PDO $pdo): void
         // robots.txt, sitemap.xml, llms.txt als echte Dateien bereitstellen
         require_once __DIR__ . '/seo_files.php';
         regenerate_seo_files();
+    }
+}
+
+function migrate_en_dictionary(): void
+{
+    require_once __DIR__ . '/en_seed.php';
+    $dict = en_dictionary();
+    $s = schema();
+    foreach (q('SELECT id, coll, data FROM ar_items')->fetchAll() as $r) {
+        $def = $s['collections'][$r['coll']] ?? null;
+        if (!$def) {
+            continue;
+        }
+        $d = json_arr($r['data']) ?? [];
+        $eff = array_merge(field_defaults($def['fields']), $d);
+        $ch = false;
+        foreach ($def['fields'] as $f) {
+            if ($f['type'] === 'section' || !field_translatable($f)) {
+                continue;
+            }
+            $de = (string)($eff[$f['key']] ?? '');
+            if ($de !== '' && trim((string)($d[$f['key'] . '_en'] ?? '')) === '' && isset($dict[$de])) {
+                $d[$f['key'] . '_en'] = $dict[$de];
+                $ch = true;
+            }
+        }
+        if ($ch) {
+            q('UPDATE ar_items SET data = ? WHERE id = ?', [enc($d), (int)$r['id']]);
+        }
+    }
+    foreach ($s['groups'] as $g => $def) {
+        $row = q('SELECT data FROM ar_settings WHERE grp = ?', [$g])->fetch();
+        $d = $row ? (json_arr($row['data']) ?? []) : [];
+        $eff = array_merge(field_defaults($def['fields']), $d);
+        $ch = false;
+        foreach ($def['fields'] as $f) {
+            if ($f['type'] === 'section' || !field_translatable($f)) {
+                continue;
+            }
+            $de = (string)($eff[$f['key']] ?? '');
+            if ($de !== '' && trim((string)($d[$f['key'] . '_en'] ?? '')) === '' && isset($dict[$de])) {
+                $d[$f['key'] . '_en'] = $dict[$de];
+                $ch = true;
+            }
+        }
+        if ($g === 'seo') {
+            foreach (en_seo_defaults() as $k => $v) {
+                if (trim((string)($d[$k] ?? '')) === '') {
+                    $d[$k] = $v;
+                    $ch = true;
+                }
+            }
+        }
+        if ($g === 'legal') {
+            foreach (legal_defaults_en() as $k => $v) {
+                if (trim((string)($d[$k . '_en'] ?? '')) === '') {
+                    $d[$k . '_en'] = $v;
+                    $ch = true;
+                }
+            }
+        }
+        if ($ch) {
+            if ($row) {
+                q('UPDATE ar_settings SET data = ? WHERE grp = ?', [enc($d), $g]);
+            } else {
+                q('INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES (?,?,?,?)', [$g, enc($d), time(), 'migration']);
+            }
+        }
     }
 }
