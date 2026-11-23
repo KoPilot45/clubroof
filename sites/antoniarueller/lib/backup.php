@@ -5,7 +5,13 @@ function backup_last(): int
 {
     $r = settings_rows()['_backup']['data'] ?? null;
     $d = json_arr($r);
-    return (int)($d['last'] ?? 0);
+    $last = (int)($d['last'] ?? 0);
+    foreach (backup_list() as $f) {
+        if ($f['type'] !== 'vor-import') {
+            return max($last, $f['time']);
+        }
+    }
+    return $last;
 }
 
 function cron_key(): string
@@ -34,28 +40,68 @@ function export_json(): string
     return (string)json_encode(export_data(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }
 
-/** Sicherung per Mail an den Inhaber. */
-function backup_mail(): bool
+const BACKUP_TYPES = ['auto' => 'automatisch', 'manuell' => 'manuell', 'vor-import' => 'vor Wiederherstellung'];
+
+function backup_dir(): string
 {
-    $json = export_json();
-    $to = array_column(q("SELECT email FROM ar_users WHERE role = 'owner'")->fetchAll(), 'email') ?: [(string)cfg('owner_email')];
-    $ok = false;
-    foreach ($to as $rcpt) {
-        $ok = send_mail((string)$rcpt, 'Sicherung antoniarueller.de ' . date('d.m.Y'),
-            "Anbei die Sicherung aller Inhalte (JSON) vom " . date('d.m.Y H:i') . " Uhr.\nWiederherstellen: Verwaltung > Sicherung > Datei hochladen.\nBilder (Ordner uploads/) werden hierin nicht gesichert – bitte gelegentlich per FTP herunterladen.\n",
-            [['name' => 'sicherung-' . date('Y-m-d') . '.json', 'type' => 'application/json', 'data' => $json]]) || $ok;
+    $d = AR_ROOT . '/data/backups';
+    if (!is_dir($d)) {
+        @mkdir($d, 0750, true);
     }
-    if ($ok) {
+    return $d;
+}
+
+/** Legt eine Sicherung auf dem Server ab (data/backups/) und räumt alte auf. Rückgabe: Dateiname oder null. */
+function backup_create(string $type): ?string
+{
+    if (!isset(BACKUP_TYPES[$type])) {
+        return null;
+    }
+    $name = 'sicherung-' . date('Ymd-His') . '-' . $type . '-' . bin2hex(random_bytes(3)) . '.json';
+    if (@file_put_contents(backup_dir() . '/' . $name, export_json(), LOCK_EX) === false) {
+        return null;
+    }
+    @chmod(backup_dir() . '/' . $name, 0640);
+    if ($type !== 'vor-import') {
         save_setting('_backup', ['last' => time()], 'system');
     }
-    return $ok;
+    // Aufbewahrung: automatische und manuelle je die neuesten 15, vor-Wiederherstellung die neuesten 5
+    foreach (['auto' => 15, 'manuell' => 15, 'vor-import' => 5] as $t => $keep) {
+        $files = array_values(array_filter(backup_list(), fn($f) => $f['type'] === $t));
+        foreach (array_slice($files, $keep) as $old) {
+            @unlink(backup_dir() . '/' . $old['file']);
+        }
+    }
+    return $name;
+}
+
+/** Gültiger Dateiname einer Sicherung? (verhindert Zugriffe auf andere Dateien) */
+function backup_valid_name(string $name): bool
+{
+    return (bool)preg_match('~^sicherung-\d{8}-\d{6}-(auto|manuell|vor-import)-[a-f0-9]{6}\.json$~', $name);
+}
+
+/** @return list<array{file:string,type:string,label:string,time:int,size:int}> neueste zuerst */
+function backup_list(): array
+{
+    $out = [];
+    foreach (glob(backup_dir() . '/sicherung-*.json') ?: [] as $f) {
+        $n = basename($f);
+        if (!backup_valid_name($n)) {
+            continue;
+        }
+        preg_match('~-(auto|manuell|vor-import)-~', $n, $m);
+        $out[] = ['file' => $n, 'type' => $m[1], 'label' => BACKUP_TYPES[$m[1]], 'time' => (int)filemtime($f), 'size' => (int)filesize($f)];
+    }
+    usort($out, fn($x, $y) => $y['time'] <=> $x['time'] ?: strcmp($y['file'], $x['file']));
+    return $out;
 }
 
 /** Wöchentliche Sicherung ohne Cronjob: wird bei Anmeldungen angestoßen. */
 function maybe_backup(): void
 {
     if (backup_last() < time() - 7 * 86400) {
-        backup_mail();
+        backup_create('auto');
     }
 }
 
@@ -70,7 +116,7 @@ function import_data(string $json, string $who): array
         return [false, 'Das ist keine gültige Sicherungsdatei.'];
     }
     $s = schema();
-    @file_put_contents(AR_ROOT . '/data/vor-import-' . date('Ymd-His') . '.json', export_json(), LOCK_EX);
+    backup_create('vor-import');
     $pdo = db();
     $pdo->beginTransaction();
     try {
@@ -103,5 +149,5 @@ function import_data(string $json, string $who): array
         return [false, 'Import fehlgeschlagen (nichts wurde verändert): ' . $e->getMessage()];
     }
     reset_content_cache();
-    return [true, $n . ' Einträge und alle Einstellungen wiederhergestellt. Der vorherige Stand liegt in data/vor-import-….json.'];
+    return [true, $n . ' Einträge und alle Einstellungen wiederhergestellt. Der vorherige Stand ist unter „Sicherung“ als „vor Wiederherstellung“ gespeichert.'];
 }

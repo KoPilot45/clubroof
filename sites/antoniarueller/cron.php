@@ -1,5 +1,5 @@
 <?php
-// Zeitgesteuerte Sicherung (Ionos-Cronjob). Aufruf: php cron.php  oder  /cron.php?key=… (Schlüssel im Admin unter „Sicherung“).
+// Zeitgesteuerte Sicherung (Ionos-Cronjob): legt eine Sicherung in data/backups/ ab. Aufruf: php cron.php  oder  /cron.php?key=… (Schlüssel im Admin unter „Sicherung“).
 if (version_compare(PHP_VERSION, '8.1.0', '<')) {
     exit(1);
 }
@@ -14,4 +14,4 @@ if (!$cli && !hash_equals(cron_key(), (string)($_GET['key'] ?? ''))) {
     exit('Nicht erlaubt');
 }
 header('Content-Type: text/plain; charset=utf-8');
-echo backup_mail() ? "OK\n" : "FEHLER\n";
+echo backup_create('auto') ? "OK\n" : "FEHLER\n";

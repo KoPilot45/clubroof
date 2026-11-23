@@ -278,6 +278,26 @@ req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'import_backup', 'conf
 ok((int)q('SELECT COUNT(*) FROM ar_items')->fetchColumn() === $nBefore, 'ungültige Sicherung ändert nichts');
 $nBefore = 0;
 
+echo "Sicherungen auf dem Server\n";
+@unlink("$root/data/mail.log");
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'backup_now']);
+ok($r['code'] === 302, 'Sicherung manuell angelegt');
+$bp = req('GET', "$base/admin/?p=backup")['body'];
+preg_match_all('~name="file" value="(sicherung-[^"]+)"~', $bp, $bf);
+ok(count($bf[1]) >= 1 && str_contains($bp, 'manuell'), 'Sicherungen werden im Admin aufgelistet');
+ok(!is_file("$root/data/mail.log") || !str_contains((string)file_get_contents("$root/data/mail.log"), 'Sicherung'), 'Sicherung wird nicht per Mail verschickt');
+$file = $bf[1][0];
+$dl = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'backup_download', 'file' => $file]);
+ok($dl['code'] === 200 && str_contains($dl['head'], 'attachment') && str_contains($dl['body'], '"eintraege"'), 'Sicherung herunterladen');
+ok(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'backup_download', 'file' => '../../config.php'])['code'] === 404, 'Pfadangaben werden abgelehnt');
+ok(req('GET', "$base/data/backups/$file")['code'] === 403 || req('GET', "$base/data/backups/$file")['code'] === 404, 'Sicherungsdatei nicht direkt abrufbar');
+$cnt = (int)q('SELECT COUNT(*) FROM ar_items')->fetchColumn();
+$rs = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'backup_restore', 'file' => $file, 'confirm' => '1']);
+ok($rs['code'] === 302 && (int)q('SELECT COUNT(*) FROM ar_items')->fetchColumn() === $cnt, 'Wiederherstellen aus gespeicherter Sicherung');
+ok(str_contains(req('GET', "$base/admin/?p=backup")['body'], 'vor Wiederherstellung'), 'Stand vor der Wiederherstellung gesichert');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'backup_delete', 'file' => $file]);
+ok(!is_file("$root/data/backups/$file"), 'Sicherung gelöscht');
+
 echo "Zeitleiste, Einstellungen, Zugänge\n";
 $tlp = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'timeline', 'end' => '2026-12-31', 'min_w' => '2.8', 'hint_mobile' => 'x'];
 $r = req('POST', "$base/admin/", $tlp + ['start' => '2023-01-01']);

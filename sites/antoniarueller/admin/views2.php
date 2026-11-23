@@ -181,10 +181,27 @@ function view_backup(array $user): void
     }
     layout_start($user, 'Sicherung', 'backup');
     $last = backup_last();
-    echo '<p class="lead">Sichert alle Texte, Listen, Einstellungen und Entwürfe als Datei (ohne Bilder, ohne Zugangsdaten). Letzte Sicherung per Mail: <strong>' . ($last ? e(when_fmt($last)) : 'noch keine') . '</strong>. Eine automatische Mail geht bei Anmeldungen alle 7 Tage an alle Inhaber.</p>';
-    echo '<div class="actions"><form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="export"><button class="btn">Sicherung herunterladen</button></form> <form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="backup_now"><button class="btn ghost">Jetzt per Mail senden</button></form></div>';
-    echo '<h2 class="fs">Wiederherstellen</h2><form method="post" action="' . a() . '" enctype="multipart/form-data" class="form" data-confirm="Alle jetzigen Inhalte werden durch die Sicherung ersetzt. Fortfahren?">' . csrf_field($user) . '<input type="hidden" name="action" value="import_backup"><div class="field"><label for="bf">Sicherungsdatei (.json)</label><input type="file" id="bf" name="backup" accept="application/json,.json" required><small class="hint">Ersetzt alle Inhalte und Einstellungen. Der aktuelle Stand wird vorher in data/ gespeichert. Bilder werden nicht verändert.</small></div><div class="field check"><label><input type="checkbox" name="confirm" value="1" required> Ich weiß, dass dabei alle jetzigen Inhalte ersetzt werden.</label></div><button class="btn danger">Wiederherstellen</button></form>';
+    $list = backup_list();
+    echo '<p class="lead">Sichert alle Texte, Listen, Einstellungen und Entwürfe (ohne Bilder und Zugangsdaten). Eine automatische Sicherung entsteht bei Anmeldungen alle 7 Tage, die neuesten 15 automatischen und 15 manuellen bleiben erhalten. Letzte Sicherung: <strong>' . ($last ? e(when_fmt($last)) : 'noch keine') . '</strong>.</p>';
+    echo '<div class="actions"><form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="backup_now"><button class="btn">Jetzt sichern</button></form> <form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="export"><button class="btn ghost">Aktuellen Stand herunterladen</button></form></div>';
+    echo '<h2 class="fs">Gespeicherte Sicherungen (' . count($list) . ')</h2>';
+    if (!$list) {
+        echo '<p class="empty">Noch keine Sicherung vorhanden.</p>';
+    } else {
+        echo '<ul class="rows">';
+        foreach ($list as $f) {
+            $hid = '<input type="hidden" name="file" value="' . e($f['file']) . '">' . csrf_field($user);
+            echo '<li class="row"><span class="r-main"><strong>' . e(when_fmt($f['time'])) . '</strong><small>' . e($f['label']) . ' · ' . kb($f['size']) . '</small></span><span class="r-act">';
+            echo '<form method="post" action="' . a() . '" class="inline"><input type="hidden" name="action" value="backup_download">' . $hid . '<button class="btn small ghost">Herunterladen</button></form>';
+            echo '<form method="post" action="' . a() . '" class="inline" data-confirm="Alle jetzigen Inhalte durch diese Sicherung ersetzen? Der aktuelle Stand wird vorher als Sicherung gespeichert."><input type="hidden" name="action" value="backup_restore"><input type="hidden" name="confirm" value="1">' . $hid . '<button class="btn small">Wiederherstellen</button></form>';
+            echo '<form method="post" action="' . a() . '" class="inline" data-confirm="Diese Sicherung endgültig löschen?"><input type="hidden" name="action" value="backup_delete">' . $hid . '<button class="btn small danger-o">Löschen</button></form>';
+            echo '</span></li>';
+        }
+        echo '</ul>';
+    }
+    echo '<p class="hint">Die Sicherungen liegen auf demselben Server wie die Seite. Lade gelegentlich eine Sicherung herunter und bewahre sie an einem anderen Ort auf. Bilder (Ordner uploads/) sind nicht enthalten und werden per FTP gesichert.</p>';
+    echo '<h2 class="fs">Aus Datei wiederherstellen</h2><form method="post" action="' . a() . '" enctype="multipart/form-data" class="form" data-confirm="Alle jetzigen Inhalte werden durch die Sicherung ersetzt. Fortfahren?">' . csrf_field($user) . '<input type="hidden" name="action" value="import_backup"><div class="field"><label for="bf">Sicherungsdatei (.json)</label><input type="file" id="bf" name="backup" accept="application/json,.json" required><small class="hint">Ersetzt alle Inhalte und Einstellungen. Der aktuelle Stand wird vorher als Sicherung gespeichert. Bilder werden nicht verändert.</small></div><div class="field check"><label><input type="checkbox" name="confirm" value="1" required> Ich weiß, dass dabei alle jetzigen Inhalte ersetzt werden.</label></div><button class="btn danger">Wiederherstellen</button></form>';
     $key = cron_key();
-    echo '<h2 class="fs">Automatisch per Cronjob (optional)</h2><p class="hint">Ionos-Kundencenter → Hosting → Cronjobs. Befehl (täglich oder wöchentlich):</p><p><code>php ' . e(AR_ROOT) . '/cron.php</code></p><p class="hint">Oder als Web-Adresse für einen externen Zeitplaner:</p><p><code>' . e(abs_url('/cron.php?key=' . $key)) . '</code></p>';
+    echo '<h2 class="fs">Zeitplan per Cronjob (optional)</h2><p class="hint">Ionos-Kundencenter → Hosting → Cronjobs. Befehl (z. B. täglich):</p><p><code>php ' . e(AR_ROOT) . '/cron.php</code></p><p class="hint">Oder als Web-Adresse für einen externen Zeitplaner:</p><p><code>' . e(abs_url('/cron.php?key=' . $key)) . '</code></p>';
     layout_end();
 }

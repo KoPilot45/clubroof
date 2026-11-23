@@ -261,9 +261,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($user['role'] !== 'owner') {
                 fatal('Nur der Inhaber darf Sicherungen verwalten.', 403);
             }
-            $ok = backup_mail();
-            audit($who, 'backup_mail', $ok ? 'ok' : 'fehlgeschlagen');
-            $back(AR_BASE . '/admin/?p=backup', $ok ? 'Sicherung wurde per Mail verschickt.' : 'Mailversand fehlgeschlagen – siehe Systemcheck.', $ok ? 'ok' : 'err');
+            $f = backup_create('manuell');
+            audit($who, 'backup_create', $f ?? 'fehlgeschlagen');
+            $back(AR_BASE . '/admin/?p=backup', $f ? 'Sicherung gespeichert.' : 'Sicherung konnte nicht gespeichert werden (Schreibrechte für data/ prüfen).', $f ? 'ok' : 'err');
+
+        case 'backup_download': {
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf Sicherungen verwalten.', 403);
+            }
+            $nm = (string)($_POST['file'] ?? '');
+            if (!backup_valid_name($nm) || !is_file(backup_dir() . '/' . $nm)) {
+                fatal('Sicherung nicht gefunden.', 404);
+            }
+            audit($who, 'backup_download', $nm);
+            header('Content-Type: application/json; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $nm . '"');
+            header('Content-Length: ' . filesize(backup_dir() . '/' . $nm));
+            readfile(backup_dir() . '/' . $nm);
+            exit;
+        }
+
+        case 'backup_restore': {
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf Sicherungen verwalten.', 403);
+            }
+            $nm = (string)($_POST['file'] ?? '');
+            if (empty($_POST['confirm']) || !backup_valid_name($nm) || !is_file(backup_dir() . '/' . $nm)) {
+                $back(AR_BASE . '/admin/?p=backup', 'Sicherung nicht gefunden oder nicht bestätigt.', 'err');
+            }
+            [$ok, $msg] = import_data((string)file_get_contents(backup_dir() . '/' . $nm), $who);
+            audit($who, 'backup_restore', $nm . ($ok ? '' : ' fehlgeschlagen'));
+            $back(AR_BASE . '/admin/?p=backup', $msg, $ok ? 'ok' : 'err');
+        }
+
+        case 'backup_delete': {
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf Sicherungen verwalten.', 403);
+            }
+            $nm = (string)($_POST['file'] ?? '');
+            if (backup_valid_name($nm) && is_file(backup_dir() . '/' . $nm)) {
+                @unlink(backup_dir() . '/' . $nm);
+                audit($who, 'backup_delete', $nm);
+            }
+            $back(AR_BASE . '/admin/?p=backup', 'Sicherung gelöscht.');
+        }
 
         case 'import_backup': {
             if ($user['role'] !== 'owner') {

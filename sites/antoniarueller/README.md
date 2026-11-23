@@ -36,7 +36,7 @@ In `config.php` unter `mail` auf SMTP umstellen:
 - **Entwürfe & Vorschau:** „Als Entwurf speichern“ ist nur in der Vorschau (`/admin/vorschau.php`, auch `?lang=en`) sichtbar; „Veröffentlichen“ schaltet live. Versionsverlauf (25 Fassungen) mit „Als Entwurf laden“.
 - **Englisch:** In jedem Formular der Reiter „English“. Leere Felder zeigen den deutschen Text. Englische Seite: `/en/`, `/en/imprint/`, `/en/privacy/`.
 - **Komfort:** Hervorhebungs-Knöpfe, Zeichenzähler, Google-Vorschau, Sortieren per Ziehen, Listensuche, Fokuspunkt im Bild, Mediathek.
-- **Sicherheit & Betrieb:** Zusätzliches Passwort (Mein Konto), Geräteliste mit Abmelden, Sicherung als JSON (Download, Mail wöchentlich bei Anmeldung, optional `cron.php`), Wiederherstellung.
+- **Sicherheit & Betrieb:** Zusätzliches Passwort (Mein Konto), Geräteliste mit Abmelden, Sicherungen als JSON auf dem Server (`data/backups/`, im Admin aufgelistet: Herunterladen, Wiederherstellen, Löschen; automatisch alle 7 Tage bei Anmeldungen, optional `cron.php`).
 - **Besucherzahlen:** `data/stats/*.log`, nur Datum/Stunde, Seite, Gerätetyp, verweisende Domain – ohne Cookies und ohne IP-Adresse.
 
 ## SEO & Suche
