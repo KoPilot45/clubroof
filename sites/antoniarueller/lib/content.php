@@ -632,27 +632,28 @@ function store_pdf(array $file): string
     return $name;
 }
 
-/** Löscht Dateien in uploads/, die nirgends mehr verwendet werden (auch nicht in Entwürfen oder im Papierkorb) und älter als einen Tag sind. */
+/** Löscht Dateien in uploads/, die nirgends mehr verwendet werden (auch nicht im Papierkorb). */
 function cleanup_uploads(): void
 {
     $dir = upload_dir();
     $blob = '';
-    foreach (q('SELECT data, draft FROM ar_items')->fetchAll() as $r) {
-        $blob .= $r['data'] . ($r['draft'] ?? '');
+    foreach (q('SELECT data FROM ar_items')->fetchAll() as $r) {
+        $blob .= $r['data'];
     }
-    foreach (q('SELECT data, draft FROM ar_settings')->fetchAll() as $r) {
-        $blob .= $r['data'] . ($r['draft'] ?? '');
+    foreach (q('SELECT data FROM ar_settings')->fetchAll() as $r) {
+        $blob .= $r['data'];
     }
     foreach (glob($dir . '/*') ?: [] as $f) {
         $n = basename($f);
         if ($n[0] === '.' || str_starts_with($n, 'seed-')) {
             continue;
         }
-        if (!str_contains($blob, '"' . $n . '"') && filemtime($f) < time() - 86400) {
+        if (!str_contains($blob, '"' . $n . '"') && filemtime($f) < time() - 600) {
             @unlink($f);
         }
     }
 }
+
 
 /** Bereinigt eine englische Übersetzung wie die deutsche Eingabe (Feldtyp und Länge). */
 function clean_translation(array $f, string $raw): string
