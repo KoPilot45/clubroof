@@ -5,6 +5,12 @@ require_once __DIR__ . '/i18n.php';
 
 // Hilfen für die öffentliche Seite
 
+/** Nur #RRGGBB zulassen (verhindert Einschleusen von CSS über Einstellungen oder importierte Daten). */
+function css_color(mixed $v, string $fallback = '#000000'): string
+{
+    return preg_match('~^#[0-9a-fA-F]{6}$~', (string)$v) ? (string)$v : $fallback;
+}
+
 function cache_dir(): string
 {
     return AR_ROOT . '/data/cache';
@@ -14,9 +20,10 @@ function cache_dir(): string
 function page_build_id(): string
 {
     $s = '';
-    foreach (['templates/page.php', 'templates/legal.php', 'templates/favicon.php', 'lib/render.php', 'lib/schema.php', 'lib/page.php', 'assets/site.css', 'assets/site.js', 'config.php'] as $f) {
+    foreach (['templates/page.php', 'templates/legal.php', 'templates/favicon.php', 'lib/render.php', 'lib/schema.php', 'lib/page.php', 'assets/site.css', 'assets/site.js'] as $f) {
         $s .= (string)@filemtime(AR_ROOT . '/' . $f) . '|';
     }
+    $s .= (string)@filemtime(config_file()) . '|';
     return substr(md5($s), 0, 10);
 }
 

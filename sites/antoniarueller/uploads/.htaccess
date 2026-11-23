@@ -8,3 +8,6 @@ Order allow,deny
 Deny from all
 </IfModule>
 </FilesMatch>
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+</IfModule>

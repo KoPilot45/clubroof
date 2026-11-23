@@ -28,11 +28,21 @@ function fatal(string $msg, int $code = 500): never
     exit;
 }
 
+/**
+ * Pfad der Konfiguration. Sicherer: eine Datei „antoniarueller-config.php“ eine Ebene ÜBER dem Webverzeichnis
+ * (dort ist sie nie über das Internet erreichbar). Sonst config.php im Webverzeichnis (per .htaccess gesperrt).
+ */
+function config_file(): string
+{
+    $outside = dirname(AR_ROOT) . '/antoniarueller-config.php';
+    return is_file($outside) ? $outside : AR_ROOT . '/config.php';
+}
+
 function cfg(?string $key = null, mixed $default = null): mixed
 {
     static $c = null;
     if ($c === null) {
-        $file = AR_ROOT . '/config.php';
+        $file = config_file();
         if (!is_file($file)) {
             $sample = @file_get_contents(AR_ROOT . '/config.sample.php');
             if ($sample === false) {

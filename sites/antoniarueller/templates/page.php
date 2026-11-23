@@ -1,7 +1,7 @@
 <?php
 /** Öffentliche Seite. Variablen kommen aus index.php. */
-$acc = $site['accent'];
-$rec = $site['rec'];
+$acc = css_color($site['accent'], '#0E5C62');
+$rec = css_color($site['rec'], '#C42F24');
 $ph = fn(string $v): string => $v; // Platzhalter
 $mediaLabel = media_options();
 $short = ['video' => 'Video', 'text' => 'Text', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'Social'];
@@ -152,7 +152,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php foreach ($tracks as $t): ?>
 <div class="ed-lane">
 <?php foreach ($timeline['byTrack'][$t['code']] ?? [] as $b): $c = $clipsById[$b['id']]; ?>
-<button type="button" class="ar-tlclip" data-id="<?= $c['_id'] ?>" aria-pressed="<?= $c['_id'] === $first['_id'] ? 'true' : 'false' ?>" title="<?= e($c['title']) ?>" style="left:<?= $b['left'] ?>%;width:<?= $b['w'] ?>%;background:<?= e($t['bg']) ?>;color:<?= e($t['fg']) ?>"><span class="tl-no"><?= e($c['_no']) ?></span><?php if ($b['w'] >= 6 && $c['short'] !== ''): ?><span class="tl-sh"><?= e($c['short']) ?></span><?php endif; ?></button>
+<button type="button" class="ar-tlclip" data-id="<?= $c['_id'] ?>" aria-pressed="<?= $c['_id'] === $first['_id'] ? 'true' : 'false' ?>" title="<?= e($c['title']) ?>" style="left:<?= $b['left'] ?>%;width:<?= $b['w'] ?>%;background:<?= css_color($t['bg'], '#172526') ?>;color:<?= css_color($t['fg'], '#F3ECDF') ?>"><span class="tl-no"><?= e($c['_no']) ?></span><?php if ($b['w'] >= 6 && $c['short'] !== ''): ?><span class="tl-sh"><?= e($c['short']) ?></span><?php endif; ?></button>
 <?php endforeach; ?>
 </div>
 <?php endforeach; ?>
@@ -192,7 +192,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="mob-tl-l"><div style="height:20px;border-bottom:1px solid var(--line)"></div><?php foreach ($tracks as $t): ?><div class="mob-lane-i" style="height:<?= 30 * ($timeline['rows'][$t['code']] ?? 1) + 8 ?>px"><?= icon($t['icon'], 15) ?></div><?php endforeach; ?></div>
 <div class="mob-tl-r">
 <div class="ed-years mob-years"><?php foreach ($timeline['cols'] as $c): ?><span class="<?= $c['year'] ? 'yr' : '' ?>" style="flex:<?= round($c['w'], 3) ?> 1 0"><?= $c['year'] ? e(substr($c['label'], 2)) : '' ?></span><?php endforeach; ?></div>
-<?php foreach ($tracks as $t): ?><div class="mob-lane" style="height:<?= 30 * ($timeline['rows'][$t['code']] ?? 1) + 8 ?>px"><?php foreach ($timeline['byTrack'][$t['code']] ?? [] as $b): $c = $clipsById[$b['id']]; ?><button type="button" class="ar-tlclip mini" data-id="<?= $c['_id'] ?>" aria-pressed="<?= $c['_id'] === $first['_id'] ? 'true' : 'false' ?>" aria-label="Clip <?= e($c['_no']) ?>: <?= e($c['short'] ?: $c['title']) ?>" style="left:<?= $b['left'] ?>%;width:<?= $b['w'] ?>%;top:<?= 4 + 30 * $b['row'] ?>px;bottom:auto;height:26px;background:<?= e($t['bg']) ?>"></button><?php endforeach; ?></div><?php endforeach; ?>
+<?php foreach ($tracks as $t): ?><div class="mob-lane" style="height:<?= 30 * ($timeline['rows'][$t['code']] ?? 1) + 8 ?>px"><?php foreach ($timeline['byTrack'][$t['code']] ?? [] as $b): $c = $clipsById[$b['id']]; ?><button type="button" class="ar-tlclip mini" data-id="<?= $c['_id'] ?>" aria-pressed="<?= $c['_id'] === $first['_id'] ? 'true' : 'false' ?>" aria-label="Clip <?= e($c['_no']) ?>: <?= e($c['short'] ?: $c['title']) ?>" style="left:<?= $b['left'] ?>%;width:<?= $b['w'] ?>%;top:<?= 4 + 30 * $b['row'] ?>px;bottom:auto;height:26px;background:<?= css_color($t['bg'], '#172526') ?>"></button><?php endforeach; ?></div><?php endforeach; ?>
 <span class="playhead mob-ph" id="playheadm" aria-hidden="true" style="left:<?= round($timeline['pos'][$first['_id']] ?? 0, 2) ?>%"><span></span></span>
 </div>
 </div>

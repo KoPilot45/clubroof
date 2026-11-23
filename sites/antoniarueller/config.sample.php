@@ -21,6 +21,8 @@ return [
         'driver' => 'sqlite',
         'file'   => '__DBFILE__',
         'host' => 'localhost', 'name' => '', 'user' => '', 'pass' => '',
+        // Optional: verschlüsselte Datenbankverbindung. Pfad zur CA-Datei der Datenbank angeben, falls der Hoster TLS anbietet.
+        // 'ssl_ca' => '/pfad/zur/ca.pem',
     ],
 
     // Versand der Anmelde-Codes.

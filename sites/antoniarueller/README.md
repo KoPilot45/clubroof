@@ -46,21 +46,13 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 `config.php` → `'extra_users' => [['email' => '…', 'name' => '…']]` legt beim nächsten Aufruf einmalig einen Zugang an.
 
 ## Sicherheit
-- Anmeldung nur mit Code per E-Mail (8 Ziffern, 10 Min. gültig, einmalig, nur gehasht gespeichert, max. 5 Versuche, Begrenzung pro Adresse und IP, neutrale Antworten).
+- Anmeldung mit E-Mail-Code (8 Ziffern, 10 Min. gültig, einmalig, nur gehasht gespeichert, max. 5 Versuche, Begrenzung pro Adresse und IP, neutrale Antworten) und optional zusätzlichem Passwort (bcrypt).
 - Nur eingetragene Adressen (Admin → Zugänge); Adressen der eigenen Domain werden abgelehnt.
-- Sitzung: zufälliges Token (gehasht in der Datenbank), `HttpOnly`, `SameSite=Strict`, Abmeldung nach 60 Min. Inaktivität, max. 12 h; CSRF-Token und Herkunftsprüfung bei jeder Änderung.
-- Strenge Content-Security-Policy, keine externen Skripte/Schriften (Schriften selbst gehostet), Links nur `http(s)`/`mailto`.
-- Uploads: nur JPG/PNG/WebP (neu kodiert, Metadaten entfernt) und PDF, Zufallsnamen.
+- Sitzung: zufälliges Token (nur als Hash in der Datenbank), `HttpOnly`, `SameSite=Strict`, Abmeldung nach 60 Min. Inaktivität, max. 12 h; CSRF-Token und Herkunftsprüfung bei jeder Änderung; Geräteliste mit Abmelden.
+- Strenge Content-Security-Policy, keine externen Skripte/Schriften, Links nur `http(s)`/`mailto`, alle Ausgaben maskiert, Farben nur als #RRGGBB.
+- Uploads: nur JPG/PNG/WebP (neu kodiert, Metadaten entfernt) und PDF, Zufallsnamen, keine Programmausführung in `uploads/`.
+- Gesperrte Ordner/Dateien (`.htaccess`): `lib/`, `data/` (inkl. Sicherungen), `templates/`, `tools/`, `seed-assets/`, `config*.php`, `error_log`. Im Admin unter „Systemcheck“ prüft ein Selbsttest, dass sie von außen nicht erreichbar sind.
+- Verschlüsselung: HTTPS (HSTS), Mail-Versand per SMTP mit TLS und Zertifikatsprüfung, Passwörter/Codes/Sitzungen nur als Hash. Datenbankverbindung zu Ionos ist standardmäßig unverschlüsselt (internes Netz); optional `db.ssl_ca` in `config.php`.
+- Konfiguration (`config.php` mit Zugangsdaten) am besten eine Ebene ÜBER dem Webverzeichnis als `antoniarueller-config.php` ablegen; sie wird dann bevorzugt gelesen.
 - Protokoll aller Anmeldungen und Änderungen; Mail bei jeder neuen Anmeldung.
-- Backup: `data/` (Datenbank) und `uploads/` regelmäßig sichern (Ionos-Backup oder FTP-Download).
-
-## Papierkorb
-„In den Papierkorb“ blendet Einträge sofort aus. Unter **Papierkorb**: wiederherstellen (ans Listenende) oder endgültig löschen. Ungenutzte Bilddateien werden danach entfernt.
-
-## Lokal testen
-```
-cp config.sample.php config.php   # dann driver auf 'log' stellen, site_url leer/Produktion
-php -S 127.0.0.1:8080 -t . tools/router.php
-php tools/selftest.php
-```
-Im Modus `log` landet der Anmeldecode in `data/mail.log`.
+- Sicherungen: `data/backups/` (im Admin verwaltet). Zusätzlich gelegentlich eine Sicherung herunterladen und `uploads/` per FTP sichern.

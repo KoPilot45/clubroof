@@ -212,6 +212,8 @@ function view_check(array $user): void
         ['Diagnose-Datei entfernt', is_file(AR_ROOT . '/diagnose.php') ? 'diagnose.php liegt noch auf dem Server – bitte löschen' : 'ja', !is_file(AR_ROOT . '/diagnose.php')],
         ['Entwicklungsordner entfernt', is_dir(AR_ROOT . '/tools') ? 'Ordner tools/ liegt noch auf dem Server – bitte löschen' : 'ja', !is_dir(AR_ROOT . '/tools')],
         ['Seiten-Zwischenspeicher', is_dir(cache_dir()) && is_writable(cache_dir()) ? 'aktiv' : 'wird beim ersten Aufruf angelegt', true],
+        ['Erkannte Besucher-Adresse (für Begrenzungen)', e_ip_label(), filter_var((string)($_SERVER['REMOTE_ADDR'] ?? ''), FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false || in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1'], true)],
+        ['Konfiguration außerhalb des Webverzeichnisses', config_file() !== AR_ROOT . '/config.php' ? 'ja (empfohlen)' : 'nein – config.php liegt im Webverzeichnis (gesperrt, aber „oberhalb“ wäre sicherer)', true],
         ['Mailversand', (string)cfg('mail.driver') . ' · Absender ' . cfg('mail.from'), cfg('mail.driver') !== 'log'],
     ];
     $blocked = [];
@@ -223,14 +225,21 @@ function view_check(array $user): void
         echo '<tr><td>' . e($l) . '</td><td>' . e($v) . '</td><td>' . $ok($good) . '</td></tr>';
     }
     echo '</tbody></table>';
-    echo '<h2 class="fs">Ordner-Schutz</h2><p class="lead">Diese Adressen müssen im Browser <em>nicht</em> erreichbar sein (Fehler 403/404). Prüfe sie einmal nach dem Hochladen:</p><ul>';
-    foreach (['data/', 'lib/bootstrap.php', 'config.php', 'templates/page.php'] as $p) {
-        echo '<li><a href="' . e(AR_BASE . '/' . $p) . '" target="_blank" rel="noopener">' . e($p) . '</a></li>';
+    echo '<h2 class="fs">Sicherheits-Selbsttest</h2><p class="lead">Prüft jetzt in deinem Browser, ob interne Dateien von außen gesperrt sind. Alles muss „gesperrt“ zeigen.</p><ul class="selfchecks">';
+    foreach (['config.php', 'config.sample.php', 'lib/bootstrap.php', 'templates/page.php', 'data/', 'data/backups/', 'seed-assets/', 'error_log', 'diagnose.php', 'tools/selftest.php', 'admin/views.php'] as $p) {
+        echo '<li data-path="' . e(AR_BASE . '/' . $p) . '"><code>' . e($p) . '</code> <span class="pill">prüfe …</span></li>';
     }
-    echo '</ul><h2 class="fs">Mailversand testen</h2><form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="test_mail"><button class="btn">Testmail an ' . e($user['email']) . ' senden</button></form>';
+echo '</ul><h2 class="fs">Mailversand testen</h2><form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="test_mail"><button class="btn">Testmail an ' . e($user['email']) . ' senden</button></form>';
     echo '<p class="hint">Kommt keine Mail an, trage in <code>config.php</code> unter „mail“ den SMTP-Zugang ein (siehe README).</p>';
     if ($user['role'] === 'owner') {
         echo '<h2 class="fs">Sicherung der Inhalte</h2><p class="lead">Lädt alle Texte, Listen und Einstellungen als Datei herunter (ohne Bilder und ohne Zugangsdaten). Bilder liegen im Ordner uploads/ und werden per FTP gesichert.</p><form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="export"><button class="btn ghost">Sicherung herunterladen (JSON)</button></form>';
     }
     layout_end();
+}
+
+function e_ip_label(): string
+{
+    $ip = (string)($_SERVER['REMOTE_ADDR'] ?? '?');
+    $note = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false ? ' – interne Adresse: hinter einem Proxy teilen sich alle Besucher eine Adresse' : '';
+    return $ip . $note;
 }

@@ -186,6 +186,18 @@ stats_cleanup();
 ok(!is_file("$root/data/stats/seen-2020010100.tmp"), 'alte Kurzwert-Dateien werden gelöscht');
 ok(stats_summary()['hits'] >= stats_summary()['total'], 'Auswertung: Aufrufe ≥ Besuche');
 
+echo "Sicherheit\n";
+require_once $root . '/lib/render.php';
+ok(css_color('#0E5C62', '#000000') === '#0E5C62' && css_color('red;}</style><script>', '#111111') === '#111111' && css_color("#fff\n", '#222222') === '#222222', 'css_color lässt nur #RRGGBB zu');
+ok(str_contains(req('GET', "$base/admin/?p=check")['body'], 'Sicherheits-Selbsttest'), 'Systemcheck mit Sicherheits-Selbsttest');
+ok(req('GET', "$base/error_log")['code'] === 403, 'error_log gesperrt');
+$hdr = req('GET', "$base/")['head'];
+ok(str_contains($hdr, 'X-Frame-Options: DENY') && str_contains($hdr, 'X-Content-Type-Options: nosniff') && str_contains($hdr, "frame-ancestors 'none'"), 'Sicherheits-Kopfzeilen auf der Seite');
+$ah = req('GET', "$base/admin/")['head'];
+ok(str_contains($ah, 'no-store') && str_contains($ah, 'noindex'), 'Admin: kein Zwischenspeichern, noindex');
+$ck = req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner])['head'];
+ok(!str_contains($ck, 'Set-Cookie: ar_admin=') , 'Keine Sitzung vor erfolgreicher Anmeldung');
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

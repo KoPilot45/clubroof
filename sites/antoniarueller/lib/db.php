@@ -11,6 +11,10 @@ function db(): PDO
     $opts = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC];
     try {
         if (($c['driver'] ?? 'sqlite') === 'mysql') {
+            if (!empty($c['ssl_ca']) && is_file((string)$c['ssl_ca'])) {
+                // Verschlüsselte Verbindung zur Datenbank (Zertifikat der Zertifizierungsstelle angeben)
+                $opts[PDO::MYSQL_ATTR_SSL_CA] = (string)$c['ssl_ca'];
+            }
             $pdo = new PDO('mysql:host=' . $c['host'] . ';dbname=' . $c['name'] . ';charset=utf8mb4', $c['user'], $c['pass'], $opts);
         } else {
             $dir = AR_ROOT . '/data';

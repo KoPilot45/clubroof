@@ -237,4 +237,14 @@
     });
     update();
   }
+
+  // ---- Sicherheits-Selbsttest (Systemcheck) ----
+  $$('.selfchecks li').forEach(function (li) {
+    var pill = $('.pill', li);
+    fetch(li.getAttribute('data-path'), { credentials: 'omit', cache: 'no-store' }).then(function (r) {
+      var ok = r.status === 403 || r.status === 404;
+      pill.textContent = ok ? 'gesperrt (' + r.status + ')' : 'ERREICHBAR (' + r.status + ') – bitte prüfen';
+      pill.className = 'pill ' + (ok ? 'ok' : 'bad');
+    }).catch(function () { pill.textContent = 'nicht prüfbar'; });
+  });
 })();
