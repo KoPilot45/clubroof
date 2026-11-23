@@ -202,4 +202,37 @@
     }, { threshold: 0.3 });
     ['arbeiten', 'podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt'].forEach(function (id) { var s = document.getElementById(id); if (s) so.observe(s); });
   }
+
+  // ---- Player-Leiste (Scrollfortschritt mit Kapitelstrichen) und Nach-oben-Knopf ----
+  var pl = $('#pl'), toTop = $('#toTop'), ticking = false;
+  var chapters = ['arbeiten', 'podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt'];
+  function scrollMax() { return Math.max(1, document.documentElement.scrollHeight - window.innerHeight); }
+  function placeMarks() {
+    if (!pl) return;
+    $$('.pl-mark', pl).forEach(function (m) { m.remove(); });
+    chapters.forEach(function (id) {
+      var s = document.getElementById(id);
+      if (!s) return;
+      var p = Math.min(1, Math.max(0, (s.getBoundingClientRect().top + window.scrollY - 84) / scrollMax()));
+      if (p <= 0.005 || p >= 0.995) return;
+      var m = document.createElement('i');
+      m.className = 'pl-mark';
+      m.style.left = (p * 100) + '%';
+      pl.appendChild(m);
+    });
+  }
+  function onProgress() {
+    ticking = false;
+    var p = Math.min(1, Math.max(0, window.scrollY / scrollMax()));
+    if (pl) pl.style.setProperty('--p', p.toFixed(4));
+    if (toTop) toTop.classList.toggle('show', window.scrollY > window.innerHeight * 1.5);
+  }
+  window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onProgress); } }, { passive: true });
+  window.addEventListener('resize', function () { placeMarks(); onProgress(); });
+  window.addEventListener('load', function () { placeMarks(); onProgress(); });
+  placeMarks(); onProgress();
+  if (toTop) toTop.addEventListener('click', function (e) {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  });
 })();

@@ -65,6 +65,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php if ($hasMail && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-nav ar-nav-cta" href="#kontakt" data-ev="mail" data-k="kopfzeile" data-mail="<?= e(AR_BASE) ?>/mail.php"><?= e($contact['cta_label']) ?> <span aria-hidden="true">↗</span></a><?php endif; ?>
 <button type="button" class="ar-burger" id="burger" aria-label="<?= tr('Menü öffnen') ?>" aria-expanded="false" aria-controls="menu"><svg aria-hidden="true" width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 2h18M1 12h18"></path></svg></button>
 </div>
+<div class="pl" id="pl" aria-hidden="true"><span class="pl-fill"></span><span class="pl-dot"></span></div>
 </header>
 
 <main id="inhalt">
@@ -325,6 +326,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </section>
 
 </main>
+<a class="to-top" id="toTop" href="#top" aria-label="<?= e(tr('Nach oben')) ?>"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
 
 <div id="menu" class="menu" role="dialog" aria-modal="true" aria-label="<?= tr('Menü') ?>" hidden>
 <div class="menu-top"><span style="display:flex;align-items:center;gap:10px"><?= rec_dot() ?>AR / Menü</span>

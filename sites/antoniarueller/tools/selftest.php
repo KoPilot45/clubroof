@@ -589,6 +589,7 @@ echo "Zeitleiste, Einstellungen, Zugänge\n";
 $hp = req('GET', "$base/")['body'];
 ok(str_contains($hp, 'class="ed-ruler"') && str_contains($hp, 'class="ed-lane') && str_contains($hp, 'data-track=') && str_contains($hp, 'class="yr-flag"'), 'Schnittplatz: Spuren, Lineal, Jahres-Fähnchen');
 ok(!str_contains($hp, 'style="left:') || !str_contains($hp, 'class="ar-tlclip" data-id="x"'), 'Clips ohne Datumsmaßstab');
+ok(str_contains($hp, 'id="pl"') && str_contains($hp, 'id="toTop"') && str_contains($hp, 'class="pl-fill"'), 'Player-Leiste und Nach-oben-Knopf vorhanden');
 $lw = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL AND live = 1 ORDER BY sort LIMIT 1")->fetchColumn();
 req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $lw, 'title' => 'Lang-Test', 'medium' => 'text', 'tl_track' => 'A1', 'tl_len' => 'long', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'publish']);
 ok(str_contains(req('GET', "$base/")['body'], '--w:1.6'), 'Länge „Lang“ macht den Clip breiter');

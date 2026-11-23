@@ -452,3 +452,16 @@ a:hover{color:var(--accent)}
   .sel-meta{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .ed-sel-r{position:absolute;right:24px;bottom:22px;width:300px;max-width:none;flex:none}
 }
+
+/* Player-Leiste an der Unterkante der Kopfzeile: Fortschritt, Abspielmarke, Kapitelstriche */
+.pl{position:absolute;left:0;right:0;bottom:-1px;height:3px;background:rgba(23,37,38,.12);pointer-events:none}
+.pl-fill{position:absolute;inset:0;background:var(--accent);transform-origin:0 50%;transform:scaleX(var(--p,0))}
+.pl-dot{position:absolute;top:50%;left:clamp(6px,calc(var(--p,0) * 100%),calc(100% - 6px));width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--paper)}
+.pl-mark{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink);opacity:.35}
+/* Nach oben */
+.to-top{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));z-index:35;width:46px;height:46px;border-radius:50%;background:var(--paper);color:var(--ink);border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;text-decoration:none;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .25s,transform .25s,visibility 0s .25s}
+.to-top.show{opacity:1;visibility:visible;transform:none;transition:opacity .25s,transform .25s}
+.to-top:hover{background:var(--ink);color:var(--paper)}
+.to-top:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media (max-width:860px){.to-top{bottom:max(72px,calc(env(safe-area-inset-bottom,0px) + 56px));width:42px;height:42px}}
+@media (prefers-reduced-motion:reduce){.to-top{transition:none}}
