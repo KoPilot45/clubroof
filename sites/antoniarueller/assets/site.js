@@ -296,6 +296,26 @@
     }
   }
 
+  // ---- Podcast: Audiospuren bauen sich von links nach rechts auf ----
+  if ('IntersectionObserver' in window && !reduce) {
+    var waves = $$('.wave').filter(function (w) { return w.getClientRects().length && w.getBoundingClientRect().top > window.innerHeight * 0.92; });
+    if (waves.length) {
+      waves.forEach(function (w) {
+        $$('span', w).forEach(function (s, i) { s.style.setProperty('--i', i); });
+        w.classList.add('wv-pre');
+      });
+      var wio = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          en.target.classList.add('in');
+          wio.unobserve(en.target);
+          (function (el) { setTimeout(function () { el.classList.remove('wv-pre', 'in'); $$('span', el).forEach(function (s) { s.style.removeProperty('--i'); }); }, 4500); })(en.target);
+        });
+      }, { threshold: 0.6 });
+      waves.forEach(function (w) { wio.observe(w); });
+    }
+  }
+
   // ---- Parallax: der Kreis hinter dem Startfoto bewegt sich etwas langsamer (nur Desktop) ----
   var circle = $('.ar-hero-circle');
   if (circle && !reduce) {
