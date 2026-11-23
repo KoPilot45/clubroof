@@ -85,19 +85,10 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="ar-hero-media">
 <span class="ar-hero-circle" aria-hidden="true"></span>
 <?php if (upload_url($hero['photo']) !== ''): ?><img class="ar-hero-img" src="<?= e(upload_url($hero['photo'])) ?>"<?= img_attrs($hero['photo']) ?> alt="<?= e($hero['photo_alt']) ?>" fetchpriority="high" decoding="async"><?php endif; ?>
-<div class="ar-hero-tag">
-<span class="tag-live"><span class="ar-rec" style="width:8px;height:8px;background:#F3ECDF"></span><?= e($hero['tag_live']) ?></span>
-<span class="tag-name"><?= e($hero['tag_name']) ?></span>
-<span class="tag-role"><?= e($hero['tag_role']) ?></span>
-</div>
 </div>
 </section>
 
-<?php if ($marquee): ?>
-<div class="marquee" aria-hidden="true"><div class="ar-track">
-<?php for ($r = 0; $r < 4; $r++): foreach ($marquee as $i => $w): ?><span><?= e($w['word']) ?></span><?php if ($i < count($marquee) - 1): ?><span class="amp">&amp;</span><?php endif; endforeach; ?><span class="mq-dot"></span><?php endfor; ?>
-</div></div>
-<?php endif; ?>
+<div class="cutband" aria-hidden="true"></div>
 
 <?php if ($questions): ?>
 <section aria-label="<?= tr('Was mich antreibt') ?>" style="padding-top:112px">

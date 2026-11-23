@@ -42,7 +42,6 @@ function seed_defaults(PDO $pdo): void
         'meta' => 'Journalistin & Reporterin · Bremen',
         'now_lines' => "Investigativ-Recherche\nRadio Bremen · seit 11/2026",
         'photo' => $hero, 'photo_alt' => 'Antonia Rüller im roten Pullover, Arme verschränkt',
-        'tag_role' => 'Reporterin · Radio Bremen',
     ]);
     $set('sections', []);
     $set('timeline', []);
@@ -64,7 +63,6 @@ function seed_defaults(PDO $pdo): void
         ['label' => 'Über mich', 'anchor' => 'ueber', 'desktop' => true], ['label' => 'Lebenslauf', 'anchor' => 'lebenslauf', 'desktop' => true],
         ['label' => 'Off the record', 'anchor' => 'offtherecord', 'desktop' => false], ['label' => 'Kontakt', 'anchor' => 'kontakt', 'desktop' => true],
     ]);
-    $add('marquee', [['word' => 'Innovation'], ['word' => 'Aktivismus'], ['word' => 'Menschen']]);
     $add('questions', [
         ['number' => '01', 'text' => 'Wie verändern *politische Umbrüche* das Leben von Menschen?'],
         ['number' => '02', 'text' => 'Wer hat **Macht** — und wer kämpft um *Selbstbestimmung*?'],

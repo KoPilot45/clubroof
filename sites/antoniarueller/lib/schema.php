@@ -159,10 +159,6 @@ function schema(): array
             f('markup', 'text', 'Frage', ['required' => true, 'max' => 240, 'hint' => MARKUP_HINT]),
         ],
     ];
-    $s['collections']['marquee'] = [
-        'label' => 'Laufband (Wörter)', 'singular' => 'Wort', 'title' => 'word', 'sub' => [],
-        'fields' => [f('text', 'word', 'Wort', ['required' => true, 'max' => 40])],
-    ];
     $s['collections']['social'] = [
         'label' => 'Social-Media-Profile', 'singular' => 'Profil', 'title' => 'label', 'sub' => ['url'],
         'help' => 'Erscheinen als Buttons unter „Schreib mir“, im Handy-Menü und als Profile für Suchmaschinen (Schema.org). Alles optional – leere Liste = keine Buttons.',
@@ -238,9 +234,6 @@ function schema(): array
             f('image', 'photo', 'Foto (am besten freigestellt, WebP/PNG)'),
             f('text', 'photo_alt', 'Bildbeschreibung (Alt-Text)', ['max' => 160, 'required' => true]),
             f('section', '', 'Namensschild am Foto'),
-            f('text', 'tag_live', 'Kleine Zeile oben', ['max' => 40, 'default' => 'Live · Bremen']),
-            f('text', 'tag_name', 'Name', ['max' => 60, 'default' => 'Antonia Rüller']),
-            f('text', 'tag_role', 'Rolle', ['max' => 60]),
         ],
     ];
     $s['groups']['sections'] = [
@@ -323,7 +316,7 @@ function schema(): array
 function admin_menu(): array
 {
     return [
-        'Seite' => [['g', 'site'], ['g', 'seo'], ['g', 'hero'], ['c', 'nav'], ['c', 'marquee'], ['g', 'sections']],
+        'Seite' => [['g', 'site'], ['g', 'seo'], ['g', 'hero'], ['c', 'nav'], ['g', 'sections']],
         'Inhalte' => [['c', 'clips'], ['c', 'tracks'], ['c', 'episodes'], ['c', 'stations'], ['c', 'cv'], ['c', 'before'], ['g', 'about'], ['c', 'crossmedia'], ['c', 'languages'], ['c', 'offrecord'], ['c', 'questions'], ['g', 'contact'], ['c', 'social'], ['g', 'legal']],
     ];
 }
@@ -337,7 +330,6 @@ function admin_nav(): array
     return [
         'start' => ['Startseite', 'home', 'Das Erste, was Besucher sehen.', [
             ['g', 'hero', 'Startbild & Einleitung', 'Foto, Überschrift und Einstiegstext ganz oben.'],
-            ['c', 'marquee', 'Laufband', 'Die Wörter, die unter dem Startbild durchlaufen.'],
             ['c', 'questions', 'Leitfragen', '„Was mich antreibt“ – die kurzen Fragen mit Nummer.'],
         ]],
         'arbeiten' => ['Arbeiten', 'film', 'Referenzen, Hauptclip und Schnittplatz.', [

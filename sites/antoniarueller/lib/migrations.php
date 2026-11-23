@@ -256,6 +256,12 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'schnitt_v1';
     }
 
+    // Laufband entfernt: die nicht mehr verwendeten Wörter werden einmalig gelöscht (Sicherungen enthalten sie weiterhin)
+    if (!in_array('laufband_v1', $applied, true)) {
+        q("DELETE FROM ar_items WHERE coll = 'marquee'");
+        $applied[] = 'laufband_v1';
+    }
+
     // Zusätzliche Zugänge aus config.php ('extra_users'): werden einmal angelegt; spätere Entfernung im Admin bleibt bestehen
     foreach ((array)cfg('extra_users', []) as $u) {
         $em = strtolower(trim((string)($u['email'] ?? '')));

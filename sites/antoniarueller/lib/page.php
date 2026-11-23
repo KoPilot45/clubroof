@@ -83,7 +83,6 @@ if ($page === 'impressum' || $page === 'datenschutz') {
 }
 
 $nav = items('nav');
-$marquee = items('marquee');
 $questions = items('questions');
 $tracks = items('tracks');
 $episodes = array_values(array_filter(items('episodes'), fn($e) => $e['published']));
