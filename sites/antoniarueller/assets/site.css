@@ -529,3 +529,5 @@ a:not([class]){text-decoration-thickness:1px;text-underline-offset:.2em;transiti
   .cx-pre.in .fa-stand{transition:opacity 1.1s ease .85s,transform 1.1s ease .85s}
   .cx-pre.in .fa-foot{transition:opacity 1.1s ease 1.1s,transform 1.1s ease 1.1s}
 }
+
+.pod-desc{margin-top:4px;max-width:60ch;font-family:'Inter Tight',system-ui,sans-serif;font-size:15px;line-height:1.5;color:#C9DEDA}

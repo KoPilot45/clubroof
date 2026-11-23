@@ -232,7 +232,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <article class="pod-card">
 <div class="pod-top">
 <span class="pod-ic" aria-hidden="true"><?= icon('podcast', 30) ?></span>
-<div class="pod-t"><span class="pod-show"><?= e($ep['show']) ?><?= $ep['number'] !== '' ? ' · ' . tr('Folge') . ' ' . e($ep['number']) : '' ?></span><span class="pod-title"><?= e($ep['title']) ?></span></div>
+<div class="pod-t"><span class="pod-show"><?= e($ep['show']) ?><?= $ep['number'] !== '' ? ' · ' . tr('Folge') . ' ' . e($ep['number']) : '' ?></span><span class="pod-title"><?= e($ep['title']) ?></span><?php if (trim((string)$ep['desc']) !== ''): ?><span class="pod-desc"><?= e($ep['desc']) ?></span><?php endif; ?></div>
 </div>
 <div class="wave wave-<?= $style ?>" aria-hidden="true"><?php foreach ($bars as $h): ?><span style="height:<?= $h ?>%"></span><?php endforeach; ?></div>
 <?php if ($ep['duration'] !== '' || $ep['outlet'] !== ''): ?><div class="pod-meta"><span><?= e($ep['duration']) ?></span><span><?= e($ep['outlet']) ?></span></div><?php endif; ?>

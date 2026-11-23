@@ -473,6 +473,19 @@ foreach ([$new[0] ?? '', $fat] as $nm) {
 }
 @unlink($big);
 
+echo "Podcast: Kurzbeschreibung\n";
+$ep = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'episodes', 'show' => 'Test-Podcast', 'title' => 'Beschreibungstest', 'wave' => 'auto', 'published' => '1', 'mode' => 'publish'];
+$r = req('POST', "$base/admin/", $ep + ['desc' => 'Zwei Sätze über <b>die</b> Folge.']);
+$pp = req('GET', "$base/")['body'];
+ok($r['code'] === 302 && str_contains($pp, 'class="pod-desc">Zwei Sätze über &lt;b&gt;die&lt;/b&gt; Folge.'), 'Kurzbeschreibung erscheint unter dem Titel (maskiert)');
+$r = req('POST', "$base/admin/", $ep + ['title' => 'Zu lang', 'desc' => str_repeat('a', 201)]);
+ok(str_contains($r['body'], 'höchstens 200 Zeichen'), 'mehr als 200 Zeichen werden abgelehnt');
+ok(substr_count(req('GET', "$base/")['body'], 'class="pod-desc"') === 1, 'Folgen ohne Beschreibung zeigen keine leere Zeile');
+foreach (q("SELECT id FROM ar_items WHERE coll = 'episodes' AND data LIKE '%Beschreibungstest%'")->fetchAll() as $row) {
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
+}
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

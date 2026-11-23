@@ -90,6 +90,7 @@ function schema(): array
             f('text', 'show', 'Podcast-Name', ['required' => true, 'max' => 120]),
             f('text', 'number', 'Folge', ['max' => 20, 'hint' => 'z. B. „12“ – leer lassen, wenn es keine Nummer gibt.']),
             f('text', 'title', 'Titel der Folge', ['required' => true, 'max' => 200]),
+            f('textarea', 'desc', 'Kurzbeschreibung (optional)', ['max' => 200, 'rows' => 3, 'ideal' => [80, 180], 'hint' => 'Erscheint unter dem Titel, ein bis zwei Sätze. Höchstens 200 Zeichen.']),
             f('text', 'duration', 'Dauer', ['max' => 20, 'hint' => 'z. B. 32 Min.']),
             f('text', 'outlet', 'Sender / Plattform', ['max' => 120]),
             f('date', 'date', 'Veröffentlicht am'),
