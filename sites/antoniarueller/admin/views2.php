@@ -5,6 +5,7 @@ require_once __DIR__ . '/../lib/media.php';
 require_once __DIR__ . '/../lib/checks.php';
 require_once __DIR__ . '/../lib/stats.php';
 require_once __DIR__ . '/../lib/backup.php';
+require_once __DIR__ . '/../lib/dashboard.php';
 
 function kb(int $b): string
 {
@@ -12,17 +13,72 @@ function kb(int $b): string
 }
 
 // ---------- Übersicht ----------
+function kpi(string $label, string $valueHtml, string $subHtml = '', string $level = '', string $href = ''): string
+{
+    $inner = '<span class="k-l">' . e($label) . '</span><strong class="k-v">' . $valueHtml . '</strong>' . ($subHtml !== '' ? '<span class="k-s">' . $subHtml . '</span>' : '');
+    return $href !== '' ? '<a class="kpi ' . $level . '" href="' . e($href) . '">' . $inner . '</a>' : '<div class="kpi ' . $level . '">' . $inner . '</div>';
+}
+
 function view_home(array $user): void
 {
-    $s = schema();
-    layout_start($user, 'Übersicht', 'home');
-    $name = $user['name'] ?: 'willkommen';
-    echo '<p class="lead">Hier pflegst du alle Inhalte der Seite. Änderungen unter „Veröffentlichen“ sind sofort live, Entwürfe nur in der Vorschau.</p>';
+    $isOwner = $user['role'] === 'owner';
+    $h = (int)date('G');
+    $first = trim(explode(' ', (string)($user['name'] ?: ''))[0]);
+    layout_start($user, ($h < 11 ? 'Guten Morgen' : ($h < 18 ? 'Guten Tag' : 'Guten Abend')) . ($first !== '' ? ', ' . $first : ''), 'home', true);
 
-    // Entwürfe
+    // 1. Schnellaktionen
+    echo '<div class="quick"><a class="btn small" href="' . a('p=edit&c=clips') . '">+ Neue Referenz</a><a class="btn small" href="' . a('p=edit&c=episodes') . '">+ Neue Podcast-Folge</a><a class="btn small ghost" href="' . AR_BASE . '/" target="_blank" rel="noopener">Seite ansehen ↗</a><a class="btn small ghost" href="' . e(preview_url()) . '" target="_blank" rel="noopener">Vorschau ↗</a>';
+    if ($isOwner) {
+        echo '<form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="backup_now"><button class="btn small ghost">Jetzt sichern</button></form>';
+    }
+    echo '</div>';
+
+    // 2. Warnleiste (nur wenn nötig)
+    echo '<div class="alerts" aria-label="Hinweise">';
+    foreach (dash_alerts($user) as [$lvl, $txt, $link]) {
+        echo '<a class="alert ' . e($lvl) . '" href="' . e($link) . '"><span class="al-i" aria-hidden="true">!</span>' . e($txt) . '</a>';
+    }
+    echo '<a class="alert bad" id="alert-self" href="' . a('p=check') . '" hidden data-paths="' . e(implode(',', array_map(fn($p) => AR_BASE . '/' . $p, ['config.php', 'lib/bootstrap.php', 'data/', 'data/backups/', 'error_log']))) . '"><span class="al-i" aria-hidden="true">!</span><span class="al-t"></span></a>';
+    echo '<a class="alert warn" id="alert-ssl" href="' . a('p=check') . '" hidden><span class="al-i" aria-hidden="true">!</span><span class="al-t"></span></a></div>';
+
+    // 3. Kennzahlen
+    $st = stats_summary();
+    $vals = array_values($st['days']);
+    $prevWeek = array_sum(array_slice($vals, -14, 7));
+    $thisWeek = $st['week'];
+    $trend = $prevWeek > 0 ? (int)round(($thisWeek - $prevWeek) / $prevWeek * 100) : null;
+    $trendTxt = $trend === null ? '' : ' · ' . ($trend >= 0 ? '↑ ' : '↓ ') . abs($trend) . ' % zur Vorwoche';
+    $act = dash_activity(8);
+    $checks = readiness_checks();
+    $must = array_filter($checks, fn($c) => $c[0] === 'must');
+    $mustOk = count(array_filter($must, fn($c) => $c[1]));
+    $tp = translation_progress();
+    $pct = $tp['total'] ? (int)round($tp['done'] / $tp['total'] * 100) : 100;
     $drafts = open_drafts();
+    $prev = dash_previous_login($user['email']);
+
+    echo '<div class="kpis" style="--n:' . ($isOwner ? 6 : 5) . '">';
+    echo kpi('Besuche heute', (string)$st['today'], '7 Tage: ' . $thisWeek . e($trendTxt), '', '#besuche');
+    if ($act) {
+        echo kpi('Letzte Änderung', e(rel_time($act[0]['at'])), e(who_name($act[0]['who'])) . ' · ' . e($act[0]['text']), '', $act[0]['link']);
+    } else {
+        echo kpi('Letzte Änderung', '–', 'Noch keine Änderungen');
+    }
+    if ($isOwner) {
+        $last = backup_last();
+        $age = $last ? (time() - $last) / 86400 : 999;
+        echo kpi('Letztes Backup', $last ? e(rel_time($last)) : 'keins', $last ? e(date('d.m.Y H:i', $last)) . ' Uhr' : 'Jetzt sichern empfohlen', $age <= 8 ? 'ok' : ($age <= 14 ? 'warn' : 'bad'), a('p=backup'));
+    }
+    echo kpi('Dein letzter Login', $prev ? e(rel_time($prev['at'])) : '–', $prev ? e(date('d.m.Y H:i', $prev['at'])) . ' · ' . e($prev['device'] ?: 'Gerät unbekannt') : 'Das ist deine erste erfasste Anmeldung', '', a('p=sessions'));
+    echo kpi('Offene Entwürfe', (string)count($drafts), $drafts ? 'noch nicht öffentlich' : 'alles veröffentlicht', $drafts ? 'warn' : 'ok', $drafts ? '#entwuerfe' : '');
+    echo kpi('Startklar · Englisch', $mustOk . '/' . count($must), 'Pflichtpunkte · Englisch ' . $pct . ' %', $mustOk === count($must) ? 'ok' : 'warn', '#startklar');
+    echo '</div>';
+
+    echo '<div class="dash-cols"><div class="dash-col">';
+
+    // Aufgaben: Entwürfe
     if ($drafts) {
-        echo '<section class="card warnbox"><h2>Offene Entwürfe (' . count($drafts) . ')</h2><p class="hint">Diese Änderungen sind noch nicht öffentlich.</p><ul class="plain">';
+        echo '<section class="card warnbox" id="entwuerfe"><h2>Offene Entwürfe (' . count($drafts) . ')</h2><p class="hint">Diese Änderungen sind noch nicht öffentlich.</p><ul class="plain">';
         foreach ($drafts as $d) {
             $href = $d['kind'] === 'item' ? a('p=edit&c=' . $d['coll'] . '&id=' . $d['ref']) : a('p=group&g=' . $d['ref']);
             echo '<li><a href="' . e($href) . '">' . e($d['label']) . '</a> <small>' . ($d['new'] ? 'neu · ' : '') . e(who_name($d['who'])) . ', ' . e(when_fmt($d['at'])) . '</small></li>';
@@ -30,59 +86,113 @@ function view_home(array $user): void
         echo '</ul><p><a class="btn small ghost" href="' . e(preview_url()) . '" target="_blank" rel="noopener">Vorschau ansehen ↗</a> <form method="post" action="' . a() . '" class="inline" data-confirm="Alle Entwürfe jetzt veröffentlichen?">' . csrf_field($user) . '<input type="hidden" name="action" value="publish_all"><button class="btn small">Alle veröffentlichen</button></form></p></section>';
     }
 
-    // Startklar
-    $checks = readiness_checks();
-    $must = array_filter($checks, fn($c) => $c[0] === 'must');
-    $mustOk = count(array_filter($must, fn($c) => $c[1]));
-    $niceOk = count(array_filter($checks, fn($c) => $c[0] === 'nice' && $c[1]));
-    $niceAll = count($checks) - count($must);
-    echo '<section class="card"><h2>Startklar? <span class="score">' . $mustOk . ' von ' . count($must) . ' Pflichtpunkten</span></h2><div class="meter"><span style="width:' . (int)round($mustOk / max(1, count($must)) * 100) . '%"></span></div><ul class="check">';
-    foreach ($checks as [$lvl, $ok, $text, $link]) {
-        echo '<li class="' . ($ok ? 'ok' : ($lvl === 'must' ? 'bad' : 'meh')) . '"><span class="mark" aria-hidden="true">' . ($ok ? '✓' : ($lvl === 'must' ? '!' : '○')) . '</span> <a href="' . e($link) . '">' . e($text) . '</a>' . ($lvl === 'nice' ? ' <small>(empfohlen)</small>' : '') . '</li>';
-    }
-    echo '</ul><p class="hint">Empfohlen erledigt: ' . $niceOk . ' von ' . $niceAll . '</p></section>';
-
-    // Platzhalter
-    $ph = find_placeholders();
-    echo '<section class="card"><h2>Platzhalter in Texten (' . count($ph) . ')</h2>';
-    if (!$ph) {
-        echo '<p class="hint">Keine Texte mit [eckigen Klammern] gefunden. Sehr gut.</p>';
-    } else {
-        echo '<p class="hint">Diese Stellen sind noch Platzhalter und sollten vor dem Start ersetzt oder gelöscht werden.</p><ul class="plain">';
-        foreach (array_slice($ph, 0, 40) as $x) {
-            echo '<li><a href="' . e($x['link']) . '"><strong>' . e($x['area']) . '</strong>' . ($x['item'] !== '' ? ' · ' . e($x['item']) : '') . ' · ' . e($x['field']) . '</a> <code>' . e(mb_strimwidth($x['snippet'], 0, 60, '…')) . '</code></li>';
-        }
-        if (count($ph) > 40) {
-            echo '<li><small>… und ' . (count($ph) - 40) . ' weitere</small></li>';
+    // Aufgaben: Startklar (nur Offenes, Erledigtes eingeklappt)
+    $open = array_filter($checks, fn($c) => !$c[1]);
+    $done = array_filter($checks, fn($c) => $c[1]);
+    echo '<section class="card" id="startklar"><h2>Startklar? <span class="score">' . $mustOk . ' von ' . count($must) . ' Pflichtpunkten</span></h2><div class="meter"><span style="width:' . (int)round($mustOk / max(1, count($must)) * 100) . '%"></span></div>';
+    if ($open) {
+        echo '<ul class="check">';
+        foreach ($open as [$lvl, $ok, $text, $link]) {
+            echo '<li class="' . ($lvl === 'must' ? 'bad' : 'meh') . '"><span class="mark" aria-hidden="true">' . ($lvl === 'must' ? '!' : '○') . '</span> <a href="' . e($link) . '">' . e($text) . '</a>' . ($lvl === 'nice' ? ' <small>(empfohlen)</small>' : '') . '</li>';
         }
         echo '</ul>';
+    } else {
+        echo '<p class="hint">Alles erledigt. Sehr gut.</p>';
+    }
+    if ($done) {
+        echo '<details class="fold"><summary>✓ ' . count($done) . ' erledigt</summary><ul class="check">';
+        foreach ($done as [$lvl, $ok, $text, $link]) {
+            echo '<li class="ok"><span class="mark" aria-hidden="true">✓</span> <a href="' . e($link) . '">' . e($text) . '</a></li>';
+        }
+        echo '</ul></details>';
     }
     echo '</section>';
 
-    // Englisch
-    $tp = translation_progress();
-    $pct = $tp['total'] ? (int)round($tp['done'] / $tp['total'] * 100) : 100;
-    echo '<section class="card"><h2>Englische Fassung <span class="score">' . $pct . ' % übersetzt</span></h2><div class="meter"><span style="width:' . $pct . '%"></span></div><p class="hint">Unübersetzte Felder zeigen auf der englischen Seite den deutschen Text. In jedem Formular wechselst du oben auf „English“.</p>';
+    // Aufgaben: Platzhalter, nach Bereich gruppiert und eingeklappt
+    $ph = find_placeholders();
+    $byArea = [];
+    foreach ($ph as $x) {
+        $byArea[$x['area']][] = $x;
+    }
+    echo '<section class="card"><h2>Platzhalter in Texten <span class="score">' . count($ph) . '</span></h2>';
+    if (!$ph) {
+        echo '<p class="hint">Keine Texte mit [eckigen Klammern] gefunden. Sehr gut.</p>';
+    } else {
+        echo '<p class="hint">Diese Stellen sind noch Platzhalter und sollten vor dem Start ersetzt oder gelöscht werden.</p>';
+        foreach ($byArea as $area => $list) {
+            echo '<details class="fold"><summary>' . e($area) . ' <span class="cnt">' . count($list) . '</span></summary><ul class="plain">';
+            foreach ($list as $x) {
+                echo '<li><a href="' . e($x['link']) . '">' . ($x['item'] !== '' ? e($x['item']) . ' · ' : '') . e($x['field']) . '</a> <code>' . e(mb_strimwidth($x['snippet'], 0, 50, '…')) . '</code></li>';
+            }
+            echo '</ul></details>';
+        }
+    }
+    echo '</section>';
+
+    // Aufgaben: Englisch
+    echo '<section class="card"><h2>Englische Fassung <span class="score">' . $pct . ' % übersetzt</span></h2><div class="meter"><span style="width:' . $pct . '%"></span></div>';
     if ($tp['missing_by_area']) {
-        echo '<ul class="plain">';
-        foreach (array_slice($tp['missing_by_area'], 0, 6, true) as $area => $n) {
-            echo '<li>' . e($area) . ': <strong>' . $n . '</strong> offen</li>';
+        echo '<details class="fold"><summary>Noch offen nach Bereich</summary><ul class="plain">';
+        foreach (array_slice($tp['missing_by_area'], 0, 8, true) as $area => $n) {
+            echo '<li>' . e($area) . ': <strong>' . $n . '</strong> Felder</li>';
+        }
+        echo '</ul></details>';
+    }
+    echo '<p class="hint">Unübersetzte Felder zeigen auf der englischen Seite den deutschen Text. In jedem Formular wechselst du oben auf „English“. <a href="' . AR_BASE . '/en/" target="_blank" rel="noopener">Englische Seite ansehen ↗</a></p></section>';
+
+    echo '</div><div class="dash-col">';
+
+    // Aktivität
+    echo '<section class="card"><h2>Letzte Änderungen</h2>';
+    if (!$act) {
+        echo '<p class="hint">Noch keine Änderungen.</p>';
+    } else {
+        echo '<ul class="act">';
+        foreach ($act as $x) {
+            $t = e($x['text']);
+            echo '<li><span class="act-w">' . e(who_name($x['who'])) . '</span> ' . ($x['link'] !== '' ? '<a href="' . e($x['link']) . '">' . $t . '</a>' : $t) . ' <small title="' . e(when_fmt($x['at'])) . '">' . e(rel_time($x['at'])) . '</small></li>';
         }
         echo '</ul>';
     }
-    echo '<p><a class="btn small ghost" href="' . AR_BASE . '/en/" target="_blank" rel="noopener">Englische Seite ansehen ↗</a></p></section>';
+    echo '<p class="hint"><a href="' . a('p=log') . '">Gesamtes Protokoll</a></p></section>';
 
-    // Besucher
-    $st = stats_summary();
+    // Anmeldungen und Sicherheit
+    echo '<section class="card"><h2>Anmeldungen &amp; Sicherheit</h2>';
+    $logins = dash_logins();
+    echo '<table class="mini"><thead><tr><th>Konto</th><th>Letzte Anmeldung</th><th>Passwort</th></tr></thead><tbody>';
+    foreach ($logins as $l) {
+        if (!$isOwner && $l['email'] !== $user['email']) {
+            continue;
+        }
+        echo '<tr><td>' . e($l['name']) . ($l['role'] === 'owner' ? ' <small>(Inhaber)</small>' : '') . '</td><td>' . ($l['at'] ? e(rel_time($l['at'])) . '<br><small>' . e($l['device'] ?: 'Gerät unbekannt') . '</small>' : 'noch nie') . '</td><td>' . ($l['pw'] ? '<span class="pill ok">ja</span>' : '<span class="pill">nein</span>') . '</td></tr>';
+    }
+    echo '</tbody></table>';
+    if ($isOwner) {
+        $fails = dash_count_audit(['login_failed', 'login_failed_pw']);
+        $locks = dash_count_audit(['login_locked']);
+        echo '<p class="secstats"><span>Fehlversuche (7 Tage): <strong>' . $fails . '</strong></span><span>Sperren (7 Tage): <strong>' . $locks . '</strong></span><span>Aktive Geräte: <strong>' . dash_active_devices() . '</strong></span></p>';
+    }
+    echo '<p class="hint"><a href="' . a('p=sessions') . '">Geräte verwalten</a>' . ($isOwner ? ' · <a href="' . a('p=users') . '">Zugänge</a>' : '') . '</p></section>';
+
+    // Besuche
     $max = max(1, max($st['days']));
-    echo '<section class="card"><h2>Besuche <span class="score">letzte 30 Tage</span></h2><div class="stats"><div><strong>' . $st['today'] . '</strong><small>heute</small></div><div><strong>' . $st['week'] . '</strong><small>7 Tage</small></div><div><strong>' . $st['total'] . '</strong><small>30 Tage</small></div><div><strong>' . $st['hits'] . '</strong><small>Aufrufe (30 Tage)</small></div></div><div class="bars" role="img" aria-label="Seitenaufrufe pro Tag">';
+    echo '<section class="card" id="besuche"><h2>Besuche <span class="score">letzte 30 Tage</span></h2><div class="stats"><div><strong>' . $st['today'] . '</strong><small>heute</small></div><div><strong>' . $thisWeek . '</strong><small>7 Tage</small></div><div><strong>' . $st['total'] . '</strong><small>30 Tage</small></div><div><strong>' . $st['hits'] . '</strong><small>Aufrufe (30 Tage)</small></div></div><div class="bars" role="img" aria-label="Besuche pro Tag">';
     foreach ($st['days'] as $day => $n) {
         echo '<span title="' . e(date('d.m.', strtotime($day))) . ': ' . $n . '" style="height:' . max(2, (int)round($n / $max * 100)) . '%"></span>';
     }
-    echo '</div><div class="cols">';
+    echo '</div>';
     $tot = max(1, $st['dev']['m'] + $st['dev']['d']);
-    echo '<div><h3>Geräte</h3><p>Handy ' . (int)round($st['dev']['m'] / $tot * 100) . ' % · Rechner ' . (int)round($st['dev']['d'] / $tot * 100) . ' %</p><h3>Seiten</h3><ul class="plain">';
+    $enN = 0;
+    $allN = 0;
+    foreach ($st['pages'] as $pg => $n) {
+        $allN += $n;
+        if (str_ends_with($pg, '-en')) {
+            $enN += $n;
+        }
+    }
+    echo '<div class="cols"><div><h3>Geräte &amp; Sprache</h3><p>Handy ' . (int)round($st['dev']['m'] / $tot * 100) . ' % · Rechner ' . (int)round($st['dev']['d'] / $tot * 100) . ' %<br>Deutsch ' . ($allN ? (int)round(($allN - $enN) / $allN * 100) : 0) . ' % · Englisch ' . ($allN ? (int)round($enN / $allN * 100) : 0) . ' %</p>';
     $label = ['home' => 'Startseite', 'home-en' => 'Startseite (Englisch)', 'impressum' => 'Impressum', 'datenschutz' => 'Datenschutz', 'impressum-en' => 'Imprint', 'datenschutz-en' => 'Privacy'];
+    echo '<h3>Seiten</h3><ul class="plain">';
     foreach (array_slice($st['pages'], 0, 5, true) as $pg => $n) {
         echo '<li>' . e($label[$pg] ?? $pg) . ': ' . $n . '</li>';
     }
@@ -92,19 +202,19 @@ function view_home(array $user): void
         echo '<li>' . e($r) . ': ' . $n . '</li>';
     }
     echo $st['refs'] ? '</ul>' : '';
-    echo '</div></div><p class="hint">Ein Gerät zählt höchstens einmal pro Stunde als Besuch (Aufrufe zählen alle Seitenaufrufe). Gespeichert werden nur Stunde, Seite, Gerätetyp und verweisende Domain – ohne Cookies und ohne IP-Adresse. Für die Stunden-Erkennung liegt kurz ein nicht umkehrbarer Kurzwert auf dem Server und wird zum Stundenende gelöscht. Bots und „Do Not Track“ werden nicht gezählt.</p></section>';
+    echo '</div></div><p class="hint">Ein Gerät zählt höchstens einmal pro Stunde als Besuch. Gespeichert werden nur Stunde, Seite, Gerätetyp und verweisende Domain – ohne Cookies und ohne IP-Adresse. Bots und „Do Not Track“ werden nicht gezählt.</p></section>';
 
-    // Bereiche
-    echo '<h2 class="fs">Bereiche</h2><div class="tiles">';
-    foreach (admin_menu() as $head => $entries) {
-        foreach ($entries as [$kind, $key]) {
-            $label2 = $kind === 'c' ? $s['collections'][$key]['label'] : $s['groups'][$key]['label'];
-            $href = $kind === 'c' ? a('p=list&c=' . $key) : a('p=group&g=' . $key);
-            $count = $kind === 'c' ? count(items($key, false, true)) : null;
-            echo '<a class="tile" href="' . $href . '"><span class="t-h">' . e($head) . '</span><strong>' . e($label2) . '</strong>' . ($count !== null ? '<span class="t-c">' . $count . ' Einträge</span>' : '') . '</a>';
-        }
-    }
-    echo '</div>';
+    echo '</div></div>';
+
+    // 5. Technik (eingeklappt)
+    $tech = dash_tech();
+    echo '<details class="card tech"><summary><strong>Technik</strong> <span class="score">PHP, Speicher, Zertifikat</span></summary><dl class="kv">';
+    echo '<div><dt>PHP-Version</dt><dd>' . e($tech['php']) . '</dd></div><div><dt>Datenbank</dt><dd>' . e($tech['db']) . '</dd></div>';
+    echo '<div><dt>Einträge</dt><dd>' . $tech['items'] . ' (Papierkorb: ' . $tech['trash'] . ')</dd></div>';
+    echo '<div><dt>Bilder (uploads/)</dt><dd>' . kb($tech['uploads']) . '</dd></div>';
+    echo '<div><dt>Sicherungen</dt><dd>' . $tech['backup_n'] . ' Dateien, ' . kb($tech['backups']) . '</dd></div>';
+    echo '<div><dt>SSL-Zertifikat</dt><dd id="ssl-val" data-url="' . e(a('p=ssl_json')) . '">wird geprüft …</dd></div>';
+    echo '</dl><p class="hint"><a href="' . a('p=check') . '">Zum Systemcheck</a></p></details>';
     layout_end();
 }
 

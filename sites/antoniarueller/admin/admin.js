@@ -308,4 +308,26 @@
       });
     }
   });
+
+  // ---- Übersicht: Selbsttest-Warnung und SSL-Ablauf (laden im Hintergrund) ----
+  var sa = $('#alert-self');
+  if (sa) {
+    var bad = [];
+    var paths = sa.getAttribute('data-paths').split(',');
+    Promise.all(paths.map(function (p) {
+      return fetch(p, { credentials: 'omit', cache: 'no-store' }).then(function (r) { if (r.status === 200) bad.push(p); }).catch(function () {});
+    })).then(function () {
+      if (bad.length) { $('.al-t', sa).textContent = 'Sicherheits-Selbsttest: Diese Dateien sind von außen erreichbar: ' + bad.join(', '); sa.hidden = false; }
+    });
+  }
+  var sv = $('#ssl-val');
+  if (sv) {
+    fetch(sv.getAttribute('data-url'), { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.error || d.days === null || d.days === undefined) { sv.textContent = 'nicht abrufbar'; return; }
+      var dt = new Date(d.until * 1000);
+      sv.textContent = 'läuft am ' + dt.toLocaleDateString('de-DE') + ' ab (in ' + d.days + ' Tagen)';
+      var al = $('#alert-ssl');
+      if (al && d.days < 21) { $('.al-t', al).textContent = 'Das SSL-Zertifikat läuft in ' + d.days + ' Tagen ab (' + dt.toLocaleDateString('de-DE') + ').'; al.hidden = false; }
+    }).catch(function () { sv.textContent = 'nicht abrufbar'; });
+  }
 })();

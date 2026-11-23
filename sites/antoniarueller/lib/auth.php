@@ -91,7 +91,7 @@ function login_verify(string $email, string $code, string $password = ''): bool
         [hmac($token), $user['id'], bin2hex(random_bytes(24)), time(), time(), hmac($_SERVER['HTTP_USER_AGENT'] ?? ''), ua_label((string)($_SERVER['HTTP_USER_AGENT'] ?? ''))]);
     q('UPDATE ar_users SET last_login = ? WHERE id = ?', [time(), $user['id']]);
     set_session_cookie($token, 0);
-    audit($email, 'login');
+    audit($email, 'login', ua_label((string)($_SERVER['HTTP_USER_AGENT'] ?? '')));
     require_once __DIR__ . '/backup.php';
     try {
         maybe_backup();

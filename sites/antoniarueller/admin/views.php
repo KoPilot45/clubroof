@@ -36,7 +36,7 @@ function csrf_field(array $user): string
     return '<input type="hidden" name="_csrf" value="' . e($user['csrf']) . '">';
 }
 
-function layout_start(array $user, string $title, string $active = ''): void
+function layout_start(array $user, string $title, string $active = '', bool $wide = false): void
 {
     admin_head($title, $user);
     $s = schema();
@@ -75,7 +75,7 @@ function layout_start(array $user, string $title, string $active = ''): void
 <span class="who"><?= e($user['name'] ?: $user['email']) ?></span>
 <form method="post" action="<?= a() ?>" class="inline"><?= csrf_field($user) ?><input type="hidden" name="action" value="logout"><button class="btn small ghost">Abmelden</button></form>
 </header>
-<main>
+<main<?= $wide ? ' class="wide"' : '' ?>>
 <?php if (!empty($GLOBALS['flash'])): ?><div class="flash <?= e($GLOBALS['flash']['type']) ?>" role="status"><?= e($GLOBALS['flash']['msg']) ?></div><?php endif; ?>
 <h1><?= e($title) ?></h1>
 <?php

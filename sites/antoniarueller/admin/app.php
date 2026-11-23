@@ -488,6 +488,10 @@ switch ($p) {
     case 'media':
         view_media($user);
         break;
+    case 'ssl_json':
+        header('Content-Type: application/json');
+        echo json_encode(ssl_expiry());
+        break;
     case 'media_json':
         header('Content-Type: application/json');
         echo json_encode(array_map(fn($m) => ['name' => $m['name'], 'url' => $m['url']], media_list()));
