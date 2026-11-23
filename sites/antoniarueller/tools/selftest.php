@@ -558,7 +558,7 @@ ok(!is_file("$root/data/backups/$file"), 'Sicherung gelöscht');
 
 echo "Zeitleiste, Einstellungen, Zugänge\n";
 $hp = req('GET', "$base/")['body'];
-ok(str_contains($hp, 'class="ed-ruler"') && str_contains($hp, 'class="ed-lane') && str_contains($hp, 'data-track=') && str_contains($hp, 'id="edPlay"') && str_contains($hp, 'class="yr-flag"'), 'Schnittplatz: Spuren, Lineal, Jahres-Fähnchen, Abspielen');
+ok(str_contains($hp, 'class="ed-ruler"') && str_contains($hp, 'class="ed-lane') && str_contains($hp, 'data-track=') && str_contains($hp, 'class="yr-flag"'), 'Schnittplatz: Spuren, Lineal, Jahres-Fähnchen');
 ok(!str_contains($hp, 'style="left:') || !str_contains($hp, 'class="ar-tlclip" data-id="x"'), 'Clips ohne Datumsmaßstab');
 $lw = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL AND live = 1 ORDER BY sort LIMIT 1")->fetchColumn();
 req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $lw, 'title' => 'Lang-Test', 'medium' => 'text', 'tl_track' => 'A1', 'tl_len' => 'long', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'publish']);

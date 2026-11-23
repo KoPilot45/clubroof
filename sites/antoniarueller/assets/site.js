@@ -29,7 +29,7 @@
     });
   }
   window.addEventListener('resize', function () { placeHeads(false); });
-  window.addEventListener('load', function () { placeHeads(false); });
+  window.addEventListener('load', function () { placeHeads(false); requestAnimationFrame(function () { if (desk) desk.classList.add('ready'); }); });
   placeHeads(false);
 
   function select(id) {
@@ -81,27 +81,6 @@
       if (soloTrack && seq().indexOf(current) === -1 && seq().length) select(seq()[0]);
     });
   });
-
-  // Abspielen: Abspielmarke wandert von Clip zu Clip, pausiert bei Berührung
-  var playBtn = $('#edPlay'), timer = null, playing = false, hold = false;
-  function tick() { if (!hold) step(1); }
-  function setPlay(on) {
-    playing = on;
-    clearInterval(timer);
-    if (on) timer = setInterval(tick, 3200);
-    if (playBtn) {
-      playBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      $('.pl', playBtn).textContent = playBtn.getAttribute(on ? 'data-pause' : 'data-play');
-      playBtn.firstElementChild.textContent = on ? '❚❚' : '▶';
-    }
-  }
-  if (playBtn) playBtn.addEventListener('click', function () { setPlay(!playing); });
-  if (desk) {
-    desk.addEventListener('mouseenter', function () { hold = true; });
-    desk.addEventListener('mouseleave', function () { hold = false; });
-    desk.addEventListener('focusin', function () { hold = true; });
-    desk.addEventListener('focusout', function () { hold = false; });
-  }
 
   // ---- Mobiles Menü ----
   var menu = $('#menu'), burger = $('#burger'), closeBtn = $('#menuClose');

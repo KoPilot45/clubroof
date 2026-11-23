@@ -369,10 +369,6 @@ a:hover{color:var(--accent)}
 .ar-ed-desk[data-solo] .ed-lane:not(.solo) .ar-tlclip{pointer-events:auto}
 .yr-flag{position:absolute;left:0;top:-15px;height:13px;border-left:1px solid var(--ink);padding-left:4px;font-family:var(--mono);font-size:9px;font-weight:600;line-height:13px;color:var(--ink);letter-spacing:.06em}
 .playhead{top:0;bottom:0;left:0;z-index:2}
-.ed-play{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--mint);color:var(--mint);border-radius:999px;padding:4px 12px;font:inherit;font-size:11px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
-.ed-play:hover{background:rgba(201,222,218,.15)}
-.ed-play[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#FBF6EE}
-.ed-play:focus-visible{outline:2px solid var(--paper);outline-offset:2px}
 @media (min-width:1100px){
   .ed-row,.ed-lane{height:64px}
   .ed-head,.ed-ruler{height:32px}
@@ -387,3 +383,18 @@ a:hover{color:var(--accent)}
 .ar-tlclip.mini{flex:0 0 calc(var(--w,1) * var(--u) - 3px);min-width:0;padding:0;justify-content:center;top:auto;bottom:auto;height:auto;outline:none}
 .mob-ph span{top:3px}
 .ar-tlclip{overflow:visible}
+
+/* Lineal zählt nicht zur Breite: Scrollleiste erscheint nur, wenn Clips wirklich nicht passen */
+.ed-grid{padding-top:32px}
+.ed-ruler{position:absolute;left:0;right:0;top:0;overflow:hidden}
+@supports (-moz-appearance:none){.ed-scroll,.mob-tl-r{scrollbar-width:thin;scrollbar-color:rgba(23,37,38,.45) transparent}}
+.ed-scroll::-webkit-scrollbar,.mob-tl-r::-webkit-scrollbar{height:10px}
+.ed-scroll::-webkit-scrollbar-button,.mob-tl-r::-webkit-scrollbar-button{display:none;width:0;height:0}
+.ed-scroll::-webkit-scrollbar-track,.mob-tl-r::-webkit-scrollbar-track{background:transparent}
+.ed-scroll::-webkit-scrollbar-thumb,.mob-tl-r::-webkit-scrollbar-thumb{background:rgba(23,37,38,.4);border:3px solid transparent;border-radius:99px;background-clip:padding-box}
+.ed-scroll::-webkit-scrollbar-thumb:hover,.mob-tl-r::-webkit-scrollbar-thumb:hover{background:var(--accent);background-clip:padding-box}
+.ed-body{align-items:flex-start}
+.ed-scroll{overflow-y:hidden}
+.playhead{transition:none}
+.ar-ed-desk.ready .playhead{transition:left .35s ease}
+.mob-ph{transition:left .35s ease}

@@ -162,7 +162,7 @@ function build_timeline(array $clips, array $tracks): array
     foreach ($byTrack as $list) {
         $max = max($max, array_sum(array_column($list, 'w')));
     }
-    return ['byTrack' => $byTrack, 'ticks' => max(6, (int)ceil($max) + 1)];
+    return ['byTrack' => $byTrack, 'ticks' => max(16, (int)ceil($max) + 1)];
 }
 
 /** Beschriftung eines Lineal-Feldes (dekorativ, wie ein Timecode-Lineal). */

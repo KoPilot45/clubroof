@@ -139,7 +139,6 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="ed-bar">
 <span class="ed-t"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span><?= e($sec['editor_title']) ?></span>
 <span class="ed-icons"><?php foreach (['video' => 'Video', 'text' => 'Text', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'Social'] as $k => $l): ?><span><?= icon($k, 14) ?><?= tr($l) ?></span><?php endforeach; ?></span>
-<button type="button" class="ed-play" id="edPlay" aria-pressed="false" data-play="<?= e(tr('Abspielen')) ?>" data-pause="<?= e(tr('Pause')) ?>"><span aria-hidden="true">▶</span> <span class="pl"><?= tr('Abspielen') ?></span></button>
 <span style="color:#C9DEDA"><?= tr('Clip anklicken für Details') ?></span>
 </div>
 <div class="ed-body">
