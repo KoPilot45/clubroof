@@ -476,3 +476,52 @@ a:hover{color:var(--accent)}
 .ar-track>span{line-height:1}
 .mq-dot{display:block;flex:none;width:.3em;height:.3em;border-radius:50%;background:var(--accent)}
 .amp{position:relative;top:0}
+
+/* ===== Weiche Bewegungen (alles nur Deckkraft/Verschiebung, ohne Bibliothek) ===== */
+/* 2: Hover-Zustände */
+a{transition:color .2s}
+a:not([class]){text-decoration-thickness:1px;text-underline-offset:.2em;transition:color .2s,text-decoration-color .2s}
+.ar-nav a{transition:color .2s}
+.ar-nav a:hover{color:var(--accent)}
+.btn-ghost,.btn-solid,.fa-cta,.pod-btn{transition:background-color .25s,color .25s,border-color .25s,transform .25s,box-shadow .25s}
+.btn-solid:hover{background:var(--teal);transform:translateY(-2px);box-shadow:0 10px 22px rgba(11,63,68,.22)}
+.btn-ghost:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px)}
+.fa-cta:hover,.pod-btn:hover{transform:translateY(-2px)}
+.btn-ghost span[aria-hidden],.btn-solid span[aria-hidden],.fa-cta span[aria-hidden]{display:inline-block;transition:transform .25s}
+.btn-ghost:hover span[aria-hidden],.btn-solid:hover span[aria-hidden],.fa-cta:hover span[aria-hidden]{transform:translateX(4px)}
+.ar-clip>a{transition:padding-left .3s ease}
+.ar-clip:hover>a{padding-left:22px}
+.ar-redact{transition:background .25s,color .25s}
+.ar-tlclip{transition:transform .2s,opacity .25s}
+.ar-tlclip:hover{transform:translateY(-1px)}
+/* 3: gleitender Strich unter dem aktiven Menüpunkt */
+.ar-nav{position:relative}
+.ar-nav a.on{border-bottom-color:transparent}
+.nav-ind{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--accent);opacity:0;pointer-events:none;transition:transform .4s cubic-bezier(.4,0,.2,1),width .4s cubic-bezier(.4,0,.2,1),opacity .25s}
+/* 6: Überblendung beim Wechsel des aktiven Beitrags */
+.ed-sel-l,.mob-panel{transition:opacity .16s ease}
+.fx-out{opacity:0}
+@media (prefers-reduced-motion:no-preference){
+  /* 7: sanft pulsierender Aufnahme-Punkt */
+  @keyframes ar-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+  .ar-rec{animation:ar-pulse 2.4s ease-in-out infinite}
+  /* 1: Abschnitte blenden beim Scrollen ein */
+  .rv-pre{opacity:0;transform:translateY(18px)}
+  .rv-pre.in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.2,.6,.2,1) var(--rd,0ms),transform .7s cubic-bezier(.2,.6,.2,1) var(--rd,0ms)}
+  /* 5: Clips laden nacheinander in die Spuren, danach erscheint die Abspielmarke */
+  .cx-pre:not(.in) .ar-tlclip{opacity:0;transform:translateX(-26px)}
+  .cx-pre.in .ar-tlclip{transition:opacity .5s ease var(--d,0ms),transform .5s cubic-bezier(.2,.6,.2,1) var(--d,0ms)}
+  .cx-pre:not(.in) .playhead{opacity:0}
+  .cx-pre.in .playhead{transition:opacity .5s ease .9s,left .35s ease}
+  .ar-ed-desk.cx-pre:not(.in) .ed-ruler{opacity:0}
+  .ar-ed-desk.cx-pre.in .ed-ruler{transition:opacity .6s ease}
+  /* 10: Aufmacher baut sich ruhig auf */
+  .cx-pre:not(.in) .fa-mast,.cx-pre:not(.in) .fa-kick,.cx-pre:not(.in) .fa-stand,.cx-pre:not(.in) .fa-foot,.cx-pre:not(.in) .fa-no,.cx-pre:not(.in) .fa-img{opacity:0;transform:translateY(16px)}
+  .cx-pre:not(.in) .ar-feat-h{opacity:0;transform:translateY(24px);clip-path:inset(0 0 100% 0)}
+  .cx-pre.in .ar-feat-h{clip-path:inset(-.3em -.3em -.3em -.3em);transition:opacity .6s ease .2s,transform .8s cubic-bezier(.2,.6,.2,1) .2s,clip-path .9s cubic-bezier(.2,.6,.2,1) .2s}
+  .cx-pre.in .fa-mast{transition:opacity .6s ease,transform .6s ease}
+  .cx-pre.in .fa-kick{transition:opacity .6s ease .1s,transform .6s ease .1s}
+  .cx-pre.in .fa-no,.cx-pre.in .fa-img{transition:opacity 1s ease .4s,transform 1s cubic-bezier(.2,.6,.2,1) .4s}
+  .cx-pre.in .fa-stand{transition:opacity .7s ease .55s,transform .7s ease .55s}
+  .cx-pre.in .fa-foot{transition:opacity .7s ease .7s,transform .7s ease .7s}
+}
