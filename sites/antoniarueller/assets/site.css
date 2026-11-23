@@ -239,8 +239,8 @@ a:hover{color:var(--accent)}
 
 /* Off the record */
 .oh1{font-family:var(--anton);font-size:clamp(64px,10vw,150px);text-transform:uppercase}
-.oh2{font-family:var(--anton);font-size:clamp(64px,10vw,150px);text-transform:uppercase;color:var(--teal)}
-.the{position:relative;display:inline-block}
+.oh2{font-family:var(--anton);font-size:clamp(64px,10vw,150px);text-transform:uppercase;color:var(--ink)}
+.the{position:relative;display:inline-block;margin-right:.195em}
 .strike{position:absolute;left:-4%;right:-4%;top:38%;height:30%;background:var(--ink);transform:rotate(-2deg)}
 .off{margin:0;border-top:1px solid var(--ink)}
 .off-r{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 40px;padding:22px 0;border-bottom:1px solid var(--line)}
