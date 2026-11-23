@@ -198,6 +198,19 @@ ok(str_contains($ah, 'no-store') && str_contains($ah, 'noindex'), 'Admin: kein Z
 $ck = req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner])['head'];
 ok(!str_contains($ck, 'Set-Cookie: ar_admin=') , 'Keine Sitzung vor erfolgreicher Anmeldung');
 
+echo "Mail-Warnung in der Übersicht\n";
+audit('test', 'login_mail_failed', 'alter Fehler');
+q("DELETE FROM ar_settings WHERE grp = '_mail'");
+settings_rows(true);
+ok(!str_contains(req('GET', "$base/admin/")['body'], 'letzte Mailversand'), 'alte Fehler im Protokoll lösen keine Warnung mehr aus');
+save_setting('_mail', ['ok' => false, 'at' => time(), 'err' => 'Test-Fehlergrund'], 'test');
+ok(str_contains(req('GET', "$base/admin/")['body'], 'Test-Fehlergrund'), 'aktueller Fehler wird mit Grund angezeigt');
+ok(str_contains(req('GET', "$base/admin/?p=check")['body'], 'FEHLGESCHLAGEN'), 'Systemcheck zeigt den letzten Mailversand');
+save_setting('_mail', ['ok' => true, 'at' => time(), 'err' => ''], 'test');
+ok(!str_contains(req('GET', "$base/admin/")['body'], 'letzte Mailversand'), 'nach erfolgreichem Versand keine Warnung');
+q("DELETE FROM ar_settings WHERE grp = '_mail'");
+settings_rows(true);
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

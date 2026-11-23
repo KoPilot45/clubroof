@@ -46,7 +46,7 @@ function login_request(string $email): void
         "Er ist $min Minuten gültig und kann nur einmal verwendet werden.\n" .
         "Wenn du dich nicht anmelden wolltest, ignoriere diese Mail – ohne den Code kann sich niemand anmelden.\n");
     if (!$ok) {
-        audit($email, 'login_mail_failed');
+        audit($email, 'login_mail_failed', mail_last_error());
     }
 }
 

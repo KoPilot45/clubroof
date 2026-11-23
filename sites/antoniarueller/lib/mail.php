@@ -1,6 +1,26 @@
 <?php
 declare(strict_types=1);
 
+/** Letzter Fehlergrund beim Mailversand (leer = kein Fehler). */
+function mail_last_error(?string $set = null): string
+{
+    static $e = '';
+    if ($set !== null) {
+        $e = mb_substr(trim(preg_replace('~\s+~', ' ', $set)), 0, 160);
+    }
+    return $e;
+}
+
+/** Ergebnis des letzten Versands für die Übersicht merken (nur bei echtem Versand). */
+function mail_record_status(bool $ok): void
+{
+    try {
+        save_setting('_mail', ['ok' => $ok, 'at' => time(), 'err' => mail_last_error()], 'system');
+    } catch (Throwable $e) {
+        error_log('mail status: ' . $e->getMessage());
+    }
+}
+
 function mail_clean(string $s): string
 {
     return trim(str_replace(["\r", "\n", "\0"], ' ', $s));
@@ -47,10 +67,17 @@ function send_mail(string $to, string $subject, string $body, array $attachments
         $encBody = $text;
     }
 
+    mail_last_error('');
     if ($driver === 'smtp') {
-        return smtp_send((array)cfg('mail.smtp'), $from, $to, $encSubject, $headers, $encBody, $fromName);
+        $ok = smtp_send((array)cfg('mail.smtp'), $from, $to, $encSubject, $headers, $encBody, $fromName);
+    } else {
+        $ok = @mail($to, $encSubject, $encBody, implode("\r\n", $headers), '-f' . $from);
+        if (!$ok) {
+            mail_last_error('PHP mail() hat den Versand abgelehnt');
+        }
     }
-    return @mail($to, $encSubject, $encBody, implode("\r\n", $headers), '-f' . $from);
+    mail_record_status($ok);
+    return $ok;
 }
 
 function smtp_send(array $c, string $from, string $to, string $subject, array $headers, string $body, string $fromName): bool
@@ -61,7 +88,8 @@ function smtp_send(array $c, string $from, string $to, string $subject, array $h
     $ctx = stream_context_create(['ssl' => ['verify_peer' => true, 'verify_peer_name' => true]]);
     $fp = @stream_socket_client(($secure === 'ssl' ? 'ssl://' : 'tcp://') . "$host:$port", $en, $es, 12, STREAM_CLIENT_CONNECT, $ctx);
     if (!$fp) {
-        error_log("SMTP connect failed: $es");
+        mail_last_error("Verbindung zu $host:$port nicht möglich ($es)");
+        error_log('SMTP: ' . mail_last_error());
         return false;
     }
     stream_set_timeout($fp, 12);
@@ -75,31 +103,68 @@ function smtp_send(array $c, string $from, string $to, string $subject, array $h
         }
         return $out;
     };
-    $cmd = function (string $c, string $expect) use ($fp, $read): bool {
-        fwrite($fp, $c . "\r\n");
-        $r = $read();
-        return str_starts_with($r, $expect);
+    $fail = function (string $step, string $reply) use ($fp): bool {
+        mail_last_error($step . ': ' . ($reply !== '' ? $reply : 'keine Antwort'));
+        error_log('SMTP: ' . mail_last_error());
+        @fwrite($fp, "QUIT\r\n");
+        fclose($fp);
+        return false;
     };
-    $ok = str_starts_with($read(), '220');
+    $expect = function (string $cmd, string $prefix, string $step) use ($fp, $read, $fail): ?bool {
+        if ($cmd !== '') {
+            fwrite($fp, $cmd . "\r\n");
+        }
+        $r = $read();
+        return str_starts_with($r, $prefix) ? null : $fail($step, $r);
+    };
+    $greet = $read();
+    if (!str_starts_with($greet, '220')) {
+        return $fail('Begrüßung', $greet);
+    }
     $ehlo = 'EHLO ' . (preg_replace('~[^a-z0-9.-]~i', '', $_SERVER['SERVER_NAME'] ?? 'localhost') ?: 'localhost');
-    $ok = $ok && $cmd($ehlo, '250');
-    if ($ok && $secure === 'tls') {
-        $ok = $cmd('STARTTLS', '220') && @stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
-        $ok = $ok && $cmd($ehlo, '250');
+    if (($x = $expect($ehlo, '250', 'EHLO')) !== null) {
+        return $x;
     }
-    if ($ok && !empty($c['user'])) {
-        $ok = $cmd('AUTH LOGIN', '334') && $cmd(base64_encode((string)$c['user']), '334') && $cmd(base64_encode((string)$c['pass']), '235');
+    if ($secure === 'tls') {
+        if (($x = $expect('STARTTLS', '220', 'STARTTLS')) !== null) {
+            return $x;
+        }
+        if (!@stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+            return $fail('TLS-Verschlüsselung', 'Zertifikat oder Verbindung abgelehnt');
+        }
+        if (($x = $expect($ehlo, '250', 'EHLO nach STARTTLS')) !== null) {
+            return $x;
+        }
     }
-    $ok = $ok && $cmd("MAIL FROM:<$from>", '250') && $cmd("RCPT TO:<$to>", '25') && $cmd('DATA', '354');
-    if ($ok) {
-        $msg = implode("\r\n", array_merge($headers, ["To: <$to>", "Subject: $subject", 'Date: ' . date('r'), 'Message-ID: <' . bin2hex(random_bytes(8)) . '@' . (parse_url((string)cfg('site_url'), PHP_URL_HOST) ?: 'localhost') . '>'])) . "\r\n\r\n" . $body;
-        $msg = preg_replace('~^\.~m', '..', $msg);
-        $ok = $cmd($msg . "\r\n.", '250');
+    if (!empty($c['user'])) {
+        foreach ([['AUTH LOGIN', '334'], [base64_encode((string)$c['user']), '334'], [base64_encode((string)$c['pass']), '235']] as $i => [$cmd, $pfx]) {
+            if (($x = $expect($cmd, $pfx, 'Anmeldung am Mailserver (SMTP-Zugang prüfen)')) !== null) {
+                return $x;
+            }
+        }
     }
-    @fwrite($fp, "QUIT\r\n");
-    fclose($fp);
-    if (!$ok) {
-        error_log('SMTP: Versand fehlgeschlagen');
+    foreach ([["MAIL FROM:<$from>", '250', 'Absender'], ["RCPT TO:<$to>", '25', 'Empfänger'], ['DATA', '354', 'DATA']] as [$cmd, $pfx, $step]) {
+        if (($x = $expect($cmd, $pfx, $step)) !== null) {
+            return $x;
+        }
     }
-    return $ok;
+    $msg = implode("\r\n", array_merge($headers, ["To: <$to>", "Subject: $subject", 'Date: ' . date('r'), 'Message-ID: <' . bin2hex(random_bytes(8)) . '@' . (parse_url((string)cfg('site_url'), PHP_URL_HOST) ?: 'localhost') . '>'])) . "\r\n\r\n" . $body;
+    $msg = preg_replace('~^\.~m', '..', $msg);
+    stream_set_timeout($fp, (int)($c['data_timeout'] ?? 40)); // manche Server prüfen die Mail vor der Bestätigung (Spamfilter)
+    fwrite($fp, $msg . "\r\n.\r\n");
+    $final = $read();
+    $meta = stream_get_meta_data($fp);
+    if (str_starts_with($final, '250')) {
+        @fwrite($fp, "QUIT\r\n");
+        fclose($fp);
+        return true;
+    }
+    if ($final === '' && !empty($meta['timed_out'])) {
+        // Mail wurde übergeben, aber der Server hat die Annahme nicht rechtzeitig bestätigt: nicht als Fehler werten.
+        mail_last_error('Annahme vom Mailserver nicht bestätigt (Zeitüberschreitung) – Mail wurde übergeben');
+        error_log('SMTP: ' . mail_last_error());
+        fclose($fp);
+        return true;
+    }
+    return $fail('Übergabe der Nachricht', $final);
 }

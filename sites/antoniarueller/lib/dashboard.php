@@ -97,8 +97,9 @@ function dash_alerts(array $user): array
         if (dash_count_audit(['login_locked']) > 0) {
             $out[] = ['warn', 'In den letzten 7 Tagen gab es Sperren nach Fehlversuchen bei der Anmeldung.', a('p=log')];
         }
-        if (dash_count_audit(['login_mail_failed']) > 0) {
-            $out[] = ['bad', 'Der Versand von Anmelde-Mails ist fehlgeschlagen. Mail-Einstellungen prüfen.', a('p=check')];
+        $ms = json_arr(settings_rows()['_mail']['data'] ?? null);
+        if ($ms && empty($ms['ok']) && (int)($ms['at'] ?? 0) > time() - 7 * 86400) {
+            $out[] = ['bad', 'Der letzte Mailversand (' . date('d.m. H:i', (int)$ms['at']) . ' Uhr) ist fehlgeschlagen' . (!empty($ms['err']) ? ': ' . $ms['err'] : '') . '. Mail-Einstellungen im Systemcheck prüfen.', a('p=check')];
         }
     }
     if (is_file(AR_ROOT . '/diagnose.php') || is_dir(AR_ROOT . '/tools')) {

@@ -187,6 +187,7 @@ function view_check(array $user): void
         ['Seiten-Zwischenspeicher', is_dir(cache_dir()) && is_writable(cache_dir()) ? 'aktiv' : 'wird beim ersten Aufruf angelegt', true],
         ['Erkannte Besucher-Adresse (für Begrenzungen)', e_ip_label(), filter_var((string)($_SERVER['REMOTE_ADDR'] ?? ''), FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false || in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1'], true)],
         ['Konfiguration außerhalb des Webverzeichnisses', config_file() !== AR_ROOT . '/config.php' ? 'ja (empfohlen)' : 'nein – config.php liegt im Webverzeichnis (gesperrt, aber „oberhalb“ wäre sicherer)', true],
+        ['Letzter Mailversand', mail_status_label(), mail_status_ok()],
         ['Mailversand', (string)cfg('mail.driver') . ' · Absender ' . cfg('mail.from'), cfg('mail.driver') !== 'log'],
     ];
     $blocked = [];
@@ -215,4 +216,19 @@ function e_ip_label(): string
     $ip = (string)($_SERVER['REMOTE_ADDR'] ?? '?');
     $note = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false ? ' – interne Adresse: hinter einem Proxy teilen sich alle Besucher eine Adresse' : '';
     return $ip . $note;
+}
+
+function mail_status_ok(): bool
+{
+    $ms = json_arr(settings_rows()['_mail']['data'] ?? null);
+    return !$ms || !empty($ms['ok']);
+}
+
+function mail_status_label(): string
+{
+    $ms = json_arr(settings_rows()['_mail']['data'] ?? null);
+    if (!$ms) {
+        return 'noch kein Versand erfasst';
+    }
+    return (!empty($ms['ok']) ? 'erfolgreich' : 'FEHLGESCHLAGEN') . ' (' . date('d.m.Y H:i', (int)($ms['at'] ?? 0)) . ' Uhr)' . (!empty($ms['err']) ? ' – ' . $ms['err'] : '');
 }
