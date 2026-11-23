@@ -504,9 +504,9 @@ $ef = req('GET', "$base/admin/?p=edit&c=clips")['body'];
 ok(str_contains($ef, 'Vorschaubild (optional)') && str_contains($ef, 'Bildnachweis (optional)') && !str_contains($ef, 'Standbild'), 'Backend: „Vorschaubild“ und „Bildnachweis“');
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Vorschaubild-Test', 'medium' => 'text', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'still_credit' => 'Bild: <Test>', 'still_focus' => '40,25', 'mode' => 'publish', 'still' => new CURLFile($root . '/seed-assets/antonia-portrait.jpg', 'image/jpeg', 'v.jpg')], true);
 $vp = req('GET', "$base/")['body'];
-ok($r['code'] === 302 && preg_match('~<span class="cl-th"><img src="[^"]*/uploads/[a-z0-9]+\.webp"[^>]*loading="lazy"[^>]*object-position:40% 25%~', $vp) === 1, 'Liste zeigt Vorschaubild mit Fokuspunkt');
-ok(str_contains($vp, 'Bild: \\u003CTest\\u003E') && !str_contains($vp, 'Bild: <Test>'), 'Bildnachweis steht maskiert in den Beitragsdaten');
-ok(substr_count($vp, '<span class="cl-th none">') >= 1, 'Beiträge ohne Bild lassen die Spalte frei');
+ok($r['code'] === 302 && preg_match('~<span class="cl-fig"><img src="[^"]*/uploads/[a-z0-9]+\.webp"[^>]*loading="lazy"[^>]*object-position:40% 25%~', $vp) === 1, 'Kachel zeigt Vorschaubild mit Fokuspunkt');
+ok(str_contains($vp, 'Bild: &lt;Test&gt;') && !str_contains($vp, 'Bild: <Test>'), 'Bildnachweis steht maskiert auf der Kachel');
+ok(substr_count($vp, 'class="cl-fig txt') >= 1, 'Beiträge ohne Bild werden zur typografischen Kachel');
 foreach (q("SELECT id FROM ar_items WHERE coll = 'clips' AND data LIKE '%Vorschaubild-Test%'")->fetchAll() as $row) {
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);

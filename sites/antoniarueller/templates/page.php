@@ -126,7 +126,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?= sec_head('01', 'Showreel', $sec['show_right'] !== '' ? $sec['show_right'] : count($clips) . ' ' . tr('Clips') . ' · ' . implode(', ', array_unique(array_map(fn($c) => media_label($c['medium']), $clips))) . ($yearSpan ? ' · ' . $yearSpan : ''), '24px') ?>
 <h2 class="big-h"><span class="bh1"><?= e($sec['show_h1']) ?></span><span class="bh2"><?= e($sec['show_h2']) ?></span></h2>
 
-<div class="ar-ed-desk editor<?= array_filter($clips, fn($x) => upload_url((string)$x['still']) !== '') ? ' has-thumbs' : '' ?>">
+<div class="ar-ed-desk editor">
 <div class="ed-bar">
 <span class="ed-t"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span><?= e($sec['editor_title']) ?></span>
 <span class="ed-icons"><?php foreach (['video' => 'Video', 'text' => 'Text', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'Social'] as $k => $l): ?><span><?= icon($k, 14) ?><?= tr($l) ?></span><?php endforeach; ?></span>
@@ -151,8 +151,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 </div>
 </div>
-<div class="ed-sel<?= upload_url((string)$first['still']) !== '' ? ' has-img' : '' ?>">
-<figure class="ed-fig" id="edFig"<?= upload_url((string)$first['still']) === '' ? ' hidden' : '' ?>><img id="edFigImg" src="<?= e(upload_url((string)$first['still'])) ?>" alt="" decoding="async" style="object-position:<?= e(focus_pos((string)($first['still_focus'] ?? ''))) ?>"><figcaption class="cred" id="edFigCr"<?= trim((string)($first['still_credit'] ?? '')) === '' ? ' hidden' : '' ?>><?= e((string)($first['still_credit'] ?? '')) ?></figcaption></figure>
+<div class="ed-sel">
 <div class="ed-sel-l">
 <span class="sel-no" data-f="no"><?= e($first['_no']) ?></span>
 <div class="sel-col">
@@ -197,13 +196,12 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <div class="muted list-h"><?= e($sec['show_all']) ?></div>
 <ol class="clip-list">
-<?php foreach ($clips as $c): ?>
+<?php foreach ($clips as $n => $c): $cImg = upload_url((string)$c['still']); ?>
 <li class="ar-clip<?= $c['_id'] === $first['_id'] ? ' on' : '' ?>" data-id="<?= $c['_id'] ?>">
 <a data-ev="clip" data-k="<?= (int)$c['_id'] ?>" href="<?= e(safe_url($c['url']) ?: '#arbeiten') ?>" <?= $c['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
-<span class="cl-no"><?= e($c['_no']) ?></span>
-<span class="cl-th<?= upload_url((string)$c['still']) === '' ? ' none' : '' ?>"><?php if (upload_url((string)$c['still']) !== ''): ?><img src="<?= e(upload_url((string)$c['still'])) ?>"<?= img_attrs((string)$c['still']) ?> alt="" loading="lazy" decoding="async" style="object-position:<?= e(focus_pos((string)($c['still_focus'] ?? ''))) ?>"><?php endif; ?></span>
-<span class="cl-main"><span class="ar-clip-title"><?= e($c['title']) ?></span><?php if ($c['desc'] !== ''): ?><span class="cl-desc"><?= e($c['desc']) ?></span><?php endif; ?><span class="cl-tc muted"><span>TC <?= e($c['_tc']) ?></span><span style="color:var(--ink)"><?= icon($c['medium'], 16) ?></span></span></span>
-<span class="cl-side"><span><?= e($c['outlet']) ?> <span aria-hidden="true" style="color:var(--accent)">↗</span></span><span class="muted"><?= e(implode(' · ', array_filter([$c['format'], $c['_date']]))) ?></span><?php if ($c['role'] !== ''): ?><span class="muted"><?= tr('Rolle:') ?> <?= e($c['role']) ?></span><?php endif; ?><span class="cl-link"><?= e($c['link_text']) ?></span></span>
+<span class="cl-fig<?= $cImg === '' ? ' txt t' . ($n % 2) : '' ?>"><?php if ($cImg !== ''): ?><img src="<?= e($cImg) ?>"<?= img_attrs((string)$c['still']) ?> alt="" loading="lazy" decoding="async" style="object-position:<?= e(focus_pos((string)($c['still_focus'] ?? ''))) ?>"><?php endif; ?><span class="cl-no"><?= e($c['_no']) ?></span><span class="cl-kind"><?= icon($c['medium'], 14) ?><?= e(media_label($c['medium'])) ?></span><?php if ($cImg !== '' && trim((string)($c['still_credit'] ?? '')) !== ''): ?><span class="cl-cred cred"><?= e($c['still_credit']) ?></span><?php endif; ?></span>
+<span class="ar-clip-title"><?= e($c['title']) ?></span>
+<span class="cl-meta"><?= implode('', array_map(fn($x) => '<span>' . e($x) . '</span>', array_filter([(string)$c['outlet'], (string)$c['format'], (string)$c['_date']]))) ?></span>
 </a></li>
 <?php endforeach; ?>
 </ol>

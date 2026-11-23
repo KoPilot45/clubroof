@@ -118,7 +118,6 @@ foreach ($clips as $c) {
         'no' => $c['_no'], 'tc' => $c['_tc'], 'title' => $c['title'], 'desc' => $c['desc'], 'outlet' => $c['outlet'],
         'format' => $c['format'], 'date' => $c['_date'], 'role' => $c['role'], 'link_text' => $c['link_text'],
         'url' => safe_url($c['url']) ?: '#arbeiten', 'new_tab' => (bool)$c['new_tab'], 'medium' => $c['medium'],
-        'img' => upload_url((string)$c['still']), 'imgpos' => focus_pos((string)($c['still_focus'] ?? '')), 'credit' => trim((string)($c['still_credit'] ?? '')),
     ];
 }
 $yearSpan = $years ? (min($years) === max($years) ? (string)min($years) : min($years) . ' — ' . max($years)) : '';
