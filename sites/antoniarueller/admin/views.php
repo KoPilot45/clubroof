@@ -6,6 +6,7 @@ require_once __DIR__ . '/views2.php';
 require_once __DIR__ . '/login_views.php';
 require_once __DIR__ . '/stats_views.php';
 require_once __DIR__ . '/ui.php';
+require_once __DIR__ . '/translate.php';
 
 function a(string $q = ''): string
 {

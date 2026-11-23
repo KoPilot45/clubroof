@@ -393,6 +393,54 @@ $vh = req('GET', "$base/admin/vorschau.php")['head'];
 ok(str_contains($vh, "frame-ancestors 'self'") && str_contains($vh, 'X-Frame-Options: SAMEORIGIN'), 'Vorschau darf nur von der eigenen Verwaltung eingebettet werden');
 ok(str_contains(req('GET', "$base/admin/")['head'], "frame-ancestors 'none'"), 'Verwaltung selbst bleibt gegen Einbetten gesperrt');
 
+echo "Übersetzungstabelle\n";
+require_once $root . '/lib/checks.php';
+if (!function_exists('a')) {
+    function a(string $q = ''): string
+    {
+        return AR_BASE . '/admin/' . ($q !== '' ? '?' . $q : '');
+    }
+}
+$tp = req('GET', "$base/admin/?p=translate");
+ok($tp['code'] === 200 && str_contains($tp['body'], 'id="trform"') && str_contains($tp['body'], 'Noch offen') && str_contains($tp['body'], 'name="t[c:'), 'Tabelle mit Deutsch und Englisch');
+ok(str_contains(req('GET', "$base/admin/")['body'], 'Übersetzungstabelle'), 'Menüpunkt „Englisch“');
+$ef = req('GET', "$base/admin/?p=edit&c=clips&id=$uc")['body'];
+ok(!str_contains($ef, 'class="field tr-en"') && !str_contains($ef, 'data-lang="en"') && str_contains($ef, 'class="enhint"') && str_contains($ef, 'p=translate&amp;a=c%3Aclips'), 'Formulare ohne Sprachumschalter, mit Link zur Tabelle');
+$tk = "c:$uc:title";
+$tr = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_save', 'ajax' => '1', 't' => [$tk => "  Hello\nWorld <b> "]])['body'], true);
+reset_content_cache();
+$it = item($uc);
+ok(($tr['ok'] ?? false) === true && ($tr['n'] ?? 0) === 1 && $it['title_en'] === 'Hello World <b>', 'Übersetzung gespeichert (bereinigt)');
+$pubEn = req('GET', "$base/en/")['body'];
+ok(str_contains($pubEn, 'Hello World &lt;b&gt;'), 'erscheint maskiert auf der englischen Seite');
+// Formular-Speichern darf Englisch nicht löschen
+$sv = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $uc, 'title' => $it['title'], 'medium' => 'text', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'publish'];
+req('POST', "$base/admin/", $sv);
+reset_content_cache();
+ok(item($uc)['title_en'] === 'Hello World <b>', 'Speichern im Formular erhält die englische Fassung');
+// Entwurf: Übersetzung landet in Entwurf und veröffentlichtem Stand
+req('POST', "$base/admin/", ['mode' => 'draft', 'title' => 'Entwurfstitel'] + $sv);
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_save', 't' => [$tk => 'Draft EN']]);
+$row = q('SELECT data, draft FROM ar_items WHERE id = ?', [$uc])->fetch();
+ok(str_contains((string)$row['data'], '"title_en":"Draft EN"') && str_contains((string)$row['draft'], '"title_en":"Draft EN"') && !str_contains((string)$row['data'], 'Entwurfstitel'), 'Übersetzung wirkt auf Stand und Entwurf, ohne den Entwurf zu veröffentlichen');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'discard_draft', 'kind' => 'item', 'id' => $uc]);
+// Einstellungsseite und Fremdes
+$tr = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_save', 'ajax' => '1', 't' => ['g:sections:unbekannt' => 'x', 'g:nix:a' => 'x', "c:$uc:url" => 'x', 'kaputt' => 'x', "c:99999:title" => 'x']])['body'], true);
+ok(($tr['ok'] ?? false) === true && ($tr['n'] ?? 1) === 0, 'Unbekannte, nicht übersetzbare und fremde Felder werden ignoriert');
+$gt = null;
+foreach (translation_rows() as $rw) {
+    if (str_starts_with($rw['key'], 'g:') && $gt === null) {
+        $gt = $rw;
+    }
+}
+$tr = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_save', 'ajax' => '1', 't' => [$gt['key'] => 'Gruppen-EN']])['body'], true);
+[, $gg, $gf] = explode(':', $gt['key'], 3);
+reset_content_cache();
+ok(($tr['n'] ?? 0) === 1 && (setting($gg, true)[$gf . '_en'] ?? '') === 'Gruppen-EN', 'Übersetzung für Einstellungsseiten');
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_save', 't' => [$gt['key'] => 'Gruppen-EN 2']]);
+ok($r['code'] === 302 && str_contains($r['head'], 'p=translate'), 'Speichern ohne JavaScript leitet zurück');
+ok(req('POST', "$base/admin/", ['action' => 'translate_save', 't' => [$tk => 'x']])['code'] === 403, 'ohne CSRF-Token abgelehnt');
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

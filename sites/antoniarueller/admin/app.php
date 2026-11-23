@@ -258,6 +258,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             audit($who, 'empty_trash', (string)$n);
             $back(AR_BASE . '/admin/?p=trash', $n . ' Einträge endgültig gelöscht.');
 
+        case 'translate_save': {
+            $t = $_POST['t'] ?? [];
+            $n = save_translations(is_array($t) ? $t : []);
+            audit($who, 'translate', (string)$n);
+            if (!empty($_POST['ajax'])) {
+                header('Content-Type: application/json');
+                echo json_encode(['ok' => true, 'n' => $n]);
+                exit;
+            }
+            $back(AR_BASE . '/admin/?p=translate', $n === 0 ? 'Keine Änderungen.' : $n . ($n === 1 ? ' Übersetzung gespeichert.' : ' Übersetzungen gespeichert.'));
+        }
+
         case 'toggle_pub':
         case 'bulk': {
             $ids = $act === 'bulk' ? array_filter(array_map('intval', (array)($_POST['ids'] ?? []))) : [(int)($_POST['id'] ?? 0)];
@@ -618,6 +630,9 @@ switch ($p) {
         break;
     case 'help':
         view_help($user);
+        break;
+    case 'translate':
+        view_translate($user);
         break;
     case 'ssl_json':
         header('Content-Type: application/json');

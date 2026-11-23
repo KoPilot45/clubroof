@@ -140,7 +140,7 @@ function view_home(array $user): void
         }
         echo '</ul></details>';
     }
-    echo '<p class="hint">Unübersetzte Felder zeigen auf der englischen Seite den deutschen Text. In jedem Formular wechselst du oben auf „English“. <a href="' . AR_BASE . '/en/" target="_blank" rel="noopener">Englische Seite ansehen ↗</a></p></section>';
+    echo '<p class="hint">Unübersetzte Felder zeigen auf der englischen Seite den deutschen Text. Alle Übersetzungen pflegst du in der <a href="' . a('p=translate') . '">Übersetzungstabelle</a>. <a href="' . AR_BASE . '/en/" target="_blank" rel="noopener">Englische Seite ansehen ↗</a></p></section>';
 
     echo '</div><div class="dash-col">';
 

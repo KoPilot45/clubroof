@@ -70,6 +70,41 @@ function translation_progress(): array
     return ['total' => $total, 'done' => $done, 'missing_by_area' => $byArea];
 }
 
+/**
+ * Alle übersetzbaren Texte für die Übersetzungstabelle.
+ * Zeile: key (c:ID:feld | g:gruppe:feld), area, area_key, item, label, de, en, multi, max, link
+ */
+function translation_rows(): array
+{
+    $s = schema();
+    $out = [];
+    $add = function (array $fields, array $vals, string $kind, string $ref, string $area, string $areaKey, string $item, string $link) use (&$out) {
+        foreach ($fields as $f) {
+            if ($f['type'] === 'section' || !field_translatable($f)) {
+                continue;
+            }
+            $de = trim((string)($vals[$f['key']] ?? ''));
+            if ($de === '') {
+                continue;
+            }
+            $out[] = [
+                'key' => $kind . ':' . $ref . ':' . $f['key'], 'area' => $area, 'area_key' => $areaKey, 'item' => $item, 'label' => $f['label'],
+                'de' => $de, 'en' => (string)($vals[$f['key'] . '_en'] ?? ''), 'multi' => $f['type'] === 'textarea', 'max' => (int)($f['max'] ?? 500), 'link' => $link,
+            ];
+        }
+    };
+    foreach ($s['groups'] as $g => $def) {
+        $add($def['fields'], setting($g, true), 'g', $g, $def['label'], 'g:' . $g, '', a('p=group&g=' . $g));
+    }
+    foreach ($s['collections'] as $coll => $def) {
+        foreach (items($coll, false, true) as $it) {
+            $title = trim((string)($it[$def['title']] ?? '')) ?: '(ohne Titel)';
+            $add($def['fields'], $it, 'c', (string)$it['_id'], $def['label'], 'c:' . $coll, mb_strimwidth($title, 0, 60, '…'), a('p=edit&c=' . $coll . '&id=' . $it['_id']));
+        }
+    }
+    return $out;
+}
+
 /** „Startklar“-Liste: [['ok'=>bool, 'text'=>…, 'link'=>…, 'level'=>'must'|'nice']] */
 function readiness_checks(): array
 {

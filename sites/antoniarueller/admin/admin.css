@@ -426,3 +426,26 @@ details.adv[open]{background:#fbf7ec}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .actions .btn{padding:8px 16px;font-size:14px}
+
+/* Übersetzungstabelle */
+.enhint{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#e8f0f9;border:1px solid #c5d6ea;color:#1b4a7a;border-radius:10px;padding:8px 14px;margin:0 0 18px;font-size:14px}
+.enhint a{font-weight:600}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.trprog{padding:12px 20px;margin:0 0 12px}
+.trbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;position:sticky;top:57px;z-index:5;background:var(--paper);padding:8px 0;margin:0 0 6px}
+.trbar .chips{margin:0}
+.trbar select,.trbar input[type=search]{width:auto;max-width:260px;border-radius:999px;padding:7px 14px}
+.trstate{font-size:13px;color:var(--mute);margin-left:auto}
+.trstate.ok{color:var(--ok)}.trstate.err{color:var(--bad);font-weight:600}
+.trarea[hidden],.trrow[hidden]{display:none}
+.trarea .cnt{font-size:12px;letter-spacing:0;text-transform:none;background:#efe6d4;border-radius:99px;padding:1px 9px;margin-left:6px;color:var(--ink)}
+.trrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;padding:12px 0;border-bottom:1px solid var(--line)}
+.tr-l{display:block;font-size:12px;letter-spacing:.04em;color:var(--mute);margin-bottom:3px}
+.tr-t{background:#f3ecdf;border-radius:8px;padding:9px 11px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
+.tr-en textarea{width:100%;font:inherit;font-size:15px;padding:9px 11px;border:1px solid #bfb39b;border-radius:8px;background:#fff;resize:vertical;min-height:46px}
+.trrow.open .tr-en textarea{border-color:#e6c76a;background:#fffaf0}
+.trrow.saved .tr-en textarea{border-color:#7fb592}
+.tr-f{display:flex;gap:12px;align-items:center;font-size:13px;margin-top:3px}
+.tr-s{color:var(--mute)}.tr-s.ok{color:var(--ok)}.tr-s.err{color:var(--bad);font-weight:600}
+.trsave{position:sticky;bottom:0;background:rgba(243,236,223,.96);margin:18px 0 0;padding:12px 0;border-top:1px solid var(--line);border-radius:0;box-shadow:none}
+@media (max-width:860px){.trrow{grid-template-columns:1fr;gap:6px}.trbar{top:50px}.trsave{bottom:60px}}

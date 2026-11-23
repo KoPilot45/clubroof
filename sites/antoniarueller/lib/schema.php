@@ -375,6 +375,9 @@ function admin_nav(): array
             ['c', 'nav', 'Menü der Webseite', 'Die Menüpunkte oben auf der Seite.'],
             ['g', 'sections', 'Überschriften der Abschnitte', 'Titel und Einleitungen der einzelnen Abschnitte.'],
         ]],
+        'englisch' => ['Englisch', 'globe', 'Die englische Fassung der Seite.', [
+            ['p', 'translate', 'Übersetzungstabelle', 'Deutsch und Englisch nebeneinander – alle Texte an einem Ort.'],
+        ]],
         'recht' => ['Suche & Recht', 'search', 'Google, Social-Media-Vorschau, Impressum.', [
             ['g', 'seo', 'SEO & Suche', 'Titel, Beschreibung und Vorschaubild für Suchmaschinen.'],
             ['g', 'legal', 'Impressum & Datenschutz', 'Die rechtlichen Texte (Deutsch und Englisch).'],

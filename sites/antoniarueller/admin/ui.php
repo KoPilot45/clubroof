@@ -31,6 +31,7 @@ function aicon(string $name, int $size = 18): string
         'logout' => '<path d="M10 4H5v16h5M16 8l4 4-4 4M20 12H9"/>',
         'menu' => '<path d="M4 7h16M4 12h16M4 17h16"/>',
         'check' => '<path d="m5 12 5 5 9-10"/>',
+        'globe' => '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
         'save' => '<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
     ];
     return '<svg class="ic" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . ($p[$name] ?? '') . '</svg>';
@@ -173,7 +174,7 @@ function view_help(array $user): void
         ['Etwas vorübergehend ausblenden', ['In der Liste den Schalter „Anzeigen“ der Zeile ausschalten. Der Eintrag bleibt erhalten und kann jederzeit wieder eingeschaltet werden.']],
         ['Reihenfolge ändern', ['In der Liste die Zeile am Griff (⠿) ziehen. Ohne Maus: Menü „⋯“ → „Nach oben / unten“.']],
         ['Versehentlich entfernt?', ['Nach dem Entfernen erscheint unten ein Hinweis mit „Rückgängig“. Später findest du den Eintrag im Papierkorb (Menü „System“).']],
-        ['Englische Fassung', ['Im Bearbeiten-Formular oben auf „English“ wechseln. Rechts neben jedem Feld siehst du den deutschen Text zum Übersetzen.']],
+        ['Englische Fassung', ['Menü „Englisch“ → „Übersetzungstabelle“: links der deutsche Text, rechts die englische Fassung. Gespeichert wird beim Verlassen des Feldes.', 'Mit dem Filter „Noch offen“ siehst du nur, was noch fehlt. Leere Felder zeigen auf der englischen Seite den deutschen Text.']],
         ['Änderungen prüfen, bevor sie öffentlich sind', ['„Als Entwurf speichern“ und dann „Vorschau“ öffnen. Im Formular zeigt „Live-Vorschau“ die Seite direkt daneben.', 'Entwürfe werden beim Schreiben automatisch gespeichert – öffentlich wird erst, was du veröffentlichst.']],
         ['Tastenkürzel', ['<kbd>Strg</kbd> + <kbd>K</kbd> Suche · <kbd>Strg</kbd> + <kbd>S</kbd> Entwurf speichern · <kbd>Strg</kbd> + <kbd>Enter</kbd> Veröffentlichen']],
     ];

@@ -510,4 +510,56 @@
       if (rl) rl.addEventListener('click', function () { if (dirty) save(true).then(reloadLive); else reloadLive(); });
     }
   }
+
+  // ---- Übersetzungstabelle ----
+  var trForm = $('#trform');
+  if (trForm) {
+    var trState = $('#trstate'), trChip = $('.chip.on', $('#trbar')).getAttribute('data-f'), trArea = $('#trarea'), trQ = $('#trq');
+    var trUrl = trForm.getAttribute('data-url'), trCsrf = trForm.getAttribute('data-csrf');
+    function grow(t) { t.style.height = 'auto'; t.style.height = Math.max(46, t.scrollHeight + 2) + 'px'; }
+    function trFilter() {
+      var q = trQ.value.toLowerCase(), a = trArea.value;
+      $$('.trarea', trForm).forEach(function (sec) {
+        var any = false;
+        $$('.trrow', sec).forEach(function (r) {
+          var ok = (trChip === 'all' || r.getAttribute('data-open') === '1' || r.classList.contains('saved') && false)
+            && (!a || r.getAttribute('data-area') === a)
+            && (!q || r.textContent.toLowerCase().indexOf(q) !== -1 || $('textarea', r).value.toLowerCase().indexOf(q) !== -1);
+          r.hidden = !ok; if (ok) any = true;
+        });
+        sec.hidden = !any;
+      });
+    }
+    $$('#trbar .chip').forEach(function (c) { c.addEventListener('click', function () {
+      trChip = c.getAttribute('data-f');
+      $$('#trbar .chip').forEach(function (x) { x.classList.toggle('on', x === c); });
+      trFilter();
+    }); });
+    trArea.addEventListener('change', trFilter);
+    trQ.addEventListener('input', trFilter);
+    $$('textarea', trForm).forEach(function (t) { grow(t); t.addEventListener('input', function () { grow(t); }); });
+    function trSave(t) {
+      if (t.value === t.getAttribute('data-orig')) return;
+      var row = t.closest('.trrow'), st = $('.tr-s', row);
+      var fd = new FormData(); fd.set('_csrf', trCsrf); fd.set('action', 'translate_save'); fd.set('ajax', '1'); fd.set(t.name, t.value);
+      st.className = 'tr-s'; st.textContent = 'Speichert …';
+      fetch(trUrl, { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+        if (!j.ok) throw new Error('x');
+        t.setAttribute('data-orig', t.value);
+        st.className = 'tr-s ok'; st.textContent = '✓ gespeichert';
+        row.classList.toggle('open', t.value.trim() === '');
+        row.classList.add('saved');
+        row.setAttribute('data-open', t.value.trim() === '' ? '1' : '0');
+        trState.className = 'trstate ok'; trState.textContent = 'Zuletzt gespeichert ' + new Date().toTimeString().slice(0, 5) + ' Uhr';
+      }).catch(function () { st.className = 'tr-s err'; st.textContent = 'Nicht gespeichert'; trState.className = 'trstate err'; trState.textContent = 'Speichern fehlgeschlagen – bitte erneut versuchen'; });
+    }
+    trForm.addEventListener('change', function (e) { if (e.target.tagName === 'TEXTAREA') trSave(e.target); });
+    trForm.addEventListener('click', function (e) {
+      if (!e.target.classList.contains('tr-copy')) return;
+      var src = document.getElementById(e.target.getAttribute('data-from')), t = $('textarea', e.target.closest('.trrow'));
+      t.value = src.textContent; grow(t); trSave(t);
+    });
+    trForm.addEventListener('submit', function () { $$('textarea', trForm).forEach(function (t) { if (t.value === t.getAttribute('data-orig')) t.disabled = true; }); });
+    trFilter();
+  }
 })();

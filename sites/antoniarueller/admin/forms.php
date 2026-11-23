@@ -127,11 +127,6 @@ function render_field(array $f, mixed $val, array $vals = []): void
             break;
     }
     echo $hint . '</div>';
-    if ($tr) {
-        echo '<div class="field tr-en"><label for="' . $id . '_en">' . e($f['label']) . ' <span class="enmark">English</span></label><div class="de-ref" data-ref="' . $id . '"></div>';
-        render_text_control($f, $k . '_en', $id . '_en', (string)($vals[$k . '_en'] ?? ''));
-        echo '<small class="hint">Leer lassen = die deutsche Fassung wird angezeigt.</small></div>';
-    }
 }
 
 function form_errors(array $errors): void
@@ -145,8 +140,8 @@ function form_errors(array $errors): void
     }
 }
 
-/** Reiter „Deutsch / English“ über dem Formular. */
-function lang_bar(array $fields, array $vals): void
+/** Hinweis über dem Formular: Englisch wird in der Übersetzungstabelle bearbeitet. */
+function lang_bar(array $fields, array $vals, string $areaKey = ''): void
 {
     $n = 0;
     $any = false;
@@ -160,7 +155,7 @@ function lang_bar(array $fields, array $vals): void
         }
     }
     if ($any) {
-        echo '<div class="langbar" role="group" aria-label="Sprache bearbeiten"><button type="button" data-lang="de" class="on">Deutsch</button><button type="button" data-lang="en">English' . ($n ? ' <span class="badge" title="Noch nicht übersetzt">' . $n . '</span>' : '') . '</button></div>';
+        echo '<p class="enhint">' . aicon('globe', 16) . ' <span>Englische Fassung: ' . ($n ? '<strong>' . $n . ' Text' . ($n === 1 ? '' : 'e') . ' noch offen</strong>' : 'vollständig') . '.</span> <a href="' . e(a('p=translate' . ($areaKey !== '' ? '&a=' . rawurlencode($areaKey) : ''))) . '">In der Übersetzungstabelle bearbeiten →</a></p>';
     }
 }
 
@@ -355,7 +350,7 @@ function view_edit_item(array $user, string $coll, ?int $id, array $vals, array 
 <form method="post" action="<?= a() ?>" enctype="multipart/form-data" class="form" data-coll="<?= e($coll) ?>"<?= $id ? ' data-autosave="1"' : '' ?>>
 <?= csrf_field($user) ?><input type="hidden" name="action" value="save_item"><input type="hidden" name="coll" value="<?= e($coll) ?>"><input type="hidden" name="id" value="<?= (int)$id ?>">
 <?php
-    lang_bar($def['fields'], $vals);
+    lang_bar($def['fields'], $vals, 'c:' . $coll);
     render_fields($def['fields'], $vals, function ($f) use ($coll) {
         if ($coll === 'clips' && $f['key'] === 'tc') {
             tl_preview();
@@ -401,7 +396,7 @@ function view_edit_group(array $user, string $g, array $vals, array $errors): vo
 <form method="post" action="<?= a() ?>" enctype="multipart/form-data" class="form" data-autosave="1">
 <?= csrf_field($user) ?><input type="hidden" name="action" value="save_group"><input type="hidden" name="g" value="<?= e($g) ?>">
 <?php
-    lang_bar($def['fields'], $vals);
+    lang_bar($def['fields'], $vals, 'g:' . $g);
     render_fields($def['fields'], $vals);
     form_actions(a(), preview_anchor($g), $isDraft, true);
     echo '</form><aside class="livepane" id="livepane" hidden><div class="lp-h"><strong>Live-Vorschau</strong><button type="button" class="btn small ghost" id="lpreload">Aktualisieren</button></div><iframe id="lpframe" title="Vorschau der Seite" loading="lazy"></iframe></aside></div>';

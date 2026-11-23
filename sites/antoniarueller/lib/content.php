@@ -480,7 +480,10 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
             && preg_match('~^[a-z0-9_-]+\.(jpg|png|webp)$~', (string)$post[$k . '_pick']) && is_file(upload_dir() . '/' . $post[$k . '_pick'])) {
             $v = (string)$post[$k . '_pick'];
         }
-        if (field_translatable($f)) {
+        if (field_translatable($f) && !array_key_exists($k . '_en', $post)) {
+            // Englische Texte werden in der Übersetzungstabelle bearbeitet: vorhandene Fassung beibehalten.
+            $out[$k . '_en'] = (string)($old[$k . '_en'] ?? '');
+        } elseif (field_translatable($f)) {
             $raw2 = $post[$k . '_en'] ?? '';
             $en = is_array($raw2) ? '' : preg_replace('~[\x00-\x08\x0B\x0C\x0E-\x1F]~', '', (string)$raw2);
             $en = $t === 'textarea' ? trim(str_replace("\r\n", "\n", $en)) : trim(preg_replace('~\s*[\r\n]+\s*~', ' ', $en));
@@ -639,4 +642,77 @@ function cleanup_uploads(): void
             @unlink($f);
         }
     }
+}
+
+
+/** Bereinigt eine englische Übersetzung wie die deutsche Eingabe (Feldtyp und Länge). */
+function clean_translation(array $f, string $raw): string
+{
+    $en = preg_replace('~[\x00-\x08\x0B\x0C\x0E-\x1F]~', '', $raw);
+    $en = $f['type'] === 'textarea' ? trim(str_replace("\r\n", "\n", $en)) : trim(preg_replace('~\s*[\r\n]+\s*~', ' ', $en));
+    return mb_substr($en, 0, (int)($f['max'] ?? 500));
+}
+
+/**
+ * Speichert englische Texte direkt (ohne andere Entwurfsänderungen zu veröffentlichen):
+ * in den veröffentlichten Stand und, falls vorhanden, auch in den Entwurf.
+ * $changes: ['c:12:title' => 'Text', 'g:hero:lead' => '…'] – gibt die Zahl gespeicherter Texte zurück.
+ */
+function save_translations(array $changes): int
+{
+    reset_content_cache();
+    $s = schema();
+    $by = [];
+    $n = 0;
+    foreach ($changes as $key => $val) {
+        if (!is_string($key) || !is_string($val)) {
+            continue;
+        }
+        $p = explode(':', $key, 3);
+        if (count($p) !== 3) {
+            continue;
+        }
+        [$kind, $ref, $fk] = $p;
+        $fields = null;
+        if ($kind === 'c') {
+            $row = q('SELECT coll FROM ar_items WHERE id = ? AND deleted_at IS NULL', [(int)$ref])->fetch();
+            $fields = $row ? ($s['collections'][$row['coll']]['fields'] ?? null) : null;
+        } elseif ($kind === 'g') {
+            $fields = $s['groups'][$ref]['fields'] ?? null;
+        }
+        foreach ($fields ?? [] as $f) {
+            if ($f['type'] !== 'section' && $f['key'] === $fk && field_translatable($f)) {
+                $by[$kind . ':' . $ref][$fk . '_en'] = clean_translation($f, $val);
+                $n++;
+            }
+        }
+    }
+    foreach ($by as $ref => $vals) {
+        [$kind, $id] = explode(':', $ref, 2);
+        if ($kind === 'c') {
+            $row = q('SELECT data, draft, live FROM ar_items WHERE id = ?', [(int)$id])->fetch();
+            foreach (['data', 'draft'] as $col) {
+                $arr = json_arr($row[$col] ?? null);
+                if ($arr === null || ($col === 'data' && !(int)$row['live'])) {
+                    continue;
+                }
+                q('UPDATE ar_items SET ' . $col . ' = ? WHERE id = ?', [enc(array_merge($arr, $vals)), (int)$id]);
+            }
+        } else {
+            $row = q('SELECT data, draft FROM ar_settings WHERE grp = ?', [$id])->fetch();
+            if (!$row) {
+                q('INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES (?,?,?,?)', [$id, enc($vals), time(), 'übersetzung']);
+                continue;
+            }
+            foreach (['data', 'draft'] as $col) {
+                $arr = json_arr($row[$col] ?? null);
+                if ($arr === null) {
+                    continue;
+                }
+                q('UPDATE ar_settings SET ' . $col . ' = ? WHERE grp = ?', [enc(array_merge($arr, $vals)), $id]);
+            }
+        }
+    }
+    reset_content_cache();
+    return $n;
 }
