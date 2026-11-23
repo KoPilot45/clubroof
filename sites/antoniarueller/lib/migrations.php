@@ -240,6 +240,22 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'order_v1';
     }
 
+    // Schnittplatz ohne Datumsmaßstab: lange Balken früherer Fassungen werden zu „Lang“, kurze bleiben „Normal“
+    if (!in_array('schnitt_v1', $applied, true)) {
+        foreach (q("SELECT id, data, draft FROM ar_items WHERE coll = 'clips'")->fetchAll() as $r) {
+            foreach (['data', 'draft'] as $col) {
+                $d = json_arr($r[$col] ?? null);
+                if ($d === null || isset($d['tl_len'])) {
+                    continue;
+                }
+                $long = !empty($d['tl_end']) || (float)str_replace(',', '.', (string)($d['tl_w'] ?? 0)) >= 8;
+                $d['tl_len'] = $long ? 'long' : 'normal';
+                q('UPDATE ar_items SET ' . $col . ' = ? WHERE id = ?', [json_encode($d, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), (int)$r['id']]);
+            }
+        }
+        $applied[] = 'schnitt_v1';
+    }
+
     // Zusätzliche Zugänge aus config.php ('extra_users'): werden einmal angelegt; spätere Entfernung im Admin bleibt bestehen
     foreach ((array)cfg('extra_users', []) as $u) {
         $em = strtolower(trim((string)($u['email'] ?? '')));

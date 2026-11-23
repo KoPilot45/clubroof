@@ -7,8 +7,30 @@
   var dataEl = $('#ar-clips');
   var clips = {};
   try { clips = dataEl ? JSON.parse(dataEl.textContent) : {}; } catch (e) { clips = {}; }
-  var ids = Object.keys(clips);
-  var current = ids[0];
+  var listIds = $$('.clip-list .ar-clip').map(function (li) { return li.getAttribute('data-id'); }).filter(function (id) { return clips[id]; });
+  var ids = listIds.length ? listIds : Object.keys(clips);
+  var pressed = $('.ar-tlclip[aria-pressed="true"]');
+  var current = pressed ? pressed.getAttribute('data-id') : ids[0];
+  var soloTrack = '';
+  var desk = $('.ar-ed-desk');
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function placeHeads(scroll) {
+    [['.ed-grid', 'playhead', '.ed-scroll'], ['.mob-grid', 'playheadm', '.mob-tl-r']].forEach(function (t) {
+      var grid = $(t[0]), ph = document.getElementById(t[1]);
+      if (!grid || !ph) return;
+      var b = $('.ar-tlclip[data-id="' + current + '"]', grid);
+      if (!b || !grid.offsetWidth) { ph.style.visibility = 'hidden'; return; }
+      ph.style.visibility = '';
+      var x = b.offsetLeft + b.offsetWidth / 2;
+      ph.style.left = x + 'px';
+      var sc = $(t[2]);
+      if (scroll && sc && sc.scrollWidth > sc.clientWidth) sc.scrollTo({ left: Math.max(0, x - sc.clientWidth / 2), behavior: reduce ? 'auto' : 'smooth' });
+    });
+  }
+  window.addEventListener('resize', function () { placeHeads(false); });
+  window.addEventListener('load', function () { placeHeads(false); });
+  placeHeads(false);
 
   function select(id) {
     var c = clips[id];
@@ -25,7 +47,7 @@
     });
     var mp = $('#mobpanel');
     if (mp) mp.setAttribute('data-medium', c.medium);
-    ['playhead', 'playheadm'].forEach(function (p) { var el = document.getElementById(p); if (el) el.style.left = c.pos + '%'; });
+    placeHeads(true);
     $$('.ar-tlclip').forEach(function (b) {
       b.setAttribute('aria-pressed', b.getAttribute('data-id') === id ? 'true' : 'false');
     });
@@ -35,12 +57,51 @@
     b.addEventListener('click', function () { select(b.getAttribute('data-id')); });
   });
   var prev = $('#prevClip'), next = $('#nextClip');
+  function seq() {
+    if (!soloTrack) return ids;
+    return ids.filter(function (id) { return $('.ed-lane[data-track="' + soloTrack + '"] .ar-tlclip[data-id="' + id + '"]'); });
+  }
   function step(d) {
-    var i = ids.indexOf(current);
-    select(ids[(i + d + ids.length) % ids.length]);
+    var s = seq();
+    if (!s.length) return;
+    var i = s.indexOf(current);
+    select(s[i === -1 ? 0 : (i + d + s.length) % s.length]);
   }
   if (prev) prev.addEventListener('click', function () { step(-1); });
   if (next) next.addEventListener('click', function () { step(1); });
+
+  // Spuren: Klick auf den Spurkopf zeigt nur diese Spur („Solo“)
+  $$('.ed-tl').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = b.getAttribute('data-track');
+      soloTrack = soloTrack === t ? '' : t;
+      $$('.ed-tl').forEach(function (x) { x.setAttribute('aria-pressed', x === b && soloTrack ? 'true' : 'false'); });
+      $$('.ed-lane').forEach(function (l) { l.classList.toggle('solo', !!soloTrack && l.getAttribute('data-track') === soloTrack); });
+      if (desk) { if (soloTrack) desk.setAttribute('data-solo', soloTrack); else desk.removeAttribute('data-solo'); }
+      if (soloTrack && seq().indexOf(current) === -1 && seq().length) select(seq()[0]);
+    });
+  });
+
+  // Abspielen: Abspielmarke wandert von Clip zu Clip, pausiert bei Berührung
+  var playBtn = $('#edPlay'), timer = null, playing = false, hold = false;
+  function tick() { if (!hold) step(1); }
+  function setPlay(on) {
+    playing = on;
+    clearInterval(timer);
+    if (on) timer = setInterval(tick, 3200);
+    if (playBtn) {
+      playBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      $('.pl', playBtn).textContent = playBtn.getAttribute(on ? 'data-pause' : 'data-play');
+      playBtn.firstElementChild.textContent = on ? '❚❚' : '▶';
+    }
+  }
+  if (playBtn) playBtn.addEventListener('click', function () { setPlay(!playing); });
+  if (desk) {
+    desk.addEventListener('mouseenter', function () { hold = true; });
+    desk.addEventListener('mouseleave', function () { hold = false; });
+    desk.addEventListener('focusin', function () { hold = true; });
+    desk.addEventListener('focusout', function () { hold = false; });
+  }
 
   // ---- Mobiles Menü ----
   var menu = $('#menu'), burger = $('#burger'), closeBtn = $('#menuClose');

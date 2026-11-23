@@ -49,11 +49,11 @@ function schema(): array
         'fields' => [
             f('section', '', 'Inhalt'),
             f('text', 'title', 'Titel', ['required' => true, 'max' => 200]),
-            f('text', 'short', 'Kurzname (für die Zeitleiste)', ['max' => 40, 'hint' => 'Erscheint im Balken der Zeitleiste, z. B. „Istanbul“.']),
+            f('text', 'short', 'Kurzname (für den Schnittplatz)', ['max' => 40, 'hint' => 'Erscheint im Clip des Schnittplatzes, z. B. „Istanbul“.']),
             f('text', 'outlet', 'Redaktion / Sender', ['max' => 120]),
             f('select', 'medium', 'Kategorie', ['options' => media_options(), 'default' => 'text']),
             f('text', 'format', 'Format', ['max' => 120, 'hint' => 'z. B. „Online · Politik“ oder „Video · Selbstversuch“.']),
-            f('date', 'date', 'Datum (Veröffentlichung)', ['hint' => 'Bestimmt die Position in der Zeitleiste und die Anzeige „MM/JJJJ“.']),
+            f('date', 'date', 'Datum (Veröffentlichung)', ['hint' => 'Bestimmt die Anzeige „MM/JJJJ“ und das Jahres-Fähnchen im Schnittplatz.']),
             f('text', 'date_label', 'Datumsanzeige überschreiben (optional)', ['max' => 40, 'hint' => 'Nur nötig für Zeiträume wie „2024–2025“ oder wenn kein genaues Datum bekannt ist.']),
             f('text', 'role', 'Rolle', ['max' => 80]),
             f('textarea', 'desc', 'Beschreibung', ['max' => 600]),
@@ -65,18 +65,16 @@ function schema(): array
             f('bool', 'featured', 'Als Hauptclip oben zeigen', ['hint' => 'Es wird der erste Hauptclip der Liste gezeigt.']),
             f('markup', 'headline', 'Große Überschrift (optional)', ['max' => 200, 'hint' => 'Standard ist der Titel. ' . MARKUP_HINT]),
             f('image', 'still', 'Standbild (optional)'),
-            f('section', '', 'Zeitleiste'),
-            f('select', 'tl_track', 'Spur in der Zeitleiste', ['options_from' => 'tracks', 'empty' => 'Nicht in der Zeitleiste zeigen', 'hint' => 'Spuren (Video, Online, Radio …) legst du unter „Zeitleiste → Spuren“ an.']),
-            f('date', 'tl_end', 'Enddatum (optional)', ['hint' => 'Für längere Produktionen. Leer = kurzer Balken am Datum.']),
-            f('section', '', 'Feintuning der Zeitleiste', ['adv' => true]),
-            f('number', 'tl_pos', 'Position manuell (0–100 %, optional)', ['min' => 0, 'max' => 100, 'step' => 0.1, 'hint' => 'Überschreibt die automatische Position aus dem Datum.']),
-            f('number', 'tl_w', 'Balkenbreite manuell (% , optional)', ['min' => 0.5, 'max' => 100, 'step' => 0.1]),
+            f('section', '', 'Schnittplatz'),
+            f('select', 'tl_track', 'Spur im Schnittplatz', ['options_from' => 'tracks', 'empty' => 'Nicht im Schnittplatz zeigen', 'hint' => 'Spuren (Video, Online, Radio …) legst du unter „Schnittplatz → Spuren“ an. Die Reihenfolge in der Spur entspricht der Nummerierung der Referenzen (Liste per Ziehen sortieren).']),
+            f('select', 'tl_len', 'Länge im Schnittplatz', ['options' => ['short' => 'Kurz', 'normal' => 'Normal', 'long' => 'Lang'], 'default' => 'normal', 'hint' => 'Wie breit der Clip im Schnittplatz erscheint – wie eine kürzere oder längere Aufnahme.']),
+            f('section', '', 'Timecode', ['adv' => true]),
             f('text', 'tc', 'Timecode (optional)', ['max' => 11, 'hint' => 'Leer = wird automatisch vergeben, Format 00:01:47:10.']),
         ],
     ];
     $s['collections']['tracks'] = [
-        'label' => 'Zeitleiste: Spuren', 'singular' => 'Spur', 'title' => 'label', 'sub' => ['code'],
-        'help' => 'Die Zeilen der Zeitleiste im Showreel. Farben und Symbol sind frei wählbar.',
+        'label' => 'Schnittplatz: Spuren', 'singular' => 'Spur', 'title' => 'label', 'sub' => ['code'],
+        'help' => 'Die Zeilen des Schnittplatzes im Showreel. Farben und Symbol sind frei wählbar.',
         'fields' => [
             f('text', 'code', 'Kürzel', ['required' => true, 'max' => 6, 'hint' => 'z. B. V1, T1, A1 (wird in der Spurliste links gezeigt).']),
             f('text', 'label', 'Bezeichnung', ['required' => true, 'max' => 40]),
@@ -255,7 +253,7 @@ function schema(): array
             f('text', 'show_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'reel']),
             f('text', 'show_right', 'Zeile rechts', ['max' => 80, 'hint' => 'Leer = automatisch (Anzahl Clips und Zeitraum).']),
             f('text', 'show_all', 'Titel der Liste', ['max' => 40, 'default' => 'Alle Clips']),
-            f('text', 'editor_title', 'Titel der Zeitleiste', ['max' => 40, 'default' => 'Schnittplatz · Reel №1']),
+            f('text', 'editor_title', 'Titel des Schnittplatzes', ['max' => 40, 'default' => 'Schnittplatz · Reel №1']),
             f('section', '', 'Podcast'),
             f('text', 'pod_h1', 'Überschrift, Teil 1', ['max' => 20, 'default' => 'Hör']),
             f('text', 'pod_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'mal rein.']),
@@ -273,13 +271,9 @@ function schema(): array
         ],
     ];
     $s['groups']['timeline'] = [
-        'label' => 'Zeitleiste: Zeitraum',
-        'help' => 'Welcher Zeitraum die Zeitleiste im Showreel abdeckt. Ein Quartal entspricht einer Spalte.',
+        'label' => 'Schnittplatz: Hinweis',
         'fields' => [
-            f('date', 'start', 'Beginn', ['default' => '2024-01-01', 'required' => true]),
-            f('date', 'end', 'Ende', ['default' => '2026-12-31', 'required' => true]),
-            f('number', 'min_w', 'Mindestbreite eines Balkens (%)', ['min' => 0.5, 'max' => 20, 'step' => 0.1, 'default' => 2.8]),
-            f('text', 'hint_mobile', 'Hinweis unter der Handy-Zeitleiste', ['max' => 80, 'default' => 'Pfeile nutzen oder Clip antippen']),
+            f('text', 'hint_mobile', 'Hinweis unter dem Schnittplatz auf dem Handy', ['max' => 80, 'default' => 'Pfeile nutzen oder Clip antippen']),
         ],
     ];
     $s['groups']['about'] = [
@@ -329,7 +323,7 @@ function admin_menu(): array
 {
     return [
         'Seite' => [['g', 'site'], ['g', 'seo'], ['g', 'hero'], ['c', 'nav'], ['c', 'marquee'], ['g', 'sections']],
-        'Inhalte' => [['c', 'clips'], ['g', 'timeline'], ['c', 'tracks'], ['c', 'episodes'], ['c', 'stations'], ['c', 'cv'], ['c', 'before'], ['g', 'about'], ['c', 'crossmedia'], ['c', 'languages'], ['c', 'offrecord'], ['c', 'questions'], ['g', 'contact'], ['c', 'social'], ['g', 'legal']],
+        'Inhalte' => [['c', 'clips'], ['c', 'tracks'], ['c', 'episodes'], ['c', 'stations'], ['c', 'cv'], ['c', 'before'], ['g', 'about'], ['c', 'crossmedia'], ['c', 'languages'], ['c', 'offrecord'], ['c', 'questions'], ['g', 'contact'], ['c', 'social'], ['g', 'legal']],
     ];
 }
 
@@ -345,10 +339,9 @@ function admin_nav(): array
             ['c', 'marquee', 'Laufband', 'Die Wörter, die unter dem Startbild durchlaufen.'],
             ['c', 'questions', 'Leitfragen', '„Was mich antreibt“ – die kurzen Fragen mit Nummer.'],
         ]],
-        'arbeiten' => ['Arbeiten', 'film', 'Referenzen, Hauptclip und Zeitleiste.', [
+        'arbeiten' => ['Arbeiten', 'film', 'Referenzen, Hauptclip und Schnittplatz.', [
             ['c', 'clips', 'Referenzen', 'Alle Arbeitsproben, auch der Hauptclip oben.'],
-            ['c', 'tracks', 'Zeitleiste: Spuren', 'Die Zeilen der Zeitleiste (Video, Radio, Online …).'],
-            ['g', 'timeline', 'Zeitleiste: Zeitraum', 'Von wann bis wann die Zeitleiste reicht.'],
+            ['c', 'tracks', 'Spuren', 'Die Zeilen des Schnittplatzes (Video, Radio, Online …).'],
         ]],
         'podcast' => ['Podcast', 'mic', 'Folgen mit Links zu den Plattformen.', [
             ['c', 'episodes', 'Folgen', 'Jede Folge mit Titel, Wellenform und Plattform-Links.'],

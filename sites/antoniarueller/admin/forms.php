@@ -351,24 +351,13 @@ function view_edit_item(array $user, string $coll, ?int $id, array $vals, array 
 <?= csrf_field($user) ?><input type="hidden" name="action" value="save_item"><input type="hidden" name="coll" value="<?= e($coll) ?>"><input type="hidden" name="id" value="<?= (int)$id ?>">
 <?php
     lang_bar($def['fields'], $vals, 'c:' . $coll);
-    render_fields($def['fields'], $vals, function ($f) use ($coll) {
-        if ($coll === 'clips' && $f['key'] === 'tc') {
-            tl_preview();
-        }
-    });
+    render_fields($def['fields'], $vals);
     form_actions(a('p=list&c=' . $coll), preview_anchor($coll), $isDraft, (bool)$id);
     echo '</form><aside class="livepane" id="livepane" hidden><div class="lp-h"><strong>Live-Vorschau</strong><button type="button" class="btn small ghost" id="lpreload">Aktualisieren</button></div><iframe id="lpframe" title="Vorschau der Seite" loading="lazy"></iframe></aside></div>';
     if ($id) {
         history_box($user, 'item', (string)$id);
     }
     layout_end();
-}
-
-/** Vorschau-Streifen der Zeitleiste (wird von admin.js befüllt). */
-function tl_preview(): void
-{
-    $tl = setting('timeline');
-    echo '<div class="tlprev" id="tlprev" data-start="' . e($tl['start']) . '" data-end="' . e($tl['end']) . '" data-minw="' . e($tl['min_w']) . '"><div class="tlprev-h">Vorschau Zeitleiste (' . e(fmt_month($tl['start'])) . ' bis ' . e(fmt_month($tl['end'])) . ')</div><div class="tlprev-bar"><span id="tlprevbar"></span></div><small class="hint" id="tlprevtxt"></small></div>';
 }
 
 function view_edit_group(array $user, string $g, array $vals, array $errors): void

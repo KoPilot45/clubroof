@@ -169,7 +169,7 @@ function view_help(array $user): void
     layout_start($user, 'Hilfe', 'help');
     echo '<p class="lead">Kurze Anleitungen für die häufigsten Aufgaben. Mit <kbd>Strg</kbd> + <kbd>K</kbd> findest du jede Stelle der Verwaltung sofort.</p>';
     $topics = [
-        ['Neue Referenz anlegen', ['Menü „Arbeiten“ → „Referenzen“ → „Referenz hinzufügen“.', 'Titel, Kategorie und Datum eintragen; mit dem Datum landet sie automatisch an der richtigen Stelle der Zeitleiste.', '„Als Entwurf speichern“ zeigt sie nur dir (über „Vorschau“), „Veröffentlichen“ schaltet sie live.']],
+        ['Neue Referenz anlegen', ['Menü „Arbeiten“ → „Referenzen“ → „Referenz hinzufügen“.', 'Titel, Kategorie und Datum eintragen, eine Spur im Schnittplatz wählen und bei Bedarf die Länge (kurz/normal/lang). Die Reihenfolge in der Spur entspricht der Liste.', '„Als Entwurf speichern“ zeigt sie nur dir (über „Vorschau“), „Veröffentlichen“ schaltet sie live.']],
         ['Podcast-Folge hinzufügen', ['Menü „Podcast“ → „Folgen“ → „Folge hinzufügen“.', 'Titel und Links zu den Plattformen eintragen. Leere Links werden nicht angezeigt.']],
         ['Etwas vorübergehend ausblenden', ['In der Liste den Schalter „Anzeigen“ der Zeile ausschalten. Der Eintrag bleibt erhalten und kann jederzeit wieder eingeschaltet werden.']],
         ['Reihenfolge ändern', ['In der Liste die Zeile am Griff (⠿) ziehen. Ohne Maus: Menü „⋯“ → „Nach oben / unten“.']],

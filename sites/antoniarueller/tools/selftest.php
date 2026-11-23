@@ -381,7 +381,7 @@ req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'discard_draft', 'kind
 
 $eb = req('GET', "$base/admin/?p=edit&c=clips&id=$uc")['body'];
 ok(str_contains($eb, 'id="livebtn"') && str_contains($eb, 'id="livepane"') && str_contains($eb, 'data-autosave="1"') && str_contains($eb, 'class="actions"'), 'Editor: Aktionsleiste, Live-Vorschau, Autospeichern');
-ok(str_contains($eb, 'details class="adv"') && str_contains($eb, 'Feintuning der Zeitleiste'), 'Editor: „Erweitert“ eingeklappt');
+ok(str_contains($eb, 'details class="adv"') && str_contains($eb, 'Timecode <small>(erweitert)</small>'), 'Editor: „Erweitert“ eingeklappt');
 $en = req('GET', "$base/admin/?p=edit&c=clips")['body'];
 ok(!str_contains($en, 'data-autosave') && !str_contains($en, 'id="livebtn"'), 'Neuer Eintrag: kein Autospeichern');
 ok(str_contains(req('GET', "$base/admin/?p=group&g=seo")['body'], 'robots.txt <small>(erweitert)</small>'), 'SEO-Seite: technische Abschnitte eingeklappt');
@@ -557,11 +557,15 @@ req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'backup_delete', 'file
 ok(!is_file("$root/data/backups/$file"), 'Sicherung gelöscht');
 
 echo "Zeitleiste, Einstellungen, Zugänge\n";
-$tlp = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'timeline', 'end' => '2026-12-31', 'min_w' => '2.8', 'hint_mobile' => 'x'];
-$r = req('POST', "$base/admin/", $tlp + ['start' => '2023-01-01']);
-ok($r['code'] === 302, 'Zeitraum der Zeitleiste ändern');
-ok(str_contains(req('GET', "$base/")['body'], '>2023<'), 'Spalte 2023 erscheint');
-req('POST', "$base/admin/", $tlp + ['start' => '2024-01-01']);
+$hp = req('GET', "$base/")['body'];
+ok(str_contains($hp, 'class="ed-ruler"') && str_contains($hp, 'class="ed-lane') && str_contains($hp, 'data-track=') && str_contains($hp, 'id="edPlay"') && str_contains($hp, 'class="yr-flag"'), 'Schnittplatz: Spuren, Lineal, Jahres-Fähnchen, Abspielen');
+ok(!str_contains($hp, 'style="left:') || !str_contains($hp, 'class="ar-tlclip" data-id="x"'), 'Clips ohne Datumsmaßstab');
+$lw = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL AND live = 1 ORDER BY sort LIMIT 1")->fetchColumn();
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $lw, 'title' => 'Lang-Test', 'medium' => 'text', 'tl_track' => 'A1', 'tl_len' => 'long', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'publish']);
+ok(str_contains(req('GET', "$base/")['body'], '--w:1.6'), 'Länge „Lang“ macht den Clip breiter');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $lw, 'title' => 'Lang-Test', 'medium' => 'text', 'tl_track' => 'A1', 'tl_len' => 'kaputt', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'publish']);
+reset_content_cache();
+ok(item($lw)['tl_len'] === 'normal', 'Ungültige Länge wird zu „Normal“');
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'add_user', 'email' => 'antonia@antoniarueller.de', 'name' => 'A']);
 ok(str_contains(follow($r)['body'], 'eigenen Domain'), 'Domain-Postfach als Zugang abgelehnt');
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'logout']);
