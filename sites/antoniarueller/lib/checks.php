@@ -89,7 +89,7 @@ function translation_rows(): array
             }
             $out[] = [
                 'key' => $kind . ':' . $ref . ':' . $f['key'], 'area' => $area, 'area_key' => $areaKey, 'item' => $item, 'label' => $f['label'],
-                'de' => $de, 'en' => (string)($vals[$f['key'] . '_en'] ?? ''), 'multi' => $f['type'] === 'textarea', 'max' => (int)($f['max'] ?? 500), 'link' => $link,
+                'de' => $de, 'en' => (string)($vals[$f['key'] . '_en'] ?? ''), 'multi' => $f['type'] === 'textarea', 'rich' => !empty($f['rich']), 'max' => (int)($f['max'] ?? 500), 'link' => $link,
             ];
         }
     };

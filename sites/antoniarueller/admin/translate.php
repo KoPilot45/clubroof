@@ -46,7 +46,7 @@ function view_translate(array $user): void
             $id = 'tr_' . substr(md5($r['key']), 0, 10);
             echo '<div class="trrow' . ($isOpen ? ' open' : '') . '" data-open="' . ($isOpen ? '1' : '0') . '" data-area="' . e($k) . '">';
             echo '<div class="tr-de"><span class="tr-l">' . e($r['label']) . ($r['item'] !== '' ? ' · <a href="' . e($r['link']) . '">' . e($r['item']) . '</a>' : ' · <a href="' . e($r['link']) . '">öffnen</a>') . '</span><div class="tr-t" id="' . $id . '_de">' . e($r['de']) . '</div></div>';
-            echo '<div class="tr-en"><label class="sr" for="' . $id . '">' . e($r['label']) . ' (English)</label><textarea id="' . $id . '" name="t[' . e($r['key']) . ']" rows="' . $nl . '" maxlength="' . (int)$r['max'] . '" data-orig="' . e($r['en']) . '" placeholder="Englische Übersetzung …"' . ($r['multi'] ? '' : ' data-single="1"') . '>' . e($r['en']) . '</textarea>';
+            echo '<div class="tr-en"><label class="sr" for="' . $id . '">' . e($r['label']) . ' (English)</label><textarea id="' . $id . '" name="t[' . e($r['key']) . ']" rows="' . $nl . '" maxlength="' . (int)$r['max'] . '" data-orig="' . e($r['en']) . '" placeholder="Englische Übersetzung …"' . ($r['multi'] ? '' : ' data-single="1"') . (!empty($r['rich']) ? ' data-rich="1"' : '') . '>' . e($r['en']) . '</textarea>';
             echo '<div class="tr-f"><button type="button" class="link tr-copy" data-from="' . $id . '_de">Deutsch übernehmen</button><span class="tr-s" aria-live="polite"></span></div></div></div>';
         }
         echo '</section>';

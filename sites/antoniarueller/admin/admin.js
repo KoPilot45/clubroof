@@ -538,9 +538,137 @@
     trForm.addEventListener('click', function (e) {
       if (!e.target.classList.contains('tr-copy')) return;
       var src = document.getElementById(e.target.getAttribute('data-from')), t = $('textarea', e.target.closest('.trrow'));
-      t.value = src.textContent; grow(t); trSave(t);
+      t.value = src.textContent; t.dispatchEvent(new Event('rte:set')); grow(t); trSave(t);
     });
     trForm.addEventListener('submit', function () { $$('textarea', trForm).forEach(function (t) { if (t.value === t.getAttribute('data-orig')) t.disabled = true; }); });
     trFilter();
   }
+
+  // ---- Kleiner Text-Editor für Impressum und Datenschutz (speichert weiter als einfacher Text mit ##, -, **fett**, [Link](Ziel)) ----
+  function rteEsc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function rteInline(s) {
+    s = rteEsc(s);
+    s = s.replace(/\[([^\]\n]+)\]\(([^)\s]+)\)/g, function (m, t, u) { return '<a href="' + u + '">' + t + '</a>'; });
+    return s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  }
+  function rteToHtml(text) {
+    var out = '';
+    text.replace(/\r\n/g, '\n').trim().split(/\n\s*\n/).forEach(function (b) {
+      b = b.trim();
+      if (!b) return;
+      if (b.indexOf('## ') === 0) out += '<h2>' + rteEsc(b.slice(3).trim()) + '</h2>';
+      else if (/^- /.test(b)) out += '<ul>' + b.split('\n').map(function (l) { return '<li>' + rteInline(l.replace(/^- /, '')) + '</li>'; }).join('') + '</ul>';
+      else out += '<p>' + b.split('\n').map(rteInline).join('<br>') + '</p>';
+    });
+    return out || '<p><br></p>';
+  }
+  function rteInlineText(n) {
+    var s = '';
+    Array.prototype.forEach.call(n.childNodes, function (c) {
+      if (c.nodeType === 3) s += c.nodeValue.replace(/ /g, ' ');
+      else if (c.nodeType === 1) {
+        var tag = c.tagName;
+        if (tag === 'BR') s += '\n';
+        else if (tag === 'A' && c.getAttribute('href')) { var t = rteInlineText(c); s += t.trim() ? '[' + t + '](' + c.getAttribute('href') + ')' : t; }
+        else if (tag === 'B' || tag === 'STRONG') { var b = rteInlineText(c); s += b.trim() ? '**' + b + '**' : b; }
+        else s += rteInlineText(c);
+      }
+    });
+    return s;
+  }
+  function rteToText(root) {
+    var blocks = [];
+    Array.prototype.forEach.call(root.childNodes, function (n) {
+      var t = '';
+      if (n.nodeType === 3) t = n.nodeValue.trim();
+      else if (n.nodeType === 1) {
+        if (/^H[1-6]$/.test(n.tagName)) t = '## ' + rteInlineText(n).replace(/\n/g, ' ').trim();
+        else if (n.tagName === 'UL' || n.tagName === 'OL') t = Array.prototype.map.call(n.children, function (li) { return '- ' + rteInlineText(li).replace(/\n/g, ' ').trim(); }).join('\n');
+        else t = rteInlineText(n).replace(/\n{2,}/g, '\n').trim();
+      }
+      if (t && t !== '## ') blocks.push(t);
+    });
+    return blocks.join('\n\n');
+  }
+  function rteInit(ta) {
+    var wrap = document.createElement('div');
+    wrap.className = 'rte';
+    var label = ta.id ? document.querySelector('label[for="' + ta.id + '"]') : null;
+    wrap.innerHTML = '<div class="rte-bar" role="toolbar" aria-label="Formatierung">' +
+      '<button type="button" data-c="h" title="Überschrift">Überschrift</button><button type="button" data-c="b" title="Fett (Strg+B)"><b>F</b></button><button type="button" data-c="ul" title="Aufzählung">• Liste</button><button type="button" data-c="link" title="Link (Strg+K)">Link</button><button type="button" data-c="unlink" title="Link entfernen">Link entfernen</button></div>' +
+      '<div class="rte-link" hidden><label>Art <select class="rl-t"><option value="web">Webadresse</option><option value="mail">E-Mail-Adresse</option><option value="impressum">Seite: Impressum</option><option value="datenschutz">Seite: Datenschutzerklärung</option></select></label> ' +
+      '<label class="rl-uw">Adresse <input type="text" class="rl-u" placeholder="https://…"></label> <label class="rl-tw" hidden>Linktext <input type="text" class="rl-x"></label> ' +
+      '<button type="button" class="btn small rl-ok">Übernehmen</button> <button type="button" class="btn small ghost rl-no">Abbrechen</button></div>' +
+      '<div class="rte-area" contenteditable="true" role="textbox" aria-multiline="true"></div>';
+    var area = wrap.querySelector('.rte-area'), bar = wrap.querySelector('.rte-bar'), lp = wrap.querySelector('.rte-link');
+    if (label) area.setAttribute('aria-label', label.textContent.trim());
+    ta.parentNode.insertBefore(wrap, ta);
+    ta.hidden = true;
+    var saved = null, editing = null;
+    function render() { area.innerHTML = rteToHtml(ta.value); }
+    function sync() { ta.value = rteToText(area); ta.dispatchEvent(new Event('input', { bubbles: true })); }
+    render();
+    ta.addEventListener('rte:set', render);
+    area.addEventListener('input', sync);
+    area.addEventListener('blur', function () { ta.dispatchEvent(new Event('change', { bubbles: true })); });
+    area.addEventListener('paste', function (e) {
+      e.preventDefault();
+      var t = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, t.replace(/\r\n/g, '\n'));
+    });
+    try { document.execCommand('defaultParagraphSeparator', false, 'p'); document.execCommand('styleWithCSS', false, false); } catch (x) { /* egal */ }
+    function selLink() { var s = window.getSelection(); if (!s.rangeCount) return null; var n = s.anchorNode; while (n && n !== area) { if (n.nodeType === 1 && n.tagName === 'A') return n; n = n.parentNode; } return null; }
+    function typeUi() {
+      var t = $('.rl-t', lp).value;
+      $('.rl-uw', lp).hidden = (t === 'impressum' || t === 'datenschutz');
+      $('.rl-u', lp).placeholder = t === 'mail' ? 'name@beispiel.de' : 'https://…';
+    }
+    function openLink() {
+      var s = window.getSelection();
+      if (!s.rangeCount || !area.contains(s.anchorNode)) { area.focus(); s = window.getSelection(); }
+      saved = s.rangeCount ? s.getRangeAt(0).cloneRange() : null;
+      editing = selLink();
+      var t = 'web', u = '';
+      if (editing) {
+        var h = editing.getAttribute('href') || '';
+        if (h.indexOf('legal:') === 0) t = h.slice(6); else if (h.indexOf('mailto:') === 0) { t = 'mail'; u = h.slice(7); } else u = h;
+      }
+      $('.rl-t', lp).value = t; $('.rl-u', lp).value = u; $('.rl-x', lp).value = '';
+      $('.rl-tw', lp).hidden = !!editing || !saved || !saved.collapsed;
+      typeUi(); lp.hidden = false; $('.rl-u', lp).focus();
+    }
+    function closeLink() { lp.hidden = true; area.focus(); }
+    $('.rl-t', lp).addEventListener('change', typeUi);
+    $('.rl-no', lp).addEventListener('click', closeLink);
+    $('.rl-ok', lp).addEventListener('click', function () {
+      var t = $('.rl-t', lp).value, u = $('.rl-u', lp).value.trim(), href;
+      if (t === 'impressum' || t === 'datenschutz') href = 'legal:' + t;
+      else if (!u) { $('.rl-u', lp).focus(); return; }
+      else if (t === 'mail') href = 'mailto:' + u.replace(/^mailto:/i, '');
+      else href = /^(https?:\/\/|\/|#)/i.test(u) ? u : 'https://' + u;
+      area.focus();
+      var s = window.getSelection();
+      if (saved) { s.removeAllRanges(); s.addRange(saved); }
+      if (editing) { editing.setAttribute('href', href); }
+      else if (saved && saved.collapsed) {
+        var txt = $('.rl-x', lp).value.trim() || (t === 'mail' ? u : (t === 'web' ? u : (t === 'impressum' ? 'Impressum' : 'Datenschutzerklärung')));
+        document.execCommand('insertHTML', false, '<a href="' + rteEsc(href) + '">' + rteEsc(txt) + '</a>');
+      } else document.execCommand('createLink', false, href);
+      lp.hidden = true; sync(); area.focus();
+    });
+    bar.addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      var c = b.getAttribute('data-c');
+      area.focus();
+      if (c === 'h') document.execCommand('formatBlock', false, /^h[1-6]$/i.test(document.queryCommandValue('formatBlock')) ? 'p' : 'h2');
+      else if (c === 'b') document.execCommand('bold');
+      else if (c === 'ul') document.execCommand('insertUnorderedList');
+      else if (c === 'unlink') document.execCommand('unlink');
+      else if (c === 'link') { openLink(); return; }
+      sync();
+    });
+    area.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); e.stopPropagation(); openLink(); } });
+  }
+  $$('textarea[data-rich]').forEach(rteInit);
 })();

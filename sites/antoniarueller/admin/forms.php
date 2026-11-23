@@ -45,7 +45,7 @@ function render_text_control(array $f, string $name, string $id, mixed $val, str
         echo '<div class="mktool" data-for="' . e($id) . '" role="group" aria-label="Hervorheben"><button type="button" data-mk="*"><i>Kursiv</i></button><button type="button" data-mk="**"><b>GROSS</b></button><button type="button" data-mk="==">Akzent</button></div>';
     }
     if ($t === 'textarea') {
-        echo '<textarea id="' . e($id) . '" name="' . e($name) . '" rows="' . (int)($f['rows'] ?? 4) . '"' . ($max ? ' maxlength="' . $max . '"' : '') . $desc . '>' . e($val) . '</textarea>';
+        echo '<textarea id="' . e($id) . '" name="' . e($name) . '" rows="' . (int)($f['rows'] ?? 4) . '"' . ($max ? ' maxlength="' . $max . '"' : '') . (!empty($f['rich']) ? ' data-rich="1"' : '') . $desc . '>' . e($val) . '</textarea>';
     } else {
         echo '<input type="text" id="' . e($id) . '" name="' . e($name) . '" value="' . e($val) . '"' . ($max ? ' maxlength="' . $max . '"' : '') . ($required ? ' required' : '') . $desc . '>';
     }

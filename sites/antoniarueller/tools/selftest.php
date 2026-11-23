@@ -526,6 +526,17 @@ save_setting('contact', $ctOrig, 'test', true);
 clear_page_cache();
 ok(str_contains(req('GET', "$base/admin/?p=group&g=contact")['body'], 'Fotonachweis: Link (optional)'), 'Backend-Feld für den Link');
 
+echo "Rechtstexte: Links, Fett, Editor\n";
+$lt = "## 1. Test\n\nSiehe [Datenschutzerklärung](legal:datenschutz) und **fette** Wörter, [Mail](mailto:a@b.de), [Web](https://example.org/a?x=1&y=2), [Bad](javascript:alert(1)) und <b>x</b>.\n\n- Punkt [A](https://example.org)\n- Punkt https://example.com bare";
+$lh = legal_html($lt);
+ok(str_contains($lh, '<a href="' . legal_url('datenschutz') . '">Datenschutzerklärung</a>') && str_contains($lh, '<strong>fette</strong>'), 'Link zur Datenschutzseite und fette Wörter');
+ok(str_contains($lh, 'href="https://example.org/a?x=1&amp;y=2" target="_blank" rel="noopener noreferrer">Web</a>') && str_contains($lh, '<li>Punkt <a href="https://example.org"'), 'Webadressen als Link (Text frei wählbar, auch in Listen)');
+ok(!str_contains($lh, 'href="mailto:') && str_contains($lh, '&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#97;'), 'E-Mail-Links verschleiert');
+ok(!str_contains($lh, 'href="javascript') && str_contains($lh, '[Bad](javascript:alert(1))') && str_contains($lh, '&lt;b&gt;x&lt;/b&gt;'), 'unsichere Ziele und HTML bleiben Text');
+$lg = req('GET', "$base/admin/?p=group&g=legal")['body'];
+ok(substr_count($lg, 'data-rich="1"') === 2 && str_contains($lg, 'name="impressum"') && str_contains($lg, 'name="datenschutz"'), 'Editor für Impressum und Datenschutz');
+ok(!str_contains(req('GET', "$base/admin/?p=group&g=contact")['body'], 'data-rich'), 'andere Felder bleiben einfache Textfelder');
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

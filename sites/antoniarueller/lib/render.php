@@ -210,15 +210,43 @@ function ent(string $s): string
 
 function legal_inline(string $s): string
 {
-    $s = e($s);
+    $tokens = [];
+    $keep = function (string $html) use (&$tokens): string {
+        $tokens[] = $html;
+        return "\x01" . (count($tokens) - 1) . "\x02";
+    };
+    $s = e(preg_replace('~[\x01\x02]~', '', $s));
+    // [Text](Ziel): Webadresse, E-Mail, Seite der Website („legal:impressum“, „legal:datenschutz“) oder interner Pfad
+    $s = preg_replace_callback('~\[([^\]\n]+)\]\(([^)\s]+)\)~u', function ($m) use ($keep) {
+        $text = $m[1];
+        $u = html_entity_decode($m[2], ENT_QUOTES);
+        if (preg_match('~^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$~', html_entity_decode($text, ENT_QUOTES))) {
+            $text = ent(html_entity_decode($text, ENT_QUOTES));
+        }
+        if (preg_match('~^legal:(impressum|datenschutz)$~', $u, $p)) {
+            return $keep('<a href="' . e(legal_url($p[1])) . '">' . $text . '</a>');
+        }
+        if (stripos($u, 'mailto:') === 0) {
+            return $keep('<a href="' . ent($u) . '">' . $text . '</a>');
+        }
+        if (preg_match('~^https?://~i', $u)) {
+            return $keep('<a href="' . e($u) . '" target="_blank" rel="noopener noreferrer">' . $text . '</a>');
+        }
+        if (preg_match('~^[/#]~', $u)) {
+            return $keep('<a href="' . e($u) . '">' . $text . '</a>');
+        }
+        return $m[0];
+    }, $s);
+    $s = preg_replace('~\*\*(.+?)\*\*~us', '<strong>$1</strong>', $s);
     // E-Mail-Adressen als HTML-Zeichencodes (für Menschen lesbar und klickbar, für einfache Adress-Sammler nicht)
     $s = preg_replace_callback('~[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}~', fn($m) => '<a href="' . ent('mailto:' . $m[0]) . '">' . ent($m[0]) . '</a>', $s);
     // URLs und www.-Adressen verlinken
-    return preg_replace_callback('~\b((?:https?://|www\.)[^\s<]+[^\s<.,;:)\]])~u', function ($m) {
+    $s = preg_replace_callback('~\b((?:https?://|www\.)[^\s<]+[^\s<.,;:)\]])~u', function ($m) {
         $u = $m[1];
         $href = str_starts_with($u, 'www.') ? 'https://' . $u : $u;
         return '<a href="' . $href . '" target="_blank" rel="noopener noreferrer">' . $u . '</a>';
     }, $s);
+    return preg_replace_callback('~\x01(\d+)\x02~', fn($m) => $tokens[(int)$m[1]] ?? '', $s);
 }
 
 function legal_html(string $text): string

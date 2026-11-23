@@ -304,10 +304,10 @@ function schema(): array
     ];
     $s['groups']['legal'] = [
         'label' => 'Impressum & Datenschutz',
-        'help' => 'Vorlagen: Angaben in [eckigen Klammern] ersetzen oder löschen. Absätze durch eine Leerzeile trennen, Überschriften mit „## “, Aufzählungen mit „- “. Die Seiten erscheinen unter /impressum und /datenschutz. Keine Rechtsberatung – vor dem Start prüfen (lassen).',
+        'help' => 'Vorlagen: Angaben in [eckigen Klammern] ersetzen oder löschen. Mit der Werkzeugleiste formatierst du Überschriften, fette Wörter, Aufzählungen und Links (auch zur Datenschutzerklärung bzw. zum Impressum). Die Seiten erscheinen unter /impressum und /datenschutz. Keine Rechtsberatung – bitte prüfen lassen.',
         'fields' => [
-            f('textarea', 'impressum', 'Impressum', ['rows' => 22, 'max' => 20000, 'default' => legal_defaults()['impressum']]),
-            f('textarea', 'datenschutz', 'Datenschutzerklärung', ['rows' => 30, 'max' => 40000, 'default' => legal_defaults()['datenschutz']]),
+            f('textarea', 'impressum', 'Impressum', ['rich' => true, 'rows' => 22, 'max' => 20000, 'default' => legal_defaults()['impressum']]),
+            f('textarea', 'datenschutz', 'Datenschutzerklärung', ['rich' => true, 'rows' => 30, 'max' => 40000, 'default' => legal_defaults()['datenschutz']]),
         ],
     ];
 
