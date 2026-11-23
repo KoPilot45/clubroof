@@ -21,7 +21,7 @@ function preview_mode(?bool $set = null): bool
 }
 
 /** Felder, die nie übersetzt werden (Namen, Kürzel, technische Werte). */
-const NO_TRANSLATE = ['first', 'last', 'tag_name', 'code', 'tc', 'email', 'outlet', 'show', 'number', 'org', 'name', 'country', 'google_verify', 'bing_verify', 'works_for', 'header_label', 'date_label', 'outlets', 'copyright', 'robots_extra', 'llms_summary', 'llms_extra', 'same_as', 'alumni', 'other_label'];
+const NO_TRANSLATE = ['still_credit', 'first', 'last', 'tag_name', 'code', 'tc', 'email', 'outlet', 'show', 'number', 'org', 'name', 'country', 'google_verify', 'bing_verify', 'works_for', 'header_label', 'date_label', 'outlets', 'copyright', 'robots_extra', 'llms_summary', 'llms_extra', 'same_as', 'alumni', 'other_label'];
 
 function field_translatable(array $f): bool
 {

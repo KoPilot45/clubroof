@@ -115,7 +115,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php if ($fc['url'] !== ''): ?><a class="fa-cta" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= icon($fc['medium'], 16) ?><span><?= e($fc['link_text']) ?></span><span aria-hidden="true">→</span></a><?php endif; ?>
 </div>
 </div>
-<?php if ($fImg !== ''): ?><figure class="fa-img"><img src="<?= e($fImg) ?>" alt="" loading="lazy"></figure><?php else: ?><div class="fa-no" aria-hidden="true"><?= e($fc['_no']) ?></div><?php endif; ?>
+<?php if ($fImg !== ''): ?><figure class="fa-img"><img src="<?= e($fImg) ?>" alt="" loading="lazy" style="object-position:<?= e(focus_pos((string)($fc['still_focus'] ?? ''))) ?>"><?php if (trim((string)($fc['still_credit'] ?? '')) !== ''): ?><figcaption class="cred"><?= e($fc['still_credit']) ?></figcaption><?php endif; ?></figure><?php else: ?><div class="fa-no" aria-hidden="true"><?= e($fc['_no']) ?></div><?php endif; ?>
 </div>
 </article>
 </section>
@@ -126,7 +126,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?= sec_head('01', 'Showreel', $sec['show_right'] !== '' ? $sec['show_right'] : count($clips) . ' ' . tr('Clips') . ' · ' . implode(', ', array_unique(array_map(fn($c) => media_label($c['medium']), $clips))) . ($yearSpan ? ' · ' . $yearSpan : ''), '24px') ?>
 <h2 class="big-h"><span class="bh1"><?= e($sec['show_h1']) ?></span><span class="bh2"><?= e($sec['show_h2']) ?></span></h2>
 
-<div class="ar-ed-desk editor">
+<div class="ar-ed-desk editor<?= array_filter($clips, fn($x) => upload_url((string)$x['still']) !== '') ? ' has-thumbs' : '' ?>">
 <div class="ed-bar">
 <span class="ed-t"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span><?= e($sec['editor_title']) ?></span>
 <span class="ed-icons"><?php foreach (['video' => 'Video', 'text' => 'Text', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'Social'] as $k => $l): ?><span><?= icon($k, 14) ?><?= tr($l) ?></span><?php endforeach; ?></span>
@@ -151,7 +151,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 </div>
 </div>
-<div class="ed-sel">
+<div class="ed-sel<?= upload_url((string)$first['still']) !== '' ? ' has-img' : '' ?>">
+<figure class="ed-fig" id="edFig"<?= upload_url((string)$first['still']) === '' ? ' hidden' : '' ?>><img id="edFigImg" src="<?= e(upload_url((string)$first['still'])) ?>" alt="" decoding="async" style="object-position:<?= e(focus_pos((string)($first['still_focus'] ?? ''))) ?>"><figcaption class="cred" id="edFigCr"<?= trim((string)($first['still_credit'] ?? '')) === '' ? ' hidden' : '' ?>><?= e((string)($first['still_credit'] ?? '')) ?></figcaption></figure>
 <div class="ed-sel-l">
 <span class="sel-no" data-f="no"><?= e($first['_no']) ?></span>
 <div class="sel-col">
@@ -200,8 +201,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <li class="ar-clip<?= $c['_id'] === $first['_id'] ? ' on' : '' ?>" data-id="<?= $c['_id'] ?>">
 <a data-ev="clip" data-k="<?= (int)$c['_id'] ?>" href="<?= e(safe_url($c['url']) ?: '#arbeiten') ?>" <?= $c['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
 <span class="cl-no"><?= e($c['_no']) ?></span>
-<span class="cl-tc muted"><span>TC <?= e($c['_tc']) ?></span><span style="color:var(--ink)"><?= icon($c['medium'], 20) ?></span></span>
-<span class="cl-main"><span class="ar-clip-title"><?= e($c['title']) ?></span><span class="cl-desc"><?= e($c['desc']) ?></span></span>
+<span class="cl-th<?= upload_url((string)$c['still']) === '' ? ' none' : '' ?>"><?php if (upload_url((string)$c['still']) !== ''): ?><img src="<?= e(upload_url((string)$c['still'])) ?>"<?= img_attrs((string)$c['still']) ?> alt="" loading="lazy" decoding="async" style="object-position:<?= e(focus_pos((string)($c['still_focus'] ?? ''))) ?>"><?php endif; ?></span>
+<span class="cl-main"><span class="ar-clip-title"><?= e($c['title']) ?></span><?php if ($c['desc'] !== ''): ?><span class="cl-desc"><?= e($c['desc']) ?></span><?php endif; ?><span class="cl-tc muted"><span>TC <?= e($c['_tc']) ?></span><span style="color:var(--ink)"><?= icon($c['medium'], 16) ?></span></span></span>
 <span class="cl-side"><span><?= e($c['outlet']) ?> <span aria-hidden="true" style="color:var(--accent)">↗</span></span><span class="muted"><?= e(implode(' · ', array_filter([$c['format'], $c['_date']]))) ?></span><?php if ($c['role'] !== ''): ?><span class="muted"><?= tr('Rolle:') ?> <?= e($c['role']) ?></span><?php endif; ?><span class="cl-link"><?= e($c['link_text']) ?></span></span>
 </a></li>
 <?php endforeach; ?>

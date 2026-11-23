@@ -78,6 +78,12 @@ function img_attrs(string $name): string
     return $i ? ' width="' . (int)$i[0] . '" height="' . (int)$i[1] . '"' : '';
 }
 
+/** Fokuspunkt „x,y“ (Prozent) → CSS object-position. */
+function focus_pos(string $f): string
+{
+    return preg_match('~^(\d{1,3}(?:\.\d)?),(\d{1,3}(?:\.\d)?)$~', $f, $m) ? $m[1] . '% ' . $m[2] . '%' : '50% 50%';
+}
+
 /** *kursiv*, **GROSS**, ==Akzent== → HTML (alles andere wird maskiert). */
 function mk(string $s): string
 {
