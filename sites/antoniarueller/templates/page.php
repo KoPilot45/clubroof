@@ -109,24 +109,23 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </section>
 <?php endif; ?>
 
-<?php if ($featured): $fc = $featured; ?>
+<?php if ($featured): $fc = $featured; $fImg = upload_url($fc['still']); $fBy = array_filter([trim($hero['first'] . ' ' . $hero['last']), trim((string)$fc['role']), trim((string)$fc['outlet'])]); ?>
 <section id="arbeiten" aria-label="<?= tr('Featured Clip') ?>" style="padding-top:96px">
-<?= sec_head('01', 'Featured Clip', $fc['_tc']) ?>
-<div class="feat">
-<div class="feat-media">
-<?php if (upload_url($fc['still']) !== ''): ?><img src="<?= e(upload_url($fc['still'])) ?>" alt="" loading="lazy"><?php endif; ?>
-<?php if (upload_url($fc['still']) === ''): ?><span class="feat-label">[<?= e($fc['outlet']) ?> · <?= e($fc['format']) ?>]</span><?php endif; ?>
-<span class="feat-tc ar-feat-tc"><span class="ar-rec" style="width:8px;height:8px"></span><?= e($fc['_tc']) ?></span>
-<?php if ($fc['url'] !== ''): ?><a class="feat-play" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?> aria-label="Beitrag öffnen: <?= e($fc['title']) ?>"><svg aria-hidden="true" width="34" height="38" viewBox="0 0 34 38"><path d="M4 3 L31 19 L4 35 Z" fill="#FBF6EE"></path></svg></a><?php endif; ?>
-<span class="feat-bar"><span></span></span>
-</div>
-<div class="feat-text">
-<div class="muted"><?= e($fc['outlet']) ?> · <?= e(media_label($fc['medium'])) ?></div>
+<article class="fa">
+<div class="fa-mast"><span><?= tr('Hauptbeitrag') ?></span><span><?= e(media_label($fc['medium'])) ?></span><span><?= e(implode(' · ', array_filter([(string)$fc['outlet'], (string)$fc['_date']]))) ?></span></div>
+<div class="fa-body<?= $fImg !== '' ? ' has-img' : '' ?>">
+<div class="fa-main">
+<?php if (trim((string)$fc['format']) !== ''): ?><p class="fa-kick"><?= e($fc['format']) ?></p><?php endif; ?>
 <h2 class="ar-feat-h"><?= mk($fc['headline'] !== '' ? $fc['headline'] : $fc['title']) ?></h2>
-<?php if ($fc['desc'] !== ''): ?><p class="feat-desc"><?= e($fc['desc']) ?></p><?php endif; ?>
-<?php if ($fc['url'] !== ''): ?><a class="btn-ghost" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= e($fc['link_text']) ?> <span aria-hidden="true">→</span></a><?php endif; ?>
+<?php if ($fc['desc'] !== ''): ?><p class="fa-stand"><?= e($fc['desc']) ?></p><?php endif; ?>
+<div class="fa-foot">
+<span class="fa-by"><?= $fBy ? e(tr('Von')) . ' <b>' . e(array_shift($fBy)) . '</b>' . ($fBy ? ' · ' . e(implode(' · ', $fBy)) : '') : '' ?></span>
+<?php if ($fc['url'] !== ''): ?><a class="fa-cta" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= icon($fc['medium'], 16) ?><span><?= e($fc['link_text']) ?></span><span aria-hidden="true">→</span></a><?php endif; ?>
 </div>
 </div>
+<?php if ($fImg !== ''): ?><figure class="fa-img"><img src="<?= e($fImg) ?>" alt="" loading="lazy"></figure><?php else: ?><div class="fa-no" aria-hidden="true"><?= e($fc['_no']) ?></div><?php endif; ?>
+</div>
+</article>
 </section>
 <?php endif; ?>
 
