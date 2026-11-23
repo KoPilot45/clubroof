@@ -550,12 +550,25 @@ $row = q("SELECT draft FROM ar_items WHERE draft LIKE '%Sofort-Upload-Test%'")->
 ok($r['code'] === 302 && str_contains((string)($row['draft'] ?? ''), $ui['name']), 'hochgeladenes Bild wird über „Auswahl“ im Entwurf gespeichert');
 touch("$root/uploads/{$ui['name']}", time() - 3 * 86400);
 cleanup_uploads();
-ok(is_file("$root/uploads/{$ui['name']}"), 'Bild im Entwurf wird vom Aufräumen nicht gelöscht');
+ok(is_file("$root/uploads/{$ui['name']}"), 'ungenutzte Bilder bleiben in der Mediathek erhalten');
 foreach (q("SELECT id FROM ar_items WHERE draft LIKE '%Sofort-Upload-Test%'")->fetchAll() as $rw) {
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'discard_draft', 'kind' => 'item', 'id' => $rw['id']]);
 }
 @unlink($bad);
 @unlink("$root/uploads/{$ui['name']}");
+
+echo "AVIF\n";
+$av = '/tmp/claude-0/test.avif';
+if (is_file($av)) {
+    $ua = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'file' => new CURLFile($av, 'image/avif', 'a.avif')], true)['body'], true);
+    if (function_exists('imagecreatefromavif')) {
+        ok(($ua['ok'] ?? false) === true && str_ends_with((string)$ua['name'], '.webp'), 'AVIF wird auf dem Server in WebP umgewandelt');
+        @unlink("$root/uploads/{$ua['name']}");
+    } else {
+        ok(($ua['ok'] ?? true) === false && str_contains((string)$ua['error'], 'AVIF'), 'AVIF ohne Server-Unterstützung: klare Meldung statt Fehler');
+    }
+}
+ok(str_contains(req('GET', "$base/admin/?p=edit&c=clips")['body'], 'image/avif'), 'Bildfelder erlauben AVIF');
 
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];

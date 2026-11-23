@@ -227,7 +227,7 @@ function view_media(array $user): void
     $list = media_list();
     $use = media_usage();
     echo '<p class="lead">Alle hochgeladenen Bilder. Du kannst sie in jedem Bildfeld über „Aus Mediathek wählen“ wiederverwenden. Nicht verwendete Bilder lassen sich löschen.</p>';
-    echo '<form method="post" action="' . a() . '" enctype="multipart/form-data" class="form" style="margin-bottom:22px">' . csrf_field($user) . '<input type="hidden" name="action" value="media_upload"><div class="field"><label for="mf">Bilder hochladen</label><input type="file" id="mf" name="files[]" accept="image/jpeg,image/png,image/webp" multiple><small class="hint">JPG, PNG oder WebP, je höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB.</small></div><button class="btn">Hochladen</button></form>';
+    echo '<form method="post" action="' . a() . '" enctype="multipart/form-data" class="form" style="margin-bottom:22px">' . csrf_field($user) . '<input type="hidden" name="action" value="media_upload"><div class="field"><label for="mf">Bilder hochladen</label><input type="file" id="mf" name="files[]" accept="image/jpeg,image/png,image/webp,image/avif,.avif" multiple><small class="hint">JPG, PNG, WebP oder AVIF, je höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB.</small></div><button class="btn">Hochladen</button></form>';
     if ($list && $user['role'] === 'owner') {
         $cfgI = image_settings();
         $tot = array_sum(array_column($list, 'size'));

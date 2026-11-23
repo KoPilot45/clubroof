@@ -563,8 +563,14 @@ function store_image(array $file): string
     check_upload($file);
     $info = @getimagesize($file['tmp_name']);
     $types = [IMAGETYPE_JPEG => 'jpeg', IMAGETYPE_PNG => 'png', IMAGETYPE_WEBP => 'webp'];
+    if (defined('IMAGETYPE_AVIF')) {
+        $types[IMAGETYPE_AVIF] = 'avif';
+    }
     if (!$info || !isset($types[$info[2]])) {
-        throw new RuntimeException('Bitte JPG, PNG oder WebP hochladen.');
+        throw new RuntimeException('Bitte JPG, PNG, WebP oder AVIF hochladen.');
+    }
+    if ($types[$info[2]] === 'avif' && !function_exists('imagecreatefromavif')) {
+        throw new RuntimeException('AVIF kann dieser Server nicht verarbeiten. Im Backend wird AVIF beim Hochladen im Browser in WebP umgewandelt – bitte dort hochladen oder das Bild als JPG, PNG oder WebP speichern.');
     }
     if ($info[0] * $info[1] > 40000000) {
         throw new RuntimeException('Bild hat zu viele Pixel.');
@@ -632,26 +638,12 @@ function store_pdf(array $file): string
     return $name;
 }
 
-/** Löscht Dateien in uploads/, die nirgends mehr verwendet werden (auch nicht in Entwürfen oder im Papierkorb) und älter als einen Tag sind. */
+/**
+ * Früher wurden ungenutzte Dateien hier automatisch gelöscht. Jetzt bleiben alle Bilder in der Mediathek;
+ * ungenutzte lassen sich dort von Hand löschen. Die Funktion bleibt als Aufrufstelle erhalten.
+ */
 function cleanup_uploads(): void
 {
-    $dir = upload_dir();
-    $blob = '';
-    foreach (q('SELECT data, draft FROM ar_items')->fetchAll() as $r) {
-        $blob .= $r['data'] . ($r['draft'] ?? '');
-    }
-    foreach (q('SELECT data, draft FROM ar_settings')->fetchAll() as $r) {
-        $blob .= $r['data'] . ($r['draft'] ?? '');
-    }
-    foreach (glob($dir . '/*') ?: [] as $f) {
-        $n = basename($f);
-        if ($n[0] === '.' || str_starts_with($n, 'seed-')) {
-            continue;
-        }
-        if (!str_contains($blob, '"' . $n . '"') && filemtime($f) < time() - 86400) {
-            @unlink($f);
-        }
-    }
 }
 
 /** Bereinigt eine englische Übersetzung wie die deutsche Eingabe (Feldtyp und Länge). */

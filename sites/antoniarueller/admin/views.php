@@ -171,7 +171,7 @@ function view_check(array $user): void
         ['PHP-Version (mind. 8.1)', PHP_VERSION, version_compare(PHP_VERSION, '8.1.0', '>=')],
         ['Datenbank', cfg('db.driver') . ' (verbunden)', true],
         ['PHP-Erweiterung mbstring', extension_loaded('mbstring') ? 'vorhanden' : 'fehlt', extension_loaded('mbstring')],
-        ['PHP-Erweiterung GD (Bilder)', extension_loaded('gd') ? 'vorhanden' . (function_exists('imagewebp') ? ', WebP' : ', ohne WebP') : 'fehlt', extension_loaded('gd')],
+        ['PHP-Erweiterung GD (Bilder)', extension_loaded('gd') ? 'vorhanden' . (function_exists('imagewebp') ? ', WebP' : ', ohne WebP') . (function_exists('imagecreatefromavif') ? ', AVIF (Server)' : ', AVIF nur über den Browser') : 'fehlt', extension_loaded('gd')],
         ['Ordner uploads/ beschreibbar', is_writable(AR_ROOT . '/uploads') ? 'ja' : 'nein', is_writable(AR_ROOT . '/uploads')],
         ['Ordner data/ beschreibbar', is_writable(AR_ROOT . '/data') ? 'ja' : 'nein', is_writable(AR_ROOT . '/data')],
         ['Verbindung per HTTPS', is_https() ? 'ja' : 'nein (nur lokal in Ordnung)', is_https() || in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1'], true)],

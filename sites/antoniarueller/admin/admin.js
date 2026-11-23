@@ -690,6 +690,31 @@
     if (inp) inp.value = '';
     var dot = $('.fdot', box); if (dot) { dot.style.left = '50%'; dot.style.top = '50%'; }
   }
+
+  // ---- AVIF: wird im Browser in WebP umgewandelt (funktioniert unabhängig vom Server), der Server optimiert danach wie gewohnt ----
+  function isAvif(f) { return f && (f.type === 'image/avif' || /\.avif$/i.test(f.name)); }
+  function avifToWebp(f) {
+    return new Promise(function (resolve, reject) {
+      var rd = new FileReader();
+      rd.onerror = function () { reject(new Error('Datei konnte nicht gelesen werden')); };
+      rd.onload = function () {
+        var im = new Image();
+        im.onerror = function () { reject(new Error('AVIF wird von diesem Browser nicht unterstützt')); };
+        im.onload = function () {
+          var w = im.naturalWidth, h = im.naturalHeight, s = Math.min(1, 2400 / Math.max(w, h));
+          var c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(w * s)); c.height = Math.max(1, Math.round(h * s));
+          c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+          c.toBlob(function (b) {
+            if (!b || b.type !== 'image/webp') { reject(new Error('Umwandlung nicht möglich')); return; }
+            resolve(new File([b], f.name.replace(/\.avif$/i, '') + '.webp', { type: 'image/webp' }));
+          }, 'image/webp', 0.95);
+        };
+        im.src = String(rd.result);
+      };
+      rd.readAsDataURL(f);
+    });
+  }
   function stagedBadge(box, text, bad) {
     var b = box.parentNode.querySelector('.newbadge');
     if (!b) { setPreview(box, $('img', box).getAttribute('src') || '', text); b = box.parentNode.querySelector('.newbadge'); }
@@ -715,9 +740,11 @@
       var rd = new FileReader();
       rd.onload = function () { setPreview(box, String(rd.result), 'Lädt hoch …'); };
       rd.readAsDataURL(f);
-      var fd = new FormData();
-      fd.set('_csrf', form.elements['_csrf'].value); fd.set('action', 'upload_image'); fd.set('file', f);
-      fetch(form.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+      (isAvif(f) ? avifToWebp(f) : Promise.resolve(f)).then(function (up) {
+        var fd = new FormData();
+        fd.set('_csrf', form.elements['_csrf'].value); fd.set('action', 'upload_image'); fd.set('file', up);
+        return fetch(form.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' });
+      }).then(function (r) { return r.json(); }).then(function (j) {
         if (!j.ok) throw new Error(j.error || 'Upload fehlgeschlagen');
         inp.value = '';
         stagedDone(box, inp.name, j.name, j.url, hasAuto);
@@ -730,4 +757,25 @@
   $$('.imgbox input[type=checkbox][name^="_remove_"]').forEach(function (cb) {
     cb.addEventListener('change', function () { var box = cb.closest('.imgbox').querySelector('.focusbox'); if (box) box.classList.toggle('removing', cb.checked); });
   });
+
+  // Mediathek: mehrere Bilder, AVIF-Dateien werden vorher im Browser umgewandelt
+  var mfForm = form && form.querySelector('input[name="files[]"]') ? form : null;
+  if (mfForm) {
+    mfForm.addEventListener('submit', function (e) {
+      var inp = mfForm.querySelector('input[name="files[]"]');
+      var files = Array.prototype.slice.call(inp.files || []);
+      if (!files.some(isAvif)) return;
+      e.preventDefault();
+      var btn = $('button', mfForm); if (btn) { btn.disabled = true; btn.textContent = 'Wandelt um und lädt hoch …'; }
+      Promise.all(files.map(function (f) { return isAvif(f) ? avifToWebp(f) : Promise.resolve(f); })).then(function (list) {
+        var fd = new FormData();
+        fd.set('_csrf', mfForm.elements['_csrf'].value); fd.set('action', 'media_upload');
+        list.forEach(function (f) { fd.append('files[]', f); });
+        return fetch(mfForm.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin', redirect: 'manual' });
+      }).then(function () { window.location.href = mfForm.getAttribute('action') + '?p=media'; }).catch(function (err) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Hochladen'; }
+        window.alert('AVIF konnte nicht umgewandelt werden: ' + (err && err.message ? err.message : 'Fehler'));
+      });
+    });
+  }
 })();

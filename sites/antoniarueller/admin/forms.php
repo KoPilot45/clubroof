@@ -116,8 +116,8 @@ function render_field(array $f, mixed $val, array $vals = []): void
             if ($has) {
                 echo '<label class="check"><input type="checkbox" name="_remove_' . e($k) . '" value="1"> Bild entfernen</label>';
             }
-            echo '</div><input type="file" id="' . $id . '" name="' . e($k) . '" accept="image/jpeg,image/png,image/webp"' . $desc . '> <button type="button" class="btn small ghost" data-media-pick="' . e($k) . '">Aus Mediathek wählen</button>';
-            echo '<small class="hint">JPG, PNG oder WebP, höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB. Wird automatisch verkleinert und optimiert.</small>';
+            echo '</div><input type="file" id="' . $id . '" name="' . e($k) . '" accept="image/jpeg,image/png,image/webp,image/avif,.avif"' . $desc . '> <button type="button" class="btn small ghost" data-media-pick="' . e($k) . '">Aus Mediathek wählen</button>';
+            echo '<small class="hint">JPG, PNG, WebP oder AVIF, höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB. Wird automatisch verkleinert und optimiert.</small>';
             break;
         case 'pdf':
             if ($val !== '' && upload_url((string)$val) !== '') {
