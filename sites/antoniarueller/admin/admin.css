@@ -262,9 +262,6 @@ ul.barlist li{display:grid;grid-template-columns:minmax(80px,38%) 1fr auto;gap:1
 .bl-b{background:#efe6d4;border-radius:99px;height:10px;overflow:hidden}
 .bl-b span{display:block;height:100%;background:var(--teal);border-radius:99px}
 .bl-n{font-weight:600;white-space:nowrap}.bl-n small{font-weight:400;color:var(--mute)}
-.campaign{display:grid;gap:4px}
-.campaign .field{margin:0 0 8px}
-.campaign #cu{width:calc(100% - 100px);display:inline-block;vertical-align:middle;margin-right:6px}
 
 /* ===== Überarbeitung: Navigation, Editor, Listen, Optik ===== */
 body{font-family:'Inter Tight',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}

@@ -246,15 +246,6 @@ function view_stats(array $user): void
     }
     echo '<p class="hint">„Direkt / unbekannt“: Der Browser hat keine Herkunft übermittelt (direkter Aufruf, Mail- oder Messenger-Link, viele Apps).</p></section>';
 
-    // Kampagnen
-    echo '<section class="card"><h2>Kampagnen-Links</h2>';
-    $camp = [];
-    foreach ($t['camp'] as $k => $n) {
-        $camp[(string)$k] = $n;
-    }
-    echo $camp ? stat_bar_list($camp, $t['v']) : '<p class="hint">Noch keine Besuche über Kampagnen-Links im gewählten Zeitraum.</p>';
-    echo '<h3>Link erzeugen</h3><p class="hint">Verwende für jeden Post oder jede Mail einen eigenen Link. Die Statistik zeigt dann, welcher wie viele Besuche bringt.</p>';
-    echo '<div class="campaign" data-de="' . e(abs_url('/')) . '" data-en="' . e(abs_url('/en/')) . '"><div class="field"><label for="cn">Name der Kampagne</label><input id="cn" maxlength="40" placeholder="z. B. linkedin-nov oder bewerbung-ard" autocomplete="off"><small class="hint">Kleinbuchstaben, Zahlen, Bindestrich.</small></div><div class="field"><label for="ct">Ziel</label><select id="ct"><option value="de|">Startseite (Deutsch)</option><option value="de|arbeiten">Deutsch: Arbeiten</option><option value="de|ueber">Deutsch: Über mich</option><option value="de|kontakt">Deutsch: Kontakt</option><option value="en|">Startseite (Englisch)</option><option value="en|arbeiten">Englisch: Work</option></select></div><div class="field"><label for="cu">Dein Link</label><input id="cu" readonly value="' . e(abs_url('/')) . '"><button type="button" class="btn small" id="ccopy">Kopieren</button></div></div></section>';
 
     echo '</div><div class="dash-col">';
 

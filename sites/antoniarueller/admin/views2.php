@@ -210,12 +210,12 @@ function view_home(array $user): void
 
     // 5. Technik (eingeklappt)
     $tech = dash_tech();
-    echo '<details class="card tech"><summary><strong>Technik</strong> <span class="score">PHP, Speicher, Zertifikat</span></summary><dl class="kv">';
+    echo '<details class="card tech"><summary><strong>Technik</strong> <span class="score">PHP, Speicher, HTTPS</span></summary><dl class="kv">';
     echo '<div><dt>PHP-Version</dt><dd>' . e($tech['php']) . '</dd></div><div><dt>Datenbank</dt><dd>' . e($tech['db']) . '</dd></div>';
     echo '<div><dt>Einträge</dt><dd>' . $tech['items'] . ' (Papierkorb: ' . $tech['trash'] . ')</dd></div>';
     echo '<div><dt>Bilder (uploads/)</dt><dd>' . kb($tech['uploads']) . '</dd></div>';
     echo '<div><dt>Sicherungen</dt><dd>' . $tech['backup_n'] . ' Dateien, ' . kb($tech['backups']) . '</dd></div>';
-    echo '<div><dt>SSL-Zertifikat</dt><dd id="ssl-val" data-url="' . e(a('p=ssl_json')) . '">wird geprüft …</dd></div>';
+    echo '<div><dt>HTTPS-Schutz</dt><dd id="ssl-val" data-url="' . e(a('p=ssl_json')) . '">wird geprüft …</dd></div>';
     echo '</dl><p class="hint"><a href="' . a('p=check') . '">Zum Systemcheck</a></p></details>';
     layout_end();
 }

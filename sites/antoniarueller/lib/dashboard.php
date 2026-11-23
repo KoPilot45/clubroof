@@ -134,35 +134,68 @@ function dash_tech(): array
     ];
 }
 
-/** Ablauf des SSL-Zertifikats der eigenen Domain (12 Stunden zwischengespeichert). */
-function ssl_expiry(): array
+/** Passt das Zertifikat zum Hostnamen? (SAN bzw. CN, inkl. Wildcard) */
+function cert_matches_host(array $info, string $host): bool
 {
-    $cache = AR_ROOT . '/data/ssl-cache.json';
-    if (is_file($cache) && filemtime($cache) > time() - 43200) {
-        $d = json_decode((string)file_get_contents($cache), true);
-        if (is_array($d)) {
-            $d['days'] = isset($d['until']) ? (int)floor(($d['until'] - time()) / 86400) : null;
-            return $d;
+    $names = [];
+    foreach (explode(',', (string)($info['extensions']['subjectAltName'] ?? '')) as $p) {
+        if (str_starts_with(trim($p), 'DNS:')) {
+            $names[] = strtolower(trim(substr(trim($p), 4)));
         }
     }
-    $host = (string)(parse_url((string)cfg('site_url'), PHP_URL_HOST) ?: '');
-    if ($host === '' || !function_exists('openssl_x509_parse')) {
-        return ['error' => 'nicht abrufbar'];
+    if (!$names && !empty($info['subject']['CN'])) {
+        $names[] = strtolower((string)$info['subject']['CN']);
+    }
+    $host = strtolower($host);
+    foreach ($names as $n) {
+        if ($n === $host || (str_starts_with($n, '*.') && substr_count($n, '.') === substr_count($host, '.') && str_ends_with($host, substr($n, 1)))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Ist die Seite aktuell per HTTPS geschützt? Prüft, ob unter der Adresse ein gültiges Zertifikat ausgeliefert wird
+ * (nicht abgelaufen, passend zur Domain). Das Ablaufdatum interessiert nicht – die Verlängerung läuft automatisch.
+ * Ergebnis: ['ok' => true|false|null, 'text' => …]; Erfolg wird 6 Stunden zwischengespeichert.
+ */
+function ssl_status(): array
+{
+    $site = (string)cfg('site_url');
+    $host = (string)(parse_url($site, PHP_URL_HOST) ?: '');
+    if ($host === '' || !str_starts_with($site, 'https://')) {
+        return ['ok' => null, 'text' => 'Wird im Livebetrieb geprüft (Seite läuft hier ohne HTTPS).'];
+    }
+    $cache = AR_ROOT . '/data/ssl-cache.json';
+    if (is_file($cache) && filemtime($cache) > time() - 21600) {
+        return ['ok' => true, 'text' => 'Die Seite ist per HTTPS geschützt.'];
+    }
+    if (!function_exists('openssl_x509_parse')) {
+        return ['ok' => null, 'text' => 'Prüfung auf diesem Server nicht möglich.'];
     }
     $ctx = stream_context_create(['ssl' => ['capture_peer_cert' => true, 'verify_peer' => false, 'verify_peer_name' => false, 'SNI_enabled' => true, 'peer_name' => $host]]);
-    $fp = @stream_socket_client('ssl://' . $host . ':443', $en, $es, 4, STREAM_CLIENT_CONNECT, $ctx);
+    $fp = @stream_socket_client('ssl://' . $host . ':443', $en, $es, 5, STREAM_CLIENT_CONNECT, $ctx);
     if (!$fp) {
-        return ['error' => 'nicht abrufbar'];
+        return ['ok' => false, 'text' => 'Unter https://' . $host . ' ist keine gesicherte Verbindung möglich.'];
     }
     $cert = stream_context_get_params($fp)['options']['ssl']['peer_certificate'] ?? null;
     fclose($fp);
     $info = $cert ? @openssl_x509_parse($cert) : null;
-    $until = (int)($info['validTo_time_t'] ?? 0);
-    if ($until <= 0) {
-        return ['error' => 'nicht abrufbar'];
+    if (!$info) {
+        return ['ok' => false, 'text' => 'Das Zertifikat der Seite konnte nicht gelesen werden.'];
     }
-    @file_put_contents($cache, json_encode(['host' => $host, 'until' => $until]), LOCK_EX);
-    return ['host' => $host, 'until' => $until, 'days' => (int)floor(($until - time()) / 86400)];
+    if ((int)$info['validTo_time_t'] < time()) {
+        return ['ok' => false, 'text' => 'Das SSL-Zertifikat der Seite ist abgelaufen.'];
+    }
+    if ((int)$info['validFrom_time_t'] > time() + 300) {
+        return ['ok' => false, 'text' => 'Das SSL-Zertifikat der Seite ist noch nicht gültig.'];
+    }
+    if (!cert_matches_host($info, $host)) {
+        return ['ok' => false, 'text' => 'Das SSL-Zertifikat passt nicht zur Domain ' . $host . '.'];
+    }
+    @file_put_contents($cache, '{}', LOCK_EX);
+    return ['ok' => true, 'text' => 'Die Seite ist per HTTPS geschützt.'];
 }
 
 function rel_time(int $t): string

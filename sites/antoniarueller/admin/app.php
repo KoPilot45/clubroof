@@ -636,7 +636,7 @@ switch ($p) {
         break;
     case 'ssl_json':
         header('Content-Type: application/json');
-        echo json_encode(ssl_expiry());
+        echo json_encode(ssl_status());
         break;
     case 'media_json':
         header('Content-Type: application/json');

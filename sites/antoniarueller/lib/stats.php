@@ -5,7 +5,7 @@ declare(strict_types=1);
  * Reichweitenmessung ohne Cookies und ohne Speicherung personenbezogener Daten.
  *
  * Gespeichert wird nur Anonymes: Datum + Stunde, Seite, Gerätegruppe, Browser-/Systemfamilie, verweisende Domain,
- * Kampagnenname (?q=…) und das Merkmal „erster Aufruf dieses Geräts in dieser Stunde“ (= Besuch).
+ * das Merkmal „erster Aufruf dieses Geräts in dieser Stunde“ (= Besuch).
  * Für die Besuchserkennung liegt bis zum Ende der Stunde ein nicht umkehrbarer Kurzwert (mit zufälligem Schlüssel) in
  * data/stats/seen-JJJJMMTTHH.tmp; danach wird er samt Schlüssel gelöscht. Die IP-Adresse wird nie gespeichert.
  *
@@ -191,10 +191,8 @@ function stats_hit(string $page): void
         return;
     }
     [$dev, $br, $os] = ua_family($ua);
-    $q = strtolower((string)($_GET['q'] ?? ''));
-    $camp = preg_match('~^[a-z0-9][a-z0-9_-]{0,39}$~', $q) ? $q : '';
     $visit = stats_is_new_visit() ? '1' : '0';
-    stats_append(date('Y-m') . '.log', date('Y-m-d H') . "\t" . $page . "\t" . $dev . "\t" . stats_ref_domain((string)($_SERVER['HTTP_REFERER'] ?? '')) . "\t" . $visit . "\t" . $br . "\t" . $os . "\t" . $camp);
+    stats_append(date('Y-m') . '.log', date('Y-m-d H') . "\t" . $page . "\t" . $dev . "\t" . stats_ref_domain((string)($_SERVER['HTTP_REFERER'] ?? '')) . "\t" . $visit . "\t" . $br . "\t" . $os . "\t");
     if (random_int(1, 300) === 1) {
         stats_prune_old();
     }

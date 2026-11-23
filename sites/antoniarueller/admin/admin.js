@@ -317,31 +317,12 @@
   var sv = $('#ssl-val');
   if (sv) {
     fetch(sv.getAttribute('data-url'), { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (d) {
-      if (d.error || d.days === null || d.days === undefined) { sv.textContent = 'nicht abrufbar'; return; }
-      var dt = new Date(d.until * 1000);
-      sv.textContent = 'läuft am ' + dt.toLocaleDateString('de-DE') + ' ab (in ' + d.days + ' Tagen)';
+      sv.textContent = (d.ok === true ? '✓ ' : '') + (d.text || 'nicht abrufbar');
       var al = $('#alert-ssl');
-      if (al && d.days < 21) { $('.al-t', al).textContent = 'Das SSL-Zertifikat läuft in ' + d.days + ' Tagen ab (' + dt.toLocaleDateString('de-DE') + ').'; al.hidden = false; }
+      if (al && d.ok === false) { $('.al-t', al).textContent = d.text + ' Besucher sehen eventuell eine Sicherheitswarnung.'; al.hidden = false; }
     }).catch(function () { sv.textContent = 'nicht abrufbar'; });
   }
 
-  // ---- Statistik: Kampagnen-Link-Baukasten ----
-  var cb = $('.campaign');
-  if (cb) {
-    var cn = $('#cn', cb), ct = $('#ct', cb), cu = $('#cu', cb), cc = $('#ccopy', cb);
-    var build = function () {
-      var name = cn.value.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
-      var t = ct.value.split('|');
-      var base = cb.getAttribute(t[0] === 'en' ? 'data-en' : 'data-de');
-      cu.value = base + (name ? '?q=' + name : '') + (t[1] ? '#' + t[1] : '');
-    };
-    cn.addEventListener('input', build);
-    ct.addEventListener('change', build);
-    cc.addEventListener('click', function () {
-      cu.select();
-      if (navigator.clipboard) navigator.clipboard.writeText(cu.value).then(function () { cc.textContent = 'Kopiert'; setTimeout(function () { cc.textContent = 'Kopieren'; }, 1500); });
-    });
-  }
 
   // ---- Menü: Gruppen merken, Handy-Leiste ----
   var NAVKEY = 'ar_nav_open';

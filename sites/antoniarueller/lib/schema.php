@@ -383,7 +383,7 @@ function admin_nav(): array
             ['g', 'legal', 'Impressum & Datenschutz', 'Die rechtlichen Texte (Deutsch und Englisch).'],
         ]],
         'auswertung' => ['Auswertung', 'chart', 'Besuche und Klicks – ohne Cookies.', [
-            ['p', 'stats', 'Statistik', 'Besuche, Herkunft, Klicks und Kampagnen.'],
+            ['p', 'stats', 'Statistik', 'Besuche, Herkunft und Klicks.'],
         ]],
         'system' => ['System', 'gear', 'Dateien, Zugänge, Sicherung.', [
             ['p', 'media', 'Mediathek', 'Alle hochgeladenen Bilder und Dateien.'],

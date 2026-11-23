@@ -211,7 +211,7 @@ ok(!str_contains(req('GET', "$base/admin/")['body'], 'letzte Mailversand'), 'nac
 q("DELETE FROM ar_settings WHERE grp = '_mail'");
 settings_rows(true);
 
-echo "Statistik: Ereignisse, Kampagnen, Crawler, 404, Archiv\n";
+echo "Statistik: Ereignisse, Crawler, 404, Archiv\n";
 foreach (glob("$root/data/stats/*") ?: [] as $sf) {
     @unlink($sf); // frischer Zustand (Kurzwerte gelten nur je Stunde)
 }
@@ -263,11 +263,7 @@ $ios = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1
 $rawReq('GET', "$base/?q=linkedin-test", [], $ios);
 $ll = $lines('20??-??.log');
 $last = explode("\t", (string)end($ll));
-ok(($last[2] ?? '') === 'm' && ($last[4] ?? '') === '1' && ($last[5] ?? '') === 'safari' && ($last[6] ?? '') === 'ios' && ($last[7] ?? '') === 'linkedin-test', 'Gerät, Browser, System und Kampagne werden erfasst');
-$rawReq('GET', "$base/?q=" . rawurlencode('<script>x</script>'), [], $ios . ' x2');
-$ll = $lines('20??-??.log');
-$last = explode("\t", (string)end($ll));
-ok(($last[7] ?? 'x') === '', 'ungültiger Kampagnenname wird verworfen');
+ok(($last[2] ?? '') === 'm' && ($last[4] ?? '') === '1' && ($last[5] ?? '') === 'safari' && ($last[6] ?? '') === 'ios' && ($last[7] ?? 'x') === '', 'Gerät, Browser und System werden erfasst, Kampagnenname nicht');
 [$d1, $b1, $o1] = ua_family('Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit Safari');
 [$d2, $b2, $o2] = ua_family('Mozilla/5.0 (Linux; Android 14; Pixel 8) Chrome/120 Mobile Safari/537');
 [$d3, $b3, $o3] = ua_family('Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120 Safari/537 Edg/120');
@@ -281,8 +277,8 @@ stats_log_404('/.env', '');
 ok(count($lines('404-*.dat')) === $e0 + 1 && str_contains(implode("\n", $lines('404-*.dat')), "/alter-link-123\texample.org"), '404-Adressen werden gezählt, Angriffsversuche nicht');
 
 $sp = req('GET', "$base/admin/?p=stats")['body'];
-ok(str_contains($sp, 'Besuche im Verlauf') && str_contains($sp, '<svg') && str_contains($sp, 'Wann kommen Besucher') && str_contains($sp, 'Kampagnen-Links') && str_contains($sp, 'Crawler') && str_contains($sp, 'Nicht gefundene Adressen'), 'Statistik-Seite mit Diagramm, Heatmap, Kampagnen, Crawler, 404');
-ok(str_contains($sp, 'linkedin-test') && str_contains($sp, '/alter-link-123') && str_contains($sp, 'OpenAI') && str_contains($sp, 'Was wird angeklickt'), 'Auswertung zeigt Kampagne, 404, Crawler und Klicks');
+ok(str_contains($sp, 'Besuche im Verlauf') && str_contains($sp, '<svg') && str_contains($sp, 'Wann kommen Besucher') && !str_contains($sp, 'Kampagnen-Links') && str_contains($sp, 'Crawler') && str_contains($sp, 'Nicht gefundene Adressen'), 'Statistik-Seite mit Diagramm, Heatmap, Crawler, 404 (ohne Kampagnen)');
+ok(str_contains($sp, '/alter-link-123') && str_contains($sp, 'OpenAI') && str_contains($sp, 'Was wird angeklickt'), 'Auswertung zeigt 404, Crawler und Klicks');
 foreach ([7, 90, 365] as $rg) {
     ok(req('GET', "$base/admin/?p=stats&r=$rg")['code'] === 200, "Zeitraum $rg Tage");
 }
@@ -440,6 +436,13 @@ ok(($tr['n'] ?? 0) === 1 && (setting($gg, true)[$gf . '_en'] ?? '') === 'Gruppen
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_save', 't' => [$gt['key'] => 'Gruppen-EN 2']]);
 ok($r['code'] === 302 && str_contains($r['head'], 'p=translate'), 'Speichern ohne JavaScript leitet zurück');
 ok(req('POST', "$base/admin/", ['action' => 'translate_save', 't' => [$tk => 'x']])['code'] === 403, 'ohne CSRF-Token abgelehnt');
+
+echo "HTTPS-Prüfung\n";
+require_once $root . '/lib/dashboard.php';
+ok(cert_matches_host(['extensions' => ['subjectAltName' => 'DNS:antoniarueller.de, DNS:www.antoniarueller.de']], 'antoniarueller.de'), 'Zertifikat passt zur Domain');
+ok(cert_matches_host(['extensions' => ['subjectAltName' => 'DNS:*.example.org']], 'www.example.org') && !cert_matches_host(['extensions' => ['subjectAltName' => 'DNS:*.example.org']], 'a.b.example.org') && !cert_matches_host(['extensions' => ['subjectAltName' => 'DNS:example.org']], 'evil.org'), 'Wildcard und Fremddomain');
+$sj = json_decode(req('GET', "$base/admin/?p=ssl_json")['body'], true);
+ok(array_key_exists('ok', $sj) && is_string($sj['text'] ?? null) && !array_key_exists('until', $sj), 'HTTPS-Status ohne Ablaufdatum');
 
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
