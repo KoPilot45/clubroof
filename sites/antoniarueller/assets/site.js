@@ -271,8 +271,11 @@
     $$('.ar-root main>section').forEach(function (sec) {
       if (sec.classList.contains('ar-hero')) return;
       Array.prototype.slice.call(sec.children).forEach(function (ch) {
-        if (!ch.getClientRects().length) return;
-        if (ch.getBoundingClientRect().top < vh * 0.92) return;
+        if (!ch.getClientRects().length || ch.tagName === 'FOOTER') return;
+        var rt = ch.getBoundingClientRect().top;
+        if (rt < vh * 0.92) return;
+        // Was auch am Seitenende nicht weit genug ins Bild käme, wird nie versteckt
+        if (rt + window.scrollY - Math.max(0, document.documentElement.scrollHeight - vh) > vh * 0.7) return;
         var isCustom = custom.some(function (c) { return ch.classList.contains(c); });
         ch.classList.add(isCustom ? 'cx-pre' : 'rv-pre');
         if (isCustom) {
@@ -293,6 +296,12 @@
         });
       }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
       seen.forEach(function (el) { rio.observe(el); });
+      // Sicherheitsnetz: am Seitenende wird alles noch Versteckte eingeblendet
+      var endCheck = function () {
+        if (window.scrollY < document.documentElement.scrollHeight - window.innerHeight - 6) return;
+        seen.forEach(function (el) { if (!el.classList.contains('in') && (el.classList.contains('rv-pre') || el.classList.contains('cx-pre'))) { el.classList.add('in'); rio.unobserve(el); } });
+      };
+      window.addEventListener('scroll', endCheck, { passive: true });
     }
   }
 
