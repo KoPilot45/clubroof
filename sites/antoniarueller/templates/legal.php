@@ -13,10 +13,12 @@
 <body>
 <div class="ar-root">
 <header class="top-wrap" id="topbar"><div class="top"><div class="top-l"><?= rec_dot() ?><span><?= e($site['header_label']) ?></span></div><a href="<?= e(lang_url(current_lang(), '')) ?>" class="back">← <?= tr('Zur Startseite') ?></a></div></header>
+<main id="inhalt">
 <section style="padding-top:48px;padding-bottom:96px">
 <h1 class="big-h"><span class="bh1"><?= e($legalTitle) ?></span></h1>
 <div class="legal"><?= $legalBody ?></div>
 </section>
+</main>
 </div>
 <script src="<?= AR_BASE ?>/assets/site.js?v=<?= @filemtime(AR_ROOT . '/assets/site.js') ?>" defer></script>
 </body>

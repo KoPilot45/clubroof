@@ -67,7 +67,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 </header>
 
-<section class="ar-hero" id="inhalt" aria-label="<?= tr('Intro') ?>">
+<main id="inhalt">
+<section class="ar-hero" aria-label="<?= tr('Intro') ?>">
 <div class="sec-head" style="margin-bottom:0"><span class="sec-l"><?= rec_dot() ?><span class="rec-t">REC</span><span>00 — <?= tr('Intro') ?></span></span>
 <span class="muted"><?= e($hero['meta']) ?></span><span class="muted">TC 00:00:00:01</span></div>
 <h1 aria-label="<?= e(trim($hero['first'] . ' ' . $hero['last'])) ?>">
@@ -188,10 +189,10 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <button type="button" class="circ circ-acc" id="nextClip" aria-label="<?= tr('Nächster Clip') ?>"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l9 6-9 6z"></path><path d="M18 6v12"></path></svg></button>
 </div>
 <div class="mob-tl">
-<div class="mob-tl-l"><div style="height:20px;border-bottom:1px solid var(--line)"></div><?php foreach ($tracks as $t): ?><div class="mob-lane-i"><?= icon($t['icon'], 15) ?></div><?php endforeach; ?></div>
+<div class="mob-tl-l"><div style="height:20px;border-bottom:1px solid var(--line)"></div><?php foreach ($tracks as $t): ?><div class="mob-lane-i" style="height:<?= 30 * ($timeline['rows'][$t['code']] ?? 1) + 8 ?>px"><?= icon($t['icon'], 15) ?></div><?php endforeach; ?></div>
 <div class="mob-tl-r">
 <div class="ed-years mob-years"><?php foreach ($timeline['cols'] as $c): ?><span class="<?= $c['year'] ? 'yr' : '' ?>" style="flex:<?= round($c['w'], 3) ?> 1 0"><?= $c['year'] ? e(substr($c['label'], 2)) : '' ?></span><?php endforeach; ?></div>
-<?php foreach ($tracks as $t): ?><div class="mob-lane"><?php foreach ($timeline['byTrack'][$t['code']] ?? [] as $b): $c = $clipsById[$b['id']]; ?><button type="button" class="ar-tlclip mini" data-id="<?= $c['_id'] ?>" aria-pressed="<?= $c['_id'] === $first['_id'] ? 'true' : 'false' ?>" aria-label="Clip <?= e($c['_no']) ?>: <?= e($c['short'] ?: $c['title']) ?>" style="left:<?= $b['left'] ?>%;width:<?= $b['w'] ?>%;background:<?= e($t['bg']) ?>"></button><?php endforeach; ?></div><?php endforeach; ?>
+<?php foreach ($tracks as $t): ?><div class="mob-lane" style="height:<?= 30 * ($timeline['rows'][$t['code']] ?? 1) + 8 ?>px"><?php foreach ($timeline['byTrack'][$t['code']] ?? [] as $b): $c = $clipsById[$b['id']]; ?><button type="button" class="ar-tlclip mini" data-id="<?= $c['_id'] ?>" aria-pressed="<?= $c['_id'] === $first['_id'] ? 'true' : 'false' ?>" aria-label="Clip <?= e($c['_no']) ?>: <?= e($c['short'] ?: $c['title']) ?>" style="left:<?= $b['left'] ?>%;width:<?= $b['w'] ?>%;top:<?= 4 + 30 * $b['row'] ?>px;bottom:auto;height:26px;background:<?= e($t['bg']) ?>"></button><?php endforeach; ?></div><?php endforeach; ?>
 <span class="playhead mob-ph" id="playheadm" aria-hidden="true" style="left:<?= round($timeline['pos'][$first['_id']] ?? 0, 2) ?>%"><span></span></span>
 </div>
 </div>
@@ -319,6 +320,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <span style="display:flex;gap:24px"><a href="<?= e(legal_url('impressum')) ?>"><?= tr('Impressum') ?></a><a href="<?= e(legal_url('datenschutz')) ?>"><?= tr('Datenschutz') ?></a></span>
 </footer>
 </section>
+
+</main>
 
 <div id="menu" class="menu" role="dialog" aria-modal="true" aria-label="<?= tr('Menü') ?>" hidden>
 <div class="menu-top"><span style="display:flex;align-items:center;gap:10px"><?= rec_dot() ?>AR / Menü</span>

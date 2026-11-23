@@ -184,7 +184,25 @@ function build_timeline(array $clips, array $tracks, array $tl): array
         $pos[$c['_id']] = $p;
         $byTrack[$c['tl_track']][] = ['id' => $c['_id'], 'left' => round($p, 2), 'w' => round($w, 2)];
     }
-    return ['cols' => $cols, 'byTrack' => $byTrack, 'pos' => $pos, 'start' => $t0, 'end' => $t1];
+    // Handy-Zeitleiste: Balken, die sich überlappen würden, in eigene Zeilen legen (jedes Ziel mind. 24 px)
+    $rows = [];
+    foreach ($byTrack as $code => &$list) {
+        $order = array_keys($list);
+        usort($order, fn($a, $b) => $list[$a]['left'] <=> $list[$b]['left']);
+        $ends = [];
+        foreach ($order as $i) {
+            $need = max($list[$i]['w'], 9.0);
+            $row = 0;
+            while (isset($ends[$row]) && $ends[$row] > $list[$i]['left'] + 0.3) {
+                $row++;
+            }
+            $ends[$row] = $list[$i]['left'] + $need;
+            $list[$i]['row'] = $row;
+        }
+        $rows[$code] = max(1, count($ends));
+    }
+    unset($list);
+    return ['cols' => $cols, 'byTrack' => $byTrack, 'pos' => $pos, 'start' => $t0, 'end' => $t1, 'rows' => $rows];
 }
 
 /** Lebenslauf nach Beginn-Jahr gruppieren. */

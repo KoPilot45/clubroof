@@ -14,7 +14,7 @@ a:hover{color:var(--accent)}
 .skip{position:absolute;left:-9999px;top:8px;z-index:100;background:#fff;color:var(--ink);padding:10px 16px;border-radius:8px;border:2px solid var(--accent)}
 .skip:focus{left:16px}
 .ar-root{background:var(--paper);color:var(--ink);font-family:'Inter Tight',system-ui,sans-serif;min-height:100vh;overflow-x:clip}
-.ar-root>section{max-width:1440px;margin:0 auto;padding-left:48px;padding-right:48px;position:relative}
+.ar-root main>section{max-width:1440px;margin:0 auto;padding-left:48px;padding-right:48px;position:relative}
 .muted{color:var(--mute)}
 
 @keyframes ar-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -166,7 +166,7 @@ a:hover{color:var(--accent)}
 .mob-years{height:20px}
 .mob-years span{padding:4px 0 0 3px;font-size:9px;color:var(--ink);height:20px}
 .mob-lane{position:relative;height:38px;border-bottom:1px solid var(--line)}
-.ar-tlclip.mini{top:5px;bottom:5px;min-width:12px;outline:1px solid var(--sand2);padding:0}
+.ar-tlclip.mini{top:5px;bottom:5px;min-width:24px;outline:1px solid var(--sand2);padding:0}
 .mob-ph span{top:3px;left:-6px;width:14px;height:14px}
 
 .list-h{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin:56px 0 12px}
@@ -295,7 +295,7 @@ a:hover{color:var(--accent)}
   html{scroll-padding-top:76px}
   .top{padding-top:10px;padding-bottom:10px}
   .ar-burger{display:flex!important}
-  .ar-root>section,.top{padding-left:20px!important;padding-right:20px!important}
+  .ar-root main>section,.top{padding-left:20px!important;padding-right:20px!important}
   .ar-ed-desk{display:none!important}
   .ar-ed-mob{display:block}
   .ar-feat-h{font-size:44px}
@@ -306,7 +306,7 @@ a:hover{color:var(--accent)}
   .ar-redact{font-size:22px}
   .ar-schreib{font-size:84px}
   .ar-onair{right:-6px;bottom:-24px;width:96px;height:96px}
-  .ar-root>section:not(.ar-hero){padding-top:88px!important}
+  .ar-root main>section:not(.ar-hero){padding-top:88px!important}
   .ar-hero{min-height:0}
   .ar-hero-media{position:relative;right:auto;height:520px;aspect-ratio:auto;width:100%;margin-top:-24px}
   .ar-hero-circle{left:50%;width:300px;margin-left:-150px;top:30px}
