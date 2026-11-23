@@ -4,11 +4,6 @@ DirectoryIndex index.php
 
 <IfModule mod_rewrite.c>
 RewriteEngine On
-# HTTPS erzwingen
-RewriteCond %{HTTPS} !=on
-RewriteCond %{HTTP:X-Forwarded-Proto} !https
-RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)
-RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # Rechtliche Seiten
 RewriteRule ^impressum/?$ index.php?seite=impressum [L,QSA]
 RewriteRule ^datenschutz/?$ index.php?seite=datenschutz [L,QSA]
