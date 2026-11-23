@@ -398,3 +398,10 @@ a:hover{color:var(--accent)}
 .playhead{transition:none}
 .ar-ed-desk.ready .playhead{transition:left .35s ease}
 .mob-ph{transition:left .35s ease}
+
+/* Desktop: Pfeilnavigation im Bereich des aktiven Beitrags */
+.ed-sel-r{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.ed-nav{display:flex;align-items:center;gap:12px}
+.ed-nav .circ{width:44px;height:44px}
+.ed-nav .circ:hover{background:var(--ink);color:var(--paper)}
+.ed-nav .circ:focus-visible{outline:2px solid var(--accent);outline-offset:3px}

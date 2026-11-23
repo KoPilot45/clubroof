@@ -170,7 +170,14 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <span class="sel-meta"><?= tr('Redaktion:') ?> <span data-f="outlet"><?= e($first['outlet']) ?></span> · <span data-f="format"><?= e($first['format']) ?></span> · <span data-f="date"><?= e($first['_date']) ?></span> · <?= tr('Rolle:') ?> <span data-f="role"><?= e($first['role']) ?></span></span>
 </div>
 </div>
+<div class="ed-sel-r">
 <a class="btn-solid" data-ev="clip" data-f-href href="<?= e(safe_url($first['url']) ?: '#arbeiten') ?>" <?= $first['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><span data-f="link_text"><?= e($first['link_text']) ?></span> <span aria-hidden="true">↗</span></a>
+<div class="ed-nav" role="group" aria-label="<?= e(tr('Clip wechseln')) ?>">
+<button type="button" class="circ ed-prev" aria-label="<?= tr('Vorheriger Clip') ?>"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 9 12l9 6z"></path><path d="M6 6v12"></path></svg></button>
+<span class="mob-count"><span data-f="no" style="font-size:14px;font-weight:600"><?= e($first['_no']) ?></span><span class="muted" style="font-size:10px"> / <?= count($clips) ?></span></span>
+<button type="button" class="circ circ-acc ed-next" aria-label="<?= tr('Nächster Clip') ?>"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l9 6-9 6z"></path><path d="M18 6v12"></path></svg></button>
+</div>
+</div>
 </div>
 </div>
 

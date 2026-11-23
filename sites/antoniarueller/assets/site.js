@@ -56,7 +56,7 @@
   $$('.ar-tlclip').forEach(function (b) {
     b.addEventListener('click', function () { select(b.getAttribute('data-id')); });
   });
-  var prev = $('#prevClip'), next = $('#nextClip');
+  var prevs = $$('#prevClip, .ed-prev'), nexts = $$('#nextClip, .ed-next');
   function seq() {
     if (!soloTrack) return ids;
     return ids.filter(function (id) { return $('.ed-lane[data-track="' + soloTrack + '"] .ar-tlclip[data-id="' + id + '"]'); });
@@ -67,8 +67,16 @@
     var i = s.indexOf(current);
     select(s[i === -1 ? 0 : (i + d + s.length) % s.length]);
   }
-  if (prev) prev.addEventListener('click', function () { step(-1); });
-  if (next) next.addEventListener('click', function () { step(1); });
+  prevs.forEach(function (b) { b.addEventListener('click', function () { step(-1); }); });
+  nexts.forEach(function (b) { b.addEventListener('click', function () { step(1); }); });
+  // Pfeiltasten, wenn der Fokus im Schnittplatz liegt
+  if (desk) desk.addEventListener('keydown', function (e) {
+    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.altKey || e.ctrlKey || e.metaKey) return;
+    e.preventDefault();
+    step(e.key === 'ArrowRight' ? 1 : -1);
+    var cur = $('.ar-tlclip[data-id="' + current + '"]', desk);
+    if (cur && document.activeElement && document.activeElement.classList.contains('ar-tlclip')) cur.focus({ preventScroll: true });
+  });
 
   // Spuren: Klick auf den Spurkopf zeigt nur diese Spur („Solo“)
   $$('.ed-tl').forEach(function (b) {
