@@ -74,7 +74,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <span class="muted"><?= e($hero['meta']) ?></span><span class="muted">TC 00:00:00:01</span></div>
 <h1 aria-label="<?= e(trim($hero['first'] . ' ' . $hero['last'])) ?>">
 <span class="h1-first" aria-hidden="true"><?= e($hero['first']) ?></span>
-<span class="h1-last" aria-hidden="true"><?= str_replace('ü', '<span class="uwrap">u<span class="udot d1"></span><span class="udot d2"></span></span>', e($hero['last'])) ?></span>
+<span class="h1-last" aria-hidden="true"><?= e($hero['last']) ?></span>
 </h1>
 <div class="hero-copy">
 <?php if ($hero['lead'] !== ''): ?><p class="hero-lead"><?= e($hero['lead']) ?></p><?php endif; ?>

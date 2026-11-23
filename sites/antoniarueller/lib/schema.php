@@ -226,7 +226,7 @@ function schema(): array
         'label' => 'Startbereich (Hero)',
         'fields' => [
             f('text', 'first', 'Vorname', ['max' => 40, 'default' => 'Antonia']),
-            f('text', 'last', 'Nachname', ['max' => 40, 'default' => 'Rüller', 'hint' => 'Ein „ü“ wird als „u“ mit zwei roten Punkten dargestellt.']),
+            f('text', 'last', 'Nachname', ['max' => 40, 'default' => 'Rüller']),
             f('textarea', 'lead', 'Einleitung', ['max' => 300]),
             f('text', 'meta', 'Zeile oben (Beruf · Ort)', ['max' => 80]),
             f('text', 'now_label', 'Überschrift „Aktuell“', ['max' => 30, 'default' => 'Aktuell']),

@@ -46,9 +46,6 @@ a:hover{color:var(--accent)}
 .ar-root h1{margin:24px 0 0;font-weight:400;line-height:.8;position:relative}
 .h1-first{display:block;position:relative;z-index:0;font-family:var(--anton);font-size:clamp(96px,19vw,280px);letter-spacing:-.005em;text-transform:uppercase}
 .h1-last{display:block;position:relative;z-index:2;font-family:var(--serif);font-style:italic;font-size:clamp(120px,23vw,340px);letter-spacing:-.035em;margin-top:-.18em;padding-left:18%;color:var(--teal)}
-.uwrap{position:relative;display:inline-block}
-.udot{position:absolute;top:.02em;width:.13em;height:.13em;border-radius:50%;background:var(--rec)}
-.d1{left:.17em}.d2{left:.40em}
 .hero-copy{position:relative;z-index:2;display:flex;flex-direction:column;gap:28px;max-width:520px;margin-top:40px;padding-bottom:56px}
 .hero-lead{margin:0;font-family:var(--serif);font-size:34px;line-height:1.15}
 .hero-now{display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:13px;text-transform:uppercase;letter-spacing:.05em}
@@ -519,7 +516,7 @@ a:not([class]){text-decoration-thickness:1px;text-underline-offset:.2em;transiti
 /* Hero: ruhiger Namensschriftzug in Instrument Serif (zweizeilig), Foto rechts */
 .ar-hero h1{margin:48px 0 0;line-height:.9}
 .ar-hero .h1-first{font-family:var(--serif);font-size:clamp(72px,10.4vw,148px);letter-spacing:-.025em;text-transform:none;line-height:.9}
-.ar-hero .h1-last{font-size:clamp(72px,10.4vw,148px);letter-spacing:-.025em;margin-top:0;padding-left:.55em;line-height:.9}
+.ar-hero .h1-last{color:var(--ink);font-size:clamp(72px,10.4vw,148px);letter-spacing:-.025em;margin-top:0;padding-left:.55em;line-height:.9}
 .ar-hero .hero-lead{font-size:clamp(24px,2.3vw,32px);line-height:1.18;max-width:30ch}
 @media (min-width:861px){
   .ar-hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);grid-template-rows:auto auto 1fr;column-gap:24px;min-height:660px;padding-bottom:0}
