@@ -444,7 +444,7 @@ ok(cert_matches_host(['extensions' => ['subjectAltName' => 'DNS:*.example.org']]
 $sj = json_decode(req('GET', "$base/admin/?p=ssl_json")['body'], true);
 ok(array_key_exists('ok', $sj) && is_string($sj['text'] ?? null) && !array_key_exists('until', $sj), 'HTTPS-Status ohne Ablaufdatum');
 
-echo "Bilder: Einstellungen und Komprimierung\n";
+echo "Bilder: fester Standard und Komprimierung\n";
 require_once $root . '/lib/media.php';
 $big = tempnam(sys_get_temp_dir(), 'big') . '.png';
 $gd = imagecreatetruecolor(3000, 2000);
@@ -452,38 +452,25 @@ for ($i = 0; $i < 60; $i++) {
     imagefilledrectangle($gd, random_int(0, 2900), random_int(0, 1900), random_int(0, 3000), random_int(0, 2000), imagecolorallocate($gd, random_int(0, 255), random_int(0, 255), random_int(0, 255)));
 }
 imagepng($gd, $big);
-$set = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'site', 'accent' => '#0E5C62', 'rec' => '#C42F24', 'header_label' => 'AR', 'mode' => 'publish', 'img_webp' => '1', 'img_quality' => '70', 'img_max' => '1600'];
-req('POST', "$base/admin/", $set);
 $before = array_column(media_list(), 'name');
 req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'media_upload', 'files[0]' => new CURLFile($big, 'image/png', 'big.png')], true);
 $new = array_values(array_diff(array_column(media_list(), 'name'), $before));
 $sz = $new ? getimagesize("$root/uploads/{$new[0]}") : [0, 0];
-ok($new && str_ends_with($new[0], '.webp') && max($sz[0], $sz[1]) === 1600, 'Upload: WebP, auf 1600 px verkleinert');
-$small = $new ? filesize("$root/uploads/{$new[0]}") : 0;
-req('POST', "$base/admin/", ['img_quality' => '92', 'img_max' => '3200'] + $set);
-$before = array_column(media_list(), 'name');
-req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'media_upload', 'files[0]' => new CURLFile($big, 'image/png', 'big.png')], true);
-$new2 = array_values(array_diff(array_column(media_list(), 'name'), $before));
-ok($new2 && filesize("$root/uploads/{$new2[0]}") > $small && max(...array_slice(getimagesize("$root/uploads/{$new2[0]}"), 0, 2)) === 3000, 'höhere Qualität und Größe wirken auf neue Uploads');
-$set2 = ['img_webp' => '0', 'img_quality' => '86', 'img_max' => '2400'] + $set;
-unset($set2['img_webp']);
-req('POST', "$base/admin/", $set2);
-$before = array_column(media_list(), 'name');
-req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'media_upload', 'files[0]' => new CURLFile($big, 'image/png', 'big.png')], true);
-$new3 = array_values(array_diff(array_column(media_list(), 'name'), $before));
-ok($new3 && str_ends_with($new3[0], '.png'), 'WebP ausgeschaltet: PNG bleibt PNG');
-req('POST', "$base/admin/", ['img_webp' => '1', 'img_quality' => '70', 'img_max' => '1600'] + $set);
-$o = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'media_optimize']);
-ok($o['code'] === 302, 'Vorhandene Bilder neu komprimieren');
-clearstatcache();
-ok(max(...array_slice(getimagesize("$root/uploads/{$new2[0]}"), 0, 2)) === 1600 && filesize("$root/uploads/{$new2[0]}") < 600000, 'große Bilder werden verkleinert');
+ok($new && str_ends_with($new[0], '.webp') && max($sz[0], $sz[1]) === 1600, 'Upload: immer WebP, auf 1600 px verkleinert');
+ok(!str_contains(req('GET', "$base/admin/?p=group&g=site")['body'], 'name="img_quality"'), 'keine Bild-Einstellungen im Backend');
 ok(str_contains(req('GET', "$base/admin/?p=media")['body'], 'Vorhandene Bilder neu komprimieren'), 'Knopf in der Mediathek');
-foreach ([$new[0] ?? '', $new2[0] ?? '', $new3[0] ?? ''] as $nm) {
+// Neukomprimieren: ein großes, schwach komprimiertes Bild wird kleiner
+$fat = 'zz' . bin2hex(random_bytes(4)) . '.webp';
+imagewebp($gd, "$root/uploads/$fat", 95);
+$o = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'media_optimize']);
+clearstatcache();
+$fs = getimagesize("$root/uploads/$fat");
+ok($o['code'] === 302 && max($fs[0], $fs[1]) === 1600, 'Vorhandene Bilder neu komprimieren und verkleinern');
+foreach ([$new[0] ?? '', $fat] as $nm) {
     if ($nm !== '') {
         @unlink("$root/uploads/$nm");
     }
 }
-req('POST', "$base/admin/", ['img_webp' => '1', 'img_quality' => '86', 'img_max' => '2400'] + $set);
 @unlink($big);
 
 echo "SEO: noindex\n";

@@ -549,15 +549,13 @@ function check_upload(array $file): void
     }
 }
 
-/** Einstellungen für hochgeladene Bilder (Allgemein & Design → Bilder). */
+/** Fester Standard für hochgeladene Bilder: möglichst klein bei guter Optik (WebP, Qualität 72, längste Seite 1600 px). */
+const IMG_QUALITY = 72;
+const IMG_MAX_EDGE = 1600;
+
 function image_settings(): array
 {
-    $s = setting('site', true);
-    return [
-        'webp' => !array_key_exists('img_webp', $s) || !empty($s['img_webp']),
-        'quality' => max(50, min(95, (int)($s['img_quality'] ?? 86) ?: 86)),
-        'max' => max(800, min(4000, (int)($s['img_max'] ?? 2400) ?: 2400)),
-    ];
+    return ['webp' => true, 'quality' => IMG_QUALITY, 'max' => IMG_MAX_EDGE];
 }
 
 function store_image(array $file): string
