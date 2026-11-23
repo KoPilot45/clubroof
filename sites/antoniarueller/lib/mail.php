@@ -7,7 +7,7 @@ function mail_clean(string $s): string
 }
 
 /** Verschickt eine Text-Mail. Rückgabe true bei Erfolg. */
-function send_mail(string $to, string $subject, string $body): bool
+function send_mail(string $to, string $subject, string $body, array $attachments = []): bool
 {
     $to = mail_clean($to);
     $subject = mail_clean($subject);
@@ -21,18 +21,31 @@ function send_mail(string $to, string $subject, string $body): bool
     if ($driver === 'log') {
         $dir = AR_ROOT . '/data';
         @mkdir($dir, 0750, true);
-        return file_put_contents($dir . '/mail.log', "--- " . date('c') . " an $to\nBetreff: $subject\n$body\n\n", FILE_APPEND | LOCK_EX) !== false;
+        $att = $attachments ? 'Anhang: ' . implode(', ', array_column($attachments, 'name')) . "\n" : '';
+        return file_put_contents($dir . '/mail.log', "--- " . date('c') . " an $to\nBetreff: $subject\n$att$body\n\n", FILE_APPEND | LOCK_EX) !== false;
     }
 
     $headers = [
         'From: ' . mb_encode_mimeheader($fromName, 'UTF-8') . " <$from>",
         'MIME-Version: 1.0',
-        'Content-Type: text/plain; charset=UTF-8',
-        'Content-Transfer-Encoding: base64',
         'X-Auto-Response-Suppress: All',
     ];
     $encSubject = mb_encode_mimeheader($subject, 'UTF-8');
-    $encBody = chunk_split(base64_encode(str_replace("\n", "\r\n", str_replace("\r\n", "\n", $body))));
+    $text = chunk_split(base64_encode(str_replace("\n", "\r\n", str_replace("\r\n", "\n", $body))));
+    if ($attachments) {
+        $bd = 'ar_' . bin2hex(random_bytes(8));
+        $headers[] = 'Content-Type: multipart/mixed; boundary="' . $bd . '"';
+        $encBody = "--$bd\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . $text;
+        foreach ($attachments as $a) {
+            $nm = preg_replace('~[^A-Za-z0-9._-]~', '_', (string)$a['name']);
+            $encBody .= "--$bd\r\nContent-Type: " . preg_replace('~[^a-z0-9/+.-]~i', '', (string)$a['type']) . "; name=\"$nm\"\r\nContent-Disposition: attachment; filename=\"$nm\"\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode((string)$a['data']));
+        }
+        $encBody .= "--$bd--\r\n";
+    } else {
+        $headers[] = 'Content-Type: text/plain; charset=UTF-8';
+        $headers[] = 'Content-Transfer-Encoding: base64';
+        $encBody = $text;
+    }
 
     if ($driver === 'smtp') {
         return smtp_send((array)cfg('mail.smtp'), $from, $to, $encSubject, $headers, $encBody, $fromName);

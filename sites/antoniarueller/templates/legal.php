@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="<?= e(current_lang()) ?>">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="ar-root">
-<header class="top-wrap" id="topbar"><div class="top"><div class="top-l"><?= rec_dot() ?><span><?= e($site['header_label']) ?></span></div><a href="<?= AR_BASE ?>/" class="back">← Zur Startseite</a></div></header>
+<header class="top-wrap" id="topbar"><div class="top"><div class="top-l"><?= rec_dot() ?><span><?= e($site['header_label']) ?></span></div><a href="<?= e(lang_url(current_lang(), '')) ?>" class="back">← <?= tr('Zur Startseite') ?></a></div></header>
 <section style="padding-top:48px;padding-bottom:96px">
 <h1 class="big-h"><span class="bh1"><?= e($legalTitle) ?></span></h1>
 <div class="legal"><?= $legalBody ?></div>

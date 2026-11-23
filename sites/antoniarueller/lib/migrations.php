@@ -16,6 +16,30 @@ function run_migrations(PDO $pdo): void
     $applied = $row ? (json_decode((string)$row, true) ?: []) : [];
     $before = count($applied);
 
+    // Entwürfe, Versionen, Passwort, Geräteliste
+    if (!in_array('schema_v2', $applied, true)) {
+        $my = db_is_mysql();
+        $txt = $my ? 'MEDIUMTEXT' : 'TEXT';
+        $id = $my ? 'INT AUTO_INCREMENT PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+        $tail = $my ? ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4' : '';
+        foreach ([
+            "ALTER TABLE ar_items ADD COLUMN draft $txt NULL",
+            "ALTER TABLE ar_items ADD COLUMN live INT NOT NULL DEFAULT 1",
+            "ALTER TABLE ar_settings ADD COLUMN draft $txt NULL",
+            "ALTER TABLE ar_users ADD COLUMN pw_hash VARCHAR(255) NULL",
+            "ALTER TABLE ar_sessions ADD COLUMN ua_text VARCHAR(190) NOT NULL DEFAULT ''",
+            "CREATE TABLE IF NOT EXISTS ar_versions (id $id, kind VARCHAR(10) NOT NULL, ref VARCHAR(60) NOT NULL, data $txt NOT NULL, saved_by VARCHAR(190) NOT NULL DEFAULT '', saved_at INT NOT NULL)$tail",
+            "CREATE INDEX ar_versions_r ON ar_versions (kind, ref)",
+        ] as $sql) {
+            try {
+                $pdo->exec($sql);
+            } catch (Throwable $e) {
+                // Spalte/Tabelle existiert bereits
+            }
+        }
+        $applied[] = 'schema_v2';
+    }
+
     // Titel/Beschreibung/Vorschaubild wandern aus „Allgemein“ in den neuen Bereich „SEO“
     if (!in_array('seo_v1', $applied, true)) {
         $has = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = 'seo'")->fetchColumn();
@@ -30,7 +54,7 @@ function run_migrations(PDO $pdo): void
     // Neue Vorlagen für Impressum/Datenschutz, solange die alten Platzhalter unverändert sind
     if (!in_array('legal_v1', $applied, true)) {
         require_once __DIR__ . '/legal_defaults.php';
-        $legal = setting('legal');
+        $legal = setting('legal', true);
         $new = legal_defaults();
         $old = legal_old_placeholders();
         $changed = false;
@@ -80,6 +104,87 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'social_v1';
     }
 
+    // Englische Startübersetzungen
+    if (!in_array('en_v1', $applied, true)) {
+        require_once __DIR__ . '/en_seed.php';
+        $dict = en_dictionary();
+        $s = schema();
+        foreach (q('SELECT id, coll, data FROM ar_items')->fetchAll() as $r) {
+            $def = $s['collections'][$r['coll']] ?? null;
+            if (!$def) {
+                continue;
+            }
+            $d = json_arr($r['data']) ?? [];
+            $eff = array_merge(field_defaults($def['fields']), $d);
+            $ch = false;
+            foreach ($def['fields'] as $f) {
+                if ($f['type'] === 'section' || !field_translatable($f)) {
+                    continue;
+                }
+                $de = (string)($eff[$f['key']] ?? '');
+                if ($de !== '' && trim((string)($d[$f['key'] . '_en'] ?? '')) === '' && isset($dict[$de])) {
+                    $d[$f['key'] . '_en'] = $dict[$de];
+                    $ch = true;
+                }
+            }
+            if ($ch) {
+                q('UPDATE ar_items SET data = ? WHERE id = ?', [enc($d), (int)$r['id']]);
+            }
+        }
+        foreach ($s['groups'] as $g => $def) {
+            $row = q('SELECT data FROM ar_settings WHERE grp = ?', [$g])->fetch();
+            $d = $row ? (json_arr($row['data']) ?? []) : [];
+            $eff = array_merge(field_defaults($def['fields']), $d);
+            $ch = false;
+            foreach ($def['fields'] as $f) {
+                if ($f['type'] === 'section' || !field_translatable($f)) {
+                    continue;
+                }
+                $de = (string)($eff[$f['key']] ?? '');
+                if ($de !== '' && trim((string)($d[$f['key'] . '_en'] ?? '')) === '' && isset($dict[$de])) {
+                    $d[$f['key'] . '_en'] = $dict[$de];
+                    $ch = true;
+                }
+            }
+            if ($g === 'seo') {
+                foreach (en_seo_defaults() as $k => $v) {
+                    if (trim((string)($d[$k] ?? '')) === '') {
+                        $d[$k] = $v;
+                        $ch = true;
+                    }
+                }
+            }
+            if ($g === 'legal') {
+                foreach (legal_defaults_en() as $k => $v) {
+                    if (trim((string)($d[$k . '_en'] ?? '')) === '') {
+                        $d[$k . '_en'] = $v;
+                        $ch = true;
+                    }
+                }
+            }
+            if ($ch) {
+                if ($row) {
+                    q('UPDATE ar_settings SET data = ? WHERE grp = ?', [enc($d), $g]);
+                } else {
+                    q('INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES (?,?,?,?)', [$g, enc($d), time(), 'migration']);
+                }
+            }
+        }
+        $applied[] = 'en_v1';
+    }
+
+    // Datenschutz: Reichweitenmessung ergänzen
+    if (!in_array('privacy_stats_v1', $applied, true)) {
+        $legal = setting('legal', true);
+        $patched = privacy_stats_patch((string)$legal['datenschutz']);
+        if ($patched !== null) {
+            $legal['datenschutz'] = $patched;
+            save_setting('legal', $legal, 'migration');
+        }
+        $applied[] = 'privacy_stats_v1';
+    }
+
+    require_once __DIR__ . '/legal_defaults.php';
     // Zusätzliche Zugänge aus config.php ('extra_users'): werden einmal angelegt; spätere Entfernung im Admin bleibt bestehen
     foreach ((array)cfg('extra_users', []) as $u) {
         $em = strtolower(trim((string)($u['email'] ?? '')));

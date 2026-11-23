@@ -26,12 +26,12 @@ if (!$user) {
             login_request($email);
             $step = 'code';
         } elseif ($action === 'verify') {
-            if (login_verify($email, (string)($_POST['code'] ?? ''))) {
+            if (login_verify($email, (string)($_POST['code'] ?? ''), (string)($_POST['pw'] ?? ''))) {
                 header('Location: ' . AR_BASE . '/admin/');
                 exit;
             }
             $step = 'code';
-            $error = 'Der Code ist ungültig oder abgelaufen. Bitte neuen Code anfordern.';
+            $error = 'Code oder Passwort ungültig bzw. Code abgelaufen. Bitte neuen Code anfordern.';
         }
     }
     view_login($step, $email, $error);
@@ -75,9 +75,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 view_edit_item($user, $coll, $id, array_merge(field_defaults($s['collections'][$coll]['fields']), $data), $errors);
                 exit;
             }
-            $id = save_item($coll, $id, $data, $who);
-            audit($who, 'save_item', $coll . '#' . $id . ' ' . ($data[$s['collections'][$coll]['title']] ?? ''));
-            $back(AR_BASE . '/admin/?p=list&c=' . $coll, 'Gespeichert.');
+            $publish = ($_POST['mode'] ?? 'publish') !== 'draft';
+            $id = save_item($coll, $id, $data, $who, $publish);
+            audit($who, $publish ? 'publish_item' : 'draft_item', $coll . '#' . $id . ' ' . ($data[$s['collections'][$coll]['title']] ?? ''));
+            if ($publish) {
+                $back(AR_BASE . '/admin/?p=list&c=' . $coll, 'Veröffentlicht.');
+            }
+            $back(AR_BASE . '/admin/?p=edit&c=' . $coll . '&id=' . $id, 'Entwurf gespeichert – noch nicht öffentlich. Mit „Vorschau“ ansehen, mit „Jetzt veröffentlichen“ live schalten.');
         }
 
         case 'save_group': {
@@ -85,17 +89,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!isset($s['groups'][$g])) {
                 fatal('Unbekannter Bereich.', 400);
             }
-            $old = setting($g);
+            $old = setting($g, true);
             [$data, $errors] = sanitize_fields($s['groups'][$g]['fields'], $_POST, $_FILES, $old);
             if ($errors) {
                 view_edit_group($user, $g, array_merge($old, $data), $errors);
                 exit;
             }
-            save_setting($g, $data, $who);
+            $publish = ($_POST['mode'] ?? 'publish') !== 'draft';
+            save_setting($g, $data, $who, $publish);
             cleanup_uploads();
-            audit($who, 'save_group', $g);
-            $back(AR_BASE . '/admin/?p=group&g=' . $g, 'Gespeichert.');
+            audit($who, $publish ? 'publish_group' : 'draft_group', $g);
+            $back(AR_BASE . '/admin/?p=group&g=' . $g, $publish ? 'Veröffentlicht.' : 'Entwurf gespeichert – noch nicht öffentlich. Mit „Vorschau“ ansehen.');
         }
+
+        case 'publish_draft':
+            if (($_POST['kind'] ?? '') === 'item') {
+                $it = item((int)($_POST['id'] ?? 0));
+                if ($it) {
+                    publish_item_draft((int)$it['_id'], $who);
+                    audit($who, 'publish_item', $it['coll'] . '#' . $it['_id']);
+                    $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], 'Veröffentlicht.');
+                }
+            } elseif (isset($s['groups'][(string)($_POST['g'] ?? '')])) {
+                publish_setting_draft((string)$_POST['g'], $who);
+                audit($who, 'publish_group', (string)$_POST['g']);
+                $back(AR_BASE . '/admin/?p=group&g=' . $_POST['g'], 'Veröffentlicht.');
+            }
+            $back(AR_BASE . '/admin/', 'Nicht gefunden.', 'err');
+
+        case 'discard_draft':
+            if (($_POST['kind'] ?? '') === 'item') {
+                $it = item((int)($_POST['id'] ?? 0));
+                if ($it) {
+                    discard_item_draft((int)$it['_id']);
+                    audit($who, 'discard_draft', $it['coll'] . '#' . $it['_id']);
+                    $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], 'Entwurf verworfen.');
+                }
+            } elseif (isset($s['groups'][(string)($_POST['g'] ?? '')])) {
+                discard_setting_draft((string)$_POST['g']);
+                audit($who, 'discard_draft', (string)$_POST['g']);
+                $back(AR_BASE . '/admin/?p=group&g=' . $_POST['g'], 'Entwurf verworfen.');
+            }
+            $back(AR_BASE . '/admin/', 'Nicht gefunden.', 'err');
+
+        case 'publish_all':
+            foreach (open_drafts() as $d) {
+                if ($d['kind'] === 'item') {
+                    publish_item_draft((int)$d['ref'], $who);
+                } else {
+                    publish_setting_draft((string)$d['ref'], $who);
+                }
+            }
+            audit($who, 'publish_all');
+            $back(AR_BASE . '/admin/', 'Alle Entwürfe veröffentlicht.');
+
+        case 'restore_version': {
+            $ver = q('SELECT * FROM ar_versions WHERE id = ?', [(int)($_POST['vid'] ?? 0)])->fetch();
+            if (!$ver || $ver['kind'] !== (string)($_POST['kind'] ?? '') || $ver['ref'] !== (string)($_POST['ref'] ?? '')) {
+                $back(AR_BASE . '/admin/', 'Fassung nicht gefunden.', 'err');
+            }
+            reset_content_cache();
+            if ($ver['kind'] === 'item') {
+                q('UPDATE ar_items SET draft = ?, updated_at = ?, updated_by = ? WHERE id = ?', [$ver['data'], time(), $who, (int)$ver['ref']]);
+                $it = item((int)$ver['ref']);
+                audit($who, 'restore_version', 'item#' . $ver['ref']);
+                $back(AR_BASE . '/admin/?p=edit&c=' . ($it['coll'] ?? '') . '&id=' . (int)$ver['ref'], 'Frühere Fassung als Entwurf geladen. Prüfen und veröffentlichen.');
+            }
+            save_setting((string)$ver['ref'], json_arr($ver['data']) ?? [], $who, false);
+            audit($who, 'restore_version', 'group:' . $ver['ref']);
+            $back(AR_BASE . '/admin/?p=group&g=' . $ver['ref'], 'Frühere Fassung als Entwurf geladen. Prüfen und veröffentlichen.');
+        }
+
+        case 'reorder':
+            $ok = reorder_items((string)($_POST['coll'] ?? ''), array_filter(explode(',', (string)($_POST['ids'] ?? ''))));
+            header('Content-Type: application/json');
+            echo json_encode(['ok' => $ok]);
+            exit;
 
         case 'trash':
             $it = item((int)($_POST['id'] ?? 0));
@@ -182,18 +251,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($user['role'] !== 'owner') {
                 fatal('Nur der Inhaber darf die Sicherung herunterladen.', 403);
             }
-            $out = ['exportiert' => date('c'), 'einstellungen' => [], 'eintraege' => []];
-            foreach (q("SELECT grp, data FROM ar_settings WHERE grp <> '_migrations' ORDER BY grp")->fetchAll() as $r) {
-                $out['einstellungen'][$r['grp']] = json_decode((string)$r['data'], true);
-            }
-            foreach (q('SELECT coll, data, sort, deleted_at, created_at, updated_at FROM ar_items ORDER BY coll, sort, id')->fetchAll() as $r) {
-                $out['eintraege'][] = ['bereich' => $r['coll'], 'daten' => json_decode((string)$r['data'], true), 'reihenfolge' => (int)$r['sort'], 'im_papierkorb' => $r['deleted_at'] !== null, 'geaendert' => (int)$r['updated_at']];
-            }
             audit($who, 'export');
             header('Content-Type: application/json; charset=utf-8');
             header('Content-Disposition: attachment; filename="sicherung-' . date('Y-m-d') . '.json"');
-            echo json_encode($out, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            echo export_json();
             exit;
+
+        case 'backup_now':
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf Sicherungen verwalten.', 403);
+            }
+            $ok = backup_mail();
+            audit($who, 'backup_mail', $ok ? 'ok' : 'fehlgeschlagen');
+            $back(AR_BASE . '/admin/?p=backup', $ok ? 'Sicherung wurde per Mail verschickt.' : 'Mailversand fehlgeschlagen – siehe Systemcheck.', $ok ? 'ok' : 'err');
+
+        case 'import_backup': {
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf Sicherungen verwalten.', 403);
+            }
+            if (empty($_POST['confirm']) || empty($_FILES['backup']['tmp_name']) || !is_uploaded_file($_FILES['backup']['tmp_name']) || $_FILES['backup']['size'] > 20 * 1048576) {
+                $back(AR_BASE . '/admin/?p=backup', 'Bitte Datei wählen und bestätigen.', 'err');
+            }
+            [$ok, $msg] = import_data((string)file_get_contents($_FILES['backup']['tmp_name']), $who);
+            audit($who, 'import_backup', $ok ? 'ok' : 'fehlgeschlagen');
+            $back(AR_BASE . '/admin/?p=backup', $msg, $ok ? 'ok' : 'err');
+        }
+
+        case 'media_upload': {
+            [$n, $errs] = store_uploaded_images($_FILES['files'] ?? []);
+            audit($who, 'media_upload', (string)$n);
+            if ($errs) {
+                $back(AR_BASE . '/admin/?p=media', $n . ' hochgeladen. Fehler: ' . implode(' ', $errs), 'err');
+            }
+            $back(AR_BASE . '/admin/?p=media', $n ? $n . ' Bild(er) hochgeladen.' : 'Keine Datei gewählt.', $n ? 'ok' : 'err');
+        }
+
+        case 'media_delete': {
+            $nm = (string)($_POST['name'] ?? '');
+            if (!preg_match('~^[a-z0-9_-]+\.(jpg|png|webp)$~', $nm) || isset(media_usage()[$nm]) || !is_file(upload_dir() . '/' . $nm)) {
+                $back(AR_BASE . '/admin/?p=media', 'Bild wird noch verwendet oder existiert nicht.', 'err');
+            }
+            @unlink(upload_dir() . '/' . $nm);
+            audit($who, 'media_delete', $nm);
+            $back(AR_BASE . '/admin/?p=media', 'Bild gelöscht.');
+        }
+
+        case 'session_revoke': {
+            $h = (string)($_POST['h'] ?? '');
+            $row = q('SELECT user_id FROM ar_sessions WHERE token_hash = ?', [$h])->fetch();
+            if ($row && ($user['role'] === 'owner' || (int)$row['user_id'] === (int)$user['user_id']) && !hash_equals($h, current_token_hash())) {
+                q('DELETE FROM ar_sessions WHERE token_hash = ?', [$h]);
+                audit($who, 'session_revoke');
+            }
+            $back(AR_BASE . '/admin/?p=sessions', 'Gerät abgemeldet.');
+        }
+
+        case 'sessions_revoke_others':
+            q('DELETE FROM ar_sessions WHERE user_id = ? AND token_hash <> ?', [(int)$user['user_id'], current_token_hash()]);
+            audit($who, 'sessions_revoke_others');
+            $back(AR_BASE . '/admin/?p=sessions', 'Alle anderen Geräte wurden abgemeldet.');
+
+        case 'account_save': {
+            $errs = [];
+            $nm = mb_substr(trim((string)($_POST['name'] ?? '')), 0, 120);
+            $row = q('SELECT pw_hash FROM ar_users WHERE id = ?', [(int)$user['user_id']])->fetch();
+            $hasPw = !empty($row['pw_hash']);
+            $new = (string)($_POST['new_pw'] ?? '');
+            $remove = !empty($_POST['remove_pw']);
+            if (($new !== '' || $remove) && $hasPw && !password_verify((string)($_POST['current_pw'] ?? ''), (string)$row['pw_hash'])) {
+                $errs[] = 'Das aktuelle Passwort stimmt nicht.';
+            }
+            if ($new !== '' && !$errs) {
+                if (mb_strlen($new) < 12) {
+                    $errs[] = 'Das Passwort braucht mindestens 12 Zeichen.';
+                } elseif ($new !== (string)($_POST['new_pw2'] ?? '')) {
+                    $errs[] = 'Die beiden Passwörter stimmen nicht überein.';
+                }
+            }
+            if ($errs) {
+                view_account($user, $errs);
+                exit;
+            }
+            q('UPDATE ar_users SET name = ? WHERE id = ?', [$nm, (int)$user['user_id']]);
+            if ($new !== '') {
+                q('UPDATE ar_users SET pw_hash = ? WHERE id = ?', [password_hash($new, PASSWORD_DEFAULT), (int)$user['user_id']]);
+                audit($who, 'password_set');
+            } elseif ($remove) {
+                q('UPDATE ar_users SET pw_hash = NULL WHERE id = ?', [(int)$user['user_id']]);
+                audit($who, 'password_removed');
+            }
+            $back(AR_BASE . '/admin/?p=account', 'Gespeichert.');
+        }
 
         case 'test_mail':
             $ok = send_mail($user['email'], 'Testmail der Verwaltung', "Wenn du diese Mail liest, funktioniert der Mailversand.\n");
@@ -236,10 +384,26 @@ switch ($p) {
         break;
     case 'group':
         $g = (string)($_GET['g'] ?? '');
-        isset($s['groups'][$g]) ? view_edit_group($user, $g, setting($g), []) : view_home($user);
+        isset($s['groups'][$g]) ? view_edit_group($user, $g, setting($g, true), []) : view_home($user);
         break;
     case 'trash':
         view_trash($user);
+        break;
+    case 'media':
+        view_media($user);
+        break;
+    case 'media_json':
+        header('Content-Type: application/json');
+        echo json_encode(array_map(fn($m) => ['name' => $m['name'], 'url' => $m['url']], media_list()));
+        break;
+    case 'sessions':
+        view_sessions($user);
+        break;
+    case 'account':
+        view_account($user);
+        break;
+    case 'backup':
+        view_backup($user);
         break;
     case 'users':
         view_users($user);

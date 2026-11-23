@@ -1,6 +1,55 @@
 <?php
 declare(strict_types=1);
 
+// ---------- Sprache, Vorschau ----------
+
+function current_lang(): string
+{
+    return defined('AR_LANG') ? (string)AR_LANG : 'de';
+}
+
+/** Vorschau: Entwürfe statt veröffentlichter Fassung zeigen (nur für Angemeldete). */
+function preview_mode(?bool $set = null): bool
+{
+    static $p = false;
+    if ($set !== null) {
+        $p = $set;
+        items_rows(true);
+        settings_rows(true);
+    }
+    return $p;
+}
+
+/** Felder, die nie übersetzt werden (Namen, Kürzel, technische Werte). */
+const NO_TRANSLATE = ['first', 'last', 'tag_name', 'code', 'tc', 'email', 'outlet', 'show', 'number', 'org', 'name', 'country', 'google_verify', 'bing_verify', 'works_for', 'header_label', 'date_label', 'outlets', 'copyright', 'robots_extra', 'llms_summary', 'llms_extra', 'same_as', 'alumni', 'other_label'];
+
+function field_translatable(array $f): bool
+{
+    if (!in_array($f['type'], ['text', 'textarea', 'markup'], true)) {
+        return false;
+    }
+    if (isset($f['tr'])) {
+        return (bool)$f['tr'];
+    }
+    return !in_array($f['key'], NO_TRANSLATE, true);
+}
+
+function apply_lang(array $vals, array $fields): array
+{
+    if (current_lang() === 'de') {
+        return $vals;
+    }
+    foreach ($fields as $f) {
+        if ($f['type'] !== 'section' && field_translatable($f)) {
+            $en = $vals[$f['key'] . '_en'] ?? '';
+            if (is_string($en) && trim($en) !== '') {
+                $vals[$f['key']] = $en;
+            }
+        }
+    }
+    return $vals;
+}
+
 // ---------- Lesen ----------
 
 function field_defaults(array $fields): array
@@ -15,18 +64,33 @@ function field_defaults(array $fields): array
     return $d;
 }
 
-function row_to_item(array $r, array $fields): array
+function json_arr(?string $s): ?array
 {
-    $data = json_decode((string)$r['data'], true);
-    $data = is_array($data) ? $data : [];
-    return array_merge(field_defaults($fields), $data, [
+    if ($s === null || $s === '') {
+        return null;
+    }
+    $d = json_decode($s, true);
+    return is_array($d) ? $d : null;
+}
+
+function row_to_item(array $r, array $fields, bool $admin = false): array
+{
+    $data = json_arr((string)$r['data']) ?? [];
+    $draft = json_arr($r['draft'] ?? null);
+    $eff = $admin ? ($draft ?? $data) : ((preview_mode() && $draft !== null) ? $draft : $data);
+    $vals = array_merge(field_defaults($fields), $eff);
+    if (!$admin) {
+        $vals = apply_lang($vals, $fields);
+    }
+    return array_merge($vals, [
         '_id' => (int)$r['id'], '_sort' => (int)$r['sort'], '_deleted' => $r['deleted_at'] !== null ? (int)$r['deleted_at'] : null,
-        '_updated' => (int)$r['updated_at'],
+        '_updated' => (int)$r['updated_at'], '_updated_by' => (string)($r['updated_by'] ?? ''),
+        '_live' => (int)($r['live'] ?? 1), '_draft' => $draft !== null,
     ]);
 }
 
-/** Liste einer Sammlung (ohne Papierkorb). */
-function items(string $coll, bool $trash = false): array
+/** Liste einer Sammlung. $admin = auch unveröffentlichte Einträge, Entwurfsstand. */
+function items(string $coll, bool $trash = false, bool $admin = false): array
 {
     $def = schema()['collections'][$coll] ?? null;
     if (!$def) {
@@ -34,10 +98,13 @@ function items(string $coll, bool $trash = false): array
     }
     if ($trash) {
         $rows = q('SELECT * FROM ar_items WHERE coll = ? AND deleted_at IS NOT NULL ORDER BY deleted_at DESC', [$coll])->fetchAll();
+        $admin = true;
+    } elseif ($admin) {
+        $rows = q('SELECT * FROM ar_items WHERE coll = ? AND deleted_at IS NULL ORDER BY sort ASC, id ASC', [$coll])->fetchAll();
     } else {
         $rows = items_rows()[$coll] ?? [];
     }
-    return array_map(fn($r) => row_to_item($r, $def['fields']), $rows);
+    return array_map(fn($r) => row_to_item($r, $def['fields'], $admin), $rows);
 }
 
 /** Alle sichtbaren Einträge in EINER Abfrage laden (statt einer pro Liste). */
@@ -50,7 +117,8 @@ function items_rows(bool $reset = false): array
     }
     if ($all === null) {
         $all = [];
-        foreach (q('SELECT * FROM ar_items WHERE deleted_at IS NULL ORDER BY sort ASC, id ASC')->fetchAll() as $r) {
+        $sql = 'SELECT * FROM ar_items WHERE deleted_at IS NULL' . (preview_mode() ? '' : ' AND live = 1') . ' ORDER BY sort ASC, id ASC';
+        foreach (q($sql)->fetchAll() as $r) {
             $all[$r['coll']][] = $r;
         }
     }
@@ -66,13 +134,20 @@ function settings_rows(bool $reset = false): array
     }
     if ($all === null) {
         $all = [];
-        foreach (q('SELECT grp, data FROM ar_settings')->fetchAll() as $r) {
-            $all[$r['grp']] = $r['data'];
+        foreach (q('SELECT grp, data, draft FROM ar_settings')->fetchAll() as $r) {
+            $all[$r['grp']] = ['data' => $r['data'], 'draft' => $r['draft']];
         }
     }
     return $all;
 }
 
+function reset_content_cache(): void
+{
+    items_rows(true);
+    settings_rows(true);
+}
+
+/** Einzelner Eintrag im Entwurfsstand (für den Admin), auch Papierkorb. */
 function item(int $id): ?array
 {
     $r = q('SELECT * FROM ar_items WHERE id = ?', [$id])->fetch();
@@ -80,61 +155,178 @@ function item(int $id): ?array
         return null;
     }
     $def = schema()['collections'][$r['coll']] ?? null;
-    return $def ? ['coll' => $r['coll']] + row_to_item($r, $def['fields']) : null;
+    return $def ? ['coll' => $r['coll']] + row_to_item($r, $def['fields'], true) : null;
 }
 
-function setting(string $grp): array
+function setting(string $grp, bool $admin = false): array
 {
     $def = schema()['groups'][$grp] ?? null;
     if (!$def) {
         return [];
     }
-    $r = settings_rows()[$grp] ?? null;
-    $data = $r ? json_decode((string)$r, true) : [];
-    return array_merge(field_defaults($def['fields']), is_array($data) ? $data : []);
+    $row = settings_rows()[$grp] ?? null;
+    $data = json_arr($row['data'] ?? null) ?? [];
+    $draft = json_arr($row['draft'] ?? null);
+    $eff = $admin ? ($draft ?? $data) : ((preview_mode() && $draft !== null) ? $draft : $data);
+    $vals = array_merge(field_defaults($def['fields']), $eff);
+    return $admin ? $vals : apply_lang($vals, $def['fields']);
+}
+
+function setting_has_draft(string $grp): bool
+{
+    return (settings_rows()[$grp]['draft'] ?? null) !== null;
+}
+
+function setting_meta(string $grp): array
+{
+    $r = q('SELECT updated_at, updated_by FROM ar_settings WHERE grp = ?', [$grp])->fetch();
+    return $r ? ['at' => (int)$r['updated_at'], 'by' => (string)($r['updated_by'] ?? '')] : ['at' => 0, 'by' => ''];
+}
+
+// ---------- Versionen ----------
+
+function record_version(string $kind, string $ref, string $json, string $who): void
+{
+    q('INSERT INTO ar_versions (kind, ref, data, saved_by, saved_at) VALUES (?,?,?,?,?)', [$kind, $ref, $json, $who, time()]);
+    $ids = q('SELECT id FROM ar_versions WHERE kind = ? AND ref = ? ORDER BY id DESC', [$kind, $ref])->fetchAll(PDO::FETCH_COLUMN);
+    foreach (array_slice($ids, 25) as $old) {
+        q('DELETE FROM ar_versions WHERE id = ?', [$old]);
+    }
+}
+
+function versions(string $kind, string $ref): array
+{
+    return q('SELECT id, saved_by, saved_at, data FROM ar_versions WHERE kind = ? AND ref = ? ORDER BY id DESC LIMIT 25', [$kind, $ref])->fetchAll();
 }
 
 // ---------- Schreiben ----------
 
-function save_item(string $coll, ?int $id, array $data, string $who): int
+function enc(array $data): string
 {
-    items_rows(true);
-    settings_rows(true);
+    return (string)json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+}
+
+/** Speichert veröffentlicht ($publish) oder als Entwurf. */
+function save_item(string $coll, ?int $id, array $data, string $who, bool $publish = true): int
+{
+    reset_content_cache();
     $now = time();
-    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $json = enc($data);
     if ($id) {
-        q('UPDATE ar_items SET data = ?, updated_at = ?, updated_by = ? WHERE id = ? AND coll = ?', [$json, $now, $who, $id, $coll]);
+        if ($publish) {
+            q('UPDATE ar_items SET data = ?, draft = NULL, live = 1, updated_at = ?, updated_by = ? WHERE id = ? AND coll = ?', [$json, $now, $who, $id, $coll]);
+            record_version('item', (string)$id, $json, $who);
+        } else {
+            q('UPDATE ar_items SET draft = ?, updated_at = ?, updated_by = ? WHERE id = ? AND coll = ?', [$json, $now, $who, $id, $coll]);
+        }
         return $id;
     }
     $max = (int)q('SELECT COALESCE(MAX(sort), 0) FROM ar_items WHERE coll = ?', [$coll])->fetchColumn();
-    q('INSERT INTO ar_items (coll, data, sort, created_at, updated_at, updated_by) VALUES (?,?,?,?,?,?)', [$coll, $json, $max + 1, $now, $now, $who]);
+    if ($publish) {
+        q('INSERT INTO ar_items (coll, data, live, sort, created_at, updated_at, updated_by) VALUES (?,?,1,?,?,?,?)', [$coll, $json, $max + 1, $now, $now, $who]);
+        $nid = (int)db()->lastInsertId();
+        record_version('item', (string)$nid, $json, $who);
+        return $nid;
+    }
+    q('INSERT INTO ar_items (coll, data, draft, live, sort, created_at, updated_at, updated_by) VALUES (?,?,?,0,?,?,?,?)', [$coll, '{}', $json, $max + 1, $now, $now, $who]);
     return (int)db()->lastInsertId();
 }
 
-function save_setting(string $grp, array $data, string $who): void
+function publish_item_draft(int $id, string $who): void
 {
-    items_rows(true);
-    settings_rows(true);
-    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    $exists = q('SELECT 1 FROM ar_settings WHERE grp = ?', [$grp])->fetchColumn();
-    if ($exists) {
-        q('UPDATE ar_settings SET data = ?, updated_at = ?, updated_by = ? WHERE grp = ?', [$json, time(), $who, $grp]);
-    } else {
-        q('INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES (?,?,?,?)', [$grp, $json, time(), $who]);
+    reset_content_cache();
+    $r = q('SELECT draft FROM ar_items WHERE id = ?', [$id])->fetch();
+    if ($r && $r['draft'] !== null) {
+        q('UPDATE ar_items SET data = draft, draft = NULL, live = 1, updated_at = ?, updated_by = ? WHERE id = ?', [time(), $who, $id]);
+        record_version('item', (string)$id, (string)$r['draft'], $who);
     }
+}
+
+function discard_item_draft(int $id): void
+{
+    reset_content_cache();
+    $r = q('SELECT live FROM ar_items WHERE id = ?', [$id])->fetch();
+    if (!$r) {
+        return;
+    }
+    if ((int)$r['live'] === 0) {
+        q('DELETE FROM ar_items WHERE id = ?', [$id]);
+        cleanup_uploads();
+    } else {
+        q('UPDATE ar_items SET draft = NULL WHERE id = ?', [$id]);
+    }
+}
+
+function save_setting(string $grp, array $data, string $who, bool $publish = true): void
+{
+    reset_content_cache();
+    $json = enc($data);
+    $exists = q('SELECT 1 FROM ar_settings WHERE grp = ?', [$grp])->fetchColumn();
+    if ($publish) {
+        if ($exists) {
+            q('UPDATE ar_settings SET data = ?, draft = NULL, updated_at = ?, updated_by = ? WHERE grp = ?', [$json, time(), $who, $grp]);
+        } else {
+            q('INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES (?,?,?,?)', [$grp, $json, time(), $who]);
+        }
+        if (!str_starts_with($grp, '_')) {
+            record_version('group', $grp, $json, $who);
+        }
+        return;
+    }
+    if ($exists) {
+        q('UPDATE ar_settings SET draft = ?, updated_at = ?, updated_by = ? WHERE grp = ?', [$json, time(), $who, $grp]);
+    } else {
+        q('INSERT INTO ar_settings (grp, data, draft, updated_at, updated_by) VALUES (?,?,?,?,?)', [$grp, '{}', $json, time(), $who]);
+    }
+}
+
+function publish_setting_draft(string $grp, string $who): void
+{
+    reset_content_cache();
+    $r = q('SELECT draft FROM ar_settings WHERE grp = ?', [$grp])->fetch();
+    if ($r && $r['draft'] !== null) {
+        q('UPDATE ar_settings SET data = draft, draft = NULL, updated_at = ?, updated_by = ? WHERE grp = ?', [time(), $who, $grp]);
+        record_version('group', $grp, (string)$r['draft'], $who);
+    }
+}
+
+function discard_setting_draft(string $grp): void
+{
+    reset_content_cache();
+    q('UPDATE ar_settings SET draft = NULL WHERE grp = ?', [$grp]);
+    cleanup_uploads();
+}
+
+/** Alle offenen Entwürfe: [['kind'=>'item'|'group', 'ref'=>…, 'label'=>…, 'who'=>…, 'at'=>…]] */
+function open_drafts(): array
+{
+    $s = schema();
+    $out = [];
+    foreach (q('SELECT * FROM ar_items WHERE deleted_at IS NULL AND (draft IS NOT NULL OR live = 0) ORDER BY updated_at DESC')->fetchAll() as $r) {
+        $def = $s['collections'][$r['coll']] ?? null;
+        if (!$def) {
+            continue;
+        }
+        $it = row_to_item($r, $def['fields'], true);
+        $out[] = ['kind' => 'item', 'coll' => $r['coll'], 'ref' => (int)$r['id'], 'label' => $def['singular'] . ': ' . (trim((string)$it[$def['title']]) ?: '(ohne Titel)'), 'new' => (int)$r['live'] === 0, 'who' => (string)$r['updated_by'], 'at' => (int)$r['updated_at']];
+    }
+    foreach (q('SELECT grp, updated_at, updated_by FROM ar_settings WHERE draft IS NOT NULL')->fetchAll() as $r) {
+        if (isset($s['groups'][$r['grp']])) {
+            $out[] = ['kind' => 'group', 'ref' => $r['grp'], 'label' => $s['groups'][$r['grp']]['label'], 'new' => false, 'who' => (string)$r['updated_by'], 'at' => (int)$r['updated_at']];
+        }
+    }
+    return $out;
 }
 
 function trash_item(int $id): void
 {
-    items_rows(true);
-    settings_rows(true);
+    reset_content_cache();
     q('UPDATE ar_items SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL', [time(), $id]);
 }
 
 function restore_item(int $id): void
 {
-    items_rows(true);
-    settings_rows(true);
+    reset_content_cache();
     $r = q('SELECT coll FROM ar_items WHERE id = ?', [$id])->fetch();
     if (!$r) {
         return;
@@ -145,16 +337,15 @@ function restore_item(int $id): void
 
 function purge_item(int $id): void
 {
-    items_rows(true);
-    settings_rows(true);
+    reset_content_cache();
     q('DELETE FROM ar_items WHERE id = ? AND deleted_at IS NOT NULL', [$id]);
+    q("DELETE FROM ar_versions WHERE kind = 'item' AND ref = ?", [(string)$id]);
     cleanup_uploads();
 }
 
 function move_item(int $id, string $dir): void
 {
-    items_rows(true);
-    settings_rows(true);
+    reset_content_cache();
     $r = q('SELECT coll FROM ar_items WHERE id = ? AND deleted_at IS NULL', [$id])->fetch();
     if (!$r) {
         return;
@@ -172,6 +363,24 @@ function move_item(int $id, string $dir): void
     foreach ($ids as $n => $iid) {
         q('UPDATE ar_items SET sort = ? WHERE id = ?', [$n + 1, $iid]);
     }
+}
+
+/** Neue Reihenfolge per Drag-and-drop. */
+function reorder_items(string $coll, array $ids): bool
+{
+    reset_content_cache();
+    $cur = array_map('intval', array_column(q('SELECT id FROM ar_items WHERE coll = ? AND deleted_at IS NULL', [$coll])->fetchAll(), 'id'));
+    $ids = array_values(array_unique(array_map('intval', $ids)));
+    sort($cur);
+    $chk = $ids;
+    sort($chk);
+    if ($cur !== $chk) {
+        return false;
+    }
+    foreach ($ids as $n => $iid) {
+        q('UPDATE ar_items SET sort = ? WHERE id = ? AND coll = ?', [$n + 1, $iid, $coll]);
+    }
+    return true;
 }
 
 // ---------- Eingaben prüfen ----------
@@ -263,6 +472,24 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
                     }
                 }
                 break;
+        }
+        if ($t === 'image' && empty($files[$k]['name']) && !empty($post[$k . '_pick'])
+            && preg_match('~^[a-z0-9_-]+\.(jpg|png|webp)$~', (string)$post[$k . '_pick']) && is_file(upload_dir() . '/' . $post[$k . '_pick'])) {
+            $v = (string)$post[$k . '_pick'];
+        }
+        if (field_translatable($f)) {
+            $raw2 = $post[$k . '_en'] ?? '';
+            $en = is_array($raw2) ? '' : preg_replace('~[\x00-\x08\x0B\x0C\x0E-\x1F]~', '', (string)$raw2);
+            $en = $t === 'textarea' ? trim(str_replace("\r\n", "\n", $en)) : trim(preg_replace('~\s*[\r\n]+\s*~', ' ', $en));
+            if (mb_strlen($en) > $max) {
+                $errors[] = $f['label'] . ' (English): höchstens ' . $max . ' Zeichen.';
+                $en = mb_substr($en, 0, $max);
+            }
+            $out[$k . '_en'] = $en;
+        }
+        if ($t === 'image') {
+            $fo = (string)($post[$k . '_focus'] ?? '');
+            $out[$k . '_focus'] = preg_match('~^\d{1,3}(\.\d)?,\d{1,3}(\.\d)?$~', $fo) ? $fo : '';
         }
         if (is_string($v) && $t !== 'image' && $t !== 'pdf' && mb_strlen($v) > $max) {
             $errors[] = $f['label'] . ': höchstens ' . $max . ' Zeichen.';

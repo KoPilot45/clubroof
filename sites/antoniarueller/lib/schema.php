@@ -140,7 +140,7 @@ function schema(): array
     $s['collections']['languages'] = [
         'label' => 'Über mich: Sprachen', 'singular' => 'Sprache', 'title' => 'name', 'sub' => ['note'],
         'fields' => [
-            f('text', 'name', 'Sprache', ['required' => true, 'max' => 40]),
+            f('text', 'name', 'Sprache', ['required' => true, 'max' => 40, 'tr' => true]),
             f('text', 'note', 'Zusatz (z. B. „im Aufbau“)', ['max' => 40]),
         ],
     ];
@@ -167,7 +167,7 @@ function schema(): array
         'label' => 'Social-Media-Profile', 'singular' => 'Profil', 'title' => 'label', 'sub' => ['url'],
         'help' => 'Erscheinen als Buttons unter „Schreib mir“, im Handy-Menü und als Profile für Suchmaschinen (Schema.org). Alles optional – leere Liste = keine Buttons.',
         'fields' => [
-            f('text', 'label', 'Beschriftung', ['required' => true, 'max' => 30, 'hint' => 'z. B. LinkedIn, Instagram, Bluesky, Mastodon, YouTube, Xing.']),
+            f('text', 'label', 'Beschriftung', ['required' => true, 'max' => 30, 'tr' => false, 'hint' => 'z. B. LinkedIn, Instagram, Bluesky, Mastodon, YouTube, Xing.']),
             f('url', 'url', 'Link zum Profil', ['required' => true]),
             f('bool', 'published', 'Anzeigen', ['default' => true]),
         ],
@@ -200,8 +200,8 @@ function schema(): array
             f('section', '', 'Sichtbarkeit'),
             f('bool', 'noindex', 'Seite für Suchmaschinen sperren (noindex)', ['hint' => 'Setzt noindex/nofollow, sperrt alles in robots.txt und schaltet Sitemap und llms.txt ab. Sinnvoll, solange die Seite noch nicht öffentlich sein soll.']),
             f('section', '', 'Titel & Beschreibung'),
-            f('text', 'title', 'Seitentitel', ['max' => 70, 'default' => 'Antonia Rüller – Journalistin', 'hint' => 'Ideal 40–60 Zeichen. Name und Beruf nach vorn, z. B. „Antonia Rüller – Journalistin & Reporterin, Bremen“.']),
-            f('textarea', 'description', 'Beschreibung (Meta-Description)', ['max' => 170, 'rows' => 3, 'hint' => 'Ideal 120–160 Zeichen: Wer, wofür, wo.']),
+            f('text', 'title', 'Seitentitel', ['max' => 70, 'ideal' => [40, 60], 'default' => 'Antonia Rüller – Journalistin', 'hint' => 'Ideal 40–60 Zeichen. Name und Beruf nach vorn, z. B. „Antonia Rüller – Journalistin & Reporterin, Bremen“.']),
+            f('textarea', 'description', 'Beschreibung (Meta-Description)', ['max' => 170, 'ideal' => [120, 160], 'rows' => 3, 'hint' => 'Ideal 120–160 Zeichen: Wer, wofür, wo.']),
             f('image', 'og_image', 'Vorschaubild beim Teilen (1200 × 630 px)', ['hint' => 'Leer = Foto aus dem Startbereich.']),
             f('section', '', 'Person: strukturierte Daten für Google (Schema.org)'),
             f('bool', 'jsonld', 'Strukturierte Daten ausgeben', ['default' => true, 'hint' => 'Helfen Suchmaschinen, dich als Person, Journalistin und Autorin deiner Beiträge zu erkennen.']),

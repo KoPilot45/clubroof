@@ -314,3 +314,10 @@ a:hover{color:var(--accent)}
   .cv-dot{left:-42px}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.ar-track,.ar-rec{animation:none}}
+
+/* Sprachumschalter */
+.lang-switch{display:inline-flex;gap:2px;font-family:var(--mono);font-size:12px;letter-spacing:.05em}
+.lang-switch a{text-decoration:none;padding:4px 8px;border-radius:999px;color:var(--mute)}
+.lang-switch a[aria-current]{background:var(--ink);color:var(--paper)}
+.lang-menu a{color:var(--paper);padding:0;border-radius:0}
+.lang-menu{display:block;margin-bottom:10px}

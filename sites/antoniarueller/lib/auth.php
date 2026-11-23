@@ -47,7 +47,7 @@ function login_request(string $email): void
 }
 
 /** Schritt 2: Code prüfen, Sitzung anlegen. */
-function login_verify(string $email, string $code): bool
+function login_verify(string $email, string $code, string $password = ''): bool
 {
     $email = strtolower(trim($email));
     $code = preg_replace('~\D~', '', $code);
@@ -70,13 +70,24 @@ function login_verify(string $email, string $code): bool
         audit($email, 'login_failed');
         return false;
     }
+    if (!empty($user['pw_hash']) && !password_verify($password, (string)$user['pw_hash'])) {
+        throttle_hit($fb);
+        audit($email, 'login_failed_pw');
+        return false;
+    }
     q('UPDATE ar_login_codes SET used = 1 WHERE id = ?', [$row['id']]);
     $token = bin2hex(random_bytes(32));
-    q('INSERT INTO ar_sessions (token_hash, user_id, csrf, created_at, last_seen, ua_hash) VALUES (?,?,?,?,?,?)',
-        [hmac($token), $user['id'], bin2hex(random_bytes(24)), time(), time(), hmac($_SERVER['HTTP_USER_AGENT'] ?? '')]);
+    q('INSERT INTO ar_sessions (token_hash, user_id, csrf, created_at, last_seen, ua_hash, ua_text) VALUES (?,?,?,?,?,?,?)',
+        [hmac($token), $user['id'], bin2hex(random_bytes(24)), time(), time(), hmac($_SERVER['HTTP_USER_AGENT'] ?? ''), ua_label((string)($_SERVER['HTTP_USER_AGENT'] ?? ''))]);
     q('UPDATE ar_users SET last_login = ? WHERE id = ?', [time(), $user['id']]);
     set_session_cookie($token, 0);
     audit($email, 'login');
+    require_once __DIR__ . '/backup.php';
+    try {
+        maybe_backup();
+    } catch (Throwable $e) {
+        error_log('Backup: ' . $e->getMessage());
+    }
     send_mail($email, 'Neue Anmeldung bei der Verwaltung', "Es gab soeben eine Anmeldung bei der Verwaltung von antoniarueller.de (" . date('d.m.Y H:i') . " Uhr).\nWar das nicht du? Dann bitte sofort melden.\n");
     return true;
 }
@@ -145,4 +156,29 @@ function csrf_check(array $user): void
     if (!hash_equals((string)$user['csrf'], (string)($_POST['_csrf'] ?? ''))) {
         fatal('Sitzung abgelaufen oder ungültige Anfrage. Bitte Seite neu laden.', 403);
     }
+}
+
+function ua_label(string $ua): string
+{
+    $b = 'Browser';
+    foreach (['Edg/' => 'Edge', 'OPR/' => 'Opera', 'Firefox/' => 'Firefox', 'Chrome/' => 'Chrome', 'Safari/' => 'Safari'] as $k => $n) {
+        if (str_contains($ua, $k)) {
+            $b = $n;
+            break;
+        }
+    }
+    $os = 'unbekanntes System';
+    foreach (['iPhone' => 'iPhone', 'iPad' => 'iPad', 'Android' => 'Android', 'Windows' => 'Windows', 'Mac OS X' => 'Mac', 'Linux' => 'Linux'] as $k => $n) {
+        if (str_contains($ua, $k)) {
+            $os = $n;
+            break;
+        }
+    }
+    return $b . ' auf ' . $os;
+}
+
+function current_token_hash(): string
+{
+    $t = $_COOKIE[AR_COOKIE] ?? '';
+    return is_string($t) && $t !== '' ? hmac($t) : '';
 }

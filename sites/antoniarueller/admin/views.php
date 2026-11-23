@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/forms.php';
+require_once __DIR__ . '/views2.php';
+
 function a(string $q = ''): string
 {
     return AR_BASE . '/admin/' . ($q !== '' ? '?' . $q : '');
@@ -54,8 +57,12 @@ function layout_start(array $user, string $title, string $active = ''): void
 <a href="<?= $href ?>" class="<?= $active === $kind . ':' . $key ? 'on' : '' ?>"><?= e($label) ?></a>
 <?php endforeach; endforeach; ?>
 <div class="nav-h">System</div>
+<a href="<?= a('p=media') ?>" class="<?= $active === 'media' ? 'on' : '' ?>">Mediathek</a>
 <a href="<?= a('p=trash') ?>" class="<?= $active === 'trash' ? 'on' : '' ?>">Papierkorb<?php if ($trashN): ?> <span class="badge"><?= $trashN ?></span><?php endif; ?></a>
-<?php if ($user['role'] === 'owner'): ?><a href="<?= a('p=users') ?>" class="<?= $active === 'users' ? 'on' : '' ?>">Zugänge</a><?php endif; ?>
+<?php if ($user['role'] === 'owner'): ?><a href="<?= a('p=users') ?>" class="<?= $active === 'users' ? 'on' : '' ?>">Zugänge</a>
+<a href="<?= a('p=backup') ?>" class="<?= $active === 'backup' ? 'on' : '' ?>">Sicherung</a><?php endif; ?>
+<a href="<?= a('p=account') ?>" class="<?= $active === 'account' ? 'on' : '' ?>">Mein Konto</a>
+<a href="<?= a('p=sessions') ?>" class="<?= $active === 'sessions' ? 'on' : '' ?>">Geräte</a>
 <a href="<?= a('p=log') ?>" class="<?= $active === 'log' ? 'on' : '' ?>">Protokoll</a>
 <a href="<?= a('p=check') ?>" class="<?= $active === 'check' ? 'on' : '' ?>">Systemcheck</a>
 </nav>
@@ -105,6 +112,8 @@ function view_login(string $step, string $email, string $error): void
 <input type="hidden" name="email" value="<?= e($email) ?>">
 <label for="code">Code</label>
 <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{8,9}" maxlength="9" required autofocus class="code">
+<label for="pw">Passwort <small>(nur falls eingerichtet)</small></label>
+<input id="pw" name="pw" type="password" autocomplete="current-password">
 <button class="btn">Anmelden</button>
 </form>
 <form method="post" class="again"><input type="hidden" name="action" value="request"><input type="hidden" name="email" value="<?= e($email) ?>"><button class="link">Neuen Code senden</button> · <a href="<?= a() ?>">Andere Adresse</a></form>
@@ -113,192 +122,6 @@ function view_login(string $step, string $email, string $error): void
 </div>
 <?php
     admin_foot();
-}
-
-// ---------- Übersicht ----------
-function view_home(array $user): void
-{
-    $s = schema();
-    layout_start($user, 'Übersicht', 'home');
-    ?>
-<p class="lead">Hier pflegst du alle Inhalte der Seite. Änderungen sind sofort live.</p>
-<div class="tiles">
-<?php foreach (admin_menu() as $head => $entries): foreach ($entries as [$kind, $key]):
-    $label = $kind === 'c' ? $s['collections'][$key]['label'] : $s['groups'][$key]['label'];
-    $href = $kind === 'c' ? a('p=list&c=' . $key) : a('p=group&g=' . $key);
-    $count = $kind === 'c' ? count(items($key)) : null; ?>
-<a class="tile" href="<?= $href ?>"><span class="t-h"><?= e($head) ?></span><strong><?= e($label) ?></strong><?php if ($count !== null): ?><span class="t-c"><?= $count ?> Einträge</span><?php endif; ?></a>
-<?php endforeach; endforeach; ?>
-</div>
-<?php
-    layout_end();
-}
-
-// ---------- Formularfelder ----------
-function render_field(array $f, mixed $val, string $coll = ''): void
-{
-    $t = $f['type'];
-    $k = $f['key'];
-    $id = 'f_' . $k;
-    if ($t === 'section') {
-        echo '<h2 class="fs">' . e($f['label']) . '</h2>';
-        return;
-    }
-    $req = !empty($f['required']);
-    $hint = !empty($f['hint']) ? '<small class="hint" id="h_' . e($k) . '">' . e($f['hint']) . '</small>' : '';
-    $desc = $hint ? ' aria-describedby="h_' . e($k) . '"' : '';
-    if ($t === 'bool') {
-        echo '<div class="field check"><label><input type="checkbox" name="' . e($k) . '" value="1"' . ($val ? ' checked' : '') . $desc . '> ' . e($f['label']) . '</label>' . $hint . '</div>';
-        return;
-    }
-    echo '<div class="field"><label for="' . $id . '">' . e($f['label']) . ($req ? ' <span class="req">*</span>' : '') . '</label>';
-    switch ($t) {
-        case 'text':
-        case 'markup':
-            echo '<input type="text" id="' . $id . '" name="' . e($k) . '" value="' . e($val) . '"' . (!empty($f['max']) ? ' maxlength="' . (int)$f['max'] . '"' : '') . ($req ? ' required' : '') . $desc . '>';
-            break;
-        case 'url':
-            echo '<input type="text" inputmode="url" id="' . $id . '" name="' . e($k) . '" value="' . e($val) . '" placeholder="https://…"' . $desc . '>';
-            break;
-        case 'textarea':
-            echo '<textarea id="' . $id . '" name="' . e($k) . '" rows="' . (int)($f['rows'] ?? 4) . '"' . (!empty($f['max']) ? ' maxlength="' . (int)$f['max'] . '"' : '') . $desc . '>' . e($val) . '</textarea>';
-            break;
-        case 'date':
-            echo '<input type="date" id="' . $id . '" name="' . e($k) . '" value="' . e($val) . '"' . ($req ? ' required' : '') . $desc . '>';
-            break;
-        case 'month':
-            echo '<input type="month" id="' . $id . '" name="' . e($k) . '" value="' . e($val) . '"' . ($req ? ' required' : '') . $desc . '>';
-            break;
-        case 'number':
-            echo '<input type="number" id="' . $id . '" name="' . e($k) . '" value="' . e($val) . '" min="' . e($f['min'] ?? '') . '" max="' . e($f['max'] ?? '') . '" step="' . e($f['step'] ?? 'any') . '"' . $desc . '>';
-            break;
-        case 'color':
-            echo '<input type="color" id="' . $id . '" name="' . e($k) . '" value="' . e($val ?: ($f['default'] ?? '#000000')) . '"' . $desc . '>';
-            break;
-        case 'select':
-            $opts = select_options($f);
-            echo '<select id="' . $id . '" name="' . e($k) . '"' . $desc . '>';
-            if (isset($f['empty'])) {
-                echo '<option value="">' . e($f['empty']) . '</option>';
-            }
-            foreach ($opts as $ov => $ol) {
-                echo '<option value="' . e($ov) . '"' . ((string)$val === (string)$ov ? ' selected' : '') . '>' . e($ol) . '</option>';
-            }
-            echo '</select>';
-            break;
-        case 'image':
-            if ($val !== '' && upload_url((string)$val) !== '') {
-                echo '<div class="imgprev"><img src="' . e(upload_url((string)$val)) . '" alt="Aktuelles Bild"><label class="check"><input type="checkbox" name="_remove_' . e($k) . '" value="1"> Bild entfernen</label></div>';
-            }
-            echo '<input type="file" id="' . $id . '" name="' . e($k) . '" accept="image/jpeg,image/png,image/webp"' . $desc . '><small class="hint">JPG, PNG oder WebP, höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB. Wird automatisch verkleinert und optimiert.</small>';
-            break;
-        case 'pdf':
-            if ($val !== '' && upload_url((string)$val) !== '') {
-                echo '<div class="imgprev"><a href="' . e(upload_url((string)$val)) . '" target="_blank" rel="noopener">Aktuelle PDF öffnen</a><label class="check"><input type="checkbox" name="_remove_' . e($k) . '" value="1"> PDF entfernen</label></div>';
-            }
-            echo '<input type="file" id="' . $id . '" name="' . e($k) . '" accept="application/pdf"' . $desc . '>';
-            break;
-    }
-    echo $hint . '</div>';
-}
-
-function form_errors(array $errors): void
-{
-    if ($errors) {
-        echo '<div class="flash err" role="alert"><strong>Bitte prüfen:</strong><ul>';
-        foreach ($errors as $er) {
-            echo '<li>' . e($er) . '</li>';
-        }
-        echo '</ul></div>';
-    }
-}
-
-// ---------- Listen ----------
-function view_list(array $user, string $coll): void
-{
-    $def = schema()['collections'][$coll];
-    $rows = items($coll);
-    layout_start($user, $def['label'], 'c:' . $coll);
-    if (!empty($def['help'])) {
-        echo '<p class="lead">' . e($def['help']) . '</p>';
-    }
-    echo '<p><a class="btn" href="' . a('p=edit&c=' . $coll) . '">+ ' . e($def['singular']) . ' hinzufügen</a></p>';
-    if (!$rows) {
-        echo '<p class="empty">Noch keine Einträge.</p>';
-    }
-    echo '<ol class="rows">';
-    foreach ($rows as $i => $r) {
-        $title = trim((string)($r[$def['title']] ?? '')) ?: '(ohne Titel)';
-        $sub = array_filter(array_map(fn($k) => (string)($r[$k] ?? ''), $def['sub']));
-        $off = array_key_exists('published', $r) && !$r['published'];
-        echo '<li id="i' . $r['_id'] . '" class="row' . ($off ? ' draft' : '') . '"><span class="no">' . sprintf('%02d', $i + 1) . '</span>';
-        echo '<a class="r-main" href="' . a('p=edit&c=' . $coll . '&id=' . $r['_id']) . '"><strong>' . e(mb_strimwidth($title, 0, 90, '…')) . '</strong>';
-        if ($sub) {
-            echo '<small>' . e(implode(' · ', $sub)) . '</small>';
-        }
-        if ($off) {
-            echo '<span class="pill">Entwurf</span>';
-        }
-        echo '</a><span class="r-act">';
-        foreach (['up' => ['▲', 'nach oben'], 'down' => ['▼', 'nach unten']] as $dir => [$sym, $lab]) {
-            echo '<form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="move"><input type="hidden" name="id" value="' . $r['_id'] . '"><input type="hidden" name="dir" value="' . $dir . '"><button class="icon" aria-label="' . e($title) . ' ' . $lab . ' verschieben"' . (($dir === 'up' && $i === 0) || ($dir === 'down' && $i === count($rows) - 1) ? ' disabled' : '') . '>' . $sym . '</button></form>';
-        }
-        echo '<a class="btn small ghost" href="' . a('p=edit&c=' . $coll . '&id=' . $r['_id']) . '">Bearbeiten</a>';
-        echo '<form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="trash"><input type="hidden" name="id" value="' . $r['_id'] . '"><button class="btn small danger-o">In den Papierkorb</button></form>';
-        echo '</span></li>';
-    }
-    echo '</ol>';
-    layout_end();
-}
-
-function view_edit_item(array $user, string $coll, ?int $id, array $vals, array $errors): void
-{
-    $def = schema()['collections'][$coll];
-    layout_start($user, ($id ? $def['singular'] . ' bearbeiten' : $def['singular'] . ' hinzufügen'), 'c:' . $coll);
-    form_errors($errors);
-    ?>
-<form method="post" action="<?= a() ?>" enctype="multipart/form-data" class="form" data-coll="<?= e($coll) ?>">
-<?= csrf_field($user) ?><input type="hidden" name="action" value="save_item"><input type="hidden" name="coll" value="<?= e($coll) ?>"><input type="hidden" name="id" value="<?= (int)$id ?>">
-<?php
-    foreach ($def['fields'] as $f) {
-        render_field($f, $vals[$f['key']] ?? '', $coll);
-        if ($coll === 'clips' && $f['key'] === 'tc') {
-            tl_preview();
-        }
-    }
-    ?>
-<div class="actions"><button class="btn">Speichern</button><a class="btn ghost" href="<?= a('p=list&c=' . $coll) ?>">Abbrechen</a></div>
-</form>
-<?php
-    layout_end();
-}
-
-/** Vorschau-Streifen der Zeitleiste (wird von admin.js befüllt). */
-function tl_preview(): void
-{
-    $tl = setting('timeline');
-    echo '<div class="tlprev" id="tlprev" data-start="' . e($tl['start']) . '" data-end="' . e($tl['end']) . '" data-minw="' . e($tl['min_w']) . '"><div class="tlprev-h">Vorschau Zeitleiste (' . e(fmt_month($tl['start'])) . ' bis ' . e(fmt_month($tl['end'])) . ')</div><div class="tlprev-bar"><span id="tlprevbar"></span></div><small class="hint" id="tlprevtxt"></small></div>';
-}
-
-function view_edit_group(array $user, string $g, array $vals, array $errors): void
-{
-    $def = schema()['groups'][$g];
-    layout_start($user, $def['label'], 'g:' . $g);
-    if (!empty($def['help'])) {
-        echo '<p class="lead">' . e($def['help']) . '</p>';
-    }
-    form_errors($errors);
-    if ($g === 'seo') {
-        echo '<p class="lead">Ansehen: <a href="' . AR_BASE . '/robots.txt" target="_blank" rel="noopener">robots.txt</a> · <a href="' . AR_BASE . '/sitemap.xml" target="_blank" rel="noopener">sitemap.xml</a> · <a href="' . AR_BASE . '/llms.txt" target="_blank" rel="noopener">llms.txt</a> · <a href="https://search.google.com/test/rich-results?url=' . rawurlencode(abs_url('/')) . '" target="_blank" rel="noopener">Google: Test für strukturierte Daten ↗</a></p>';
-    }
-    ?>
-<form method="post" action="<?= a() ?>" enctype="multipart/form-data" class="form">
-<?= csrf_field($user) ?><input type="hidden" name="action" value="save_group"><input type="hidden" name="g" value="<?= e($g) ?>">
-<?php foreach ($def['fields'] as $f) { render_field($f, $vals[$f['key']] ?? ''); } ?>
-<div class="actions"><button class="btn">Speichern</button></div>
-</form>
-<?php
-    layout_end();
 }
 
 // ---------- Papierkorb ----------

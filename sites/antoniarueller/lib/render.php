@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/i18n.php';
+
 // Hilfen für die öffentliche Seite
 
 function cache_dir(): string
@@ -99,7 +101,7 @@ function rec_dot(int $px = 10): string
 
 function sec_head(string $no, string $label, string $right, string $mb = '40px'): string
 {
-    return '<div class="sec-head" style="margin-bottom:' . $mb . '"><span class="sec-l">' . rec_dot() . '<span class="rec-t">REC</span><span>' . e($no) . ' — ' . e($label) . '</span></span>'
+    return '<div class="sec-head" style="margin-bottom:' . $mb . '"><span class="sec-l">' . rec_dot() . '<span class="rec-t">REC</span><span>' . e($no) . ' — ' . e(tr($label)) . '</span></span>'
         . ($right !== '' ? '<span class="muted">' . e($right) . '</span>' : '') . '</div>';
 }
 
@@ -205,7 +207,7 @@ function cv_when(array $r): string
     $a = fmt_month((string)$r['from']);
     $b = fmt_month((string)$r['to']);
     if ($r['ongoing']) {
-        return 'seit ' . $a;
+        return tr('seit') . ' ' . $a;
     }
     return $b !== '' ? $a . ' — ' . $b : $a;
 }
@@ -292,8 +294,8 @@ function build_jsonld(array $seo, array $hero, array $socialUrls, array $langs, 
     ];
     $graph = [
         $person,
-        ['@type' => 'WebSite', '@id' => abs_url('/#website'), 'url' => abs_url('/'), 'name' => $seo['title'], 'inLanguage' => 'de', 'publisher' => ['@id' => $pid]],
-        ['@type' => 'ProfilePage', '@id' => abs_url('/#profile'), 'url' => abs_url('/'), 'name' => $seo['title'], 'inLanguage' => 'de', 'isPartOf' => ['@id' => abs_url('/#website')], 'mainEntity' => ['@id' => $pid]],
+        ['@type' => 'WebSite', '@id' => abs_url('/#website'), 'url' => abs_url(current_lang() === 'en' ? '/en/' : '/'), 'name' => $seo['title'], 'inLanguage' => current_lang(), 'publisher' => ['@id' => $pid]],
+        ['@type' => 'ProfilePage', '@id' => abs_url('/#profile'), 'url' => abs_url(current_lang() === 'en' ? '/en/' : '/'), 'name' => $seo['title'], 'inLanguage' => current_lang(), 'isPartOf' => ['@id' => abs_url('/#website')], 'mainEntity' => ['@id' => $pid]],
     ];
     if ($seo['works_list']) {
         $items = [];
@@ -309,7 +311,7 @@ function build_jsonld(array $seo, array $hero, array $socialUrls, array $langs, 
                     'headline' => $c['medium'] === 'text' ? $c['title'] : '', 'name' => $c['title'], 'description' => $c['desc'], 'url' => $url,
                     'datePublished' => $c['date'], 'author' => ['@id' => $pid],
                     'publisher' => $c['outlet'] ? ['@type' => 'Organization', 'name' => $c['outlet']] : '',
-                    'genre' => $c['format'], 'inLanguage' => 'de',
+                    'genre' => $c['format'], 'inLanguage' => current_lang(),
                 ],
             ];
         }

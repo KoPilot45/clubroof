@@ -62,7 +62,7 @@ E-Mail: [E-Mail-Adresse einfügen]
 ## 2. Das Wichtigste in Kürze
 
 - Für Besucherinnen und Besucher werden keine Cookies gesetzt.
-- Es gibt keine Analyse-, Tracking- oder Werbedienste.
+- Es gibt keine Tracking- oder Werbedienste. Seitenaufrufe werden ohne Cookies und ohne IP-Adresse gezählt (siehe Abschnitt „Reichweitenmessung“).
 - Schriften sind auf dem eigenen Server gespeichert; es gibt keine Verbindung zu Google Fonts oder ähnlichen Diensten.
 - Es werden keine Inhalte Dritter (Videos, Karten, Social-Media-Plugins) eingebunden.
 
@@ -72,31 +72,35 @@ Diese Website wird bei IONOS SE, Elgendorfer Str. 57, 56410 Montabaur, gehostet.
 
 Beim Aufruf der Website verarbeitet der Webserver technisch notwendige Daten, die dein Browser automatisch übermittelt: IP-Adresse, Datum und Uhrzeit, aufgerufene Seite bzw. Datei, übertragene Datenmenge, Statuscode sowie Browsertyp und Betriebssystem. Die Verarbeitung dient der sicheren und stabilen Bereitstellung der Website. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am sicheren Betrieb). Die Logfiles werden nach kurzer Zeit gelöscht, [Speicherdauer laut Angaben des Hosters ergänzen, z. B. 7 Tage – bitte prüfen]. Eine Zusammenführung mit anderen Daten findet nicht statt.
 
-## 4. Verschlüsselung
+## 4. Reichweitenmessung ohne Cookies
+
+Um zu verstehen, wie oft die Seite besucht wird, wird jeder Seitenaufruf auf diesem Server gezählt: Es werden nur Datum und Uhrzeit (Stunde), die aufgerufene Seite, der Gerätetyp (Handy oder Rechner) und die verweisende Internetadresse (Domain) festgehalten. Es wird keine IP-Adresse gespeichert, Besucherinnen und Besucher werden nicht wiedererkannt, und es werden keine Cookies gesetzt. Bots und Browser mit „Do Not Track“ werden nicht gezählt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (Interesse an der bedarfsgerechten Gestaltung des Angebots).
+
+## 5. Verschlüsselung
 
 Die Verbindung zu dieser Website ist per TLS (https) verschlüsselt.
 
-## 5. Kontaktaufnahme per E-Mail
+## 6. Kontaktaufnahme per E-Mail
 
 Wenn du mir eine E-Mail schreibst, verarbeite ich deine Angaben (E-Mail-Adresse, Name, Inhalt der Nachricht) zur Bearbeitung deiner Anfrage. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, wenn es um vorvertragliche oder vertragliche Fragen geht, sonst Art. 6 Abs. 1 lit. f DSGVO (Interesse an der Beantwortung von Anfragen). Die Daten werden gelöscht, sobald die Anfrage erledigt ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
 
 Bei vertraulichen Hinweisen und Recherchethemen beachte bitte, dass normale E-Mails nicht durchgehend verschlüsselt übertragen werden. [Optional: Hinweis auf einen verschlüsselten Kontaktweg ergänzen, z. B. Signal oder PGP.]
 
-## 6. Externe Links
+## 7. Externe Links
 
 Diese Seite enthält Links zu Beiträgen bei Redaktionen und zu LinkedIn (LinkedIn Ireland Unlimited Company, Wilton Plaza, Wilton Place, Dublin 2, Irland). Es werden keine Daten an diese Anbieter übertragen, solange du die Links nicht anklickst. Nach dem Klick gelten die Datenschutzbestimmungen des jeweiligen Anbieters.
 
-## 7. Speicherung im Browser
+## 8. Speicherung im Browser
 
 Die Seite speichert nichts in deinem Browser (kein Local Storage, keine Cookies für Besucherinnen und Besucher).
 
-## 8. Deine Rechte
+## 9. Deine Rechte
 
 Du hast gegenüber mir das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21). Wende dich dazu an die oben genannte E-Mail-Adresse.
 
 Du hast außerdem das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO). [Zuständige Behörde ergänzen und prüfen. Bei Wohnsitz in Bremen z. B.: Die Landesbeauftragte für Datenschutz und Informationsfreiheit der Freien Hansestadt Bremen, Arndtstraße 1, 27570 Bremerhaven, www.datenschutz.bremen.de]
 
-## 9. Änderungen
+## 10. Änderungen
 
 Ich passe diese Erklärung an, wenn sich die Website oder die Rechtslage ändert. Stand: [Datum einfügen].
 TXT;
@@ -111,4 +115,15 @@ function legal_old_placeholders(): array
         "## Angaben gemäß § 5 DDG\n\n[Name, Anschrift und Kontaktdaten hier im Admin unter „Impressum & Datenschutz“ eintragen]",
         "## Datenschutzerklärung\n\n[Text hier im Admin eintragen. Diese Seite setzt keine Cookies, bindet keine externen Schriften ein und nutzt keine Tracker.]",
     ];
+}
+
+/** Ergänzung für bereits veröffentlichte Texte (Reichweitenmessung). */
+function privacy_stats_patch(string $text): ?string
+{
+    if (str_contains($text, 'Reichweitenmessung') || !str_contains($text, '- Es gibt keine Analyse-, Tracking- oder Werbedienste.') || !str_contains($text, '## 4. Verschlüsselung')) {
+        return null;
+    }
+    $text = str_replace('- Es gibt keine Analyse-, Tracking- oder Werbedienste.', '- Es gibt keine Tracking- oder Werbedienste. Seitenaufrufe werden ohne Cookies und ohne IP-Adresse gezählt (siehe Abschnitt „Reichweitenmessung“).', $text);
+    $sec = "## 3a. Reichweitenmessung ohne Cookies\n\nUm zu verstehen, wie oft die Seite besucht wird, wird jeder Seitenaufruf auf diesem Server gezählt: Es werden nur Datum und Uhrzeit (Stunde), die aufgerufene Seite, der Gerätetyp (Handy oder Rechner) und die verweisende Internetadresse (Domain) festgehalten. Es wird keine IP-Adresse gespeichert, Besucherinnen und Besucher werden nicht wiedererkannt, und es werden keine Cookies gesetzt. Bots und Browser mit „Do Not Track“ werden nicht gezählt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (Interesse an der bedarfsgerechten Gestaltung des Angebots).\n\n";
+    return str_replace('## 4. Verschlüsselung', $sec . '## 4. Verschlüsselung', $text);
 }

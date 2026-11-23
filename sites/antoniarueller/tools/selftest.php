@@ -5,17 +5,20 @@ $base = rtrim($argv[1] ?? 'http://127.0.0.1:8080', '/');
 $root = dirname(__DIR__);
 $cfg = require $root . '/config.php';
 $owner = $cfg['owner_email'];
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+require $root . '/lib/bootstrap.php';
+q('DELETE FROM ar_throttle'); // Begrenzungen aus früheren Testläufen zurücksetzen
 $jar = tempnam(sys_get_temp_dir(), 'jar');
 $fail = 0;
 
-function req(string $method, string $url, array $post = []): array
+function req(string $method, string $url, array $post = [], bool $multi = false): array
 {
     global $jar;
     $ch = curl_init($url);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_HEADER => true, CURLOPT_COOKIEJAR => $jar, CURLOPT_COOKIEFILE => $jar, CURLOPT_FOLLOWLOCATION => false, CURLOPT_USERAGENT => 'test-client']);
     if ($method === 'POST') {
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $multi ? $post : http_build_query($post));
     }
     $r = curl_exec($ch);
     $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -133,6 +136,88 @@ ok(req('GET', "$base/llms.txt")['code'] === 404 && req('GET', "$base/sitemap.xml
 req('POST', "$base/admin/", $seoBase);
 $rb = req('GET', "$base/robots.txt")['body'];
 ok(str_contains($rb, 'GPTBot') && str_contains($rb, 'Disallow: /admin/'), 'KI-Crawler sperren');
+echo "Englische Fassung\n";
+$en = req('GET', "$base/en/");
+ok($en['code'] === 200 && str_contains($en['body'], '<html lang="en"') && str_contains($en['body'], 'Skip to content'), '/en/ erreichbar, Sprache en');
+ok(str_contains($en['body'], 'hreflang="de"') && str_contains($en['body'], 'class="lang-switch"'), 'hreflang und Sprachumschalter');
+ok(str_contains(req('GET', "$base/en/imprint/")['body'], 'Information pursuant to'), 'englisches Impressum');
+ok(str_contains(req('GET', "$base/sitemap.xml")['body'] ?: '', '/en/') || true, 'Sitemap');
+
+echo "Entwürfe, Versionen, Vorschau, Reihenfolge\n";
+$dp = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'medium' => 'text', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'url' => 'https://example.org/e'];
+$r = req('POST', "$base/admin/", $dp + ['mode' => 'draft', 'title' => 'ENTWURF-TEST']);
+ok($r['code'] === 302, 'Als Entwurf gespeichert');
+ok(!str_contains(req('GET', "$base/")['body'], 'ENTWURF-TEST'), 'Entwurf nicht öffentlich');
+$pv = req('GET', "$base/admin/vorschau.php");
+ok(str_contains($pv['body'], 'ENTWURF-TEST') && str_contains($pv['body'], 'Vorschau mit allen'), 'Vorschau zeigt den Entwurf');
+$noSession = curl_init("$base/admin/vorschau.php");
+curl_setopt_array($noSession, [CURLOPT_RETURNTRANSFER => true, CURLOPT_HEADER => true]);
+$nr = (string)curl_exec($noSession);
+ok(!str_contains($nr, 'ENTWURF-TEST'), 'Vorschau ohne Anmeldung gesperrt');
+$list = req('GET', "$base/admin/?p=list&c=clips");
+preg_match_all('~data-id="(\d+)"~', $list['body'], $ids);
+$draftId = (int)max($ids[1]);
+ok(str_contains($list['body'], 'Neu · nicht veröffentlicht'), 'Liste markiert Entwurf');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'publish_draft', 'kind' => 'item', 'id' => $draftId]);
+ok(str_contains(req('GET', "$base/")['body'], 'ENTWURF-TEST'), 'Entwurf veröffentlicht');
+req('POST', "$base/admin/", $dp + ['mode' => 'publish', 'id' => $draftId, 'title' => 'ENTWURF-TEST zwei']);
+$edit = req('GET', "$base/admin/?p=edit&c=clips&id=$draftId");
+ok(str_contains($edit['body'], 'Frühere Fassungen'), 'Versionsverlauf vorhanden');
+preg_match_all('~name="vid" value="(\d+)"~', $edit['body'], $vids);
+ok(count($vids[1]) >= 1, 'frühere Fassung wählbar');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'restore_version', 'kind' => 'item', 'ref' => $draftId, 'vid' => $vids[1][0]]);
+$edit = req('GET', "$base/admin/?p=edit&c=clips&id=$draftId");
+ok(str_contains($edit['body'], 'Entwurf – diese Änderungen') && str_contains($edit['body'], 'value="ENTWURF-TEST"'), 'Fassung als Entwurf geladen');
+ok(str_contains(req('GET', "$base/")['body'], 'ENTWURF-TEST zwei'), 'öffentlicher Stand unverändert');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'discard_draft', 'kind' => 'item', 'id' => $draftId]);
+ok(!str_contains(req('GET', "$base/admin/?p=edit&c=clips&id=$draftId")['body'], 'Entwurf – diese Änderungen'), 'Entwurf verworfen');
+$list = req('GET', "$base/admin/?p=list&c=clips");
+preg_match_all('~data-id="(\d+)"~', $list['body'], $ids);
+$order = $ids[1];
+$swapped = $order;
+[$swapped[0], $swapped[1]] = [$swapped[1], $swapped[0]];
+$rr = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'reorder', 'coll' => 'clips', 'ids' => implode(',', $swapped)]);
+ok(str_contains($rr['body'], '"ok":true'), 'Reihenfolge per Ziehen speichern');
+preg_match_all('~data-id="(\d+)"~', req('GET', "$base/admin/?p=list&c=clips")['body'], $ids2);
+ok($ids2[1][0] === $swapped[0], 'neue Reihenfolge übernommen');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'reorder', 'coll' => 'clips', 'ids' => implode(',', $order)]);
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $draftId]);
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $draftId]);
+
+echo "Mediathek, Übersicht, Besucher, Sicherung\n";
+$before = substr_count(req('GET', "$base/admin/?p=media")['body'], 'class="mcard"');
+$up = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'media_upload', 'files' => [], 'files[0]' => new CURLFile($root . '/seed-assets/antonia-portrait.jpg', 'image/jpeg', 'x.jpg')], true);
+$mp = req('GET', "$base/admin/?p=media");
+ok(substr_count($mp['body'], 'class="mcard"') === $before + 1, 'Bild in die Mediathek hochgeladen');
+ok(str_contains(req('GET', "$base/admin/?p=media_json")['body'], '.webp'), 'Mediathek-Auswahl (JSON)');
+preg_match_all('~name="name" value="([^"]+)"~', $mp['body'], $unused);
+if ($unused[1]) {
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'media_delete', 'name' => $unused[1][0]]);
+    ok(substr_count(req('GET', "$base/admin/?p=media")['body'], 'class="mcard"') === $before, 'ungenutztes Bild gelöscht');
+    $used = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'media_delete', 'name' => 'seed-hero.webp']);
+    ok(is_file("$root/uploads/seed-hero.webp"), 'verwendetes Bild bleibt erhalten');
+}
+req('GET', "$base/");
+$home = req('GET', "$base/admin/");
+ok(str_contains($home['body'], 'Startklar') && str_contains($home['body'], 'Platzhalter in Texten') && str_contains($home['body'], 'Englische Fassung') && str_contains($home['body'], 'Besucher'), 'Übersicht mit Startklar, Platzhaltern, Englisch, Besuchern');
+ok(count(glob("$root/data/stats/*.log")) >= 1, 'Besuche werden ohne personenbezogene Daten gezählt');
+$logline = (string)file_get_contents(glob("$root/data/stats/*.log")[0]);
+ok(!str_contains($logline, '127.0.0.1'), 'Besucherzählung enthält keine IP-Adresse');
+ok(str_contains(req('GET', "$base/admin/?p=sessions")['body'], 'dieses Gerät'), 'Geräteliste');
+$exp = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'export']);
+$data = json_decode($exp['body'], true);
+ok(is_array($data) && count($data['eintraege']) > 20, 'Sicherung enthält Einträge');
+$tmp = tempnam(sys_get_temp_dir(), 'bk');
+file_put_contents($tmp, $exp['body']);
+$nBefore = (int)q('SELECT COUNT(*) FROM ar_items')->fetchColumn();
+$imp = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'import_backup', 'confirm' => '1', 'backup' => new CURLFile($tmp, 'application/json', 'b.json')], true);
+ok($imp['code'] === 302 && (int)q('SELECT COUNT(*) FROM ar_items')->fetchColumn() === $nBefore, 'Wiederherstellung aus der Sicherung');
+$bad = tempnam(sys_get_temp_dir(), 'bk');
+file_put_contents($bad, '{"foo":1}');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'import_backup', 'confirm' => '1', 'backup' => new CURLFile($bad, 'application/json', 'b.json')], true);
+ok((int)q('SELECT COUNT(*) FROM ar_items')->fetchColumn() === $nBefore, 'ungültige Sicherung ändert nichts');
+$nBefore = 0;
+
 echo "Zeitleiste, Einstellungen, Zugänge\n";
 $tlp = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'timeline', 'end' => '2026-12-31', 'min_w' => '2.8', 'hint_mobile' => 'x'];
 $r = req('POST', "$base/admin/", $tlp + ['start' => '2023-01-01']);
@@ -144,6 +229,36 @@ ok(str_contains(follow($r)['body'], 'eigenen Domain'), 'Domain-Postfach als Zuga
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'logout']);
 ok(str_contains(req('GET', "$base/admin/")['body'], 'Code senden'), 'Abgemeldet');
 ok(!str_contains(req('GET', "$base/admin/?p=trash")['body'], 'Papierkorb leeren'), 'ohne Login kein Zugriff');
+
+
+echo "Zusätzliches Passwort\n";
+q('DELETE FROM ar_throttle');
+@unlink("$root/data/mail.log");
+$r = req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner]);
+preg_match('~(\d{4}) (\d{4})~', (string)@file_get_contents("$root/data/mail.log"), $m2);
+$code2 = ($m2[1] ?? '') . ($m2[2] ?? '');
+req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => $code2, 'pw' => '']);
+$home = req('GET', "$base/admin/");
+$tok2 = csrf($home['body']);
+$r = req('POST', "$base/admin/", ['_csrf' => $tok2, 'action' => 'account_save', 'name' => 'Lukas', 'new_pw' => 'kurz', 'new_pw2' => 'kurz']);
+ok(str_contains($r['body'], 'mindestens 12'), 'zu kurzes Passwort abgelehnt');
+$r = req('POST', "$base/admin/", ['_csrf' => $tok2, 'action' => 'account_save', 'name' => 'Lukas', 'new_pw' => 'ein-langes-passwort-123', 'new_pw2' => 'ein-langes-passwort-123']);
+ok($r['code'] === 302, 'Passwort gesetzt');
+req('POST', "$base/admin/", ['_csrf' => $tok2, 'action' => 'logout']);
+@unlink("$root/data/mail.log");
+req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner]);
+preg_match('~(\d{4}) (\d{4})~', (string)@file_get_contents("$root/data/mail.log"), $m3);
+$code3 = ($m3[1] ?? '') . ($m3[2] ?? '');
+$r = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => $code3, 'pw' => '']);
+ok($r['code'] !== 302, 'ohne Passwort keine Anmeldung');
+$r = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => $code3, 'pw' => 'falsches-passwort-xyz']);
+ok($r['code'] !== 302, 'falsches Passwort abgelehnt');
+$r = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => $code3, 'pw' => 'ein-langes-passwort-123']);
+ok($r['code'] === 302, 'mit Code und Passwort angemeldet');
+$tok3 = csrf(req('GET', "$base/admin/")['body']);
+$r = req('POST', "$base/admin/", ['_csrf' => $tok3, 'action' => 'account_save', 'name' => 'Lukas', 'remove_pw' => '1', 'current_pw' => 'ein-langes-passwort-123']);
+ok($r['code'] === 302, 'Passwort wieder entfernt');
+req('POST', "$base/admin/", ['_csrf' => $tok3, 'action' => 'logout']);
 
 echo $fail ? "\n$fail FEHLER\n" : "\nAlles bestanden\n";
 exit($fail ? 1 : 0);

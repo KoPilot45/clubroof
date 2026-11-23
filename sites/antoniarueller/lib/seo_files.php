@@ -39,8 +39,11 @@ function sitemap_xml(): ?string
         return null;
     }
     $t = max((int)q('SELECT MAX(updated_at) FROM ar_items')->fetchColumn(), (int)q("SELECT MAX(updated_at) FROM ar_settings WHERE grp <> '_migrations'")->fetchColumn());
-    return '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n"
-        . '<url><loc>' . e(abs_url('/')) . '</loc><lastmod>' . date('c', $t ?: time()) . '</lastmod><changefreq>monthly</changefreq><priority>1.0</priority></url>' . "\n</urlset>\n";
+    $mod = date('c', $t ?: time());
+    $alt = '<xhtml:link rel="alternate" hreflang="de" href="' . e(abs_url('/')) . '"/><xhtml:link rel="alternate" hreflang="en" href="' . e(abs_url('/en/')) . '"/><xhtml:link rel="alternate" hreflang="x-default" href="' . e(abs_url('/')) . '"/>';
+    return '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">' . "\n"
+        . '<url><loc>' . e(abs_url('/')) . '</loc><lastmod>' . $mod . '</lastmod><changefreq>monthly</changefreq><priority>1.0</priority>' . $alt . '</url>' . "\n"
+        . '<url><loc>' . e(abs_url('/en/')) . '</loc><lastmod>' . $mod . '</lastmod><changefreq>monthly</changefreq><priority>0.9</priority>' . $alt . '</url>' . "\n</urlset>\n";
 }
 
 function llms_txt(): ?string
@@ -89,7 +92,7 @@ function llms_txt(): ?string
     if ($stations) {
         $md .= "## Stationen\n\n" . implode(', ', $stations) . ".\n\n";
     }
-    $md .= "## Seiten\n\n- [Startseite mit allen Arbeiten, Lebenslauf und Kontakt](" . abs_url('/') . ")\n- [Impressum](" . abs_url('/impressum/') . ")\n";
+    $md .= "## Seiten\n\n- [Startseite mit allen Arbeiten, Lebenslauf und Kontakt](" . abs_url('/') . ")\n- [English version](" . abs_url('/en/') . ")\n- [Impressum](" . abs_url('/impressum/') . ")\n";
     if (trim($seo['llms_extra']) !== '') {
         $md .= "\n## Hinweise\n\n" . trim($seo['llms_extra']) . "\n";
     }
