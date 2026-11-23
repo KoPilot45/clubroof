@@ -465,3 +465,8 @@ a:hover{color:var(--accent)}
 .to-top:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 @media (max-width:860px){.to-top{bottom:max(72px,calc(env(safe-area-inset-bottom,0px) + 56px));width:42px;height:42px}}
 @media (prefers-reduced-motion:reduce){.to-top{transition:none}}
+
+/* roter i-Punkt in der Überschrift „Schreib mir“ */
+.rdot{position:relative;display:inline-block;line-height:.82}
+.rd-b{display:inline-block;clip-path:inset(.185em -.3em -.4em -.3em)}
+.rd-t{position:absolute;left:0;top:0;color:var(--rec);clip-path:inset(-.1em -.3em calc(100% - .185em) -.3em)}
