@@ -549,6 +549,17 @@ function check_upload(array $file): void
     }
 }
 
+/** Einstellungen für hochgeladene Bilder (Allgemein & Design → Bilder). */
+function image_settings(): array
+{
+    $s = setting('site', true);
+    return [
+        'webp' => !array_key_exists('img_webp', $s) || !empty($s['img_webp']),
+        'quality' => max(50, min(95, (int)($s['img_quality'] ?? 86) ?: 86)),
+        'max' => max(800, min(4000, (int)($s['img_max'] ?? 2400) ?: 2400)),
+    ];
+}
+
 function store_image(array $file): string
 {
     check_upload($file);
@@ -577,7 +588,8 @@ function store_image(array $file): string
     }
     $w = imagesx($img);
     $h = imagesy($img);
-    $maxEdge = 2400;
+    $cfgImg = image_settings();
+    $maxEdge = $cfgImg['max'];
     if (max($w, $h) > $maxEdge) {
         $r = $maxEdge / max($w, $h);
         $n = imagescale($img, (int)round($w * $r), (int)round($h * $r));
@@ -590,15 +602,15 @@ function store_image(array $file): string
     $name = bin2hex(random_bytes(10));
     $dir = upload_dir();
     // Metadaten (EXIF/GPS) werden durch das Neu-Kodieren entfernt.
-    if (function_exists('imagewebp')) {
+    if ($cfgImg['webp'] && function_exists('imagewebp')) {
         $name .= '.webp';
-        $ok = imagewebp($img, "$dir/$name", 86);
+        $ok = imagewebp($img, "$dir/$name", $cfgImg['quality']);
     } elseif ($hasAlpha) {
         $name .= '.png';
         $ok = imagepng($img, "$dir/$name", 6);
     } else {
         $name .= '.jpg';
-        $ok = imagejpeg($img, "$dir/$name", 86);
+        $ok = imagejpeg($img, "$dir/$name", $cfgImg['quality']);
     }
     if (!$ok) {
         throw new RuntimeException('Bild konnte nicht gespeichert werden.');

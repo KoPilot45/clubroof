@@ -190,6 +190,10 @@ function schema(): array
             f('color', 'rec', 'Rec-Rot (blinkender Punkt)', ['default' => '#C42F24']),
             f('section', '', 'Kopfzeile'),
             f('text', 'header_label', 'Text links oben', ['max' => 60, 'default' => 'AR / Reel 2025–26']),
+            f('section', '', 'Bilder beim Hochladen'),
+            f('bool', 'img_webp', 'Bilder in WebP umwandeln', ['default' => true, 'hint' => 'WebP ist deutlich kleiner als JPG/PNG und wird von allen aktuellen Browsern angezeigt. Ausgeschaltet bleiben Fotos JPG und Bilder mit Transparenz PNG.']),
+            f('select', 'img_quality', 'Qualität', ['options' => ['92' => 'Sehr hoch (größere Dateien)', '86' => 'Hoch (Standard)', '78' => 'Ausgewogen (kleinere Dateien)', '70' => 'Klein (schnellste Seite)'], 'default' => '86', 'hint' => 'Gilt für neue Uploads. Vorhandene Bilder lassen sich in der Mediathek neu komprimieren.']),
+            f('select', 'img_max', 'Maximale Größe (längste Seite)', ['options' => ['1600' => '1600 px', '2000' => '2000 px', '2400' => '2400 px (Standard)', '3200' => '3200 px'], 'default' => '2400', 'hint' => 'Größere Bilder werden beim Hochladen verkleinert. Metadaten wie Aufnahmeort werden immer entfernt.']),
         ],
     ];
     $s['groups']['seo'] = [

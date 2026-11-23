@@ -228,6 +228,11 @@ function view_media(array $user): void
     $use = media_usage();
     echo '<p class="lead">Alle hochgeladenen Bilder. Du kannst sie in jedem Bildfeld über „Aus Mediathek wählen“ wiederverwenden. Nicht verwendete Bilder lassen sich löschen.</p>';
     echo '<form method="post" action="' . a() . '" enctype="multipart/form-data" class="form" style="margin-bottom:22px">' . csrf_field($user) . '<input type="hidden" name="action" value="media_upload"><div class="field"><label for="mf">Bilder hochladen</label><input type="file" id="mf" name="files[]" accept="image/jpeg,image/png,image/webp" multiple><small class="hint">JPG, PNG oder WebP, je höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB.</small></div><button class="btn">Hochladen</button></form>';
+    if ($list && $user['role'] === 'owner') {
+        $cfgI = image_settings();
+        $tot = array_sum(array_column($list, 'size'));
+        echo '<div class="card wide" style="display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between"><span><strong>' . count($list) . ' Bilder · ' . kb($tot) . '</strong><br><small class="hint">Neue Uploads: ' . ($cfgI['webp'] ? 'WebP' : 'JPG/PNG') . ', Qualität ' . $cfgI['quality'] . ', höchstens ' . $cfgI['max'] . ' px. Anpassen unter <a href="' . a('p=group&g=site') . '">Allgemein &amp; Design</a>.</small></span><form method="post" action="' . a() . '" class="inline" data-confirm="Alle Bilder mit den aktuellen Einstellungen neu komprimieren? Es werden nur Bilder ersetzt, die dadurch kleiner werden. Das kann nicht rückgängig gemacht werden.">' . csrf_field($user) . '<input type="hidden" name="action" value="media_optimize"><button class="btn small ghost">Vorhandene Bilder neu komprimieren</button></form></div>';
+    }
     if (!$list) {
         echo '<p class="empty">Noch keine Bilder.</p>';
     }

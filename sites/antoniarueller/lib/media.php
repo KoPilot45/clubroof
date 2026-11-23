@@ -81,3 +81,53 @@ function store_uploaded_images(array $files): array
     }
     return [$ok, $errors];
 }
+
+
+/**
+ * Vorhandene Bilder mit den aktuellen Einstellungen neu komprimieren (Dateiname und Format bleiben,
+ * es wird nur ersetzt, wenn die Datei dadurch spürbar kleiner wird). Gibt [geprüft, ersetzt, gesparte Bytes] zurück.
+ */
+function optimize_media(): array
+{
+    if (!function_exists('imagecreatefromstring')) {
+        return [0, 0, 0];
+    }
+    $cfg = image_settings();
+    $checked = $replaced = $saved = 0;
+    foreach (media_list() as $m) {
+        $path = upload_dir() . '/' . $m['name'];
+        $ext = strtolower(pathinfo($m['name'], PATHINFO_EXTENSION));
+        $img = @imagecreatefromstring((string)@file_get_contents($path));
+        if (!$img) {
+            continue;
+        }
+        $checked++;
+        $w = imagesx($img);
+        $h = imagesy($img);
+        if (max($w, $h) > $cfg['max']) {
+            $r = $cfg['max'] / max($w, $h);
+            $n = imagescale($img, (int)round($w * $r), (int)round($h * $r));
+            if ($n) {
+                $img = $n;
+            }
+        }
+        imagesavealpha($img, true);
+        $tmp = $path . '.tmp';
+        $ok = match ($ext) {
+            'webp' => function_exists('imagewebp') && imagewebp($img, $tmp, $cfg['quality']),
+            'png' => imagepng($img, $tmp, 7),
+            default => imagejpeg($img, $tmp, $cfg['quality']),
+        };
+        $old = (int)filesize($path);
+        $new = $ok ? (int)@filesize($tmp) : 0;
+        if ($ok && $new > 0 && $new < $old * 0.95) {
+            @rename($tmp, $path);
+            @chmod($path, 0644);
+            $replaced++;
+            $saved += $old - $new;
+        } else {
+            @unlink($tmp);
+        }
+    }
+    return [$checked, $replaced, $saved];
+}

@@ -455,6 +455,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $back(AR_BASE . '/admin/?p=media', $n ? $n . ' Bild(er) hochgeladen.' : 'Keine Datei gewählt.', $n ? 'ok' : 'err');
         }
 
+        case 'media_optimize': {
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf Bilder neu komprimieren.', 403);
+            }
+            @set_time_limit(120);
+            [$c, $r, $b] = optimize_media();
+            audit($who, 'media_optimize', $r . '/' . $c);
+            $back(AR_BASE . '/admin/?p=media', $r ? $r . ' von ' . $c . ' Bildern neu komprimiert, ' . round($b / 1048576, 1) . ' MB gespart.' : 'Alle ' . $c . ' Bilder sind bereits klein genug.');
+        }
+
         case 'media_delete': {
             $nm = (string)($_POST['name'] ?? '');
             if (!preg_match('~^[a-z0-9_-]+\.(jpg|png|webp)$~', $nm) || isset(media_usage()[$nm]) || !is_file(upload_dir() . '/' . $nm)) {
