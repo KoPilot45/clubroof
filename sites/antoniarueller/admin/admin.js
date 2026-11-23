@@ -330,4 +330,22 @@
       if (al && d.days < 21) { $('.al-t', al).textContent = 'Das SSL-Zertifikat läuft in ' + d.days + ' Tagen ab (' + dt.toLocaleDateString('de-DE') + ').'; al.hidden = false; }
     }).catch(function () { sv.textContent = 'nicht abrufbar'; });
   }
+
+  // ---- Statistik: Kampagnen-Link-Baukasten ----
+  var cb = $('.campaign');
+  if (cb) {
+    var cn = $('#cn', cb), ct = $('#ct', cb), cu = $('#cu', cb), cc = $('#ccopy', cb);
+    var build = function () {
+      var name = cn.value.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+      var t = ct.value.split('|');
+      var base = cb.getAttribute(t[0] === 'en' ? 'data-en' : 'data-de');
+      cu.value = base + (name ? '?q=' + name : '') + (t[1] ? '#' + t[1] : '');
+    };
+    cn.addEventListener('input', build);
+    ct.addEventListener('change', build);
+    cc.addEventListener('click', function () {
+      cu.select();
+      if (navigator.clipboard) navigator.clipboard.writeText(cu.value).then(function () { cc.textContent = 'Kopiert'; setTimeout(function () { cc.textContent = 'Kopieren'; }, 1500); });
+    });
+  }
 })();

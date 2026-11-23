@@ -50,7 +50,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php if ($jsonld !== ''): ?><script type="application/ld+json"><?= $jsonld ?></script><?php endif; ?>
 </head>
 <body>
-<div class="ar-root">
+<div class="ar-root" data-stat="<?= defined('AR_PREVIEW') ? '' : e(AR_BASE) . '/stat.php' ?>">
 <a class="skip" href="#inhalt"><?= tr('Zum Inhalt springen') ?></a>
 
 <header class="top-wrap" id="topbar">
@@ -61,8 +61,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <a href="#<?= e($n['anchor']) ?>" data-nav="<?= e($n['anchor']) ?>"><?= sprintf('%02d', $nDesktop) ?> <?= e($n['label']) ?></a>
 <?php endforeach; ?>
 </nav>
-<span class="lang-switch" role="group" aria-label="<?= current_lang() === 'en' ? 'Language' : 'Sprache' ?>"><a href="<?= e(lang_url('de', $page)) ?>" hreflang="de" lang="de"<?= current_lang() === 'de' ? ' aria-current="true"' : '' ?>>DE</a><a href="<?= e(lang_url('en', $page)) ?>" hreflang="en" lang="en"<?= current_lang() === 'en' ? ' aria-current="true"' : '' ?>>EN</a></span>
-<?php if ($hasMail && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-nav ar-nav-cta" href="#kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php"><?= e($contact['cta_label']) ?> <span aria-hidden="true">↗</span></a><?php endif; ?>
+<span class="lang-switch" role="group" aria-label="<?= current_lang() === 'en' ? 'Language' : 'Sprache' ?>"><a data-ev="lang" data-k="de" href="<?= e(lang_url('de', $page)) ?>" hreflang="de" lang="de"<?= current_lang() === 'de' ? ' aria-current="true"' : '' ?>>DE</a><a data-ev="lang" data-k="en" href="<?= e(lang_url('en', $page)) ?>" hreflang="en" lang="en"<?= current_lang() === 'en' ? ' aria-current="true"' : '' ?>>EN</a></span>
+<?php if ($hasMail && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-nav ar-nav-cta" href="#kontakt" data-ev="mail" data-k="kopfzeile" data-mail="<?= e(AR_BASE) ?>/mail.php"><?= e($contact['cta_label']) ?> <span aria-hidden="true">↗</span></a><?php endif; ?>
 <button type="button" class="ar-burger" id="burger" aria-label="<?= tr('Menü öffnen') ?>" aria-expanded="false" aria-controls="menu"><svg aria-hidden="true" width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 2h18M1 12h18"></path></svg></button>
 </div>
 </header>
@@ -117,14 +117,14 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php if (upload_url($fc['still']) !== ''): ?><img src="<?= e(upload_url($fc['still'])) ?>" alt="" loading="lazy"><?php endif; ?>
 <?php if (upload_url($fc['still']) === ''): ?><span class="feat-label">[<?= e($fc['outlet']) ?> · <?= e($fc['format']) ?>]</span><?php endif; ?>
 <span class="feat-tc ar-feat-tc"><span class="ar-rec" style="width:8px;height:8px"></span><?= e($fc['_tc']) ?></span>
-<?php if ($fc['url'] !== ''): ?><a class="feat-play" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?> aria-label="Beitrag öffnen: <?= e($fc['title']) ?>"><svg aria-hidden="true" width="34" height="38" viewBox="0 0 34 38"><path d="M4 3 L31 19 L4 35 Z" fill="#FBF6EE"></path></svg></a><?php endif; ?>
+<?php if ($fc['url'] !== ''): ?><a class="feat-play" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?> aria-label="Beitrag öffnen: <?= e($fc['title']) ?>"><svg aria-hidden="true" width="34" height="38" viewBox="0 0 34 38"><path d="M4 3 L31 19 L4 35 Z" fill="#FBF6EE"></path></svg></a><?php endif; ?>
 <span class="feat-bar"><span></span></span>
 </div>
 <div class="feat-text">
 <div class="muted"><?= e($fc['outlet']) ?> · <?= e(media_label($fc['medium'])) ?></div>
 <h2 class="ar-feat-h"><?= mk($fc['headline'] !== '' ? $fc['headline'] : $fc['title']) ?></h2>
 <?php if ($fc['desc'] !== ''): ?><p class="feat-desc"><?= e($fc['desc']) ?></p><?php endif; ?>
-<?php if ($fc['url'] !== ''): ?><a class="btn-ghost" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= e($fc['link_text']) ?> <span aria-hidden="true">→</span></a><?php endif; ?>
+<?php if ($fc['url'] !== ''): ?><a class="btn-ghost" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= e($fc['link_text']) ?> <span aria-hidden="true">→</span></a><?php endif; ?>
 </div>
 </div>
 </section>
@@ -170,7 +170,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <span class="sel-meta"><?= tr('Redaktion:') ?> <span data-f="outlet"><?= e($first['outlet']) ?></span> · <span data-f="format"><?= e($first['format']) ?></span> · <span data-f="date"><?= e($first['_date']) ?></span> · <?= tr('Rolle:') ?> <span data-f="role"><?= e($first['role']) ?></span></span>
 </div>
 </div>
-<a class="btn-solid" data-f-href href="<?= e(safe_url($first['url']) ?: '#arbeiten') ?>" <?= $first['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><span data-f="link_text"><?= e($first['link_text']) ?></span> <span aria-hidden="true">↗</span></a>
+<a class="btn-solid" data-ev="clip" data-f-href href="<?= e(safe_url($first['url']) ?: '#arbeiten') ?>" <?= $first['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><span data-f="link_text"><?= e($first['link_text']) ?></span> <span aria-hidden="true">↗</span></a>
 </div>
 </div>
 
@@ -181,7 +181,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <span class="mob-ic"><?php foreach ($short as $k => $l): ?><span class="mi mi-<?= $k ?>"><?= icon($k, 18) ?><?= tr($l) ?></span><?php endforeach; ?></span></div>
 <span class="mob-title" data-f="title"><?= e($first['title']) ?></span>
 <span class="mob-meta"><span data-f="outlet"><?= e($first['outlet']) ?></span> · <span data-f="date"><?= e($first['_date']) ?></span> · <span data-f="role"><?= e($first['role']) ?></span></span>
-<a class="btn-solid btn-block" data-f-href href="<?= e(safe_url($first['url']) ?: '#arbeiten') ?>" <?= $first['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><span data-f="link_text"><?= e($first['link_text']) ?></span> ↗</a>
+<a class="btn-solid btn-block" data-ev="clip" data-f-href href="<?= e(safe_url($first['url']) ?: '#arbeiten') ?>" <?= $first['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><span data-f="link_text"><?= e($first['link_text']) ?></span> ↗</a>
 </div>
 <div class="mob-nav">
 <button type="button" class="circ" id="prevClip" aria-label="<?= tr('Vorheriger Clip') ?>"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 9 12l9 6z"></path><path d="M6 6v12"></path></svg></button>
@@ -203,7 +203,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <ol class="clip-list">
 <?php foreach ($clips as $c): ?>
 <li class="ar-clip<?= $c['_id'] === $first['_id'] ? ' on' : '' ?>" data-id="<?= $c['_id'] ?>">
-<a href="<?= e(safe_url($c['url']) ?: '#arbeiten') ?>" <?= $c['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
+<a data-ev="clip" data-k="<?= (int)$c['_id'] ?>" href="<?= e(safe_url($c['url']) ?: '#arbeiten') ?>" <?= $c['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
 <span class="cl-no"><?= e($c['_no']) ?></span>
 <span class="cl-tc muted"><span>TC <?= e($c['_tc']) ?></span><span style="color:var(--ink)"><?= icon($c['medium'], 20) ?></span></span>
 <span class="cl-main"><span class="ar-clip-title"><?= e($c['title']) ?></span><span class="cl-desc"><?= e($c['desc']) ?></span></span>
@@ -232,7 +232,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 <div class="wave wave-<?= $style ?>" aria-hidden="true"><?php foreach ($bars as $h): ?><span style="height:<?= $h ?>%"></span><?php endforeach; ?></div>
 <?php if ($ep['duration'] !== '' || $ep['outlet'] !== ''): ?><div class="pod-meta"><span><?= e($ep['duration']) ?></span><span><?= e($ep['outlet']) ?></span></div><?php endif; ?>
-<?php if ($links): ?><div class="pod-btns"><span class="pod-lab"><?= tr('Anhören bei') ?></span><?php foreach ($links as $l): ?><a class="pod-btn" href="<?= e($l[1]) ?>" target="_blank" rel="noopener noreferrer"><?= e($l[0]) ?> <span aria-hidden="true">↗</span><span class="sr-only"> (<?= e($ep['title']) ?>, <?= tr('öffnet in neuem Tab') ?>)</span></a><?php endforeach; ?></div><?php endif; ?>
+<?php if ($links): ?><div class="pod-btns"><span class="pod-lab"><?= tr('Anhören bei') ?></span><?php foreach ($links as $l): ?><a class="pod-btn" data-ev="podcast" data-k="<?= e(trim((string)preg_replace('~[^a-z0-9]+~', '-', strtolower($l[0])), '-') ?: 'mehr') ?>" href="<?= e($l[1]) ?>" target="_blank" rel="noopener noreferrer"><?= e($l[0]) ?> <span aria-hidden="true">↗</span><span class="sr-only"> (<?= e($ep['title']) ?>, <?= tr('öffnet in neuem Tab') ?>)</span></a><?php endforeach; ?></div><?php endif; ?>
 </article>
 <?php endforeach; ?>
 </div>
@@ -288,7 +288,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="cv-before"><span class="cv-before-l muted"><?= e($sec['cv_before']) ?></span>
 <div class="cv-before-r"><?php foreach ($before as $b): ?><div class="cv-it2"><span class="cv-role"><?= mk($b['text']) ?></span><span class="cv-when"><?= e($b['side']) ?></span></div><?php endforeach; ?></div></div>
 <?php endif; ?>
-<?php if (upload_url($contact['cv_pdf']) !== ''): ?><div style="display:flex;justify-content:flex-end;margin-top:24px"><a class="btn-solid" href="<?= e(upload_url($contact['cv_pdf'])) ?>" target="_blank" rel="noopener" download><?= e($sec['cv_pdf_label']) ?> <span aria-hidden="true">↓</span></a></div><?php endif; ?>
+<?php if (upload_url($contact['cv_pdf']) !== ''): ?><div style="display:flex;justify-content:flex-end;margin-top:24px"><a class="btn-solid" data-ev="cv" data-k="pdf" href="<?= e(upload_url($contact['cv_pdf'])) ?>" target="_blank" rel="noopener" download><?= e($sec['cv_pdf_label']) ?> <span aria-hidden="true">↓</span></a></div><?php endif; ?>
 </section>
 <?php endif; ?>
 
@@ -310,8 +310,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <h2 class="k-h"><span class="ar-schreib"><?= e($contact['h1']) ?></span><span class="k-h2"><?= e($contact['h2']) ?><span style="color:var(--accent)">.</span></span></h2>
 <p class="k-intro"><?= e($contact['intro']) ?></p>
 <div class="k-btns">
-<?php if ($hasMail): ?><a class="btn-solid btn-lg" id="mailbtn" href="#kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php" data-note="<?= e(tr('Mailprogramm öffnet sich nicht? Adresse:')) ?>" data-copy="<?= e(tr('Kopieren')) ?>" data-copied="<?= e(tr('Kopiert')) ?>"><span><?= e($contact['mail_label'] !== '' ? $contact['mail_label'] : tr('E-Mail schreiben')) ?></span> <span aria-hidden="true">↗</span></a><noscript><span class="muted"><?= e(tr('Bitte JavaScript aktivieren, um die E-Mail-Adresse zu sehen – oder im Impressum nachsehen.')) ?></span></noscript><?php endif; ?>
-<?php foreach ($social as $so): ?><a class="btn-ghost btn-lg" href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> <span aria-hidden="true">↗</span></a><?php endforeach; ?>
+<?php if ($hasMail): ?><a class="btn-solid btn-lg" id="mailbtn" href="#kontakt" data-ev="mail" data-k="kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php" data-note="<?= e(tr('Mailprogramm öffnet sich nicht? Adresse:')) ?>" data-copy="<?= e(tr('Kopieren')) ?>" data-copied="<?= e(tr('Kopiert')) ?>"><span><?= e($contact['mail_label'] !== '' ? $contact['mail_label'] : tr('E-Mail schreiben')) ?></span> <span aria-hidden="true">↗</span></a><noscript><span class="muted"><?= e(tr('Bitte JavaScript aktivieren, um die E-Mail-Adresse zu sehen – oder im Impressum nachsehen.')) ?></span></noscript><?php endif; ?>
+<?php foreach ($social as $so): ?><a class="btn-ghost btn-lg" data-ev="social" data-k="<?= e(trim((string)preg_replace('~[^a-z0-9]+~', '-', strtolower($so['label'])), '-') ?: 'profil') ?>" href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> <span aria-hidden="true">↗</span></a><?php endforeach; ?>
 </div>
 <p class="mailnote" id="mailnote" aria-live="polite" hidden></p>
 <footer class="foot">
@@ -330,7 +330,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php foreach ($nav as $i => $n): ?><li><a href="#<?= e($n['anchor']) ?>"><span class="mn"><?= sprintf('%02d', $i + 1) ?></span><span class="ml"><?= e($n['label']) ?></span></a></li>
 <?php endforeach; ?>
 </ol></nav>
-<?php if ($hasMail && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-block menu-cta" href="#kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php" style="margin-top:28px"><?= e($contact['cta_label']) ?> ↗</a><?php endif; ?>
+<?php if ($hasMail && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-block menu-cta" href="#kontakt" data-ev="mail" data-k="menue" data-mail="<?= e(AR_BASE) ?>/mail.php" style="margin-top:28px"><?= e($contact['cta_label']) ?> ↗</a><?php endif; ?>
 <div class="menu-foot"><span class="lang-switch lang-menu"><a href="<?= e(lang_url('de', $page)) ?>" hreflang="de" lang="de">Deutsch</a> · <a href="<?= e(lang_url('en', $page)) ?>" hreflang="en" lang="en">English</a></span><span><?= e($hero['now_lines'] !== '' ? str_replace("\n", ' · ', trim(explode("\n", $hero['now_lines'])[0])) . ' · ' . $hero['tag_role'] : '') ?></span>
 <?php foreach ($social as $so): ?><a href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> ↗</a><?php endforeach; ?></div>
 </div>

@@ -202,6 +202,30 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'privacy_stats_v3';
     }
 
+    // Datenschutz: Ereigniszähler, Crawler, 404
+    if (!in_array('privacy_stats_v4', $applied, true)) {
+        $legal = setting('legal', true);
+        $pairs = privacy_stats_v4_pairs();
+        $ch = false;
+        foreach (['datenschutz' => 'de', 'datenschutz_en' => 'en'] as $key => $lng) {
+            $txt = (string)($legal[$key] ?? '');
+            $new = $txt;
+            foreach ($pairs[$lng] as [$o, $n]) {
+                if (!str_contains($new, 'Verknüpfungen angeklickt') && !str_contains($new, 'certain links are clicked')) {
+                    $new = str_replace($o, $n, $new);
+                }
+            }
+            if ($new !== $txt) {
+                $legal[$key] = $new;
+                $ch = true;
+            }
+        }
+        if ($ch) {
+            save_setting('legal', $legal, 'migration');
+        }
+        $applied[] = 'privacy_stats_v4';
+    }
+
     // Reihenfolge: „Über mich“ vor „Lebenslauf“ (Navigation)
     if (!in_array('order_v1', $applied, true)) {
         $nav = [];

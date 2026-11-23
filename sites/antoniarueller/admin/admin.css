@@ -234,3 +234,34 @@ dl.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:
 dl.kv dt{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
 dl.kv dd{margin:2px 0 0;font-weight:600}
 @media (max-width:1000px){.dash-cols{grid-template-columns:1fr}}
+
+/* Statistik */
+.rangebar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.card.wide{max-width:none;margin:0 0 16px}
+svg.chart{width:100%;height:auto;display:block}
+svg.chart .grid{stroke:#e3d8c2;stroke-width:1}
+svg.chart .ax{font-size:11px;fill:#6b7573;font-family:system-ui,sans-serif}
+svg.chart .bar{fill:#0E5C62}
+svg.chart .we{fill:#efe6d4}
+svg.chart .avg{fill:none;stroke:#e5483a;stroke-width:2;stroke-linejoin:round}
+svg.chart .prev{fill:none;stroke:#8b8878;stroke-width:1.6;stroke-dasharray:4 3}
+svg.chart .mk line{stroke:#d9a300;stroke-width:1.5;stroke-dasharray:2 2}
+svg.chart .mk circle{fill:#d9a300;stroke:#fff;stroke-width:1.5}
+.legend{font-size:13px;color:var(--mute);margin:8px 0 0}
+.legend .lg{display:inline-block;width:14px;height:10px;margin:0 4px 0 10px;border-radius:2px;vertical-align:middle}
+.lg.lg-bar{background:#0E5C62}.lg.lg-avg{background:#e5483a;height:3px}.lg.lg-prev{background:repeating-linear-gradient(90deg,#8b8878 0 4px,transparent 4px 7px);height:3px}.lg.lg-mk{background:#d9a300;border-radius:50%;width:10px}.lg.lg-we{background:#efe6d4;border:1px solid #d9ccb6}
+.tbl-scroll{max-height:340px;overflow:auto}
+.hm-wrap{overflow-x:auto}
+table.hm{border-collapse:separate;border-spacing:2px;font-size:11px;color:var(--mute);width:100%}
+table.hm th{font-weight:400;text-align:center;padding:0}
+table.hm tbody th{text-align:right;padding-right:6px;color:var(--ink)}
+table.hm td{height:22px;min-width:14px;border-radius:3px;background:rgba(14,92,98,var(--a));outline:1px solid #efe6d4;outline-offset:-1px}
+ul.barlist{list-style:none;margin:6px 0 10px;padding:0}
+ul.barlist li{display:grid;grid-template-columns:minmax(80px,38%) 1fr auto;gap:10px;align-items:center;padding:4px 0;font-size:14px}
+.bl-l{overflow-wrap:anywhere}
+.bl-b{background:#efe6d4;border-radius:99px;height:10px;overflow:hidden}
+.bl-b span{display:block;height:100%;background:var(--teal);border-radius:99px}
+.bl-n{font-weight:600;white-space:nowrap}.bl-n small{font-weight:400;color:var(--mute)}
+.campaign{display:grid;gap:4px}
+.campaign .field{margin:0 0 8px}
+.campaign #cu{width:calc(100% - 100px);display:inline-block;vertical-align:middle;margin-right:6px}

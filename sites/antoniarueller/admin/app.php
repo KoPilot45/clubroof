@@ -412,6 +412,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $back(AR_BASE . '/admin/?p=account', 'Gespeichert.');
         }
 
+        case 'stats_csv': {
+            $r = (int)($_POST['r'] ?? 30);
+            $r = in_array($r, [7, 30, 90, 365], true) ? $r : 30;
+            $days = stats_collect(date('Y-m-d', strtotime('-' . ($r - 1) . ' days')), date('Y-m-d'));
+            audit($who, 'stats_csv', (string)$r);
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="statistik-' . date('Y-m-d') . '.csv"');
+            echo stats_csv($days);
+            exit;
+        }
+
+        case 'stats_toggle': {
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf die Statistik verwalten.', 403);
+            }
+            stats_ensure_dir();
+            $flag = stats_dir() . '/disabled';
+            if (is_file($flag)) {
+                @unlink($flag);
+                $msg = 'Statistik eingeschaltet.';
+            } else {
+                @file_put_contents($flag, "aus\n");
+                $msg = 'Statistik ausgeschaltet. Es werden keine neuen Daten erfasst.';
+            }
+            audit($who, 'stats_toggle', is_file($flag) ? 'aus' : 'ein');
+            $back(AR_BASE . '/admin/?p=stats', $msg);
+        }
+
+        case 'stats_delete': {
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf die Statistik verwalten.', 403);
+            }
+            $n = stats_delete_all();
+            audit($who, 'stats_delete', (string)$n);
+            $back(AR_BASE . '/admin/?p=stats', 'Statistikdaten gelöscht (' . $n . ' Dateien).');
+        }
+
         case 'user_pw_clear': {
             if ($user['role'] !== 'owner') {
                 fatal('Nur der Inhaber darf Zugänge verwalten.', 403);
@@ -487,6 +524,9 @@ switch ($p) {
         break;
     case 'media':
         view_media($user);
+        break;
+    case 'stats':
+        view_stats($user);
         break;
     case 'ssl_json':
         header('Content-Type: application/json');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/forms.php';
 require_once __DIR__ . '/views2.php';
 require_once __DIR__ . '/login_views.php';
+require_once __DIR__ . '/stats_views.php';
 
 function a(string $q = ''): string
 {
@@ -50,6 +51,7 @@ function layout_start(array $user, string $title, string $active = '', bool $wid
 <a class="brand" href="<?= a() ?>"><span class="dot"></span>Verwaltung<small>antoniarueller.de</small></a>
 <nav>
 <a href="<?= a() ?>" class="<?= $active === 'home' ? 'on' : '' ?>">Übersicht</a>
+<a href="<?= a('p=stats') ?>" class="<?= $active === 'stats' ? 'on' : '' ?>">Statistik</a>
 <?php foreach (admin_menu() as $head => $entries): ?>
 <div class="nav-h"><?= e($head) ?></div>
 <?php foreach ($entries as [$kind, $key]):

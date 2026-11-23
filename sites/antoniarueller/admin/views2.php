@@ -58,7 +58,7 @@ function view_home(array $user): void
     $prev = dash_previous_login($user['email']);
 
     echo '<div class="kpis" style="--n:' . ($isOwner ? 6 : 5) . '">';
-    echo kpi('Besuche heute', (string)$st['today'], '7 Tage: ' . $thisWeek . e($trendTxt), '', '#besuche');
+    echo kpi('Besuche heute', (string)$st['today'], '7 Tage: ' . $thisWeek . e($trendTxt), '', a('p=stats'));
     if ($act) {
         echo kpi('Letzte Änderung', e(rel_time($act[0]['at'])), e(who_name($act[0]['who'])) . ' · ' . e($act[0]['text']), '', $act[0]['link']);
     } else {
@@ -181,7 +181,7 @@ function view_home(array $user): void
         echo '<span title="' . e(date('d.m.', strtotime($day))) . ': ' . $n . '" style="height:' . max(2, (int)round($n / $max * 100)) . '%"></span>';
     }
     echo '</div>';
-    $tot = max(1, $st['dev']['m'] + $st['dev']['d']);
+    $tot = max(1, $st['dev']['m'] + $st['dev']['t'] + $st['dev']['d']);
     $enN = 0;
     $allN = 0;
     foreach ($st['pages'] as $pg => $n) {
@@ -190,7 +190,7 @@ function view_home(array $user): void
             $enN += $n;
         }
     }
-    echo '<div class="cols"><div><h3>Geräte &amp; Sprache</h3><p>Handy ' . (int)round($st['dev']['m'] / $tot * 100) . ' % · Rechner ' . (int)round($st['dev']['d'] / $tot * 100) . ' %<br>Deutsch ' . ($allN ? (int)round(($allN - $enN) / $allN * 100) : 0) . ' % · Englisch ' . ($allN ? (int)round($enN / $allN * 100) : 0) . ' %</p>';
+    echo '<div class="cols"><div><h3>Geräte &amp; Sprache</h3><p>Handy ' . (int)round($st['dev']['m'] / $tot * 100) . ' % · Tablet ' . (int)round($st['dev']['t'] / $tot * 100) . ' % · Rechner ' . (int)round($st['dev']['d'] / $tot * 100) . ' %<br>Deutsch ' . ($allN ? (int)round(($allN - $enN) / $allN * 100) : 0) . ' % · Englisch ' . ($allN ? (int)round($enN / $allN * 100) : 0) . ' %</p>';
     $label = ['home' => 'Startseite', 'home-en' => 'Startseite (Englisch)', 'impressum' => 'Impressum', 'datenschutz' => 'Datenschutz', 'impressum-en' => 'Imprint', 'datenschutz-en' => 'Privacy'];
     echo '<h3>Seiten</h3><ul class="plain">';
     foreach (array_slice($st['pages'], 0, 5, true) as $pg => $n) {
@@ -202,7 +202,7 @@ function view_home(array $user): void
         echo '<li>' . e($r) . ': ' . $n . '</li>';
     }
     echo $st['refs'] ? '</ul>' : '';
-    echo '</div></div><p class="hint">Ein Gerät zählt höchstens einmal pro Stunde als Besuch. Gespeichert werden nur Stunde, Seite, Gerätetyp und verweisende Domain – ohne Cookies und ohne IP-Adresse. Bots und „Do Not Track“ werden nicht gezählt.</p></section>';
+    echo '</div></div><p class="hint">Ein Gerät zählt höchstens einmal pro Stunde als Besuch. Gespeichert werden nur Stunde, Seite, Gerätetyp und verweisende Domain – ohne Cookies und ohne IP-Adresse. Bots und „Do Not Track“ werden nicht gezählt. <a href="' . a('p=stats') . '">Alle Auswertungen →</a></p></section>';
 
     echo '</div></div>';
 

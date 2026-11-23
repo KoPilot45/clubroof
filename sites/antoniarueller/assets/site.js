@@ -127,4 +127,31 @@
     }, { rootMargin: '-40% 0px -55% 0px' });
     Object.keys(map).forEach(function (id) { var s = document.getElementById(id); if (s) io.observe(s); });
   }
+
+  // ---- Anonyme Ereigniszähler (Klicks, erreichte Abschnitte): ohne Kennung, ohne Speicherung im Browser ----
+  var root = $('.ar-root');
+  var statUrl = root ? root.getAttribute('data-stat') : '';
+  var sentEv = {};
+  function ev(type, key) {
+    if (!statUrl || navigator.doNotTrack === '1' || !key || sentEv[type + '|' + key]) return;
+    sentEv[type + '|' + key] = 1;
+    try {
+      var body = new URLSearchParams({ e: type, k: String(key) });
+      if (navigator.sendBeacon) navigator.sendBeacon(statUrl, body);
+      else fetch(statUrl, { method: 'POST', body: body, keepalive: true, credentials: 'omit' });
+    } catch (e) { /* ignorieren */ }
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest ? e.target.closest('[data-ev]') : null;
+    if (!a) return;
+    var t = a.getAttribute('data-ev'), k = a.getAttribute('data-k');
+    if (t === 'clip' && !k) k = current;
+    ev(t, k);
+  });
+  if (statUrl && 'IntersectionObserver' in window) {
+    var so = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { ev('section', en.target.id); so.unobserve(en.target); } });
+    }, { threshold: 0.3 });
+    ['arbeiten', 'podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt'].forEach(function (id) { var s = document.getElementById(id); if (s) so.observe(s); });
+  }
 })();

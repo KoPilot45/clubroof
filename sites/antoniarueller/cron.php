@@ -8,6 +8,7 @@ require __DIR__ . '/lib/mail.php';
 require __DIR__ . '/lib/backup.php';
 require __DIR__ . '/lib/stats.php';
 stats_cleanup();
+stats_archive_if_due();
 $cli = PHP_SAPI === 'cli';
 if (!$cli && !hash_equals(cron_key(), (string)($_GET['key'] ?? ''))) {
     http_response_code(403);

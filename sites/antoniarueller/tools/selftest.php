@@ -211,6 +211,116 @@ ok(!str_contains(req('GET', "$base/admin/")['body'], 'letzte Mailversand'), 'nac
 q("DELETE FROM ar_settings WHERE grp = '_mail'");
 settings_rows(true);
 
+echo "Statistik: Ereignisse, Kampagnen, Crawler, 404, Archiv\n";
+foreach (glob("$root/data/stats/*") ?: [] as $sf) {
+    @unlink($sf); // frischer Zustand (Kurzwerte gelten nur je Stunde)
+}
+$rawReq = function (string $method, string $url, array $post = [], string $ua = 'test-client', array $headers = []) {
+    $c = curl_init($url);
+    curl_setopt_array($c, [CURLOPT_RETURNTRANSFER => true, CURLOPT_HEADER => true, CURLOPT_USERAGENT => $ua, CURLOPT_CUSTOMREQUEST => $method, CURLOPT_HTTPHEADER => $headers]);
+    if ($method === 'POST') {
+        curl_setopt($c, CURLOPT_POSTFIELDS, http_build_query($post));
+    }
+    $r = (string)curl_exec($c);
+    return ['code' => curl_getinfo($c, CURLINFO_HTTP_CODE), 'body' => substr($r, curl_getinfo($c, CURLINFO_HEADER_SIZE))];
+};
+$lines = function (string $glob) use ($root): array {
+    $o = [];
+    foreach (glob("$root/data/stats/$glob") ?: [] as $f) {
+        foreach (file($f, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $l) {
+            $o[] = $l;
+        }
+    }
+    return $o;
+};
+$same = ['Sec-Fetch-Site: same-origin'];
+$ev0 = count($lines('events-*.dat'));
+$cid = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL ORDER BY sort LIMIT 1")->fetchColumn();
+$r1 = $rawReq('POST', "$base/stat.php", ['e' => 'clip', 'k' => (string)$cid], 'test-client', $same);
+ok($r1['code'] === 204 && count($lines('events-*.dat')) === $ev0 + 1, 'Ereignis wird gezählt (204)');
+$rawReq('POST', "$base/stat.php", ['e' => 'clip', 'k' => (string)$cid], 'test-client', $same);
+ok(count($lines('events-*.dat')) === $ev0 + 1, 'derselbe Klick zählt je Gerät und Stunde nur einmal');
+$rawReq('POST', "$base/stat.php", ['e' => 'section', 'k' => 'kontakt'], 'test-client', $same);
+ok(count($lines('events-*.dat')) === $ev0 + 2, 'anderes Ereignis zählt');
+$rawReq('POST', "$base/stat.php", ['e' => 'unsinn', 'k' => '1'], 'test-client', $same);
+$rawReq('POST', "$base/stat.php", ['e' => 'clip', 'k' => '1; DROP'], 'test-client', $same);
+$rawReq('GET', "$base/stat.php", [], 'test-client', $same);
+$rawReq('POST', "$base/stat.php", ['e' => 'mail', 'k' => 'kontakt'], 'test-client', ['Sec-Fetch-Site: cross-site']);
+$rawReq('POST', "$base/stat.php", ['e' => 'mail', 'k' => 'kontakt'], 'Mozilla/5.0 (compatible; Googlebot/2.1)', $same);
+ok(count($lines('events-*.dat')) === $ev0 + 2, 'ungültige, fremde und Bot-Ereignisse werden ignoriert');
+$evTxt = implode("\n", $lines('events-*.dat'));
+ok(!str_contains($evTxt, '127.0.0.1') && !str_contains($evTxt, 'test-client'), 'Ereignisdatei enthält weder IP noch Browserkennung');
+
+$bots0 = count($lines('bots-*.dat'));
+$main0 = count($lines('20??-??.log'));
+$rawReq('GET', "$base/", [], 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)');
+$rawReq('GET', "$base/", [], 'Mozilla/5.0 (compatible; GPTBot/1.0)');
+$bl = $lines('bots-*.dat');
+ok(count($bl) === $bots0 + 2 && str_contains(implode("\n", $bl), "google\tsearch") && str_contains(implode("\n", $bl), "openai\tai"), 'bekannte Crawler werden getrennt gezählt');
+ok(count($lines('20??-??.log')) === $main0, 'Crawler zählen nicht als Besuche');
+
+$ios = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+$rawReq('GET', "$base/?q=linkedin-test", [], $ios);
+$ll = $lines('20??-??.log');
+$last = explode("\t", (string)end($ll));
+ok(($last[2] ?? '') === 'm' && ($last[4] ?? '') === '1' && ($last[5] ?? '') === 'safari' && ($last[6] ?? '') === 'ios' && ($last[7] ?? '') === 'linkedin-test', 'Gerät, Browser, System und Kampagne werden erfasst');
+$rawReq('GET', "$base/?q=" . rawurlencode('<script>x</script>'), [], $ios . ' x2');
+$ll = $lines('20??-??.log');
+$last = explode("\t", (string)end($ll));
+ok(($last[7] ?? 'x') === '', 'ungültiger Kampagnenname wird verworfen');
+[$d1, $b1, $o1] = ua_family('Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit Safari');
+[$d2, $b2, $o2] = ua_family('Mozilla/5.0 (Linux; Android 14; Pixel 8) Chrome/120 Mobile Safari/537');
+[$d3, $b3, $o3] = ua_family('Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120 Safari/537 Edg/120');
+ok($d1 === 't' && $d2 === 'm' && $d3 === 'd' && $o1 === 'ios' && $o2 === 'android' && $b3 === 'edge' && $o3 === 'windows', 'Erkennung Handy/Tablet/Rechner, Browser, System');
+
+$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 Chrome/120';
+$e0 = count($lines('404-*.dat'));
+stats_log_404('/alter-link-123', 'https://example.org/x');
+stats_log_404('/wp-login.php', '');
+stats_log_404('/.env', '');
+ok(count($lines('404-*.dat')) === $e0 + 1 && str_contains(implode("\n", $lines('404-*.dat')), "/alter-link-123\texample.org"), '404-Adressen werden gezählt, Angriffsversuche nicht');
+
+$sp = req('GET', "$base/admin/?p=stats")['body'];
+ok(str_contains($sp, 'Besuche im Verlauf') && str_contains($sp, '<svg') && str_contains($sp, 'Wann kommen Besucher') && str_contains($sp, 'Kampagnen-Links') && str_contains($sp, 'Crawler') && str_contains($sp, 'Nicht gefundene Adressen'), 'Statistik-Seite mit Diagramm, Heatmap, Kampagnen, Crawler, 404');
+ok(str_contains($sp, 'linkedin-test') && str_contains($sp, '/alter-link-123') && str_contains($sp, 'OpenAI') && str_contains($sp, 'Was wird angeklickt'), 'Auswertung zeigt Kampagne, 404, Crawler und Klicks');
+foreach ([7, 90, 365] as $rg) {
+    ok(req('GET', "$base/admin/?p=stats&r=$rg")['code'] === 200, "Zeitraum $rg Tage");
+}
+$csv = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'stats_csv', 'r' => '30']);
+ok($csv['code'] === 200 && str_contains($csv['body'], 'Datum;Besuche;Aufrufe'), 'CSV-Export');
+$hp = req('GET', "$base/")['body'];
+ok(str_contains($hp, 'data-stat="/stat.php"') && str_contains($hp, 'data-ev="clip"') && str_contains($hp, 'data-ev="lang"') && (!str_contains((string)setting('contact')['email'], '@') || str_contains($hp, 'data-ev="mail"')), 'Seite enthält die Ereignis-Markierungen');
+ok(str_contains(req('GET', "$base/admin/vorschau.php")['body'], 'data-stat=""'), 'Vorschau zählt nichts');
+ok(str_contains(setting('legal')['datenschutz'], 'Verknüpfungen angeklickt'), 'Datenschutzerklärung beschreibt Ereigniszähler');
+
+// Archivierung (Rohdaten älter als 90 Tage)
+$oldDay = date('Y-m-d', strtotime('-120 days'));
+$oldFile = "$root/data/stats/" . substr($oldDay, 0, 7) . '.log';
+file_put_contents($oldFile, "$oldDay 10\thome\td\t\t1\tchrome\twindows\t\n$oldDay 11\thome\tm\tgoogle.com\t1\tsafari\tios\t\n$oldDay 11\thome\tm\tgoogle.com\t0\tsafari\tios\t\n", FILE_APPEND);
+file_put_contents("$root/data/stats/bots-" . substr($oldDay, 0, 7) . '.dat', "$oldDay 03\tgoogle\tsearch\thome\n", FILE_APPEND);
+stats_archive();
+ok(!str_contains((string)@file_get_contents($oldFile), $oldDay), 'alte Rohdaten wurden aus der Datei entfernt');
+$ar = stats_archive_load();
+ok(($ar['days'][$oldDay]['v'] ?? 0) === 2 && ($ar['days'][$oldDay]['h'] ?? 0) === 3, 'alte Tage stehen als Tageswerte im Archiv');
+$c1 = stats_collect($oldDay, $oldDay)[$oldDay];
+stats_archive();
+$c2 = stats_collect($oldDay, $oldDay)[$oldDay];
+ok($c1['v'] === 2 && $c2['v'] === 2 && ($c2['bots']['google|search'] ?? 0) === 1 && ($c2['refs']['google.com'] ?? 0) === 1, 'Auswertung liest Archiv ohne Doppelzählung');
+ok(count($lines('20??-??.log')) > 0, 'neue Rohdaten bleiben erhalten');
+
+// Ein-/Ausschalten, Löschen
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'stats_toggle']);
+ok(is_file("$root/data/stats/disabled"), 'Statistik ausgeschaltet');
+$n0 = count($lines('20??-??.log'));
+$rawReq('GET', "$base/", [], $ios . ' x3');
+$rawReq('POST', "$base/stat.php", ['e' => 'cv', 'k' => 'pdf'], $ios . ' x3', $same);
+ok(count($lines('20??-??.log')) === $n0 && count($lines('events-*.dat')) === $ev0 + 2, 'ausgeschaltet: nichts wird erfasst');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'stats_toggle']);
+clearstatcache();
+ok(!is_file("$root/data/stats/disabled"), 'Statistik wieder eingeschaltet');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'stats_delete']);
+ok(count($lines('*.log')) === 0 && !is_file("$root/data/stats/archive.json"), 'Statistikdaten gelöscht');
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);
