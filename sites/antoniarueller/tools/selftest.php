@@ -537,6 +537,23 @@ $lg = req('GET', "$base/admin/?p=group&g=legal")['body'];
 ok(substr_count($lg, 'data-rich="1"') === 2 && str_contains($lg, 'name="impressum"') && str_contains($lg, 'name="datenschutz"'), 'Editor für Impressum und Datenschutz');
 ok(!str_contains(req('GET', "$base/admin/?p=group&g=contact")['body'], 'data-rich'), 'andere Felder bleiben einfache Textfelder');
 
+echo "Aufräumen von Bildern: Entwürfe zählen mit\n";
+$dn = 'zz' . bin2hex(random_bytes(4)) . '.webp';
+file_put_contents("$root/uploads/$dn", 'x');
+touch("$root/uploads/$dn", time() - 3 * 86400);
+q('INSERT INTO ar_items (coll, data, draft, live, sort, created_at, updated_at, updated_by) VALUES (?,?,?,?,?,?,?,?)', ['clips', '{}', json_encode(['title' => 'Entwurf', 'still' => $dn]), 0, 9999, time(), time(), 'test']);
+cleanup_uploads();
+ok(is_file("$root/uploads/$dn"), 'Bild, das nur in einem Entwurf steht, bleibt erhalten');
+q("DELETE FROM ar_items WHERE data = '{}' AND updated_by = 'test'");
+touch("$root/uploads/$dn", time() - 3 * 86400);
+cleanup_uploads();
+ok(!is_file("$root/uploads/$dn"), 'ungenutztes Bild wird nach einem Tag entfernt');
+$young = 'zz' . bin2hex(random_bytes(4)) . '.webp';
+file_put_contents("$root/uploads/$young", 'x');
+cleanup_uploads();
+ok(is_file("$root/uploads/$young"), 'frisch hochgeladene Bilder werden nicht angetastet');
+@unlink("$root/uploads/$young");
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);
