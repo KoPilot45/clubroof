@@ -61,7 +61,7 @@ function seed_defaults(PDO $pdo): void
     $add('social', [['label' => 'LinkedIn', 'url' => 'https://www.linkedin.com/in/antonia-r%C3%BCller-85836320a/', 'published' => true]]);
     $add('nav', [
         ['label' => 'Arbeiten', 'anchor' => 'arbeiten', 'desktop' => true], ['label' => 'Podcast', 'anchor' => 'podcast', 'desktop' => false],
-        ['label' => 'Lebenslauf', 'anchor' => 'lebenslauf', 'desktop' => true], ['label' => 'Über mich', 'anchor' => 'ueber', 'desktop' => true],
+        ['label' => 'Über mich', 'anchor' => 'ueber', 'desktop' => true], ['label' => 'Lebenslauf', 'anchor' => 'lebenslauf', 'desktop' => true],
         ['label' => 'Off the record', 'anchor' => 'offtherecord', 'desktop' => false], ['label' => 'Kontakt', 'anchor' => 'kontakt', 'desktop' => true],
     ]);
     $add('marquee', [['word' => 'Innovation'], ['word' => 'Aktivismus'], ['word' => 'Menschen']]);

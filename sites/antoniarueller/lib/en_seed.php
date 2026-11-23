@@ -146,7 +146,7 @@ Email: [add email address]
 ## 2. In brief
 
 - No cookies are set for visitors.
-- There are no tracking or advertising services. Page views are counted without cookies and without IP addresses (see section “Audience measurement”).
+- There are no tracking or advertising services. Visits are counted without cookies and without storing IP addresses (see section “Audience measurement”).
 - Fonts are stored on this server; there is no connection to Google Fonts or similar services.
 - No third-party content (videos, maps, social media plugins) is embedded.
 
@@ -158,7 +158,7 @@ When you open the website, the web server processes technically necessary data t
 
 ## 4. Audience measurement without cookies
 
-To understand how often the site is visited, each page view is counted on this server: only date and hour, page, device type (phone or computer) and the referring domain are recorded. No IP address is stored, visitors are not recognised, and no cookies are used. Bots and browsers with “Do Not Track” enabled are not counted. The legal basis is Art. 6(1)(f) GDPR (interest in demand-oriented design of the offering).
+To understand how often the site is visited, page views and visits are counted on this server: only date and hour, page, device type (phone or computer) and the referring domain are recorded. To make sure a device counts as only one visit per hour, an irreversible short value is formed from the IP address and browser identifier using a random key; it is kept on the server only until the end of the current hour and then deleted together with the key. The IP address itself is not stored, no cookies or other browser storage are used, and no profile across several hours is created. Bots and browsers with “Do Not Track” enabled are not counted. The legal basis is Art. 6(1)(f) GDPR (interest in demand-oriented design of the offering).
 
 ## 5. Encryption
 

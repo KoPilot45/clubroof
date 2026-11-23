@@ -9,7 +9,7 @@ return [
     'owner_name'  => 'Lukas',
 
     // Weitere Zugänge, die beim ersten Aufruf automatisch angelegt werden (danach im Admin unter „Zugänge“ verwaltbar).
-    // Beispiel: 'extra_users' => [['email' => 'name@example.com', 'name' => 'Name']],
+    // Beispiel: 'extra_users' => [['email' => 'name@example.com', 'name' => 'Name', 'role' => 'owner']],  // role optional: 'owner' = Inhaber
     'extra_users' => [],
 
     // Geheimnis für Hashes (Codes, Sitzungen). Wird automatisch erzeugt.

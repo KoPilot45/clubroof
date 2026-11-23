@@ -116,11 +116,13 @@ function items_rows(bool $reset = false): array
         return [];
     }
     if ($all === null) {
-        $all = [];
+        // Erst nach dem Laden zuweisen: Die erste Abfrage kann Migrationen auslösen, die selbst lesen.
         $sql = 'SELECT * FROM ar_items WHERE deleted_at IS NULL' . (preview_mode() ? '' : ' AND live = 1') . ' ORDER BY sort ASC, id ASC';
+        $loaded = [];
         foreach (q($sql)->fetchAll() as $r) {
-            $all[$r['coll']][] = $r;
+            $loaded[$r['coll']][] = $r;
         }
+        $all = $loaded;
     }
     return $all;
 }
@@ -133,10 +135,11 @@ function settings_rows(bool $reset = false): array
         return [];
     }
     if ($all === null) {
-        $all = [];
+        $loaded = [];
         foreach (q('SELECT grp, data, draft FROM ar_settings')->fetchAll() as $r) {
-            $all[$r['grp']] = ['data' => $r['data'], 'draft' => $r['draft']];
+            $loaded[$r['grp']] = ['data' => $r['data'], 'draft' => $r['draft']];
         }
+        $all = $loaded;
     }
     return $all;
 }

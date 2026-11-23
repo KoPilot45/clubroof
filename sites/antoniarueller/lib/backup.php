@@ -38,9 +38,13 @@ function export_json(): string
 function backup_mail(): bool
 {
     $json = export_json();
-    $ok = send_mail((string)cfg('owner_email'), 'Sicherung antoniarueller.de ' . date('d.m.Y'),
-        "Anbei die Sicherung aller Inhalte (JSON) vom " . date('d.m.Y H:i') . " Uhr.\nWiederherstellen: Verwaltung > Sicherung > Datei hochladen.\nBilder (Ordner uploads/) werden hierin nicht gesichert – bitte gelegentlich per FTP herunterladen.\n",
-        [['name' => 'sicherung-' . date('Y-m-d') . '.json', 'type' => 'application/json', 'data' => $json]]);
+    $to = array_column(q("SELECT email FROM ar_users WHERE role = 'owner'")->fetchAll(), 'email') ?: [(string)cfg('owner_email')];
+    $ok = false;
+    foreach ($to as $rcpt) {
+        $ok = send_mail((string)$rcpt, 'Sicherung antoniarueller.de ' . date('d.m.Y'),
+            "Anbei die Sicherung aller Inhalte (JSON) vom " . date('d.m.Y H:i') . " Uhr.\nWiederherstellen: Verwaltung > Sicherung > Datei hochladen.\nBilder (Ordner uploads/) werden hierin nicht gesichert – bitte gelegentlich per FTP herunterladen.\n",
+            [['name' => 'sicherung-' . date('Y-m-d') . '.json', 'type' => 'application/json', 'data' => $json]]) || $ok;
+    }
     if ($ok) {
         save_setting('_backup', ['last' => time()], 'system');
     }

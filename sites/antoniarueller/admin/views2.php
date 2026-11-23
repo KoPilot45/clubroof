@@ -75,7 +75,7 @@ function view_home(array $user): void
     // Besucher
     $st = stats_summary();
     $max = max(1, max($st['days']));
-    echo '<section class="card"><h2>Besucher <span class="score">letzte 30 Tage</span></h2><div class="stats"><div><strong>' . $st['today'] . '</strong><small>heute</small></div><div><strong>' . $st['week'] . '</strong><small>7 Tage</small></div><div><strong>' . $st['total'] . '</strong><small>30 Tage</small></div></div><div class="bars" role="img" aria-label="Seitenaufrufe pro Tag">';
+    echo '<section class="card"><h2>Besuche <span class="score">letzte 30 Tage</span></h2><div class="stats"><div><strong>' . $st['today'] . '</strong><small>heute</small></div><div><strong>' . $st['week'] . '</strong><small>7 Tage</small></div><div><strong>' . $st['total'] . '</strong><small>30 Tage</small></div><div><strong>' . $st['hits'] . '</strong><small>Aufrufe (30 Tage)</small></div></div><div class="bars" role="img" aria-label="Seitenaufrufe pro Tag">';
     foreach ($st['days'] as $day => $n) {
         echo '<span title="' . e(date('d.m.', strtotime($day))) . ': ' . $n . '" style="height:' . max(2, (int)round($n / $max * 100)) . '%"></span>';
     }
@@ -92,7 +92,7 @@ function view_home(array $user): void
         echo '<li>' . e($r) . ': ' . $n . '</li>';
     }
     echo $st['refs'] ? '</ul>' : '';
-    echo '</div></div><p class="hint">Gezählt werden nur Seitenaufrufe – ohne Cookies, ohne IP-Adresse, ohne Wiedererkennung. Bots werden nicht mitgezählt.</p></section>';
+    echo '</div></div><p class="hint">Ein Gerät zählt höchstens einmal pro Stunde als Besuch (Aufrufe zählen alle Seitenaufrufe). Gespeichert werden nur Stunde, Seite, Gerätetyp und verweisende Domain – ohne Cookies und ohne IP-Adresse. Für die Stunden-Erkennung liegt kurz ein nicht umkehrbarer Kurzwert auf dem Server und wird zum Stundenende gelöscht. Bots und „Do Not Track“ werden nicht gezählt.</p></section>';
 
     // Bereiche
     echo '<h2 class="fs">Bereiche</h2><div class="tiles">';
@@ -181,7 +181,7 @@ function view_backup(array $user): void
     }
     layout_start($user, 'Sicherung', 'backup');
     $last = backup_last();
-    echo '<p class="lead">Sichert alle Texte, Listen, Einstellungen und Entwürfe als Datei (ohne Bilder, ohne Zugangsdaten). Letzte Sicherung per Mail: <strong>' . ($last ? e(when_fmt($last)) : 'noch keine') . '</strong>. Eine automatische Mail geht bei Anmeldungen alle 7 Tage an ' . e((string)cfg('owner_email')) . '.</p>';
+    echo '<p class="lead">Sichert alle Texte, Listen, Einstellungen und Entwürfe als Datei (ohne Bilder, ohne Zugangsdaten). Letzte Sicherung per Mail: <strong>' . ($last ? e(when_fmt($last)) : 'noch keine') . '</strong>. Eine automatische Mail geht bei Anmeldungen alle 7 Tage an alle Inhaber.</p>';
     echo '<div class="actions"><form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="export"><button class="btn">Sicherung herunterladen</button></form> <form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="backup_now"><button class="btn ghost">Jetzt per Mail senden</button></form></div>';
     echo '<h2 class="fs">Wiederherstellen</h2><form method="post" action="' . a() . '" enctype="multipart/form-data" class="form" data-confirm="Alle jetzigen Inhalte werden durch die Sicherung ersetzt. Fortfahren?">' . csrf_field($user) . '<input type="hidden" name="action" value="import_backup"><div class="field"><label for="bf">Sicherungsdatei (.json)</label><input type="file" id="bf" name="backup" accept="application/json,.json" required><small class="hint">Ersetzt alle Inhalte und Einstellungen. Der aktuelle Stand wird vorher in data/ gespeichert. Bilder werden nicht verändert.</small></div><div class="field check"><label><input type="checkbox" name="confirm" value="1" required> Ich weiß, dass dabei alle jetzigen Inhalte ersetzt werden.</label></div><button class="btn danger">Wiederherstellen</button></form>';
     $key = cron_key();

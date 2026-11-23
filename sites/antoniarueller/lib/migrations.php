@@ -124,6 +124,85 @@ function run_migrations(PDO $pdo): void
     }
 
     require_once __DIR__ . '/legal_defaults.php';
+    // Datenschutz: Besuchserkennung (ein Besuch pro Gerät und Stunde)
+    if (!in_array('privacy_stats_v2', $applied, true)) {
+        $legal = setting('legal', true);
+        $pairs = privacy_stats_v2_pairs();
+        $ch = false;
+        foreach (['datenschutz' => 'de', 'datenschutz_en' => 'en'] as $key => $lng) {
+            $txt = (string)($legal[$key] ?? '');
+            $new = $txt;
+            foreach ($pairs[$lng] as [$o, $n]) {
+                $new = str_replace($o, $n, $new);
+            }
+            if ($new !== $txt) {
+                $legal[$key] = $new;
+                $ch = true;
+            }
+        }
+        if ($ch) {
+            save_setting('legal', $legal, 'migration');
+        }
+        $applied[] = 'privacy_stats_v2';
+    }
+
+    // Reparatur: Impressum/Datenschutz-Vorlagen, falls noch die alten Platzhalter oder leere Texte gespeichert sind
+    if (!in_array('legal_v2', $applied, true)) {
+        require_once __DIR__ . '/legal_defaults.php';
+        $legal = setting('legal', true);
+        $new = legal_defaults();
+        $old = legal_old_placeholders();
+        $changed = false;
+        foreach (['impressum' => 0, 'datenschutz' => 1] as $k => $i) {
+            $row = json_arr((string)(settings_rows()['legal']['data'] ?? ''));
+            $stored = trim((string)($row[$k] ?? ''));
+            if ($stored === '' || $stored === $old[$i]) {
+                $legal[$k] = $new[$k];
+                $changed = true;
+            }
+        }
+        if ($changed) {
+            save_setting('legal', $legal, 'migration');
+        }
+        $applied[] = 'legal_v2';
+    }
+
+    // Reparatur: LinkedIn-Link aus den alten Kontaktdaten als Social-Profil übernehmen (falls noch keins existiert)
+    if (!in_array('social_v2', $applied, true)) {
+        $have = $pdo->query("SELECT 1 FROM ar_items WHERE coll = 'social' LIMIT 1")->fetchColumn();
+        $row = json_arr((string)(settings_rows()['contact']['data'] ?? ''));
+        $li = trim((string)($row['linkedin'] ?? ''));
+        if (!$have && $li !== '') {
+            save_item('social', null, ['label' => 'LinkedIn', 'url' => $li, 'published' => true], 'migration');
+        }
+        $applied[] = 'social_v2';
+    }
+
+    // Sicherstellen, dass die Datenschutzerklärung die Besuchszählung beschreibt (falls noch nicht vorhanden)
+    if (!in_array('privacy_stats_v3', $applied, true)) {
+        $legal = setting('legal', true);
+        $patched = privacy_stats_patch((string)$legal['datenschutz']);
+        if ($patched !== null) {
+            $legal['datenschutz'] = $patched;
+            save_setting('legal', $legal, 'migration');
+        }
+        $applied[] = 'privacy_stats_v3';
+    }
+
+    // Reihenfolge: „Über mich“ vor „Lebenslauf“ (Navigation)
+    if (!in_array('order_v1', $applied, true)) {
+        $nav = [];
+        foreach (q("SELECT id, data, sort FROM ar_items WHERE coll = 'nav' AND deleted_at IS NULL")->fetchAll() as $r) {
+            $d = json_arr($r['data']) ?? [];
+            $nav[(string)($d['anchor'] ?? '')] = $r;
+        }
+        if (isset($nav['lebenslauf'], $nav['ueber']) && (int)$nav['lebenslauf']['sort'] < (int)$nav['ueber']['sort']) {
+            q('UPDATE ar_items SET sort = ? WHERE id = ?', [(int)$nav['ueber']['sort'], (int)$nav['lebenslauf']['id']]);
+            q('UPDATE ar_items SET sort = ? WHERE id = ?', [(int)$nav['lebenslauf']['sort'], (int)$nav['ueber']['id']]);
+        }
+        $applied[] = 'order_v1';
+    }
+
     // Zusätzliche Zugänge aus config.php ('extra_users'): werden einmal angelegt; spätere Entfernung im Admin bleibt bestehen
     foreach ((array)cfg('extra_users', []) as $u) {
         $em = strtolower(trim((string)($u['email'] ?? '')));
@@ -138,6 +217,15 @@ function run_migrations(PDO $pdo): void
                 ->execute([$em, mb_substr((string)($u['name'] ?? ''), 0, 120), 'editor', time()]);
         }
         $applied[] = $mark;
+    }
+    // Rolle „Inhaber“ für Zugänge aus config.php ('role' => 'owner'), einmalig
+    foreach ((array)cfg('extra_users', []) as $u) {
+        $em = strtolower(trim((string)($u['email'] ?? '')));
+        $mark = 'role:' . $em;
+        if ($em !== '' && ($u['role'] ?? '') === 'owner' && !in_array($mark, $applied, true)) {
+            $pdo->prepare("UPDATE ar_users SET role = 'owner' WHERE email = ?")->execute([$em]);
+            $applied[] = $mark;
+        }
     }
 
     if (count($applied) !== $before) {

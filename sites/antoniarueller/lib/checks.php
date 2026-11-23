@@ -88,6 +88,7 @@ function readiness_checks(): array
         ['must', trim((string)$c['email']) !== '', 'Kontakt-E-Mail-Adresse eingetragen', a('p=group&g=contact')],
         ['must', !$ph((string)$legal['impressum']), 'Impressum vollständig (keine [Platzhalter] mehr)', a('p=group&g=legal')],
         ['must', !$ph((string)$legal['datenschutz']), 'Datenschutzerklärung vollständig (keine [Platzhalter] mehr)', a('p=group&g=legal')],
+        ['must', str_contains((string)$legal['datenschutz'], 'Reichweitenmessung'), 'Datenschutzerklärung beschreibt die Besuchszählung (Abschnitt „Reichweitenmessung“)', a('p=group&g=legal')],
         ['must', !$seo['noindex'], 'Suchmaschinen zugelassen („noindex“ ist aus)', a('p=group&g=seo')],
         ['must', $hero['photo'] !== '' && trim((string)$hero['photo_alt']) !== '', 'Startfoto mit Bildbeschreibung', a('p=group&g=hero')],
         ['must', count($clips) >= 3, 'Mindestens drei Referenzen mit echtem Link', a('p=list&c=clips')],

@@ -155,6 +155,37 @@ save_setting('contact', $cOld, 'test');
 save_setting('legal', $lOld, 'test');
 clear_page_cache();
 
+echo "Besuchszähler: ein Besuch pro Gerät und Stunde\n";
+require_once $root . '/lib/stats.php';
+$visits = function () use ($root): array {
+    $v = 0;
+    $n = 0;
+    foreach (glob("$root/data/stats/*.log") ?: [] as $f) {
+        foreach (file($f, FILE_IGNORE_NEW_LINES) as $l) {
+            $p = explode("\t", $l);
+            $n++;
+            $v += (($p[4] ?? '1') === '1') ? 1 : 0;
+        }
+    }
+    return [$n, $v];
+};
+req('GET', "$base/");
+[$n0, $v0] = $visits();
+req('GET', "$base/");
+req('GET', "$base/en/");
+req('GET', "$base/impressum/");
+[$n1, $v1] = $visits();
+ok($n1 === $n0 + 3, 'weitere Aufrufe werden als Aufrufe protokolliert');
+ok($v1 === $v0, 'dasselbe Gerät zählt in derselben Stunde nicht erneut als Besuch');
+$seen = glob("$root/data/stats/seen-*.tmp") ?: [];
+ok(count($seen) === 1, 'genau eine Kurzwert-Datei für die laufende Stunde');
+$seenTxt = (string)file_get_contents($seen[0]);
+ok(!str_contains($seenTxt, '127.0.0.1') && !str_contains($seenTxt, 'test-client'), 'Kurzwert-Datei enthält weder IP noch Browserkennung');
+file_put_contents("$root/data/stats/seen-2020010100.tmp", "salt\nabc\n");
+stats_cleanup();
+ok(!is_file("$root/data/stats/seen-2020010100.tmp"), 'alte Kurzwert-Dateien werden gelöscht');
+ok(stats_summary()['hits'] >= stats_summary()['total'], 'Auswertung: Aufrufe ≥ Besuche');
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

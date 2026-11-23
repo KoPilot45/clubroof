@@ -62,7 +62,7 @@ E-Mail: [E-Mail-Adresse einfügen]
 ## 2. Das Wichtigste in Kürze
 
 - Für Besucherinnen und Besucher werden keine Cookies gesetzt.
-- Es gibt keine Tracking- oder Werbedienste. Seitenaufrufe werden ohne Cookies und ohne IP-Adresse gezählt (siehe Abschnitt „Reichweitenmessung“).
+- Es gibt keine Tracking- oder Werbedienste. Besuche werden ohne Cookies und ohne Speicherung von IP-Adressen gezählt (siehe Abschnitt „Reichweitenmessung“).
 - Schriften sind auf dem eigenen Server gespeichert; es gibt keine Verbindung zu Google Fonts oder ähnlichen Diensten.
 - Es werden keine Inhalte Dritter (Videos, Karten, Social-Media-Plugins) eingebunden.
 
@@ -74,7 +74,7 @@ Beim Aufruf der Website verarbeitet der Webserver technisch notwendige Daten, di
 
 ## 4. Reichweitenmessung ohne Cookies
 
-Um zu verstehen, wie oft die Seite besucht wird, wird jeder Seitenaufruf auf diesem Server gezählt: Es werden nur Datum und Uhrzeit (Stunde), die aufgerufene Seite, der Gerätetyp (Handy oder Rechner) und die verweisende Internetadresse (Domain) festgehalten. Es wird keine IP-Adresse gespeichert, Besucherinnen und Besucher werden nicht wiedererkannt, und es werden keine Cookies gesetzt. Bots und Browser mit „Do Not Track“ werden nicht gezählt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (Interesse an der bedarfsgerechten Gestaltung des Angebots).
+Um zu verstehen, wie oft die Seite besucht wird, werden Seitenaufrufe und Besuche auf diesem Server gezählt: Es werden nur Datum und Uhrzeit (Stunde), die aufgerufene Seite, der Gerätetyp (Handy oder Rechner) und die verweisende Internetadresse (Domain) festgehalten. Damit ein Gerät pro Stunde nur einmal als Besuch zählt, wird aus IP-Adresse und Browserkennung mit einem zufälligen Schlüssel ein nicht umkehrbarer Kurzwert gebildet und nur bis zum Ende der laufenden Stunde auf dem Server vorgehalten; danach wird er samt Schlüssel gelöscht. Die IP-Adresse selbst wird nicht gespeichert, es werden keine Cookies oder sonstigen Speicherungen im Browser eingesetzt, und es entsteht kein Profil über mehrere Stunden. Bots und Browser mit „Do Not Track“ werden nicht gezählt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (Interesse an der bedarfsgerechten Gestaltung des Angebots).
 
 ## 5. Verschlüsselung
 
@@ -123,7 +123,16 @@ function privacy_stats_patch(string $text): ?string
     if (str_contains($text, 'Reichweitenmessung') || !str_contains($text, '- Es gibt keine Analyse-, Tracking- oder Werbedienste.') || !str_contains($text, '## 4. Verschlüsselung')) {
         return null;
     }
-    $text = str_replace('- Es gibt keine Analyse-, Tracking- oder Werbedienste.', '- Es gibt keine Tracking- oder Werbedienste. Seitenaufrufe werden ohne Cookies und ohne IP-Adresse gezählt (siehe Abschnitt „Reichweitenmessung“).', $text);
-    $sec = "## 3a. Reichweitenmessung ohne Cookies\n\nUm zu verstehen, wie oft die Seite besucht wird, wird jeder Seitenaufruf auf diesem Server gezählt: Es werden nur Datum und Uhrzeit (Stunde), die aufgerufene Seite, der Gerätetyp (Handy oder Rechner) und die verweisende Internetadresse (Domain) festgehalten. Es wird keine IP-Adresse gespeichert, Besucherinnen und Besucher werden nicht wiedererkannt, und es werden keine Cookies gesetzt. Bots und Browser mit „Do Not Track“ werden nicht gezählt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (Interesse an der bedarfsgerechten Gestaltung des Angebots).\n\n";
+    $text = str_replace('- Es gibt keine Analyse-, Tracking- oder Werbedienste.', '- Es gibt keine Tracking- oder Werbedienste. Besuche werden ohne Cookies und ohne Speicherung von IP-Adressen gezählt (siehe Abschnitt „Reichweitenmessung“).', $text);
+    $sec = "## 3a. Reichweitenmessung ohne Cookies\n\nUm zu verstehen, wie oft die Seite besucht wird, werden Seitenaufrufe und Besuche auf diesem Server gezählt: Es werden nur Datum und Uhrzeit (Stunde), die aufgerufene Seite, der Gerätetyp (Handy oder Rechner) und die verweisende Internetadresse (Domain) festgehalten. Damit ein Gerät pro Stunde nur einmal als Besuch zählt, wird aus IP-Adresse und Browserkennung mit einem zufälligen Schlüssel ein nicht umkehrbarer Kurzwert gebildet und nur bis zum Ende der laufenden Stunde auf dem Server vorgehalten; danach wird er samt Schlüssel gelöscht. Die IP-Adresse selbst wird nicht gespeichert, es werden keine Cookies oder sonstigen Speicherungen im Browser eingesetzt, und es entsteht kein Profil über mehrere Stunden. Bots und Browser mit „Do Not Track“ werden nicht gezählt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (Interesse an der bedarfsgerechten Gestaltung des Angebots).\n\n";
     return str_replace('## 4. Verschlüsselung', $sec . '## 4. Verschlüsselung', $text);
+}
+
+/** Neuer Wortlaut zur Besuchserkennung (Deutsch/Englisch) für bereits gespeicherte Texte. */
+function privacy_stats_v2_pairs(): array
+{
+    return [
+        'de' => [['wird jeder Seitenaufruf auf diesem Server gezählt', 'werden Seitenaufrufe und Besuche auf diesem Server gezählt'], ['Es wird keine IP-Adresse gespeichert, Besucherinnen und Besucher werden nicht wiedererkannt, und es werden keine Cookies gesetzt.', 'Damit ein Gerät pro Stunde nur einmal als Besuch zählt, wird aus IP-Adresse und Browserkennung mit einem zufälligen Schlüssel ein nicht umkehrbarer Kurzwert gebildet und nur bis zum Ende der laufenden Stunde auf dem Server vorgehalten; danach wird er samt Schlüssel gelöscht. Die IP-Adresse selbst wird nicht gespeichert, es werden keine Cookies oder sonstigen Speicherungen im Browser eingesetzt, und es entsteht kein Profil über mehrere Stunden.'], ['Seitenaufrufe werden ohne Cookies und ohne IP-Adresse gezählt', 'Besuche werden ohne Cookies und ohne Speicherung von IP-Adressen gezählt']],
+        'en' => [['each page view is counted on this server', 'page views and visits are counted on this server'], ['No IP address is stored, visitors are not recognised, and no cookies are used.', 'To make sure a device counts as only one visit per hour, an irreversible short value is formed from the IP address and browser identifier using a random key; it is kept on the server only until the end of the current hour and then deleted together with the key. The IP address itself is not stored, no cookies or other browser storage are used, and no profile across several hours is created.'], ['Page views are counted without cookies and without IP addresses', 'Visits are counted without cookies and without storing IP addresses']],
+    ];
 }

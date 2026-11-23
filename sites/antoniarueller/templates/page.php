@@ -239,39 +239,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </section>
 <?php endif; ?>
 
-<?php if ($stations): ?>
-<section id="lebenslauf" aria-label="<?= tr('Stationen') ?>" style="padding-top:144px">
-<?= sec_head('02', 'Stationen', $sec['st_right'], '24px') ?>
-<p class="ar-wall">
-<?php foreach ($stations as $i => $s): ?><span class="ar-st"><span class="<?= $s['highlight'] ? 'st-hl' : 'ar-outline' ?>"><?= e($s['name']) ?></span><?php if ($i < count($stations) - 1): ?><span class="ar-sl">/</span><?php endif; ?></span>
-<?php endforeach; ?>
-</p>
-</section>
-<?php endif; ?>
-
-<?php if ($cvGroups): ?>
-<section aria-label="<?= tr('Lebenslauf') ?>" <?= $stations ? '' : 'id="lebenslauf"' ?> style="padding-top:120px">
-<?= sec_head('02', 'Lebenslauf', ($cvMin ? $cvMin . ' — ' . tr('heute') : '') . ($sec['cv_right'] !== '' ? ' · ' . $sec['cv_right'] : ''), '24px') ?>
-<h2 class="big-h" style="margin-bottom:56px"><span class="bh1"><?= e($sec['cv_h1']) ?></span><span class="bh2"><?= e($sec['cv_h2']) ?></span></h2>
-<ol class="cv">
-<?php foreach ($cvGroups as $year => $rows): ?>
-<li><span class="cv-y <?= (int)$year >= (int)date('Y') - 1 ? 'ar-year-now' : 'ar-year-past' ?>"><?= e($year) ?></span>
-<div class="cv-items">
-<?php foreach ($rows as $r): ?><div class="cv-it"><span class="cv-dot" aria-hidden="true"></span><span class="cv-role"><?= $r['role'] !== '' ? e($r['role']) . ', ' : '' ?><span class="mk-i"><?= e($r['org']) ?></span></span><span class="cv-when"><?= e(cv_when($r)) ?></span></div>
-<?php endforeach; ?>
-</div></li>
-<?php endforeach; ?>
-</ol>
-<?php if ($before): ?>
-<div class="cv-before"><span class="cv-before-l muted"><?= e($sec['cv_before']) ?></span>
-<div class="cv-before-r"><?php foreach ($before as $b): ?><div class="cv-it2"><span class="cv-role"><?= mk($b['text']) ?></span><span class="cv-when"><?= e($b['side']) ?></span></div><?php endforeach; ?></div></div>
-<?php endif; ?>
-<?php if (upload_url($contact['cv_pdf']) !== ''): ?><div style="display:flex;justify-content:flex-end;margin-top:24px"><a class="btn-solid" href="<?= e(upload_url($contact['cv_pdf'])) ?>" target="_blank" rel="noopener" download><?= e($sec['cv_pdf_label']) ?> <span aria-hidden="true">↓</span></a></div><?php endif; ?>
-</section>
-<?php endif; ?>
-
 <section id="ueber" aria-label="<?= tr('Über') ?>" style="padding-top:144px">
-<?= sec_head('03', 'Über mich', $about['right'], '48px') ?>
+<?= sec_head('02', 'Über mich', $about['right'], '48px') ?>
 <div class="about">
 <?php if (upload_url($about['portrait']) !== ''): ?>
 <div class="about-img"><img src="<?= e(upload_url($about['portrait'])) ?>"<?= img_attrs($about['portrait']) ?> alt="<?= e($about['portrait_alt']) ?>" loading="lazy" decoding="async"><?php if ($about['onair'] !== ''): ?><span class="ar-onair"><?= e($about['onair']) ?></span><?php endif; ?></div>
@@ -290,6 +259,38 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 </div>
 </section>
+
+<?php if ($stations): ?>
+<section id="lebenslauf" aria-label="<?= tr('Stationen') ?>" style="padding-top:144px">
+<?= sec_head('03', 'Stationen', $sec['st_right'], '24px') ?>
+<p class="ar-wall">
+<?php foreach ($stations as $i => $s): ?><span class="ar-st"><span class="<?= $s['highlight'] ? 'st-hl' : 'ar-outline' ?>"><?= e($s['name']) ?></span><?php if ($i < count($stations) - 1): ?><span class="ar-sl">/</span><?php endif; ?></span>
+<?php endforeach; ?>
+</p>
+</section>
+<?php endif; ?>
+
+<?php if ($cvGroups): ?>
+<section aria-label="<?= tr('Lebenslauf') ?>" <?= $stations ? '' : 'id="lebenslauf"' ?> style="padding-top:120px">
+<?= sec_head('03', 'Lebenslauf', ($cvMin ? $cvMin . ' — ' . tr('heute') : '') . ($sec['cv_right'] !== '' ? ' · ' . $sec['cv_right'] : ''), '24px') ?>
+<h2 class="big-h" style="margin-bottom:56px"><span class="bh1"><?= e($sec['cv_h1']) ?></span><span class="bh2"><?= e($sec['cv_h2']) ?></span></h2>
+<ol class="cv">
+<?php foreach ($cvGroups as $year => $rows): ?>
+<li><span class="cv-y <?= (int)$year >= (int)date('Y') - 1 ? 'ar-year-now' : 'ar-year-past' ?>"><?= e($year) ?></span>
+<div class="cv-items">
+<?php foreach ($rows as $r): ?><div class="cv-it"><span class="cv-dot" aria-hidden="true"></span><span class="cv-role"><?= $r['role'] !== '' ? e($r['role']) . ', ' : '' ?><span class="mk-i"><?= e($r['org']) ?></span></span><span class="cv-when"><?= e(cv_when($r)) ?></span></div>
+<?php endforeach; ?>
+</div></li>
+<?php endforeach; ?>
+</ol>
+<?php if ($before): ?>
+<div class="cv-before"><span class="cv-before-l muted"><?= e($sec['cv_before']) ?></span>
+<div class="cv-before-r"><?php foreach ($before as $b): ?><div class="cv-it2"><span class="cv-role"><?= mk($b['text']) ?></span><span class="cv-when"><?= e($b['side']) ?></span></div><?php endforeach; ?></div></div>
+<?php endif; ?>
+<?php if (upload_url($contact['cv_pdf']) !== ''): ?><div style="display:flex;justify-content:flex-end;margin-top:24px"><a class="btn-solid" href="<?= e(upload_url($contact['cv_pdf'])) ?>" target="_blank" rel="noopener" download><?= e($sec['cv_pdf_label']) ?> <span aria-hidden="true">↓</span></a></div><?php endif; ?>
+</section>
+<?php endif; ?>
+
 
 <?php if ($off): ?>
 <section id="offtherecord" aria-label="<?= tr('Off the record') ?>" style="padding-top:144px">
