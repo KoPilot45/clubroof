@@ -68,6 +68,7 @@ function schema(): array
             f('section', '', 'Zeitleiste'),
             f('select', 'tl_track', 'Spur in der Zeitleiste', ['options_from' => 'tracks', 'empty' => 'Nicht in der Zeitleiste zeigen', 'hint' => 'Spuren (Video, Online, Radio …) legst du unter „Zeitleiste → Spuren“ an.']),
             f('date', 'tl_end', 'Enddatum (optional)', ['hint' => 'Für längere Produktionen. Leer = kurzer Balken am Datum.']),
+            f('section', '', 'Feintuning der Zeitleiste', ['adv' => true]),
             f('number', 'tl_pos', 'Position manuell (0–100 %, optional)', ['min' => 0, 'max' => 100, 'step' => 0.1, 'hint' => 'Überschreibt die automatische Position aus dem Datum.']),
             f('number', 'tl_w', 'Balkenbreite manuell (% , optional)', ['min' => 0.5, 'max' => 100, 'step' => 0.1]),
             f('text', 'tc', 'Timecode (optional)', ['max' => 11, 'hint' => 'Leer = wird automatisch vergeben, Format 00:01:47:10.']),
@@ -203,7 +204,7 @@ function schema(): array
             f('text', 'title', 'Seitentitel', ['max' => 70, 'ideal' => [40, 60], 'default' => 'Antonia Rüller – Journalistin', 'hint' => 'Ideal 40–60 Zeichen. Name und Beruf nach vorn, z. B. „Antonia Rüller – Journalistin & Reporterin, Bremen“.']),
             f('textarea', 'description', 'Beschreibung (Meta-Description)', ['max' => 170, 'ideal' => [120, 160], 'rows' => 3, 'hint' => 'Ideal 120–160 Zeichen: Wer, wofür, wo.']),
             f('image', 'og_image', 'Vorschaubild beim Teilen (1200 × 630 px)', ['hint' => 'Leer = Foto aus dem Startbereich.']),
-            f('section', '', 'Person: strukturierte Daten für Google (Schema.org)'),
+            f('section', '', 'Person: strukturierte Daten für Google (Schema.org)', ['adv' => true]),
             f('bool', 'jsonld', 'Strukturierte Daten ausgeben', ['default' => true, 'hint' => 'Helfen Suchmaschinen, dich als Person, Journalistin und Autorin deiner Beiträge zu erkennen.']),
             f('text', 'job_title', 'Berufsbezeichnung', ['max' => 80, 'default' => 'Journalistin und Reporterin']),
             f('text', 'works_for', 'Arbeitgeber / Redaktion', ['max' => 80, 'default' => 'Radio Bremen']),
@@ -214,13 +215,13 @@ function schema(): array
             f('textarea', 'knows_about', 'Themenschwerpunkte (einer pro Zeile)', ['rows' => 6, 'max' => 800, 'default' => "Investigativjournalismus\nRecherche\nPolitik\nGesundheitspolitik\nKlimapolitik\nTürkei\nRadio\nPodcast\nVideo", 'hint' => 'Wofür soll man dich finden?']),
             f('textarea', 'alumni', 'Ausbildung / Hochschulen (eine pro Zeile)', ['rows' => 3, 'max' => 400, 'default' => 'TU Dortmund']),
             f('bool', 'works_list', 'Referenzen als Werkliste ausgeben', ['default' => true, 'hint' => 'Jede Referenz mit echtem Link wird als Beitrag mit dir als Autorin ausgezeichnet.']),
-            f('section', '', 'Bestätigung der Webmaster-Konten (optional)'),
+            f('section', '', 'Bestätigung der Webmaster-Konten (optional)', ['adv' => true]),
             f('text', 'google_verify', 'Google Search Console: Inhalt des Meta-Tags', ['max' => 120, 'hint' => 'Nur der Wert aus content="…".']),
             f('text', 'bing_verify', 'Bing Webmaster Tools: Inhalt des Meta-Tags', ['max' => 120]),
-            f('section', '', 'robots.txt'),
+            f('section', '', 'robots.txt', ['adv' => true]),
             f('select', 'ai_bots', 'KI-Crawler', ['options' => ['allow' => 'Erlauben', 'block' => 'Training sperren (GPTBot, ClaudeBot, Google-Extended, CCBot u. a.)'], 'default' => 'allow', 'hint' => 'robots.txt ist eine Bitte, keine Sperre – seriöse Anbieter halten sich daran.']),
             f('textarea', 'robots_extra', 'Zusätzliche Zeilen für robots.txt', ['rows' => 4, 'max' => 1000, 'hint' => 'Nur für Fortgeschrittene. Beispiel: Disallow: /uploads/privat/']),
-            f('section', '', 'llms.txt (Überblick für KI-Assistenten)'),
+            f('section', '', 'llms.txt (Überblick für KI-Assistenten)', ['adv' => true]),
             f('bool', 'llms_enabled', 'llms.txt bereitstellen', ['default' => true]),
             f('textarea', 'llms_summary', 'Kurzbeschreibung für KI-Assistenten', ['rows' => 4, 'max' => 600, 'hint' => 'Leer = die Meta-Description. Sachlich formulieren: wer du bist, wofür du stehst, wo man Arbeiten findet.']),
             f('textarea', 'llms_extra', 'Zusätzlicher Text (Markdown)', ['rows' => 5, 'max' => 3000, 'hint' => 'z. B. Hinweise zur Nutzung deiner Beiträge, Zitierregeln, Pressekontakt.']),
@@ -323,11 +324,74 @@ function schema(): array
     return $s;
 }
 
-/** Navigationsstruktur der Admin-Seitenleiste */
+/** Navigationsstruktur der Admin-Seitenleiste – folgt den Abschnitten der Website. */
 function admin_menu(): array
 {
     return [
         'Seite' => [['g', 'site'], ['g', 'seo'], ['g', 'hero'], ['c', 'nav'], ['c', 'marquee'], ['g', 'sections']],
         'Inhalte' => [['c', 'clips'], ['g', 'timeline'], ['c', 'tracks'], ['c', 'episodes'], ['c', 'stations'], ['c', 'cv'], ['c', 'before'], ['g', 'about'], ['c', 'crossmedia'], ['c', 'languages'], ['c', 'offrecord'], ['c', 'questions'], ['g', 'contact'], ['c', 'social'], ['g', 'legal']],
+    ];
+}
+
+/**
+ * Seitenleiste nach Website-Abschnitten.
+ * Gruppe: id => [Titel, Symbol, Beschreibung, Einträge]; Eintrag: [Art (c|g|p), Schlüssel, Menütext, Erklärung, nur Inhaber?]
+ */
+function admin_nav(): array
+{
+    return [
+        'start' => ['Startseite', 'home', 'Das Erste, was Besucher sehen.', [
+            ['g', 'hero', 'Startbild & Einleitung', 'Foto, Überschrift und Einstiegstext ganz oben.'],
+            ['c', 'marquee', 'Laufband', 'Die Wörter, die unter dem Startbild durchlaufen.'],
+            ['c', 'questions', 'Leitfragen', '„Was mich antreibt“ – die kurzen Fragen mit Nummer.'],
+        ]],
+        'arbeiten' => ['Arbeiten', 'film', 'Referenzen, Hauptclip und Zeitleiste.', [
+            ['c', 'clips', 'Referenzen', 'Alle Arbeitsproben, auch der Hauptclip oben.'],
+            ['c', 'tracks', 'Zeitleiste: Spuren', 'Die Zeilen der Zeitleiste (Video, Radio, Online …).'],
+            ['g', 'timeline', 'Zeitleiste: Zeitraum', 'Von wann bis wann die Zeitleiste reicht.'],
+        ]],
+        'podcast' => ['Podcast', 'mic', 'Folgen mit Links zu den Plattformen.', [
+            ['c', 'episodes', 'Folgen', 'Jede Folge mit Titel, Wellenform und Plattform-Links.'],
+        ]],
+        'ueber' => ['Über mich', 'user', 'Porträt, Text, Sprachen und Medien.', [
+            ['g', 'about', 'Text & Porträt', 'Foto und Text im Abschnitt „Über mich“.'],
+            ['c', 'crossmedia', 'Crossmedial', 'Die Kacheln mit Medien, in denen Antonia arbeitet.'],
+            ['c', 'languages', 'Sprachen', 'Sprachen mit Niveau.'],
+        ]],
+        'cv' => ['Lebenslauf', 'doc', 'Stationen und frühere Erfahrungen.', [
+            ['c', 'cv', 'Stationen', 'Berufliche Stationen mit Zeitraum.'],
+            ['c', 'stations', 'Sender & Redaktionen', 'Die Liste der Sender und Redaktionen.'],
+            ['c', 'before', 'Davor', 'Frühere Erfahrungen und Ausbildung.'],
+        ]],
+        'otr' => ['Off the record', 'chat', 'Persönliche Fragen und Antworten.', [
+            ['c', 'offrecord', 'Fragen & Antworten', 'Die persönlichen Fragen im Abschnitt „Off the record“.'],
+        ]],
+        'kontakt' => ['Kontakt', 'mail', 'Kontaktangaben und Profile.', [
+            ['g', 'contact', 'Kontakt & Fußzeile', 'E-Mail, Texte beim Kontakt und die Fußzeile.'],
+            ['c', 'social', 'Social-Media-Profile', 'Links zu LinkedIn, Instagram usw.'],
+        ]],
+        'design' => ['Seite & Design', 'palette', 'Farben, Menü und Überschriften.', [
+            ['g', 'site', 'Farben & Kopfzeile', 'Akzentfarbe und Verhalten der Kopfzeile.'],
+            ['c', 'nav', 'Menü der Webseite', 'Die Menüpunkte oben auf der Seite.'],
+            ['g', 'sections', 'Überschriften der Abschnitte', 'Titel und Einleitungen der einzelnen Abschnitte.'],
+        ]],
+        'recht' => ['Suche & Recht', 'search', 'Google, Social-Media-Vorschau, Impressum.', [
+            ['g', 'seo', 'SEO & Suche', 'Titel, Beschreibung und Vorschaubild für Suchmaschinen.'],
+            ['g', 'legal', 'Impressum & Datenschutz', 'Die rechtlichen Texte (Deutsch und Englisch).'],
+        ]],
+        'auswertung' => ['Auswertung', 'chart', 'Besuche und Klicks – ohne Cookies.', [
+            ['p', 'stats', 'Statistik', 'Besuche, Herkunft, Klicks und Kampagnen.'],
+        ]],
+        'system' => ['System', 'gear', 'Dateien, Zugänge, Sicherung.', [
+            ['p', 'media', 'Mediathek', 'Alle hochgeladenen Bilder und Dateien.'],
+            ['p', 'trash', 'Papierkorb', 'Entfernte Einträge wiederherstellen oder löschen.'],
+            ['p', 'users', 'Zugänge', 'Wer sich anmelden darf.', true],
+            ['p', 'backup', 'Sicherung', 'Backups ansehen, laden und zurückspielen.', true],
+            ['p', 'account', 'Mein Konto', 'Name und Passwort.'],
+            ['p', 'sessions', 'Geräte', 'Wo du angemeldet bist.'],
+            ['p', 'log', 'Protokoll', 'Wer hat wann was geändert.', true],
+            ['p', 'check', 'Systemcheck', 'Technische Prüfung der Installation.', true],
+            ['p', 'help', 'Hilfe', 'Kurze Anleitungen für typische Aufgaben.'],
+        ]],
     ];
 }

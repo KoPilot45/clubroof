@@ -5,6 +5,7 @@ require_once __DIR__ . '/forms.php';
 require_once __DIR__ . '/views2.php';
 require_once __DIR__ . '/login_views.php';
 require_once __DIR__ . '/stats_views.php';
+require_once __DIR__ . '/ui.php';
 
 function a(string $q = ''): string
 {
@@ -21,6 +22,7 @@ function admin_head(string $title, ?array $user = null): void
 <meta name="robots" content="noindex, nofollow">
 <title><?= e($title) ?> – Verwaltung</title>
 <link rel="icon" href="<?= AR_BASE ?>/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="<?= AR_BASE ?>/assets/fonts.css">
 <link rel="stylesheet" href="<?= AR_BASE ?>/admin/admin.css?v=<?= @filemtime(__DIR__ . '/admin.css') ?>">
 </head>
 <body>
@@ -40,47 +42,36 @@ function csrf_field(array $user): string
 function layout_start(array $user, string $title, string $active = '', bool $wide = false): void
 {
     admin_head($title, $user);
-    $s = schema();
-    $trashN = 0;
-    foreach (array_keys($s['collections']) as $c) {
-        $trashN += (int)q('SELECT COUNT(*) FROM ar_items WHERE coll = ? AND deleted_at IS NOT NULL', [$c])->fetchColumn();
-    }
+    $fl = $GLOBALS['flash'] ?? null;
     ?>
+<a class="skip" href="#main">Zum Inhalt springen</a>
 <div class="shell">
 <aside class="side" id="side">
-<a class="brand" href="<?= a() ?>"><span class="dot"></span>Verwaltung<small>antoniarueller.de</small></a>
-<nav>
-<a href="<?= a() ?>" class="<?= $active === 'home' ? 'on' : '' ?>">Übersicht</a>
-<a href="<?= a('p=stats') ?>" class="<?= $active === 'stats' ? 'on' : '' ?>">Statistik</a>
-<?php foreach (admin_menu() as $head => $entries): ?>
-<div class="nav-h"><?= e($head) ?></div>
-<?php foreach ($entries as [$kind, $key]):
-    $label = $kind === 'c' ? $s['collections'][$key]['label'] : $s['groups'][$key]['label'];
-    $href = $kind === 'c' ? a('p=list&c=' . $key) : a('p=group&g=' . $key); ?>
-<a href="<?= $href ?>" class="<?= $active === $kind . ':' . $key ? 'on' : '' ?>"><?= e($label) ?></a>
-<?php endforeach; endforeach; ?>
-<div class="nav-h">System</div>
-<a href="<?= a('p=media') ?>" class="<?= $active === 'media' ? 'on' : '' ?>">Mediathek</a>
-<a href="<?= a('p=trash') ?>" class="<?= $active === 'trash' ? 'on' : '' ?>">Papierkorb<?php if ($trashN): ?> <span class="badge"><?= $trashN ?></span><?php endif; ?></a>
-<?php if ($user['role'] === 'owner'): ?><a href="<?= a('p=users') ?>" class="<?= $active === 'users' ? 'on' : '' ?>">Zugänge</a>
-<a href="<?= a('p=backup') ?>" class="<?= $active === 'backup' ? 'on' : '' ?>">Sicherung</a><?php endif; ?>
-<a href="<?= a('p=account') ?>" class="<?= $active === 'account' ? 'on' : '' ?>">Mein Konto</a>
-<a href="<?= a('p=sessions') ?>" class="<?= $active === 'sessions' ? 'on' : '' ?>">Geräte</a>
-<a href="<?= a('p=log') ?>" class="<?= $active === 'log' ? 'on' : '' ?>">Protokoll</a>
-<a href="<?= a('p=check') ?>" class="<?= $active === 'check' ? 'on' : '' ?>">Systemcheck</a>
-</nav>
+<a class="brand" href="<?= a() ?>"><span class="dot"></span><span class="brand-t">Verwaltung</span><small>antoniarueller.de</small></a>
+<?php render_sidebar($user, $active); ?>
 </aside>
 <div class="main">
 <header class="bar">
-<button type="button" class="menu-btn" id="menuBtn" aria-label="Menü" aria-expanded="false">☰</button>
-<a class="view-site" href="<?= AR_BASE ?>/" target="_blank" rel="noopener">Seite ansehen ↗</a>
+<button type="button" class="menu-btn" id="menuBtn" aria-label="Menü öffnen" aria-expanded="false" aria-controls="side"><?= aicon('menu', 22) ?></button>
+<button type="button" class="gs-btn" id="gsBtn" aria-label="Suchen (Strg+K)"><?= aicon('search') ?><span>Suchen</span><kbd>Strg K</kbd></button>
+<a class="view-site" href="<?= AR_BASE ?>/" target="_blank" rel="noopener"><?= aicon('external', 16) ?> Seite ansehen</a>
+<a class="bar-help" href="<?= a('p=help') ?>" aria-label="Hilfe"><?= aicon('help', 20) ?></a>
 <span class="who"><?= e($user['name'] ?: $user['email']) ?></span>
-<form method="post" action="<?= a() ?>" class="inline"><?= csrf_field($user) ?><input type="hidden" name="action" value="logout"><button class="btn small ghost">Abmelden</button></form>
+<form method="post" action="<?= a() ?>" class="inline"><?= csrf_field($user) ?><input type="hidden" name="action" value="logout"><button class="btn small ghost"><?= aicon('logout', 16) ?> <span class="lbl">Abmelden</span></button></form>
 </header>
-<main<?= $wide ? ' class="wide"' : '' ?>>
-<?php if (!empty($GLOBALS['flash'])): ?><div class="flash <?= e($GLOBALS['flash']['type']) ?>" role="status"><?= e($GLOBALS['flash']['msg']) ?></div><?php endif; ?>
+<main id="main"<?= $wide ? ' class="wide"' : '' ?>>
+<?php if ($fl && $fl['type'] === 'err'): ?><div class="flash err" role="alert"><?= e($fl['msg']) ?></div><?php endif; ?>
 <h1><?= e($title) ?></h1>
 <?php
+    if ($fl && $fl['type'] !== 'err') {
+        echo '<div class="toast ok" role="status" id="toast"><span>' . aicon('check', 18) . e($fl['msg']) . '</span>';
+        if (!empty($fl['undo'])) {
+            echo '<form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="restore"><input type="hidden" name="ret" value="list"><input type="hidden" name="id" value="' . (int)$fl['undo'] . '"><button class="toast-undo">Rückgängig</button></form>';
+        }
+        echo '<button type="button" class="toast-x" aria-label="Schließen">×</button></div>';
+    }
+    render_search_box($user);
+    echo '<nav class="tabbar" aria-label="Schnellzugriff"><a href="' . a() . '"' . ($active === 'home' ? ' class="on" aria-current="page"' : '') . '>' . aicon('home', 22) . '<span>Übersicht</span></a><a href="' . a('p=list&c=clips') . '"' . ($active === 'c:clips' ? ' class="on"' : '') . '>' . aicon('film', 22) . '<span>Referenzen</span></a><a href="' . a('p=stats') . '"' . ($active === 'stats' ? ' class="on"' : '') . '>' . aicon('chart', 22) . '<span>Statistik</span></a><button type="button" id="tabSearch">' . aicon('search', 22) . '<span>Suchen</span></button><button type="button" id="tabMenu">' . aicon('menu', 22) . '<span>Menü</span></button></nav>';
 }
 
 function layout_end(): void

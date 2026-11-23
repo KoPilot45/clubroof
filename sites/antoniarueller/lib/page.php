@@ -13,6 +13,7 @@ if (defined('AR_PREVIEW')) {
         exit;
     }
     preview_mode(true);
+    security_headers(false, true);
     header('Cache-Control: no-store');
 }
 

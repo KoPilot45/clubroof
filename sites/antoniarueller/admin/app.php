@@ -76,8 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     });
     $act = (string)($_POST['action'] ?? '');
     $who = $user['email'];
-    $back = function (string $to, string $msg, string $type = 'ok') {
-        setcookie('ar_flash', $type . '|' . rawurlencode($msg), ['expires' => time() + 30, 'path' => AR_BASE . '/admin/', 'httponly' => true, 'samesite' => 'Strict', 'secure' => is_https()]);
+    $back = function (string $to, string $msg, string $type = 'ok', int $undo = 0) {
+        setcookie('ar_flash', $type . '|' . rawurlencode($msg) . ($undo ? '|' . $undo : ''), ['expires' => time() + 30, 'path' => AR_BASE . '/admin/', 'httponly' => true, 'samesite' => 'Strict', 'secure' => is_https()]);
         header('Location: ' . $to);
         exit;
     };
@@ -99,6 +99,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 fatal('Eintrag nicht gefunden.', 404);
             }
             [$data, $errors] = sanitize_fields($s['collections'][$coll]['fields'], $_POST, $_FILES, $old);
+            $ajax = !empty($_POST['ajax']);
+            if ($ajax) {
+                header('Content-Type: application/json');
+                if (!$id || $errors) {
+                    echo json_encode(['ok' => false, 'errors' => $id ? array_values($errors) : ['Neue Einträge werden nicht automatisch gespeichert.']]);
+                    exit;
+                }
+                save_item($coll, $id, $data, $who, false);
+                audit($who, 'draft_item', $coll . '#' . $id . ' (automatisch)');
+                echo json_encode(['ok' => true, 'at' => date('H:i')]);
+                exit;
+            }
             if ($errors) {
                 view_edit_item($user, $coll, $id, array_merge(field_defaults($s['collections'][$coll]['fields']), $data), $errors);
                 exit;
@@ -119,6 +131,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $old = setting($g, true);
             [$data, $errors] = sanitize_fields($s['groups'][$g]['fields'], $_POST, $_FILES, $old);
+            if (!empty($_POST['ajax'])) {
+                header('Content-Type: application/json');
+                if ($errors) {
+                    echo json_encode(['ok' => false, 'errors' => array_values($errors)]);
+                    exit;
+                }
+                save_setting($g, $data, $who, false);
+                audit($who, 'draft_group', $g . ' (automatisch)');
+                echo json_encode(['ok' => true, 'at' => date('H:i')]);
+                exit;
+            }
             if ($errors) {
                 view_edit_group($user, $g, array_merge($old, $data), $errors);
                 exit;
@@ -199,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($it) {
                 trash_item((int)$it['_id']);
                 audit($who, 'trash', $it['coll'] . '#' . $it['_id']);
-                $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], 'In den Papierkorb verschoben. Du findest den Eintrag dort wieder.');
+                $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], '„' . mb_strimwidth(trim((string)($it[$s['collections'][$it['coll']]['title']] ?? '')) ?: 'Eintrag', 0, 50, '…') . '“ in den Papierkorb verschoben.', 'ok', (int)$it['_id']);
             }
             $back(AR_BASE . '/admin/', 'Eintrag nicht gefunden.', 'err');
 
@@ -208,6 +231,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($it) {
                 restore_item((int)$it['_id']);
                 audit($who, 'restore', $it['coll'] . '#' . $it['_id']);
+                if (($_POST['ret'] ?? '') === 'list') {
+                    $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], 'Wiederhergestellt.');
+                }
                 $back(AR_BASE . '/admin/?p=trash', 'Wiederhergestellt.');
             }
             $back(AR_BASE . '/admin/?p=trash', 'Eintrag nicht gefunden.', 'err');
@@ -231,6 +257,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             audit($who, 'empty_trash', (string)$n);
             $back(AR_BASE . '/admin/?p=trash', $n . ' Einträge endgültig gelöscht.');
+
+        case 'toggle_pub':
+        case 'bulk': {
+            $ids = $act === 'bulk' ? array_filter(array_map('intval', (array)($_POST['ids'] ?? []))) : [(int)($_POST['id'] ?? 0)];
+            $op = $act === 'bulk' ? (string)($_POST['op'] ?? '') : ((string)($_POST['to'] ?? '') === '1' ? 'show' : 'hide');
+            if (!$ids || !in_array($op, ['show', 'hide', 'trash'], true)) {
+                $back(AR_BASE . '/admin/', 'Nichts ausgewählt.', 'err');
+            }
+            $coll = '';
+            $n = 0;
+            $draftOnly = 0;
+            foreach ($ids as $iid) {
+                $it = item($iid);
+                if (!$it || $it['_deleted'] !== null) {
+                    continue;
+                }
+                $coll = $it['coll'];
+                if ($op === 'trash') {
+                    trash_item($iid);
+                    audit($who, 'trash', $coll . '#' . $iid);
+                    $n++;
+                    continue;
+                }
+                $data = array_filter($it, fn($k) => $k !== 'coll' && $k[0] !== '_', ARRAY_FILTER_USE_KEY);
+                if (!array_key_exists('published', $data)) {
+                    continue;
+                }
+                $data['published'] = $op === 'show';
+                $direct = !$it['_draft'] && $it['_live'];
+                save_item($coll, $iid, $data, $who, $direct);
+                $draftOnly += $direct ? 0 : 1;
+                audit($who, $op === 'show' ? 'show_item' : 'hide_item', $coll . '#' . $iid);
+                $n++;
+            }
+            $to = AR_BASE . '/admin/?p=list&c=' . $coll;
+            if ($act === 'toggle_pub' && ($_POST['ajax'] ?? '') === '1') {
+                header('Content-Type: application/json');
+                echo json_encode(['ok' => $n > 0, 'draft' => $draftOnly > 0]);
+                exit;
+            }
+            $label = ['show' => 'eingeblendet', 'hide' => 'ausgeblendet', 'trash' => 'in den Papierkorb verschoben'][$op];
+            $back($to, $n . ($n === 1 ? ' Eintrag ' : ' Einträge ') . $label . '.' . ($draftOnly ? ' Hinweis: Bei Einträgen mit offenem Entwurf gilt die Änderung erst nach dem Veröffentlichen.' : ''), 'ok', ($op === 'trash' && $n === 1) ? $ids[0] : 0);
+        }
+
+        case 'duplicate': {
+            $it = item((int)($_POST['id'] ?? 0));
+            if (!$it || $it['_deleted'] !== null) {
+                $back(AR_BASE . '/admin/', 'Eintrag nicht gefunden.', 'err');
+            }
+            $def = $s['collections'][$it['coll']];
+            $data = array_filter($it, fn($k) => $k !== 'coll' && $k[0] !== '_', ARRAY_FILTER_USE_KEY);
+            $tk = $def['title'];
+            $data[$tk] = mb_substr((string)($data[$tk] ?? ''), 0, 180) . ' (Kopie)';
+            foreach (['tc' => '', 'featured' => false] as $k => $v) {
+                if (array_key_exists($k, $data)) {
+                    $data[$k] = $v;
+                }
+            }
+            $nid = save_item($it['coll'], null, $data, $who, false);
+            audit($who, 'duplicate', $it['coll'] . '#' . $it['_id'] . ' → ' . $nid);
+            $back(AR_BASE . '/admin/?p=edit&c=' . $it['coll'] . '&id=' . $nid, 'Kopie angelegt – noch nicht veröffentlicht. Passe sie an und veröffentliche sie.');
+        }
 
         case 'move':
             $it = item((int)($_POST['id'] ?? 0));
@@ -485,8 +573,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // ---------- Anzeige ----------
 if (isset($_COOKIE['ar_flash'])) {
-    [$ft, $fm] = array_pad(explode('|', (string)$_COOKIE['ar_flash'], 2), 2, '');
-    $flash = ['type' => $ft === 'err' ? 'err' : 'ok', 'msg' => rawurldecode($fm)];
+    [$ft, $fm, $fu] = array_pad(explode('|', (string)$_COOKIE['ar_flash'], 3), 3, '');
+    $flash = ['type' => $ft === 'err' ? 'err' : 'ok', 'msg' => rawurldecode($fm), 'undo' => (int)$fu];
     setcookie('ar_flash', '', ['expires' => time() - 3600, 'path' => AR_BASE . '/admin/']);
 }
 $GLOBALS['flash'] = $flash;
@@ -527,6 +615,9 @@ switch ($p) {
         break;
     case 'stats':
         view_stats($user);
+        break;
+    case 'help':
+        view_help($user);
         break;
     case 'ssl_json':
         header('Content-Type: application/json');

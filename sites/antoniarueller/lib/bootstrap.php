@@ -115,13 +115,13 @@ function upload_url(string $name): string
     return preg_match('~^[a-z0-9_-]+\.(jpg|png|webp|pdf)$~', $name) ? AR_BASE . '/uploads/' . $name : '';
 }
 
-function security_headers(bool $admin = false): void
+function security_headers(bool $admin = false, bool $frameSelf = false): void
 {
     header('X-Content-Type-Options: nosniff');
-    header('X-Frame-Options: DENY');
+    header('X-Frame-Options: ' . ($frameSelf ? 'SAMEORIGIN' : 'DENY'));
     header('Referrer-Policy: strict-origin-when-cross-origin');
     header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
-    header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'");
+    header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors " . ($frameSelf ? "'self'" : "'none'"));
     if (is_https()) {
         header('Strict-Transport-Security: max-age=31536000');
     }

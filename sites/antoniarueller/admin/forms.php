@@ -195,60 +195,152 @@ function view_list(array $user, string $coll): void
     $def = schema()['collections'][$coll];
     $rows = items($coll, false, true);
     layout_start($user, $def['label'], 'c:' . $coll);
-    if (!empty($def['help'])) {
-        echo '<p class="lead">' . e($def['help']) . '</p>';
+    $desc = $def['help'] ?? '';
+    if ($desc === '') {
+        foreach (admin_nav() as [, , , $entries]) {
+            foreach ($entries as $e) {
+                if ($e[0] === 'c' && $e[1] === $coll) {
+                    $desc = $e[3];
+                }
+            }
+        }
     }
-    echo '<p class="toolbar"><a class="btn" href="' . a('p=edit&c=' . $coll) . '">+ ' . e($def['singular']) . ' hinzufügen</a>';
+    if ($desc !== '') {
+        echo '<p class="lead">' . e($desc) . '</p>';
+    }
+    $imgKey = '';
+    $hasPub = false;
+    foreach ($def['fields'] as $f) {
+        if ($f['type'] === 'image' && $imgKey === '') {
+            $imgKey = $f['key'];
+        }
+        $hasPub = $hasPub || $f['key'] === 'published';
+    }
+    $cnt = ['all' => count($rows), 'draft' => 0, 'hidden' => 0];
+    foreach ($rows as $r) {
+        $cnt['draft'] += (!$r['_live'] || $r['_draft']) ? 1 : 0;
+        $cnt['hidden'] += ($hasPub && !$r['published']) ? 1 : 0;
+    }
+    echo '<div class="toolbar"><a class="btn" href="' . a('p=edit&c=' . $coll) . '">' . aicon('plus') . ' ' . e($def['singular']) . ' hinzufügen</a>';
     if (count($rows) > 6) {
-        echo '<input type="search" id="rowfilter" placeholder="Suchen …" aria-label="Liste durchsuchen">';
+        echo '<input type="search" id="rowfilter" placeholder="In dieser Liste suchen …" aria-label="Liste durchsuchen">';
     }
-    echo '<a class="btn ghost" href="' . e(preview_url(preview_anchor($coll))) . '" target="_blank" rel="noopener">Vorschau ↗</a></p>';
+    echo '<a class="btn ghost" href="' . e(preview_url(preview_anchor($coll))) . '" target="_blank" rel="noopener">Vorschau ' . aicon('external', 14) . '</a></div>';
+    if ($rows && ($cnt['draft'] || $cnt['hidden'])) {
+        echo '<div class="chips" role="group" aria-label="Filtern"><button type="button" class="chip on" data-f="all">Alle <span>' . $cnt['all'] . '</span></button>';
+        if ($cnt['draft']) {
+            echo '<button type="button" class="chip" data-f="draft">Entwürfe <span>' . $cnt['draft'] . '</span></button>';
+        }
+        if ($cnt['hidden']) {
+            echo '<button type="button" class="chip" data-f="hidden">Ausgeblendet <span>' . $cnt['hidden'] . '</span></button>';
+        }
+        echo '</div>';
+    }
     if (!$rows) {
-        echo '<p class="empty">Noch keine Einträge.</p>';
+        echo '<div class="emptystate">' . aicon('plus', 28) . '<p><strong>Noch keine Einträge.</strong><br>Lege ' . e($def['singular'] === 'Frage' ? 'die erste' : 'den ersten') . ' Eintrag an – er erscheint auf der Seite, sobald du ihn veröffentlichst.</p><a class="btn" href="' . a('p=edit&c=' . $coll) . '">' . e($def['singular']) . ' hinzufügen</a></div>';
+        layout_end();
+        return;
     }
-    echo '<ol class="rows sortable" id="rows" data-coll="' . e($coll) . '" data-csrf="' . e($user['csrf']) . '" data-url="' . e(a()) . '">';
+    echo '<form method="post" action="' . a() . '" id="bulkform" class="bulk" hidden>' . csrf_field($user) . '<input type="hidden" name="action" value="bulk"><span class="bulk-n" id="bulkn"></span>';
+    if ($hasPub) {
+        echo '<button class="btn small ghost" name="op" value="show">Einblenden</button><button class="btn small ghost" name="op" value="hide">Ausblenden</button>';
+    }
+    echo '<button class="btn small danger-o" name="op" value="trash" data-confirm="Die ausgewählten Einträge in den Papierkorb verschieben?">In den Papierkorb</button></form>';
+    echo '<ol class="rows sortable cards" id="rows" data-coll="' . e($coll) . '" data-csrf="' . e($user['csrf']) . '" data-url="' . e(a()) . '">';
     foreach ($rows as $i => $r) {
         $title = trim((string)($r[$def['title']] ?? '')) ?: '(ohne Titel)';
         $sub = array_filter(array_map(fn($k) => (string)($r[$k] ?? ''), $def['sub']));
-        $hidden = array_key_exists('published', $r) && !$r['published'];
-        echo '<li id="i' . $r['_id'] . '" class="row' . ($hidden ? ' draft' : '') . '" data-id="' . $r['_id'] . '" draggable="true"><span class="grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span><span class="no">' . sprintf('%02d', $i + 1) . '</span>';
-        echo '<a class="r-main" href="' . a('p=edit&c=' . $coll . '&id=' . $r['_id']) . '"><strong>' . e(mb_strimwidth($title, 0, 90, '…')) . '</strong>';
+        $hidden = $hasPub && !$r['published'];
+        $isDraft = !$r['_live'] || $r['_draft'];
+        $state = ($isDraft ? 'draft ' : '') . ($hidden ? 'hidden' : '');
+        $edit = a('p=edit&c=' . $coll . '&id=' . $r['_id']);
+        echo '<li id="i' . $r['_id'] . '" class="row' . ($hidden ? ' off' : '') . '" data-id="' . $r['_id'] . '" data-state="' . e(trim($state)) . '" draggable="true">';
+        echo '<input type="checkbox" class="sel" name="ids[]" value="' . $r['_id'] . '" form="bulkform" aria-label="' . e($title) . ' auswählen">';
+        echo '<span class="grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span><span class="no">' . sprintf('%02d', $i + 1) . '</span>';
+        if ($imgKey !== '' && !empty($r[$imgKey])) {
+            echo '<img class="thumb" src="' . e(upload_url((string)$r[$imgKey])) . '" alt="" loading="lazy" width="56" height="56">';
+        }
+        echo '<a class="r-main" href="' . e($edit) . '"><strong>' . e(mb_strimwidth($title, 0, 90, '…')) . '</strong>';
         if ($sub) {
             echo '<small>' . e(implode(' · ', $sub)) . '</small>';
         }
-        if ($r['_updated_by'] !== '' && $r['_updated_by'] !== 'seed') {
-            echo '<small class="muted2">Zuletzt: ' . e(who_name($r['_updated_by'])) . ', ' . e(date('d.m.Y', $r['_updated'])) . '</small>';
-        }
+        echo '<span class="chipline">';
         if (!$r['_live']) {
             echo '<span class="pill warn">Neu · nicht veröffentlicht</span>';
         } elseif ($r['_draft']) {
             echo '<span class="pill warn">Entwurf mit Änderungen</span>';
         }
         if ($hidden) {
-            echo '<span class="pill">Ausgeblendet</span>';
+            echo '<span class="pill hid">Ausgeblendet</span>';
         }
-        echo '</a><span class="r-act">';
-        foreach (['up' => ['▲', 'nach oben'], 'down' => ['▼', 'nach unten']] as $dir => [$sym, $lab]) {
-            echo '<form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="move"><input type="hidden" name="id" value="' . $r['_id'] . '"><input type="hidden" name="dir" value="' . $dir . '"><button class="icon" aria-label="' . e($title) . ' ' . $lab . ' verschieben"' . (($dir === 'up' && $i === 0) || ($dir === 'down' && $i === count($rows) - 1) ? ' disabled' : '') . '>' . $sym . '</button></form>';
+        if (!empty($r['featured'])) {
+            echo '<span class="pill ok">Hauptclip</span>';
         }
-        echo '<a class="btn small ghost" href="' . a('p=edit&c=' . $coll . '&id=' . $r['_id']) . '">Bearbeiten</a>';
-        echo '<form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="trash"><input type="hidden" name="id" value="' . $r['_id'] . '"><button class="btn small danger-o">In den Papierkorb</button></form>';
-        echo '</span></li>';
+        if ($r['_updated_by'] !== '' && $r['_updated_by'] !== 'seed') {
+            echo '<span class="muted2">' . e(who_name($r['_updated_by'])) . ', ' . e(date('d.m.Y', $r['_updated'])) . '</span>';
+        }
+        echo '</span></a><span class="r-act">';
+        if ($hasPub) {
+            echo '<form method="post" action="' . a() . '" class="inline tgl-f">' . csrf_field($user) . '<input type="hidden" name="action" value="toggle_pub"><input type="hidden" name="id" value="' . $r['_id'] . '"><input type="hidden" name="to" value="' . ($hidden ? '1' : '0') . '"><button class="tgl' . ($hidden ? '' : ' on') . '" role="switch" aria-checked="' . ($hidden ? 'false' : 'true') . '" aria-label="' . e($title) . ' auf der Seite anzeigen" title="' . ($hidden ? 'Ausgeblendet – zum Einblenden klicken' : 'Sichtbar – zum Ausblenden klicken') . '"><span></span></button></form>';
+        }
+        echo '<a class="btn small ghost" href="' . e($edit) . '">' . aicon('edit', 15) . ' Bearbeiten</a>';
+        echo '<details class="more"><summary aria-label="Weitere Aktionen für ' . e($title) . '">' . aicon('dots') . '</summary><div class="more-m">';
+        foreach (['up' => ['up', 'Nach oben'], 'down' => ['down', 'Nach unten']] as $dir => [$ic, $lab]) {
+            if (($dir === 'up' && $i === 0) || ($dir === 'down' && $i === count($rows) - 1)) {
+                continue;
+            }
+            echo '<form method="post" action="' . a() . '">' . csrf_field($user) . '<input type="hidden" name="action" value="move"><input type="hidden" name="id" value="' . $r['_id'] . '"><input type="hidden" name="dir" value="' . $dir . '"><button>' . aicon($ic, 16) . $lab . '</button></form>';
+        }
+        echo '<form method="post" action="' . a() . '">' . csrf_field($user) . '<input type="hidden" name="action" value="duplicate"><input type="hidden" name="id" value="' . $r['_id'] . '"><button>' . aicon('copy', 16) . 'Duplizieren</button></form>';
+        echo '<form method="post" action="' . a() . '">' . csrf_field($user) . '<input type="hidden" name="action" value="trash"><input type="hidden" name="id" value="' . $r['_id'] . '"><button class="danger">' . aicon('trash', 16) . 'In den Papierkorb</button></form>';
+        echo '</div></details></span></li>';
     }
     echo '</ol>';
     layout_end();
 }
 
-function form_actions(string $cancelUrl, string $previewAnchor, bool $isDraft): void
+function form_actions(string $cancelUrl, string $previewAnchor, bool $isDraft, bool $canLive = false): void
 {
-    echo '<div class="actions"><button class="btn" name="mode" value="publish">Veröffentlichen</button><button class="btn ghost" name="mode" value="draft">Als Entwurf speichern</button><a class="btn ghost" href="' . e(preview_url($previewAnchor)) . '" target="_blank" rel="noopener">Vorschau ↗</a><a class="btn ghost" href="' . e(AR_BASE . '/admin/vorschau.php?lang=en' . ($previewAnchor !== '' ? '#' . $previewAnchor : '')) . '" target="_blank" rel="noopener">Vorschau English ↗</a><a class="btn ghost" href="' . e($cancelUrl) . '">Abbrechen</a></div>';
-    echo '<p class="hint">„Veröffentlichen“ ist sofort für alle sichtbar. „Als Entwurf speichern“ bleibt nur für dich sichtbar – siehe „Vorschau“.' . ($isDraft ? ' Vorhandener Entwurf wird überschrieben.' : '') . '</p>';
+    echo '<div class="actions" id="actions"><div class="act-main"><button class="btn" name="mode" value="publish">' . aicon('check', 16) . ' Veröffentlichen</button><button class="btn ghost" name="mode" value="draft">Als Entwurf speichern</button></div>';
+    echo '<span class="savestate" id="savestate" role="status" aria-live="polite">' . ($isDraft ? 'Entwurf vorhanden' : 'Keine Änderungen') . '</span>';
+    echo '<div class="act-aux">';
+    if ($canLive) {
+        echo '<button type="button" class="btn ghost" id="livebtn" aria-pressed="false" data-src="' . e(preview_url($previewAnchor)) . '">Live-Vorschau</button>';
+    }
+    echo '<a class="btn ghost" href="' . e(preview_url($previewAnchor)) . '" target="_blank" rel="noopener">Vorschau ' . aicon('external', 14) . '</a><a class="btn ghost" href="' . e(AR_BASE . '/admin/vorschau.php?lang=en' . ($previewAnchor !== '' ? '#' . $previewAnchor : '')) . '" target="_blank" rel="noopener">English ' . aicon('external', 14) . '</a><a class="btn ghost" href="' . e($cancelUrl) . '">Abbrechen</a></div></div>';
+    echo '<p class="hint kbdhint">„Veröffentlichen“ ist sofort für alle sichtbar. „Als Entwurf speichern“ bleibt nur für dich sichtbar. Tastenkürzel: <kbd>Strg</kbd>+<kbd>S</kbd> Entwurf · <kbd>Strg</kbd>+<kbd>Enter</kbd> veröffentlichen. Änderungen werden als Entwurf automatisch gesichert.</p>';
+}
+
+/** Felder ausgeben; Abschnitte mit 'adv' => true sind als „Erweitert“ eingeklappt. */
+function render_fields(array $fields, array $vals, ?callable $after = null): void
+{
+    $adv = false;
+    foreach ($fields as $f) {
+        if ($f['type'] === 'section') {
+            if ($adv) {
+                echo '</details>';
+                $adv = false;
+            }
+            if (!empty($f['adv'])) {
+                echo '<details class="adv"><summary>' . e($f['label']) . ' <small>(erweitert)</small></summary>';
+                $adv = true;
+                continue;
+            }
+        }
+        render_field($f, $vals[$f['key']] ?? '', $vals);
+        if ($after) {
+            $after($f);
+        }
+    }
+    if ($adv) {
+        echo '</details>';
+    }
 }
 
 function view_edit_item(array $user, string $coll, ?int $id, array $vals, array $errors): void
 {
     $def = schema()['collections'][$coll];
-    layout_start($user, ($id ? $def['singular'] . ' bearbeiten' : $def['singular'] . ' hinzufügen'), 'c:' . $coll);
+    layout_start($user, ($id ? $def['singular'] . ' bearbeiten' : $def['singular'] . ' hinzufügen'), 'c:' . $coll, true);
     $isDraft = !empty($vals['_draft']);
     $isNew = $id && isset($vals['_live']) && (int)$vals['_live'] === 0;
     if ($id && ($isDraft || $isNew)) {
@@ -259,18 +351,18 @@ function view_edit_item(array $user, string $coll, ?int $id, array $vals, array 
     }
     form_errors($errors);
     ?>
-<form method="post" action="<?= a() ?>" enctype="multipart/form-data" class="form" data-coll="<?= e($coll) ?>">
+<div class="edwrap" id="edwrap">
+<form method="post" action="<?= a() ?>" enctype="multipart/form-data" class="form" data-coll="<?= e($coll) ?>"<?= $id ? ' data-autosave="1"' : '' ?>>
 <?= csrf_field($user) ?><input type="hidden" name="action" value="save_item"><input type="hidden" name="coll" value="<?= e($coll) ?>"><input type="hidden" name="id" value="<?= (int)$id ?>">
 <?php
     lang_bar($def['fields'], $vals);
-    foreach ($def['fields'] as $f) {
-        render_field($f, $vals[$f['key']] ?? '', $vals);
+    render_fields($def['fields'], $vals, function ($f) use ($coll) {
         if ($coll === 'clips' && $f['key'] === 'tc') {
             tl_preview();
         }
-    }
-    form_actions(a('p=list&c=' . $coll), preview_anchor($coll), $isDraft);
-    echo '</form>';
+    });
+    form_actions(a('p=list&c=' . $coll), preview_anchor($coll), $isDraft, (bool)$id);
+    echo '</form><aside class="livepane" id="livepane" hidden><div class="lp-h"><strong>Live-Vorschau</strong><button type="button" class="btn small ghost" id="lpreload">Aktualisieren</button></div><iframe id="lpframe" title="Vorschau der Seite" loading="lazy"></iframe></aside></div>';
     if ($id) {
         history_box($user, 'item', (string)$id);
     }
@@ -287,7 +379,7 @@ function tl_preview(): void
 function view_edit_group(array $user, string $g, array $vals, array $errors): void
 {
     $def = schema()['groups'][$g];
-    layout_start($user, $def['label'], 'g:' . $g);
+    layout_start($user, $def['label'], 'g:' . $g, true);
     if (!empty($def['help'])) {
         echo '<p class="lead">' . e($def['help']) . '</p>';
     }
@@ -305,15 +397,14 @@ function view_edit_group(array $user, string $g, array $vals, array $errors): vo
         echo '<div class="serp" id="serp" aria-label="Vorschau in der Google-Suche"><div class="serp-url">' . e(preg_replace('~^https?://~', '', abs_url('/'))) . '</div><div class="serp-title"></div><div class="serp-desc"></div></div>';
     }
     ?>
-<form method="post" action="<?= a() ?>" enctype="multipart/form-data" class="form">
+<div class="edwrap" id="edwrap">
+<form method="post" action="<?= a() ?>" enctype="multipart/form-data" class="form" data-autosave="1">
 <?= csrf_field($user) ?><input type="hidden" name="action" value="save_group"><input type="hidden" name="g" value="<?= e($g) ?>">
 <?php
     lang_bar($def['fields'], $vals);
-    foreach ($def['fields'] as $f) {
-        render_field($f, $vals[$f['key']] ?? '', $vals);
-    }
-    form_actions(a(), preview_anchor($g), $isDraft);
-    echo '</form>';
+    render_fields($def['fields'], $vals);
+    form_actions(a(), preview_anchor($g), $isDraft, true);
+    echo '</form><aside class="livepane" id="livepane" hidden><div class="lp-h"><strong>Live-Vorschau</strong><button type="button" class="btn small ghost" id="lpreload">Aktualisieren</button></div><iframe id="lpframe" title="Vorschau der Seite" loading="lazy"></iframe></aside></div>';
     history_box($user, 'group', $g);
     layout_end();
 }

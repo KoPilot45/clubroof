@@ -74,6 +74,8 @@ function view_home(array $user): void
     echo kpi('Startklar · Englisch', $mustOk . '/' . count($must), 'Pflichtpunkte · Englisch ' . $pct . ' %', $mustOk === count($must) ? 'ok' : 'warn', '#startklar');
     echo '</div>';
 
+    site_map($user);
+
     echo '<div class="dash-cols"><div class="dash-col">';
 
     // Aufgaben: Entwürfe

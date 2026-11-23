@@ -163,12 +163,6 @@
   // ---- Listen: Suche und Sortieren per Ziehen ----
   var filter = $('#rowfilter');
   var rows = $('#rows');
-  if (filter && rows) {
-    filter.addEventListener('input', function () {
-      var q = filter.value.toLowerCase();
-      $$('li.row', rows).forEach(function (li) { li.hidden = q && li.textContent.toLowerCase().indexOf(q) === -1; });
-    });
-  }
   if (rows && rows.classList.contains('sortable')) {
     var dragged = null;
     function renumber() { $$('li.row .no', rows).forEach(function (n, i) { n.textContent = ('0' + (i + 1)).slice(-2); }); }
@@ -347,5 +341,173 @@
       cu.select();
       if (navigator.clipboard) navigator.clipboard.writeText(cu.value).then(function () { cc.textContent = 'Kopiert'; setTimeout(function () { cc.textContent = 'Kopieren'; }, 1500); });
     });
+  }
+
+  // ---- Menü: Gruppen merken, Handy-Leiste ----
+  var NAVKEY = 'ar_nav_open';
+  function navStore(v) { try { if (v) localStorage.setItem(NAVKEY, JSON.stringify(v)); else return JSON.parse(localStorage.getItem(NAVKEY) || '[]'); } catch (e) { return []; } return null; }
+  var openIds = navStore() || [];
+  $$('details.ng').forEach(function (d) {
+    if (openIds.indexOf(d.getAttribute('data-g')) !== -1) d.open = true;
+    d.addEventListener('toggle', function () {
+      var ids = $$('details.ng').filter(function (x) { return x.open && !x.hasAttribute('data-active'); }).map(function (x) { return x.getAttribute('data-g'); });
+      navStore(ids);
+    });
+  });
+  var tabMenu = $('#tabMenu');
+  if (tabMenu && side) tabMenu.addEventListener('click', function (e) { e.stopPropagation(); var o = side.classList.toggle('open'); if (btn) btn.setAttribute('aria-expanded', o ? 'true' : 'false'); });
+
+  // ---- Hinweis (Toast) ----
+  var toast = $('#toast');
+  if (toast) {
+    var hideToast = function () { toast.classList.add('out'); setTimeout(function () { toast.remove(); }, 350); };
+    var tx = $('.toast-x', toast);
+    if (tx) tx.addEventListener('click', hideToast);
+    setTimeout(hideToast, $('.toast-undo', toast) ? 12000 : 6000);
+  }
+
+  // ---- Globale Suche (Strg+K) ----
+  var gs = $('#gs'), gsq = $('#gsq'), gsl = $('#gsl'), gsIdx = [], gsSel = 0, gsFrom = null;
+  try { gsIdx = JSON.parse(($('#gsdata') || {}).textContent || '[]'); } catch (e) { gsIdx = []; }
+  function gsRender() {
+    var q = gsq.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    var res = gsIdx.filter(function (x) {
+      var hay = (x.t + ' ' + x.s + ' ' + x.k).toLowerCase();
+      return q.every(function (w) { return hay.indexOf(w) !== -1; });
+    });
+    if (q.length) res.sort(function (a, b) { return (b.t.toLowerCase().indexOf(q[0]) === 0) - (a.t.toLowerCase().indexOf(q[0]) === 0); });
+    res = res.slice(0, 12);
+    gsl.textContent = '';
+    if (!res.length) { var n = document.createElement('li'); n.className = 'none'; n.textContent = 'Nichts gefunden.'; gsl.appendChild(n); return; }
+    gsSel = Math.min(gsSel, res.length - 1);
+    res.forEach(function (x, i) {
+      var li = document.createElement('li'); li.setAttribute('role', 'option');
+      if (i === gsSel) li.className = 'cur';
+      var a = document.createElement('a'); a.href = x.u;
+      var t = document.createElement('span'); t.textContent = x.t;
+      var s = document.createElement('span'); s.className = 's'; s.textContent = x.s;
+      var k = document.createElement('small'); k.textContent = x.k;
+      a.appendChild(t); a.appendChild(s); a.appendChild(k); li.appendChild(a); gsl.appendChild(li);
+    });
+  }
+  function gsOpen() { if (!gs) return; gsFrom = document.activeElement; gs.hidden = false; gsq.value = ''; gsSel = 0; gsRender(); gsq.focus(); }
+  function gsClose() { if (!gs || gs.hidden) return; gs.hidden = true; if (gsFrom && gsFrom.focus) gsFrom.focus(); }
+  if (gs) {
+    gsq.addEventListener('input', function () { gsSel = 0; gsRender(); });
+    gs.addEventListener('click', function (e) { if (e.target === gs) gsClose(); });
+    gsq.addEventListener('keydown', function (e) {
+      var items = $$('li:not(.none)', gsl);
+      if (e.key === 'ArrowDown') { e.preventDefault(); gsSel = Math.min(items.length - 1, gsSel + 1); gsRender(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); gsSel = Math.max(0, gsSel - 1); gsRender(); }
+      else if (e.key === 'Enter') { var a = $('li.cur a', gsl); if (a) { e.preventDefault(); location.href = a.href; } }
+      else if (e.key === 'Escape') { e.preventDefault(); gsClose(); }
+    });
+    ['gsBtn', 'tabSearch'].forEach(function (id) { var b = document.getElementById(id); if (b) b.addEventListener('click', gsOpen); });
+  }
+
+  // ---- Tastenkürzel ----
+  document.addEventListener('keydown', function (e) {
+    var mod = e.ctrlKey || e.metaKey;
+    if (!mod) return;
+    var k = e.key.toLowerCase();
+    if (k === 'k') { e.preventDefault(); if (gs) { gs.hidden ? gsOpen() : gsClose(); } return; }
+    if (!form) return;
+    if (k === 's') { e.preventDefault(); var d = $('button[name=mode][value=draft]', form); if (d) d.click(); }
+    else if (e.key === 'Enter') { e.preventDefault(); var p = $('button[name=mode][value=publish]', form); if (p) p.click(); }
+  });
+
+  // ---- Listen: Filter-Chips, Mehrfachauswahl, Schalter ----
+  var chipState = 'all';
+  function applyListFilter() {
+    if (!rows) return;
+    var q = filter ? filter.value.toLowerCase() : '';
+    $$('li.row', rows).forEach(function (li) {
+      var st = li.getAttribute('data-state') || '';
+      var okChip = chipState === 'all' || st.split(' ').indexOf(chipState) !== -1;
+      var okQ = !q || li.textContent.toLowerCase().indexOf(q) !== -1;
+      li.hidden = !(okChip && okQ);
+    });
+  }
+  if (rows) {
+    if (filter) filter.addEventListener('input', applyListFilter);
+    $$('.chip').forEach(function (c) {
+      c.addEventListener('click', function () {
+        chipState = c.getAttribute('data-f');
+        $$('.chip').forEach(function (x) { x.classList.toggle('on', x === c); });
+        applyListFilter();
+      });
+    });
+    var bulk = $('#bulkform'), bn = $('#bulkn');
+    rows.addEventListener('change', function (e) {
+      if (!e.target.classList.contains('sel') || !bulk) return;
+      var n = $$('.sel:checked', rows).length;
+      bulk.hidden = n === 0;
+      bn.textContent = n + (n === 1 ? ' ausgewählt' : ' ausgewählt');
+    });
+    if (bulk) bulk.addEventListener('submit', function (e) {
+      var sub = e.submitter;
+      if (sub && sub.getAttribute('data-confirm') && !window.confirm(sub.getAttribute('data-confirm'))) e.preventDefault();
+    });
+    // Anzeigen/Ausblenden per Schalter ohne Neuladen
+    rows.addEventListener('submit', function (e) {
+      var f = e.target;
+      if (!f.classList || !f.classList.contains('tgl-f')) return;
+      e.preventDefault();
+      var fd = new FormData(f); fd.set('ajax', '1');
+      var b = $('.tgl', f), li = f.closest('li.row');
+      fetch(f.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+        if (!j.ok) { f.submit(); return; }
+        var on = fd.get('to') === '1';
+        b.classList.toggle('on', on); b.setAttribute('aria-checked', on ? 'true' : 'false');
+        f.elements.to.value = on ? '0' : '1';
+        li.classList.toggle('off', !on);
+        var st = (li.getAttribute('data-state') || '').split(' ').filter(function (x) { return x && x !== 'hidden'; });
+        if (!on) st.push('hidden');
+        li.setAttribute('data-state', st.join(' '));
+        var line = $('.chipline', li), pill = $('.pill.hid', li);
+        if (!on && !pill) { var p = document.createElement('span'); p.className = 'pill hid'; p.textContent = 'Ausgeblendet'; if (line) line.insertBefore(p, line.firstChild); }
+        if (on && pill) pill.remove();
+        if (j.draft) { b.title = 'Als Entwurf gespeichert – erst nach dem Veröffentlichen sichtbar'; }
+      }).catch(function () { f.submit(); });
+    });
+    // Aktionsmenü schließen bei Klick außerhalb
+    document.addEventListener('click', function (e) { $$('details.more[open]').forEach(function (d) { if (!d.contains(e.target)) d.open = false; }); });
+  }
+
+  // ---- Editor: Speicherstatus, Autospeichern, Live-Vorschau ----
+  if (form) {
+    var ss = $('#savestate'), timer = null, busy = false, saveNote = ss ? ss.textContent : '';
+    var live = $('#livepane'), lframe = $('#lpframe'), lbtn = $('#livebtn'), wrap = $('#edwrap');
+    var autosave = form.getAttribute('data-autosave') === '1';
+    function setState(txt, cls) { if (!ss) return; ss.textContent = txt; ss.className = 'savestate' + (cls ? ' ' + cls : ''); }
+    function hasFiles() { return $$('input[type=file]', form).some(function (i) { return i.files && i.files.length; }); }
+    function reloadLive() { if (lframe && live && !live.hidden && lframe.contentWindow) { try { lframe.contentWindow.location.reload(); } catch (e) { lframe.src = lframe.src; } } }
+    function save(manual) {
+      if (!autosave || busy) return Promise.resolve();
+      if (hasFiles()) { setState('Bild gewählt – bitte „Als Entwurf speichern“ klicken', 'dirty'); return Promise.resolve(); }
+      busy = true; setState('Speichert …', '');
+      var fd = new FormData(form); fd.set('mode', 'draft'); fd.set('ajax', '1');
+      return fetch(form.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+        busy = false;
+        if (j.ok) { dirty = false; setState('Als Entwurf gesichert um ' + j.at + ' Uhr', 'ok'); reloadLive(); }
+        else setState('Nicht gesichert: ' + ((j.errors && j.errors[0]) || 'bitte Eingaben prüfen'), 'err');
+      }).catch(function () { busy = false; setState('Nicht gesichert – keine Verbindung?', 'err'); });
+    }
+    form.addEventListener('input', function () {
+      setState(autosave ? 'Ungespeicherte Änderungen …' : 'Ungespeicherte Änderungen', 'dirty');
+      if (autosave) { clearTimeout(timer); timer = setTimeout(function () { save(false); }, 6000); }
+    });
+    form.addEventListener('submit', function () { clearTimeout(timer); });
+    form.addEventListener('invalid', function (e) { var d = e.target.closest ? e.target.closest('details.adv') : null; if (d) d.open = true; }, true);
+    if (lbtn && live && lframe && wrap) {
+      lbtn.addEventListener('click', function () {
+        var on = live.hidden;
+        live.hidden = !on; wrap.classList.toggle('split', on);
+        lbtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (on && !lframe.getAttribute('src')) lframe.src = lbtn.getAttribute('data-src');
+      });
+      var rl = $('#lpreload');
+      if (rl) rl.addEventListener('click', function () { if (dirty) save(true).then(reloadLive); else reloadLive(); });
+    }
   }
 })();

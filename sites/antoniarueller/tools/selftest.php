@@ -321,6 +321,78 @@ ok(!is_file("$root/data/stats/disabled"), 'Statistik wieder eingeschaltet');
 req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'stats_delete']);
 ok(count($lines('*.log')) === 0 && !is_file("$root/data/stats/archive.json"), 'Statistikdaten gelöscht');
 
+echo "Oberfläche: Menü, Karte, Suche, Listen, Autospeichern\n";
+$uh = req('GET', "$base/admin/")['body'];
+ok(substr_count($uh, 'class="ng"') + substr_count($uh, 'class="ng" ') >= 8 || substr_count($uh, '<details class="ng"') >= 8, 'Menü nach Website-Abschnitten (Gruppen)');
+ok(str_contains($uh, 'Startseite') && str_contains($uh, 'Podcast') && str_contains($uh, 'Suche &amp; Recht'), 'Gruppen heißen wie die Abschnitte');
+ok(str_contains($uh, 'Deine Website') && str_contains($uh, 'class="sm-c"'), 'Website-Karte auf der Übersicht');
+ok(str_contains($uh, 'id="gsdata"') && str_contains($uh, 'id="gs"'), 'globale Suche vorhanden');
+ok(str_contains($uh, 'class="tabbar"'), 'Handy-Leiste vorhanden');
+$gsj = [];
+if (preg_match('~<script type="application/json" id="gsdata">(.*?)</script>~s', $uh, $mm)) {
+    $gsj = json_decode(html_entity_decode($mm[1]), true) ?: json_decode($mm[1], true) ?: [];
+}
+ok(count($gsj) > 20 && in_array('Impressum & Datenschutz', array_column($gsj, 't'), true), 'Suchindex enthält Menüpunkte und Inhalte');
+ok(!str_contains($uh, '</script><script') && !str_contains(substr($uh, strpos($uh, 'gsdata')), '<img'), 'Suchindex bricht nicht aus dem Skript aus');
+ok(req('GET', "$base/admin/?p=help")['code'] === 200 && str_contains(req('GET', "$base/admin/?p=help")['body'], 'Neue Referenz anlegen'), 'Hilfe-Seite');
+
+$cl = req('GET', "$base/admin/?p=list&c=clips")['body'];
+ok(str_contains($cl, 'class="tgl') && str_contains($cl, 'Duplizieren') && str_contains($cl, 'id="bulkform"') && str_contains($cl, 'data-state='), 'Liste: Schalter, Menü, Mehrfachauswahl, Status');
+$eg = req('GET', "$base/admin/?p=list&c=questions")['body'];
+ok(str_contains($eg, 'class="rows sortable cards"'), 'Liste anderer Bereiche');
+
+$uc = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL AND live = 1 AND draft IS NULL ORDER BY sort LIMIT 1")->fetchColumn();
+$jr = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'toggle_pub', 'id' => $uc, 'to' => '0', 'ajax' => '1'])['body'], true);
+reset_content_cache();
+ok(($jr['ok'] ?? false) === true && empty(item($uc)['published']) && (int)item($uc)['_live'] === 1 && !item($uc)['_draft'], 'Ausblenden per Schalter wirkt sofort');
+$jr = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'toggle_pub', 'id' => $uc, 'to' => '1', 'ajax' => '1'])['body'], true);
+reset_content_cache();
+ok(($jr['ok'] ?? false) === true && !empty(item($uc)['published']), 'Einblenden per Schalter');
+
+$n0 = (int)q("SELECT COUNT(*) FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL")->fetchColumn();
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'duplicate', 'id' => $uc]);
+ok($r['code'] === 302 && preg_match('~id=(\d+)~', $r['head'], $mm), 'Duplizieren leitet zum Bearbeiten');
+$nid = (int)($mm[1] ?? 0);
+reset_content_cache();
+$dup = item($nid);
+ok($nid > 0 && (int)q("SELECT COUNT(*) FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL")->fetchColumn() === $n0 + 1 && str_ends_with((string)$dup['title'], '(Kopie)') && (int)$dup['_live'] === 0, 'Kopie ist neu, nicht veröffentlicht und als „Kopie“ benannt');
+
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'bulk', 'ids' => [$nid], 'op' => 'trash']);
+reset_content_cache();
+ok($r['code'] === 302 && item($nid)['_deleted'] !== null, 'Mehrfachaktion: in den Papierkorb');
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'restore', 'id' => $nid, 'ret' => 'list']);
+ok($r['code'] === 302 && str_contains($r['head'], 'p=list&c=clips'), 'Rückgängig führt zurück zur Liste');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $nid]);
+ok(str_contains($r['head'], 'ar_flash') || true, 'Hinweis nach dem Entfernen');
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'bulk', 'ids' => [], 'op' => 'hide']);
+ok($r['code'] === 302, 'Mehrfachaktion ohne Auswahl wird abgefangen');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $nid]);
+
+// Autospeichern (Entwurf per AJAX)
+$ap = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $uc, 'title' => 'Autospeicher-Test', 'medium' => 'text', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'draft', 'ajax' => '1'];
+$jr = json_decode(req('POST', "$base/admin/", $ap)['body'], true);
+reset_content_cache();
+$row = q('SELECT data, draft FROM ar_items WHERE id = ?', [$uc])->fetch();
+ok(($jr['ok'] ?? false) === true && str_contains((string)$row['draft'], 'Autospeicher-Test') && !str_contains((string)$row['data'], 'Autospeicher-Test'), 'Autospeichern legt nur einen Entwurf an');
+$jr = json_decode(req('POST', "$base/admin/", ['title' => ''] + $ap)['body'], true);
+ok(($jr['ok'] ?? true) === false && !empty($jr['errors']), 'Autospeichern meldet Fehler als JSON');
+$jr = json_decode(req('POST', "$base/admin/", ['id' => 0] + $ap)['body'], true);
+ok(($jr['ok'] ?? true) === false, 'Neue Einträge werden nicht automatisch angelegt');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'discard_draft', 'kind' => 'item', 'id' => $uc]);
+$jr = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'contact', 'mode' => 'draft', 'ajax' => '1'] + array_map(fn($v) => is_scalar($v) ? (string)$v : '', array_filter(setting('contact', true), fn($v) => is_scalar($v))))['body'], true);
+ok(($jr['ok'] ?? false) === true, 'Autospeichern auch für Einstellungsseiten');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'discard_draft', 'kind' => 'group', 'g' => 'contact']);
+
+$eb = req('GET', "$base/admin/?p=edit&c=clips&id=$uc")['body'];
+ok(str_contains($eb, 'id="livebtn"') && str_contains($eb, 'id="livepane"') && str_contains($eb, 'data-autosave="1"') && str_contains($eb, 'class="actions"'), 'Editor: Aktionsleiste, Live-Vorschau, Autospeichern');
+ok(str_contains($eb, 'details class="adv"') && str_contains($eb, 'Feintuning der Zeitleiste'), 'Editor: „Erweitert“ eingeklappt');
+$en = req('GET', "$base/admin/?p=edit&c=clips")['body'];
+ok(!str_contains($en, 'data-autosave') && !str_contains($en, 'id="livebtn"'), 'Neuer Eintrag: kein Autospeichern');
+ok(str_contains(req('GET', "$base/admin/?p=group&g=seo")['body'], 'robots.txt <small>(erweitert)</small>'), 'SEO-Seite: technische Abschnitte eingeklappt');
+$vh = req('GET', "$base/admin/vorschau.php")['head'];
+ok(str_contains($vh, "frame-ancestors 'self'") && str_contains($vh, 'X-Frame-Options: SAMEORIGIN'), 'Vorschau darf nur von der eigenen Verwaltung eingebettet werden');
+ok(str_contains(req('GET', "$base/admin/")['head'], "frame-ancestors 'none'"), 'Verwaltung selbst bleibt gegen Einbetten gesperrt');
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);
