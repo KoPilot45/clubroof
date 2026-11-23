@@ -281,7 +281,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <h2 class="big-h" style="margin-bottom:56px"><span class="bh1"><?= e($sec['cv_h1']) ?></span><span class="bh2"><?= e($sec['cv_h2']) ?></span></h2>
 <ol class="cv">
 <?php foreach ($cvGroups as $year => $rows): ?>
-<li><span class="cv-y <?= (int)$year >= (int)date('Y') - 1 ? 'ar-year-now' : 'ar-year-past' ?>"><?= e($year) ?></span>
+<li><span class="cv-y <?= array_filter($rows, fn($x) => !empty($x['ongoing'])) ? 'ar-year-now' : 'ar-year-past' ?>"><?= e($year) ?></span>
 <div class="cv-items">
 <?php foreach ($rows as $r): ?><div class="cv-it"><span class="cv-dot" aria-hidden="true"></span><span class="cv-role"><?= $r['role'] !== '' ? e($r['role']) . ', ' : '' ?><span class="mk-i"><?= e($r['org']) ?></span></span><span class="cv-when"><?= e(cv_when($r)) ?></span></div>
 <?php endforeach; ?>

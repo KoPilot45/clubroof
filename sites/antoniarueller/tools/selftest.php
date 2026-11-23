@@ -486,6 +486,19 @@ foreach (q("SELECT id FROM ar_items WHERE coll = 'episodes' AND data LIKE '%Besc
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
 }
 
+echo "Lebenslauf: Jahreszahl nach aktiver Station\n";
+$cvp = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'cv', 'role' => 'Testrolle', 'org' => 'Testorg', 'from' => '1999-05', 'mode' => 'publish'];
+req('POST', "$base/admin/", $cvp);
+$h = req('GET', "$base/")['body'];
+ok(preg_match('~<span class="cv-y ar-year-past">1999</span>~', $h) === 1, 'Jahr ohne laufende Station: Umriss');
+req('POST', "$base/admin/", $cvp + ['ongoing' => '1', 'org' => 'Testorg2']);
+$h = req('GET', "$base/")['body'];
+ok(preg_match('~<span class="cv-y ar-year-now">1999</span>~', $h) === 1, 'Jahr mit laufender Station: farbig');
+foreach (q("SELECT id FROM ar_items WHERE coll = 'cv' AND data LIKE '%Testorg%'")->fetchAll() as $row) {
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
+}
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

@@ -112,13 +112,13 @@ function schema(): array
     ];
     $s['collections']['cv'] = [
         'label' => 'Lebenslauf: Stationen', 'singular' => 'Station', 'title' => 'org', 'sub' => ['role', 'when_label'],
-        'help' => 'Die Einträge werden automatisch nach Jahr des Beginns gruppiert (neueste zuerst).',
+        'help' => 'Die Einträge werden automatisch nach Jahr des Beginns gruppiert (neueste zuerst). Die Jahreszahl ist farbig, wenn in diesem Jahr mindestens eine Station mit „Läuft noch“ beginnt, sonst als Umriss.',
         'fields' => [
             f('text', 'role', 'Rolle', ['max' => 80, 'hint' => 'z. B. „Autorin“ – das Komma setzt die Seite selbst.']),
             f('text', 'org', 'Organisation', ['required' => true, 'max' => 120]),
             f('month', 'from', 'Beginn', ['required' => true]),
             f('month', 'to', 'Ende'),
-            f('bool', 'ongoing', 'Läuft noch („seit …“)'),
+            f('bool', 'ongoing', 'Läuft noch („seit …“)', ['hint' => 'Färbt zugleich die Jahreszahl des Beginns auf der Seite ein.']),
             f('text', 'when_label', 'Zeitangabe überschreiben (optional)', ['max' => 120, 'hint' => 'Leer = automatisch aus Beginn/Ende, z. B. „06/2016 — 06/2018“.']),
         ],
     ];
