@@ -281,7 +281,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="about-cols"><?php foreach ([$about['text1'], $about['text2']] as $t): if ($t === '') { continue; } ?><p><?= nl2br(e($t)) ?></p><?php endforeach; ?></div>
 <?php if ($cross): ?>
 <div class="about-block"><span class="muted lab"><?= e($about['cross_label']) ?></span>
-<div class="cross"><?php foreach ($cross as $c): ?><div class="cross-t"><span class="cross-h"><?= icon($c['icon'], 22) ?><?= e($c['label']) ?></span><span class="cross-o"><?= e($c['outlets']) ?></span></div><?php endforeach; ?></div></div>
+<?php $nc = count($cross); $wide = $nc <= 5 ? $nc : (int)ceil($nc / 2); $mid = $nc <= 3 ? $nc : (int)ceil($nc / 2); ?><div class="cross-wrap"><div class="cross" style="--n:<?= $wide ?>;--m:<?= $mid ?>"><?php foreach ($cross as $c): ?><div class="cross-t"><span class="cross-h"><?= icon($c['icon'], 22) ?><?= e($c['label']) ?></span><span class="cross-o"><?= e($c['outlets']) ?></span></div><?php endforeach; ?></div></div></div>
 <?php endif; ?>
 <?php if ($langs): ?>
 <div class="about-block"><span class="muted lab"><?= e($about['lang_label']) ?></span>
