@@ -56,7 +56,7 @@ foreach (['lib/bootstrap.php', 'config.php', 'data/', 'templates/page.php', 'too
     $c = req('GET', "$base/$p")['code'];
     ok(in_array($c, [403, 404], true), "$p gesperrt ($c)");
 }
-ok(req('GET', "$base/impressum")['code'] === 200, 'Impressum erreichbar');
+ok(req('GET', "$base/impressum/")['code'] === 200, 'Impressum erreichbar');
 
 foreach (['robots.txt' => 'Sitemap:', 'sitemap.xml' => '<urlset', 'llms.txt' => '# '] as $path => $needle) {
     $r = req('GET', "$base/$path");
@@ -65,7 +65,7 @@ foreach (['robots.txt' => 'Sitemap:', 'sitemap.xml' => '<urlset', 'llms.txt' => 
 $pub = req('GET', "$base/");
 ok(str_contains($pub['body'], 'application/ld+json') && str_contains($pub['body'], 'ProfilePage'), 'JSON-LD vorhanden');
 ok(str_contains($pub['body'], 'rel="icon"') && req('GET', "$base/favicon.ico")['code'] === 200, 'Favicon');
-ok(str_contains(req('GET', "$base/datenschutz")['body'], 'Verantwortliche'), 'Datenschutz-Vorlage');
+ok(str_contains(req('GET', "$base/datenschutz/")['body'], 'Verantwortliche'), 'Datenschutz-Vorlage');
 
 echo "Anmeldung\n";
 @unlink("$root/data/mail.log");

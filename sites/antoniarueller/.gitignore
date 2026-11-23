@@ -4,3 +4,6 @@ data/*
 uploads/*
 !uploads/.htaccess
 !uploads/.gitkeep
+robots.txt
+sitemap.xml
+llms.txt

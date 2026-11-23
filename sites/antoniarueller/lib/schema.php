@@ -287,6 +287,7 @@ function schema(): array
             f('text', 'h1', 'Überschrift, Teil 1', ['max' => 20, 'default' => 'Schreib']),
             f('text', 'h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'mir']),
             f('text', 'intro', 'Einleitung', ['max' => 160, 'default' => 'Für Themen, Recherchen und Zusammenarbeit.']),
+            f('text', 'cta_label', 'Button in der Kopfzeile', ['max' => 24, 'default' => 'Schreib mir', 'hint' => 'Öffnet eine E-Mail an die Adresse unten. Leer = kein Button. Ohne E-Mail-Adresse wird der Button nicht gezeigt.']),
             f('text', 'email', 'E-Mail-Adresse', ['max' => 120, 'hint' => 'Wird im Seitenquelltext verschleiert (Spam-Schutz).']),
             f('url', 'linkedin', 'LinkedIn-Link'),
             f('pdf', 'cv_pdf', 'Lebenslauf als PDF'),

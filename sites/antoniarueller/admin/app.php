@@ -4,6 +4,7 @@ declare(strict_types=1);
 require __DIR__ . '/../lib/bootstrap.php';
 require __DIR__ . '/../lib/auth.php';
 require __DIR__ . '/../lib/render.php';
+require __DIR__ . '/../lib/seo_files.php';
 require __DIR__ . '/views.php';
 
 security_headers(true);
@@ -41,6 +42,7 @@ if (!$user) {
 $flash = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check($user);
+    register_shutdown_function('regenerate_seo_files');
     $act = (string)($_POST['action'] ?? '');
     $who = $user['email'];
     $back = function (string $to, string $msg, string $type = 'ok') {

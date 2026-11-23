@@ -46,14 +46,17 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <body>
 <div class="ar-root">
 
-<header class="top">
+<header class="top-wrap" id="topbar">
+<div class="top">
 <div class="top-l"><?= rec_dot() ?><span><?= e($site['header_label']) ?></span></div>
 <nav class="ar-nav" aria-label="Hauptnavigation">
 <?php foreach ($nav as $n): if (!$n['desktop']) { continue; } $nDesktop++; ?>
-<a href="#<?= e($n['anchor']) ?>"><?= sprintf('%02d', $nDesktop) ?> <?= e($n['label']) ?></a>
+<a href="#<?= e($n['anchor']) ?>" data-nav="<?= e($n['anchor']) ?>"><?= sprintf('%02d', $nDesktop) ?> <?= e($n['label']) ?></a>
 <?php endforeach; ?>
 </nav>
+<?php if ($mailUser !== '' && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-nav ar-nav-cta" href="#kontakt" data-u="<?= e(base64_encode($mailUser)) ?>" data-d="<?= e(base64_encode($mailDomain)) ?>"><?= e($contact['cta_label']) ?> <span aria-hidden="true">↗</span></a><?php endif; ?>
 <button type="button" class="ar-burger" id="burger" aria-label="Menü öffnen" aria-expanded="false" aria-controls="menu"><svg aria-hidden="true" width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 2h18M1 12h18"></path></svg></button>
+</div>
 </header>
 
 <section class="ar-hero" aria-label="Intro">
@@ -302,7 +305,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <footer class="foot">
 <span><?= e(implode(' · ', array_filter([$contact['copyright'], $contact['photo_credit']]))) ?></span>
 <span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;background:var(--mute);display:inline-block"></span><?= e($contact['end_note']) ?></span>
-<span style="display:flex;gap:24px"><a href="<?= AR_BASE ?>/impressum">Impressum</a><a href="<?= AR_BASE ?>/datenschutz">Datenschutz</a></span>
+<span style="display:flex;gap:24px"><a href="<?= AR_BASE ?>/impressum/">Impressum</a><a href="<?= AR_BASE ?>/datenschutz/">Datenschutz</a></span>
 </footer>
 </section>
 
@@ -313,6 +316,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php foreach ($nav as $i => $n): ?><li><a href="#<?= e($n['anchor']) ?>"><span class="mn"><?= sprintf('%02d', $i + 1) ?></span><span class="ml"><?= e($n['label']) ?></span></a></li>
 <?php endforeach; ?>
 </ol></nav>
+<?php if ($mailUser !== '' && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-block menu-cta" href="#kontakt" data-u="<?= e(base64_encode($mailUser)) ?>" data-d="<?= e(base64_encode($mailDomain)) ?>" style="margin-top:28px"><?= e($contact['cta_label']) ?> ↗</a><?php endif; ?>
 <div class="menu-foot"><span><?= e($hero['now_lines'] !== '' ? str_replace("\n", ' · ', trim(explode("\n", $hero['now_lines'])[0])) . ' · ' . $hero['tag_role'] : '') ?></span>
 <?php if (safe_url($contact['linkedin']) !== ''): ?><a href="<?= e(safe_url($contact['linkedin'])) ?>" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><?php endif; ?></div>
 </div>

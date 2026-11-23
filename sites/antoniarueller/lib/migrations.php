@@ -46,6 +46,29 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'legal_v1';
     }
 
+    // Sinnvolle SEO-Texte für robots/llms (nur, wo noch nichts Eigenes steht)
+    if (!in_array('seo_v2', $applied, true)) {
+        $seo = setting('seo');
+        $oldDesc = 'Antonia Rüller – Journalistin und Reporterin in Bremen. Recherche und dokumentarisches Erzählen für Radio, Podcast und Bewegtbild.';
+        if (in_array(trim((string)$seo['title']), ['', 'Antonia Rüller – Journalistin'], true)) {
+            $seo['title'] = 'Antonia Rüller – Journalistin & Reporterin in Bremen';
+        }
+        if (in_array(trim((string)$seo['description']), ['', $oldDesc], true)) {
+            $seo['description'] = 'Antonia Rüller, Journalistin und Reporterin in Bremen: investigative Recherche und dokumentarisches Erzählen für Radio, Podcast und Video – u. a. Radio Bremen, ARD und WDR.';
+        }
+        if (trim((string)$seo['llms_summary']) === '') {
+            $seo['llms_summary'] = 'Antonia Rüller ist Journalistin und Reporterin in Bremen. Sie recherchiert und erzählt dokumentarisch für Radio, Podcast und Bewegtbild – seit November 2026 im Investigativ-Bereich von Radio Bremen. Zuvor war sie sieben Jahre beim WDR (Lokalzeit, WDR aktuell, MordOrte) und arbeitete u. a. für das ARD-Studio Istanbul, das ARD-Hauptstadtstudio, das Y-Kollektiv und SRF Genf. Schwerpunkte: politische Umbrüche, Macht und Selbstbestimmung, Gesundheitsversorgung, Klima und Recht, Türkei.';
+        }
+        if (trim((string)$seo['llms_extra']) === '') {
+            $seo['llms_extra'] = "Beiträge dürfen mit Quellenangabe und Link zitiert werden. Die Rechte an den verlinkten Beiträgen liegen bei den jeweiligen Redaktionen. Diese Datei ist ein Überblick; maßgeblich ist die Startseite. Für Anfragen und Recherchehinweise bitte den Kontaktbereich der Startseite nutzen.";
+        }
+        if ($seo['ai_bots'] === 'allow') {
+            $seo['ai_bots'] = 'block';
+        }
+        save_setting('seo', $seo, 'migration');
+        $applied[] = 'seo_v2';
+    }
+
     // Zusätzliche Zugänge aus config.php ('extra_users'): werden einmal angelegt; spätere Entfernung im Admin bleibt bestehen
     foreach ((array)cfg('extra_users', []) as $u) {
         $em = strtolower(trim((string)($u['email'] ?? '')));
@@ -70,5 +93,8 @@ function run_migrations(PDO $pdo): void
         } else {
             $pdo->prepare("INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES ('_migrations', ?, ?, 'system')")->execute([$json, time()]);
         }
+        // robots.txt, sitemap.xml, llms.txt als echte Dateien bereitstellen
+        require_once __DIR__ . '/seo_files.php';
+        regenerate_seo_files();
     }
 }

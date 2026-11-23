@@ -67,12 +67,32 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && menu && !menu.hidden) setMenu(false); });
 
   // ---- E-Mail-Adresse erst im Browser zusammensetzen (Spam-Schutz) ----
-  var mb = $('#mailbtn');
-  if (mb) {
+  $$('[data-u]').forEach(function (el) {
     try {
-      var addr = atob(mb.getAttribute('data-u')) + '@' + atob(mb.getAttribute('data-d'));
-      mb.setAttribute('href', 'mailto:' + addr);
-      $('#mailtxt').textContent = addr;
+      var addr = atob(el.getAttribute('data-u')) + '@' + atob(el.getAttribute('data-d'));
+      el.setAttribute('href', 'mailto:' + addr);
+      if (el.id === 'mailbtn') { var t = $('#mailtxt'); if (t) t.textContent = addr; }
     } catch (e) { /* ignorieren */ }
+  });
+
+  // ---- Kopfzeile: Linie beim Scrollen, aktiver Abschnitt ----
+  var bar = $('#topbar');
+  function onScroll() { if (bar) bar.classList.toggle('scrolled', window.scrollY > 8); }
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  var links = $$('.ar-nav a[data-nav]');
+  if (links.length && 'IntersectionObserver' in window) {
+    var map = {};
+    links.forEach(function (a) { map[a.getAttribute('data-nav')] = a; });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          links.forEach(function (a) { a.classList.toggle('on', false); a.setAttribute('aria-current', 'false'); });
+          var a = map[en.target.id];
+          if (a) { a.classList.add('on'); a.setAttribute('aria-current', 'true'); }
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    Object.keys(map).forEach(function (id) { var s = document.getElementById(id); if (s) io.observe(s); });
   }
 })();
