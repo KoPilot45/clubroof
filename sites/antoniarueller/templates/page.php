@@ -95,7 +95,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <?php if ($marquee): ?>
 <div class="marquee" aria-hidden="true"><div class="ar-track">
-<?php for ($r = 0; $r < 4; $r++): foreach ($marquee as $i => $w): ?><span><?= e($w['word']) ?></span><?php if ($i < count($marquee) - 1): ?><span class="amp">&amp;</span><?php endif; endforeach; ?><span style="color:var(--accent)">●</span><?php endfor; ?>
+<?php for ($r = 0; $r < 4; $r++): foreach ($marquee as $i => $w): ?><span><?= e($w['word']) ?></span><?php if ($i < count($marquee) - 1): ?><span class="amp">&amp;</span><?php endif; endforeach; ?><span class="mq-dot"></span><?php endfor; ?>
 </div></div>
 <?php endif; ?>
 

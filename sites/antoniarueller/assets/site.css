@@ -470,3 +470,9 @@ a:hover{color:var(--accent)}
 .rdot{position:relative;display:inline-block;line-height:.82}
 .rd-b{display:inline-block;clip-path:inset(.185em -.3em -.4em -.3em)}
 .rd-t{position:absolute;left:0;top:0;color:var(--rec);clip-path:inset(-.1em -.3em calc(100% - .185em) -.3em)}
+
+/* Lauftext: Wörter, „&“ und Punkt auf einer gemeinsamen optischen Mitte */
+.ar-track{align-items:center}
+.ar-track>span{line-height:1}
+.mq-dot{display:block;flex:none;width:.3em;height:.3em;border-radius:50%;background:var(--accent)}
+.amp{position:relative;top:0}
