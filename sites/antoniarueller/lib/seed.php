@@ -35,7 +35,8 @@ function seed_defaults(PDO $pdo): void
         }
     }
 
-    $set('site', ['description' => 'Antonia Rüller – Journalistin und Reporterin in Bremen. Recherche und dokumentarisches Erzählen für Radio, Podcast und Bewegtbild.']);
+    $set('site', []);
+    $set('seo', ['description' => 'Antonia Rüller – Journalistin und Reporterin in Bremen. Recherche und dokumentarisches Erzählen für Radio, Podcast und Bewegtbild.', 'noindex' => false]);
     $set('hero', [
         'lead' => 'Recherche und dokumentarisches Erzählen — für Radio, Podcast und Bewegtbild, in Deutschland und im Ausland.',
         'meta' => 'Journalistin & Reporterin · Bremen',
@@ -54,10 +55,8 @@ function seed_defaults(PDO $pdo): void
     $set('contact', [
         'email' => '', 'linkedin' => 'https://www.linkedin.com/in/antonia-r%C3%BCller-85836320a/', 'photo_credit' => '',
     ]);
-    $set('legal', [
-        'impressum' => "## Angaben gemäß § 5 DDG\n\n[Name, Anschrift und Kontaktdaten hier im Admin unter „Impressum & Datenschutz“ eintragen]",
-        'datenschutz' => "## Datenschutzerklärung\n\n[Text hier im Admin eintragen. Diese Seite setzt keine Cookies, bindet keine externen Schriften ein und nutzt keine Tracker.]",
-    ]);
+    $set('legal', legal_defaults());
+
 
     $add('nav', [
         ['label' => 'Arbeiten', 'anchor' => 'arbeiten', 'desktop' => true], ['label' => 'Podcast', 'anchor' => 'podcast', 'desktop' => false],

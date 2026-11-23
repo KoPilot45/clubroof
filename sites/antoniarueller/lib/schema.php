@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/legal_defaults.php';
+
 /**
  * Datenmodell: jede Eingabemaske im Admin entsteht aus diesen Definitionen.
  *  - collections = Listen (hinzufügen, sortieren, Papierkorb)
@@ -167,17 +169,46 @@ function schema(): array
 
     // ---------- Einzelbereiche ----------
     $s['groups']['site'] = [
-        'label' => 'Allgemein & Design', 'help' => 'Seitentitel, Farben und Kopfzeile.',
+        'label' => 'Allgemein & Design', 'help' => 'Farben und Kopfzeile. Titel und Beschreibung für Suchmaschinen findest du unter „SEO & Suche“.',
         'fields' => [
-            f('section', '', 'Suchmaschinen & Teilen'),
-            f('text', 'title', 'Seitentitel', ['max' => 80, 'default' => 'Antonia Rüller – Journalistin']),
-            f('textarea', 'description', 'Beschreibung (Google, Social Media)', ['max' => 200]),
-            f('image', 'og_image', 'Vorschaubild beim Teilen'),
             f('section', '', 'Farben'),
             f('color', 'accent', 'Akzentfarbe (Buttons, Zahlen)', ['default' => '#0E5C62']),
             f('color', 'rec', 'Rec-Rot (blinkender Punkt)', ['default' => '#C42F24']),
             f('section', '', 'Kopfzeile'),
             f('text', 'header_label', 'Text links oben', ['max' => 60, 'default' => 'AR / Reel 2025–26']),
+        ],
+    ];
+    $s['groups']['seo'] = [
+        'label' => 'SEO & Suche',
+        'help' => 'Wie die Seite bei Google & Co. und beim Teilen erscheint. Vorschau der Dateien: robots.txt, sitemap.xml, llms.txt (Links unten).',
+        'fields' => [
+            f('section', '', 'Sichtbarkeit'),
+            f('bool', 'noindex', 'Seite für Suchmaschinen sperren (noindex)', ['hint' => 'Setzt noindex/nofollow, sperrt alles in robots.txt und schaltet Sitemap und llms.txt ab. Sinnvoll, solange die Seite noch nicht öffentlich sein soll.']),
+            f('section', '', 'Titel & Beschreibung'),
+            f('text', 'title', 'Seitentitel', ['max' => 70, 'default' => 'Antonia Rüller – Journalistin', 'hint' => 'Ideal 40–60 Zeichen. Name und Beruf nach vorn, z. B. „Antonia Rüller – Journalistin & Reporterin, Bremen“.']),
+            f('textarea', 'description', 'Beschreibung (Meta-Description)', ['max' => 170, 'rows' => 3, 'hint' => 'Ideal 120–160 Zeichen: Wer, wofür, wo.']),
+            f('image', 'og_image', 'Vorschaubild beim Teilen (1200 × 630 px)', ['hint' => 'Leer = Foto aus dem Startbereich.']),
+            f('section', '', 'Person: strukturierte Daten für Google (Schema.org)'),
+            f('bool', 'jsonld', 'Strukturierte Daten ausgeben', ['default' => true, 'hint' => 'Helfen Suchmaschinen, dich als Person, Journalistin und Autorin deiner Beiträge zu erkennen.']),
+            f('text', 'job_title', 'Berufsbezeichnung', ['max' => 80, 'default' => 'Journalistin und Reporterin']),
+            f('text', 'works_for', 'Arbeitgeber / Redaktion', ['max' => 80, 'default' => 'Radio Bremen']),
+            f('url', 'works_for_url', 'Webseite des Arbeitgebers', ['default' => 'https://www.radiobremen.de']),
+            f('text', 'location', 'Ort', ['max' => 60, 'default' => 'Bremen']),
+            f('text', 'country', 'Land (Kürzel)', ['max' => 2, 'default' => 'DE']),
+            f('textarea', 'same_as', 'Weitere Profile (ein Link pro Zeile)', ['rows' => 4, 'max' => 800, 'hint' => 'LinkedIn aus dem Kontaktbereich wird automatisch ergänzt. Sinnvoll: Autorenseiten bei Sendern, Wikipedia, Mastodon/Bluesky, DJV-Profil, ORCID.']),
+            f('textarea', 'knows_about', 'Themenschwerpunkte (einer pro Zeile)', ['rows' => 6, 'max' => 800, 'default' => "Investigativjournalismus\nRecherche\nPolitik\nGesundheitspolitik\nKlimapolitik\nTürkei\nRadio\nPodcast\nVideo", 'hint' => 'Wofür soll man dich finden?']),
+            f('textarea', 'alumni', 'Ausbildung / Hochschulen (eine pro Zeile)', ['rows' => 3, 'max' => 400, 'default' => 'TU Dortmund']),
+            f('bool', 'works_list', 'Referenzen als Werkliste ausgeben', ['default' => true, 'hint' => 'Jede Referenz mit echtem Link wird als Beitrag mit dir als Autorin ausgezeichnet.']),
+            f('section', '', 'Bestätigung der Webmaster-Konten (optional)'),
+            f('text', 'google_verify', 'Google Search Console: Inhalt des Meta-Tags', ['max' => 120, 'hint' => 'Nur der Wert aus content="…".']),
+            f('text', 'bing_verify', 'Bing Webmaster Tools: Inhalt des Meta-Tags', ['max' => 120]),
+            f('section', '', 'robots.txt'),
+            f('select', 'ai_bots', 'KI-Crawler', ['options' => ['allow' => 'Erlauben', 'block' => 'Training sperren (GPTBot, ClaudeBot, Google-Extended, CCBot u. a.)'], 'default' => 'allow', 'hint' => 'robots.txt ist eine Bitte, keine Sperre – seriöse Anbieter halten sich daran.']),
+            f('textarea', 'robots_extra', 'Zusätzliche Zeilen für robots.txt', ['rows' => 4, 'max' => 1000, 'hint' => 'Nur für Fortgeschrittene. Beispiel: Disallow: /uploads/privat/']),
+            f('section', '', 'llms.txt (Überblick für KI-Assistenten)'),
+            f('bool', 'llms_enabled', 'llms.txt bereitstellen', ['default' => true]),
+            f('textarea', 'llms_summary', 'Kurzbeschreibung für KI-Assistenten', ['rows' => 4, 'max' => 600, 'hint' => 'Leer = die Meta-Description. Sachlich formulieren: wer du bist, wofür du stehst, wo man Arbeiten findet.']),
+            f('textarea', 'llms_extra', 'Zusätzlicher Text (Markdown)', ['rows' => 5, 'max' => 3000, 'hint' => 'z. B. Hinweise zur Nutzung deiner Beiträge, Zitierregeln, Pressekontakt.']),
         ],
     ];
     $s['groups']['hero'] = [
@@ -266,10 +297,10 @@ function schema(): array
     ];
     $s['groups']['legal'] = [
         'label' => 'Impressum & Datenschutz',
-        'help' => 'Absätze durch eine Leerzeile trennen, Überschriften mit „## “ beginnen. Die Seiten erscheinen unter /impressum und /datenschutz.',
+        'help' => 'Vorlagen: Angaben in [eckigen Klammern] ersetzen oder löschen. Absätze durch eine Leerzeile trennen, Überschriften mit „## “, Aufzählungen mit „- “. Die Seiten erscheinen unter /impressum und /datenschutz. Keine Rechtsberatung – vor dem Start prüfen (lassen).',
         'fields' => [
-            f('textarea', 'impressum', 'Impressum', ['rows' => 16, 'max' => 20000]),
-            f('textarea', 'datenschutz', 'Datenschutzerklärung', ['rows' => 22, 'max' => 40000]),
+            f('textarea', 'impressum', 'Impressum', ['rows' => 22, 'max' => 20000, 'default' => legal_defaults()['impressum']]),
+            f('textarea', 'datenschutz', 'Datenschutzerklärung', ['rows' => 30, 'max' => 40000, 'default' => legal_defaults()['datenschutz']]),
         ],
     ];
 
@@ -280,7 +311,7 @@ function schema(): array
 function admin_menu(): array
 {
     return [
-        'Seite' => [['g', 'site'], ['g', 'hero'], ['c', 'nav'], ['c', 'marquee'], ['g', 'sections']],
+        'Seite' => [['g', 'site'], ['g', 'seo'], ['g', 'hero'], ['c', 'nav'], ['c', 'marquee'], ['g', 'sections']],
         'Inhalte' => [['c', 'clips'], ['g', 'timeline'], ['c', 'tracks'], ['c', 'episodes'], ['c', 'stations'], ['c', 'cv'], ['c', 'before'], ['g', 'about'], ['c', 'crossmedia'], ['c', 'languages'], ['c', 'offrecord'], ['c', 'questions'], ['g', 'contact'], ['g', 'legal']],
     ];
 }

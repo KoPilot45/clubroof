@@ -4,7 +4,19 @@ DirectoryIndex index.php
 
 <IfModule mod_rewrite.c>
 RewriteEngine On
+# HTTPS erzwingen (Schleifenschutz: nicht bei Port 443 und nicht hinter einem HTTPS-Proxy)
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+RewriteCond %{SERVER_PORT} !^443$
+RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:\d+)?$
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# www auf die Hauptadresse umleiten
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 # Rechtliche Seiten
+RewriteRule ^robots\.txt$ robots.php [L]
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+RewriteRule ^llms\.txt$ llms.php [L]
 RewriteRule ^impressum/?$ index.php?seite=impressum [L,QSA]
 RewriteRule ^datenschutz/?$ index.php?seite=datenschutz [L,QSA]
 </IfModule>

@@ -144,21 +144,114 @@ function cv_when(array $r): string
     return $b !== '' ? $a . ' — ' . $b : $a;
 }
 
+function legal_inline(string $s): string
+{
+    $s = e($s);
+    // URLs und www.-Adressen verlinken
+    return preg_replace_callback('~\b((?:https?://|www\.)[^\s<]+[^\s<.,;:)\]])~u', function ($m) {
+        $u = $m[1];
+        $href = str_starts_with($u, 'www.') ? 'https://' . $u : $u;
+        return '<a href="' . $href . '" target="_blank" rel="noopener noreferrer">' . $u . '</a>';
+    }, $s);
+}
+
 function legal_html(string $text): string
 {
     $out = '';
-    foreach (preg_split('~\n\s*\n~', trim($text)) as $block) {
+    foreach (preg_split('~\n\s*\n~', trim(str_replace("\r\n", "\n", $text))) as $block) {
         $block = trim($block);
         if ($block === '') {
             continue;
         }
         if (str_starts_with($block, '## ')) {
             $out .= '<h2>' . e(trim(substr($block, 3))) . '</h2>';
+        } elseif (preg_match('~^- ~', $block)) {
+            $out .= '<ul>';
+            foreach (explode("\n", $block) as $li) {
+                $out .= '<li>' . legal_inline(preg_replace('~^- ~', '', $li)) . '</li>';
+            }
+            $out .= '</ul>';
         } else {
-            $out .= '<p>' . nl2br(e($block)) . '</p>';
+            $out .= '<p>' . nl2br(legal_inline($block)) . '</p>';
         }
     }
     return $out;
+}
+
+function abs_url(string $path): string
+{
+    return rtrim((string)cfg('site_url'), '/') . $path;
+}
+
+function lines_of(string $s): array
+{
+    return array_values(array_filter(array_map('trim', preg_split('~\R~', $s) ?: [])));
+}
+
+function prune(array $a): array
+{
+    foreach ($a as $k => $v) {
+        if (is_array($v)) {
+            $a[$k] = prune($v);
+        }
+        if ($a[$k] === '' || $a[$k] === null || $a[$k] === []) {
+            unset($a[$k]);
+        }
+    }
+    return $a;
+}
+
+/** Strukturierte Daten (JSON-LD): Person, WebSite, ProfilePage und Werkliste. */
+function build_jsonld(array $seo, array $hero, array $contact, array $langs, array $clips): string
+{
+    $name = trim($hero['first'] . ' ' . $hero['last']);
+    $pid = abs_url('/#person');
+    $lang = ['deutsch' => 'de', 'englisch' => 'en', 'französisch' => 'fr', 'türkisch' => 'tr', 'spanisch' => 'es', 'italienisch' => 'it', 'arabisch' => 'ar', 'russisch' => 'ru'];
+    $knowsLang = [];
+    foreach ($langs as $l) {
+        $code = $lang[mb_strtolower($l['name'])] ?? '';
+        if ($code) {
+            $knowsLang[] = $code;
+        }
+    }
+    $same = array_values(array_unique(array_filter(array_merge(lines_of($seo['same_as']), [safe_url($contact['linkedin'])]))));
+    $person = [
+        '@type' => 'Person', '@id' => $pid, 'name' => $name, 'url' => abs_url('/'),
+        'jobTitle' => $seo['job_title'], 'description' => $seo['description'],
+        'image' => upload_url($hero['photo']) ? abs_url(upload_url($hero['photo'])) : '',
+        'worksFor' => $seo['works_for'] ? ['@type' => 'Organization', 'name' => $seo['works_for'], 'url' => safe_url($seo['works_for_url'])] : '',
+        'homeLocation' => $seo['location'] ? ['@type' => 'Place', 'address' => ['@type' => 'PostalAddress', 'addressLocality' => $seo['location'], 'addressCountry' => strtoupper($seo['country'])]] : '',
+        'sameAs' => $same, 'knowsAbout' => lines_of($seo['knows_about']), 'knowsLanguage' => $knowsLang,
+        'alumniOf' => array_map(fn($n) => ['@type' => 'EducationalOrganization', 'name' => $n], lines_of($seo['alumni'])),
+    ];
+    $graph = [
+        $person,
+        ['@type' => 'WebSite', '@id' => abs_url('/#website'), 'url' => abs_url('/'), 'name' => $seo['title'], 'inLanguage' => 'de', 'publisher' => ['@id' => $pid]],
+        ['@type' => 'ProfilePage', '@id' => abs_url('/#profile'), 'url' => abs_url('/'), 'name' => $seo['title'], 'inLanguage' => 'de', 'isPartOf' => ['@id' => abs_url('/#website')], 'mainEntity' => ['@id' => $pid]],
+    ];
+    if ($seo['works_list']) {
+        $items = [];
+        foreach ($clips as $c) {
+            $url = safe_url($c['url']);
+            if (!str_starts_with($url, 'http') || str_starts_with(trim($c['title']), '[')) {
+                continue;
+            }
+            $items[] = [
+                '@type' => 'ListItem', 'position' => count($items) + 1,
+                'item' => [
+                    '@type' => $c['medium'] === 'text' ? 'NewsArticle' : 'CreativeWork',
+                    'headline' => $c['medium'] === 'text' ? $c['title'] : '', 'name' => $c['title'], 'description' => $c['desc'], 'url' => $url,
+                    'datePublished' => $c['date'], 'author' => ['@id' => $pid],
+                    'publisher' => $c['outlet'] ? ['@type' => 'Organization', 'name' => $c['outlet']] : '',
+                    'genre' => $c['format'], 'inLanguage' => 'de',
+                ],
+            ];
+        }
+        if ($items) {
+            $graph[] = ['@type' => 'ItemList', '@id' => abs_url('/#arbeiten'), 'name' => 'Arbeitsproben von ' . $name, 'itemListElement' => $items];
+        }
+    }
+    return (string)json_encode(['@context' => 'https://schema.org', '@graph' => array_map('prune', $graph)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP);
 }
 
 /** Schwärzungs-Zufallshöhen der Podcast-Wellenform (stabil pro Folge). */

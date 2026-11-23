@@ -21,6 +21,10 @@ function send_html(string $html): never
 }
 
 $site = setting('site');
+$seo = setting('seo');
+if ($seo['noindex']) {
+    header('X-Robots-Tag: noindex, nofollow');
+}
 $hero = setting('hero');
 $sec = setting('sections');
 $about = setting('about');
@@ -86,6 +90,8 @@ foreach ($clips as $c) {
 $cvGroups = cv_groups($cvRows);
 $cvYears = array_filter(array_map('strval', array_keys($cvGroups)), 'ctype_digit');
 $cvMin = $cvYears ? min($cvYears) : '';
+
+$jsonld = $seo['jsonld'] ? build_jsonld($seo, $hero, $contact, $langs, $clips) : '';
 
 $mailUser = $mailDomain = '';
 if (str_contains($contact['email'], '@')) {

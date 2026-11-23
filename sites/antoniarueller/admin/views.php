@@ -15,6 +15,7 @@ function admin_head(string $title, ?array $user = null): void
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title><?= e($title) ?> – Verwaltung</title>
+<link rel="icon" href="<?= AR_BASE ?>/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="<?= AR_BASE ?>/admin/admin.css?v=<?= @filemtime(__DIR__ . '/admin.css') ?>">
 </head>
 <body>
@@ -287,6 +288,9 @@ function view_edit_group(array $user, string $g, array $vals, array $errors): vo
         echo '<p class="lead">' . e($def['help']) . '</p>';
     }
     form_errors($errors);
+    if ($g === 'seo') {
+        echo '<p class="lead">Ansehen: <a href="' . AR_BASE . '/robots.txt" target="_blank" rel="noopener">robots.txt</a> · <a href="' . AR_BASE . '/sitemap.xml" target="_blank" rel="noopener">sitemap.xml</a> · <a href="' . AR_BASE . '/llms.txt" target="_blank" rel="noopener">llms.txt</a> · <a href="https://search.google.com/test/rich-results?url=' . rawurlencode(abs_url('/')) . '" target="_blank" rel="noopener">Google: Test für strukturierte Daten ↗</a></p>';
+    }
     ?>
 <form method="post" action="<?= a() ?>" enctype="multipart/form-data" class="form">
 <?= csrf_field($user) ?><input type="hidden" name="action" value="save_group"><input type="hidden" name="g" value="<?= e($g) ?>">

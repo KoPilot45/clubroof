@@ -58,6 +58,15 @@ foreach (['lib/bootstrap.php', 'config.php', 'data/', 'templates/page.php', 'too
 }
 ok(req('GET', "$base/impressum")['code'] === 200, 'Impressum erreichbar');
 
+foreach (['robots.txt' => 'Sitemap:', 'sitemap.xml' => '<urlset', 'llms.txt' => '# '] as $path => $needle) {
+    $r = req('GET', "$base/$path");
+    ok($r['code'] === 200 && str_contains($r['body'], $needle), "$path erreichbar");
+}
+$pub = req('GET', "$base/");
+ok(str_contains($pub['body'], 'application/ld+json') && str_contains($pub['body'], 'ProfilePage'), 'JSON-LD vorhanden');
+ok(str_contains($pub['body'], 'rel="icon"') && req('GET', "$base/favicon.ico")['code'] === 200, 'Favicon');
+ok(str_contains(req('GET', "$base/datenschutz")['body'], 'Verantwortliche'), 'Datenschutz-Vorlage');
+
 echo "Anmeldung\n";
 @unlink("$root/data/mail.log");
 $r = req('GET', "$base/admin/");
@@ -103,6 +112,16 @@ req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $newI
 req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $newId]);
 ok(!str_contains(req('GET', "$base/admin/?p=trash")['body'], 'Test-Referenz'), 'endgültig gelöscht');
 
+echo "SEO: noindex\n";
+$seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
+req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);
+ok(trim(req('GET', "$base/robots.txt")['body']) === "User-agent: *\nDisallow: /", 'noindex: robots sperrt alles');
+$r = req('GET', "$base/");
+ok(str_contains($r['body'], 'noindex, nofollow') && str_contains($r['head'], 'X-Robots-Tag: noindex'), 'noindex: Meta und Header');
+ok(req('GET', "$base/llms.txt")['code'] === 404 && req('GET', "$base/sitemap.xml")['code'] === 404, 'noindex: Sitemap/llms aus');
+req('POST', "$base/admin/", $seoBase);
+$rb = req('GET', "$base/robots.txt")['body'];
+ok(str_contains($rb, 'GPTBot') && str_contains($rb, 'Disallow: /admin/'), 'KI-Crawler sperren');
 echo "Zeitleiste, Einstellungen, Zugänge\n";
 $tlp = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'timeline', 'end' => '2026-12-31', 'min_w' => '2.8', 'hint_mobile' => 'x'];
 $r = req('POST', "$base/admin/", $tlp + ['start' => '2023-01-01']);

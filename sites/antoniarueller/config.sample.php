@@ -8,6 +8,10 @@ return [
     'owner_email' => 'lukaskoziorowski@yahoo.de',
     'owner_name'  => 'Lukas',
 
+    // Weitere Zugänge, die beim ersten Aufruf automatisch angelegt werden (danach im Admin unter „Zugänge“ verwaltbar).
+    // Beispiel: 'extra_users' => [['email' => 'name@example.com', 'name' => 'Name']],
+    'extra_users' => [],
+
     // Geheimnis für Hashes (Codes, Sitzungen). Wird automatisch erzeugt.
     'secret' => '__SECRET__',
 

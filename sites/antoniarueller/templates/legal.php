@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= e($legalTitle) ?> – <?= e($site['title']) ?></title>
+<title><?= e($legalTitle) ?> – <?= e($seo['title']) ?></title>
 <meta name="robots" content="noindex">
+<?php require __DIR__ . '/favicon.php'; ?>
 <link rel="stylesheet" href="<?= AR_BASE ?>/assets/fonts.css?v=1">
 <link rel="stylesheet" href="<?= AR_BASE ?>/assets/site.css?v=<?= @filemtime(AR_ROOT . '/assets/site.css') ?>">
 <style>:root{--accent:<?= e($site['accent']) ?>;--rec:<?= e($site['rec']) ?>}</style>

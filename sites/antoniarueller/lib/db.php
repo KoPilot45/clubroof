@@ -25,6 +25,8 @@ function db(): PDO
         fatal('Die Datenbank ist nicht erreichbar. Bitte Systemcheck im Admin bzw. config.php prüfen.');
     }
     db_migrate($pdo);
+    require_once __DIR__ . '/migrations.php';
+    run_migrations($pdo);
     return $pdo;
 }
 

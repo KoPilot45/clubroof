@@ -13,22 +13,35 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= e($site['title']) ?></title>
-<?php if ($site['description'] !== ''): ?><meta name="description" content="<?= e($site['description']) ?>">
-<meta property="og:description" content="<?= e($site['description']) ?>"><?php endif; ?>
-
-<meta property="og:title" content="<?= e($site['title']) ?>">
+<title><?= e($seo['title']) ?></title>
+<?php if ($seo['description'] !== ''): ?><meta name="description" content="<?= e($seo['description']) ?>">
+<meta property="og:description" content="<?= e($seo['description']) ?>">
+<meta name="twitter:description" content="<?= e($seo['description']) ?>">
+<?php endif; ?>
+<meta name="robots" content="<?= $seo['noindex'] ? 'noindex, nofollow' : 'index, follow, max-image-preview:large' ?>">
+<meta name="author" content="<?= e(trim($hero['first'] . ' ' . $hero['last'])) ?>">
+<meta property="og:title" content="<?= e($seo['title']) ?>">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
-<?php $og = $site['og_image'] ?: $hero['photo']; if ($og !== '' && upload_url($og) !== ''): ?><meta property="og:image" content="<?= e(rtrim((string)cfg('site_url'), '/') . upload_url($og)) ?>"><?php endif; ?>
-
-<?php if (cfg('site_url')): ?><link rel="canonical" href="<?= e(rtrim((string)cfg('site_url'), '/') . '/') ?>"><?php endif; ?>
-
+<meta property="og:site_name" content="<?= e(trim($hero['first'] . ' ' . $hero['last'])) ?>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<?= e($seo['title']) ?>">
+<?php $og = $seo['og_image'] ?: $hero['photo']; if ($og !== '' && upload_url($og) !== ''): ?><meta property="og:image" content="<?= e(abs_url(upload_url($og))) ?>">
+<meta name="twitter:image" content="<?= e(abs_url(upload_url($og))) ?>">
+<?php endif; ?>
+<?php if (cfg('site_url')): ?><link rel="canonical" href="<?= e(abs_url('/')) ?>">
+<meta property="og:url" content="<?= e(abs_url('/')) ?>">
+<?php endif; ?>
+<?php if ($seo['google_verify'] !== ''): ?><meta name="google-site-verification" content="<?= e($seo['google_verify']) ?>">
+<?php endif; ?>
+<?php if ($seo['bing_verify'] !== ''): ?><meta name="msvalidate.01" content="<?= e($seo['bing_verify']) ?>">
+<?php endif; ?>
 <meta name="theme-color" content="#F3ECDF">
+<?php require __DIR__ . '/favicon.php'; ?>
 <link rel="stylesheet" href="<?= AR_BASE ?>/assets/fonts.css?v=1">
 <link rel="stylesheet" href="<?= AR_BASE ?>/assets/site.css?v=<?= @filemtime(AR_ROOT . '/assets/site.css') ?>">
 <style>:root{--accent:<?= e($acc) ?>;--rec:<?= e($rec) ?>}</style>
-<script type="application/ld+json"><?= json_encode(['@context' => 'https://schema.org', '@type' => 'Person', 'name' => trim($hero['first'] . ' ' . $hero['last']), 'jobTitle' => 'Journalistin', 'sameAs' => array_values(array_filter([safe_url($contact['linkedin'])]))], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
+<?php if ($jsonld !== ''): ?><script type="application/ld+json"><?= $jsonld ?></script><?php endif; ?>
 </head>
 <body>
 <div class="ar-root">
