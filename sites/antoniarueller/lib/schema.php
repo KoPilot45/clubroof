@@ -19,6 +19,11 @@ function media_options(): array
     return ['video' => 'Video / TV', 'text' => 'Text / Online', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'YouTube / Social'];
 }
 
+function wave_options(): array
+{
+    return ['auto' => 'Automatisch (wechselt)', '1' => 'Gespräch (Sprechblöcke mit Pausen)', '2' => 'Reportage (Atmo mit Stimmen-Spitzen)', '3' => 'Atmo (ruhiger Klangteppich)', '4' => 'Zwei Stimmen (Wechselrede)'];
+}
+
 function anchor_options(): array
 {
     return ['arbeiten' => 'Arbeiten', 'podcast' => 'Podcast', 'lebenslauf' => 'Lebenslauf', 'ueber' => 'Über mich', 'offtherecord' => 'Off the record', 'kontakt' => 'Kontakt'];
@@ -94,6 +99,7 @@ function schema(): array
             f('url', 'audiothek', 'Link ARD Audiothek'),
             f('text', 'other_label', 'Weitere Plattform (Name)', ['max' => 30]),
             f('url', 'other_url', 'Weitere Plattform (Link)'),
+            f('select', 'wave', 'Tonspur-Darstellung', ['options' => wave_options(), 'default' => 'auto', 'hint' => 'Nur Optik. „Automatisch“ lässt die Tonspuren der Folgen der Reihe nach wechseln.']),
             f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true]),
         ],
     ];

@@ -320,14 +320,47 @@ function build_jsonld(array $seo, array $hero, array $socialUrls, array $langs, 
     return (string)json_encode(['@context' => 'https://schema.org', '@graph' => array_map('prune', $graph)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP);
 }
 
-/** Schwärzungs-Zufallshöhen der Podcast-Wellenform (stabil pro Folge). */
-function wave_bars(int $seed): array
+/**
+ * Dekorative Tonspur (48 Balken, Höhe in %). Vier Stile, stabil pro Folge:
+ * 1 Gespräch, 2 Reportage, 3 Atmo, 4 Zwei Stimmen.
+ */
+function wave_bars(int $style, int $seed): array
 {
-    mt_srand($seed * 7919 + 13);
-    $bars = [];
-    for ($i = 0; $i < 48; $i++) {
-        $bars[] = mt_rand(30, 92);
+    mt_srand($seed * 7919 + $style * 104729 + 13);
+    $b = [];
+    switch ($style) {
+        case 1: // Sprechblöcke mit kurzen Pausen
+            while (count($b) < 48) {
+                $len = mt_rand(5, 9);
+                for ($i = 0; $i < $len && count($b) < 48; $i++) {
+                    $b[] = mt_rand(38, 92);
+                }
+                for ($i = 0, $p = mt_rand(1, 2); $i < $p && count($b) < 48; $i++) {
+                    $b[] = mt_rand(8, 16);
+                }
+            }
+            break;
+        case 2: // niedriger Grundpegel, einzelne Spitzen
+            for ($i = 0; $i < 48; $i++) {
+                $b[] = mt_rand(1, 7) === 1 ? mt_rand(60, 96) : mt_rand(14, 34);
+            }
+            break;
+        case 3: // ruhige Wellen
+            for ($i = 0; $i < 48; $i++) {
+                $b[] = (int)round(44 + 22 * sin($i / 3.2 + ($seed % 7)) + 10 * sin($i / 1.3) + mt_rand(-4, 4));
+            }
+            break;
+        default: // Wechselrede: hohe und mittlere Blöcke
+            $hi = true;
+            while (count($b) < 48) {
+                $len = mt_rand(6, 10);
+                for ($i = 0; $i < $len && count($b) < 48; $i++) {
+                    $b[] = $hi ? mt_rand(52, 94) : mt_rand(22, 52);
+                }
+                $b[] = 10;
+                $hi = !$hi;
+            }
     }
     mt_srand();
-    return $bars;
+    return array_map(fn($h) => max(6, min(96, (int)$h)), array_slice($b, 0, 48));
 }

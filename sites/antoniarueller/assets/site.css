@@ -191,16 +191,22 @@ a:hover{color:var(--accent)}
 .pod-list{flex:2 1 560px;min-width:0;display:flex;flex-direction:column;gap:24px}
 .pod-card{background:var(--ink);color:var(--paper);padding:28px;display:flex;flex-direction:column;gap:24px}
 .pod-top{display:flex;align-items:center;gap:20px}
-.pod-play{flex:0 0 72px;width:72px;height:72px;border-radius:50%;background:#8FCFCB;display:flex;align-items:center;justify-content:center}
-a.pod-play:hover{background:var(--paper)}
+.pod-ic{flex:0 0 72px;width:72px;height:72px;border-radius:50%;border:2px solid #8FCFCB;color:#8FCFCB;display:flex;align-items:center;justify-content:center}
 .pod-t{display:flex;flex-direction:column;gap:6px;min-width:0}
 .pod-show{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mint)}
 .pod-title{font-family:var(--serif);font-size:34px;line-height:1.05}
 .wave{height:72px;display:flex;align-items:center;gap:3px}
-.wave span{flex:1 1 0;border-radius:2px}
+.wave span{flex:1 1 0;border-radius:2px;background:#8FCFCB}
+.wave-2 span{background:#CDBBA3}
+.wave-3 span{background:#6FB9B4}
+.wave-4 span{background:#E3D6BF}
+.wave-4 span:nth-child(even){opacity:.75}
 .pod-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mint)}
-.pod-links{display:flex;flex-wrap:wrap;gap:18px}
-.pod-links a{color:var(--paper)}
+.pod-btns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.pod-lab{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mint);margin-right:4px}
+.pod-btn{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 18px;border:1px solid #8FCFCB;border-radius:999px;color:var(--paper);text-decoration:none;font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.pod-btn:hover,.pod-btn:focus-visible{background:#8FCFCB;color:var(--ink)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* Stationen / Lebenslauf */
 .ar-wall{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .3em;font-family:var(--anton);font-size:clamp(40px,8.6vw,128px);line-height:1.05;text-transform:uppercase}

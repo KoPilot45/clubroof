@@ -216,17 +216,18 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="pod-grid">
 <h2 class="pod-h"><span class="ph1"><?= e($sec['pod_h1']) ?></span><span class="ph2"><?= e($sec['pod_h2']) ?></span></h2>
 <div class="pod-list">
-<?php foreach ($episodes as $ep):
-    $links = array_values(array_filter([['Spotify', $ep['spotify']], ['Apple', $ep['apple']], ['ARD Audiothek', $ep['audiothek']], [$ep['other_label'] ?: 'Mehr', $ep['other_url']]], fn($l) => $l[1] !== ''));
-    $bars = wave_bars($ep['_id']); ?>
+<?php foreach ($episodes as $n => $ep):
+    $links = array_values(array_filter([['Spotify', $ep['spotify']], ['Apple Podcasts', $ep['apple']], ['ARD Audiothek', $ep['audiothek']], [$ep['other_label'] ?: 'Mehr', $ep['other_url']]], fn($l) => $l[1] !== ''));
+    $style = in_array($ep['wave'], ['1', '2', '3', '4'], true) ? (int)$ep['wave'] : ($n % 4) + 1;
+    $bars = wave_bars($style, $ep['_id']); ?>
 <article class="pod-card">
 <div class="pod-top">
-<?php if ($links): ?><a class="pod-play" href="<?= e($links[0][1]) ?>" target="_blank" rel="noopener noreferrer" aria-label="Folge anhören: <?= e($ep['title']) ?> (<?= e($links[0][0]) ?>)"><svg aria-hidden="true" width="22" height="24" viewBox="0 0 34 38"><path d="M4 3 L31 19 L4 35 Z" fill="#172526"></path></svg></a><?php else: ?><span class="pod-play" aria-hidden="true"><svg width="22" height="24" viewBox="0 0 34 38"><path d="M4 3 L31 19 L4 35 Z" fill="#172526"></path></svg></span><?php endif; ?>
+<span class="pod-ic" aria-hidden="true"><?= icon('podcast', 30) ?></span>
 <div class="pod-t"><span class="pod-show"><?= e($ep['show']) ?><?= $ep['number'] !== '' ? ' · Folge ' . e($ep['number']) : '' ?></span><span class="pod-title"><?= e($ep['title']) ?></span></div>
 </div>
-<div class="wave" aria-hidden="true"><?php foreach ($bars as $i => $h): ?><span style="height:<?= $h ?>%;background:<?= $i < 17 ? '#8FCFCB' : '#CDBBA3' ?>"></span><?php endforeach; ?></div>
-<div class="pod-meta"><span><?= e($ep['duration']) ?></span><span><?= e($ep['outlet']) ?></span>
-<span class="pod-links"><?php foreach ($links as $l): ?><a href="<?= e($l[1]) ?>" target="_blank" rel="noopener noreferrer"><?= e($l[0]) ?> ↗</a><?php endforeach; ?></span></div>
+<div class="wave wave-<?= $style ?>" aria-hidden="true"><?php foreach ($bars as $h): ?><span style="height:<?= $h ?>%"></span><?php endforeach; ?></div>
+<?php if ($ep['duration'] !== '' || $ep['outlet'] !== ''): ?><div class="pod-meta"><span><?= e($ep['duration']) ?></span><span><?= e($ep['outlet']) ?></span></div><?php endif; ?>
+<?php if ($links): ?><div class="pod-btns"><span class="pod-lab">Anhören bei</span><?php foreach ($links as $l): ?><a class="pod-btn" href="<?= e($l[1]) ?>" target="_blank" rel="noopener noreferrer"><?= e($l[0]) ?> <span aria-hidden="true">↗</span><span class="sr-only"> (Folge „<?= e($ep['title']) ?>“, öffnet in neuem Tab)</span></a><?php endforeach; ?></div><?php endif; ?>
 </article>
 <?php endforeach; ?>
 </div>
