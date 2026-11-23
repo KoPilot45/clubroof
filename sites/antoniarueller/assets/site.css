@@ -214,7 +214,7 @@ a:hover{color:var(--accent)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* Stationen / Lebenslauf */
-.ar-wall{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .3em;font-family:var(--anton);font-size:clamp(40px,8.6vw,128px);line-height:1.05;text-transform:uppercase}
+.ar-wall{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .3em;font-family:var(--anton);font-size:clamp(32px,6.9vw,102px);line-height:1.05;text-transform:uppercase}
 .ar-st{white-space:nowrap}
 .st-hl{color:var(--accent)}
 .ar-sl{font-family:var(--serif);font-style:italic;color:var(--teal);text-transform:none;margin-left:.25em}
