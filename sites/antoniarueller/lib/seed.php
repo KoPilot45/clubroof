@@ -53,11 +53,12 @@ function seed_defaults(PDO $pdo): void
         'text2' => 'Sieben Jahre war ich beim WDR, als Autorin und Reporterin für die Lokalzeit, WDR aktuell und das YouTube-Format MordOrte. 2025 habe ich mich bewusst noch einmal für ein Volontariat entschieden, bei Radio Bremen. Seitdem habe ich in Genf, im ARD-Hauptstadtstudio, beim Y-Kollektiv und im ARD-Studio Istanbul gearbeitet. Ab November 2026 recherchiere ich im Investigativ-Bereich von Radio Bremen.',
     ]);
     $set('contact', [
-        'email' => '', 'linkedin' => 'https://www.linkedin.com/in/antonia-r%C3%BCller-85836320a/', 'photo_credit' => '',
+        'email' => '', 'photo_credit' => '',
     ]);
     $set('legal', legal_defaults());
 
 
+    $add('social', [['label' => 'LinkedIn', 'url' => 'https://www.linkedin.com/in/antonia-r%C3%BCller-85836320a/', 'published' => true]]);
     $add('nav', [
         ['label' => 'Arbeiten', 'anchor' => 'arbeiten', 'desktop' => true], ['label' => 'Podcast', 'anchor' => 'podcast', 'desktop' => false],
         ['label' => 'Lebenslauf', 'anchor' => 'lebenslauf', 'desktop' => true], ['label' => 'Über mich', 'anchor' => 'ueber', 'desktop' => true],

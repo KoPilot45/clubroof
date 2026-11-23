@@ -11,7 +11,7 @@ function legal_defaults(): array
 ## Angaben gemäß § 5 DDG
 
 Antonia Rüller
-[Straße und Hausnummer einfügen]
+[Ladungsfähige Anschrift: Straße und Hausnummer – ein Postfach genügt nicht. Alternative bei privater Wohnadresse: Anschrift eines Impressums-Services oder Büros, an der Post zuverlässig ankommt]
 [PLZ] [Ort]
 Deutschland
 

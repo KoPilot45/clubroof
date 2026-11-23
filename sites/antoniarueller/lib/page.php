@@ -53,6 +53,10 @@ $before = items('before');
 $cross = items('crossmedia');
 $langs = items('languages');
 $off = items('offrecord');
+$social = array_values(array_filter(array_map(function ($x) {
+    $x['url'] = safe_url($x['url']);
+    return $x;
+}, items('social')), fn($x) => $x['published'] && $x['url'] !== ''));
 
 // Referenzen
 $clips = array_values(array_filter(items('clips'), fn($c) => $c['published']));
@@ -91,7 +95,7 @@ $cvGroups = cv_groups($cvRows);
 $cvYears = array_filter(array_map('strval', array_keys($cvGroups)), 'ctype_digit');
 $cvMin = $cvYears ? min($cvYears) : '';
 
-$jsonld = $seo['jsonld'] ? build_jsonld($seo, $hero, $contact, $langs, $clips) : '';
+$jsonld = $seo['jsonld'] ? build_jsonld($seo, $hero, array_column($social, 'url'), $langs, $clips) : '';
 
 $mailUser = $mailDomain = '';
 if (str_contains($contact['email'], '@')) {

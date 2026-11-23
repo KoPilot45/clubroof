@@ -157,6 +157,15 @@ function schema(): array
         'label' => 'Laufband (Wörter)', 'singular' => 'Wort', 'title' => 'word', 'sub' => [],
         'fields' => [f('text', 'word', 'Wort', ['required' => true, 'max' => 40])],
     ];
+    $s['collections']['social'] = [
+        'label' => 'Social-Media-Profile', 'singular' => 'Profil', 'title' => 'label', 'sub' => ['url'],
+        'help' => 'Erscheinen als Buttons unter „Schreib mir“, im Handy-Menü und als Profile für Suchmaschinen (Schema.org). Alles optional – leere Liste = keine Buttons.',
+        'fields' => [
+            f('text', 'label', 'Beschriftung', ['required' => true, 'max' => 30, 'hint' => 'z. B. LinkedIn, Instagram, Bluesky, Mastodon, YouTube, Xing.']),
+            f('url', 'url', 'Link zum Profil', ['required' => true]),
+            f('bool', 'published', 'Anzeigen', ['default' => true]),
+        ],
+    ];
     $s['collections']['nav'] = [
         'label' => 'Navigation', 'singular' => 'Menüpunkt', 'title' => 'label', 'sub' => ['anchor'],
         'help' => 'Menüpunkte oben (Desktop) und im Handy-Menü.',
@@ -289,7 +298,6 @@ function schema(): array
             f('text', 'intro', 'Einleitung', ['max' => 160, 'default' => 'Für Themen, Recherchen und Zusammenarbeit.']),
             f('text', 'cta_label', 'Button in der Kopfzeile', ['max' => 24, 'default' => 'Schreib mir', 'hint' => 'Öffnet eine E-Mail an die Adresse unten. Leer = kein Button. Ohne E-Mail-Adresse wird der Button nicht gezeigt.']),
             f('text', 'email', 'E-Mail-Adresse', ['max' => 120, 'hint' => 'Wird im Seitenquelltext verschleiert (Spam-Schutz).']),
-            f('url', 'linkedin', 'LinkedIn-Link'),
             f('pdf', 'cv_pdf', 'Lebenslauf als PDF'),
             f('text', 'copyright', 'Copyright-Zeile', ['max' => 120, 'default' => '© 2026 Antonia Rüller']),
             f('text', 'photo_credit', 'Fotonachweis', ['max' => 120, 'hint' => 'z. B. „Fotos: Name“ – leer = nichts anzeigen.']),
@@ -313,6 +321,6 @@ function admin_menu(): array
 {
     return [
         'Seite' => [['g', 'site'], ['g', 'seo'], ['g', 'hero'], ['c', 'nav'], ['c', 'marquee'], ['g', 'sections']],
-        'Inhalte' => [['c', 'clips'], ['g', 'timeline'], ['c', 'tracks'], ['c', 'episodes'], ['c', 'stations'], ['c', 'cv'], ['c', 'before'], ['g', 'about'], ['c', 'crossmedia'], ['c', 'languages'], ['c', 'offrecord'], ['c', 'questions'], ['g', 'contact'], ['g', 'legal']],
+        'Inhalte' => [['c', 'clips'], ['g', 'timeline'], ['c', 'tracks'], ['c', 'episodes'], ['c', 'stations'], ['c', 'cv'], ['c', 'before'], ['g', 'about'], ['c', 'crossmedia'], ['c', 'languages'], ['c', 'offrecord'], ['c', 'questions'], ['g', 'contact'], ['c', 'social'], ['g', 'legal']],
     ];
 }

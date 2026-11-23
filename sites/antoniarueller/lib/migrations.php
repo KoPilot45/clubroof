@@ -69,6 +69,17 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'seo_v2';
     }
 
+    // Social-Media-Profile: bisherigen LinkedIn-Link als erstes Profil übernehmen
+    if (!in_array('social_v1', $applied, true)) {
+        $have = $pdo->query("SELECT 1 FROM ar_items WHERE coll = 'social' LIMIT 1")->fetchColumn();
+        $contact = setting('contact');
+        $li = trim((string)($contact['linkedin'] ?? ''));
+        if (!$have && $li !== '') {
+            save_item('social', null, ['label' => 'LinkedIn', 'url' => $li, 'published' => true], 'migration');
+        }
+        $applied[] = 'social_v1';
+    }
+
     // Zusätzliche Zugänge aus config.php ('extra_users'): werden einmal angelegt; spätere Entfernung im Admin bleibt bestehen
     foreach ((array)cfg('extra_users', []) as $u) {
         $em = strtolower(trim((string)($u['email'] ?? '')));

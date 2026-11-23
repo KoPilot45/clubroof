@@ -300,7 +300,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <p class="k-intro"><?= e($contact['intro']) ?></p>
 <div class="k-btns">
 <?php if ($mailUser !== ''): ?><a class="btn-solid btn-lg" id="mailbtn" href="#kontakt" data-u="<?= e(base64_encode($mailUser)) ?>" data-d="<?= e(base64_encode($mailDomain)) ?>"><span id="mailtxt">E-Mail schreiben</span> <span aria-hidden="true">↗</span></a><noscript><span class="muted"><?= e($mailUser) ?> [at] <?= e($mailDomain) ?></span></noscript><?php endif; ?>
-<?php if (safe_url($contact['linkedin']) !== ''): ?><a class="btn-ghost btn-lg" href="<?= e(safe_url($contact['linkedin'])) ?>" target="_blank" rel="noopener noreferrer">LinkedIn <span aria-hidden="true">↗</span></a><?php endif; ?>
+<?php foreach ($social as $so): ?><a class="btn-ghost btn-lg" href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> <span aria-hidden="true">↗</span></a><?php endforeach; ?>
 </div>
 <footer class="foot">
 <span><?= e(implode(' · ', array_filter([$contact['copyright'], $contact['photo_credit']]))) ?></span>
@@ -318,7 +318,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </ol></nav>
 <?php if ($mailUser !== '' && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-block menu-cta" href="#kontakt" data-u="<?= e(base64_encode($mailUser)) ?>" data-d="<?= e(base64_encode($mailDomain)) ?>" style="margin-top:28px"><?= e($contact['cta_label']) ?> ↗</a><?php endif; ?>
 <div class="menu-foot"><span><?= e($hero['now_lines'] !== '' ? str_replace("\n", ' · ', trim(explode("\n", $hero['now_lines'])[0])) . ' · ' . $hero['tag_role'] : '') ?></span>
-<?php if (safe_url($contact['linkedin']) !== ''): ?><a href="<?= e(safe_url($contact['linkedin'])) ?>" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><?php endif; ?></div>
+<?php foreach ($social as $so): ?><a href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> ↗</a><?php endforeach; ?></div>
 </div>
 
 </div>

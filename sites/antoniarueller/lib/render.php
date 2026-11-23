@@ -202,7 +202,7 @@ function prune(array $a): array
 }
 
 /** Strukturierte Daten (JSON-LD): Person, WebSite, ProfilePage und Werkliste. */
-function build_jsonld(array $seo, array $hero, array $contact, array $langs, array $clips): string
+function build_jsonld(array $seo, array $hero, array $socialUrls, array $langs, array $clips): string
 {
     $name = trim($hero['first'] . ' ' . $hero['last']);
     $pid = abs_url('/#person');
@@ -214,7 +214,7 @@ function build_jsonld(array $seo, array $hero, array $contact, array $langs, arr
             $knowsLang[] = $code;
         }
     }
-    $same = array_values(array_unique(array_filter(array_merge(lines_of($seo['same_as']), [safe_url($contact['linkedin'])]))));
+    $same = array_values(array_unique(array_filter(array_merge(lines_of($seo['same_as']), $socialUrls))));
     $person = [
         '@type' => 'Person', '@id' => $pid, 'name' => $name, 'url' => abs_url('/'),
         'jobTitle' => $seo['job_title'], 'description' => $seo['description'],
