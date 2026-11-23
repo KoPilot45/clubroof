@@ -464,3 +464,13 @@ details.adv[open]{background:#fbf7ec}
 .rte-area ul{margin:0 0 12px;padding-left:24px}
 .rte-area a{color:var(--teal);text-decoration:underline}
 .trrow .rte-area{min-height:200px}
+
+/* Bildfelder */
+input[type=file]{font:inherit;font-size:14px;color:var(--mute);max-width:100%}
+input[type=file]::file-selector-button{margin-right:12px;border:1px solid var(--teal);background:var(--teal);color:#fff;border-radius:999px;padding:6px 16px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
+input[type=file]::file-selector-button:hover{background:var(--teal-d);border-color:var(--teal-d)}
+input[type=file]:focus-visible{outline:3px solid #f2b705;outline-offset:3px;border-radius:999px}
+.newbadge{margin:8px 0 6px;padding:7px 12px;border-radius:10px;background:#fff6dc;border:1px solid #e6c76a;color:#5c4500;font-size:13px;max-width:560px}
+.newbadge[hidden]{display:none}
+.focusbox.removing{opacity:.35}
+.focusbox.removing::after{content:'wird entfernt';position:absolute;left:8px;top:8px;background:var(--bad);color:#fff;font-size:12px;padding:2px 8px;border-radius:99px}

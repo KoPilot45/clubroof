@@ -149,7 +149,7 @@
             var hid = document.getElementById('f_' + key + '_pick');
             if (hid) hid.value = it.name;
             var box = $('.focusbox[data-key="' + key + '"]');
-            if (box) { box.hidden = false; $('img', box).src = it.url; var h = box.parentNode.querySelector('.focushint'); if (h) h.hidden = false; }
+            if (box) { setPreview(box, it.url, 'Vorschau: Die Auswahl wird erst nach „Als Entwurf speichern“ bzw. „Veröffentlichen“ übernommen.'); resetFocus(box); var fi = document.querySelector('input[type=file][name="' + key + '"]'); if (fi) fi.value = ''; }
             dirty = true;
             closeModal();
           });
@@ -671,4 +671,46 @@
     area.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); e.stopPropagation(); openLink(); } });
   }
   $$('textarea[data-rich]').forEach(rteInit);
+
+  // ---- Bildfelder: gewähltes Bild sofort im Formular zeigen (gespeichert wird erst mit „Als Entwurf speichern“ / „Veröffentlichen“) ----
+  function setPreview(box, src, note) {
+    var img = $('img', box);
+    if (!box.hasAttribute('data-orig')) box.setAttribute('data-orig', box.hidden ? '' : (img.getAttribute('src') || ''));
+    img.src = src;
+    box.hidden = false;
+    var h = box.parentNode.querySelector('.focushint'); if (h) h.hidden = false;
+    var b = box.parentNode.querySelector('.newbadge');
+    if (!b) { b = document.createElement('p'); b.className = 'newbadge'; b.setAttribute('role', 'status'); box.parentNode.insertBefore(b, box.nextSibling); }
+    b.textContent = note;
+    b.hidden = !note;
+  }
+  function resetFocus(box) {
+    var inp = form && form.elements[box.getAttribute('data-key') + '_focus'];
+    if (inp) inp.value = '';
+    var dot = $('.fdot', box); if (dot) { dot.style.left = '50%'; dot.style.top = '50%'; }
+  }
+  $$('input[type=file][accept^="image"]').forEach(function (inp) {
+    inp.addEventListener('change', function () {
+      var box = $('.focusbox[data-key="' + inp.name + '"]');
+      if (!box) return;
+      var f = inp.files && inp.files[0];
+      if (!f) {
+        var orig = box.getAttribute('data-orig');
+        if (orig !== null) {
+          if (orig) { $('img', box).src = orig; }
+          else { box.hidden = true; var h = box.parentNode.querySelector('.focushint'); if (h) h.hidden = true; }
+          var b = box.parentNode.querySelector('.newbadge'); if (b) b.hidden = true;
+        }
+        return;
+      }
+      if (!/^image\//.test(f.type)) return;
+      var pick = document.getElementById('f_' + inp.name + '_pick'); if (pick) pick.value = '';
+      var rd = new FileReader();
+      rd.onload = function () { setPreview(box, String(rd.result), 'Vorschau: Das Bild ist noch nicht gespeichert und erscheint erst nach „Als Entwurf speichern“ bzw. „Veröffentlichen“ auf der Seite.'); resetFocus(box); };
+      rd.readAsDataURL(f);
+    });
+  });
+  $$('.imgbox input[type=checkbox][name^="_remove_"]').forEach(function (cb) {
+    cb.addEventListener('change', function () { var box = cb.closest('.imgbox').querySelector('.focusbox'); if (box) box.classList.toggle('removing', cb.checked); });
+  });
 })();
