@@ -330,7 +330,7 @@ if (preg_match('~<script type="application/json" id="gsdata">(.*?)</script>~s', 
 }
 ok(count($gsj) > 20 && in_array('Impressum & Datenschutz', array_column($gsj, 't'), true), 'Suchindex enthält Menüpunkte und Inhalte');
 ok(!str_contains($uh, '</script><script') && !str_contains(substr($uh, strpos($uh, 'gsdata')), '<img'), 'Suchindex bricht nicht aus dem Skript aus');
-ok(req('GET', "$base/admin/?p=help")['code'] === 200 && str_contains(req('GET', "$base/admin/?p=help")['body'], 'Neue Referenz anlegen'), 'Hilfe-Seite');
+ok(req('GET', "$base/admin/?p=help")['code'] === 200 && str_contains(req('GET', "$base/admin/?p=help")['body'], 'Eine Referenz anlegen und bearbeiten'), 'Hilfe-Seite');
 
 $cl = req('GET', "$base/admin/?p=list&c=clips")['body'];
 ok(str_contains($cl, 'class="tgl') && str_contains($cl, 'Duplizieren') && str_contains($cl, 'id="bulkform"') && str_contains($cl, 'data-state='), 'Liste: Schalter, Menü, Mehrfachauswahl, Status');
@@ -826,6 +826,41 @@ reset_content_cache();
 @unlink("$root/uploads/{$up1b['name']}");
 @unlink($gp);
 @unlink($pdfp);
+
+echo "Hilfe\n";
+require_once "$root/admin/help.php";
+$hp = req('GET', "$base/admin/?p=help")['body'];
+ok(substr_count($hp, 'class="hchap"') + substr_count($hp, 'class="hchap" ') >= 0 && preg_match_all('~<details class="hchap" id="k-[a-z]+" name="hilfe"~', $hp) === 13, 'Hilfe: 13 Kapitel als Akkordeon (gemeinsamer Name „hilfe“)');
+ok(preg_match_all('~<details class="hchap"[^>]* open>~', $hp) === 1, 'Hilfe: genau ein Kapitel ist offen');
+ok(str_contains(req('GET', "$base/admin/?p=help&k=arbeiten&a=featured")['body'], 'id="k-arbeiten" name="hilfe" open') && str_contains(req('GET', "$base/admin/?p=help&k=arbeiten&a=featured")['body'], 'data-focus="featured"'), 'Hilfe: Link öffnet das passende Kapitel und merkt den Artikel');
+$hm = req('GET', "$base/admin/")['body'];
+ok(strpos($hm, '>Hilfe') !== false && strpos($hm, '>Hilfe') < strpos($hm, '>System'), 'Hilfe ist ein eigener Hauptpunkt über „System“');
+ok(str_contains(req('GET', "$base/admin/?p=list&c=clips")['body'], 'p=help&amp;k=arbeiten&amp;a=referenz-anlegen'), 'Kontext-Hilfe: „?“ führt zum passenden Artikel');
+ok(str_contains($hm, '"Featured: eine Referenz hervorheben"') || str_contains($hm, 'Featured: eine Referenz hervorheben'), 'Hilfeartikel stehen in der Suche (Strg+K)');
+$ids = [];
+$bad = [];
+foreach (help_chapters() as $ch) {
+    foreach ($ch['articles'] as $ar) {
+        if (isset($ids[$ar['id']])) {
+            $bad[] = 'doppelt: ' . $ar['id'];
+        }
+        $ids[$ar['id']] = 1;
+        if (!empty($ar['shot']) && !is_file(HELP_IMG_DIR . '/' . $ar['shot'] . '.webp')) {
+            $bad[] = 'Bild fehlt: ' . $ar['shot'];
+        }
+        if (!empty($ar['open']) && !preg_match('~^(p=[a-z]+.*)?$~', $ar['open'][1])) {
+            $bad[] = 'Link: ' . $ar['open'][1];
+        }
+    }
+}
+foreach (['c:clips', 'c:tracks', 'c:episodes', 'c:cv', 'g:about', 'g:hero', 'g:sections', 'translate', 'media', 'g:seo', 'g:legal', 'stats', 'trash', 'users', 'backup', 'account', 'sessions', 'log', 'check'] as $act) {
+    [$kc, $ka] = help_context($act) + [null, null];
+    if (!isset($ids[$ka]) || !in_array($kc, array_column(help_chapters(), 'id'), true)) {
+        $bad[] = 'Kontext ' . $act;
+    }
+}
+ok(!$bad, 'Hilfe: Artikel-IDs eindeutig, alle Bilder vorhanden, Kontext-Links gültig' . ($bad ? ' (' . implode(', ', $bad) . ')' : ''));
+ok(is_dir("$root/admin/hilfe-bilder") && count(glob("$root/admin/hilfe-bilder/*.webp")) >= 20 && !array_filter(media_list(), fn($m) => str_contains($m['name'], 'uebersicht')), 'Hilfe-Bilder liegen im eigenen Ordner, nicht in der Mediathek');
 
 echo "Mediathek\n";
 $home = req('GET', "$base/admin/")['body'];

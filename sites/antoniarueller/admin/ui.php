@@ -126,6 +126,9 @@ function admin_search_index(array $user): array
             $idx[] = ['t' => mb_strimwidth($t, 0, 80, '…'), 's' => $def['singular'], 'u' => a('p=edit&c=' . $coll . '&id=' . $r['_id']), 'k' => $def['label']];
         }
     }
+    foreach (help_search_entries() as $h) {
+        $idx[] = $h;
+    }
     foreach ([['Neue Referenz', 'clips'], ['Neue Podcast-Folge', 'episodes']] as [$t, $c]) {
         $idx[] = ['t' => $t, 's' => 'Neu anlegen', 'u' => a('p=edit&c=' . $c), 'k' => 'Neu'];
     }
@@ -168,33 +171,3 @@ function site_map(array $user): void
     echo '</ol></section>';
 }
 
-function view_help(array $user): void
-{
-    layout_start($user, 'Hilfe', 'help');
-    echo '<p class="lead">Kurze Anleitungen für die häufigsten Aufgaben. Mit <kbd>Strg</kbd> + <kbd>K</kbd> findest du jede Stelle der Verwaltung sofort.</p>';
-    $topics = [
-        ['Neue Referenz anlegen', ['Menü „Arbeiten“ → „Referenzen“ → „Referenz hinzufügen“.', 'Titel, Kategorie (sie bestimmt die Spur im Schnittplatz) und Datum eintragen. Kategorien verwaltest du unter „Arbeiten“ → „Kategorien“. Die Breite im Schnittplatz ergibt sich automatisch.', '„Als Entwurf speichern“ zeigt sie nur dir (über „Vorschau“), „Veröffentlichen“ schaltet sie live.']],
-        ['Eine Referenz als Featured hervorheben', ['In der Referenzen-Liste auf den Stern klicken. Es gibt immer nur ein Featured: Ein Klick bei einer anderen Referenz nimmt den Stern der bisherigen weg, ein zweiter Klick hebt es ganz auf (dann entfällt der Bereich auf der Seite).', 'Ist die Referenz ausgeblendet, erscheint in der Liste ein Hinweis – auf der Seite ist dann kein Featured zu sehen.']],
-        ['Beitrag selbst hosten (Bilder und PDFs)', ['In der Referenz unter „Link zum Beitrag“ „Beitrag selbst hosten“ wählen, dann „Bilder“ oder „PDF“ wählen und einen Linktext festlegen. Bei „Bilder“ ordnest du die Galerie per Ziehen oder mit den Pfeilen, Bildunterschriften sind optional; bei „PDF“ lädst du eine Datei hoch.', 'Auf der Seite öffnet der Knopf (in der Kachel und im Featured) die Galerie mit Pfeilen, Wischen und Tastatur oder das PDF in einem neuen Tab. Mit „Externer Link“ wechselst du jederzeit zurück; die jeweils andere Eingabe bleibt gespeichert.']],
-        ['Dateien in der Mediathek verwalten', ['Menü „Mediathek“ (nach „Englisch“): Bilder und PDFs hochladen, nach Typ oder „Ungenutzt“ filtern, nach Namen suchen und sortieren.', 'Den Dateinamen ändern: Namen in der Karte bearbeiten und „Umbenennen“ klicken – alle Verweise auf der Seite, in Entwürfen und früheren Fassungen werden automatisch angepasst, die alte Adresse gilt danach nicht mehr. „Ersetzen“ tauscht die Datei unter demselben Namen aus.', 'Nicht verwendete Dateien lassen sich einzeln oder gesammelt (Kästchen oben links in der Karte, „Alle ungenutzten wählen“) löschen.']],
-        ['Bild entfernen', ['Am Vorschaubild auf das rote X klicken und die Rückfrage bestätigen. Das Bild verschwindet sofort aus der Vorschau, auf der Seite aber erst nach „Veröffentlichen“. Die Datei bleibt in der Mediathek.']],
-        ['Einen ganzen Abschnitt aus- oder einblenden', ['Menü „Seite“ → „Abschnitte“: Jeder Abschnitt hat einen Schieberegler. Ausgeschaltet verschwindet er samt Menüpunkt von der Seite; seine Inhalte bleiben erhalten.', 'Darunter stehen die Texte des Abschnitts (Abschnittsname, Überschrift, Beschriftungen). Mit „Inhalte bearbeiten“ springst du zu den Einträgen, z. B. den Referenzen.']],
-        ['Podcast-Folge hinzufügen', ['Menü „Podcast“ → „Folgen“ → „Folge hinzufügen“.', 'Titel und Links zu den Plattformen eintragen. Leere Links werden nicht angezeigt.']],
-        ['Etwas vorübergehend ausblenden', ['In der Liste den Schalter „Anzeigen“ der Zeile ausschalten. Der Eintrag bleibt erhalten und kann jederzeit wieder eingeschaltet werden.']],
-        ['Reihenfolge ändern', ['In der Liste die Zeile am Griff (⠿) ziehen. Ohne Maus: Menü „⋯“ → „Nach oben / unten“.']],
-        ['Versehentlich entfernt?', ['Nach dem Entfernen erscheint unten ein Hinweis mit „Rückgängig“. Später findest du den Eintrag im Papierkorb (Menü „System“).']],
-        ['Englische Fassung', ['Menü „Englisch“ → „Übersetzungstabelle“: links der deutsche Text, rechts die englische Fassung. Gespeichert wird beim Verlassen des Feldes.', 'Mit dem Filter „Noch offen“ siehst du nur, was noch fehlt. Leere Felder zeigen auf der englischen Seite den deutschen Text.']],
-        ['Änderungen prüfen, bevor sie öffentlich sind', ['„Als Entwurf speichern“ und dann „Vorschau“ öffnen. Im Formular zeigt „Live-Vorschau“ die Seite direkt daneben.', 'Entwürfe werden beim Schreiben automatisch gespeichert – öffentlich wird erst, was du veröffentlichst.']],
-        ['Tastenkürzel', ['<kbd>Strg</kbd> + <kbd>K</kbd> Suche · <kbd>Strg</kbd> + <kbd>S</kbd> Entwurf speichern · <kbd>Strg</kbd> + <kbd>Enter</kbd> Veröffentlichen']],
-    ];
-    echo '<div class="helpgrid">';
-    foreach ($topics as [$t, $steps]) {
-        echo '<section class="card"><h2>' . e($t) . '</h2><ul class="plain">';
-        foreach ($steps as $x) {
-            echo '<li>' . (str_contains($x, '<kbd>') ? $x : e($x)) . '</li>';
-        }
-        echo '</ul></section>';
-    }
-    echo '</div>';
-    layout_end();
-}

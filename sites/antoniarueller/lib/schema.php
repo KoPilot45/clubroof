@@ -413,6 +413,9 @@ function admin_nav(): array
         'auswertung' => ['Auswertung', 'chart', 'Besuche und Klicks – ohne Cookies.', [
             ['p', 'stats', 'Statistik', 'Besuche, Herkunft und Klicks.'],
         ]],
+        'hilfe' => ['Hilfe', 'help', 'Anleitungen mit Bildern.', [
+            ['p', 'help', 'Hilfe', 'Ausführliche Anleitungen für alle Bereiche, nach Kapiteln.'],
+        ]],
         'system' => ['System', 'gear', 'Zugänge, Sicherung, Technik.', [
             ['p', 'trash', 'Papierkorb', 'Entfernte Einträge wiederherstellen oder löschen.'],
             ['p', 'users', 'Zugänge', 'Wer sich anmelden darf.', true],
@@ -421,7 +424,6 @@ function admin_nav(): array
             ['p', 'sessions', 'Geräte', 'Wo du angemeldet bist.'],
             ['p', 'log', 'Protokoll', 'Wer hat wann was geändert.', true],
             ['p', 'check', 'Systemcheck', 'Technische Prüfung der Installation.', true],
-            ['p', 'help', 'Hilfe', 'Kurze Anleitungen für typische Aufgaben.'],
         ]],
     ];
 }

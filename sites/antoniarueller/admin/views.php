@@ -7,6 +7,7 @@ require_once __DIR__ . '/login_views.php';
 require_once __DIR__ . '/stats_views.php';
 require_once __DIR__ . '/ui.php';
 require_once __DIR__ . '/translate.php';
+require_once __DIR__ . '/help.php';
 
 function a(string $q = ''): string
 {
@@ -56,7 +57,7 @@ function layout_start(array $user, string $title, string $active = '', bool $wid
 <button type="button" class="menu-btn" id="menuBtn" aria-label="Menü öffnen" aria-expanded="false" aria-controls="side"><?= aicon('menu', 22) ?></button>
 <button type="button" class="gs-btn" id="gsBtn" aria-label="Suchen (Strg+K)"><?= aicon('search') ?><span>Suchen</span><kbd>Strg K</kbd></button>
 <a class="view-site" href="<?= AR_BASE ?>/" target="_blank" rel="noopener"><?= aicon('external', 16) ?> Seite ansehen</a>
-<a class="bar-help" href="<?= a('p=help') ?>" aria-label="Hilfe"><?= aicon('help', 20) ?></a>
+<a class="bar-help" href="<?= e(help_url(help_context($active))) ?>" aria-label="Hilfe zu dieser Seite" title="Hilfe zu dieser Seite"><?= aicon('help', 20) ?></a>
 <span class="who"><?= e($user['name'] ?: $user['email']) ?></span>
 <form method="post" action="<?= a() ?>" class="inline"><?= csrf_field($user) ?><input type="hidden" name="action" value="logout"><button class="btn small ghost"><?= aicon('logout', 16) ?> <span class="lbl">Abmelden</span></button></form>
 </header>

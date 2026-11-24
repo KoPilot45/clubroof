@@ -99,3 +99,10 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 - **Dateinamen:** Beim Hochladen bleibt der Name erhalten (`upload_slug()`: klein, Umlaute umgeschrieben, Sonderzeichen zu „-“, Endung passend; bei Doppelung `-2`, `-3` …). Bestehende Dateien bleiben unverändert.
 - **Umbenennen** (`media_rename()`): ersetzt den Namen automatisch in Einträgen, Entwürfen, Einstellungen, früheren Fassungen und englischen Texten; vergebene Namen werden abgelehnt. **Ersetzen** (`media_replace()`): gleicher Name, neue Datei (Bild nur durch Bild, PDF nur durch PDF; ändert sich die Endung, z. B. JPG → WebP, werden Verweise angepasst). **Mehrfach löschen** nur für ungenutzte Dateien.
 - Dateiadressen tragen eine Versionsnummer (`?v=`), damit ersetzte Dateien trotz langem Browser-Cache sofort neu erscheinen. PDF-Felder bieten „Aus Mediathek wählen“.
+
+## Hilfe
+
+- Eigener Hauptpunkt „Hilfe“ über „System“: 13 Kapitel mit 56 Anleitungen als **Akkordeon** (immer nur ein Kapitel offen; `<details name="hilfe">` plus Skript), Suche in der Hilfe, „Alles drucken“, Sprung per Link (`?p=help&k=<Kapitel>&a=<Artikel>`), Hilfeartikel auch in der Strg+K-Suche. Das „?“ in der Kopfleiste führt zum Artikel der aktuellen Seite (`help_context()`).
+- Texte: `admin/hilfe/start.php`, `inhalte.php`, `system.php` (Kapitel → Artikel mit Schritten, Legende zu den Bildmarkierungen, Tipps, Warnungen). Gerüst: `admin/help.php`.
+- **Screenshots** liegen in einem eigenen Ordner, getrennt von der Mediathek: `admin/hilfe-bilder/*.webp` (23 Bilder, ~1,2 MB). Neu erzeugen nach Änderungen an der Oberfläche: frische Entwicklungsdatenbank, Server starten, dann `NODE_PATH=$(npm root -g) node tools/hilfe-bilder.js` (Playwright + Pillow; ersetzt Namen und E-Mail-Adressen durch Beispielwerte und setzt die nummerierten Markierungen). `tools/` gehört nicht zum Upload.
+- Behoben nebenbei: Der Zeichenzähler brach bei leeren Feldern mit Idealwert (z. B. Podcast-Kurzbeschreibung) mit einem Skriptfehler ab. Speicher-Leiste: Bei Fensterbreiten bis 1500 px zeigen die Knöpfe „Live“, „Vorschau“, „English“ nur ihr Symbol, damit der Status lesbar bleibt.

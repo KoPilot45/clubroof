@@ -69,7 +69,8 @@
       c.className = 'counter';
       if (ideal) {
         var p = ideal.split('-');
-        c.classList.add(n >= +p[0] && n <= +p[1] ? 'good' : (n === 0 ? '' : 'warn'));
+        var cls = n >= +p[0] && n <= +p[1] ? 'good' : (n === 0 ? '' : 'warn');
+        if (cls) c.classList.add(cls);
       }
     });
     $$('.mkprev[data-for="' + id + '"]').forEach(function (p) { p.innerHTML = el.value ? mk(el.value) : ''; });
@@ -1011,6 +1012,49 @@
           return fetch(fm.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin', redirect: 'manual' });
         }).then(function () { window.location.href = fm.getAttribute('action') + '?p=media'; }).catch(function (err) { window.alert('AVIF konnte nicht umgewandelt werden: ' + (err && err.message ? err.message : 'Fehler')); });
       });
+    });
+  }
+
+  // ---- Hilfe: Akkordeon (immer nur ein Kapitel offen), Suche, Drucken, Sprung zum Artikel ----
+  var hacc = $('#hacc');
+  if (hacc) {
+    var chaps = $$('.hchap', hacc), hq = $('#hq'), hstate = $('#hstate'), hnone = $('#hnone'), hTotal = hstate.textContent;
+    chaps.forEach(function (d) {
+      d.addEventListener('toggle', function () {
+        if (!d.open || document.documentElement.classList.contains('printing')) return;
+        chaps.forEach(function (o) { if (o !== d && o.open) o.open = false; });
+      });
+    });
+    function hOpenFor(id) {
+      var art = document.getElementById('a-' + id); if (!art) return;
+      var ch = art.closest('.hchap'); if (ch && !ch.open) ch.open = true;
+      setTimeout(function () { art.scrollIntoView({ behavior: 'smooth', block: 'start' }); art.classList.remove('hit'); void art.offsetWidth; art.classList.add('hit'); }, 60);
+    }
+    var want = hacc.getAttribute('data-focus') || (location.hash.indexOf('#a-') === 0 ? location.hash.slice(3) : '');
+    if (want) hOpenFor(want);
+    $$('.hchips a', hacc).forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); hOpenFor(a.getAttribute('data-a')); history.replaceState(null, '', '#a-' + a.getAttribute('data-a')); }); });
+    window.addEventListener('hashchange', function () { if (location.hash.indexOf('#a-') === 0) hOpenFor(location.hash.slice(3)); });
+    hq.addEventListener('input', function () {
+      var q = hq.value.trim().toLowerCase(), n = 0, first = null;
+      chaps.forEach(function (ch) {
+        var any = false;
+        $$('.harticle', ch).forEach(function (a) {
+          var ok = !q || a.getAttribute('data-t').indexOf(q) !== -1 || a.querySelector('h3').textContent.toLowerCase().indexOf(q) !== -1;
+          a.hidden = !ok; if (ok) { any = true; n++; }
+        });
+        ch.hidden = !any;
+        if (any && !first) first = ch;
+      });
+      $$('.hchips', hacc).forEach(function (c) { c.hidden = !!q; });
+      hnone.hidden = n !== 0 || !q;
+      hstate.textContent = q ? n + ' Treffer' : hTotal;
+      if (q && first) first.open = true;
+    });
+    $('#hprint').addEventListener('click', function () {
+      document.documentElement.classList.add('printing');
+      chaps.forEach(function (d) { d.open = true; });
+      window.print();
+      setTimeout(function () { document.documentElement.classList.remove('printing'); }, 500);
     });
   }
 })();
