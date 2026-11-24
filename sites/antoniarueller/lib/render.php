@@ -209,6 +209,23 @@ function ent(string $s): string
     return implode('', array_map(fn($c) => '&#' . ord($c) . ';', str_split($s)));
 }
 
+/**
+ * E-Mail-Adresse für Impressum/Datenschutz: nirgends im Quelltext lesbar. Name und Domain stehen rückwärts und
+ * Base64-kodiert in Datenattributen; das Seitenskript setzt daraus beim Laden den Link zusammen. Ohne JavaScript
+ * (und für Screenreader beim Laden) steht die Adresse als „name (at) domain.de“ da.
+ * $text = frei gewählter Linktext (leer = die Adresse selbst).
+ */
+function mail_span(string $addr, string $text = ''): string
+{
+    [$l, $d] = explode('@', $addr, 2);
+    $fb = e($l . ' (at) ' . $d);
+    $attr = ' data-p="' . base64_encode(strrev($l)) . '" data-q="' . base64_encode(strrev($d)) . '"';
+    if ($text === '') {
+        return '<span class="am"' . $attr . '><span class="am-fb">' . $fb . '</span></span>';
+    }
+    return '<span class="am"' . $attr . '><span class="am-t">' . $text . '</span> <span class="am-fb">(' . $fb . ')</span></span>';
+}
+
 function legal_inline(string $s): string
 {
     $tokens = [];
@@ -221,14 +238,16 @@ function legal_inline(string $s): string
     $s = preg_replace_callback('~\[([^\]\n]+)\]\(([^)\s]+)\)~u', function ($m) use ($keep) {
         $text = $m[1];
         $u = html_entity_decode($m[2], ENT_QUOTES);
-        if (preg_match('~^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$~', html_entity_decode($text, ENT_QUOTES))) {
-            $text = ent(html_entity_decode($text, ENT_QUOTES));
-        }
+        $isAddr = preg_match('~^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$~', html_entity_decode($text, ENT_QUOTES)) === 1;
         if (preg_match('~^legal:(impressum|datenschutz)$~', $u, $p)) {
             return $keep('<a href="' . e(legal_url($p[1])) . '">' . $text . '</a>');
         }
         if (stripos($u, 'mailto:') === 0) {
-            return $keep('<a href="' . ent($u) . '">' . $text . '</a>');
+            $to = preg_replace('~\?.*$~', '', substr($u, 7));
+            if (!preg_match('~^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$~', (string)$to)) {
+                return $m[0];
+            }
+            return $keep(mail_span((string)$to, $isAddr ? '' : $text));
         }
         if (preg_match('~^https?://~i', $u)) {
             return $keep('<a href="' . e($u) . '" target="_blank" rel="noopener noreferrer">' . $text . '</a>');
@@ -239,8 +258,8 @@ function legal_inline(string $s): string
         return $m[0];
     }, $s);
     $s = preg_replace('~\*\*(.+?)\*\*~us', '<strong>$1</strong>', $s);
-    // E-Mail-Adressen als HTML-Zeichencodes (für Menschen lesbar und klickbar, für einfache Adress-Sammler nicht)
-    $s = preg_replace_callback('~[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}~', fn($m) => '<a href="' . ent('mailto:' . $m[0]) . '">' . ent($m[0]) . '</a>', $s);
+    // E-Mail-Adressen im Text: automatisch geschützt (siehe mail_span)
+    $s = preg_replace_callback('~[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}~', fn($m) => mail_span($m[0]), $s);
     // URLs und www.-Adressen verlinken
     $s = preg_replace_callback('~\b((?:https?://|www\.)[^\s<]+[^\s<.,;:)\]])~u', function ($m) {
         $u = $m[1];

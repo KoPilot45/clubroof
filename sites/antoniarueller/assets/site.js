@@ -25,6 +25,19 @@
   window.addEventListener('load', function () { placeHeads(false); requestAnimationFrame(function () { if (desk) desk.classList.add('ready'); }); });
   placeHeads(false);
 
+  // ---- Geschützte E-Mail-Adressen (Impressum, Datenschutz): Link erst im Browser zusammensetzen ----
+  $$('.am').forEach(function (s) {
+    try {
+      var rev = function (x) { return atob(x).split('').reverse().join(''); };
+      var addr = rev(s.getAttribute('data-p')) + '@' + rev(s.getAttribute('data-q'));
+      var a = document.createElement('a');
+      a.href = 'mailto:' + addr;
+      var t = s.querySelector('.am-t');
+      a.textContent = t ? t.textContent : addr;
+      s.replaceWith(a);
+    } catch (e) { /* Rückfall „name (at) domain.de“ bleibt sichtbar */ }
+  });
+
   var flashT = null;
   function focusClip(id) {
     current = id;

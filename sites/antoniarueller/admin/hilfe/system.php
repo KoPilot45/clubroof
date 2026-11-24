@@ -30,6 +30,7 @@ return [
                     'Ersetze alle Angaben in **[eckigen Klammern]** durch deine echten Daten oder lösche sie. Die Startklar-Liste warnt, solange noch Platzhalter da sind.',
                     'Mit der **Werkzeugleiste** formatierst du: Überschrift, **fett**, Liste und **Link** (auf eine Webseite, eine E-Mail-Adresse oder eine Seite dieser Website).',
                     'Die englische Fassung pflegst du in der **Übersetzungstabelle**.',
+                    '**E-Mail-Adressen** schreibst du einfach normal in den Text (oder als Link mit „Link → E-Mail-Adresse“). Die Seite schützt sie automatisch: Im Quelltext steht keine lesbare Adresse, im Browser ist sie klickbar, ohne JavaScript steht sie als „name (at) domain.de“ da.',
                 ],
                 'warn' => ['Das Impressum ist gesetzlich vorgeschrieben. Prüfe die Angaben vor dem Livegang sorgfältig (bei Unsicherheit mit einer Fachperson).'],
                 'open' => ['Texte öffnen', 'p=group&g=legal'],

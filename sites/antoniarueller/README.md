@@ -119,3 +119,7 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 - **Bildgrößen:** Hero- und Porträtfoto bekommen mit `img_width_set()` Breiten-Varianten (`<name>.w<breite>.<zeit>.webp` in `uploads/v/`), das Original bleibt größte Stufe im `srcset`; erzeugt beim ersten Aufruf bzw. beim Veröffentlichen von Hero-Bereich oder „Über mich“.
 - **Handy-Schnittplatz:** Die Abspielmarke liegt in einem eigenen Streifen über den Clips und verdeckt keine Nummer mehr.
 - **404-Seite** (`templates/notfound.php`): große „404“ mit Kreis-Motiv, Hinweis und Knöpfen (Startseite plus erste Menüpunkte); englisch unter `/en/…`. Auf 404, Impressum und Datenschutz ist „Zur Startseite“ in der Kopfzeile ein Knopf. `tools/router.php` nutzt für unbekannte Adressen jetzt 404.php wie Apache.
+
+## E-Mail-Adressen im Impressum und Datenschutz
+
+- Jede Adresse im Text (frei getippt, als `[Text](mailto:…)` oder als Linktext) wird beim Ausgeben automatisch geschützt (`mail_span()` in `lib/render.php`): Name und Domain stehen rückwärts und Base64-kodiert in Datenattributen, `assets/site.js` setzt daraus den Link zusammen. Ohne JavaScript steht „name (at) domain.de“ (bei Linktext: „Text (name (at) domain.de)“). Gespeichert wird der Text unverändert, im Editor schreibst du die Adresse normal. Die Kontakt-Adresse hinter „Schreib mir“ wird weiter erst beim Klick geladen (`mail.php`).
