@@ -130,12 +130,12 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="ed-bar">
 <span class="ed-t"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span><?= e($sec['editor_title']) ?></span>
 <span class="ed-icons"><?php foreach (['video' => 'Video', 'text' => 'Text', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'Social'] as $k => $l): ?><span><?= icon($k, 14) ?><?= tr($l) ?></span><?php endforeach; ?></span>
-<span style="color:#C9DEDA"><?= tr('Clip anklicken für Details') ?></span>
+<span style="color:#C9DEDA"><?= tr('Clip anklicken: springt zum Beitrag') ?></span>
 </div>
 <div class="ed-body">
 <div class="ed-tracks">
 <div class="ed-row ed-head"><?= tr('Spur') ?></div>
-<?php foreach ($tracks as $t): ?><button type="button" class="ed-row ed-tl" data-track="<?= e($t['code']) ?>" aria-pressed="false" title="<?= e(tr('Nur diese Spur zeigen')) ?>"><?= icon($t['icon'], 18) ?><span class="tl-t"><span><?= e($t['code']) ?></span><span class="muted"><?= e($t['label']) ?></span></span></button><?php endforeach; ?>
+<?php foreach ($tracks as $t): ?><div class="ed-row ed-tl"><?= icon($t['icon'], 18) ?><span class="tl-t"><span><?= e($t['code']) ?></span><span class="muted"><?= e($t['label']) ?></span></span></div><?php endforeach; ?>
 </div>
 <div class="ed-scroll">
 <div class="ed-grid">
@@ -143,7 +143,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php foreach ($tracks as $t): $lane = $timeline['byTrack'][$t['code']] ?? []; ?>
 <div class="ed-lane<?= $lane ? '' : ' is-empty' ?>" data-track="<?= e($t['code']) ?>">
 <?php foreach ($lane as $b): $c = $clipsById[$b['id']]; ?>
-<button type="button" class="ar-tlclip" data-id="<?= $c['_id'] ?>" aria-pressed="<?= $c['_id'] === $first['_id'] ? 'true' : 'false' ?>" title="<?= e($c['title']) ?>" style="--w:<?= $b['w'] ?>;background:<?= css_color($t['bg'], '#172526') ?>;color:<?= css_color($t['fg'], '#F3ECDF') ?>"><?php if ($b['year'] !== ''): ?><span class="yr-flag" aria-hidden="true"><?= e($b['year']) ?></span><?php endif; ?><span class="tl-no"><?= e($c['_no']) ?></span><?php if ($c['short'] !== ''): ?><span class="tl-sh"><?= e($c['short']) ?></span><?php endif; ?></button>
+<button type="button" class="ar-tlclip" data-id="<?= $c['_id'] ?>" aria-pressed="false" data-tip="<?= e(implode(' · ', array_filter([(string)$c['title'], (string)$c['outlet']]))) ?>" style="--w:<?= $b['w'] ?>;background:<?= css_color($t['bg'], '#172526') ?>;color:<?= css_color($t['fg'], '#F3ECDF') ?>"><?php if ($b['year'] !== ''): ?><span class="yr-flag" aria-hidden="true"><?= e($b['year']) ?></span><?php endif; ?><span class="tl-no"><?= e($c['_no']) ?></span><?php if ($c['short'] !== ''): ?><span class="tl-sh"><?= e($c['short']) ?></span><?php endif; ?></button>
 <?php endforeach; ?>
 </div>
 <?php endforeach; ?>
@@ -151,43 +151,13 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 </div>
 </div>
-<div class="ed-sel">
-<div class="ed-sel-l">
-<span class="sel-no" data-f="no"><?= e($first['_no']) ?></span>
-<div class="sel-col">
-<span class="muted sel-prog"><span class="ar-rec" style="width:8px;height:8px"></span><?= tr('Programm') ?> · TC <span data-f="tc"><?= e($first['_tc']) ?></span></span>
-<span class="sel-title" data-f="title"><?= e($first['title']) ?></span>
-<span class="sel-desc" data-f="desc"><?= e($first['desc']) ?></span>
-<span class="sel-meta"><?= tr('Redaktion:') ?> <span data-f="outlet"><?= e($first['outlet']) ?></span> · <span data-f="format"><?= e($first['format']) ?></span> · <span data-f="date"><?= e($first['_date']) ?></span> · <?= tr('Rolle:') ?> <span data-f="role"><?= e($first['role']) ?></span></span>
-</div>
-</div>
-<div class="ed-sel-r" role="group" aria-label="<?= e(tr('Clip wechseln')) ?>">
-<button type="button" class="circ ed-prev" aria-label="<?= tr('Vorheriger Clip') ?>"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 9 12l9 6z"></path><path d="M6 6v12"></path></svg></button>
-<a class="btn-solid" data-ev="clip" data-f-href href="<?= e(safe_url($first['url']) ?: '#arbeiten') ?>" <?= $first['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><span data-f="link_text"><?= e($first['link_text']) ?></span> <span aria-hidden="true">↗</span></a>
-<button type="button" class="circ circ-acc ed-next" aria-label="<?= tr('Nächster Clip') ?>"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l9 6-9 6z"></path><path d="M18 6v12"></path></svg></button>
-<span class="mob-count ed-count"><span data-f="no" style="font-size:14px;font-weight:600"><?= e($first['_no']) ?></span><span class="muted" style="font-size:10px"> / <?= count($clips) ?></span></span>
-</div>
-</div>
 </div>
 
 <div class="ar-ed-mob">
-<div class="mob-panel" data-medium="<?= e($first['medium']) ?>" id="mobpanel">
-<div class="mob-top"><span><?= rec_dot(7) ?><?= tr('Programm') ?></span><span>TC <span data-f="tc"><?= e($first['_tc']) ?></span></span></div>
-<div class="mob-mid"><span class="mob-no" data-f="no"><?= e($first['_no']) ?></span>
-<span class="mob-ic"><?php foreach ($short as $k => $l): ?><span class="mi mi-<?= $k ?>"><?= icon($k, 18) ?><?= tr($l) ?></span><?php endforeach; ?></span></div>
-<span class="mob-title" data-f="title"><?= e($first['title']) ?></span>
-<span class="mob-meta"><span data-f="outlet"><?= e($first['outlet']) ?></span> · <span data-f="date"><?= e($first['_date']) ?></span> · <span data-f="role"><?= e($first['role']) ?></span></span>
-<a class="btn-solid btn-block" data-ev="clip" data-f-href href="<?= e(safe_url($first['url']) ?: '#arbeiten') ?>" <?= $first['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><span data-f="link_text"><?= e($first['link_text']) ?></span> ↗</a>
-</div>
-<div class="mob-nav">
-<button type="button" class="circ" id="prevClip" aria-label="<?= tr('Vorheriger Clip') ?>"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 9 12l9 6z"></path><path d="M6 6v12"></path></svg></button>
-<span class="mob-count"><span data-f="no" style="font-size:14px;font-weight:600"><?= e($first['_no']) ?></span><span class="muted" style="font-size:10px"> / <?= count($clips) ?></span></span>
-<button type="button" class="circ circ-acc" id="nextClip" aria-label="<?= tr('Nächster Clip') ?>"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l9 6-9 6z"></path><path d="M18 6v12"></path></svg></button>
-</div>
 <div class="mob-tl">
 <div class="mob-tl-l"><?php foreach ($tracks as $t): ?><div class="mob-lane-i"><?= icon($t['icon'], 15) ?></div><?php endforeach; ?></div>
 <div class="mob-tl-r"><div class="mob-grid">
-<?php foreach ($tracks as $t): $lane = $timeline['byTrack'][$t['code']] ?? []; ?><div class="mob-lane<?= $lane ? '' : ' is-empty' ?>"><?php foreach ($lane as $b): $c = $clipsById[$b['id']]; ?><button type="button" class="ar-tlclip mini" data-id="<?= $c['_id'] ?>" aria-pressed="<?= $c['_id'] === $first['_id'] ? 'true' : 'false' ?>" aria-label="Clip <?= e($c['_no']) ?>: <?= e($c['short'] ?: $c['title']) ?>" style="--w:<?= $b['w'] ?>;background:<?= css_color($t['bg'], '#172526') ?>;color:<?= css_color($t['fg'], '#F3ECDF') ?>"><span class="tl-no"><?= e($c['_no']) ?></span></button><?php endforeach; ?></div><?php endforeach; ?>
+<?php foreach ($tracks as $t): $lane = $timeline['byTrack'][$t['code']] ?? []; ?><div class="mob-lane<?= $lane ? '' : ' is-empty' ?>"><?php foreach ($lane as $b): $c = $clipsById[$b['id']]; ?><button type="button" class="ar-tlclip mini" data-id="<?= $c['_id'] ?>" aria-pressed="false" aria-label="Clip <?= e($c['_no']) ?>: <?= e($c['short'] ?: $c['title']) ?>" data-tip="<?= e(implode(' · ', array_filter([(string)$c['title'], (string)$c['outlet']]))) ?>" style="--w:<?= $b['w'] ?>;background:<?= css_color($t['bg'], '#172526') ?>;color:<?= css_color($t['fg'], '#F3ECDF') ?>"><span class="tl-no"><?= e($c['_no']) ?></span></button><?php endforeach; ?></div><?php endforeach; ?>
 <span class="playhead mob-ph" id="playheadm" aria-hidden="true"><span></span></span>
 </div></div>
 </div>
@@ -197,16 +167,17 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="muted list-h"><?= e($sec['show_all']) ?></div>
 <ol class="clip-list">
 <?php foreach ($clips as $n => $c): $cImg = upload_url((string)$c['still']); ?>
-<li class="ar-clip<?= $c['_id'] === $first['_id'] ? ' on' : '' ?>" data-id="<?= $c['_id'] ?>">
+<li class="ar-clip" id="clip-<?= $c['_id'] ?>" data-id="<?= $c['_id'] ?>">
 <a data-ev="clip" data-k="<?= (int)$c['_id'] ?>" href="<?= e(safe_url($c['url']) ?: '#arbeiten') ?>" <?= $c['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
 <span class="cl-fig<?= $cImg === '' ? ' txt t' . ($n % 2) : '' ?>"><?php if ($cImg !== ''): ?><img src="<?= e($cImg) ?>"<?= img_attrs((string)$c['still']) ?> alt="" loading="lazy" decoding="async" style="object-position:<?= e(focus_pos((string)($c['still_focus'] ?? ''))) ?>"><?php endif; ?><span class="cl-no"><?= e($c['_no']) ?></span><span class="cl-kind"><?= icon($c['medium'], 14) ?><?= e(media_label($c['medium'])) ?></span><?php if ($cImg !== '' && trim((string)($c['still_credit'] ?? '')) !== ''): ?><span class="cl-cred cred"><?= e($c['still_credit']) ?></span><?php endif; ?></span>
 <span class="ar-clip-title"><?= e($c['title']) ?></span>
+<?php if (trim((string)$c['desc']) !== ''): ?><span class="cl-desc"><?= e($c['desc']) ?></span><?php endif; ?>
 <span class="cl-meta"><?= implode('', array_map(fn($x) => '<span>' . e($x) . '</span>', array_filter([(string)$c['outlet'], (string)$c['format'], (string)$c['_date']]))) ?></span>
+<?php if (trim((string)$c['role']) !== ''): ?><span class="cl-role"><?= e(tr('Rolle:')) ?> <?= e($c['role']) ?></span><?php endif; ?>
 </a></li>
 <?php endforeach; ?>
 </ol>
 </section>
-<script type="application/json" id="ar-clips"><?= json_encode($clipJson, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
 <?php endif; ?>
 
 <?php if ($episodes): ?>

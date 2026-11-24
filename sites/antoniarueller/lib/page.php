@@ -100,7 +100,6 @@ $social = array_values(array_filter(array_map(function ($x) {
 // Referenzen
 $clips = array_values(array_filter(items('clips'), fn($c) => $c['published']));
 $clipsById = [];
-$clipJson = [];
 $years = [];
 foreach ($clips as $i => $c) {
     $c['_no'] = sprintf('%02d', $i + 1);
@@ -113,13 +112,6 @@ foreach ($clips as $i => $c) {
     $clipsById[$c['_id']] = $c;
 }
 $timeline = build_timeline($clips, $tracks);
-foreach ($clips as $c) {
-    $clipJson[(string)$c['_id']] = [
-        'no' => $c['_no'], 'tc' => $c['_tc'], 'title' => $c['title'], 'desc' => $c['desc'], 'outlet' => $c['outlet'],
-        'format' => $c['format'], 'date' => $c['_date'], 'role' => $c['role'], 'link_text' => $c['link_text'],
-        'url' => safe_url($c['url']) ?: '#arbeiten', 'new_tab' => (bool)$c['new_tab'], 'medium' => $c['medium'],
-    ];
-}
 $yearSpan = $years ? (min($years) === max($years) ? (string)min($years) : min($years) . ' — ' . max($years)) : '';
 $featured = null;
 foreach ($clips as $c) {

@@ -8,7 +8,7 @@ function ui_en(): array
         'Zum Inhalt springen' => 'Skip to content', 'Hauptnavigation' => 'Main navigation', 'Menü öffnen' => 'Open menu', 'Menü' => 'Menu', 'Menü schließen' => 'Close menu',
         'Mobile Navigation' => 'Mobile navigation', 'Intro' => 'Intro', 'Was mich antreibt' => 'What drives me', 'Featured Clip' => 'Featured clip', 'Showreel' => 'Showreel',
         'Vorheriger Clip' => 'Previous clip', 'Hauptbeitrag' => 'Featured story', 'Nach oben' => 'Back to top', 'Von' => 'By', 'Clip wechseln' => 'Switch clip', 'Nächster Clip' => 'Next clip', 'Podcast' => 'Podcast', 'Stationen' => 'Stations', 'Lebenslauf' => 'CV', 'Über' => 'About',
-        'Über mich' => 'About me', 'Off the record' => 'Off the record', 'Kontakt' => 'Contact', 'Clip anklicken für Details' => 'Select a clip for details', 'Nur diese Spur zeigen' => 'Show this track only', 'Spur' => 'Track',
+        'Über mich' => 'About me', 'Off the record' => 'Off the record', 'Kontakt' => 'Contact', 'Clip anklicken für Details' => 'Select a clip for details', 'Clip anklicken: springt zum Beitrag' => 'Select a clip to jump to the post', 'Nur diese Spur zeigen' => 'Show this track only', 'Spur' => 'Track',
         'Programm' => 'Program', 'Redaktion:' => 'Outlet:', 'Rolle:' => 'Role:', 'Anhören bei' => 'Listen on', 'Folge' => 'Episode', 'E-Mail schreiben' => 'Write an email',
         'Impressum' => 'Imprint', 'Datenschutz' => 'Privacy', 'heute' => 'today', 'seit' => 'since', 'Zur Startseite' => 'Back to home', 'Clips' => 'clips',
         'öffnet in neuem Tab' => 'opens in a new tab', 'Beitrag öffnen' => 'Open story', 'Video / TV' => 'Video / TV', 'Text / Online' => 'Text / online', 'Radio' => 'Radio',

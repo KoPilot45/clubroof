@@ -570,6 +570,12 @@ if (is_file($av)) {
 }
 ok(str_contains(req('GET', "$base/admin/?p=edit&c=clips")['body'], 'image/avif'), 'Bildfelder erlauben AVIF');
 
+echo "Schnittplatz als Übersicht, Beiträge dreispaltig\n";
+$sp = req('GET', "$base/")['body'];
+ok(str_contains($sp, 'data-tip="') && str_contains($sp, 'class="ed-ruler"') && !str_contains($sp, 'class="ed-sel') && !str_contains($sp, 'id="ar-clips"'), 'Schnittplatz ohne Detailfeld, Clips mit Hinweisschild');
+ok(preg_match_all('~<li class="ar-clip" id="clip-(\d+)"~', $sp) >= 5 && str_contains($sp, 'class="cl-desc"') && str_contains($sp, 'class="cl-role"'), 'Kacheln mit Anker, Beschreibung und Rolle');
+ok(substr_count($sp, 'class="ar-tlclip"') >= 5 && substr_count($sp, 'ed-tl"><') >= 3 && !str_contains($sp, 'Nur diese Spur zeigen'), 'Spurköpfe sind reine Beschriftung');
+
 echo "SEO: noindex\n";
 $seoBase = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'seo', 'title' => 'Titel', 'description' => 'Beschreibung', 'jsonld' => '1', 'works_list' => '1', 'llms_enabled' => '1', 'ai_bots' => 'block', 'job_title' => 'Journalistin', 'country' => 'DE'];
 req('POST', "$base/admin/", $seoBase + ['noindex' => '1']);

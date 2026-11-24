@@ -3,18 +3,11 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
-  // ---- Showreel: Clip auswählen ----
-  var dataEl = $('#ar-clips');
-  var clips = {};
-  try { clips = dataEl ? JSON.parse(dataEl.textContent) : {}; } catch (e) { clips = {}; }
-  var listIds = $$('.clip-list .ar-clip').map(function (li) { return li.getAttribute('data-id'); }).filter(function (id) { return clips[id]; });
-  var ids = listIds.length ? listIds : Object.keys(clips);
-  var pressed = $('.ar-tlclip[aria-pressed="true"]');
-  var current = pressed ? pressed.getAttribute('data-id') : ids[0];
-  var soloTrack = '';
-  var desk = $('.ar-ed-desk');
-
+  // ---- Schnittplatz: Übersicht über alle Beiträge, ein Klick springt zur Kachel ----
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var desk = $('.ar-ed-desk');
+  var firstClip = $('.ar-tlclip');
+  var current = firstClip ? firstClip.getAttribute('data-id') : '';
   function placeHeads(scroll) {
     [['.ed-grid', 'playhead', '.ed-scroll'], ['.mob-grid', 'playheadm', '.mob-tl-r']].forEach(function (t) {
       var grid = $(t[0]), ph = document.getElementById(t[1]);
@@ -32,71 +25,37 @@
   window.addEventListener('load', function () { placeHeads(false); requestAnimationFrame(function () { if (desk) desk.classList.add('ready'); }); });
   placeHeads(false);
 
-  function applyClip(id) {
-    var c = clips[id];
-    if (!c) return;
-    $$('[data-f]').forEach(function (el) {
-      var k = el.getAttribute('data-f');
-      if (c[k] !== undefined) el.textContent = c[k];
-    });
-    $$('[data-f-href]').forEach(function (a) {
-      a.setAttribute('href', c.url);
-      if (c.new_tab) { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener noreferrer'); }
-      else { a.removeAttribute('target'); a.removeAttribute('rel'); }
-    });
-    var mp = $('#mobpanel');
-    if (mp) mp.setAttribute('data-medium', c.medium);
-  }
-  var fadeT = null;
-  function select(id) {
-    if (!clips[id]) return;
+  var flashT = null;
+  function focusClip(id) {
     current = id;
     placeHeads(true);
-    $$('.ar-tlclip').forEach(function (b) {
-      b.setAttribute('aria-pressed', b.getAttribute('data-id') === id ? 'true' : 'false');
-    });
-    $$('.clip-list .ar-clip').forEach(function (li) { li.classList.toggle('on', li.getAttribute('data-id') === id); });
-    clearTimeout(fadeT);
-    if (reduce) { applyClip(id); return; }
-    var fe = $$('.ed-sel-l, .mob-panel');
-    fe.forEach(function (e) { e.classList.add('fx-out'); });
-    fadeT = setTimeout(function () { applyClip(current); fe.forEach(function (e) { e.classList.remove('fx-out'); }); }, 220);
+    $$('.ar-tlclip').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-id') === id ? 'true' : 'false'); });
+    var tile = document.getElementById('clip-' + id);
+    $$('.clip-list .ar-clip').forEach(function (li) { li.classList.toggle('on', li === tile); li.classList.remove('flash'); });
+    if (!tile) return;
+    tile.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    clearTimeout(flashT);
+    flashT = setTimeout(function () { tile.classList.add('flash'); setTimeout(function () { tile.classList.remove('flash'); }, 1600); }, reduce ? 0 : 450);
   }
+  // Hinweisschild mit Titel und Redaktion
+  var tip = null;
+  function showTip(b) {
+    if (!desk || !b.getAttribute('data-tip')) return;
+    if (!tip) { tip = document.createElement('div'); tip.className = 'tl-tip'; tip.setAttribute('role', 'tooltip'); desk.appendChild(tip); }
+    tip.textContent = b.getAttribute('data-tip');
+    var r = b.getBoundingClientRect(), d = desk.getBoundingClientRect();
+    tip.style.left = Math.max(120, Math.min(d.width - 120, r.left - d.left + r.width / 2)) + 'px';
+    tip.style.top = (r.top - d.top - 6) + 'px';
+    tip.hidden = false;
+  }
+  function hideTip() { if (tip) tip.hidden = true; }
   $$('.ar-tlclip').forEach(function (b) {
-    b.addEventListener('click', function () { select(b.getAttribute('data-id')); });
-  });
-  var prevs = $$('#prevClip, .ed-prev'), nexts = $$('#nextClip, .ed-next');
-  function seq() {
-    if (!soloTrack) return ids;
-    return ids.filter(function (id) { return $('.ed-lane[data-track="' + soloTrack + '"] .ar-tlclip[data-id="' + id + '"]'); });
-  }
-  function step(d) {
-    var s = seq();
-    if (!s.length) return;
-    var i = s.indexOf(current);
-    select(s[i === -1 ? 0 : (i + d + s.length) % s.length]);
-  }
-  prevs.forEach(function (b) { b.addEventListener('click', function () { step(-1); }); });
-  nexts.forEach(function (b) { b.addEventListener('click', function () { step(1); }); });
-  // Pfeiltasten, wenn der Fokus im Schnittplatz liegt
-  if (desk) desk.addEventListener('keydown', function (e) {
-    if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.altKey || e.ctrlKey || e.metaKey) return;
-    e.preventDefault();
-    step(e.key === 'ArrowRight' ? 1 : -1);
-    var cur = $('.ar-tlclip[data-id="' + current + '"]', desk);
-    if (cur && document.activeElement && document.activeElement.classList.contains('ar-tlclip')) cur.focus({ preventScroll: true });
-  });
-
-  // Spuren: Klick auf den Spurkopf zeigt nur diese Spur („Solo“)
-  $$('.ed-tl').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var t = b.getAttribute('data-track');
-      soloTrack = soloTrack === t ? '' : t;
-      $$('.ed-tl').forEach(function (x) { x.setAttribute('aria-pressed', x === b && soloTrack ? 'true' : 'false'); });
-      $$('.ed-lane').forEach(function (l) { l.classList.toggle('solo', !!soloTrack && l.getAttribute('data-track') === soloTrack); });
-      if (desk) { if (soloTrack) desk.setAttribute('data-solo', soloTrack); else desk.removeAttribute('data-solo'); }
-      if (soloTrack && seq().indexOf(current) === -1 && seq().length) select(seq()[0]);
-    });
+    var id = b.getAttribute('data-id');
+    b.addEventListener('click', function () { focusClip(id); });
+    b.addEventListener('mouseenter', function () { current = id; placeHeads(false); showTip(b); });
+    b.addEventListener('focus', function () { current = id; placeHeads(false); showTip(b); });
+    b.addEventListener('mouseleave', hideTip);
+    b.addEventListener('blur', hideTip);
   });
 
   // ---- Mobiles Menü ----
