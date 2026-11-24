@@ -117,6 +117,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $publish = ($_POST['mode'] ?? 'publish') !== 'draft';
             $id = save_item($coll, $id, $data, $who, $publish);
+            if ($publish && $coll === 'clips' && trim((string)($data['still'] ?? '')) !== '') {
+                img_square_set((string)$data['still'], (string)($data['still_focus'] ?? ''));
+            }
             audit($who, $publish ? 'publish_item' : 'draft_item', $coll . '#' . $id . ' ' . ($data[$s['collections'][$coll]['title']] ?? ''));
             if ($publish) {
                 $back(AR_BASE . '/admin/?p=list&c=' . $coll, 'Veröffentlicht.');
@@ -482,6 +485,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $back(AR_BASE . '/admin/?p=media', $n ? $n . ($n === 1 ? ' Datei hochgeladen.' : ' Dateien hochgeladen.') : 'Keine Datei gewählt.', $n ? 'ok' : 'err');
         }
 
+        case 'variants_clear': {
+            $n = purge_all_variants();
+            audit($who, 'variants_clear', (string)$n);
+            $back(AR_BASE . '/admin/?p=media', $n . ($n === 1 ? ' Bildgröße gelöscht' : ' Bildgrößen gelöscht') . ' – sie werden beim nächsten Aufruf der Seite automatisch neu erzeugt.');
+        }
+
         case 'media_rename': {
             [$ok, $msg] = media_rename((string)($_POST['name'] ?? ''), (string)($_POST['newname'] ?? ''));
             if ($ok) {
@@ -512,6 +521,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     continue;
                 }
                 @unlink(upload_dir() . '/' . $nm);
+                purge_variants($nm);
                 audit($who, 'media_delete', $nm);
                 $n++;
             }
@@ -551,6 +561,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $back(AR_BASE . '/admin/?p=media', 'Datei wird noch verwendet oder existiert nicht.', 'err');
             }
             @unlink(upload_dir() . '/' . $nm);
+            purge_variants($nm);
             audit($who, 'media_delete', $nm);
             $back(AR_BASE . '/admin/?p=media', 'Datei gelöscht.');
         }

@@ -796,6 +796,7 @@ function media_rename(string $old, string $newBase): array
     if (!@rename(upload_dir() . '/' . $old, upload_dir() . '/' . $new)) {
         return [false, 'Umbenennen nicht möglich (Dateirechte).', ''];
     }
+    purge_variants($old);
     $n = media_rewrite_refs($old, $new);
     return [true, '„' . $old . '“ heißt jetzt „' . $new . '“' . ($n ? ' (' . $n . ' Verweis' . ($n === 1 ? '' : 'e') . ' angepasst)' : '') . '.', $new];
 }
@@ -811,6 +812,7 @@ function media_replace(string $old, array $file): array
     } catch (RuntimeException $ex) {
         return [false, $ex->getMessage(), ''];
     }
+    purge_variants($old);
     if ($new !== $old) {
         @unlink(upload_dir() . '/' . $old);
         media_rewrite_refs($old, $new);

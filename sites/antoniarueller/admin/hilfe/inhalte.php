@@ -69,6 +69,7 @@ return [
                     'Setze den **Fokuspunkt** durch einen Klick auf die wichtige Stelle, damit der Ausschnitt gut sitzt.',
                     'Trage bei Bedarf den **Bildnachweis** ein (z. B. „Bild: buten un binnen“). Er erscheint klein im Bild.',
                     'Ohne Vorschaubild zeigt die Kachel eine farbige Fläche mit der Nummer.',
+                    'Passende **Bildgrößen** legt die Seite selbst an (quadratisch um den Fokuspunkt). Jedes Gerät lädt nur die Größe, die es braucht. Du musst nichts einstellen.',
                 ],
             ],
         ],

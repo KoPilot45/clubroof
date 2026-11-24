@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/imgvar.php';
+
 require_once __DIR__ . '/i18n.php';
 
 // Hilfen für die öffentliche Seite

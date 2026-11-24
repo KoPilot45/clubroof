@@ -504,13 +504,63 @@ $ef = req('GET', "$base/admin/?p=edit&c=clips")['body'];
 ok(str_contains($ef, 'Vorschaubild (optional)') && str_contains($ef, 'Bildnachweis (optional)') && !str_contains($ef, 'Standbild'), 'Backend: „Vorschaubild“ und „Bildnachweis“');
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Vorschaubild-Test', 'medium' => 'text', 'tl_track' => 'T1', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'still_credit' => 'Bild: <Test>', 'still_focus' => '40,25', 'mode' => 'publish', 'still' => new CURLFile($root . '/seed-assets/antonia-portrait.jpg', 'image/jpeg', 'v.jpg')], true);
 $vp = req('GET', "$base/")['body'];
-ok($r['code'] === 302 && preg_match('~<span class="cl-fig"><img src="[^"]*/uploads/[a-z0-9-]+\.webp(\?v=\d+)?"[^>]*loading="lazy"[^>]*object-position:40% 25%~', $vp) === 1, 'Kachel zeigt Vorschaubild mit Fokuspunkt');
+ok($r['code'] === 302 && preg_match('~<span class="cl-fig"><img src="[^"]*/uploads/(v/)?[a-z0-9.-]+\.webp(\?v=\d+)?"[^>]*loading="lazy"[^>]*object-position:40% 25%~', $vp) === 1, 'Kachel zeigt Vorschaubild mit Fokuspunkt');
 ok(str_contains($vp, 'Bild: &lt;Test&gt;') && !str_contains($vp, 'Bild: <Test>'), 'Bildnachweis steht maskiert auf der Kachel');
 ok(substr_count($vp, 'class="cl-fig txt') >= 1, 'Beiträge ohne Bild werden zur typografischen Kachel');
 foreach (q("SELECT id FROM ar_items WHERE coll = 'clips' AND data LIKE '%Vorschaubild-Test%'")->fetchAll() as $row) {
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
 }
+
+echo "Automatische Bildgrößen\n";
+$bg = sys_get_temp_dir() . '/bildgroessen-test.png';
+$gi = imagecreatetruecolor(1600, 1000);
+imagefill($gi, 0, 0, imagecolorallocate($gi, 0, 0, 220));
+imagefilledrectangle($gi, 0, 0, 533, 999, imagecolorallocate($gi, 220, 0, 0));
+imagepng($gi, $bg);
+$ub = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'file' => new CURLFile($bg, 'image/png', 'bildgroessen-test.png')], true)['body'], true);
+ok(($ub['ok'] ?? false) && str_starts_with((string)$ub['name'], 'bildgroessen-test'), 'Testbild für Bildgrößen hochgeladen');
+$bgPost = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Bildgrößen-Test', 'tl_track' => 'T1', 'link_mode' => 'external', 'still_pick' => $ub['name'], 'still_focus' => '0,50', 'mode' => 'publish'];
+req('POST', "$base/admin/", $bgPost);
+reset_content_cache();
+$bid = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL ORDER BY id DESC LIMIT 1")->fetchColumn();
+$vbase = preg_replace('~\.webp$~', '', (string)$ub['name']);
+$vfiles = glob("$root/uploads/v/$vbase.*.0x50.*.webp");
+ok(count($vfiles) === 4, 'Beim Veröffentlichen entstehen vier Größen (360, 540, 720 und die volle Bildhöhe 1000; 1080 wäre größer als das Bild)');
+$sq = true;
+foreach ($vfiles as $vf) {
+    $vi = getimagesize($vf);
+    $sq = $sq && $vi[0] === $vi[1] && in_array($vi[0], [360, 540, 720, 1000], true);
+}
+ok($sq, 'Varianten sind quadratisch');
+$pg = req('GET', "$base/")['body'];
+ok(preg_match('~<img src="[^"]*/uploads/v/' . preg_quote($vbase, '~') . '\.720\.0x50\.[a-z0-9]+\.webp" srcset="[^"]*\.360\.0x50\.[a-z0-9]+\.webp 360w, [^"]*\.540\.0x50\.[a-z0-9]+\.webp 540w, [^"]*\.720\.0x50\.[a-z0-9]+\.webp 720w, [^"]*\.1000\.0x50\.[a-z0-9]+\.webp 1000w" sizes="[^"]*100vw[^"]*" width="720" height="720"~', $pg) === 1 && !str_contains($pg, '1080w'), 'Kachel: srcset mit passenden Größen und sizes');
+$px = function (string $file, float $fx) {
+    $im = imagecreatefromwebp($file);
+    $c = imagecolorat($im, (int)(imagesx($im) * $fx), (int)(imagesy($im) / 2));
+    return [($c >> 16) & 255, $c & 255];
+};
+$v360 = glob("$root/uploads/v/$vbase.360.0x50.*.webp")[0];
+[$pr, $pb] = $px($v360, 0.2);
+ok($pr > 150 && $pb < 100, 'Fokus links: Ausschnitt beginnt links (roter Bereich)');
+req('POST', "$base/admin/", array_merge($bgPost, ['id' => $bid, 'still_focus' => '100,50']));
+$v360b = glob("$root/uploads/v/$vbase.360.100x50.*.webp");
+[$qr, $qb] = $v360b ? $px($v360b[0], 0.2) : [0, 0];
+ok($v360b && $qb > 150 && $qr < 100, 'Fokus rechts: anderer Ausschnitt (blauer Bereich), neue Datei');
+$mp = req('GET', "$base/admin/?p=media")['body'];
+ok(str_contains($mp, 'Automatische Bildgrößen:') && !str_contains($mp, 'data-name="' . basename($v360) . '"'), 'Mediathek zeigt die Varianten nicht als Dateien');
+// Umbenennen räumt auf, die Seite erzeugt neue
+media_rename((string)$ub['name'], 'bildgroessen-neu');
+ok(!glob("$root/uploads/v/$vbase.*.webp"), 'Umbenennen löscht die alten Varianten');
+req('GET', "$base/");
+ok(count(glob("$root/uploads/v/bildgroessen-neu.*.webp")) >= 3, 'Seite erzeugt die Varianten unter dem neuen Namen');
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'variants_clear']);
+ok(!glob("$root/uploads/v/*.webp") && str_contains(follow($r)['body'], 'Bildgrößen gelöscht'), 'Zwischenspeicher leeren');
+q("UPDATE ar_items SET deleted_at = " . time() . " WHERE id = $bid");
+reset_content_cache();
+@unlink("$root/uploads/bildgroessen-neu.webp");
+@unlink($bg);
+purge_all_variants();
 
 echo "Fotonachweis mit Link\n";
 $ctOrig = setting('contact', true);
