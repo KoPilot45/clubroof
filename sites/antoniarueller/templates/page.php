@@ -252,7 +252,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 ?>
 <li class="ar-logo"><<?= $tag ?> class="ar-logo-in"<?= $lnk ?>>
 <span class="ar-logo-box"><?php if ($lu !== ''): ?><img src="<?= e($lu) ?>"<?= img_attrs((string)$s['logo']) ?> alt="" loading="lazy" decoding="async"><?php else: ?><span class="ar-logo-name"><?= e($s['name']) ?></span><?php endif; ?></span>
-<span class="ar-logo-cap"><?php if ($lu !== ''): ?><b><?= e($s['name']) ?></b><?php endif; ?><?php if ($capParts): ?><span><?= e(implode(' · ', $capParts)) ?></span><?php endif; ?></span>
+<span class="ar-logo-cap"><span class="ar-logo-cap-in"><?php if ($lu !== ''): ?><b><?= e($s['name']) ?></b><?php endif; ?><?php if ($capParts): ?><span class="ar-logo-sub"><?= e(implode(' · ', $capParts)) ?></span><?php endif; ?></span></span>
 </<?= $tag ?>></li>
 <?php endforeach; ?>
 </ul>

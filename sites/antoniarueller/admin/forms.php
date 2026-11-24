@@ -173,7 +173,7 @@ function render_field_inner(array $f, mixed $val, array $vals = []): void
             echo '<input type="hidden" name="_remove_' . e($k) . '" id="f_' . e($k) . '_remove" value="">';
             echo '</div><input type="file" id="' . $id . '" name="' . e($k) . '" accept="image/jpeg,image/png,image/webp,image/avif,.avif"' . ($isLogo ? ' data-logo' : '') . $desc . '> <button type="button" class="btn small ghost" data-media-pick="' . e($k) . '">Aus Mediathek wählen</button>';
             if ($isLogo) {
-                echo '<small class="hint">Am besten ein <strong>freigestelltes Logo mit transparentem Hintergrund</strong> (PNG oder WebP). Ein Logo mit weißem oder farbigem Hintergrund wirkt auf der Seite wie ein Kasten. Freistellen geht schnell mit einem KI-Werkzeug, z. B. „Hintergrund entfernen“ in einer Bildbearbeitungs-App oder auf einer Webseite wie remove.bg. Beim Hochladen wird das Logo automatisch auf höchstens ' . LOGO_MAX_W . ' × ' . LOGO_MAX_H . ' Pixel verkleinert (auf der Seite erscheint es höchstens 180 × 48 Pixel groß), leere Ränder werden abgeschnitten und es wird in WebP umgewandelt. Auf der Seite wird es grau gezeigt und beim Darüberfahren farbig.</small>';
+                echo '<small class="hint">Am besten <strong>freigestellt</strong> (transparenter Hintergrund, PNG oder WebP), z. B. mit „Hintergrund entfernen“ in einer Bildbearbeitungs-App oder auf remove.bg. Wird beim Hochladen automatisch auf höchstens ' . LOGO_MAX_W . ' × ' . LOGO_MAX_H . ' Pixel verkleinert und in WebP umgewandelt.</small>';
             } else {
                 echo '<small class="hint">JPG, PNG, WebP oder AVIF, höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB. Wird automatisch verkleinert und optimiert.</small>';
             }

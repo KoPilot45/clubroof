@@ -148,25 +148,24 @@ a:hover{color:var(--accent)}
 .pod-btn:hover,.pod-btn:focus-visible{background:#8FCFCB;color:var(--ink)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* Stationen als Logo-Raster */
-.ar-logos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
+/* Stationen als Logo-Raster: Spalten nach verfügbarer Breite, Beschriftung schiebt das Logo nach oben (nichts überlagert sich) */
+.ar-logos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(max(200px,19.9%),1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
 .ar-logo{border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
-.ar-logo-in{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:132px;padding:20px 12px;height:100%;color:inherit;text-decoration:none;transition:background .3s}
-.ar-logo-box{display:flex;align-items:center;justify-content:center;width:100%;transition:transform .3s}
-.ar-logo-box img{display:block;max-width:180px;width:auto;height:auto;max-height:48px;object-fit:contain;filter:grayscale(1);opacity:.75;transition:filter .3s,opacity .3s}
-.ar-logo-name{font-family:var(--serif);font-size:26px;line-height:1.1;color:var(--mute);text-align:center;transition:color .3s}
-.ar-logo-cap{position:absolute;left:8px;right:8px;bottom:12px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s}
-.ar-logo-cap b{font-weight:500;font-size:14px;color:var(--ink)}
-.ar-logo-cap span{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--mute)}
+.ar-logo-in{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:164px;height:100%;padding:16px 12px;color:inherit;text-decoration:none;transition:background .3s}
+.ar-logo-box{display:flex;align-items:center;justify-content:center;width:100%;min-width:0}
+.ar-logo-box img{display:block;max-width:min(180px,100%);width:auto;height:auto;max-height:48px;object-fit:contain;filter:grayscale(1);opacity:.75;transition:filter .3s,opacity .3s}
+.ar-logo-name{font-family:var(--serif);font-size:26px;line-height:1.1;color:var(--mute);text-align:center;overflow-wrap:anywhere;transition:color .3s}
+.ar-logo-cap{display:grid;grid-template-rows:0fr;width:100%;opacity:0;margin-top:0;transition:grid-template-rows .35s ease,opacity .3s ease,margin-top .35s ease}
+.ar-logo-cap-in{min-height:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.ar-logo-cap b{font-weight:500;font-size:14px;line-height:1.25;color:var(--ink);overflow-wrap:anywhere}
+.ar-logo-sub{font-family:var(--mono);font-size:12px;line-height:1.3;letter-spacing:.04em;color:var(--mute);overflow-wrap:anywhere}
 .ar-logo-in:hover,.ar-logo-in:focus-visible{background:var(--card)}
 .ar-logo-in:hover .ar-logo-box img,.ar-logo-in:focus-visible .ar-logo-box img{filter:none;opacity:1}
 .ar-logo-in:hover .ar-logo-name,.ar-logo-in:focus-visible .ar-logo-name{color:var(--ink)}
-.ar-logo-in:hover .ar-logo-box,.ar-logo-in:focus-visible .ar-logo-box{transform:translateY(-14px)}
-.ar-logo-in:hover .ar-logo-cap,.ar-logo-in:focus-visible .ar-logo-cap{opacity:1;transform:none}
+.ar-logo-in:hover .ar-logo-cap,.ar-logo-in:focus-visible .ar-logo-cap{grid-template-rows:1fr;opacity:1;margin-top:10px}
 .ar-logo-in:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
-@media (hover:none){.ar-logo-in{justify-content:flex-start;padding-bottom:54px}.ar-logo-cap{opacity:1;transform:none}}
-@media (max-width:900px){.ar-logos{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:560px){.ar-logos{grid-template-columns:repeat(2,minmax(0,1fr))}.ar-logo-box img{max-width:140px}}
+@media (hover:none){.ar-logo-cap{grid-template-rows:1fr;opacity:1;margin-top:10px;transition:none}}
+@media (max-width:560px){.ar-logos{grid-template-columns:repeat(2,minmax(0,1fr))}.ar-logo-in{min-height:150px;padding:14px 8px}}
 
 /* Stationen / Lebenslauf */
 .ar-wall{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .3em;font-family:var(--anton);font-size:clamp(24px,5.2vw,77px);line-height:1.05;text-transform:uppercase}

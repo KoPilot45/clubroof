@@ -111,7 +111,6 @@ function schema(): array
             f('text', 'desk', 'Redaktion (optional)', ['max' => 40, 'hint' => 'Freitext, z. B. „TV“, „Radio“, „Online“ oder „Investigativ-Team“.']),
             f('url', 'url', 'Link (optional)', ['hint' => 'Wenn gesetzt, ist das Logo anklickbar.']),
             f('bool', 'highlight', 'Farbig hervorheben (nur bei „Namen als Schrift“)'),
-            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true]),
         ],
     ];
     $s['collections']['cv'] = [
