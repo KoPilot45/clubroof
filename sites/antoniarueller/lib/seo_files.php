@@ -70,11 +70,12 @@ function llms_txt(): ?string
     if ($topics) {
         $md .= '**Themen:** ' . implode(', ', $topics) . "\n\n";
     }
-    $clips = array_filter(items('clips'), fn($c) => $c['published'] && str_starts_with(safe_url($c['url']), 'http') && !str_starts_with(trim($c['title']), '['));
+    $tracksLbl = array_column(items('tracks'), 'label', 'code');
+    $clips = array_filter(items('clips'), fn($c) => $c['published'] && ($c['link_mode'] ?? '') !== 'hosted' && str_starts_with(safe_url($c['url']), 'http') && !str_starts_with(trim($c['title']), '['));
     if ($clips) {
         $md .= "## Ausgewählte Arbeiten\n\n";
         foreach ($clips as $c) {
-            $meta = implode(', ', array_filter([$c['outlet'], $c['format'], clip_date_label($c)]));
+            $meta = implode(', ', array_filter([$c['outlet'], ($tracksLbl[$c['tl_track']] ?? ''), clip_date_label($c)]));
             $md .= '- [' . str_replace(['[', ']'], '', $c['title']) . '](' . safe_url($c['url']) . ')' . ($meta ? ' – ' . $meta : '') . ($c['desc'] ? ': ' . $c['desc'] : '') . "\n";
         }
         $md .= "\n";

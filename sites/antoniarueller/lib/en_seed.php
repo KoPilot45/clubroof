@@ -21,7 +21,7 @@ function en_dictionary(): array
         'Reporterin · Radio Bremen' => 'Reporter · Radio Bremen',
         'Antonia Rüller im roten Pullover, Arme verschränkt' => 'Antonia Rüller in a red sweater, arms crossed',
         // Abschnitte
-        'Zwei Fragen' => 'Two questions', 'Alle Clips' => 'All clips', 'Schnittplatz · Reel №1' => 'Edit suite · Reel №1',
+        'Zwei Fragen' => 'Two questions', 'Alle Beiträge' => 'All posts', 'Schnittplatz · Reel №1' => 'Edit suite · Reel №1',
         'Hör' => 'Have', 'mal rein.' => 'a listen.', 'Sender & Redaktionen' => 'Broadcasters & newsrooms',
         'Lebens' => 'Re', 'lauf' => 'sumé', 'rückwärts abgespielt' => 'played backwards', 'Davor' => 'Before',
         'CV als PDF' => 'CV as PDF', 'Nicht zitierfähig' => 'Off the record',

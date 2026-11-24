@@ -262,6 +262,46 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'laufband_v1';
     }
 
+    // Kategorien statt Spuren: jede Referenz bekommt die Kategorie (Spur) passend zu ihrem früheren Medium; Listentitel „Alle Beiträge“
+    if (!in_array('kategorien_v1', $applied, true)) {
+        $tr = q("SELECT data FROM ar_items WHERE coll = 'tracks' AND deleted_at IS NULL ORDER BY sort ASC, id ASC")->fetchAll();
+        $tracks = array_values(array_filter(array_map(fn($r) => json_arr($r['data']) ?? [], $tr), fn($t) => !empty($t['code'])));
+        if ($tracks) {
+            $codes = array_column($tracks, 'code');
+            foreach (q("SELECT id, data, draft FROM ar_items WHERE coll = 'clips'")->fetchAll() as $r) {
+                foreach (['data', 'draft'] as $col) {
+                    $d = json_arr($r[$col] ?? null);
+                    if ($d === null || in_array((string)($d['tl_track'] ?? ''), $codes, true)) {
+                        continue;
+                    }
+                    $hit = null;
+                    foreach ($tracks as $t) {
+                        if (($t['icon'] ?? '') === ($d['medium'] ?? 'text')) {
+                            $hit = $t['code'];
+                            break;
+                        }
+                    }
+                    $d['tl_track'] = $hit ?? $tracks[0]['code'];
+                    q('UPDATE ar_items SET ' . $col . ' = ? WHERE id = ?', [json_encode($d, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), (int)$r['id']]);
+                }
+            }
+        }
+        foreach (q("SELECT grp, data, draft FROM ar_settings WHERE grp = 'sections'")->fetchAll() as $r) {
+            foreach (['data', 'draft'] as $col) {
+                $d = json_arr($r[$col] ?? null);
+                if ($d === null || ($d['show_all'] ?? '') !== 'Alle Clips') {
+                    continue;
+                }
+                $d['show_all'] = 'Alle Beiträge';
+                if (($d['show_all_en'] ?? '') === 'All clips') {
+                    $d['show_all_en'] = 'All posts';
+                }
+                q('UPDATE ar_settings SET ' . $col . ' = ? WHERE grp = ?', [json_encode($d, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), 'sections']);
+            }
+        }
+        $applied[] = 'kategorien_v1';
+    }
+
     // Zusätzliche Zugänge aus config.php ('extra_users'): werden einmal angelegt; spätere Entfernung im Admin bleibt bestehen
     foreach ((array)cfg('extra_users', []) as $u) {
         $em = strtolower(trim((string)($u['email'] ?? '')));

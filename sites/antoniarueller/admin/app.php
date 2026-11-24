@@ -270,6 +270,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $back(AR_BASE . '/admin/?p=translate', $n === 0 ? 'Keine Änderungen.' : $n . ($n === 1 ? ' Übersetzung gespeichert.' : ' Übersetzungen gespeichert.'));
         }
 
+        case 'toggle_featured': {
+            // Stern in der Liste: immer höchstens ein Eintrag „Featured“; wirkt sofort, ohne andere Entwurfsänderungen zu veröffentlichen
+            $it = item((int)($_POST['id'] ?? 0));
+            $key = $it ? (string)($s['collections'][$it['coll']]['star'] ?? '') : '';
+            $ajax = ($_POST['ajax'] ?? '') === '1';
+            if (!$it || $it['_deleted'] !== null || $key === '') {
+                if ($ajax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['ok' => false]);
+                    exit;
+                }
+                $back(AR_BASE . '/admin/', 'Eintrag nicht gefunden.', 'err');
+            }
+            $on = empty($it[$key]);
+            foreach (items($it['coll'], false, true) as $o) {
+                set_item_flags((int)$o['_id'], [$key => (int)$o['_id'] === (int)$it['_id'] ? $on : false]);
+            }
+            audit($who, $on ? 'feature_on' : 'feature_off', $it['coll'] . '#' . $it['_id']);
+            if ($ajax) {
+                header('Content-Type: application/json');
+                echo json_encode(['ok' => true, 'active' => $on ? (int)$it['_id'] : 0]);
+                exit;
+            }
+            $tt = mb_strimwidth(trim((string)($it[$s['collections'][$it['coll']]['title']] ?? '')) ?: 'Eintrag', 0, 50, '…');
+            $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], $on ? '„' . $tt . '“ ist jetzt Featured.' : 'Featured aufgehoben.');
+        }
+
         case 'toggle_pub':
         case 'bulk': {
             $ids = $act === 'bulk' ? array_filter(array_map('intval', (array)($_POST['ids'] ?? []))) : [(int)($_POST['id'] ?? 0)];
@@ -467,14 +494,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'upload_image': {
             header('Content-Type: application/json');
+            $file = $_FILES['file'] ?? [];
+            // Galerie-Felder dürfen auch PDF-Dateien aufnehmen
+            $isPdf = ($_POST['kind'] ?? '') === 'gallery' && !empty($file['tmp_name']) && is_file((string)$file['tmp_name'])
+                && (string)file_get_contents((string)$file['tmp_name'], false, null, 0, 5) === '%PDF-';
             try {
-                $name = store_image($_FILES['file'] ?? []);
+                $name = $isPdf ? store_pdf($file) : store_image($file);
             } catch (RuntimeException $ex) {
                 echo json_encode(['ok' => false, 'error' => $ex->getMessage()]);
                 exit;
             }
             audit($who, 'media_upload', $name);
-            echo json_encode(['ok' => true, 'name' => $name, 'url' => upload_url($name)]);
+            echo json_encode(['ok' => true, 'name' => $name, 'url' => upload_url($name), 'kind' => $isPdf ? 'pdf' : 'image']);
             exit;
         }
 

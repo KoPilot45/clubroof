@@ -57,7 +57,36 @@ function render_text_control(array $f, string $name, string $id, mixed $val, str
     }
 }
 
+/** Einzelnes Feld: versteckte Felder entfallen, abhängige Felder (show_if) erscheinen je nach Umschalter. */
 function render_field(array $f, mixed $val, array $vals = []): void
+{
+    if (!empty($f['hidden'])) {
+        return;
+    }
+    if (!empty($f['show_if'])) {
+        $cur = (string)($vals[$f['show_if'][0]] ?? '');
+        echo '<div class="showif" data-showif="' . e($f['show_if'][0] . '=' . $f['show_if'][1]) . '"' . ($cur === (string)$f['show_if'][1] ? '' : ' hidden') . '>';
+        render_field_inner($f, $val, $vals);
+        echo '</div>';
+        return;
+    }
+    render_field_inner($f, $val, $vals);
+}
+
+/** Eine Zeile der Galerie (Bild oder PDF mit optionaler Bildunterschrift). */
+function gallery_row(string $k, string|int $i, array $g): string
+{
+    $fn = (string)($g['f'] ?? '');
+    $isPdf = str_ends_with($fn, '.pdf');
+    $thumb = $fn === '' ? '' : ($isPdf ? '<span class="gal-pdf">' . aicon('doc', 22) . 'PDF</span>' : '<img src="' . e(upload_url($fn)) . '" alt="" loading="lazy">');
+    return '<li class="gal-row" data-f="' . e($fn) . '"><span class="gal-grip" aria-hidden="true" title="Zum Sortieren ziehen">⠿</span><span class="gal-thumb">' . $thumb . '</span>'
+        . '<span class="gal-fields"><input type="hidden" data-n="f" name="' . e($k) . '[' . $i . '][f]" value="' . e($fn) . '">'
+        . '<input type="text" data-n="cap" name="' . e($k) . '[' . $i . '][cap]" value="' . e((string)($g['cap'] ?? '')) . '" maxlength="200" placeholder="Bildunterschrift (optional)" aria-label="Bildunterschrift (optional)"></span>'
+        . '<span class="gal-btns"><button type="button" data-gal="up" aria-label="Nach oben" title="Nach oben">' . aicon('up', 16) . '</button><button type="button" data-gal="down" aria-label="Nach unten" title="Nach unten">' . aicon('down', 16) . '</button>'
+        . '<button type="button" data-gal="del" class="danger" aria-label="Entfernen" title="Entfernen">' . aicon('x', 16) . '</button></span></li>';
+}
+
+function render_field_inner(array $f, mixed $val, array $vals = []): void
 {
     $t = $f['type'];
     $k = $f['key'];
@@ -96,6 +125,25 @@ function render_field(array $f, mixed $val, array $vals = []): void
         case 'color':
             echo '<input type="color" id="' . $id . '" name="' . e($k) . '" value="' . e($val ?: ($f['default'] ?? '#000000')) . '"' . $desc . '>';
             break;
+        case 'switch':
+            echo '<div class="seg" role="group" aria-label="' . e($f['label']) . '">';
+            foreach (($f['options'] ?? []) as $ov => $ol) {
+                $on = (string)$val === (string)$ov;
+                echo '<button type="button" class="seg-b' . ($on ? ' on' : '') . '" data-v="' . e($ov) . '" aria-pressed="' . ($on ? 'true' : 'false') . '">' . e($ol) . '</button>';
+            }
+            echo '<input type="hidden" id="' . $id . '" name="' . e($k) . '" value="' . e((string)$val) . '"></div>';
+            break;
+        case 'gallery':
+            $gi = is_array($val) ? array_values($val) : [];
+            echo '<div class="gal' . ($gi ? '' : ' empty') . '" data-key="' . e($k) . '" data-max="' . (int)($f['max_items'] ?? 30) . '"><ul class="gal-list" id="gal_' . e($k) . '">';
+            foreach ($gi as $n => $g) {
+                echo gallery_row($k, $n, (array)$g);
+            }
+            echo '</ul><p class="gal-none hint">Noch keine Dateien. Füge Bilder oder PDFs hinzu.</p><p class="gal-status newbadge" role="status" hidden></p>';
+            echo '<div class="gal-add"><label class="btn small ghost gal-file">' . aicon('plus', 15) . ' Dateien hinzufügen<input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif,.avif,application/pdf" hidden></label> <button type="button" class="btn small ghost" data-gal-media>Aus Mediathek wählen</button></div>';
+            echo '<template id="galtpl_' . e($k) . '">' . gallery_row($k, '__I__', []) . '</template></div>';
+            echo '<small class="hint">JPG, PNG, WebP, AVIF oder PDF, je höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB, bis zu ' . (int)($f['max_items'] ?? 30) . ' Dateien. Bilder werden automatisch optimiert. Reihenfolge per Ziehen oder mit den Pfeilen ändern.</small>';
+            break;
         case 'select':
             $opts = select_options($f);
             echo '<select id="' . $id . '" name="' . e($k) . '"' . $desc . '>';
@@ -110,12 +158,11 @@ function render_field(array $f, mixed $val, array $vals = []): void
         case 'image':
             $has = $val !== '' && upload_url((string)$val) !== '';
             $fo = (string)($vals[$k . '_focus'] ?? '');
-            echo '<div class="imgbox"><div class="focusbox" data-key="' . e($k) . '"' . ($has ? '' : ' hidden') . '><img src="' . ($has ? e(upload_url((string)$val)) : '') . '" alt="Aktuelles Bild"><span class="fdot"></span></div>';
+            echo '<div class="imgbox"><div class="focusbox" data-key="' . e($k) . '"' . ($has ? '' : ' hidden') . '><img src="' . ($has ? e(upload_url((string)$val)) : '') . '" alt="Aktuelles Bild"><span class="fdot"></span><button type="button" class="imgx" data-img-remove="' . e($k) . '" aria-label="Bild entfernen" title="Bild entfernen">' . aicon('x', 16) . '</button></div>';
+            echo '<div class="imgask" role="alertdialog" aria-label="Bild entfernen?" hidden><span>Dieses Bild wirklich entfernen?</span><button type="button" class="btn small danger" data-img-yes>Ja, entfernen</button><button type="button" class="btn small ghost" data-img-no>Abbrechen</button></div>';
             echo '<small class="hint focushint"' . ($has ? '' : ' hidden') . '>Klicke ins Bild, um den wichtigen Ausschnitt (z. B. das Gesicht) festzulegen. Er bleibt sichtbar, wenn das Bild zugeschnitten wird.</small>';
             echo '<input type="hidden" name="' . e($k) . '_focus" value="' . e($fo) . '"><input type="hidden" name="' . e($k) . '_pick" id="f_' . e($k) . '_pick" value="">';
-            if ($has) {
-                echo '<label class="check"><input type="checkbox" name="_remove_' . e($k) . '" value="1"> Bild entfernen</label>';
-            }
+            echo '<input type="hidden" name="_remove_' . e($k) . '" id="f_' . e($k) . '_remove" value="">';
             echo '</div><input type="file" id="' . $id . '" name="' . e($k) . '" accept="image/jpeg,image/png,image/webp,image/avif,.avif"' . $desc . '> <button type="button" class="btn small ghost" data-media-pick="' . e($k) . '">Aus Mediathek wählen</button>';
             echo '<small class="hint">JPG, PNG, WebP oder AVIF, höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB. Wird automatisch verkleinert und optimiert.</small>';
             break;
@@ -146,7 +193,7 @@ function lang_bar(array $fields, array $vals, string $areaKey = ''): void
     $n = 0;
     $any = false;
     foreach ($fields as $f) {
-        if ($f['type'] === 'section' || !field_translatable($f)) {
+        if ($f['type'] === 'section' || !field_translatable($f) || !field_relevant($f, $vals)) {
             continue;
         }
         $any = true;
@@ -268,13 +315,17 @@ function view_list(array $user, string $coll): void
         if ($hidden) {
             echo '<span class="pill hid">Ausgeblendet</span>';
         }
-        if (!empty($r['featured'])) {
-            echo '<span class="pill ok">Hauptclip</span>';
+        if (!empty($def['star']) && !empty($r[$def['star']])) {
+            echo '<span class="pill feat ' . ($hidden ? 'warn' : 'ok') . '">' . ($hidden ? 'Featured – aktuell ausgeblendet' : 'Featured') . '</span>';
         }
         if ($r['_updated_by'] !== '' && $r['_updated_by'] !== 'seed') {
             echo '<span class="muted2">' . e(who_name($r['_updated_by'])) . ', ' . e(date('d.m.Y', $r['_updated'])) . '</span>';
         }
         echo '</span></a><span class="r-act">';
+        if (!empty($def['star'])) {
+            $isStar = !empty($r[$def['star']]);
+            echo '<form method="post" action="' . a() . '" class="inline star-f">' . csrf_field($user) . '<input type="hidden" name="action" value="toggle_featured"><input type="hidden" name="id" value="' . $r['_id'] . '"><button class="star' . ($isStar ? ' on' : '') . '" aria-pressed="' . ($isStar ? 'true' : 'false') . '" aria-label="' . e($title) . ' als Featured hervorheben" title="' . ($isStar ? 'Featured – zum Aufheben klicken' : 'Als Featured hervorheben (immer nur eine Referenz)') . '">' . aicon('star', 18) . '</button></form>';
+        }
         if ($hasPub) {
             echo '<form method="post" action="' . a() . '" class="inline tgl-f">' . csrf_field($user) . '<input type="hidden" name="action" value="toggle_pub"><input type="hidden" name="id" value="' . $r['_id'] . '"><input type="hidden" name="to" value="' . ($hidden ? '1' : '0') . '"><button class="tgl' . ($hidden ? '' : ' on') . '" role="switch" aria-checked="' . ($hidden ? 'false' : 'true') . '" aria-label="' . e($title) . ' auf der Seite anzeigen" title="' . ($hidden ? 'Ausgeblendet – zum Einblenden klicken' : 'Sichtbar – zum Ausblenden klicken') . '"><span></span></button></form>';
         }
@@ -300,10 +351,13 @@ function form_actions(string $cancelUrl, string $previewAnchor, bool $isDraft, b
     echo '<span class="savestate" id="savestate" role="status" aria-live="polite">' . ($isDraft ? 'Entwurf vorhanden' : 'Keine Änderungen') . '</span>';
     echo '<div class="act-aux">';
     if ($canLive) {
-        echo '<button type="button" class="btn ghost" id="livebtn" aria-pressed="false" data-src="' . e(preview_url($previewAnchor)) . '">Live-Vorschau</button>';
+        echo '<button type="button" class="ibtn" id="livebtn" aria-pressed="false" data-src="' . e(preview_url($previewAnchor)) . '" title="Live-Vorschau neben dem Formular ein- oder ausblenden">' . aicon('panel', 16) . '<span>Live</span></button>';
     }
-    echo '<a class="btn ghost" href="' . e(preview_url($previewAnchor)) . '" target="_blank" rel="noopener">Vorschau ' . aicon('external', 14) . '</a><a class="btn ghost" href="' . e(AR_BASE . '/admin/vorschau.php?lang=en' . ($previewAnchor !== '' ? '#' . $previewAnchor : '')) . '" target="_blank" rel="noopener">English ' . aicon('external', 14) . '</a><a class="btn ghost" href="' . e($cancelUrl) . '">Abbrechen</a></div></div>';
-    echo '<p class="hint kbdhint">„Veröffentlichen“ ist sofort für alle sichtbar. „Als Entwurf speichern“ bleibt nur für dich sichtbar. Tastenkürzel: <kbd>Strg</kbd>+<kbd>S</kbd> Entwurf · <kbd>Strg</kbd>+<kbd>Enter</kbd> veröffentlichen. Änderungen werden als Entwurf automatisch gesichert.</p>';
+    echo '<a class="ibtn" href="' . e(preview_url($previewAnchor)) . '" target="_blank" rel="noopener" title="Vorschau in neuem Tab">' . aicon('eye', 16) . '<span>Vorschau</span></a>';
+    echo '<a class="ibtn" href="' . e(AR_BASE . '/admin/vorschau.php?lang=en' . ($previewAnchor !== '' ? '#' . $previewAnchor : '')) . '" target="_blank" rel="noopener" title="Englische Vorschau in neuem Tab">' . aicon('globe', 16) . '<span>English</span></a>';
+    echo '<a class="act-cancel" href="' . e($cancelUrl) . '">Abbrechen</a>';
+    echo '<details class="kbhelp"><summary aria-label="Hilfe zum Speichern und zu Tastenkürzeln" title="Hilfe">?</summary><div class="kbhelp-m"><p><strong>Veröffentlichen</strong> ist sofort für alle sichtbar. <strong>Als Entwurf speichern</strong> bleibt nur für dich sichtbar; Änderungen werden außerdem automatisch als Entwurf gesichert.</p><p><kbd>Strg</kbd>+<kbd>S</kbd> Entwurf · <kbd>Strg</kbd>+<kbd>Enter</kbd> veröffentlichen</p></div></details>';
+    echo '</div></div>';
 }
 
 /** Felder ausgeben; Abschnitte mit 'adv' => true sind als „Erweitert“ eingeklappt. */

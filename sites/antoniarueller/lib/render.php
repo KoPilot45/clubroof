@@ -140,13 +140,18 @@ function auto_tc(int $i): string
     return sprintf('00:%02d:%02d:%02d', intdiv($sec, 60), $sec % 60, ($i * 7) % 25);
 }
 
-/** Breite eines Clips im Schnittplatz (Vielfaches einer Grundbreite). */
-const TL_WEIGHTS = ['short' => 0.7, 'normal' => 1.0, 'long' => 1.6];
+/** Breite eines Clips im Schnittplatz: variiert automatisch, bleibt aber für denselben Beitrag immer gleich. */
+const TL_WEIGHTS = [0.85, 1.0, 1.15, 1.3, 1.5];
+
+function tl_weight(int $id): float
+{
+    return TL_WEIGHTS[crc32('clip' . $id) % count(TL_WEIGHTS)];
+}
 
 /**
- * Schnittplatz berechnen: jede Spur ist eine Kette aus Clips in Listenreihenfolge (ohne Datumsmaßstab).
+ * Schnittplatz berechnen: jede Kategorie ist eine Spur, jede Spur eine Kette aus Clips in Listenreihenfolge (ohne Datumsmaßstab).
  * @param array $clips veröffentlichte Referenzen in Listenreihenfolge
- * @return array byTrack: Code => [['id', 'w', 'year' (Jahr, wenn es hier beginnt)]], ticks: Zahl der Lineal-Felder, sum: je Spur
+ * @return array byTrack: Code => [['id', 'w', 'year' (Jahr, wenn es hier beginnt)]], ticks: Zahl der Lineal-Felder, max: Summe der längsten Spur
  */
 function build_timeline(array $clips, array $tracks): array
 {
@@ -159,7 +164,7 @@ function build_timeline(array $clips, array $tracks): array
             continue;
         }
         $y = $c['date'] !== '' ? substr((string)$c['date'], 0, 4) : '';
-        $byTrack[$code][] = ['id' => $c['_id'], 'w' => TL_WEIGHTS[$c['tl_len'] ?? 'normal'] ?? 1.0, 'year' => ($y !== '' && ($last[$code] ?? '') !== $y) ? $y : ''];
+        $byTrack[$code][] = ['id' => $c['_id'], 'w' => tl_weight((int)$c['_id']), 'year' => ($y !== '' && ($last[$code] ?? '') !== $y) ? $y : ''];
         if ($y !== '') {
             $last[$code] = $y;
         }
@@ -168,7 +173,7 @@ function build_timeline(array $clips, array $tracks): array
     foreach ($byTrack as $list) {
         $max = max($max, array_sum(array_column($list, 'w')));
     }
-    return ['byTrack' => $byTrack, 'ticks' => max(16, (int)ceil($max) + 1)];
+    return ['byTrack' => $byTrack, 'ticks' => max(16, (int)ceil($max) + 1), 'max' => max(1.0, round($max, 2))];
 }
 
 /** Beschriftung eines Lineal-Feldes (dekorativ, wie ein Timecode-Lineal). */
@@ -326,7 +331,7 @@ function build_jsonld(array $seo, array $hero, array $socialUrls, array $langs, 
     if ($seo['works_list']) {
         $items = [];
         foreach ($clips as $c) {
-            $url = safe_url($c['url']);
+            $url = ($c['link_mode'] ?? '') === 'hosted' ? '' : safe_url($c['url']);
             if (!str_starts_with($url, 'http') || str_starts_with(trim($c['title']), '[')) {
                 continue;
             }
@@ -337,7 +342,7 @@ function build_jsonld(array $seo, array $hero, array $socialUrls, array $langs, 
                     'headline' => $c['medium'] === 'text' ? $c['title'] : '', 'name' => $c['title'], 'description' => $c['desc'], 'url' => $url,
                     'datePublished' => $c['date'], 'author' => ['@id' => $pid],
                     'publisher' => $c['outlet'] ? ['@type' => 'Organization', 'name' => $c['outlet']] : '',
-                    'genre' => $c['format'], 'inLanguage' => current_lang(),
+                    'genre' => (string)($c['_cat'] ?? ''), 'inLanguage' => current_lang(),
                 ],
             ];
         }

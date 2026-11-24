@@ -104,15 +104,16 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php if ($featured): $fc = $featured; $fImg = upload_url($fc['still']); $fBy = array_filter([trim($hero['first'] . ' ' . $hero['last']), trim((string)$fc['role']), trim((string)$fc['outlet'])]); ?>
 <section id="arbeiten" aria-label="<?= tr('Featured Clip') ?>" style="padding-top:96px">
 <article class="fa">
-<div class="fa-mast"><span><?= tr('Hauptbeitrag') ?></span><span><?= e(media_label($fc['medium'])) ?></span><span><?= e(implode(' · ', array_filter([(string)$fc['outlet'], (string)$fc['_date']]))) ?></span></div>
+<div class="fa-mast"><span><?= e(tr('Featured')) ?></span><span><?= e($fc['_cat'] !== '' ? $fc['_cat'] : media_label($fc['medium'])) ?></span><span><?= e(implode(' · ', array_filter([(string)$fc['outlet'], (string)$fc['_date']]))) ?></span></div>
 <div class="fa-body<?= $fImg !== '' ? ' has-img' : '' ?>">
 <div class="fa-main">
-<?php if (trim((string)$fc['format']) !== ''): ?><p class="fa-kick"><?= e($fc['format']) ?></p><?php endif; ?>
-<h2 class="ar-feat-h"><?= mk($fc['headline'] !== '' ? $fc['headline'] : $fc['title']) ?></h2>
+<?php $kick = implode(' · ', array_filter([(string)$fc['_cat'], (string)$fc['short']])); if ($kick !== ''): ?><p class="fa-kick"><?= e($kick) ?></p><?php endif; ?>
+<h2 class="ar-feat-h"><?= e($fc['title']) ?></h2>
 <?php if ($fc['desc'] !== ''): ?><p class="fa-stand"><?= e($fc['desc']) ?></p><?php endif; ?>
 <div class="fa-foot">
 <span class="fa-by"><?= $fBy ? e(tr('Von')) . ' <b>' . e(array_shift($fBy)) . '</b>' . ($fBy ? ' · ' . e(implode(' · ', $fBy)) : '') : '' ?></span>
-<?php if ($fc['url'] !== ''): ?><a class="fa-cta" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= icon($fc['medium'], 16) ?><span><?= e($fc['link_text']) ?></span><span aria-hidden="true">→</span></a><?php endif; ?>
+<?php if ($fc['_hosted']): ?><button type="button" class="fa-cta" data-gal="<?= (int)$fc['_id'] ?>" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>"><?= icon($fc['medium'], 16) ?><span><?= e(tr($fc['gallery_text'] ?: 'Beitrag ansehen')) ?></span><span aria-hidden="true">→</span></button>
+<?php elseif ($fc['link_mode'] !== 'hosted' && $fc['url'] !== ''): ?><a class="fa-cta" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= icon($fc['medium'], 16) ?><span><?= e(tr($fc['link_text'] ?: 'Zum Beitrag')) ?></span><span aria-hidden="true">→</span></a><?php endif; ?>
 </div>
 </div>
 <?php if ($fImg !== ''): ?><figure class="fa-img"><img src="<?= e($fImg) ?>" alt="" loading="lazy" style="object-position:<?= e(focus_pos((string)($fc['still_focus'] ?? ''))) ?>"><?php if (trim((string)($fc['still_credit'] ?? '')) !== ''): ?><figcaption class="cred"><?= e($fc['still_credit']) ?></figcaption><?php endif; ?></figure><?php else: ?><div class="fa-no" aria-hidden="true"><?= e($fc['_no']) ?></div><?php endif; ?>
@@ -123,7 +124,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <?php if ($clips): $first = $clips[0]; ?>
 <section aria-label="<?= tr('Showreel') ?>" <?= $featured ? '' : 'id="arbeiten"' ?> style="padding-top:128px">
-<?= sec_head('01', 'Showreel', $sec['show_right'] !== '' ? $sec['show_right'] : count($clips) . ' ' . tr('Clips') . ' · ' . implode(', ', array_unique(array_map(fn($c) => media_label($c['medium']), $clips))) . ($yearSpan ? ' · ' . $yearSpan : ''), '24px') ?>
+<?= sec_head('01', 'Showreel', $sec['show_right'] !== '' ? $sec['show_right'] : count($clips) . ' ' . tr('Clips') . ' · ' . implode(', ', array_unique(array_map(fn($c) => $c['_cat'] !== '' ? $c['_cat'] : media_label($c['medium']), $clips))) . ($yearSpan ? ' · ' . $yearSpan : ''), '24px') ?>
 <h2 class="big-h"><span class="bh1"><?= e($sec['show_h1']) ?></span><span class="bh2"><?= e($sec['show_h2']) ?></span></h2>
 
 <div class="ar-ed-desk editor">
@@ -132,7 +133,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <span class="ed-icons"><?php foreach (['video' => 'Video', 'text' => 'Text', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'Social'] as $k => $l): ?><span><?= icon($k, 14) ?><?= tr($l) ?></span><?php endforeach; ?></span>
 <span style="color:#C9DEDA"><?= tr('Clip anklicken: springt zum Beitrag') ?></span>
 </div>
-<div class="ed-body">
+<div class="ed-body" style="--max:<?= e((string)$timeline['max']) ?>">
 <div class="ed-tracks">
 <div class="ed-row ed-head"><?= tr('Spur') ?></div>
 <?php foreach ($tracks as $t): ?><div class="ed-row ed-tl"><?= icon($t['icon'], 18) ?><span class="tl-t"><span><?= e($t['code']) ?></span><span class="muted"><?= e($t['label']) ?></span></span></div><?php endforeach; ?>
@@ -156,7 +157,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="ar-ed-mob">
 <div class="mob-tl">
 <div class="mob-tl-l"><?php foreach ($tracks as $t): ?><div class="mob-lane-i"><?= icon($t['icon'], 15) ?></div><?php endforeach; ?></div>
-<div class="mob-tl-r"><div class="mob-grid">
+<div class="mob-tl-r"><div class="mob-grid" style="--max:<?= e((string)$timeline['max']) ?>">
 <?php foreach ($tracks as $t): $lane = $timeline['byTrack'][$t['code']] ?? []; ?><div class="mob-lane<?= $lane ? '' : ' is-empty' ?>"><?php foreach ($lane as $b): $c = $clipsById[$b['id']]; ?><button type="button" class="ar-tlclip mini" data-id="<?= $c['_id'] ?>" aria-pressed="false" aria-label="Clip <?= e($c['_no']) ?>: <?= e($c['short'] ?: $c['title']) ?>" data-tip="<?= e(implode(' · ', array_filter([(string)$c['title'], (string)$c['outlet']]))) ?>" style="--w:<?= $b['w'] ?>;background:<?= css_color($t['bg'], '#172526') ?>;color:<?= css_color($t['fg'], '#F3ECDF') ?>"><span class="tl-no"><?= e($c['_no']) ?></span></button><?php endforeach; ?></div><?php endforeach; ?>
 <span class="playhead mob-ph" id="playheadm" aria-hidden="true"><span></span></span>
 </div></div>
@@ -166,15 +167,22 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <div class="muted list-h"><?= e($sec['show_all']) ?></div>
 <ol class="clip-list">
-<?php foreach ($clips as $n => $c): $cImg = upload_url((string)$c['still']); ?>
+<?php foreach ($clips as $n => $c): $cImg = upload_url((string)$c['still']); $ext = $c['link_mode'] === 'hosted' ? '' : safe_url($c['url']); $cat = $c['_cat'] !== '' ? $c['_cat'] : media_label($c['medium']); ?>
 <li class="ar-clip" id="clip-<?= $c['_id'] ?>" data-id="<?= $c['_id'] ?>">
-<a data-ev="clip" data-k="<?= (int)$c['_id'] ?>" href="<?= e(safe_url($c['url']) ?: '#arbeiten') ?>" <?= $c['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
-<span class="cl-fig<?= $cImg === '' ? ' txt t' . ($n % 2) : '' ?>"><?php if ($cImg !== ''): ?><img src="<?= e($cImg) ?>"<?= img_attrs((string)$c['still']) ?> alt="" loading="lazy" decoding="async" style="object-position:<?= e(focus_pos((string)($c['still_focus'] ?? ''))) ?>"><?php endif; ?><span class="cl-no"><?= e($c['_no']) ?></span><span class="cl-kind"><?= icon($c['medium'], 14) ?><?= e(media_label($c['medium'])) ?></span><?php if ($cImg !== '' && trim((string)($c['still_credit'] ?? '')) !== ''): ?><span class="cl-cred cred"><?= e($c['still_credit']) ?></span><?php endif; ?></span>
+<?php if ($c['_hosted']): ?><button type="button" class="cl-link" data-gal="<?= (int)$c['_id'] ?>" data-ev="clip" data-k="<?= (int)$c['_id'] ?>">
+<?php elseif ($ext !== ''): ?><a class="cl-link" data-ev="clip" data-k="<?= (int)$c['_id'] ?>" href="<?= e($ext) ?>" <?= $c['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
+<?php else: ?><div class="cl-link">
+<?php endif; ?>
+<span class="cl-fig<?= $cImg === '' ? ' txt t' . ($n % 2) : '' ?>"><?php if ($cImg !== ''): ?><img src="<?= e($cImg) ?>"<?= img_attrs((string)$c['still']) ?> alt="" loading="lazy" decoding="async" style="object-position:<?= e(focus_pos((string)($c['still_focus'] ?? ''))) ?>"><?php endif; ?><span class="cl-no"><?= e($c['_no']) ?></span><span class="cl-kind"><?= icon($c['medium'], 14) ?><?= e($cat) ?></span><?php if ($cImg !== '' && trim((string)($c['still_credit'] ?? '')) !== ''): ?><span class="cl-cred cred"><?= e($c['still_credit']) ?></span><?php endif; ?></span>
 <span class="ar-clip-title"><?= e($c['title']) ?></span>
 <?php if (trim((string)$c['desc']) !== ''): ?><span class="cl-desc"><?= e($c['desc']) ?></span><?php endif; ?>
-<span class="cl-meta"><?= implode('', array_map(fn($x) => '<span>' . e($x) . '</span>', array_filter([(string)$c['outlet'], (string)$c['format'], (string)$c['_date']]))) ?></span>
+<span class="cl-meta"><?= implode('', array_map(fn($x) => '<span>' . e($x) . '</span>', array_filter([(string)$c['outlet'], (string)$c['_date']]))) ?></span>
 <?php if (trim((string)$c['role']) !== ''): ?><span class="cl-role"><?= e(tr('Rolle:')) ?> <?= e($c['role']) ?></span><?php endif; ?>
-</a></li>
+<?php if ($c['_hosted']): ?><span class="cl-cta"><span><?= e(tr($c['gallery_text'] ?: 'Beitrag ansehen')) ?></span><span aria-hidden="true">→</span></span></button>
+<?php elseif ($ext !== ''): ?><span class="cl-cta"><span><?= e(tr($c['link_text'] ?: 'Zum Beitrag')) ?></span><span aria-hidden="true">→</span></span></a>
+<?php else: ?></div>
+<?php endif; ?>
+</li>
 <?php endforeach; ?>
 </ol>
 </section>
@@ -302,6 +310,22 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 
 </div>
+<?php
+$galData = [];
+foreach ($clips as $c) {
+    if (!$c['_hosted']) {
+        continue;
+    }
+    foreach ($c['gallery'] as $g) {
+        $u = upload_url((string)($g['f'] ?? ''));
+        if ($u !== '') {
+            $galData[(string)$c['_id']][] = ['src' => $u, 'cap' => (string)($g['cap'] ?? ''), 'pdf' => str_ends_with((string)$g['f'], '.pdf'), 'title' => (string)$c['title']];
+        }
+    }
+}
+if ($galData): ?>
+<script type="application/json" id="ar-gal"><?= json_encode(['l' => ['gallery' => tr('Galerie'), 'close' => tr('Schließen'), 'prev' => tr('Zurück'), 'next' => tr('Weiter'), 'of' => tr('von'), 'pdf' => tr('PDF öffnen')], 'g' => $galData], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
+<?php endif; ?>
 <script src="<?= AR_BASE ?>/assets/site.js?v=<?= @filemtime(AR_ROOT . '/assets/site.js') ?>" defer></script>
 </body>
 </html>

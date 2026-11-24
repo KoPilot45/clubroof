@@ -365,7 +365,7 @@ ok($r['code'] === 302, 'Mehrfachaktion ohne Auswahl wird abgefangen');
 req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $nid]);
 
 // Autospeichern (Entwurf per AJAX)
-$ap = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $uc, 'title' => 'Autospeicher-Test', 'medium' => 'text', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'draft', 'ajax' => '1'];
+$ap = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $uc, 'title' => 'Autospeicher-Test', 'medium' => 'text', 'tl_track' => 'T1', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'draft', 'ajax' => '1'];
 $jr = json_decode(req('POST', "$base/admin/", $ap)['body'], true);
 reset_content_cache();
 $row = q('SELECT data, draft FROM ar_items WHERE id = ?', [$uc])->fetch();
@@ -410,7 +410,7 @@ ok(($tr['ok'] ?? false) === true && ($tr['n'] ?? 0) === 1 && $it['title_en'] ===
 $pubEn = req('GET', "$base/en/")['body'];
 ok(str_contains($pubEn, 'Hello World &lt;b&gt;'), 'erscheint maskiert auf der englischen Seite');
 // Formular-Speichern darf Englisch nicht löschen
-$sv = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $uc, 'title' => $it['title'], 'medium' => 'text', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'publish'];
+$sv = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $uc, 'title' => $it['title'], 'medium' => 'text', 'tl_track' => 'T1', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'publish'];
 req('POST', "$base/admin/", $sv);
 reset_content_cache();
 ok(item($uc)['title_en'] === 'Hello World <b>', 'Speichern im Formular erhält die englische Fassung');
@@ -502,7 +502,7 @@ foreach (q("SELECT id FROM ar_items WHERE coll = 'cv' AND data LIKE '%Testorg%'"
 echo "Vorschaubild bei Referenzen\n";
 $ef = req('GET', "$base/admin/?p=edit&c=clips")['body'];
 ok(str_contains($ef, 'Vorschaubild (optional)') && str_contains($ef, 'Bildnachweis (optional)') && !str_contains($ef, 'Standbild'), 'Backend: „Vorschaubild“ und „Bildnachweis“');
-$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Vorschaubild-Test', 'medium' => 'text', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'still_credit' => 'Bild: <Test>', 'still_focus' => '40,25', 'mode' => 'publish', 'still' => new CURLFile($root . '/seed-assets/antonia-portrait.jpg', 'image/jpeg', 'v.jpg')], true);
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Vorschaubild-Test', 'medium' => 'text', 'tl_track' => 'T1', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'still_credit' => 'Bild: <Test>', 'still_focus' => '40,25', 'mode' => 'publish', 'still' => new CURLFile($root . '/seed-assets/antonia-portrait.jpg', 'image/jpeg', 'v.jpg')], true);
 $vp = req('GET', "$base/")['body'];
 ok($r['code'] === 302 && preg_match('~<span class="cl-fig"><img src="[^"]*/uploads/[a-z0-9]+\.webp"[^>]*loading="lazy"[^>]*object-position:40% 25%~', $vp) === 1, 'Kachel zeigt Vorschaubild mit Fokuspunkt');
 ok(str_contains($vp, 'Bild: &lt;Test&gt;') && !str_contains($vp, 'Bild: <Test>'), 'Bildnachweis steht maskiert auf der Kachel');
@@ -545,7 +545,7 @@ $bad = tempnam(sys_get_temp_dir(), 'bad');
 file_put_contents($bad, 'kein Bild');
 $ub = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'file' => new CURLFile($bad, 'text/plain', 'x.png')], true)['body'], true);
 ok(($ub['ok'] ?? true) === false && !empty($ub['error']), 'Kein Bild: Fehlermeldung als JSON');
-$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Sofort-Upload-Test', 'medium' => 'text', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'draft', 'still_pick' => $ui['name']]);
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Sofort-Upload-Test', 'medium' => 'text', 'tl_track' => 'T1', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'draft', 'still_pick' => $ui['name']]);
 $row = q("SELECT draft FROM ar_items WHERE draft LIKE '%Sofort-Upload-Test%'")->fetch();
 ok($r['code'] === 302 && str_contains((string)($row['draft'] ?? ''), $ui['name']), 'hochgeladenes Bild wird über „Auswahl“ im Entwurf gespeichert');
 touch("$root/uploads/{$ui['name']}", time() - 3 * 86400);
@@ -594,7 +594,7 @@ ok(str_contains(req('GET', "$base/en/imprint/")['body'], 'Information pursuant t
 ok(str_contains(req('GET', "$base/sitemap.xml")['body'] ?: '', '/en/') || true, 'Sitemap');
 
 echo "Entwürfe, Versionen, Vorschau, Reihenfolge\n";
-$dp = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'medium' => 'text', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'url' => 'https://example.org/e'];
+$dp = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'medium' => 'text', 'tl_track' => 'T1', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'url' => 'https://example.org/e'];
 $r = req('POST', "$base/admin/", $dp + ['mode' => 'draft', 'title' => 'ENTWURF-TEST']);
 ok($r['code'] === 302, 'Als Entwurf gespeichert');
 ok(!str_contains(req('GET', "$base/")['body'], 'ENTWURF-TEST'), 'Entwurf nicht öffentlich');
@@ -693,12 +693,122 @@ $hp = req('GET', "$base/")['body'];
 ok(str_contains($hp, 'class="ed-ruler"') && str_contains($hp, 'class="ed-lane') && str_contains($hp, 'data-track=') && str_contains($hp, 'class="yr-flag"'), 'Schnittplatz: Spuren, Lineal, Jahres-Fähnchen');
 ok(!str_contains($hp, 'style="left:') || !str_contains($hp, 'class="ar-tlclip" data-id="x"'), 'Clips ohne Datumsmaßstab');
 ok(str_contains($hp, 'id="pl"') && str_contains($hp, 'id="toTop"') && str_contains($hp, 'class="pl-fill"'), 'Player-Leiste und Nach-oben-Knopf vorhanden');
-$lw = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL AND live = 1 ORDER BY sort LIMIT 1")->fetchColumn();
-req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $lw, 'title' => 'Lang-Test', 'medium' => 'text', 'tl_track' => 'A1', 'tl_len' => 'long', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'publish']);
-ok(str_contains(req('GET', "$base/")['body'], '--w:1.6'), 'Länge „Lang“ macht den Clip breiter');
-req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $lw, 'title' => 'Lang-Test', 'medium' => 'text', 'tl_track' => 'A1', 'tl_len' => 'kaputt', 'published' => '1', 'new_tab' => '1', 'link_text' => 'x', 'mode' => 'publish']);
+preg_match_all('~--w:([0-9.]+)~', $hp, $wm);
+$okW = $wm[1] !== [];
+foreach ($wm[1] as $w) {
+    $okW = $okW && in_array((float)$w, TL_WEIGHTS, true);
+}
+ok($okW, 'Clip-Breiten variieren automatisch (feste Werte je Beitrag)');
+ok(tl_weight(123) === tl_weight(123), 'Breite eines Beitrags bleibt gleich');
+ok(preg_match('~class="ed-body" style="--max:[0-9.]+"~', $hp) === 1 && str_contains((string)file_get_contents("$root/assets/site.css"), '80cqw / var(--max'), 'Schnittplatz: längste Spur füllt mindestens 80 % der Breite');
+
+echo "Kategorien, Featured, eigener Beitrag\n";
+$tl = req('GET', "$base/admin/?p=list&c=tracks")['body'];
+ok(str_contains($tl, 'Kategorien') && !str_contains($tl, '>Spuren<'), 'Menüpunkt „Kategorien“ statt „Spuren“');
+$ed = req('GET', "$base/admin/?p=edit&c=clips")['body'];
+$gone = true;
+foreach (['tl_len', 'featured', 'published', 'headline', 'format', 'medium'] as $nm) {
+    $gone = $gone && !str_contains($ed, 'name="' . $nm . '"');
+    if (str_contains($ed, 'name="' . $nm . '"')) {
+        echo "    (noch vorhanden: $nm)\n";
+    }
+}
+ok(str_contains($ed, 'name="tl_track"') && str_contains($ed, 'Kategorie') && !str_contains($ed, '>Spur im Schnittplatz<') && $gone, 'Referenz-Formular: Kategorie statt Spur, ohne Hauptclip, Überschrift, Format, Länge und „Anzeigen“');
+ok(str_contains($ed, 'data-v="external"') && str_contains($ed, 'data-v="hosted"') && str_contains($ed, 'Externer Link') && str_contains($ed, 'Beitrag selbst hosten'), 'Umschalter „Externer Link“ / „Beitrag selbst hosten“');
+ok(!str_contains($ed, 'Hauptclip') && !str_contains($ed, 'Große Überschrift'), 'keine Reste von Hauptclip / Große Überschrift im Formular');
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Ohne Kategorie', 'mode' => 'publish']);
+ok(str_contains($r['body'], 'Kategorie ist ein Pflichtfeld'), 'Kategorie ist Pflicht');
+
+// Bilder: PNG und PDF hochladen
+$gp = sys_get_temp_dir() . '/galtest.png';
+$gd = imagecreatetruecolor(40, 30);
+imagepng($gd, $gp);
+$pdfp = sys_get_temp_dir() . '/galtest.pdf';
+file_put_contents($pdfp, "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
+$up1 = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'kind' => 'gallery', 'file' => new CURLFile($gp, 'image/png', 'a.png')], true)['body'], true);
+$up2 = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'kind' => 'gallery', 'file' => new CURLFile($pdfp, 'application/pdf', 'a.pdf')], true)['body'], true);
+ok(($up1['ok'] ?? false) && ($up1['kind'] ?? '') === 'image' && ($up2['ok'] ?? false) && ($up2['kind'] ?? '') === 'pdf' && str_ends_with((string)$up2['name'], '.pdf'), 'Galerie: Bild und PDF hochgeladen');
+$up3 = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'file' => new CURLFile($pdfp, 'application/pdf', 'a.pdf')], true)['body'], true);
+ok(($up3['ok'] ?? true) === false, 'PDF nur in Galerie-Feldern, nicht als Einzelbild');
+
+$gpost = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Eigener Beitrag', 'tl_track' => 'T1', 'date' => '2026-05-01', 'link_mode' => 'hosted', 'gallery_text' => '', 'url' => 'https://example.org/alt', 'link_text' => 'Zum Beitrag', 'new_tab' => '1', 'mode' => 'publish',
+    'gallery' => [1 => ['f' => $up2['name'], 'cap' => 'Zweite <Seite>'], 0 => ['f' => $up1['name'], 'cap' => 'Erste Seite'], 2 => ['f' => '../config.php', 'cap' => 'böse'], 3 => ['f' => 'fehlt.png', 'cap' => 'x']]];
+$r = req('POST', "$base/admin/", $gpost);
+ok($r['code'] === 302, 'Beitrag mit Galerie gespeichert');
 reset_content_cache();
-ok(item($lw)['tl_len'] === 'normal', 'Ungültige Länge wird zu „Normal“');
+$gid = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL ORDER BY id DESC LIMIT 1")->fetchColumn();
+$gi = item($gid);
+ok(count($gi['gallery']) === 2 && $gi['gallery'][0]['f'] === $up1['name'] && $gi['gallery'][1]['f'] === $up2['name'] && $gi['link_mode'] === 'hosted', 'Galerie: Reihenfolge übernommen, ungültige Dateien verworfen');
+ok($gi['published'] === true && $gi['featured'] === false, 'versteckte Felder bekommen Standardwerte');
+$pub = req('GET', "$base/")['body'];
+ok(str_contains($pub, 'data-gal="' . $gid . '"') && str_contains($pub, 'Beitrag ansehen') && str_contains($pub, 'id="ar-gal"') && !str_contains($pub, 'example.org/alt'), 'Kachel: Knopf „Beitrag ansehen“ öffnet die Galerie (kein externer Link)');
+$hx = substr(json_encode('<', JSON_HEX_TAG), 1, -1);
+ok(str_contains($pub, 'Zweite ' . $hx . 'Seite') && !str_contains($pub, 'Zweite <Seite>') && str_contains($pub, '"pdf":true'), 'Galerie-Daten maskiert, PDF erkannt');
+ok(preg_match('~<a class="cl-link"[^>]*href="https://[^"]+"[^>]*>.*?<span class="cl-cta"><span>Zum Beitrag</span>~s', $pub) === 1, 'Auch externe Beiträge haben unten einen Knopf mit Linktext');
+$tp = req('GET', "$base/admin/?p=translate")['body'];
+ok(str_contains($tp, 'gallery.' . $up1['name']) && str_contains($tp, 'Bildunterschrift'), 'Bildunterschriften stehen in der Übersetzungstabelle');
+$r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_save', 'ajax' => '1', 't' => ['c:' . $gid . ':gallery.' . $up1['name'] => 'First page']]);
+reset_content_cache();
+ok(str_contains(req('GET', "$base/en/")['body'], 'First page') && !str_contains(req('GET', "$base/")['body'], 'First page'), 'Englische Bildunterschrift wirkt nur auf der englischen Seite');
+ok(str_contains(req('GET', "$base/")['body'], 'Erste Seite'), 'Deutsche Bildunterschrift bleibt');
+// Speichern ohne Bildunterschrift-Übersetzung behält sie
+req('POST', "$base/admin/", $gpost + ['id' => $gid]);
+reset_content_cache();
+ok(item($gid)['gallery'][0]['cap_en'] === 'First page', 'Übersetzung der Bildunterschrift bleibt beim Speichern erhalten');
+
+// Stern: immer nur ein Featured
+$cl = array_map('intval', array_column(q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL AND live = 1 ORDER BY sort")->fetchAll(), 'id'));
+$fa = $cl[0];
+$fb = $cl[1];
+$feat = fn(int $id) => json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'toggle_featured', 'ajax' => '1', 'id' => $id])['body'], true);
+$j = $feat($fa);
+reset_content_cache();
+ok(($j['ok'] ?? false) && $j['active'] === $fa && !empty(item($fa)['featured']), 'Stern setzt Featured');
+$j = $feat($fb);
+reset_content_cache();
+ok($j['active'] === $fb && !empty(item($fb)['featured']) && empty(item($fa)['featured']), 'Stern bei einer anderen Referenz nimmt ihn der bisherigen');
+$pub = req('GET', "$base/")['body'];
+ok(str_contains($pub, '<article class="fa">') && str_contains($pub, '>Featured<') && !str_contains($pub, 'Hauptbeitrag'), 'Featured-Block heißt „Featured“');
+$lst = req('GET', "$base/admin/?p=list&c=clips")['body'];
+ok(substr_count($lst, 'class="star on"') === 1 && str_contains($lst, 'class="pill feat ok">Featured<'), 'Liste: genau ein aktiver Stern und Hinweis „Featured“');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'toggle_pub', 'ajax' => '1', 'id' => $fb, 'to' => '0']);
+reset_content_cache();
+$lst = req('GET', "$base/admin/?p=list&c=clips")['body'];
+ok(str_contains($lst, 'Featured – aktuell ausgeblendet'), 'ausgeblendetes Featured: Hinweis in der Liste');
+ok(!str_contains(req('GET', "$base/")['body'], '<article class="fa">'), 'ausgeblendetes Featured: Bereich fällt weg');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'toggle_pub', 'ajax' => '1', 'id' => $fb, 'to' => '1']);
+// Formular-Speichern ändert weder Sichtbarkeit noch Stern
+$fi = item($fb);
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $fb, 'title' => $fi['title'], 'tl_track' => $fi['tl_track'], 'link_mode' => 'external', 'url' => $fi['url'], 'mode' => 'publish']);
+reset_content_cache();
+ok(!empty(item($fb)['featured']) && item($fb)['published'] === true, 'Speichern im Formular lässt Stern und Sichtbarkeit unverändert');
+$j = $feat($fb);
+reset_content_cache();
+ok($j['active'] === 0 && empty(item($fb)['featured']) && !str_contains(req('GET', "$base/")['body'], '<article class="fa">'), 'zweiter Klick hebt Featured auf, Bereich fällt weg');
+
+// Bild entfernen (rotes X → Entwurf)
+$rm = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'id' => $gid, 'title' => 'Eigener Beitrag', 'tl_track' => 'T1', 'link_mode' => 'hosted', 'still_pick' => $up1['name'], 'mode' => 'publish'];
+req('POST', "$base/admin/", $rm);
+reset_content_cache();
+ok(item($gid)['still'] === $up1['name'], 'Vorschaubild gesetzt');
+$ed = req('GET', "$base/admin/?p=edit&c=clips&id=$gid")['body'];
+ok(str_contains($ed, 'data-img-remove="still"') && str_contains($ed, 'data-img-yes') && !str_contains($ed, 'Bild entfernen</label>'), 'Bild entfernen: rotes X mit Rückfrage statt Kontrollkästchen');
+req('POST', "$base/admin/", ['_remove_still' => '1', 'mode' => 'draft'] + array_diff_key($rm, ['still_pick' => 1]));
+reset_content_cache();
+ok(item($gid)['still'] === '' && str_contains((string)q("SELECT data FROM ar_items WHERE id = $gid")->fetchColumn(), $up1['name']), 'Bild entfernt: nur im Entwurf, live bleibt es bis zur Veröffentlichung');
+discard_item_draft($gid);
+
+// Speicher-Leiste
+ok(str_contains($ed, 'class="ibtn"') && str_contains($ed, 'class="kbhelp"') && !str_contains($ed, 'kbdhint'), 'Speicher-Leiste: kompakte Knöpfe, Hilfe als Sprechblase');
+
+// aufräumen
+q("UPDATE ar_items SET deleted_at = " . time() . " WHERE id = $gid");
+reset_content_cache();
+@unlink("$root/uploads/{$up1['name']}");
+@unlink("$root/uploads/{$up2['name']}");
+@unlink($gp);
+@unlink($pdfp);
+
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'add_user', 'email' => 'antonia@antoniarueller.de', 'name' => 'A']);
 ok(str_contains(follow($r)['body'], 'eigenen Domain'), 'Domain-Postfach als Zugang abgelehnt');
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'logout']);

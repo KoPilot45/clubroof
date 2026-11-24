@@ -449,6 +449,34 @@
         if (!on && !pill) { var p = document.createElement('span'); p.className = 'pill hid'; p.textContent = 'Ausgeblendet'; if (line) line.insertBefore(p, line.firstChild); }
         if (on && pill) pill.remove();
         if (j.draft) { b.title = 'Als Entwurf gespeichert – erst nach dem Veröffentlichen sichtbar'; }
+        if (typeof refreshFeat === 'function') refreshFeat();
+      }).catch(function () { f.submit(); });
+    });
+    // Stern „Featured“: immer nur eine Referenz, wirkt sofort
+    function refreshFeat() {
+      $$('li.row', rows).forEach(function (li) {
+        $$('.pill.feat', li).forEach(function (p) { p.remove(); });
+        var line = $('.chipline', li);
+        if (!$('.star.on', li) || !line) return;
+        var off = li.classList.contains('off'), p = document.createElement('span');
+        p.className = 'pill feat ' + (off ? 'warn' : 'ok');
+        p.textContent = off ? 'Featured – aktuell ausgeblendet' : 'Featured';
+        line.appendChild(p);
+      });
+    }
+    rows.addEventListener('submit', function (e) {
+      var f = e.target;
+      if (!f.classList || !f.classList.contains('star-f')) return;
+      e.preventDefault();
+      var fd = new FormData(f); fd.set('ajax', '1');
+      fetch(f.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+        if (!j.ok) { f.submit(); return; }
+        $$('.star-f .star', rows).forEach(function (b) {
+          var li = b.closest('li.row'), on = !!j.active && parseInt(li.getAttribute('data-id'), 10) === j.active;
+          b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+          b.title = on ? 'Featured – zum Aufheben klicken' : 'Als Featured hervorheben (immer nur eine Referenz)';
+        });
+        refreshFeat();
       }).catch(function () { f.submit(); });
     });
     // Aktionsmenü schließen bei Klick außerhalb
@@ -470,7 +498,7 @@
       var fd = new FormData(form); fd.set('mode', 'draft'); fd.set('ajax', '1');
       return fetch(form.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
         busy = false;
-        if (j.ok) { dirty = false; setState('Als Entwurf gesichert um ' + j.at + ' Uhr', 'ok'); reloadLive(); }
+        if (j.ok) { dirty = false; setState('Entwurf gesichert um ' + j.at + ' Uhr', 'ok'); reloadLive(); }
         else setState('Nicht gesichert: ' + ((j.errors && j.errors[0]) || 'bitte Eingaben prüfen'), 'err');
       }).catch(function () { busy = false; setState('Nicht gesichert – keine Verbindung?', 'err'); });
     }
@@ -722,6 +750,7 @@
   }
   function stagedDone(box, key, name, url, hasAuto) {
     var pick = document.getElementById('f_' + key + '_pick'); if (pick) pick.value = name;
+    var rmv = document.getElementById('f_' + key + '_remove'); if (rmv) rmv.value = '';
     setPreview(box, url, hasAuto ? 'Hochgeladen und als Entwurf gesichert. Auf der Seite erscheint das Bild erst nach „Veröffentlichen“.' : 'Hochgeladen. Das Bild wird mit „Als Entwurf speichern“ bzw. „Veröffentlichen“ übernommen und erscheint erst nach „Veröffentlichen“ auf der Seite.');
     resetFocus(box);
     var bd = box.parentNode.querySelector('.newbadge'); if (bd) bd.classList.remove('bad');
@@ -778,4 +807,142 @@
       });
     });
   }
+
+  // ---- Umschalter (z. B. Externer Link / Beitrag selbst hosten) steuert abhängige Felder ----
+  $$('.seg').forEach(function (seg) {
+    var inp = $('input[type=hidden]', seg);
+    function apply() {
+      var v = inp.value;
+      $$('.seg-b', seg).forEach(function (b) { var on = b.getAttribute('data-v') === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+      $$('.showif').forEach(function (w) { var p = w.getAttribute('data-showif').split('='); if (p[0] === inp.name) w.hidden = p[1] !== v; });
+    }
+    seg.addEventListener('click', function (e) {
+      var b = e.target.closest('.seg-b'); if (!b) return;
+      inp.value = b.getAttribute('data-v'); apply(); dirty = true;
+      if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    apply();
+  });
+
+  // ---- Bild entfernen: rotes X mit kurzer Rückfrage (wirkt erst nach „Veröffentlichen“) ----
+  $$('[data-img-remove]').forEach(function (btn) {
+    var key = btn.getAttribute('data-img-remove'), box = btn.closest('.focusbox'), holder = btn.closest('.imgbox'), ask = $('.imgask', holder);
+    if (!ask) return;
+    btn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); ask.hidden = false; $('[data-img-yes]', ask).focus(); });
+    $('[data-img-no]', ask).addEventListener('click', function () { ask.hidden = true; btn.focus(); });
+    $('[data-img-yes]', ask).addEventListener('click', function () {
+      ask.hidden = true;
+      var rm = document.getElementById('f_' + key + '_remove'); if (rm) rm.value = '1';
+      var pk = document.getElementById('f_' + key + '_pick'); if (pk) pk.value = '';
+      var fi = document.querySelector('input[type=file][name="' + key + '"]'); if (fi) fi.value = '';
+      var h = holder.querySelector('.focushint'); if (h) h.hidden = true;
+      box.hidden = true;
+      var b = holder.querySelector('.newbadge');
+      if (!b) { b = document.createElement('p'); b.className = 'newbadge'; b.setAttribute('role', 'status'); holder.appendChild(b); }
+      b.classList.remove('bad'); b.hidden = false;
+      b.textContent = 'Bild entfernt. Auf der Seite verschwindet es erst nach „Veröffentlichen“.';
+      dirty = true;
+      if (form) { form.dispatchEvent(new Event('input', { bubbles: true })); if (form.getAttribute('data-autosave') === '1') form.dispatchEvent(new Event('ar:save')); }
+    });
+  });
+
+  // ---- Galerie (Beitrag selbst hosten): Dateien hochladen, sortieren, Bildunterschriften ----
+  $$('.gal').forEach(function (g) {
+    var key = g.getAttribute('data-key'), list = $('.gal-list', g), tpl = document.getElementById('galtpl_' + key);
+    var max = parseInt(g.getAttribute('data-max'), 10) || 30, status = $('.gal-status', g), file = $('input[type=file]', g);
+    function reindex() {
+      var rowsEl = $$('.gal-row', list);
+      rowsEl.forEach(function (li, i) {
+        $$('[data-n]', li).forEach(function (inp) { inp.name = key + '[' + i + '][' + inp.getAttribute('data-n') + ']'; });
+        $('[data-gal="up"]', li).disabled = i === 0;
+        $('[data-gal="down"]', li).disabled = i === rowsEl.length - 1;
+      });
+      g.classList.toggle('empty', rowsEl.length === 0);
+    }
+    function changed() {
+      reindex(); dirty = true;
+      if (form) { form.dispatchEvent(new Event('input', { bubbles: true })); if (form.getAttribute('data-autosave') === '1') form.dispatchEvent(new Event('ar:save')); }
+    }
+    function addRow(name, url, pdf) {
+      if ($$('.gal-row', list).length >= max) return false;
+      var t = document.createElement('template');
+      t.innerHTML = tpl.innerHTML.trim();
+      var li = t.content.firstElementChild;
+      li.setAttribute('data-f', name);
+      $('[data-n="f"]', li).value = name;
+      $('.gal-thumb', li).innerHTML = pdf ? '<span class="gal-pdf">PDF</span>' : '<img alt="" src="' + esc(url) + '">';
+      list.appendChild(li);
+      return true;
+    }
+    function say(msg, bad) { status.hidden = !msg; status.textContent = msg || ''; status.classList.toggle('bad', !!bad); }
+    function uploadAll(files) {
+      var queue = Array.prototype.slice.call(files), done = 0, fails = [];
+      function next() {
+        if (!queue.length) {
+          reindex();
+          say(fails.length ? fails.join(' · ') : (done ? done + (done === 1 ? ' Datei hinzugefügt.' : ' Dateien hinzugefügt.') : ''), fails.length > 0);
+          if (done) changed();
+          return;
+        }
+        var f = queue.shift();
+        say('Lädt hoch: ' + f.name + ' …', false);
+        var isPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+        (!isPdf && isAvif(f) ? avifToWebp(f) : Promise.resolve(f)).then(function (up) {
+          var fd = new FormData();
+          fd.set('_csrf', form.elements['_csrf'].value); fd.set('action', 'upload_image'); fd.set('kind', 'gallery'); fd.set('file', up);
+          return fetch(form.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' });
+        }).then(function (r) { return r.json(); }).then(function (j) {
+          if (!j.ok) throw new Error(j.error || 'Upload fehlgeschlagen');
+          if (addRow(j.name, j.url, j.kind === 'pdf')) done++; else fails.push('Höchstens ' + max + ' Dateien.');
+        }).catch(function (err) { fails.push(f.name + ': ' + (err && err.message ? err.message : 'Fehler')); }).then(next);
+      }
+      next();
+    }
+    file.addEventListener('change', function () { var fs = file.files; if (fs && fs.length) uploadAll(fs); file.value = ''; });
+    // Sortieren: Pfeile, Entfernen
+    list.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-gal]'); if (!b) return;
+      var li = b.closest('.gal-row'), k = b.getAttribute('data-gal');
+      if (k === 'up' && li.previousElementSibling) list.insertBefore(li, li.previousElementSibling);
+      else if (k === 'down' && li.nextElementSibling) list.insertBefore(li.nextElementSibling, li);
+      else if (k === 'del') li.remove();
+      changed();
+    });
+    // Sortieren: Ziehen am Griff
+    var dragEl = null;
+    list.addEventListener('mousedown', function (e) { var gr = e.target.closest('.gal-grip'); if (gr) gr.closest('.gal-row').draggable = true; });
+    list.addEventListener('dragstart', function (e) {
+      var li = e.target.closest ? e.target.closest('.gal-row') : null; if (!li || !li.draggable) return;
+      dragEl = li; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'gal'); } catch (x) {}
+      li.classList.add('drag');
+    });
+    list.addEventListener('dragover', function (e) {
+      if (!dragEl) return; e.preventDefault();
+      var li = e.target.closest('.gal-row'); if (!li || li === dragEl) return;
+      var r = li.getBoundingClientRect();
+      list.insertBefore(dragEl, (e.clientY - r.top) > r.height / 2 ? li.nextSibling : li);
+    });
+    list.addEventListener('dragend', function () { if (!dragEl) return; dragEl.classList.remove('drag'); dragEl.draggable = false; dragEl = null; changed(); });
+    // Aus der Mediathek
+    var mb = $('[data-gal-media]', g);
+    if (mb) mb.addEventListener('click', function () {
+      closeModal();
+      modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" aria-label="Bild aus der Mediathek hinzufügen"><div class="modal-h"><strong>Bild hinzufügen</strong><button type="button" class="btn small ghost" data-close>Schließen</button></div><div class="mgrid" id="mgrid">Lädt …</div></div>';
+      document.body.appendChild(modal);
+      modal.addEventListener('click', function (e) { if (e.target === modal || e.target.hasAttribute('data-close')) closeModal(); });
+      fetch(location.pathname + '?p=media_json', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (items) {
+        var grid = $('#mgrid', modal); grid.innerHTML = '';
+        if (!items.length) grid.textContent = 'Noch keine Bilder in der Mediathek.';
+        items.forEach(function (it) {
+          var c = document.createElement('button'); c.type = 'button'; c.className = 'mitem';
+          c.innerHTML = '<img src="' + it.url + '" alt="" loading="lazy"><span>' + esc(it.name) + '</span>';
+          c.addEventListener('click', function () { if (addRow(it.name, it.url, false)) changed(); closeModal(); });
+          grid.appendChild(c);
+        });
+      }).catch(function () { $('#mgrid', modal).textContent = 'Mediathek konnte nicht geladen werden.'; });
+    });
+    reindex();
+  });
 })();

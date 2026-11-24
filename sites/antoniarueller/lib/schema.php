@@ -9,7 +9,7 @@ require_once __DIR__ . '/legal_defaults.php';
  *  - groups      = einzelne Bereiche (Singletons)
  *
  * Feldtypen: text, textarea, markup (Text mit *kursiv* / **GROSS** / ==Akzent==), date, month,
- *            select, bool, number, range, color, url, image, pdf
+ *            select, switch, bool, number, range, color, url, image, pdf, gallery
  */
 
 const MARKUP_HINT = 'Hervorhebungen: *kursiv*, **GROSSSCHRIFT**, ==Akzentfarbe==';
@@ -44,41 +44,39 @@ function schema(): array
 
     // ---------- Listen ----------
     $s['collections']['clips'] = [
-        'label' => 'Referenzen (Showreel)', 'singular' => 'Referenz', 'title' => 'title', 'sub' => ['outlet', 'date_label'],
-        'help' => 'Alle Arbeitsproben. Die Reihenfolge hier bestimmt die Nummerierung („01, 02 …“). Entfernte Referenzen landen zuerst im Papierkorb.',
+        'label' => 'Referenzen (Showreel)', 'singular' => 'Referenz', 'title' => 'title', 'sub' => ['outlet', 'date_label'], 'star' => 'featured',
+        'help' => 'Alle Arbeitsproben. Die Reihenfolge hier bestimmt die Nummerierung („01, 02 …“). Mit dem Schalter blendest du eine Referenz ein oder aus, mit dem Stern hebst du sie als „Featured“ ganz oben hervor (immer nur eine). Entfernte Referenzen landen zuerst im Papierkorb.',
         'fields' => [
             f('section', '', 'Inhalt'),
             f('text', 'title', 'Titel', ['required' => true, 'max' => 200]),
             f('text', 'short', 'Kurzname (für den Schnittplatz)', ['max' => 40, 'hint' => 'Erscheint im Clip des Schnittplatzes, z. B. „Istanbul“.']),
             f('text', 'outlet', 'Redaktion / Sender', ['max' => 120]),
-            f('select', 'medium', 'Kategorie', ['options' => media_options(), 'default' => 'text']),
-            f('text', 'format', 'Format', ['max' => 120, 'hint' => 'z. B. „Online · Politik“ oder „Video · Selbstversuch“.']),
+            f('select', 'tl_track', 'Kategorie', ['options_from' => 'tracks', 'required' => true, 'hint' => 'Die Kategorie bestimmt die Spur im Schnittplatz, die Farbe und das Symbol. Kategorien legst du unter „Arbeiten → Kategorien“ an.']),
             f('date', 'date', 'Datum (Veröffentlichung)', ['hint' => 'Bestimmt die Anzeige „MM/JJJJ“ und das Jahres-Fähnchen im Schnittplatz.']),
             f('text', 'date_label', 'Datumsanzeige überschreiben (optional)', ['max' => 40, 'hint' => 'Nur nötig für Zeiträume wie „2024–2025“ oder wenn kein genaues Datum bekannt ist.']),
             f('text', 'role', 'Rolle', ['max' => 80]),
             f('textarea', 'desc', 'Beschreibung', ['max' => 600]),
-            f('image', 'still', 'Vorschaubild (optional)', ['hint' => 'Erscheint in der Liste „Alle Clips“, im Schnittplatz und beim Hauptclip. Format 3:2, mindestens 1200 × 800 px. Mit dem Fokuspunkt legst du fest, welcher Ausschnitt sichtbar bleibt.']),
+            f('image', 'still', 'Vorschaubild (optional)', ['hint' => 'Erscheint als quadratische Kachel in der Liste „Alle Beiträge“ und im Featured-Block. Mit dem Fokuspunkt legst du fest, welcher Ausschnitt sichtbar bleibt.']),
             f('text', 'still_credit', 'Bildnachweis (optional)', ['max' => 80, 'hint' => 'z. B. „Bild: buten un binnen“. Erscheint klein im Bild.']),
-            f('url', 'url', 'Link zum Beitrag'),
-            f('text', 'link_text', 'Linktext', ['max' => 60, 'default' => 'Zum Beitrag']),
-            f('bool', 'new_tab', 'Link in neuem Tab öffnen', ['default' => true]),
-            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hint' => 'Ausschalten = Entwurf (nicht sichtbar, aber nicht gelöscht).']),
-            f('section', '', 'Hauptclip („Featured“)'),
-            f('bool', 'featured', 'Als Hauptclip oben zeigen', ['hint' => 'Es wird der erste Hauptclip der Liste gezeigt.']),
-            f('markup', 'headline', 'Große Überschrift (optional)', ['max' => 200, 'hint' => 'Standard ist der Titel. ' . MARKUP_HINT]),
-            f('section', '', 'Schnittplatz'),
-            f('select', 'tl_track', 'Spur im Schnittplatz', ['options_from' => 'tracks', 'empty' => 'Nicht im Schnittplatz zeigen', 'hint' => 'Spuren (Video, Online, Radio …) legst du unter „Schnittplatz → Spuren“ an. Die Reihenfolge in der Spur entspricht der Nummerierung der Referenzen (Liste per Ziehen sortieren).']),
-            f('select', 'tl_len', 'Länge im Schnittplatz', ['options' => ['short' => 'Kurz', 'normal' => 'Normal', 'long' => 'Lang'], 'default' => 'normal', 'hint' => 'Wie breit der Clip im Schnittplatz erscheint – wie eine kürzere oder längere Aufnahme.']),
+            f('section', '', 'Link zum Beitrag'),
+            f('switch', 'link_mode', 'Wo liegt der Beitrag?', ['options' => ['external' => 'Externer Link', 'hosted' => 'Beitrag selbst hosten'], 'default' => 'external']),
+            f('url', 'url', 'Link zum Beitrag', ['show_if' => ['link_mode', 'external']]),
+            f('text', 'link_text', 'Linktext', ['max' => 60, 'default' => 'Zum Beitrag', 'dict' => true, 'show_if' => ['link_mode', 'external']]),
+            f('bool', 'new_tab', 'Link in neuem Tab öffnen', ['default' => true, 'show_if' => ['link_mode', 'external']]),
+            f('text', 'gallery_text', 'Linktext', ['max' => 60, 'default' => 'Beitrag ansehen', 'dict' => true, 'show_if' => ['link_mode', 'hosted'], 'hint' => 'Beschriftung des Knopfes, der die Bilder öffnet.']),
+            f('gallery', 'gallery', 'Bilder und PDFs', ['show_if' => ['link_mode', 'hosted'], 'max_items' => 30, 'hint' => 'Auf der Seite öffnen sich die Dateien in dieser Reihenfolge in einer Galerie (Lightbox). Die Bildunterschrift ist optional.']),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
+            f('bool', 'featured', 'Featured', ['hidden' => true]),
             f('section', '', 'Timecode', ['adv' => true]),
             f('text', 'tc', 'Timecode (optional)', ['max' => 11, 'hint' => 'Leer = wird automatisch vergeben, Format 00:01:47:10.']),
         ],
     ];
     $s['collections']['tracks'] = [
-        'label' => 'Schnittplatz: Spuren', 'singular' => 'Spur', 'title' => 'label', 'sub' => ['code'],
-        'help' => 'Die Zeilen des Schnittplatzes im Showreel. Farben und Symbol sind frei wählbar.',
+        'label' => 'Kategorien', 'singular' => 'Kategorie', 'title' => 'label', 'sub' => ['code'],
+        'help' => 'Jede Kategorie (Video, Online, Radio …) ist eine Spur im Schnittplatz und ordnet die Referenzen. Reihenfolge, Farben und Symbol sind frei wählbar.',
         'fields' => [
-            f('text', 'code', 'Kürzel', ['required' => true, 'max' => 6, 'hint' => 'z. B. V1, T1, A1 (wird in der Spurliste links gezeigt).']),
-            f('text', 'label', 'Bezeichnung', ['required' => true, 'max' => 40]),
+            f('text', 'code', 'Spurkürzel', ['required' => true, 'max' => 6, 'hint' => 'z. B. V1, T1, A1 (wird in der Spurliste des Schnittplatzes gezeigt).']),
+            f('text', 'label', 'Bezeichnung', ['required' => true, 'max' => 40, 'hint' => 'Erscheint an der Referenz und in der Spur, z. B. „Online“.']),
             f('select', 'icon', 'Symbol', ['options' => media_options(), 'default' => 'text']),
             f('color', 'bg', 'Balkenfarbe', ['default' => '#0B3F44']),
             f('color', 'fg', 'Schriftfarbe im Balken', ['default' => '#F3ECDF']),
@@ -247,7 +245,7 @@ function schema(): array
             f('text', 'show_h1', 'Überschrift, Teil 1 (Großschrift)', ['max' => 20, 'default' => 'Show']),
             f('text', 'show_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'reel']),
             f('text', 'show_right', 'Zeile rechts', ['max' => 80, 'hint' => 'Leer = automatisch (Anzahl Clips und Zeitraum).']),
-            f('text', 'show_all', 'Titel der Liste', ['max' => 40, 'default' => 'Alle Clips']),
+            f('text', 'show_all', 'Titel der Liste', ['max' => 40, 'default' => 'Alle Beiträge']),
             f('text', 'editor_title', 'Titel des Schnittplatzes', ['max' => 40, 'default' => 'Schnittplatz · Reel №1']),
             f('section', '', 'Podcast'),
             f('text', 'pod_h1', 'Überschrift, Teil 1', ['max' => 20, 'default' => 'Hör']),
@@ -334,9 +332,9 @@ function admin_nav(): array
             ['g', 'hero', 'Startbild & Einleitung', 'Foto, Überschrift und Einstiegstext ganz oben.'],
             ['c', 'questions', 'Leitfragen', '„Was mich antreibt“ – die kurzen Fragen mit Nummer.'],
         ]],
-        'arbeiten' => ['Arbeiten', 'film', 'Referenzen, Hauptclip und Schnittplatz.', [
-            ['c', 'clips', 'Referenzen', 'Alle Arbeitsproben, auch der Hauptclip oben.'],
-            ['c', 'tracks', 'Spuren', 'Die Zeilen des Schnittplatzes (Video, Radio, Online …).'],
+        'arbeiten' => ['Arbeiten', 'film', 'Referenzen, Featured und Schnittplatz.', [
+            ['c', 'clips', 'Referenzen', 'Alle Arbeitsproben, auch das Featured ganz oben.'],
+            ['c', 'tracks', 'Kategorien', 'Video, Online, Radio …: jede Kategorie ist eine Spur im Schnittplatz.'],
         ]],
         'podcast' => ['Podcast', 'mic', 'Folgen mit Links zu den Plattformen.', [
             ['c', 'episodes', 'Folgen', 'Jede Folge mit Titel, Wellenform und Plattform-Links.'],

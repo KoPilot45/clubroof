@@ -101,7 +101,16 @@ $social = array_values(array_filter(array_map(function ($x) {
 $clips = array_values(array_filter(items('clips'), fn($c) => $c['published']));
 $clipsById = [];
 $years = [];
+$trackByCode = [];
+foreach ($tracks as $t) {
+    $trackByCode[$t['code']] = $t;
+}
 foreach ($clips as $i => $c) {
+    // Kategorie → Symbol/Medium und Bezeichnung
+    $tk = $trackByCode[$c['tl_track']] ?? null;
+    $c['medium'] = $tk['icon'] ?? 'text';
+    $c['_cat'] = $tk['label'] ?? '';
+    $c['_hosted'] = $c['link_mode'] === 'hosted' && $c['gallery'];
     $c['_no'] = sprintf('%02d', $i + 1);
     $c['_tc'] = trim($c['tc']) !== '' ? $c['tc'] : auto_tc($i);
     $c['_date'] = clip_date_label($c);

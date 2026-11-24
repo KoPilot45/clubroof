@@ -40,6 +40,13 @@ function apply_lang(array $vals, array $fields): array
         return $vals;
     }
     foreach ($fields as $f) {
+        if ($f['type'] === 'gallery' && is_array($vals[$f['key']] ?? null)) {
+            foreach ($vals[$f['key']] as $n => $g) {
+                if (trim((string)($g['cap_en'] ?? '')) !== '') {
+                    $vals[$f['key']][$n]['cap'] = $g['cap_en'];
+                }
+            }
+        }
         if ($f['type'] !== 'section' && field_translatable($f)) {
             $en = $vals[$f['key'] . '_en'] ?? '';
             if (is_string($en) && trim($en) !== '') {
@@ -59,7 +66,7 @@ function field_defaults(array $fields): array
         if ($f['type'] === 'section') {
             continue;
         }
-        $d[$f['key']] = $f['default'] ?? ($f['type'] === 'bool' ? false : '');
+        $d[$f['key']] = $f['default'] ?? ($f['type'] === 'bool' ? false : ($f['type'] === 'gallery' ? [] : ''));
     }
     return $d;
 }
@@ -401,10 +408,41 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
             continue;
         }
         $k = $f['key'];
+        if (!empty($f['hidden'])) {
+            // Wird nicht im Formular bearbeitet (z. B. Schalter und Stern in der Liste): bisheriger Wert bleibt
+            $out[$k] = array_key_exists($k, $old) ? $old[$k] : ($f['default'] ?? ($t === 'bool' ? false : ''));
+            continue;
+        }
         $raw = $post[$k] ?? '';
         $max = $f['max'] ?? 500;
         $v = '';
         switch ($t) {
+            case 'gallery':
+                $v = [];
+                $oldCaps = [];
+                foreach ((array)($old[$k] ?? []) as $og) {
+                    $oldCaps[(string)($og['f'] ?? '')] = (string)($og['cap_en'] ?? '');
+                }
+                $list = is_array($raw) ? $raw : [];
+                ksort($list);
+                foreach ($list as $g) {
+                    $fn = is_array($g) ? (string)($g['f'] ?? '') : '';
+                    if (!preg_match('~^[a-z0-9_-]+\.(jpg|png|webp|pdf)$~', $fn) || !is_file(upload_dir() . '/' . $fn)) {
+                        continue;
+                    }
+                    $cap = trim(preg_replace('~\s*[\r\n]+\s*~', ' ', preg_replace('~[\x00-\x08\x0B\x0C\x0E-\x1F]~', '', (string)($g['cap'] ?? ''))));
+                    $v[] = ['f' => $fn, 'cap' => mb_substr($cap, 0, 200), 'cap_en' => $oldCaps[$fn] ?? ''];
+                    if (count($v) >= (int)($f['max_items'] ?? 30)) {
+                        break;
+                    }
+                }
+                break;
+            case 'switch':
+                $v = (string)(is_array($raw) ? '' : $raw);
+                if (!isset(($f['options'] ?? [])[$v])) {
+                    $v = $f['default'] ?? '';
+                }
+                break;
             case 'bool':
                 $v = !empty($post[$k]);
                 break;
@@ -497,7 +535,7 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
             $fo = (string)($post[$k . '_focus'] ?? '');
             $out[$k . '_focus'] = preg_match('~^\d{1,3}(\.\d)?,\d{1,3}(\.\d)?$~', $fo) ? $fo : '';
         }
-        if (is_string($v) && $t !== 'image' && $t !== 'pdf' && mb_strlen($v) > $max) {
+        if (is_string($v) && $t !== 'image' && $t !== 'pdf' && $t !== 'gallery' && mb_strlen($v) > $max) {
             $errors[] = $f['label'] . ': höchstens ' . $max . ' Zeichen.';
             $v = mb_substr($v, 0, $max);
         }
@@ -646,6 +684,40 @@ function cleanup_uploads(): void
 {
 }
 
+/**
+ * Setzt einzelne Werte (z. B. den Stern „Featured“) sofort, ohne den restlichen Entwurf zu veröffentlichen:
+ * im veröffentlichten Stand und, falls vorhanden, auch im Entwurf. Gibt zurück, ob etwas geändert wurde.
+ */
+function set_item_flags(int $id, array $vals): bool
+{
+    $row = q('SELECT data, draft, live FROM ar_items WHERE id = ?', [$id])->fetch();
+    if (!$row) {
+        return false;
+    }
+    $changed = false;
+    foreach (['data', 'draft'] as $col) {
+        $arr = json_arr($row[$col] ?? null);
+        if ($arr === null || ($col === 'data' && !(int)$row['live'])) {
+            continue;
+        }
+        $new = $arr;
+        foreach ($vals as $vk => $vv) {
+            if (!array_key_exists($vk, $arr) && ($vv === false || $vv === '')) {
+                continue;
+            }
+            $new[$vk] = $vv;
+        }
+        if ($new !== $arr) {
+            q('UPDATE ar_items SET ' . $col . ' = ? WHERE id = ?', [enc($new), $id]);
+            $changed = true;
+        }
+    }
+    if ($changed) {
+        reset_content_cache();
+    }
+    return $changed;
+}
+
 /** Bereinigt eine englische Übersetzung wie die deutsche Eingabe (Feldtyp und Länge). */
 function clean_translation(array $f, string $raw): string
 {
@@ -681,6 +753,11 @@ function save_translations(array $changes): int
         } elseif ($kind === 'g') {
             $fields = $s['groups'][$ref]['fields'] ?? null;
         }
+        if (str_starts_with($fk, 'gallery.') && $kind === 'c' && preg_match('~^gallery\.([a-z0-9_-]+\.(jpg|png|webp|pdf))$~', $fk, $gm)) {
+            $by[$kind . ':' . $ref]['__gal'][$gm[1]] = mb_substr(trim(preg_replace('~\s*[\r\n]+\s*~', ' ', $val)), 0, 200);
+            $n++;
+            continue;
+        }
         foreach ($fields ?? [] as $f) {
             if ($f['type'] !== 'section' && $f['key'] === $fk && field_translatable($f)) {
                 $by[$kind . ':' . $ref][$fk . '_en'] = clean_translation($f, $val);
@@ -690,6 +767,8 @@ function save_translations(array $changes): int
     }
     foreach ($by as $ref => $vals) {
         [$kind, $id] = explode(':', $ref, 2);
+        $galTr = $vals['__gal'] ?? [];
+        unset($vals['__gal']);
         if ($kind === 'c') {
             $row = q('SELECT data, draft, live FROM ar_items WHERE id = ?', [(int)$id])->fetch();
             foreach (['data', 'draft'] as $col) {
@@ -697,7 +776,15 @@ function save_translations(array $changes): int
                 if ($arr === null || ($col === 'data' && !(int)$row['live'])) {
                     continue;
                 }
-                q('UPDATE ar_items SET ' . $col . ' = ? WHERE id = ?', [enc(array_merge($arr, $vals)), (int)$id]);
+                $arr = array_merge($arr, $vals);
+                if ($galTr && is_array($arr['gallery'] ?? null)) {
+                    foreach ($arr['gallery'] as $gn => $g) {
+                        if (isset($galTr[$g['f'] ?? ''])) {
+                            $arr['gallery'][$gn]['cap_en'] = $galTr[$g['f']];
+                        }
+                    }
+                }
+                q('UPDATE ar_items SET ' . $col . ' = ? WHERE id = ?', [enc($arr), (int)$id]);
             }
         } else {
             $row = q('SELECT data, draft FROM ar_settings WHERE grp = ?', [$id])->fetch();

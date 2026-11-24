@@ -32,6 +32,9 @@ function aicon(string $name, int $size = 18): string
         'menu' => '<path d="M4 7h16M4 12h16M4 17h16"/>',
         'check' => '<path d="m5 12 5 5 9-10"/>',
         'globe' => '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+        'star' => '<path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.2 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.7l5.9-.8z"/>',
+        'x' => '<path d="M6 6l12 12M18 6 6 18"/>',
+        'panel' => '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M14 4v16"/>',
         'save' => '<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
     ];
     return '<svg class="ic" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . ($p[$name] ?? '') . '</svg>';
@@ -169,7 +172,10 @@ function view_help(array $user): void
     layout_start($user, 'Hilfe', 'help');
     echo '<p class="lead">Kurze Anleitungen für die häufigsten Aufgaben. Mit <kbd>Strg</kbd> + <kbd>K</kbd> findest du jede Stelle der Verwaltung sofort.</p>';
     $topics = [
-        ['Neue Referenz anlegen', ['Menü „Arbeiten“ → „Referenzen“ → „Referenz hinzufügen“.', 'Titel, Kategorie und Datum eintragen, eine Spur im Schnittplatz wählen und bei Bedarf die Länge (kurz/normal/lang). Die Reihenfolge in der Spur entspricht der Liste.', '„Als Entwurf speichern“ zeigt sie nur dir (über „Vorschau“), „Veröffentlichen“ schaltet sie live.']],
+        ['Neue Referenz anlegen', ['Menü „Arbeiten“ → „Referenzen“ → „Referenz hinzufügen“.', 'Titel, Kategorie (sie bestimmt die Spur im Schnittplatz) und Datum eintragen. Kategorien verwaltest du unter „Arbeiten“ → „Kategorien“. Die Breite im Schnittplatz ergibt sich automatisch.', '„Als Entwurf speichern“ zeigt sie nur dir (über „Vorschau“), „Veröffentlichen“ schaltet sie live.']],
+        ['Eine Referenz als Featured hervorheben', ['In der Referenzen-Liste auf den Stern klicken. Es gibt immer nur ein Featured: Ein Klick bei einer anderen Referenz nimmt den Stern der bisherigen weg, ein zweiter Klick hebt es ganz auf (dann entfällt der Bereich auf der Seite).', 'Ist die Referenz ausgeblendet, erscheint in der Liste ein Hinweis – auf der Seite ist dann kein Featured zu sehen.']],
+        ['Beitrag selbst hosten (Bilder und PDFs)', ['In der Referenz unter „Link zum Beitrag“ „Beitrag selbst hosten“ wählen, einen Linktext festlegen und Bilder oder PDFs hinzufügen. Reihenfolge per Ziehen oder mit den Pfeilen, Bildunterschriften sind optional.', 'Auf der Seite öffnet der Knopf (in der Kachel und im Featured) eine Galerie mit Pfeilen, Wischen und Tastatur. Mit „Externer Link“ wechselst du jederzeit zurück; die jeweils andere Eingabe bleibt gespeichert.']],
+        ['Bild entfernen', ['Am Vorschaubild auf das rote X klicken und die Rückfrage bestätigen. Das Bild verschwindet sofort aus der Vorschau, auf der Seite aber erst nach „Veröffentlichen“. Die Datei bleibt in der Mediathek.']],
         ['Podcast-Folge hinzufügen', ['Menü „Podcast“ → „Folgen“ → „Folge hinzufügen“.', 'Titel und Links zu den Plattformen eintragen. Leere Links werden nicht angezeigt.']],
         ['Etwas vorübergehend ausblenden', ['In der Liste den Schalter „Anzeigen“ der Zeile ausschalten. Der Eintrag bleibt erhalten und kann jederzeit wieder eingeschaltet werden.']],
         ['Reihenfolge ändern', ['In der Liste die Zeile am Griff (⠿) ziehen. Ohne Maus: Menü „⋯“ → „Nach oben / unten“.']],

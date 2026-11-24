@@ -43,7 +43,7 @@ function translation_progress(): array
     $byArea = [];
     $count = function (array $fields, array $vals, string $area) use (&$total, &$done, &$byArea) {
         foreach ($fields as $f) {
-            if ($f['type'] === 'section' || !field_translatable($f)) {
+            if ($f['type'] === 'section' || !field_translatable($f) || !field_relevant($f, $vals)) {
                 continue;
             }
             $de = trim((string)($vals[$f['key']] ?? ''));
@@ -74,13 +74,37 @@ function translation_progress(): array
  * Alle übersetzbaren Texte für die Übersetzungstabelle.
  * Zeile: key (c:ID:feld | g:gruppe:feld), area, area_key, item, label, de, en, multi, max, link
  */
+/** Felder, die nur bei bestimmter Einstellung gelten (show_if) oder deren Standardtext das Wörterbuch übersetzt, werden nicht abgefragt. */
+function field_relevant(array $f, array $vals): bool
+{
+    if (!empty($f['show_if']) && (string)($vals[$f['show_if'][0]] ?? '') !== (string)$f['show_if'][1]) {
+        return false;
+    }
+    if (!empty($f['dict']) && trim((string)($vals[$f['key']] ?? '')) === (string)($f['default'] ?? '')) {
+        return false;
+    }
+    return true;
+}
+
 function translation_rows(): array
 {
     $s = schema();
     $out = [];
     $add = function (array $fields, array $vals, string $kind, string $ref, string $area, string $areaKey, string $item, string $link) use (&$out) {
         foreach ($fields as $f) {
-            if ($f['type'] === 'section' || !field_translatable($f)) {
+            if ($f['type'] === 'gallery') {
+                foreach ((array)($vals[$f['key']] ?? []) as $g) {
+                    if (trim((string)($g['cap'] ?? '')) === '') {
+                        continue;
+                    }
+                    $out[] = [
+                        'key' => $kind . ':' . $ref . ':gallery.' . $g['f'], 'area' => $area, 'area_key' => $areaKey, 'item' => $item, 'label' => 'Bildunterschrift',
+                        'de' => trim((string)$g['cap']), 'en' => (string)($g['cap_en'] ?? ''), 'multi' => false, 'rich' => false, 'max' => 200, 'link' => $link,
+                    ];
+                }
+                continue;
+            }
+            if ($f['type'] === 'section' || !field_translatable($f) || !field_relevant($f, $vals)) {
                 continue;
             }
             $de = trim((string)($vals[$f['key']] ?? ''));
@@ -112,7 +136,7 @@ function readiness_checks(): array
     $seo = setting('seo', true);
     $hero = setting('hero', true);
     $legal = setting('legal', true);
-    $clips = array_filter(items('clips', false, true), fn($x) => $x['published'] && str_starts_with(safe_url($x['url']), 'http'));
+    $clips = array_filter(items('clips', false, true), fn($x) => $x['published'] && (($x['link_mode'] === 'hosted' && $x['gallery']) || ($x['link_mode'] !== 'hosted' && str_starts_with(safe_url($x['url']), 'http'))));
     $ph = fn(string $t) => $t === '' || (bool)preg_match('~\[[^\]\n]{2,}\]~u', $t);
     $tp = translation_progress();
     $pct = $tp['total'] ? (int)round($tp['done'] / $tp['total'] * 100) : 100;
@@ -126,7 +150,7 @@ function readiness_checks(): array
         ['must', str_contains((string)$legal['datenschutz'], 'Reichweitenmessung'), 'Datenschutzerklärung beschreibt die Besuchszählung (Abschnitt „Reichweitenmessung“)', a('p=group&g=legal')],
         ['must', !$seo['noindex'], 'Suchmaschinen zugelassen („noindex“ ist aus)', a('p=group&g=seo')],
         ['must', $hero['photo'] !== '' && trim((string)$hero['photo_alt']) !== '', 'Startfoto mit Bildbeschreibung', a('p=group&g=hero')],
-        ['must', count($clips) >= 3, 'Mindestens drei Referenzen mit echtem Link', a('p=list&c=clips')],
+        ['must', count($clips) >= 3, 'Mindestens drei Referenzen mit echtem Link oder eigenen Bildern', a('p=list&c=clips')],
         ['nice', $titleLen >= 40 && $titleLen <= 70 && $descLen >= 100 && $descLen <= 170, 'Titel und Beschreibung für Google in guter Länge', a('p=group&g=seo')],
         ['nice', count(items('social', false, true)) > 0, 'Mindestens ein Social-Media-Profil', a('p=list&c=social')],
         ['nice', cfg('mail.driver') !== 'log', 'Mailversand ist eingerichtet', a('p=check')],
