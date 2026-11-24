@@ -68,6 +68,15 @@ $site = setting('site');
 $seo = setting('seo');
 $hero = setting('hero');
 $sec = setting('sections');
+// Beschriftungen, die nie leer sein dürfen (Abschnittsnamen, Links der Fußzeile …): leer = Standardtext
+foreach (['sections' => &$sec, 'site' => &$site] as $grp => &$vals) {
+    foreach (schema()['groups'][$grp]['fields'] as $fd) {
+        if (!empty($fd['dict']) && trim((string)($vals[$fd['key']] ?? '')) === '') {
+            $vals[$fd['key']] = $fd['default'] ?? '';
+        }
+    }
+}
+unset($vals);
 $about = setting('about');
 $contact = setting('contact');
 $tl = setting('timeline');
@@ -131,6 +140,14 @@ foreach ($clips as $c) {
 }
 
 $cvGroups = cv_groups($cvRows);
+// Abschnitte ein-/ausblenden: Menüpunkte ausgeblendeter Abschnitte entfallen
+$showSt = $stations && $sec['on_stations'];
+$showCv = $cvGroups && $sec['on_cv'];
+$vis = [
+    'arbeiten' => $featured !== null || ($clips && $sec['on_show']), 'podcast' => $episodes && $sec['on_podcast'], 'ueber' => (bool)$sec['on_about'],
+    'lebenslauf' => $showSt || $showCv, 'offtherecord' => $off && $sec['on_off'], 'kontakt' => (bool)$sec['on_contact'],
+];
+$nav = array_values(array_filter($nav, fn($n) => $vis[$n['anchor']] ?? true));
 $cvYears = array_filter(array_map('strval', array_keys($cvGroups)), 'ctype_digit');
 $cvMin = $cvYears ? min($cvYears) : '';
 

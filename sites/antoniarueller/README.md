@@ -80,3 +80,10 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 - **Bild entfernen:** rotes X am Vorschaubild mit Rückfrage; wirkt im Entwurf, live erst nach „Veröffentlichen“.
 - **Speicher-Leiste:** eine Zeile – Veröffentlichen, Entwurf, Status, Live/Vorschau/English als kompakte Knöpfe, Abbrechen, Hilfe („?“) mit Erklärung und Tastenkürzeln.
 - „Alle Clips“ heißt jetzt „Alle Beiträge“.
+
+## Abschnitte
+
+- „Seite → Abschnitte“ (früher „Überschriften der Abschnitte“): je Abschnitt eine Karte mit Schieberegler (Leitfragen, Showreel, Podcast, Über mich, Stationen, Lebenslauf, Off the record, Kontakt) und allen Texten des Abschnitts. Start (Intro) ist immer sichtbar; die Fußzeile mit Impressum und Datenschutz bleibt auch bei ausgeschaltetem Kontakt.
+- Ausgeschaltete Abschnitte entfallen samt Menüpunkt (Kopfzeile, Handy-Menü, „Schreib mir“-Knopf); das Featured hängt nur am Stern der Referenzen.
+- Neu bearbeitbar (vorher fest im Code): Abschnittsnamen der REC-Zeilen, Intro-Name und Timecode, Hinweis/Spaltenkopf im Schnittplatz, Featured-Beschriftungen, „Rolle:“, Wort für „Clips“, Podcast „Anhören bei“/„Folge“, „heute“/„seit“, Mail-Hinweis, „Kopieren“/„Kopiert“, Fußzeilen-Links, Titel im Handy-Menü. Das Feld „Podcast: Zeile rechts“ war bisher ohne Wirkung und wird jetzt angezeigt. Leere Pflichtbeschriftungen fallen auf den Standardtext zurück; Standardtexte stehen ohne Eingabe auch englisch zur Verfügung (nur eigene Texte erscheinen in der Übersetzungstabelle).
+- Fest gestaltet bleibt die Überschrift „Off the record“ (durchgestrichenes „the“).

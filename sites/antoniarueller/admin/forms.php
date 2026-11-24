@@ -360,21 +360,55 @@ function form_actions(string $cancelUrl, string $previewAnchor, bool $isDraft, b
     echo '</div></div>';
 }
 
-/** Felder ausgeben; Abschnitte mit 'adv' => true sind als „Erweitert“ eingeklappt. */
+/** Felder ausgeben; Abschnitte mit 'adv' => true sind als „Erweitert“ eingeklappt, mit 'card' => true als Karte mit Schieberegler. */
 function render_fields(array $fields, array $vals, ?callable $after = null): void
 {
     $adv = false;
+    $card = false;
+    $toggles = [];
+    foreach ($fields as $f) {
+        if (!empty($f['card_toggle'])) {
+            $toggles[$f['key']] = $f;
+        }
+    }
     foreach ($fields as $f) {
         if ($f['type'] === 'section') {
             if ($adv) {
                 echo '</details>';
                 $adv = false;
             }
+            if ($card) {
+                echo '</div></section>';
+                $card = false;
+            }
+            if (!empty($f['card'])) {
+                $tk = (string)($f['toggle'] ?? '');
+                $on = $tk === '' || !empty($vals[$tk]);
+                echo '<section class="seccard' . ($on ? '' : ' off') . '"><header class="seccard-h"><h2>' . e($f['label']) . '</h2>';
+                if ($tk !== '' && isset($toggles[$tk])) {
+                    echo '<label class="sw"><input type="checkbox" name="' . e($tk) . '" value="1"' . ($on ? ' checked' : '') . ' aria-label="' . e($f['label'] . ': ' . $toggles[$tk]['label']) . '"><span class="sw-ui" aria-hidden="true"></span><span class="sw-t"><span class="sw-on">Sichtbar</span><span class="sw-off">Ausgeblendet</span></span></label>';
+                } else {
+                    echo '<span class="sw-fix">Immer sichtbar</span>';
+                }
+                if (!empty($f['link'])) {
+                    echo '<a class="seccard-l" href="' . e(nav_href($f['link'][0], $f['link'][1])) . '">Inhalte bearbeiten →</a>';
+                }
+                echo '</header>';
+                if (!empty($f['note'])) {
+                    echo '<p class="seccard-note">' . e($f['note']) . '</p>';
+                }
+                echo '<div class="seccard-b">';
+                $card = true;
+                continue;
+            }
             if (!empty($f['adv'])) {
                 echo '<details class="adv"><summary>' . e($f['label']) . ' <small>(erweitert)</small></summary>';
                 $adv = true;
                 continue;
             }
+        }
+        if (!empty($f['card_toggle'])) {
+            continue;
         }
         render_field($f, $vals[$f['key']] ?? '', $vals);
         if ($after) {
@@ -383,6 +417,9 @@ function render_fields(array $fields, array $vals, ?callable $after = null): voi
     }
     if ($adv) {
         echo '</details>';
+    }
+    if ($card) {
+        echo '</div></section>';
     }
 }
 

@@ -195,7 +195,7 @@ function cv_groups(array $rows): array
     return $g;
 }
 
-function cv_when(array $r): string
+function cv_when(array $r, string $since = ''): string
 {
     if (trim($r['when_label']) !== '') {
         return $r['when_label'];
@@ -203,7 +203,7 @@ function cv_when(array $r): string
     $a = fmt_month((string)$r['from']);
     $b = fmt_month((string)$r['to']);
     if ($r['ongoing']) {
-        return tr('seit') . ' ' . $a;
+        return ($since !== '' ? $since : tr('seit')) . ' ' . $a;
     }
     return $b !== '' ? $a . ' — ' . $b : $a;
 }

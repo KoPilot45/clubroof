@@ -302,6 +302,24 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'kategorien_v1';
     }
 
+    // Abschnitte: veralteten Hinweis zum Schnittplatz auf dem Handy (Pfeile gibt es nicht mehr) aktualisieren
+    if (!in_array('abschnitte_v1', $applied, true)) {
+        foreach (q("SELECT data, draft FROM ar_settings WHERE grp = 'timeline'")->fetchAll() as $r) {
+            foreach (['data', 'draft'] as $col) {
+                $d = json_arr($r[$col] ?? null);
+                if ($d === null || ($d['hint_mobile'] ?? '') !== 'Pfeile nutzen oder Clip antippen') {
+                    continue;
+                }
+                $d['hint_mobile'] = 'Clip antippen: springt zum Beitrag';
+                if (($d['hint_mobile_en'] ?? '') !== '') {
+                    $d['hint_mobile_en'] = 'Tap a clip to jump to the post';
+                }
+                q('UPDATE ar_settings SET ' . $col . ' = ? WHERE grp = ?', [json_encode($d, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), 'timeline']);
+            }
+        }
+        $applied[] = 'abschnitte_v1';
+    }
+
     // Zusätzliche Zugänge aus config.php ('extra_users'): werden einmal angelegt; spätere Entfernung im Admin bleibt bestehen
     foreach ((array)cfg('extra_users', []) as $u) {
         $em = strtolower(trim((string)($u['email'] ?? '')));

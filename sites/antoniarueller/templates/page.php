@@ -62,16 +62,16 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php endforeach; ?>
 </nav>
 <span class="lang-switch" role="group" aria-label="<?= current_lang() === 'en' ? 'Language' : 'Sprache' ?>"><a data-ev="lang" data-k="de" href="<?= e(lang_url('de', $page)) ?>" hreflang="de" lang="de"<?= current_lang() === 'de' ? ' aria-current="true"' : '' ?>>DE</a><a data-ev="lang" data-k="en" href="<?= e(lang_url('en', $page)) ?>" hreflang="en" lang="en"<?= current_lang() === 'en' ? ' aria-current="true"' : '' ?>>EN</a></span>
-<?php if ($hasMail && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-nav ar-nav-cta" href="#kontakt" data-ev="mail" data-k="kopfzeile" data-mail="<?= e(AR_BASE) ?>/mail.php"><?= e($contact['cta_label']) ?> <span aria-hidden="true">↗</span></a><?php endif; ?>
+<?php if ($hasMail && $sec['on_contact'] && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-nav ar-nav-cta" href="#kontakt" data-ev="mail" data-k="kopfzeile" data-mail="<?= e(AR_BASE) ?>/mail.php"><?= e($contact['cta_label']) ?> <span aria-hidden="true">↗</span></a><?php endif; ?>
 <button type="button" class="ar-burger" id="burger" aria-label="<?= tr('Menü öffnen') ?>" aria-expanded="false" aria-controls="menu"><svg aria-hidden="true" width="20" height="14" viewBox="0 0 20 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 2h18M1 12h18"></path></svg></button>
 </div>
 <div class="pl" id="pl" aria-hidden="true"><span class="pl-fill"></span><span class="pl-dot"></span></div>
 </header>
 
 <main id="inhalt">
-<section class="ar-hero" aria-label="<?= tr('Intro') ?>">
-<div class="sec-head" style="margin-bottom:0"><span class="sec-l"><?= rec_dot() ?><span class="rec-t">REC</span><span>00 — <?= tr('Intro') ?></span></span>
-<span class="muted"><?= e($hero['meta']) ?></span><span class="muted">TC 00:00:00:01</span></div>
+<section class="ar-hero" aria-label="<?= e(tr($sec['intro_label'])) ?>">
+<div class="sec-head" style="margin-bottom:0"><span class="sec-l"><?= rec_dot() ?><span class="rec-t">REC</span><span>00 — <?= e(tr($sec['intro_label'])) ?></span></span>
+<span class="muted"><?= e($hero['meta']) ?></span><span class="muted"><?= e($sec['hero_tc']) ?></span></div>
 <h1 aria-label="<?= e(trim($hero['first'] . ' ' . $hero['last'])) ?>">
 <span class="h1-first" aria-hidden="true"><?= e($hero['first']) ?></span>
 <span class="h1-last" aria-hidden="true"><?= e($hero['last']) ?></span>
@@ -90,9 +90,9 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <div class="cutband" aria-hidden="true"></div>
 
-<?php if ($questions): ?>
-<section aria-label="<?= tr('Was mich antreibt') ?>" style="padding-top:112px">
-<?= sec_head('00', 'Was mich antreibt', $sec['q_right']) ?>
+<?php if ($questions && $sec['on_questions']): ?>
+<section aria-label="<?= e(tr($sec['q_label'])) ?>" style="padding-top:112px">
+<?= sec_head('00', $sec['q_label'], $sec['q_right']) ?>
 <div class="questions">
 <?php foreach ($questions as $i => $q): ?>
 <p class="<?= $i % 2 ? 'ar-q2' : '' ?>"><span class="q-no"><?= e($q['number']) ?></span><span class="q-text"><?= mk($q['text']) ?></span></p>
@@ -104,14 +104,14 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php if ($featured): $fc = $featured; $fImg = upload_url($fc['still']); $fBy = array_filter([trim($hero['first'] . ' ' . $hero['last']), trim((string)$fc['role']), trim((string)$fc['outlet'])]); ?>
 <section id="arbeiten" aria-label="<?= tr('Featured Clip') ?>" style="padding-top:96px">
 <article class="fa">
-<div class="fa-mast"><span><?= e(tr('Featured')) ?></span><span><?= e($fc['_cat'] !== '' ? $fc['_cat'] : media_label($fc['medium'])) ?></span><span><?= e(implode(' · ', array_filter([(string)$fc['outlet'], (string)$fc['_date']]))) ?></span></div>
+<div class="fa-mast"><span><?= e(tr($sec['feat_label'])) ?></span><span><?= e($fc['_cat'] !== '' ? $fc['_cat'] : media_label($fc['medium'])) ?></span><span><?= e(implode(' · ', array_filter([(string)$fc['outlet'], (string)$fc['_date']]))) ?></span></div>
 <div class="fa-body<?= $fImg !== '' ? ' has-img' : '' ?>">
 <div class="fa-main">
 <?php $kick = implode(' · ', array_filter([(string)$fc['_cat'], (string)$fc['short']])); if ($kick !== ''): ?><p class="fa-kick"><?= e($kick) ?></p><?php endif; ?>
 <h2 class="ar-feat-h"><?= e($fc['title']) ?></h2>
 <?php if ($fc['desc'] !== ''): ?><p class="fa-stand"><?= e($fc['desc']) ?></p><?php endif; ?>
 <div class="fa-foot">
-<span class="fa-by"><?= $fBy ? e(tr('Von')) . ' <b>' . e(array_shift($fBy)) . '</b>' . ($fBy ? ' · ' . e(implode(' · ', $fBy)) : '') : '' ?></span>
+<span class="fa-by"><?= $fBy ? e(tr($sec['feat_by'])) . ' <b>' . e(array_shift($fBy)) . '</b>' . ($fBy ? ' · ' . e(implode(' · ', $fBy)) : '') : '' ?></span>
 <?php if ($fc['_hosted']): ?><button type="button" class="fa-cta" data-gal="<?= (int)$fc['_id'] ?>" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>"><?= icon($fc['medium'], 16) ?><span><?= e(tr($fc['gallery_text'] ?: 'Beitrag ansehen')) ?></span><span aria-hidden="true">→</span></button>
 <?php elseif ($fc['link_mode'] !== 'hosted' && $fc['url'] !== ''): ?><a class="fa-cta" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= icon($fc['medium'], 16) ?><span><?= e(tr($fc['link_text'] ?: 'Zum Beitrag')) ?></span><span aria-hidden="true">→</span></a><?php endif; ?>
 </div>
@@ -122,20 +122,20 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </section>
 <?php endif; ?>
 
-<?php if ($clips): $first = $clips[0]; ?>
-<section aria-label="<?= tr('Showreel') ?>" <?= $featured ? '' : 'id="arbeiten"' ?> style="padding-top:128px">
-<?= sec_head('01', 'Showreel', $sec['show_right'] !== '' ? $sec['show_right'] : count($clips) . ' ' . tr('Clips') . ' · ' . implode(', ', array_unique(array_map(fn($c) => $c['_cat'] !== '' ? $c['_cat'] : media_label($c['medium']), $clips))) . ($yearSpan ? ' · ' . $yearSpan : ''), '24px') ?>
+<?php if ($clips && $sec['on_show']): $first = $clips[0]; ?>
+<section aria-label="<?= e(tr($sec['show_label'])) ?>" <?= $featured ? '' : 'id="arbeiten"' ?> style="padding-top:128px">
+<?= sec_head('01', $sec['show_label'], $sec['show_right'] !== '' ? $sec['show_right'] : count($clips) . ' ' . tr($sec['show_unit']) . ' · ' . implode(', ', array_unique(array_map(fn($c) => $c['_cat'] !== '' ? $c['_cat'] : media_label($c['medium']), $clips))) . ($yearSpan ? ' · ' . $yearSpan : ''), '24px') ?>
 <h2 class="big-h"><span class="bh1"><?= e($sec['show_h1']) ?></span><span class="bh2"><?= e($sec['show_h2']) ?></span></h2>
 
 <div class="ar-ed-desk editor">
 <div class="ed-bar">
 <span class="ed-t"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span><?= e($sec['editor_title']) ?></span>
 <span class="ed-icons"><?php foreach (['video' => 'Video', 'text' => 'Text', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'Social'] as $k => $l): ?><span><?= icon($k, 14) ?><?= tr($l) ?></span><?php endforeach; ?></span>
-<span style="color:#C9DEDA"><?= tr('Clip anklicken: springt zum Beitrag') ?></span>
+<span style="color:#C9DEDA"><?= e(tr($sec['editor_hint'])) ?></span>
 </div>
 <div class="ed-body" style="--max:<?= e((string)$timeline['max']) ?>">
 <div class="ed-tracks">
-<div class="ed-row ed-head"><?= tr('Spur') ?></div>
+<div class="ed-row ed-head"><?= e(tr($sec['editor_track'])) ?></div>
 <?php foreach ($tracks as $t): ?><div class="ed-row ed-tl"><?= icon($t['icon'], 18) ?><span class="tl-t"><span><?= e($t['code']) ?></span><span class="muted"><?= e($t['label']) ?></span></span></div><?php endforeach; ?>
 </div>
 <div class="ed-scroll">
@@ -177,7 +177,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <span class="ar-clip-title"><?= e($c['title']) ?></span>
 <?php if (trim((string)$c['desc']) !== ''): ?><span class="cl-desc"><?= e($c['desc']) ?></span><?php endif; ?>
 <span class="cl-meta"><?= implode('', array_map(fn($x) => '<span>' . e($x) . '</span>', array_filter([(string)$c['outlet'], (string)$c['_date']]))) ?></span>
-<?php if (trim((string)$c['role']) !== ''): ?><span class="cl-role"><?= e(tr('Rolle:')) ?> <?= e($c['role']) ?></span><?php endif; ?>
+<?php if (trim((string)$c['role']) !== ''): ?><span class="cl-role"><?= e(tr($sec['role_label'])) ?> <?= e($c['role']) ?></span><?php endif; ?>
 <?php if ($c['_hosted']): ?><span class="cl-cta"><span><?= e(tr($c['gallery_text'] ?: 'Beitrag ansehen')) ?></span><span aria-hidden="true">→</span></span></button>
 <?php elseif ($ext !== ''): ?><span class="cl-cta"><span><?= e(tr($c['link_text'] ?: 'Zum Beitrag')) ?></span><span aria-hidden="true">→</span></span></a>
 <?php else: ?></div>
@@ -188,9 +188,9 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </section>
 <?php endif; ?>
 
-<?php if ($episodes): ?>
-<section id="podcast" aria-label="<?= tr('Podcast') ?>" style="padding-top:128px">
-<?= sec_head('01', 'Podcast', '', '32px') ?>
+<?php if ($episodes && $sec['on_podcast']): ?>
+<section id="podcast" aria-label="<?= e(tr($sec['pod_label'])) ?>" style="padding-top:128px">
+<?= sec_head('01', $sec['pod_label'], $sec['pod_right'], '32px') ?>
 <div class="pod-grid">
 <h2 class="pod-h"><span class="ph1"><?= e($sec['pod_h1']) ?></span><span class="ph2"><?= e($sec['pod_h2']) ?></span></h2>
 <div class="pod-list">
@@ -201,11 +201,11 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <article class="pod-card">
 <div class="pod-top">
 <span class="pod-ic" aria-hidden="true"><?= icon('podcast', 30) ?></span>
-<div class="pod-t"><span class="pod-show"><?= e($ep['show']) ?><?= $ep['number'] !== '' ? ' · ' . tr('Folge') . ' ' . e($ep['number']) : '' ?></span><span class="pod-title"><?= e($ep['title']) ?></span><?php if (trim((string)$ep['desc']) !== ''): ?><span class="pod-desc"><?= e($ep['desc']) ?></span><?php endif; ?></div>
+<div class="pod-t"><span class="pod-show"><?= e($ep['show']) ?><?= $ep['number'] !== '' ? ' · ' . e(tr($sec['pod_episode'])) . ' ' . e($ep['number']) : '' ?></span><span class="pod-title"><?= e($ep['title']) ?></span><?php if (trim((string)$ep['desc']) !== ''): ?><span class="pod-desc"><?= e($ep['desc']) ?></span><?php endif; ?></div>
 </div>
 <div class="wave wave-<?= $style ?>" aria-hidden="true"><?php foreach ($bars as $h): ?><span style="height:<?= $h ?>%"></span><?php endforeach; ?></div>
 <?php if ($ep['duration'] !== '' || $ep['outlet'] !== ''): ?><div class="pod-meta"><span><?= e($ep['duration']) ?></span><span><?= e($ep['outlet']) ?></span></div><?php endif; ?>
-<?php if ($links): ?><div class="pod-btns"><span class="pod-lab"><?= tr('Anhören bei') ?></span><?php foreach ($links as $l): ?><a class="pod-btn" data-ev="podcast" data-k="<?= e(trim((string)preg_replace('~[^a-z0-9]+~', '-', strtolower($l[0])), '-') ?: 'mehr') ?>" href="<?= e($l[1]) ?>" target="_blank" rel="noopener noreferrer"><?= e($l[0]) ?> <span aria-hidden="true">↗</span><span class="sr-only"> (<?= e($ep['title']) ?>, <?= tr('öffnet in neuem Tab') ?>)</span></a><?php endforeach; ?></div><?php endif; ?>
+<?php if ($links): ?><div class="pod-btns"><span class="pod-lab"><?= e(tr($sec['pod_listen'])) ?></span><?php foreach ($links as $l): ?><a class="pod-btn" data-ev="podcast" data-k="<?= e(trim((string)preg_replace('~[^a-z0-9]+~', '-', strtolower($l[0])), '-') ?: 'mehr') ?>" href="<?= e($l[1]) ?>" target="_blank" rel="noopener noreferrer"><?= e($l[0]) ?> <span aria-hidden="true">↗</span><span class="sr-only"> (<?= e($ep['title']) ?>, <?= tr('öffnet in neuem Tab') ?>)</span></a><?php endforeach; ?></div><?php endif; ?>
 </article>
 <?php endforeach; ?>
 </div>
@@ -213,8 +213,9 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </section>
 <?php endif; ?>
 
-<section id="ueber" aria-label="<?= tr('Über') ?>" style="padding-top:144px">
-<?= sec_head('02', 'Über mich', $about['right'], '48px') ?>
+<?php if ($sec['on_about']): ?>
+<section id="ueber" aria-label="<?= e(tr($sec['about_label'])) ?>" style="padding-top:144px">
+<?= sec_head('02', $sec['about_label'], $about['right'], '48px') ?>
 <div class="about">
 <?php if (upload_url($about['portrait']) !== ''): ?>
 <div class="about-img"><img src="<?= e(upload_url($about['portrait'])) ?>"<?= img_attrs($about['portrait']) ?> alt="<?= e($about['portrait_alt']) ?>" loading="lazy" decoding="async"><?php if ($about['onair'] !== ''): ?><span class="ar-onair"><?= e($about['onair']) ?></span><?php endif; ?></div>
@@ -233,10 +234,11 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 </div>
 </section>
+<?php endif; ?>
 
-<?php if ($stations): ?>
-<section id="lebenslauf" aria-label="<?= tr('Stationen') ?>" style="padding-top:144px">
-<?= sec_head('03', 'Stationen', $sec['st_right'], '24px') ?>
+<?php if ($showSt): ?>
+<section id="lebenslauf" aria-label="<?= e(tr($sec['st_label'])) ?>" style="padding-top:144px">
+<?= sec_head('03', $sec['st_label'], $sec['st_right'], '24px') ?>
 <p class="ar-wall">
 <?php foreach ($stations as $i => $s): ?><span class="ar-st"><span class="<?= $s['highlight'] ? 'st-hl' : 'ar-outline' ?>"><?= e($s['name']) ?></span><?php if ($i < count($stations) - 1): ?><span class="ar-sl">/</span><?php endif; ?></span>
 <?php endforeach; ?>
@@ -244,15 +246,15 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </section>
 <?php endif; ?>
 
-<?php if ($cvGroups): ?>
-<section aria-label="<?= tr('Lebenslauf') ?>" <?= $stations ? '' : 'id="lebenslauf"' ?> style="padding-top:120px">
-<?= sec_head('03', 'Lebenslauf', ($cvMin ? $cvMin . ' — ' . tr('heute') : '') . ($sec['cv_right'] !== '' ? ' · ' . $sec['cv_right'] : ''), '24px') ?>
+<?php if ($showCv): ?>
+<section aria-label="<?= e(tr($sec['cv_label'])) ?>" <?= $showSt ? '' : 'id="lebenslauf"' ?> style="padding-top:120px">
+<?= sec_head('03', $sec['cv_label'], ($cvMin ? $cvMin . ' — ' . tr($sec['cv_today']) : '') . ($sec['cv_right'] !== '' ? ' · ' . $sec['cv_right'] : ''), '24px') ?>
 <h2 class="big-h" style="margin-bottom:56px"><span class="bh1"><?= e($sec['cv_h1']) ?></span><span class="bh2"><?= e($sec['cv_h2']) ?></span></h2>
 <ol class="cv">
 <?php foreach ($cvGroups as $year => $rows): ?>
 <li><span class="cv-y <?= array_filter($rows, fn($x) => !empty($x['ongoing'])) ? 'ar-year-now' : 'ar-year-past' ?>"><?= e($year) ?></span>
 <div class="cv-items">
-<?php foreach ($rows as $r): ?><div class="cv-it"><span class="cv-dot" aria-hidden="true"></span><span class="cv-role"><?= $r['role'] !== '' ? e($r['role']) . ', ' : '' ?><span class="mk-i"><?= e($r['org']) ?></span></span><span class="cv-when"><?= e(cv_when($r)) ?></span></div>
+<?php foreach ($rows as $r): ?><div class="cv-it"><span class="cv-dot" aria-hidden="true"></span><span class="cv-role"><?= $r['role'] !== '' ? e($r['role']) . ', ' : '' ?><span class="mk-i"><?= e($r['org']) ?></span></span><span class="cv-when"><?= e(cv_when($r, tr($sec['cv_since']))) ?></span></div>
 <?php endforeach; ?>
 </div></li>
 <?php endforeach; ?>
@@ -266,9 +268,9 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php endif; ?>
 
 
-<?php if ($off): ?>
-<section id="offtherecord" aria-label="<?= tr('Off the record') ?>" style="padding-top:144px">
-<div class="sec-head off-head" style="margin-bottom:24px"><span class="sec-l"><span style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--mute);box-sizing:border-box;display:inline-block"></span><span style="font-weight:600">Off</span><span>04 — Off the record</span></span><span><?= e($sec['off_right']) ?></span></div>
+<?php if ($off && $sec['on_off']): ?>
+<section id="offtherecord" aria-label="<?= e(tr($sec['off_label'])) ?>" style="padding-top:144px">
+<div class="sec-head off-head" style="margin-bottom:24px"><span class="sec-l"><span style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--mute);box-sizing:border-box;display:inline-block"></span><span style="font-weight:600">Off</span><span>04 — <?= e(tr($sec['off_label'])) ?></span></span><span><?= e($sec['off_right']) ?></span></div>
 <h2 class="big-h" style="margin-bottom:16px"><span class="oh1">Off <span class="the">the<span class="strike" aria-hidden="true"></span></span></span> <span class="oh2">record</span></h2>
 <p class="muted" style="margin:0 0 32px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;font-family:'JetBrains Mono',monospace"><?= e($sec['off_hint']) ?></p>
 <dl class="off">
@@ -278,19 +280,21 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </section>
 <?php endif; ?>
 
-<section id="kontakt" aria-label="<?= tr('Kontakt') ?>" style="padding-top:176px;padding-bottom:48px">
-<?= sec_head('05', 'Kontakt', $contact['right'], '0') ?>
+<section id="kontakt" aria-label="<?= e(tr($sec['contact_label'])) ?>" style="padding-top:176px;padding-bottom:48px">
+<?php if ($sec['on_contact']): ?>
+<?= sec_head('05', $sec['contact_label'], $contact['right'], '0') ?>
 <h2 class="k-h" aria-label="<?= e(trim($contact['h1'] . ' ' . $contact['h2'])) ?>"><span class="ar-schreib" aria-hidden="true"><?= e($contact['h1']) ?></span><span class="k-h2" aria-hidden="true"><?= e($contact['h2']) ?>.</span></h2>
 <p class="k-intro"><?= e($contact['intro']) ?></p>
 <div class="k-btns">
-<?php if ($hasMail): ?><a class="btn-solid btn-lg" id="mailbtn" href="#kontakt" data-ev="mail" data-k="kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php" data-note="<?= e(tr('Mailprogramm öffnet sich nicht? Adresse:')) ?>" data-copy="<?= e(tr('Kopieren')) ?>" data-copied="<?= e(tr('Kopiert')) ?>"><span><?= e($contact['mail_label'] !== '' ? $contact['mail_label'] : tr('E-Mail schreiben')) ?></span> <span aria-hidden="true">↗</span></a><noscript><span class="muted"><?= e(tr('Bitte JavaScript aktivieren, um die E-Mail-Adresse zu sehen – oder im Impressum nachsehen.')) ?></span></noscript><?php endif; ?>
+<?php if ($hasMail): ?><a class="btn-solid btn-lg" id="mailbtn" href="#kontakt" data-ev="mail" data-k="kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php" data-note="<?= e(tr($sec['mail_fail'])) ?>" data-copy="<?= e(tr($sec['copy_label'])) ?>" data-copied="<?= e(tr($sec['copied_label'])) ?>"><span><?= e($contact['mail_label'] !== '' ? $contact['mail_label'] : tr('E-Mail schreiben')) ?></span> <span aria-hidden="true">↗</span></a><noscript><span class="muted"><?= e(tr('Bitte JavaScript aktivieren, um die E-Mail-Adresse zu sehen – oder im Impressum nachsehen.')) ?></span></noscript><?php endif; ?>
 <?php foreach ($social as $so): ?><a class="btn-ghost btn-lg" data-ev="social" data-k="<?= e(trim((string)preg_replace('~[^a-z0-9]+~', '-', strtolower($so['label'])), '-') ?: 'profil') ?>" href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> <span aria-hidden="true">↗</span></a><?php endforeach; ?>
 </div>
 <p class="mailnote" id="mailnote" aria-live="polite" hidden></p>
+<?php endif; ?>
 <footer class="foot">
 <span><?= e($contact['copyright']) ?><?php if (trim((string)$contact['photo_credit']) !== ''): ?><?= trim((string)$contact['copyright']) !== '' ? ' · ' : '' ?><?php $pcu = safe_url((string)$contact['photo_credit_url']); if ($pcu !== ''): ?><a class="foot-credit" href="<?= e($pcu) ?>" target="_blank" rel="noopener noreferrer"><?= e($contact['photo_credit']) ?></a><?php else: ?><?= e($contact['photo_credit']) ?><?php endif; endif; ?></span>
 <span style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;background:var(--mute);display:inline-block"></span><?= e($contact['end_note']) ?></span>
-<span style="display:flex;gap:24px"><a href="<?= e(legal_url('impressum')) ?>"><?= tr('Impressum') ?></a><a href="<?= e(legal_url('datenschutz')) ?>"><?= tr('Datenschutz') ?></a></span>
+<span style="display:flex;gap:24px"><a href="<?= e(legal_url('impressum')) ?>"><?= e(tr($sec['foot_imprint'])) ?></a><a href="<?= e(legal_url('datenschutz')) ?>"><?= e(tr($sec['foot_privacy'])) ?></a></span>
 </footer>
 </section>
 
@@ -298,13 +302,13 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <a class="to-top" id="toTop" href="#top" aria-label="<?= e(tr('Nach oben')) ?>"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
 
 <div id="menu" class="menu" role="dialog" aria-modal="true" aria-label="<?= tr('Menü') ?>" hidden>
-<div class="menu-top"><span style="display:flex;align-items:center;gap:10px"><?= rec_dot() ?>AR / Menü</span>
+<div class="menu-top"><span style="display:flex;align-items:center;gap:10px"><?= rec_dot() ?><?= e(tr($site['menu_label'])) ?></span>
 <button type="button" class="circ menu-x" id="menuClose" aria-label="<?= tr('Menü schließen') ?>"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l12 12M14 2L2 14"></path></svg></button></div>
 <nav aria-label="<?= tr('Mobile Navigation') ?>"><ol>
 <?php foreach ($nav as $i => $n): ?><li><a href="#<?= e($n['anchor']) ?>"><span class="mn"><?= sprintf('%02d', $i + 1) ?></span><span class="ml"><?= e($n['label']) ?></span></a></li>
 <?php endforeach; ?>
 </ol></nav>
-<?php if ($hasMail && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-block menu-cta" href="#kontakt" data-ev="mail" data-k="menue" data-mail="<?= e(AR_BASE) ?>/mail.php" style="margin-top:28px"><?= e($contact['cta_label']) ?> ↗</a><?php endif; ?>
+<?php if ($hasMail && $sec['on_contact'] && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-block menu-cta" href="#kontakt" data-ev="mail" data-k="menue" data-mail="<?= e(AR_BASE) ?>/mail.php" style="margin-top:28px"><?= e($contact['cta_label']) ?> ↗</a><?php endif; ?>
 <div class="menu-foot"><span class="lang-switch lang-menu"><a href="<?= e(lang_url('de', $page)) ?>" hreflang="de" lang="de">Deutsch</a> · <a href="<?= e(lang_url('en', $page)) ?>" hreflang="en" lang="en">English</a></span><span><?= e($hero['now_lines'] !== '' ? str_replace("\n", ' · ', trim(explode("\n", $hero['now_lines'])[0])) . ' · ' . $hero['tag_role'] : '') ?></span>
 <?php foreach ($social as $so): ?><a href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> ↗</a><?php endforeach; ?></div>
 </div>

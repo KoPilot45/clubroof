@@ -186,6 +186,7 @@ function schema(): array
             f('color', 'rec', 'Rec-Rot (blinkender Punkt)', ['default' => '#C42F24']),
             f('section', '', 'Kopfzeile'),
             f('text', 'header_label', 'Text links oben', ['max' => 60, 'default' => 'AR / Reel 2025–26']),
+            f('text', 'menu_label', 'Titel im Handy-Menü', ['max' => 30, 'default' => 'AR / Menü', 'dict' => true]),
         ],
     ];
     $s['groups']['seo'] = [
@@ -236,37 +237,82 @@ function schema(): array
         ],
     ];
     $s['groups']['sections'] = [
-        'label' => 'Abschnittstitel',
-        'help' => 'Überschriften und Begleittexte der einzelnen Abschnitte.',
+        'label' => 'Abschnitte',
+        'help' => 'Jeder Abschnitt der Seite hat einen eigenen Bereich: Mit dem Schieberegler blendest du den ganzen Abschnitt ein oder aus, darunter bearbeitest du seine Texte (Abschnittsname, Überschrift, Beschriftungen). Die Inhalte selbst (Referenzen, Folgen, Stationen …) pflegst du über den Link im jeweiligen Bereich.',
         'fields' => [
-            f('section', '', 'Leitfragen'),
+            f('section', '', 'Start (Intro)', ['card' => true, 'note' => 'Der Startbereich ist immer sichtbar.', 'link' => ['g', 'hero']]),
+            f('text', 'intro_label', 'Abschnittsname in der REC-Zeile', ['max' => 30, 'default' => 'Intro', 'dict' => true]),
+            f('text', 'hero_tc', 'Timecode rechts oben', ['max' => 30, 'default' => 'TC 00:00:00:01', 'dict' => true]),
+
+            f('section', '', 'Leitfragen', ['card' => true, 'toggle' => 'on_questions', 'link' => ['c', 'questions']]),
+            f('bool', 'on_questions', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('text', 'q_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Was mich antreibt', 'dict' => true]),
             f('text', 'q_right', 'Rechts neben „REC“', ['max' => 40, 'default' => 'Zwei Fragen']),
-            f('section', '', 'Showreel'),
+
+            f('section', '', 'Showreel', ['card' => true, 'toggle' => 'on_show', 'note' => 'Das Featured ganz oben wird mit dem Stern in der Referenzen-Liste gewählt und ist von diesem Schalter unabhängig.', 'link' => ['c', 'clips']]),
+            f('bool', 'on_show', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('text', 'show_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Showreel', 'dict' => true]),
             f('text', 'show_h1', 'Überschrift, Teil 1 (Großschrift)', ['max' => 20, 'default' => 'Show']),
             f('text', 'show_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'reel']),
-            f('text', 'show_right', 'Zeile rechts', ['max' => 80, 'hint' => 'Leer = automatisch (Anzahl Clips und Zeitraum).']),
+            f('text', 'show_right', 'Zeile rechts', ['max' => 80, 'hint' => 'Leer = automatisch (Anzahl, Kategorien und Zeitraum).']),
+            f('text', 'show_unit', 'Wort für die Anzahl in der automatischen Zeile', ['max' => 20, 'default' => 'Clips', 'dict' => true, 'hint' => 'z. B. „Clips“ oder „Beiträge“.']),
             f('text', 'show_all', 'Titel der Liste', ['max' => 40, 'default' => 'Alle Beiträge']),
             f('text', 'editor_title', 'Titel des Schnittplatzes', ['max' => 40, 'default' => 'Schnittplatz · Reel №1']),
-            f('section', '', 'Podcast'),
+            f('text', 'editor_hint', 'Hinweis in der Leiste des Schnittplatzes', ['max' => 60, 'default' => 'Clip anklicken: springt zum Beitrag', 'dict' => true]),
+            f('text', 'editor_track', 'Spaltenkopf der Spuren', ['max' => 20, 'default' => 'Spur', 'dict' => true]),
+            f('text', 'feat_label', 'Beschriftung im Featured-Block', ['max' => 30, 'default' => 'Featured', 'dict' => true]),
+            f('text', 'feat_by', 'Wort vor dem Namen im Featured („Von …“)', ['max' => 20, 'default' => 'Von', 'dict' => true]),
+            f('text', 'role_label', 'Beschriftung vor der Rolle in den Kacheln', ['max' => 20, 'default' => 'Rolle:', 'dict' => true]),
+
+            f('section', '', 'Podcast', ['card' => true, 'toggle' => 'on_podcast', 'link' => ['c', 'episodes']]),
+            f('bool', 'on_podcast', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('text', 'pod_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Podcast', 'dict' => true]),
             f('text', 'pod_h1', 'Überschrift, Teil 1', ['max' => 20, 'default' => 'Hör']),
             f('text', 'pod_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'mal rein.']),
-            f('text', 'pod_right', 'Zeile rechts', ['max' => 40, 'default' => 'Audio · On Air']),
-            f('section', '', 'Stationen & Lebenslauf'),
-            f('text', 'st_right', 'Stationen: Zeile rechts', ['max' => 40, 'default' => 'Sender & Redaktionen']),
-            f('text', 'cv_h1', 'Lebenslauf Teil 1', ['max' => 20, 'default' => 'Lebens']),
-            f('text', 'cv_h2', 'Lebenslauf Teil 2 (kursiv)', ['max' => 20, 'default' => 'lauf']),
-            f('text', 'cv_right', 'Lebenslauf: Zeile rechts', ['max' => 60, 'default' => 'rückwärts abgespielt']),
+            f('text', 'pod_right', 'Zeile rechts', ['max' => 40, 'default' => 'Audio · On Air', 'hint' => 'Leer = keine Zeile.']),
+            f('text', 'pod_listen', 'Beschriftung vor den Plattform-Knöpfen', ['max' => 30, 'default' => 'Anhören bei', 'dict' => true]),
+            f('text', 'pod_episode', 'Wort für „Folge“', ['max' => 20, 'default' => 'Folge', 'dict' => true]),
+
+            f('section', '', 'Über mich', ['card' => true, 'toggle' => 'on_about', 'link' => ['g', 'about']]),
+            f('bool', 'on_about', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('text', 'about_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Über mich', 'dict' => true]),
+
+            f('section', '', 'Stationen', ['card' => true, 'toggle' => 'on_stations', 'link' => ['c', 'stations']]),
+            f('bool', 'on_stations', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('text', 'st_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Stationen', 'dict' => true]),
+            f('text', 'st_right', 'Zeile rechts', ['max' => 40, 'default' => 'Sender & Redaktionen']),
+
+            f('section', '', 'Lebenslauf', ['card' => true, 'toggle' => 'on_cv', 'link' => ['c', 'cv']]),
+            f('bool', 'on_cv', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('text', 'cv_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Lebenslauf', 'dict' => true]),
+            f('text', 'cv_h1', 'Überschrift, Teil 1', ['max' => 20, 'default' => 'Lebens']),
+            f('text', 'cv_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'lauf']),
+            f('text', 'cv_right', 'Zeile rechts', ['max' => 60, 'default' => 'rückwärts abgespielt']),
+            f('text', 'cv_today', 'Wort für „heute“ (Zeitraum in der Zeile rechts)', ['max' => 20, 'default' => 'heute', 'dict' => true]),
+            f('text', 'cv_since', 'Wort für „seit“ (laufende Stationen)', ['max' => 20, 'default' => 'seit', 'dict' => true]),
             f('text', 'cv_before', 'Beschriftung „Davor“', ['max' => 20, 'default' => 'Davor']),
-            f('text', 'cv_pdf_label', 'Button CV-Download', ['max' => 30, 'default' => 'CV als PDF']),
-            f('section', '', 'Off the record'),
+            f('text', 'cv_pdf_label', 'Knopf für den CV-Download', ['max' => 30, 'default' => 'CV als PDF']),
+
+            f('section', '', 'Off the record', ['card' => true, 'toggle' => 'on_off', 'note' => 'Die große Überschrift „Off the record“ mit dem durchgestrichenen „the“ ist fest gestaltet.', 'link' => ['c', 'offrecord']]),
+            f('bool', 'on_off', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('text', 'off_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Off the record', 'dict' => true]),
             f('text', 'off_right', 'Zeile rechts', ['max' => 40, 'default' => 'Nicht zitierfähig']),
             f('text', 'off_hint', 'Hinweis unter der Überschrift', ['max' => 120, 'default' => 'Zum Aufdecken über die Balken fahren oder tippen.']),
+
+            f('section', '', 'Kontakt & Fußzeile', ['card' => true, 'toggle' => 'on_contact', 'note' => 'Bei ausgeschaltetem Kontakt bleibt die Fußzeile mit Impressum und Datenschutz immer sichtbar.', 'link' => ['g', 'contact']]),
+            f('bool', 'on_contact', 'Kontaktbereich auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('text', 'contact_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Kontakt', 'dict' => true]),
+            f('text', 'mail_fail', 'Hinweis, wenn sich das Mailprogramm nicht öffnet', ['max' => 80, 'default' => 'Mailprogramm öffnet sich nicht? Adresse:', 'dict' => true]),
+            f('text', 'copy_label', 'Knopf „Kopieren“', ['max' => 20, 'default' => 'Kopieren', 'dict' => true]),
+            f('text', 'copied_label', 'Bestätigung „Kopiert“', ['max' => 20, 'default' => 'Kopiert', 'dict' => true]),
+            f('text', 'foot_imprint', 'Fußzeile: Link zum Impressum', ['max' => 30, 'default' => 'Impressum', 'dict' => true]),
+            f('text', 'foot_privacy', 'Fußzeile: Link zum Datenschutz', ['max' => 30, 'default' => 'Datenschutz', 'dict' => true]),
         ],
     ];
     $s['groups']['timeline'] = [
         'label' => 'Schnittplatz: Hinweis',
         'fields' => [
-            f('text', 'hint_mobile', 'Hinweis unter dem Schnittplatz auf dem Handy', ['max' => 80, 'default' => 'Pfeile nutzen oder Clip antippen']),
+            f('text', 'hint_mobile', 'Hinweis unter dem Schnittplatz auf dem Handy', ['max' => 80, 'default' => 'Clip antippen: springt zum Beitrag']),
         ],
     ];
     $s['groups']['about'] = [
@@ -359,7 +405,7 @@ function admin_nav(): array
         'design' => ['Seite & Design', 'palette', 'Farben, Menü und Überschriften.', [
             ['g', 'site', 'Farben & Kopfzeile', 'Akzentfarbe und Verhalten der Kopfzeile.'],
             ['c', 'nav', 'Menü der Webseite', 'Die Menüpunkte oben auf der Seite.'],
-            ['g', 'sections', 'Überschriften der Abschnitte', 'Titel und Einleitungen der einzelnen Abschnitte.'],
+            ['g', 'sections', 'Abschnitte', 'Abschnitte ein- oder ausblenden und ihre Texte bearbeiten.'],
         ]],
         'englisch' => ['Englisch', 'globe', 'Die englische Fassung der Seite.', [
             ['p', 'translate', 'Übersetzungstabelle', 'Deutsch und Englisch nebeneinander – alle Texte an einem Ort.'],

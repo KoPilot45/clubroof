@@ -809,6 +809,35 @@ reset_content_cache();
 @unlink($gp);
 @unlink($pdfp);
 
+echo "Abschnitte\n";
+$sg = req('GET', "$base/admin/?p=group&g=sections")['body'];
+ok(str_contains($sg, 'Abschnitte') && !str_contains($sg, 'Abschnittstitel') && !str_contains($sg, 'Überschriften der Abschnitte') && substr_count($sg, 'class="sw"') === 8 && substr_count($sg, 'class="seccard') >= 9, 'Abschnitte: eine Karte je Abschnitt mit acht Schiebereglern');
+$ons = ['on_questions', 'on_show', 'on_podcast', 'on_about', 'on_stations', 'on_cv', 'on_off', 'on_contact'];
+$secPost = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'sections', 'mode' => 'publish'];
+req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1') + ['pod_listen' => 'Hier hören', 'pod_right' => 'Audio · On Air', 'q_label' => 'Leitfragen', 'cv_since' => 'ab']);
+$pg = req('GET', "$base/")['body'];
+$allIds = true;
+foreach (['podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt', 'arbeiten'] as $idn) {
+    $allIds = $allIds && str_contains($pg, 'id="' . $idn . '"');
+}
+ok($allIds && str_contains($pg, 'class="questions"') && str_contains($pg, 'class="cv"'), 'alle Abschnitte eingeschaltet sichtbar');
+ok(str_contains($pg, 'Audio · On Air') && str_contains($pg, '00 — Leitfragen') && str_contains($pg, '>ab '), 'bearbeitete Textbausteine erscheinen (inkl. „Zeile rechts“ beim Podcast)');
+req('POST', "$base/admin/", $secPost);
+$pg = req('GET', "$base/")['body'];
+$none = true;
+foreach (['id="podcast"', 'id="ueber"', 'id="offtherecord"', 'class="ar-wall"', 'class="cv"', 'class="questions"', 'class="ed-body"', 'class="k-h"', 'class="pod-grid"'] as $needle) {
+    $none = $none && !str_contains($pg, $needle);
+}
+ok($none, 'ausgeschaltete Abschnitte fehlen auf der Seite');
+ok(str_contains($pg, 'class="ar-hero"') && str_contains($pg, '<footer class="foot">') && str_contains($pg, 'Impressum'), 'Start und Fußzeile bleiben');
+ok(!preg_match('~href="#(podcast|ueber|offtherecord|kontakt|lebenslauf)"~', $pg), 'Menüpunkte ausgeblendeter Abschnitte entfallen');
+req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1'));
+ok(str_contains(req('GET', "$base/")['body'], 'id="podcast"'), 'wieder eingeschaltet');
+$en = req('GET', "$base/en/")['body'];
+ok(str_contains($en, 'Select a clip to jump to the post') && str_contains($en, 'Role:') && !str_contains($en, 'Anhören bei'), 'neue Textbausteine: englische Standardtexte');
+$tp = req('GET', "$base/admin/?p=translate")['body'];
+ok(!str_contains($tp, 'Beschriftung vor der Rolle'), 'Standardtexte mit Wörterbuch erscheinen nicht als offene Übersetzung');
+
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'add_user', 'email' => 'antonia@antoniarueller.de', 'name' => 'A']);
 ok(str_contains(follow($r)['body'], 'eigenen Domain'), 'Domain-Postfach als Zugang abgelehnt');
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'logout']);
