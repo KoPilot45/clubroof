@@ -3,17 +3,18 @@ declare(strict_types=1);
 
 const MEDIA_RE = '~^[a-z0-9_-]+\.(jpg|png|webp|pdf)$~';
 
-/** Bilder in uploads/ (neueste zuerst). */
+/** Bilder und PDFs in uploads/ (neueste zuerst). */
 function media_list(): array
 {
     $out = [];
     foreach (glob(upload_dir() . '/*') ?: [] as $f) {
         $n = basename($f);
-        if (!preg_match('~^[a-z0-9_-]+\.(jpg|png|webp)$~', $n)) {
+        if (!preg_match(MEDIA_RE, $n)) {
             continue;
         }
-        $i = @getimagesize($f);
-        $out[] = ['name' => $n, 'url' => upload_url($n), 'size' => (int)filesize($f), 'w' => (int)($i[0] ?? 0), 'h' => (int)($i[1] ?? 0), 'time' => (int)filemtime($f)];
+        $pdf = str_ends_with($n, '.pdf');
+        $i = $pdf ? false : @getimagesize($f);
+        $out[] = ['name' => $n, 'url' => upload_url($n), 'kind' => $pdf ? 'pdf' : 'image', 'size' => (int)filesize($f), 'w' => (int)($i[0] ?? 0), 'h' => (int)($i[1] ?? 0), 'time' => (int)filemtime($f)];
     }
     usort($out, fn($a, $b) => $b['time'] <=> $a['time']);
     return $out;
@@ -35,7 +36,7 @@ function media_usage(): array
 {
     $s = schema();
     $use = [];
-    foreach (q('SELECT coll, data, draft, deleted_at FROM ar_items')->fetchAll() as $r) {
+    foreach (q('SELECT id, coll, data, draft, deleted_at FROM ar_items')->fetchAll() as $r) {
         $def = $s['collections'][$r['coll']] ?? null;
         $found = [];
         collect_files(json_arr($r['data']) ?? [], $found);
@@ -44,7 +45,10 @@ function media_usage(): array
         collect_files($d ?? [], $found);
         $title = $def ? trim((string)($dd[$def['title']] ?? '')) : '';
         foreach (array_keys($found) as $f) {
-            $use[$f][] = ($def['singular'] ?? $r['coll']) . ($title !== '' ? ': ' . mb_strimwidth($title, 0, 40, '…') : '') . ($r['deleted_at'] !== null ? ' (Papierkorb)' : '');
+            $use[$f][] = [
+                'label' => ($def['singular'] ?? $r['coll']) . ($title !== '' ? ': ' . mb_strimwidth($title, 0, 40, '…') : '') . ($r['deleted_at'] !== null ? ' (Papierkorb)' : ''),
+                'url' => $r['deleted_at'] === null ? a('p=edit&c=' . $r['coll'] . '&id=' . $r['id']) : a('p=trash'),
+            ];
         }
     }
     foreach (q('SELECT grp, data, draft FROM ar_settings')->fetchAll() as $r) {
@@ -55,7 +59,7 @@ function media_usage(): array
         collect_files(json_arr($r['data']) ?? [], $found);
         collect_files(json_arr($r['draft']) ?? [], $found);
         foreach (array_keys($found) as $f) {
-            $use[$f][] = $s['groups'][$r['grp']]['label'];
+            $use[$f][] = ['label' => $s['groups'][$r['grp']]['label'], 'url' => a('p=group&g=' . $r['grp'])];
         }
     }
     return $use;
@@ -73,7 +77,11 @@ function store_uploaded_images(array $files): array
         }
         $one = ['name' => $files['name'][$i], 'type' => $files['type'][$i], 'tmp_name' => $files['tmp_name'][$i], 'error' => $files['error'][$i], 'size' => $files['size'][$i]];
         try {
-            store_image($one);
+            if ((string)@file_get_contents((string)$one['tmp_name'], false, null, 0, 5) === '%PDF-') {
+                store_pdf($one);
+            } else {
+                store_image($one);
+            }
             $ok++;
         } catch (RuntimeException $e) {
             $errors[] = $files['name'][$i] . ': ' . $e->getMessage();
@@ -95,6 +103,9 @@ function optimize_media(): array
     $cfg = image_settings();
     $checked = $replaced = $saved = 0;
     foreach (media_list() as $m) {
+        if ($m['kind'] === 'pdf') {
+            continue;
+        }
         $path = upload_dir() . '/' . $m['name'];
         $ext = strtolower(pathinfo($m['name'], PATHINFO_EXTENSION));
         $img = @imagecreatefromstring((string)@file_get_contents($path));

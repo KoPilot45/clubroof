@@ -403,6 +403,9 @@ function admin_nav(): array
         'englisch' => ['Englisch', 'globe', 'Die englische Fassung der Seite.', [
             ['p', 'translate', 'Übersetzungstabelle', 'Deutsch und Englisch nebeneinander – alle Texte an einem Ort.'],
         ]],
+        'mediathek' => ['Mediathek', 'image', 'Bilder und PDFs.', [
+            ['p', 'media', 'Mediathek', 'Alle hochgeladenen Bilder und PDFs: umbenennen, ersetzen, aufräumen.'],
+        ]],
         'recht' => ['Suche & Recht', 'search', 'Google, Social-Media-Vorschau, Impressum.', [
             ['g', 'seo', 'SEO & Suche', 'Titel, Beschreibung und Vorschaubild für Suchmaschinen.'],
             ['g', 'legal', 'Impressum & Datenschutz', 'Die rechtlichen Texte (Deutsch und Englisch).'],
@@ -410,8 +413,7 @@ function admin_nav(): array
         'auswertung' => ['Auswertung', 'chart', 'Besuche und Klicks – ohne Cookies.', [
             ['p', 'stats', 'Statistik', 'Besuche, Herkunft und Klicks.'],
         ]],
-        'system' => ['System', 'gear', 'Dateien, Zugänge, Sicherung.', [
-            ['p', 'media', 'Mediathek', 'Alle hochgeladenen Bilder und Dateien.'],
+        'system' => ['System', 'gear', 'Zugänge, Sicherung, Technik.', [
             ['p', 'trash', 'Papierkorb', 'Entfernte Einträge wiederherstellen oder löschen.'],
             ['p', 'users', 'Zugänge', 'Wer sich anmelden darf.', true],
             ['p', 'backup', 'Sicherung', 'Backups ansehen, laden und zurückspielen.', true],

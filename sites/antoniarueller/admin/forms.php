@@ -178,7 +178,7 @@ function render_field_inner(array $f, mixed $val, array $vals = []): void
             echo '<div class="pdfbox"' . ($hasPdf ? '' : ' hidden') . '><span class="pdf-ic" aria-hidden="true">' . aicon('doc', 22) . '</span><a href="' . ($hasPdf ? e(upload_url((string)$val)) : '#') . '" target="_blank" rel="noopener">Aktuelles PDF öffnen</a><button type="button" class="btn small danger-o" data-pdf-remove="' . e($k) . '">Entfernen</button></div>';
             echo '<p class="newbadge pdfnote" role="status" hidden></p>';
             echo '<input type="hidden" name="_remove_' . e($k) . '" id="f_' . e($k) . '_remove" value=""><input type="hidden" name="' . e($k) . '_pick" id="f_' . e($k) . '_pick" value="">';
-            echo '<input type="file" id="' . $id . '" name="' . e($k) . '" accept="application/pdf" data-pdf-up' . $desc . '>';
+            echo '<input type="file" id="' . $id . '" name="' . e($k) . '" accept="application/pdf" data-pdf-up' . $desc . '> <button type="button" class="btn small ghost" data-pdf-media="' . e($k) . '">Aus Mediathek wählen</button>';
             echo '<small class="hint">PDF, höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB. Wird sofort hochgeladen; auf der Seite erscheint es erst nach „Veröffentlichen“.</small>';
             break;
     }

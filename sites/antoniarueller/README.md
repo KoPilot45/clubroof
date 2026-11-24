@@ -92,3 +92,10 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 
 - Entfernt: Timecode-Feld der Referenzen, leere Überschrift „Namensschild am Foto“, Rest des Namensschilds im Handy-Menü, Vorschau-Code der alten Zeitleiste, `admin_menu()`, `auto_tc()`, ungenutzte Formatierungen. Menü „Startseite“ heißt jetzt „Hero-Bereich“. PDF-Felder (auch CV) laden sofort hoch; Entfernen mit Rückfrage.
 - Abschnitte → Showreel: Felder gruppiert in „Hervorgehobener Beitrag“, „Schnittplatz“, „Beitragsliste“.
+
+## Mediathek
+
+- Eigener Hauptpunkt nach „Englisch“; zeigt Bilder und PDFs mit Filter (Alle/Bilder/PDFs/Ungenutzt), Suche, Sortierung und Verwendungsnachweis mit Links.
+- **Dateinamen:** Beim Hochladen bleibt der Name erhalten (`upload_slug()`: klein, Umlaute umgeschrieben, Sonderzeichen zu „-“, Endung passend; bei Doppelung `-2`, `-3` …). Bestehende Dateien bleiben unverändert.
+- **Umbenennen** (`media_rename()`): ersetzt den Namen automatisch in Einträgen, Entwürfen, Einstellungen, früheren Fassungen und englischen Texten; vergebene Namen werden abgelehnt. **Ersetzen** (`media_replace()`): gleicher Name, neue Datei (Bild nur durch Bild, PDF nur durch PDF; ändert sich die Endung, z. B. JPG → WebP, werden Verweise angepasst). **Mehrfach löschen** nur für ungenutzte Dateien.
+- Dateiadressen tragen eine Versionsnummer (`?v=`), damit ersetzte Dateien trotz langem Browser-Cache sofort neu erscheinen. PDF-Felder bieten „Aus Mediathek wählen“.

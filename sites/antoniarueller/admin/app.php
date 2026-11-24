@@ -479,7 +479,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($errs) {
                 $back(AR_BASE . '/admin/?p=media', $n . ' hochgeladen. Fehler: ' . implode(' ', $errs), 'err');
             }
-            $back(AR_BASE . '/admin/?p=media', $n ? $n . ' Bild(er) hochgeladen.' : 'Keine Datei gewählt.', $n ? 'ok' : 'err');
+            $back(AR_BASE . '/admin/?p=media', $n ? $n . ($n === 1 ? ' Datei hochgeladen.' : ' Dateien hochgeladen.') : 'Keine Datei gewählt.', $n ? 'ok' : 'err');
+        }
+
+        case 'media_rename': {
+            [$ok, $msg] = media_rename((string)($_POST['name'] ?? ''), (string)($_POST['newname'] ?? ''));
+            if ($ok) {
+                audit($who, 'media_rename', ($_POST['name'] ?? '') . ' → ' . ($_POST['newname'] ?? ''));
+            }
+            $back(AR_BASE . '/admin/?p=media', $msg, $ok ? 'ok' : 'err');
+        }
+
+        case 'media_replace': {
+            [$ok, $msg] = media_replace((string)($_POST['name'] ?? ''), $_FILES['file'] ?? []);
+            if ($ok) {
+                audit($who, 'media_replace', (string)($_POST['name'] ?? ''));
+            }
+            $back(AR_BASE . '/admin/?p=media', $msg, $ok ? 'ok' : 'err');
+        }
+
+        case 'media_bulk_delete': {
+            $use = media_usage();
+            $n = 0;
+            $skipped = 0;
+            foreach ((array)($_POST['names'] ?? []) as $nm) {
+                $nm = (string)$nm;
+                if (!preg_match(MEDIA_RE, $nm) || !is_file(upload_dir() . '/' . $nm)) {
+                    continue;
+                }
+                if (isset($use[$nm])) {
+                    $skipped++;
+                    continue;
+                }
+                @unlink(upload_dir() . '/' . $nm);
+                audit($who, 'media_delete', $nm);
+                $n++;
+            }
+            $back(AR_BASE . '/admin/?p=media', $n . ($n === 1 ? ' Datei gelöscht.' : ' Dateien gelöscht.') . ($skipped ? ' ' . $skipped . ' verwendete Datei(en) blieben erhalten.' : ''), $n ? 'ok' : 'err');
         }
 
         case 'media_optimize': {
@@ -511,12 +547,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'media_delete': {
             $nm = (string)($_POST['name'] ?? '');
-            if (!preg_match('~^[a-z0-9_-]+\.(jpg|png|webp)$~', $nm) || isset(media_usage()[$nm]) || !is_file(upload_dir() . '/' . $nm)) {
-                $back(AR_BASE . '/admin/?p=media', 'Bild wird noch verwendet oder existiert nicht.', 'err');
+            if (!preg_match(MEDIA_RE, $nm) || isset(media_usage()[$nm]) || !is_file(upload_dir() . '/' . $nm)) {
+                $back(AR_BASE . '/admin/?p=media', 'Datei wird noch verwendet oder existiert nicht.', 'err');
             }
             @unlink(upload_dir() . '/' . $nm);
             audit($who, 'media_delete', $nm);
-            $back(AR_BASE . '/admin/?p=media', 'Bild gelöscht.');
+            $back(AR_BASE . '/admin/?p=media', 'Datei gelöscht.');
         }
 
         case 'session_revoke': {
@@ -694,7 +730,8 @@ switch ($p) {
         break;
     case 'media_json':
         header('Content-Type: application/json');
-        echo json_encode(array_map(fn($m) => ['name' => $m['name'], 'url' => $m['url']], media_list()));
+        $want = ($_GET['kind'] ?? 'image') === 'pdf' ? 'pdf' : 'image';
+        echo json_encode(array_values(array_map(fn($m) => ['name' => $m['name'], 'url' => $m['url'], 'kind' => $m['kind']], array_filter(media_list(), fn($m) => $m['kind'] === $want))));
         break;
     case 'sessions':
         view_sessions($user);

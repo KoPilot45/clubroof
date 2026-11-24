@@ -600,7 +600,36 @@ function image_settings(): array
     return ['webp' => true, 'quality' => IMG_QUALITY, 'max' => IMG_MAX_EDGE];
 }
 
-function store_image(array $file): string
+/** Dateiname aus dem Originalnamen: klein, Umlaute umgeschrieben, Sonderzeichen zu „-“ (ohne Endung). */
+function upload_slug(string $name): string
+{
+    $s = preg_replace('~\.(jpe?g|png|webp|avif|pdf)$~i', '', trim($name));
+    $s = strtr((string)$s, ['ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue', 'ß' => 'ss']);
+    if (function_exists('iconv')) {
+        $t = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
+        if ($t !== false) {
+            $s = $t;
+        }
+    }
+    $s = trim((string)preg_replace('~[^a-z0-9]+~', '-', strtolower($s)), '-');
+    $s = trim(substr($s, 0, 60), '-');
+    return $s !== '' ? $s : 'datei';
+}
+
+/** Freien Dateinamen finden (name.ext, name-2.ext …); $keep darf überschrieben werden (Datei ersetzen). */
+function unique_upload_name(string $base, string $ext, string $keep = ''): string
+{
+    $dir = upload_dir();
+    $n = 1;
+    do {
+        $name = $base . ($n > 1 ? '-' . $n : '') . '.' . $ext;
+        $n++;
+    } while ($name !== $keep && is_file($dir . '/' . $name));
+    return $name;
+}
+
+/** $replace = vorhandene Datei, deren Namen das neue Bild übernimmt (Datei ersetzen). */
+function store_image(array $file, string $replace = ''): string
 {
     check_upload($file);
     $info = @getimagesize($file['tmp_name']);
@@ -645,17 +674,17 @@ function store_image(array $file): string
     }
     $hasAlpha = $info[2] !== IMAGETYPE_JPEG;
     imagesavealpha($img, true);
-    $name = bin2hex(random_bytes(10));
     $dir = upload_dir();
+    $base = $replace !== '' ? (string)preg_replace('~\.[a-z]+$~', '', $replace) : upload_slug((string)($file['name'] ?? ''));
     // Metadaten (EXIF/GPS) werden durch das Neu-Kodieren entfernt.
     if ($cfgImg['webp'] && function_exists('imagewebp')) {
-        $name .= '.webp';
+        $name = unique_upload_name($base, 'webp', $replace);
         $ok = imagewebp($img, "$dir/$name", $cfgImg['quality']);
     } elseif ($hasAlpha) {
-        $name .= '.png';
+        $name = unique_upload_name($base, 'png', $replace);
         $ok = imagepng($img, "$dir/$name", 6);
     } else {
-        $name .= '.jpg';
+        $name = unique_upload_name($base, 'jpg', $replace);
         $ok = imagejpeg($img, "$dir/$name", $cfgImg['quality']);
     }
     if (!$ok) {
@@ -665,14 +694,14 @@ function store_image(array $file): string
     return $name;
 }
 
-function store_pdf(array $file): string
+function store_pdf(array $file, string $replace = ''): string
 {
     check_upload($file);
     $head = (string)file_get_contents($file['tmp_name'], false, null, 0, 5);
     if ($head !== '%PDF-') {
         throw new RuntimeException('Bitte eine PDF-Datei hochladen.');
     }
-    $name = bin2hex(random_bytes(10)) . '.pdf';
+    $name = unique_upload_name($replace !== '' ? (string)preg_replace('~\.[a-z]+$~', '', $replace) : upload_slug((string)($file['name'] ?? '')), 'pdf', $replace);
     if (!move_uploaded_file($file['tmp_name'], upload_dir() . '/' . $name)) {
         throw new RuntimeException('Datei konnte nicht gespeichert werden.');
     }
@@ -720,6 +749,75 @@ function set_item_flags(int $id, array $vals): bool
         reset_content_cache();
     }
     return $changed;
+}
+
+/** Dateiname in allen Inhalten ersetzen (Einträge, Entwürfe, Einstellungen, frühere Fassungen, englische Texte). Gibt die Zahl der Ersetzungen zurück. */
+function media_rewrite_refs(string $old, string $new): int
+{
+    $re = '~(?<![a-z0-9_.-])' . preg_quote($old, '~') . '(?![a-z0-9_-])~';
+    $n = 0;
+    foreach (['ar_items' => ['id', ['data', 'draft']], 'ar_settings' => ['grp', ['data', 'draft']], 'ar_versions' => ['id', ['data']]] as $table => [$pk, $cols]) {
+        $where = implode(' OR ', array_map(fn($col) => $col . ' LIKE ?', $cols));
+        $rows = q('SELECT ' . $pk . ', ' . implode(', ', $cols) . ' FROM ' . $table . ' WHERE ' . $where, array_fill(0, count($cols), '%' . $old . '%'))->fetchAll();
+        foreach ($rows as $r) {
+            foreach ($cols as $col) {
+                if ($r[$col] === null || $r[$col] === '') {
+                    continue;
+                }
+                $v = preg_replace($re, $new, (string)$r[$col], -1, $cnt);
+                if ($cnt) {
+                    q('UPDATE ' . $table . ' SET ' . $col . ' = ? WHERE ' . $pk . ' = ?', [$v, $r[$pk]]);
+                    $n += $cnt;
+                }
+            }
+        }
+    }
+    reset_content_cache();
+    if (function_exists('clear_page_cache')) {
+        clear_page_cache();
+    }
+    return $n;
+}
+
+/** Datei umbenennen; alle Verweise werden automatisch angepasst. @return array{0: bool, 1: string, 2: string} ok, Meldung, neuer Name */
+function media_rename(string $old, string $newBase): array
+{
+    if (!preg_match(MEDIA_RE, $old) || !is_file(upload_dir() . '/' . $old)) {
+        return [false, 'Datei nicht gefunden.', ''];
+    }
+    $ext = (string)pathinfo($old, PATHINFO_EXTENSION);
+    $new = upload_slug($newBase) . '.' . $ext;
+    if ($new === $old) {
+        return [true, 'Der Name ist unverändert.', $old];
+    }
+    if (is_file(upload_dir() . '/' . $new)) {
+        return [false, 'Der Name „' . $new . '“ ist schon vergeben.', ''];
+    }
+    if (!@rename(upload_dir() . '/' . $old, upload_dir() . '/' . $new)) {
+        return [false, 'Umbenennen nicht möglich (Dateirechte).', ''];
+    }
+    $n = media_rewrite_refs($old, $new);
+    return [true, '„' . $old . '“ heißt jetzt „' . $new . '“' . ($n ? ' (' . $n . ' Verweis' . ($n === 1 ? '' : 'e') . ' angepasst)' : '') . '.', $new];
+}
+
+/** Datei durch eine neue ersetzen (gleicher Name; ändert sich dabei die Endung, z. B. JPG → WebP, werden die Verweise angepasst). */
+function media_replace(string $old, array $file): array
+{
+    if (!preg_match(MEDIA_RE, $old) || !is_file(upload_dir() . '/' . $old)) {
+        return [false, 'Datei nicht gefunden.', ''];
+    }
+    try {
+        $new = str_ends_with($old, '.pdf') ? store_pdf($file, $old) : store_image($file, $old);
+    } catch (RuntimeException $ex) {
+        return [false, $ex->getMessage(), ''];
+    }
+    if ($new !== $old) {
+        @unlink(upload_dir() . '/' . $old);
+        media_rewrite_refs($old, $new);
+    } elseif (function_exists('clear_page_cache')) {
+        clear_page_cache();
+    }
+    return [true, '„' . $old . '“ wurde ersetzt' . ($new !== $old ? ' und heißt jetzt „' . $new . '“' : '') . '.', $new];
 }
 
 /** Bereinigt eine englische Übersetzung wie die deutsche Eingabe (Feldtyp und Länge). */

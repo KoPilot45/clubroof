@@ -223,28 +223,48 @@ function view_home(array $user): void
 // ---------- Mediathek ----------
 function view_media(array $user): void
 {
-    layout_start($user, 'Mediathek', 'media');
+    layout_start($user, 'Mediathek', 'media', true);
     $list = media_list();
     $use = media_usage();
-    echo '<p class="lead">Alle hochgeladenen Bilder. Du kannst sie in jedem Bildfeld über „Aus Mediathek wählen“ wiederverwenden. Nicht verwendete Bilder lassen sich löschen.</p>';
-    echo '<form method="post" action="' . a() . '" enctype="multipart/form-data" class="form" style="margin-bottom:22px">' . csrf_field($user) . '<input type="hidden" name="action" value="media_upload"><div class="field"><label for="mf">Bilder hochladen</label><input type="file" id="mf" name="files[]" accept="image/jpeg,image/png,image/webp,image/avif,.avif" multiple><small class="hint">JPG, PNG, WebP oder AVIF, je höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB.</small></div><button class="btn">Hochladen</button></form>';
-    if ($list && $user['role'] === 'owner') {
-        $cfgI = image_settings();
-        $tot = array_sum(array_column($list, 'size'));
-        echo '<div class="card wide" style="display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between"><span><strong>' . count($list) . ' Bilder · ' . kb($tot) . '</strong><br><small class="hint">Neue Uploads werden automatisch als WebP gespeichert und auf höchstens ' . $cfgI['max'] . ' px verkleinert.</small></span><form method="post" action="' . a() . '" class="inline" data-confirm="Alle vorhandenen Bilder neu komprimieren? Es werden nur Bilder ersetzt, die dadurch kleiner werden. Das kann nicht rückgängig gemacht werden.">' . csrf_field($user) . '<input type="hidden" name="action" value="media_optimize"><button class="btn small ghost">Vorhandene Bilder neu komprimieren</button></form></div>';
+    $nImg = count(array_filter($list, fn($m) => $m['kind'] === 'image'));
+    $nPdf = count($list) - $nImg;
+    $nUnused = count(array_filter($list, fn($m) => !isset($use[$m['name']])));
+    $max = (int)cfg('max_upload_mb', 8);
+    echo '<p class="lead">Alle hochgeladenen Bilder und PDFs. Dateien lassen sich umbenennen (die Verweise auf der ganzen Seite werden automatisch angepasst), ersetzen und – wenn sie nirgends verwendet werden – löschen. Bilder wählst du in jedem Bildfeld über „Aus Mediathek wählen“ erneut aus, PDFs in den PDF-Feldern.</p>';
+    echo '<form method="post" action="' . a() . '" enctype="multipart/form-data" class="form" style="margin-bottom:22px">' . csrf_field($user) . '<input type="hidden" name="action" value="media_upload"><div class="field"><label for="mf">Dateien hochladen</label><input type="file" id="mf" name="files[]" accept="image/jpeg,image/png,image/webp,image/avif,.avif,application/pdf" multiple><small class="hint">Bilder (JPG, PNG, WebP, AVIF) und PDFs, je höchstens ' . $max . ' MB. Der Dateiname bleibt erhalten (kleingeschrieben, ohne Sonderzeichen). Bilder werden automatisch als WebP gespeichert und auf höchstens ' . IMG_MAX_EDGE . ' px verkleinert.</small></div><button class="btn">Hochladen</button></form>';
+    if ($nImg && $user['role'] === 'owner') {
+        echo '<div class="card wide" style="display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between"><span><strong>' . count($list) . ' Dateien · ' . kb(array_sum(array_column($list, 'size'))) . '</strong></span><form method="post" action="' . a() . '" class="inline" data-confirm="Alle vorhandenen Bilder neu komprimieren? Es werden nur Bilder ersetzt, die dadurch kleiner werden. Das kann nicht rückgängig gemacht werden.">' . csrf_field($user) . '<input type="hidden" name="action" value="media_optimize"><button class="btn small ghost">Vorhandene Bilder neu komprimieren</button></form></div>';
     }
     if (!$list) {
-        echo '<p class="empty">Noch keine Bilder.</p>';
+        echo '<p class="empty">Noch keine Dateien.</p>';
+        layout_end();
+        return;
     }
-    echo '<div class="mlib">';
+    echo '<div class="toolbar mbar" id="mbar"><div class="chips" role="group" aria-label="Filtern"><button type="button" class="chip on" data-f="all">Alle <span>' . count($list) . '</span></button><button type="button" class="chip" data-f="image">Bilder <span>' . $nImg . '</span></button><button type="button" class="chip" data-f="pdf">PDFs <span>' . $nPdf . '</span></button><button type="button" class="chip" data-f="unused">Ungenutzt <span>' . $nUnused . '</span></button></div>';
+    echo '<input type="search" id="mq" placeholder="Dateiname suchen …" aria-label="Dateien durchsuchen"><label class="msort"><span class="sr">Sortierung</span><select id="msort" aria-label="Sortierung"><option value="new">Neueste zuerst</option><option value="old">Älteste zuerst</option><option value="az">Name A–Z</option><option value="size">Größte zuerst</option></select></label></div>';
+    echo '<form method="post" action="' . a() . '" id="mbulk" class="bulk" hidden>' . csrf_field($user) . '<input type="hidden" name="action" value="media_bulk_delete"><span class="bulk-n" id="mbulkn"></span><button type="button" class="btn small ghost" id="msel-unused">Alle ungenutzten wählen</button><button class="btn small danger-o" data-confirm="Die ausgewählten Dateien endgültig löschen?">Ausgewählte löschen</button></form>';
+    echo '<p class="empty" id="mnone" hidden>Keine Datei passt zum Filter.</p><div class="mlib" id="mlib">';
     foreach ($list as $m) {
         $u = $use[$m['name']] ?? [];
-        echo '<figure class="mcard"><img src="' . e($m['url']) . '" alt="" loading="lazy"><figcaption><strong>' . e($m['name']) . '</strong><small>' . $m['w'] . ' × ' . $m['h'] . ' px · ' . kb($m['size']) . '</small>';
-        echo $u ? '<small class="used">Verwendet in: ' . e(implode('; ', array_slice($u, 0, 3))) . '</small>' : '<small class="unused">nicht verwendet</small>';
-        if (!$u) {
-            echo '<form method="post" action="' . a() . '" class="inline" data-confirm="Bild endgültig löschen?">' . csrf_field($user) . '<input type="hidden" name="action" value="media_delete"><input type="hidden" name="name" value="' . e($m['name']) . '"><button class="btn small danger-o">Löschen</button></form>';
+        $pdf = $m['kind'] === 'pdf';
+        $base = (string)preg_replace('~\.[a-z]+$~', '', $m['name']);
+        $ext = (string)pathinfo($m['name'], PATHINFO_EXTENSION);
+        echo '<figure class="mcard" data-kind="' . $m['kind'] . '" data-name="' . e($m['name']) . '" data-size="' . $m['size'] . '" data-time="' . $m['time'] . '" data-used="' . ($u ? '1' : '0') . '">';
+        echo '<input type="checkbox" class="msel" name="names[]" value="' . e($m['name']) . '" form="mbulk" aria-label="' . e($m['name']) . ' auswählen"' . ($u ? ' disabled title="Wird verwendet"' : '') . '>';
+        echo '<a class="mthumb" href="' . e($m['url']) . '" target="_blank" rel="noopener" title="Datei öffnen">' . ($pdf ? '<span class="mpdf">' . aicon('doc', 34) . '<b>PDF</b></span>' : '<img src="' . e($m['url']) . '" alt="" loading="lazy">') . '</a>';
+        echo '<figcaption><form method="post" action="' . a() . '" class="mren">' . csrf_field($user) . '<input type="hidden" name="action" value="media_rename"><input type="hidden" name="name" value="' . e($m['name']) . '"><span class="mname"><input type="text" name="newname" value="' . e($base) . '" maxlength="60" aria-label="Dateiname von ' . e($m['name']) . '"><em>.' . e($ext) . '</em></span><button class="btn small ghost" title="Name speichern; Verweise werden angepasst">Umbenennen</button></form>';
+        echo '<small>' . ($pdf ? 'PDF' : $m['w'] . ' × ' . $m['h'] . ' px') . ' · ' . kb($m['size']) . ' · ' . e(date('d.m.Y', $m['time'])) . '</small>';
+        if ($u) {
+            $links = array_map(fn($x) => '<a href="' . e($x['url']) . '">' . e($x['label']) . '</a>', array_slice($u, 0, 3));
+            echo '<small class="used">Verwendet in: ' . implode('; ', $links) . (count($u) > 3 ? ' … (+' . (count($u) - 3) . ')' : '') . '</small>';
+        } else {
+            echo '<small class="unused">nicht verwendet</small>';
         }
-        echo '</figcaption></figure>';
+        echo '<div class="mact"><form method="post" action="' . a() . '" enctype="multipart/form-data" class="mrep" data-pdf="' . ($pdf ? '1' : '0') . '">' . csrf_field($user) . '<input type="hidden" name="action" value="media_replace"><input type="hidden" name="name" value="' . e($m['name']) . '"><label class="btn small ghost">Ersetzen<input type="file" name="file" accept="' . ($pdf ? 'application/pdf' : 'image/jpeg,image/png,image/webp,image/avif,.avif') . '" hidden></label></form>';
+        if (!$u) {
+            echo '<form method="post" action="' . a() . '" class="inline" data-confirm="Datei endgültig löschen?">' . csrf_field($user) . '<input type="hidden" name="action" value="media_delete"><input type="hidden" name="name" value="' . e($m['name']) . '"><button class="btn small danger-o">Löschen</button></form>';
+        }
+        echo '</div></figcaption></figure>';
     }
     echo '</div>';
     layout_end();

@@ -136,7 +136,7 @@
       modal.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" aria-label="Bild aus der Mediathek wählen"><div class="modal-h"><strong>Bild wählen</strong><button type="button" class="btn small ghost" data-close>Schließen</button></div><div class="mgrid" id="mgrid">Lädt …</div></div>';
       document.body.appendChild(modal);
       modal.addEventListener('click', function (e) { if (e.target === modal || e.target.hasAttribute('data-close')) closeModal(); });
-      fetch(location.pathname + '?p=media_json', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (list) {
+      fetch(location.pathname + '?p=media_json&kind=image', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (list) {
         var g = $('#mgrid', modal);
         g.innerHTML = '';
         if (!list.length) g.textContent = 'Noch keine Bilder in der Mediathek.';
@@ -892,7 +892,7 @@
       modal.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" aria-label="Bild aus der Mediathek hinzufügen"><div class="modal-h"><strong>Bild hinzufügen</strong><button type="button" class="btn small ghost" data-close>Schließen</button></div><div class="mgrid" id="mgrid">Lädt …</div></div>';
       document.body.appendChild(modal);
       modal.addEventListener('click', function (e) { if (e.target === modal || e.target.hasAttribute('data-close')) closeModal(); });
-      fetch(location.pathname + '?p=media_json', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (items) {
+      fetch(location.pathname + '?p=media_json&kind=image', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (items) {
         var grid = $('#mgrid', modal); grid.innerHTML = '';
         if (!items.length) grid.textContent = 'Noch keine Bilder in der Mediathek.';
         items.forEach(function (it) {
@@ -937,4 +937,80 @@
       if (form) { form.dispatchEvent(new Event('input', { bubbles: true })); if (form.getAttribute('data-autosave') === '1') form.dispatchEvent(new Event('ar:save')); }
     });
   });
+
+  // ---- PDF aus der Mediathek wählen ----
+  $$('[data-pdf-media]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var key = b.getAttribute('data-pdf-media'), holder = b.parentNode, box = $('.pdfbox', holder), note = $('.pdfnote', holder);
+      closeModal();
+      modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" aria-label="PDF aus der Mediathek wählen"><div class="modal-h"><strong>PDF wählen</strong><button type="button" class="btn small ghost" data-close>Schließen</button></div><div class="mgrid" id="mgrid">Lädt …</div></div>';
+      document.body.appendChild(modal);
+      modal.addEventListener('click', function (e) { if (e.target === modal || e.target.hasAttribute('data-close')) closeModal(); });
+      fetch(location.pathname + '?p=media_json&kind=pdf', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (items) {
+        var grid = $('#mgrid', modal); grid.innerHTML = '';
+        if (!items.length) grid.textContent = 'Noch keine PDFs in der Mediathek.';
+        items.forEach(function (it) {
+          var c = document.createElement('button'); c.type = 'button'; c.className = 'mitem';
+          c.innerHTML = '<span class="mpdf"><b>PDF</b></span><span>' + esc(it.name) + '</span>';
+          c.addEventListener('click', function () {
+            document.getElementById('f_' + key + '_pick').value = it.name;
+            document.getElementById('f_' + key + '_remove').value = '';
+            var a = $('a', box); a.href = it.url; a.textContent = 'Gewähltes PDF öffnen (' + it.name + ')'; box.hidden = false;
+            note.hidden = false; note.textContent = 'Gewählt. Auf der Seite erscheint es erst nach „Veröffentlichen“.';
+            dirty = true;
+            if (form) { form.dispatchEvent(new Event('input', { bubbles: true })); if (form.getAttribute('data-autosave') === '1') form.dispatchEvent(new Event('ar:save')); }
+            closeModal();
+          });
+          grid.appendChild(c);
+        });
+      }).catch(function () { $('#mgrid', modal).textContent = 'Mediathek konnte nicht geladen werden.'; });
+    });
+  });
+
+  // ---- Mediathek: filtern, suchen, sortieren, mehrere löschen, ersetzen ----
+  var mlib = $('#mlib');
+  if (mlib) {
+    var cards = $$('.mcard', mlib), mFilter = 'all', mq = $('#mq'), msort = $('#msort'), mnone = $('#mnone');
+    function mApply() {
+      var q = mq.value.trim().toLowerCase(), shown = 0;
+      cards.forEach(function (c) {
+        var ok = (mFilter === 'all' || (mFilter === 'unused' ? c.getAttribute('data-used') === '0' : c.getAttribute('data-kind') === mFilter))
+          && (!q || c.getAttribute('data-name').toLowerCase().indexOf(q) !== -1);
+        c.hidden = !ok; if (ok) shown++;
+      });
+      mnone.hidden = shown !== 0;
+      var by = msort.value;
+      cards.slice().sort(function (a, b) {
+        if (by === 'az') return a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'));
+        if (by === 'size') return b.getAttribute('data-size') - a.getAttribute('data-size');
+        if (by === 'old') return a.getAttribute('data-time') - b.getAttribute('data-time');
+        return b.getAttribute('data-time') - a.getAttribute('data-time');
+      }).forEach(function (c) { mlib.appendChild(c); });
+    }
+    $$('#mbar .chip').forEach(function (c) { c.addEventListener('click', function () {
+      mFilter = c.getAttribute('data-f');
+      $$('#mbar .chip').forEach(function (x) { x.classList.toggle('on', x === c); });
+      mApply();
+    }); });
+    mq.addEventListener('input', mApply); msort.addEventListener('change', mApply);
+    var mbulk = $('#mbulk'), mbn = $('#mbulkn');
+    function mCount() { var n = $$('.msel:checked', mlib).length; mbulk.hidden = n === 0; mbn.textContent = n + ' ausgewählt'; }
+    mlib.addEventListener('change', function (e) { if (e.target.classList.contains('msel')) mCount(); });
+    $('#msel-unused').addEventListener('click', function () { cards.forEach(function (c) { var cb = $('.msel', c); if (cb && !cb.disabled && !c.hidden) cb.checked = true; }); mCount(); });
+    mbulk.addEventListener('submit', function (e) { var sub = e.submitter; if (sub && sub.getAttribute('data-confirm') && !window.confirm(sub.getAttribute('data-confirm'))) e.preventDefault(); });
+    // Datei ersetzen: gewählte Datei sofort senden (AVIF vorher im Browser in WebP umwandeln)
+    $$('.mrep input[type=file]', mlib).forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        var f = inp.files && inp.files[0]; if (!f) return;
+        var fm = inp.form;
+        if (!isAvif(f)) { fm.submit(); return; }
+        avifToWebp(f).then(function (w) {
+          var fd = new FormData(); fd.set('_csrf', fm.elements['_csrf'].value); fd.set('action', 'media_replace'); fd.set('name', fm.elements['name'].value); fd.set('file', w);
+          return fetch(fm.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin', redirect: 'manual' });
+        }).then(function () { window.location.href = fm.getAttribute('action') + '?p=media'; }).catch(function (err) { window.alert('AVIF konnte nicht umgewandelt werden: ' + (err && err.message ? err.message : 'Fehler')); });
+      });
+    });
+  }
 })();

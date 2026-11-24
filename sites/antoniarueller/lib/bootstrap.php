@@ -112,7 +112,12 @@ function safe_url(string $u): string
 
 function upload_url(string $name): string
 {
-    return preg_match('~^[a-z0-9_-]+\.(jpg|png|webp|pdf)$~', $name) ? AR_BASE . '/uploads/' . $name : '';
+    if (!preg_match('~^[a-z0-9_-]+\.(jpg|png|webp|pdf)$~', $name)) {
+        return '';
+    }
+    // Änderungszeit als Version: ersetzte Dateien erscheinen trotz langem Browser-Cache sofort neu
+    $m = @filemtime(AR_ROOT . '/uploads/' . $name);
+    return AR_BASE . '/uploads/' . $name . ($m ? '?v=' . $m : '');
 }
 
 function security_headers(bool $admin = false, bool $frameSelf = false): void
