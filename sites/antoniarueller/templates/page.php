@@ -73,8 +73,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="sec-head" style="margin-bottom:0"><span class="sec-l"><?= rec_dot() ?><span class="rec-t">REC</span><span>00 — <?= e(tr($sec['intro_label'])) ?></span></span>
 <span class="muted"><?= e($hero['meta']) ?></span><span class="muted"><?= e($sec['hero_tc']) ?></span></div>
 <h1 aria-label="<?= e(trim($hero['first'] . ' ' . $hero['last'])) ?>">
-<span class="h1-first" aria-hidden="true"><?= e($hero['first']) ?></span>
-<span class="h1-last" aria-hidden="true"><?= e($hero['last']) ?></span>
+<span class="h1-first" aria-hidden="true"><span class="h1-in"><?= e($hero['first']) ?></span></span>
+<span class="h1-last" aria-hidden="true"><span class="h1-in"><?= e($hero['last']) ?></span></span>
 </h1>
 <div class="hero-copy">
 <?php if ($hero['lead'] !== ''): ?><p class="hero-lead"><?= e($hero['lead']) ?></p><?php endif; ?>

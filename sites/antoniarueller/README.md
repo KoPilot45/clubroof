@@ -123,3 +123,7 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 ## E-Mail-Adressen im Impressum und Datenschutz
 
 - Jede Adresse im Text (frei getippt, als `[Text](mailto:…)` oder als Linktext) wird beim Ausgeben automatisch geschützt (`mail_span()` in `lib/render.php`): Name und Domain stehen rückwärts und Base64-kodiert in Datenattributen, `assets/site.js` setzt daraus den Link zusammen. Ohne JavaScript steht „name (at) domain.de“ (bei Linktext: „Text (name (at) domain.de)“). Gespeichert wird der Text unverändert, im Editor schreibst du die Adresse normal. Die Kontakt-Adresse hinter „Schreib mir“ wird weiter erst beim Klick geladen (`mail.php`).
+
+## Hero-Animation
+
+- Aufbau beim Laden in insgesamt 1 s, nur CSS (`@keyframes hNav/hIn/hRise/hCircle/hPhoto/hBand`, am Ende von `assets/site.css`), ohne JavaScript und ohne Aufblitzen: Navigationszeile (0,35 s), REC-Zeile, Name (steigt hinter einer unsichtbaren Linie nach oben), Einleitung, „Aktuell“, Kreis (wächst von 85 auf 100 %), Foto (gleitet 18 px nach oben, bleibt dabei sichtbar, damit die Ladezeit gleich bleibt) und Schnittband (zieht sich von links auf). Danach „atmet“ der Kreis (`hBreathe`, 9 s, ±3 %). Bei „Bewegung reduzieren“ entfällt alles.

@@ -895,6 +895,11 @@ foreach (['/gibtesnicht', '/impressum/', '/datenschutz/'] as $up) {
 }
 ok($ok3, '404, Impressum und Datenschutz: „Zur Startseite“ ist ein Knopf in der Navigation');
 
+echo "Hero-Animation\n";
+$hh = req('GET', "$base/")['body'];
+ok(str_contains($hh, '<span class="h1-first" aria-hidden="true"><span class="h1-in">') && str_contains($hh, '<span class="h1-last" aria-hidden="true"><span class="h1-in">') && str_contains($hh, 'aria-label="Antonia'), 'Hero: Name in zwei Zeilen mit innerem Element für den Aufbau, Name bleibt für Screenreader vollständig');
+ok(str_contains($cssTxt = (string)file_get_contents("$root/assets/site.css"), '@keyframes hRise') && str_contains($cssTxt, '@keyframes hBreathe') && preg_match('~@media \(prefers-reduced-motion:no-preference\)\{\s*@keyframes hNav~', $cssTxt) === 1, 'Hero-Animation nur bei erlaubter Bewegung');
+
 echo "Hilfe\n";
 require_once "$root/admin/help.php";
 $hp = req('GET', "$base/admin/?p=help")['body'];
