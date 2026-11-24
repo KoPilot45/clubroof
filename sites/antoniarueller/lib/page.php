@@ -119,9 +119,14 @@ foreach ($clips as $i => $c) {
     $tk = $trackByCode[$c['tl_track']] ?? null;
     $c['medium'] = $tk['icon'] ?? 'text';
     $c['_cat'] = $tk['label'] ?? '';
-    $c['_hosted'] = $c['link_mode'] === 'hosted' && $c['gallery'];
+    // Beitrag selbst gehostet: Bilder (Lightbox) oder PDF (neuer Tab)
+    $c['gallery'] = array_values(array_filter((array)$c['gallery'], fn($g) => !str_ends_with((string)($g['f'] ?? ''), '.pdf')));
+    $c['_hosted'] = $c['link_mode'] === 'hosted' && $c['hosted_kind'] !== 'pdf' && $c['gallery'];
+    $c['_pdf'] = $c['link_mode'] === 'hosted' && $c['hosted_kind'] === 'pdf' ? upload_url((string)$c['pdf_file']) : '';
+    $c['_href'] = $c['link_mode'] === 'hosted' ? $c['_pdf'] : safe_url($c['url']);
+    $c['_blank'] = $c['_pdf'] !== '' || $c['new_tab'];
+    $c['_cta'] = $c['link_mode'] === 'hosted' ? ($c['gallery_text'] ?: 'Beitrag ansehen') : ($c['link_text'] ?: 'Zum Beitrag');
     $c['_no'] = sprintf('%02d', $i + 1);
-    $c['_tc'] = trim($c['tc']) !== '' ? $c['tc'] : auto_tc($i);
     $c['_date'] = clip_date_label($c);
     if ($c['date'] !== '') {
         $years[] = (int)substr($c['date'], 0, 4);

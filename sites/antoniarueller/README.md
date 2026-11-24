@@ -76,7 +76,7 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 
 - **Kategorien** (früher „Spuren“, Menü „Arbeiten → Kategorien“): jede Kategorie ist eine Spur im Schnittplatz (Kürzel, Bezeichnung, Symbol, Farben). Die Referenz wählt nur die Kategorie; Format, Länge, „Schnittplatz“, „Hauptclip“, „Große Überschrift“ und „Auf der Seite anzeigen“ entfallen im Formular. Die Breite der Clips variiert automatisch (fester Wert je Beitrag, `tl_weight()`), die längste Spur füllt mindestens 80 % der Breite (CSS `--u`, Container-Einheiten).
 - **Featured:** Stern in der Referenzen-Liste (immer nur eine Referenz, wirkt sofort wie der Schalter zum Ein-/Ausblenden). Ist die hervorgehobene Referenz ausgeblendet, zeigt die Liste einen Hinweis und der Bereich fällt auf der Seite weg; ohne Featured entfällt der Bereich ebenfalls. Der Block heißt „Featured“, die Überschrift ist immer der Titel.
-- **Link zum Beitrag:** Umschalter „Externer Link“ / „Beitrag selbst hosten“. Selbst gehostet: Linktext (Standard „Beitrag ansehen“) und Galerie aus Bildern und PDFs (Reihenfolge per Ziehen oder Pfeile, Bildunterschrift optional, englisch in der Übersetzungstabelle). Auf der Seite öffnet der Knopf (Featured und Kachel) eine Lightbox mit Pfeilen, Wischen, Tastatur und Zähler. Jede Kachel hat unten einen Knopf (externer Link oder Galerie).
+- **Link zum Beitrag:** Umschalter „Externer Link“ / „Beitrag selbst hosten“. Selbst gehostet: Linktext (Standard „Beitrag ansehen“) und zweiter Umschalter „Bilder“ / „PDF“: Bilder (Galerie, Reihenfolge per Ziehen oder Pfeile, Bildunterschrift optional, englisch in der Übersetzungstabelle) öffnen sich in einer Lightbox mit Pfeilen, Wischen, Tastatur und Zähler; ein PDF öffnet sich im neuen Tab (die Server-Kopfzeilen verbieten bewusst das Einbetten in Rahmen). Jede Kachel hat unten einen Knopf (externer Link oder Galerie).
 - **Bild entfernen:** rotes X am Vorschaubild mit Rückfrage; wirkt im Entwurf, live erst nach „Veröffentlichen“.
 - **Speicher-Leiste:** eine Zeile – Veröffentlichen, Entwurf, Status, Live/Vorschau/English als kompakte Knöpfe, Abbrechen, Hilfe („?“) mit Erklärung und Tastenkürzeln.
 - „Alle Clips“ heißt jetzt „Alle Beiträge“.
@@ -87,3 +87,8 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 - Ausgeschaltete Abschnitte entfallen samt Menüpunkt (Kopfzeile, Handy-Menü, „Schreib mir“-Knopf); das Featured hängt nur am Stern der Referenzen.
 - Neu bearbeitbar (vorher fest im Code): Abschnittsnamen der REC-Zeilen, Intro-Name und Timecode, Hinweis/Spaltenkopf im Schnittplatz, Featured-Beschriftungen, „Rolle:“, Wort für „Clips“, Podcast „Anhören bei“/„Folge“, „heute“/„seit“, Mail-Hinweis, „Kopieren“/„Kopiert“, Fußzeilen-Links, Titel im Handy-Menü. Das Feld „Podcast: Zeile rechts“ war bisher ohne Wirkung und wird jetzt angezeigt. Leere Pflichtbeschriftungen fallen auf den Standardtext zurück; Standardtexte stehen ohne Eingabe auch englisch zur Verfügung (nur eigene Texte erscheinen in der Übersetzungstabelle).
 - Fest gestaltet bleibt die Überschrift „Off the record“ (durchgestrichenes „the“).
+
+## Aufgeräumt
+
+- Entfernt: Timecode-Feld der Referenzen, leere Überschrift „Namensschild am Foto“, Rest des Namensschilds im Handy-Menü, Vorschau-Code der alten Zeitleiste, `admin_menu()`, `auto_tc()`, ungenutzte Formatierungen. Menü „Startseite“ heißt jetzt „Hero-Bereich“. PDF-Felder (auch CV) laden sofort hoch; Entfernen mit Rückfrage.
+- Abschnitte → Showreel: Felder gruppiert in „Hervorgehobener Beitrag“, „Schnittplatz“, „Beitragsliste“.

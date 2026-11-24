@@ -381,7 +381,7 @@ req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'discard_draft', 'kind
 
 $eb = req('GET', "$base/admin/?p=edit&c=clips&id=$uc")['body'];
 ok(str_contains($eb, 'id="livebtn"') && str_contains($eb, 'id="livepane"') && str_contains($eb, 'data-autosave="1"') && str_contains($eb, 'class="actions"'), 'Editor: Aktionsleiste, Live-Vorschau, Autospeichern');
-ok(str_contains($eb, 'details class="adv"') && str_contains($eb, 'Timecode <small>(erweitert)</small>'), 'Editor: „Erweitert“ eingeklappt');
+ok(str_contains(req('GET', "$base/admin/?p=group&g=seo")['body'], 'details class="adv"') && !str_contains($eb, 'Timecode'), 'Editor: „Erweitert“ eingeklappt (SEO), Referenzen ohne Timecode');
 $en = req('GET', "$base/admin/?p=edit&c=clips")['body'];
 ok(!str_contains($en, 'data-autosave') && !str_contains($en, 'id="livebtn"'), 'Neuer Eintrag: kein Autospeichern');
 ok(str_contains(req('GET', "$base/admin/?p=group&g=seo")['body'], 'robots.txt <small>(erweitert)</small>'), 'SEO-Seite: technische Abschnitte eingeklappt');
@@ -726,24 +726,25 @@ imagepng($gd, $gp);
 $pdfp = sys_get_temp_dir() . '/galtest.pdf';
 file_put_contents($pdfp, "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
 $up1 = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'kind' => 'gallery', 'file' => new CURLFile($gp, 'image/png', 'a.png')], true)['body'], true);
+$up1b = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'file' => new CURLFile($gp, 'image/png', 'b.png')], true)['body'], true);
 $up2 = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'kind' => 'gallery', 'file' => new CURLFile($pdfp, 'application/pdf', 'a.pdf')], true)['body'], true);
 ok(($up1['ok'] ?? false) && ($up1['kind'] ?? '') === 'image' && ($up2['ok'] ?? false) && ($up2['kind'] ?? '') === 'pdf' && str_ends_with((string)$up2['name'], '.pdf'), 'Galerie: Bild und PDF hochgeladen');
 $up3 = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'file' => new CURLFile($pdfp, 'application/pdf', 'a.pdf')], true)['body'], true);
 ok(($up3['ok'] ?? true) === false, 'PDF nur in Galerie-Feldern, nicht als Einzelbild');
 
 $gpost = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'Eigener Beitrag', 'tl_track' => 'T1', 'date' => '2026-05-01', 'link_mode' => 'hosted', 'gallery_text' => '', 'url' => 'https://example.org/alt', 'link_text' => 'Zum Beitrag', 'new_tab' => '1', 'mode' => 'publish',
-    'gallery' => [1 => ['f' => $up2['name'], 'cap' => 'Zweite <Seite>'], 0 => ['f' => $up1['name'], 'cap' => 'Erste Seite'], 2 => ['f' => '../config.php', 'cap' => 'böse'], 3 => ['f' => 'fehlt.png', 'cap' => 'x']]];
+    'hosted_kind' => 'images', 'gallery' => [1 => ['f' => $up1b['name'], 'cap' => 'Zweite <Seite>'], 4 => ['f' => $up2['name'], 'cap' => 'PDF gehört nicht in die Galerie'], 0 => ['f' => $up1['name'], 'cap' => 'Erste Seite'], 2 => ['f' => '../config.php', 'cap' => 'böse'], 3 => ['f' => 'fehlt.png', 'cap' => 'x']]];
 $r = req('POST', "$base/admin/", $gpost);
 ok($r['code'] === 302, 'Beitrag mit Galerie gespeichert');
 reset_content_cache();
 $gid = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL ORDER BY id DESC LIMIT 1")->fetchColumn();
 $gi = item($gid);
-ok(count($gi['gallery']) === 2 && $gi['gallery'][0]['f'] === $up1['name'] && $gi['gallery'][1]['f'] === $up2['name'] && $gi['link_mode'] === 'hosted', 'Galerie: Reihenfolge übernommen, ungültige Dateien verworfen');
+ok(count($gi['gallery']) === 2 && $gi['gallery'][0]['f'] === $up1['name'] && $gi['gallery'][1]['f'] === $up1b['name'] && $gi['link_mode'] === 'hosted', 'Galerie: Reihenfolge übernommen, ungültige Dateien verworfen');
 ok($gi['published'] === true && $gi['featured'] === false, 'versteckte Felder bekommen Standardwerte');
 $pub = req('GET', "$base/")['body'];
 ok(str_contains($pub, 'data-gal="' . $gid . '"') && str_contains($pub, 'Beitrag ansehen') && str_contains($pub, 'id="ar-gal"') && !str_contains($pub, 'example.org/alt'), 'Kachel: Knopf „Beitrag ansehen“ öffnet die Galerie (kein externer Link)');
 $hx = substr(json_encode('<', JSON_HEX_TAG), 1, -1);
-ok(str_contains($pub, 'Zweite ' . $hx . 'Seite') && !str_contains($pub, 'Zweite <Seite>') && str_contains($pub, '"pdf":true'), 'Galerie-Daten maskiert, PDF erkannt');
+ok(str_contains($pub, 'Zweite ' . $hx . 'Seite') && !str_contains($pub, 'Zweite <Seite>') && !str_contains($pub, 'PDF gehört nicht'), 'Galerie-Daten maskiert, PDF-Dateien gehören nicht in die Galerie');
 ok(preg_match('~<a class="cl-link"[^>]*href="https://[^"]+"[^>]*>.*?<span class="cl-cta"><span>Zum Beitrag</span>~s', $pub) === 1, 'Auch externe Beiträge haben unten einen Knopf mit Linktext');
 $tp = req('GET', "$base/admin/?p=translate")['body'];
 ok(str_contains($tp, 'gallery.' . $up1['name']) && str_contains($tp, 'Bildunterschrift'), 'Bildunterschriften stehen in der Übersetzungstabelle');
@@ -755,6 +756,22 @@ ok(str_contains(req('GET', "$base/")['body'], 'Erste Seite'), 'Deutsche Bildunte
 req('POST', "$base/admin/", $gpost + ['id' => $gid]);
 reset_content_cache();
 ok(item($gid)['gallery'][0]['cap_en'] === 'First page', 'Übersetzung der Bildunterschrift bleibt beim Speichern erhalten');
+
+// Beitrag selbst hosten als PDF: öffnet im neuen Tab
+$ed2 = req('GET', "$base/admin/?p=edit&c=clips")['body'];
+ok(str_contains($ed2, 'data-v="images"') && str_contains($ed2, 'data-v="pdf"') && str_contains($ed2, 'name="pdf_file_pick"') && str_contains($ed2, 'data-pdf-up'), 'Umschalter „Bilder“ / „PDF“ und PDF-Feld im Formular');
+$pdfPost = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'clips', 'title' => 'PDF-Beitrag', 'tl_track' => 'T1', 'link_mode' => 'hosted', 'hosted_kind' => 'pdf', 'pdf_file_pick' => $up2['name'], 'gallery_text' => '', 'mode' => 'publish'];
+req('POST', "$base/admin/", $pdfPost);
+reset_content_cache();
+$pid = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL ORDER BY id DESC LIMIT 1")->fetchColumn();
+ok(item($pid)['pdf_file'] === $up2['name'], 'PDF gespeichert');
+$pub = req('GET', "$base/")['body'];
+ok(preg_match('~<a class="cl-link"[^>]*href="[^"]*' . preg_quote($up2['name'], '~') . '"[^>]*target="_blank"[^>]*>.*?<span class="cl-cta"><span>Beitrag ansehen</span>~s', $pub) === 1 && !str_contains($pub, 'data-gal="' . $pid . '"'), 'PDF-Beitrag: Knopf öffnet das PDF im neuen Tab (keine Lightbox)');
+req('POST', "$base/admin/", array_merge($pdfPost, ['id' => $pid, '_remove_pdf_file' => '1', 'pdf_file_pick' => '']));
+reset_content_cache();
+ok(item($pid)['pdf_file'] === '' && !str_contains(req('GET', "$base/")['body'], $up2['name']), 'PDF entfernt');
+q("UPDATE ar_items SET deleted_at = " . time() . " WHERE id = $pid");
+reset_content_cache();
 
 // Stern: immer nur ein Featured
 $cl = array_map('intval', array_column(q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL AND live = 1 ORDER BY sort")->fetchAll(), 'id'));
@@ -806,6 +823,7 @@ q("UPDATE ar_items SET deleted_at = " . time() . " WHERE id = $gid");
 reset_content_cache();
 @unlink("$root/uploads/{$up1['name']}");
 @unlink("$root/uploads/{$up2['name']}");
+@unlink("$root/uploads/{$up1b['name']}");
 @unlink($gp);
 @unlink($pdfp);
 
@@ -837,6 +855,15 @@ $en = req('GET', "$base/en/")['body'];
 ok(str_contains($en, 'Select a clip to jump to the post') && str_contains($en, 'Role:') && !str_contains($en, 'Anhören bei'), 'neue Textbausteine: englische Standardtexte');
 $tp = req('GET', "$base/admin/?p=translate")['body'];
 ok(!str_contains($tp, 'Beschriftung vor der Rolle'), 'Standardtexte mit Wörterbuch erscheinen nicht als offene Übersetzung');
+$sg = req('GET', "$base/admin/?p=group&g=sections")['body'];
+$pa = strpos($sg, 'Hervorgehobener Beitrag');
+$pb = strpos($sg, '>Schnittplatz<');
+$pc = strpos($sg, 'Beitragsliste');
+ok($pa !== false && $pb > $pa && $pc > $pb && strpos($sg, 'name="feat_label"') > $pa && strpos($sg, 'name="editor_title"') > $pb && strpos($sg, 'name="show_all"') > $pc, 'Showreel-Karte: Felder gruppiert (Hervorgehobener Beitrag, Schnittplatz, Beitragsliste)');
+$hg = req('GET', "$base/admin/?p=group&g=hero")['body'];
+ok(!str_contains($hg, 'Namensschild') && str_contains(req('GET', "$base/admin/")['body'], 'Hero-Bereich') && !str_contains(req('GET', "$base/admin/")['body'], '>Startseite<'), 'Menü „Hero-Bereich“, keine leere Überschrift im Hero-Formular');
+ok(!str_contains(req('GET', "$base/admin/?p=edit&c=clips")['body'], 'name="tc"') && !function_exists('admin_menu') && !function_exists('auto_tc'), 'Timecode-Feld und ungenutzte Funktionen entfernt');
+ok(!str_contains(req('GET', "$base/")['body'], 'Ende Reel №1 · ') && !preg_match('~menu-foot.*? · </span>~s', req('GET', "$base/")['body']), 'Handy-Menü ohne hängendes „ · “');
 
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'add_user', 'email' => 'antonia@antoniarueller.de', 'name' => 'A']);
 ok(str_contains(follow($r)['body'], 'eigenen Domain'), 'Domain-Postfach als Zugang abgelehnt');

@@ -63,12 +63,12 @@ function schema(): array
             f('url', 'url', 'Link zum Beitrag', ['show_if' => ['link_mode', 'external']]),
             f('text', 'link_text', 'Linktext', ['max' => 60, 'default' => 'Zum Beitrag', 'dict' => true, 'show_if' => ['link_mode', 'external']]),
             f('bool', 'new_tab', 'Link in neuem Tab öffnen', ['default' => true, 'show_if' => ['link_mode', 'external']]),
-            f('text', 'gallery_text', 'Linktext', ['max' => 60, 'default' => 'Beitrag ansehen', 'dict' => true, 'show_if' => ['link_mode', 'hosted'], 'hint' => 'Beschriftung des Knopfes, der die Bilder öffnet.']),
-            f('gallery', 'gallery', 'Bilder und PDFs', ['show_if' => ['link_mode', 'hosted'], 'max_items' => 30, 'hint' => 'Auf der Seite öffnen sich die Dateien in dieser Reihenfolge in einer Galerie (Lightbox). Die Bildunterschrift ist optional.']),
+            f('switch', 'hosted_kind', 'Was soll sich öffnen?', ['options' => ['images' => 'Bilder', 'pdf' => 'PDF'], 'default' => 'images', 'show_if' => ['link_mode', 'hosted']]),
+            f('text', 'gallery_text', 'Linktext', ['max' => 60, 'default' => 'Beitrag ansehen', 'dict' => true, 'show_if' => ['link_mode', 'hosted'], 'hint' => 'Beschriftung des Knopfes in der Kachel und im Featured.']),
+            f('gallery', 'gallery', 'Bilder', ['show_if' => ['link_mode', 'hosted'], 'show_if2' => ['hosted_kind', 'images'], 'max_items' => 30, 'hint' => 'Auf der Seite öffnen sich die Bilder in dieser Reihenfolge in einer Galerie (Lightbox). Die Bildunterschrift ist optional.']),
+            f('pdf', 'pdf_file', 'PDF', ['show_if' => ['link_mode', 'hosted'], 'show_if2' => ['hosted_kind', 'pdf'], 'hint' => 'Das PDF öffnet sich beim Klick in einem neuen Tab.']),
             f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
             f('bool', 'featured', 'Featured', ['hidden' => true]),
-            f('section', '', 'Timecode', ['adv' => true]),
-            f('text', 'tc', 'Timecode (optional)', ['max' => 11, 'hint' => 'Leer = wird automatisch vergeben, Format 00:01:47:10.']),
         ],
     ];
     $s['collections']['tracks'] = [
@@ -223,7 +223,7 @@ function schema(): array
         ],
     ];
     $s['groups']['hero'] = [
-        'label' => 'Startbereich (Hero)',
+        'label' => 'Hero-Bereich',
         'fields' => [
             f('text', 'first', 'Vorname', ['max' => 40, 'default' => 'Antonia']),
             f('text', 'last', 'Nachname', ['max' => 40, 'default' => 'Rüller']),
@@ -233,7 +233,6 @@ function schema(): array
             f('textarea', 'now_lines', 'Aktuell (eine Zeile pro Eintrag)', ['max' => 200]),
             f('image', 'photo', 'Foto (am besten freigestellt, WebP/PNG)'),
             f('text', 'photo_alt', 'Bildbeschreibung (Alt-Text)', ['max' => 160, 'required' => true]),
-            f('section', '', 'Namensschild am Foto'),
         ],
     ];
     $s['groups']['sections'] = [
@@ -255,13 +254,16 @@ function schema(): array
             f('text', 'show_h1', 'Überschrift, Teil 1 (Großschrift)', ['max' => 20, 'default' => 'Show']),
             f('text', 'show_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'reel']),
             f('text', 'show_right', 'Zeile rechts', ['max' => 80, 'hint' => 'Leer = automatisch (Anzahl, Kategorien und Zeitraum).']),
-            f('text', 'show_unit', 'Wort für die Anzahl in der automatischen Zeile', ['max' => 20, 'default' => 'Clips', 'dict' => true, 'hint' => 'z. B. „Clips“ oder „Beiträge“.']),
-            f('text', 'show_all', 'Titel der Liste', ['max' => 40, 'default' => 'Alle Beiträge']),
+            f('section', '', 'Hervorgehobener Beitrag', ['sub' => true]),
+            f('text', 'feat_label', 'Beschriftung im Featured-Block', ['max' => 30, 'default' => 'Featured', 'dict' => true]),
+            f('text', 'feat_by', 'Wort vor dem Namen im Featured („Von …“)', ['max' => 20, 'default' => 'Von', 'dict' => true]),
+            f('section', '', 'Schnittplatz', ['sub' => true]),
             f('text', 'editor_title', 'Titel des Schnittplatzes', ['max' => 40, 'default' => 'Schnittplatz · Reel №1']),
             f('text', 'editor_hint', 'Hinweis in der Leiste des Schnittplatzes', ['max' => 60, 'default' => 'Clip anklicken: springt zum Beitrag', 'dict' => true]),
             f('text', 'editor_track', 'Spaltenkopf der Spuren', ['max' => 20, 'default' => 'Spur', 'dict' => true]),
-            f('text', 'feat_label', 'Beschriftung im Featured-Block', ['max' => 30, 'default' => 'Featured', 'dict' => true]),
-            f('text', 'feat_by', 'Wort vor dem Namen im Featured („Von …“)', ['max' => 20, 'default' => 'Von', 'dict' => true]),
+            f('section', '', 'Beitragsliste', ['sub' => true]),
+            f('text', 'show_all', 'Titel der Liste', ['max' => 40, 'default' => 'Alle Beiträge']),
+            f('text', 'show_unit', 'Wort für die Anzahl in der automatischen Zeile rechts', ['max' => 20, 'default' => 'Clips', 'dict' => true, 'hint' => 'z. B. „Clips“ oder „Beiträge“.']),
             f('text', 'role_label', 'Beschriftung vor der Rolle in den Kacheln', ['max' => 20, 'default' => 'Rolle:', 'dict' => true]),
 
             f('section', '', 'Podcast', ['card' => true, 'toggle' => 'on_podcast', 'link' => ['c', 'episodes']]),
@@ -358,15 +360,6 @@ function schema(): array
     return $s;
 }
 
-/** Navigationsstruktur der Admin-Seitenleiste – folgt den Abschnitten der Website. */
-function admin_menu(): array
-{
-    return [
-        'Seite' => [['g', 'site'], ['g', 'seo'], ['g', 'hero'], ['c', 'nav'], ['g', 'sections']],
-        'Inhalte' => [['c', 'clips'], ['c', 'tracks'], ['c', 'episodes'], ['c', 'stations'], ['c', 'cv'], ['c', 'before'], ['g', 'about'], ['c', 'crossmedia'], ['c', 'languages'], ['c', 'offrecord'], ['c', 'questions'], ['g', 'contact'], ['c', 'social'], ['g', 'legal']],
-    ];
-}
-
 /**
  * Seitenleiste nach Website-Abschnitten.
  * Gruppe: id => [Titel, Symbol, Beschreibung, Einträge]; Eintrag: [Art (c|g|p), Schlüssel, Menütext, Erklärung, nur Inhaber?]
@@ -374,7 +367,7 @@ function admin_menu(): array
 function admin_nav(): array
 {
     return [
-        'start' => ['Startseite', 'home', 'Das Erste, was Besucher sehen.', [
+        'start' => ['Hero-Bereich', 'home', 'Das Erste, was Besucher sehen.', [
             ['g', 'hero', 'Startbild & Einleitung', 'Foto, Überschrift und Einstiegstext ganz oben.'],
             ['c', 'questions', 'Leitfragen', '„Was mich antreibt“ – die kurzen Fragen mit Nummer.'],
         ]],

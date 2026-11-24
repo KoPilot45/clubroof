@@ -21,7 +21,7 @@ function preview_mode(?bool $set = null): bool
 }
 
 /** Felder, die nie übersetzt werden (Namen, Kürzel, technische Werte). */
-const NO_TRANSLATE = ['photo_credit_url', 'still_credit', 'first', 'last', 'tag_name', 'code', 'tc', 'email', 'outlet', 'show', 'number', 'org', 'name', 'country', 'google_verify', 'bing_verify', 'works_for', 'header_label', 'date_label', 'outlets', 'copyright', 'robots_extra', 'llms_summary', 'llms_extra', 'same_as', 'alumni', 'other_label'];
+const NO_TRANSLATE = ['photo_credit_url', 'still_credit', 'first', 'last', 'code', 'email', 'outlet', 'show', 'number', 'org', 'name', 'country', 'google_verify', 'bing_verify', 'works_for', 'header_label', 'date_label', 'outlets', 'copyright', 'robots_extra', 'llms_summary', 'llms_extra', 'same_as', 'alumni', 'other_label'];
 
 function field_translatable(array $f): bool
 {
@@ -427,7 +427,7 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
                 ksort($list);
                 foreach ($list as $g) {
                     $fn = is_array($g) ? (string)($g['f'] ?? '') : '';
-                    if (!preg_match('~^[a-z0-9_-]+\.(jpg|png|webp|pdf)$~', $fn) || !is_file(upload_dir() . '/' . $fn)) {
+                    if (!preg_match('~^[a-z0-9_-]+\.(jpg|png|webp)$~', $fn) || !is_file(upload_dir() . '/' . $fn)) {
                         continue;
                     }
                     $cap = trim(preg_replace('~\s*[\r\n]+\s*~', ' ', preg_replace('~[\x00-\x08\x0B\x0C\x0E-\x1F]~', '', (string)($g['cap'] ?? ''))));
@@ -513,6 +513,10 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
                     }
                 }
                 break;
+        }
+        if ($t === 'pdf' && empty($files[$k]['name']) && !empty($post[$k . '_pick'])
+            && preg_match('~^[a-z0-9_-]+\.pdf$~', (string)$post[$k . '_pick']) && is_file(upload_dir() . '/' . $post[$k . '_pick'])) {
+            $v = (string)$post[$k . '_pick'];
         }
         if ($t === 'image' && empty($files[$k]['name']) && !empty($post[$k . '_pick'])
             && preg_match('~^[a-z0-9_-]+\.(jpg|png|webp)$~', (string)$post[$k . '_pick']) && is_file(upload_dir() . '/' . $post[$k . '_pick'])) {

@@ -134,12 +134,6 @@ function clip_date_label(array $c): string
     return fmt_month($c['date']);
 }
 
-function auto_tc(int $i): string
-{
-    $sec = ($i + 1) * 33 - 21;
-    return sprintf('00:%02d:%02d:%02d', intdiv($sec, 60), $sec % 60, ($i * 7) % 25);
-}
-
 /** Breite eines Clips im Schnittplatz: variiert automatisch, bleibt aber für denselben Beitrag immer gleich. */
 const TL_WEIGHTS = [0.85, 1.0, 1.15, 1.3, 1.5];
 

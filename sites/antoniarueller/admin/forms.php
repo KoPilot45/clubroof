@@ -63,11 +63,19 @@ function render_field(array $f, mixed $val, array $vals = []): void
     if (!empty($f['hidden'])) {
         return;
     }
-    if (!empty($f['show_if'])) {
-        $cur = (string)($vals[$f['show_if'][0]] ?? '');
-        echo '<div class="showif" data-showif="' . e($f['show_if'][0] . '=' . $f['show_if'][1]) . '"' . ($cur === (string)$f['show_if'][1] ? '' : ' hidden') . '>';
+    $open = '';
+    $close = '';
+    foreach (['show_if', 'show_if2'] as $sk) {
+        if (!empty($f[$sk])) {
+            $cur = (string)($vals[$f[$sk][0]] ?? '');
+            $open .= '<div class="showif" data-showif="' . e($f[$sk][0] . '=' . $f[$sk][1]) . '"' . ($cur === (string)$f[$sk][1] ? '' : ' hidden') . '>';
+            $close .= '</div>';
+        }
+    }
+    if ($open !== '') {
+        echo $open;
         render_field_inner($f, $val, $vals);
-        echo '</div>';
+        echo $close;
         return;
     }
     render_field_inner($f, $val, $vals);
@@ -77,8 +85,7 @@ function render_field(array $f, mixed $val, array $vals = []): void
 function gallery_row(string $k, string|int $i, array $g): string
 {
     $fn = (string)($g['f'] ?? '');
-    $isPdf = str_ends_with($fn, '.pdf');
-    $thumb = $fn === '' ? '' : ($isPdf ? '<span class="gal-pdf">' . aicon('doc', 22) . 'PDF</span>' : '<img src="' . e(upload_url($fn)) . '" alt="" loading="lazy">');
+    $thumb = $fn === '' ? '' : '<img src="' . e(upload_url($fn)) . '" alt="" loading="lazy">';
     return '<li class="gal-row" data-f="' . e($fn) . '"><span class="gal-grip" aria-hidden="true" title="Zum Sortieren ziehen">⠿</span><span class="gal-thumb">' . $thumb . '</span>'
         . '<span class="gal-fields"><input type="hidden" data-n="f" name="' . e($k) . '[' . $i . '][f]" value="' . e($fn) . '">'
         . '<input type="text" data-n="cap" name="' . e($k) . '[' . $i . '][cap]" value="' . e((string)($g['cap'] ?? '')) . '" maxlength="200" placeholder="Bildunterschrift (optional)" aria-label="Bildunterschrift (optional)"></span>'
@@ -139,10 +146,10 @@ function render_field_inner(array $f, mixed $val, array $vals = []): void
             foreach ($gi as $n => $g) {
                 echo gallery_row($k, $n, (array)$g);
             }
-            echo '</ul><p class="gal-none hint">Noch keine Dateien. Füge Bilder oder PDFs hinzu.</p><p class="gal-status newbadge" role="status" hidden></p>';
-            echo '<div class="gal-add"><label class="btn small ghost gal-file">' . aicon('plus', 15) . ' Dateien hinzufügen<input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif,.avif,application/pdf" hidden></label> <button type="button" class="btn small ghost" data-gal-media>Aus Mediathek wählen</button></div>';
+            echo '</ul><p class="gal-none hint">Noch keine Bilder.</p><p class="gal-status newbadge" role="status" hidden></p>';
+            echo '<div class="gal-add"><label class="btn small ghost gal-file">' . aicon('plus', 15) . ' Bilder hinzufügen<input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif,.avif" hidden></label> <button type="button" class="btn small ghost" data-gal-media>Aus Mediathek wählen</button></div>';
             echo '<template id="galtpl_' . e($k) . '">' . gallery_row($k, '__I__', []) . '</template></div>';
-            echo '<small class="hint">JPG, PNG, WebP, AVIF oder PDF, je höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB, bis zu ' . (int)($f['max_items'] ?? 30) . ' Dateien. Bilder werden automatisch optimiert. Reihenfolge per Ziehen oder mit den Pfeilen ändern.</small>';
+            echo '<small class="hint">JPG, PNG, WebP oder AVIF, je höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB, bis zu ' . (int)($f['max_items'] ?? 30) . ' Bilder. Sie werden automatisch optimiert. Reihenfolge per Ziehen oder mit den Pfeilen ändern.</small>';
             break;
         case 'select':
             $opts = select_options($f);
@@ -167,10 +174,12 @@ function render_field_inner(array $f, mixed $val, array $vals = []): void
             echo '<small class="hint">JPG, PNG, WebP oder AVIF, höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB. Wird automatisch verkleinert und optimiert.</small>';
             break;
         case 'pdf':
-            if ($val !== '' && upload_url((string)$val) !== '') {
-                echo '<div class="imgprev"><a href="' . e(upload_url((string)$val)) . '" target="_blank" rel="noopener">Aktuelle PDF öffnen</a><label class="check"><input type="checkbox" name="_remove_' . e($k) . '" value="1"> PDF entfernen</label></div>';
-            }
-            echo '<input type="file" id="' . $id . '" name="' . e($k) . '" accept="application/pdf"' . $desc . '>';
+            $hasPdf = $val !== '' && upload_url((string)$val) !== '';
+            echo '<div class="pdfbox"' . ($hasPdf ? '' : ' hidden') . '><span class="pdf-ic" aria-hidden="true">' . aicon('doc', 22) . '</span><a href="' . ($hasPdf ? e(upload_url((string)$val)) : '#') . '" target="_blank" rel="noopener">Aktuelles PDF öffnen</a><button type="button" class="btn small danger-o" data-pdf-remove="' . e($k) . '">Entfernen</button></div>';
+            echo '<p class="newbadge pdfnote" role="status" hidden></p>';
+            echo '<input type="hidden" name="_remove_' . e($k) . '" id="f_' . e($k) . '_remove" value=""><input type="hidden" name="' . e($k) . '_pick" id="f_' . e($k) . '_pick" value="">';
+            echo '<input type="file" id="' . $id . '" name="' . e($k) . '" accept="application/pdf" data-pdf-up' . $desc . '>';
+            echo '<small class="hint">PDF, höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB. Wird sofort hochgeladen; auf der Seite erscheint es erst nach „Veröffentlichen“.</small>';
             break;
     }
     echo $hint . '</div>';
@@ -376,6 +385,10 @@ function render_fields(array $fields, array $vals, ?callable $after = null): voi
             if ($adv) {
                 echo '</details>';
                 $adv = false;
+            }
+            if (!empty($f['sub']) && $card) {
+                echo '<h3 class="seccard-sub">' . e($f['label']) . '</h3>';
+                continue;
             }
             if ($card) {
                 echo '</div></section>';

@@ -80,6 +80,9 @@ function field_relevant(array $f, array $vals): bool
     if (!empty($f['show_if']) && (string)($vals[$f['show_if'][0]] ?? '') !== (string)$f['show_if'][1]) {
         return false;
     }
+    if (!empty($f['show_if2']) && (string)($vals[$f['show_if2'][0]] ?? '') !== (string)$f['show_if2'][1]) {
+        return false;
+    }
     if (!empty($f['dict']) && trim((string)($vals[$f['key']] ?? '')) === (string)($f['default'] ?? '')) {
         return false;
     }
@@ -136,7 +139,7 @@ function readiness_checks(): array
     $seo = setting('seo', true);
     $hero = setting('hero', true);
     $legal = setting('legal', true);
-    $clips = array_filter(items('clips', false, true), fn($x) => $x['published'] && (($x['link_mode'] === 'hosted' && $x['gallery']) || ($x['link_mode'] !== 'hosted' && str_starts_with(safe_url($x['url']), 'http'))));
+    $clips = array_filter(items('clips', false, true), fn($x) => $x['published'] && (($x['link_mode'] === 'hosted' && ($x['hosted_kind'] === 'pdf' ? $x['pdf_file'] !== '' : (bool)$x['gallery'])) || ($x['link_mode'] !== 'hosted' && str_starts_with(safe_url($x['url']), 'http'))));
     $ph = fn(string $t) => $t === '' || (bool)preg_match('~\[[^\]\n]{2,}\]~u', $t);
     $tp = translation_progress();
     $pct = $tp['total'] ? (int)round($tp['done'] / $tp['total'] * 100) : 100;

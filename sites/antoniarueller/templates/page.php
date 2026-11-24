@@ -112,8 +112,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php if ($fc['desc'] !== ''): ?><p class="fa-stand"><?= e($fc['desc']) ?></p><?php endif; ?>
 <div class="fa-foot">
 <span class="fa-by"><?= $fBy ? e(tr($sec['feat_by'])) . ' <b>' . e(array_shift($fBy)) . '</b>' . ($fBy ? ' · ' . e(implode(' · ', $fBy)) : '') : '' ?></span>
-<?php if ($fc['_hosted']): ?><button type="button" class="fa-cta" data-gal="<?= (int)$fc['_id'] ?>" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>"><?= icon($fc['medium'], 16) ?><span><?= e(tr($fc['gallery_text'] ?: 'Beitrag ansehen')) ?></span><span aria-hidden="true">→</span></button>
-<?php elseif ($fc['link_mode'] !== 'hosted' && $fc['url'] !== ''): ?><a class="fa-cta" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e(safe_url($fc['url'])) ?>" <?= $fc['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= icon($fc['medium'], 16) ?><span><?= e(tr($fc['link_text'] ?: 'Zum Beitrag')) ?></span><span aria-hidden="true">→</span></a><?php endif; ?>
+<?php if ($fc['_hosted']): ?><button type="button" class="fa-cta" data-gal="<?= (int)$fc['_id'] ?>" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>"><?= icon($fc['medium'], 16) ?><span><?= e(tr($fc['_cta'])) ?></span><span aria-hidden="true">→</span></button>
+<?php elseif ($fc['_href'] !== ''): ?><a class="fa-cta" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e($fc['_href']) ?>" <?= $fc['_blank'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= icon($fc['medium'], 16) ?><span><?= e(tr($fc['_cta'])) ?></span><span aria-hidden="true">→</span></a><?php endif; ?>
 </div>
 </div>
 <?php if ($fImg !== ''): ?><figure class="fa-img"><img src="<?= e($fImg) ?>" alt="" loading="lazy" style="object-position:<?= e(focus_pos((string)($fc['still_focus'] ?? ''))) ?>"><?php if (trim((string)($fc['still_credit'] ?? '')) !== ''): ?><figcaption class="cred"><?= e($fc['still_credit']) ?></figcaption><?php endif; ?></figure><?php else: ?><div class="fa-no" aria-hidden="true"><?= e($fc['_no']) ?></div><?php endif; ?>
@@ -167,10 +167,10 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <div class="muted list-h"><?= e($sec['show_all']) ?></div>
 <ol class="clip-list">
-<?php foreach ($clips as $n => $c): $cImg = upload_url((string)$c['still']); $ext = $c['link_mode'] === 'hosted' ? '' : safe_url($c['url']); $cat = $c['_cat'] !== '' ? $c['_cat'] : media_label($c['medium']); ?>
+<?php foreach ($clips as $n => $c): $cImg = upload_url((string)$c['still']); $ext = $c['_href']; $cat = $c['_cat'] !== '' ? $c['_cat'] : media_label($c['medium']); ?>
 <li class="ar-clip" id="clip-<?= $c['_id'] ?>" data-id="<?= $c['_id'] ?>">
 <?php if ($c['_hosted']): ?><button type="button" class="cl-link" data-gal="<?= (int)$c['_id'] ?>" data-ev="clip" data-k="<?= (int)$c['_id'] ?>">
-<?php elseif ($ext !== ''): ?><a class="cl-link" data-ev="clip" data-k="<?= (int)$c['_id'] ?>" href="<?= e($ext) ?>" <?= $c['new_tab'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
+<?php elseif ($ext !== ''): ?><a class="cl-link" data-ev="clip" data-k="<?= (int)$c['_id'] ?>" href="<?= e($ext) ?>" <?= $c['_blank'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
 <?php else: ?><div class="cl-link">
 <?php endif; ?>
 <span class="cl-fig<?= $cImg === '' ? ' txt t' . ($n % 2) : '' ?>"><?php if ($cImg !== ''): ?><img src="<?= e($cImg) ?>"<?= img_attrs((string)$c['still']) ?> alt="" loading="lazy" decoding="async" style="object-position:<?= e(focus_pos((string)($c['still_focus'] ?? ''))) ?>"><?php endif; ?><span class="cl-no"><?= e($c['_no']) ?></span><span class="cl-kind"><?= icon($c['medium'], 14) ?><?= e($cat) ?></span><?php if ($cImg !== '' && trim((string)($c['still_credit'] ?? '')) !== ''): ?><span class="cl-cred cred"><?= e($c['still_credit']) ?></span><?php endif; ?></span>
@@ -178,8 +178,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php if (trim((string)$c['desc']) !== ''): ?><span class="cl-desc"><?= e($c['desc']) ?></span><?php endif; ?>
 <span class="cl-meta"><?= implode('', array_map(fn($x) => '<span>' . e($x) . '</span>', array_filter([(string)$c['outlet'], (string)$c['_date']]))) ?></span>
 <?php if (trim((string)$c['role']) !== ''): ?><span class="cl-role"><?= e(tr($sec['role_label'])) ?> <?= e($c['role']) ?></span><?php endif; ?>
-<?php if ($c['_hosted']): ?><span class="cl-cta"><span><?= e(tr($c['gallery_text'] ?: 'Beitrag ansehen')) ?></span><span aria-hidden="true">→</span></span></button>
-<?php elseif ($ext !== ''): ?><span class="cl-cta"><span><?= e(tr($c['link_text'] ?: 'Zum Beitrag')) ?></span><span aria-hidden="true">→</span></span></a>
+<?php if ($c['_hosted']): ?><span class="cl-cta"><span><?= e(tr($c['_cta'])) ?></span><span aria-hidden="true">→</span></span></button>
+<?php elseif ($ext !== ''): ?><span class="cl-cta"><span><?= e(tr($c['_cta'])) ?></span><span aria-hidden="true">→</span></span></a>
 <?php else: ?></div>
 <?php endif; ?>
 </li>
@@ -309,7 +309,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php endforeach; ?>
 </ol></nav>
 <?php if ($hasMail && $sec['on_contact'] && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-block menu-cta" href="#kontakt" data-ev="mail" data-k="menue" data-mail="<?= e(AR_BASE) ?>/mail.php" style="margin-top:28px"><?= e($contact['cta_label']) ?> ↗</a><?php endif; ?>
-<div class="menu-foot"><span class="lang-switch lang-menu"><a href="<?= e(lang_url('de', $page)) ?>" hreflang="de" lang="de">Deutsch</a> · <a href="<?= e(lang_url('en', $page)) ?>" hreflang="en" lang="en">English</a></span><span><?= e($hero['now_lines'] !== '' ? str_replace("\n", ' · ', trim(explode("\n", $hero['now_lines'])[0])) . ' · ' . $hero['tag_role'] : '') ?></span>
+<div class="menu-foot"><span class="lang-switch lang-menu"><a href="<?= e(lang_url('de', $page)) ?>" hreflang="de" lang="de">Deutsch</a> · <a href="<?= e(lang_url('en', $page)) ?>" hreflang="en" lang="en">English</a></span><span><?= e($hero['now_lines'] !== '' ? str_replace("\n", ' · ', trim(explode("\n", $hero['now_lines'])[0])) : '') ?></span>
 <?php foreach ($social as $so): ?><a href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> ↗</a><?php endforeach; ?></div>
 </div>
 
@@ -323,12 +323,12 @@ foreach ($clips as $c) {
     foreach ($c['gallery'] as $g) {
         $u = upload_url((string)($g['f'] ?? ''));
         if ($u !== '') {
-            $galData[(string)$c['_id']][] = ['src' => $u, 'cap' => (string)($g['cap'] ?? ''), 'pdf' => str_ends_with((string)$g['f'], '.pdf'), 'title' => (string)$c['title']];
+            $galData[(string)$c['_id']][] = ['src' => $u, 'cap' => (string)($g['cap'] ?? ''), 'title' => (string)$c['title']];
         }
     }
 }
 if ($galData): ?>
-<script type="application/json" id="ar-gal"><?= json_encode(['l' => ['gallery' => tr('Galerie'), 'close' => tr('Schließen'), 'prev' => tr('Zurück'), 'next' => tr('Weiter'), 'of' => tr('von'), 'pdf' => tr('PDF öffnen')], 'g' => $galData], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
+<script type="application/json" id="ar-gal"><?= json_encode(['l' => ['gallery' => tr('Galerie'), 'close' => tr('Schließen'), 'prev' => tr('Zurück'), 'next' => tr('Weiter'), 'of' => tr('von')], 'g' => $galData], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 <?php endif; ?>
 <script src="<?= AR_BASE ?>/assets/site.js?v=<?= @filemtime(AR_ROOT . '/assets/site.js') ?>" defer></script>
 </body>

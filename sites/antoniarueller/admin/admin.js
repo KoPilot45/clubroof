@@ -193,45 +193,6 @@
     });
   }
 
-  // ---- Vorschau der Zeitleiste im Formular für Referenzen ----
-  var prev = $('#tlprev');
-  if (prev) {
-    var get = function (n) { var el = document.querySelector('[name="' + n + '"]'); return el ? el.value : ''; };
-    var barEl = $('#tlprevbar');
-    var txt = $('#tlprevtxt');
-    var t0 = Date.parse(prev.getAttribute('data-start') + 'T00:00:00Z');
-    var t1 = Date.parse(prev.getAttribute('data-end') + 'T00:00:00Z');
-    var minW = parseFloat(prev.getAttribute('data-minw')) || 2.8;
-    var update = function () {
-      var track = get('tl_track');
-      var pos = parseFloat(String(get('tl_pos')).replace(',', '.'));
-      var w = parseFloat(String(get('tl_w')).replace(',', '.'));
-      var d = get('date'), end = get('tl_end');
-      var span = t1 - t0;
-      var left = null, width = null;
-      if (!isNaN(pos)) {
-        left = pos; width = isNaN(w) ? minW : w;
-      } else if (d) {
-        var s = Date.parse(d + 'T00:00:00Z');
-        left = (s - t0) / span * 100;
-        var e = end ? Date.parse(end + 'T00:00:00Z') : s;
-        width = Math.max(minW, (e - s) / span * 100);
-        if (!isNaN(w)) width = w;
-      }
-      if (!track) { barEl.style.display = 'none'; txt.textContent = 'Diese Referenz wird nicht in der Zeitleiste gezeigt (keine Spur gewählt).'; return; }
-      if (left === null) { barEl.style.display = 'none'; txt.textContent = 'Bitte ein Datum wählen, damit der Balken in der Zeitleiste erscheint.'; return; }
-      var out = left < 0 || left > 100;
-      left = Math.max(0, Math.min(99.5, left)); width = Math.max(0.5, Math.min(100 - left, width));
-      barEl.style.display = 'block'; barEl.style.left = left + '%'; barEl.style.width = width + '%';
-      txt.textContent = out ? 'Achtung: Das Datum liegt außerhalb des Zeitraums der Zeitleiste (unter „Zeitleiste: Zeitraum“ anpassbar).' : 'Position ' + left.toFixed(1) + ' %, Breite ' + width.toFixed(1) + ' %.';
-    };
-    ['date', 'tl_end', 'tl_pos', 'tl_w', 'tl_track'].forEach(function (n) {
-      var el = document.querySelector('[name="' + n + '"]');
-      if (el) { el.addEventListener('input', update); el.addEventListener('change', update); }
-    });
-    update();
-  }
-
   // ---- Sicherheits-Selbsttest (Systemcheck) ----
   $$('.selfchecks li').forEach(function (li) {
     var pill = $('.pill', li);
@@ -863,14 +824,14 @@
       reindex(); dirty = true;
       if (form) { form.dispatchEvent(new Event('input', { bubbles: true })); if (form.getAttribute('data-autosave') === '1') form.dispatchEvent(new Event('ar:save')); }
     }
-    function addRow(name, url, pdf) {
+    function addRow(name, url) {
       if ($$('.gal-row', list).length >= max) return false;
       var t = document.createElement('template');
       t.innerHTML = tpl.innerHTML.trim();
       var li = t.content.firstElementChild;
       li.setAttribute('data-f', name);
       $('[data-n="f"]', li).value = name;
-      $('.gal-thumb', li).innerHTML = pdf ? '<span class="gal-pdf">PDF</span>' : '<img alt="" src="' + esc(url) + '">';
+      $('.gal-thumb', li).innerHTML = '<img alt="" src="' + esc(url) + '">';
       list.appendChild(li);
       return true;
     }
@@ -886,14 +847,13 @@
         }
         var f = queue.shift();
         say('Lädt hoch: ' + f.name + ' …', false);
-        var isPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
-        (!isPdf && isAvif(f) ? avifToWebp(f) : Promise.resolve(f)).then(function (up) {
+        (isAvif(f) ? avifToWebp(f) : Promise.resolve(f)).then(function (up) {
           var fd = new FormData();
-          fd.set('_csrf', form.elements['_csrf'].value); fd.set('action', 'upload_image'); fd.set('kind', 'gallery'); fd.set('file', up);
+          fd.set('_csrf', form.elements['_csrf'].value); fd.set('action', 'upload_image'); fd.set('file', up);
           return fetch(form.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' });
         }).then(function (r) { return r.json(); }).then(function (j) {
           if (!j.ok) throw new Error(j.error || 'Upload fehlgeschlagen');
-          if (addRow(j.name, j.url, j.kind === 'pdf')) done++; else fails.push('Höchstens ' + max + ' Dateien.');
+          if (addRow(j.name, j.url)) done++; else fails.push('Höchstens ' + max + ' Dateien.');
         }).catch(function (err) { fails.push(f.name + ': ' + (err && err.message ? err.message : 'Fehler')); }).then(next);
       }
       next();
@@ -938,11 +898,43 @@
         items.forEach(function (it) {
           var c = document.createElement('button'); c.type = 'button'; c.className = 'mitem';
           c.innerHTML = '<img src="' + it.url + '" alt="" loading="lazy"><span>' + esc(it.name) + '</span>';
-          c.addEventListener('click', function () { if (addRow(it.name, it.url, false)) changed(); closeModal(); });
+          c.addEventListener('click', function () { if (addRow(it.name, it.url)) changed(); closeModal(); });
           grid.appendChild(c);
         });
       }).catch(function () { $('#mgrid', modal).textContent = 'Mediathek konnte nicht geladen werden.'; });
     });
     reindex();
+  });
+
+  // ---- PDF-Felder: sofort hochladen, Entfernen mit Rückfrage ----
+  $$('input[type=file][data-pdf-up]').forEach(function (inp) {
+    var key = inp.name, holder = inp.parentNode, box = $('.pdfbox', holder), note = $('.pdfnote', holder);
+    function say(t, bad) { note.hidden = !t; note.textContent = t || ''; note.classList.toggle('bad', !!bad); }
+    inp.addEventListener('change', function () {
+      var f = inp.files && inp.files[0]; if (!f || !form) return;
+      say('Lädt hoch …');
+      var fd = new FormData();
+      fd.set('_csrf', form.elements['_csrf'].value); fd.set('action', 'upload_image'); fd.set('kind', 'gallery'); fd.set('file', f);
+      fetch(form.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+        if (!j.ok || j.kind !== 'pdf') throw new Error(j.ok ? 'Bitte eine PDF-Datei wählen.' : (j.error || 'Upload fehlgeschlagen'));
+        inp.value = '';
+        document.getElementById('f_' + key + '_pick').value = j.name;
+        document.getElementById('f_' + key + '_remove').value = '';
+        var a = $('a', box); a.href = j.url; a.textContent = 'Hochgeladenes PDF öffnen'; box.hidden = false;
+        say('Hochgeladen. Auf der Seite erscheint es erst nach „Veröffentlichen“.');
+        dirty = true;
+        form.dispatchEvent(new Event('input', { bubbles: true })); if (form.getAttribute('data-autosave') === '1') form.dispatchEvent(new Event('ar:save'));
+      }).catch(function (err) { say('Direkter Upload nicht möglich (' + (err && err.message ? err.message : 'Fehler') + '). Die Datei wird beim Speichern hochgeladen.', true); });
+    });
+    var rm = $('[data-pdf-remove]', box);
+    if (rm) rm.addEventListener('click', function () {
+      if (!window.confirm('Dieses PDF wirklich entfernen?')) return;
+      document.getElementById('f_' + key + '_remove').value = '1';
+      document.getElementById('f_' + key + '_pick').value = '';
+      inp.value = ''; box.hidden = true;
+      say('PDF entfernt. Auf der Seite verschwindet es erst nach „Veröffentlichen“.');
+      dirty = true;
+      if (form) { form.dispatchEvent(new Event('input', { bubbles: true })); if (form.getAttribute('data-autosave') === '1') form.dispatchEvent(new Event('ar:save')); }
+    });
   });
 })();

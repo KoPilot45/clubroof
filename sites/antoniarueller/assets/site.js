@@ -65,13 +65,7 @@
   function lbShow() {
     var it = lbItems[lbI], L = galData.l, fig = $('.lb-fig', lb), cap = $('.lb-cap', lb);
     fig.innerHTML = '';
-    if (it.pdf) {
-      var fr = document.createElement('iframe'); fr.src = it.src; fr.title = it.cap || it.title; fr.className = 'lb-pdf';
-      var op = document.createElement('a'); op.href = it.src; op.target = '_blank'; op.rel = 'noopener'; op.className = 'lb-pdflink'; op.textContent = L.pdf + ' ↗';
-      fig.appendChild(fr); fig.appendChild(op);
-    } else {
-      var im = document.createElement('img'); im.src = it.src; im.alt = it.cap || it.title; fig.appendChild(im);
-    }
+    var im = document.createElement('img'); im.src = it.src; im.alt = it.cap || it.title; fig.appendChild(im);
     cap.textContent = it.cap || ''; cap.hidden = !it.cap;
     $('.lb-count', lb).textContent = lbItems.length > 1 ? (lbI + 1) + ' ' + L.of + ' ' + lbItems.length : '';
     $$('.lb-nav', lb).forEach(function (b) { b.hidden = lbItems.length < 2; });
