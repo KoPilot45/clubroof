@@ -151,6 +151,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $publish = ($_POST['mode'] ?? 'publish') !== 'draft';
             save_setting($g, $data, $who, $publish);
+            if ($publish) {
+                foreach (['photo', 'portrait'] as $pk) {
+                    if ($g !== 'site' && !empty($data[$pk]) && is_string($data[$pk]) && in_array($g, ['hero', 'about'], true)) {
+                        img_width_set($data[$pk]);
+                    }
+                }
+            }
             cleanup_uploads();
             audit($who, $publish ? 'publish_group' : 'draft_group', $g);
             $back(AR_BASE . '/admin/?p=group&g=' . $g, $publish ? 'Veröffentlicht.' : 'Entwurf gespeichert – noch nicht öffentlich. Mit „Vorschau“ ansehen.');

@@ -877,6 +877,21 @@ reset_content_cache();
 @unlink($gp);
 @unlink($pdfp);
 
+echo "Feinschliff: Schrift, Überschriften, 404, Unterseiten\n";
+$cssTxt = (string)file_get_contents("$root/assets/site.css");
+preg_match_all('~font-size:\s*(\d+(?:\.\d+)?)px~', $cssTxt, $fs);
+ok(!array_filter($fs[1], fn($x) => (float)$x < 12), 'Schriftgrößen im Frontend mindestens 12 px');
+$hp = req('GET', "$base/")['body'];
+ok(preg_match('~<h2 class="sr-only">[^<]+</h2>\s*<div class="sec-head"[^>]*><span class="sec-l"><span class="rec-dot[^"]*"[^>]*></span><span class="rec-t">REC</span><span>02~', $hp) === 1 || substr_count($hp, 'class="sr-only"') >= 3, 'Leitfragen, Über mich und Stationen haben eine (unsichtbare) Überschrift');
+ok(preg_match('~<img class="ar-hero-img" src="[^"]*" srcset="[^"]*/uploads/v/[a-z0-9-]+\.w360\.[a-z0-9]+\.webp 360w, [^"]*/uploads/[a-z0-9-]+\.webp\?v=\d+ 593w" sizes="\(max-width: 899px\) 347px, 416px"~', $hp) === 1, 'Hero-Foto: eigene Größen per srcset, Original als größte Stufe');
+$nf = req('GET', "$base/gibtesnicht");
+ok($nf['code'] === 404 && str_contains($nf['body'], 'class="nf-code"') && str_contains($nf['body'], 'Diese Seite gibt es') && str_contains($nf['body'], 'btn-solid btn-lg') && str_contains($nf['body'], 'btn-ghost btn-lg'), '404-Seite: großer Hinweis mit Knöpfen');
+$ok3 = true;
+foreach (['/gibtesnicht', '/impressum/', '/datenschutz/'] as $up) {
+    $ok3 = $ok3 && str_contains(req('GET', $base . $up)['body'], 'class="btn-solid btn-nav back"');
+}
+ok($ok3, '404, Impressum und Datenschutz: „Zur Startseite“ ist ein Knopf in der Navigation');
+
 echo "Hilfe\n";
 require_once "$root/admin/help.php";
 $hp = req('GET', "$base/admin/?p=help")['body'];

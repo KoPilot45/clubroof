@@ -84,7 +84,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </div>
 <div class="ar-hero-media">
 <span class="ar-hero-circle" aria-hidden="true"></span>
-<?php if (upload_url($hero['photo']) !== ''): ?><img class="ar-hero-img" src="<?= e(upload_url($hero['photo'])) ?>"<?= img_attrs($hero['photo']) ?> alt="<?= e($hero['photo_alt']) ?>" fetchpriority="high" decoding="async"><?php endif; ?>
+<?php if (upload_url($hero['photo']) !== ''): ?><?php $hv = img_width_set((string)$hero['photo']); ?><img class="ar-hero-img" src="<?= e(upload_url($hero['photo'])) ?>"<?= $hv ? ' srcset="' . e($hv['srcset']) . '" sizes="(max-width: 899px) 347px, 416px"' : '' ?><?= img_attrs($hero['photo']) ?> alt="<?= e($hero['photo_alt']) ?>" fetchpriority="high" decoding="async"><?php endif; ?>
 </div>
 </section>
 
@@ -92,6 +92,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <?php if ($questions && $sec['on_questions']): ?>
 <section aria-label="<?= e(tr($sec['q_label'])) ?>" style="padding-top:112px">
+<h2 class="sr-only"><?= e($sec['q_label']) ?></h2>
 <?= sec_head('00', $sec['q_label'], $sec['q_right']) ?>
 <div class="questions">
 <?php foreach ($questions as $i => $q): ?>
@@ -162,7 +163,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <span class="playhead mob-ph" id="playheadm" aria-hidden="true"><span></span></span>
 </div></div>
 </div>
-<p class="muted" style="margin:10px 0 0;font-size:10px"><?= e($tl['hint_mobile']) ?> · <?= e($yearSpan) ?></p>
+<p class="muted" style="margin:10px 0 0;font-size:12px"><?= e($tl['hint_mobile']) ?> · <?= e($yearSpan) ?></p>
 </div>
 
 <div class="muted list-h"><?= e($sec['show_all']) ?></div>
@@ -215,10 +216,11 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <?php if ($sec['on_about']): ?>
 <section id="ueber" aria-label="<?= e(tr($sec['about_label'])) ?>" style="padding-top:144px">
+<h2 class="sr-only"><?= e($sec['about_label']) ?></h2>
 <?= sec_head('02', $sec['about_label'], $about['right'], '48px') ?>
 <div class="about">
 <?php if (upload_url($about['portrait']) !== ''): ?>
-<div class="about-img"><img src="<?= e(upload_url($about['portrait'])) ?>"<?= img_attrs($about['portrait']) ?> alt="<?= e($about['portrait_alt']) ?>" loading="lazy" decoding="async"><?php if ($about['onair'] !== ''): ?><span class="ar-onair"><?= e($about['onair']) ?></span><?php endif; ?></div>
+<div class="about-img"><?php $pv = img_width_set((string)$about['portrait']); ?><img src="<?= e(upload_url($about['portrait'])) ?>"<?= $pv ? ' srcset="' . e($pv['srcset']) . '" sizes="(max-width: 500px) calc(100vw - 40px), 460px"' : '' ?><?= img_attrs($about['portrait']) ?> alt="<?= e($about['portrait_alt']) ?>" loading="lazy" decoding="async"><?php if ($about['onair'] !== ''): ?><span class="ar-onair"><?= e($about['onair']) ?></span><?php endif; ?></div>
 <?php endif; ?>
 <div class="about-r">
 <?php if ($about['headline'] !== ''): ?><p class="about-h"><?= mk($about['headline']) ?></p><?php endif; ?>
@@ -238,6 +240,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <?php if ($showSt): ?>
 <section id="lebenslauf" aria-label="<?= e(tr($sec['st_label'])) ?>" style="padding-top:144px">
+<h2 class="sr-only"><?= e($sec['st_label']) ?></h2>
 <?= sec_head('03', $sec['st_label'], $sec['st_right'], '24px') ?>
 <p class="ar-wall">
 <?php foreach ($stations as $i => $s): ?><span class="ar-st"><span class="<?= $s['highlight'] ? 'st-hl' : 'ar-outline' ?>"><?= e($s['name']) ?></span><?php if ($i < count($stations) - 1): ?><span class="ar-sl">/</span><?php endif; ?></span>

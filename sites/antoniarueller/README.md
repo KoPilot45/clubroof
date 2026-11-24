@@ -111,3 +111,11 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 
 - Kacheln (Showreel) und Featured nutzen `img_square_set()` (`lib/imgvar.php`): aus dem Original entstehen beim ersten Aufruf (bzw. beim Veröffentlichen einer Referenz) quadratische WebP-Varianten (360/540/720/1080 px, nie größer als die kurze Bildseite) in `uploads/v/`, ausgeschnitten um den Fokuspunkt. Die Seite gibt `srcset` und `sizes` aus, der Browser lädt nur die passende Größe. Fehlt GD/WebP, bleibt das Original.
 - Dateiname `<name>.<breite>.<fx>x<fy>.<änderungszeit>.webp`: Ändern oder Ersetzen des Bildes bzw. des Fokuspunkts erzeugt neue Dateien. Umbenennen, Ersetzen und Löschen in der Mediathek räumen die alten Varianten weg; „Zwischenspeicher leeren“ (Mediathek) löscht alle (sie entstehen bei Bedarf neu). Die Mediathek zeigt sie nicht als Dateien. Lightbox, Hero, „Über mich“ und das Teilen-Bild bleiben unverändert.
+
+## Feinschliff nach der Live-Prüfung
+
+- **Schrift:** Im Frontend ist nichts mehr kleiner als 12 px (Beschriftungen, Schnittplatz, Kacheln, Featured, Fußzeile); der Selbsttest prüft das im CSS. Fußzeilen-Links haben mindestens 24 px Klickhöhe.
+- **Überschriften:** „Leitfragen“, „Über mich“ und „Stationen“ haben eine unsichtbare H2 (`sr-only`) für Screenreader und Gliederung.
+- **Bildgrößen:** Hero- und Porträtfoto bekommen mit `img_width_set()` Breiten-Varianten (`<name>.w<breite>.<zeit>.webp` in `uploads/v/`), das Original bleibt größte Stufe im `srcset`; erzeugt beim ersten Aufruf bzw. beim Veröffentlichen von Hero-Bereich oder „Über mich“.
+- **Handy-Schnittplatz:** Die Abspielmarke liegt in einem eigenen Streifen über den Clips und verdeckt keine Nummer mehr.
+- **404-Seite** (`templates/notfound.php`): große „404“ mit Kreis-Motiv, Hinweis und Knöpfen (Startseite plus erste Menüpunkte); englisch unter `/en/…`. Auf 404, Impressum und Datenschutz ist „Zur Startseite“ in der Kopfzeile ein Knopf. `tools/router.php` nutzt für unbekannte Adressen jetzt 404.php wie Apache.

@@ -4,6 +4,7 @@ $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $root = dirname(__DIR__);
 if (preg_match('~^/(impressum|datenschutz)/?$~', $path, $m)) {
     $_GET['seite'] = $m[1];
+    $_SERVER['SCRIPT_NAME'] = '/index.php';
     require $root . '/index.php';
     return true;
 }
@@ -29,6 +30,7 @@ if ($path === '/' || $path === '') {
     require $root . '/index.php';
     return true;
 }
-http_response_code(404);
-echo 'Nicht gefunden';
+// Wie Apache (ErrorDocument): 404.php zeigt die Fehlerseite
+$_SERVER['REDIRECT_URL'] = $path;
+require $root . '/404.php';
 return true;

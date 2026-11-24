@@ -116,6 +116,79 @@ function img_square_set(string $name, string $focus = ''): array
     return ['src' => AR_BASE . '/uploads/v/' . $files[$best], 'srcset' => implode(', ', $set), 'size' => $best];
 }
 
+/**
+ * Breiten-Varianten ohne Zuschnitt (Hero- und Porträtfoto): kleinere Fassungen desselben Bildes.
+ * Dateiname: <name>.w<breite>.<änderungszeit>.webp. Das Original bleibt die größte Stufe im srcset.
+ * @return array{srcset: string}|array{} leer = nur das Original verwenden
+ */
+function img_width_set(string $name, array $widths = [360, 540, 720, 900]): array
+{
+    static $off = false;
+    if ($off || !preg_match('~^([a-z0-9_-]+)\.(jpg|png|webp)$~', $name, $nm)) {
+        return [];
+    }
+    $path = AR_ROOT . '/uploads/' . $name;
+    $mt = @filemtime($path);
+    $info = $mt ? @getimagesize($path) : false;
+    if (!$info) {
+        return [];
+    }
+    if (!function_exists('imagewebp') || !function_exists('imagecreatefromstring')) {
+        $off = true;
+        return [];
+    }
+    [$w0, $h0] = $info;
+    $widths = array_values(array_filter($widths, fn($x) => $x <= $w0 * 0.85));
+    if (!$widths) {
+        return [];
+    }
+    $tag = base_convert((string)$mt, 10, 36);
+    $dir = imgvar_dir();
+    $files = [];
+    $missing = [];
+    foreach ($widths as $vw) {
+        $files[$vw] = $nm[1] . '.w' . $vw . '.' . $tag . '.webp';
+        if (!is_file($dir . '/' . $files[$vw])) {
+            $missing[] = $vw;
+        }
+    }
+    if ($missing) {
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
+            return [];
+        }
+        $src = @imagecreatefromstring((string)@file_get_contents($path));
+        if (!$src) {
+            return [];
+        }
+        foreach ($missing as $vw) {
+            $vh = max(1, (int)round($h0 * $vw / $w0));
+            $dst = imagecreatetruecolor($vw, $vh);
+            imagealphablending($dst, false);
+            imagesavealpha($dst, true);
+            imagecopyresampled($dst, $src, 0, 0, 0, 0, $vw, $vh, $w0, $h0);
+            $tmp = $dir . '/.tmp' . bin2hex(random_bytes(4));
+            if (@imagewebp($dst, $tmp, IMGVAR_QUALITY) && @rename($tmp, $dir . '/' . $files[$vw])) {
+                @chmod($dir . '/' . $files[$vw], 0644);
+            } else {
+                @unlink($tmp);
+                unset($files[$vw]);
+            }
+        }
+    }
+    $set = [];
+    foreach ($files as $vw => $f) {
+        if (is_file($dir . '/' . $f)) {
+            $set[$vw] = AR_BASE . '/uploads/v/' . $f . ' ' . $vw . 'w';
+        }
+    }
+    if (!$set) {
+        return [];
+    }
+    ksort($set);
+    $set[$w0] = upload_url($name) . ' ' . $w0 . 'w';
+    return ['srcset' => implode(', ', $set)];
+}
+
 /** Alle Varianten eines Bildes löschen (beim Ersetzen, Umbenennen, Löschen). */
 function purge_variants(string $name): int
 {
