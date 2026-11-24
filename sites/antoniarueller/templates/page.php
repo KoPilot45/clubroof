@@ -243,7 +243,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <h2 class="sr-only"><?= e($sec['st_label']) ?></h2>
 <?= sec_head('03', $sec['st_label'], $sec['st_right'], '24px') ?>
 <?php if (($sec['st_mode'] ?? 'text') === 'logos'): ?>
-<ul class="ar-logos" role="list">
+<ul class="ar-logos" role="list" style="--c5:<?= logo_cols(count($stations), 5) ?>;--c4:<?= logo_cols(count($stations), 4) ?>;--c3:<?= logo_cols(count($stations), 3) ?>">
 <?php foreach ($stations as $s):
     $lu = $s['logo'] !== '' ? upload_url((string)$s['logo']) : '';
     $capParts = array_values(array_filter([(string)$s['period'], (string)$s['desk']], fn($x) => $x !== ''));

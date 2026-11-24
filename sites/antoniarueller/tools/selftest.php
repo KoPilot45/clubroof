@@ -1047,6 +1047,9 @@ req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' =>
 $pgT = req('GET', "$base/")['body'];
 ok(str_contains($pgT, 'class="ar-wall"') && !str_contains($pgT, 'class="ar-logos"') && str_contains($pgT, 'Teststation Eins'), 'Standard: Namen als Schrift');
 req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1') + ['st_mode' => 'logos']);
+$pgL0 = req('GET', "$base/")['body'];
+ok(preg_match('~class="ar-logos" role="list" style="--c5:\d;--c4:\d;--c3:\d"~', $pgL0) === 1, 'Logo-Raster: Spaltenzahl je Breite gesetzt');
+ok([logo_cols(10, 5), logo_cols(12, 5), logo_cols(9, 5), logo_cols(8, 5), logo_cols(11, 5), logo_cols(10, 3), logo_cols(3, 5), logo_cols(2, 5)] === [5, 4, 3, 4, 4, 2, 3, 2], 'Spaltenzahl: volle letzte Reihe bevorzugt (' . implode(',', [logo_cols(10, 5), logo_cols(12, 5), logo_cols(9, 5), logo_cols(8, 5), logo_cols(11, 5), logo_cols(10, 3), logo_cols(3, 5), logo_cols(2, 5)]) . ')');
 $pgL = req('GET', "$base/")['body'];
 ok(str_contains($pgL, 'class="ar-logos"') && !str_contains($pgL, 'class="ar-wall"'), 'Darstellung „Logos“: Raster statt Namenswand');
 ok(preg_match('~<img src="[^"]*' . preg_quote((string)$ul['name'], '~') . '[^"]*" width="360" height="90" alt=""~', $pgL) === 1, 'Logo mit Maßen eingebunden (Alternativtext leer, Name steht in der Beschriftung)');

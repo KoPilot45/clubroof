@@ -71,6 +71,25 @@ function write_page_cache(string $key, string $html, bool $noindex): void
     }
 }
 
+/**
+ * Spaltenzahl für das Logo-Raster: möglichst eine volle letzte Reihe (Anzahl teilbar), sonst die Zahl mit der
+ * vollsten letzten Reihe; bei Gleichstand die größere. Mindestens 2, höchstens $max Spalten.
+ */
+function logo_cols(int $n, int $max): int
+{
+    $best = 2;
+    $bestScore = -1;
+    for ($c = min($max, max(2, $n)); $c >= 2; $c--) {
+        $r = $n % $c;
+        $score = $r === 0 ? $c + 1000 : $r * 10 + $c / 10;
+        if ($score > $bestScore) {
+            $bestScore = $score;
+            $best = $c;
+        }
+    }
+    return $best;
+}
+
 function img_attrs(string $name): string
 {
     if (upload_url($name) === '') {
