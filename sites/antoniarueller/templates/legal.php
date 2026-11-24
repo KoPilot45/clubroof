@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="ar-root">
-<header class="top-wrap" id="topbar"><div class="top"><div class="top-l"><?= rec_dot() ?><span><?= e($site['header_label']) ?></span></div><a href="<?= e(lang_url(current_lang(), '')) ?>" class="btn-solid btn-nav back"><span aria-hidden="true">←</span> <?= e(tr('Zur Startseite')) ?></a></div></header>
+<header class="top-wrap" id="topbar"><div class="top"><a class="top-l" href="<?= e(lang_url(current_lang(), '')) ?>"><?= rec_dot() ?><span><?= e($site['header_label']) ?></span></a><a href="<?= e(lang_url(current_lang(), '')) ?>" class="btn-solid btn-nav back"><span aria-hidden="true">←</span> <?= e(tr('Zur Startseite')) ?></a></div></header>
 <main id="inhalt">
 <?php if (!empty($isNotFound)): require __DIR__ . '/notfound.php'; else: ?>
 <section style="padding-top:48px;padding-bottom:96px">

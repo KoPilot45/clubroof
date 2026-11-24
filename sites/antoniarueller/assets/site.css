@@ -28,6 +28,8 @@ a:hover{color:var(--accent)}
 .top-wrap.scrolled{border-bottom-color:var(--line)}
 .top{max-width:1440px;margin:0 auto;padding:14px 48px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;font-family:var(--mono);font-size:13px;letter-spacing:.04em;text-transform:uppercase}
 .top-l{display:flex;align-items:center;gap:14px}
+a.top-l{color:inherit;text-decoration:none}
+a.top-l:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
 .ar-nav{display:flex;flex-wrap:wrap;gap:32px}
 .ar-nav a{text-decoration:none;padding:6px 0;border-bottom:2px solid transparent}
 .ar-nav a.on{border-bottom-color:var(--accent);color:var(--accent)}

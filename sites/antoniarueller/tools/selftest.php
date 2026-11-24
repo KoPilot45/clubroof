@@ -1045,6 +1045,7 @@ $lgPost = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'stations', 'name
 req('POST', "$base/admin/", $lgPost);
 req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'stations', 'name' => 'Teststation Ohne', 'mode' => 'publish']);
 $pgT = req('GET', "$base/")['body'];
+ok(str_contains($pgT, '<a class="top-l" href="#" data-top>') && str_contains($pgT, '03 — Off the record') && preg_match('~04 — ' . preg_quote(tr(setting('sections')['contact_label']), '~') . '~', $pgT) === 1 && !str_contains($pgT, '05 — '), 'Kopfzeilenname führt nach oben; Nummern: Off the record 03, Kontakt 04');
 ok(str_contains($pgT, 'class="ar-wall"') && !str_contains($pgT, 'class="ar-logos"') && str_contains($pgT, 'Teststation Eins'), 'Standard: Namen als Schrift');
 req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1') + ['st_mode' => 'logos']);
 $pgL0 = req('GET', "$base/")['body'];

@@ -297,6 +297,14 @@
   window.addEventListener('resize', function () { placeMarks(); onProgress(); });
   window.addEventListener('load', function () { placeMarks(); onProgress(); });
   placeMarks(); onProgress();
+  // Name in der Kopfzeile: immer nach oben
+  $$('a[data-top]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      if (location.hash && window.history && history.replaceState) history.replaceState(null, '', location.pathname + location.search);
+    });
+  });
   if (toTop) toTop.addEventListener('click', function (e) {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });

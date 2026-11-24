@@ -55,7 +55,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <header class="top-wrap" id="topbar">
 <div class="top">
-<div class="top-l"><?= rec_dot() ?><span><?= e($site['header_label']) ?></span></div>
+<a class="top-l" href="#" data-top><?= rec_dot() ?><span><?= e($site['header_label']) ?></span></a>
 <nav class="ar-nav" aria-label="<?= tr('Hauptnavigation') ?>">
 <?php foreach ($nav as $n): if (!$n['desktop']) { continue; } $nDesktop++; ?>
 <a href="#<?= e($n['anchor']) ?>" data-nav="<?= e($n['anchor']) ?>"><?= sprintf('%02d', $nDesktop) ?> <?= e($n['label']) ?></a>
@@ -289,7 +289,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <?php if ($off && $sec['on_off']): ?>
 <section id="offtherecord" aria-label="<?= e(tr($sec['off_label'])) ?>" style="padding-top:144px">
-<div class="sec-head off-head" style="margin-bottom:24px"><span class="sec-l"><span style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--mute);box-sizing:border-box;display:inline-block"></span><span style="font-weight:600">Off</span><span>04 — <?= e(tr($sec['off_label'])) ?></span></span><span><?= e($sec['off_right']) ?></span></div>
+<div class="sec-head off-head" style="margin-bottom:24px"><span class="sec-l"><span style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--mute);box-sizing:border-box;display:inline-block"></span><span style="font-weight:600">Off</span><span>03 — <?= e(tr($sec['off_label'])) ?></span></span><span><?= e($sec['off_right']) ?></span></div>
 <h2 class="big-h" style="margin-bottom:16px"><span class="oh1">Off <span class="the">the<span class="strike" aria-hidden="true"></span></span></span> <span class="oh2">record</span></h2>
 <p class="muted" style="margin:0 0 32px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;font-family:'JetBrains Mono',monospace"><?= e($sec['off_hint']) ?></p>
 <dl class="off">
@@ -301,7 +301,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <section id="kontakt" aria-label="<?= e(tr($sec['contact_label'])) ?>" style="padding-top:176px;padding-bottom:48px">
 <?php if ($sec['on_contact']): ?>
-<?= sec_head('05', $sec['contact_label'], $contact['right'], '0') ?>
+<?= sec_head('04', $sec['contact_label'], $contact['right'], '0') ?>
 <h2 class="k-h" aria-label="<?= e(trim($contact['h1'] . ' ' . $contact['h2'])) ?>"><span class="ar-schreib" aria-hidden="true"><?= e($contact['h1']) ?></span><span class="k-h2" aria-hidden="true"><?= e($contact['h2']) ?>.</span></h2>
 <p class="k-intro"><?= e($contact['intro']) ?></p>
 <div class="k-btns">
