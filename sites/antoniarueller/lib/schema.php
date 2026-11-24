@@ -105,8 +105,13 @@ function schema(): array
     $s['collections']['stations'] = [
         'label' => 'Stationen (Sender & Redaktionen)', 'singular' => 'Station', 'title' => 'name', 'sub' => [],
         'fields' => [
-            f('text', 'name', 'Name', ['required' => true, 'max' => 60]),
-            f('bool', 'highlight', 'Farbig hervorheben (aktuelle Station)'),
+            f('text', 'name', 'Name', ['required' => true, 'max' => 60, 'hint' => 'Erscheint auch als Alternativtext des Logos und, wenn kein Logo da ist, als Schrift.']),
+            f('image', 'logo', 'Logo (optional)', ['logo' => true]),
+            f('text', 'period', 'Datum oder Zeitraum (optional)', ['max' => 40, 'hint' => 'Freitext, z. B. „seit 11/2026“ oder „2018 – 2021“.']),
+            f('text', 'desk', 'Redaktion (optional)', ['max' => 40, 'hint' => 'Freitext, z. B. „TV“, „Radio“, „Online“ oder „Investigativ-Team“.']),
+            f('url', 'url', 'Link (optional)', ['hint' => 'Wenn gesetzt, ist das Logo anklickbar.']),
+            f('bool', 'highlight', 'Farbig hervorheben (nur bei „Namen als Schrift“)'),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true]),
         ],
     ];
     $s['collections']['cv'] = [
@@ -283,6 +288,7 @@ function schema(): array
             f('bool', 'on_stations', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
             f('text', 'st_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Stationen', 'dict' => true]),
             f('text', 'st_right', 'Zeile rechts', ['max' => 40, 'default' => 'Sender & Redaktionen']),
+            f('switch', 'st_mode', 'Darstellung', ['options' => ['text' => 'Namen als Schrift', 'logos' => 'Logos'], 'default' => 'text', 'hint' => '„Logos“ zeigt die Logos der Stationen als ruhiges Raster; Name, Zeitraum und Redaktion erscheinen beim Darüberfahren. Stationen ohne Logo erscheinen dort als Name.']),
 
             f('section', '', 'Lebenslauf', ['card' => true, 'toggle' => 'on_cv', 'link' => ['c', 'cv']]),
             f('bool', 'on_cv', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),

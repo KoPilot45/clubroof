@@ -81,6 +81,14 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 - **Speicher-Leiste:** eine Zeile – Veröffentlichen, Entwurf, Status, Live/Vorschau/English als kompakte Knöpfe, Abbrechen, Hilfe („?“) mit Erklärung und Tastenkürzeln.
 - „Alle Clips“ heißt jetzt „Alle Beiträge“.
 
+
+## Stationen mit Logos
+
+- Sammlung „Sender & Redaktionen“: Name, Logo (optional), Datum/Zeitraum, Redaktion (Freitext), Link, „Auf der Seite anzeigen“; sortierbar.
+- Umschalter „Darstellung“ (`sections.st_mode`): `text` = große Namensliste (Standard, mit „Farbig hervorheben“), `logos` = Raster mit grauen Logos, Beschriftung beim Darüberfahren (Touch: immer sichtbar), Stationen ohne Logo als Name, Einblend-Animation (insgesamt ca. 1 s, nur ohne „weniger Bewegung“).
+- Logo-Upload (`store_image(..., logo: true)`): leere Ränder abschneiden, höchstens `LOGO_MAX_W × LOGO_MAX_H` (360 × 96, doppelte Größe der Anzeige von 180 × 48), verlustfrei als WebP. Startbestand: `seed-assets/logos/*.webp` (landet im Demo-Seed und im Upload-Paket in `uploads/`).
+- Die Logos sind geschützte Marken: Rechte klären oder Dateien aus den Presseportalen der Sender verwenden.
+
 ## Abschnitte
 
 - „Seite → Abschnitte“ (früher „Überschriften der Abschnitte“): je Abschnitt eine Karte mit Schieberegler (Leitfragen, Showreel, Podcast, Über mich, Stationen, Lebenslauf, Off the record, Kontakt) und allen Texten des Abschnitts. Start (Intro) ist immer sichtbar; die Fußzeile mit Impressum und Datenschutz bleibt auch bei ausgeschaltetem Kontakt.

@@ -97,7 +97,27 @@ function seed_defaults(PDO $pdo): void
     $add('episodes', [
         ['show' => '[Podcast-Name]', 'number' => '[№]', 'title' => '[Titel der Folge]', 'duration' => '[Dauer]', 'outlet' => '[Sender / Plattform]', 'spotify' => '', 'apple' => '', 'audiothek' => '', 'published' => true],
     ]);
-    $add('stations', array_map(fn($n) => ['name' => $n, 'highlight' => $n === 'Radio Bremen'], ['Radio Bremen', 'ARD-Studio Istanbul', 'ARD-Hauptstadtstudio', 'Y-Kollektiv', 'SRF Genf', 'WDR', 'WELT', 'heute-show', 'Radio Bochum', 'funk', 'Good News']));
+    // Logos der Stationen (freigestellte WebP) in die Mediathek legen
+    $logoOf = [];
+    foreach (glob(AR_ROOT . '/seed-assets/logos/*.webp') ?: [] as $lf) {
+        if (@copy($lf, "$up/" . basename($lf))) {
+            $logoOf[basename($lf, '.webp')] = basename($lf);
+        }
+    }
+    $lg = fn(string $k) => $logoOf[$k] ?? '';
+    $add('stations', [
+        ['name' => 'Radio Bremen', 'logo' => $lg('logo-radio-bremen'), 'period' => 'seit 11/2026', 'desk' => 'Radio', 'highlight' => true],
+        ['name' => 'ARD-Studio Istanbul', 'logo' => $lg('logo-ard'), 'period' => '2026', 'desk' => 'Radio'],
+        ['name' => 'ARD-Hauptstadtstudio', 'logo' => $lg('logo-ard-hauptstadtstudio'), 'period' => '2025', 'desk' => 'Radio'],
+        ['name' => 'Y-Kollektiv', 'logo' => $lg('logo-y-kollektiv'), 'period' => '2026', 'desk' => 'Podcast'],
+        ['name' => 'SRF Genf'],
+        ['name' => 'WDR', 'logo' => $lg('logo-wdr'), 'period' => '2018 – 2021', 'desk' => 'TV, Radio'],
+        ['name' => 'WELT', 'logo' => $lg('logo-welt'), 'period' => '2021', 'desk' => 'Online'],
+        ['name' => 'heute-show', 'logo' => $lg('logo-heute-show'), 'desk' => 'TV'],
+        ['name' => 'Radio Bochum', 'logo' => $lg('logo-radio-bochum'), 'desk' => 'Radio'],
+        ['name' => 'funk', 'logo' => $lg('logo-funk'), 'desk' => 'Online'],
+        ['name' => 'Good News', 'logo' => $lg('logo-good-news'), 'period' => 'seit 01/2026', 'desk' => 'Online'],
+    ]);
     $add('cv', [
         ['role' => 'Investigativ-Recherche', 'org' => 'Radio Bremen', 'from' => '2026-11', 'ongoing' => true],
         ['role' => 'Autorin', 'org' => 'ARD-Studio Istanbul', 'from' => '2026-01', 'when_label' => '2026 · Radio'],

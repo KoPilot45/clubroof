@@ -305,7 +305,7 @@
   // ---- Weiche Bewegung: Einblenden beim Scrollen (nur unterhalb des sichtbaren Bereichs, ohne JS bleibt alles sichtbar) ----
   if ('IntersectionObserver' in window && !reduce) {
     var vh = window.innerHeight;
-    var custom = ['fa', 'ar-ed-desk', 'ar-ed-mob'];
+    var custom = ['fa', 'ar-ed-desk', 'ar-ed-mob', 'ar-logos'];
     var seen = [];
     $$('.ar-root main>section').forEach(function (sec) {
       if (sec.classList.contains('ar-hero')) return;
@@ -319,6 +319,9 @@
         ch.classList.add(isCustom ? 'cx-pre' : 'rv-pre');
         if (isCustom) {
           $$('.ar-tlclip', ch).forEach(function (c, i) { c.style.setProperty('--d', (300 + Math.min(i, 20) * 80) + 'ms'); });
+          var lg = $$('.ar-logo-in', ch);
+          // alle Logos zusammen höchstens etwa 1 s
+          lg.forEach(function (c, i) { c.style.setProperty('--d', Math.round(i * Math.min(70, 380 / Math.max(1, lg.length - 1))) + 'ms'); });
         }
         seen.push(ch);
       });

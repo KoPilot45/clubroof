@@ -669,7 +669,7 @@
     if (!box.hasAttribute('data-orig')) box.setAttribute('data-orig', box.hidden ? '' : (img.getAttribute('src') || ''));
     img.src = src;
     box.hidden = false;
-    var h = box.parentNode.querySelector('.focushint'); if (h) h.hidden = false;
+    var h = box.parentNode.querySelector('.focushint'); if (h && !box.classList.contains('logo')) h.hidden = false;
     var b = box.parentNode.querySelector('.newbadge');
     if (!b) { b = document.createElement('p'); b.className = 'newbadge'; b.setAttribute('role', 'status'); box.parentNode.insertBefore(b, box.nextSibling); }
     b.textContent = note;
@@ -733,7 +733,7 @@
       rd.readAsDataURL(f);
       (isAvif(f) ? avifToWebp(f) : Promise.resolve(f)).then(function (up) {
         var fd = new FormData();
-        fd.set('_csrf', form.elements['_csrf'].value); fd.set('action', 'upload_image'); fd.set('file', up);
+        fd.set('_csrf', form.elements['_csrf'].value); fd.set('action', 'upload_image'); fd.set('file', up); if (inp.hasAttribute('data-logo')) fd.set('kind', 'logo');
         return fetch(form.getAttribute('action'), { method: 'POST', body: fd, credentials: 'same-origin' });
       }).then(function (r) { return r.json(); }).then(function (j) {
         if (!j.ok) throw new Error(j.error || 'Upload fehlgeschlagen');

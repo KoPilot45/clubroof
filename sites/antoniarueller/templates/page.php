@@ -242,10 +242,26 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <section id="lebenslauf" aria-label="<?= e(tr($sec['st_label'])) ?>" style="padding-top:144px">
 <h2 class="sr-only"><?= e($sec['st_label']) ?></h2>
 <?= sec_head('03', $sec['st_label'], $sec['st_right'], '24px') ?>
+<?php if (($sec['st_mode'] ?? 'text') === 'logos'): ?>
+<ul class="ar-logos" role="list">
+<?php foreach ($stations as $s):
+    $lu = $s['logo'] !== '' ? upload_url((string)$s['logo']) : '';
+    $capParts = array_values(array_filter([(string)$s['period'], (string)$s['desk']], fn($x) => $x !== ''));
+    $tag = $s['url'] !== '' ? 'a' : 'div';
+    $lnk = $tag === 'a' ? ' href="' . e($s['url']) . '" target="_blank" rel="noopener noreferrer"' : '';
+?>
+<li class="ar-logo"><<?= $tag ?> class="ar-logo-in"<?= $lnk ?>>
+<span class="ar-logo-box"><?php if ($lu !== ''): ?><img src="<?= e($lu) ?>"<?= img_attrs((string)$s['logo']) ?> alt="" loading="lazy" decoding="async"><?php else: ?><span class="ar-logo-name"><?= e($s['name']) ?></span><?php endif; ?></span>
+<span class="ar-logo-cap"><?php if ($lu !== ''): ?><b><?= e($s['name']) ?></b><?php endif; ?><?php if ($capParts): ?><span><?= e(implode(' · ', $capParts)) ?></span><?php endif; ?></span>
+</<?= $tag ?>></li>
+<?php endforeach; ?>
+</ul>
+<?php else: ?>
 <p class="ar-wall">
 <?php foreach ($stations as $i => $s): ?><span class="ar-st"><span class="<?= $s['highlight'] ? 'st-hl' : 'ar-outline' ?>"><?= e($s['name']) ?></span><?php if ($i < count($stations) - 1): ?><span class="ar-sl">/</span><?php endif; ?></span>
 <?php endforeach; ?>
 </p>
+<?php endif; ?>
 </section>
 <?php endif; ?>
 

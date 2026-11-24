@@ -95,7 +95,7 @@ $nav = items('nav');
 $questions = items('questions');
 $tracks = items('tracks');
 $episodes = array_values(array_filter(items('episodes'), fn($e) => $e['published']));
-$stations = items('stations');
+$stations = array_values(array_filter(items('stations'), fn($s) => $s['published']));
 $cvRows = items('cv');
 $before = items('before');
 $cross = items('crossmedia');

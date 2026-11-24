@@ -97,11 +97,13 @@ return [
                 'legend' => ['**Rolle**, z. B. „Reporterin“', '**Organisation** (erscheint kursiv)', '**Beginn** (und darunter **Ende**)', 'Der Haken **Läuft noch** färbt die Jahreszahl im Lebenslauf ein'],
                 'steps' => [
                     '**Lebenslauf → Stationen:** pro Station **Rolle**, **Organisation**, **Von** und **Bis**. Läuft die Station noch, setze den Haken **Läuft noch** (die Jahreszahl wird dann farbig).',
-                    '**Sender & Redaktionen:** die große Namensliste. Mit **Farbig hervorheben** markierst du die aktuelle Station.',
+                    '**Sender & Redaktionen:** pro Station **Name**, optional **Logo**, **Datum oder Zeitraum**, **Redaktion** (Freitext, z. B. „TV“ oder „Radio“) und **Link**. Die Reihenfolge änderst du in der Liste, mit **Auf der Seite anzeigen** blendest du eine Station aus.',
+                    '**Logos:** am besten freigestellt (transparenter Hintergrund). Beim Hochladen werden sie automatisch auf höchstens 360 × 96 Pixel verkleinert, von leeren Rändern befreit und in WebP umgewandelt. Eine Auswahl fertiger Logos liegt schon in der **Mediathek**.',
+                    '**Darstellung:** unter **Seite & Design → Abschnitte → Stationen** schaltest du zwischen **Namen als Schrift** (große Namensliste, hier markiert **Farbig hervorheben** die aktuelle Station) und **Logos** (ruhiges Raster; Name, Zeitraum und Redaktion erscheinen beim Darüberfahren). Stationen ohne Logo erscheinen im Raster als Name.',
                     '**Davor:** frühere Erfahrungen und Ausbildung als kurze Zeilen mit Zusatz rechts.',
                     'Das **CV als PDF** (Download-Knopf) lädst du unter **Kontakt & Fußzeile** hoch.',
                 ],
-                'open' => ['Stationen öffnen', 'p=list&c=cv'],
+                'open' => ['Sender & Redaktionen öffnen', 'p=list&c=stations'],
             ],
             [
                 'id' => 'ueber-mich', 'title' => 'Über mich: Text, Porträt, Medien, Sprachen', 'lead' => 'Foto und Text im Abschnitt „Über mich“.',

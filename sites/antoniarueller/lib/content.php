@@ -507,7 +507,7 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
                 }
                 if (!empty($files[$k]['name']) && ($files[$k]['error'] ?? 4) !== UPLOAD_ERR_NO_FILE) {
                     try {
-                        $v = $t === 'image' ? store_image($files[$k]) : store_pdf($files[$k]);
+                        $v = $t === 'image' ? store_image($files[$k], '', !empty($f['logo'])) : store_pdf($files[$k]);
                     } catch (RuntimeException $ex) {
                         $errors[] = $f['label'] . ': ' . $ex->getMessage();
                     }
@@ -629,7 +629,11 @@ function unique_upload_name(string $base, string $ext, string $keep = ''): strin
 }
 
 /** $replace = vorhandene Datei, deren Namen das neue Bild übernimmt (Datei ersetzen). */
-function store_image(array $file, string $replace = ''): string
+/** Größte Logos im Frontend: 180 × 48 px; gespeichert wird in doppelter Größe (scharf auf hochauflösenden Bildschirmen). */
+const LOGO_MAX_W = 360;
+const LOGO_MAX_H = 96;
+
+function store_image(array $file, string $replace = '', bool $logo = false): string
 {
     check_upload($file);
     $info = @getimagesize($file['tmp_name']);
@@ -661,25 +665,43 @@ function store_image(array $file, string $replace = ''): string
             $img = imagerotate($img, $rot, 0) ?: $img;
         }
     }
+    if ($logo && function_exists('imagecropauto')) {
+        // transparente Ränder abschneiden, damit alle Logos gleich wirken
+        foreach ([IMG_CROP_TRANSPARENT, IMG_CROP_SIDES] as $mode) {
+            $cr = @imagecropauto($img, $mode);
+            if ($cr && (imagesx($cr) < imagesx($img) || imagesy($cr) < imagesy($img))) {
+                $img = $cr;
+                break;
+            }
+        }
+    }
     $w = imagesx($img);
     $h = imagesy($img);
     $cfgImg = image_settings();
     $maxEdge = $cfgImg['max'];
-    if (max($w, $h) > $maxEdge) {
+    if ($logo) {
+        $r = min(LOGO_MAX_W / $w, LOGO_MAX_H / $h, 1);
+        if ($r < 1) {
+            $n = imagescale($img, max(1, (int)round($w * $r)), max(1, (int)round($h * $r)), IMG_BICUBIC);
+            if ($n) {
+                $img = $n;
+            }
+        }
+    } elseif (max($w, $h) > $maxEdge) {
         $r = $maxEdge / max($w, $h);
         $n = imagescale($img, (int)round($w * $r), (int)round($h * $r));
         if ($n) {
             $img = $n;
         }
     }
-    $hasAlpha = $info[2] !== IMAGETYPE_JPEG;
+    $hasAlpha = $logo || $info[2] !== IMAGETYPE_JPEG;
     imagesavealpha($img, true);
     $dir = upload_dir();
     $base = $replace !== '' ? (string)preg_replace('~\.[a-z]+$~', '', $replace) : upload_slug((string)($file['name'] ?? ''));
     // Metadaten (EXIF/GPS) werden durch das Neu-Kodieren entfernt.
-    if ($cfgImg['webp'] && function_exists('imagewebp')) {
+    if (($cfgImg['webp'] || $logo) && function_exists('imagewebp')) {
         $name = unique_upload_name($base, 'webp', $replace);
-        $ok = imagewebp($img, "$dir/$name", $cfgImg['quality']);
+        $ok = imagewebp($img, "$dir/$name", $logo ? (defined('IMG_WEBP_LOSSLESS') ? IMG_WEBP_LOSSLESS : 100) : $cfgImg['quality']);
     } elseif ($hasAlpha) {
         $name = unique_upload_name($base, 'png', $replace);
         $ok = imagepng($img, "$dir/$name", 6);

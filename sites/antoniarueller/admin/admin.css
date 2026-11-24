@@ -637,3 +637,7 @@ input[type=file]:focus-visible{outline:3px solid #f2b705;outline-offset:3px;bord
   main,.main{padding:0!important;max-width:none!important}
 }
 @media (max-width:1500px){.ibtn span{display:none}.ibtn{padding:8px 11px}}
+
+.focusbox.logo{cursor:default;min-width:140px;min-height:60px}
+.focusbox.logo .fdot{display:none}
+.focusbox.logo img{max-height:96px;padding:8px}

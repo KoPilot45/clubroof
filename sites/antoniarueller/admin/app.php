@@ -552,7 +552,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $isPdf = ($_POST['kind'] ?? '') === 'gallery' && !empty($file['tmp_name']) && is_file((string)$file['tmp_name'])
                 && (string)file_get_contents((string)$file['tmp_name'], false, null, 0, 5) === '%PDF-';
             try {
-                $name = $isPdf ? store_pdf($file) : store_image($file);
+                $name = $isPdf ? store_pdf($file) : store_image($file, '', ($_POST['kind'] ?? '') === 'logo');
             } catch (RuntimeException $ex) {
                 echo json_encode(['ok' => false, 'error' => $ex->getMessage()]);
                 exit;

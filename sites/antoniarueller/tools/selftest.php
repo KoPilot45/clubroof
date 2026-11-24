@@ -1023,6 +1023,47 @@ ok(!str_contains($hg, 'Namensschild') && str_contains(req('GET', "$base/admin/")
 ok(!str_contains(req('GET', "$base/admin/?p=edit&c=clips")['body'], 'name="tc"') && !function_exists('admin_menu') && !function_exists('auto_tc'), 'Timecode-Feld und ungenutzte Funktionen entfernt');
 ok(!str_contains(req('GET', "$base/")['body'], 'Ende Reel №1 · ') && !preg_match('~menu-foot.*? · </span>~s', req('GET', "$base/")['body']), 'Handy-Menü ohne hängendes „ · “');
 
+echo "Stationen mit Logos\n";
+$sf = req('GET', "$base/admin/?p=edit&c=stations")['body'];
+ok(str_contains($sf, 'data-logo') && str_contains($sf, 'freigestelltes Logo') && str_contains($sf, 'remove.bg') && str_contains($sf, '360 × 96'), 'Logo-Feld: Hinweis auf Freistellen (auch per KI), Maximalgröße, data-logo');
+ok(str_contains($sf, 'name="desk"') && !str_contains($sf, '<select name="desk"') && str_contains($sf, 'name="period"'), 'Redaktion und Zeitraum sind Freitext');
+$sgS = req('GET', "$base/admin/?p=group&g=sections")['body'];
+ok(str_contains($sgS, 'Namen als Schrift') && str_contains($sgS, 'name="st_mode"'), 'Umschalter „Darstellung“ im Abschnitt Stationen');
+// Logo mit transparentem Rand, größer als erlaubt
+$lgw = tempnam(sys_get_temp_dir(), 'lg') . '.png';
+$im = imagecreatetruecolor(1200, 600);
+imagesavealpha($im, true);
+imagealphablending($im, false);
+imagefill($im, 0, 0, imagecolorallocatealpha($im, 0, 0, 0, 127));
+imagefilledrectangle($im, 200, 150, 999, 349, imagecolorallocatealpha($im, 200, 20, 20, 0));
+imagepng($im, $lgw);
+$ul = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'kind' => 'logo', 'file' => new CURLFile($lgw, 'image/png', 'Test Logo Station.png')], true)['body'], true);
+ok(!empty($ul['ok']) && str_ends_with((string)$ul['name'], '.webp'), 'Logo-Upload wird in WebP umgewandelt');
+$li = @getimagesize("$root/uploads/" . ($ul['name'] ?? 'x'));
+ok($li && $li[0] <= LOGO_MAX_W && $li[1] <= LOGO_MAX_H && $li[0] === 360 && $li[1] === 90, 'Logo: leere Ränder abgeschnitten und auf höchstens 360 × 96 verkleinert (' . ($li ? $li[0] . '×' . $li[1] : '?') . ')');
+$lgPost = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'stations', 'name' => 'Teststation Eins', 'logo_pick' => (string)$ul['name'], 'period' => 'seit 11/2026', 'desk' => 'Investigativ-Team', 'url' => 'https://example.org/', 'published' => '1', 'mode' => 'publish'];
+req('POST', "$base/admin/", $lgPost);
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'stations', 'name' => 'Teststation Ohne', 'published' => '1', 'mode' => 'publish']);
+req('POST', "$base/admin/", $lgPost + ['name' => 'Teststation Versteckt', 'published' => '0']);
+$pgT = req('GET', "$base/")['body'];
+ok(str_contains($pgT, 'class="ar-wall"') && !str_contains($pgT, 'class="ar-logos"') && str_contains($pgT, 'Teststation Eins') && !str_contains($pgT, 'Teststation Versteckt'), 'Standard: Namen als Schrift, unveröffentlichte Stationen fehlen');
+req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1') + ['st_mode' => 'logos']);
+$pgL = req('GET', "$base/")['body'];
+ok(str_contains($pgL, 'class="ar-logos"') && !str_contains($pgL, 'class="ar-wall"'), 'Darstellung „Logos“: Raster statt Namenswand');
+ok(preg_match('~<img src="[^"]*' . preg_quote((string)$ul['name'], '~') . '[^"]*" width="360" height="90" alt=""~', $pgL) === 1, 'Logo mit Maßen eingebunden (Alternativtext leer, Name steht in der Beschriftung)');
+ok(str_contains($pgL, '<b>Teststation Eins</b>') && str_contains($pgL, 'seit 11/2026 · Investigativ-Team') && str_contains($pgL, 'href="https://example.org/"'), 'Beschriftung mit Name, Zeitraum und Redaktion; Link am Logo');
+ok(str_contains($pgL, '<span class="ar-logo-name">Teststation Ohne</span>') && !str_contains($pgL, 'Teststation Versteckt'), 'Station ohne Logo erscheint als Name');
+ok(!str_contains($pgL, 'st-hl'), 'im Logo-Raster ist keine Station hervorgehoben');
+req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1') + ['st_mode' => 'text']);
+ok(str_contains(req('GET', "$base/")['body'], 'class="ar-wall"'), 'zurück auf Namen als Schrift');
+foreach (q("SELECT id FROM ar_items WHERE coll = 'stations' AND data LIKE '%Teststation%'")->fetchAll() as $row) {
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
+}
+@unlink("$root/uploads/" . $ul['name']);
+@unlink($lgw);
+req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1'));
+
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'add_user', 'email' => 'antonia@antoniarueller.de', 'name' => 'A']);
 ok(str_contains(follow($r)['body'], 'eigenen Domain'), 'Domain-Postfach als Zugang abgelehnt');
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'logout']);

@@ -164,14 +164,19 @@ function render_field_inner(array $f, mixed $val, array $vals = []): void
             break;
         case 'image':
             $has = $val !== '' && upload_url((string)$val) !== '';
+            $isLogo = !empty($f['logo']);
             $fo = (string)($vals[$k . '_focus'] ?? '');
-            echo '<div class="imgbox"><div class="focusbox" data-key="' . e($k) . '"' . ($has ? '' : ' hidden') . '><img src="' . ($has ? e(upload_url((string)$val)) : '') . '" alt="Aktuelles Bild"><span class="fdot"></span><button type="button" class="imgx" data-img-remove="' . e($k) . '" aria-label="Bild entfernen" title="Bild entfernen">' . aicon('x', 16) . '</button></div>';
+            echo '<div class="imgbox"><div class="focusbox' . ($isLogo ? ' logo' : '') . '" data-key="' . e($k) . '"' . ($has ? '' : ' hidden') . '><img src="' . ($has ? e(upload_url((string)$val)) : '') . '" alt="Aktuelles Bild"><span class="fdot"></span><button type="button" class="imgx" data-img-remove="' . e($k) . '" aria-label="Bild entfernen" title="Bild entfernen">' . aicon('x', 16) . '</button></div>';
             echo '<div class="imgask" role="alertdialog" aria-label="Bild entfernen?" hidden><span>Dieses Bild wirklich entfernen?</span><button type="button" class="btn small danger" data-img-yes>Ja, entfernen</button><button type="button" class="btn small ghost" data-img-no>Abbrechen</button></div>';
-            echo '<small class="hint focushint"' . ($has ? '' : ' hidden') . '>Klicke ins Bild, um den wichtigen Ausschnitt (z. B. das Gesicht) festzulegen. Er bleibt sichtbar, wenn das Bild zugeschnitten wird.</small>';
+            echo '<small class="hint focushint"' . ($has && !$isLogo ? '' : ' hidden') . '>Klicke ins Bild, um den wichtigen Ausschnitt (z. B. das Gesicht) festzulegen. Er bleibt sichtbar, wenn das Bild zugeschnitten wird.</small>';
             echo '<input type="hidden" name="' . e($k) . '_focus" value="' . e($fo) . '"><input type="hidden" name="' . e($k) . '_pick" id="f_' . e($k) . '_pick" value="">';
             echo '<input type="hidden" name="_remove_' . e($k) . '" id="f_' . e($k) . '_remove" value="">';
-            echo '</div><input type="file" id="' . $id . '" name="' . e($k) . '" accept="image/jpeg,image/png,image/webp,image/avif,.avif"' . $desc . '> <button type="button" class="btn small ghost" data-media-pick="' . e($k) . '">Aus Mediathek wählen</button>';
-            echo '<small class="hint">JPG, PNG, WebP oder AVIF, höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB. Wird automatisch verkleinert und optimiert.</small>';
+            echo '</div><input type="file" id="' . $id . '" name="' . e($k) . '" accept="image/jpeg,image/png,image/webp,image/avif,.avif"' . ($isLogo ? ' data-logo' : '') . $desc . '> <button type="button" class="btn small ghost" data-media-pick="' . e($k) . '">Aus Mediathek wählen</button>';
+            if ($isLogo) {
+                echo '<small class="hint">Am besten ein <strong>freigestelltes Logo mit transparentem Hintergrund</strong> (PNG oder WebP). Ein Logo mit weißem oder farbigem Hintergrund wirkt auf der Seite wie ein Kasten. Freistellen geht schnell mit einem KI-Werkzeug, z. B. „Hintergrund entfernen“ in einer Bildbearbeitungs-App oder auf einer Webseite wie remove.bg. Beim Hochladen wird das Logo automatisch auf höchstens ' . LOGO_MAX_W . ' × ' . LOGO_MAX_H . ' Pixel verkleinert (auf der Seite erscheint es höchstens 180 × 48 Pixel groß), leere Ränder werden abgeschnitten und es wird in WebP umgewandelt. Auf der Seite wird es grau gezeigt und beim Darüberfahren farbig.</small>';
+            } else {
+                echo '<small class="hint">JPG, PNG, WebP oder AVIF, höchstens ' . (int)cfg('max_upload_mb', 8) . ' MB. Wird automatisch verkleinert und optimiert.</small>';
+            }
             break;
         case 'pdf':
             $hasPdf = $val !== '' && upload_url((string)$val) !== '';
