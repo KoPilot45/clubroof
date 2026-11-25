@@ -50,6 +50,22 @@
     clearTimeout(flashT);
     flashT = setTimeout(function () { tile.classList.add('flash'); setTimeout(function () { tile.classList.remove('flash'); }, 1600); }, reduce ? 0 : 450);
   }
+  // Eingangsanimation der Beitragskacheln: nacheinander, sobald sie ins Bild kommen
+  var clipList = $('.clip-list');
+  if (clipList && !reduce && 'IntersectionObserver' in window) {
+    clipList.classList.add('anim');
+    var pending = [], flushT = null;
+    var flush = function () {
+      pending.forEach(function (li, k) { li.style.animationDelay = (k * 130) + 'ms'; li.classList.add('shown'); });
+      pending = []; flushT = null;
+    };
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { pending.push(e.target); io.unobserve(e.target); } });
+      if (pending.length && !flushT) flushT = setTimeout(flush, 30);
+    }, { threshold: 0.12 });
+    $$('.ar-clip', clipList).forEach(function (li) { io.observe(li); });
+  }
+
   // Hinweisschild mit Titel und Redaktion
   var tip = null;
   function showTip(b) {
