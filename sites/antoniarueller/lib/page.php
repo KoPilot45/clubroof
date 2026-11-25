@@ -67,16 +67,20 @@ if (!defined('AR_PREVIEW') && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
 $site = setting('site');
 $seo = setting('seo');
 $hero = setting('hero');
-$sec = setting('sections');
+$sec = section_settings();
 // Beschriftungen, die nie leer sein dürfen (Abschnittsnamen, Links der Fußzeile …): leer = Standardtext
-foreach (['sections' => &$sec, 'site' => &$site] as $grp => &$vals) {
+$dictFill = function (array $vals, string $grp): array {
     foreach (schema()['groups'][$grp]['fields'] as $fd) {
         if (!empty($fd['dict']) && trim((string)($vals[$fd['key']] ?? '')) === '') {
             $vals[$fd['key']] = $fd['default'] ?? '';
         }
     }
+    return $vals;
+};
+foreach (array_keys(texts_groups()) as $grp) {
+    $sec = array_merge($sec, array_intersect_key($dictFill($sec, $grp), array_flip(array_column(schema()['groups'][$grp]['fields'], 'key'))));
 }
-unset($vals);
+$site = $dictFill($site, 'site');
 $about = setting('about');
 $contact = setting('contact');
 $tl = setting('timeline');

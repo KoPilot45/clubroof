@@ -135,6 +135,18 @@ function import_data(string $json, string $who): array
             ]);
             $n++;
         }
+        // Sicherungen aus der Zeit vor den „Abschnittstexten“ enthalten die Gruppe „sections“: auf die neuen Gruppen verteilen
+        if (isset($d['einstellungen']['sections']) && is_array($d['einstellungen']['sections'])) {
+            foreach (split_legacy_sections($d['einstellungen']['sections']) as $tg => $part) {
+                $d['einstellungen'][$tg] = array_merge($part, is_array($d['einstellungen'][$tg] ?? null) ? $d['einstellungen'][$tg] : []);
+            }
+            if (isset($d['einstellungen_entwurf']['sections']) && is_array($d['einstellungen_entwurf']['sections'])) {
+                foreach (split_legacy_sections($d['einstellungen_entwurf']['sections']) as $tg => $part) {
+                    $d['einstellungen_entwurf'][$tg] = array_merge($part, is_array($d['einstellungen_entwurf'][$tg] ?? null) ? $d['einstellungen_entwurf'][$tg] : []);
+                }
+            }
+            unset($d['einstellungen']['sections']);
+        }
         foreach ($d['einstellungen'] as $grp => $vals) {
             if (!isset($s['groups'][$grp]) || !is_array($vals)) {
                 continue;

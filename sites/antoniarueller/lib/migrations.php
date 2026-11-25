@@ -429,6 +429,34 @@ function run_migrations(PDO $pdo): void
         }
     }
 
+    // „Abschnitte“ (eine Gruppe für alle Abschnitte) ist auf vier Gruppen (Abschnittstexte je Menüpunkt) verteilt:
+    // vorhandene Werte (auch Englisch und Entwürfe) werden übernommen, die alte Zeile bleibt unangetastet.
+    if (!in_array('texts_split_v1', $applied, true)) {
+        try {
+            require_once __DIR__ . '/schema.php';
+            $old = $pdo->query("SELECT data, draft FROM ar_settings WHERE grp = 'sections'")->fetch();
+            if ($old) {
+                $dat = json_decode((string)$old['data'], true) ?: [];
+                $dra = $old['draft'] !== null ? (json_decode((string)$old['draft'], true) ?: null) : null;
+                $partsD = split_legacy_sections($dat);
+                $partsR = $dra !== null ? split_legacy_sections($dra) : [];
+                $enc = fn($x) => json_encode($x, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                foreach (array_keys(texts_groups()) as $tg) {
+                    $has = $pdo->prepare('SELECT 1 FROM ar_settings WHERE grp = ?');
+                    $has->execute([$tg]);
+                    if ($has->fetchColumn()) {
+                        continue;
+                    }
+                    $pdo->prepare('INSERT INTO ar_settings (grp, data, draft, updated_at, updated_by) VALUES (?,?,?,?,?)')
+                        ->execute([$tg, $enc($partsD[$tg] ?? []), $dra !== null && isset($partsR[$tg]) ? $enc($partsR[$tg]) : null, time(), 'migration']);
+                }
+            }
+            $applied[] = 'texts_split_v1';
+        } catch (Throwable $e) {
+            // beim nächsten Aufruf erneut
+        }
+    }
+
     if (count($applied) !== $before) {
         $json = json_encode($applied);
         $exists = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = '_migrations'")->fetchColumn();

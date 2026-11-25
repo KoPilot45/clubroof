@@ -43,7 +43,9 @@ function seed_defaults(PDO $pdo): void
         'now_lines' => "Investigativ-Recherche\nRadio Bremen · seit 11/2026",
         'photo' => $hero, 'photo_alt' => 'Antonia Rüller im roten Pullover, Arme verschränkt',
     ]);
-    $set('sections', []);
+    foreach (array_keys(texts_groups()) as $tg) {
+        $set($tg, []);
+    }
     $set('timeline', []);
     $set('about', [
         'portrait' => $portrait, 'portrait_alt' => 'Porträt von Antonia Rüller vor grüner Wand',

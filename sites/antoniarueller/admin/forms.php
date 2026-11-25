@@ -32,7 +32,7 @@ function preview_anchor(string $key): string
 {
     return [
         'clips' => 'arbeiten', 'tracks' => 'arbeiten', 'timeline' => 'arbeiten', 'episodes' => 'podcast', 'cv' => 'lebenslauf', 'before' => 'lebenslauf',
-        'about' => 'ueber', 'crossmedia' => 'ueber', 'languages' => 'ueber', 'offrecord' => 'offtherecord', 'contact' => 'kontakt', 'social' => 'kontakt', 'hero' => 'inhalt',
+        'texts_start' => 'inhalt', 'texts_arbeiten' => 'arbeiten', 'texts_ueber' => 'ueber', 'texts_kontakt' => 'kontakt', 'about' => 'ueber', 'crossmedia' => 'ueber', 'languages' => 'ueber', 'offrecord' => 'offtherecord', 'contact' => 'kontakt', 'social' => 'kontakt', 'hero' => 'inhalt',
         'questions' => 'inhalt',
     ][$key] ?? '';
 }

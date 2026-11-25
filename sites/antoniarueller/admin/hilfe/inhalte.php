@@ -142,7 +142,7 @@ return [
                 'steps' => [
                     'Öffne **Off the record → Fragen & Antworten** und lege Einträge mit **Frage** und **Antwort** an.',
                     'Auf der Seite sind die Antworten geschwärzt und erscheinen beim Darüberfahren (am Handy: Antippen).',
-                    'Den Hinweis unter der Überschrift änderst du unter **Seite & Design → Abschnitte**.',
+                    'Den Hinweis unter der Überschrift änderst du unter **Über mich → Abschnittstexte**.',
                 ],
                 'open' => ['Fragen öffnen', 'p=list&c=offrecord'],
             ],

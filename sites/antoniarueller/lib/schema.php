@@ -15,6 +15,42 @@ require_once __DIR__ . '/legal_defaults.php';
 const MARKUP_HINT = 'Hervorhebungen: *kursiv*, **GROSSSCHRIFT**, ==Akzentfarbe==';
 
 /** Symbole für Kategorien und „Crossmedial“: Schlüssel => Bezeichnung (die Zeichnungen stehen in icon(), lib/render.php). */
+/** Gruppen der Abschnittstexte (früher eine Gruppe „sections“): Gruppe => Menüpunkt der Verwaltung. */
+function texts_groups(): array
+{
+    return ['texts_start' => 'start', 'texts_arbeiten' => 'arbeiten', 'texts_ueber' => 'ueber', 'texts_kontakt' => 'kontakt'];
+}
+
+/** Abschnittstexte einer Gruppe: alle Gruppen zusammen ergeben die Texte und Schalter für die Seite. */
+function section_settings(bool $admin = false): array
+{
+    $out = [];
+    foreach (array_keys(texts_groups()) as $g) {
+        $out = array_merge($out, setting($g, $admin));
+    }
+    return $out;
+}
+
+/** Alte Gruppe „sections“ (eine Gruppe für alle Abschnitte) auf die vier Gruppen verteilen: [Gruppe => Werte]. */
+function split_legacy_sections(array $vals): array
+{
+    $out = [];
+    foreach (array_keys(texts_groups()) as $g) {
+        $keys = [];
+        foreach (schema()['groups'][$g]['fields'] as $f) {
+            if ($f['type'] !== 'section') {
+                $keys[] = $f['key'];
+                $keys[] = $f['key'] . '_en';
+            }
+        }
+        $part = array_intersect_key($vals, array_flip($keys));
+        if ($part) {
+            $out[$g] = $part;
+        }
+    }
+    return $out;
+}
+
 function media_options(): array
 {
     return [
@@ -238,9 +274,9 @@ function schema(): array
             f('text', 'photo_alt', 'Bildbeschreibung (Alt-Text)', ['max' => 160, 'required' => true]),
         ],
     ];
-    $s['groups']['sections'] = [
-        'label' => 'Abschnitte',
-        'help' => 'Jeder Abschnitt der Seite hat einen eigenen Bereich: Mit dem Schieberegler blendest du den ganzen Abschnitt ein oder aus, darunter bearbeitest du seine Texte (Abschnittsname, Überschrift, Beschriftungen). Die Inhalte selbst (Referenzen, Folgen, Stationen …) pflegst du über den Link im jeweiligen Bereich.',
+    $s['groups']['texts_start'] = [
+        'label' => 'Abschnittstexte: Hero-Bereich',
+        'help' => 'Namen und Texte der Abschnitte im Hero-Bereich („Intro“ und „Leitfragen“). Mit dem Schieberegler blendest du einen Abschnitt ein oder aus; ausgeblendete Abschnitte entfallen samt Menüpunkt.',
         'fields' => [
             f('section', '', 'Start (Intro)', ['card' => true, 'note' => 'Der Startbereich ist immer sichtbar.', 'link' => ['g', 'hero']]),
             f('text', 'intro_label', 'Abschnittsname in der REC-Zeile', ['max' => 30, 'default' => 'Intro', 'dict' => true]),
@@ -250,7 +286,12 @@ function schema(): array
             f('bool', 'on_questions', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
             f('text', 'q_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Was mich antreibt', 'dict' => true]),
             f('text', 'q_right', 'Rechts neben „REC“', ['max' => 40, 'default' => 'Zwei Fragen']),
-
+        ],
+    ];
+    $s['groups']['texts_arbeiten'] = [
+        'label' => 'Abschnittstexte: Arbeiten',
+        'help' => 'Namen, Überschriften und Beschriftungen der Abschnitte „Showreel“ und „Podcast“. Mit dem Schieberegler blendest du einen Abschnitt ein oder aus.',
+        'fields' => [
             f('section', '', 'Showreel', ['card' => true, 'toggle' => 'on_show', 'note' => 'Das Featured ganz oben wird mit dem Stern in der Referenzen-Liste gewählt und ist von diesem Schalter unabhängig.', 'link' => ['c', 'clips']]),
             f('bool', 'on_show', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
             f('text', 'show_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Showreel', 'dict' => true]),
@@ -277,7 +318,12 @@ function schema(): array
             f('text', 'pod_right', 'Zeile rechts', ['max' => 40, 'default' => 'Audio · On Air', 'hint' => 'Leer = keine Zeile.']),
             f('text', 'pod_listen', 'Beschriftung vor den Plattform-Knöpfen', ['max' => 30, 'default' => 'Anhören bei', 'dict' => true]),
             f('text', 'pod_episode', 'Wort für „Folge“', ['max' => 20, 'default' => 'Folge', 'dict' => true]),
-
+        ],
+    ];
+    $s['groups']['texts_ueber'] = [
+        'label' => 'Abschnittstexte: Über mich',
+        'help' => 'Namen und Texte der Abschnitte „Über mich“, „Lebenslauf“ und „Off the record“. Mit dem Schieberegler blendest du einen Abschnitt ein oder aus.',
+        'fields' => [
             f('section', '', 'Über mich', ['card' => true, 'toggle' => 'on_about', 'link' => ['g', 'about']]),
             f('bool', 'on_about', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
             f('text', 'about_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Über mich', 'dict' => true]),
@@ -301,7 +347,12 @@ function schema(): array
             f('text', 'off_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Off the record', 'dict' => true]),
             f('text', 'off_right', 'Zeile rechts', ['max' => 40, 'default' => 'Nicht zitierfähig']),
             f('text', 'off_hint', 'Hinweis unter der Überschrift', ['max' => 120, 'default' => 'Zum Aufdecken über die Balken fahren oder tippen.']),
-
+        ],
+    ];
+    $s['groups']['texts_kontakt'] = [
+        'label' => 'Abschnittstexte: Kontakt',
+        'help' => 'Name und Texte des Kontaktbereichs und der Fußzeile.',
+        'fields' => [
             f('section', '', 'Kontakt & Fußzeile', ['card' => true, 'toggle' => 'on_contact', 'note' => 'Bei ausgeschaltetem Kontakt bleibt die Fußzeile mit Impressum und Datenschutz immer sichtbar.', 'link' => ['g', 'contact']]),
             f('bool', 'on_contact', 'Kontaktbereich auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
             f('text', 'contact_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Kontakt', 'dict' => true]),
@@ -367,15 +418,18 @@ function admin_nav(): array
 {
     return [
         'start' => ['Hero-Bereich', 'home', 'Das Erste, was Besucher sehen.', [
+            ['g', 'texts_start', 'Abschnittstexte', 'Namen und Texte von „Intro“ und „Leitfragen“; Abschnitte ein- oder ausblenden.'],
             ['g', 'hero', 'Startbild & Einleitung', 'Foto, Überschrift und Einstiegstext ganz oben.'],
             ['c', 'questions', 'Leitfragen', '„Was mich antreibt“ – die kurzen Fragen mit Nummer.'],
         ]],
         'arbeiten' => ['Arbeiten', 'film', 'Referenzen, Featured, Schnittplatz und Podcast.', [
+            ['g', 'texts_arbeiten', 'Abschnittstexte', 'Namen, Überschriften und Beschriftungen von „Showreel“ und „Podcast“; Abschnitte ein- oder ausblenden.'],
             ['c', 'clips', 'Referenzen', 'Alle Arbeitsproben, auch das Featured ganz oben.'],
             ['c', 'tracks', 'Kategorien', 'Video, Online, Radio …: jede Kategorie ist eine Spur im Schnittplatz.'],
             ['c', 'episodes', 'Podcast-Folgen', 'Jede Folge mit Titel, Wellenform und Plattform-Links.'],
         ]],
         'ueber' => ['Über mich', 'user', 'Porträt, Text, Stationen und Off the record.', [
+            ['g', 'texts_ueber', 'Abschnittstexte', 'Namen und Texte von „Über mich“, „Lebenslauf“ und „Off the record“; Abschnitte ein- oder ausblenden.'],
             ['g', 'about', 'Text & Porträt', 'Foto und Text im Abschnitt „Über mich“.'],
             ['c', 'crossmedia', 'Crossmedial', 'Die Kacheln mit Medien, in denen Antonia arbeitet.'],
             ['c', 'languages', 'Sprachen', 'Sprachen mit Niveau.'],
@@ -383,13 +437,13 @@ function admin_nav(): array
             ['c', 'offrecord', 'Off the record', 'Die persönlichen Fragen und Antworten im Abschnitt „Off the record“.'],
         ]],
         'kontakt' => ['Kontakt', 'mail', 'Kontaktangaben und Profile.', [
+            ['g', 'texts_kontakt', 'Abschnittstexte', 'Name und Texte des Kontaktbereichs und der Fußzeile; Bereich ein- oder ausblenden.'],
             ['g', 'contact', 'Kontakt & Fußzeile', 'E-Mail, Texte beim Kontakt und die Fußzeile.'],
             ['c', 'social', 'Social-Media-Profile', 'Links zu LinkedIn, Instagram usw.'],
         ]],
-        'design' => ['Seite & Design', 'palette', 'Farben, Menü und Überschriften.', [
+        'design' => ['Seite & Design', 'palette', 'Farben, Kopfzeile und Menü.', [
             ['g', 'site', 'Farben & Kopfzeile', 'Akzentfarbe und Verhalten der Kopfzeile.'],
             ['c', 'nav', 'Menü der Webseite', 'Die Menüpunkte oben auf der Seite.'],
-            ['g', 'sections', 'Abschnitte', 'Abschnitte ein- oder ausblenden und ihre Texte bearbeiten.'],
         ]],
         'englisch' => ['Englisch', 'globe', 'Die englische Fassung der Seite.', [
             ['p', 'translate', 'Übersetzungstabelle', 'Deutsch und Englisch nebeneinander – alle Texte an einem Ort.'],

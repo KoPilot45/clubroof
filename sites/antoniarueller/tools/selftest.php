@@ -422,7 +422,7 @@ $row = q('SELECT data, draft FROM ar_items WHERE id = ?', [$uc])->fetch();
 ok(str_contains((string)$row['data'], '"title_en":"Draft EN"') && str_contains((string)$row['draft'], '"title_en":"Draft EN"') && !str_contains((string)$row['data'], 'Entwurfstitel'), 'Übersetzung wirkt auf Stand und Entwurf, ohne den Entwurf zu veröffentlichen');
 req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'discard_draft', 'kind' => 'item', 'id' => $uc]);
 // Einstellungsseite und Fremdes
-$tr = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_save', 'ajax' => '1', 't' => ['g:sections:unbekannt' => 'x', 'g:nix:a' => 'x', "c:$uc:url" => 'x', 'kaputt' => 'x', "c:99999:title" => 'x']])['body'], true);
+$tr = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_save', 'ajax' => '1', 't' => ['g:texts_start:unbekannt' => 'x', 'g:nix:a' => 'x', "c:$uc:url" => 'x', 'kaputt' => 'x', "c:99999:title" => 'x']])['body'], true);
 ok(($tr['ok'] ?? false) === true && ($tr['n'] ?? 1) === 0, 'Unbekannte, nicht übersetzbare und fremde Felder werden ignoriert');
 $gt = null;
 foreach (translation_rows() as $rw) {
@@ -927,7 +927,7 @@ foreach (help_chapters() as $ch) {
         }
     }
 }
-foreach (['c:clips', 'c:tracks', 'c:episodes', 'c:cv', 'g:about', 'g:hero', 'g:sections', 'translate', 'media', 'g:seo', 'g:legal', 'stats', 'trash', 'users', 'backup', 'account', 'sessions', 'log', 'check'] as $act) {
+foreach (['c:clips', 'c:tracks', 'c:episodes', 'c:cv', 'g:about', 'g:hero', 'g:texts_arbeiten', 'translate', 'media', 'g:seo', 'g:legal', 'stats', 'trash', 'users', 'backup', 'account', 'sessions', 'log', 'check'] as $act) {
     [$kc, $ka] = help_context($act) + [null, null];
     if (!isset($ids[$ka]) || !in_array($kc, array_column(help_chapters(), 'id'), true)) {
         $bad[] = 'Kontext ' . $act;
@@ -986,12 +986,30 @@ reset_content_cache();
 @unlink("$root/uploads/neuer-name-aerztin.webp");
 @unlink($mimg); @unlink($mpdf); @unlink($mimg2);
 
-echo "Abschnitte\n";
-$sg = req('GET', "$base/admin/?p=group&g=sections")['body'];
-ok(str_contains($sg, 'Abschnitte') && !str_contains($sg, 'Abschnittstitel') && !str_contains($sg, 'Überschriften der Abschnitte') && substr_count($sg, 'class="sw"') === 7 && substr_count($sg, 'class="seccard') >= 8, 'Abschnitte: eine Karte je Abschnitt mit sieben Schiebereglern');
+echo "Abschnittstexte\n";
+function save_sections(array $vals): void
+{
+    global $base, $tok;
+    foreach (array_keys(texts_groups()) as $g) {
+        $keys = [];
+        foreach (schema()['groups'][$g]['fields'] as $f) {
+            if ($f['type'] !== 'section') {
+                $keys[] = $f['key'];
+            }
+        }
+        req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_group', 'g' => $g, 'mode' => 'publish'] + array_intersect_key($vals, array_flip($keys)));
+    }
+}
+$tsAll = '';
+foreach (array_keys(texts_groups()) as $tg) {
+    $tsAll .= req('GET', "$base/admin/?p=group&g=$tg")['body'];
+}
+ok(substr_count($tsAll, 'class="sw"') === 7 && substr_count($tsAll, 'class="seccard') >= 8 && !str_contains($tsAll, 'Abschnittstitel'), 'Abschnittstexte: je Menüpunkt eine Seite, zusammen eine Karte je Abschnitt mit sieben Schiebereglern');
+ok(!str_contains(req('GET', "$base/admin/")['body'], 'p=group&amp;g=sections') && substr_count(req('GET', "$base/admin/")['body'], '>Abschnittstexte<') >= 4, 'Menüpunkt „Abschnitte“ ist weg, „Abschnittstexte“ steht unter Hero-Bereich, Arbeiten, Über mich und Kontakt');
+$nvAll = admin_nav();
+ok(($nvAll['start'][3][0][1] ?? '') === 'texts_start' && ($nvAll['arbeiten'][3][0][1] ?? '') === 'texts_arbeiten' && ($nvAll['ueber'][3][0][1] ?? '') === 'texts_ueber' && ($nvAll['kontakt'][3][0][1] ?? '') === 'texts_kontakt', '„Abschnittstexte“ ist jeweils der erste Punkt');
 $ons = ['on_questions', 'on_show', 'on_podcast', 'on_about', 'on_cv', 'on_off', 'on_contact'];
-$secPost = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'sections', 'mode' => 'publish'];
-req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1') + ['pod_listen' => 'Hier hören', 'pod_right' => 'Audio · On Air', 'q_label' => 'Leitfragen', 'cv_since' => 'ab']);
+save_sections(array_fill_keys($ons, '1') + ['pod_listen' => 'Hier hören', 'pod_right' => 'Audio · On Air', 'q_label' => 'Leitfragen', 'cv_since' => 'ab']);
 $pg = req('GET', "$base/")['body'];
 $allIds = true;
 foreach (['podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt', 'arbeiten'] as $idn) {
@@ -999,7 +1017,7 @@ foreach (['podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt', 'arbeiten
 }
 ok($allIds && str_contains($pg, 'class="questions"') && str_contains($pg, 'class="rf-list"'), 'alle Abschnitte eingeschaltet sichtbar');
 ok(str_contains($pg, 'Audio · On Air') && str_contains($pg, '00 — Leitfragen') && str_contains($pg, '>ab '), 'bearbeitete Textbausteine erscheinen (inkl. „Zeile rechts“ beim Podcast)');
-req('POST', "$base/admin/", $secPost);
+save_sections([]);
 $pg = req('GET', "$base/")['body'];
 $none = true;
 foreach (['id="podcast"', 'id="ueber"', 'id="offtherecord"', 'class="rf-list"', 'class="questions"', 'class="ed-body"', 'class="k-h"', 'class="pod-grid"'] as $needle) {
@@ -1008,13 +1026,13 @@ foreach (['id="podcast"', 'id="ueber"', 'id="offtherecord"', 'class="rf-list"', 
 ok($none, 'ausgeschaltete Abschnitte fehlen auf der Seite');
 ok(str_contains($pg, 'class="ar-hero"') && str_contains($pg, '<footer class="foot">') && str_contains($pg, 'Impressum'), 'Start und Fußzeile bleiben');
 ok(!preg_match('~href="#(podcast|ueber|offtherecord|kontakt|lebenslauf)"~', $pg), 'Menüpunkte ausgeblendeter Abschnitte entfallen');
-req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1'));
+save_sections(array_fill_keys($ons, '1'));
 ok(str_contains(req('GET', "$base/")['body'], 'id="podcast"'), 'wieder eingeschaltet');
 $en = req('GET', "$base/en/")['body'];
 ok(str_contains($en, 'Select a clip to jump to the post') && str_contains($en, 'Role:') && !str_contains($en, 'Anhören bei'), 'neue Textbausteine: englische Standardtexte');
 $tp = req('GET', "$base/admin/?p=translate")['body'];
 ok(!str_contains($tp, 'Beschriftung vor der Rolle'), 'Standardtexte mit Wörterbuch erscheinen nicht als offene Übersetzung');
-$sg = req('GET', "$base/admin/?p=group&g=sections")['body'];
+$sg = req('GET', "$base/admin/?p=group&g=texts_arbeiten")['body'];
 $pa = strpos($sg, 'Hervorgehobener Beitrag');
 $pb = strpos($sg, '>Schnittplatz<');
 $pc = strpos($sg, 'Beitragsliste');
@@ -1028,7 +1046,7 @@ echo "Lebenslauf mit Zeitstrahl und Logoleiste\n";
 $cf = req('GET', "$base/admin/?p=edit&c=cv")['body'];
 ok(str_contains($cf, 'data-logo') && str_contains($cf, '>freigestellt</strong>') && str_contains($cf, 'remove.bg') && str_contains($cf, '360 × 96'), 'Lebenslauf-Eintrag: Logo-Feld mit Hinweis auf Freistellen, Maximalgröße');
 ok(str_contains($cf, 'name="desk"') && !str_contains($cf, '<select name="desk"') && str_contains($cf, 'name="url"') && str_contains($cf, 'name="ongoing"'), 'Redaktion und Link sind Felder des Eintrags (Redaktion als Freitext)');
-ok(!str_contains(req('GET', "$base/admin/?p=group&g=sections")['body'], 'name="st_mode"') && !str_contains(req('GET', "$base/admin/")['body'], 'Sender &amp; Redaktionen'), 'keine getrennte Stationen-Liste mehr im Backend');
+ok(!str_contains(req('GET', "$base/admin/?p=group&g=texts_ueber")['body'], 'name="st_mode"') && !str_contains(req('GET', "$base/admin/")['body'], 'Sender &amp; Redaktionen'), 'keine getrennte Stationen-Liste mehr im Backend');
 // Logo mit transparentem Rand, größer als erlaubt
 $lgw = tempnam(sys_get_temp_dir(), 'lg') . '.png';
 $im = imagecreatetruecolor(1200, 600);
@@ -1087,36 +1105,32 @@ foreach (q("SELECT id FROM ar_items WHERE coll = 'before' AND data LIKE '%Davor-
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
 }
-$sgA = req('GET', "$base/admin/?p=group&g=sections")['body'];
-ok(str_contains($sgA, 'name="cross_label"') && str_contains($sgA, 'name="lang_label"') && !str_contains(req('GET', "$base/admin/?p=group&g=about")['body'], 'name="cross_label"'), 'Überschriften „Crossmedial“ und „Sprachen“ stehen unter Abschnitte → Über mich');
-// Übernahme der Überschriften (einmalige Migration, nichts wird überschrieben)
-$aRow = q("SELECT data FROM ar_settings WHERE grp = 'about'")->fetchColumn();
-$ad0 = json_decode((string)$aRow, true) ?: [];
-$sRow = q("SELECT data FROM ar_settings WHERE grp = 'sections'")->fetchColumn();
-$sd0 = $sRow !== false ? (json_decode((string)$sRow, true) ?: []) : [];
-$ad1 = $ad0 + ['cross_label' => 'Alte Crossmedial-Überschrift', 'lang_label' => 'Alte Sprachen'];
-$ad1['cross_label'] = 'Alte Crossmedial-Überschrift';
-$ad1['lang_label'] = 'Alte Sprachen';
-q("UPDATE ar_settings SET data = ? WHERE grp = 'about'", [json_encode($ad1)]);
-$sd1 = $sd0;
-unset($sd1['cross_label']);
-$sd1['lang_label'] = 'Neue Sprachen bleibt';
-if ($sRow !== false) {
-    q("UPDATE ar_settings SET data = ? WHERE grp = 'sections'", [json_encode($sd1)]);
-} else {
-    q("INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES ('sections', ?, ?, 't')", [json_encode($sd1), time()]);
+$sgA = req('GET', "$base/admin/?p=group&g=texts_ueber")['body'];
+ok(str_contains($sgA, 'name="cross_label"') && str_contains($sgA, 'name="lang_label"') && !str_contains(req('GET', "$base/admin/?p=group&g=about")['body'], 'name="cross_label"'), 'Überschriften „Crossmedial“ und „Sprachen“ stehen unter Abschnittstexte (Über mich)');
+// Aufteilung der alten Gruppe „sections“ auf die Abschnittstexte (einmalige Migration, alte Zeile bleibt)
+$saved = [];
+foreach (array_keys(texts_groups()) as $tg) {
+    $saved[$tg] = q('SELECT data FROM ar_settings WHERE grp = ?', [$tg])->fetchColumn();
+    q('DELETE FROM ar_settings WHERE grp = ?', [$tg]);
 }
-$mj2 = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = '_migrations'")->fetchColumn(), true) ?: [];
-q("UPDATE ar_settings SET data = ? WHERE grp = '_migrations'", [json_encode(array_values(array_diff($mj2, ['about_labels_v1'])))]);
+q("DELETE FROM ar_settings WHERE grp = 'sections'");
+q("INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES ('sections', ?, ?, 't')", [json_encode(['cross_label' => 'Alte Crossmedial-Überschrift', 'pod_listen' => 'Alt hören', 'pod_listen_en' => 'Old listen', 'on_cv' => true, 'q_label' => 'Alte Leitfragen', 'contact_label' => 'Alter Kontakt'], JSON_UNESCAPED_UNICODE), time()]);
+$mj3 = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = '_migrations'")->fetchColumn(), true) ?: [];
+q("UPDATE ar_settings SET data = ? WHERE grp = '_migrations'", [json_encode(array_values(array_diff($mj3, ['texts_split_v1'])))]);
 req('GET', "$base/admin/");
-$sd2 = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = 'sections'")->fetchColumn(), true) ?: [];
-ok(($sd2['cross_label'] ?? '') === 'Alte Crossmedial-Überschrift' && ($sd2['lang_label'] ?? '') === 'Neue Sprachen bleibt', 'Migration: vorhandene Überschrift wird übernommen, bereits gesetzte nicht überschrieben');
-q("UPDATE ar_settings SET data = ? WHERE grp = 'about'", [json_encode($ad0)]);
-if ($sRow !== false) {
-    q("UPDATE ar_settings SET data = ? WHERE grp = 'sections'", [$sRow]);
-} else {
-    q("DELETE FROM ar_settings WHERE grp = 'sections'");
+$sp = [];
+foreach (array_keys(texts_groups()) as $tg) {
+    $sp[$tg] = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', [$tg])->fetchColumn(), true) ?: [];
 }
+ok(($sp['texts_ueber']['cross_label'] ?? '') === 'Alte Crossmedial-Überschrift' && !empty($sp['texts_ueber']['on_cv']) && ($sp['texts_arbeiten']['pod_listen'] ?? '') === 'Alt hören' && ($sp['texts_arbeiten']['pod_listen_en'] ?? '') === 'Old listen' && ($sp['texts_start']['q_label'] ?? '') === 'Alte Leitfragen' && ($sp['texts_kontakt']['contact_label'] ?? '') === 'Alter Kontakt', 'Migration: Werte der alten Abschnitte (auch Englisch) landen in den passenden Abschnittstexten');
+ok(isset($sp['texts_ueber']['cross_label']) && !isset($sp['texts_start']['cross_label']), 'Migration: jeder Wert nur in der passenden Gruppe');
+foreach (array_keys(texts_groups()) as $tg) {
+    q('DELETE FROM ar_settings WHERE grp = ?', [$tg]);
+    if ($saved[$tg] !== false) {
+        q('INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES (?,?,?,?)', [$tg, $saved[$tg], time(), 't']);
+    }
+}
+q("DELETE FROM ar_settings WHERE grp = 'sections'");
 reset_content_cache();
 // Symbol-Auswahl bei Kategorien und Crossmedial
 $cmForm = req('GET', "$base/admin/?p=edit&c=crossmedia")['body'];
