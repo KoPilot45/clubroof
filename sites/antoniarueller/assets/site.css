@@ -637,3 +637,7 @@ html.lb-open{overflow:hidden}
 .cl-pin{position:absolute;left:50%;top:11px;width:0;height:0;z-index:3;pointer-events:none;transform:rotate(-24deg);filter:drop-shadow(2px 3px .6px rgba(23,37,38,.38))}
 .cl-pin:before{content:"";position:absolute;left:-1.25px;top:-22px;width:2.5px;height:22px;background:linear-gradient(90deg,rgba(23,37,38,.85),rgba(160,172,172,.95) 40%,rgba(23,37,38,.8));clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%)}
 .cl-pin:after{content:"";position:absolute;left:-9px;top:-33px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.85) 0,rgba(255,255,255,0) 26%),radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--rec),#fff 40%),var(--rec) 55%,color-mix(in srgb,var(--rec),#000 55%))}
+
+/* Name oben links ist aktiv, solange der Startbereich im Bild ist */
+a.top-l>span:last-child{padding:6px 0;border-bottom:2px solid transparent;transition:color .3s,border-color .3s}
+a.top-l.on>span:last-child{color:var(--accent);border-bottom-color:var(--accent)}

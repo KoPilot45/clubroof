@@ -259,20 +259,36 @@
   }
   window.addEventListener('resize', moveInd);
   window.addEventListener('load', moveInd);
-  if (links.length && 'IntersectionObserver' in window) {
-    var map = {};
-    links.forEach(function (a) { map[a.getAttribute('data-nav')] = a; });
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          links.forEach(function (a) { a.classList.toggle('on', false); a.setAttribute('aria-current', 'false'); });
-          var a = map[en.target.id];
-          if (a) { a.classList.add('on'); a.setAttribute('aria-current', 'true'); }
-          moveInd();
-        }
+  // Aktiver Menüpunkt: der Abschnitt an einer Linie bei 40 % der Fensterhöhe; im Startbereich ist der Name oben links aktiv
+  var brand = $('a[data-top]'), hero = $('.ar-hero');
+  if (links.length) {
+    var spy = [];
+    links.forEach(function (a) { var s = document.getElementById(a.getAttribute('data-nav')); if (s) spy.push({ el: s, link: a }); });
+    var spyRaf = 0;
+    var setOn = function (a, on) { a.classList.toggle('on', on); a.setAttribute('aria-current', on ? 'true' : 'false'); };
+    var updateSpy = function () {
+      spyRaf = 0;
+      var line = window.innerHeight * 0.4, cur = null, atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      spy.forEach(function (x) {
+        var r = x.el.getBoundingClientRect();
+        if (r.top <= line && r.bottom > line) cur = x.link;
       });
-    }, { rootMargin: '-40% 0px -55% 0px' });
-    Object.keys(map).forEach(function (id) { var s = document.getElementById(id); if (s) io.observe(s); });
+      if (!cur && atEnd && spy.length) cur = spy[spy.length - 1].link;
+      links.forEach(function (a) { setOn(a, a === cur); });
+      if (brand) {
+        var hr = hero ? hero.getBoundingClientRect() : null;
+        var inHero = hr ? (hr.top <= line && hr.bottom > line) : window.scrollY < 40;
+        if (!cur && !hr && window.scrollY < 40) inHero = true;
+        brand.classList.toggle('on', inHero && !cur);
+        if (inHero && !cur) brand.setAttribute('aria-current', 'true'); else brand.removeAttribute('aria-current');
+      }
+      moveInd();
+    };
+    var queueSpy = function () { if (!spyRaf) spyRaf = window.requestAnimationFrame(updateSpy); };
+    window.addEventListener('scroll', queueSpy, { passive: true });
+    window.addEventListener('resize', queueSpy);
+    window.addEventListener('load', queueSpy);
+    updateSpy();
   }
 
   // ---- Anonyme Ereigniszähler (Klicks, erreichte Abschnitte): ohne Kennung, ohne Speicherung im Browser ----
