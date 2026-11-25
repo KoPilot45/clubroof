@@ -66,6 +66,7 @@
     tip.appendChild(tx);
     if (img) { var im = document.createElement('img'); im.src = img; im.alt = ''; im.width = 88; im.height = 88; tip.appendChild(im); }
     tip.hidden = false;
+    markLane(b);
     var r = b.getBoundingClientRect(), d = desk.getBoundingClientRect(), w = tip.offsetWidth, cx = r.left - d.left + r.width / 2;
     var left = Math.max(w / 2 + 4, Math.min(d.width - w / 2 - 4, cx));
     tip.style.left = left + 'px';
@@ -73,7 +74,17 @@
     // Pfeil zeigt auf die Mitte des Clips (in der Box begrenzt)
     tip.style.setProperty('--ax', Math.max(-(w / 2 - 16), Math.min(w / 2 - 16, cx - left)) + 'px');
   }
-  function hideTip() { if (tip) tip.hidden = true; }
+  function hideTip() { if (tip) tip.hidden = true; markLane(null); }
+  // Spur des Clips hervorheben (Zeile samt Bezeichnung links)
+  function markLane(b) {
+    $$('.ed-lane.hl, .ed-row.ed-tl.hl').forEach(function (x) { x.classList.remove('hl'); });
+    if (!b || !desk) return;
+    var lane = b.closest('.ed-lane');
+    if (!lane) return;
+    lane.classList.add('hl');
+    var i = $$('.ed-lane', desk).indexOf(lane), lab = $$('.ed-row.ed-tl', desk)[i];
+    if (lab) lab.classList.add('hl');
+  }
   $$('.ar-tlclip').forEach(function (b) {
     var id = b.getAttribute('data-id');
     b.addEventListener('click', function () { focusClip(id); });

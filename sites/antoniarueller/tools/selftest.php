@@ -507,7 +507,7 @@ $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'col
 $vp = req('GET', "$base/")['body'];
 ok($r['code'] === 302 && preg_match('~<span class="cl-fig"><img src="[^"]*/uploads/(v/)?[a-z0-9.-]+\.webp(\?v=\d+)?"[^>]*loading="lazy"[^>]*object-position:40% 25%~', $vp) === 1, 'Kachel zeigt Vorschaubild mit Fokuspunkt');
 ok(str_contains($vp, 'Bild: &lt;Test&gt;') && !str_contains($vp, 'Bild: <Test>'), 'Bildnachweis steht maskiert auf der Kachel');
-ok(substr_count($vp, 'class="cl-fig txt') >= 1, 'Beiträge ohne Bild werden zur typografischen Kachel');
+ok(substr_count($vp, 'data-txt="1"') >= 1 && substr_count($vp, 'class="cl-pin"') >= 5, 'Beiträge ohne Bild werden zur Textkachel, jede Kachel trägt einen Pin');
 foreach (q("SELECT id FROM ar_items WHERE coll = 'clips' AND data LIKE '%Vorschaubild-Test%'")->fetchAll() as $row) {
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
