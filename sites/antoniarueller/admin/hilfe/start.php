@@ -200,7 +200,7 @@ return [
                 'steps' => [
                     'Öffne **Seite & Design → Menü der Webseite**.',
                     'Jeder Menüpunkt hat eine **Beschriftung** und ein Ziel („Springt zu“: Arbeiten, Podcast, Lebenslauf, Über mich, Off the record oder Kontakt).',
-                    'Mit dem Haken **Auch in der Kopfzeile am Desktop zeigen** erscheint er auch oben am großen Bildschirm, sonst nur im Handy-Menü.',
+                    'Mit dem Haken **Im Menü zeigen** erscheint er in der Kopfzeile am großen Bildschirm und im Handy-Menü, ohne Haken in keinem von beiden (der Bereich bleibt auf der Seite erreichbar).',
                     'Die Reihenfolge änderst du per Ziehen.',
                 ],
                 'tips' => ['Zeigt ein Menüpunkt auf einen ausgeschalteten Abschnitt, wird er automatisch ausgeblendet.'],

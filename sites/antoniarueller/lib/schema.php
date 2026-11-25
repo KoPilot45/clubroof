@@ -217,7 +217,7 @@ function schema(): array
         'fields' => [
             f('text', 'label', 'Beschriftung', ['required' => true, 'max' => 30]),
             f('select', 'anchor', 'Springt zu', ['options' => anchor_options(), 'default' => 'arbeiten']),
-            f('bool', 'desktop', 'Auch in der Kopfzeile am Desktop zeigen', ['default' => true]),
+            f('bool', 'desktop', 'Im Menü zeigen (Kopfzeile und Handy-Menü)', ['default' => true]),
             f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
         ],
     ];

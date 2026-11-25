@@ -1276,10 +1276,10 @@ preg_match_all('~<span class="rec-t">REC</span><span>(\d\d) — ([^<]+)</span>~'
 $nums1 = array_map(fn($a, $b) => "$a — $b", $rm1[1], $rm1[2]);
 ok(in_array('01 — Über mich', $nums1, true) && in_array('02 — Lebenslauf', $nums1, true) && in_array('03 — Showreel', $nums1, true) && in_array('03 — Podcast', $nums1, true), 'Nummern folgen der Reihenfolge (nebeneinander stehende Showreel und Podcast teilen sich eine Nummer)');
 $navHtml = (string)(preg_match('~<nav aria-label="Mobile Navigation">.*?</nav>~s', $pgL1, $nm) ? $nm[0] : '');
-$navPos = array_map(fn($a) => pos_of($navHtml, 'href="#' . $a . '"'), ['ueber', 'lebenslauf', 'arbeiten', 'podcast', 'kontakt']);
+$navPos = array_map(fn($a) => pos_of($navHtml, 'href="#' . $a . '"'), ['ueber', 'lebenslauf', 'arbeiten', 'kontakt']);
 $navSorted = $navPos;
 sort($navSorted);
-ok(!in_array(-1, $navPos, true) && $navPos === $navSorted, 'Menüpunkte folgen der Reihenfolge der Abschnitte');
+ok(!in_array(-1, $navPos, true) && $navPos === $navSorted, 'Menüpunkte folgen der Reihenfolge der Abschnitte (Handy-Menü wie Kopfzeile, ohne Podcast und Off the record)');
 save_layout(['order' => 'x,off,off,nix']);
 $lf2 = req('GET', "$base/admin/?p=group&g=layout")['body'];
 ok(str_contains($lf2, 'name="order" id="lay-order" value="off,questions,arbeiten,podcast,about,cv"'), 'ungültige und doppelte Einträge entfallen, fehlende folgen in Standardreihenfolge');

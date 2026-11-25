@@ -111,7 +111,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <div class="menu-top"><span style="display:flex;align-items:center;gap:10px"><?= rec_dot() ?><?= e(tr($site['menu_label'])) ?></span>
 <button type="button" class="circ menu-x" id="menuClose" aria-label="<?= tr('Menü schließen') ?>"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l12 12M14 2L2 14"></path></svg></button></div>
 <nav aria-label="<?= tr('Mobile Navigation') ?>"><ol>
-<?php foreach ($nav as $i => $n): ?><li><a href="#<?= e($n['anchor']) ?>"><span class="mn"><?= sprintf('%02d', $i + 1) ?></span><span class="ml"><?= e($n['label']) ?></span></a></li>
+<?php $nMob = 0; foreach ($nav as $n): if (!$n['desktop']) { continue; } $nMob++; ?><li><a href="#<?= e($n['anchor']) ?>"><span class="mn"><?= sprintf('%02d', $nMob) ?></span><span class="ml"><?= e($n['label']) ?></span></a></li>
 <?php endforeach; ?>
 </ol></nav>
 <?php if ($hasMail && $sec['on_contact'] && trim($contact['cta_label']) !== ''): ?><a class="btn-solid btn-block menu-cta" href="#kontakt" data-ev="mail" data-k="menue" data-mail="<?= e(AR_BASE) ?>/mail.php" style="margin-top:28px"><?= e($contact['cta_label']) ?> ↗</a><?php endif; ?>
