@@ -49,7 +49,8 @@ function apply_lang(array $vals, array $fields): array
         }
         if ($f['type'] !== 'section' && field_translatable($f)) {
             $en = $vals[$f['key'] . '_en'] ?? '';
-            if (is_string($en) && trim($en) !== '') {
+            // Ohne deutschen Text gibt es keinen englischen: ein geleertes deutsches Feld bleibt auch auf Englisch leer
+            if (is_string($en) && trim($en) !== '' && trim((string)($vals[$f['key']] ?? '')) !== '') {
                 $vals[$f['key']] = $en;
             }
         }
@@ -555,7 +556,10 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
             && preg_match('~^[a-z0-9_-]+\.(jpg|png|webp)$~', (string)$post[$k . '_pick']) && is_file(upload_dir() . '/' . $post[$k . '_pick'])) {
             $v = (string)$post[$k . '_pick'];
         }
-        if (field_translatable($f) && !array_key_exists($k . '_en', $post)) {
+        if (field_translatable($f) && is_string($v) && trim($v) === '') {
+            // Kein deutscher Text: auch keine englische Fassung (sonst bliebe sie unsichtbar in den Daten hängen)
+            $out[$k . '_en'] = '';
+        } elseif (field_translatable($f) && !array_key_exists($k . '_en', $post)) {
             // Englische Texte werden in der Übersetzungstabelle bearbeitet: vorhandene Fassung beibehalten.
             $out[$k . '_en'] = (string)($old[$k . '_en'] ?? '');
         } elseif (field_translatable($f)) {

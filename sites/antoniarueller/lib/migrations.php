@@ -509,6 +509,64 @@ function run_migrations(PDO $pdo): void
         }
     }
 
+    // Englische Texte ohne deutschen Text (Überschriftenteile, die auf Deutsch längst geleert sind) entfernen
+    if (!in_array('en_orphans_v1', $applied, true)) {
+        try {
+            require_once __DIR__ . '/schema.php';
+            $s = schema();
+            $strip = function (array $fields, array $d): array {
+                $eff = array_merge(field_defaults($fields), $d);
+                $n = 0;
+                foreach ($fields as $f) {
+                    if ($f['type'] === 'section' || !field_translatable($f)) {
+                        continue;
+                    }
+                    $k = $f['key'] . '_en';
+                    if (trim((string)($eff[$f['key']] ?? '')) === '' && trim((string)($d[$k] ?? '')) !== '') {
+                        $d[$k] = '';
+                        $n++;
+                    }
+                }
+                return [$d, $n];
+            };
+            foreach ($pdo->query('SELECT id, coll, data, draft FROM ar_items')->fetchAll(PDO::FETCH_ASSOC) as $r) {
+                $def = $s['collections'][$r['coll']] ?? null;
+                if (!$def) {
+                    continue;
+                }
+                foreach (['data', 'draft'] as $col) {
+                    $d = json_decode((string)($r[$col] ?? ''), true);
+                    if (!is_array($d)) {
+                        continue;
+                    }
+                    [$d, $n] = $strip($def['fields'], $d);
+                    if ($n) {
+                        $pdo->prepare("UPDATE ar_items SET $col = ? WHERE id = ?")->execute([json_encode($d, JSON_UNESCAPED_UNICODE), (int)$r['id']]);
+                    }
+                }
+            }
+            foreach ($pdo->query('SELECT grp, data, draft FROM ar_settings')->fetchAll(PDO::FETCH_ASSOC) as $r) {
+                $def = $s['groups'][$r['grp']] ?? null;
+                if (!$def) {
+                    continue;
+                }
+                foreach (['data', 'draft'] as $col) {
+                    $d = json_decode((string)($r[$col] ?? ''), true);
+                    if (!is_array($d)) {
+                        continue;
+                    }
+                    [$d, $n] = $strip($def['fields'], $d);
+                    if ($n) {
+                        $pdo->prepare("UPDATE ar_settings SET $col = ? WHERE grp = ?")->execute([json_encode($d, JSON_UNESCAPED_UNICODE), $r['grp']]);
+                    }
+                }
+            }
+            $applied[] = 'en_orphans_v1';
+        } catch (Throwable $e) {
+            // beim nächsten Aufruf erneut
+        }
+    }
+
     if (count($applied) !== $before) {
         $json = json_encode($applied);
         $exists = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = '_migrations'")->fetchColumn();

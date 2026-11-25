@@ -1359,6 +1359,23 @@ foreach (glob("$root/admin/hilfe/*.php") as $af) {
     $blocked = $blocked && preg_match($blockRe, basename($af)) === 1;
 }
 ok(str_contains($adm, '(?!(index|vorschau)\\.php$)') && $blocked, 'Admin: nur index.php und vorschau.php sind aufrufbar, alle eingebundenen Dateien gesperrt');
+// Englischer Text ohne deutschen Text erscheint nicht (geleerte deutsche Überschriftenteile)
+$rowO = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['texts_arbeiten'])->fetchColumn(), true) ?: [];
+$bakO = $rowO;
+$rowO['show_h2'] = '';
+$rowO['show_h2_en'] = 'ORPHANTEST';
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($rowO), 'texts_arbeiten']);
+reset_content_cache();
+foreach (glob("$root/data/cache/*") ?: [] as $cf) {
+    @unlink($cf);
+}
+$enO = req('GET', "$base/en/")['body'];
+ok(!str_contains($enO, 'ORPHANTEST'), 'Englisch: Text ohne deutsche Entsprechung wird nicht angezeigt');
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($bakO), 'texts_arbeiten']);
+reset_content_cache();
+foreach (glob("$root/data/cache/*") ?: [] as $cf) {
+    @unlink($cf);
+}
 // Barrierefreiheit
 echo "Barrierefreiheit\n";
 $empty = ['show_h1' => '', 'show_h2' => '', 'pod_h1' => '', 'pod_h2' => ''];

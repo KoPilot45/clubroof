@@ -1,6 +1,6 @@
 <?php if ($sec['on_about']): ?>
 <section id="ueber" aria-label="<?= e(tr($sec['about_label'])) ?>" style="padding-top:144px">
-<h2 class="sr-only"><?= e($sec['about_label']) ?></h2>
+<h2 class="sr-only"><?= e(tr($sec['about_label'])) ?></h2>
 <?= sec_head($no['about'], $sec['about_label'], $about['right'], '48px') ?>
 <div class="about">
 <?php if (upload_url($about['portrait']) !== ''): ?>
