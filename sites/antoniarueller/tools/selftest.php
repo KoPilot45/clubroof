@@ -1104,6 +1104,7 @@ $adm = req('GET', "$base/admin/")['body'];
 ok(str_contains($adm, 'Podcast-Folgen') && !str_contains($adm, 'Lebenslauf &amp; Stationen') && substr_count($adm, 'p=list&amp;c=cv') >= 1 && substr_count($adm, 'p=list&amp;c=offrecord') >= 1, 'Seitenleiste: Podcast-Folgen, Stationen und Off the record als Unterpunkte');
 $cvList = req('GET', "$base/admin/?p=list&c=cv")['body'];
 ok(str_contains($cvList, 'class="embedlist"') && str_contains($cvList, 'p=edit&amp;c=before') && substr_count($cvList, 'id="rows"') === 1, '„Davor“ steht unter den Stationen auf derselben Seite');
+ok(str_contains($cvList, 'id="rows-embed"') && str_contains($cvList, 'data-coll="before"') && substr_count($cvList, 'class="grip"') === count(items('cv', false, true)) + count(items('before', false, true)) && substr_count($cvList, 'draggable="true"') === substr_count($cvList, 'class="grip"'), '„Davor“ lässt sich wie die Stationen per Ziehen sortieren');
 $bp = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'before', 'text' => 'Davor-Test', 'side' => 'x', 'mode' => 'publish']);
 ok(str_contains($bp['head'], 'c=cv'), 'nach dem Speichern von „Davor“ geht es zurück zur Stationen-Seite');
 foreach (q("SELECT id FROM ar_items WHERE coll = 'before' AND data LIKE '%Davor-Test%'")->fetchAll() as $row) {

@@ -382,7 +382,7 @@ function list_embedded(array $user, array $def): void
         echo '<div class="emptystate"><p><strong>Noch keine Einträge.</strong></p></div></section>';
         return;
     }
-    echo '<ol class="rows cards">';
+    echo '<ol class="rows sortable cards" id="rows-embed" data-coll="' . e($wc) . '" data-csrf="' . e($user['csrf']) . '" data-url="' . e(a()) . '">';
     foreach ($rows as $i => $r) {
         list_row($user, $wdef, $wc, $r, $i, count($rows), '', false, true);
     }
@@ -404,11 +404,11 @@ function list_row(array $user, array $def, string $coll, array $r, int $i, int $
     $isDraft = !$r['_live'] || $r['_draft'];
     $state = ($isDraft ? 'draft ' : '') . ($hidden ? 'hidden' : '');
     $edit = a('p=edit&c=' . $coll . '&id=' . $r['_id']);
-    echo '<li id="i' . $r['_id'] . '" class="row' . ($hidden ? ' off' : '') . '" data-id="' . $r['_id'] . '" data-state="' . e(trim($state)) . '"' . ($embedded ? '' : ' draggable="true"') . '>';
+    echo '<li id="i' . $r['_id'] . '" class="row' . ($hidden ? ' off' : '') . '" data-id="' . $r['_id'] . '" data-state="' . e(trim($state)) . '"' . ' draggable="true"' . '>';
     if (!$embedded) {
         echo '<input type="checkbox" class="sel" name="ids[]" value="' . $r['_id'] . '" form="bulkform" aria-label="' . e($title) . ' auswählen">';
-        echo '<span class="grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span>';
     }
+    echo '<span class="grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span>';
     echo '<span class="no">' . sprintf('%02d', $i + 1) . '</span>';
     if ($imgKey !== '' && !empty($r[$imgKey])) {
         echo '<img class="thumb' . ($isLogoThumb ? ' logo' : '') . '" src="' . e(upload_url((string)$r[$imgKey])) . '" alt="" loading="lazy" width="56" height="56">';

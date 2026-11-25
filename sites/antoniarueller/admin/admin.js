@@ -164,7 +164,7 @@
   // ---- Listen: Suche und Sortieren per Ziehen ----
   var filter = $('#rowfilter');
   var rows = $('#rows');
-  if (rows && rows.classList.contains('sortable')) {
+  $$('ol.sortable').forEach(function (rows) {
     var dragged = null;
     function renumber() { $$('li.row .no', rows).forEach(function (n, i) { n.textContent = ('0' + (i + 1)).slice(-2); }); }
     rows.addEventListener('dragstart', function (e) {
@@ -192,7 +192,7 @@
         .then(function (j) { if (!j.ok) location.reload(); })
         .catch(function () { location.reload(); });
     });
-  }
+  });
 
   // ---- Sicherheits-Selbsttest (Systemcheck) ----
   $$('.selfchecks li').forEach(function (li) {
