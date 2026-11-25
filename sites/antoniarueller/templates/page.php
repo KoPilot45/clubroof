@@ -89,7 +89,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <section id="kontakt" aria-label="<?= e(tr($sec['contact_label'])) ?>" style="padding-top:176px;padding-bottom:48px">
 <?php if ($sec['on_contact']): ?>
 <?= sec_head($no['contact'], $sec['contact_label'], $contact['right'], '0') ?>
-<h2 class="k-h" aria-label="<?= e(trim($contact['h1'] . ' ' . $contact['h2'])) ?>"><span class="ar-schreib" aria-hidden="true"><?= e($contact['h1']) ?></span><span class="k-h2" aria-hidden="true"><?= e($contact['h2']) ?>.</span></h2>
+<h2 class="k-h"><span class="ar-schreib"><?= e($contact['h1']) ?></span></h2>
 <p class="k-intro"><?= e($contact['intro']) ?></p>
 <div class="k-btns">
 <?php if ($hasMail): ?><a class="btn-solid btn-lg" id="mailbtn" href="#kontakt" data-ev="mail" data-k="kontakt" data-mail="<?= e(AR_BASE) ?>/mail.php" data-note="<?= e(tr($sec['mail_fail'])) ?>" data-copy="<?= e(tr($sec['copy_label'])) ?>" data-copied="<?= e(tr($sec['copied_label'])) ?>"><span><?= e($contact['mail_label'] !== '' ? $contact['mail_label'] : tr('E-Mail schreiben')) ?></span> <span aria-hidden="true">↗</span></a><noscript><span class="muted"><?= e(tr('Bitte JavaScript aktivieren, um die E-Mail-Adresse zu sehen – oder im Impressum nachsehen.')) ?></span></noscript><?php endif; ?>

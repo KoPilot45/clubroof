@@ -1362,8 +1362,8 @@ ok(str_contains($adm, '(?!(index|vorschau)\\.php$)') && $blocked, 'Admin: nur in
 // Englischer Text ohne deutschen Text erscheint nicht (geleerte deutsche Überschriftenteile)
 $rowO = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['texts_arbeiten'])->fetchColumn(), true) ?: [];
 $bakO = $rowO;
-$rowO['show_h2'] = '';
-$rowO['show_h2_en'] = 'ORPHANTEST';
+$rowO['show_right'] = '';
+$rowO['show_right_en'] = 'ORPHANTEST';
 q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($rowO), 'texts_arbeiten']);
 reset_content_cache();
 foreach (glob("$root/data/cache/*") ?: [] as $cf) {
@@ -1376,10 +1376,70 @@ reset_content_cache();
 foreach (glob("$root/data/cache/*") ?: [] as $cf) {
     @unlink($cf);
 }
+// Übersetzungen: Überschriften ohne kursiven Teil, veraltete Übersetzungen erkennen, feste Texte vollständig
+echo "Übersetzungen\n";
+$pgH = req('GET', "$base/")['body'] . req('GET', "$base/en/")['body'];
+ok(!str_contains($pgH, 'class="bh2"') && !str_contains($pgH, 'class="ph2"') && !str_contains($pgH, 'class="k-h2"'), 'Überschriften ohne kursiven zweiten Teil');
+ok(!array_filter(schema()['groups']['texts_arbeiten']['fields'], fn($f) => in_array($f['key'], ['show_h2', 'pod_h2'], true)) && !array_filter(schema()['groups']['contact']['fields'], fn($f) => $f['key'] === 'h2'), 'Backend: keine Felder „Teil 2 (kursiv)“ mehr');
+$cRow = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['contact'])->fetchColumn(), true) ?: [];
+$cBak = $cRow;
+$cRow['intro'] = 'Deutscher Teststand eins';
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($cRow), 'contact']);
+reset_content_cache();
+save_translations(['g:contact:intro' => 'English test state one']);
+$findRow = function () {
+    foreach (translation_rows() as $r) {
+        if ($r['key'] === 'g:contact:intro') {
+            return $r;
+        }
+    }
+    return null;
+};
+$r1 = $findRow();
+ok($r1 && $r1['en'] === 'English test state one' && !$r1['stale'], 'Übersetzung gespeichert: nicht veraltet');
+$cRow2 = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['contact'])->fetchColumn(), true) ?: [];
+$cRow2['intro'] = 'Deutscher Teststand zwei';
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($cRow2), 'contact']);
+reset_content_cache();
+$r2 = $findRow();
+ok($r2 && $r2['stale'] === true && translation_report()['stale'] >= 1, 'deutscher Text geändert: Übersetzung gilt als veraltet');
+$trPg = req('GET', "$base/admin/?p=translate")['body'];
+ok(str_contains($trPg, 'data-f="stale"') && str_contains($trPg, 'data-stale="1"') && str_contains($trPg, 'tr-stale'), 'Übersetzungstabelle: Filter „Veraltet“ und Hinweis an der Zeile');
+save_translations(['g:contact:intro' => 'English test state two']);
+$r3 = $findRow();
+ok($r3 && !$r3['stale'], 'nach erneutem Speichern der Übersetzung nicht mehr veraltet');
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($cBak), 'contact']);
+reset_content_cache();
+foreach (glob("$root/data/cache/*") ?: [] as $cf) {
+    @unlink($cf);
+}
+// feste Texte: jeder im Code stehende Text hat eine englische Fassung
+require_once "$root/lib/en_seed.php";
+$known = array_merge(ui_en(), en_dictionary());
+$missingTr = [];
+foreach (array_merge(glob("$root/templates/*.php") ?: [], glob("$root/templates/sections/*.php") ?: [], glob("$root/lib/*.php") ?: []) as $tf) {
+    if (preg_match_all("~\btr\(\s*'((?:[^'\\\\]|\\\\.)*)'\s*\)~u", (string)file_get_contents($tf), $mm)) {
+        foreach ($mm[1] as $lit) {
+            $lit = stripslashes($lit);
+            if (!isset($known[$lit])) {
+                $missingTr[$lit] = basename($tf);
+            }
+        }
+    }
+}
+ok(!$missingTr, 'jeder feste Text im Code hat eine englische Fassung' . ($missingTr ? ' – fehlt: ' . json_encode($missingTr, JSON_UNESCAPED_UNICODE) : ''));
+$missingDict = [];
+foreach (schema()['groups'] as $gk => $gd) {
+    foreach ($gd['fields'] as $fd) {
+        if (!empty($fd['dict']) && ($fd['default'] ?? '') !== '' && !isset($known[$fd['default']])) {
+            $missingDict[$gk . '.' . $fd['key']] = $fd['default'];
+        }
+    }
+}
+ok(!$missingDict, 'jeder Standardtext der Beschriftungsfelder hat eine englische Fassung' . ($missingDict ? ' – fehlt: ' . json_encode($missingDict, JSON_UNESCAPED_UNICODE) : ''));
 // Barrierefreiheit
 echo "Barrierefreiheit\n";
-$empty = ['show_h1' => '', 'show_h2' => '', 'pod_h1' => '', 'pod_h2' => ''];
-foreach (['texts_arbeiten' => ['show_h1', 'show_h2', 'pod_h1', 'pod_h2'], 'texts_ueber' => ['cv_h1', 'cv_h2']] as $tg => $ks) {
+foreach (['texts_arbeiten' => ['show_h1', 'pod_h1'], 'texts_ueber' => ['cv_h1']] as $tg => $ks) {
     $row = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', [$tg])->fetchColumn(), true) ?: [];
     $a11yBak[$tg] = $row;
     foreach ($ks as $k) {

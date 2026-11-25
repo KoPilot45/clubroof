@@ -344,8 +344,7 @@ function schema(): array
         'fields' => [
             f('section', '', 'Showreel', ['card' => true, 'note' => 'Das Featured ganz oben wird mit dem Stern in der Referenzen-Liste gewählt. Ein- und Ausblenden und die Reihenfolge stehen unter „Aufbau der Seite“.', 'link' => ['c', 'clips']]),
             f('text', 'show_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Showreel', 'dict' => true]),
-            f('text', 'show_h1', 'Überschrift, Teil 1 (Großschrift)', ['max' => 20, 'default' => 'Show']),
-            f('text', 'show_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'reel']),
+            f('text', 'show_h1', 'Überschrift', ['max' => 40, 'default' => 'Showreel', 'hint' => 'Leer = keine sichtbare Überschrift.']),
             f('text', 'show_right', 'Zeile rechts', ['max' => 80, 'hint' => 'Leer = automatisch (Anzahl, Kategorien und Zeitraum).']),
             f('section', '', 'Hervorgehobener Beitrag', ['sub' => true]),
             f('text', 'feat_label', 'Beschriftung im Featured-Block', ['max' => 30, 'default' => 'Featured', 'dict' => true]),
@@ -360,8 +359,7 @@ function schema(): array
 
             f('section', '', 'Podcast', ['card' => true, 'link' => ['c', 'episodes']]),
             f('text', 'pod_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Podcast', 'dict' => true]),
-            f('text', 'pod_h1', 'Überschrift, Teil 1', ['max' => 20, 'default' => 'Hör']),
-            f('text', 'pod_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'mal rein.']),
+            f('text', 'pod_h1', 'Überschrift', ['max' => 40, 'default' => 'Hör mal rein.', 'hint' => 'Leer = keine sichtbare Überschrift.']),
             f('text', 'pod_right', 'Zeile rechts', ['max' => 40, 'default' => 'Audio · On Air', 'hint' => 'Leer = keine Zeile.']),
             f('text', 'pod_listen', 'Beschriftung vor den Plattform-Knöpfen', ['max' => 30, 'default' => 'Anhören bei', 'dict' => true]),
             f('text', 'pod_episode', 'Wort für „Folge“', ['max' => 20, 'default' => 'Folge', 'dict' => true]),
@@ -379,8 +377,7 @@ function schema(): array
 
             f('section', '', 'Lebenslauf', ['card' => true, 'link' => ['c', 'cv']]),
             f('text', 'cv_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Lebenslauf', 'dict' => true]),
-            f('text', 'cv_h1', 'Überschrift, Teil 1', ['max' => 20, 'default' => 'Lebens']),
-            f('text', 'cv_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'lauf']),
+            f('text', 'cv_h1', 'Überschrift', ['max' => 40, 'default' => 'Lebenslauf', 'hint' => 'Leer = keine sichtbare Überschrift.']),
             f('text', 'cv_right', 'Zeile rechts', ['max' => 60, 'default' => 'rückwärts abgespielt']),
             f('text', 'cv_today', 'Wort für „heute“ (Zeitraum in der Zeile rechts)', ['max' => 20, 'default' => 'heute', 'dict' => true]),
             f('text', 'cv_since', 'Wort für „seit“ (laufende Stationen)', ['max' => 20, 'default' => 'seit', 'dict' => true]),
@@ -428,8 +425,7 @@ function schema(): array
         'label' => 'Kontakt & Fußzeile',
         'fields' => [
             f('text', 'right', 'Zeile rechts neben „REC“', ['max' => 40, 'default' => 'TC 00:04:12:00']),
-            f('text', 'h1', 'Überschrift, Teil 1', ['max' => 20, 'default' => 'Schreib']),
-            f('text', 'h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'mir']),
+            f('text', 'h1', 'Überschrift', ['max' => 40, 'default' => 'Schreib mir.']),
             f('text', 'intro', 'Einleitung', ['max' => 160, 'default' => 'Für Themen, Recherchen und Zusammenarbeit.']),
             f('text', 'cta_label', 'Button in der Kopfzeile', ['max' => 24, 'default' => 'Schreib mir', 'hint' => 'Öffnet eine E-Mail an die Adresse unten. Leer = kein Button. Ohne E-Mail-Adresse wird der Button nicht gezeigt.']),
             f('text', 'mail_label', 'Beschriftung des E-Mail-Buttons', ['max' => 30, 'default' => 'E-Mail schreiben']),

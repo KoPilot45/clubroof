@@ -2,7 +2,7 @@
 <section id="podcast" aria-label="<?= e(tr($sec['pod_label'])) ?>" style="padding-top:128px">
 <?= sec_head($no['podcast'], $sec['pod_label'], $sec['pod_right'], '32px') ?>
 <div class="pod-grid">
-<?php if (trim($sec['pod_h1'] . $sec['pod_h2']) !== ''): ?><h2 class="pod-h"><span class="ph1"><?= e($sec['pod_h1']) ?></span><span class="ph2"><?= e($sec['pod_h2']) ?></span></h2><?php else: ?><h2 class="sr-only"><?= e(tr($sec['pod_label'])) ?></h2><?php endif; ?>
+<?php if (trim($sec['pod_h1']) !== ''): ?><h2 class="pod-h"><span class="ph1"><?= e($sec['pod_h1']) ?></span></h2><?php else: ?><h2 class="sr-only"><?= e(tr($sec['pod_label'])) ?></h2><?php endif; ?>
 <div class="pod-list">
 <?php foreach ($episodes as $n => $ep):
     $links = array_values(array_filter([['Spotify', $ep['spotify']], ['Apple Podcasts', $ep['apple']], ['ARD Audiothek', $ep['audiothek']], [$ep['other_label'] ?: 'Mehr', $ep['other_url']]], fn($l) => $l[1] !== ''));

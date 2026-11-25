@@ -114,9 +114,12 @@ function translation_rows(): array
             if ($de === '') {
                 continue;
             }
+            $enV = (string)($vals[$f['key'] . '_en'] ?? '');
+            $srcV = (string)($vals[$f['key'] . '_en_src'] ?? '');
             $out[] = [
                 'key' => $kind . ':' . $ref . ':' . $f['key'], 'area' => $area, 'area_key' => $areaKey, 'item' => $item, 'label' => $f['label'],
-                'de' => $de, 'en' => (string)($vals[$f['key'] . '_en'] ?? ''), 'multi' => $f['type'] === 'textarea', 'rich' => !empty($f['rich']), 'max' => (int)($f['max'] ?? 500), 'link' => $link,
+                'stale' => trim($enV) !== '' && $srcV !== '' && $srcV !== tr_src($de),
+                'de' => $de, 'en' => $enV, 'multi' => $f['type'] === 'textarea', 'rich' => !empty($f['rich']), 'max' => (int)($f['max'] ?? 500), 'link' => $link,
             ];
         }
     };
@@ -132,6 +135,44 @@ function translation_rows(): array
     return $out;
 }
 
+/** Englische Texte, deren deutscher Text leer ist (bleiben unsichtbar in den Daten, sollten nicht vorkommen). */
+function translation_orphans(): int
+{
+    $s = schema();
+    $n = 0;
+    $scan = function (array $fields, array $vals) use (&$n) {
+        foreach ($fields as $f) {
+            if ($f['type'] === 'section' || !field_translatable($f)) {
+                continue;
+            }
+            if (trim((string)($vals[$f['key']] ?? '')) === '' && trim((string)($vals[$f['key'] . '_en'] ?? '')) !== '') {
+                $n++;
+            }
+        }
+    };
+    foreach ($s['groups'] as $g => $def) {
+        $scan($def['fields'], setting($g, true));
+    }
+    foreach ($s['collections'] as $coll => $def) {
+        foreach (items($coll, false, true) as $it) {
+            $scan($def['fields'], $it);
+        }
+    }
+    return $n;
+}
+
+/** Übersicht für Übersicht und Prüfungen: offene, veraltete und verwaiste Übersetzungen. */
+function translation_report(): array
+{
+    $rows = translation_rows();
+    return [
+        'total' => count($rows),
+        'open' => count(array_filter($rows, fn($r) => trim($r['en']) === '')),
+        'stale' => count(array_filter($rows, fn($r) => !empty($r['stale']))),
+        'orphan' => translation_orphans(),
+    ];
+}
+
 /** „Startklar“-Liste: [['ok'=>bool, 'text'=>…, 'link'=>…, 'level'=>'must'|'nice']] */
 function readiness_checks(): array
 {
@@ -142,6 +183,7 @@ function readiness_checks(): array
     $clips = array_filter(items('clips', false, true), fn($x) => $x['published'] && (($x['link_mode'] === 'hosted' && ($x['hosted_kind'] === 'pdf' ? $x['pdf_file'] !== '' : (bool)$x['gallery'])) || ($x['link_mode'] !== 'hosted' && str_starts_with(safe_url($x['url']), 'http'))));
     $ph = fn(string $t) => $t === '' || (bool)preg_match('~\[[^\]\n]{2,}\]~u', $t);
     $tp = translation_progress();
+    $trr = translation_report();
     $pct = $tp['total'] ? (int)round($tp['done'] / $tp['total'] * 100) : 100;
     $last = backup_last();
     $titleLen = mb_strlen((string)$seo['title']);
@@ -159,6 +201,7 @@ function readiness_checks(): array
         ['nice', cfg('mail.driver') !== 'log', 'Mailversand ist eingerichtet', a('p=check')],
         ['nice', !is_file(AR_ROOT . '/diagnose.php') && !is_dir(AR_ROOT . '/tools'), 'Diagnose-Datei und Ordner tools/ vom Server entfernt', a('p=check')],
         ['nice', $last > time() - 14 * 86400, 'Sicherung der letzten 14 Tage vorhanden', a('p=backup')],
-        ['nice', $pct >= 80, 'Englische Fassung zu mindestens 80 % übersetzt (jetzt ' . $pct . ' %)', a('p=list&c=clips')],
+        ['nice', $pct >= 80, 'Englische Fassung zu mindestens 80 % übersetzt (jetzt ' . $pct . ' %)', a('p=translate')],
+        ['nice', $trr['stale'] === 0 && $trr['orphan'] === 0, 'Keine veralteten Übersetzungen (deutscher Text seit der Übersetzung geändert)' . ($trr['stale'] ? ': ' . $trr['stale'] . ' zu prüfen' : ''), a('p=translate&f=stale')],
     ];
 }

@@ -567,6 +567,106 @@ function run_migrations(PDO $pdo): void
         }
     }
 
+    // Überschriften bestanden aus zwei Teilen (zweiter kursiv): jetzt ein Feld, vorhandene Werte werden zusammengeführt
+    if (!in_array('headings_v1', $applied, true)) {
+        try {
+            $pairs = [
+                'texts_arbeiten' => [['show_h1', 'show_h2', 'Show', 'reel', '', ''], ['pod_h1', 'pod_h2', 'Hör', 'mal rein.', ' ', '']],
+                'texts_ueber' => [['cv_h1', 'cv_h2', 'Lebens', 'lauf', '', '']],
+                'contact' => [['h1', 'h2', 'Schreib', 'mir', ' ', '.']],
+            ];
+            foreach ($pairs as $grp => $list) {
+                $st = $pdo->prepare('SELECT data, draft FROM ar_settings WHERE grp = ?');
+                $st->execute([$grp]);
+                $row = $st->fetch(PDO::FETCH_ASSOC);
+                if (!$row) {
+                    continue;
+                }
+                foreach (['data', 'draft'] as $col) {
+                    $d = json_decode((string)($row[$col] ?? ''), true);
+                    if (!is_array($d)) {
+                        continue;
+                    }
+                    $ch = false;
+                    foreach ($list as [$k1, $k2, $def1, $def2, $join, $suffix]) {
+                        if (!array_key_exists($k1, $d) && !array_key_exists($k2, $d)) {
+                            continue;
+                        }
+                        $a = trim((string)($d[$k1] ?? $def1));
+                        $b = trim((string)($d[$k2] ?? $def2));
+                        $d[$k1] = $b === '' ? $a : trim($a . $join . $b) . (str_ends_with($b, $suffix) ? '' : $suffix);
+                        $en1 = trim((string)($d[$k1 . '_en'] ?? ''));
+                        $en2 = trim((string)($d[$k2 . '_en'] ?? ''));
+                        if ($b !== '') {
+                            $d[$k1 . '_en'] = ($en1 !== '' && $en2 !== '') ? trim($en1 . $join . $en2) . (str_ends_with($en2, $suffix) ? '' : $suffix) : '';
+                        }
+                        unset($d[$k2], $d[$k2 . '_en'], $d[$k2 . '_en_src']);
+                        unset($d[$k1 . '_en_src']);
+                        $ch = true;
+                    }
+                    if ($ch) {
+                        $pdo->prepare("UPDATE ar_settings SET $col = ? WHERE grp = ?")->execute([json_encode($d, JSON_UNESCAPED_UNICODE), $grp]);
+                    }
+                }
+            }
+            $applied[] = 'headings_v1';
+        } catch (Throwable $e) {
+            // beim nächsten Aufruf erneut
+        }
+    }
+
+    // Stand des deutschen Textes zu jeder vorhandenen Übersetzung merken, damit spätere Änderungen auffallen
+    if (!in_array('en_src_v1', $applied, true) && in_array('en_orphans_v1', $applied, true)) {
+        try {
+            require_once __DIR__ . '/schema.php';
+            $s = schema();
+            $mark = function (array $fields, array $d): array {
+                $eff = array_merge(field_defaults($fields), $d);
+                $n = 0;
+                foreach ($fields as $f) {
+                    if ($f['type'] === 'section' || !field_translatable($f)) {
+                        continue;
+                    }
+                    $k = $f['key'];
+                    if (trim((string)($d[$k . '_en'] ?? '')) !== '' && trim((string)($d[$k . '_en_src'] ?? '')) === '') {
+                        $d[$k . '_en_src'] = tr_src((string)($eff[$k] ?? ''));
+                        $n++;
+                    }
+                }
+                return [$d, $n];
+            };
+            foreach ($pdo->query('SELECT id, coll, data, draft FROM ar_items')->fetchAll(PDO::FETCH_ASSOC) as $r) {
+                $def = $s['collections'][$r['coll']] ?? null;
+                foreach ($def ? ['data', 'draft'] : [] as $col) {
+                    $d = json_decode((string)($r[$col] ?? ''), true);
+                    if (!is_array($d)) {
+                        continue;
+                    }
+                    [$d, $n] = $mark($def['fields'], $d);
+                    if ($n) {
+                        $pdo->prepare("UPDATE ar_items SET $col = ? WHERE id = ?")->execute([json_encode($d, JSON_UNESCAPED_UNICODE), (int)$r['id']]);
+                    }
+                }
+            }
+            foreach ($pdo->query('SELECT grp, data, draft FROM ar_settings')->fetchAll(PDO::FETCH_ASSOC) as $r) {
+                $def = $s['groups'][$r['grp']] ?? null;
+                foreach ($def ? ['data', 'draft'] : [] as $col) {
+                    $d = json_decode((string)($r[$col] ?? ''), true);
+                    if (!is_array($d)) {
+                        continue;
+                    }
+                    [$d, $n] = $mark($def['fields'], $d);
+                    if ($n) {
+                        $pdo->prepare("UPDATE ar_settings SET $col = ? WHERE grp = ?")->execute([json_encode($d, JSON_UNESCAPED_UNICODE), $r['grp']]);
+                    }
+                }
+            }
+            $applied[] = 'en_src_v1';
+        } catch (Throwable $e) {
+            // beim nächsten Aufruf erneut
+        }
+    }
+
     if (count($applied) !== $before) {
         $json = json_encode($applied);
         $exists = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = '_migrations'")->fetchColumn();

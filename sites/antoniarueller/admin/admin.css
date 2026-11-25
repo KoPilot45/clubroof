@@ -702,3 +702,6 @@ input[type=file]:focus-visible{outline:3px solid #f2b705;outline-offset:3px;bord
 .lay-fix span:last-child{margin-left:auto;font-size:.82rem;color:var(--muted,#5b6b6c)}
 .fp>span,.pp>span{display:block}.pp>.pp-sw{display:flex}.pp>.pp-ok{display:inline-block}
 
+
+.tr-stale{margin:0 0 8px;padding:7px 10px;background:#fff4d6;border-left:3px solid #b07a00;font-size:13px;color:#4d3500}
+.trrow.stale{border-left:3px solid #b07a00}

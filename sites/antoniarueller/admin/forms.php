@@ -258,18 +258,23 @@ function form_errors(array $errors): void
 function lang_bar(array $fields, array $vals, string $areaKey = ''): void
 {
     $n = 0;
+    $st = 0;
     $any = false;
     foreach ($fields as $f) {
         if ($f['type'] === 'section' || !field_translatable($f) || !field_relevant($f, $vals)) {
             continue;
         }
         $any = true;
-        if (trim((string)($vals[$f['key']] ?? '')) !== '' && trim((string)($vals[$f['key'] . '_en'] ?? '')) === '') {
+        $deT = trim((string)($vals[$f['key']] ?? ''));
+        $enT = trim((string)($vals[$f['key'] . '_en'] ?? ''));
+        if ($deT !== '' && $enT === '') {
             $n++;
+        } elseif ($deT !== '' && $enT !== '' && ($vals[$f['key'] . '_en_src'] ?? '') !== '' && $vals[$f['key'] . '_en_src'] !== tr_src($deT)) {
+            $st++;
         }
     }
     if ($any) {
-        echo '<p class="enhint">' . aicon('globe', 16) . ' <span>Englische Fassung: ' . ($n ? '<strong>' . $n . ' Text' . ($n === 1 ? '' : 'e') . ' noch offen</strong>' : 'vollständig') . '.</span> <a href="' . e(a('p=translate' . ($areaKey !== '' ? '&a=' . rawurlencode($areaKey) : ''))) . '">In der Übersetzungstabelle bearbeiten →</a></p>';
+        echo '<p class="enhint">' . aicon('globe', 16) . ' <span>Englische Fassung: ' . ($n || $st ? implode(' · ', array_filter([$n ? '<strong>' . $n . ' Text' . ($n === 1 ? '' : 'e') . ' noch offen</strong>' : '', $st ? '<strong>' . $st . ' veraltet</strong> (deutscher Text geändert)' : ''])) : 'vollständig') . '.</span> <a href="' . e(a('p=translate' . ($areaKey !== '' ? '&a=' . rawurlencode($areaKey) : ''))) . '">In der Übersetzungstabelle bearbeiten →</a></p>';
     }
 }
 

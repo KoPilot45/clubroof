@@ -492,7 +492,7 @@
       $$('.trarea', trForm).forEach(function (sec) {
         var any = false;
         $$('.trrow', sec).forEach(function (r) {
-          var ok = (trChip === 'all' || r.getAttribute('data-open') === '1' || r.classList.contains('saved') && false)
+          var ok = (trChip === 'all' || (trChip === 'open' && r.getAttribute('data-open') === '1') || (trChip === 'stale' && r.getAttribute('data-stale') === '1'))
             && (!a || r.getAttribute('data-area') === a)
             && (!q || r.textContent.toLowerCase().indexOf(q) !== -1 || $('textarea', r).value.toLowerCase().indexOf(q) !== -1);
           r.hidden = !ok; if (ok) any = true;
@@ -508,8 +508,8 @@
     trArea.addEventListener('change', trFilter);
     trQ.addEventListener('input', trFilter);
     $$('textarea', trForm).forEach(function (t) { grow(t); t.addEventListener('input', function () { grow(t); }); });
-    function trSave(t) {
-      if (t.value === t.getAttribute('data-orig')) return;
+    function trSave(t, force) {
+      if (!force && t.value === t.getAttribute('data-orig')) return;
       var row = t.closest('.trrow'), st = $('.tr-s', row);
       var fd = new FormData(); fd.set('_csrf', trCsrf); fd.set('action', 'translate_save'); fd.set('ajax', '1'); fd.set(t.name, t.value);
       st.className = 'tr-s'; st.textContent = 'Speichert …';
@@ -520,11 +520,13 @@
         row.classList.toggle('open', t.value.trim() === '');
         row.classList.add('saved');
         row.setAttribute('data-open', t.value.trim() === '' ? '1' : '0');
+        row.setAttribute('data-stale', '0'); row.classList.remove('stale'); var sn = $('.tr-stale', row); if (sn) sn.remove();
         trState.className = 'trstate ok'; trState.textContent = 'Zuletzt gespeichert ' + new Date().toTimeString().slice(0, 5) + ' Uhr';
       }).catch(function () { st.className = 'tr-s err'; st.textContent = 'Nicht gespeichert'; trState.className = 'trstate err'; trState.textContent = 'Speichern fehlgeschlagen – bitte erneut versuchen'; });
     }
     trForm.addEventListener('change', function (e) { if (e.target.tagName === 'TEXTAREA') trSave(e.target); });
     trForm.addEventListener('click', function (e) {
+      if (e.target.classList.contains('tr-ok')) { trSave($('textarea', e.target.closest('.trrow')), true); return; }
       if (!e.target.classList.contains('tr-copy')) return;
       var src = document.getElementById(e.target.getAttribute('data-from')), t = $('textarea', e.target.closest('.trrow'));
       t.value = src.textContent; t.dispatchEvent(new Event('rte:set')); grow(t); trSave(t);

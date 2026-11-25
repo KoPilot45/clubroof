@@ -165,10 +165,10 @@ return [
             [
                 'id' => 'uebersetzungstabelle', 'title' => 'Die Übersetzungstabelle', 'shot' => 'uebersetzung', 'alt' => 'Übersetzungstabelle mit deutschem und englischem Text nebeneinander',
                 'lead' => 'Links der deutsche Text, rechts die englische Fassung. Es gibt keine getrennten Englisch-Felder mehr.',
-                'legend' => ['Filter: nur **Noch offen** oder **Alle**', 'Bereich wählen und Suche', 'Das englische Feld: wird beim Verlassen automatisch gespeichert', '**Deutsch übernehmen** kopiert den deutschen Text'],
+                'legend' => ['Filter: **Noch offen**, **Veraltet** (deutscher Text wurde nach der Übersetzung geändert) oder **Alle**', 'Bereich wählen und Suche', 'Das englische Feld: wird beim Verlassen automatisch gespeichert', '**Deutsch übernehmen** kopiert den deutschen Text'],
                 'steps' => [
                     'Öffne **Englisch → Übersetzungstabelle**. Oben zeigt ein Balken, wie viel Prozent schon übersetzt sind.',
-                    'Wähle den Filter **Noch offen**, dann siehst du nur, was noch fehlt, optional pro **Bereich**.',
+                    'Wähle den Filter **Noch offen**, dann siehst du nur, was noch fehlt, optional pro **Bereich**. Der Filter **Veraltet** zeigt Texte, deren deutsche Fassung sich nach der Übersetzung geändert hat. Passe die englische Fassung an oder bestätige sie mit **Englisch ist aktuell**, dann gilt die Zeile wieder als aktuell.',
                     'Schreibe die englische Fassung ins rechte Feld. Gespeichert wird automatisch, sobald du das Feld verlässt („✓ gespeichert“).',
                     'Hervorhebungen (**Sternchen** und Gleichheitszeichen) wie im Deutschen übernehmen.',
                     'Prüfe das Ergebnis mit **Englische Vorschau**.',

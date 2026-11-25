@@ -80,7 +80,6 @@ a.top-l:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
 /* Große Zwischenüberschriften */
 .big-h{margin:0 0 32px;font-weight:400;line-height:1}
 .bh1{font-family:var(--anton);font-size:calc(clamp(72px,11vw,168px) * var(--fs-d,1));text-transform:uppercase}
-.bh2{font-family:var(--serif);font-style:italic;font-size:calc(clamp(80px,12.5vw,188px) * var(--fs-d,1));color:var(--teal)}
 
 /* Showreel: Schnittplatz */
 .editor{border:1px solid var(--ink);background:var(--sand2)}
@@ -128,7 +127,6 @@ a.top-l:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
 .pod-grid{display:flex;flex-wrap:wrap;gap:40px 64px;align-items:center}
 .pod-h{flex:1 1 420px;margin:0;font-weight:400;line-height:1}
 .ph1{display:block;font-family:var(--anton);font-size:calc(clamp(72px,9vw,140px) * var(--fs-d,1));text-transform:uppercase}
-.ph2{display:block;font-family:var(--serif);font-style:italic;font-size:calc(clamp(80px,10vw,156px) * var(--fs-t,1));color:var(--teal);padding-left:12%}
 .pod-list{flex:2 1 560px;min-width:0;display:flex;flex-direction:column;gap:24px}
 .pod-card{background:var(--ink);color:var(--paper);padding:28px;display:flex;flex-direction:column;gap:24px}
 .pod-top{display:flex;align-items:center;gap:20px}
@@ -233,7 +231,6 @@ a.top-l:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
 /* Kontakt */
 .k-h{margin:24px 0 0;font-weight:400;line-height:.9}
 .ar-schreib{display:block;font-family:var(--serif);font-size:calc(clamp(72px,10.4vw,148px) * var(--fs-d,1));letter-spacing:-.025em;line-height:.9;text-transform:none}
-.k-h2{display:block;font-family:var(--serif);font-style:italic;font-size:calc(clamp(72px,10.4vw,148px) * var(--fs-d,1));letter-spacing:-.025em;line-height:.9;color:var(--ink);padding-left:.55em;margin-top:0}
 .k-intro{margin:32px 0 0;font-family:var(--serif);font-size:calc(34px * var(--fs-t,1));line-height:1.2}
 .k-btns{display:flex;flex-wrap:wrap;gap:16px;margin-top:56px;align-items:center}
 .foot{margin-top:120px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
@@ -269,7 +266,7 @@ a.top-l:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
   .ar-q2{padding-left:0!important}
   .ar-clip-title{font-size:calc(28px * var(--fs-t,1))}
   .ar-redact{font-size:calc(22px * var(--fs-t,1))}
-  .ar-schreib,.k-h2{font-size:calc(clamp(64px,22vw,110px) * var(--fs-d,1))}
+  .ar-schreib{font-size:calc(clamp(64px,22vw,110px) * var(--fs-d,1))}
   .ar-onair{right:-6px;bottom:-24px;width:96px;height:96px}
   .ar-root main>section:not(.ar-hero){padding-top:88px!important}
   .ar-hero{min-height:0}

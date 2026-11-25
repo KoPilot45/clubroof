@@ -34,6 +34,12 @@ function field_translatable(array $f): bool
     return !in_array($f['key'], NO_TRANSLATE, true);
 }
 
+/** Kurzkennung des deutschen Textes, zu dem eine Übersetzung gespeichert wurde (erkennt später geänderten deutschen Text). */
+function tr_src(string $de): string
+{
+    return substr(md5(trim($de)), 0, 8);
+}
+
 function apply_lang(array $vals, array $fields): array
 {
     if (current_lang() === 'de') {
@@ -559,9 +565,11 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
         if (field_translatable($f) && is_string($v) && trim($v) === '') {
             // Kein deutscher Text: auch keine englische Fassung (sonst bliebe sie unsichtbar in den Daten hängen)
             $out[$k . '_en'] = '';
+            $out[$k . '_en_src'] = '';
         } elseif (field_translatable($f) && !array_key_exists($k . '_en', $post)) {
-            // Englische Texte werden in der Übersetzungstabelle bearbeitet: vorhandene Fassung beibehalten.
+            // Englische Texte werden in der Übersetzungstabelle bearbeitet: vorhandene Fassung beibehalten (samt Stand des deutschen Textes).
             $out[$k . '_en'] = (string)($old[$k . '_en'] ?? '');
+            $out[$k . '_en_src'] = (string)($old[$k . '_en_src'] ?? '');
         } elseif (field_translatable($f)) {
             $raw2 = $post[$k . '_en'] ?? '';
             $en = is_array($raw2) ? '' : preg_replace('~[\x00-\x08\x0B\x0C\x0E-\x1F]~', '', (string)$raw2);
@@ -571,6 +579,7 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
                 $en = mb_substr($en, 0, $max);
             }
             $out[$k . '_en'] = $en;
+            $out[$k . '_en_src'] = $en !== '' && is_string($v) ? tr_src($v) : '';
         }
         if ($t === 'image') {
             $fo = (string)($post[$k . '_focus'] ?? '');
@@ -923,7 +932,17 @@ function save_translations(array $changes): int
         }
         foreach ($fields ?? [] as $f) {
             if ($f['type'] !== 'section' && $f['key'] === $fk && field_translatable($f)) {
-                $by[$kind . ':' . $ref][$fk . '_en'] = clean_translation($f, $val);
+                $enNew = clean_translation($f, $val);
+                $by[$kind . ':' . $ref][$fk . '_en'] = $enNew;
+                // Stand des deutschen Textes zum Zeitpunkt der Übersetzung
+                if ($kind === 'c') {
+                    $rw = q('SELECT data, draft FROM ar_items WHERE id = ?', [(int)$ref])->fetch();
+                    $dd = $rw ? (json_arr($rw['draft'] ?? null) ?? json_arr($rw['data'] ?? null) ?? []) : [];
+                    $deNow = (string)(array_merge(field_defaults($fields), $dd)[$fk] ?? '');
+                } else {
+                    $deNow = (string)(setting($ref, true)[$fk] ?? '');
+                }
+                $by[$kind . ':' . $ref][$fk . '_en_src'] = $enNew !== '' ? tr_src($deNow) : '';
                 $n++;
             }
         }
