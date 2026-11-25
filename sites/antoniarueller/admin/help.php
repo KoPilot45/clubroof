@@ -112,7 +112,7 @@ function view_help(array $user): void
 
 function help_article(array $ar): void
 {
-    echo '<article class="harticle" id="a-' . e($ar['id']) . '" data-t="' . e(help_plain($ar)) . '"><h3>' . e($ar['title']) . '</h3>';
+    echo '<article class="harticle" id="a-' . e($ar['id']) . '" data-t="' . e(help_plain($ar)) . '"><h2>' . e($ar['title']) . '</h2>';
     if (!empty($ar['lead'])) {
         echo '<p class="hlead">' . help_fmt($ar['lead']) . '</p>';
     }

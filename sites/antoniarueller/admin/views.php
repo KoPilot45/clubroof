@@ -59,7 +59,7 @@ function layout_start(array $user, string $title, string $active = '', bool $wid
 <a class="view-site" href="<?= AR_BASE ?>/" target="_blank" rel="noopener"><?= aicon('external', 16) ?> Seite ansehen</a>
 <a class="bar-help" href="<?= e(help_url(help_context($active))) ?>" aria-label="Hilfe zu dieser Seite" title="Hilfe zu dieser Seite"><?= aicon('help', 20) ?></a>
 <span class="who"><?= e($user['name'] ?: $user['email']) ?></span>
-<form method="post" action="<?= a() ?>" class="inline"><?= csrf_field($user) ?><input type="hidden" name="action" value="logout"><button class="btn small ghost"><?= aicon('logout', 16) ?> <span class="lbl">Abmelden</span></button></form>
+<form method="post" action="<?= a() ?>" class="inline"><?= csrf_field($user) ?><input type="hidden" name="action" value="logout"><button class="btn small ghost" aria-label="Abmelden"><?= aicon('logout', 16) ?> <span class="lbl">Abmelden</span></button></form>
 </header>
 <main id="main"<?= $wide ? ' class="wide"' : '' ?>>
 <?php if ($fl && $fl['type'] === 'err'): ?><div class="flash err" role="alert"><?= e($fl['msg']) ?></div><?php endif; ?>

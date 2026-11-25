@@ -1356,6 +1356,36 @@ foreach (glob("$root/admin/hilfe/*.php") as $af) {
     $blocked = $blocked && preg_match($blockRe, basename($af)) === 1;
 }
 ok(str_contains($adm, '(?!(index|vorschau)\\.php$)') && $blocked, 'Admin: nur index.php und vorschau.php sind aufrufbar, alle eingebundenen Dateien gesperrt');
+// Barrierefreiheit
+echo "Barrierefreiheit\n";
+$empty = ['show_h1' => '', 'show_h2' => '', 'pod_h1' => '', 'pod_h2' => ''];
+foreach (['texts_arbeiten' => ['show_h1', 'show_h2', 'pod_h1', 'pod_h2'], 'texts_ueber' => ['cv_h1', 'cv_h2']] as $tg => $ks) {
+    $row = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', [$tg])->fetchColumn(), true) ?: [];
+    $a11yBak[$tg] = $row;
+    foreach ($ks as $k) {
+        $row[$k] = '';
+        $row[$k . '_en'] = '';
+    }
+    q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($row), $tg]);
+}
+reset_content_cache();
+foreach (glob("$root/data/cache/*") ?: [] as $cf) {
+    @unlink($cf);
+}
+$pgA = req('GET', "$base/")['body'];
+ok(!preg_match('~<h2 class="(big-h|pod-h)"[^>]*>\s*<span class="(bh1|ph1)"></span><span class="(bh2|ph2)"></span></h2>~', $pgA), 'keine leeren Überschriften (ohne Überschriftstext entfällt das Element)');
+ok(preg_match_all('~<h2~', $pgA) >= 4 && !str_contains($pgA, '<h2 class="big-h"><span class="bh1"></span>'), 'jeder Abschnitt hat weiterhin eine Überschrift für die Gliederung');
+foreach ($a11yBak as $tg => $row) {
+    q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($row), $tg]);
+}
+reset_content_cache();
+foreach (glob("$root/data/cache/*") ?: [] as $cf) {
+    @unlink($cf);
+}
+$adminHome = req('GET', "$base/admin/")['body'];
+ok(str_contains($adminHome, 'class="btn small ghost" aria-label="Abmelden"'), 'Admin: Abmelden-Knopf hat auch ohne Text (Handy) einen Namen');
+ok(str_contains(req('GET', "$base/admin/?p=stats")['body'], 'role="region" aria-label="Besuche nach Wochentag') && !str_contains(req('GET', "$base/admin/?p=stats")['body'], '<th scope="col"></th>'), 'Admin: Statistik-Tabelle mit Beschriftung, waagerecht scrollbarer Bereich per Tastatur erreichbar');
+ok(color_contrast('#5b6866', '#fffdf8') >= 4.5, 'Admin: Nebentext hat ausreichend Kontrast');
 // Symbol-Auswahl bei Kategorien und Crossmedial
 $cmForm = req('GET', "$base/admin/?p=edit&c=crossmedia")['body'];
 $trForm = req('GET', "$base/admin/?p=edit&c=tracks")['body'];

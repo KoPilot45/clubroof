@@ -127,9 +127,9 @@ function stats_heatmap_html(array $hm): string
         $max = max($max, max($row));
     }
     $wd = [1 => 'Mo', 2 => 'Di', 3 => 'Mi', 4 => 'Do', 5 => 'Fr', 6 => 'Sa', 7 => 'So'];
-    $o = '<div class="hm-wrap"><table class="hm" aria-label="Besuche nach Wochentag und Uhrzeit"><thead><tr><th></th>';
+    $o = '<div class="hm-wrap" tabindex="0" role="region" aria-label="Besuche nach Wochentag und Uhrzeit (waagerecht scrollbar)"><table class="hm" aria-label="Besuche nach Wochentag und Uhrzeit"><thead><tr><th><span class="sr-only">Wochentag</span></th>';
     for ($h = 0; $h < 24; $h++) {
-        $o .= '<th scope="col">' . ($h % 3 === 0 ? $h : '') . '</th>';
+        $o .= '<th scope="col">' . ($h % 3 === 0 ? $h : '<span class="sr-only">' . $h . '</span>') . '</th>';
     }
     $o .= '</tr></thead><tbody>';
     foreach ($wd as $i => $label) {

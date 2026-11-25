@@ -6,7 +6,7 @@ declare(strict_types=1);
 function login_card_start(string $title, string $info = '', string $error = ''): void
 {
     admin_head($title);
-    echo '<div class="login"><div class="card"><div class="brand-l"><span class="dot"></span>Verwaltung <small>antoniarueller.de</small></div>';
+    echo '<main class="login" id="main"><div class="card"><div class="brand-l"><span class="dot"></span>Verwaltung <small>antoniarueller.de</small></div>';
     if ($info !== '') {
         echo '<div class="flash ok" role="status">' . e($info) . '</div>';
     }
@@ -17,7 +17,7 @@ function login_card_start(string $title, string $info = '', string $error = ''):
 
 function login_card_end(): void
 {
-    echo '</div></div>';
+    echo '</div></main>';
     admin_foot();
 }
 

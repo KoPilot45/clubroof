@@ -1111,7 +1111,7 @@
       chaps.forEach(function (ch) {
         var any = false;
         $$('.harticle', ch).forEach(function (a) {
-          var ok = !q || a.getAttribute('data-t').indexOf(q) !== -1 || a.querySelector('h3').textContent.toLowerCase().indexOf(q) !== -1;
+          var ok = !q || a.getAttribute('data-t').indexOf(q) !== -1 || a.querySelector('h2').textContent.toLowerCase().indexOf(q) !== -1;
           a.hidden = !ok; if (ok) { any = true; n++; }
         });
         ch.hidden = !any;
