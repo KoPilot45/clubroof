@@ -303,6 +303,7 @@ function view_list(array $user, string $coll): void
     }
     if (!$rows) {
         echo '<div class="emptystate">' . aicon('plus', 28) . '<p><strong>Noch keine Einträge.</strong><br>Lege ' . e($def['singular'] === 'Frage' ? 'die erste' : 'den ersten') . ' Eintrag an – er erscheint auf der Seite, sobald du ihn veröffentlichst.</p><a class="btn" href="' . a('p=edit&c=' . $coll) . '">' . e($def['singular']) . ' hinzufügen</a></div>';
+        list_embedded($user, $def);
         layout_end();
         return;
     }
@@ -313,60 +314,95 @@ function view_list(array $user, string $coll): void
     echo '<button class="btn small danger-o" name="op" value="trash" data-confirm="Die ausgewählten Einträge in den Papierkorb verschieben?">In den Papierkorb</button></form>';
     echo '<ol class="rows sortable cards" id="rows" data-coll="' . e($coll) . '" data-csrf="' . e($user['csrf']) . '" data-url="' . e(a()) . '">';
     foreach ($rows as $i => $r) {
-        $title = trim((string)($r[$def['title']] ?? '')) ?: '(ohne Titel)';
-        $sub = array_filter(array_map(fn($k) => (string)($r[$k] ?? ''), $def['sub']));
-        $hidden = $hasPub && !$r['published'];
-        $isDraft = !$r['_live'] || $r['_draft'];
-        $state = ($isDraft ? 'draft ' : '') . ($hidden ? 'hidden' : '');
-        $edit = a('p=edit&c=' . $coll . '&id=' . $r['_id']);
-        echo '<li id="i' . $r['_id'] . '" class="row' . ($hidden ? ' off' : '') . '" data-id="' . $r['_id'] . '" data-state="' . e(trim($state)) . '" draggable="true">';
-        echo '<input type="checkbox" class="sel" name="ids[]" value="' . $r['_id'] . '" form="bulkform" aria-label="' . e($title) . ' auswählen">';
-        echo '<span class="grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span><span class="no">' . sprintf('%02d', $i + 1) . '</span>';
-        if ($imgKey !== '' && !empty($r[$imgKey])) {
-            echo '<img class="thumb" src="' . e(upload_url((string)$r[$imgKey])) . '" alt="" loading="lazy" width="56" height="56">';
-        }
-        echo '<a class="r-main" href="' . e($edit) . '"><strong>' . e(mb_strimwidth($title, 0, 90, '…')) . '</strong>';
-        if ($sub) {
-            echo '<small>' . e(implode(' · ', $sub)) . '</small>';
-        }
-        echo '<span class="chipline">';
-        if (!$r['_live']) {
-            echo '<span class="pill warn">Neu · nicht veröffentlicht</span>';
-        } elseif ($r['_draft']) {
-            echo '<span class="pill warn">Entwurf mit Änderungen</span>';
-        }
-        if ($hidden) {
-            echo '<span class="pill hid">Ausgeblendet</span>';
-        }
-        if (!empty($def['star']) && !empty($r[$def['star']])) {
-            echo '<span class="pill feat ' . ($hidden ? 'warn' : 'ok') . '">' . ($hidden ? 'Featured – aktuell ausgeblendet' : 'Featured') . '</span>';
-        }
-        if ($r['_updated_by'] !== '' && $r['_updated_by'] !== 'seed') {
-            echo '<span class="muted2">' . e(who_name($r['_updated_by'])) . ', ' . e(date('d.m.Y', $r['_updated'])) . '</span>';
-        }
-        echo '</span></a><span class="r-act">';
-        if (!empty($def['star'])) {
-            $isStar = !empty($r[$def['star']]);
-            echo '<form method="post" action="' . a() . '" class="inline star-f">' . csrf_field($user) . '<input type="hidden" name="action" value="toggle_featured"><input type="hidden" name="id" value="' . $r['_id'] . '"><button class="star' . ($isStar ? ' on' : '') . '" aria-pressed="' . ($isStar ? 'true' : 'false') . '" aria-label="' . e($title) . ' als Featured hervorheben" title="' . ($isStar ? 'Featured – zum Aufheben klicken' : 'Als Featured hervorheben (immer nur eine Referenz)') . '">' . aicon('star', 18) . '</button></form>';
-        }
-        if ($hasPub) {
-            echo '<form method="post" action="' . a() . '" class="inline tgl-f">' . csrf_field($user) . '<input type="hidden" name="action" value="toggle_pub"><input type="hidden" name="id" value="' . $r['_id'] . '"><input type="hidden" name="to" value="' . ($hidden ? '1' : '0') . '"><button class="tgl' . ($hidden ? '' : ' on') . '" role="switch" aria-checked="' . ($hidden ? 'false' : 'true') . '" aria-label="' . e($title) . ' auf der Seite anzeigen" title="' . ($hidden ? 'Ausgeblendet – zum Einblenden klicken' : 'Sichtbar – zum Ausblenden klicken') . '"><span></span></button></form>';
-        }
-        echo '<a class="btn small ghost" href="' . e($edit) . '">' . aicon('edit', 15) . ' Bearbeiten</a>';
-        echo '<details class="more"><summary aria-label="Weitere Aktionen für ' . e($title) . '">' . aicon('dots') . '</summary><div class="more-m">';
-        foreach (['up' => ['up', 'Nach oben'], 'down' => ['down', 'Nach unten']] as $dir => [$ic, $lab]) {
-            if (($dir === 'up' && $i === 0) || ($dir === 'down' && $i === count($rows) - 1)) {
-                continue;
-            }
-            echo '<form method="post" action="' . a() . '">' . csrf_field($user) . '<input type="hidden" name="action" value="move"><input type="hidden" name="id" value="' . $r['_id'] . '"><input type="hidden" name="dir" value="' . $dir . '"><button>' . aicon($ic, 16) . $lab . '</button></form>';
-        }
-        echo '<form method="post" action="' . a() . '">' . csrf_field($user) . '<input type="hidden" name="action" value="duplicate"><input type="hidden" name="id" value="' . $r['_id'] . '"><button>' . aicon('copy', 16) . 'Duplizieren</button></form>';
-        echo '<form method="post" action="' . a() . '">' . csrf_field($user) . '<input type="hidden" name="action" value="trash"><input type="hidden" name="id" value="' . $r['_id'] . '"><button class="danger">' . aicon('trash', 16) . 'In den Papierkorb</button></form>';
-        echo '</div></details></span></li>';
+        list_row($user, $def, $coll, $r, $i, count($rows), $imgKey, $hasPub);
     }
     echo '</ol>';
+    list_embedded($user, $def);
     layout_end();
 }
+/** Zweite Liste unter der Hauptliste (Option 'with' der Sammlung), z. B. „Davor“ unter den Stationen. */
+function list_embedded(array $user, array $def): void
+{
+    $wc = (string)($def['with'] ?? '');
+    $wdef = schema()['collections'][$wc] ?? null;
+    if (!$wdef) {
+        return;
+    }
+    $rows = items($wc, false, true);
+    echo '<section class="embedlist"><h2 class="embed-h">' . e($wdef['label']) . '</h2>';
+    if (!empty($wdef['help'])) {
+        echo '<p class="lead">' . e($wdef['help']) . '</p>';
+    }
+    echo '<div class="toolbar"><a class="btn" href="' . a('p=edit&c=' . $wc) . '">' . aicon('plus') . ' ' . e($wdef['singular']) . ' hinzufügen</a></div>';
+    if (!$rows) {
+        echo '<div class="emptystate"><p><strong>Noch keine Einträge.</strong></p></div></section>';
+        return;
+    }
+    echo '<ol class="rows cards">';
+    foreach ($rows as $i => $r) {
+        list_row($user, $wdef, $wc, $r, $i, count($rows), '', false, true);
+    }
+    echo '</ol></section>';
+}
+
+/** Eine Zeile der Listenansicht. $embedded = ohne Auswahlfeld und Ziehgriff (zweite Liste auf derselben Seite). */
+function list_row(array $user, array $def, string $coll, array $r, int $i, int $count, string $imgKey, bool $hasPub, bool $embedded = false): void
+{
+    $title = trim((string)($r[$def['title']] ?? '')) ?: '(ohne Titel)';
+    $sub = array_filter(array_map(fn($k) => (string)($r[$k] ?? ''), $def['sub']));
+    $hidden = $hasPub && !$r['published'];
+    $isDraft = !$r['_live'] || $r['_draft'];
+    $state = ($isDraft ? 'draft ' : '') . ($hidden ? 'hidden' : '');
+    $edit = a('p=edit&c=' . $coll . '&id=' . $r['_id']);
+    echo '<li id="i' . $r['_id'] . '" class="row' . ($hidden ? ' off' : '') . '" data-id="' . $r['_id'] . '" data-state="' . e(trim($state)) . '"' . ($embedded ? '' : ' draggable="true"') . '>';
+    if (!$embedded) {
+        echo '<input type="checkbox" class="sel" name="ids[]" value="' . $r['_id'] . '" form="bulkform" aria-label="' . e($title) . ' auswählen">';
+        echo '<span class="grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span>';
+    }
+    echo '<span class="no">' . sprintf('%02d', $i + 1) . '</span>';
+    if ($imgKey !== '' && !empty($r[$imgKey])) {
+        echo '<img class="thumb" src="' . e(upload_url((string)$r[$imgKey])) . '" alt="" loading="lazy" width="56" height="56">';
+    }
+    echo '<a class="r-main" href="' . e($edit) . '"><strong>' . e(mb_strimwidth($title, 0, 90, '…')) . '</strong>';
+    if ($sub) {
+        echo '<small>' . e(implode(' · ', $sub)) . '</small>';
+    }
+    echo '<span class="chipline">';
+    if (!$r['_live']) {
+        echo '<span class="pill warn">Neu · nicht veröffentlicht</span>';
+    } elseif ($r['_draft']) {
+        echo '<span class="pill warn">Entwurf mit Änderungen</span>';
+    }
+    if ($hidden) {
+        echo '<span class="pill hid">Ausgeblendet</span>';
+    }
+    if (!empty($def['star']) && !empty($r[$def['star']])) {
+        echo '<span class="pill feat ' . ($hidden ? 'warn' : 'ok') . '">' . ($hidden ? 'Featured – aktuell ausgeblendet' : 'Featured') . '</span>';
+    }
+    if ($r['_updated_by'] !== '' && $r['_updated_by'] !== 'seed') {
+        echo '<span class="muted2">' . e(who_name($r['_updated_by'])) . ', ' . e(date('d.m.Y', $r['_updated'])) . '</span>';
+    }
+    echo '</span></a><span class="r-act">';
+    if (!empty($def['star'])) {
+        $isStar = !empty($r[$def['star']]);
+        echo '<form method="post" action="' . a() . '" class="inline star-f">' . csrf_field($user) . '<input type="hidden" name="action" value="toggle_featured"><input type="hidden" name="id" value="' . $r['_id'] . '"><button class="star' . ($isStar ? ' on' : '') . '" aria-pressed="' . ($isStar ? 'true' : 'false') . '" aria-label="' . e($title) . ' als Featured hervorheben" title="' . ($isStar ? 'Featured – zum Aufheben klicken' : 'Als Featured hervorheben (immer nur eine Referenz)') . '">' . aicon('star', 18) . '</button></form>';
+    }
+    if ($hasPub) {
+        echo '<form method="post" action="' . a() . '" class="inline tgl-f">' . csrf_field($user) . '<input type="hidden" name="action" value="toggle_pub"><input type="hidden" name="id" value="' . $r['_id'] . '"><input type="hidden" name="to" value="' . ($hidden ? '1' : '0') . '"><button class="tgl' . ($hidden ? '' : ' on') . '" role="switch" aria-checked="' . ($hidden ? 'false' : 'true') . '" aria-label="' . e($title) . ' auf der Seite anzeigen" title="' . ($hidden ? 'Ausgeblendet – zum Einblenden klicken' : 'Sichtbar – zum Ausblenden klicken') . '"><span></span></button></form>';
+    }
+    echo '<a class="btn small ghost" href="' . e($edit) . '">' . aicon('edit', 15) . ' Bearbeiten</a>';
+    echo '<details class="more"><summary aria-label="Weitere Aktionen für ' . e($title) . '">' . aicon('dots') . '</summary><div class="more-m">';
+    foreach (['up' => ['up', 'Nach oben'], 'down' => ['down', 'Nach unten']] as $dir => [$ic, $lab]) {
+        if (($dir === 'up' && $i === 0) || ($dir === 'down' && $i === $count - 1)) {
+            continue;
+        }
+        echo '<form method="post" action="' . a() . '">' . csrf_field($user) . '<input type="hidden" name="action" value="move"><input type="hidden" name="id" value="' . $r['_id'] . '"><input type="hidden" name="dir" value="' . $dir . '"><button>' . aicon($ic, 16) . $lab . '</button></form>';
+    }
+    echo '<form method="post" action="' . a() . '">' . csrf_field($user) . '<input type="hidden" name="action" value="duplicate"><input type="hidden" name="id" value="' . $r['_id'] . '"><button>' . aicon('copy', 16) . 'Duplizieren</button></form>';
+    echo '<form method="post" action="' . a() . '">' . csrf_field($user) . '<input type="hidden" name="action" value="trash"><input type="hidden" name="id" value="' . $r['_id'] . '"><button class="danger">' . aicon('trash', 16) . 'In den Papierkorb</button></form>';
+    echo '</div></details></span></li>';
+}
+
 
 function form_actions(string $cancelUrl, string $previewAnchor, bool $isDraft, bool $canLive = false): void
 {
@@ -470,7 +506,7 @@ function view_edit_item(array $user, string $coll, ?int $id, array $vals, array 
 <?php
     lang_bar($def['fields'], $vals, 'c:' . $coll);
     render_fields($def['fields'], $vals);
-    form_actions(a('p=list&c=' . $coll), preview_anchor($coll), $isDraft, (bool)$id);
+    form_actions(list_url($coll), preview_anchor($coll), $isDraft, (bool)$id);
     echo '</form><aside class="livepane" id="livepane" hidden><div class="lp-h"><strong>Live-Vorschau</strong><button type="button" class="btn small ghost" id="lpreload">Aktualisieren</button></div><iframe id="lpframe" title="Vorschau der Seite" loading="lazy"></iframe></aside></div>';
     if ($id) {
         history_box($user, 'item', (string)$id);

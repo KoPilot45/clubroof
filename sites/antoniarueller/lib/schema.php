@@ -16,7 +16,7 @@ const MARKUP_HINT = 'Hervorhebungen: *kursiv*, **GROSSSCHRIFT**, ==Akzentfarbe==
 
 function media_options(): array
 {
-    return ['video' => 'Video / TV', 'text' => 'Text / Online', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'YouTube / Social'];
+    return ['video' => 'Video / TV', 'text' => 'Text / Online', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'YouTube / Video-Plattform', 'share' => 'Social Media'];
 }
 
 function wave_options(): array
@@ -103,7 +103,7 @@ function schema(): array
         ],
     ];
     $s['collections']['cv'] = [
-        'label' => 'Lebenslauf & Stationen', 'singular' => 'Station', 'title' => 'org', 'sub' => ['role', 'when_label'],
+        'label' => 'Stationen', 'singular' => 'Station', 'title' => 'org', 'sub' => ['role', 'when_label'], 'with' => 'before',
         'help' => 'Eine Liste für den Zeitstrahl und die Logoleiste im Abschnitt „Lebenslauf“. Die Einträge werden automatisch nach Jahr des Beginns gruppiert (neueste zuerst). Das Jahr ist farbig, wenn in diesem Jahr mindestens eine Station mit „Läuft noch“ beginnt. Die Logoleiste zeigt jedes Logo nur einmal.',
         'fields' => [
             f('text', 'org', 'Organisation', ['required' => true, 'max' => 120, 'hint' => 'z. B. „WDR“. Dient auch als Alternativtext des Logos.']),
@@ -118,7 +118,7 @@ function schema(): array
         ],
     ];
     $s['collections']['before'] = [
-        'label' => 'Lebenslauf: „Davor“', 'singular' => 'Eintrag', 'title' => 'text', 'sub' => ['side'],
+        'label' => 'Davor', 'help' => 'Frühere Erfahrungen und Ausbildung, stehen am Ende des Zeitstrahls.', 'singular' => 'Eintrag', 'title' => 'text', 'sub' => ['side'],
         'fields' => [
             f('markup', 'text', 'Text', ['required' => true, 'max' => 160, 'hint' => MARKUP_HINT]),
             f('text', 'side', 'Zusatz rechts', ['max' => 160]),
@@ -274,6 +274,9 @@ function schema(): array
             f('section', '', 'Über mich', ['card' => true, 'toggle' => 'on_about', 'link' => ['g', 'about']]),
             f('bool', 'on_about', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
             f('text', 'about_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Über mich', 'dict' => true]),
+            f('section', '', 'Überschriften im Abschnitt', ['sub' => true]),
+            f('text', 'cross_label', 'Überschrift „Crossmedial“', ['max' => 40, 'default' => 'Crossmedial unterwegs']),
+            f('text', 'lang_label', 'Überschrift „Sprachen“', ['max' => 40, 'default' => 'Sprachen']),
 
             f('section', '', 'Lebenslauf', ['card' => true, 'toggle' => 'on_cv', 'link' => ['c', 'cv']]),
             f('bool', 'on_cv', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
@@ -318,8 +321,6 @@ function schema(): array
             f('markup', 'headline', 'Große Aussage', ['max' => 240, 'hint' => MARKUP_HINT]),
             f('textarea', 'text1', 'Text, linke Spalte', ['max' => 1500]),
             f('textarea', 'text2', 'Text, rechte Spalte', ['max' => 1500]),
-            f('text', 'cross_label', 'Überschrift „Crossmedial“', ['max' => 40, 'default' => 'Crossmedial unterwegs']),
-            f('text', 'lang_label', 'Überschrift „Sprachen“', ['max' => 40, 'default' => 'Sprachen']),
         ],
     ];
     $s['groups']['contact'] = [
@@ -362,24 +363,17 @@ function admin_nav(): array
             ['g', 'hero', 'Startbild & Einleitung', 'Foto, Überschrift und Einstiegstext ganz oben.'],
             ['c', 'questions', 'Leitfragen', '„Was mich antreibt“ – die kurzen Fragen mit Nummer.'],
         ]],
-        'arbeiten' => ['Arbeiten', 'film', 'Referenzen, Featured und Schnittplatz.', [
+        'arbeiten' => ['Arbeiten', 'film', 'Referenzen, Featured, Schnittplatz und Podcast.', [
             ['c', 'clips', 'Referenzen', 'Alle Arbeitsproben, auch das Featured ganz oben.'],
             ['c', 'tracks', 'Kategorien', 'Video, Online, Radio …: jede Kategorie ist eine Spur im Schnittplatz.'],
+            ['c', 'episodes', 'Podcast-Folgen', 'Jede Folge mit Titel, Wellenform und Plattform-Links.'],
         ]],
-        'podcast' => ['Podcast', 'mic', 'Folgen mit Links zu den Plattformen.', [
-            ['c', 'episodes', 'Folgen', 'Jede Folge mit Titel, Wellenform und Plattform-Links.'],
-        ]],
-        'ueber' => ['Über mich', 'user', 'Porträt, Text, Sprachen und Medien.', [
+        'ueber' => ['Über mich', 'user', 'Porträt, Text, Stationen und Off the record.', [
             ['g', 'about', 'Text & Porträt', 'Foto und Text im Abschnitt „Über mich“.'],
             ['c', 'crossmedia', 'Crossmedial', 'Die Kacheln mit Medien, in denen Antonia arbeitet.'],
             ['c', 'languages', 'Sprachen', 'Sprachen mit Niveau.'],
-        ]],
-        'cv' => ['Lebenslauf & Stationen', 'doc', 'Zeitstrahl, Logos und frühere Erfahrungen.', [
-            ['c', 'cv', 'Stationen', 'Zeitstrahl und Logoleiste: Organisation, Logo, Rolle, Zeitraum, Redaktion.'],
-            ['c', 'before', 'Davor', 'Frühere Erfahrungen und Ausbildung.'],
-        ]],
-        'otr' => ['Off the record', 'chat', 'Persönliche Fragen und Antworten.', [
-            ['c', 'offrecord', 'Fragen & Antworten', 'Die persönlichen Fragen im Abschnitt „Off the record“.'],
+            ['c', 'cv', 'Stationen', 'Zeitstrahl und Logoleiste (Organisation, Logo, Rolle, Zeitraum, Redaktion), darunter „Davor“.'],
+            ['c', 'offrecord', 'Off the record', 'Die persönlichen Fragen und Antworten im Abschnitt „Off the record“.'],
         ]],
         'kontakt' => ['Kontakt', 'mail', 'Kontaktangaben und Profile.', [
             ['g', 'contact', 'Kontakt & Fußzeile', 'E-Mail, Texte beim Kontakt und die Fußzeile.'],

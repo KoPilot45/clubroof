@@ -148,8 +148,7 @@ function site_map(array $user): void
     $s = schema();
     $drafts = nav_draft_counts();
     $order = [
-        'start' => 'inhalt', 'arbeiten' => 'arbeiten', 'podcast' => 'podcast', 'ueber' => 'ueber',
-        'cv' => 'lebenslauf', 'otr' => 'offtherecord', 'kontakt' => 'kontakt',
+        'start' => 'inhalt', 'arbeiten' => 'arbeiten', 'ueber' => 'ueber', 'kontakt' => 'kontakt',
     ];
     $nav = admin_nav();
     echo '<section class="card wide sitemap" aria-labelledby="smh"><div class="sm-h"><h2 id="smh">' . aicon('map', 20) . ' Deine Website</h2><a class="btn small ghost" href="' . e(preview_url()) . '" target="_blank" rel="noopener">Ganze Vorschau ' . aicon('external', 14) . '</a></div>';
@@ -171,3 +170,9 @@ function site_map(array $user): void
     echo '</ol></section>';
 }
 
+
+/** Adresse der Listenseite einer Sammlung („Davor“ liegt auf der Seite der Stationen). */
+function list_url(string $coll): string
+{
+    return AR_BASE . '/admin/?p=list&c=' . ($coll === 'before' ? 'cv' : $coll);
+}

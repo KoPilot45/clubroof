@@ -99,7 +99,7 @@ return [
                     '**Lebenslauf → Stationen:** eine Liste für den **Zeitstrahl** und die **Logoleiste**. Pro Eintrag: **Organisation**, optional **Logo**, **Rolle**, **Beginn** und **Ende** (nur das **Jahr** ist Pflicht, der Monat optional), **Redaktion** (Freitext, z. B. „TV“ oder „Radio“) und ein optionaler **Link**.',
                     'Der Haken **Läuft noch** hebt die Karte hervor und färbt das Jahr im Zeitstrahl ein. Mit **Zeitangabe überschreiben** setzt du einen eigenen Text, z. B. „rund 7 Jahre · Lokalzeit“.',
                     '**Logos:** am besten freigestellt (transparenter Hintergrund). Beim Hochladen werden sie auf höchstens 360 × 96 Pixel verkleinert, von leeren Rändern befreit und in WebP umgewandelt. Eine Auswahl fertiger Logos liegt in der **Mediathek**. Die **Logoleiste** über dem Zeitstrahl zeigt jedes Logo nur einmal, auch wenn es bei mehreren Einträgen steht.',
-                    '**Davor:** frühere Erfahrungen und Ausbildung als kurze Zeilen am Ende des Zeitstrahls.',
+                    '**Davor:** frühere Erfahrungen und Ausbildung als kurze Zeilen am Ende des Zeitstrahls. Die Liste steht auf derselben Seite unter den Stationen (**Über mich → Stationen**).',
                     'Das **CV als PDF** (Download-Knopf) lädst du unter **Kontakt & Fußzeile** hoch.',
                 ],
                 'open' => ['Stationen öffnen', 'p=list&c=cv'],

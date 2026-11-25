@@ -642,4 +642,5 @@ input[type=file]:focus-visible{outline:3px solid #f2b705;outline-offset:3px;bord
 .focusbox.logo .fdot{display:none}
 .focusbox.logo img{max-height:96px;padding:8px}
 
-.ym{display:flex;gap:8px;align-items:center}.ym select{flex:1 1 auto;width:auto}.ym input[type=number]{flex:0 0 110px;width:110px}
+.ym{display:flex;gap:8px;align-items:center}.ym select,.ym input[type=number]{flex:1 1 0;width:auto;min-width:0}
+.embedlist{margin-top:40px;padding-top:8px;border-top:1px solid var(--line)}.embed-h{font-size:1.25rem;margin:18px 0 6px}

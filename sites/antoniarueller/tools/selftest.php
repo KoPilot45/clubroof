@@ -1076,6 +1076,50 @@ foreach (q("SELECT id FROM ar_items WHERE coll = 'cv' AND data LIKE '%Jahrtest%'
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
 }
 reset_content_cache();
+// Backend-Struktur: Podcast-Folgen unter Arbeiten; Stationen (mit „Davor“) und Off the record unter Über mich
+$adm = req('GET', "$base/admin/")['body'];
+ok(str_contains($adm, 'Podcast-Folgen') && !str_contains($adm, 'Lebenslauf &amp; Stationen') && substr_count($adm, 'p=list&amp;c=cv') >= 1 && substr_count($adm, 'p=list&amp;c=offrecord') >= 1, 'Seitenleiste: Podcast-Folgen, Stationen und Off the record als Unterpunkte');
+$cvList = req('GET', "$base/admin/?p=list&c=cv")['body'];
+ok(str_contains($cvList, 'class="embedlist"') && str_contains($cvList, 'p=edit&amp;c=before') && substr_count($cvList, 'id="rows"') === 1, '„Davor“ steht unter den Stationen auf derselben Seite');
+$bp = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'before', 'text' => 'Davor-Test', 'side' => 'x', 'mode' => 'publish']);
+ok(str_contains($bp['head'], 'c=cv'), 'nach dem Speichern von „Davor“ geht es zurück zur Stationen-Seite');
+foreach (q("SELECT id FROM ar_items WHERE coll = 'before' AND data LIKE '%Davor-Test%'")->fetchAll() as $row) {
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
+}
+$sgA = req('GET', "$base/admin/?p=group&g=sections")['body'];
+ok(str_contains($sgA, 'name="cross_label"') && str_contains($sgA, 'name="lang_label"') && !str_contains(req('GET', "$base/admin/?p=group&g=about")['body'], 'name="cross_label"'), 'Überschriften „Crossmedial“ und „Sprachen“ stehen unter Abschnitte → Über mich');
+// Übernahme der Überschriften (einmalige Migration, nichts wird überschrieben)
+$aRow = q("SELECT data FROM ar_settings WHERE grp = 'about'")->fetchColumn();
+$ad0 = json_decode((string)$aRow, true) ?: [];
+$sRow = q("SELECT data FROM ar_settings WHERE grp = 'sections'")->fetchColumn();
+$sd0 = $sRow !== false ? (json_decode((string)$sRow, true) ?: []) : [];
+$ad1 = $ad0 + ['cross_label' => 'Alte Crossmedial-Überschrift', 'lang_label' => 'Alte Sprachen'];
+$ad1['cross_label'] = 'Alte Crossmedial-Überschrift';
+$ad1['lang_label'] = 'Alte Sprachen';
+q("UPDATE ar_settings SET data = ? WHERE grp = 'about'", [json_encode($ad1)]);
+$sd1 = $sd0;
+unset($sd1['cross_label']);
+$sd1['lang_label'] = 'Neue Sprachen bleibt';
+if ($sRow !== false) {
+    q("UPDATE ar_settings SET data = ? WHERE grp = 'sections'", [json_encode($sd1)]);
+} else {
+    q("INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES ('sections', ?, ?, 't')", [json_encode($sd1), time()]);
+}
+$mj2 = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = '_migrations'")->fetchColumn(), true) ?: [];
+q("UPDATE ar_settings SET data = ? WHERE grp = '_migrations'", [json_encode(array_values(array_diff($mj2, ['about_labels_v1'])))]);
+req('GET', "$base/admin/");
+$sd2 = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = 'sections'")->fetchColumn(), true) ?: [];
+ok(($sd2['cross_label'] ?? '') === 'Alte Crossmedial-Überschrift' && ($sd2['lang_label'] ?? '') === 'Neue Sprachen bleibt', 'Migration: vorhandene Überschrift wird übernommen, bereits gesetzte nicht überschrieben');
+q("UPDATE ar_settings SET data = ? WHERE grp = 'about'", [json_encode($ad0)]);
+if ($sRow !== false) {
+    q("UPDATE ar_settings SET data = ? WHERE grp = 'sections'", [$sRow]);
+} else {
+    q("DELETE FROM ar_settings WHERE grp = 'sections'");
+}
+reset_content_cache();
+// Symbol „Social Media“ bei Crossmedial
+ok(str_contains(req('GET', "$base/admin/?p=edit&c=crossmedia")['body'], 'value="share"') && str_contains(icon('share'), '<circle'), 'Crossmedial: neues Symbol „Social Media“');
 // Übernahme alter Stationen in den Lebenslauf (einmalige Migration)
 $mj = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = '_migrations'")->fetchColumn(), true) ?: [];
 q("DELETE FROM ar_items WHERE data LIKE '%Migrationsstation%'");
@@ -1083,7 +1127,7 @@ q('INSERT INTO ar_items (coll, data, sort, created_at, updated_at, updated_by) V
 q('INSERT INTO ar_items (coll, data, sort, created_at, updated_at, updated_by) VALUES (?,?,?,?,?,?)', ['stations', json_encode(['name' => 'Migrationsstation Beta', 'logo' => '', 'desk' => 'Radio', 'period' => 'seit 2019', 'url' => '']), 902, time(), time(), 't']);
 q('INSERT INTO ar_items (coll, data, sort, created_at, updated_at, updated_by) VALUES (?,?,?,?,?,?)', ['cv', json_encode(['org' => 'Migrationsstation Alpha GmbH', 'role' => 'Autorin', 'from' => '2020-01', 'logo' => '', 'desk' => '']), 901, time(), time(), 't']);
 q("UPDATE ar_settings SET data = ? WHERE grp = '_migrations'", [json_encode(array_values(array_diff($mj, ['cv_stations_v1'])))]);
-req('GET', "$base/");
+req('GET', "$base/admin/");
 $ma = json_decode((string)q("SELECT data FROM ar_items WHERE coll = 'cv' AND data LIKE '%Migrationsstation Alpha%'")->fetchColumn(), true);
 $mb = json_decode((string)q("SELECT data FROM ar_items WHERE coll = 'cv' AND data LIKE '%Migrationsstation Beta%'")->fetchColumn(), true);
 ok(($ma['logo'] ?? '') === 'logo-wdr.webp' && ($ma['desk'] ?? '') === 'TV', 'Migration: Logo und Redaktion gehen an den passenden Lebenslauf-Eintrag');

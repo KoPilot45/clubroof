@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             audit($who, $publish ? 'publish_item' : 'draft_item', $coll . '#' . $id . ' ' . ($data[$s['collections'][$coll]['title']] ?? ''));
             if ($publish) {
-                $back(AR_BASE . '/admin/?p=list&c=' . $coll, 'Veröffentlicht.');
+                $back(list_url($coll), 'Veröffentlicht.');
             }
             $back(AR_BASE . '/admin/?p=edit&c=' . $coll . '&id=' . $id, 'Entwurf gespeichert – noch nicht öffentlich. Mit „Vorschau“ ansehen, mit „Jetzt veröffentlichen“ live schalten.');
         }
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($it) {
                     publish_item_draft((int)$it['_id'], $who);
                     audit($who, 'publish_item', $it['coll'] . '#' . $it['_id']);
-                    $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], 'Veröffentlicht.');
+                    $back(list_url($it['coll']), 'Veröffentlicht.');
                 }
             } elseif (isset($s['groups'][(string)($_POST['g'] ?? '')])) {
                 publish_setting_draft((string)$_POST['g'], $who);
@@ -184,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($it) {
                     discard_item_draft((int)$it['_id']);
                     audit($who, 'discard_draft', $it['coll'] . '#' . $it['_id']);
-                    $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], 'Entwurf verworfen.');
+                    $back(list_url($it['coll']), 'Entwurf verworfen.');
                 }
             } elseif (isset($s['groups'][(string)($_POST['g'] ?? '')])) {
                 discard_setting_draft((string)$_POST['g']);
@@ -232,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($it) {
                 trash_item((int)$it['_id']);
                 audit($who, 'trash', $it['coll'] . '#' . $it['_id']);
-                $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], '„' . mb_strimwidth(trim((string)($it[$s['collections'][$it['coll']]['title']] ?? '')) ?: 'Eintrag', 0, 50, '…') . '“ in den Papierkorb verschoben.', 'ok', (int)$it['_id']);
+                $back(list_url($it['coll']), '„' . mb_strimwidth(trim((string)($it[$s['collections'][$it['coll']]['title']] ?? '')) ?: 'Eintrag', 0, 50, '…') . '“ in den Papierkorb verschoben.', 'ok', (int)$it['_id']);
             }
             $back(AR_BASE . '/admin/', 'Eintrag nicht gefunden.', 'err');
 
@@ -242,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 restore_item((int)$it['_id']);
                 audit($who, 'restore', $it['coll'] . '#' . $it['_id']);
                 if (($_POST['ret'] ?? '') === 'list') {
-                    $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], 'Wiederhergestellt.');
+                    $back(list_url($it['coll']), 'Wiederhergestellt.');
                 }
                 $back(AR_BASE . '/admin/?p=trash', 'Wiederhergestellt.');
             }
@@ -304,7 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
             $tt = mb_strimwidth(trim((string)($it[$s['collections'][$it['coll']]['title']] ?? '')) ?: 'Eintrag', 0, 50, '…');
-            $back(AR_BASE . '/admin/?p=list&c=' . $it['coll'], $on ? '„' . $tt . '“ ist jetzt Featured.' : 'Featured aufgehoben.');
+            $back(list_url($it['coll']), $on ? '„' . $tt . '“ ist jetzt Featured.' : 'Featured aufgehoben.');
         }
 
         case 'toggle_pub':
@@ -340,7 +340,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 audit($who, $op === 'show' ? 'show_item' : 'hide_item', $coll . '#' . $iid);
                 $n++;
             }
-            $to = AR_BASE . '/admin/?p=list&c=' . $coll;
+            $to = list_url($coll);
             if ($act === 'toggle_pub' && ($_POST['ajax'] ?? '') === '1') {
                 header('Content-Type: application/json');
                 echo json_encode(['ok' => $n > 0, 'draft' => $draftOnly > 0]);
@@ -373,7 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $it = item((int)($_POST['id'] ?? 0));
             if ($it) {
                 move_item((int)$it['_id'], ($_POST['dir'] ?? '') === 'up' ? 'up' : 'down');
-                header('Location: ' . AR_BASE . '/admin/?p=list&c=' . $it['coll'] . '#i' . $it['_id']);
+                header('Location: ' . list_url($it['coll']) . '#i' . $it['_id']);
                 exit;
             }
             $back(AR_BASE . '/admin/', 'Eintrag nicht gefunden.', 'err');

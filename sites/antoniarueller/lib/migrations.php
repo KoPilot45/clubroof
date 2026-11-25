@@ -396,6 +396,39 @@ function run_migrations(PDO $pdo): void
         }
     }
 
+    // Überschriften „Crossmedial“ und „Sprachen“ liegen jetzt unter „Abschnitte“: vorhandene Werte (auch Englisch) übernehmen, nichts überschreiben
+    if (!in_array('about_labels_v1', $applied, true)) {
+        try {
+            $ab = $pdo->query("SELECT data, draft FROM ar_settings WHERE grp = 'about'")->fetch();
+            if ($ab) {
+                $ad = json_decode((string)$ab['data'], true) ?: [];
+                $sr = $pdo->query("SELECT data, draft FROM ar_settings WHERE grp = 'sections'")->fetch();
+                $sd = $sr ? (json_decode((string)$sr['data'], true) ?: []) : [];
+                $sdr = ($sr && $sr['draft'] !== null) ? (json_decode((string)$sr['draft'], true) ?: null) : null;
+                $fill = function (array $to) use ($ad): array {
+                    foreach (['cross_label', 'lang_label', 'cross_label_en', 'lang_label_en'] as $k) {
+                        if (trim((string)($ad[$k] ?? '')) !== '' && trim((string)($to[$k] ?? '')) === '') {
+                            $to[$k] = (string)$ad[$k];
+                        }
+                    }
+                    return $to;
+                };
+                $enc = fn($x) => json_encode($x, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                $nd = $fill($sd);
+                if ($nd !== $sd || ($sdr !== null && $fill($sdr) !== $sdr)) {
+                    if ($sr) {
+                        $pdo->prepare("UPDATE ar_settings SET data = ?, draft = ? WHERE grp = 'sections'")->execute([$enc($nd), $sdr !== null ? $enc($fill($sdr)) : null]);
+                    } else {
+                        $pdo->prepare("INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES ('sections', ?, ?, 'migration')")->execute([$enc($nd), time()]);
+                    }
+                }
+            }
+            $applied[] = 'about_labels_v1';
+        } catch (Throwable $e) {
+            // beim nächsten Aufruf erneut
+        }
+    }
+
     if (count($applied) !== $before) {
         $json = json_encode($applied);
         $exists = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = '_migrations'")->fetchColumn();
