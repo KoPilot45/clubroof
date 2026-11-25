@@ -4,7 +4,7 @@
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
   // ---- Seitenleiste auf dem Handy ----
-  var btn = $('#menuBtn'), side = $('#side');
+  var btn = $('#tabMenu'), side = $('#side');
   if (btn && side) {
     btn.addEventListener('click', function () {
       var open = side.classList.toggle('open');
@@ -297,8 +297,6 @@
       navStore(ids);
     });
   });
-  var tabMenu = $('#tabMenu');
-  if (tabMenu && side) tabMenu.addEventListener('click', function (e) { e.stopPropagation(); var o = side.classList.toggle('open'); if (btn) btn.setAttribute('aria-expanded', o ? 'true' : 'false'); });
 
   // ---- Hinweis (Toast) ----
   var toast = $('#toast');

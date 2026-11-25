@@ -54,7 +54,6 @@ function layout_start(array $user, string $title, string $active = '', bool $wid
 </aside>
 <div class="main">
 <header class="bar">
-<button type="button" class="menu-btn" id="menuBtn" aria-label="Menü öffnen" aria-expanded="false" aria-controls="side"><?= aicon('menu', 22) ?></button>
 <button type="button" class="gs-btn" id="gsBtn" aria-label="Suchen (Strg+K)"><?= aicon('search') ?><span>Suchen</span><kbd>Strg K</kbd></button>
 <a class="view-site" href="<?= AR_BASE ?>/" target="_blank" rel="noopener"><?= aicon('external', 16) ?> Seite ansehen</a>
 <a class="bar-help" href="<?= e(help_url(help_context($active))) ?>" aria-label="Hilfe zu dieser Seite" title="Hilfe zu dieser Seite"><?= aicon('help', 20) ?></a>
@@ -73,7 +72,7 @@ function layout_start(array $user, string $title, string $active = '', bool $wid
         echo '<button type="button" class="toast-x" aria-label="Schließen">×</button></div>';
     }
     render_search_box($user);
-    echo '<nav class="tabbar" aria-label="Schnellzugriff"><a href="' . a() . '"' . ($active === 'home' ? ' class="on" aria-current="page"' : '') . '>' . aicon('home', 22) . '<span>Übersicht</span></a><a href="' . a('p=list&c=clips') . '"' . ($active === 'c:clips' ? ' class="on"' : '') . '>' . aicon('film', 22) . '<span>Referenzen</span></a><a href="' . a('p=stats') . '"' . ($active === 'stats' ? ' class="on"' : '') . '>' . aicon('chart', 22) . '<span>Statistik</span></a><button type="button" id="tabSearch">' . aicon('search', 22) . '<span>Suchen</span></button><button type="button" id="tabMenu">' . aicon('menu', 22) . '<span>Menü</span></button></nav>';
+    echo '<nav class="tabbar" aria-label="Schnellzugriff"><a href="' . a() . '"' . ($active === 'home' ? ' class="on" aria-current="page"' : '') . '>' . aicon('home', 22) . '<span>Übersicht</span></a><a href="' . a('p=list&c=clips') . '"' . ($active === 'c:clips' ? ' class="on"' : '') . '>' . aicon('film', 22) . '<span>Referenzen</span></a><a href="' . a('p=stats') . '"' . ($active === 'stats' ? ' class="on"' : '') . '>' . aicon('chart', 22) . '<span>Statistik</span></a><button type="button" id="tabSearch">' . aicon('search', 22) . '<span>Suchen</span></button><button type="button" id="tabMenu" aria-controls="side" aria-expanded="false">' . aicon('menu', 22) . '<span>Menü</span></button></nav>';
 }
 
 function layout_end(): void

@@ -20,7 +20,6 @@ code{background:#fff;padding:1px 5px;border:1px solid var(--line);border-radius:
 .bar{display:flex;align-items:center;gap:12px;padding:12px 28px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:5}
 .bar .view-site{margin-right:auto}
 .who{color:var(--mute);font-size:14px}
-.menu-btn{display:none;font-size:22px;background:none;border:1px solid var(--line);border-radius:8px;padding:2px 10px;cursor:pointer}
 main{padding:28px;max-width:980px}
 .inline{display:inline}
 
@@ -90,7 +89,6 @@ textarea{resize:vertical}
 @media (max-width:860px){
   .side{position:fixed;left:0;top:0;z-index:20;transform:translateX(-100%);transition:transform .2s;width:280px}
   .side.open{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.35)}
-  .menu-btn{display:inline-block}
   main{padding:18px 16px}
   .bar{padding:10px 14px}
   .who{display:none}
@@ -630,7 +628,7 @@ input[type=file]:focus-visible{outline:3px solid #f2b705;outline-offset:3px;bord
 .hchap[hidden],.harticle[hidden]{display:none}
 @media (max-width:640px){.hbody{padding:4px 14px 18px}.hchap>summary{padding:12px 12px;gap:10px}.hnum{display:none}}
 @media print{
-  .side,.bar,.hbar,.hchips,.hopen,.menu-btn,.gs,.toast{display:none!important}
+  .side,.bar,.hbar,.hchips,.hopen,.gs,.toast{display:none!important}
   .hchap>summary::after{display:none}
   .hchap{border:0;box-shadow:none;break-inside:auto}
   .harticle{break-inside:avoid}

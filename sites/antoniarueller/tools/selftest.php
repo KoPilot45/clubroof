@@ -711,6 +711,7 @@ q("DELETE FROM ar_items WHERE coll = 'stations'");
 // Handy-Menü: Klick auf das Symbol im Knopf darf das Menü nicht sofort wieder schließen
 $jsA = (string)file_get_contents("$root/admin/admin.js");
 ok(str_contains($jsA, '!btn.contains(e.target)') && !str_contains($jsA, 'e.target !== btn)'), 'Handy-Menü-Knopf: Klick auf das Symbol schließt das Menü nicht mehr sofort');
+ok(!str_contains(file_get_contents(__DIR__ . '/../admin/views.php'), 'id="menuBtn"') && str_contains(file_get_contents(__DIR__ . '/../admin/views.php'), 'id="tabMenu" aria-controls="side"'), 'Handy: nur noch der Menü-Knopf der unteren Leiste (kein doppelter Knopf oben links)');
 req('GET', "$base/");
 $home = req('GET', "$base/admin/");
 ok(str_contains($home['body'], 'Startklar') && str_contains($home['body'], 'Platzhalter in Texten') && str_contains($home['body'], 'Englische Fassung') && str_contains($home['body'], 'Besucher'), 'Übersicht mit Startklar, Platzhaltern, Englisch, Besuchern');
