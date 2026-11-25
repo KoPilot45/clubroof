@@ -626,7 +626,7 @@ ok(str_contains(req('GET', "$base/admin/?p=edit&c=clips")['body'], 'image/avif')
 echo "Schnittplatz als Übersicht, Beiträge dreispaltig\n";
 $sp = req('GET', "$base/")['body'];
 ok(str_contains($sp, 'data-tip="') && str_contains($sp, 'class="ed-ruler"') && !str_contains($sp, 'class="ed-sel') && !str_contains($sp, 'id="ar-clips"'), 'Schnittplatz ohne Detailfeld, Clips mit Hinweisschild');
-ok(preg_match_all('~<li class="ar-clip" id="clip-(\d+)"~', $sp) >= 5 && str_contains($sp, 'class="cl-desc"') && str_contains($sp, 'class="cl-role"'), 'Kacheln mit Anker, Beschreibung und Rolle');
+ok(preg_match_all('~<li class="ar-clip" id="clip-(\d+)"~', $sp) >= 5 && str_contains($sp, 'class="cl-desc"'), 'Kacheln mit Anker, Beschreibung und Rolle');
 ok(substr_count($sp, 'class="ar-tlclip"') >= 5 && substr_count($sp, 'ed-tl"><') >= 3 && !str_contains($sp, 'Nur diese Spur zeigen'), 'Spurköpfe sind reine Beschriftung');
 
 echo "SEO: noindex\n";
@@ -1048,7 +1048,7 @@ ok(!preg_match('~href="#(podcast|ueber|offtherecord|kontakt|lebenslauf)"~', $pg)
 save_sections(array_fill_keys($ons, '1'));
 ok(str_contains(req('GET', "$base/")['body'], 'id="podcast"'), 'wieder eingeschaltet');
 $en = req('GET', "$base/en/")['body'];
-ok(str_contains($en, 'Select a clip to jump to the post') && str_contains($en, 'Role:') && !str_contains($en, 'Anhören bei'), 'neue Textbausteine: englische Standardtexte');
+ok(str_contains($en, 'Select a clip to jump to the post') && !str_contains($en, 'Anhören bei'), 'neue Textbausteine: englische Standardtexte');
 $tp = req('GET', "$base/admin/?p=translate")['body'];
 ok(!str_contains($tp, 'Beschriftung vor der Rolle'), 'Standardtexte mit Wörterbuch erscheinen nicht als offene Übersetzung');
 $sg = req('GET', "$base/admin/?p=group&g=texts_arbeiten")['body'];

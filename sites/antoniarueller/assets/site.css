@@ -120,7 +120,6 @@ a.top-l:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
 .clip-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--ink)}
 .ar-clip{border-bottom:1px solid var(--line);transition:background .25s ease}
 .ar-clip:hover,.ar-clip.on{background:var(--sand)}
-.ar-clip:hover .ar-clip-title{font-style:italic}
 .ar-clip>a{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px 40px;padding:28px 8px;text-decoration:none;color:var(--ink)}
 .cl-no{flex:0 0 96px;font-family:var(--anton);font-size:calc(56px * var(--fs-d,1));line-height:1;color:var(--accent)}
 .ar-clip-title{font-family:var(--serif);font-size:calc(40px * var(--fs-t,1));line-height:1.08}
@@ -509,7 +508,6 @@ a:not([class]){text-decoration-thickness:1px;text-underline-offset:.2em;transiti
 .ar-clip{scroll-margin-top:110px}
 .ar-clip-title{font-size:calc(clamp(26px,2.3vw,34px) * var(--fs-t,1));line-height:1.1}
 .cl-desc{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:calc(15px * var(--fs-b,1));line-height:1.5;color:var(--body)}
-.cl-role{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink)}
 @media (max-width:1000px){.clip-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 22px}}
 @media (max-width:600px){.clip-list{grid-template-columns:minmax(0,1fr);gap:36px}.cl-fig .cl-no{font-size:calc(26px * var(--fs-d,1))}.cl-fig.txt .cl-no{font-size:calc(96px * var(--fs-d,1))}.cl-kind{font-size:12px}}
 @media (prefers-reduced-motion:no-preference){
@@ -635,7 +633,7 @@ html.lb-open{overflow:hidden}
   .clip-list.anim .ar-clip.shown{animation:clipin .65s cubic-bezier(.22,.61,.36,1) backwards}
 }
 
-/* Pin: Nadel schräg unter dem Kopf, scharf gezeichnet */
-.cl-pin{position:absolute;left:50%;top:-13px;width:26px;height:26px;margin-left:-13px;z-index:3;pointer-events:none}
-.cl-pin:before{content:"";position:absolute;left:15px;top:14px;width:4px;height:31px;background:linear-gradient(90deg,rgba(23,37,38,.9),rgba(120,135,135,.9) 45%,rgba(23,37,38,.9));clip-path:polygon(0 0,100% 0,50% 100%);transform:rotate(-38deg);transform-origin:50% 0;filter:drop-shadow(2px 2px 0 rgba(23,37,38,.18))}
-.cl-pin:after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--rec),#fff 45%),var(--rec) 55%,color-mix(in srgb,var(--rec),#000 55%));box-shadow:1px 2px 0 rgba(23,37,38,.3),2px 4px 3px rgba(23,37,38,.18)}
+/* Pin: Stecknadel mit Kugelkopf, leicht geneigt; der Einstichpunkt liegt mittig unter dem Kopf */
+.cl-pin{position:absolute;left:50%;top:11px;width:0;height:0;z-index:3;pointer-events:none;transform:rotate(-24deg);filter:drop-shadow(2px 3px .6px rgba(23,37,38,.38))}
+.cl-pin:before{content:"";position:absolute;left:-1.25px;top:-22px;width:2.5px;height:22px;background:linear-gradient(90deg,rgba(23,37,38,.85),rgba(160,172,172,.95) 40%,rgba(23,37,38,.8));clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%)}
+.cl-pin:after{content:"";position:absolute;left:-9px;top:-33px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.85) 0,rgba(255,255,255,0) 26%),radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--rec),#fff 40%),var(--rec) 55%,color-mix(in srgb,var(--rec),#000 55%))}

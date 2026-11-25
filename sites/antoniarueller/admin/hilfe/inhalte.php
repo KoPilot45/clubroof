@@ -16,7 +16,7 @@ return [
                     'Öffne **Arbeiten → Referenzen** und klicke **Referenz hinzufügen**.',
                     'Trage **Titel**, **Kurzname** (kurz, für den Schnittplatz) und **Redaktion / Sender** ein und wähle die **Kategorie**.',
                     'Setze das **Datum**. Bei Zeiträumen („2024–2025“) hilft das Feld **Datumsanzeige überschreiben**.',
-                    'Ergänze **Rolle** und **Beschreibung**. Ein **Vorschaubild** ist optional, ein **Bildnachweis** erscheint klein im Bild.',
+                    'Ergänze die **Beschreibung**. Ein **Vorschaubild** ist optional, ein **Bildnachweis** erscheint klein im Bild.',
                     'Lege unter **Link zum Beitrag** fest, wohin der Knopf führt (eigener Artikel in dieser Hilfe).',
                     '**Als Entwurf speichern** und prüfen, dann **Veröffentlichen**.',
                 ],
@@ -56,7 +56,7 @@ return [
                 'steps' => [
                     'Klicke in der Referenzen-Liste auf den **Stern** der gewünschten Referenz. Es ist immer **nur eine** hervorgehoben: Ein Klick bei einer anderen nimmt den Stern der bisherigen weg.',
                     'Ein zweiter Klick auf den aktiven Stern hebt das Featured auf, dann entfällt der Bereich auf der Seite.',
-                    'Das Featured zeigt Titel, Beschreibung, Rolle, Redaktion und das Vorschaubild. Mit Knopf zum Beitrag.',
+                    'Das Featured zeigt Titel, Beschreibung, Redaktion und das Vorschaubild. Mit Knopf zum Beitrag.',
                 ],
                 'tips' => ['Ist die hervorgehobene Referenz ausgeblendet, steht in der Liste „Featured – aktuell ausgeblendet“ und der Bereich fehlt auf der Seite.', 'Der Stern wirkt sofort, ohne Veröffentlichen.'],
             ],

@@ -14,7 +14,6 @@ $ctaHtml = '<span class="cl-cta"><span>' . e(tr($c['_cta'])) . '</span>' . $ctaI
 <?php if ($cImg !== ''): ?><span class="cl-fig"><?php $iv = img_square_set((string)$c['still'], (string)($c['still_focus'] ?? '')); ?><img src="<?= e($iv['src'] ?? $cImg) ?>"<?= $iv ? ' srcset="' . e($iv['srcset']) . '" sizes="(max-width: 600px) calc(100vw - 72px), (max-width: 1000px) calc(50vw - 72px), min(380px, calc((100vw - 190px) / 3))" width="' . $iv['size'] . '" height="' . $iv['size'] . '"' : img_attrs((string)$c['still']) ?> alt="" loading="lazy" decoding="async" style="object-position:<?= e(focus_pos((string)($c['still_focus'] ?? ''))) ?>"><?php if (trim((string)($c['still_credit'] ?? '')) !== ''): ?><span class="cl-cred cred"><?= e($c['still_credit']) ?></span><?php endif; ?></span>
 <?php endif; ?>
 <?php if (trim((string)$c['desc']) !== ''): ?><span class="cl-desc"><?= e($c['desc']) ?></span><?php endif; ?>
-<?php if (trim((string)$c['role']) !== ''): ?><span class="cl-role"><?= e(tr($sec['role_label'])) ?> <?= e($c['role']) ?></span><?php endif; ?>
 <span class="cl-foot"><span class="cl-nd"><span class="cl-no"><?= e($c['_no']) ?></span><?php if ($c['_date'] !== ''): ?><span class="cl-date"><?= e($c['_date']) ?></span><?php endif; ?></span><?php if ($c['_hosted'] || $ext !== ''): ?><?= $ctaHtml ?><?php if (!$c['_hosted'] && $c['_blank']): ?><span class="sr-only"> (<?= e(tr('öffnet in neuem Tab')) ?>)</span><?php endif; ?><?php endif; ?></span>
 <?php if ($c['_hosted']): ?></button>
 <?php elseif ($ext !== ''): ?></a>

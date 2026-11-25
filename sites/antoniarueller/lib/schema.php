@@ -97,7 +97,6 @@ function schema(): array
             f('select', 'tl_track', 'Kategorie', ['options_from' => 'tracks', 'required' => true, 'hint' => 'Die Kategorie bestimmt die Spur im Schnittplatz, die Farbe und das Symbol. Kategorien legst du unter „Arbeiten → Kategorien“ an.']),
             f('date', 'date', 'Datum (Veröffentlichung)', ['hint' => 'Bestimmt die Anzeige „MM/JJJJ“ und das Jahres-Fähnchen im Schnittplatz.']),
             f('text', 'date_label', 'Datumsanzeige überschreiben (optional)', ['max' => 40, 'hint' => 'Nur nötig für Zeiträume wie „2024–2025“ oder wenn kein genaues Datum bekannt ist.']),
-            f('text', 'role', 'Rolle', ['max' => 80]),
             f('textarea', 'desc', 'Beschreibung', ['max' => 600]),
             f('image', 'still', 'Vorschaubild (optional)', ['hint' => 'Erscheint als quadratische Kachel in der Liste „Alle Beiträge“ und im Featured-Block. Mit dem Fokuspunkt legst du fest, welcher Ausschnitt sichtbar bleibt.']),
             f('text', 'still_credit', 'Bildnachweis (optional)', ['max' => 80, 'hint' => 'z. B. „Bild: buten un binnen“. Erscheint klein im Bild.']),
@@ -358,7 +357,6 @@ function schema(): array
             f('section', '', 'Beitragsliste', ['sub' => true]),
             f('text', 'show_all', 'Titel der Liste', ['max' => 40, 'default' => 'Alle Beiträge']),
             f('text', 'show_unit', 'Wort für die Anzahl in der automatischen Zeile rechts', ['max' => 20, 'default' => 'Clips', 'dict' => true, 'hint' => 'z. B. „Clips“ oder „Beiträge“.']),
-            f('text', 'role_label', 'Beschriftung vor der Rolle in den Kacheln', ['max' => 20, 'default' => 'Rolle:', 'dict' => true]),
 
             f('section', '', 'Podcast', ['card' => true, 'link' => ['c', 'episodes']]),
             f('text', 'pod_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Podcast', 'dict' => true]),

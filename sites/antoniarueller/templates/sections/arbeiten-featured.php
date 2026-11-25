@@ -1,4 +1,4 @@
-<?php $fc = $featured; $fImg = upload_url($fc['still']); $fBy = array_filter([trim($hero['first'] . ' ' . $hero['last']), trim((string)$fc['role']), trim((string)$fc['outlet'])]); ?>
+<?php $fc = $featured; $fImg = upload_url($fc['still']); $fBy = array_filter([trim($hero['first'] . ' ' . $hero['last']), trim((string)$fc['outlet'])]); ?>
 <section<?= $idPlaced ? '' : ' id="arbeiten"' ?> aria-label="<?= tr('Featured Clip') ?>" style="padding-top:96px">
 <article class="fa">
 <div class="fa-mast"><span><?= e(tr($sec['feat_label'])) ?></span><span><?= e($fc['_cat'] !== '' ? $fc['_cat'] : media_label($fc['medium'])) ?></span><span><?= e(implode(' · ', array_filter([(string)$fc['outlet'], (string)$fc['_date']]))) ?></span></div>
