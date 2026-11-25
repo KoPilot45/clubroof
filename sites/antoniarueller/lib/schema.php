@@ -102,27 +102,19 @@ function schema(): array
             f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true]),
         ],
     ];
-    $s['collections']['stations'] = [
-        'label' => 'Stationen (Sender & Redaktionen)', 'singular' => 'Station', 'title' => 'name', 'sub' => [],
-        'fields' => [
-            f('text', 'name', 'Name', ['required' => true, 'max' => 60, 'hint' => 'Erscheint auch als Alternativtext des Logos und, wenn kein Logo da ist, als Schrift.']),
-            f('image', 'logo', 'Logo (optional)', ['logo' => true]),
-            f('text', 'period', 'Datum oder Zeitraum (optional)', ['max' => 40, 'hint' => 'Freitext, z. B. „seit 11/2026“ oder „2018 – 2021“.']),
-            f('text', 'desk', 'Redaktion (optional)', ['max' => 40, 'hint' => 'Freitext, z. B. „TV“, „Radio“, „Online“ oder „Investigativ-Team“.']),
-            f('url', 'url', 'Link (optional)', ['hint' => 'Wenn gesetzt, ist das Logo anklickbar.']),
-            f('bool', 'highlight', 'Farbig hervorheben (nur bei „Namen als Schrift“)'),
-        ],
-    ];
     $s['collections']['cv'] = [
-        'label' => 'Lebenslauf: Stationen', 'singular' => 'Station', 'title' => 'org', 'sub' => ['role', 'when_label'],
-        'help' => 'Die Einträge werden automatisch nach Jahr des Beginns gruppiert (neueste zuerst). Die Jahreszahl ist farbig, wenn in diesem Jahr mindestens eine Station mit „Läuft noch“ beginnt, sonst als Umriss.',
+        'label' => 'Lebenslauf & Stationen', 'singular' => 'Station', 'title' => 'org', 'sub' => ['role', 'when_label'],
+        'help' => 'Eine Liste für den Zeitstrahl und die Logoleiste im Abschnitt „Lebenslauf“. Die Einträge werden automatisch nach Jahr des Beginns gruppiert (neueste zuerst). Das Jahr ist farbig, wenn in diesem Jahr mindestens eine Station mit „Läuft noch“ beginnt. Die Logoleiste zeigt jedes Logo nur einmal.',
         'fields' => [
-            f('text', 'role', 'Rolle', ['max' => 80, 'hint' => 'z. B. „Autorin“ – das Komma setzt die Seite selbst.']),
-            f('text', 'org', 'Organisation', ['required' => true, 'max' => 120]),
+            f('text', 'org', 'Organisation', ['required' => true, 'max' => 120, 'hint' => 'z. B. „WDR“. Dient auch als Alternativtext des Logos.']),
+            f('image', 'logo', 'Logo (optional)', ['logo' => true]),
+            f('text', 'role', 'Rolle', ['max' => 80, 'hint' => 'z. B. „Autorin“.']),
             f('month', 'from', 'Beginn', ['required' => true]),
             f('month', 'to', 'Ende'),
-            f('bool', 'ongoing', 'Läuft noch („seit …“)', ['hint' => 'Färbt zugleich die Jahreszahl des Beginns auf der Seite ein.']),
+            f('bool', 'ongoing', 'Läuft noch („seit …“)', ['hint' => 'Hebt die Karte hervor und färbt die Jahreszahl des Beginns ein.']),
             f('text', 'when_label', 'Zeitangabe überschreiben (optional)', ['max' => 120, 'hint' => 'Leer = automatisch aus Beginn/Ende, z. B. „06/2016 — 06/2018“.']),
+            f('text', 'desk', 'Redaktion (optional)', ['max' => 40, 'hint' => 'Freitext, z. B. „TV“, „Radio“ oder „Investigativ-Team“. Erscheint auf der Karte.']),
+            f('url', 'url', 'Link (optional)', ['hint' => 'Wenn gesetzt, ist das Logo in der Logoleiste anklickbar.']),
         ],
     ];
     $s['collections']['before'] = [
@@ -283,12 +275,6 @@ function schema(): array
             f('bool', 'on_about', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
             f('text', 'about_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Über mich', 'dict' => true]),
 
-            f('section', '', 'Stationen', ['card' => true, 'toggle' => 'on_stations', 'link' => ['c', 'stations']]),
-            f('bool', 'on_stations', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
-            f('text', 'st_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Stationen', 'dict' => true]),
-            f('text', 'st_right', 'Zeile rechts', ['max' => 40, 'default' => 'Sender & Redaktionen']),
-            f('switch', 'st_mode', 'Darstellung', ['options' => ['text' => 'Namen als Schrift', 'logos' => 'Logos'], 'default' => 'text', 'hint' => '„Logos“ zeigt die Logos der Stationen als ruhiges Raster; Name, Zeitraum und Redaktion erscheinen beim Darüberfahren. Stationen ohne Logo erscheinen dort als Name.']),
-
             f('section', '', 'Lebenslauf', ['card' => true, 'toggle' => 'on_cv', 'link' => ['c', 'cv']]),
             f('bool', 'on_cv', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
             f('text', 'cv_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Lebenslauf', 'dict' => true]),
@@ -388,9 +374,8 @@ function admin_nav(): array
             ['c', 'crossmedia', 'Crossmedial', 'Die Kacheln mit Medien, in denen Antonia arbeitet.'],
             ['c', 'languages', 'Sprachen', 'Sprachen mit Niveau.'],
         ]],
-        'cv' => ['Lebenslauf', 'doc', 'Stationen und frühere Erfahrungen.', [
-            ['c', 'cv', 'Stationen', 'Berufliche Stationen mit Zeitraum.'],
-            ['c', 'stations', 'Sender & Redaktionen', 'Die Liste der Sender und Redaktionen.'],
+        'cv' => ['Lebenslauf & Stationen', 'doc', 'Zeitstrahl, Logos und frühere Erfahrungen.', [
+            ['c', 'cv', 'Stationen', 'Zeitstrahl und Logoleiste: Organisation, Logo, Rolle, Zeitraum, Redaktion.'],
             ['c', 'before', 'Davor', 'Frühere Erfahrungen und Ausbildung.'],
         ]],
         'otr' => ['Off the record', 'chat', 'Persönliche Fragen und Antworten.', [

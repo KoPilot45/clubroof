@@ -95,7 +95,6 @@ $nav = items('nav');
 $questions = items('questions');
 $tracks = items('tracks');
 $episodes = array_values(array_filter(items('episodes'), fn($e) => $e['published']));
-$stations = items('stations');
 $cvRows = items('cv');
 $before = items('before');
 $cross = items('crossmedia');
@@ -146,11 +145,10 @@ foreach ($clips as $c) {
 
 $cvGroups = cv_groups($cvRows);
 // Abschnitte ein-/ausblenden: Menüpunkte ausgeblendeter Abschnitte entfallen
-$showSt = $stations && $sec['on_stations'];
 $showCv = $cvGroups && $sec['on_cv'];
 $vis = [
     'arbeiten' => $featured !== null || ($clips && $sec['on_show']), 'podcast' => $episodes && $sec['on_podcast'], 'ueber' => (bool)$sec['on_about'],
-    'lebenslauf' => $showSt || $showCv, 'offtherecord' => $off && $sec['on_off'], 'kontakt' => (bool)$sec['on_contact'],
+    'lebenslauf' => $showCv, 'offtherecord' => $off && $sec['on_off'], 'kontakt' => (bool)$sec['on_contact'],
 ];
 $nav = array_values(array_filter($nav, fn($n) => $vis[$n['anchor']] ?? true));
 $cvYears = array_filter(array_map('strval', array_keys($cvGroups)), 'ctype_digit');

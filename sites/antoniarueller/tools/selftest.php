@@ -491,10 +491,10 @@ echo "Lebenslauf: Jahreszahl nach aktiver Station\n";
 $cvp = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'cv', 'role' => 'Testrolle', 'org' => 'Testorg', 'from' => '1999-05', 'mode' => 'publish'];
 req('POST', "$base/admin/", $cvp);
 $h = req('GET', "$base/")['body'];
-ok(preg_match('~<span class="cv-y ar-year-past">1999</span>~', $h) === 1, 'Jahr ohne laufende Station: Umriss');
+ok(preg_match('~<li class="rf-y past" data-k="y"><span class="yn">1999</span></li>~', $h) === 1, 'Jahr ohne laufende Station: „past“');
 req('POST', "$base/admin/", $cvp + ['ongoing' => '1', 'org' => 'Testorg2']);
 $h = req('GET', "$base/")['body'];
-ok(preg_match('~<span class="cv-y ar-year-now">1999</span>~', $h) === 1, 'Jahr mit laufender Station: farbig');
+ok(preg_match('~<li class="rf-y now" data-k="y"><span class="yn">1999</span></li>~', $h) === 1, 'Jahr mit laufender Station: „now“');
 foreach (q("SELECT id FROM ar_items WHERE coll = 'cv' AND data LIKE '%Testorg%'")->fetchAll() as $row) {
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
@@ -712,6 +712,7 @@ $data = json_decode($exp['body'], true);
 ok(is_array($data) && count($data['eintraege']) > 20, 'Sicherung enthält Einträge');
 $tmp = tempnam(sys_get_temp_dir(), 'bk');
 file_put_contents($tmp, $exp['body']);
+q("DELETE FROM ar_items WHERE coll = 'stations'"); // alte, nicht mehr verwendete Stationen-Datensätze
 $nBefore = (int)q('SELECT COUNT(*) FROM ar_items')->fetchColumn();
 $imp = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'import_backup', 'confirm' => '1', 'backup' => new CURLFile($tmp, 'application/json', 'b.json')], true);
 ok($imp['code'] === 302 && (int)q('SELECT COUNT(*) FROM ar_items')->fetchColumn() === $nBefore, 'Wiederherstellung aus der Sicherung');
@@ -885,7 +886,7 @@ $cssTxt = (string)file_get_contents("$root/assets/site.css");
 preg_match_all('~font-size:\s*(\d+(?:\.\d+)?)px~', $cssTxt, $fs);
 ok(!array_filter($fs[1], fn($x) => (float)$x < 12), 'Schriftgrößen im Frontend mindestens 12 px');
 $hp = req('GET', "$base/")['body'];
-ok(preg_match('~<h2 class="sr-only">[^<]+</h2>\s*<div class="sec-head"[^>]*><span class="sec-l"><span class="rec-dot[^"]*"[^>]*></span><span class="rec-t">REC</span><span>02~', $hp) === 1 || substr_count($hp, 'class="sr-only"') >= 3, 'Leitfragen, Über mich und Stationen haben eine (unsichtbare) Überschrift');
+ok(preg_match('~<h2 class="sr-only">[^<]+</h2>\s*<div class="sec-head"[^>]*><span class="sec-l"><span class="rec-dot[^"]*"[^>]*></span><span class="rec-t">REC</span><span>02~', $hp) === 1 || substr_count($hp, 'class="sr-only"') >= 2, 'Leitfragen und Über mich haben eine (unsichtbare) Überschrift');
 ok(preg_match('~<img class="ar-hero-img" src="[^"]*" srcset="[^"]*/uploads/v/[a-z0-9-]+\.w360\.[a-z0-9]+\.webp 360w, [^"]*/uploads/[a-z0-9-]+\.webp\?v=\d+ 593w" sizes="\(max-width: 899px\) 347px, 416px"~', $hp) === 1, 'Hero-Foto: eigene Größen per srcset, Original als größte Stufe');
 $nf = req('GET', "$base/gibtesnicht");
 ok($nf['code'] === 404 && str_contains($nf['body'], 'class="nf-code"') && str_contains($nf['body'], 'Diese Seite gibt es') && str_contains($nf['body'], 'btn-solid btn-lg') && str_contains($nf['body'], 'btn-ghost btn-lg'), '404-Seite: großer Hinweis mit Knöpfen');
@@ -987,8 +988,8 @@ reset_content_cache();
 
 echo "Abschnitte\n";
 $sg = req('GET', "$base/admin/?p=group&g=sections")['body'];
-ok(str_contains($sg, 'Abschnitte') && !str_contains($sg, 'Abschnittstitel') && !str_contains($sg, 'Überschriften der Abschnitte') && substr_count($sg, 'class="sw"') === 8 && substr_count($sg, 'class="seccard') >= 9, 'Abschnitte: eine Karte je Abschnitt mit acht Schiebereglern');
-$ons = ['on_questions', 'on_show', 'on_podcast', 'on_about', 'on_stations', 'on_cv', 'on_off', 'on_contact'];
+ok(str_contains($sg, 'Abschnitte') && !str_contains($sg, 'Abschnittstitel') && !str_contains($sg, 'Überschriften der Abschnitte') && substr_count($sg, 'class="sw"') === 7 && substr_count($sg, 'class="seccard') >= 8, 'Abschnitte: eine Karte je Abschnitt mit sieben Schiebereglern');
+$ons = ['on_questions', 'on_show', 'on_podcast', 'on_about', 'on_cv', 'on_off', 'on_contact'];
 $secPost = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'sections', 'mode' => 'publish'];
 req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1') + ['pod_listen' => 'Hier hören', 'pod_right' => 'Audio · On Air', 'q_label' => 'Leitfragen', 'cv_since' => 'ab']);
 $pg = req('GET', "$base/")['body'];
@@ -996,12 +997,12 @@ $allIds = true;
 foreach (['podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt', 'arbeiten'] as $idn) {
     $allIds = $allIds && str_contains($pg, 'id="' . $idn . '"');
 }
-ok($allIds && str_contains($pg, 'class="questions"') && str_contains($pg, 'class="cv"'), 'alle Abschnitte eingeschaltet sichtbar');
+ok($allIds && str_contains($pg, 'class="questions"') && str_contains($pg, 'class="rf-list"'), 'alle Abschnitte eingeschaltet sichtbar');
 ok(str_contains($pg, 'Audio · On Air') && str_contains($pg, '00 — Leitfragen') && str_contains($pg, '>ab '), 'bearbeitete Textbausteine erscheinen (inkl. „Zeile rechts“ beim Podcast)');
 req('POST', "$base/admin/", $secPost);
 $pg = req('GET', "$base/")['body'];
 $none = true;
-foreach (['id="podcast"', 'id="ueber"', 'id="offtherecord"', 'class="ar-wall"', 'class="cv"', 'class="questions"', 'class="ed-body"', 'class="k-h"', 'class="pod-grid"'] as $needle) {
+foreach (['id="podcast"', 'id="ueber"', 'id="offtherecord"', 'class="rf-list"', 'class="questions"', 'class="ed-body"', 'class="k-h"', 'class="pod-grid"'] as $needle) {
     $none = $none && !str_contains($pg, $needle);
 }
 ok($none, 'ausgeschaltete Abschnitte fehlen auf der Seite');
@@ -1023,12 +1024,11 @@ ok(!str_contains($hg, 'Namensschild') && str_contains(req('GET', "$base/admin/")
 ok(!str_contains(req('GET', "$base/admin/?p=edit&c=clips")['body'], 'name="tc"') && !function_exists('admin_menu') && !function_exists('auto_tc'), 'Timecode-Feld und ungenutzte Funktionen entfernt');
 ok(!str_contains(req('GET', "$base/")['body'], 'Ende Reel №1 · ') && !preg_match('~menu-foot.*? · </span>~s', req('GET', "$base/")['body']), 'Handy-Menü ohne hängendes „ · “');
 
-echo "Stationen mit Logos\n";
-$sf = req('GET', "$base/admin/?p=edit&c=stations")['body'];
-ok(str_contains($sf, 'data-logo') && str_contains($sf, '>freigestellt</strong>') && str_contains($sf, 'remove.bg') && str_contains($sf, '360 × 96'), 'Logo-Feld: Hinweis auf Freistellen (auch per KI), Maximalgröße, data-logo');
-ok(!str_contains($sf, 'name="published"') && str_contains($sf, 'name="desk"') && !str_contains($sf, '<select name="desk"') && str_contains($sf, 'name="period"'), 'Redaktion und Zeitraum sind Freitext');
-$sgS = req('GET', "$base/admin/?p=group&g=sections")['body'];
-ok(str_contains($sgS, 'Namen als Schrift') && str_contains($sgS, 'name="st_mode"'), 'Umschalter „Darstellung“ im Abschnitt Stationen');
+echo "Lebenslauf mit Zeitstrahl und Logoleiste\n";
+$cf = req('GET', "$base/admin/?p=edit&c=cv")['body'];
+ok(str_contains($cf, 'data-logo') && str_contains($cf, '>freigestellt</strong>') && str_contains($cf, 'remove.bg') && str_contains($cf, '360 × 96'), 'Lebenslauf-Eintrag: Logo-Feld mit Hinweis auf Freistellen, Maximalgröße');
+ok(str_contains($cf, 'name="desk"') && !str_contains($cf, '<select name="desk"') && str_contains($cf, 'name="url"') && str_contains($cf, 'name="ongoing"'), 'Redaktion und Link sind Felder des Eintrags (Redaktion als Freitext)');
+ok(!str_contains(req('GET', "$base/admin/?p=group&g=sections")['body'], 'name="st_mode"') && !str_contains(req('GET', "$base/admin/")['body'], 'Sender &amp; Redaktionen'), 'keine getrennte Stationen-Liste mehr im Backend');
 // Logo mit transparentem Rand, größer als erlaubt
 $lgw = tempnam(sys_get_temp_dir(), 'lg') . '.png';
 $im = imagecreatetruecolor(1200, 600);
@@ -1040,32 +1040,39 @@ imagepng($im, $lgw);
 $ul = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'upload_image', 'kind' => 'logo', 'file' => new CURLFile($lgw, 'image/png', 'Test Logo Station.png')], true)['body'], true);
 ok(!empty($ul['ok']) && str_ends_with((string)$ul['name'], '.webp'), 'Logo-Upload wird in WebP umgewandelt');
 $li = @getimagesize("$root/uploads/" . ($ul['name'] ?? 'x'));
-ok($li && $li[0] <= LOGO_MAX_W && $li[1] <= LOGO_MAX_H && $li[0] === 360 && $li[1] === 90, 'Logo: leere Ränder abgeschnitten und auf höchstens 360 × 96 verkleinert (' . ($li ? $li[0] . '×' . $li[1] : '?') . ')');
-$lgPost = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'stations', 'name' => 'Teststation Eins', 'logo_pick' => (string)$ul['name'], 'period' => 'seit 11/2026', 'desk' => 'Investigativ-Team', 'url' => 'https://example.org/', 'mode' => 'publish'];
-req('POST', "$base/admin/", $lgPost);
-req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'stations', 'name' => 'Teststation Ohne', 'mode' => 'publish']);
-$pgT = req('GET', "$base/")['body'];
-ok(str_contains($pgT, '<a class="top-l" href="#" data-top>') && str_contains($pgT, '03 — Off the record') && preg_match('~04 — ' . preg_quote(tr(setting('sections')['contact_label']), '~') . '~', $pgT) === 1 && !str_contains($pgT, '05 — '), 'Kopfzeilenname führt nach oben; Nummern: Off the record 03, Kontakt 04');
-ok(str_contains($pgT, 'class="ar-wall"') && !str_contains($pgT, 'class="ar-logos"') && str_contains($pgT, 'Teststation Eins'), 'Standard: Namen als Schrift');
-req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1') + ['st_mode' => 'logos']);
-$pgL0 = req('GET', "$base/")['body'];
-ok(preg_match('~class="ar-logos" role="list" style="--c5:\d;--c4:\d;--c3:\d"~', $pgL0) === 1, 'Logo-Raster: Spaltenzahl je Breite gesetzt');
-ok([logo_cols(10, 5), logo_cols(12, 5), logo_cols(9, 5), logo_cols(8, 5), logo_cols(11, 5), logo_cols(10, 3), logo_cols(3, 5), logo_cols(2, 5)] === [5, 4, 3, 4, 4, 2, 3, 2], 'Spaltenzahl: volle letzte Reihe bevorzugt (' . implode(',', [logo_cols(10, 5), logo_cols(12, 5), logo_cols(9, 5), logo_cols(8, 5), logo_cols(11, 5), logo_cols(10, 3), logo_cols(3, 5), logo_cols(2, 5)]) . ')');
-$pgL = req('GET', "$base/")['body'];
-ok(str_contains($pgL, 'class="ar-logos"') && !str_contains($pgL, 'class="ar-wall"'), 'Darstellung „Logos“: Raster statt Namenswand');
-ok(preg_match('~<img src="[^"]*' . preg_quote((string)$ul['name'], '~') . '[^"]*" width="360" height="90" alt=""~', $pgL) === 1, 'Logo mit Maßen eingebunden (Alternativtext leer, Name steht in der Beschriftung)');
-ok(str_contains($pgL, '<b>Teststation Eins</b>') && str_contains($pgL, 'seit 11/2026 · Investigativ-Team') && str_contains($pgL, 'href="https://example.org/"'), 'Beschriftung mit Name, Zeitraum und Redaktion; Link am Logo');
-ok(str_contains($pgL, '<span class="ar-logo-name">Teststation Ohne</span>'), 'Station ohne Logo erscheint als Name');
-ok(!str_contains($pgL, 'st-hl'), 'im Logo-Raster ist keine Station hervorgehoben');
-req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1') + ['st_mode' => 'text']);
-ok(str_contains(req('GET', "$base/")['body'], 'class="ar-wall"'), 'zurück auf Namen als Schrift');
-foreach (q("SELECT id FROM ar_items WHERE coll = 'stations' AND data LIKE '%Teststation%'")->fetchAll() as $row) {
+ok($li && $li[0] === 360 && $li[1] === 90, 'Logo: leere Ränder abgeschnitten und auf höchstens 360 × 96 verkleinert (' . ($li ? $li[0] . '×' . $li[1] : '?') . ')');
+$cvA = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'cv', 'org' => 'Teststation Eins', 'role' => 'Autorin', 'from' => '2031-05', 'ongoing' => '1', 'logo_pick' => (string)$ul['name'], 'desk' => 'Investigativ-Team', 'url' => 'https://example.org/', 'mode' => 'publish'];
+req('POST', "$base/admin/", $cvA);
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'cv', 'org' => 'Teststation Zwei', 'role' => 'Reporterin', 'from' => '2031-02', 'to' => '2031-04', 'mode' => 'publish']);
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'cv', 'org' => 'Teststation Drei', 'role' => '', 'from' => '2030-01', 'logo_pick' => (string)$ul['name'], 'mode' => 'publish']);
+$pgC = req('GET', "$base/")['body'];
+ok(str_contains($pgC, 'class="rf-list"') && str_contains($pgC, 'id="rf"') && !str_contains($pgC, 'class="ar-wall"') && !str_contains($pgC, 'class="ar-logos"'), 'Zeitstrahl (roter Faden) statt Namenswand und Lebenslauf-Liste');
+ok(preg_match('~<li class="rf-y now" data-k="y"><span class="yn">2031</span></li>~', $pgC) === 1 && preg_match('~<li class="rf-y past" data-k="y"><span class="yn">2030</span></li>~', $pgC) === 1, 'Jahresanhänger: laufendes Jahr „now“, anderes „past“');
+$stripHtml = preg_match('~<ul class="cv-logos"[^>]*>(.*?)</ul>~s', $pgC, $sm) ? $sm[1] : '';
+ok(substr_count($stripHtml, (string)$ul['name']) === 1 && str_contains($stripHtml, 'href="https://example.org/"') && preg_match('~alt="Teststation Eins"~', $stripHtml) === 1, 'Logoleiste: dasselbe Logo nur einmal (trotz zwei Einträgen), mit Link');
+ok(substr_count($pgC, (string)$ul['name']) === 3, 'Logo erscheint in der Leiste einmal und auf den zwei Karten (' . substr_count($pgC, (string)$ul['name']) . ')');
+ok(str_contains($pgC, 'Investigativ-Team') && preg_match('~class="rf-it [lr] p\d big t\d" data-k="c"~', $pgC) === 1, 'laufende Station hervorgehoben, Redaktion auf der Karte');
+ok(preg_match('~<span class="c-role">Teststation Drei</span>~', $pgC) === 1, 'Eintrag ohne Rolle zeigt die Organisation als Titel');
+foreach (q("SELECT id FROM ar_items WHERE coll = 'cv' AND data LIKE '%Teststation%'")->fetchAll() as $row) {
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
 }
 @unlink("$root/uploads/" . $ul['name']);
 @unlink($lgw);
-req('POST', "$base/admin/", $secPost + array_fill_keys($ons, '1'));
+// Übernahme alter Stationen in den Lebenslauf (einmalige Migration)
+$mj = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = '_migrations'")->fetchColumn(), true) ?: [];
+q("DELETE FROM ar_items WHERE data LIKE '%Migrationsstation%'");
+q('INSERT INTO ar_items (coll, data, sort, created_at, updated_at, updated_by) VALUES (?,?,?,?,?,?)', ['stations', json_encode(['name' => 'Migrationsstation Alpha', 'logo' => 'logo-wdr.webp', 'desk' => 'TV', 'period' => '2020', 'url' => '']), 901, time(), time(), 't']);
+q('INSERT INTO ar_items (coll, data, sort, created_at, updated_at, updated_by) VALUES (?,?,?,?,?,?)', ['stations', json_encode(['name' => 'Migrationsstation Beta', 'logo' => '', 'desk' => 'Radio', 'period' => 'seit 2019', 'url' => '']), 902, time(), time(), 't']);
+q('INSERT INTO ar_items (coll, data, sort, created_at, updated_at, updated_by) VALUES (?,?,?,?,?,?)', ['cv', json_encode(['org' => 'Migrationsstation Alpha GmbH', 'role' => 'Autorin', 'from' => '2020-01', 'logo' => '', 'desk' => '']), 901, time(), time(), 't']);
+q("UPDATE ar_settings SET data = ? WHERE grp = '_migrations'", [json_encode(array_values(array_diff($mj, ['cv_stations_v1'])))]);
+req('GET', "$base/");
+$ma = json_decode((string)q("SELECT data FROM ar_items WHERE coll = 'cv' AND data LIKE '%Migrationsstation Alpha%'")->fetchColumn(), true);
+$mb = json_decode((string)q("SELECT data FROM ar_items WHERE coll = 'cv' AND data LIKE '%Migrationsstation Beta%'")->fetchColumn(), true);
+ok(($ma['logo'] ?? '') === 'logo-wdr.webp' && ($ma['desk'] ?? '') === 'TV', 'Migration: Logo und Redaktion gehen an den passenden Lebenslauf-Eintrag');
+ok(($mb['org'] ?? '') === 'Migrationsstation Beta' && ($mb['when_label'] ?? '') === 'seit 2019' && ($mb['desk'] ?? '') === 'Radio', 'Migration: Station ohne passenden Eintrag wird als neuer Eintrag angelegt');
+q("DELETE FROM ar_items WHERE data LIKE '%Migrationsstation%'");
+reset_content_cache();
 
 $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'add_user', 'email' => 'antonia@antoniarueller.de', 'name' => 'A']);
 ok(str_contains(follow($r)['body'], 'eigenen Domain'), 'Domain-Postfach als Zugang abgelehnt');

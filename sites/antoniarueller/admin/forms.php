@@ -31,7 +31,7 @@ function preview_url(string $anchor = ''): string
 function preview_anchor(string $key): string
 {
     return [
-        'clips' => 'arbeiten', 'tracks' => 'arbeiten', 'timeline' => 'arbeiten', 'episodes' => 'podcast', 'stations' => 'lebenslauf', 'cv' => 'lebenslauf', 'before' => 'lebenslauf',
+        'clips' => 'arbeiten', 'tracks' => 'arbeiten', 'timeline' => 'arbeiten', 'episodes' => 'podcast', 'cv' => 'lebenslauf', 'before' => 'lebenslauf',
         'about' => 'ueber', 'crossmedia' => 'ueber', 'languages' => 'ueber', 'offrecord' => 'offtherecord', 'contact' => 'kontakt', 'social' => 'kontakt', 'hero' => 'inhalt',
         'questions' => 'inhalt',
     ][$key] ?? '';

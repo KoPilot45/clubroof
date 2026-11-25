@@ -313,7 +313,7 @@
   // ---- Weiche Bewegung: Einblenden beim Scrollen (nur unterhalb des sichtbaren Bereichs, ohne JS bleibt alles sichtbar) ----
   if ('IntersectionObserver' in window && !reduce) {
     var vh = window.innerHeight;
-    var custom = ['fa', 'ar-ed-desk', 'ar-ed-mob', 'ar-logos'];
+    var custom = ['fa', 'ar-ed-desk', 'ar-ed-mob', 'rf'];
     var seen = [];
     $$('.ar-root main>section').forEach(function (sec) {
       if (sec.classList.contains('ar-hero')) return;
@@ -327,9 +327,7 @@
         ch.classList.add(isCustom ? 'cx-pre' : 'rv-pre');
         if (isCustom) {
           $$('.ar-tlclip', ch).forEach(function (c, i) { c.style.setProperty('--d', (300 + Math.min(i, 20) * 80) + 'ms'); });
-          var lg = $$('.ar-logo-in', ch);
-          // alle Logos zusammen höchstens etwa 1 s
-          lg.forEach(function (c, i) { c.style.setProperty('--d', Math.round(i * Math.min(70, 380 / Math.max(1, lg.length - 1))) + 'ms'); });
+
         }
         seen.push(ch);
       });
@@ -353,6 +351,53 @@
       };
       window.addEventListener('scroll', endCheck, { passive: true });
     }
+  }
+
+
+  // ---- Lebenslauf: roter Faden zeichnet sich beim Scrollen, Karten blenden ein, wenn er sie erreicht ----
+  var rfEl = $('#rf');
+  if (rfEl && $('.rfp', rfEl) && $$('.rf-it', rfEl).length) {
+    var rfPath = $('.rfp', rfEl), rfSvg = $('.rf-svg', rfEl), rfIts = $$('.rf-it,.rf-y', rfEl), rfPY = [], rfLen = 0;
+    var rfLenFor = function (y) { var lo = 0, hi = rfLen; for (var k = 0; k < 22; k++) { var m = (lo + hi) / 2; if (rfPath.getPointAtLength(m).y < y) lo = m; else hi = m; } return hi; };
+    var rfUpdate = function () {
+      if (!rfLen) return;
+      var R = rfEl.getBoundingClientRect(), target = window.innerHeight * 0.62 - R.top;
+      if (reduce) target = 1e9;
+      var len = target >= R.height ? rfLen : rfLenFor(Math.max(0, Math.min(R.height, target)));
+      rfPath.style.strokeDashoffset = rfLen - len;
+      rfIts.forEach(function (el, i) { el.classList.toggle('on', rfPY[i] <= target + 30); });
+    };
+    var rfBuild = function () {
+      var R = rfEl.getBoundingClientRect(), narrow = R.width < 700, pts = [];
+      if (R.height < 10) return;
+      rfSvg.setAttribute('viewBox', '0 0 ' + R.width + ' ' + R.height);
+      rfIts.forEach(function (el) {
+        var k = el.getAttribute('data-k'), t = k === 'c' ? $('.rf-card', el).getBoundingClientRect() : el.getBoundingClientRect(), y = t.top - R.top + t.height / 2, x;
+        if (k !== 'c') x = narrow ? 16 : R.width / 2;
+        else if (narrow) x = t.left - R.left;
+        else x = el.classList.contains('l') ? t.right - R.left : t.left - R.left;
+        if (k === 'y') { var yn = $('.yn', el).getBoundingClientRect(); y = yn.top - R.top + yn.height / 2; }
+        if (k === 'e') y = t.top - R.top + 10;
+        pts.push([x, y]);
+      });
+      var x0 = narrow ? 16 : R.width / 2;
+      var d = 'M' + x0 + ',0 C' + x0 + ',' + (pts[0][1] * 0.4) + ' ' + pts[0][0] + ',' + (pts[0][1] - 40) + ' ' + pts[0][0] + ',' + pts[0][1];
+      for (var i = 1; i < pts.length; i++) {
+        var a = pts[i - 1], b = pts[i], dy = (b[1] - a[1]) * 0.55;
+        d += ' C' + a[0] + ',' + (a[1] + dy) + ' ' + b[0] + ',' + (b[1] - dy) + ' ' + b[0] + ',' + b[1];
+      }
+      rfPath.setAttribute('d', d);
+      rfLen = rfPath.getTotalLength();
+      rfPath.style.strokeDasharray = rfLen;
+      rfPY = pts.map(function (p) { return p[1]; });
+      if (!reduce) rfEl.classList.add('rf-js');
+      rfUpdate();
+    };
+    window.addEventListener('scroll', rfUpdate, { passive: true });
+    window.addEventListener('resize', rfBuild);
+    window.addEventListener('load', rfBuild);
+    if ('ResizeObserver' in window) new ResizeObserver(rfBuild).observe($('.rf-list', rfEl));
+    rfBuild();
   }
 
   // ---- Podcast: Audiospuren bauen sich von links nach rechts auf ----

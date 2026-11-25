@@ -45,7 +45,7 @@ In `config.php` unter `mail` auf SMTP umstellen:
 - **Rechtstexte (Impressum, Datenschutz):** kleiner Text-Editor mit Werkzeugleiste (Überschrift, Fett, Liste, Link, Link entfernen; Strg+B/K). Links gehen auf Webadressen, E-Mail-Adressen und die Seiten Impressum/Datenschutz (je nach Sprache). Gespeichert wird weiter als einfacher Text (`## `, `- `, `**fett**`, `[Text](Ziel)`); der Editor gilt auch in der Übersetzungstabelle. Unsichere Ziele werden nicht verlinkt.
 - **Vorschaubilder:** Je Referenz optional „Vorschaubild“ (Fokuspunkt, WebP-Optimierung, Mediathek) und „Bildnachweis". Die Liste „Alle Beiträge" besteht aus quadratischen Kacheln (Bild mit Nummer und Kategorie, Titel und Angaben darunter; ohne Bild eine typografische Kachel in Petrol/Tinte). Beim Hauptbeitrag steht das Bild quadratisch rechts. Der Schnittplatz zeigt keine Bilder.
 - **Hero:** Ruhiger Namensschriftzug in Instrument Serif (einfarbig in Tinte: Vorname aufrecht, Nachname kursiv und eingerückt, normales ü), links Text, rechts das Foto im Mint-Kreis. Keine Kontur, keine Überlagerung.
-- **Lebenslauf:** Die Jahreszahl einer Gruppe ist farbig, wenn mindestens eine Station dieses Beginn-Jahres „Läuft noch“ hat, sonst als Umriss.
+- **Lebenslauf:** Der Jahresanhänger ist „now“, wenn mindestens eine Station dieses Beginn-Jahres „Läuft noch“ hat, sonst „past“.
 - **Podcast:** Je Folge optionale Kurzbeschreibung (höchstens 200 Zeichen, Zeichenzähler im Backend, übersetzbar) unter dem Titel.
 - **Weiche Bewegungen (ohne Bibliothek, nur CSS/wenig JS, aus bei „Bewegung reduzieren“):** Abschnitte blenden unterhalb des sichtbaren Bereichs beim Scrollen ein, Hover-Zustände bei Knöpfen/Listen, gleitender Strich unter dem aktiven Menüpunkt, Clips laden nacheinander in die Spuren des Schnittplatzes, Überblendung beim Wechsel des aktiven Beitrags, sanft pulsierender Aufnahme-Punkt, Parallax des Kreises hinter dem Startfoto (nur Desktop), Aufmacher baut sich ruhig auf. Ohne JavaScript bleibt alles sichtbar.
 - **Scroll-Effekte:** Player-Leiste an der Unterkante der Kopfzeile (Fortschritt, Abspielmarke, Kapitelstriche an den Abschnitten) und ein dezenter „Nach oben“-Knopf rechts unten ab 1,5 Bildschirmhöhen.
@@ -82,16 +82,16 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 - „Alle Clips“ heißt jetzt „Alle Beiträge“.
 
 
-## Stationen mit Logos
+## Lebenslauf: Zeitstrahl und Logoleiste
 
-- Sammlung „Sender & Redaktionen“: Name, Logo (optional), Datum/Zeitraum, Redaktion (Freitext), Link, „Auf der Seite anzeigen“; sortierbar.
-- Umschalter „Darstellung“ (`sections.st_mode`): `text` = große Namensliste (Standard, mit „Farbig hervorheben“), `logos` = Raster mit grauen Logos, Beschriftung beim Darüberfahren (Touch: immer sichtbar), Stationen ohne Logo als Name, Einblend-Animation (insgesamt ca. 1 s, nur ohne „weniger Bewegung“).
-- Logo-Upload (`store_image(..., logo: true)`): leere Ränder abschneiden, höchstens `LOGO_MAX_W × LOGO_MAX_H` (360 × 96, doppelte Größe der Anzeige von 180 × 48), verlustfrei als WebP. Startbestand: `seed-assets/logos/*.webp` (landet im Demo-Seed und im Upload-Paket in `uploads/`).
+- Eine Liste `cv` („Lebenslauf & Stationen“) speist beides: Organisation, Logo (optional), Rolle, Beginn/Ende, „Läuft noch“, Zeitangabe überschreiben, Redaktion (Freitext), Link. Die frühere getrennte Liste „Sender & Redaktionen“ (`stations`) gibt es nicht mehr; die Migration `cv_stations_v1` übernimmt Logo, Redaktion und Link an Lebenslauf-Einträge mit passender Organisation (sonst neuer Eintrag). Die alten Datensätze bleiben unangetastet in `ar_items` (werden aber nicht mehr angezeigt oder gesichert).
+- Darstellung: Logoleiste (`cv_logo_strip()`: jedes Logo einmal, Reihenfolge nach dem neuesten Eintrag, Einträge ohne Logo fehlen) und der „rote Faden“ (`#rf`): Jahre als Anhänger (laufendes Jahr „now“), Karten wechseln links/rechts in drei Abständen, laufende Stationen hervorgehoben. Der Faden zeichnet sich beim Scrollen (SVG-Pfad, `assets/site.js`), Karten blenden ein, wenn er sie erreicht; bei „weniger Bewegung“ ist alles sofort sichtbar. Ohne JavaScript bleibt alles sichtbar (`rf-js` wird erst gesetzt, wenn der Pfad berechnet ist). Handy: Faden links, eine Spalte.
+- Logo-Upload (`store_image(..., logo: true)`): leere Ränder abschneiden, höchstens `LOGO_MAX_W × LOGO_MAX_H` (360 × 96, doppelte Größe der Anzeige), verlustfrei als WebP. Startbestand: `seed-assets/logos/*.webp` (landet im Demo-Seed und im Upload-Paket in `uploads/`).
 - Die Logos sind geschützte Marken: Rechte klären oder Dateien aus den Presseportalen der Sender verwenden.
 
 ## Abschnitte
 
-- „Seite → Abschnitte“ (früher „Überschriften der Abschnitte“): je Abschnitt eine Karte mit Schieberegler (Leitfragen, Showreel, Podcast, Über mich, Stationen, Lebenslauf, Off the record, Kontakt) und allen Texten des Abschnitts. Start (Intro) ist immer sichtbar; die Fußzeile mit Impressum und Datenschutz bleibt auch bei ausgeschaltetem Kontakt.
+- „Seite → Abschnitte“ (früher „Überschriften der Abschnitte“): je Abschnitt eine Karte mit Schieberegler (Leitfragen, Showreel, Podcast, Über mich, Lebenslauf, Off the record, Kontakt) und allen Texten des Abschnitts. Start (Intro) ist immer sichtbar; die Fußzeile mit Impressum und Datenschutz bleibt auch bei ausgeschaltetem Kontakt.
 - Ausgeschaltete Abschnitte entfallen samt Menüpunkt (Kopfzeile, Handy-Menü, „Schreib mir“-Knopf); das Featured hängt nur am Stern der Referenzen.
 - Neu bearbeitbar (vorher fest im Code): Abschnittsnamen der REC-Zeilen, Intro-Name und Timecode, Hinweis/Spaltenkopf im Schnittplatz, Featured-Beschriftungen, „Rolle:“, Wort für „Clips“, Podcast „Anhören bei“/„Folge“, „heute“/„seit“, Mail-Hinweis, „Kopieren“/„Kopiert“, Fußzeilen-Links, Titel im Handy-Menü. Das Feld „Podcast: Zeile rechts“ war bisher ohne Wirkung und wird jetzt angezeigt. Leere Pflichtbeschriftungen fallen auf den Standardtext zurück; Standardtexte stehen ohne Eingabe auch englisch zur Verfügung (nur eigene Texte erscheinen in der Übersetzungstabelle).
 - Fest gestaltet bleibt die Überschrift „Off the record“ (durchgestrichenes „the“).
@@ -123,7 +123,7 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 ## Feinschliff nach der Live-Prüfung
 
 - **Schrift:** Im Frontend ist nichts mehr kleiner als 12 px (Beschriftungen, Schnittplatz, Kacheln, Featured, Fußzeile); der Selbsttest prüft das im CSS. Fußzeilen-Links haben mindestens 24 px Klickhöhe.
-- **Überschriften:** „Leitfragen“, „Über mich“ und „Stationen“ haben eine unsichtbare H2 (`sr-only`) für Screenreader und Gliederung.
+- **Überschriften:** „Leitfragen“ und „Über mich“ haben eine unsichtbare H2 (`sr-only`) für Screenreader und Gliederung.
 - **Bildgrößen:** Hero- und Porträtfoto bekommen mit `img_width_set()` Breiten-Varianten (`<name>.w<breite>.<zeit>.webp` in `uploads/v/`), das Original bleibt größte Stufe im `srcset`; erzeugt beim ersten Aufruf bzw. beim Veröffentlichen von Hero-Bereich oder „Über mich“.
 - **Handy-Schnittplatz:** Die Abspielmarke liegt in einem eigenen Streifen über den Clips und verdeckt keine Nummer mehr.
 - **404-Seite** (`templates/notfound.php`): große „404“ mit Kreis-Motiv, Hinweis und Knöpfen (Startseite plus erste Menüpunkte); englisch unter `/en/…`. Auf 404, Impressum und Datenschutz ist „Zur Startseite“ in der Kopfzeile ein Knopf. `tools/router.php` nutzt für unbekannte Adressen jetzt 404.php wie Apache.

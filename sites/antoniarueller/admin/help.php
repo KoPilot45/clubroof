@@ -39,7 +39,7 @@ function help_context(string $active): array
 {
     static $map = [
         'c:clips' => ['arbeiten', 'referenz-anlegen'], 'c:tracks' => ['arbeiten', 'kategorien'], 'c:episodes' => ['mehr', 'podcast'],
-        'c:cv' => ['mehr', 'lebenslauf'], 'c:stations' => ['mehr', 'lebenslauf'], 'c:before' => ['mehr', 'lebenslauf'],
+        'c:cv' => ['mehr', 'lebenslauf'], 'c:before' => ['mehr', 'lebenslauf'],
         'c:crossmedia' => ['mehr', 'ueber-mich'], 'c:languages' => ['mehr', 'ueber-mich'], 'g:about' => ['mehr', 'ueber-mich'],
         'c:offrecord' => ['mehr', 'off-the-record'], 'g:contact' => ['mehr', 'kontakt'], 'c:social' => ['mehr', 'kontakt'],
         'g:hero' => ['hero', 'hero-bereich'], 'c:questions' => ['hero', 'leitfragen'], 'g:sections' => ['hero', 'abschnitte'],

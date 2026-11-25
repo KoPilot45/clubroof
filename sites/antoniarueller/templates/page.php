@@ -238,50 +238,46 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </section>
 <?php endif; ?>
 
-<?php if ($showSt): ?>
-<section id="lebenslauf" aria-label="<?= e(tr($sec['st_label'])) ?>" style="padding-top:144px">
-<h2 class="sr-only"><?= e($sec['st_label']) ?></h2>
-<?= sec_head('03', $sec['st_label'], $sec['st_right'], '24px') ?>
-<?php if (($sec['st_mode'] ?? 'text') === 'logos'): ?>
-<ul class="ar-logos" role="list" style="--c5:<?= logo_cols(count($stations), 5) ?>;--c4:<?= logo_cols(count($stations), 4) ?>;--c3:<?= logo_cols(count($stations), 3) ?>">
-<?php foreach ($stations as $s):
-    $lu = $s['logo'] !== '' ? upload_url((string)$s['logo']) : '';
-    $capParts = array_values(array_filter([(string)$s['period'], (string)$s['desk']], fn($x) => $x !== ''));
-    $tag = $s['url'] !== '' ? 'a' : 'div';
-    $lnk = $tag === 'a' ? ' href="' . e($s['url']) . '" target="_blank" rel="noopener noreferrer"' : '';
+<?php if ($showCv):
+    $stripLogos = cv_logo_strip($cvGroups);
+    $cvI = 0;
 ?>
-<li class="ar-logo"><<?= $tag ?> class="ar-logo-in"<?= $lnk ?>>
-<span class="ar-logo-box"><?php if ($lu !== ''): ?><img src="<?= e($lu) ?>"<?= img_attrs((string)$s['logo']) ?> alt="" loading="lazy" decoding="async"><?php else: ?><span class="ar-logo-name"><?= e($s['name']) ?></span><?php endif; ?></span>
-<span class="ar-logo-cap"><span class="ar-logo-cap-in"><?php if ($lu !== ''): ?><b><?= e($s['name']) ?></b><?php endif; ?><?php if ($capParts): ?><span class="ar-logo-sub"><?= e(implode(' · ', $capParts)) ?></span><?php endif; ?></span></span>
-</<?= $tag ?>></li>
+<section id="lebenslauf" aria-label="<?= e(tr($sec['cv_label'])) ?>" style="padding-top:144px">
+<?= sec_head('03', $sec['cv_label'], ($cvMin ? $cvMin . ' — ' . tr($sec['cv_today']) : '') . ($sec['cv_right'] !== '' ? ' · ' . $sec['cv_right'] : ''), '24px') ?>
+<h2 class="big-h" style="margin-bottom:40px"><span class="bh1"><?= e($sec['cv_h1']) ?></span><span class="bh2"><?= e($sec['cv_h2']) ?></span></h2>
+<?php if ($stripLogos): ?>
+<ul class="cv-logos" role="list">
+<?php foreach ($stripLogos as $lgo): $lu = upload_url($lgo['logo']); ?>
+<li><?php if ($lgo['url'] !== ''): ?><a href="<?= e($lgo['url']) ?>" target="_blank" rel="noopener noreferrer"><?php endif; ?><img src="<?= e($lu) ?>"<?= img_attrs($lgo['logo']) ?> alt="<?= e($lgo['org']) ?>" loading="lazy" decoding="async"><?php if ($lgo['url'] !== ''): ?></a><?php endif; ?></li>
 <?php endforeach; ?>
 </ul>
-<?php else: ?>
-<p class="ar-wall">
-<?php foreach ($stations as $i => $s): ?><span class="ar-st"><span class="<?= $s['highlight'] ? 'st-hl' : 'ar-outline' ?>"><?= e($s['name']) ?></span><?php if ($i < count($stations) - 1): ?><span class="ar-sl">/</span><?php endif; ?></span>
-<?php endforeach; ?>
-</p>
 <?php endif; ?>
-</section>
-<?php endif; ?>
-
-<?php if ($showCv): ?>
-<section aria-label="<?= e(tr($sec['cv_label'])) ?>" <?= $showSt ? '' : 'id="lebenslauf"' ?> style="padding-top:120px">
-<?= sec_head('03', $sec['cv_label'], ($cvMin ? $cvMin . ' — ' . tr($sec['cv_today']) : '') . ($sec['cv_right'] !== '' ? ' · ' . $sec['cv_right'] : ''), '24px') ?>
-<h2 class="big-h" style="margin-bottom:56px"><span class="bh1"><?= e($sec['cv_h1']) ?></span><span class="bh2"><?= e($sec['cv_h2']) ?></span></h2>
-<ol class="cv">
+<div class="rf" id="rf">
+<svg class="rf-svg" aria-hidden="true"><path class="rfp" fill="none"/></svg>
+<ol class="rf-list">
 <?php foreach ($cvGroups as $year => $rows): ?>
-<li><span class="cv-y <?= array_filter($rows, fn($x) => !empty($x['ongoing'])) ? 'ar-year-now' : 'ar-year-past' ?>"><?= e($year) ?></span>
-<div class="cv-items">
-<?php foreach ($rows as $r): ?><div class="cv-it"><span class="cv-dot" aria-hidden="true"></span><span class="cv-role"><?= $r['role'] !== '' ? e($r['role']) . ', ' : '' ?><span class="mk-i"><?= e($r['org']) ?></span></span><span class="cv-when"><?= e(cv_when($r, tr($sec['cv_since']))) ?></span></div>
-<?php endforeach; ?>
+<?php if ($year !== '—'): ?><li class="rf-y <?= array_filter($rows, fn($x) => !empty($x['ongoing'])) ? 'now' : 'past' ?>" data-k="y"><span class="yn"><?= e($year) ?></span></li>
+<?php endif; ?>
+<?php foreach ($rows as $r):
+    $side = $cvI % 2 === 0 ? 'l' : 'r';
+    $pos = 'p' . (($cvI * 2 + intdiv($cvI, 3)) % 3);
+    $when = trim(cv_when($r, tr($sec['cv_since'])) . ((string)$r['desk'] !== '' ? ' · ' . $r['desk'] : ''), ' ·');
+    $lu = (string)$r['logo'] !== '' ? upload_url((string)$r['logo']) : '';
+    $cvI++;
+?>
+<li class="rf-it <?= $side ?> <?= $pos ?><?= !empty($r['ongoing']) ? ' big' : '' ?> t<?= ($cvI - 1) % 4 ?>" data-k="c"><div class="rf-card">
+<?php if ($lu !== ''): ?><span class="c-lg"><img src="<?= e($lu) ?>"<?= img_attrs((string)$r['logo']) ?> alt="" loading="lazy" decoding="async"></span><?php endif; ?>
+<span class="c-role"><?= e($r['role'] !== '' ? $r['role'] : $r['org']) ?></span>
+<?php if ($r['role'] !== ''): ?><span class="c-org"><?= e($r['org']) ?></span><?php endif; ?>
+<span class="c-when"><?= e($when) ?></span>
 </div></li>
 <?php endforeach; ?>
-</ol>
+<?php endforeach; ?>
 <?php if ($before): ?>
-<div class="cv-before"><span class="cv-before-l muted"><?= e($sec['cv_before']) ?></span>
-<div class="cv-before-r"><?php foreach ($before as $b): ?><div class="cv-it2"><span class="cv-role"><?= mk($b['text']) ?></span><span class="cv-when"><?= e($b['side']) ?></span></div><?php endforeach; ?></div></div>
+<li class="rf-y end" data-k="e"><span class="yn"><?= e($sec['cv_before']) ?></span><span class="yb"><?php foreach ($before as $b): ?><span class="yb-r"><?= mk($b['text']) ?><?php if ($b['side'] !== ''): ?> <em><?= e($b['side']) ?></em><?php endif; ?></span><?php endforeach; ?></span></li>
 <?php endif; ?>
+</ol>
+</div>
 <?php if (upload_url($contact['cv_pdf']) !== ''): ?><div style="display:flex;justify-content:flex-end;margin-top:24px"><a class="btn-solid" data-ev="cv" data-k="pdf" href="<?= e(upload_url($contact['cv_pdf'])) ?>" target="_blank" rel="noopener" download><?= e($sec['cv_pdf_label']) ?> <span aria-hidden="true">↓</span></a></div><?php endif; ?>
 </section>
 <?php endif; ?>

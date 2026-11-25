@@ -150,44 +150,49 @@ a.top-l:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
 .pod-btn:hover,.pod-btn:focus-visible{background:#8FCFCB;color:var(--ink)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* Stationen als Logo-Raster: Spalten nach verfügbarer Breite, Beschriftung schiebt das Logo nach oben (nichts überlagert sich) */
-.ar-logos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(var(--c3,3),minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
-.ar-logo{border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
-.ar-logo-in{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:164px;height:100%;padding:16px 12px;color:inherit;text-decoration:none;transition:background .3s}
-.ar-logo-box{display:flex;align-items:center;justify-content:center;width:100%;min-width:0}
-.ar-logo-box img{display:block;max-width:min(180px,100%);width:auto;height:auto;max-height:48px;object-fit:contain;filter:grayscale(1);opacity:.75;transition:filter .3s,opacity .3s}
-.ar-logo-name{font-family:var(--serif);font-size:26px;line-height:1.1;color:var(--mute);text-align:center;overflow-wrap:anywhere;transition:color .3s}
-.ar-logo-cap{display:grid;grid-template-rows:0fr;width:100%;opacity:0;margin-top:0;transition:grid-template-rows .35s ease,opacity .3s ease,margin-top .35s ease}
-.ar-logo-cap-in{min-height:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
-.ar-logo-cap b{font-weight:500;font-size:14px;line-height:1.25;color:var(--ink);overflow-wrap:anywhere}
-.ar-logo-sub{font-family:var(--mono);font-size:12px;line-height:1.3;letter-spacing:.04em;color:var(--mute);overflow-wrap:anywhere}
-.ar-logo-in:hover,.ar-logo-in:focus-visible{background:var(--card)}
-.ar-logo-in:hover .ar-logo-box img,.ar-logo-in:focus-visible .ar-logo-box img{filter:none;opacity:1}
-.ar-logo-in:hover .ar-logo-name,.ar-logo-in:focus-visible .ar-logo-name{color:var(--ink)}
-.ar-logo-in:hover .ar-logo-cap,.ar-logo-in:focus-visible .ar-logo-cap{grid-template-rows:1fr;opacity:1;margin-top:10px}
-.ar-logo-in:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
-@media (hover:none){.ar-logo-cap{grid-template-rows:1fr;opacity:1;margin-top:10px;transition:none}}
-@media (min-width:900px){.ar-logos{grid-template-columns:repeat(var(--c4,4),minmax(0,1fr))}}
-@media (min-width:1100px){.ar-logos{grid-template-columns:repeat(var(--c5,5),minmax(0,1fr))}}
-@media (max-width:899px){.ar-logo-box img{max-height:42px}}
-@media (max-width:560px){.ar-logos{grid-template-columns:repeat(2,minmax(0,1fr))}.ar-logo:last-child:nth-child(odd){grid-column:1/-1}.ar-logo-in{min-height:176px;padding:30px 8px}.ar-logo:last-child:nth-child(odd) .ar-logo-in{min-height:130px}.ar-logo-box img{max-height:30px;max-width:min(104px,100%)}.ar-logo-name{font-size:21px}.ar-logo-cap b{font-size:13px}}
-
-/* Stationen / Lebenslauf */
-.ar-wall{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .3em;font-family:var(--anton);font-size:clamp(24px,5.2vw,77px);line-height:1.05;text-transform:uppercase}
-.ar-st{white-space:nowrap}
-.st-hl{color:var(--accent)}
-.ar-sl{font-family:var(--serif);font-style:italic;color:var(--teal);text-transform:none;margin-left:.25em}
-.cv{list-style:none;margin:0;padding:0;position:relative}
-.cv>li{display:flex;flex-wrap:wrap;gap:0 40px;border-top:1px solid var(--line)}
-.cv-y{flex:0 0 280px;font-family:var(--anton);font-size:112px;line-height:1;padding:20px 0 24px}
-.cv-items{flex:1 1 520px;min-width:0;position:relative;border-left:2px solid var(--ink);padding:32px 0 32px 40px;display:flex;flex-direction:column;gap:28px}
-.cv-it,.cv-it2{position:relative;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 32px}
-.cv-dot{position:absolute;left:-50px;top:10px;width:16px;height:16px;border-radius:50%;background:var(--paper);border:2px solid var(--ink)}
-.cv-role{flex:1 1 320px;min-width:0;font-family:var(--serif);font-size:36px;line-height:1.08}
-.cv-when{flex:0 0 200px;font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
-.cv-before{display:flex;flex-wrap:wrap;gap:0 40px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
-.cv-before-l{flex:0 0 280px;font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding:28px 0}
-.cv-before-r{flex:1 1 520px;min-width:0;padding:22px 0 22px 42px;display:flex;flex-direction:column;gap:20px}
+/* Lebenslauf: Logoleiste und roter Faden */
+.cv-logos{list-style:none;margin:0 0 56px;padding:18px 0;display:flex;flex-wrap:wrap;gap:16px 34px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cv-logos img{display:block;height:auto;width:auto;max-height:28px;max-width:140px;object-fit:contain;filter:grayscale(1);opacity:.7;transition:filter .3s,opacity .3s}
+.cv-logos li:hover img,.cv-logos a:focus-visible img{filter:none;opacity:1}
+.cv-logos a{display:block;color:inherit}.cv-logos a:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+.rf{position:relative;padding:20px 0 40px}
+.rf-svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.rfp{stroke:var(--rec);stroke-width:2.4;stroke-linecap:round}
+.rf-list{list-style:none;margin:0;padding:0;position:relative;display:flex;flex-direction:column;gap:28px}
+.rf-it{--w:min(340px,calc(50% - 64px));width:var(--w);align-self:flex-start}
+.rf-it.l{margin-left:calc(50% - 20px - var(--w) - var(--sh,0px));text-align:right}
+.rf-it.r{margin-left:calc(50% + 20px + var(--sh,0px))}
+.rf-it.p0{--sh:0px}.rf-it.p1{--sh:56px}.rf-it.p2{--sh:104px}
+.rf-card{background:var(--card);border:1px solid var(--line);padding:16px 18px;display:flex;flex-direction:column;gap:5px;position:relative;box-shadow:0 6px 14px -8px rgba(23,37,38,.35)}
+.rf-card::before{content:"";position:absolute;top:50%;width:11px;height:11px;margin-top:-5px;border-radius:50%;background:var(--rec)}
+.rf-it.l .rf-card::before{right:-6px}.rf-it.r .rf-card::before{left:-6px}
+.rf-card::after{content:"";position:absolute;top:-7px;left:50%;width:46px;height:14px;margin-left:-23px;background:rgba(201,222,218,.75);transform:rotate(-3deg)}
+.rf-it.t0 .rf-card{transform:rotate(-1.6deg)}.rf-it.t1 .rf-card{transform:rotate(1.2deg)}.rf-it.t2 .rf-card{transform:rotate(-.8deg)}.rf-it.t3 .rf-card{transform:rotate(1.8deg)}
+.rf-it.big .rf-card{border:2px solid var(--accent)}
+.c-lg{display:block;margin-bottom:2px}.rf-it.l .c-lg{align-self:flex-end}
+.c-lg img{display:block;height:auto;width:auto;max-height:30px;max-width:150px;object-fit:contain;filter:grayscale(1);opacity:.8;transition:filter .3s,opacity .3s}
+.rf-it:hover .c-lg img{filter:none;opacity:1}
+.c-role{display:block;font-family:var(--serif);font-size:26px;line-height:1.1}
+.c-org{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.c-when{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--mute)}
+.rf-y{align-self:center;position:relative;text-align:center;z-index:1}
+.rf-y .yn{display:inline-block;font-family:var(--anton);font-size:56px;line-height:1;color:var(--paper);background:var(--ink);padding:10px 26px 8px;border-radius:3px;position:relative;box-shadow:0 2px 0 rgba(0,0,0,.15)}
+.rf-y .yn::before{content:"";position:absolute;left:50%;top:-6px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--rec)}
+.rf-y.past .yn{background:#4A5B5C}
+.rf-y.end .yn{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);background:var(--paper);box-shadow:none;padding:4px 14px}
+.rf-y.end .yn::before{display:none}
+.rf-y .yb{display:flex;flex-direction:column;gap:4px;font-family:var(--serif);font-size:22px;line-height:1.2;color:var(--body);background:var(--paper);padding:6px 16px}
+.rf-y .yb em{font-style:normal;font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--mute)}
+@media (prefers-reduced-motion:no-preference){
+  .rf.rf-js .rf-it,.rf.rf-js .rf-y{transition:opacity .7s ease,transform .7s ease}
+  .rf.rf-js .rf-it:not(.on),.rf.rf-js .rf-y:not(.on){opacity:0;transform:translateY(12px)}
+}
+@media (max-width:700px){
+  .cv-logos{gap:14px 22px;justify-content:center}.cv-logos img{max-height:22px;max-width:110px}
+  .rf-it,.rf-it.l,.rf-it.r{width:calc(100% - 44px);align-self:flex-end;margin:0;text-align:left}
+  .rf-it.l .c-lg{align-self:flex-start}.rf-it.l .rf-card::before,.rf-it.r .rf-card::before{left:-6px;right:auto}
+  .rf-y{align-self:flex-start;text-align:left}.rf-y .yn{font-size:44px}
+}
 
 /* Über mich */
 .about{display:flex;flex-wrap:wrap;gap:56px}
@@ -263,7 +268,6 @@ a.top-l:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
   .ar-ed-desk{display:none!important}
   .ar-ed-mob{display:block}
   .ar-q2{padding-left:0!important}
-  .ar-wall{font-size:clamp(26px,8vw,128px)}
   .ar-clip-title{font-size:28px}
   .ar-redact{font-size:22px}
   .ar-schreib,.k-h2{font-size:clamp(64px,22vw,110px)}
@@ -273,9 +277,6 @@ a.top-l:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
   .ar-hero-media{position:relative;right:auto;height:520px;aspect-ratio:auto;width:100%;margin-top:-24px}
   .ar-hero-circle{left:50%;width:300px;margin-left:-150px;top:30px}
   .ar-hero-img{right:auto;left:50%;transform:translateX(-50%)}
-    .cv-y{font-size:84px;flex-basis:100%}
-  .cv-items{padding-left:32px}
-  .cv-dot{left:-42px}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.ar-rec{animation:none}}
 
@@ -411,9 +412,6 @@ a:not([class]){text-decoration-thickness:1px;text-underline-offset:.2em;transiti
   /* 5: Clips laden nacheinander in die Spuren, danach erscheint die Abspielmarke */
   .cx-pre:not(.in) .ar-tlclip{opacity:0;transform:translateX(-26px)}
   .cx-pre.in .ar-tlclip{transition:opacity .9s ease var(--d,0ms),transform .9s cubic-bezier(.22,.61,.36,1) var(--d,0ms)}
-  /* Stationen: Logos blenden nacheinander ein */
-  .cx-pre:not(.in) .ar-logo-in{opacity:0;transform:translateY(10px)}
-  .cx-pre.in .ar-logo-in{transition:opacity .6s ease var(--d,0ms),transform .6s cubic-bezier(.22,.61,.36,1) var(--d,0ms),background .3s}
   .cx-pre:not(.in) .playhead{opacity:0}
   .cx-pre.in .playhead{transition:opacity .8s ease 1.6s,left .45s ease}
   .ar-ed-desk.cx-pre:not(.in) .ed-ruler{opacity:0}

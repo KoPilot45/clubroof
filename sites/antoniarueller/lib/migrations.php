@@ -345,6 +345,57 @@ function run_migrations(PDO $pdo): void
         }
     }
 
+    // Stationen und Lebenslauf sind eine Liste: Logo, Redaktion und Link der alten „Sender & Redaktionen“ wandern an passende Lebenslauf-Einträge
+    // (gleiche Organisation); ohne passenden Eintrag entsteht ein neuer. Die alten Datensätze bleiben unangetastet in der Tabelle.
+    if (!in_array('cv_stations_v1', $applied, true)) {
+        try {
+            $st = $pdo->query("SELECT data FROM ar_items WHERE coll = 'stations' AND deleted_at IS NULL ORDER BY sort ASC, id ASC")->fetchAll();
+            if ($st) {
+                $cvRows = $pdo->query("SELECT id, data, draft FROM ar_items WHERE coll = 'cv' AND deleted_at IS NULL")->fetchAll();
+                $maxSort = (int)$pdo->query("SELECT COALESCE(MAX(sort), 0) FROM ar_items WHERE coll = 'cv'")->fetchColumn();
+                $fill = function (array $d, array $src): array {
+                    foreach (['logo', 'desk', 'url'] as $k) {
+                        if (trim((string)($d[$k] ?? '')) === '' && trim((string)($src[$k] ?? '')) !== '') {
+                            $d[$k] = (string)$src[$k];
+                        }
+                    }
+                    return $d;
+                };
+                foreach ($st as $row) {
+                    $sd = json_decode((string)$row['data'], true) ?: [];
+                    $name = trim((string)($sd['name'] ?? ''));
+                    if ($name === '') {
+                        continue;
+                    }
+                    $src = ['logo' => $sd['logo'] ?? '', 'desk' => $sd['desk'] ?? '', 'url' => $sd['url'] ?? ''];
+                    $needle = mb_strtolower($name);
+                    $hit = false;
+                    foreach ($cvRows as $cr) {
+                        $cd = json_decode((string)$cr['data'], true) ?: [];
+                        $org = mb_strtolower(trim((string)($cd['org'] ?? '')));
+                        if ($org === '' || !(str_contains($org, $needle) || str_contains($needle, $org))) {
+                            continue;
+                        }
+                        $hit = true;
+                        $upd = $pdo->prepare('UPDATE ar_items SET data = ?, draft = ? WHERE id = ?');
+                        $dr = $cr['draft'] !== null ? json_decode((string)$cr['draft'], true) : null;
+                        $upd->execute([json_encode($fill($cd, $src), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                            is_array($dr) ? json_encode($fill($dr, $src), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null, $cr['id']]);
+                    }
+                    if (!$hit) {
+                        $nd = ['org' => $name, 'logo' => (string)$src['logo'], 'role' => '', 'from' => '', 'to' => '', 'ongoing' => false,
+                            'when_label' => (string)($sd['period'] ?? ''), 'desk' => (string)$src['desk'], 'url' => (string)$src['url']];
+                        $pdo->prepare('INSERT INTO ar_items (coll, data, sort, created_at, updated_at, updated_by) VALUES (?,?,?,?,?,?)')
+                            ->execute(['cv', json_encode($nd, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ++$maxSort, time(), time(), 'migration']);
+                    }
+                }
+            }
+            $applied[] = 'cv_stations_v1';
+        } catch (Throwable $e) {
+            // Tabelle noch nicht vorhanden: beim nächsten Aufruf erneut
+        }
+    }
+
     if (count($applied) !== $before) {
         $json = json_encode($applied);
         $exists = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = '_migrations'")->fetchColumn();

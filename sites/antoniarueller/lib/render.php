@@ -72,22 +72,21 @@ function write_page_cache(string $key, string $html, bool $noindex): void
 }
 
 /**
- * Spaltenzahl für das Logo-Raster: möglichst eine volle letzte Reihe (Anzahl teilbar), sonst die Zahl mit der
- * vollsten letzten Reihe; bei Gleichstand die größere. Mindestens 2, höchstens $max Spalten.
+ * Logoleiste: jedes Logo (Datei) nur einmal, in der Reihenfolge des jeweils neuesten Eintrags.
+ * Gibt je Logo [logo, org, url] zurück; Einträge ohne Logo erscheinen nicht.
  */
-function logo_cols(int $n, int $max): int
+function cv_logo_strip(array $groups): array
 {
-    $best = 2;
-    $bestScore = -1;
-    for ($c = min($max, max(2, $n)); $c >= 2; $c--) {
-        $r = $n % $c;
-        $score = $r === 0 ? $c + 1000 : $r * 10 + $c / 10;
-        if ($score > $bestScore) {
-            $bestScore = $score;
-            $best = $c;
+    $out = [];
+    foreach ($groups as $rows) {
+        foreach ($rows as $r) {
+            $lg = (string)($r['logo'] ?? '');
+            if ($lg !== '' && upload_url($lg) !== '' && !isset($out[$lg])) {
+                $out[$lg] = ['logo' => $lg, 'org' => (string)$r['org'], 'url' => (string)($r['url'] ?? '')];
+            }
         }
     }
-    return $best;
+    return array_values($out);
 }
 
 function img_attrs(string $name): string
@@ -206,7 +205,7 @@ function cv_groups(array $rows): array
         $y = substr((string)$r['from'], 0, 4) ?: '—';
         $g[$y][] = $r;
     }
-    krsort($g);
+    uksort($g, fn($a, $b) => $a === '—' ? 1 : ($b === '—' ? -1 : (int)$b <=> (int)$a));
     return $g;
 }
 
