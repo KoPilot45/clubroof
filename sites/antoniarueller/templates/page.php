@@ -41,12 +41,8 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php endif; ?>
 <meta name="theme-color" content="#F3ECDF">
 <?php require __DIR__ . '/favicon.php'; ?>
-<link rel="preload" href="<?= AR_BASE ?>/assets/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="<?= AR_BASE ?>/assets/fonts/instrument-serif-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="<?= AR_BASE ?>/assets/fonts/inter-tight-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="<?= AR_BASE ?>/assets/fonts.css?v=1">
 <link rel="stylesheet" href="<?= AR_BASE ?>/assets/site.css?v=<?= @filemtime(AR_ROOT . '/assets/site.css') ?>">
-<style>:root{--accent:<?= e($acc) ?>;--rec:<?= e($rec) ?>}</style>
+<?= font_head($typo) ?><style>:root{--accent:<?= e($acc) ?>;--rec:<?= e($rec) ?>}</style>
 <?php if ($jsonld !== ''): ?><script type="application/ld+json"><?= $jsonld ?></script><?php endif; ?>
 </head>
 <body>
@@ -287,7 +283,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <section id="offtherecord" aria-label="<?= e(tr($sec['off_label'])) ?>" style="padding-top:144px">
 <div class="sec-head off-head" style="margin-bottom:24px"><span class="sec-l"><span style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--mute);box-sizing:border-box;display:inline-block"></span><span style="font-weight:600">Off</span><span>03 — <?= e(tr($sec['off_label'])) ?></span></span><span><?= e($sec['off_right']) ?></span></div>
 <h2 class="big-h" style="margin-bottom:16px"><span class="oh1">Off <span class="the">the<span class="strike" aria-hidden="true"></span></span></span> <span class="oh2">record</span></h2>
-<p class="muted" style="margin:0 0 32px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;font-family:'JetBrains Mono',monospace"><?= e($sec['off_hint']) ?></p>
+<p class="muted" style="margin:0 0 32px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;font-family:var(--mono)"><?= e($sec['off_hint']) ?></p>
 <dl class="off">
 <?php foreach ($off as $o): ?><div class="off-r"><dt><?= e($o['question']) ?></dt><dd><button type="button" class="ar-redact"><?= e($o['answer']) ?></button></dd></div>
 <?php endforeach; ?>

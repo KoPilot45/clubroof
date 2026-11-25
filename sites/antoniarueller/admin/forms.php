@@ -32,7 +32,7 @@ function preview_anchor(string $key): string
 {
     return [
         'clips' => 'arbeiten', 'tracks' => 'arbeiten', 'timeline' => 'arbeiten', 'episodes' => 'podcast', 'cv' => 'lebenslauf', 'before' => 'lebenslauf',
-        'texts_start' => 'inhalt', 'texts_arbeiten' => 'arbeiten', 'texts_ueber' => 'ueber', 'texts_kontakt' => 'kontakt', 'about' => 'ueber', 'crossmedia' => 'ueber', 'languages' => 'ueber', 'offrecord' => 'offtherecord', 'contact' => 'kontakt', 'social' => 'kontakt', 'hero' => 'inhalt',
+        'typo' => 'inhalt', 'texts_start' => 'inhalt', 'texts_arbeiten' => 'arbeiten', 'texts_ueber' => 'ueber', 'texts_kontakt' => 'kontakt', 'about' => 'ueber', 'crossmedia' => 'ueber', 'languages' => 'ueber', 'offrecord' => 'offtherecord', 'contact' => 'kontakt', 'social' => 'kontakt', 'hero' => 'inhalt',
         'questions' => 'inhalt',
     ][$key] ?? '';
 }
@@ -170,6 +170,20 @@ function render_field_inner(array $f, mixed $val, array $vals = []): void
                 echo '<option value="' . e($ov) . '"' . ((string)$val === (string)$ov ? ' selected' : '') . '>' . e($ol) . '</option>';
             }
             echo '</select>';
+            break;
+        case 'fontpick':
+            $opts = select_options($f);
+            $cur = (string)$val !== '' && isset($opts[(string)$val]) ? (string)$val : (string)($f['default'] ?? '');
+            $role = (string)($f['role'] ?? 'sans');
+            [, , , $sample] = font_roles()['font_' . $role] ?? [0, 0, 0, 'Aa'];
+            echo '<fieldset class="fontpick ' . e($role) . '" id="' . $id . '"' . $desc . '><legend class="sr-only">' . e($f['label']) . '</legend>';
+            foreach ($opts as $ov => $ol) {
+                $fe = font_catalog()[$role][$ov] ?? null;
+                echo '<label class="fp"><input type="radio" name="' . e($k) . '" value="' . e($ov) . '"' . ($cur === (string)$ov ? ' checked' : '') . '>'
+                    . '<span class="fp-s" style="font-family:\'' . e($fe[1] ?? '') . '\',' . e($fe[2] ?? 'serif') . '">' . e($sample) . '</span>'
+                    . '<span class="fp-n">' . e($ol) . '</span><span class="fp-c">' . e($fe[3] ?? '') . '</span></label>';
+            }
+            echo '</fieldset>';
             break;
         case 'icon':
             $opts = select_options($f);
@@ -535,6 +549,9 @@ function view_edit_group(array $user, string $g, array $vals, array $errors): vo
     layout_start($user, $def['label'], 'g:' . $g, true);
     if (!empty($def['help'])) {
         echo '<p class="lead">' . e($def['help']) . '</p>';
+    }
+    if ($g === 'typo') {
+        echo '<link rel="stylesheet" href="' . AR_BASE . '/assets/fonts-all.css">';
     }
     $isDraft = setting_has_draft($g);
     if ($isDraft) {

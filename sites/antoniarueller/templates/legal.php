@@ -6,9 +6,8 @@
 <title><?= e($legalTitle) ?> – <?= e($seo['title']) ?></title>
 <meta name="robots" content="noindex">
 <?php require __DIR__ . '/favicon.php'; ?>
-<link rel="stylesheet" href="<?= AR_BASE ?>/assets/fonts.css?v=1">
 <link rel="stylesheet" href="<?= AR_BASE ?>/assets/site.css?v=<?= @filemtime(AR_ROOT . '/assets/site.css') ?>">
-<style>:root{--accent:<?= css_color($site['accent'], '#0E5C62') ?>;--rec:<?= css_color($site['rec'], '#C42F24') ?>}</style>
+<?= font_head($typo ?? setting('typo')) ?><style>:root{--accent:<?= css_color($site['accent'], '#0E5C62') ?>;--rec:<?= css_color($site['rec'], '#C42F24') ?>}</style>
 </head>
 <body>
 <div class="ar-root">

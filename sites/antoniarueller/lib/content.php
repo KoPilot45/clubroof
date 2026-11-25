@@ -512,6 +512,7 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
                 break;
             case 'select':
             case 'icon':
+            case 'fontpick':
                 $opts = select_options($f);
                 $v = (string)$raw;
                 if ($v !== '' && !isset($opts[$v])) {

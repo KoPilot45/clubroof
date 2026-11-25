@@ -228,6 +228,19 @@ function schema(): array
             f('text', 'menu_label', 'Titel im Handy-Menü', ['max' => 30, 'default' => 'AR / Menü', 'dict' => true]),
         ],
     ];
+    $s['groups']['typo'] = [
+        'label' => 'Schrift',
+        'help' => 'Wähle je Verwendung eine Schrift (die jetzige oder eine von drei Alternativen) und eine Größe. Auf der Seite werden nur die gewählten Schriften geladen.',
+        'fields' => [
+            f('section', '', 'Schriften'),
+            f('fontpick', 'font_display', 'Große Überschriften (Großbuchstaben)', ['options' => font_options('display'), 'default' => font_default('display'), 'role' => 'display']),
+            f('fontpick', 'font_serif', 'Titel und Hervorhebungen (Serifenschrift)', ['options' => font_options('serif'), 'default' => font_default('serif'), 'role' => 'serif']),
+            f('fontpick', 'font_sans', 'Fließtext und Knöpfe', ['options' => font_options('sans'), 'default' => font_default('sans'), 'role' => 'sans']),
+            f('fontpick', 'font_mono', 'Beschriftungen (REC-Zeilen, Zeiträume)', ['options' => font_options('mono'), 'default' => font_default('mono'), 'role' => 'mono']),
+            f('section', '', 'Schriftgröße'),
+            f('switch', 'size_preset', 'Größe der Texte', ['options' => array_map(fn($p) => $p[0], size_presets()), 'default' => 'standard', 'hint' => 'Kompakt, Standard oder Groß: Das ändert Großschrift, Titel und Fließtext zugleich. Beschriftungen bleiben bei mindestens 12 Pixel.']),
+        ],
+    ];
     $s['groups']['seo'] = [
         'label' => 'SEO & Suche',
         'help' => 'Wie die Seite bei Google & Co. und beim Teilen erscheint. Vorschau der Dateien: robots.txt, sitemap.xml, llms.txt (Links unten).',
@@ -443,6 +456,7 @@ function admin_nav(): array
         ]],
         'design' => ['Seite & Design', 'palette', 'Farben, Kopfzeile und Menü.', [
             ['g', 'site', 'Farben & Kopfzeile', 'Akzentfarbe und Verhalten der Kopfzeile.'],
+            ['g', 'typo', 'Schrift', 'Schriften und Textgrößen: je Verwendung drei Alternativen.'],
             ['c', 'nav', 'Menü der Webseite', 'Die Menüpunkte oben auf der Seite.'],
         ]],
         'englisch' => ['Englisch', 'globe', 'Die englische Fassung der Seite.', [

@@ -1132,6 +1132,42 @@ foreach (array_keys(texts_groups()) as $tg) {
 }
 q("DELETE FROM ar_settings WHERE grp = 'sections'");
 reset_content_cache();
+// Schrift: je Verwendung vier Schriften zur Wahl, auf der Seite werden nur die gewählten geladen
+echo "Schrift\n";
+$allFilesOk = true;
+foreach (font_catalog() as $role => $fonts) {
+    foreach ($fonts as $key => $fe) {
+        $css = font_faces_css([$role => $key], 'assets/fonts');
+        preg_match_all('~url\(([^)]+)\)~', $css, $um);
+        foreach ($um[1] as $u) {
+            $allFilesOk = $allFilesOk && is_file("$root/$u");
+        }
+        $allFilesOk = $allFilesOk && count($fe[4]) >= 1 && count($fonts) === 4;
+    }
+}
+ok($allFilesOk, 'alle Schriften des Katalogs sind als Dateien vorhanden (je Verwendung vier)');
+$pgF0 = req('GET', "$base/")['body'];
+ok(str_contains($pgF0, "--anton:'Anton',sans-serif") && str_contains($pgF0, "font-family:'Anton'") && !str_contains($pgF0, "font-family:'Bebas Neue'") && !str_contains($pgF0, "font-family:'Inter'") && str_contains($pgF0, '--fs-d:1;') && !str_contains($pgF0, 'assets/fonts.css'), 'Standard: nur Anton, Instrument Serif, Inter Tight und JetBrains Mono werden eingebunden');
+$tf = req('GET', "$base/admin/?p=group&g=typo")['body'];
+ok(substr_count($tf, 'class="fp"') === 16 && str_contains($tf, 'fonts-all.css') && str_contains($tf, 'name="size_preset"') && str_contains($tf, 'Kompakt') && str_contains($tf, 'Groß'), 'Schrift-Seite: vier Schriften je Verwendung mit Beispiel, drei Größen');
+$typoPost = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'typo', 'mode' => 'publish', 'font_display' => 'bebas-neue', 'font_serif' => 'playfair-display', 'font_sans' => 'dm-sans', 'font_mono' => 'space-mono', 'size_preset' => 'gross'];
+req('POST', "$base/admin/", $typoPost);
+$pgF1 = req('GET', "$base/")['body'];
+ok(str_contains($pgF1, "font-family:'Bebas Neue'") && str_contains($pgF1, "font-family:'Playfair Display'") && str_contains($pgF1, "font-family:'DM Sans'") && str_contains($pgF1, "font-family:'Space Mono'")
+    && !str_contains($pgF1, "font-family:'Anton'") && !str_contains($pgF1, "font-family:'Instrument Serif'") && !str_contains($pgF1, "font-family:'Inter Tight'") && !str_contains($pgF1, "font-family:'JetBrains Mono'"), 'gewählte Schriften werden eingebunden, die abgewählten nicht');
+ok(str_contains($pgF1, "--anton:'Bebas Neue',sans-serif") && str_contains($pgF1, '--fs-d:1.12;--fs-t:1.1;--fs-b:1.08;') && substr_count($pgF1, 'rel="preload"') === 3, 'Variablen für Schrift und Größe, drei Dateien werden vorab geladen');
+preg_match_all('~rel="preload" href="[^"]*/(assets/fonts/[^"]+)"~', $pgF1, $pm);
+$pre = true;
+foreach ($pm[1] as $pf) {
+    $pre = $pre && is_file("$root/$pf");
+}
+ok($pre && count($pm[1]) === 3, 'vorab geladene Dateien existieren');
+ok(str_contains(req('GET', "$base/impressum/")['body'], "font-family:'Bebas Neue'"), 'Impressum und Datenschutz nutzen dieselben Schriften');
+req('POST', "$base/admin/", array_merge($typoPost, ['font_display' => 'gibt-es-nicht', 'size_preset' => 'riesig']));
+$pgF2 = req('GET', "$base/")['body'];
+ok(str_contains($pgF2, "font-family:'Anton'") && str_contains($pgF2, '--fs-d:1;'), 'ungültige Werte fallen auf die Standardschrift und -größe zurück');
+req('POST', "$base/admin/", array_merge($typoPost, ['font_display' => 'anton', 'font_serif' => 'instrument-serif', 'font_sans' => 'inter-tight', 'font_mono' => 'jetbrains-mono', 'size_preset' => 'standard']));
+ok(str_contains(req('GET', "$base/")['body'], '--fs-b:1;'), 'zurück auf Standard');
 // Symbol-Auswahl bei Kategorien und Crossmedial
 $cmForm = req('GET', "$base/admin/?p=edit&c=crossmedia")['body'];
 $trForm = req('GET', "$base/admin/?p=edit&c=tracks")['body'];

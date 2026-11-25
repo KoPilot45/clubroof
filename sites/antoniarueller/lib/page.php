@@ -67,6 +67,7 @@ if (!defined('AR_PREVIEW') && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
 $site = setting('site');
 $seo = setting('seo');
 $hero = setting('hero');
+$typo = setting('typo');
 $sec = section_settings();
 // Beschriftungen, die nie leer sein dürfen (Abschnittsnamen, Links der Fußzeile …): leer = Standardtext
 $dictFill = function (array $vals, string $grp): array {
