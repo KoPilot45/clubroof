@@ -770,6 +770,18 @@
     });
   }
 
+  // ---- Anmeldecode: nur Ziffern, in Vierergruppen; Leerzeichen und Sonderzeichen beim Einfügen werden entfernt ----
+  var codeIn = $('input[data-code]');
+  if (codeIn) {
+    var fmt = function () {
+      var d = codeIn.value.replace(/\D/g, '').slice(0, 8);
+      codeIn.value = d.length > 4 ? d.slice(0, 4) + ' ' + d.slice(4) : d;
+    };
+    codeIn.addEventListener('input', fmt);
+    codeIn.addEventListener('paste', function () { setTimeout(fmt, 0); });
+    fmt();
+  }
+
   // ---- Aufbau der Seite: Abschnitte per Ziehen oder Pfeilen ordnen ----
   $$('.lay').forEach(function (list) {
     var target = document.getElementById(list.getAttribute('data-target'));

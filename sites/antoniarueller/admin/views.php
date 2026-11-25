@@ -186,7 +186,7 @@ function view_check(array $user): void
         ['Mailversand', (string)cfg('mail.driver') . ' · Absender ' . cfg('mail.from'), cfg('mail.driver') !== 'log'],
     ];
     $blocked = [];
-    foreach (['data/', 'lib/', 'config.php'] as $path) {
+    foreach (['data/', 'lib/', 'config.php', 'admin/forms.php'] as $path) {
         $blocked[] = $path;
     }
     echo '<table class="log"><tbody>';

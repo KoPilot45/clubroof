@@ -1,4 +1,6 @@
-<FilesMatch "^views\.php$">
+# Im Verzeichnis admin/ sind nur index.php (Verwaltung) und vorschau.php (Vorschau) von außen aufrufbar;
+# alle anderen PHP-Dateien (auch in Unterordnern) werden nur eingebunden.
+<FilesMatch "^(?!(index|vorschau)\.php$).*\.php$">
 <IfModule mod_authz_core.c>
 Require all denied
 </IfModule>

@@ -47,6 +47,13 @@ function login_fail(string $email): void
     }
 }
 
+/** Wie viele Fehlversuche noch möglich sind, bevor die Anmeldung gesperrt wird (gilt für jede Adresse gleich). */
+function login_attempts_left(string $email): int
+{
+    $n = (int)q('SELECT COUNT(*) FROM ar_throttle WHERE bucket = ? AND ts > ?', [lock_bucket($email), time() - lock_window()])->fetchColumn();
+    return max(0, lock_max() - $n);
+}
+
 function login_unlock(string $email): void
 {
     q('DELETE FROM ar_throttle WHERE bucket = ?', [lock_bucket($email)]);

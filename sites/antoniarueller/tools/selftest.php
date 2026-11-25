@@ -1332,6 +1332,19 @@ foreach (q("SELECT id FROM ar_items WHERE data LIKE '%Ausblend%' AND coll IN ('c
     req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
 }
 reset_content_cache();
+// Admin: nur index.php und vorschau.php sind von außen aufrufbar
+$adm = (string)file_get_contents("$root/admin/.htaccess");
+$allow = ['index.php', 'vorschau.php'];
+$blockRe = '~^(?!(index|vorschau)\\.php$).*\\.php$~';
+$blocked = true;
+foreach (glob("$root/admin/*.php") as $af) {
+    $isB = preg_match($blockRe, basename($af)) === 1;
+    $blocked = $blocked && ($isB === !in_array(basename($af), $allow, true));
+}
+foreach (glob("$root/admin/hilfe/*.php") as $af) {
+    $blocked = $blocked && preg_match($blockRe, basename($af)) === 1;
+}
+ok(str_contains($adm, '(?!(index|vorschau)\\.php$)') && $blocked, 'Admin: nur index.php und vorschau.php sind aufrufbar, alle eingebundenen Dateien gesperrt');
 // Symbol-Auswahl bei Kategorien und Crossmedial
 $cmForm = req('GET', "$base/admin/?p=edit&c=crossmedia")['body'];
 $trForm = req('GET', "$base/admin/?p=edit&c=tracks")['body'];
@@ -1383,6 +1396,20 @@ for ($i = 1; $i <= 5; $i++) {
     $rr = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => '1234567' . $i, 'pw' => '']);
 }
 ok(str_contains($rr['body'], 'vorübergehend gesperrt'), 'nach 5 Fehlversuchen: Sperre mit Hinweis');
+q('DELETE FROM ar_throttle');
+$m1 = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => '12345670', 'pw' => '']);
+$m2 = req('POST', "$base/admin/", ['action' => 'verify', 'email' => 'unbekannt@example.net', 'code' => '12345670', 'pw' => '']);
+ok(str_contains($m1['body'], 'Noch 4 Versuche') && str_contains($m1['body'], 'für 15 Minuten gesperrt') && str_contains($m2['body'], 'Noch 4 Versuche'), 'nach einem Fehlversuch: Hinweis auf die verbleibenden Versuche und die Sperrdauer (für jede Adresse gleich)');
+for ($i = 0; $i < 3; $i++) {
+    $m3 = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => '1234567' . $i, 'pw' => '']);
+}
+ok(str_contains($m3['body'], 'Noch 1 Versuch,'), 'vorletzter Stand: „Noch 1 Versuch“ (Einzahl)');
+q('DELETE FROM ar_throttle');
+$cl = req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner]);
+ok(!str_contains($cl['body'], 'pattern=') && str_contains($cl['body'], 'data-code') && str_contains($cl['body'], 'Leerzeichen beim Einfügen'), 'Code-Feld ohne starre Mustervorgabe, Hinweis auf Leerzeichen');
+for ($i = 1; $i <= 5; $i++) {
+    $rr = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => '1234567' . $i, 'pw' => '']);
+}
 @unlink("$root/data/mail.log");
 $rq = req('POST', "$base/admin/", ['action' => 'request', 'email' => $owner]);
 ok(str_contains($rq['body'], 'vorübergehend gesperrt') && !is_file("$root/data/mail.log"), 'gesperrt: kein neuer Code per Mail');
@@ -1463,8 +1490,9 @@ $r = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code
 ok($r['code'] !== 302, 'ohne Passwort keine Anmeldung');
 $r = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => $code3, 'pw' => 'falsches-passwort-xyz']);
 ok($r['code'] !== 302, 'falsches Passwort abgelehnt');
-$r = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => $code3, 'pw' => 'ein-langes-passwort-123']);
-ok($r['code'] === 302, 'mit Code und Passwort angemeldet');
+$messy = '  ' . substr($code3, 0, 4) . "\u{00A0}  " . substr($code3, 4) . ' ';
+$r = req('POST', "$base/admin/", ['action' => 'verify', 'email' => $owner, 'code' => $messy, 'pw' => 'ein-langes-passwort-123']);
+ok($r['code'] === 302, 'mit Code (mit Leerzeichen und geschütztem Leerzeichen eingefügt) und Passwort angemeldet');
 $tok3 = csrf(req('GET', "$base/admin/")['body']);
 $r = req('POST', "$base/admin/", ['_csrf' => $tok3, 'action' => 'account_save', 'name' => 'Lukas', 'remove_pw' => '1', 'current_pw' => 'ein-langes-passwort-123']);
 ok($r['code'] === 302, 'Passwort wieder entfernt');

@@ -39,12 +39,13 @@ function view_login(string $step, string $email, string $error, string $info = '
     } else {
         ?>
 <h1>Code eingeben</h1>
-<p>Falls die Adresse freigegeben ist, haben wir einen 8-stelligen Code geschickt (<?= (int)cfg('code_valid_minutes', 10) ?> Minuten gültig). Keine Mail da? Bitte auch den Spam-Ordner prüfen.</p>
+<p>Falls die Adresse freigegeben ist, haben wir einen 8-stelligen Code geschickt (<?= (int)cfg('code_valid_minutes', 10) ?> Minuten gültig). Keine Mail da? Bitte auch den Spam-Ordner prüfen. Ein neuer Code macht den alten ungültig; pro Adresse sind drei Codes in zehn Minuten möglich.</p>
 <form method="post" class="lf">
 <input type="hidden" name="action" value="verify">
 <input type="hidden" name="email" value="<?= e($email) ?>">
 <label for="code">Code aus der E-Mail</label>
-<input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{8,9}" maxlength="9" required autofocus class="code" placeholder="0000 0000">
+<input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="40" required autofocus class="code" placeholder="0000 0000" data-code>
+<small class="hint">Leerzeichen beim Einfügen sind kein Problem.</small>
 <label for="pw">Passwort <small>(nur falls eingerichtet)</small></label>
 <input id="pw" name="pw" type="password" autocomplete="current-password" placeholder="Dein Passwort">
 <button class="btn">Anmelden</button>

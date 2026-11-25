@@ -38,7 +38,12 @@ if (!$user) {
             }
             $step = 'code';
             $rem = login_lock_remaining($email);
-            $error = $rem > 0 ? lock_message($rem) : 'Code oder Passwort ungültig bzw. Code abgelaufen. Bitte neuen Code anfordern.';
+            if ($rem > 0) {
+                $error = lock_message($rem);
+            } else {
+                $left = login_attempts_left($email);
+                $error = 'Code oder Passwort stimmt nicht (oder der Code ist abgelaufen). Noch ' . $left . ($left === 1 ? ' Versuch' : ' Versuche') . ', danach ist die Anmeldung für ' . (int)(lock_window() / 60) . ' Minuten gesperrt. Du kannst auch einen neuen Code anfordern.';
+            }
         } elseif ($action === 'forgot') {
             reset_request($email);
             view_forgot(true, $email);
