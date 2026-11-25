@@ -38,6 +38,9 @@ function media_usage(): array
     $use = [];
     foreach (q('SELECT id, coll, data, draft, deleted_at FROM ar_items')->fetchAll() as $r) {
         $def = $s['collections'][$r['coll']] ?? null;
+        if (!$def) {
+            continue; // alte, nicht mehr verwendete Listen (z. B. die frühere Liste „stations“) zählen nicht als Verwendung
+        }
         $found = [];
         collect_files(json_arr($r['data']) ?? [], $found);
         $d = json_arr($r['draft']);

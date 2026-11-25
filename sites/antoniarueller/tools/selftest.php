@@ -700,6 +700,17 @@ if ($unused[1]) {
     $used = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'media_delete', 'name' => 'seed-hero.webp']);
     ok(is_file("$root/uploads/seed-hero.webp"), 'verwendetes Bild bleibt erhalten');
 }
+// Alte, nicht mehr verwendete Listen (früher „stations“) blockieren das Löschen von Bildern nicht
+$legacyImg = 'veraltetes-logo-test.webp';
+@copy("$root/seed-assets/logos/logo-wdr.webp", "$root/uploads/$legacyImg");
+q('INSERT INTO ar_items (coll, data, sort, created_at, updated_at, updated_by) VALUES (?,?,?,?,?,?)', ['stations', json_encode(['name' => 'Alt', 'logo' => $legacyImg]), 999, time(), time(), 't']);
+ok(!isset(media_usage()[$legacyImg]), 'Bild, das nur in einer alten Liste („stations“) steht, gilt als unbenutzt');
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'media_delete', 'name' => $legacyImg]);
+ok(!is_file("$root/uploads/$legacyImg"), 'und lässt sich in der Mediathek löschen');
+q("DELETE FROM ar_items WHERE coll = 'stations'");
+// Handy-Menü: Klick auf das Symbol im Knopf darf das Menü nicht sofort wieder schließen
+$jsA = (string)file_get_contents("$root/admin/admin.js");
+ok(str_contains($jsA, '!btn.contains(e.target)') && !str_contains($jsA, 'e.target !== btn)'), 'Handy-Menü-Knopf: Klick auf das Symbol schließt das Menü nicht mehr sofort');
 req('GET', "$base/");
 $home = req('GET', "$base/admin/");
 ok(str_contains($home['body'], 'Startklar') && str_contains($home['body'], 'Platzhalter in Texten') && str_contains($home['body'], 'Englische Fassung') && str_contains($home['body'], 'Besucher'), 'Übersicht mit Startklar, Platzhaltern, Englisch, Besuchern');

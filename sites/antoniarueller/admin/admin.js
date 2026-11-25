@@ -11,7 +11,7 @@
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
     document.addEventListener('click', function (e) {
-      if (side.classList.contains('open') && !side.contains(e.target) && e.target !== btn) side.classList.remove('open');
+      if (side.classList.contains('open') && !side.contains(e.target) && !btn.contains(e.target)) { side.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
     });
   }
 
