@@ -15,7 +15,7 @@
 <?php foreach ($tracks as $t): $lane = $timeline['byTrack'][$t['code']] ?? []; ?>
 <div class="ed-lane<?= $lane ? '' : ' is-empty' ?>" data-track="<?= e($t['code']) ?>">
 <?php foreach ($lane as $b): $c = $clipsById[$b['id']]; ?>
-<button type="button" class="ar-tlclip" data-id="<?= $c['_id'] ?>" aria-pressed="false" data-tip="<?= e(implode(' · ', array_filter([(string)$c['title'], (string)$c['outlet']]))) ?>" style="--w:<?= $b['w'] ?>;background:<?= css_color($t['bg'], '#172526') ?>;color:<?= css_color($t['fg'], '#F3ECDF') ?>"><?php if ($b['year'] !== ''): ?><span class="yr-flag" aria-hidden="true"><?= e($b['year']) ?></span><?php endif; ?><span class="tl-no"><?= e($c['_no']) ?></span><?php if ($c['short'] !== ''): ?><span class="tl-sh"><?= e($c['short']) ?></span><?php endif; ?></button>
+<button type="button" class="ar-tlclip" data-id="<?= $c['_id'] ?>" aria-pressed="false" data-tip="<?= e(implode(' · ', array_filter([(string)$c['title'], (string)$c['outlet']]))) ?>" data-tip-title="<?= e((string)$c['title']) ?>" data-tip-outlet="<?= e((string)$c['outlet']) ?>"<?php $tImg = upload_url((string)$c['still']); if ($tImg !== ''): $tv = img_square_set((string)$c['still'], (string)($c['still_focus'] ?? '')); ?> data-tip-img="<?= e($tv['src'] ?? $tImg) ?>"<?php endif; ?> style="--w:<?= $b['w'] ?>;background:<?= css_color($t['bg'], '#172526') ?>;color:<?= css_color($t['fg'], '#F3ECDF') ?>"><?php if ($b['year'] !== ''): ?><span class="yr-flag" aria-hidden="true"><?= e($b['year']) ?></span><?php endif; ?><span class="tl-no"><?= e($c['_no']) ?></span><?php if ($c['short'] !== ''): ?><span class="tl-sh"><?= e($c['short']) ?></span><?php endif; ?></button>
 <?php endforeach; ?>
 </div>
 <?php endforeach; ?>

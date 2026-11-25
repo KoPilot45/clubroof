@@ -55,11 +55,23 @@
   function showTip(b) {
     if (!desk || !b.getAttribute('data-tip')) return;
     if (!tip) { tip = document.createElement('div'); tip.className = 'tl-tip'; tip.setAttribute('role', 'tooltip'); desk.appendChild(tip); }
-    tip.textContent = b.getAttribute('data-tip');
-    var r = b.getBoundingClientRect(), d = desk.getBoundingClientRect();
-    tip.style.left = Math.max(120, Math.min(d.width - 120, r.left - d.left + r.width / 2)) + 'px';
-    tip.style.top = (r.top - d.top - 6) + 'px';
+    var ttl = b.getAttribute('data-tip-title'), out = b.getAttribute('data-tip-outlet'), img = b.getAttribute('data-tip-img');
+    tip.textContent = '';
+    tip.classList.toggle('has-img', !!img);
+    var tx = document.createElement('div'); tx.className = 'tt';
+    if (ttl === null) { tx.textContent = b.getAttribute('data-tip'); } else {
+      if (out) { var k = document.createElement('small'); k.textContent = out; tx.appendChild(k); }
+      tx.appendChild(document.createTextNode(ttl));
+    }
+    tip.appendChild(tx);
+    if (img) { var im = document.createElement('img'); im.src = img; im.alt = ''; im.width = 88; im.height = 88; tip.appendChild(im); }
     tip.hidden = false;
+    var r = b.getBoundingClientRect(), d = desk.getBoundingClientRect(), w = tip.offsetWidth, cx = r.left - d.left + r.width / 2;
+    var left = Math.max(w / 2 + 4, Math.min(d.width - w / 2 - 4, cx));
+    tip.style.left = left + 'px';
+    tip.style.top = (r.top - d.top - 12) + 'px';
+    // Pfeil zeigt auf die Mitte des Clips (in der Box begrenzt)
+    tip.style.setProperty('--ax', Math.max(-(w / 2 - 16), Math.min(w / 2 - 16, cx - left)) + 'px');
   }
   function hideTip() { if (tip) tip.hidden = true; }
   $$('.ar-tlclip').forEach(function (b) {
