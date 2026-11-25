@@ -96,7 +96,7 @@ return [
                 'lead' => 'Der Lebenslauf gruppiert sich automatisch nach Jahr (neueste zuerst).',
                 'legend' => ['**Rolle**, z. B. „Reporterin“', '**Organisation** (erscheint kursiv)', '**Beginn** (und darunter **Ende**)', 'Der Haken **Läuft noch** färbt die Jahreszahl im Lebenslauf ein'],
                 'steps' => [
-                    '**Lebenslauf → Stationen:** eine Liste für den **Zeitstrahl** und die **Logoleiste**. Pro Eintrag: **Organisation**, optional **Logo**, **Rolle**, **Beginn** und **Ende**, **Redaktion** (Freitext, z. B. „TV“ oder „Radio“) und ein optionaler **Link**.',
+                    '**Lebenslauf → Stationen:** eine Liste für den **Zeitstrahl** und die **Logoleiste**. Pro Eintrag: **Organisation**, optional **Logo**, **Rolle**, **Beginn** und **Ende** (nur das **Jahr** ist Pflicht, der Monat optional), **Redaktion** (Freitext, z. B. „TV“ oder „Radio“) und ein optionaler **Link**.',
                     'Der Haken **Läuft noch** hebt die Karte hervor und färbt das Jahr im Zeitstrahl ein. Mit **Zeitangabe überschreiben** setzt du einen eigenen Text, z. B. „rund 7 Jahre · Lokalzeit“.',
                     '**Logos:** am besten freigestellt (transparenter Hintergrund). Beim Hochladen werden sie auf höchstens 360 × 96 Pixel verkleinert, von leeren Rändern befreit und in WebP umgewandelt. Eine Auswahl fertiger Logos liegt in der **Mediathek**. Die **Logoleiste** über dem Zeitstrahl zeigt jedes Logo nur einmal, auch wenn es bei mehreren Einträgen steht.',
                     '**Davor:** frühere Erfahrungen und Ausbildung als kurze Zeilen am Ende des Zeitstrahls.',

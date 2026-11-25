@@ -1059,6 +1059,23 @@ foreach (q("SELECT id FROM ar_items WHERE coll = 'cv' AND data LIKE '%Teststatio
 }
 @unlink("$root/uploads/" . $ul['name']);
 @unlink($lgw);
+// Beginn/Ende: nur das Jahr ist Pflicht, der Monat optional
+$ymBase = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'cv', 'org' => 'Jahrtest', 'role' => 'Autorin', 'mode' => 'publish'];
+$rY = req('POST', "$base/admin/", $ymBase + ['from_y' => '2033', 'from_m' => '', 'to_y' => '2034', 'to_m' => '']);
+$rM = req('POST', "$base/admin/", $ymBase + ['org' => 'Jahrtest Monat', 'from_y' => '2032', 'from_m' => '03', 'to_y' => '2034', 'to_m' => '11']);
+$rN = follow(req('POST', "$base/admin/", $ymBase + ['org' => 'Jahrtest Ohne', 'from_y' => '', 'from_m' => '05']));
+$rO = req('POST', "$base/admin/", $ymBase + ['org' => 'Jahrtest Laufend', 'from_y' => '2035', 'ongoing' => '1']);
+$pgY = req('GET', "$base/")['body'];
+ok(str_contains($pgY, '2033 — 2034') && str_contains($pgY, '03/2032 — 11/2034') && str_contains($pgY, 'seit 2035'), 'Zeitraum nur mit Jahr oder mit Monat und Jahr, „seit“ nur mit Jahr');
+ok(str_contains($rN['body'], 'Bitte auch das Jahr angeben') || str_contains($rN['body'], 'Beginn'), 'Monat ohne Jahr wird abgelehnt (Jahr ist Pflicht)');
+ok(!q("SELECT 1 FROM ar_items WHERE coll = 'cv' AND data LIKE '%Jahrtest Ohne%'")->fetchColumn(), 'Eintrag ohne Jahr wird nicht gespeichert');
+$yf = req('GET', "$base/admin/?p=edit&c=cv")['body'];
+ok(str_contains($yf, 'name="from_y"') && str_contains($yf, 'name="from_m"') && str_contains($yf, 'name="to_y"') && !str_contains($yf, 'type="month"'), 'Formular: Jahr und Monat getrennt, Monat optional');
+foreach (q("SELECT id FROM ar_items WHERE coll = 'cv' AND data LIKE '%Jahrtest%'")->fetchAll() as $row) {
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
+}
+reset_content_cache();
 // Übernahme alter Stationen in den Lebenslauf (einmalige Migration)
 $mj = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = '_migrations'")->fetchColumn(), true) ?: [];
 q("DELETE FROM ar_items WHERE data LIKE '%Migrationsstation%'");

@@ -467,6 +467,27 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
                     $v = '';
                 }
                 break;
+            case 'ym':
+                // Jahr (Pflicht, wenn das Feld Pflicht ist) und optional Monat; gespeichert als „JJJJ“ oder „JJJJ-MM“
+                $ym = trim((string)($post[$k . '_y'] ?? ''));
+                $mm = trim((string)($post[$k . '_m'] ?? ''));
+                if ($ym === '' && $mm === '' && is_string($raw) && preg_match('~^(\d{4})(?:-(\d{2}))?$~', trim($raw), $lm)) {
+                    $ym = $lm[1];
+                    $mm = $lm[2] ?? '';
+                }
+                $v = '';
+                if ($ym === '' && $mm !== '') {
+                    $errors[] = $f['label'] . ': Bitte auch das Jahr angeben.';
+                } elseif ($ym !== '') {
+                    if (!preg_match('~^\d{4}$~', $ym) || (int)$ym < 1900 || (int)$ym > 2100) {
+                        $errors[] = $f['label'] . ': ungültiges Jahr.';
+                    } elseif ($mm !== '' && !preg_match('~^(0?[1-9]|1[0-2])$~', $mm)) {
+                        $errors[] = $f['label'] . ': ungültiger Monat.';
+                    } else {
+                        $v = $ym . ($mm !== '' ? '-' . str_pad($mm, 2, '0', STR_PAD_LEFT) : '');
+                    }
+                }
+                break;
             case 'month':
                 $v = trim((string)$raw);
                 if ($v !== '' && !preg_match('~^\d{4}-(0[1-9]|1[0-2])$~', $v)) {

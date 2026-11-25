@@ -641,3 +641,5 @@ input[type=file]:focus-visible{outline:3px solid #f2b705;outline-offset:3px;bord
 .focusbox.logo{cursor:default;min-width:140px;min-height:60px}
 .focusbox.logo .fdot{display:none}
 .focusbox.logo img{max-height:96px;padding:8px}
+
+.ym{display:flex;gap:8px;align-items:center}.ym select{flex:1 1 auto;width:auto}.ym input[type=number]{flex:0 0 110px;width:110px}

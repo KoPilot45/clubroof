@@ -123,6 +123,15 @@ function render_field_inner(array $f, mixed $val, array $vals = []): void
         case 'date':
             echo '<input type="date" id="' . $id . '" name="' . e($k) . '" value="' . e($val) . '"' . ($req ? ' required' : '') . $desc . '>';
             break;
+        case 'ym':
+            $yv = preg_match('~^(\d{4})(?:-(\d{2}))?$~', (string)$val, $ymm) ? $ymm[1] : '';
+            $mv = (int)($ymm[2] ?? 0);
+            echo '<div class="ym"><select name="' . e($k) . '_m" aria-label="' . e($f['label']) . ': Monat (optional)"><option value="">Monat (optional)</option>';
+            foreach (['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'] as $mi => $mn) {
+                echo '<option value="' . sprintf('%02d', $mi + 1) . '"' . ($mv === $mi + 1 ? ' selected' : '') . '>' . $mn . '</option>';
+            }
+            echo '</select><input type="number" id="' . $id . '" name="' . e($k) . '_y" value="' . e($yv) . '" min="1900" max="2100" step="1" inputmode="numeric" placeholder="Jahr"' . ($req ? ' required' : '') . $desc . '></div>';
+            break;
         case 'month':
             echo '<input type="month" id="' . $id . '" name="' . e($k) . '" value="' . e($val) . '"' . ($req ? ' required' : '') . $desc . '>';
             break;

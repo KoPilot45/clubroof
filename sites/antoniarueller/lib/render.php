@@ -140,7 +140,10 @@ function sec_head(string $no, string $label, string $right, string $mb = '40px')
 
 function fmt_month(string $date): string
 {
-    return preg_match('~^(\d{4})-(\d{2})~', $date, $m) ? $m[2] . '/' . $m[1] : '';
+    if (preg_match('~^(\d{4})-(\d{2})~', $date, $m)) {
+        return $m[2] . '/' . $m[1];
+    }
+    return preg_match('~^(\d{4})$~', $date, $m) ? $m[1] : '';
 }
 
 function clip_date_label(array $c): string
