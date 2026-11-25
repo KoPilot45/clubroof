@@ -11,7 +11,7 @@ function legal_defaults(): array
 ## Angaben gemäß § 5 DDG
 
 Antonia Rüller
-[Ladungsfähige Anschrift: Straße und Hausnummer – ein Postfach genügt nicht. Alternative bei privater Wohnadresse: Anschrift eines Impressums-Services oder Büros, an der Post zuverlässig ankommt]
+[Straße und Hausnummer einfügen]
 [PLZ] [Ort]
 Deutschland
 
@@ -22,7 +22,7 @@ Telefon: [Telefonnummer einfügen – optional, sofern eine schnelle Kontaktaufn
 
 ## Berufsbezeichnung
 
-Journalistin. [Die Berufsbezeichnung ist in Deutschland nicht gesetzlich geschützt, eine Kammer oder berufsrechtliche Regelung gibt es nicht. Optional: Mitgliedschaft in einem Berufsverband nennen, z. B. DJV.]
+Journalistin. [Die Berufsbezeichnung ist in Deutschland nicht gesetzlich geschützt. Optional: Mitgliedschaft in einem Berufsverband nennen, z. B. DJV.]
 
 ## Verantwortlich für journalistisch-redaktionelle Inhalte (§ 18 Abs. 2 MStV)
 
@@ -30,11 +30,11 @@ Antonia Rüller, Anschrift wie oben. [Nur nötig, wenn die Seite als journalisti
 
 ## Umsatzsteuer-ID
 
-[Falls vorhanden: Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: DE123456789. Falls keine vorhanden ist, diesen Abschnitt streichen.]
+[Falls vorhanden: Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG. Falls keine vorhanden ist, diesen Abschnitt streichen.]
 
 ## Verlinkte Beiträge und Inhalte Dritter
 
-Diese Seite verweist auf Beiträge, die bei Radio Bremen, im ARD-Verbund, beim WDR und bei weiteren Redaktionen erschienen sind. Für die Inhalte der verlinkten Seiten sind allein die jeweiligen Anbieter verantwortlich. Die Rechte an den dort veröffentlichten Beiträgen liegen bei den jeweiligen Sendern und Redaktionen. Zum Zeitpunkt der Verlinkung waren keine Rechtsverstöße erkennbar. Bei Bekanntwerden von Rechtsverletzungen werden solche Links umgehend entfernt.
+Diese Seite verweist auf Beiträge, die bei Radio Bremen, im ARD-Verbund, beim WDR und bei weiteren Redaktionen erschienen sind, sowie auf Plattformen wie YouTube, Spotify, Apple Podcasts und die ARD Audiothek. Für die Inhalte der verlinkten Seiten sind allein die jeweiligen Anbieter verantwortlich. Die Rechte an den dort veröffentlichten Beiträgen liegen bei den jeweiligen Sendern, Redaktionen und Plattformen. Zum Zeitpunkt der Verlinkung waren keine Rechtsverstöße erkennbar. Bei Bekanntwerden von Rechtsverletzungen werden solche Links umgehend entfernt.
 
 ## Urheberrecht
 
@@ -42,13 +42,13 @@ Texte und Gestaltung dieser Seite unterliegen dem Urheberrecht. Fotos: [Fotograf
 
 ## Verbraucherstreitbeilegung
 
-[Prüfen und ggf. anpassen:] Ich bin weder bereit noch verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+An Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle wird weder teilgenommen, noch besteht dazu eine Verpflichtung.
 TXT;
 
     $datenschutz = <<<'TXT'
 ## Datenschutzerklärung
 
-Der Schutz deiner personenbezogenen Daten ist mir wichtig. Hier erfährst du, welche Daten beim Besuch dieser Website verarbeitet werden und welche Rechte du hast.
+Der Schutz personenbezogener Daten hat einen hohen Stellenwert. Diese Erklärung informiert darüber, welche Daten beim Besuch dieser Website verarbeitet werden und welche Rechte betroffenen Personen zustehen.
 
 ## 1. Verantwortliche
 
@@ -64,17 +64,17 @@ E-Mail: [E-Mail-Adresse einfügen]
 - Für Besucherinnen und Besucher werden keine Cookies gesetzt.
 - Es gibt keine Tracking- oder Werbedienste. Besuche werden ohne Cookies und ohne Speicherung von IP-Adressen gezählt (siehe Abschnitt „Reichweitenmessung“).
 - Schriften sind auf dem eigenen Server gespeichert; es gibt keine Verbindung zu Google Fonts oder ähnlichen Diensten.
-- Es werden keine Inhalte Dritter (Videos, Karten, Social-Media-Plugins) eingebunden.
+- Es werden keine Inhalte Dritter (Videos, Karten, Social-Media-Plugins) eingebunden. Verlinkte Angebote anderer Anbieter werden erst nach einem Klick geöffnet (siehe Abschnitt „Externe Links“).
 
 ## 3. Hosting und Server-Logfiles
 
 Diese Website wird bei IONOS SE, Elgendorfer Str. 57, 56410 Montabaur, gehostet. Mit dem Anbieter besteht ein Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO.
 
-Beim Aufruf der Website verarbeitet der Webserver technisch notwendige Daten, die dein Browser automatisch übermittelt: IP-Adresse, Datum und Uhrzeit, aufgerufene Seite bzw. Datei, übertragene Datenmenge, Statuscode sowie Browsertyp und Betriebssystem. Die Verarbeitung dient der sicheren und stabilen Bereitstellung der Website. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am sicheren Betrieb). Die Logfiles werden nach kurzer Zeit gelöscht, [Speicherdauer laut Angaben des Hosters ergänzen, z. B. 7 Tage – bitte prüfen]. Eine Zusammenführung mit anderen Daten findet nicht statt.
+Beim Aufruf der Website verarbeitet der Webserver technisch notwendige Daten, die der Browser automatisch übermittelt: Datum und Uhrzeit, aufgerufene Seite bzw. Datei, übertragene Datenmenge, Statuscode sowie Browsertyp und Betriebssystem. Die IP-Adresse wird dabei technisch kurzzeitig verarbeitet; in den Logfiles des Hosters wird sie nur anonymisiert gespeichert. Die Verarbeitung dient der sicheren und stabilen Bereitstellung der Website. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am sicheren Betrieb). Die Logfiles werden vom Hoster für höchstens 8 Wochen aufbewahrt und danach automatisch gelöscht. Eine Zusammenführung mit anderen Daten findet nicht statt.
 
 ## 4. Reichweitenmessung ohne Cookies
 
-Um zu verstehen, wie oft die Seite besucht wird, werden Seitenaufrufe und Besuche auf diesem Server gezählt: Es werden nur Datum und Uhrzeit (Stunde), die aufgerufene Seite, der Gerätetyp (Handy oder Rechner) und die verweisende Internetadresse (Domain) festgehalten. Damit ein Gerät pro Stunde nur einmal als Besuch zählt, wird aus IP-Adresse und Browserkennung mit einem zufälligen Schlüssel ein nicht umkehrbarer Kurzwert gebildet und nur bis zum Ende der laufenden Stunde auf dem Server vorgehalten; danach wird er samt Schlüssel gelöscht. Die IP-Adresse selbst wird nicht gespeichert, es werden keine Cookies oder sonstigen Speicherungen im Browser eingesetzt, und es entsteht kein Profil über mehrere Stunden. Bots und Browser mit „Do Not Track“ werden nicht gezählt. Zusätzlich werden anonyme Summen erfasst, wie oft bestimmte Verknüpfungen angeklickt werden (z. B. einzelne Beiträge, die E-Mail-Schaltfläche, der Lebenslauf-Download) und welche Abschnitte der Seite erreicht werden – ohne Kennung und ohne Speicherung im Browser; ein Gerät wird je Stunde und Ereignis höchstens einmal gezählt. Bekannte Suchmaschinen-Crawler und nicht vorhandene aufgerufene Adressen werden nur als Summen erfasst. Einzelne Stundenwerte werden nach 90 Tagen zu Tageswerten zusammengefasst. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (Interesse an der bedarfsgerechten Gestaltung des Angebots).
+Auf dem eigenen Server wird anonym gezählt, wie oft die Seite aufgerufen wird und welche Bereiche genutzt werden. Dabei werden Datum und Uhrzeit (nur die Stunde), die aufgerufene Seite, der Gerätetyp (Handy oder Rechner) und die verweisende Domain erfasst. Die IP-Adresse wird dafür nur kurz verarbeitet, damit ein Gerät pro Stunde nur einmal gezählt wird; sie wird nicht gespeichert, und der dabei gebildete Kurzwert wird am Ende der Stunde gelöscht. Es werden keine Cookies oder andere Daten im Browser gespeichert, und es entstehen keine Nutzerprofile. Auch Klicks auf einzelne Verknüpfungen und erreichte Abschnitte werden nur als anonyme Summen gezählt. Aufgerufene Adressen, die nicht existieren, werden ohne IP-Adresse als Summe erfasst. Stundenwerte werden nach 90 Tagen zu Tageswerten zusammengefasst. Browser mit aktivierter Einstellung „Do Not Track“ werden nicht gezählt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer bedarfsgerechten Gestaltung des Angebots).
 
 ## 5. Verschlüsselung
 
@@ -82,27 +82,33 @@ Die Verbindung zu dieser Website ist per TLS (https) verschlüsselt.
 
 ## 6. Kontaktaufnahme per E-Mail
 
-Wenn du mir eine E-Mail schreibst, verarbeite ich deine Angaben (E-Mail-Adresse, Name, Inhalt der Nachricht) zur Bearbeitung deiner Anfrage. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, wenn es um vorvertragliche oder vertragliche Fragen geht, sonst Art. 6 Abs. 1 lit. f DSGVO (Interesse an der Beantwortung von Anfragen). Die Daten werden gelöscht, sobald die Anfrage erledigt ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
+Bei einer Kontaktaufnahme per E-Mail werden die übermittelten Angaben (E-Mail-Adresse, Name, Inhalt der Nachricht) zur Bearbeitung der Anfrage verarbeitet. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, wenn es um vorvertragliche oder vertragliche Fragen geht, sonst Art. 6 Abs. 1 lit. f DSGVO (Interesse an der Beantwortung von Anfragen). Die Daten werden gelöscht, sobald die Anfrage erledigt ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
 
-Bei vertraulichen Hinweisen und Recherchethemen beachte bitte, dass normale E-Mails nicht durchgehend verschlüsselt übertragen werden. [Optional: Hinweis auf einen verschlüsselten Kontaktweg ergänzen, z. B. Signal oder PGP.]
+Bei vertraulichen Hinweisen und Recherchethemen ist zu beachten, dass normale E-Mails nicht durchgehend verschlüsselt übertragen werden.
 
 ## 7. Externe Links
 
-Diese Seite enthält Links zu Beiträgen bei Redaktionen und zu LinkedIn (LinkedIn Ireland Unlimited Company, Wilton Plaza, Wilton Place, Dublin 2, Irland). Es werden keine Daten an diese Anbieter übertragen, solange du die Links nicht anklickst. Nach dem Klick gelten die Datenschutzbestimmungen des jeweiligen Anbieters.
+Diese Seite enthält Links zu Beiträgen bei Redaktionen sowie zu Profilen und Plattformen, auf denen Beiträge zu sehen oder zu hören sind. Dazu zählen LinkedIn (LinkedIn Ireland Unlimited Company, Wilton Plaza, Wilton Place, Dublin 2, Irland), YouTube (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland), Spotify (Spotify AB, Regeringsgatan 19, 111 53 Stockholm, Schweden), Apple Podcasts (Apple Distribution International Ltd., Hollyhill Industrial Estate, Hollyhill, Cork, Irland) und die ARD Audiothek sowie weitere Audio- und Videoangebote von Sendern und Plattformen. Es werden keine Videos oder Player dieser Anbieter eingebunden. Daten werden an diese Anbieter erst übertragen, wenn ein Link angeklickt wird. Danach gelten die Datenschutzbestimmungen des jeweiligen Anbieters; dabei können Daten auch in Ländern außerhalb der EU verarbeitet werden.
 
 ## 8. Speicherung im Browser
 
-Die Seite speichert nichts in deinem Browser (kein Local Storage, keine Cookies für Besucherinnen und Besucher).
+Die Seite speichert nichts im Browser (kein Local Storage, keine Cookies für Besucherinnen und Besucher).
 
-## 9. Deine Rechte
+## 9. Rechte betroffener Personen
 
-Du hast gegenüber mir das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21). Wende dich dazu an die oben genannte E-Mail-Adresse.
+Betroffenen Personen stehen gegenüber der Verantwortlichen die Rechte auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21) zu. Anfragen sind an die oben genannte E-Mail-Adresse zu richten.
 
-Du hast außerdem das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO). [Zuständige Behörde ergänzen und prüfen. Bei Wohnsitz in Bremen z. B.: Die Landesbeauftragte für Datenschutz und Informationsfreiheit der Freien Hansestadt Bremen, Arndtstraße 1, 27570 Bremerhaven, www.datenschutz.bremen.de]
+## 10. Widerspruchsrecht
 
-## 10. Änderungen
+Soweit Daten auf Grundlage berechtigter Interessen (Art. 6 Abs. 1 lit. f DSGVO) verarbeitet werden, kann dieser Verarbeitung jederzeit aus Gründen, die sich aus der besonderen Situation der betroffenen Person ergeben, widersprochen werden (Art. 21 Abs. 1 DSGVO). Dazu genügt eine Nachricht an die oben genannte E-Mail-Adresse. Die Verarbeitung wird dann beendet, es sei denn, es liegen zwingende schutzwürdige Gründe vor, die überwiegen.
 
-Ich passe diese Erklärung an, wenn sich die Website oder die Rechtslage ändert. Stand: [Datum einfügen].
+## 11. Beschwerderecht
+
+Es besteht das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO), insbesondere in dem Land, in dem die betroffene Person lebt oder arbeitet oder in dem der mutmaßliche Verstoß stattgefunden hat. Zuständig für die Verantwortliche ist: Die Landesbeauftragte für Datenschutz und Informationsfreiheit der Freien Hansestadt Bremen, Arndtstraße 1, 27570 Bremerhaven, [www.datenschutz.bremen.de](https://www.datenschutz.bremen.de)
+
+## 12. Änderungen
+
+Diese Erklärung wird angepasst, wenn sich die Website oder die Rechtslage ändert. Stand: 25.11.2026.
 TXT;
 
     return ['impressum' => $impressum, 'datenschutz' => $datenschutz];

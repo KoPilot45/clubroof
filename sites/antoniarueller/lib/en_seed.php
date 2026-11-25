@@ -95,7 +95,7 @@ function legal_defaults_en(): array
 ## Information pursuant to § 5 DDG
 
 Antonia Rüller
-[Address for service: street and number – a P.O. box is not sufficient]
+[Street and number]
 [Postcode] [City]
 Germany
 
@@ -106,7 +106,7 @@ Phone: [add phone number – optional]
 
 ## Professional title
 
-Journalist. [The title is not legally protected in Germany; there is no chamber or professional regulation to cite. Optional: name a professional association, e.g. DJV.]
+Journalist. [The title is not legally protected in Germany. Optional: name a professional association, e.g. DJV.]
 
 ## Responsible for journalistic and editorial content (§ 18 (2) MStV)
 
@@ -114,11 +114,11 @@ Antonia Rüller, address as above. [Only required if the site counts as a journa
 
 ## VAT ID
 
-[If applicable: VAT identification number pursuant to § 27a UStG: DE123456789. Otherwise delete this section.]
+[If applicable: VAT identification number pursuant to § 27a UStG. Otherwise delete this section.]
 
 ## Linked stories and third-party content
 
-This site links to stories published by Radio Bremen, the ARD network, WDR and other newsrooms. The respective providers are solely responsible for the content of the linked pages. The rights to the stories published there belong to the respective broadcasters and newsrooms. No legal violations were apparent when the links were set. If infringements become known, such links will be removed immediately.
+This site links to stories published by Radio Bremen, the ARD network, WDR and other newsrooms, as well as to platforms such as YouTube, Spotify, Apple Podcasts and the ARD Audiothek. The respective providers are solely responsible for the content of the linked pages. The rights to the stories published there belong to the respective broadcasters, newsrooms and platforms. No legal violations were apparent when the links were set. If infringements become known, such links will be removed immediately.
 
 ## Copyright
 
@@ -126,13 +126,13 @@ The texts and design of this site are subject to copyright. Photos: [name the ph
 
 ## Consumer dispute resolution
 
-[Please check and adjust:] I am neither willing nor obliged to take part in dispute resolution proceedings before a consumer arbitration board.
+Participation in dispute resolution proceedings before a consumer arbitration board is neither intended nor obligatory.
 TXT;
 
     $privacy = <<<'TXT'
 ## Privacy policy
 
-Protecting your personal data matters to me. Here you can find out which data is processed when you visit this website and which rights you have.
+Protecting personal data is important. This policy explains which data is processed when this website is visited and which rights data subjects have.
 
 ## 1. Controller
 
@@ -148,17 +148,17 @@ Email: [add email address]
 - No cookies are set for visitors.
 - There are no tracking or advertising services. Visits are counted without cookies and without storing IP addresses (see section “Audience measurement”).
 - Fonts are stored on this server; there is no connection to Google Fonts or similar services.
-- No third-party content (videos, maps, social media plugins) is embedded.
+- No third-party content (videos, maps, social media plugins) is embedded. Links to offerings of other providers are only opened after a click (see section “External links”).
 
 ## 3. Hosting and server log files
 
 This website is hosted by IONOS SE, Elgendorfer Str. 57, 56410 Montabaur, Germany. A data processing agreement under Art. 28 GDPR is in place with the provider.
 
-When you open the website, the web server processes technically necessary data that your browser transmits automatically: IP address, date and time, page or file requested, amount of data transferred, status code, and browser type and operating system. This serves the secure and stable provision of the website. The legal basis is Art. 6(1)(f) GDPR (legitimate interest in secure operation). The log files are deleted after a short time, [add retention period according to the host, e.g. 7 days – please check]. The data is not merged with other data.
+When the website is opened, the web server processes technically necessary data that the browser transmits automatically: date and time, page or file requested, amount of data transferred, status code, and browser type and operating system. The IP address is processed only briefly for technical reasons; the host stores it only in anonymised form in its log files. This serves the secure and stable provision of the website. The legal basis is Art. 6(1)(f) GDPR (legitimate interest in secure operation). The host keeps the log files for a maximum of 8 weeks and then deletes them automatically. The data is not merged with other data.
 
 ## 4. Audience measurement without cookies
 
-To understand how often the site is visited, page views and visits are counted on this server: only date and hour, page, device type (phone or computer) and the referring domain are recorded. To make sure a device counts as only one visit per hour, an irreversible short value is formed from the IP address and browser identifier using a random key; it is kept on the server only until the end of the current hour and then deleted together with the key. The IP address itself is not stored, no cookies or other browser storage are used, and no profile across several hours is created. Bots and browsers with “Do Not Track” enabled are not counted. In addition, anonymous totals are recorded for how often certain links are clicked (e.g. individual stories, the email button, the CV download) and which sections of the page are reached – without any identifier and without storage in the browser; a device is counted at most once per hour and event. Known search-engine crawlers and non-existent addresses requested are recorded only as totals. Hourly values are condensed into daily values after 90 days. The legal basis is Art. 6(1)(f) GDPR (interest in demand-oriented design of the offering).
+How often the site is visited and which areas are used is counted anonymously on this server. Only date and hour, the page, the device type (phone or computer) and the referring domain are recorded. The IP address is processed only briefly so that a device is counted only once per hour; it is not stored, and the short value formed from it is deleted at the end of the hour. No cookies or other data are stored in the browser, and no user profiles are created. Clicks on individual links and sections reached are likewise counted only as anonymous totals. Requested addresses that do not exist are recorded as a total without IP address. Hourly values are condensed into daily values after 90 days. Browsers with “Do Not Track” enabled are not counted. The legal basis is Art. 6(1)(f) GDPR (legitimate interest in demand-oriented design of the offering).
 
 ## 5. Encryption
 
@@ -166,27 +166,33 @@ The connection to this website is encrypted via TLS (https).
 
 ## 6. Contact by email
 
-If you email me, I process your details (email address, name, content of the message) to handle your request. The legal basis is Art. 6(1)(b) GDPR for pre-contractual or contractual matters, otherwise Art. 6(1)(f) GDPR (interest in answering enquiries). The data is deleted once the request has been handled, unless statutory retention obligations apply.
+When contact is made by email, the details provided (email address, name, content of the message) are processed to handle the request. The legal basis is Art. 6(1)(b) GDPR for pre-contractual or contractual matters, otherwise Art. 6(1)(f) GDPR (interest in answering enquiries). The data is deleted once the request has been handled, unless statutory retention obligations apply.
 
-For confidential tips and research topics, please note that ordinary emails are not consistently encrypted in transit. [Optional: add an encrypted contact option, e.g. Signal or PGP.]
+For confidential tips and research topics, please note that ordinary emails are not transmitted fully encrypted.
 
 ## 7. External links
 
-This site contains links to stories at newsrooms and to LinkedIn (LinkedIn Ireland Unlimited Company, Wilton Plaza, Wilton Place, Dublin 2, Ireland) and possibly other social networks. No data is transmitted to these providers as long as you do not click the links. After clicking, the respective provider’s privacy policy applies.
+This site contains links to stories at newsrooms and to profiles and platforms where stories can be viewed or heard. These include LinkedIn (LinkedIn Ireland Unlimited Company, Wilton Plaza, Wilton Place, Dublin 2, Ireland), YouTube (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland), Spotify (Spotify AB, Regeringsgatan 19, 111 53 Stockholm, Sweden), Apple Podcasts (Apple Distribution International Ltd., Hollyhill Industrial Estate, Hollyhill, Cork, Ireland) and the ARD Audiothek, as well as other audio and video offerings of broadcasters and platforms. No videos or players of these providers are embedded. Data is transferred to these providers only once a link is clicked. After that, the privacy terms of the respective provider apply; data may also be processed in countries outside the EU.
 
-## 8. Storage in your browser
+## 8. Storage in the browser
 
-The site stores nothing in your browser (no local storage, no cookies for visitors).
+The site stores nothing in the browser (no local storage, no cookies for visitors).
 
-## 9. Your rights
+## 9. Rights of data subjects
 
-You have the right to access (Art. 15 GDPR), rectification (Art. 16), erasure (Art. 17), restriction of processing (Art. 18), data portability (Art. 20) and to object to processing based on legitimate interests (Art. 21). Please contact me at the email address given above.
+Data subjects have the rights against the controller to access (Art. 15 GDPR), rectification (Art. 16), erasure (Art. 17), restriction of processing (Art. 18), data portability (Art. 20) and objection (Art. 21). Requests should be sent to the email address stated above.
 
-You also have the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR). [Add and check the competent authority. If resident in Bremen, e.g.: Die Landesbeauftragte für Datenschutz und Informationsfreiheit der Freien Hansestadt Bremen, Arndtstraße 1, 27570 Bremerhaven, Germany, www.datenschutz.bremen.de]
+## 10. Right to object
 
-## 10. Changes
+Where data is processed on the basis of legitimate interests (Art. 6(1)(f) GDPR), this processing can be objected to at any time on grounds relating to the data subject’s particular situation (Art. 21(1) GDPR). A message to the email address stated above is sufficient. The processing will then be ended unless there are compelling legitimate grounds that override.
 
-I will adapt this policy if the website or the legal situation changes. Last updated: [add date].
+## 11. Right to lodge a complaint
+
+There is a right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR), in particular in the state where the data subject lives or works or where the alleged infringement took place. The authority responsible for the controller is: The State Commissioner for Data Protection and Freedom of Information of the Free Hanseatic City of Bremen, Arndtstraße 1, 27570 Bremerhaven, Germany, [www.datenschutz.bremen.de](https://www.datenschutz.bremen.de)
+
+## 12. Changes
+
+This policy is updated when the website or the legal situation changes. Last updated: 25 November 2026.
 TXT;
     return ['impressum' => $imprint, 'datenschutz' => $privacy];
 }
