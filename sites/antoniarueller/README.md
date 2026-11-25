@@ -90,6 +90,8 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 
 ## Lebenslauf: Zeitstrahl und Logoleiste
 
+- Alle Listen (auch Stationen, „Davor“, Crossmedial, Sprachen, Off the record, Leitfragen, Menü) haben den Schieberegler „Anzeigen“ wie die Referenzen: Feld `published` (im Formular verborgen, Standard „an“); die Seite zeigt nur `items_shown()`. Kategorien (Spuren) haben ihn nicht, weil Referenzen daran hängen.
+
 - Backend-Menü: „Podcast-Folgen“ steht unter Arbeiten; „Stationen“ (mit der Liste „Davor“ darunter, Option `with` der Sammlung) und „Off the record“ stehen unter Über mich. Die Überschriften „Crossmedial“ und „Sprachen“ liegen unter Abschnitte → Über mich (Migration `about_labels_v1` übernimmt vorhandene Werte). Crossmedial hat das zusätzliche Symbol „Social Media“ (`share`).
 
 - Eine Liste `cv` („Lebenslauf & Stationen“) speist beides: Organisation, Logo (optional), Rolle, Beginn/Ende (Feldtyp `ym`: Jahr Pflicht, Monat optional; gespeichert als „JJJJ“ oder „JJJJ-MM“), „Läuft noch“, Zeitangabe überschreiben, Redaktion (Freitext), Link. Die frühere getrennte Liste „Sender & Redaktionen“ (`stations`) gibt es nicht mehr; die Migration `cv_stations_v1` übernimmt Logo, Redaktion und Link an Lebenslauf-Einträge mit passender Organisation (sonst neuer Eintrag). Die alten Datensätze bleiben unangetastet in `ar_items` (werden aber nicht mehr angezeigt oder gesichert).

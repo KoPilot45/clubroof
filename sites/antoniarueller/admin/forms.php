@@ -373,6 +373,10 @@ function list_embedded(array $user, array $def): void
         return;
     }
     $rows = items($wc, false, true);
+    $hasPubW = false;
+    foreach ($wdef['fields'] as $wf) {
+        $hasPubW = $hasPubW || $wf['key'] === 'published';
+    }
     echo '<section class="embedlist"><h2 class="embed-h">' . e($wdef['label']) . '</h2>';
     if (!empty($wdef['help'])) {
         echo '<p class="lead">' . e($wdef['help']) . '</p>';
@@ -384,7 +388,7 @@ function list_embedded(array $user, array $def): void
     }
     echo '<ol class="rows sortable cards" id="rows-embed" data-coll="' . e($wc) . '" data-csrf="' . e($user['csrf']) . '" data-url="' . e(a()) . '">';
     foreach ($rows as $i => $r) {
-        list_row($user, $wdef, $wc, $r, $i, count($rows), '', false, true);
+        list_row($user, $wdef, $wc, $r, $i, count($rows), '', $hasPubW, true);
     }
     echo '</ol></section>';
 }

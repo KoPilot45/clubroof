@@ -2,7 +2,7 @@
 /** Inhalt der 404-Seite (wird von templates/legal.php eingebunden). */
 $home = lang_url(current_lang(), '');
 $links = [];
-foreach (items('nav') as $nv) {
+foreach (items_shown('nav') as $nv) {
     if (preg_match('~^[a-z]+$~', (string)$nv['anchor'])) {
         $links[] = ['label' => (string)$nv['label'], 'href' => $home . '#' . $nv['anchor']];
     }

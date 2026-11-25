@@ -89,7 +89,7 @@ function llms_txt(): ?string
         }
         $md .= "\n";
     }
-    $stations = array_values(array_unique(array_map(fn($s) => $s['org'], items('cv'))));
+    $stations = array_values(array_unique(array_map(fn($s) => $s['org'], items_shown('cv'))));
     if ($stations) {
         $md .= "## Stationen\n\n" . implode(', ', $stations) . ".\n\n";
     }

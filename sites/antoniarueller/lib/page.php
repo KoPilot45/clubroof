@@ -106,15 +106,15 @@ if ($page === 'impressum' || $page === 'datenschutz') {
     send_html((string)ob_get_clean(), (bool)$seo['noindex'], $cacheKey);
 }
 
-$nav = items('nav');
-$questions = items('questions');
+$nav = items_shown('nav');
+$questions = items_shown('questions');
 $tracks = items('tracks');
 $episodes = array_values(array_filter(items('episodes'), fn($e) => $e['published']));
-$cvRows = items('cv');
-$before = items('before');
-$cross = items('crossmedia');
-$langs = items('languages');
-$off = items('offrecord');
+$cvRows = items_shown('cv');
+$before = items_shown('before');
+$cross = items_shown('crossmedia');
+$langs = items_shown('languages');
+$off = items_shown('offrecord');
 $social = array_values(array_filter(array_map(function ($x) {
     $x['url'] = safe_url($x['url']);
     return $x;

@@ -114,6 +114,12 @@ function items(string $coll, bool $trash = false, bool $admin = false): array
     return array_map(fn($r) => row_to_item($r, $def['fields'], $admin), $rows);
 }
 
+/** Einträge einer Liste, die auf der Seite angezeigt werden (ausgeblendete entfallen). */
+function items_shown(string $coll): array
+{
+    return array_values(array_filter(items($coll), fn($r) => !array_key_exists('published', $r) || !empty($r['published'])));
+}
+
 /** Alle sichtbaren Einträge in EINER Abfrage laden (statt einer pro Liste). */
 function items_rows(bool $reset = false): array
 {

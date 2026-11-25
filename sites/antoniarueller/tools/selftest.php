@@ -1303,6 +1303,35 @@ if ($layRow !== false) {
 }
 save_layout();
 reset_content_cache();
+// Ein-/Ausblenden per Schieberegler in der Liste bei allen Einträgen (kein Häkchen mehr im Formular)
+echo "Ein-/Ausblenden\n";
+$pubOk = true;
+foreach (['clips', 'episodes', 'social', 'cv', 'before', 'crossmedia', 'languages', 'offrecord', 'questions', 'nav'] as $pc) {
+    $lb = req('GET', "$base/admin/?p=list&c=$pc")['body'];
+    $eb = req('GET', "$base/admin/?p=edit&c=$pc")['body'];
+    $pubOk = $pubOk && str_contains($lb, 'tgl-f') && !str_contains($eb, 'name="published"');
+}
+ok($pubOk, 'alle Listen haben den Schieberegler, in keinem Formular steht noch ein Anzeigen-Häkchen');
+$pubPost = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'crossmedia', 'label' => 'Ausblendtest', 'outlets' => 'x', 'icon' => 'text', 'mode' => 'publish'];
+req('POST', "$base/admin/", $pubPost);
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'languages', 'name' => 'Ausblendsprache', 'mode' => 'publish']);
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'cv', 'org' => 'Ausblendorg', 'from_y' => '2036', 'mode' => 'publish']);
+$pgP = req('GET', "$base/")['body'];
+ok(str_contains($pgP, 'Ausblendtest') && str_contains($pgP, 'Ausblendsprache') && str_contains($pgP, 'Ausblendorg'), 'neue Einträge sind ohne Häkchen sichtbar');
+foreach (['crossmedia' => 'Ausblendtest', 'languages' => 'Ausblendsprache', 'cv' => 'Ausblendorg'] as $pc => $needle) {
+    $pid = (int)q("SELECT id FROM ar_items WHERE coll = ? AND data LIKE ?", [$pc, '%' . $needle . '%'])->fetchColumn();
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'toggle_pub', 'id' => $pid, 'to' => '0', 'ajax' => '1']);
+}
+$pgP2 = req('GET', "$base/")['body'];
+ok(!str_contains($pgP2, 'Ausblendtest') && !str_contains($pgP2, 'Ausblendsprache') && !str_contains($pgP2, 'Ausblendorg') && !str_contains(req('GET', "$base/llms.txt")['body'], 'Ausblendorg'), 'ausgeblendete Einträge fehlen auf der Seite (Crossmedial, Sprachen, Stationen)');
+$pidc = (int)q("SELECT id FROM ar_items WHERE coll = 'cv' AND data LIKE '%Ausblendorg%'")->fetchColumn();
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'cv', 'id' => $pidc, 'org' => 'Ausblendorg', 'from_y' => '2036', 'mode' => 'publish']);
+ok(!str_contains(req('GET', "$base/")['body'], 'Ausblendorg'), 'Speichern über das Formular blendet einen ausgeblendeten Eintrag nicht wieder ein');
+foreach (q("SELECT id FROM ar_items WHERE data LIKE '%Ausblend%' AND coll IN ('crossmedia','languages','cv')")->fetchAll() as $row) {
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
+}
+reset_content_cache();
 // Symbol-Auswahl bei Kategorien und Crossmedial
 $cmForm = req('GET', "$base/admin/?p=edit&c=crossmedia")['body'];
 $trForm = req('GET', "$base/admin/?p=edit&c=tracks")['body'];

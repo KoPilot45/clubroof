@@ -142,7 +142,7 @@ function schema(): array
             f('text', 'other_label', 'Weitere Plattform (Name)', ['max' => 30]),
             f('url', 'other_url', 'Weitere Plattform (Link)'),
             f('select', 'wave', 'Tonspur-Darstellung', ['options' => wave_options(), 'default' => 'auto', 'hint' => 'Nur Optik. „Automatisch“ lässt die Tonspuren der Folgen der Reihe nach wechseln.']),
-            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true]),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
         ],
     ];
     $s['collections']['cv'] = [
@@ -158,6 +158,7 @@ function schema(): array
             f('text', 'when_label', 'Zeitangabe überschreiben (optional)', ['max' => 120, 'hint' => 'Leer = automatisch aus Beginn/Ende, z. B. „06/2016 — 06/2018“.']),
             f('text', 'desk', 'Redaktion (optional)', ['max' => 40, 'hint' => 'Freitext, z. B. „TV“, „Radio“ oder „Investigativ-Team“. Erscheint auf der Karte.']),
             f('url', 'url', 'Link (optional)', ['hint' => 'Wenn gesetzt, ist das Logo in der Logoleiste anklickbar.']),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
         ],
     ];
     $s['collections']['before'] = [
@@ -165,6 +166,7 @@ function schema(): array
         'fields' => [
             f('markup', 'text', 'Text', ['required' => true, 'max' => 160, 'hint' => MARKUP_HINT]),
             f('text', 'side', 'Zusatz rechts', ['max' => 160]),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
         ],
     ];
     $s['collections']['crossmedia'] = [
@@ -173,6 +175,7 @@ function schema(): array
             f('icon', 'icon', 'Symbol', ['options' => media_options(), 'default' => 'text']),
             f('text', 'label', 'Bezeichnung', ['required' => true, 'max' => 30]),
             f('text', 'outlets', 'Redaktionen', ['max' => 200, 'hint' => 'z. B. „buten un binnen · WELT · Good News“']),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
         ],
     ];
     $s['collections']['languages'] = [
@@ -180,6 +183,7 @@ function schema(): array
         'fields' => [
             f('text', 'name', 'Sprache', ['required' => true, 'max' => 40, 'tr' => true]),
             f('text', 'note', 'Zusatz (z. B. „im Aufbau“)', ['max' => 40]),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
         ],
     ];
     $s['collections']['offrecord'] = [
@@ -188,6 +192,7 @@ function schema(): array
         'fields' => [
             f('text', 'question', 'Frage', ['required' => true, 'max' => 120]),
             f('textarea', 'answer', 'Antwort', ['max' => 400]),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
         ],
     ];
     $s['collections']['questions'] = [
@@ -195,6 +200,7 @@ function schema(): array
         'fields' => [
             f('text', 'number', 'Nummer', ['max' => 4, 'default' => '01']),
             f('markup', 'text', 'Frage', ['required' => true, 'max' => 240, 'hint' => MARKUP_HINT]),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
         ],
     ];
     $s['collections']['social'] = [
@@ -203,7 +209,7 @@ function schema(): array
         'fields' => [
             f('text', 'label', 'Beschriftung', ['required' => true, 'max' => 30, 'tr' => false, 'hint' => 'z. B. LinkedIn, Instagram, Bluesky, Mastodon, YouTube, Xing.']),
             f('url', 'url', 'Link zum Profil', ['required' => true]),
-            f('bool', 'published', 'Anzeigen', ['default' => true]),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
         ],
     ];
     $s['collections']['nav'] = [
@@ -213,6 +219,7 @@ function schema(): array
             f('text', 'label', 'Beschriftung', ['required' => true, 'max' => 30]),
             f('select', 'anchor', 'Springt zu', ['options' => anchor_options(), 'default' => 'arbeiten']),
             f('bool', 'desktop', 'Auch in der Kopfzeile am Desktop zeigen', ['default' => true]),
+            f('bool', 'published', 'Auf der Seite anzeigen', ['default' => true, 'hidden' => true]),
         ],
     ];
 
