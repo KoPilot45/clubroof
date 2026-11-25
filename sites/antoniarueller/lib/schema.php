@@ -208,7 +208,7 @@ function schema(): array
     ];
     $s['collections']['nav'] = [
         'label' => 'Navigation', 'singular' => 'Menüpunkt', 'title' => 'label', 'sub' => ['anchor'],
-        'help' => 'Menüpunkte oben (Desktop) und im Handy-Menü.',
+        'help' => 'Menüpunkte oben (Desktop) und im Handy-Menü. Ihre Reihenfolge folgt automatisch der Reihenfolge der Abschnitte (Seite & Design → Aufbau der Seite); hier legst du Beschriftung, Ziel und Anzeige fest.',
         'fields' => [
             f('text', 'label', 'Beschriftung', ['required' => true, 'max' => 30]),
             f('select', 'anchor', 'Springt zu', ['options' => anchor_options(), 'default' => 'arbeiten']),
@@ -234,6 +234,30 @@ function schema(): array
             f('color', 'c_accent', 'Akzentfarbe (Knöpfe, Zahlen, Hervorhebungen)', ['default' => '#0E5C62', 'show_if' => ['palette', 'custom']]),
             f('color', 'c_teal', 'Dunkle Flächen (Podcast, Featured, Menü)', ['default' => '#0B3F44', 'show_if' => ['palette', 'custom']]),
             f('color', 'c_rec', 'REC-Rot (blinkender Punkt)', ['default' => '#C42F24', 'show_if' => ['palette', 'custom']]),
+        ],
+    ];
+    $s['groups']['layout'] = [
+        'label' => 'Aufbau der Seite',
+        'help' => 'Hier legst du fest, in welcher Reihenfolge die Abschnitte erscheinen und welche sichtbar sind, auch innerhalb eines Abschnitts. Die Menüpunkte oben folgen automatisch dieser Reihenfolge. Der Startbereich bleibt oben, Kontakt und Fußzeile unten.',
+        'fields' => [
+            f('orderlist', 'order', 'Reihenfolge der Abschnitte', ['options' => array_map(fn($x) => $x[0], layout_sections()), 'default' => implode(',', array_keys(layout_sections()))]),
+            f('orderlist', 'sub_arbeiten', 'Reihenfolge in „Showreel“', ['options' => layout_subs()['arbeiten'], 'default' => implode(',', array_keys(layout_subs()['arbeiten']))]),
+            f('orderlist', 'sub_about', 'Reihenfolge in „Über mich“', ['options' => layout_subs()['about'], 'default' => implode(',', array_keys(layout_subs()['about']))]),
+            f('orderlist', 'sub_cv', 'Reihenfolge im „Lebenslauf“', ['options' => layout_subs()['cv'], 'default' => implode(',', array_keys(layout_subs()['cv']))]),
+            f('bool', 'on_questions', 'Sichtbar', ['default' => true]),
+            f('bool', 'on_show', 'Sichtbar', ['default' => true]),
+            f('bool', 'on_podcast', 'Sichtbar', ['default' => true]),
+            f('bool', 'on_about', 'Sichtbar', ['default' => true]),
+            f('bool', 'on_cv', 'Sichtbar', ['default' => true]),
+            f('bool', 'on_off', 'Sichtbar', ['default' => true]),
+            f('bool', 'on_contact', 'Sichtbar', ['default' => true]),
+            f('bool', 's_featured', 'Sichtbar', ['default' => true]),
+            f('bool', 's_editor', 'Sichtbar', ['default' => true]),
+            f('bool', 's_list', 'Sichtbar', ['default' => true]),
+            f('bool', 's_cross', 'Sichtbar', ['default' => true]),
+            f('bool', 's_lang', 'Sichtbar', ['default' => true]),
+            f('bool', 's_logos', 'Sichtbar', ['default' => true]),
+            f('bool', 's_thread', 'Sichtbar', ['default' => true]),
         ],
     ];
     $s['groups']['typo'] = [
@@ -297,24 +321,22 @@ function schema(): array
     ];
     $s['groups']['texts_start'] = [
         'label' => 'Abschnittstexte: Hero-Bereich',
-        'help' => 'Namen und Texte der Abschnitte im Hero-Bereich („Intro“ und „Leitfragen“). Mit dem Schieberegler blendest du einen Abschnitt ein oder aus; ausgeblendete Abschnitte entfallen samt Menüpunkt.',
+        'help' => 'Namen und Texte der Abschnitte im Hero-Bereich („Intro“ und „Leitfragen“). Ein- und Ausblenden und die Reihenfolge der Abschnitte stehen unter „Seite & Design → Aufbau der Seite“.',
         'fields' => [
-            f('section', '', 'Start (Intro)', ['card' => true, 'note' => 'Der Startbereich ist immer sichtbar.', 'link' => ['g', 'hero']]),
+            f('section', '', 'Start (Intro)', ['card' => true, 'fixed' => true, 'note' => 'Der Startbereich ist immer sichtbar.', 'link' => ['g', 'hero']]),
             f('text', 'intro_label', 'Abschnittsname in der REC-Zeile', ['max' => 30, 'default' => 'Intro', 'dict' => true]),
             f('text', 'hero_tc', 'Timecode rechts oben', ['max' => 30, 'default' => 'TC 00:00:00:01', 'dict' => true]),
 
-            f('section', '', 'Leitfragen', ['card' => true, 'toggle' => 'on_questions', 'link' => ['c', 'questions']]),
-            f('bool', 'on_questions', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('section', '', 'Leitfragen', ['card' => true, 'link' => ['c', 'questions']]),
             f('text', 'q_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Was mich antreibt', 'dict' => true]),
             f('text', 'q_right', 'Rechts neben „REC“', ['max' => 40, 'default' => 'Zwei Fragen']),
         ],
     ];
     $s['groups']['texts_arbeiten'] = [
         'label' => 'Abschnittstexte: Arbeiten',
-        'help' => 'Namen, Überschriften und Beschriftungen der Abschnitte „Showreel“ und „Podcast“. Mit dem Schieberegler blendest du einen Abschnitt ein oder aus.',
+        'help' => 'Namen, Überschriften und Beschriftungen der Abschnitte „Showreel“ und „Podcast“. Ein- und Ausblenden und die Reihenfolge stehen unter „Seite & Design → Aufbau der Seite“.',
         'fields' => [
-            f('section', '', 'Showreel', ['card' => true, 'toggle' => 'on_show', 'note' => 'Das Featured ganz oben wird mit dem Stern in der Referenzen-Liste gewählt und ist von diesem Schalter unabhängig.', 'link' => ['c', 'clips']]),
-            f('bool', 'on_show', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('section', '', 'Showreel', ['card' => true, 'note' => 'Das Featured ganz oben wird mit dem Stern in der Referenzen-Liste gewählt. Ein- und Ausblenden und die Reihenfolge stehen unter „Aufbau der Seite“.', 'link' => ['c', 'clips']]),
             f('text', 'show_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Showreel', 'dict' => true]),
             f('text', 'show_h1', 'Überschrift, Teil 1 (Großschrift)', ['max' => 20, 'default' => 'Show']),
             f('text', 'show_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'reel']),
@@ -331,8 +353,7 @@ function schema(): array
             f('text', 'show_unit', 'Wort für die Anzahl in der automatischen Zeile rechts', ['max' => 20, 'default' => 'Clips', 'dict' => true, 'hint' => 'z. B. „Clips“ oder „Beiträge“.']),
             f('text', 'role_label', 'Beschriftung vor der Rolle in den Kacheln', ['max' => 20, 'default' => 'Rolle:', 'dict' => true]),
 
-            f('section', '', 'Podcast', ['card' => true, 'toggle' => 'on_podcast', 'link' => ['c', 'episodes']]),
-            f('bool', 'on_podcast', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('section', '', 'Podcast', ['card' => true, 'link' => ['c', 'episodes']]),
             f('text', 'pod_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Podcast', 'dict' => true]),
             f('text', 'pod_h1', 'Überschrift, Teil 1', ['max' => 20, 'default' => 'Hör']),
             f('text', 'pod_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'mal rein.']),
@@ -343,17 +364,15 @@ function schema(): array
     ];
     $s['groups']['texts_ueber'] = [
         'label' => 'Abschnittstexte: Über mich',
-        'help' => 'Namen und Texte der Abschnitte „Über mich“, „Lebenslauf“ und „Off the record“. Mit dem Schieberegler blendest du einen Abschnitt ein oder aus.',
+        'help' => 'Namen und Texte der Abschnitte „Über mich“, „Lebenslauf“ und „Off the record“. Ein- und Ausblenden und die Reihenfolge stehen unter „Seite & Design → Aufbau der Seite“.',
         'fields' => [
-            f('section', '', 'Über mich', ['card' => true, 'toggle' => 'on_about', 'link' => ['g', 'about']]),
-            f('bool', 'on_about', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('section', '', 'Über mich', ['card' => true, 'link' => ['g', 'about']]),
             f('text', 'about_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Über mich', 'dict' => true]),
             f('section', '', 'Überschriften im Abschnitt', ['sub' => true]),
             f('text', 'cross_label', 'Überschrift „Crossmedial“', ['max' => 40, 'default' => 'Crossmedial unterwegs']),
             f('text', 'lang_label', 'Überschrift „Sprachen“', ['max' => 40, 'default' => 'Sprachen']),
 
-            f('section', '', 'Lebenslauf', ['card' => true, 'toggle' => 'on_cv', 'link' => ['c', 'cv']]),
-            f('bool', 'on_cv', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('section', '', 'Lebenslauf', ['card' => true, 'link' => ['c', 'cv']]),
             f('text', 'cv_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Lebenslauf', 'dict' => true]),
             f('text', 'cv_h1', 'Überschrift, Teil 1', ['max' => 20, 'default' => 'Lebens']),
             f('text', 'cv_h2', 'Überschrift, Teil 2 (kursiv)', ['max' => 20, 'default' => 'lauf']),
@@ -363,8 +382,7 @@ function schema(): array
             f('text', 'cv_before', 'Beschriftung „Davor“', ['max' => 20, 'default' => 'Davor']),
             f('text', 'cv_pdf_label', 'Knopf für den CV-Download', ['max' => 30, 'default' => 'CV als PDF']),
 
-            f('section', '', 'Off the record', ['card' => true, 'toggle' => 'on_off', 'note' => 'Die große Überschrift „Off the record“ mit dem durchgestrichenen „the“ ist fest gestaltet.', 'link' => ['c', 'offrecord']]),
-            f('bool', 'on_off', 'Abschnitt auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('section', '', 'Off the record', ['card' => true, 'note' => 'Die große Überschrift „Off the record“ mit dem durchgestrichenen „the“ ist fest gestaltet.', 'link' => ['c', 'offrecord']]),
             f('text', 'off_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Off the record', 'dict' => true]),
             f('text', 'off_right', 'Zeile rechts', ['max' => 40, 'default' => 'Nicht zitierfähig']),
             f('text', 'off_hint', 'Hinweis unter der Überschrift', ['max' => 120, 'default' => 'Zum Aufdecken über die Balken fahren oder tippen.']),
@@ -374,8 +392,7 @@ function schema(): array
         'label' => 'Abschnittstexte: Kontakt',
         'help' => 'Name und Texte des Kontaktbereichs und der Fußzeile.',
         'fields' => [
-            f('section', '', 'Kontakt & Fußzeile', ['card' => true, 'toggle' => 'on_contact', 'note' => 'Bei ausgeschaltetem Kontakt bleibt die Fußzeile mit Impressum und Datenschutz immer sichtbar.', 'link' => ['g', 'contact']]),
-            f('bool', 'on_contact', 'Kontaktbereich auf der Seite zeigen', ['default' => true, 'card_toggle' => true]),
+            f('section', '', 'Kontakt & Fußzeile', ['card' => true, 'note' => 'Bei ausgeschaltetem Kontakt bleibt die Fußzeile mit Impressum und Datenschutz immer sichtbar.', 'link' => ['g', 'contact']]),
             f('text', 'contact_label', 'Abschnittsname in der REC-Zeile', ['max' => 40, 'default' => 'Kontakt', 'dict' => true]),
             f('text', 'mail_fail', 'Hinweis, wenn sich das Mailprogramm nicht öffnet', ['max' => 80, 'default' => 'Mailprogramm öffnet sich nicht? Adresse:', 'dict' => true]),
             f('text', 'copy_label', 'Knopf „Kopieren“', ['max' => 20, 'default' => 'Kopieren', 'dict' => true]),
@@ -463,6 +480,7 @@ function admin_nav(): array
             ['c', 'social', 'Social-Media-Profile', 'Links zu LinkedIn, Instagram usw.'],
         ]],
         'design' => ['Seite & Design', 'palette', 'Farben, Kopfzeile und Menü.', [
+            ['g', 'layout', 'Aufbau der Seite', 'Reihenfolge und Sichtbarkeit der Abschnitte und ihrer Unterabschnitte.'],
             ['g', 'colors', 'Farben', 'Fertige Farbpaletten oder eigene Farben mit Lesbarkeits-Prüfung.'],
             ['g', 'site', 'Kopfzeile', 'Text links oben und Titel im Handy-Menü.'],
             ['g', 'typo', 'Schrift', 'Schriften und Textgrößen: je Verwendung drei Alternativen.'],

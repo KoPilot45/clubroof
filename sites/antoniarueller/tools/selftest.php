@@ -999,12 +999,17 @@ function save_sections(array $vals): void
         }
         req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_group', 'g' => $g, 'mode' => 'publish'] + array_intersect_key($vals, array_flip($keys)));
     }
+    $lk = [];
+    foreach (schema()['groups']['layout']['fields'] as $f) {
+        $lk[] = $f['key'];
+    }
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'layout', 'mode' => 'publish'] + array_intersect_key($vals + array_fill_keys(array_values(layout_sub_toggles()), '1'), array_flip($lk)));
 }
 $tsAll = '';
 foreach (array_keys(texts_groups()) as $tg) {
     $tsAll .= req('GET', "$base/admin/?p=group&g=$tg")['body'];
 }
-ok(substr_count($tsAll, 'class="sw"') === 7 && substr_count($tsAll, 'class="seccard') >= 8 && !str_contains($tsAll, 'Abschnittstitel'), 'Abschnittstexte: je Menüpunkt eine Seite, zusammen eine Karte je Abschnitt mit sieben Schiebereglern');
+ok(substr_count($tsAll, 'class="sw"') === 0 && substr_count($tsAll, 'class="seccard') >= 8 && !str_contains($tsAll, 'Abschnittstitel'), 'Abschnittstexte: je Menüpunkt eine Seite, zusammen eine Karte je Abschnitt, ohne Schieberegler (die stehen im Aufbau der Seite)');
 ok(!str_contains(req('GET', "$base/admin/")['body'], 'p=group&amp;g=sections') && substr_count(req('GET', "$base/admin/")['body'], '>Abschnittstexte<') >= 4, 'Menüpunkt „Abschnitte“ ist weg, „Abschnittstexte“ steht unter Hero-Bereich, Arbeiten, Über mich und Kontakt');
 $nvAll = admin_nav();
 ok(($nvAll['start'][3][0][1] ?? '') === 'texts_start' && ($nvAll['arbeiten'][3][0][1] ?? '') === 'texts_arbeiten' && ($nvAll['ueber'][3][0][1] ?? '') === 'texts_ueber' && ($nvAll['kontakt'][3][0][1] ?? '') === 'texts_kontakt', '„Abschnittstexte“ ist jeweils der erste Punkt');
@@ -1122,7 +1127,7 @@ $sp = [];
 foreach (array_keys(texts_groups()) as $tg) {
     $sp[$tg] = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', [$tg])->fetchColumn(), true) ?: [];
 }
-ok(($sp['texts_ueber']['cross_label'] ?? '') === 'Alte Crossmedial-Überschrift' && !empty($sp['texts_ueber']['on_cv']) && ($sp['texts_arbeiten']['pod_listen'] ?? '') === 'Alt hören' && ($sp['texts_arbeiten']['pod_listen_en'] ?? '') === 'Old listen' && ($sp['texts_start']['q_label'] ?? '') === 'Alte Leitfragen' && ($sp['texts_kontakt']['contact_label'] ?? '') === 'Alter Kontakt', 'Migration: Werte der alten Abschnitte (auch Englisch) landen in den passenden Abschnittstexten');
+ok(($sp['texts_ueber']['cross_label'] ?? '') === 'Alte Crossmedial-Überschrift' && ($sp['texts_arbeiten']['pod_listen'] ?? '') === 'Alt hören' && ($sp['texts_arbeiten']['pod_listen_en'] ?? '') === 'Old listen' && ($sp['texts_start']['q_label'] ?? '') === 'Alte Leitfragen' && ($sp['texts_kontakt']['contact_label'] ?? '') === 'Alter Kontakt', 'Migration: Werte der alten Abschnitte (auch Englisch) landen in den passenden Abschnittstexten');
 ok(isset($sp['texts_ueber']['cross_label']) && !isset($sp['texts_start']['cross_label']), 'Migration: jeder Wert nur in der passenden Gruppe');
 foreach (array_keys(texts_groups()) as $tg) {
     q('DELETE FROM ar_settings WHERE grp = ?', [$tg]);
@@ -1221,6 +1226,82 @@ if ($colSaved !== false) {
 req('POST', "$base/admin/", array_merge($colPost, ['palette' => 'standard']));
 reset_content_cache();
 ok(str_contains(req('GET', "$base/")['body'], '--accent:#0E5C62;'), 'zurück auf Standard');
+// Aufbau der Seite: Reihenfolge und Sichtbarkeit der Abschnitte und Unterabschnitte
+echo "Aufbau der Seite\n";
+function save_layout(array $v = []): void
+{
+    global $base, $tok;
+    $all = array_fill_keys(array_merge(array_values(layout_toggles()), array_values(layout_sub_toggles())), '1');
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'layout', 'mode' => 'publish'] + array_merge($all, $v));
+}
+function pos_of(string $html, string $needle): int
+{
+    $p = strpos($html, $needle);
+    return $p === false ? -1 : $p;
+}
+save_layout();
+$featId = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL ORDER BY sort LIMIT 1")->fetchColumn();
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'toggle_featured', 'id' => $featId]);
+$lf = req('GET', "$base/admin/?p=group&g=layout")['body'];
+ok(substr_count($lf, 'name="on_') === 7 && substr_count($lf, 'name="s_') === 7 && substr_count($lf, 'data-lay="up"') === 13 && str_contains($lf, 'id="lay-order"') && str_contains($lf, 'name="sub_arbeiten"') && str_contains($lf, 'name="sub_about"') && str_contains($lf, 'name="sub_cv"'), 'Aufbau-Seite: Schalter und Pfeile für Abschnitte und Unterabschnitte (7 + 7)');
+$pgL0 = req('GET', "$base/")['body'];
+$ord0 = array_map(fn($id) => pos_of($pgL0, 'id="' . $id . '"'), ['arbeiten', 'podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt']);
+$sorted0 = $ord0;
+sort($sorted0);
+ok(!in_array(-1, $ord0, true) && $ord0 === $sorted0, 'Standardreihenfolge: Arbeiten, Podcast, Über mich, Lebenslauf, Off the record, Kontakt');
+preg_match_all('~<span class="rec-t">REC</span><span>(\d\d) — ([^<]+)</span>~', $pgL0, $rm);
+ok(in_array('01 — Showreel', array_map(fn($a, $b) => "$a — $b", $rm[1], $rm[2]), true) && in_array('04 — Kontakt', array_map(fn($a, $b) => "$a — $b", $rm[1], $rm[2]), true), 'Nummern der REC-Zeilen wie bisher (Showreel 01, Kontakt 04)');
+save_layout(['order' => 'about,cv,arbeiten,podcast,questions,off']);
+$pgL1 = req('GET', "$base/")['body'];
+$ord1 = array_map(fn($id) => pos_of($pgL1, 'id="' . $id . '"'), ['ueber', 'lebenslauf', 'arbeiten', 'podcast']);
+$s1 = $ord1;
+sort($s1);
+ok(!in_array(-1, $ord1, true) && $ord1 === $s1 && pos_of($pgL1, 'class="questions"') > pos_of($pgL1, 'id="podcast"') && pos_of($pgL1, 'id="offtherecord"') > pos_of($pgL1, 'class="questions"') && pos_of($pgL1, 'id="kontakt"') > pos_of($pgL1, 'id="offtherecord"'), 'neue Reihenfolge: Über mich, Lebenslauf, Arbeiten, Podcast, Leitfragen, Off the record, Kontakt unten');
+preg_match_all('~<span class="rec-t">REC</span><span>(\d\d) — ([^<]+)</span>~', $pgL1, $rm1);
+$nums1 = array_map(fn($a, $b) => "$a — $b", $rm1[1], $rm1[2]);
+ok(in_array('01 — Über mich', $nums1, true) && in_array('02 — Lebenslauf', $nums1, true) && in_array('03 — Showreel', $nums1, true) && in_array('03 — Podcast', $nums1, true), 'Nummern folgen der Reihenfolge (nebeneinander stehende Showreel und Podcast teilen sich eine Nummer)');
+$navHtml = (string)(preg_match('~<nav aria-label="Mobile Navigation">.*?</nav>~s', $pgL1, $nm) ? $nm[0] : '');
+$navPos = array_map(fn($a) => pos_of($navHtml, 'href="#' . $a . '"'), ['ueber', 'lebenslauf', 'arbeiten', 'podcast', 'kontakt']);
+$navSorted = $navPos;
+sort($navSorted);
+ok(!in_array(-1, $navPos, true) && $navPos === $navSorted, 'Menüpunkte folgen der Reihenfolge der Abschnitte');
+save_layout(['order' => 'x,off,off,nix']);
+$lf2 = req('GET', "$base/admin/?p=group&g=layout")['body'];
+ok(str_contains($lf2, 'name="order" id="lay-order" value="off,questions,arbeiten,podcast,about,cv"'), 'ungültige und doppelte Einträge entfallen, fehlende folgen in Standardreihenfolge');
+save_layout(['sub_about' => 'lang,cross', 'sub_cv' => 'thread,logos', 'sub_arbeiten' => 'editor,featured,list']);
+$pgL2 = req('GET', "$base/")['body'];
+ok(pos_of($pgL2, 'class="langs"') > -1 && pos_of($pgL2, 'class="langs"') < pos_of($pgL2, 'class="cross-wrap"'), 'Über mich: Sprachen vor Crossmedial');
+ok(pos_of($pgL2, 'id="rf"') > -1 && pos_of($pgL2, 'id="rf"') < pos_of($pgL2, 'class="cv-logos"'), 'Lebenslauf: Zeitstrahl vor der Logoleiste');
+ok(pos_of($pgL2, 'class="ar-ed-desk editor"') > -1 && pos_of($pgL2, 'class="ar-ed-desk editor"') < pos_of($pgL2, 'class="fa"') && pos_of($pgL2, 'class="fa"') < pos_of($pgL2, 'class="clip-list"') && substr_count($pgL2, 'id="arbeiten"') === 1, 'Arbeiten: Schnittplatz, Featured, Beitragsliste; die id steht nur einmal');
+save_layout(['s_lang' => '', 's_logos' => '', 's_featured' => '', 'on_podcast' => '']);
+$pgL3 = req('GET', "$base/")['body'];
+$nav3 = (string)(preg_match('~<nav aria-label="Mobile Navigation">.*?</nav>~s', $pgL3, $nm3) ? $nm3[0] : '');
+ok(!str_contains($pgL3, 'class="langs"') && !str_contains($pgL3, 'class="cv-logos"') && !str_contains($pgL3, 'class="fa"') && !str_contains($pgL3, 'id="podcast"') && !str_contains($nav3, 'href="#podcast"') && str_contains($pgL3, 'class="rf-list"') && str_contains($pgL3, 'class="clip-list"'), 'Schalter: Unterabschnitte und Abschnitte lassen sich ausblenden (Menüpunkt entfällt), der Rest bleibt');
+save_layout(['on_show' => '']);
+$pgL4 = req('GET', "$base/")['body'];
+ok(!str_contains($pgL4, 'class="clip-list"') && !str_contains($pgL4, 'class="ar-ed-desk editor"') && str_contains($pgL4, 'class="fa"'), 'Showreel aus: Featured bleibt, Schnittplatz und Liste entfallen');
+save_layout();
+req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'toggle_featured', 'id' => $featId]);
+// Übernahme der Schalter (einmalige Migration)
+$layRow = q("SELECT data FROM ar_settings WHERE grp = 'layout'")->fetchColumn();
+$taRow = q("SELECT data FROM ar_settings WHERE grp = 'texts_arbeiten'")->fetchColumn();
+$taD = json_decode((string)$taRow, true) ?: [];
+$taD['on_podcast'] = false;
+$taD['on_show'] = true;
+q("UPDATE ar_settings SET data = ? WHERE grp = 'texts_arbeiten'", [json_encode($taD)]);
+q("DELETE FROM ar_settings WHERE grp = 'layout'");
+$mjl = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = '_migrations'")->fetchColumn(), true) ?: [];
+q("UPDATE ar_settings SET data = ? WHERE grp = '_migrations'", [json_encode(array_values(array_diff($mjl, ['layout_v1'])))]);
+req('GET', "$base/admin/");
+$ly = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = 'layout'")->fetchColumn(), true) ?: [];
+ok(array_key_exists('on_podcast', $ly) && $ly['on_podcast'] === false && ($ly['on_show'] ?? null) === true, 'Migration: Schalter aus den Abschnittstexten gehen in „Aufbau der Seite“ über');
+q("UPDATE ar_settings SET data = ? WHERE grp = 'texts_arbeiten'", [(string)$taRow]);
+q("DELETE FROM ar_settings WHERE grp = 'layout'");
+if ($layRow !== false) {
+    q("INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES ('layout', ?, ?, 't')", [$layRow, time()]);
+}
+save_layout();
+reset_content_cache();
 // Symbol-Auswahl bei Kategorien und Crossmedial
 $cmForm = req('GET', "$base/admin/?p=edit&c=crossmedia")['body'];
 $trForm = req('GET', "$base/admin/?p=edit&c=tracks")['body'];

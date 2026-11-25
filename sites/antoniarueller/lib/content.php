@@ -510,6 +510,9 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
             case 'color':
                 $v = preg_match('~^#[0-9a-fA-F]{6}$~', (string)$raw) ? strtolower((string)$raw) : ($f['default'] ?? '#000000');
                 break;
+            case 'orderlist':
+                $v = implode(',', layout_normalize(is_string($raw) ? $raw : '', array_keys((array)($f['options'] ?? []))));
+                break;
             case 'select':
             case 'icon':
             case 'fontpick':

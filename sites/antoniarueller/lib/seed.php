@@ -46,6 +46,7 @@ function seed_defaults(PDO $pdo): void
     foreach (array_keys(texts_groups()) as $tg) {
         $set($tg, []);
     }
+    $set('layout', []);
     $set('timeline', []);
     $set('about', [
         'portrait' => $portrait, 'portrait_alt' => 'Porträt von Antonia Rüller vor grüner Wand',

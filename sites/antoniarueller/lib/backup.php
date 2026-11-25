@@ -135,6 +135,20 @@ function import_data(string $json, string $who): array
             ]);
             $n++;
         }
+        // Sicherungen aus der Zeit vor „Aufbau der Seite“: die Schalter „Abschnitt zeigen“ standen in den Abschnittstexten
+        if (!isset($d['einstellungen']['layout'])) {
+            $lay = [];
+            foreach (array_values(layout_toggles()) as $tk) {
+                foreach (array_merge(['sections'], array_keys(texts_groups())) as $tg) {
+                    if (is_array($d['einstellungen'][$tg] ?? null) && array_key_exists($tk, $d['einstellungen'][$tg])) {
+                        $lay[$tk] = !empty($d['einstellungen'][$tg][$tk]);
+                    }
+                }
+            }
+            if ($lay) {
+                $d['einstellungen']['layout'] = $lay;
+            }
+        }
         // Sicherungen aus der Zeit vor den „Abschnittstexten“ enthalten die Gruppe „sections“: auf die neuen Gruppen verteilen
         if (isset($d['einstellungen']['sections']) && is_array($d['einstellungen']['sections'])) {
             foreach (split_legacy_sections($d['einstellungen']['sections']) as $tg => $part) {

@@ -479,6 +479,36 @@ function run_migrations(PDO $pdo): void
         }
     }
 
+    // Schalter „Abschnitt zeigen“ (früher in den Abschnittstexten) liegen jetzt unter „Aufbau der Seite“: vorhandene Werte übernehmen
+    if (!in_array('layout_v1', $applied, true)) {
+        try {
+            require_once __DIR__ . '/schema.php';
+            $has = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = 'layout'")->fetchColumn();
+            if (!$has) {
+                $keys = ['on_questions', 'on_show', 'on_podcast', 'on_about', 'on_cv', 'on_off', 'on_contact'];
+                $data = [];
+                foreach (['sections', 'texts_start', 'texts_arbeiten', 'texts_ueber', 'texts_kontakt'] as $g) {
+                    $r = $pdo->prepare('SELECT data FROM ar_settings WHERE grp = ?');
+                    $r->execute([$g]);
+                    $row = $r->fetchColumn();
+                    $d = $row !== false ? (json_decode((string)$row, true) ?: []) : [];
+                    foreach ($keys as $k) {
+                        if (array_key_exists($k, $d)) {
+                            $data[$k] = !empty($d[$k]);
+                        }
+                    }
+                }
+                if ($data) {
+                    $pdo->prepare("INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES ('layout', ?, ?, 'migration')")
+                        ->execute([json_encode($data), time()]);
+                }
+            }
+            $applied[] = 'layout_v1';
+        } catch (Throwable $e) {
+            // beim nächsten Aufruf erneut
+        }
+    }
+
     if (count($applied) !== $before) {
         $json = json_encode($applied);
         $exists = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = '_migrations'")->fetchColumn();

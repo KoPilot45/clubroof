@@ -69,7 +69,16 @@ $seo = setting('seo');
 $hero = setting('hero');
 $typo = setting('typo');
 $colors = setting('colors');
-$sec = section_settings();
+$layout = setting('layout');
+$sec = array_merge(section_settings(), layout_flags($layout));
+$sub = [];
+foreach (layout_sub_toggles() as $sk => $setkey) {
+    $sub[$sk] = !array_key_exists($setkey, $layout) || !empty($layout[$setkey]);
+}
+$subOrder = [];
+foreach (array_keys(layout_subs()) as $parent) {
+    $subOrder[$parent] = layout_sub_order($layout, $parent);
+}
 // Beschriftungen, die nie leer sein dürfen (Abschnittsnamen, Links der Fußzeile …): leer = Standardtext
 $dictFill = function (array $vals, string $grp): array {
     foreach (schema()['groups'][$grp]['fields'] as $fd) {
@@ -152,11 +161,23 @@ foreach ($clips as $c) {
 $cvGroups = cv_groups($cvRows);
 // Abschnitte ein-/ausblenden: Menüpunkte ausgeblendeter Abschnitte entfallen
 $showCv = $cvGroups && $sec['on_cv'];
+// Sichtbare Abschnitte (verschiebbare, in der gewählten Reihenfolge) und Nummern der REC-Zeilen
+$visSec = [
+    'questions' => (bool)($questions && $sec['on_questions']),
+    'arbeiten' => (bool)(($featured !== null && $sub['featured']) || ($clips && $sec['on_show'] && ($sub['editor'] || $sub['list']))),
+    'podcast' => (bool)($episodes && $sec['on_podcast']), 'about' => (bool)$sec['on_about'], 'cv' => (bool)$showCv, 'off' => (bool)($off && $sec['on_off']),
+];
+$sectionOrder = array_values(array_filter(layout_order($layout), fn($id) => $visSec[$id]));
+$no = layout_numbers(array_merge($sectionOrder, $sec['on_contact'] ? ['contact'] : []));
 $vis = [
-    'arbeiten' => $featured !== null || ($clips && $sec['on_show']), 'podcast' => $episodes && $sec['on_podcast'], 'ueber' => (bool)$sec['on_about'],
-    'lebenslauf' => $showCv, 'offtherecord' => $off && $sec['on_off'], 'kontakt' => (bool)$sec['on_contact'],
+    'arbeiten' => $visSec['arbeiten'], 'podcast' => $visSec['podcast'], 'ueber' => $visSec['about'], 'lebenslauf' => $visSec['cv'], 'offtherecord' => $visSec['off'],
+    'kontakt' => (bool)$sec['on_contact'],
 ];
 $nav = array_values(array_filter($nav, fn($n) => $vis[$n['anchor']] ?? true));
+// Menüpunkte folgen der Reihenfolge der Abschnitte
+$navPos = array_flip(array_merge($sectionOrder, ['contact']));
+$anchorSec = ['arbeiten' => 'arbeiten', 'podcast' => 'podcast', 'ueber' => 'about', 'lebenslauf' => 'cv', 'offtherecord' => 'off', 'kontakt' => 'contact'];
+usort($nav, fn($a, $b) => (($navPos[$anchorSec[$a['anchor']] ?? ''] ?? -1) <=> ($navPos[$anchorSec[$b['anchor']] ?? ''] ?? -1)));
 $cvYears = array_filter(array_map('strval', array_keys($cvGroups)), 'ctype_digit');
 $cvMin = $cvYears ? min($cvYears) : '';
 

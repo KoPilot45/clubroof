@@ -770,6 +770,33 @@
     });
   }
 
+  // ---- Aufbau der Seite: Abschnitte per Ziehen oder Pfeilen ordnen ----
+  $$('.lay').forEach(function (list) {
+    var target = document.getElementById(list.getAttribute('data-target'));
+    function sync() {
+      if (target) target.value = $$(':scope > li.lay-i', list).map(function (li) { return li.getAttribute('data-id'); }).join(',');
+      if (form) { form.dispatchEvent(new Event('input', { bubbles: true })); dirty = true; }
+    }
+    list.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-lay]'); if (!b) return;
+      var li = b.closest('li.lay-i'); if (!li || li.parentNode !== list) return;
+      if (b.getAttribute('data-lay') === 'up' && li.previousElementSibling) list.insertBefore(li, li.previousElementSibling);
+      else if (b.getAttribute('data-lay') === 'down' && li.nextElementSibling) list.insertBefore(li.nextElementSibling, li);
+      else return;
+      sync(); b.focus();
+    });
+    var drag = null;
+    list.addEventListener('dragstart', function (e) { var li = e.target.closest ? e.target.closest('li.lay-i') : null; if (!li || li.parentNode !== list) return; drag = li; li.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', li.getAttribute('data-id')); e.stopPropagation(); });
+    list.addEventListener('dragover', function (e) {
+      if (!drag || drag.parentNode !== list) return;
+      e.preventDefault(); e.stopPropagation();
+      var over = e.target.closest('li.lay-i');
+      while (over && over.parentNode !== list) over = over.parentNode.closest ? over.parentNode.closest('li.lay-i') : null;
+      if (over && over !== drag) { var r = over.getBoundingClientRect(); list.insertBefore(drag, e.clientY > r.top + r.height / 2 ? over.nextSibling : over); }
+    });
+    list.addEventListener('dragend', function () { if (!drag || drag.parentNode !== list) { drag = null; return; } drag.classList.remove('dragging'); drag = null; sync(); });
+  });
+
   // ---- Farbpalette: eigene Farben zeigen, Karte „Eigene Farben“ nachführen, Lesbarkeit prüfen ----
   var pal = $('.palettepick');
   if (pal) {

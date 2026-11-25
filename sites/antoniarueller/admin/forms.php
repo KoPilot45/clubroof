@@ -32,7 +32,7 @@ function preview_anchor(string $key): string
 {
     return [
         'clips' => 'arbeiten', 'tracks' => 'arbeiten', 'timeline' => 'arbeiten', 'episodes' => 'podcast', 'cv' => 'lebenslauf', 'before' => 'lebenslauf',
-        'typo' => 'inhalt', 'colors' => 'inhalt', 'texts_start' => 'inhalt', 'texts_arbeiten' => 'arbeiten', 'texts_ueber' => 'ueber', 'texts_kontakt' => 'kontakt', 'about' => 'ueber', 'crossmedia' => 'ueber', 'languages' => 'ueber', 'offrecord' => 'offtherecord', 'contact' => 'kontakt', 'social' => 'kontakt', 'hero' => 'inhalt',
+        'typo' => 'inhalt', 'colors' => 'inhalt', 'layout' => 'inhalt', 'texts_start' => 'inhalt', 'texts_arbeiten' => 'arbeiten', 'texts_ueber' => 'ueber', 'texts_kontakt' => 'kontakt', 'about' => 'ueber', 'crossmedia' => 'ueber', 'languages' => 'ueber', 'offrecord' => 'offtherecord', 'contact' => 'kontakt', 'social' => 'kontakt', 'hero' => 'inhalt',
         'questions' => 'inhalt',
     ][$key] ?? '';
 }
@@ -500,7 +500,7 @@ function render_fields(array $fields, array $vals, ?callable $after = null): voi
                 echo '<section class="seccard' . ($on ? '' : ' off') . '"><header class="seccard-h"><h2>' . e($f['label']) . '</h2>';
                 if ($tk !== '' && isset($toggles[$tk])) {
                     echo '<label class="sw"><input type="checkbox" name="' . e($tk) . '" value="1"' . ($on ? ' checked' : '') . ' aria-label="' . e($f['label'] . ': ' . $toggles[$tk]['label']) . '"><span class="sw-ui" aria-hidden="true"></span><span class="sw-t"><span class="sw-on">Sichtbar</span><span class="sw-off">Ausgeblendet</span></span></label>';
-                } else {
+                } elseif (!empty($f['fixed'])) {
                     echo '<span class="sw-fix">Immer sichtbar</span>';
                 }
                 if (!empty($f['link'])) {
@@ -564,6 +564,50 @@ function view_edit_item(array $user, string $coll, ?int $id, array $vals, array 
     layout_end();
 }
 
+/** Schalter „Sichtbar“ (wie bei den Abschnittskarten). */
+function layout_switch(string $name, bool $on, string $label): string
+{
+    return '<label class="sw"><input type="checkbox" name="' . e($name) . '" value="1"' . ($on ? ' checked' : '') . ' aria-label="' . e($label . ': sichtbar') . '"><span class="sw-ui" aria-hidden="true"></span><span class="sw-t"><span class="sw-on">Sichtbar</span><span class="sw-off">Ausgeblendet</span></span></label>';
+}
+
+function layout_buttons(): string
+{
+    return '<span class="lay-btns"><button type="button" class="ibtn" data-lay="up" aria-label="Nach oben" title="Nach oben">' . aicon('up', 16) . '</button><button type="button" class="ibtn" data-lay="down" aria-label="Nach unten" title="Nach unten">' . aicon('down', 16) . '</button></span>';
+}
+
+/** „Aufbau der Seite“: Abschnitte und Unterabschnitte per Ziehen oder Pfeilen ordnen, je mit Schalter „Sichtbar“. */
+function render_layout(array $vals): void
+{
+    $secs = layout_sections();
+    $subs = layout_subs();
+    $tog = layout_toggles();
+    $stog = layout_sub_toggles();
+    $on = fn(string $k) => !array_key_exists($k, $vals) || !empty($vals[$k]);
+    echo '<div class="layout">';
+    echo '<div class="lay-fix"><strong>Startbereich (Intro)</strong><span>immer ganz oben</span></div>';
+    echo '<input type="hidden" name="order" id="lay-order" value="' . e(implode(',', layout_order($vals))) . '">';
+    echo '<ol class="lay" id="lay-main" data-target="lay-order">';
+    foreach (layout_order($vals) as $id) {
+        echo '<li class="lay-i" data-id="' . e($id) . '" draggable="true"><div class="lay-row"><span class="lay-grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span><strong class="lay-n">' . e($secs[$id][0]) . '</strong>'
+            . layout_switch($tog[$id], $on($tog[$id]), $secs[$id][0]) . layout_buttons() . '</div>';
+        $pk = $id === 'about' ? 'about' : $id;
+        if (isset($subs[$pk])) {
+            $sk = layout_sub_key($pk);
+            echo '<input type="hidden" name="' . e($sk) . '" id="lay-' . e($sk) . '" value="' . e(implode(',', layout_sub_order($vals, $pk))) . '"><p class="lay-sub-h">Darin, in dieser Reihenfolge:</p>';
+            echo '<ol class="lay lay-sub" data-target="lay-' . e($sk) . '">';
+            foreach (layout_sub_order($vals, $pk) as $sid) {
+                echo '<li class="lay-i" data-id="' . e($sid) . '" draggable="true"><div class="lay-row"><span class="lay-grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span><span class="lay-n">' . e($subs[$pk][$sid]) . '</span>'
+                    . layout_switch($stog[$sid], $on($stog[$sid]), $subs[$pk][$sid]) . layout_buttons() . '</div></li>';
+            }
+            echo '</ol>';
+        }
+        echo '</li>';
+    }
+    echo '</ol>';
+    echo '<div class="lay-fix"><strong>Kontakt &amp; Fußzeile</strong>' . layout_switch($tog['contact'], $on($tog['contact']), 'Kontakt') . '<span>immer ganz unten, die Fußzeile gehört dazu</span></div>';
+    echo '</div>';
+}
+
 function view_edit_group(array $user, string $g, array $vals, array $errors): void
 {
     $def = schema()['groups'][$g];
@@ -594,7 +638,11 @@ function view_edit_group(array $user, string $g, array $vals, array $errors): vo
 <?php
     $GLOBALS['palette_vals'] = $g === 'colors' ? $vals : [];
     lang_bar($def['fields'], $vals, 'g:' . $g);
-    render_fields($def['fields'], $vals);
+    if ($g === 'layout') {
+        render_layout($vals);
+    } else {
+        render_fields($def['fields'], $vals);
+    }
     form_actions(a(), preview_anchor($g), $isDraft, true);
     echo '</form><aside class="livepane" id="livepane" hidden><div class="lp-h"><strong>Live-Vorschau</strong><button type="button" class="btn small ghost" id="lpreload">Aktualisieren</button></div><iframe id="lpframe" title="Vorschau der Seite" loading="lazy"></iframe></aside></div>';
     history_box($user, 'group', $g);

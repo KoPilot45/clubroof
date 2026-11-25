@@ -42,7 +42,7 @@ function help_context(string $active): array
         'c:cv' => ['mehr', 'lebenslauf'], 'c:before' => ['mehr', 'lebenslauf'],
         'c:crossmedia' => ['mehr', 'ueber-mich'], 'c:languages' => ['mehr', 'ueber-mich'], 'g:about' => ['mehr', 'ueber-mich'],
         'c:offrecord' => ['mehr', 'off-the-record'], 'g:contact' => ['mehr', 'kontakt'], 'c:social' => ['mehr', 'kontakt'],
-        'g:hero' => ['hero', 'hero-bereich'], 'c:questions' => ['hero', 'leitfragen'], 'g:typo' => ['hero', 'schrift'], 'g:colors' => ['hero', 'farben'], 'g:texts_start' => ['hero', 'abschnitte'], 'g:texts_arbeiten' => ['hero', 'abschnitte'], 'g:texts_ueber' => ['hero', 'abschnitte'], 'g:texts_kontakt' => ['hero', 'abschnitte'],
+        'g:hero' => ['hero', 'hero-bereich'], 'c:questions' => ['hero', 'leitfragen'], 'g:typo' => ['hero', 'schrift'], 'g:layout' => ['hero', 'seitenaufbau'], 'g:colors' => ['hero', 'farbpaletten'], 'g:texts_start' => ['hero', 'abschnitte'], 'g:texts_arbeiten' => ['hero', 'abschnitte'], 'g:texts_ueber' => ['hero', 'abschnitte'], 'g:texts_kontakt' => ['hero', 'abschnitte'],
         'c:nav' => ['hero', 'menue'], 'g:site' => ['hero', 'farben'], 'translate' => ['englisch', 'uebersetzungstabelle'],
         'media' => ['mediathek', 'mediathek-ueberblick'], 'g:seo' => ['recht', 'seo'], 'g:legal' => ['recht', 'impressum'],
         'stats' => ['auswertung', 'statistik'], 'trash' => ['grundlagen', 'papierkorb'], 'users' => ['system', 'zugaenge'],

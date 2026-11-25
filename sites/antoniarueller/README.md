@@ -82,6 +82,12 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 - „Alle Clips“ heißt jetzt „Alle Beiträge“.
 
 
+## Design: Schrift, Farben, Aufbau der Seite
+
+- **Schrift** (`lib/fonts.php`, Gruppe `typo`): je Verwendung (Großschrift, Serif, Fließtext, Beschriftungen) die jetzige Schrift plus drei Alternativen, alle selbst gehostet (SIL OFL, `assets/fonts/`); dazu drei Größenstufen (`--fs-d/-t/-b`, Beschriftungen bleiben bei mindestens 12 px). Auf der Seite stehen nur die @font-face-Regeln der gewählten Schriften im Quelltext (`font_head()`), nur drei Dateien werden vorab geladen. `assets/fonts-all.css` (Erzeugung: `php tools/fonts-build.php`) lädt alle Schriften nur auf der Schrift-Seite im Backend.
+- **Farben** (`lib/colors.php`, Gruppe `colors`): sechs fertige Paletten oder „Eigene Farben“ (fünf Grundfarben: Hintergrund, Text, Akzent, dunkle Fläche, REC-Rot); alle übrigen Töne werden berechnet (`palette_tokens()`), Lesbarkeit wird geprüft (WCAG-Kontrast, im Backend live). `assets/site.css` enthält außerhalb der Variablen keine festen Farben. Die Migration `colors_v1` übernimmt eine abweichende Akzentfarbe/REC-Rot aus „Allgemein“ als „Eigene Farben“.
+- **Aufbau der Seite** (`lib/layout.php`, Gruppe `layout`): Reihenfolge und Sichtbarkeit der Abschnitte (Leitfragen, Showreel, Podcast, Über mich, Lebenslauf, Off the record) und ihrer Unterabschnitte (Showreel: Featured, Schnittplatz, Beitragsliste; Über mich: Crossmedial, Sprachen; Lebenslauf: Logoleiste, Zeitstrahl). Startbereich oben und Kontakt mit Fußzeile unten sind fest. Die Abschnitte liegen als Teilvorlagen in `templates/sections/`; `templates/page.php` bindet sie in der gewählten Reihenfolge ein. Menüpunkte folgen der Reihenfolge, die Nummern der REC-Zeilen werden aus ihr berechnet (`layout_numbers()`). Die Schalter „Abschnitt zeigen“ (früher in den Abschnittstexten, Schlüssel `on_*`) liegen jetzt hier (Migration `layout_v1`).
+
 ## Lebenslauf: Zeitstrahl und Logoleiste
 
 - Backend-Menü: „Podcast-Folgen“ steht unter Arbeiten; „Stationen“ (mit der Liste „Davor“ darunter, Option `with` der Sammlung) und „Off the record“ stehen unter Über mich. Die Überschriften „Crossmedial“ und „Sprachen“ liegen unter Abschnitte → Über mich (Migration `about_labels_v1` übernimmt vorhandene Werte). Crossmedial hat das zusätzliche Symbol „Social Media“ (`share`).
