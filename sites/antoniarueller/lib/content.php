@@ -511,6 +511,7 @@ function sanitize_fields(array $fields, array $post, array $files, array $old): 
                 $v = preg_match('~^#[0-9a-fA-F]{6}$~', (string)$raw) ? strtolower((string)$raw) : ($f['default'] ?? '#000000');
                 break;
             case 'select':
+            case 'icon':
                 $opts = select_options($f);
                 $v = (string)$raw;
                 if ($v !== '' && !isset($opts[$v])) {

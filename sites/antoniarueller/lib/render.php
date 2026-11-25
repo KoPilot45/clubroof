@@ -123,6 +123,21 @@ function icon(string $kind, int $size = 20): string
         'podcast' => '<path d="M4 15v-3a8 8 0 0 1 16 0v3"></path><rect x="3" y="14" width="4" height="6" rx="1"></rect><rect x="17" y="14" width="4" height="6" rx="1"></rect>',
         'social' => '<path d="M4 5h16v11H9l-5 4z"></path>',
         'share' => '<circle cx="18" cy="5" r="2.6"></circle><circle cx="6" cy="12" r="2.6"></circle><circle cx="18" cy="19" r="2.6"></circle><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"></path>',
+        'tv' => '<rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8M12 17v4"></path>',
+        'film' => '<rect x="3" y="10" width="18" height="10" rx="1.5"></rect><path d="M3 10l2-5 15-2 .6 3L21 10M8.5 7.7l2.2 2.3M14 6.5l2.2 2.4"></path>',
+        'camera' => '<path d="M3 8h4l1.5-2.5h7L17 8h4v11H3z"></path><circle cx="12" cy="13.5" r="3.5"></circle>',
+        'newspaper' => '<path d="M5 4h11v15a1 1 0 0 0 1 1H7a2 2 0 0 1-2-2z"></path><path d="M16 8h3v10a2 2 0 0 1-2 2M8 8h5M8 12h5M8 16h5"></path>',
+        'book' => '<path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path d="M5 17a3 3 0 0 1 3-3h10"></path>',
+        'pen' => '<path d="M4 20l1-4.5L16 4.5l3.5 3.5L8.5 19z"></path><path d="M14 6.5l3.5 3.5"></path>',
+        'live' => '<circle cx="12" cy="12" r="1.8"></circle><path d="M8.7 8.7a4.7 4.7 0 0 0 0 6.6M15.3 8.7a4.7 4.7 0 0 1 0 6.6M5.8 5.8a8.8 8.8 0 0 0 0 12.4M18.2 5.8a8.8 8.8 0 0 1 0 12.4"></path>',
+        'chat' => '<path d="M4 4.5h11v8H9l-3 3v-3H4z"></path><path d="M17 9h3v8h-2v3l-3-3h-4v-2"></path>',
+        'play' => '<rect x="3" y="5" width="18" height="14" rx="4"></rect><path d="M10 9.4v5.2l4.4-2.6z"></path>',
+        'mail' => '<rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7.5l9 6 9-6"></path>',
+        'search' => '<circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.5-4.5"></path>',
+        'data' => '<path d="M3 20h18M6.5 20v-7M12 20V6M17.5 20v-10"></path>',
+        'pin' => '<path d="M12 21s6-5.4 6-11a6 6 0 0 0-12 0c0 5.6 6 11 6 11z"></path><circle cx="12" cy="10" r="2.2"></circle>',
+        'globe' => '<circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c3.2 3.2 3.2 14.8 0 18M12 3c-3.2 3.2-3.2 14.8 0 18"></path>',
+        'bulb' => '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"></path>',
     ];
     $p = $paths[$kind] ?? $paths['text'];
     return '<svg aria-hidden="true" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' . $p . '</svg>';

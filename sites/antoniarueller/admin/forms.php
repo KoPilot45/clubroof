@@ -171,6 +171,15 @@ function render_field_inner(array $f, mixed $val, array $vals = []): void
             }
             echo '</select>';
             break;
+        case 'icon':
+            $opts = select_options($f);
+            $cur = (string)$val !== '' && isset($opts[(string)$val]) ? (string)$val : (string)($f['default'] ?? '');
+            echo '<fieldset class="iconpick" id="' . $id . '"' . $desc . '><legend class="sr-only">' . e($f['label']) . '</legend>';
+            foreach ($opts as $ov => $ol) {
+                echo '<label class="ip" title="' . e($ol) . '"><input type="radio" name="' . e($k) . '" value="' . e($ov) . '"' . ($cur === (string)$ov ? ' checked' : '') . '><span class="ip-i">' . icon((string)$ov, 24) . '</span><span class="ip-l">' . e($ol) . '</span></label>';
+            }
+            echo '</fieldset>';
+            break;
         case 'image':
             $has = $val !== '' && upload_url((string)$val) !== '';
             $isLogo = !empty($f['logo']);
@@ -348,6 +357,12 @@ function list_embedded(array $user, array $def): void
 /** Eine Zeile der Listenansicht. $embedded = ohne Auswahlfeld und Ziehgriff (zweite Liste auf derselben Seite). */
 function list_row(array $user, array $def, string $coll, array $r, int $i, int $count, string $imgKey, bool $hasPub, bool $embedded = false): void
 {
+    $isLogoThumb = false;
+    foreach ($def['fields'] as $lf) {
+        if ($lf['key'] === $imgKey && !empty($lf['logo'])) {
+            $isLogoThumb = true;
+        }
+    }
     $title = trim((string)($r[$def['title']] ?? '')) ?: '(ohne Titel)';
     $sub = array_filter(array_map(fn($k) => (string)($r[$k] ?? ''), $def['sub']));
     $hidden = $hasPub && !$r['published'];
@@ -361,7 +376,7 @@ function list_row(array $user, array $def, string $coll, array $r, int $i, int $
     }
     echo '<span class="no">' . sprintf('%02d', $i + 1) . '</span>';
     if ($imgKey !== '' && !empty($r[$imgKey])) {
-        echo '<img class="thumb" src="' . e(upload_url((string)$r[$imgKey])) . '" alt="" loading="lazy" width="56" height="56">';
+        echo '<img class="thumb' . ($isLogoThumb ? ' logo' : '') . '" src="' . e(upload_url((string)$r[$imgKey])) . '" alt="" loading="lazy" width="56" height="56">';
     }
     echo '<a class="r-main" href="' . e($edit) . '"><strong>' . e(mb_strimwidth($title, 0, 90, '…')) . '</strong>';
     if ($sub) {

@@ -14,9 +14,16 @@ require_once __DIR__ . '/legal_defaults.php';
 
 const MARKUP_HINT = 'Hervorhebungen: *kursiv*, **GROSSSCHRIFT**, ==Akzentfarbe==';
 
+/** Symbole für Kategorien und „Crossmedial“: Schlüssel => Bezeichnung (die Zeichnungen stehen in icon(), lib/render.php). */
 function media_options(): array
 {
-    return ['video' => 'Video / TV', 'text' => 'Text / Online', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'YouTube / Video-Plattform', 'share' => 'Social Media'];
+    return [
+        'video' => 'Video / TV', 'tv' => 'Fernsehen', 'film' => 'Film / Doku', 'camera' => 'Foto',
+        'text' => 'Text / Online', 'newspaper' => 'Print / Zeitung', 'book' => 'Buch / Magazin', 'pen' => 'Kommentar / Kolumne',
+        'radio' => 'Radio', 'live' => 'Live / Sendung', 'podcast' => 'Podcast', 'chat' => 'Interview / Gespräch',
+        'social' => 'YouTube / Social', 'play' => 'Video-Plattform', 'share' => 'Social Media', 'mail' => 'Newsletter',
+        'search' => 'Recherche', 'data' => 'Daten / Grafik', 'pin' => 'Vor Ort / Reportage', 'globe' => 'International', 'bulb' => 'Innovation',
+    ];
 }
 
 function wave_options(): array
@@ -77,7 +84,7 @@ function schema(): array
         'fields' => [
             f('text', 'code', 'Spurkürzel', ['required' => true, 'max' => 6, 'hint' => 'z. B. V1, T1, A1 (wird in der Spurliste des Schnittplatzes gezeigt).']),
             f('text', 'label', 'Bezeichnung', ['required' => true, 'max' => 40, 'hint' => 'Erscheint an der Referenz und in der Spur, z. B. „Online“.']),
-            f('select', 'icon', 'Symbol', ['options' => media_options(), 'default' => 'text']),
+            f('icon', 'icon', 'Symbol', ['options' => media_options(), 'default' => 'text']),
             f('color', 'bg', 'Balkenfarbe', ['default' => '#0B3F44']),
             f('color', 'fg', 'Schriftfarbe im Balken', ['default' => '#F3ECDF']),
         ],
@@ -127,7 +134,7 @@ function schema(): array
     $s['collections']['crossmedia'] = [
         'label' => 'Über mich: Crossmedial', 'singular' => 'Kachel', 'title' => 'label', 'sub' => ['outlets'],
         'fields' => [
-            f('select', 'icon', 'Symbol', ['options' => media_options(), 'default' => 'text']),
+            f('icon', 'icon', 'Symbol', ['options' => media_options(), 'default' => 'text']),
             f('text', 'label', 'Bezeichnung', ['required' => true, 'max' => 30]),
             f('text', 'outlets', 'Redaktionen', ['max' => 200, 'hint' => 'z. B. „buten un binnen · WELT · Good News“']),
         ],

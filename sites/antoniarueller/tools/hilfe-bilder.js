@@ -76,6 +76,7 @@ async function save(page, name, clip) {
 (async () => {
   try { fs.unlinkSync(path.join(root, 'data', 'mail.log')); } catch (e) {}
   const clipId = php('echo (int)q("SELECT id FROM ar_items WHERE coll=\'clips\' AND deleted_at IS NULL ORDER BY sort LIMIT 1")->fetchColumn();');
+  const trackId = php('echo (int)q("SELECT id FROM ar_items WHERE coll=\'tracks\' AND deleted_at IS NULL ORDER BY sort LIMIT 1")->fetchColumn();');
   const cvId = php('echo (int)q("SELECT id FROM ar_items WHERE coll=\'cv\' AND deleted_at IS NULL ORDER BY sort LIMIT 1")->fetchColumn();');
   // Beispiel-PDF für die Mediathek
   const pdfPath = path.join(root, 'uploads', 'beispiel-pressemappe.pdf');
@@ -131,7 +132,9 @@ async function save(page, name, clip) {
       marks: [{ sel: '.seg', nth: 0 }, { sel: '.seg', nth: 1 }, '#f_gallery_text', '.gal'] },
     { name: 'kategorien', url: '/admin/?p=list&c=tracks', h: 560, marks: [{ sel: '.row', nth: 0 }, { sel: '.row .grip', nth: 1 }] },
     { name: 'podcast-folge', url: '/admin/?p=edit&c=episodes', h: 1280, marks: ['#f_show', '#f_desc', '#f_spotify'] },
-    { name: 'lebenslauf', url: '/admin/?p=edit&c=cv&id=' + cvId, h: 960, marks: ['#f_role', '#f_org', '#f_from', 'input[name=ongoing]'] },
+    { name: 'lebenslauf', url: '/admin/?p=edit&c=cv&id=' + cvId, h: 960, marks: ['#f_org', '#f_role', '#f_from', 'input[name=ongoing]'] },
+    { name: 'stationen', url: '/admin/?p=list&c=cv', h: 900, marks: ['.toolbar .btn', { sel: '.row', nth: 0 }, { sel: '.embedlist .toolbar .btn' }] },
+    { name: 'symbole', url: '/admin/?p=edit&c=tracks&id=' + trackId, h: 900, scrollTo: '.iconpick', marks: ['.iconpick', { sel: '.ip', nth: 0 }] },
     { name: 'uebersetzung', url: '/admin/?p=translate', h: 760, marks: [{ sel: '#trbar .chip', nth: 0 }, '#trarea', { sel: '.trrow:not([hidden]) .tr-en textarea', nth: 0 }, { sel: '.trrow:not([hidden]) .tr-copy', nth: 0 }] },
     { name: 'mediathek', url: '/admin/?p=media', h: 980, marks: ['#mf', { sel: '#mbar .chip', nth: 0 }, { sel: '.mname', nth: 0 }, { sel: '.mrep .btn', nth: 0 }, { sel: '.msel', nth: 0 }] },
     { name: 'seo', url: '/admin/?p=group&g=seo', h: 900, marks: ['input[name=noindex]', '#f_title', '#f_description'] },

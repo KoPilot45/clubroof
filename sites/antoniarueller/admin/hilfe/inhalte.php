@@ -24,12 +24,24 @@ return [
                 'open' => ['Referenzen öffnen', 'p=list&c=clips'],
             ],
             [
+                'id' => 'symbole', 'title' => 'Symbole auswählen', 'shot' => 'symbole', 'alt' => 'Symbol-Auswahl bei einer Kategorie',
+                'lead' => 'Kategorien und die Kacheln unter „Crossmedial“ bekommen ein Symbol, das du aus einer Auswahl anklickst.',
+                'legend' => ['Die Auswahl mit allen Symbolen: ein Klick wählt, das gewählte ist umrandet', 'Ein einzelnes Symbol mit Bezeichnung'],
+                'steps' => [
+                    'Öffne **Arbeiten → Kategorien** oder **Über mich → Crossmedial** und lege einen Eintrag an oder bearbeite einen.',
+                    'Klicke beim Feld **Symbol** auf das passende Bild. Es stehen rund 20 Symbole zur Auswahl, z. B. Video, Fernsehen, Radio, Podcast, Zeitung, Foto, Recherche, Interview, Social Media und Newsletter.',
+                    'Mit der Tastatur wählst du mit den Pfeiltasten und bestätigst mit der Leertaste.',
+                    'Das Symbol erscheint in der Spurliste des Schnittplatzes und in den Kacheln von „Über mich“. Gespeichert wird es mit dem Eintrag.',
+                ],
+                'open' => ['Kategorien öffnen', 'p=list&c=tracks'],
+            ],
+            [
                 'id' => 'kategorien', 'title' => 'Kategorien und Schnittplatz', 'shot' => 'kategorien', 'alt' => 'Liste der Kategorien',
                 'lead' => 'Jede Kategorie ist eine Spur im „Schnittplatz“, der Zeitleiste über der Beitragsliste.',
                 'legend' => ['Kategorie mit Spurkürzel (V1, T1 …)', 'Per Ziehen die Reihenfolge der Spuren ändern'],
                 'steps' => [
                     'Öffne **Arbeiten → Kategorien**. Hier legst du Spuren wie „Video / TV“, „Online“ oder „Radio“ an.',
-                    'Jede Kategorie hat **Spurkürzel**, **Bezeichnung**, **Symbol** sowie **Balkenfarbe** und **Schriftfarbe**.',
+                    'Jede Kategorie hat **Spurkürzel**, **Bezeichnung**, **Symbol** (aus einer Auswahl, siehe „Symbole auswählen“) sowie **Balkenfarbe** und **Schriftfarbe**.',
                     'In der Referenz wählst du nur die Kategorie, die Spur ergibt sich daraus.',
                     'Im Schnittplatz hängen die Clips einer Spur in der Reihenfolge der Referenzen aneinander. Ihre Breite variiert automatisch, die längste Spur füllt mindestens 80 % der Breite.',
                     'Ein Klick auf einen Clip springt zur Kachel des Beitrags darunter.',
@@ -93,14 +105,25 @@ return [
             ],
             [
                 'id' => 'lebenslauf', 'title' => 'Lebenslauf und Stationen', 'shot' => 'lebenslauf', 'alt' => 'Liste der Lebenslauf-Stationen',
-                'lead' => 'Der Lebenslauf gruppiert sich automatisch nach Jahr (neueste zuerst).',
-                'legend' => ['**Rolle**, z. B. „Reporterin“', '**Organisation** (erscheint kursiv)', '**Beginn** (und darunter **Ende**)', 'Der Haken **Läuft noch** färbt die Jahreszahl im Lebenslauf ein'],
+                'lead' => 'Die Stationen bilden den Zeitstrahl und die Logoleiste. Sie gruppieren sich automatisch nach Jahr (neueste zuerst).',
+                'legend' => ['**Organisation**, z. B. „WDR“ (Pflicht)', '**Rolle**, z. B. „Autorin“', '**Beginn** (nur das Jahr ist Pflicht, der Monat optional), darunter **Ende**', 'Der Haken **Läuft noch** hebt die Karte hervor und färbt das Jahr ein'],
                 'steps' => [
                     '**Lebenslauf → Stationen:** eine Liste für den **Zeitstrahl** und die **Logoleiste**. Pro Eintrag: **Organisation**, optional **Logo**, **Rolle**, **Beginn** und **Ende** (nur das **Jahr** ist Pflicht, der Monat optional), **Redaktion** (Freitext, z. B. „TV“ oder „Radio“) und ein optionaler **Link**.',
                     'Der Haken **Läuft noch** hebt die Karte hervor und färbt das Jahr im Zeitstrahl ein. Mit **Zeitangabe überschreiben** setzt du einen eigenen Text, z. B. „rund 7 Jahre · Lokalzeit“.',
                     '**Logos:** am besten freigestellt (transparenter Hintergrund). Beim Hochladen werden sie auf höchstens 360 × 96 Pixel verkleinert, von leeren Rändern befreit und in WebP umgewandelt. Eine Auswahl fertiger Logos liegt in der **Mediathek**. Die **Logoleiste** über dem Zeitstrahl zeigt jedes Logo nur einmal, auch wenn es bei mehreren Einträgen steht.',
                     '**Davor:** frühere Erfahrungen und Ausbildung als kurze Zeilen am Ende des Zeitstrahls. Die Liste steht auf derselben Seite unter den Stationen (**Über mich → Stationen**).',
                     'Das **CV als PDF** (Download-Knopf) lädst du unter **Kontakt & Fußzeile** hoch.',
+                ],
+                'open' => ['Stationen öffnen', 'p=list&c=cv'],
+            ],
+            [
+                'id' => 'stationen-liste', 'title' => 'Stationen sortieren und „Davor“', 'shot' => 'stationen', 'alt' => 'Liste der Stationen mit „Davor“ darunter',
+                'lead' => 'Die Liste der Stationen steht unter Über mich; „Davor“ gehört auf dieselbe Seite.',
+                'legend' => ['Station hinzufügen', 'Eine Station mit Logo; per Ziehen änderst du die Reihenfolge innerhalb des Jahres', 'Darunter: „Davor“ mit eigenem Knopf zum Hinzufügen'],
+                'steps' => [
+                    'Öffne **Über mich → Stationen**. Oben stehen die Stationen, darunter die Liste **Davor** (Studium, frühere Erfahrungen).',
+                    'Das Jahr bestimmt, wo eine Station im Zeitstrahl steht. Innerhalb eines Jahres bestimmt die Reihenfolge der Liste, wie die Karten folgen.',
+                    'Bei **Davor** schiebst du Einträge über das Menü hinter den drei Punkten nach oben oder unten.',
                 ],
                 'open' => ['Stationen öffnen', 'p=list&c=cv'],
             ],

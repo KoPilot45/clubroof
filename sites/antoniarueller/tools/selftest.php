@@ -1118,8 +1118,27 @@ if ($sRow !== false) {
     q("DELETE FROM ar_settings WHERE grp = 'sections'");
 }
 reset_content_cache();
-// Symbol „Social Media“ bei Crossmedial
-ok(str_contains(req('GET', "$base/admin/?p=edit&c=crossmedia")['body'], 'value="share"') && str_contains(icon('share'), '<circle'), 'Crossmedial: neues Symbol „Social Media“');
+// Symbol-Auswahl bei Kategorien und Crossmedial
+$cmForm = req('GET', "$base/admin/?p=edit&c=crossmedia")['body'];
+$trForm = req('GET', "$base/admin/?p=edit&c=tracks")['body'];
+ok(substr_count($cmForm, 'class="ip"') === count(media_options()) && substr_count($trForm, 'class="ip"') === count(media_options()) && count(media_options()) >= 20, 'Symbol-Auswahl mit allen Symbolen bei Crossmedial und Kategorien (' . count(media_options()) . ')');
+ok(str_contains($cmForm, 'type="radio" name="icon" value="share"') && str_contains($cmForm, 'value="camera"') && str_contains($cmForm, 'value="search"') && str_contains($cmForm, 'value="newspaper"') && !str_contains($cmForm, '<select name="icon"'), 'Auswahl enthält Social Media, Foto, Recherche, Print');
+$allIcons = true;
+foreach (array_keys(media_options()) as $ik) {
+    $allIcons = $allIcons && str_contains(icon($ik), '<svg') && icon($ik) !== icon('nicht-vorhanden-xyz') || $ik === 'text';
+}
+ok($allIcons, 'jedes Symbol hat eine eigene Zeichnung');
+$cmP = ['_csrf' => $tok, 'action' => 'save_item', 'coll' => 'crossmedia', 'label' => 'Symboltest', 'outlets' => 'x', 'icon' => 'camera', 'mode' => 'publish'];
+req('POST', "$base/admin/", $cmP);
+req('POST', "$base/admin/", array_merge($cmP, ['label' => 'Symboltest Ungültig', 'icon' => 'gibt-es-nicht']));
+$icRows = q("SELECT data FROM ar_items WHERE coll = 'crossmedia' AND data LIKE '%Symboltest%'")->fetchAll();
+$icVals = array_map(fn($r) => (json_decode((string)$r['data'], true) ?: [])['icon'] ?? '', $icRows);
+sort($icVals);
+ok($icVals === ['camera', 'text'], 'ungültiges Symbol fällt auf den Standard zurück (' . implode(',', $icVals) . ')');
+foreach (q("SELECT id FROM ar_items WHERE coll = 'crossmedia' AND data LIKE '%Symboltest%'")->fetchAll() as $row) {
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'trash', 'id' => $row['id']]);
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'purge', 'id' => $row['id']]);
+}
 // Übernahme alter Stationen in den Lebenslauf (einmalige Migration)
 $mj = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = '_migrations'")->fetchColumn(), true) ?: [];
 q("DELETE FROM ar_items WHERE data LIKE '%Migrationsstation%'");
