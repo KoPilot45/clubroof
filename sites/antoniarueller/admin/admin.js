@@ -770,6 +770,39 @@
     });
   }
 
+  // ---- Farbpalette: eigene Farben zeigen, Karte „Eigene Farben“ nachführen, Lesbarkeit prüfen ----
+  var pal = $('.palettepick');
+  if (pal) {
+    var presets = JSON.parse(pal.getAttribute('data-palettes') || '{}');
+    var lum = function (h) { var c = [1, 3, 5].map(function (i) { var v = parseInt(h.substr(i, 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+    var cr = function (a, b) { var x = lum(a), y = lum(b); if (x < y) { var t = x; x = y; y = t; } return (x + 0.05) / (y + 0.05); };
+    var mix = function (a, b, t) { var o = '#'; for (var i = 1; i <= 5; i += 2) { var p = parseInt(a.substr(i, 2), 16), q = parseInt(b.substr(i, 2), 16); o += ('0' + Math.round(p + (q - p) * t).toString(16)).slice(-2); } return o.toUpperCase(); };
+    var ens = function (fg, bg, min, to) { for (var i = 0; i <= 20 && cr(fg, bg) < min; i++) fg = mix(fg, to, 0.1); return fg; };
+    var field = function (n) { var e = $('input[name="' + n + '"]'); return e ? e.value : ''; };
+    var current = function () {
+      var sel = $('input[name=palette]:checked', pal), key = sel ? sel.value : 'standard';
+      if (key !== 'custom' && presets[key]) return presets[key];
+      return { paper: field('c_paper'), ink: field('c_ink'), accent: field('c_accent'), teal: field('c_teal'), rec: field('c_rec') };
+    };
+    var render = function () {
+      var b = current(), w = '#FFFFFF', card = mix(b.paper, w, 0.65);
+      if (b.paper.toUpperCase() === '#F3ECDF' && b.accent.toUpperCase() === '#0E5C62') card = '#FBF6EE';
+      var rows = [['Text auf Hintergrund', cr(b.ink, b.paper), 4.5], ['Akzentfarbe auf Hintergrund (Zahlen, kleine Beschriftungen)', cr(b.accent, b.paper), 4.5], ['Schrift auf Knöpfen (hell auf Akzentfarbe)', cr(card, b.accent), 4.5], ['Heller Text auf dunklen Flächen', cr(b.paper, b.teal), 4.5], ['REC-Rot auf Hintergrund', cr(b.rec, b.paper), 3]];
+      var box = $('#pp-checks'); if (!box) return;
+      box.innerHTML = rows.map(function (r) { var cls = r[1] >= r[2] ? 'ok' : (r[1] >= r[2] * 0.7 ? 'warn' : 'bad'); return '<div class="ck ' + cls + '"><b>' + r[1].toFixed(1) + ':1</b><span>' + (cls === 'ok' ? 'gut: ' : 'zu schwach: ') + r[0] + ' (mindestens ' + r[2] + ':1)</span></div>'; }).join('');
+      var cs = $('.pp:last-child .pp-sw', pal);
+      if (cs) ['paper', 'ink', 'accent', 'teal', 'rec'].forEach(function (k) { var i = $('i[data-c=' + k + ']', cs); if (i) var v = field('c_' + k); if (i && v) i.style.background = v; });
+    };
+    var toggle = function () {
+      var sel = $('input[name=palette]:checked', pal);
+      $$('.showif').forEach(function (w) { var p = w.getAttribute('data-showif').split('='); if (p[0] === 'palette') w.hidden = !sel || p[1] !== sel.value; });
+      render();
+    };
+    pal.addEventListener('change', toggle);
+    ['c_paper', 'c_ink', 'c_accent', 'c_teal', 'c_rec'].forEach(function (n) { var e = $('input[name="' + n + '"]'); if (e) e.addEventListener('input', render); });
+    toggle();
+  }
+
   // ---- Umschalter (z. B. Externer Link / Beitrag selbst hosten) steuert abhängige Felder ----
   $$('.seg').forEach(function (seg) {
     var inp = $('input[type=hidden]', seg);

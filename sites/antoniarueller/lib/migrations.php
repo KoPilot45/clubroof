@@ -457,6 +457,28 @@ function run_migrations(PDO $pdo): void
         }
     }
 
+    // Akzentfarbe und REC-Rot standen früher unter „Allgemein & Design“: Abweichungen vom Standard werden als „Eigene Farben“ übernommen
+    if (!in_array('colors_v1', $applied, true)) {
+        try {
+            $has = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = 'colors'")->fetchColumn();
+            if (!$has) {
+                $row = $pdo->query("SELECT data FROM ar_settings WHERE grp = 'site'")->fetchColumn();
+                $sd = $row !== false ? (json_decode((string)$row, true) ?: []) : [];
+                $acc = strtoupper(trim((string)($sd['accent'] ?? '')));
+                $rec = strtoupper(trim((string)($sd['rec'] ?? '')));
+                $custom = ($acc !== '' && $acc !== '#0E5C62' && preg_match('~^#[0-9A-F]{6}$~', $acc)) || ($rec !== '' && $rec !== '#C42F24' && preg_match('~^#[0-9A-F]{6}$~', $rec));
+                if ($custom) {
+                    $cd = ['palette' => 'custom', 'c_accent' => preg_match('~^#[0-9A-F]{6}$~', $acc) ? $acc : '#0E5C62', 'c_rec' => preg_match('~^#[0-9A-F]{6}$~', $rec) ? $rec : '#C42F24'];
+                    $pdo->prepare("INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES ('colors', ?, ?, 'migration')")
+                        ->execute([json_encode($cd), time()]);
+                }
+            }
+            $applied[] = 'colors_v1';
+        } catch (Throwable $e) {
+            // beim nächsten Aufruf erneut
+        }
+    }
+
     if (count($applied) !== $before) {
         $json = json_encode($applied);
         $exists = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = '_migrations'")->fetchColumn();

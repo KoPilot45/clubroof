@@ -218,14 +218,22 @@ function schema(): array
 
     // ---------- Einzelbereiche ----------
     $s['groups']['site'] = [
-        'label' => 'Allgemein & Design', 'help' => 'Farben und Kopfzeile. Titel und Beschreibung für Suchmaschinen findest du unter „SEO & Suche“.',
+        'label' => 'Kopfzeile', 'help' => 'Texte in der Kopfzeile und im Handy-Menü. Farben und Schriften stehen unter „Farben“ und „Schrift“; Titel und Beschreibung für Suchmaschinen unter „SEO & Suche“.',
         'fields' => [
-            f('section', '', 'Farben'),
-            f('color', 'accent', 'Akzentfarbe (Buttons, Zahlen)', ['default' => '#0E5C62']),
-            f('color', 'rec', 'Rec-Rot (blinkender Punkt)', ['default' => '#C42F24']),
-            f('section', '', 'Kopfzeile'),
             f('text', 'header_label', 'Text links oben', ['max' => 60, 'default' => 'AR / Reel 2025–26']),
             f('text', 'menu_label', 'Titel im Handy-Menü', ['max' => 30, 'default' => 'AR / Menü', 'dict' => true]),
+        ],
+    ];
+    $s['groups']['colors'] = [
+        'label' => 'Farben',
+        'help' => 'Wähle eine fertige Farbpalette oder stelle eigene Farben zusammen. Aus fünf Grundfarben berechnet die Seite alle übrigen Töne und achtet auf gute Lesbarkeit.',
+        'fields' => [
+            f('palettepick', 'palette', 'Farbpalette', ['options' => palette_options(), 'default' => 'standard']),
+            f('color', 'c_paper', 'Hintergrund', ['default' => '#F3ECDF', 'show_if' => ['palette', 'custom']]),
+            f('color', 'c_ink', 'Text', ['default' => '#172526', 'show_if' => ['palette', 'custom']]),
+            f('color', 'c_accent', 'Akzentfarbe (Knöpfe, Zahlen, Hervorhebungen)', ['default' => '#0E5C62', 'show_if' => ['palette', 'custom']]),
+            f('color', 'c_teal', 'Dunkle Flächen (Podcast, Featured, Menü)', ['default' => '#0B3F44', 'show_if' => ['palette', 'custom']]),
+            f('color', 'c_rec', 'REC-Rot (blinkender Punkt)', ['default' => '#C42F24', 'show_if' => ['palette', 'custom']]),
         ],
     ];
     $s['groups']['typo'] = [
@@ -455,7 +463,8 @@ function admin_nav(): array
             ['c', 'social', 'Social-Media-Profile', 'Links zu LinkedIn, Instagram usw.'],
         ]],
         'design' => ['Seite & Design', 'palette', 'Farben, Kopfzeile und Menü.', [
-            ['g', 'site', 'Farben & Kopfzeile', 'Akzentfarbe und Verhalten der Kopfzeile.'],
+            ['g', 'colors', 'Farben', 'Fertige Farbpaletten oder eigene Farben mit Lesbarkeits-Prüfung.'],
+            ['g', 'site', 'Kopfzeile', 'Text links oben und Titel im Handy-Menü.'],
             ['g', 'typo', 'Schrift', 'Schriften und Textgrößen: je Verwendung drei Alternativen.'],
             ['c', 'nav', 'Menü der Webseite', 'Die Menüpunkte oben auf der Seite.'],
         ]],

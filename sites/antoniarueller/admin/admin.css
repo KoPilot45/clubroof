@@ -672,3 +672,19 @@ input[type=file]:focus-visible{outline:3px solid #f2b705;outline-offset:3px;bord
 .fp:hover{border-color:var(--accent,#0E5C62)}
 .fp:has(input:checked){border-color:var(--accent,#0E5C62);box-shadow:0 0 0 2px var(--accent,#0E5C62);background:#f1f7f6}
 .fp:has(input:focus-visible){outline:3px solid #f0b400;outline-offset:2px}
+
+/* Farbpaletten */
+.palettepick{border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.pp{position:relative;display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid #bfb39b;border-radius:12px;background:#fff;cursor:pointer}
+.pp input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.pp-sw{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid rgba(0,0,0,.12)}
+.pp-sw i{flex:1}.pp-sw i[data-c=paper]{flex:2}
+.pp-n{font-weight:700;font-size:.92rem}.pp-c{font-size:.8rem;color:var(--muted,#5b6b6c)}
+.pp-ok{align-self:flex-start;font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:99px}
+.pp-ok.ok{background:#e1f0e4;color:#1f5a30}.pp-ok.warn{background:#fbe7d0;color:#8a4a00}
+.pp:hover{border-color:var(--accent,#0E5C62)}
+.pp:has(input:checked){border-color:var(--accent,#0E5C62);box-shadow:0 0 0 2px var(--accent,#0E5C62);background:#f1f7f6}
+.pp:has(input:focus-visible){outline:3px solid #f0b400;outline-offset:2px}
+.pp-checks{margin-top:14px;display:grid;gap:4px;font-size:.86rem}
+.pp-checks .ck{display:flex;gap:8px;align-items:baseline}.pp-checks .ck b{min-width:3.2em}
+.pp-checks .ck.ok b{color:#1f5a30}.pp-checks .ck.warn b{color:#8a4a00}.pp-checks .ck.bad b{color:#a3281b}

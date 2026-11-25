@@ -1168,6 +1168,59 @@ $pgF2 = req('GET', "$base/")['body'];
 ok(str_contains($pgF2, "font-family:'Anton'") && str_contains($pgF2, '--fs-d:1;'), 'ungültige Werte fallen auf die Standardschrift und -größe zurück');
 req('POST', "$base/admin/", array_merge($typoPost, ['font_display' => 'anton', 'font_serif' => 'instrument-serif', 'font_sans' => 'inter-tight', 'font_mono' => 'jetbrains-mono', 'size_preset' => 'standard']));
 ok(str_contains(req('GET', "$base/")['body'], '--fs-b:1;'), 'zurück auf Standard');
+// Farben: fertige Paletten oder eigene Farben, Lesbarkeit
+echo "Farben\n";
+$prOk = true;
+foreach (palette_presets() as $pk => $pv) {
+    $tk = palette_tokens($pv[2]);
+    foreach (palette_checks($pv[2]) as [, $ratio, $min]) {
+        $prOk = $prOk && $ratio >= $min;
+    }
+    $prOk = $prOk && color_contrast($tk['mute'], $tk['paper']) >= 4.5 && color_contrast($tk['acc-lt'], $tk['teal']) >= 4.5 && count($tk) === 20;
+}
+ok($prOk && count(palette_presets()) === 6, 'alle fertigen Paletten bestehen die Lesbarkeits-Prüfung (6 Paletten)');
+$bad = ['paper' => '#F3ECDF', 'ink' => '#C8C0B0', 'accent' => '#E0D8C8', 'teal' => '#D8D0C0', 'rec' => '#F0E8D8'];
+ok(count(array_filter(palette_checks($bad), fn($c) => $c[1] < $c[2])) >= 4, 'schlechte Farbkombination wird erkannt');
+$css0 = (string)file_get_contents("$root/assets/site.css");
+$cssBody = substr($css0, (int)strpos($css0, '*{box-sizing'));
+ok(!preg_match('~#[0-9A-Fa-f]{6}\b~', $cssBody), 'site.css enthält außerhalb der Variablen keine festen Farben mehr');
+$pgC0 = req('GET', "$base/")['body'];
+ok(str_contains($pgC0, '--accent:#0E5C62;') && str_contains($pgC0, '--card:#FBF6EE;') && str_contains($pgC0, '--acc-lt:#8FCFCB;') && str_contains($pgC0, 'name="theme-color" content="#F3ECDF"'), 'Standard: unveränderte Farben der Seite');
+$cfm = req('GET', "$base/admin/?p=group&g=colors")['body'];
+ok(substr_count($cfm, 'class="pp"') === 7 && str_contains($cfm, 'id="pp-checks"') && str_contains($cfm, 'name="c_accent"') && str_contains($cfm, 'data-showif="palette=custom"') && !str_contains(req('GET', "$base/admin/?p=group&g=site")['body'], 'name="accent"'), 'Farben-Seite: sechs Paletten plus „Eigene Farben“, Prüfung, eigene Farbfelder; Kopfzeile ohne Farben');
+$colPost = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'colors', 'mode' => 'publish', 'palette' => 'bordeaux'];
+req('POST', "$base/admin/", $colPost);
+$pgC1 = req('GET', "$base/")['body'];
+ok(str_contains($pgC1, '--accent:#8A2538;') && str_contains($pgC1, '--paper:#F6EFE6;') && str_contains($pgC1, '--teal:#551523;') && str_contains($pgC1, 'name="theme-color" content="#F6EFE6"') && !str_contains($pgC1, '--accent:#0E5C62;'), 'Palette „Bordeaux“ ändert Farben und Browserleiste');
+ok(str_contains(req('GET', "$base/impressum/")['body'], '--accent:#8A2538;'), 'Impressum und Datenschutz nutzen dieselben Farben');
+req('POST', "$base/admin/", array_merge($colPost, ['palette' => 'custom', 'c_paper' => '#EEEEEE', 'c_ink' => '#111111', 'c_accent' => '#224466', 'c_teal' => 'kein-hex', 'c_rec' => '#CC0000']));
+$pgC2 = req('GET', "$base/")['body'];
+ok(str_contains($pgC2, '--accent:#224466;') && str_contains($pgC2, '--paper:#EEEEEE;') && str_contains($pgC2, '--teal:#0B3F44;') && str_contains($pgC2, '--rec:#CC0000;'), 'Eigene Farben; ungültiger Hex-Wert fällt auf den Standard zurück');
+req('POST', "$base/admin/", array_merge($colPost, ['palette' => 'gibt-es-nicht']));
+ok(str_contains(req('GET', "$base/")['body'], '--accent:#0E5C62;'), 'ungültige Palette fällt auf Standard zurück');
+// Übernahme der alten Akzentfarbe (einmalige Migration)
+$siteRow = q("SELECT data FROM ar_settings WHERE grp = 'site'")->fetchColumn();
+$siteD = json_decode((string)$siteRow, true) ?: [];
+$colSaved = q("SELECT data FROM ar_settings WHERE grp = 'colors'")->fetchColumn();
+q("UPDATE ar_settings SET data = ? WHERE grp = 'site'", [json_encode($siteD + ['accent' => '#112233', 'rec' => '#C42F24'])]);
+$siteD2 = $siteD;
+$siteD2['accent'] = '#112233';
+$siteD2['rec'] = '#C42F24';
+q("UPDATE ar_settings SET data = ? WHERE grp = 'site'", [json_encode($siteD2)]);
+q("DELETE FROM ar_settings WHERE grp = 'colors'");
+$mjc = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = '_migrations'")->fetchColumn(), true) ?: [];
+q("UPDATE ar_settings SET data = ? WHERE grp = '_migrations'", [json_encode(array_values(array_diff($mjc, ['colors_v1'])))]);
+req('GET', "$base/admin/");
+$cm = json_decode((string)q("SELECT data FROM ar_settings WHERE grp = 'colors'")->fetchColumn(), true) ?: [];
+ok(($cm['palette'] ?? '') === 'custom' && ($cm['c_accent'] ?? '') === '#112233' && ($cm['c_rec'] ?? '') === '#C42F24', 'Migration: abweichende Akzentfarbe wird als „Eigene Farben“ übernommen');
+q("UPDATE ar_settings SET data = ? WHERE grp = 'site'", [(string)$siteRow]);
+q("DELETE FROM ar_settings WHERE grp = 'colors'");
+if ($colSaved !== false) {
+    q("INSERT INTO ar_settings (grp, data, updated_at, updated_by) VALUES ('colors', ?, ?, 't')", [$colSaved, time()]);
+}
+req('POST', "$base/admin/", array_merge($colPost, ['palette' => 'standard']));
+reset_content_cache();
+ok(str_contains(req('GET', "$base/")['body'], '--accent:#0E5C62;'), 'zurück auf Standard');
 // Symbol-Auswahl bei Kategorien und Crossmedial
 $cmForm = req('GET', "$base/admin/?p=edit&c=crossmedia")['body'];
 $trForm = req('GET', "$base/admin/?p=edit&c=tracks")['body'];

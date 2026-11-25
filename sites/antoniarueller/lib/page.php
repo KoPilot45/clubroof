@@ -68,6 +68,7 @@ $site = setting('site');
 $seo = setting('seo');
 $hero = setting('hero');
 $typo = setting('typo');
+$colors = setting('colors');
 $sec = section_settings();
 // Beschriftungen, die nie leer sein dürfen (Abschnittsnamen, Links der Fußzeile …): leer = Standardtext
 $dictFill = function (array $vals, string $grp): array {

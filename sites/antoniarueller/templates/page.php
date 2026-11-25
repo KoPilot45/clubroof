@@ -1,7 +1,5 @@
 <?php
 /** Öffentliche Seite. Variablen kommen aus index.php. */
-$acc = css_color($site['accent'], '#0E5C62');
-$rec = css_color($site['rec'], '#C42F24');
 $ph = fn(string $v): string => $v; // Platzhalter
 $mediaLabel = media_options();
 $short = ['video' => 'Video', 'text' => 'Text', 'radio' => 'Radio', 'podcast' => 'Podcast', 'social' => 'Social'];
@@ -39,10 +37,10 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php endif; ?>
 <?php if ($seo['bing_verify'] !== ''): ?><meta name="msvalidate.01" content="<?= e($seo['bing_verify']) ?>">
 <?php endif; ?>
-<meta name="theme-color" content="#F3ECDF">
+<meta name="theme-color" content="<?= e(palette_tokens(palette_base($colors))['paper']) ?>">
 <?php require __DIR__ . '/favicon.php'; ?>
 <link rel="stylesheet" href="<?= AR_BASE ?>/assets/site.css?v=<?= @filemtime(AR_ROOT . '/assets/site.css') ?>">
-<?= font_head($typo) ?><style>:root{--accent:<?= e($acc) ?>;--rec:<?= e($rec) ?>}</style>
+<?= font_head($typo) ?><?= color_head($colors) ?>
 <?php if ($jsonld !== ''): ?><script type="application/ld+json"><?= $jsonld ?></script><?php endif; ?>
 </head>
 <body>

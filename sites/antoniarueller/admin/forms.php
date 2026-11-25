@@ -32,7 +32,7 @@ function preview_anchor(string $key): string
 {
     return [
         'clips' => 'arbeiten', 'tracks' => 'arbeiten', 'timeline' => 'arbeiten', 'episodes' => 'podcast', 'cv' => 'lebenslauf', 'before' => 'lebenslauf',
-        'typo' => 'inhalt', 'texts_start' => 'inhalt', 'texts_arbeiten' => 'arbeiten', 'texts_ueber' => 'ueber', 'texts_kontakt' => 'kontakt', 'about' => 'ueber', 'crossmedia' => 'ueber', 'languages' => 'ueber', 'offrecord' => 'offtherecord', 'contact' => 'kontakt', 'social' => 'kontakt', 'hero' => 'inhalt',
+        'typo' => 'inhalt', 'colors' => 'inhalt', 'texts_start' => 'inhalt', 'texts_arbeiten' => 'arbeiten', 'texts_ueber' => 'ueber', 'texts_kontakt' => 'kontakt', 'about' => 'ueber', 'crossmedia' => 'ueber', 'languages' => 'ueber', 'offrecord' => 'offtherecord', 'contact' => 'kontakt', 'social' => 'kontakt', 'hero' => 'inhalt',
         'questions' => 'inhalt',
     ][$key] ?? '';
 }
@@ -170,6 +170,27 @@ function render_field_inner(array $f, mixed $val, array $vals = []): void
                 echo '<option value="' . e($ov) . '"' . ((string)$val === (string)$ov ? ' selected' : '') . '>' . e($ol) . '</option>';
             }
             echo '</select>';
+            break;
+        case 'palettepick':
+            $opts = select_options($f);
+            $cur = (string)$val !== '' && isset($opts[(string)$val]) ? (string)$val : (string)($f['default'] ?? '');
+            $pres = palette_presets();
+            $cust = palette_base(['palette' => 'custom'] + array_filter($GLOBALS['palette_vals'] ?? [], fn($x) => $x !== ''));
+            echo '<fieldset class="palettepick" id="' . $id . '" data-palettes="' . e(json_encode(array_map(fn($p) => $p[2], $pres))) . '"' . $desc . '><legend class="sr-only">' . e($f['label']) . '</legend>';
+            foreach ($opts as $ov => $ol) {
+                $base = $ov === 'custom' ? $cust : $pres[$ov][2];
+                $ok = true;
+                foreach (palette_checks($base) as [, $ratio, $min]) {
+                    $ok = $ok && $ratio >= $min;
+                }
+                echo '<label class="pp"><input type="radio" name="' . e($k) . '" value="' . e($ov) . '"' . ($cur === (string)$ov ? ' checked' : '') . '><span class="pp-sw" aria-hidden="true">';
+                foreach (['paper', 'ink', 'accent', 'teal', 'rec'] as $ck) {
+                    echo '<i style="background:' . e($base[$ck]) . '" data-c="' . $ck . '"></i>';
+                }
+                echo '</span><span class="pp-n">' . e($ol) . '</span><span class="pp-c">' . e($ov === 'custom' ? 'Fünf Farben selbst wählen' : $pres[$ov][1]) . '</span>'
+                    . '<span class="pp-ok ' . ($ok ? 'ok' : 'warn') . '">' . ($ok ? 'Lesbarkeit gut' : 'Kontrast prüfen') . '</span></label>';
+            }
+            echo '</fieldset><div class="pp-checks" id="pp-checks" aria-live="polite"></div>';
             break;
         case 'fontpick':
             $opts = select_options($f);
@@ -571,6 +592,7 @@ function view_edit_group(array $user, string $g, array $vals, array $errors): vo
 <form method="post" action="<?= a() ?>" enctype="multipart/form-data" class="form" data-autosave="1">
 <?= csrf_field($user) ?><input type="hidden" name="action" value="save_group"><input type="hidden" name="g" value="<?= e($g) ?>">
 <?php
+    $GLOBALS['palette_vals'] = $g === 'colors' ? $vals : [];
     lang_bar($def['fields'], $vals, 'g:' . $g);
     render_fields($def['fields'], $vals);
     form_actions(a(), preview_anchor($g), $isDraft, true);

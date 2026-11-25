@@ -139,4 +139,5 @@ function security_headers(bool $admin = false, bool $frameSelf = false): void
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/schema.php';
 require_once __DIR__ . '/fonts.php';
+require_once __DIR__ . '/colors.php';
 require_once __DIR__ . '/content.php';
