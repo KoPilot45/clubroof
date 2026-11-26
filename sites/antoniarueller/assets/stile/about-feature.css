@@ -8,7 +8,8 @@
 .af-ph{position:relative;margin:0}
 .af-img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;border:1px solid var(--ink)}
 .af-ph .ar-onair{display:none}
-.af-band{margin-top:clamp(28px,4vw,52px);border-top:4px double var(--ink);padding-top:6px}
+.af-left{min-width:0}
+.af-band{margin-top:clamp(24px,3vw,40px);border-top:4px double var(--ink);padding-top:6px}
 .af-band .about-block{margin:18px 0 0;padding-top:0}
 .af-band .about-block+.about-block{border-top:1px solid var(--line);padding-top:16px}
 @media (max-width:860px){.af{grid-template-columns:1fr}.af-ph{order:-1}.af-cols{columns:1}}
