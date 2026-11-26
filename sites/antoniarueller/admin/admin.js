@@ -870,7 +870,7 @@
       var b = { paper: f('c_paper'), ink: f('c_ink'), accent: f('c_accent'), teal: f('c_teal'), rec: f('c_rec') };
       return Object.keys(b).every(function (k) { return b[k]; }) ? b : null;
     };
-    var lcScale = function () { var s = lcBox.clientWidth / 1280; lcFrame.style.transform = 'scale(' + s + ')'; lcBox.style.height = Math.round(760 * s) + 'px'; };
+    var lcScale = function () { var w = lcBox.clientWidth || lc.clientWidth, s = Math.min(w / 1280, 260 / 640); lcFrame.style.transform = 'scale(' + s + ')'; lcFrame.style.left = Math.max(0, Math.round((w - 1280 * s) / 2)) + 'px'; lcBox.style.height = Math.round(640 * s) + 'px'; };
     var lcApply = function () {
       var doc; try { doc = lcFrame.contentDocument; } catch (e) { return; }
       if (!doc || !doc.documentElement || !doc.head) return;

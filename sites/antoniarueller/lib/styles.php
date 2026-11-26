@@ -8,9 +8,17 @@ declare(strict_types=1);
  */
 
 /** Bereich => [Name, [Stilschlüssel => Name]]. */
+/** Reihenfolge wie auf der Seite: Zeile, Hero, Leitfragen, Übersicht, Beiträge, Podcast, Über mich, Lebenslauf, Off the record, Kontakt. */
+function style_sort(array $a): array
+{
+    $o = array_flip(['head', 'hero', 'questions', 'editor', 'list', 'podcast', 'about', 'cv', 'off', 'contact']);
+    uksort($a, fn($x, $y) => ($o[$x] ?? 99) <=> ($o[$y] ?? 99));
+    return $a;
+}
+
 function style_registry(): array
 {
-    return [
+    return style_sort([
         'head' => ['Abschnittszeile (REC-Zeile)', [
             'aktuell' => 'REC-Zeile (aktuell)',
             'kapitel' => 'Kapitelzähler („01 / 04“ mit Fortschritt)',
@@ -61,13 +69,13 @@ function style_registry(): array
             'verzeichnis' => 'Folgenverzeichnis (schlichte Liste)',
             'welle' => 'Großes Wellenband',
         ]],
-    ];
+    ]);
 }
 
 /** Texte für die Auswahlkarten im Backend: Bereich => [Name, Untertitel, [Stilschlüssel => [Name, Beschreibung]]]. */
 function style_cards(): array
 {
-    return [
+    return style_sort([
         'head' => ['Abschnittszeile', 'Die Zeile über jedem Abschnitt', [
             'aktuell' => ['REC-Zeile', 'Punkt, „REC“, Nummer, Name und Zeitcode. Das bisherige Design.'],
             'kapitel' => ['Kapitelzähler', '„01 / 04“ mit Fortschrittssegmenten.'],
@@ -118,7 +126,7 @@ function style_cards(): array
             'schriftzug' => ['Schriftzug', 'Riesige Überschrift, E-Mail als breite Zeile.'],
             'abspann' => ['Abspann', 'Dunkle Fläche, zentriert.'],
         ]],
-    ];
+    ]);
 }
 
 /** Gewählter Stilschlüssel eines Bereichs; unbekannte oder fehlende Werte ergeben „aktuell“. */

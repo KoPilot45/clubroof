@@ -9,28 +9,30 @@ const out = path.join(root, 'assets', 'stile', 'vorschau');
 const BASE = process.env.BASE || 'http://127.0.0.1:8080';
 // Bereich => [Selektor, maximale Höhe in CSS-Pixeln]
 const AREAS = {
-  head: ['section[aria-label="Was mich antreibt"]', 100, 60],
+  head: ['#arbeiten .sec-head', 300, -20],
   hero: ['.ar-hero', 720, 0],
-  questions: ['section[aria-label="Was mich antreibt"]', 600, 90],
+  questions: ['section[aria-label="Was mich antreibt"]', 600, 0],
   list: ['.clip-list', 640, 0],
   editor: ['.ar-ed-desk', 640, 0],
-  podcast: ['#podcast', 640, 100],
-  about: ['#ueber', 700, 100],
+  podcast: ['#podcast', 640, 0],
+  about: ['#ueber', 700, 0],
   cv: ['#rf', 640, 0],
-  off: ['#offtherecord', 640, 110],
-  contact: ['#kontakt', 640, 110],
+  off: ['#offtherecord', 640, 0],
+  contact: ['#kontakt', 640, 0],
 };
 const php = (...args) => execFileSync('php', [path.join(root, 'tools', 'stil-setzen.php'), ...args]);
 const registry = JSON.parse(execFileSync('php', ['-r', "$root=" + JSON.stringify(root) + "; $cfg=require $root.'/config.php'; require $root.'/lib/bootstrap.php'; echo json_encode(array_map(fn($d)=>array_keys($d[1]), style_registry()));"]).toString());
 (async () => {
   const b = await chromium.launch();
   const ctx = await b.newContext({ viewport: { width: 1280, height: 1500 }, deviceScaleFactor: 0.5 });
-  const p = await ctx.newPage();
+  const p1 = await ctx.newPage();
+  const p2 = await (await b.newContext({ viewport: { width: 520, height: 1500 }, deviceScaleFactor: 1.2 })).newPage();
   require('fs').mkdirSync(out, { recursive: true });
   for (const [area, styles] of Object.entries(registry)) {
     if (process.env.ONLY && !process.env.ONLY.split(',').includes(area)) continue;
     for (const st of styles) {
       php(area + '=' + st);
+      const p = area === 'head' ? p2 : p1;
       await p.goto(BASE + '/'); await p.waitForTimeout(500);
       await p.addStyleTag({ content: '#topbar,.to-top{visibility:hidden!important}' });
       const [sel, maxH, off] = AREAS[area];
@@ -41,8 +43,14 @@ const registry = JSON.parse(execFileSync('php', ['-r', "$root=" + JSON.stringify
       await p.waitForTimeout(2400);
       const bb = await el.boundingBox();
       const sy = await p.evaluate(() => window.scrollY);
-      const y0 = Math.max(0, bb.y + sy + off - 10);
-      await p.screenshot({ path: path.join(out, area + '-' + st + '.jpg'), type: 'jpeg', quality: 82, fullPage: true, clip: { x: 0, y: y0, width: 1280, height: Math.min(maxH, bb.height - off + 20) } });
+      const dh = await p.evaluate(() => document.documentElement.scrollHeight);
+      const W = area === 'head' ? 520 : 1280;
+      const H = area === 'head' ? 325 : Math.min(800, Math.round(bb.height + 10));
+      const y0 = Math.max(0, Math.min(bb.y + sy + off - 10, dh - H));
+      const file = path.join(out, area + '-' + st + '.jpg');
+      await p.screenshot({ path: file, type: 'jpeg', quality: 82, fullPage: true, clip: { x: 0, y: y0, width: W, height: H } });
+      // auf das Seitenverhältnis der Karten (8:5) auffüllen, damit nichts angrenzendes zu sehen ist und nichts abgeschnitten wird
+      execFileSync('python3', ['-c', "from PIL import Image;import sys;f=sys.argv[1];c=sys.argv[2]=='1';im=Image.open(f).convert('RGB');W=im.width;T=round(W*0.625);\nif im.height<T:\n S=Image.new('RGB',(W,T),im.getpixel((2,2)));S.paste(im,(0,(T-im.height)//2 if c else 0));im=S\nim.save(f,quality=82)", file, area === 'head' ? '1' : '0']);
       console.log('ok', area, st);
     }
   }
