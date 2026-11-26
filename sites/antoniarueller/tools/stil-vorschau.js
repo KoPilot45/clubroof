@@ -12,6 +12,7 @@ const AREAS = {
   head: ['#arbeiten .sec-head', 300, -20],
   hero: ['.ar-hero', 720, 0],
   questions: ['section[aria-label="Was mich antreibt"]', 600, 0],
+  featured: ['section[aria-label="Featured Clip"]', 640, 0],
   list: ['.clip-list', 640, 0],
   editor: ['.ar-ed-desk', 640, 0],
   podcast: ['#podcast', 640, 0],

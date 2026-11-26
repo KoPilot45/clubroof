@@ -355,7 +355,6 @@ function schema(): array
             f('text', 'show_right', 'Zeile rechts', ['max' => 80, 'hint' => 'Leer = automatisch (Anzahl, Kategorien und Zeitraum).']),
             f('section', '', 'Hervorgehobener Beitrag', ['sub' => true]),
             f('text', 'feat_label', 'Beschriftung im Featured-Block', ['max' => 30, 'default' => 'Featured', 'dict' => true]),
-            f('text', 'feat_by', 'Wort vor dem Namen im Featured („Von …“)', ['max' => 20, 'default' => 'Von', 'dict' => true]),
             f('section', '', 'Schnittplatz', ['sub' => true]),
             f('text', 'editor_title', 'Titel des Schnittplatzes', ['max' => 40, 'default' => 'Schnittplatz · Reel №1']),
             f('text', 'editor_hint', 'Hinweis in der Leiste des Schnittplatzes', ['max' => 60, 'default' => 'Clip anklicken: springt zum Beitrag', 'dict' => true]),

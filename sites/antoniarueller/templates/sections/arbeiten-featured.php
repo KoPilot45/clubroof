@@ -1,4 +1,5 @@
-<?php $fc = $featured; $fImg = upload_url($fc['still']); $fBy = array_filter([trim($hero['first'] . ' ' . $hero['last']), trim((string)$fc['outlet'])]); ?>
+<?php $fc = $featured; $fImg = upload_url($fc['still']); $fBy = trim((string)$fc['outlet']); ?>
+<?php if ($__tpl = style_template('featured')) { include $__tpl; return; } ?>
 <section<?= $idPlaced ? '' : ' id="arbeiten"' ?> aria-label="<?= tr('Featured Clip') ?>" style="padding-top:96px">
 <article class="fa">
 <div class="fa-mast"><span><?= e(tr($sec['feat_label'])) ?></span><span><?= e($fc['_cat'] !== '' ? $fc['_cat'] : media_label($fc['medium'])) ?></span><span><?= e(implode(' · ', array_filter([(string)$fc['outlet'], (string)$fc['_date']]))) ?></span></div>
@@ -8,7 +9,7 @@
 <h2 class="ar-feat-h"><?= e($fc['title']) ?></h2>
 <?php if ($fc['desc'] !== ''): ?><p class="fa-stand"><?= e($fc['desc']) ?></p><?php endif; ?>
 <div class="fa-foot">
-<span class="fa-by"><?= $fBy ? e(tr($sec['feat_by'])) . ' <b>' . e(array_shift($fBy)) . '</b>' . ($fBy ? ' · ' . e(implode(' · ', $fBy)) : '') : '' ?></span>
+<span class="fa-by"><?= $fBy !== '' ? '<b>' . e($fBy) . '</b>' : '' ?></span>
 <?php if ($fc['_hosted']): ?><button type="button" class="fa-cta" data-gal="<?= (int)$fc['_id'] ?>" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>"><?= icon($fc['medium'], 16) ?><span><?= e(tr($fc['_cta'])) ?></span><span aria-hidden="true">→</span></button>
 <?php elseif ($fc['_href'] !== ''): ?><a class="fa-cta" data-ev="clip" data-k="<?= (int)$fc['_id'] ?>" href="<?= e($fc['_href']) ?>" <?= $fc['_blank'] ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= icon($fc['medium'], 16) ?><span><?= e(tr($fc['_cta'])) ?></span><span aria-hidden="true">→</span></a><?php endif; ?>
 </div>

@@ -11,7 +11,7 @@ declare(strict_types=1);
 /** Reihenfolge wie auf der Seite: Zeile, Hero, Leitfragen, Übersicht, Beiträge, Podcast, Über mich, Lebenslauf, Off the record, Kontakt. */
 function style_sort(array $a): array
 {
-    $o = array_flip(['head', 'hero', 'questions', 'editor', 'list', 'podcast', 'about', 'cv', 'off', 'contact']);
+    $o = array_flip(['head', 'hero', 'questions', 'featured', 'editor', 'list', 'podcast', 'about', 'cv', 'off', 'contact']);
     uksort($a, fn($x, $y) => ($o[$x] ?? 99) <=> ($o[$y] ?? 99));
     return $a;
 }
@@ -59,6 +59,11 @@ function style_registry(): array
             'magazin' => 'Magazin-Cover (hochformatige Kacheln mit Bild)',
             'zeilen' => 'Liste mit Vorschaubild (Zeilen)',
         ]],
+        'featured' => ['Hervorgehobener Beitrag (Featured)', [
+            'aktuell' => 'Dunkle Fläche mit großer Schlagzeile (aktuell)',
+            'plakat' => 'Plakat (Sandfläche, Foto mit Pin)',
+            'schlicht' => 'Schlicht (eine Zeile mit kleinem Bild)',
+        ]],
         'editor' => ['Übersicht über den Beiträgen', [
             'aktuell' => 'Schnittplatz (aktuell)',
             'sendeplan' => 'Sendeplan (Spuren und Zeiträume als Tabelle)',
@@ -95,6 +100,11 @@ function style_cards(): array
             'aktuell' => ['Pinnwand', 'Zeitungsausschnitte mit roten Pins. Das bisherige Design.'],
             'magazin' => ['Magazin-Cover', 'Hochformatige Kacheln, bildfüllend.'],
             'zeilen' => ['Liste mit Vorschaubild', 'Schlichte Zeilen mit Bild links.'],
+        ]],
+        'featured' => ['Hervorgehobener Beitrag', 'Der Featured-Beitrag über dem Schnittplatz', [
+            'aktuell' => ['Dunkle Fläche', 'Große Schlagzeile, Bild rechts. Das bisherige Design.'],
+            'plakat' => ['Plakat', 'Sandfläche, Foto mit Pin an der Pinnwand.'],
+            'schlicht' => ['Schlicht', 'Eine ruhige Zeile mit kleinem Bild und Textlink.'],
         ]],
         'editor' => ['Übersicht der Beiträge', 'Über der Beitragsliste', [
             'aktuell' => ['Schnittplatz', 'Spuren und Clips. Das bisherige Design.'],

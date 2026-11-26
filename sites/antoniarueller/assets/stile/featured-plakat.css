@@ -1,0 +1,16 @@
+/* Featured: Plakat (Sandfläche, Foto mit Pin) */
+.fp{display:grid;grid-template-columns:minmax(0,1fr);gap:28px 56px;align-items:center;padding:clamp(24px,4vw,56px);background:var(--sand);color:var(--ink)}
+.fp.has-img{grid-template-columns:minmax(0,1.25fr) minmax(220px,1fr)}
+.fp-tag{display:inline-block;margin:0 0 20px;padding:5px 12px;background:var(--rec);color:#fff;font-family:var(--mono);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.fp-h{margin:0 0 20px;font-family:var(--serif);font-weight:400;font-size:calc(clamp(40px,5.6vw,84px) * var(--fs-t,1));line-height:1;letter-spacing:-.02em;text-wrap:balance}
+.fp-st{margin:0 0 18px;max-width:44ch;font-family:var(--serif);font-size:calc(clamp(20px,2vw,27px) * var(--fs-t,1));line-height:1.3}
+.fp-by{margin:0 0 22px;font-size:calc(14px * var(--fs-b,1));color:var(--mute)}
+.fp-cta{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border:2px solid var(--ink);background:none;color:var(--ink);text-decoration:none;font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer}
+.fp-cta:hover{background:var(--ink);color:var(--sand)}
+.fp-cta:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.fp-card{position:relative;margin:0;padding:14px 14px 12px;background:#fff;box-shadow:0 12px 28px color-mix(in srgb,var(--ink) 24%,transparent);transform:rotate(1.6deg);max-width:420px;justify-self:center;width:100%}
+.fp-card .cl-pin{top:11px}
+.fp-img{aspect-ratio:1/1;position:relative;overflow:hidden}
+.fp-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.fp-card figcaption{padding-top:10px;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute)}
+@media (max-width:900px){.fp.has-img{grid-template-columns:1fr}.fp-card{order:-1;max-width:300px;margin-top:10px}}

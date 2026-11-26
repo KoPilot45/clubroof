@@ -1410,6 +1410,27 @@ save_stile(['st_head' => 'gibtsnicht']);
 ok(str_contains(req('GET', "$base/")['body'], 'class="rec-t">REC'), 'unbekannter Stil fällt auf „aktuell“ zurück');
 save_stile();
 ok(is_file(dirname(__DIR__) . '/assets/stile/head-kapitel.css') && is_file(dirname(__DIR__) . '/assets/stile/head-haarlinie.css'), 'Stylesheets der Stile vorhanden');
+// Featured-Beitrag: Plakat und Schlicht, ohne „Von …“
+$fRow = q('SELECT id, data FROM ar_items WHERE coll = ? AND deleted_at IS NULL ORDER BY id LIMIT 1', ['clips'])->fetch();
+$fId = (int)$fRow['id'];
+$fData = json_decode((string)$fRow['data'], true);
+$fSave = $fData;
+$fData['featured'] = true;
+q('UPDATE ar_items SET data = ? WHERE id = ?', [json_encode($fData), $fId]);
+save_stile();
+reset_content_cache();
+$fa = req('GET', "$base/")['body'];
+ok(str_contains($fa, 'class="fa"') && !str_contains($fa, 'class="fa-by">Von') && !preg_match('~class="fa-by">[^<]*Von~', $fa), 'Featured „aktuell“: Titelfläche ohne „Von Antonia Rüller“');
+save_stile(['st_featured' => 'plakat']);
+$fp = req('GET', "$base/")['body'];
+ok(str_contains($fp, 'class="fp') && str_contains($fp, 'assets/stile/featured-plakat.css') && !str_contains($fp, 'class="fa"') && str_contains($fp, 'fp-h'), 'Featured „Plakat“: Sandfläche mit Serifen-Titel');
+save_stile(['st_featured' => 'schlicht']);
+$fs = req('GET', "$base/")['body'];
+ok(str_contains($fs, 'class="fs') && str_contains($fs, 'assets/stile/featured-schlicht.css') && !str_contains($fs, 'class="fa"') && str_contains($fs, 'fs-h'), 'Featured „Schlicht“: eine Zeile mit Textlink');
+ok(!str_contains($fp . $fs, 'Von Antonia'), 'Featured: kein „Von Antonia Rüller“ in den Stilen');
+save_stile();
+q('UPDATE ar_items SET data = ? WHERE id = ?', [json_encode($fSave), $fId]);
+reset_content_cache();
 $pod0 = req('GET', "$base/")['body'];
 ok(pos_of($pod0, 'id="arbeiten"') < pos_of($pod0, 'id="podcast"') && pos_of($pod0, 'id="podcast"') < pos_of($pod0, 'id="ueber"') && !str_contains(json_encode(layout_order([])), 'podcast'), 'Podcast gehört jetzt zu Arbeiten (Unterabschnitt, folgt auf die Beitragsliste)');
 
