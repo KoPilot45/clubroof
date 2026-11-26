@@ -276,6 +276,11 @@ stats_log_404('/alter-link-123', 'https://example.org/x');
 stats_log_404('/wp-login.php', '');
 stats_log_404('/.env', '');
 ok(count($lines('404-*.dat')) === $e0 + 1 && str_contains(implode("\n", $lines('404-*.dat')), "/alter-link-123\texample.org"), '404-Adressen werden gezählt, Angriffsversuche nicht');
+$e1 = count($lines('404-*.dat'));
+req('GET', "$base/test-nicht-vorhanden-77");
+req('GET', "$base/wp-login.php");
+$l404 = implode("\n", $lines('404-*.dat'));
+ok(count($lines('404-*.dat')) === $e1 + 1 && str_contains($l404, '/test-nicht-vorhanden-77') && !str_contains($l404, '404.php'), '404 über die Fehlerseite: echte Adresse wird erfasst, nicht „/404.php“, Scanner-Pfade nicht');
 
 $sp = req('GET', "$base/admin/?p=stats")['body'];
 ok(str_contains($sp, 'Besuche im Verlauf') && str_contains($sp, '<svg') && str_contains($sp, 'Wann kommen Besucher') && !str_contains($sp, 'Kampagnen-Links') && str_contains($sp, 'Crawler') && str_contains($sp, 'Nicht gefundene Adressen'), 'Statistik-Seite mit Diagramm, Heatmap, Crawler, 404 (ohne Kampagnen)');

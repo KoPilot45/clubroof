@@ -32,5 +32,6 @@ if ($path === '/' || $path === '') {
 }
 // Wie Apache (ErrorDocument): 404.php zeigt die Fehlerseite
 $_SERVER['REDIRECT_URL'] = $path;
+$_SERVER['REDIRECT_STATUS'] = '404';
 require $root . '/404.php';
 return true;

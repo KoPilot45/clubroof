@@ -12,7 +12,18 @@ require __DIR__ . '/lib/render.php';
 http_response_code(404);
 if (($_SERVER['REDIRECT_STATUS'] ?? '') === '404') {
     require_once __DIR__ . '/lib/stats.php';
-    stats_log_404((string)($_SERVER['REDIRECT_URL'] ?? $_SERVER['REQUEST_URI'] ?? '/'), (string)($_SERVER['HTTP_REFERER'] ?? ''));
+    // ursprünglich aufgerufene Adresse: je nach Server steht sie in einer der Variablen (REQUEST_URI zeigt dort manchmal auf 404.php selbst)
+    $orig = '';
+    foreach (['REDIRECT_URL', 'REDIRECT_REQUEST_URI', 'REDIRECT_SCRIPT_URL', 'REQUEST_URI'] as $k) {
+        $v = (string)parse_url((string)($_SERVER[$k] ?? ''), PHP_URL_PATH);
+        if ($v !== '' && !preg_match('~/404\.php$~', $v)) {
+            $orig = $v;
+            break;
+        }
+    }
+    if ($orig !== '') {
+        stats_log_404($orig, (string)($_SERVER['HTTP_REFERER'] ?? ''));
+    }
 }
 security_headers();
 header('X-Robots-Tag: noindex');
