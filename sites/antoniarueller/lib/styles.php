@@ -26,6 +26,16 @@ function style_registry(): array
             'karten' => 'Zwei Karten (dunkle Flächen)',
             'fragezeichen' => 'Fragezeichen (großes Zeichen links)',
         ]],
+        'about' => ['Über mich', [
+            'aktuell' => 'Foto links, Text rechts (aktuell)',
+            'geteilt' => 'Geteilt, dunkel (Foto links, dunkle Fläche rechts)',
+            'feature' => 'Feature-Seite (große Aussage, Textspalten, Foto rechts)',
+        ]],
+        'cv' => ['Lebenslauf (Stationen)', [
+            'aktuell' => 'Roter Faden (aktuell)',
+            'tabelle' => 'Tabelle nach Jahren',
+            'kacheln' => 'Stations-Kacheln',
+        ]],
         'list' => ['Beitragsliste („Alle Beiträge“)', [
             'aktuell' => 'Pinnwand mit Zeitungsausschnitten (aktuell)',
             'magazin' => 'Magazin-Cover (hochformatige Kacheln mit Bild)',

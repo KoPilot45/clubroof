@@ -192,6 +192,18 @@ function hero_now_lines(array $hero): array
     return array_values(array_filter(array_map('trim', explode("\n", (string)$hero['now_lines']))));
 }
 
+/** Porträt von „Über mich“ mit „On Air“-Stempel (leer ohne Foto). */
+function about_photo_html(array $about, string $cls, string $sizes): string
+{
+    $u = upload_url((string)$about['portrait']);
+    if ($u === '') {
+        return '';
+    }
+    $pv = img_width_set((string)$about['portrait']);
+    return '<img class="' . $cls . '" src="' . e($u) . '"' . ($pv ? ' srcset="' . e($pv['srcset']) . '" sizes="' . e($sizes) . '"' : '') . img_attrs((string)$about['portrait']) . ' alt="' . e($about['portrait_alt']) . '" loading="lazy" decoding="async">'
+        . ($about['onair'] !== '' ? '<span class="ar-onair">' . e($about['onair']) . '</span>' : '');
+}
+
 function sec_head(string $no, string $label, string $right, string $mb = '40px'): string
 {
     $st = style_of('head');

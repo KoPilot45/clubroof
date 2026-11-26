@@ -1,0 +1,14 @@
+/* Über mich: Feature-Seite */
+.af-h{margin:0 0 clamp(24px,3vw,40px);max-width:20em;font-family:var(--serif);font-size:calc(clamp(40px,6.4vw,96px) * var(--fs-t,1));line-height:.98;letter-spacing:-.02em}
+.af{display:grid;grid-template-columns:minmax(0,1fr) clamp(240px,28%,380px);gap:clamp(24px,4vw,56px);align-items:start}
+.af.no-ph{grid-template-columns:1fr}
+.af-cols{columns:2;column-gap:clamp(20px,3vw,40px)}
+.af-cols p{margin:0 0 1em;break-inside:avoid-column;font-size:calc(15px * var(--fs-b,1));line-height:1.65;color:var(--body)}
+.af-cols p:first-child:first-letter{float:left;padding:.04em .12em 0 0;font-family:var(--serif);font-size:4.6em;line-height:.78;color:var(--rec)}
+.af-ph{position:relative;margin:0}
+.af-img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;border:1px solid var(--ink)}
+.af-ph .ar-onair{right:-10px;bottom:24px;left:auto;top:auto}
+.af-band{margin-top:clamp(28px,4vw,52px);border-top:4px double var(--ink);padding-top:6px}
+.af-band .about-block{margin:18px 0 0;padding-top:0}
+.af-band .about-block+.about-block{border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:860px){.af{grid-template-columns:1fr}.af-ph{order:-1}.af-cols{columns:1}}

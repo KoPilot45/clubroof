@@ -1,3 +1,4 @@
+<?php if ($__tpl = style_template('cv')) { include $__tpl; return; } ?>
 <div class="rf" id="rf">
 <svg class="rf-svg" aria-hidden="true"><path class="rfp" fill="none"/></svg>
 <ol class="rf-list">

@@ -1,0 +1,16 @@
+/* Lebenslauf: Tabelle nach Jahren */
+.ct{border-top:0}
+.ct-y{display:grid;grid-template-columns:clamp(80px,11vw,150px) minmax(0,1fr);gap:clamp(12px,2vw,28px);padding:18px 0;border-top:1px solid var(--ink)}
+.ct-yn{font-family:var(--anton);font-size:calc(clamp(34px,5vw,64px) * var(--fs-d,1));line-height:.95;color:var(--accent)}
+.ct-yn.small{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--rec)}
+.ct-l{margin:0;padding:0;list-style:none}
+.ct-r{display:grid;grid-template-columns:clamp(70px,12vw,150px) minmax(0,1fr) auto;gap:clamp(10px,2vw,28px);align-items:center;padding:10px 0}
+.ct-r+.ct-r{border-top:1px dashed var(--line)}
+.ct-lg{display:flex;align-items:center;min-height:28px}
+.ct-lg img{display:block;max-width:100%;max-height:30px;width:auto;height:auto;object-fit:contain}
+.ct-t b{display:block;font-family:var(--serif);font-size:calc(clamp(20px,2vw,28px) * var(--fs-t,1));font-weight:400;line-height:1.1}
+.ct-t span{display:block;font-size:14px;color:var(--mute)}
+.ct-w{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);text-align:right}
+.ct-bf{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding:4px 0;font-family:var(--serif);font-size:calc(clamp(20px,2vw,28px) * var(--fs-t,1));line-height:1.15}
+.ct-bf em{font-family:var(--mono);font-style:normal;font-size:12px;letter-spacing:.04em;color:var(--mute)}
+@media (max-width:760px){.ct-y{grid-template-columns:1fr;gap:6px}.ct-yn{font-size:calc(46px * var(--fs-d,1))}.ct-r{grid-template-columns:84px minmax(0,1fr);gap:12px}.ct-w{grid-column:2;text-align:left}}

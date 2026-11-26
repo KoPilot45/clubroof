@@ -1,3 +1,4 @@
+<?php if ($__tpl = style_template('about')) { include $__tpl; return; } ?>
 <?php if ($sec['on_about']): ?>
 <section id="ueber" aria-label="<?= e(tr($sec['about_label'])) ?>" style="padding-top:144px">
 <h2 class="sr-only"><?= e(tr($sec['about_label'])) ?></h2>

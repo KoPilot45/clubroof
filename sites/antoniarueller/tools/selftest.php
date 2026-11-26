@@ -1466,6 +1466,31 @@ save_stile(['st_hero' => 'bogen', 'st_questions' => 'karten']);
 ok(str_contains(req('GET', "$base/en/")['body'], 'class="qk-l">01 · Question'), 'neue Stile auf der englischen Seite (Beschriftung „Question“)');
 save_stile();
 
+// Stile: Über mich und Lebenslauf
+echo "Stile Über mich und Lebenslauf\n";
+$nSt = substr_count($h0, 'class="rf-it');
+save_stile(['st_about' => 'geteilt']);
+$u1 = req('GET', "$base/")['body'];
+ok(str_contains($u1, 'class="ag') && str_contains($u1, 'class="ag-h"') && str_contains($u1, 'class="cross-wrap"') && str_contains($u1, 'class="langs"') && str_contains($u1, 'assets/stile/about-geteilt.css') && substr_count($u1, 'id="ueber"') === 1, 'Über mich „Geteilt, dunkel“: Foto, Aussage, Texte, Crossmedial und Sprachen');
+save_stile(['st_about' => 'feature']);
+$u2 = req('GET', "$base/")['body'];
+ok(str_contains($u2, 'class="af-h"') && str_contains($u2, 'class="af-band"') && pos_of($u2, 'class="af-band"') < pos_of($u2, 'class="cross-wrap"') && str_contains($u2, 'class="langs"') && str_contains($u2, 'assets/stile/about-feature.css'), 'Über mich „Feature-Seite“: Crossmedial und Sprachen in eigener Zeile unter Text und Foto');
+save_layout(['s_cross' => '', 's_lang' => '']);
+reset_content_cache();
+foreach (glob(dirname(__DIR__) . '/data/cache/*') ?: [] as $cf) {
+    @unlink($cf);
+}
+$u3 = req('GET', "$base/")['body'];
+ok(!str_contains($u3, 'class="cross-wrap"') && !str_contains($u3, 'class="langs"') && str_contains($u3, 'class="af-h"'), 'Über mich neue Stile beachten die Schalter für Crossmedial und Sprachen');
+save_layout();
+save_stile(['st_cv' => 'tabelle']);
+$c1 = req('GET', "$base/")['body'];
+ok(substr_count($c1, 'class="ct-r"') === $nSt && str_contains($c1, 'class="ct-yn"') && str_contains($c1, 'ct-b') && str_contains($c1, 'class="cv-logos"') && str_contains($c1, 'assets/stile/cv-tabelle.css'), 'Lebenslauf „Tabelle nach Jahren“: jede Station als Zeile, Logoleiste und „Davor“ bleiben');
+save_stile(['st_cv' => 'kacheln']);
+$c2 = req('GET', "$base/")['body'];
+ok(substr_count($c2, 'class="ck-c') === $nSt && str_contains($c2, 'class="ck-b"') && str_contains($c2, 'assets/stile/cv-kacheln.css') && str_contains(req('GET', "$base/en/")['body'], 'class="ck-nw">Current'), 'Lebenslauf „Stations-Kacheln“: jede Station als Kachel, laufende mit „Aktuell“ (englisch „Current“)');
+save_stile();
+
 // Spurfarben folgen der Palette
 echo "Spurfarben\n";
 ok(track_tone_from_hex('#0e5c62') === 'accent' && track_tone_from_hex('#0b3f44') === 'teal' && track_tone_from_hex('#c9deda') === 'mint' && track_tone_from_hex('#ff00ff') === 'custom', 'Spurfarbe aus altem Hex-Wert: nächster Palettenton, sonst „Eigene Farbe“');
