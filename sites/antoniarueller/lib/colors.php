@@ -16,6 +16,14 @@ function palette_presets(): array
         'marine' => ['Marine & Hellgrau', 'Kühl und sachlich', ['paper' => '#EEF0F2', 'ink' => '#16202B', 'accent' => '#1F4E79', 'teal' => '#13304D', 'rec' => '#D6402F']],
         'terrakotta' => ['Terrakotta & Sand', 'Warm und kräftig', ['paper' => '#F5EADB', 'ink' => '#2B1D16', 'accent' => '#A94A26', 'teal' => '#5E2A14', 'rec' => '#B82E22']],
         'graphit' => ['Graphit & Papier', 'Neutral, fast schwarz-weiß', ['paper' => '#F4F2EE', 'ink' => '#191B1C', 'accent' => '#2F3A3D', 'teal' => '#1C2325', 'rec' => '#C42F24']],
+        'salbei' => ['Salbei & Leinen', 'Hell und natürlich, ruhiger als Waldgrün', ['paper' => '#F1F0E6', 'ink' => '#1F2A24', 'accent' => '#4A6B50', 'teal' => '#2B4536', 'rec' => '#B5432F']],
+        'aubergine' => ['Aubergine & Flieder', 'Kulturell, kräftiger Akzent', ['paper' => '#F4EFF3', 'ink' => '#231A2A', 'accent' => '#5B3A7A', 'teal' => '#3A2354', 'rec' => '#C23A4B']],
+        'senf' => ['Senf & Anthrazit', 'Warm und redaktionell', ['paper' => '#F6F0DC', 'ink' => '#20211F', 'accent' => '#7A5A00', 'teal' => '#2C2B25', 'rec' => '#C0392B']],
+        'eisblau' => ['Eisblau & Nebel', 'Kühl und klar', ['paper' => '#EDF2F4', 'ink' => '#12232E', 'accent' => '#1B6A8A', 'teal' => '#0F3A4D', 'rec' => '#D2452F']],
+        'kupfer' => ['Kupfer & Schiefer', 'Erdig, Kupferakzent auf Schiefer', ['paper' => '#F2EDE8', 'ink' => '#1E2326', 'accent' => '#A0552F', 'teal' => '#2B3A42', 'rec' => '#B8352A']],
+        'zeitung' => ['Zeitung (Creme, Schwarz, Rot)', 'Wie eine Zeitungsseite', ['paper' => '#F2EFE8', 'ink' => '#141414', 'accent' => '#B3261E', 'teal' => '#222222', 'rec' => '#B3261E']],
+        'altrosa' => ['Altrosa & Kohle', 'Weich, mit Kohle als Gegengewicht', ['paper' => '#F7EEEC', 'ink' => '#2A2224', 'accent' => '#9B4A5A', 'teal' => '#472A31', 'rec' => '#C23A2E']],
+        'oliv' => ['Oliv & Haferbrei', 'Gedämpft und erdig', ['paper' => '#F3EEE0', 'ink' => '#26261C', 'accent' => '#6B6A1F', 'teal' => '#3B3B1A', 'rec' => '#B8432B']],
     ];
 }
 
@@ -125,6 +133,46 @@ function palette_checks(array $base): array
         ['Heller Text auf dunklen Flächen', color_contrast($t['paper'], $t['teal']), 4.5],
         ['REC-Rot auf Hintergrund', color_contrast($t['rec'], $t['paper']), 3.0],
     ];
+}
+
+/** Töne, die eine Spur aus der Palette wählen kann: Schlüssel => Name. */
+function track_tones(): array
+{
+    return ['teal' => 'Dunkle Fläche (Palette)', 'accent' => 'Akzentfarbe (Palette)', 'ink' => 'Text-Ton (Palette)', 'mint' => 'Heller Ton (Palette)', 'sand' => 'Sand (Palette)', 'rec' => 'REC-Rot (Palette)', 'custom' => 'Eigene Farbe'];
+}
+
+/** Nächster Palettenton zu einer Hex-Farbe (nach der Standardpalette); „custom“, wenn keiner nah genug liegt. */
+function track_tone_from_hex(string $hex): string
+{
+    $std = palette_tokens(palette_presets()['standard'][2]);
+    $best = 'custom';
+    $bd = 70.0;
+    [$r, $g, $b] = color_rgb(color_hex($hex, '#0B3F44'));
+    foreach (array_keys(track_tones()) as $k) {
+        if ($k === 'custom' || !isset($std[$k])) {
+            continue;
+        }
+        [$r2, $g2, $b2] = color_rgb($std[$k]);
+        $d = sqrt(($r - $r2) ** 2 + ($g - $g2) ** 2 + ($b - $b2) ** 2);
+        if ($d < $bd) {
+            $bd = $d;
+            $best = $k;
+        }
+    }
+    return $best;
+}
+
+/** Balken- und Schriftfarbe einer Spur: Palettenton (Schrift automatisch hell oder dunkel) oder eigene Farben. */
+function track_colors(array $t): array
+{
+    $tone = (string)($t['tone'] ?? '');
+    $tok = palette_tokens(palette_base(setting('colors')));
+    if ($tone !== '' && $tone !== 'custom' && isset($tok[$tone])) {
+        $bg = $tok[$tone];
+        $fg = color_contrast($tok['paper'], $bg) >= color_contrast($tok['ink'], $bg) ? $tok['paper'] : $tok['ink'];
+        return [$bg, $fg];
+    }
+    return [css_color($t['bg'] ?? '', '#0B3F44'), css_color($t['fg'] ?? '', '#F3ECDF')];
 }
 
 /** Variablen der Palette als <style> für die Seite. */

@@ -120,8 +120,9 @@ function schema(): array
             f('text', 'code', 'Spurkürzel', ['required' => true, 'max' => 6, 'hint' => 'z. B. V1, T1, A1 (wird in der Spurliste des Schnittplatzes gezeigt).']),
             f('text', 'label', 'Bezeichnung', ['required' => true, 'max' => 40, 'hint' => 'Erscheint an der Referenz und in der Spur, z. B. „Online“.']),
             f('icon', 'icon', 'Symbol', ['options' => media_options(), 'default' => 'text']),
-            f('color', 'bg', 'Balkenfarbe', ['default' => '#0B3F44']),
-            f('color', 'fg', 'Schriftfarbe im Balken', ['default' => '#F3ECDF']),
+            f('select', 'tone', 'Farbe der Spur', ['options' => track_tones(), 'default' => 'teal', 'hint' => 'Die Farben folgen der gewählten Farbpalette; die Schrift im Balken wird automatisch hell oder dunkel. „Eigene Farbe“ ist unabhängig von der Palette.']),
+            f('color', 'bg', 'Balkenfarbe (eigene Farbe)', ['default' => '#0B3F44', 'show_if' => ['tone', 'custom']]),
+            f('color', 'fg', 'Schriftfarbe im Balken (eigene Farbe)', ['default' => '#F3ECDF', 'show_if' => ['tone', 'custom']]),
         ],
     ];
     $s['collections']['episodes'] = [

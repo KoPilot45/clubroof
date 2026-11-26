@@ -695,6 +695,26 @@ function run_migrations(PDO $pdo): void
         }
     }
 
+    // Spuren wählen einen Palettenton (aus der vorhandenen Balkenfarbe abgeleitet)
+    if (!in_array('tracks_tone_v1', $applied, true)) {
+        try {
+            require_once __DIR__ . '/colors.php';
+            foreach ($pdo->query("SELECT id, data, draft FROM ar_items WHERE coll = 'tracks'")->fetchAll(PDO::FETCH_ASSOC) as $r) {
+                foreach (['data', 'draft'] as $col) {
+                    $d = json_decode((string)($r[$col] ?? ''), true);
+                    if (!is_array($d) || isset($d['tone'])) {
+                        continue;
+                    }
+                    $d['tone'] = track_tone_from_hex((string)($d['bg'] ?? '#0B3F44'));
+                    $pdo->prepare("UPDATE ar_items SET $col = ? WHERE id = ?")->execute([json_encode($d, JSON_UNESCAPED_UNICODE), (int)$r['id']]);
+                }
+            }
+            $applied[] = 'tracks_tone_v1';
+        } catch (Throwable $e) {
+            // beim nächsten Aufruf erneut
+        }
+    }
+
     if (count($applied) !== $before) {
         $json = json_encode($applied);
         $exists = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = '_migrations'")->fetchColumn();

@@ -71,11 +71,11 @@ function seed_defaults(PDO $pdo): void
         ['number' => '02', 'text' => 'Wer hat **Macht** — und wer kämpft um *Selbstbestimmung*?'],
     ]);
     $add('tracks', [
-        ['code' => 'V1', 'label' => 'Video / TV', 'icon' => 'video', 'bg' => '#0b3f44', 'fg' => '#f3ecdf'],
-        ['code' => 'T1', 'label' => 'Online', 'icon' => 'text', 'bg' => '#172526', 'fg' => '#f3ecdf'],
-        ['code' => 'T2', 'label' => 'Magazin', 'icon' => 'text', 'bg' => '#c9deda', 'fg' => '#172526'],
-        ['code' => 'A1', 'label' => 'Radio', 'icon' => 'radio', 'bg' => '#0e5c62', 'fg' => '#fbf6ee'],
-        ['code' => 'P1', 'label' => 'Podcast', 'icon' => 'podcast', 'bg' => '#e8ddcb', 'fg' => '#172526'],
+        ['code' => 'V1', 'label' => 'Video / TV', 'icon' => 'video', 'tone' => 'teal', 'bg' => '#0b3f44', 'fg' => '#f3ecdf'],
+        ['code' => 'T1', 'label' => 'Online', 'icon' => 'text', 'tone' => 'ink', 'bg' => '#172526', 'fg' => '#f3ecdf'],
+        ['code' => 'T2', 'label' => 'Magazin', 'icon' => 'text', 'tone' => 'mint', 'bg' => '#c9deda', 'fg' => '#172526'],
+        ['code' => 'A1', 'label' => 'Radio', 'icon' => 'radio', 'tone' => 'accent', 'bg' => '#0e5c62', 'fg' => '#fbf6ee'],
+        ['code' => 'P1', 'label' => 'Podcast', 'icon' => 'podcast', 'tone' => 'sand', 'bg' => '#e8ddcb', 'fg' => '#172526'],
     ]);
 
     // Referenzen: Datum aus der alten Position der Zeitleiste zurückgerechnet (2024-01-01 bis 2026-12-31)

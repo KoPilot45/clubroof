@@ -1200,7 +1200,7 @@ foreach (palette_presets() as $pk => $pv) {
     }
     $prOk = $prOk && color_contrast($tk['mute'], $tk['paper']) >= 4.5 && color_contrast($tk['acc-lt'], $tk['teal']) >= 4.5 && count($tk) === 20;
 }
-ok($prOk && count(palette_presets()) === 6, 'alle fertigen Paletten bestehen die Lesbarkeits-Prüfung (6 Paletten)');
+ok($prOk && count(palette_presets()) === 14, 'alle fertigen Paletten bestehen die Lesbarkeits-Prüfung (14 Paletten)');
 $bad = ['paper' => '#F3ECDF', 'ink' => '#C8C0B0', 'accent' => '#E0D8C8', 'teal' => '#D8D0C0', 'rec' => '#F0E8D8'];
 ok(count(array_filter(palette_checks($bad), fn($c) => $c[1] < $c[2])) >= 4, 'schlechte Farbkombination wird erkannt');
 $css0 = (string)file_get_contents("$root/assets/site.css");
@@ -1209,7 +1209,7 @@ ok(!preg_match('~#[0-9A-Fa-f]{6}\b~', $cssBody), 'site.css enthält außerhalb d
 $pgC0 = req('GET', "$base/")['body'];
 ok(str_contains($pgC0, '--accent:#0E5C62;') && str_contains($pgC0, '--card:#FBF6EE;') && str_contains($pgC0, '--acc-lt:#8FCFCB;') && str_contains($pgC0, 'name="theme-color" content="#F3ECDF"'), 'Standard: unveränderte Farben der Seite');
 $cfm = req('GET', "$base/admin/?p=group&g=colors")['body'];
-ok(substr_count($cfm, 'class="pp"') === 7 && str_contains($cfm, 'id="pp-checks"') && str_contains($cfm, 'name="c_accent"') && str_contains($cfm, 'data-showif="palette=custom"') && !str_contains(req('GET', "$base/admin/?p=group&g=site")['body'], 'name="accent"'), 'Farben-Seite: sechs Paletten plus „Eigene Farben“, Prüfung, eigene Farbfelder; Kopfzeile ohne Farben');
+ok(substr_count($cfm, 'class="pp"') === 15 && str_contains($cfm, 'id="pp-checks"') && str_contains($cfm, 'name="c_accent"') && str_contains($cfm, 'data-showif="palette=custom"') && !str_contains(req('GET', "$base/admin/?p=group&g=site")['body'], 'name="accent"'), 'Farben-Seite: vierzehn Paletten plus „Eigene Farben“, Prüfung, eigene Farbfelder; Kopfzeile ohne Farben');
 $colPost = ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'colors', 'mode' => 'publish', 'palette' => 'bordeaux'];
 req('POST', "$base/admin/", $colPost);
 $pgC1 = req('GET', "$base/")['body'];
@@ -1412,6 +1412,27 @@ save_stile();
 ok(is_file(dirname(__DIR__) . '/assets/stile/head-kapitel.css') && is_file(dirname(__DIR__) . '/assets/stile/head-haarlinie.css'), 'Stylesheets der Stile vorhanden');
 $pod0 = req('GET', "$base/")['body'];
 ok(pos_of($pod0, 'id="arbeiten"') < pos_of($pod0, 'id="podcast"') && pos_of($pod0, 'id="podcast"') < pos_of($pod0, 'id="ueber"') && !str_contains(json_encode(layout_order([])), 'podcast'), 'Podcast gehört jetzt zu Arbeiten (Unterabschnitt, folgt auf die Beitragsliste)');
+
+// Spurfarben folgen der Palette
+echo "Spurfarben\n";
+ok(track_tone_from_hex('#0e5c62') === 'accent' && track_tone_from_hex('#0b3f44') === 'teal' && track_tone_from_hex('#c9deda') === 'mint' && track_tone_from_hex('#ff00ff') === 'custom', 'Spurfarbe aus altem Hex-Wert: nächster Palettenton, sonst „Eigene Farbe“');
+$trk = ['tone' => 'teal', 'bg' => '#123456', 'fg' => '#ffffff'];
+$colRow = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['colors'])->fetchColumn(), true) ?: [];
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode(['palette' => 'bordeaux'] + $colRow), 'colors']);
+reset_content_cache();
+[$tbg, $tfg] = track_colors($trk);
+ok(strtoupper($tbg) === '#551523' && color_contrast($tbg, $tfg) >= 4.5 && track_colors(['tone' => 'custom', 'bg' => '#123456', 'fg' => '#ffffff'])[0] === '#123456', 'Spur im Ton „Dunkel“ nimmt die Palettenfarbe (Bordeaux), Schrift bleibt lesbar; „Eigene Farbe“ bleibt unabhängig');
+foreach (glob(dirname(__DIR__) . '/data/cache/*') ?: [] as $cf) {
+    @unlink($cf);
+}
+ok(str_contains(req('GET', "$base/")['body'], 'background:#551523') , 'Schnittplatz zeigt die Spurfarbe der Palette');
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($colRow), 'colors']);
+reset_content_cache();
+foreach (glob(dirname(__DIR__) . '/data/cache/*') ?: [] as $cf) {
+    @unlink($cf);
+}
+$cssAll = (string)file_get_contents(dirname(__DIR__) . '/assets/site.css');
+ok(!preg_match('~rgba\((23,37,38|243,236,223|201,222,218|196,47,36|14,92,98|11,63,68),~', $cssAll), 'site.css: keine festen Palettenfarben als rgba mehr (alles über Variablen)');
 
 // Übersetzungen: Überschriften ohne kursiven Teil, veraltete Übersetzungen erkennen, feste Texte vollständig
 echo "Übersetzungen\n";
