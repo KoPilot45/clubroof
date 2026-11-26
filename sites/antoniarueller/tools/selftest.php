@@ -1546,6 +1546,42 @@ q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($colBak), 'color
 save_stile();
 ok($allOk && !$bad, 'jeder neue Stil in jeder Palette (deutsch und englisch) ohne Fehler, genau eine Hauptüberschrift, Kontraste der dunklen Flächen ausreichend' . ($bad ? ' – ' . json_encode($bad, JSON_UNESCAPED_UNICODE) : ''));
 
+// Stile-Auswahl mit echten Vorschaubildern, Live-Vorschau bei Farben und Schrift
+echo "Auswahl und Live-Vorschau\n";
+$nOpts = array_sum(array_map(fn($d) => count($d[1]), style_registry()));
+$pickPg = req('GET', "$base/admin/?p=group&g=stile")['body'];
+ok(substr_count($pickPg, 'class="stylepick"') === count(style_registry()) && substr_count($pickPg, 'class="sk"') === $nOpts && substr_count($pickPg, 'assets/stile/vorschau/') === $nOpts && substr_count($pickPg, '<em>(aktuell)</em>') === count(style_registry()) && !str_contains($pickPg, 'Vorschau fehlt'), 'Stile-Auswahl: je Stil eine Karte mit echtem Vorschaubild, Name und Beschreibung, „(aktuell)“ markiert');
+$cardsOk = true;
+foreach (style_registry() as $area => $def) {
+    $cards = style_cards()[$area] ?? null;
+    foreach (array_keys($def[1]) as $key) {
+        $cardsOk = $cardsOk && $cards && isset($cards[2][$key]) && is_file(dirname(__DIR__) . '/assets/stile/vorschau/' . $area . '-' . $key . '.jpg') && filesize(dirname(__DIR__) . '/assets/stile/vorschau/' . $area . '-' . $key . '.jpg') > 1500;
+    }
+    $cardsOk = $cardsOk && $cards && count($cards[2]) === count($def[1]);
+}
+ok($cardsOk, 'jeder Stil hat Kartentext und ein Vorschaubild (keine leeren Bilder)');
+$colPg = req('GET', "$base/admin/?p=group&g=colors")['body'];
+$typPg = req('GET', "$base/admin/?p=group&g=typo")['body'];
+ok(str_contains($colPg, 'id="lcFrame"') && str_contains($colPg, 'admin/vorschau.php?embed=1') && str_contains($typPg, 'id="lcFrame"') && str_contains($typPg, 'data-sizes=') && !str_contains($pickPg, 'id="lcFrame"'), 'Farben und Schrift: Live-Vorschau des Startbereichs eingebaut');
+$embed = req('GET', "$base/admin/vorschau.php?embed=1")['body'];
+$plain = req('GET', "$base/admin/vorschau.php")['body'];
+ok(!str_contains($embed, 'Vorschau mit allen Entwürfen') && str_contains($embed, 'class="ar-hero') && str_contains($plain, 'Vorschau mit allen Entwürfen'), 'Vorschau zum Einbetten ohne gelbes Band');
+$ujs = (string)file_get_contents(dirname(__DIR__) . '/admin/admin.js');
+ok(str_contains($ujs, "lcTokens") && str_contains($ujs, "'--anton'") && str_contains($ujs, 'size_preset'), 'Live-Vorschau setzt Farben, Schriften und Größen sofort');
+// frische Installation: einteilige Überschrift bleibt bei der Migration unverändert
+$uRow = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['texts_ueber'])->fetchColumn(), true) ?: [];
+$uBak = $uRow;
+$uRow['cv_h1'] = 'Lebenslauf';
+unset($uRow['cv_h2']);
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($uRow), 'texts_ueber']);
+$mk0 = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['_migrations'])->fetchColumn(), true) ?: [];
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode(array_values(array_diff($mk0, ['headings_v1']))), '_migrations']);
+req('GET', "$base/admin/");
+$uAfter = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['texts_ueber'])->fetchColumn(), true) ?: [];
+ok(($uAfter['cv_h1'] ?? '') === 'Lebenslauf', 'Migration „Überschriften“: neuer Standardtext wird nicht doppelt zusammengesetzt');
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($uBak), 'texts_ueber']);
+reset_content_cache();
+
 // Spurfarben folgen der Palette
 echo "Spurfarben\n";
 ok(track_tone_from_hex('#0e5c62') === 'accent' && track_tone_from_hex('#0b3f44') === 'teal' && track_tone_from_hex('#c9deda') === 'mint' && track_tone_from_hex('#ff00ff') === 'custom', 'Spurfarbe aus altem Hex-Wert: nächster Palettenton, sonst „Eigene Farbe“');

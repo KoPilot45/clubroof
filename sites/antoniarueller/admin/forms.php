@@ -192,6 +192,22 @@ function render_field_inner(array $f, mixed $val, array $vals = []): void
             }
             echo '</fieldset><div class="pp-checks" id="pp-checks" aria-live="polite"></div>';
             break;
+        case 'stylepick':
+            $opts = select_options($f);
+            $cur = (string)$val !== '' && isset($opts[(string)$val]) ? (string)$val : 'aktuell';
+            $area = (string)($f['area'] ?? '');
+            $card = style_cards()[$area] ?? [$f['label'], '', []];
+            echo '<fieldset class="stylepick" id="' . $id . '"' . $desc . '><legend class="sr-only">' . e($f['label']) . '</legend>';
+            foreach ($opts as $ov => $ol) {
+                $c = $card[2][$ov] ?? [$ol, ''];
+                $img = style_preview_url($area, (string)$ov);
+                echo '<label class="sk"><input type="radio" name="' . e($k) . '" value="' . e($ov) . '"' . ($cur === (string)$ov ? ' checked' : '') . '>'
+                    . '<span class="sk-i">' . ($img !== '' ? '<img src="' . e($img) . '" alt="" loading="lazy" decoding="async">' : '<i>Vorschau fehlt</i>') . '</span>'
+                    . '<span class="sk-n"><span>' . e($c[0]) . ($ov === 'aktuell' ? ' <em>(aktuell)</em>' : '') . '</span><span class="sk-c" aria-hidden="true"></span></span>'
+                    . '<span class="sk-d">' . e($c[1]) . '</span></label>';
+            }
+            echo '</fieldset>';
+            break;
         case 'fontpick':
             $opts = select_options($f);
             $cur = (string)$val !== '' && isset($opts[(string)$val]) ? (string)$val : (string)($f['default'] ?? '');
@@ -636,6 +652,10 @@ function view_edit_group(array $user, string $g, array $vals, array $errors): vo
         echo '<p class="hint">Zuletzt geändert von ' . e(who_name($meta['by'])) . ', ' . e(when_fmt($meta['at'])) . '</p>';
     }
     form_errors($errors);
+    if ($g === 'colors' || $g === 'typo') {
+        echo '<div class="lc" id="lc" data-src="' . e(AR_BASE . '/admin/vorschau.php?embed=1') . '" data-sizes="' . e(json_encode(array_map(fn($p) => $p[2], size_presets()))) . '" data-fonts="' . e(AR_BASE . '/assets/fonts-all.css') . '"><div class="lc-h"><strong>Live-Vorschau</strong><span>Zeigt sofort, wie Farben und Schrift wirken (Entwurf, noch nicht gespeichert).</span><button type="button" class="btn small ghost" id="lcToggle" aria-expanded="true">Ausblenden</button></div>'
+            . '<div class="lc-box" id="lcBox"><iframe id="lcFrame" title="Live-Vorschau des Startbereichs" loading="lazy" tabindex="-1"></iframe></div></div>';
+    }
     if ($g === 'seo') {
         echo '<p class="lead">Ansehen: <a href="' . AR_BASE . '/robots.txt" target="_blank" rel="noopener">robots.txt</a> · <a href="' . AR_BASE . '/sitemap.xml" target="_blank" rel="noopener">sitemap.xml</a> · <a href="' . AR_BASE . '/llms.txt" target="_blank" rel="noopener">llms.txt</a> · <a href="https://search.google.com/test/rich-results?url=' . rawurlencode(abs_url('/')) . '" target="_blank" rel="noopener">Google: Test für strukturierte Daten ↗</a></p>';
         echo '<div class="serp" id="serp" aria-label="Vorschau in der Google-Suche"><div class="serp-url">' . e(preg_replace('~^https?://~', '', abs_url('/'))) . '</div><div class="serp-title"></div><div class="serp-desc"></div></div>';

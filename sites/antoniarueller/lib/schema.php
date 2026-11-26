@@ -330,7 +330,7 @@ function schema(): array
     $s['groups']['stile'] = [
         'label' => 'Stile',
         'help' => 'Für jeden Bereich der Seite kannst du eine Gestaltungsvariante wählen. „(aktuell)“ ist das bisherige Design und bleibt der Standard. Texte und Inhalte ändern sich dadurch nicht, nur die Darstellung. Mit „Vorschau“ siehst du das Ergebnis vor dem Veröffentlichen.',
-        'fields' => array_map(fn($a, $d) => f('select', 'st_' . $a, $d[0], ['options' => $d[1], 'default' => 'aktuell']), array_keys(style_registry()), array_values(style_registry())),
+        'fields' => array_map(fn($a, $d) => f('stylepick', 'st_' . $a, $d[0], ['options' => $d[1], 'default' => 'aktuell', 'area' => $a]), array_keys(style_registry()), array_values(style_registry())),
     ];
     $s['groups']['texts_start'] = [
         'label' => 'Abschnittstexte: Hero-Bereich',

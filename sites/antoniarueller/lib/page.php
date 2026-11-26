@@ -20,7 +20,7 @@ if (defined('AR_PREVIEW')) {
 function emit_html(string $html, bool $noindex): never
 {
     if (defined('AR_PREVIEW')) {
-        $banner = '<div style="background:#f2b705;color:#172526;padding:10px 16px;font:600 14px system-ui,sans-serif;text-align:center">Vorschau mit allen Entwürfen – Besucher sehen das noch nicht. <a href="' . e(AR_BASE) . '/admin/" style="color:#172526">Zurück zur Verwaltung</a></div>';
+        $banner = isset($_GET['embed']) ? '' : '<div style="background:#f2b705;color:#172526;padding:10px 16px;font:600 14px system-ui,sans-serif;text-align:center">Vorschau mit allen Entwürfen – Besucher sehen das noch nicht. <a href="' . e(AR_BASE) . '/admin/" style="color:#172526">Zurück zur Verwaltung</a></div>';
         $html = preg_replace('~<body([^>]*)>~', '<body$1>' . $banner, $html, 1);
         header('Content-Type: text/html; charset=utf-8');
         header('Cache-Control: no-store');

@@ -842,6 +842,65 @@
     toggle();
   }
 
+  // ---- Live-Vorschau bei Farben und Schrift: Startbereich der echten Seite, Variablen werden sofort gesetzt ----
+  var lc = $('#lc');
+  if (lc) {
+    var lcFrame = $('#lcFrame'), lcBox = $('#lcBox'), lcBtn = $('#lcToggle');
+    var lcPal = $('.palettepick'), lcPresets = lcPal ? JSON.parse(lcPal.getAttribute('data-palettes') || '{}') : {}, lcSizes = JSON.parse(lc.getAttribute('data-sizes') || '{}');
+    var hx = function (h, i) { return parseInt(h.substr(i, 2), 16); };
+    var lcLum = function (h) { var c = [1, 3, 5].map(function (i) { var v = hx(h, i) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+    var lcCr = function (a, b) { var x = lcLum(a), y = lcLum(b); if (x < y) { var t = x; x = y; y = t; } return (x + 0.05) / (y + 0.05); };
+    var lcMix = function (a, b, t) { var o = '#'; for (var i = 1; i <= 5; i += 2) o += ('0' + Math.round(hx(a, i) + (hx(b, i) - hx(a, i)) * t).toString(16)).slice(-2); return o.toUpperCase(); };
+    var lcEns = function (fg, bg, min, to) { for (var i = 0; i <= 20 && lcCr(fg, bg) < min; i++) fg = lcMix(fg, to, 0.1); return fg; };
+    var lcStd = { mute: '#52605E', line: '#CDBBA3', mint: '#C9DEDA', sand: '#E8DDCB', sand2: '#EFE6D6', 'sand-d': '#E3D6BF', body: '#34403F', card: '#FBF6EE', 'acc-lt': '#8FCFCB', 'acc-mid': '#6FB9B4', tint1: '#E4F0EE', tint2: '#D5E7E4', tint3: '#BFE0DB', 'teal-2': '#1F5A60', 'ink-2': '#4A5B5C' };
+    var lcTokens = function (b) {
+      var P = b.paper, I = b.ink, A = b.accent, T = b.teal, w = '#FFFFFF', t = { paper: P, ink: I, accent: A, teal: T, rec: b.rec };
+      var std = lcPresets.standard;
+      if (std && ['paper', 'ink', 'accent', 'teal', 'rec'].every(function (k) { return (b[k] || '').toUpperCase() === std[k].toUpperCase(); })) { for (var k in lcStd) t[k] = lcStd[k]; return t; }
+      t.mute = lcEns(lcMix(I, P, 0.3), P, 4.6, I); t.line = lcMix(P, I, 0.2); t.mint = lcMix(A, w, 0.78); t.sand = lcMix(P, I, 0.05); t.sand2 = lcMix(P, I, 0.03); t['sand-d'] = lcMix(P, I, 0.09);
+      t.body = lcMix(I, P, 0.12); t.card = lcMix(P, w, 0.65); t['acc-lt'] = lcEns(lcMix(A, w, 0.55), T, 4.6, w); t['acc-mid'] = lcMix(A, w, 0.45);
+      t.tint1 = lcMix(A, w, 0.9); t.tint2 = lcMix(A, w, 0.86); t.tint3 = lcMix(A, w, 0.76); t['teal-2'] = lcMix(T, w, 0.12); t['ink-2'] = lcMix(I, P, 0.3);
+      return t;
+    };
+    var lcBase = function () {
+      var sel = $('input[name=palette]:checked');
+      if (!sel) return null;
+      if (sel.value !== 'custom' && lcPresets[sel.value]) return lcPresets[sel.value];
+      var f = function (n) { var e = $('input[name="' + n + '"]'); return e && /^#[0-9a-f]{6}$/i.test(e.value) ? e.value.toUpperCase() : null; };
+      var b = { paper: f('c_paper'), ink: f('c_ink'), accent: f('c_accent'), teal: f('c_teal'), rec: f('c_rec') };
+      return Object.keys(b).every(function (k) { return b[k]; }) ? b : null;
+    };
+    var lcScale = function () { var s = lcBox.clientWidth / 1280; lcFrame.style.transform = 'scale(' + s + ')'; lcBox.style.height = Math.round(760 * s) + 'px'; };
+    var lcApply = function () {
+      var doc; try { doc = lcFrame.contentDocument; } catch (e) { return; }
+      if (!doc || !doc.documentElement || !doc.head) return;
+      var st = doc.documentElement.style, b = lcBase();
+      if (b) { var t = lcTokens(b); for (var k in t) st.setProperty('--' + k, t[k]); }
+      var map = { display: '--anton', serif: '--serif', sans: '--sans', mono: '--mono' };
+      $$('.fontpick').forEach(function (fs) {
+        var role = ['display', 'serif', 'sans', 'mono'].filter(function (r) { return fs.classList.contains(r); })[0], chk = $('input:checked', fs);
+        if (!role || !chk) return;
+        var sample = $('.fp-s', chk.closest('label'));
+        if (sample) st.setProperty(map[role], getComputedStyle(sample).fontFamily);
+      });
+      var sz = $('input[name=size_preset]');
+      if (sz && lcSizes[sz.value]) { st.setProperty('--fs-d', lcSizes[sz.value].d); st.setProperty('--fs-t', lcSizes[sz.value].t); st.setProperty('--fs-b', lcSizes[sz.value].b); }
+    };
+    lcFrame.addEventListener('load', function () {
+      try {
+        var doc = lcFrame.contentDocument;
+        if (!doc.getElementById('lc-fonts')) { var l = doc.createElement('link'); l.id = 'lc-fonts'; l.rel = 'stylesheet'; l.href = lc.getAttribute('data-fonts'); doc.head.appendChild(l); }
+      } catch (e) { /* ignorieren */ }
+      lcScale(); lcApply();
+    });
+    lcFrame.src = lc.getAttribute('data-src');
+    window.addEventListener('resize', lcScale);
+    lcScale();
+    document.addEventListener('input', lcApply);
+    document.addEventListener('change', lcApply);
+    if (lcBtn) lcBtn.addEventListener('click', function () { var hide = !lcBox.hidden; lcBox.hidden = hide; lcBtn.textContent = hide ? 'Einblenden' : 'Ausblenden'; lcBtn.setAttribute('aria-expanded', hide ? 'false' : 'true'); if (!hide) lcScale(); });
+  }
+
   // ---- Umschalter (z. B. Externer Link / Beitrag selbst hosten) steuert abhängige Felder ----
   $$('.seg').forEach(function (seg) {
     var inp = $('input[type=hidden]', seg);

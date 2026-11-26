@@ -592,6 +592,10 @@ function run_migrations(PDO $pdo): void
                         if (!array_key_exists($k1, $d) && !array_key_exists($k2, $d)) {
                             continue;
                         }
+                        // frische Installation: die Überschrift ist schon einteilig (neuer Standardtext), kein zweiter Teil gespeichert
+                        if (!array_key_exists($k2, $d) && in_array((string)($d[$k1] ?? ''), ['Showreel', 'Hör mal rein.', 'Lebenslauf', 'Schreib mir.'], true)) {
+                            continue;
+                        }
                         $a = trim((string)($d[$k1] ?? $def1));
                         $b = trim((string)($d[$k2] ?? $def2));
                         $d[$k1] = $b === '' ? $a : trim($a . $join . $b) . (str_ends_with($b, $suffix) ? '' : $suffix);

@@ -64,6 +64,63 @@ function style_registry(): array
     ];
 }
 
+/** Texte für die Auswahlkarten im Backend: Bereich => [Name, Untertitel, [Stilschlüssel => [Name, Beschreibung]]]. */
+function style_cards(): array
+{
+    return [
+        'head' => ['Abschnittszeile', 'Die Zeile über jedem Abschnitt', [
+            'aktuell' => ['REC-Zeile', 'Punkt, „REC“, Nummer, Name und Zeitcode. Das bisherige Design.'],
+            'kapitel' => ['Kapitelzähler', '„01 / 04“ mit Fortschrittssegmenten.'],
+            'haarlinie' => ['Haarlinie', 'Nur Nummer, Titel und eine feine Linie.'],
+        ]],
+        'hero' => ['Startbereich', 'Name, Foto und Einleitung', [
+            'aktuell' => ['Foto im Kreis', 'Name groß links, Foto im Kreis. Das bisherige Design.'],
+            'bogen' => ['Bogen', 'Foto im hohen Bogen, Vorname links, Nachname rechts.'],
+            'sucher' => ['Sucher mit Bauchbinde', 'Kamerabild mit roter Namens-Bauchbinde.'],
+        ]],
+        'questions' => ['Leitfragen', '„Was mich antreibt“', [
+            'aktuell' => ['Große Fragen', 'Zwei große Fragen mit Nummer. Das bisherige Design.'],
+            'karten' => ['Zwei Karten', 'Dunkle Flächen mit großer Hintergrundzahl.'],
+            'fragezeichen' => ['Fragezeichen', 'Großes Zeichen links, Fragen rechts.'],
+        ]],
+        'list' => ['Beitragsliste', '„Alle Beiträge“', [
+            'aktuell' => ['Pinnwand', 'Zeitungsausschnitte mit roten Pins. Das bisherige Design.'],
+            'magazin' => ['Magazin-Cover', 'Hochformatige Kacheln, bildfüllend.'],
+            'zeilen' => ['Liste mit Vorschaubild', 'Schlichte Zeilen mit Bild links.'],
+        ]],
+        'editor' => ['Übersicht der Beiträge', 'Über der Beitragsliste', [
+            'aktuell' => ['Schnittplatz', 'Spuren und Clips. Das bisherige Design.'],
+            'sendeplan' => ['Sendeplan', 'Tabelle aus Spuren und Zeiträumen.'],
+            'zeitstrahl' => ['Zeitstrahl', 'Beiträge entlang einer Linie.'],
+        ]],
+        'podcast' => ['Podcast', 'Folgen mit Links', [
+            'aktuell' => ['Karten mit Tonspur', 'Dunkle Karten mit Wellenform. Das bisherige Design.'],
+            'verzeichnis' => ['Folgenverzeichnis', 'Schlichte Liste mit Textlinks.'],
+            'welle' => ['Großes Wellenband', 'Titel über einem breiten Wellenband.'],
+        ]],
+        'about' => ['Über mich', 'Foto, Aussage, Texte', [
+            'aktuell' => ['Foto links, Text rechts', 'Das bisherige Design.'],
+            'geteilt' => ['Geteilt, dunkel', 'Foto links, dunkle Fläche rechts.'],
+            'feature' => ['Feature-Seite', 'Große Aussage, Textspalten, Foto rechts.'],
+        ]],
+        'cv' => ['Lebenslauf', 'Stationen', [
+            'aktuell' => ['Roter Faden', 'Stationen entlang eines Fadens. Das bisherige Design.'],
+            'tabelle' => ['Tabelle nach Jahren', 'Jahr links, Stationen als Zeilen.'],
+            'kacheln' => ['Stations-Kacheln', 'Raster aus Karten mit Logo.'],
+        ]],
+        'off' => ['Off the record', 'Fragen und Antworten', [
+            'aktuell' => ['Schwarze Balken', 'Antworten verdeckt, zum Aufdecken. Das bisherige Design.'],
+            'fragebogen' => ['Fragebogen', 'Zwei Spalten, Antworten offen.'],
+            'lexikon' => ['Lexikon', 'Nummer und Frage links, Antwort rechts.'],
+        ]],
+        'contact' => ['Kontakt', 'Überschrift, E-Mail, Profile', [
+            'aktuell' => ['Große Überschrift', 'Zwei Zeilen, Knöpfe. Das bisherige Design.'],
+            'schriftzug' => ['Schriftzug', 'Riesige Überschrift, E-Mail als breite Zeile.'],
+            'abspann' => ['Abspann', 'Dunkle Fläche, zentriert.'],
+        ]],
+    ];
+}
+
 /** Gewählter Stilschlüssel eines Bereichs; unbekannte oder fehlende Werte ergeben „aktuell“. */
 function style_of(string $area): string
 {
@@ -102,6 +159,13 @@ function style_template(string $area): ?string
     }
     $file = AR_ROOT . '/templates/sections/stile/' . $area . '-' . $st . '.php';
     return is_file($file) ? $file : null;
+}
+
+/** Vorschaubild eines Stils (echter Ausschnitt der Seite in Standardfarben und Standardschrift), leer wenn nicht vorhanden. */
+function style_preview_url(string $area, string $key): string
+{
+    $f = AR_ROOT . '/assets/stile/vorschau/' . $area . '-' . $key . '.jpg';
+    return is_file($f) ? AR_BASE . '/assets/stile/vorschau/' . $area . '-' . $key . '.jpg?v=' . (int)@filemtime($f) : '';
 }
 
 /** Zahl der Nummerngruppen der sichtbaren Abschnitte (für den Kapitelzähler „01 / 04“). */
