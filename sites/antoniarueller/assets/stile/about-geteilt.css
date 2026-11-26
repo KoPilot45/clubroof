@@ -3,7 +3,7 @@
 .ag.no-ph{grid-template-columns:1fr}
 .ag-ph{position:relative;min-height:420px}
 .ag-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.ag-ph .ar-onair{position:absolute;left:18px;bottom:18px;right:auto;top:auto;background:color-mix(in srgb,var(--teal) 75%,transparent);color:#fff;border-color:#fff}
+.ag-ph .ar-onair{display:none}
 .ag-tx{padding:clamp(24px,3.4vw,52px)}
 .ag-h{margin:0 0 24px;font-family:var(--serif);font-size:calc(clamp(32px,3.8vw,56px) * var(--fs-t,1));line-height:1.04;letter-spacing:-.015em;color:#fff}
 .ag-cols{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2.4vw,32px)}

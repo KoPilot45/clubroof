@@ -11,3 +11,4 @@
 .pd-vz .pd-l:hover{color:var(--rec)}
 .pd-vz .pd-s{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);text-align:right}
 @media (max-width:700px){.pd-vz .pd-r{grid-template-columns:48px minmax(0,1fr);gap:14px}.pd-vz .pd-ico{width:48px;height:48px}.pd-vz .pd-s{grid-column:1/-1;flex-direction:row;justify-content:space-between}}
+.pd-vz .pod-show,.pd-vz .pod-meta,.pd-vz .pod-lab{color:var(--mute)}

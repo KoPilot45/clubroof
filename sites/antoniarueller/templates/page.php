@@ -84,7 +84,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </section>
 <?php endif; ?>
 
-<div class="cutband" aria-hidden="true"></div>
+<?php if (!in_array(style_of('hero'), ['sucher', 'bogen'], true)): ?><div class="cutband" aria-hidden="true"></div><?php endif; ?>
 
 <?php foreach ($sectionOrder as $secId): include __DIR__ . '/sections/' . $secId . '.php'; endforeach; ?>
 

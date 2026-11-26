@@ -45,12 +45,12 @@ const registry = JSON.parse(execFileSync('php', ['-r', "$root=" + JSON.stringify
       const sy = await p.evaluate(() => window.scrollY);
       const dh = await p.evaluate(() => document.documentElement.scrollHeight);
       const W = area === 'head' ? 520 : 1280;
-      const H = area === 'head' ? 325 : Math.min(800, Math.round(bb.height + 10));
+      const H = area === 'head' ? 325 : Math.min(area === 'questions' ? 540 : 800, area === 'questions' ? 540 : Math.round(bb.height + 10));
       const y0 = Math.max(0, Math.min(bb.y + sy + off - 10, dh - H));
       const file = path.join(out, area + '-' + st + '.jpg');
       await p.screenshot({ path: file, type: 'jpeg', quality: 82, fullPage: true, clip: { x: 0, y: y0, width: W, height: H } });
       // auf das Seitenverhältnis der Karten (8:5) auffüllen, damit nichts angrenzendes zu sehen ist und nichts abgeschnitten wird
-      execFileSync('python3', ['-c', "from PIL import Image;import sys;f=sys.argv[1];c=sys.argv[2]=='1';im=Image.open(f).convert('RGB');W=im.width;T=round(W*0.625);\nif im.height<T:\n S=Image.new('RGB',(W,T),im.getpixel((2,2)));S.paste(im,(0,(T-im.height)//2 if c else 0));im=S\nim.save(f,quality=82)", file, area === 'head' ? '1' : '0']);
+      execFileSync('python3', ['-c', "from PIL import Image;import sys;f=sys.argv[1];c=sys.argv[2]=='1';im=Image.open(f).convert('RGB');W=im.width;T=round(W*0.625);\nif im.height<T:\n S=Image.new('RGB',(W,T),im.getpixel((2,im.height//2)));S.paste(im,(0,(T-im.height)//2 if c else 0));im=S\nim.save(f,quality=82)", file, area === 'head' ? '1' : '0']);
       console.log('ok', area, st);
     }
   }

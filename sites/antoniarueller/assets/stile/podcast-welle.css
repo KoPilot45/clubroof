@@ -5,10 +5,11 @@
 .pd-wl .pd-e{padding-top:12px;border-top:2px solid var(--ink)}
 .pd-wl .pd-t{margin:2px 0 0;font-family:var(--serif);font-size:calc(clamp(30px,3.6vw,52px) * var(--fs-t,1));font-weight:400;line-height:1.05}
 .pd-wl .pd-w{display:flex;align-items:center;gap:2px;height:110px;margin:16px 0;padding:0 14px;background:color-mix(in srgb,var(--mint) 35%,transparent)}
-.pd-wl .pd-w span{flex:1;min-width:1px;border-radius:1px;background:var(--mint)}
+.pd-wl .pd-w span{flex:1;min-width:1px;border-radius:1px;background:color-mix(in srgb,var(--accent) 38%,var(--paper))}
 .pd-wl .pd-w span.on{background:var(--accent)}
 .pd-wl .pd-d{margin:0 0 10px;max-width:62ch;font-size:calc(15px * var(--fs-b,1));line-height:1.5;color:var(--body)}
 .pd-wl .pod-btns{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .pd-wl .pd-l{display:inline-block;padding:7px 14px;border:1.5px solid var(--accent);color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
 .pd-wl .pd-l:hover{background:var(--accent);color:var(--paper)}
 @media (max-width:700px){.pd-wl .pd-w{height:84px}}
+.pd-wl .pod-show,.pd-wl .pod-meta,.pd-wl .pod-lab{color:var(--mute)}
