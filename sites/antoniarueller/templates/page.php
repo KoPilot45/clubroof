@@ -88,8 +88,9 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <?php foreach ($sectionOrder as $secId): include __DIR__ . '/sections/' . $secId . '.php'; endforeach; ?>
 
-<section id="kontakt" aria-label="<?= e(tr($sec['contact_label'])) ?>" style="padding-top:176px;padding-bottom:48px">
+<section id="kontakt" class="ks ks-<?= style_of('contact') ?>" aria-label="<?= e(tr($sec['contact_label'])) ?>" style="padding-top:176px;padding-bottom:48px">
 <?php if ($sec['on_contact']): ?>
+<?php if ($__tpl = style_template('contact')) { include $__tpl; } else { ?>
 <?= sec_head($no['contact'], $sec['contact_label'], $contact['right'], '0') ?>
 <h2 class="k-h"><span class="ar-schreib"><?= e($contact['h1']) ?></span></h2>
 <p class="k-intro"><?= e($contact['intro']) ?></p>
@@ -98,6 +99,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php foreach ($social as $so): ?><a class="btn-ghost btn-lg" data-ev="social" data-k="<?= e(trim((string)preg_replace('~[^a-z0-9]+~', '-', strtolower($so['label'])), '-') ?: 'profil') ?>" href="<?= e($so['url']) ?>" target="_blank" rel="me noopener noreferrer"><?= e($so['label']) ?> <span aria-hidden="true">↗</span></a><?php endforeach; ?>
 </div>
 <p class="mailnote" id="mailnote" aria-live="polite" hidden></p>
+<?php } ?>
 <?php endif; ?>
 <footer class="foot">
 <span><?= e($contact['copyright']) ?><?php if (trim((string)$contact['photo_credit']) !== ''): ?><?= trim((string)$contact['copyright']) !== '' ? ' · ' : '' ?><?php $pcu = safe_url((string)$contact['photo_credit_url']); if ($pcu !== ''): ?><a class="foot-credit" href="<?= e($pcu) ?>" target="_blank" rel="noopener noreferrer"><?= e($contact['photo_credit']) ?></a><?php else: ?><?= e($contact['photo_credit']) ?><?php endif; endif; ?></span>

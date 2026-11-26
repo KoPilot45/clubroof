@@ -70,3 +70,10 @@ klein bleiben; **6** enthält bewusst die Abschlussprüfung.
 2. Kapitelzähler: „01 / 04“ nach Nummerngruppen (Vorschlag) oder nach Abschnitten.
 3. Menüname „Stationen“ oder „Lebenslauf“ (ein Name für Menü, REC-Zeile und Überschrift).
 4. Echte Podcast-Folgen und Off-Antworten vor Paket 3 beziehungsweise 6 eintragen.
+
+## 6. Umsetzungsstand
+
+Alle sechs Pakete sind umgesetzt (v91 bis v96): 1 Grundlage, Abschnittszeile, Podcast unter Arbeiten · 2 Farben · 3 Arbeiten · 4 Start ·
+5 Über mich und Lebenslauf · 6 Off the record, Kontakt, Abschlussprüfung. Entscheidungen: Magazin-Cover mit Feld „Bildstil“, Kapitelzähler nach
+Nummerngruppen, Namen und Texte (z. B. „Stationen“) kommen immer aus dem Backend und werden von Stilen nicht überschrieben, echte Podcast-Folgen und
+Off-Antworten werden nicht von uns eingetragen.

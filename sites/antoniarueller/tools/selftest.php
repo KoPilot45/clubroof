@@ -1491,6 +1491,61 @@ $c2 = req('GET', "$base/")['body'];
 ok(substr_count($c2, 'class="ck-c') === $nSt && str_contains($c2, 'class="ck-b"') && str_contains($c2, 'assets/stile/cv-kacheln.css') && str_contains(req('GET', "$base/en/")['body'], 'class="ck-nw">Current'), 'Lebenslauf „Stations-Kacheln“: jede Station als Kachel, laufende mit „Aktuell“ (englisch „Current“)');
 save_stile();
 
+// Stile: Off the record und Kontakt
+echo "Stile Off und Kontakt\n";
+$nOff = substr_count($h0, 'class="off-r"');
+save_stile(['st_off' => 'fragebogen']);
+$o1 = req('GET', "$base/")['body'];
+ok(substr_count($o1, 'class="of-it"') === $nOff && $nOff >= 1 && str_contains($o1, '<i>the</i>') && !str_contains($o1, 'ar-redact') && str_contains($o1, 'assets/stile/off-fragebogen.css') && substr_count($o1, 'id="offtherecord"') === 1, 'Off the record „Fragebogen“: Fragen und Antworten offen, ohne Balken');
+save_stile(['st_off' => 'lexikon']);
+$o2 = req('GET', "$base/")['body'];
+ok(substr_count($o2, 'class="ol-r"') === $nOff && str_contains($o2, 'class="ol-n"') && !str_contains($o2, 'ar-redact'), 'Off the record „Lexikon“: Nummer, Frage und Antwort');
+save_stile(['st_contact' => 'schriftzug']);
+$k1 = req('GET', "$base/")['body'];
+ok(str_contains($k1, 'class="ks ks-schriftzug"') && str_contains($k1, 'class="ks-h"') && str_contains($k1, '<footer class="foot">') && str_contains($k1, 'id="mailnote"') && substr_count($k1, 'id="kontakt"') === 1, 'Kontakt „Schriftzug“: Überschrift, Profile, Fußzeile bleibt');
+save_stile(['st_contact' => 'abspann']);
+$k2 = req('GET', "$base/")['body'];
+ok(str_contains($k2, 'class="ks ks-abspann"') && str_contains($k2, 'class="ka-h"') && str_contains($k2, '<footer class="foot">') && str_contains($k2, 'assets/stile/contact-abspann.css'), 'Kontakt „Abspann“: dunkle Fläche mit Fußzeile');
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode(array_merge($contactBak = (json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['contact'])->fetchColumn(), true) ?: []), ['email' => 'test@example.org'])), 'contact']);
+save_stile(['st_contact' => 'abspann']);
+$k3 = req('GET', "$base/")['body'];
+ok(str_contains($k3, 'id="mailbtn"') && str_contains($k3, 'class="ka-mail"') && !str_contains($k3, 'test@example.org'), 'Kontakt: E-Mail-Knopf lädt die Adresse erst beim Klick (nicht im Quelltext)');
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($contactBak), 'contact']);
+save_stile();
+
+// Abschluss: alle Stile in allen Paletten
+echo "Alle Stile mit allen Paletten\n";
+$colBak = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['colors'])->fetchColumn(), true) ?: [];
+$allOk = true;
+$bad = [];
+foreach (array_keys(palette_presets()) as $pk) {
+    q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode(['palette' => $pk] + $colBak), 'colors']);
+    $tk = palette_tokens(palette_base(['palette' => $pk]));
+    foreach ([['acc-lt', 'teal', 4.5], ['mint', 'teal', 4.5], ['mint', 'ink', 4.5], ['paper', 'ink', 4.5], ['paper', 'teal', 4.5], ['rec', 'paper', 3.0]] as [$fg, $bg, $min]) {
+        if (color_contrast($tk[$fg], $tk[$bg]) < $min) {
+            $bad[] = "$pk: $fg auf $bg";
+        }
+    }
+    foreach ([1, 2] as $i) {
+        $v = [];
+        foreach (style_registry() as $area => $def) {
+            $keys = array_keys($def[1]);
+            $v['st_' . $area] = $keys[$i] ?? 'aktuell';
+        }
+        save_stile($v);
+        foreach (["$base/", "$base/en/"] as $u) {
+            $pgx = req('GET', $u)['body'];
+            if (str_contains($pgx, 'Fatal error') || str_contains($pgx, 'Warning:') || str_contains($pgx, 'Notice:') || str_contains($pgx, 'Deprecated:') || !str_contains($pgx, '</footer>') || substr_count($pgx, '<h1') !== 1) {
+                $allOk = false;
+                $bad[] = "$pk/$i: $u";
+            }
+        }
+    }
+}
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($colBak), 'colors']);
+save_stile();
+ok($allOk && !$bad, 'jeder neue Stil in jeder Palette (deutsch und englisch) ohne Fehler, genau eine Hauptüberschrift, Kontraste der dunklen Flächen ausreichend' . ($bad ? ' – ' . json_encode($bad, JSON_UNESCAPED_UNICODE) : ''));
+
 // Spurfarben folgen der Palette
 echo "Spurfarben\n";
 ok(track_tone_from_hex('#0e5c62') === 'accent' && track_tone_from_hex('#0b3f44') === 'teal' && track_tone_from_hex('#c9deda') === 'mint' && track_tone_from_hex('#ff00ff') === 'custom', 'Spurfarbe aus altem Hex-Wert: nächster Palettenton, sonst „Eigene Farbe“');

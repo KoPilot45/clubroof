@@ -1,0 +1,9 @@
+/* Off the record: Fragebogen */
+.of-h{margin:0 0 28px;font-family:var(--serif);font-size:calc(clamp(56px,9vw,130px) * var(--fs-d,1));font-weight:400;line-height:.95;letter-spacing:-.02em}
+.of-h i{font-style:italic;color:var(--accent)}
+.of-qa{display:grid;grid-template-columns:1fr 1fr;gap:0 clamp(24px,4vw,56px)}
+.of-it{border-top:2px solid var(--ink);padding:12px 0 28px}
+.of-n{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--rec)}
+.of-it h3{margin:4px 0 10px;font-family:var(--serif);font-size:calc(clamp(26px,3vw,42px) * var(--fs-t,1));font-weight:400;line-height:1.04;letter-spacing:-.01em}
+.of-it p{margin:0;max-width:46ch;font-size:calc(15px * var(--fs-b,1));line-height:1.6;color:var(--body)}
+@media (max-width:760px){.of-qa{grid-template-columns:1fr}}

@@ -26,6 +26,16 @@ function style_registry(): array
             'karten' => 'Zwei Karten (dunkle Flächen)',
             'fragezeichen' => 'Fragezeichen (großes Zeichen links)',
         ]],
+        'off' => ['Off the record', [
+            'aktuell' => 'Schwarze Balken über den Antworten (aktuell)',
+            'fragebogen' => 'Fragebogen (zwei Spalten, Antworten offen)',
+            'lexikon' => 'Lexikon (Nummer und Frage links, Antwort rechts)',
+        ]],
+        'contact' => ['Kontakt', [
+            'aktuell' => 'Große Überschrift mit Knöpfen (aktuell)',
+            'schriftzug' => 'Schriftzug (riesige Überschrift, E-Mail als breite Zeile)',
+            'abspann' => 'Abspann (dunkle Fläche, zentriert)',
+        ]],
         'about' => ['Über mich', [
             'aktuell' => 'Foto links, Text rechts (aktuell)',
             'geteilt' => 'Geteilt, dunkel (Foto links, dunkle Fläche rechts)',

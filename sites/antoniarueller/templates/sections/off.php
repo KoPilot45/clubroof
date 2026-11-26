@@ -1,3 +1,4 @@
+<?php if ($__tpl = style_template('off')) { include $__tpl; return; } ?>
 <?php if ($off && $sec['on_off']): ?>
 <section id="offtherecord" aria-label="<?= e(tr($sec['off_label'])) ?>" style="padding-top:144px">
 <?php if (style_of('head') !== 'aktuell'): ?><?= sec_head_style(style_of('head'), $no['off'], $sec['off_label'], (string)$sec['off_right'], '24px') ?><?php else: ?><div class="sec-head off-head" style="margin-bottom:24px"><span class="sec-l"><span style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--mute);box-sizing:border-box;display:inline-block"></span><span style="font-weight:600">Off</span><span><?= e($no['off']) ?> — <?= e(tr($sec['off_label'])) ?></span></span><span><?= e($sec['off_right']) ?></span></div><?php endif; ?>

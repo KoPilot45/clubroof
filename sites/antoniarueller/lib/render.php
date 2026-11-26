@@ -204,6 +204,35 @@ function about_photo_html(array $about, string $cls, string $sizes): string
         . ($about['onair'] !== '' ? '<span class="ar-onair">' . e($about['onair']) . '</span>' : '');
 }
 
+/** Kopfzeile von „Off the record“ (der Stil „aktuell“ der Abschnittszeile zeigt den Ring statt des REC-Punkts). */
+function off_head(string $no, array $sec, string $mb = '24px'): string
+{
+    $st = style_of('head');
+    if ($st !== 'aktuell') {
+        return sec_head_style($st, $no, $sec['off_label'], (string)$sec['off_right'], $mb);
+    }
+    return '<div class="sec-head off-head" style="margin-bottom:' . e($mb) . '"><span class="sec-l"><span style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--mute);box-sizing:border-box;display:inline-block"></span><span style="font-weight:600">Off</span><span>' . e($no) . ' — ' . e(tr($sec['off_label'])) . '</span></span><span>' . e($sec['off_right']) . '</span></div>';
+}
+
+/** E-Mail-Knopf des Kontaktbereichs (Adresse wird erst beim Klick geladen). */
+function contact_mail_button(array $contact, bool $hasMail, array $sec, string $cls): string
+{
+    if (!$hasMail) {
+        return '';
+    }
+    return '<a class="' . $cls . '" id="mailbtn" href="#kontakt" data-ev="mail" data-k="kontakt" data-mail="' . e(AR_BASE) . '/mail.php" data-note="' . e(tr($sec['mail_fail'])) . '" data-copy="' . e(tr($sec['copy_label'])) . '" data-copied="' . e(tr($sec['copied_label'])) . '"><span>' . e($contact['mail_label'] !== '' ? $contact['mail_label'] : tr('E-Mail schreiben')) . '</span> <span aria-hidden="true">↗</span></a>'
+        . '<noscript><span class="muted">' . e(tr('Bitte JavaScript aktivieren, um die E-Mail-Adresse zu sehen – oder im Impressum nachsehen.')) . '</span></noscript>';
+}
+
+function contact_social_links(array $social, string $cls): string
+{
+    $o = '';
+    foreach ($social as $so) {
+        $o .= '<a class="' . $cls . '" data-ev="social" data-k="' . e(trim((string)preg_replace('~[^a-z0-9]+~', '-', strtolower($so['label'])), '-') ?: 'profil') . '" href="' . e($so['url']) . '" target="_blank" rel="me noopener noreferrer">' . e($so['label']) . ' <span aria-hidden="true">↗</span></a>';
+    }
+    return $o;
+}
+
 function sec_head(string $no, string $label, string $right, string $mb = '40px'): string
 {
     $st = style_of('head');
