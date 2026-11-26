@@ -1,0 +1,10 @@
+/* Abschnittszeile: Kapitelzähler */
+.sh-kap{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px 20px;align-items:baseline;border-top:0;border-bottom:1px solid var(--ink);padding:0 0 10px}
+.sh-kap .sh-n{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--mute)}
+.sh-kap .sh-n b{font-family:var(--anton);font-size:30px;font-weight:400;letter-spacing:0;color:var(--accent);margin-right:4px;line-height:1}
+.sh-kap .sh-l{font-weight:600;letter-spacing:.1em}
+.sh-kap .sh-seg{display:flex;gap:3px;align-self:center}
+.sh-kap .sh-seg i{display:block;width:20px;height:5px;background:var(--line)}
+.sh-kap .sh-seg i.on{background:var(--accent)}
+.sh-kap .sh-r{color:var(--mute)}
+@media (max-width:700px){.sh-kap{grid-template-columns:auto 1fr;row-gap:8px}.sh-kap .sh-seg{grid-column:1/-1;order:3}.sh-kap .sh-r{grid-column:2;text-align:right}}

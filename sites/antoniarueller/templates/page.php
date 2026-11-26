@@ -41,6 +41,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php require __DIR__ . '/favicon.php'; ?>
 <link rel="stylesheet" href="<?= AR_BASE ?>/assets/site.css?v=<?= @filemtime(AR_ROOT . '/assets/site.css') ?>">
 <?= font_head($typo) ?><?= color_head($colors) ?>
+<?= style_links() ?>
 <?php if ($jsonld !== ''): ?><script type="application/ld+json"><?= $jsonld ?></script><?php endif; ?>
 </head>
 <body>
@@ -64,8 +65,10 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 
 <main id="inhalt">
 <section class="ar-hero" aria-label="<?= e(tr($sec['intro_label'])) ?>">
-<div class="sec-head" style="margin-bottom:0"><span class="sec-l"><?= rec_dot() ?><span class="rec-t">REC</span><span>00 — <?= e(tr($sec['intro_label'])) ?></span></span>
+<?php if (style_of('head') !== 'aktuell'): ?><?= sec_head_style(style_of('head'), '00', $sec['intro_label'], (string)$hero['meta'], '0') ?>
+<?php else: ?><div class="sec-head" style="margin-bottom:0"><span class="sec-l"><?= rec_dot() ?><span class="rec-t">REC</span><span>00 — <?= e(tr($sec['intro_label'])) ?></span></span>
 <span class="muted"><?= e($hero['meta']) ?></span><span class="muted"><?= e($sec['hero_tc']) ?></span></div>
+<?php endif; ?>
 <h1 aria-label="<?= e(trim($hero['first'] . ' ' . $hero['last'])) ?>">
 <span class="h1-first" aria-hidden="true"><span class="h1-in"><?= e($hero['first']) ?></span></span>
 <span class="h1-last" aria-hidden="true"><span class="h1-in"><?= e($hero['last']) ?></span></span>

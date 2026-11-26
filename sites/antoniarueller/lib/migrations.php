@@ -667,6 +667,34 @@ function run_migrations(PDO $pdo): void
         }
     }
 
+    // Podcast ist Unterabschnitt von Arbeiten: Schalter übernehmen, aus der Abschnittsreihenfolge entfernen
+    if (!in_array('podcast_sub_v1', $applied, true)) {
+        try {
+            $st = $pdo->prepare("SELECT data, draft FROM ar_settings WHERE grp = 'layout'");
+            $st->execute();
+            $row = $st->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                foreach (['data', 'draft'] as $col) {
+                    $d = json_decode((string)($row[$col] ?? ''), true);
+                    if (!is_array($d)) {
+                        continue;
+                    }
+                    if (array_key_exists('on_podcast', $d) && !array_key_exists('s_podcast', $d)) {
+                        $d['s_podcast'] = $d['on_podcast'];
+                    }
+                    unset($d['on_podcast']);
+                    if (isset($d['order'])) {
+                        $d['order'] = implode(',', array_values(array_filter(explode(',', (string)$d['order']), fn($x) => trim($x) !== 'podcast')));
+                    }
+                    $pdo->prepare("UPDATE ar_settings SET $col = ? WHERE grp = 'layout'")->execute([json_encode($d, JSON_UNESCAPED_UNICODE)]);
+                }
+            }
+            $applied[] = 'podcast_sub_v1';
+        } catch (Throwable $e) {
+            // beim nächsten Aufruf erneut
+        }
+    }
+
     if (count($applied) !== $before) {
         $json = json_encode($applied);
         $exists = $pdo->query("SELECT 1 FROM ar_settings WHERE grp = '_migrations'")->fetchColumn();

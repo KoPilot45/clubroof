@@ -145,3 +145,9 @@ Im Admin unter **SEO & Suche**: Titel, Beschreibung, Vorschaubild, noindex-Schal
 ## Hero-Animation
 
 - Aufbau beim Laden in insgesamt 1 s, nur CSS (`@keyframes hNav/hIn/hRise/hCircle/hPhoto/hBand`, am Ende von `assets/site.css`), ohne JavaScript und ohne Aufblitzen: Navigationszeile (0,35 s), REC-Zeile, Name (steigt hinter einer unsichtbaren Linie nach oben), Einleitung, „Aktuell“, Kreis (wächst von 85 auf 100 %), Foto (gleitet 18 px nach oben, bleibt dabei sichtbar, damit die Ladezeit gleich bleibt) und Schnittband (zieht sich von links auf). Danach „atmet“ der Kreis (`hBreathe`, 9 s, ±3 %). Bei „Bewegung reduzieren“ entfällt alles.
+
+## Stile (Gestaltungsvarianten)
+
+- **Stile** (`lib/styles.php`, Gruppe `stile`, Menü „Seite & Design → Stile“): je Bereich eine Auswahl; `aktuell` ist immer das bisherige Design und der Standard. Der Stil gilt für Deutsch und Englisch. `style_registry()` listet Bereiche und Stile, `style_of($bereich)` liefert die Wahl (unbekannt = `aktuell`), `style_links()` lädt nur die Stylesheets der gewählten Stile (`assets/stile/<bereich>-<stil>.css`), Vorlagen liegen unter `templates/sections/stile/<bereich>-<stil>.php`.
+- **Abschnittszeile:** Stile „Kapitelzähler“ („01 / 04“ nach Nummerngruppen, mit Fortschrittssegmenten) und „Haarlinie“; gilt für alle REC-Zeilen (Start, Abschnitte, Off the record, Kontakt).
+- **Podcast** ist Unterabschnitt von „Arbeiten“ (Aufbau der Seite, Schalter `s_podcast`, Migration `podcast_sub_v1`); die id `podcast` bleibt für den Menüpunkt.

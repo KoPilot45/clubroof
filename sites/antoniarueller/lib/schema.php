@@ -252,7 +252,6 @@ function schema(): array
             f('orderlist', 'sub_cv', 'Reihenfolge im „Lebenslauf“', ['options' => layout_subs()['cv'], 'default' => implode(',', array_keys(layout_subs()['cv']))]),
             f('bool', 'on_questions', 'Sichtbar', ['default' => true]),
             f('bool', 'on_show', 'Sichtbar', ['default' => true]),
-            f('bool', 'on_podcast', 'Sichtbar', ['default' => true]),
             f('bool', 'on_about', 'Sichtbar', ['default' => true]),
             f('bool', 'on_cv', 'Sichtbar', ['default' => true]),
             f('bool', 'on_off', 'Sichtbar', ['default' => true]),
@@ -260,6 +259,7 @@ function schema(): array
             f('bool', 's_featured', 'Sichtbar', ['default' => true]),
             f('bool', 's_editor', 'Sichtbar', ['default' => true]),
             f('bool', 's_list', 'Sichtbar', ['default' => true]),
+            f('bool', 's_podcast', 'Sichtbar', ['default' => true]),
             f('bool', 's_cross', 'Sichtbar', ['default' => true]),
             f('bool', 's_lang', 'Sichtbar', ['default' => true]),
             f('bool', 's_logos', 'Sichtbar', ['default' => true]),
@@ -324,6 +324,11 @@ function schema(): array
             f('image', 'photo', 'Foto (am besten freigestellt, WebP/PNG)'),
             f('text', 'photo_alt', 'Bildbeschreibung (Alt-Text)', ['max' => 160, 'required' => true]),
         ],
+    ];
+    $s['groups']['stile'] = [
+        'label' => 'Stile',
+        'help' => 'Für jeden Bereich der Seite kannst du eine Gestaltungsvariante wählen. „(aktuell)“ ist das bisherige Design und bleibt der Standard. Texte und Inhalte ändern sich dadurch nicht, nur die Darstellung. Mit „Vorschau“ siehst du das Ergebnis vor dem Veröffentlichen.',
+        'fields' => array_map(fn($a, $d) => f('select', 'st_' . $a, $d[0], ['options' => $d[1], 'default' => 'aktuell']), array_keys(style_registry()), array_values(style_registry())),
     ];
     $s['groups']['texts_start'] = [
         'label' => 'Abschnittstexte: Hero-Bereich',
@@ -482,6 +487,7 @@ function admin_nav(): array
         ]],
         'design' => ['Seite & Design', 'palette', 'Farben, Kopfzeile und Menü.', [
             ['g', 'layout', 'Aufbau der Seite', 'Reihenfolge und Sichtbarkeit der Abschnitte und ihrer Unterabschnitte.'],
+            ['g', 'stile', 'Stile', 'Gestaltungsvarianten je Bereich: das aktuelle Design oder neue Stile.'],
             ['g', 'colors', 'Farben', 'Fertige Farbpaletten oder eigene Farben mit Lesbarkeits-Prüfung.'],
             ['g', 'site', 'Kopfzeile', 'Text links oben und Titel im Handy-Menü.'],
             ['g', 'typo', 'Schrift', 'Schriften und Textgrößen: je Verwendung drei Alternativen.'],

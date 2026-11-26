@@ -148,8 +148,29 @@ function rec_dot(int $px = 10): string
     return '<span class="ar-rec" style="width:' . $px . 'px;height:' . $px . 'px"></span>';
 }
 
+/** Abschnittszeile in den Stilen „Kapitelzähler“ und „Haarlinie“ (der Stil „aktuell“ steht in sec_head selbst). */
+function sec_head_style(string $style, string $no, string $label, string $right, string $mb, string $extra = ''): string
+{
+    $mbs = ' style="margin-bottom:' . e($mb) . '"';
+    $rt = $right !== '' ? '<span class="sh-r">' . e($right) . '</span>' : '';
+    if ($style === 'kapitel') {
+        $total = style_no_total();
+        $n = (int)$no;
+        $segs = '';
+        for ($i = 1; $i <= $total; $i++) {
+            $segs .= '<i' . ($i <= $n ? ' class="on"' : '') . '></i>';
+        }
+        return '<div class="sec-head sh-kap' . $extra . '"' . $mbs . '><span class="sh-n"><b>' . e($no) . '</b> / ' . sprintf('%02d', $total) . '</span><span class="sh-l">' . e(tr($label)) . '</span><span class="sh-seg" aria-hidden="true">' . $segs . '</span>' . $rt . '</div>';
+    }
+    return '<div class="sec-head sh-hair' . $extra . '"' . $mbs . '><span class="sh-l">' . e($no) . ' — ' . e(tr($label)) . '</span>' . $rt . '</div>';
+}
+
 function sec_head(string $no, string $label, string $right, string $mb = '40px'): string
 {
+    $st = style_of('head');
+    if ($st !== 'aktuell') {
+        return sec_head_style($st, $no, $label, $right, $mb);
+    }
     return '<div class="sec-head" style="margin-bottom:' . $mb . '"><span class="sec-l">' . rec_dot() . '<span class="rec-t">REC</span><span>' . e($no) . ' — ' . e(tr($label)) . '</span></span>'
         . ($right !== '' ? '<span class="muted">' . e($right) . '</span>' : '') . '</div>';
 }

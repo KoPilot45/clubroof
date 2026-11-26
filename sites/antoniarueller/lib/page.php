@@ -164,19 +164,20 @@ $showCv = $cvGroups && $sec['on_cv'];
 // Sichtbare Abschnitte (verschiebbare, in der gewählten Reihenfolge) und Nummern der REC-Zeilen
 $visSec = [
     'questions' => (bool)($questions && $sec['on_questions']),
-    'arbeiten' => (bool)(($featured !== null && $sub['featured']) || ($clips && $sec['on_show'] && ($sub['editor'] || $sub['list']))),
-    'podcast' => (bool)($episodes && $sec['on_podcast']), 'about' => (bool)$sec['on_about'], 'cv' => (bool)$showCv, 'off' => (bool)($off && $sec['on_off']),
+    'arbeiten' => (bool)(($featured !== null && $sub['featured']) || ($clips && $sec['on_show'] && ($sub['editor'] || $sub['list'])) || ($episodes && $sub['podcast'])),
+    'about' => (bool)$sec['on_about'], 'cv' => (bool)$showCv, 'off' => (bool)($off && $sec['on_off']),
 ];
 $sectionOrder = array_values(array_filter(layout_order($layout), fn($id) => $visSec[$id]));
 $no = layout_numbers(array_merge($sectionOrder, $sec['on_contact'] ? ['contact'] : []));
+$GLOBALS['ar_no_total'] = $no ? max(array_map('intval', $no)) : 1;
 $vis = [
-    'arbeiten' => $visSec['arbeiten'], 'podcast' => $visSec['podcast'], 'ueber' => $visSec['about'], 'lebenslauf' => $visSec['cv'], 'offtherecord' => $visSec['off'],
+    'arbeiten' => $visSec['arbeiten'], 'podcast' => (bool)($episodes && $sub['podcast']), 'ueber' => $visSec['about'], 'lebenslauf' => $visSec['cv'], 'offtherecord' => $visSec['off'],
     'kontakt' => (bool)$sec['on_contact'],
 ];
 $nav = array_values(array_filter($nav, fn($n) => $vis[$n['anchor']] ?? true));
 // Menüpunkte folgen der Reihenfolge der Abschnitte
 $navPos = array_flip(array_merge($sectionOrder, ['contact']));
-$anchorSec = ['arbeiten' => 'arbeiten', 'podcast' => 'podcast', 'ueber' => 'about', 'lebenslauf' => 'cv', 'offtherecord' => 'off', 'kontakt' => 'contact'];
+$anchorSec = ['arbeiten' => 'arbeiten', 'podcast' => 'arbeiten', 'ueber' => 'about', 'lebenslauf' => 'cv', 'offtherecord' => 'off', 'kontakt' => 'contact'];
 usort($nav, fn($a, $b) => (($navPos[$anchorSec[$a['anchor']] ?? ''] ?? -1) <=> ($navPos[$anchorSec[$b['anchor']] ?? ''] ?? -1)));
 $cvYears = array_filter(array_map('strval', array_keys($cvGroups)), 'ctype_digit');
 $cvMin = $cvYears ? min($cvYears) : '';

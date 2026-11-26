@@ -1,0 +1,3 @@
+/* Abschnittszeile: Haarlinie */
+.sh-hair{border-top:0;border-bottom:1px solid var(--ink);padding:0 0 10px;font-weight:600;letter-spacing:.1em;align-items:baseline}
+.sh-hair .sh-r{font-weight:400;color:var(--mute)}

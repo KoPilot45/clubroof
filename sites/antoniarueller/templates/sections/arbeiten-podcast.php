@@ -1,6 +1,6 @@
-<?php if ($episodes && $sec['on_podcast']): ?>
+<?php if ($episodes && $sub['podcast']): ?>
 <section id="podcast" aria-label="<?= e(tr($sec['pod_label'])) ?>" style="padding-top:128px">
-<?= sec_head($no['podcast'], $sec['pod_label'], $sec['pod_right'], '32px') ?>
+<?= sec_head($no['arbeiten'], $sec['pod_label'], $sec['pod_right'], '32px') ?>
 <div class="pod-grid">
 <?php if (trim($sec['pod_h1']) !== ''): ?><h2 class="pod-h"><span class="ph1"><?= e($sec['pod_h1']) ?></span></h2><?php else: ?><h2 class="sr-only"><?= e(tr($sec['pod_label'])) ?></h2><?php endif; ?>
 <div class="pod-list">

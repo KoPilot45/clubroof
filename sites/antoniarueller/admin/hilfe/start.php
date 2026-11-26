@@ -158,6 +158,16 @@ return [
                 'open' => ['Abschnittstexte (Arbeiten) öffnen', 'p=group&g=texts_arbeiten'],
             ],
             [
+                'id' => 'stile', 'title' => 'Stile: Gestaltungsvarianten je Bereich', 'lead' => 'Für jeden Bereich der Seite kannst du zwischen dem aktuellen Design und weiteren Stilen wählen. Inhalte und Texte bleiben unverändert.',
+                'steps' => [
+                    'Öffne **Seite & Design → Stile**.',
+                    'Wähle bei jedem Bereich einen Stil. „(aktuell)“ ist das bisherige Design und der Standard.',
+                    'Mit **Vorschau** siehst du das Ergebnis, mit **Veröffentlichen** wird es öffentlich.',
+                ],
+                'tips' => ['Der Stil gilt für Deutsch und Englisch. Wählst du wieder „(aktuell)“, ist alles wie vorher.', 'Farben und Schrift stellst du weiterhin unter **Farben** und **Schrift** ein; sie gelten für jeden Stil.'],
+                'open' => ['Stile öffnen', 'p=group&g=stile'],
+            ],
+            [
                 'id' => 'seitenaufbau', 'title' => 'Aufbau der Seite: Reihenfolge und Sichtbarkeit', 'shot' => 'aufbau', 'alt' => 'Aufbau der Seite mit Abschnitten und Unterabschnitten',
                 'lead' => 'Lege fest, in welcher Reihenfolge die Abschnitte erscheinen und welche sichtbar sind, auch innerhalb eines Abschnitts.',
                 'legend' => ['Schieberegler: Abschnitt zeigen oder ausblenden', 'Pfeile oder Ziehen am Griff: Reihenfolge ändern', 'Unterabschnitte lassen sich innerhalb ihres Abschnitts ordnen und ausblenden'],

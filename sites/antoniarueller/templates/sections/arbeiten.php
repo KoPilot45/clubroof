@@ -5,15 +5,15 @@ $idPlaced = false;
 $open = false;
 $headDone = false;
 foreach ($subOrder['arbeiten'] as $subId):
-    if ($subId === 'featured') {
-        if (!$featured || !$sub['featured']) {
+    if ($subId === 'featured' || $subId === 'podcast') {
+        if ($subId === 'featured' ? (!$featured || !$sub['featured']) : (!$episodes || !$sub['podcast'])) {
             continue;
         }
         if ($open) {
             echo "</section>\n";
             $open = false;
         }
-        include __DIR__ . '/arbeiten-featured.php';
+        include __DIR__ . '/arbeiten-' . $subId . '.php';
         $idPlaced = true;
         continue;
     }

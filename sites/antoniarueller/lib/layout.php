@@ -12,7 +12,6 @@ function layout_sections(): array
     return [
         'questions' => ['Leitfragen', 'start'],
         'arbeiten' => ['Showreel (Arbeiten)', 'arbeiten'],
-        'podcast' => ['Podcast', 'arbeiten'],
         'about' => ['Über mich', 'ueber'],
         'cv' => ['Lebenslauf', 'cv'],
         'off' => ['Off the record', 'cv'],
@@ -23,7 +22,7 @@ function layout_sections(): array
 function layout_subs(): array
 {
     return [
-        'arbeiten' => ['featured' => 'Hervorgehobener Beitrag (Featured)', 'editor' => 'Schnittplatz', 'list' => 'Beitragsliste'],
+        'arbeiten' => ['featured' => 'Hervorgehobener Beitrag (Featured)', 'editor' => 'Schnittplatz', 'list' => 'Beitragsliste', 'podcast' => 'Podcast'],
         'about' => ['cross' => 'Crossmedial', 'lang' => 'Sprachen'],
         'cv' => ['logos' => 'Logoleiste', 'thread' => 'Zeitstrahl'],
     ];
@@ -32,13 +31,13 @@ function layout_subs(): array
 /** Schalter „Abschnitt zeigen“: Abschnitt => Einstellung (die Schlüssel sind dieselben wie früher in den Abschnittstexten). */
 function layout_toggles(): array
 {
-    return ['questions' => 'on_questions', 'arbeiten' => 'on_show', 'podcast' => 'on_podcast', 'about' => 'on_about', 'cv' => 'on_cv', 'off' => 'on_off', 'contact' => 'on_contact'];
+    return ['questions' => 'on_questions', 'arbeiten' => 'on_show', 'about' => 'on_about', 'cv' => 'on_cv', 'off' => 'on_off', 'contact' => 'on_contact'];
 }
 
 /** Einstellungen der Unterabschnitte: Schlüssel => Einstellung des Schalters. */
 function layout_sub_toggles(): array
 {
-    return ['featured' => 's_featured', 'editor' => 's_editor', 'list' => 's_list', 'cross' => 's_cross', 'lang' => 's_lang', 'logos' => 's_logos', 'thread' => 's_thread'];
+    return ['featured' => 's_featured', 'editor' => 's_editor', 'list' => 's_list', 'podcast' => 's_podcast', 'cross' => 's_cross', 'lang' => 's_lang', 'logos' => 's_logos', 'thread' => 's_thread'];
 }
 
 /** Einstellung für die Reihenfolge der Unterabschnitte eines Abschnitts. */

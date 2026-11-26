@@ -1027,7 +1027,7 @@ ok(substr_count($tsAll, 'class="sw"') === 0 && substr_count($tsAll, 'class="secc
 ok(!str_contains(req('GET', "$base/admin/")['body'], 'p=group&amp;g=sections') && substr_count(req('GET', "$base/admin/")['body'], '>Abschnittstexte<') >= 4, 'Menüpunkt „Abschnitte“ ist weg, „Abschnittstexte“ steht unter Hero-Bereich, Arbeiten, Über mich und Kontakt');
 $nvAll = admin_nav();
 ok(($nvAll['start'][3][0][1] ?? '') === 'texts_start' && ($nvAll['arbeiten'][3][0][1] ?? '') === 'texts_arbeiten' && ($nvAll['ueber'][3][0][1] ?? '') === 'texts_ueber' && ($nvAll['kontakt'][3][0][1] ?? '') === 'texts_kontakt', '„Abschnittstexte“ ist jeweils der erste Punkt');
-$ons = ['on_questions', 'on_show', 'on_podcast', 'on_about', 'on_cv', 'on_off', 'on_contact'];
+$ons = ['on_questions', 'on_show', 's_podcast', 'on_about', 'on_cv', 'on_off', 'on_contact'];
 save_sections(array_fill_keys($ons, '1') + ['pod_listen' => 'Hier hören', 'pod_right' => 'Audio · On Air', 'q_label' => 'Leitfragen', 'cv_since' => 'ab']);
 $pg = req('GET', "$base/")['body'];
 $allIds = true;
@@ -1037,6 +1037,7 @@ foreach (['podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt', 'arbeiten
 ok($allIds && str_contains($pg, 'class="questions"') && str_contains($pg, 'class="rf-list"'), 'alle Abschnitte eingeschaltet sichtbar');
 ok(str_contains($pg, 'Audio · On Air') && str_contains($pg, '00 — Leitfragen') && str_contains($pg, '>ab '), 'bearbeitete Textbausteine erscheinen (inkl. „Zeile rechts“ beim Podcast)');
 save_sections([]);
+save_layout(array_fill_keys(array_merge(array_values(layout_toggles()), array_values(layout_sub_toggles())), ''));
 $pg = req('GET', "$base/")['body'];
 $none = true;
 foreach (['id="podcast"', 'id="ueber"', 'id="offtherecord"', 'class="rf-list"', 'class="questions"', 'class="ed-body"', 'class="k-h"', 'class="pod-grid"'] as $needle) {
@@ -1046,6 +1047,7 @@ ok($none, 'ausgeschaltete Abschnitte fehlen auf der Seite');
 ok(str_contains($pg, 'class="ar-hero"') && str_contains($pg, '<footer class="foot">') && str_contains($pg, 'Impressum'), 'Start und Fußzeile bleiben');
 ok(!preg_match('~href="#(podcast|ueber|offtherecord|kontakt|lebenslauf)"~', $pg), 'Menüpunkte ausgeblendeter Abschnitte entfallen');
 save_sections(array_fill_keys($ons, '1'));
+save_layout();
 ok(str_contains(req('GET', "$base/")['body'], 'id="podcast"'), 'wieder eingeschaltet');
 $en = req('GET', "$base/en/")['body'];
 ok(str_contains($en, 'Select a clip to jump to the post') && !str_contains($en, 'Anhören bei'), 'neue Textbausteine: englische Standardtexte');
@@ -1258,7 +1260,7 @@ save_layout();
 $featId = (int)q("SELECT id FROM ar_items WHERE coll = 'clips' AND deleted_at IS NULL ORDER BY sort LIMIT 1")->fetchColumn();
 req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'toggle_featured', 'id' => $featId]);
 $lf = req('GET', "$base/admin/?p=group&g=layout")['body'];
-ok(substr_count($lf, 'name="on_') === 7 && substr_count($lf, 'name="s_') === 7 && substr_count($lf, 'data-lay="up"') === 13 && str_contains($lf, 'id="lay-order"') && str_contains($lf, 'name="sub_arbeiten"') && str_contains($lf, 'name="sub_about"') && str_contains($lf, 'name="sub_cv"'), 'Aufbau-Seite: Schalter und Pfeile für Abschnitte und Unterabschnitte (7 + 7)');
+ok(substr_count($lf, 'name="on_') === 6 && substr_count($lf, 'name="s_') === 8 && substr_count($lf, 'data-lay="up"') === 13 && str_contains($lf, 'id="lay-order"') && str_contains($lf, 'name="sub_arbeiten"') && str_contains($lf, 'name="sub_about"') && str_contains($lf, 'name="sub_cv"'), 'Aufbau-Seite: Schalter und Pfeile für Abschnitte und Unterabschnitte (6 + 8)');
 $pgL0 = req('GET', "$base/")['body'];
 $ord0 = array_map(fn($id) => pos_of($pgL0, 'id="' . $id . '"'), ['arbeiten', 'podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt']);
 $sorted0 = $ord0;
@@ -1282,13 +1284,13 @@ sort($navSorted);
 ok(!in_array(-1, $navPos, true) && $navPos === $navSorted, 'Menüpunkte folgen der Reihenfolge der Abschnitte (Handy-Menü wie Kopfzeile, ohne Podcast und Off the record)');
 save_layout(['order' => 'x,off,off,nix']);
 $lf2 = req('GET', "$base/admin/?p=group&g=layout")['body'];
-ok(str_contains($lf2, 'name="order" id="lay-order" value="off,questions,arbeiten,podcast,about,cv"'), 'ungültige und doppelte Einträge entfallen, fehlende folgen in Standardreihenfolge');
+ok(str_contains($lf2, 'name="order" id="lay-order" value="off,questions,arbeiten,about,cv"'), 'ungültige und doppelte Einträge entfallen, fehlende folgen in Standardreihenfolge');
 save_layout(['sub_about' => 'lang,cross', 'sub_cv' => 'thread,logos', 'sub_arbeiten' => 'editor,featured,list']);
 $pgL2 = req('GET', "$base/")['body'];
 ok(pos_of($pgL2, 'class="langs"') > -1 && pos_of($pgL2, 'class="langs"') < pos_of($pgL2, 'class="cross-wrap"'), 'Über mich: Sprachen vor Crossmedial');
 ok(pos_of($pgL2, 'id="rf"') > -1 && pos_of($pgL2, 'id="rf"') < pos_of($pgL2, 'class="cv-logos"'), 'Lebenslauf: Zeitstrahl vor der Logoleiste');
 ok(pos_of($pgL2, 'class="ar-ed-desk editor"') > -1 && pos_of($pgL2, 'class="ar-ed-desk editor"') < pos_of($pgL2, 'class="fa"') && pos_of($pgL2, 'class="fa"') < pos_of($pgL2, 'class="clip-list"') && substr_count($pgL2, 'id="arbeiten"') === 1, 'Arbeiten: Schnittplatz, Featured, Beitragsliste; die id steht nur einmal');
-save_layout(['s_lang' => '', 's_logos' => '', 's_featured' => '', 'on_podcast' => '']);
+save_layout(['s_lang' => '', 's_logos' => '', 's_featured' => '', 's_podcast' => '']);
 $pgL3 = req('GET', "$base/")['body'];
 $nav3 = (string)(preg_match('~<nav aria-label="Mobile Navigation">.*?</nav>~s', $pgL3, $nm3) ? $nm3[0] : '');
 ok(!str_contains($pgL3, 'class="langs"') && !str_contains($pgL3, 'class="cv-logos"') && !str_contains($pgL3, 'class="fa"') && !str_contains($pgL3, 'id="podcast"') && !str_contains($nav3, 'href="#podcast"') && str_contains($pgL3, 'class="rf-list"') && str_contains($pgL3, 'class="clip-list"'), 'Schalter: Unterabschnitte und Abschnitte lassen sich ausblenden (Menüpunkt entfällt), der Rest bleibt');
@@ -1376,6 +1378,41 @@ reset_content_cache();
 foreach (glob("$root/data/cache/*") ?: [] as $cf) {
     @unlink($cf);
 }
+// Stile (Gestaltungsvarianten je Bereich)
+echo "Stile\n";
+function save_stile(array $v = []): void
+{
+    global $base, $tok;
+    $all = [];
+    foreach (array_keys(style_registry()) as $a) {
+        $all['st_' . $a] = 'aktuell';
+    }
+    req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'save_group', 'g' => 'stile', 'mode' => 'publish'] + array_merge($all, $v));
+    reset_content_cache();
+    foreach (glob(dirname(__DIR__) . '/data/cache/*') ?: [] as $cf) {
+        @unlink($cf);
+    }
+}
+$stPg = req('GET', "$base/admin/?p=group&g=stile")['body'];
+ok(str_contains($stPg, 'name="st_head"') && str_contains($stPg, 'Kapitelzähler') && str_contains($stPg, 'Haarlinie'), 'Backend „Stile“: Auswahl für die Abschnittszeile');
+save_stile();
+$h0 = req('GET', "$base/")['body'];
+ok(str_contains($h0, 'class="rec-t">REC') && !str_contains($h0, 'sh-kap') && !str_contains($h0, 'assets/stile/'), 'Standard „aktuell“: REC-Zeile wie bisher, kein zusätzliches Stylesheet');
+save_stile(['st_head' => 'kapitel']);
+$h1 = req('GET', "$base/")['body'];
+preg_match_all('~class="sh-n"><b>(\d\d)</b> / (\d\d)~', $h1, $km);
+ok(count($km[1]) >= 5 && str_contains($h1, 'assets/stile/head-kapitel.css') && !str_contains($h1, 'class="rec-t"') && count(array_unique($km[2])) === 1, 'Kapitelzähler: „01 / 04“ in allen Abschnittszeilen (auch Start und Off), Stylesheet geladen');
+ok(str_contains(req('GET', "$base/en/")['body'], 'class="sh-l">What drives me'), 'Kapitelzähler: englischer Titel');
+save_stile(['st_head' => 'haarlinie']);
+$h2 = req('GET', "$base/")['body'];
+ok(substr_count($h2, 'sh-hair') >= 5 && str_contains($h2, 'assets/stile/head-haarlinie.css') && !str_contains($h2, 'sh-kap'), 'Haarlinie: Nummer und Titel, feine Linie');
+save_stile(['st_head' => 'gibtsnicht']);
+ok(str_contains(req('GET', "$base/")['body'], 'class="rec-t">REC'), 'unbekannter Stil fällt auf „aktuell“ zurück');
+save_stile();
+ok(is_file(dirname(__DIR__) . '/assets/stile/head-kapitel.css') && is_file(dirname(__DIR__) . '/assets/stile/head-haarlinie.css'), 'Stylesheets der Stile vorhanden');
+$pod0 = req('GET', "$base/")['body'];
+ok(pos_of($pod0, 'id="arbeiten"') < pos_of($pod0, 'id="podcast"') && pos_of($pod0, 'id="podcast"') < pos_of($pod0, 'id="ueber"') && !str_contains(json_encode(layout_order([])), 'podcast'), 'Podcast gehört jetzt zu Arbeiten (Unterabschnitt, folgt auf die Beitragsliste)');
+
 // Übersetzungen: Überschriften ohne kursiven Teil, veraltete Übersetzungen erkennen, feste Texte vollständig
 echo "Übersetzungen\n";
 $pgH = req('GET', "$base/")['body'] . req('GET', "$base/en/")['body'];
