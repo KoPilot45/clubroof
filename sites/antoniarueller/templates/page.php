@@ -64,11 +64,9 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 </header>
 
 <main id="inhalt">
+<?php if ($__tpl = style_template('hero')): include $__tpl; else: ?>
 <section class="ar-hero" aria-label="<?= e(tr($sec['intro_label'])) ?>">
-<?php if (style_of('head') !== 'aktuell'): ?><?= sec_head_style(style_of('head'), '00', $sec['intro_label'], (string)$hero['meta'], '0') ?>
-<?php else: ?><div class="sec-head" style="margin-bottom:0"><span class="sec-l"><?= rec_dot() ?><span class="rec-t">REC</span><span>00 — <?= e(tr($sec['intro_label'])) ?></span></span>
-<span class="muted"><?= e($hero['meta']) ?></span><span class="muted"><?= e($sec['hero_tc']) ?></span></div>
-<?php endif; ?>
+<?= hero_head($sec, $hero) ?>
 <h1 aria-label="<?= e(trim($hero['first'] . ' ' . $hero['last'])) ?>">
 <span class="h1-first" aria-hidden="true"><span class="h1-in"><?= e($hero['first']) ?></span></span>
 <span class="h1-last" aria-hidden="true"><span class="h1-in"><?= e($hero['last']) ?></span></span>
@@ -84,6 +82,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php if (upload_url($hero['photo']) !== ''): ?><?php $hv = img_width_set((string)$hero['photo']); ?><img class="ar-hero-img" src="<?= e(upload_url($hero['photo'])) ?>"<?= $hv ? ' srcset="' . e($hv['srcset']) . '" sizes="(max-width: 899px) 347px, 416px"' : '' ?><?= img_attrs($hero['photo']) ?> alt="<?= e($hero['photo_alt']) ?>" fetchpriority="high" decoding="async"><?php endif; ?>
 </div>
 </section>
+<?php endif; ?>
 
 <div class="cutband" aria-hidden="true"></div>
 

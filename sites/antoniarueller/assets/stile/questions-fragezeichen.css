@@ -1,0 +1,9 @@
+/* Leitfragen: Fragezeichen */
+.qz{display:grid;grid-template-columns:minmax(120px,28%) minmax(0,1fr);gap:clamp(16px,3vw,48px);align-items:center;flex-direction:initial}
+.qz .qz-m{display:block;padding:.04em 0 .1em;text-align:center;font-family:var(--anton);font-size:calc(clamp(160px,24vw,340px) * var(--fs-d,1));line-height:.9;color:var(--accent);user-select:none}
+.qz .qz-l{display:flex;flex-direction:column;gap:clamp(20px,3vw,40px)}
+.qz .qz-q{margin:0;padding:clamp(14px,1.6vw,22px) 0 0!important;display:grid;grid-template-columns:clamp(44px,6vw,84px) minmax(0,1fr);gap:clamp(12px,2vw,28px);align-items:start;border-top:2px solid var(--ink)}
+.qz .qz-n{font-family:var(--anton);font-size:calc(clamp(34px,4.6vw,64px) * var(--fs-d,1));line-height:.95;color:var(--rec)}
+.qz .qz-t{display:block;font-family:var(--serif);font-size:calc(clamp(26px,3.4vw,48px) * var(--fs-t,1));line-height:1.06;letter-spacing:-.012em}
+.qz .mk-i{color:var(--accent)}
+@media (max-width:700px){.qz{grid-template-columns:1fr}.qz .qz-m{text-align:left;font-size:calc(clamp(120px,42vw,200px) * var(--fs-d,1))}}

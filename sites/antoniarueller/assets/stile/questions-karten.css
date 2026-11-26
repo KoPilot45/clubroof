@@ -1,0 +1,8 @@
+/* Leitfragen: Zwei Karten */
+.qk{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px;flex-direction:initial}
+.qk .qk-c{position:relative;display:flex;flex-direction:column;justify-content:flex-end;gap:12px;min-height:clamp(220px,24vw,330px);margin:0;padding:28px 28px 30px;overflow:hidden;background:var(--teal);color:var(--paper);padding-left:28px!important}
+.qk .qk-c.alt{background:var(--ink)}
+.qk .qk-g{position:absolute;right:20px;top:14px;font-family:var(--anton);font-size:calc(clamp(80px,10vw,140px) * var(--fs-d,1));line-height:1;color:color-mix(in srgb,var(--paper) 10%,transparent)}
+.qk .qk-l{position:relative;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--acc-lt)}
+.qk .qk-t{position:relative;display:block;font-family:var(--serif);font-size:calc(clamp(28px,3.2vw,46px) * var(--fs-t,1));line-height:1.06;letter-spacing:-.012em}
+.qk .mk-i{color:var(--acc-lt)}.qk .mk-c{color:#fff;border-bottom:3px solid var(--rec)}

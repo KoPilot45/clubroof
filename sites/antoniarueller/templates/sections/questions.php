@@ -1,3 +1,4 @@
+<?php if ($__tpl = style_template('questions')) { include $__tpl; return; } ?>
 <?php if ($questions && $sec['on_questions']): ?>
 <section aria-label="<?= e(tr($sec['q_label'])) ?>" style="padding-top:112px">
 <h2 class="sr-only"><?= e(tr($sec['q_label'])) ?></h2>

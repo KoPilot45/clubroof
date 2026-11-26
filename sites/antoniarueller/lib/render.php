@@ -165,6 +165,33 @@ function sec_head_style(string $style, string $no, string $label, string $right,
     return '<div class="sec-head sh-hair' . $extra . '"' . $mbs . '><span class="sh-l">' . e($no) . ' — ' . e(tr($label)) . '</span>' . $rt . '</div>';
 }
 
+/** Kopfzeile des Startbereichs („REC 00 — Intro“ …) im gewählten Stil der Abschnittszeile. */
+function hero_head(array $sec, array $hero): string
+{
+    $st = style_of('head');
+    if ($st !== 'aktuell') {
+        return sec_head_style($st, '00', $sec['intro_label'], (string)$hero['meta'], '0');
+    }
+    return '<div class="sec-head" style="margin-bottom:0"><span class="sec-l">' . rec_dot() . '<span class="rec-t">REC</span><span>00 — ' . e(tr($sec['intro_label'])) . '</span></span>'
+        . '<span class="muted">' . e($hero['meta']) . '</span><span class="muted">' . e($sec['hero_tc']) . '</span></div>';
+}
+
+/** Teile des Heros, die alle Hero-Stile brauchen: Foto-HTML und die „Aktuell“-Zeilen. */
+function hero_photo_html(array $hero, string $cls, string $sizes): string
+{
+    $u = upload_url((string)$hero['photo']);
+    if ($u === '') {
+        return '';
+    }
+    $hv = img_width_set((string)$hero['photo']);
+    return '<img class="' . $cls . '" src="' . e($u) . '"' . ($hv ? ' srcset="' . e($hv['srcset']) . '" sizes="' . e($sizes) . '"' : '') . img_attrs((string)$hero['photo']) . ' alt="' . e($hero['photo_alt']) . '" fetchpriority="high" decoding="async">';
+}
+
+function hero_now_lines(array $hero): array
+{
+    return array_values(array_filter(array_map('trim', explode("\n", (string)$hero['now_lines']))));
+}
+
 function sec_head(string $no, string $label, string $right, string $mb = '40px'): string
 {
     $st = style_of('head');

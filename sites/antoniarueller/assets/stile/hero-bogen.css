@@ -1,0 +1,16 @@
+/* Hero: Bogen */
+.hb{display:block;padding-bottom:0}
+.hb .hb-h{display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,34vw,440px) minmax(0,1fr);align-items:end;gap:clamp(8px,2vw,28px);margin:clamp(20px,3vw,40px) 0 0;font-weight:400}
+.hb-f,.hb-l{font-family:var(--serif);font-size:calc(clamp(56px,10.5vw,150px) * var(--fs-d,1));line-height:.9;letter-spacing:-.03em;padding-bottom:clamp(20px,6vw,90px)}
+.hb-f{text-align:right}
+.hb-l{font-style:italic;color:var(--accent)}
+.hb-arch{position:relative;display:block;height:calc(clamp(260px,34vw,440px) * 1.42);border-radius:999px 999px 0 0;background:var(--mint)}
+.hb-arch:before{content:"";position:absolute;left:9%;right:9%;top:6%;bottom:0;border:1.5px solid color-mix(in srgb,var(--accent) 45%,transparent);border-bottom:0;border-radius:999px 999px 0 0}
+.hb-in{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center}
+.hb-img{display:block;height:96%;width:auto;max-width:100%;object-fit:contain;object-position:50% 100%}
+.hb-base{border-top:2px solid var(--ink);margin-top:0;padding:clamp(16px,2.4vw,32px) 0 clamp(8px,2vw,24px);text-align:center}
+.hb-lead{margin:0 auto 18px;max-width:34em;font-family:var(--serif);font-size:calc(clamp(24px,2.8vw,38px) * var(--fs-t,1));line-height:1.2}
+.hb-now{display:flex;flex-wrap:wrap;gap:8px 10px;justify-content:center;font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase}
+.hb-now b{padding:5px 12px;border-radius:99px;background:var(--ink);color:var(--paper);font-weight:600}
+.hb-now span{padding:5px 12px;border:1px solid var(--ink);border-radius:99px}
+@media (max-width:760px){.hb .hb-h{grid-template-columns:1fr;gap:0;text-align:center}.hb-f,.hb-l{text-align:center;padding:0;font-size:calc(clamp(64px,22vw,120px) * var(--fs-d,1))}.hb-arch{order:2;width:min(78vw,360px);height:calc(min(78vw,360px) * 1.42);margin:12px auto 0}.hb-l{order:3;margin-top:12px}}

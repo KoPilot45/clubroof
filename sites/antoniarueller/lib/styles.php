@@ -16,6 +16,16 @@ function style_registry(): array
             'kapitel' => 'Kapitelzähler („01 / 04“ mit Fortschritt)',
             'haarlinie' => 'Haarlinie (nur Nummer, Titel und eine feine Linie)',
         ]],
+        'hero' => ['Startbereich (Hero)', [
+            'aktuell' => 'Foto im Kreis (aktuell)',
+            'bogen' => 'Bogen (Foto im hohen Bogen, Name links und rechts)',
+            'sucher' => 'Sucher mit Bauchbinde (Kamerabild)',
+        ]],
+        'questions' => ['Leitfragen („Was mich antreibt“)', [
+            'aktuell' => 'Große Fragen (aktuell)',
+            'karten' => 'Zwei Karten (dunkle Flächen)',
+            'fragezeichen' => 'Fragezeichen (großes Zeichen links)',
+        ]],
         'list' => ['Beitragsliste („Alle Beiträge“)', [
             'aktuell' => 'Pinnwand mit Zeitungsausschnitten (aktuell)',
             'magazin' => 'Magazin-Cover (hochformatige Kacheln mit Bild)',

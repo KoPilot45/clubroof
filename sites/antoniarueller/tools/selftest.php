@@ -1445,6 +1445,27 @@ ok(str_contains($m7, 'cl-mag') && str_contains($m7, 'sp-tbl') && str_contains($m
 save_stile();
 ok(str_contains(file_get_contents(dirname(__DIR__) . '/lib/schema.php'), "'still_style'") && str_contains(req('GET', "$base/admin/?p=list&c=clips")['body'], 'Referenzen'), 'Referenz: Feld „Bildstil“ im Schema');
 
+// Stile für den Start: Hero und Leitfragen
+echo "Stile Start\n";
+$nQ = substr_count($h0, 'class="q-no"');
+save_stile(['st_hero' => 'bogen']);
+$s1 = req('GET', "$base/")['body'];
+ok(str_contains($s1, 'class="ar-hero hb"') && str_contains($s1, 'class="hb-arch"') && str_contains($s1, 'hb-img') && substr_count($s1, '<h1') === 1 && str_contains($s1, 'assets/stile/hero-bogen.css') && !str_contains($s1, 'ar-hero-circle'), 'Hero „Bogen“: Foto im Bogen, genau eine Überschrift, Stylesheet geladen');
+save_stile(['st_hero' => 'sucher']);
+$s2 = req('GET', "$base/")['body'];
+ok(str_contains($s2, 'class="ar-hero hs"') && str_contains($s2, 'class="hs-name"') && str_contains($s2, 'class="hs-sub"') && substr_count($s2, '<h1') === 1 && str_contains($s2, 'aria-label="Antonia Rüller"'), 'Hero „Sucher“: Name in der Bauchbinde, Einleitung als Untertitel, eine Überschrift mit vollem Namen');
+save_stile(['st_hero' => 'sucher', 'st_head' => 'kapitel']);
+ok(str_contains(req('GET', "$base/")['body'], 'class="sec-head sh-kap"'), 'Hero und Abschnittszeile lassen sich kombinieren');
+save_stile(['st_questions' => 'karten']);
+$s3 = req('GET', "$base/")['body'];
+ok(substr_count($s3, 'class="qk-c') === $nQ && $nQ >= 2 && str_contains($s3, 'class="qk-g"') && str_contains($s3, 'mk-i') && str_contains($s3, 'assets/stile/questions-karten.css'), 'Leitfragen „Zwei Karten“: jede Frage als Karte mit Hintergrundzahl');
+save_stile(['st_questions' => 'fragezeichen']);
+$s4 = req('GET', "$base/")['body'];
+ok(substr_count($s4, 'class="qz-q"') === $nQ && str_contains($s4, 'class="qz-m"') && str_contains($s4, 'assets/stile/questions-fragezeichen.css'), 'Leitfragen „Fragezeichen“: jede Frage neben dem großen Zeichen');
+save_stile(['st_hero' => 'bogen', 'st_questions' => 'karten']);
+ok(str_contains(req('GET', "$base/en/")['body'], 'class="qk-l">01 · Question'), 'neue Stile auf der englischen Seite (Beschriftung „Question“)');
+save_stile();
+
 // Spurfarben folgen der Palette
 echo "Spurfarben\n";
 ok(track_tone_from_hex('#0e5c62') === 'accent' && track_tone_from_hex('#0b3f44') === 'teal' && track_tone_from_hex('#c9deda') === 'mint' && track_tone_from_hex('#ff00ff') === 'custom', 'Spurfarbe aus altem Hex-Wert: nächster Palettenton, sonst „Eigene Farbe“');
