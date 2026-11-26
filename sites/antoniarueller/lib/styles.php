@@ -16,6 +16,21 @@ function style_registry(): array
             'kapitel' => 'Kapitelzähler („01 / 04“ mit Fortschritt)',
             'haarlinie' => 'Haarlinie (nur Nummer, Titel und eine feine Linie)',
         ]],
+        'list' => ['Beitragsliste („Alle Beiträge“)', [
+            'aktuell' => 'Pinnwand mit Zeitungsausschnitten (aktuell)',
+            'magazin' => 'Magazin-Cover (hochformatige Kacheln mit Bild)',
+            'zeilen' => 'Liste mit Vorschaubild (Zeilen)',
+        ]],
+        'editor' => ['Übersicht über den Beiträgen', [
+            'aktuell' => 'Schnittplatz (aktuell)',
+            'sendeplan' => 'Sendeplan (Spuren und Zeiträume als Tabelle)',
+            'zeitstrahl' => 'Zeitstrahl (Beiträge entlang einer Linie)',
+        ]],
+        'podcast' => ['Podcast', [
+            'aktuell' => 'Karten mit Tonspur (aktuell)',
+            'verzeichnis' => 'Folgenverzeichnis (schlichte Liste)',
+            'welle' => 'Großes Wellenband',
+        ]],
     ];
 }
 

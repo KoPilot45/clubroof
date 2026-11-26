@@ -1,3 +1,4 @@
+<?php if ($__tpl = style_template('editor')) { include $__tpl; return; } ?>
 <div class="ar-ed-desk editor">
 <div class="ed-bar">
 <span class="ed-t"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span><?= e($sec['editor_title']) ?></span>

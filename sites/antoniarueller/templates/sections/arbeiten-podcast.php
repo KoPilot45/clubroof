@@ -1,3 +1,4 @@
+<?php if ($__tpl = style_template('podcast')) { include $__tpl; return; } ?>
 <?php if ($episodes && $sub['podcast']): ?>
 <section id="podcast" aria-label="<?= e(tr($sec['pod_label'])) ?>" style="padding-top:128px">
 <?= sec_head($no['arbeiten'], $sec['pod_label'], $sec['pod_right'], '32px') ?>

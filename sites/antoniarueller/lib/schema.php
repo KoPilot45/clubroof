@@ -100,6 +100,7 @@ function schema(): array
             f('textarea', 'desc', 'Beschreibung', ['max' => 600]),
             f('image', 'still', 'Vorschaubild (optional)', ['hint' => 'Erscheint als quadratische Kachel in der Liste „Alle Beiträge“ und im Featured-Block. Mit dem Fokuspunkt legst du fest, welcher Ausschnitt sichtbar bleibt.']),
             f('text', 'still_credit', 'Bildnachweis (optional)', ['max' => 80, 'hint' => 'z. B. „Bild: buten un binnen“. Erscheint klein im Bild.']),
+            f('select', 'still_style', 'Bildstil', ['options' => ['foto' => 'Foto (bildfüllend)', 'screenshot' => 'Bildschirmfoto (eingerahmt, nicht beschnitten)'], 'default' => 'foto', 'hint' => 'Nur für den Stil „Magazin-Cover“: Fotos füllen die Kachel, Bildschirmfotos von Webseiten bleiben vollständig sichtbar und stehen eingerahmt auf einer Farbfläche.', 'tr' => false]),
             f('section', '', 'Link zum Beitrag'),
             f('switch', 'link_mode', 'Wo liegt der Beitrag?', ['options' => ['external' => 'Externer Link', 'hosted' => 'Beitrag selbst hosten'], 'default' => 'external']),
             f('url', 'url', 'Link zum Beitrag', ['show_if' => ['link_mode', 'external']]),

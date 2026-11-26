@@ -1413,6 +1413,38 @@ ok(is_file(dirname(__DIR__) . '/assets/stile/head-kapitel.css') && is_file(dirna
 $pod0 = req('GET', "$base/")['body'];
 ok(pos_of($pod0, 'id="arbeiten"') < pos_of($pod0, 'id="podcast"') && pos_of($pod0, 'id="podcast"') < pos_of($pod0, 'id="ueber"') && !str_contains(json_encode(layout_order([])), 'podcast'), 'Podcast gehört jetzt zu Arbeiten (Unterabschnitt, folgt auf die Beitragsliste)');
 
+// Stile für Arbeiten: Beitragsliste, Übersicht, Podcast
+echo "Stile Arbeiten\n";
+$nClips = substr_count($h0, '<li class="ar-clip');
+$nEp = substr_count($h0, 'class="pod-card"');
+save_stile(['st_list' => 'magazin']);
+$m1 = req('GET', "$base/")['body'];
+ok(substr_count($m1, '<li class="ar-clip mg') === $nClips && str_contains($m1, 'cl-mag') && str_contains($m1, 'assets/stile/list-magazin.css') && str_contains($m1, 'class="mg-title"') && preg_match_all('~id="clip-\d+" data-id="\d+"~', $m1) === $nClips, 'Magazin-Cover: jede Referenz als Kachel mit Anker, Stylesheet geladen');
+save_stile(['st_list' => 'zeilen']);
+$m2 = req('GET', "$base/")['body'];
+ok(substr_count($m2, '<li class="ar-clip zl') === $nClips && str_contains($m2, 'cl-zl') && str_contains($m2, 'class="zl-t"') && str_contains($m2, 'class="zl-s"'), 'Liste mit Vorschaubild: jede Referenz als Zeile');
+save_stile(['st_editor' => 'sendeplan']);
+$m3 = req('GET', "$base/")['body'];
+ok(str_contains($m3, 'class="sp-tbl"') && substr_count($m3, 'class="tl-it') === $nClips && str_contains($m3, 'scope="row"') && str_contains($m3, 'assets/stile/editor-sendeplan.css') && !str_contains($m3, 'class="ed-grid"'), 'Sendeplan: Tabelle mit Spuren, jede Referenz einmal, Stylesheet geladen, Schnittplatz entfällt');
+save_stile(['st_editor' => 'zeitstrahl']);
+$m4 = req('GET', "$base/")['body'];
+ok(str_contains($m4, 'class="zs-stage"') && substr_count($m4, 'class="tl-it') === $nClips && preg_match_all('~class="zs-i (u1|d1|u2|d2)~', $m4) === $nClips && str_contains($m4, 'class="zs-y"'), 'Zeitstrahl: jede Referenz auf einer von vier Ebenen, Jahresmarken');
+$scM = overview_scale([['date' => '2025-12-03'], ['date' => '2026-09-01'], ['date' => '']]);
+$scQ = overview_scale([['date' => '2024-02-20'], ['date' => '2026-08-15']]);
+$scY = overview_scale([['date' => '2015-01-01'], ['date' => '2026-01-01']]);
+ok($scM['unit'] === 'm' && count($scM['keys']) === 10 && $scM['undated'] === true && $scQ['unit'] === 'q' && $scQ['keys'][0] === '2024-Q1' && end($scQ['keys']) === '2026-Q3' && $scY['unit'] === 'y' && count($scY['keys']) === 12 && overview_key($scQ, '2025-05-09') === '2025-Q2' && overview_key($scM, '') === '', 'Zeitskala: Monate bis 14 Monate, dann Quartale, dann Jahre; ohne Datum eigene Spalte');
+save_stile(['st_podcast' => 'verzeichnis']);
+$m5 = req('GET', "$base/")['body'];
+ok(substr_count($m5, 'class="pd-r"') === $nEp && str_contains($m5, 'pd-vz') && str_contains($m5, 'assets/stile/podcast-verzeichnis.css') && str_contains($m5, 'id="podcast"'), 'Folgenverzeichnis: jede Folge als Zeile');
+save_stile(['st_podcast' => 'welle']);
+$m6 = req('GET', "$base/")['body'];
+ok(substr_count($m6, 'class="pd-e"') === $nEp && str_contains($m6, 'class="pd-w"') && str_contains($m6, 'pd-wl'), 'Großes Wellenband: jede Folge mit Wellenband');
+save_stile(['st_list' => 'magazin', 'st_editor' => 'sendeplan', 'st_podcast' => 'welle']);
+$m7 = req('GET', "$base/en/")['body'];
+ok(str_contains($m7, 'cl-mag') && str_contains($m7, 'sp-tbl') && str_contains($m7, 'pd-wl') && !str_contains($m7, 'Fatal error'), 'alle neuen Stile auch auf der englischen Seite');
+save_stile();
+ok(str_contains(file_get_contents(dirname(__DIR__) . '/lib/schema.php'), "'still_style'") && str_contains(req('GET', "$base/admin/?p=list&c=clips")['body'], 'Referenzen'), 'Referenz: Feld „Bildstil“ im Schema');
+
 // Spurfarben folgen der Palette
 echo "Spurfarben\n";
 ok(track_tone_from_hex('#0e5c62') === 'accent' && track_tone_from_hex('#0b3f44') === 'teal' && track_tone_from_hex('#c9deda') === 'mint' && track_tone_from_hex('#ff00ff') === 'custom', 'Spurfarbe aus altem Hex-Wert: nächster Palettenton, sonst „Eigene Farbe“');

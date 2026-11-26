@@ -1,3 +1,4 @@
+<?php if ($__tpl = style_template('list')) { include $__tpl; return; } ?>
 <div class="muted list-h"><?= e($sec['show_all']) ?></div>
 <ol class="clip-list">
 <?php foreach ($clips as $n => $c): $cImg = upload_url((string)$c['still']); $ext = $c['_href']; $cat = $c['_cat'] !== '' ? $c['_cat'] : media_label($c['medium']);

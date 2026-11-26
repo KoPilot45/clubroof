@@ -470,3 +470,65 @@ function wave_bars(int $style, int $seed): array
     mt_srand();
     return array_map(fn($h) => max(6, min(96, (int)$h)), array_slice($b, 0, 48));
 }
+
+
+/** Öffnender Teil des Links einer Beitragskachel (Knopf für Galerie, Link oder Rahmen ohne Ziel). */
+function clip_link_open(array $c, string $cls = 'cl-link'): string
+{
+    if ($c['_hosted']) {
+        return '<button type="button" class="' . $cls . '" data-gal="' . (int)$c['_id'] . '" data-ev="clip" data-k="' . (int)$c['_id'] . '">';
+    }
+    if ($c['_href'] !== '') {
+        return '<a class="' . $cls . '" data-ev="clip" data-k="' . (int)$c['_id'] . '" href="' . e($c['_href']) . '" ' . ($c['_blank'] ? 'target="_blank" rel="noopener noreferrer"' : '') . '>';
+    }
+    return '<div class="' . $cls . '">';
+}
+
+function clip_link_close(array $c): string
+{
+    return $c['_hosted'] ? '</button>' : ($c['_href'] !== '' ? '</a>' : '</div>');
+}
+
+/** Linktext der Beitragskachel mit Symbol: Pfeil = öffnet auf der Seite, schräger Pfeil = externer Link; leer ohne Ziel. */
+function clip_cta_html(array $c): string
+{
+    if (!$c['_hosted'] && $c['_href'] === '') {
+        return '';
+    }
+    $ic = $c['_hosted']
+        ? '<svg class="cl-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg>'
+        : '<svg class="cl-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 16L18 6M9 6h9v9M5 10v9h9"/></svg>';
+    $note = (!$c['_hosted'] && $c['_blank']) ? '<span class="sr-only"> (' . e(tr('öffnet in neuem Tab')) . ')</span>' : '';
+    return '<span class="cl-cta"><span>' . e(tr($c['_cta'])) . '</span>' . $ic . '</span>' . $note;
+}
+
+/** Bild einer Beitragskachel (Vorschaubild mit Fokuspunkt), leer ohne Bild. */
+function clip_img_html(array $c, string $sizes = '(max-width: 600px) 90vw, 380px'): string
+{
+    $u = upload_url((string)$c['still']);
+    if ($u === '') {
+        return '';
+    }
+    $iv = img_width_set((string)$c['still']);
+    return '<img src="' . e($u) . '"' . ($iv ? ' srcset="' . e($iv['srcset']) . '" sizes="' . e($sizes) . '"' : '') . img_attrs((string)$c['still']) . ' alt="" loading="lazy" decoding="async" style="object-position:' . e(focus_pos((string)($c['still_focus'] ?? ''))) . '">';
+}
+
+
+/** Links einer Podcast-Folge: [[Name, URL], …] (nur gefüllte). */
+function podcast_links(array $ep): array
+{
+    return array_values(array_filter([['Spotify', $ep['spotify']], ['Apple Podcasts', $ep['apple']], ['ARD Audiothek', $ep['audiothek']], [$ep['other_label'] ?: 'Mehr', $ep['other_url']]], fn($l) => $l[1] !== ''));
+}
+
+function podcast_links_html(array $ep, string $listen, string $cls): string
+{
+    $links = podcast_links($ep);
+    if (!$links) {
+        return '';
+    }
+    $o = '<div class="pod-btns"><span class="pod-lab">' . e($listen) . '</span>';
+    foreach ($links as $l) {
+        $o .= '<a class="' . $cls . '" data-ev="podcast" data-k="' . e(trim((string)preg_replace('~[^a-z0-9]+~', '-', strtolower($l[0])), '-') ?: 'mehr') . '" href="' . e($l[1]) . '" target="_blank" rel="noopener noreferrer">' . e($l[0]) . ' <span aria-hidden="true">↗</span><span class="sr-only"> (' . e($ep['title']) . ', ' . e(tr('öffnet in neuem Tab')) . ')</span></a>';
+    }
+    return $o . '</div>';
+}

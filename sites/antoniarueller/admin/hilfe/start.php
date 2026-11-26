@@ -164,7 +164,7 @@ return [
                     'Wähle bei jedem Bereich einen Stil. „(aktuell)“ ist das bisherige Design und der Standard.',
                     'Mit **Vorschau** siehst du das Ergebnis, mit **Veröffentlichen** wird es öffentlich.',
                 ],
-                'tips' => ['Der Stil gilt für Deutsch und Englisch. Wählst du wieder „(aktuell)“, ist alles wie vorher.', 'Farben und Schrift stellst du weiterhin unter **Farben** und **Schrift** ein; sie gelten für jeden Stil.'],
+                'tips' => ['Für „Magazin-Cover“ stellst du bei jeder Referenz unter **Bildstil** ein, ob das Bild ein Foto ist (füllt die Kachel) oder ein Bildschirmfoto (bleibt vollständig sichtbar, eingerahmt).', 'Sendeplan und Zeitstrahl ordnen die Referenzen nach ihrem Datum; die Zeitskala (Monate, Quartale oder Jahre) wählt die Seite selbst. Referenzen ohne Datum stehen in einer eigenen Spalte beziehungsweise am Ende.', 'Der Stil gilt für Deutsch und Englisch. Wählst du wieder „(aktuell)“, ist alles wie vorher.', 'Farben und Schrift stellst du weiterhin unter **Farben** und **Schrift** ein; sie gelten für jeden Stil.'],
                 'open' => ['Stile öffnen', 'p=group&g=stile'],
             ],
             [

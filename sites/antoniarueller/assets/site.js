@@ -21,6 +21,7 @@
       if (scroll && sc && sc.scrollWidth > sc.clientWidth) sc.scrollTo({ left: Math.max(0, x - sc.clientWidth / 2), behavior: reduce ? 'auto' : 'smooth' });
     });
   }
+  $$('.tl-it[data-id]').forEach(function (b) { b.addEventListener('click', function () { focusClip(b.getAttribute('data-id')); }); });
   window.addEventListener('resize', function () { placeHeads(false); });
   window.addEventListener('load', function () { placeHeads(false); requestAnimationFrame(function () { if (desk) desk.classList.add('ready'); }); });
   placeHeads(false);

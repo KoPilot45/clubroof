@@ -1,0 +1,13 @@
+/* Podcast: Folgenverzeichnis */
+.pd-vz{display:block}
+.pd-vz .pod-h{margin:0 0 24px}
+.pd-vz .pod-list{display:block;border-top:2px solid var(--ink)}
+.pd-vz .pd-r{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:20px;padding:20px 0;border-bottom:1px solid var(--line);align-items:start}
+.pd-vz .pd-ico{display:flex;align-items:center;justify-content:center;width:64px;height:64px;background:var(--teal);color:var(--acc-lt)}
+.pd-vz .pd-t{margin:2px 0 6px;font-family:var(--serif);font-size:calc(clamp(26px,2.6vw,36px) * var(--fs-t,1));font-weight:400;line-height:1.05}
+.pd-vz .pd-d{margin:0 0 12px;max-width:62ch;font-size:calc(15px * var(--fs-b,1));line-height:1.5;color:var(--body)}
+.pd-vz .pod-btns{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.pd-vz .pd-l{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1.5px}
+.pd-vz .pd-l:hover{color:var(--rec)}
+.pd-vz .pd-s{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);text-align:right}
+@media (max-width:700px){.pd-vz .pd-r{grid-template-columns:48px minmax(0,1fr);gap:14px}.pd-vz .pd-ico{width:48px;height:48px}.pd-vz .pd-s{grid-column:1/-1;flex-direction:row;justify-content:space-between}}

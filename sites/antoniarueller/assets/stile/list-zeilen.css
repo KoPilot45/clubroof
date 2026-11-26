@@ -1,0 +1,19 @@
+/* Beitragsliste: Zeilen mit Vorschaubild */
+.cl-zl{display:block;padding-top:0}
+.cl-zl .ar-clip{position:static;display:block;padding:0!important;border:0;border-bottom:1px solid var(--line);background:none;box-shadow:none;transform:none!important;margin:0!important}
+.cl-zl .ar-clip:hover,.cl-zl .ar-clip:focus-within{transform:none!important;box-shadow:none;background:color-mix(in srgb,var(--sand) 55%,transparent)}
+.cl-zl .ar-clip>.cl-link,.cl-zl .ar-clip:hover>.cl-link{display:grid!important;grid-template-columns:220px minmax(0,1fr) auto;gap:24px;align-items:start;width:100%;padding:20px 8px;border:0;background:none;color:var(--ink);text-decoration:none;text-align:left}
+.cl-zl .zl-img{display:block;position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--teal);border:1px solid var(--ink)}
+.cl-zl .zl-img img{display:block;width:100%;height:100%;object-fit:cover}
+.cl-zl .zl-no{display:flex;align-items:center;justify-content:center;height:100%;font-family:var(--anton);font-size:44px;color:var(--acc-lt)}
+.cl-zl .zl-k{display:flex;flex-wrap:wrap;gap:4px 12px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.cl-zl .zl-k b{display:inline-flex;align-items:center;gap:6px;color:var(--rec);font-weight:700}
+.cl-zl .zl-t{display:block;margin:6px 0 8px;font-family:var(--serif);font-size:calc(clamp(22px,2.2vw,30px) * var(--fs-t,1));line-height:1.1}
+.cl-zl .zl-d{display:block;max-width:60ch;font-size:calc(15px * var(--fs-b,1));line-height:1.5;color:var(--body)}
+.cl-zl .zl-s{display:flex;flex-direction:column;align-items:flex-end;gap:10px;text-align:right}
+.cl-zl .zl-dt{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);white-space:nowrap}
+.cl-zl .zl-dt em{font-style:normal;font-weight:600;color:var(--rec)}
+.cl-zl .cl-cta{margin:0}
+.cl-zl .ar-clip:hover .cl-ic{transform:translateX(3px)}
+.cl-zl .ar-clip.on{outline:3px solid var(--accent);outline-offset:-3px}
+@media (max-width:700px){.cl-zl .ar-clip>.cl-link,.cl-zl .ar-clip:hover>.cl-link{grid-template-columns:30% minmax(0,1fr);gap:14px;padding:16px 0}.cl-zl .zl-t{font-size:calc(21px * var(--fs-t,1))}.cl-zl .zl-d{display:none}.cl-zl .zl-s{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center;text-align:left}.cl-zl .zl-no{font-size:30px}}
