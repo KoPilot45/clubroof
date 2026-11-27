@@ -662,6 +662,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $back(AR_BASE . '/admin/?p=stats', 'Statistikdaten gelöscht (' . $n . ' Dateien).');
         }
 
+        case 'stats_reset': {
+            if ($user['role'] !== 'owner') {
+                fatal('Nur der Inhaber darf die Statistik verwalten.', 403);
+            }
+            [$n, $dir] = stats_reset();
+            audit($who, 'stats_reset', (string)$n);
+            $back(AR_BASE . '/admin/?p=stats', $n > 0 ? 'Statistik zurückgesetzt. ' . $n . ' Dateien liegen gesichert in ' . $dir . '.' : 'Statistik zurückgesetzt (es lagen keine Daten vor).');
+        }
+
         case 'user_pw_clear': {
             if ($user['role'] !== 'owner') {
                 fatal('Nur der Inhaber darf Zugänge verwalten.', 403);

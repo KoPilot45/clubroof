@@ -217,6 +217,16 @@ function stats_event(): never
     }
     $type = (string)($_POST['e'] ?? '');
     $key = strtolower((string)($_POST['k'] ?? ''));
+    if ($type === 'human') {
+        // Interaktion im Browser (Scrollen, Tippen, Klicken) = „echter“ Besuch; ohne Kennung, höchstens einmal je Gerät und Stunde
+        if ($ok && preg_match('~^(home|impressum|datenschutz)(-en)?$~', $key) && trim((string)($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')) !== '' && stats_ensure_dir() && stats_is_new_visit('human')) {
+            [$dev, $br, $os] = ua_family($ua);
+            $r = strtolower((string)($_POST['r'] ?? ''));
+            $ref = preg_match('~^[a-z0-9.-]{1,60}$~', $r) ? stats_ref_domain('https://' . $r) : '';
+            stats_append('human-' . date('Y-m') . '.dat', date('Y-m-d H') . "\t" . $key . "\t" . $dev . "\t" . $ref . "\t" . $br . "\t" . $os);
+        }
+        exit;
+    }
     $rules = [
         'clip' => '~^\d{1,9}$~', 'mail' => '~^(kopfzeile|kontakt|menue)$~', 'social' => '~^[a-z0-9-]{1,30}$~', 'cv' => '~^pdf$~',
         'podcast' => '~^[a-z0-9-]{1,30}$~', 'section' => '~^(arbeiten|podcast|ueber|lebenslauf|offtherecord|kontakt)$~', 'lang' => '~^(de|en)$~',
@@ -248,7 +258,7 @@ function stats_log_404(string $path, string $referer = ''): void
 function stats_prune_old(): void
 {
     foreach (glob(stats_dir() . '/*') ?: [] as $f) {
-        if (is_file($f) && preg_match('~/(\d{4}-\d{2}\.log|(bots|events|404)-\d{4}-\d{2}\.dat)$~', $f) && filemtime($f) < time() - 800 * 86400) {
+        if (is_file($f) && preg_match('~/(\d{4}-\d{2}\.log|(bots|events|404|human)-\d{4}-\d{2}\.dat)$~', $f) && filemtime($f) < time() - 800 * 86400) {
             @unlink($f);
         }
     }
@@ -259,7 +269,8 @@ function stats_prune_old(): void
 function stats_day_new(): array
 {
     return ['v' => 0, 'h' => 0, 'm' => 0, 't' => 0, 'd' => 0, 'de' => 0, 'en' => 0, 'direct' => 0, 'hr' => array_fill(0, 24, 0),
-        'pages' => [], 'refs' => [], 'br' => [], 'os' => [], 'camp' => [], 'ev' => [], 'bots' => [], 'e404' => []];
+        'pages' => [], 'refs' => [], 'br' => [], 'os' => [], 'camp' => [], 'ev' => [], 'bots' => [], 'e404' => [],
+        'hv' => 0, 'hhr' => array_fill(0, 24, 0), 'hu' => []];
 }
 
 function stats_inc(array &$map, string $key, int $by = 1): void
@@ -308,6 +319,12 @@ function stats_apply_line(array &$day, string $type, array $p): void
         case 'e404':
             stats_inc($day['e404'], (string)($p[1] ?? '/'));
             break;
+        case 'human':
+            // echter Besuch: Interaktion im Browser beobachtet (Seite|Gerät|Herkunft|Browser|System)
+            $day['hv']++;
+            $day['hhr'][$hour]++;
+            stats_inc($day['hu'], implode('|', [(string)($p[1] ?? ''), (string)($p[2] ?? 'd'), (string)($p[3] ?? ''), (string)($p[4] ?? ''), (string)($p[5] ?? '')]));
+            break;
     }
 }
 
@@ -318,7 +335,7 @@ function stats_files(): array
     foreach (glob(stats_dir() . '/20??-??.log') ?: [] as $f) {
         $out[] = [$f, 'main'];
     }
-    foreach (['bots' => 'bots', 'events' => 'events', '404' => 'e404'] as $prefix => $type) {
+    foreach (['bots' => 'bots', 'events' => 'events', '404' => 'e404', 'human' => 'human'] as $prefix => $type) {
         foreach (glob(stats_dir() . '/' . $prefix . '-20??-??.dat') ?: [] as $f) {
             $out[] = [$f, $type];
         }
@@ -377,17 +394,22 @@ function stats_totals(array $days): array
     $t['bots_last'] = [];
     $t['e404_last'] = [];
     $hm = array_fill(1, 7, array_fill(0, 24, 0));
+    $hhm = $hm;
     foreach ($days as $date => $d) {
-        foreach (['v', 'h', 'm', 't', 'd', 'de', 'en', 'direct'] as $k) {
-            $t[$k] += (int)$d[$k];
+        foreach (['v', 'h', 'm', 't', 'd', 'de', 'en', 'direct', 'hv'] as $k) {
+            $t[$k] += (int)($d[$k] ?? 0);
         }
         $wd = (int)date('N', strtotime($date));
         foreach ($d['hr'] as $h => $n) {
             $t['hr'][$h] += $n;
             $hm[$wd][$h] += $n;
         }
-        foreach (['pages', 'refs', 'br', 'os', 'camp', 'ev', 'bots', 'e404'] as $k) {
-            foreach ($d[$k] as $key => $n) {
+        foreach (($d['hhr'] ?? []) as $h => $n) {
+            $t['hhr'][$h] += $n;
+            $hhm[$wd][$h] += $n;
+        }
+        foreach (['pages', 'refs', 'br', 'os', 'camp', 'ev', 'bots', 'e404', 'hu'] as $k) {
+            foreach (($d[$k] ?? []) as $key => $n) {
                 stats_inc($t[$k], (string)$key, (int)$n);
                 if ($k === 'bots') {
                     $t['bots_last'][$key] = $date;
@@ -399,6 +421,7 @@ function stats_totals(array $days): array
         }
     }
     $t['hm'] = $hm;
+    $t['hhm'] = $hhm;
     foreach (['pages', 'refs', 'br', 'os', 'camp', 'e404'] as $k) {
         arsort($t[$k]);
     }
@@ -452,13 +475,16 @@ function stats_archive(): void
         if (isset($arch['days'][$date])) {
             // Tag war schon (teilweise) archiviert: addieren
             $cur = array_replace(stats_day_new(), $arch['days'][$date]);
-            foreach (['v', 'h', 'm', 't', 'd', 'de', 'en', 'direct'] as $k) {
+            foreach (['v', 'h', 'm', 't', 'd', 'de', 'en', 'direct', 'hv'] as $k) {
                 $cur[$k] += $row[$k];
             }
             foreach ($row['hr'] as $h => $n) {
                 $cur['hr'][$h] += $n;
             }
-            foreach (['pages', 'refs', 'br', 'os', 'camp', 'ev', 'bots', 'e404'] as $k) {
+            foreach ($row['hhr'] as $h => $n) {
+                $cur['hhr'][$h] += $n;
+            }
+            foreach (['pages', 'refs', 'br', 'os', 'camp', 'ev', 'bots', 'e404', 'hu'] as $k) {
                 foreach ($row[$k] as $key => $n) {
                     stats_inc($cur[$k], (string)$key, (int)$n);
                 }
@@ -507,9 +533,9 @@ function stats_summary(): array
 /** CSV mit Tageswerten (Semikolon, UTF-8 mit BOM für Excel). */
 function stats_csv(array $days): string
 {
-    $o = "\xEF\xBB\xBF" . "Datum;Besuche;Aufrufe;Handy;Tablet;Rechner;Deutsch;Englisch\n";
+    $o = "\xEF\xBB\xBF" . "Datum;Echte Besuche;Besuche gesamt;Aufrufe;Handy;Tablet;Rechner;Deutsch;Englisch\n";
     foreach ($days as $date => $d) {
-        $o .= implode(';', [$date, $d['v'], $d['h'], $d['m'], $d['t'], $d['d'], $d['de'], $d['en']]) . "\n";
+        $o .= implode(';', [$date, $d['hv'] ?? 0, $d['v'], $d['h'], $d['m'], $d['t'], $d['d'], $d['de'], $d['en']]) . "\n";
     }
     return $o;
 }
@@ -524,4 +550,72 @@ function stats_delete_all(): int
         }
     }
     return $n;
+}
+
+/** Auswertung nur der „echten“ Besuche (mit Interaktion) im Format von stats_totals(). */
+function stats_human_view(array $t): array
+{
+    $o = $t;
+    $o['v_all'] = $t['v'];
+    $o['v'] = $t['hv'];
+    foreach (['m', 't', 'd', 'de', 'en', 'direct'] as $k) {
+        $o[$k] = 0;
+    }
+    foreach (['pages', 'refs', 'br', 'os'] as $k) {
+        $o[$k] = [];
+    }
+    foreach ($t['hu'] as $key => $n) {
+        [$pg, $dev, $ref, $br, $os] = array_pad(explode('|', (string)$key), 5, '');
+        $o[in_array($dev, ['m', 't', 'd'], true) ? $dev : 'd'] += $n;
+        $o[str_ends_with($pg, '-en') ? 'en' : 'de'] += $n;
+        stats_inc($o['pages'], $pg, $n);
+        if ($ref !== '') {
+            stats_inc($o['refs'], $ref, $n);
+        } else {
+            $o['direct'] += $n;
+        }
+        if ($br !== '') {
+            stats_inc($o['br'], $br, $n);
+        }
+        if ($os !== '') {
+            stats_inc($o['os'], $os, $n);
+        }
+    }
+    foreach (['pages', 'refs', 'br', 'os'] as $k) {
+        arsort($o[$k]);
+    }
+    $o['hr'] = $t['hhr'];
+    $o['hm'] = $t['hhm'];
+    return $o;
+}
+
+/** Datum, ab dem gezählt wird (nach einem Zurücksetzen), oder leer. */
+function stats_started(): string
+{
+    $f = stats_dir() . '/started';
+    return is_file($f) ? trim((string)@file_get_contents($f)) : '';
+}
+
+/** Statistik für den Livegang zurücksetzen: Daten wandern in einen Sicherungsordner, danach wird neu gezählt. @return array{0:int,1:string} Dateien, Ordner */
+function stats_reset(): array
+{
+    if (!stats_ensure_dir()) {
+        return [0, ''];
+    }
+    $dir = 'data/stats-sicherung-' . date('Ymd-His');
+    $target = AR_ROOT . '/' . $dir;
+    $n = 0;
+    foreach (glob(stats_dir() . '/*') ?: [] as $f) {
+        if (!is_file($f) || in_array(basename($f), ['disabled', 'started'], true) || str_starts_with(basename($f), 'seen-')) {
+            continue;
+        }
+        if ($n === 0 && !is_dir($target) && !@mkdir($target, 0750, true)) {
+            return [0, ''];
+        }
+        if (@rename($f, $target . '/' . basename($f))) {
+            $n++;
+        }
+    }
+    @file_put_contents(stats_dir() . '/started', date('Y-m-d') . "\n", LOCK_EX);
+    return [$n, $n > 0 ? $dir : ''];
 }

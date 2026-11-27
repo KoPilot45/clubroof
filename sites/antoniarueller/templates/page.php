@@ -45,7 +45,7 @@ $arbeitenOn = $featured ? 'feat' : 'show';
 <?php if ($jsonld !== ''): ?><script type="application/ld+json"><?= $jsonld ?></script><?php endif; ?>
 </head>
 <body>
-<div class="ar-root" data-stat="<?= defined('AR_PREVIEW') ? '' : e(AR_BASE) . '/stat.php' ?>">
+<div class="ar-root" data-stat="<?= defined('AR_PREVIEW') ? '' : e(AR_BASE) . '/stat.php' ?>" data-pg="<?= e((string)($cacheKey ?? 'home')) ?>">
 <a class="skip" href="#inhalt"><?= tr('Zum Inhalt springen') ?></a>
 
 <header class="top-wrap" id="topbar">

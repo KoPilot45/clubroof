@@ -319,6 +319,32 @@
     ['arbeiten', 'podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt'].forEach(function (id) { var s = document.getElementById(id); if (s) so.observe(s); });
   }
 
+  // ---- „Echter“ Besuch: erst nach einer Interaktion (Scrollen, Tippen, Klicken, Berühren) bei sichtbarem Tab, höchstens ein anonymes Signal je Seitenaufruf ----
+  var pgKey = root ? root.getAttribute('data-pg') : '';
+  if (statUrl && pgKey && navigator.doNotTrack !== '1' && !navigator.webdriver) {
+    var humanDone = false, humanT0 = Date.now(), moves = 0;
+    var humanSend = function () {
+      if (humanDone || document.visibilityState !== 'visible') return;
+      humanDone = true;
+      ['pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll', 'mousemove'].forEach(function (n) { window.removeEventListener(n, humanSignal, true); });
+      try {
+        var r = '';
+        try { if (document.referrer) { var h = new URL(document.referrer).hostname; if (h && h !== location.hostname) r = h; } } catch (e) { /* ignorieren */ }
+        var body = new URLSearchParams({ e: 'human', k: pgKey, r: r });
+        if (navigator.sendBeacon) navigator.sendBeacon(statUrl, body);
+        else fetch(statUrl, { method: 'POST', body: body, keepalive: true, credentials: 'omit' });
+      } catch (e) { /* ignorieren */ }
+    };
+    var humanSignal = function (e) {
+      if (humanDone || !e.isTrusted) return;
+      if (e.type === 'mousemove' && ++moves < 4) return;
+      if (e.type === 'scroll' && window.scrollY < 40) return;
+      var wait = 1500 - (Date.now() - humanT0);
+      if (wait > 0) setTimeout(humanSend, wait); else humanSend();
+    };
+    ['pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll', 'mousemove'].forEach(function (n) { window.addEventListener(n, humanSignal, { capture: true, passive: true }); });
+  }
+
   // ---- Player-Leiste (Scrollfortschritt mit Kapitelstrichen) und Nach-oben-Knopf ----
   var pl = $('#pl'), toTop = $('#toTop'), ticking = false;
   var chapters = ['arbeiten', 'podcast', 'ueber', 'lebenslauf', 'offtherecord', 'kontakt'];

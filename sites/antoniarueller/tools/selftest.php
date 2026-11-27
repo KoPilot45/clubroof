@@ -252,6 +252,38 @@ ok(count($lines('events-*.dat')) === $ev0 + 2, 'ungültige, fremde und Bot-Ereig
 $evTxt = implode("\n", $lines('events-*.dat'));
 ok(!str_contains($evTxt, '127.0.0.1') && !str_contains($evTxt, 'test-client'), 'Ereignisdatei enthält weder IP noch Browserkennung');
 
+// Echte Besuche: Signal nach Interaktion, mit Spracheinstellung, höchstens einmal je Gerät und Stunde
+$hu0 = count($lines('human-*.dat'));
+$hdr = array_merge($same, ['Accept-Language: de-DE,de;q=0.9']);
+$rawReq('POST', "$base/stat.php", ['e' => 'human', 'k' => 'home', 'r' => 'example.org'], 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1', $hdr);
+$rawReq('POST', "$base/stat.php", ['e' => 'human', 'k' => 'home', 'r' => 'example.org'], 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1', $hdr);
+$hl = $lines('human-*.dat');
+ok(count($hl) === $hu0 + 1 && str_contains(end($hl), "\thome\tm\texample.org\tsafari\tios"), 'echter Besuch: Seite, Gerät, Herkunft, Browser, System; je Gerät und Stunde einmal');
+$rawReq('POST', "$base/stat.php", ['e' => 'human', 'k' => 'home'], 'Mozilla/5.0 (Windows NT 10.0) Chrome/120 Safari/537.36', $same);
+$rawReq('POST', "$base/stat.php", ['e' => 'human', 'k' => 'unsinn'], 'Mozilla/5.0 (Windows NT 10.0) Chrome/120 Safari/537.36', $hdr);
+$rawReq('POST', "$base/stat.php", ['e' => 'human', 'k' => 'home'], 'Mozilla/5.0 (compatible; Googlebot/2.1)', $hdr);
+ok(count($lines('human-*.dat')) === $hu0 + 1, 'ohne Spracheinstellung, mit ungültiger Seite und von Bots: nicht als echt gezählt');
+ok(!str_contains(implode("\n", $lines('human-*.dat')), '127.0.0.1'), 'Datei der echten Besuche enthält keine IP');
+$hpage = req('GET', "$base/")['body'];
+ok(str_contains($hpage, 'data-pg="home"') && str_contains((string)file_get_contents("$root/assets/site.js"), "e: 'human'"), 'Seite meldet Interaktion (data-pg, Skript)');
+$sv = req('GET', "$base/admin/?p=stats")['body'];
+ok(str_contains($sv, 'Echte Besuche') && str_contains($sv, 'Ohne Interaktion') && str_contains($sv, 'Alle Besuche'), 'Statistik: Ansicht „Echte Besuche“ mit Anteil ohne Interaktion');
+$sa = req('GET', "$base/admin/?p=stats&m=alle")['body'];
+ok(str_contains($sa, 'enthalten auch automatische Abrufe') && !str_contains($sa, 'Ohne Interaktion'), 'Statistik: Ansicht „Alle Besuche“');
+$hv = stats_human_view(stats_totals(stats_collect(date('Y-m-d'), date('Y-m-d'))));
+ok($hv['v'] === 1 && ($hv['m'] ?? 0) === 1 && ($hv['refs']['example.org'] ?? 0) === 1 && ($hv['os']['ios'] ?? 0) === 1, 'Auswertung der echten Besuche nach Gerät, Herkunft und System');
+$sCsv = stats_csv(stats_collect(date('Y-m-d'), date('Y-m-d')));
+ok(str_contains($sCsv, 'Echte Besuche'), 'CSV enthält echte Besuche');
+// Zurücksetzen zum Livegang: Daten in Sicherungsordner, danach neu zählen
+$beforeRes = count(glob("$root/data/stats/*.dat") ?: []);
+[$resN, $resDir] = stats_reset();
+ok($resN >= $beforeRes && $beforeRes > 0 && $resDir !== '' && is_dir("$root/$resDir") && !glob("$root/data/stats/human-*.dat") && !glob("$root/data/stats/events-*.dat") && stats_started() === date('Y-m-d'), 'Zurücksetzen: Daten gesichert, Statistik leer, Startdatum gesetzt');
+foreach (glob("$root/$resDir/*") ?: [] as $bf) {
+    @rename($bf, "$root/data/stats/" . basename($bf)); // Daten zurück, damit die folgenden Prüfungen weiterlaufen
+}
+@rmdir("$root/$resDir");
+@unlink("$root/data/stats/started");
+
 $bots0 = count($lines('bots-*.dat'));
 $main0 = count($lines('20??-??.log'));
 $rawReq('GET', "$base/", [], 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)');
@@ -289,11 +321,25 @@ foreach ([7, 90, 365] as $rg) {
     ok(req('GET', "$base/admin/?p=stats&r=$rg")['code'] === 200, "Zeitraum $rg Tage");
 }
 $csv = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'stats_csv', 'r' => '30']);
-ok($csv['code'] === 200 && str_contains($csv['body'], 'Datum;Besuche;Aufrufe'), 'CSV-Export');
+ok($csv['code'] === 200 && str_contains($csv['body'], 'Datum;Echte Besuche;Besuche gesamt;Aufrufe'), 'CSV-Export');
 $hp = req('GET', "$base/")['body'];
 ok(str_contains($hp, 'data-stat="/stat.php"') && str_contains($hp, 'data-ev="clip"') && str_contains($hp, 'data-ev="lang"') && (!str_contains((string)setting('contact')['email'], '@') || str_contains($hp, 'data-ev="mail"')), 'Seite enthält die Ereignis-Markierungen');
 ok(str_contains(req('GET', "$base/admin/vorschau.php")['body'], 'data-stat=""'), 'Vorschau zählt nichts');
-ok(str_contains(setting('legal')['datenschutz'], 'Verknüpfungen angeklickt'), 'Datenschutzerklärung beschreibt Ereigniszähler');
+ok(preg_match('~Verknüpfungen (angeklickt|geklickt)|Klicks auf einzelne Verknüpfungen~', setting('legal')['datenschutz']) === 1, 'Datenschutzerklärung beschreibt Ereigniszähler');
+require_once dirname(__DIR__) . '/lib/legal_defaults.php';
+$v5 = privacy_stats_v5_pairs();
+ok(str_contains(legal_defaults()['datenschutz'], 'Zur Unterscheidung echter Besuche von automatischen Abrufen') && str_contains($v5['en']['text'], 'real visits'), 'Datenschutzvorlage beschreibt die Unterscheidung echter Besuche (de, en)');
+$lg0 = setting('legal', true);
+$lgOld = $lg0;
+$lg0['datenschutz'] = str_replace($v5['de']['text'], '', (string)$lg0['datenschutz']);
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($lg0), 'legal']);
+$mk1 = json_decode((string)q('SELECT data FROM ar_settings WHERE grp = ?', ['_migrations'])->fetchColumn(), true) ?: [];
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode(array_values(array_diff($mk1, ['privacy_stats_v5']))), '_migrations']);
+req('GET', "$base/admin/");
+reset_content_cache();
+ok(str_contains((string)setting('legal', true)['datenschutz'], 'Zur Unterscheidung echter Besuche'), 'Migration: bestehende Datenschutzerklärung wird um die Unterscheidung echter Besuche ergänzt');
+q('UPDATE ar_settings SET data = ? WHERE grp = ?', [json_encode($lgOld), 'legal']);
+reset_content_cache();
 
 // Archivierung (Rohdaten älter als 90 Tage)
 $oldDay = date('Y-m-d', strtotime('-120 days'));

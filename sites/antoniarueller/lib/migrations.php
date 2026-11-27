@@ -226,6 +226,31 @@ function run_migrations(PDO $pdo): void
         $applied[] = 'privacy_stats_v4';
     }
 
+    // Datenschutz: Hinweis auf die Unterscheidung echter Besuche (Interaktion im Browser)
+    if (!in_array('privacy_stats_v5', $applied, true)) {
+        $legal = setting('legal', true);
+        $pairs = privacy_stats_v5_pairs();
+        $ch = false;
+        foreach (['datenschutz' => 'de', 'datenschutz_en' => 'en'] as $key => $lng) {
+            $txt = (string)($legal[$key] ?? '');
+            $pr = $pairs[$lng];
+            if ($txt === '' || str_contains($txt, $pr['marker'])) {
+                continue;
+            }
+            foreach ($pr['anchors'] as $anchor) {
+                if (str_contains($txt, $anchor)) {
+                    $legal[$key] = str_replace($anchor, $pr['text'] . $anchor, $txt);
+                    $ch = true;
+                    break;
+                }
+            }
+        }
+        if ($ch) {
+            save_setting('legal', $legal, 'migration');
+        }
+        $applied[] = 'privacy_stats_v5';
+    }
+
     // Reihenfolge: „Über mich“ vor „Lebenslauf“ (Navigation)
     if (!in_array('order_v1', $applied, true)) {
         $nav = [];

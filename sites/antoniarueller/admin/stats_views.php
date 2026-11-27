@@ -164,6 +164,8 @@ function view_stats(array $user): void
     if (!in_array($range, [7, 30, 90, 365], true)) {
         $range = 30;
     }
+    $mode = (string)($_GET['m'] ?? 'echt') === 'alle' ? 'alle' : 'echt';
+    $echt = $mode === 'echt';
     $isOwner = $user['role'] === 'owner';
     $to = date('Y-m-d');
     $from = date('Y-m-d', strtotime('-' . ($range - 1) . ' days'));
@@ -173,7 +175,12 @@ function view_stats(array $user): void
     $pdays = array_filter($all, fn($k) => $k < $from, ARRAY_FILTER_USE_KEY);
     $t = stats_totals($days);
     $pt = stats_totals($pdays);
-    $vis = array_map(fn($d) => $d['v'], $days);
+    $vk = $echt ? 'hv' : 'v';
+    if ($echt) {
+        $t = stats_human_view($t);
+        $pt = stats_human_view($pt);
+    }
+    $vis = array_map(fn($d) => (int)($d[$vk] ?? 0), $days);
     $delta = $pt['v'] > 0 ? (int)round(($t['v'] - $pt['v']) / $pt['v'] * 100) : null;
     $best = $vis ? array_keys($vis, max($vis))[0] : '';
 
@@ -186,10 +193,16 @@ function view_stats(array $user): void
     }
 
     layout_start($user, 'Statistik', 'stats', true);
-    echo '<p class="lead">Anonyme Reichweite ohne Cookies und ohne Speicherung von IP-Adressen. Ein Gerät zählt höchstens einmal pro Stunde als Besuch.</p>';
+    echo '<p class="lead">Anonyme Reichweite ohne Cookies und ohne Speicherung von IP-Adressen. Ein Gerät zählt höchstens einmal pro Stunde als Besuch.' . (stats_started() !== '' ? ' Gezählt seit ' . e(date('d.m.Y', strtotime(stats_started()))) . '.' : '') . '</p>';
+    echo '<div class="rangebar" role="group" aria-label="Ansicht"><span class="hint" style="margin-right:4px">Ansicht:</span>';
+    foreach (['echt' => 'Echte Besuche', 'alle' => 'Alle Besuche'] as $m => $l) {
+        echo '<a class="btn small ' . ($m === $mode ? '' : 'ghost') . '" href="' . a('p=stats&r=' . $range . '&m=' . $m) . '"' . ($m === $mode ? ' aria-current="true"' : '') . '>' . $l . '</a>';
+    }
+    echo '</div>';
+    echo '<p class="hint">' . ($echt ? '„Echte Besuche“ sind Besuche, bei denen im Browser gescrollt, getippt oder geklickt wurde. Scanner, Link-Vorschauen und Bots rufen die Seite nur ab und fehlen hier.' : '„Alle Besuche“ enthalten auch automatische Abrufe von Scannern, Vorschau-Diensten und Bots.') . ' Gemessen wird anonym, ohne Kennung und ohne Speicherung im Browser.</p>';
     echo '<div class="rangebar" role="group" aria-label="Zeitraum">';
     foreach ([7 => '7 Tage', 30 => '30 Tage', 90 => '90 Tage', 365 => '12 Monate'] as $r => $l) {
-        echo '<a class="btn small ' . ($r === $range ? '' : 'ghost') . '" href="' . a('p=stats&r=' . $r) . '"' . ($r === $range ? ' aria-current="true"' : '') . '>' . $l . '</a>';
+        echo '<a class="btn small ' . ($r === $range ? '' : 'ghost') . '" href="' . a('p=stats&r=' . $r . '&m=' . $mode) . '"' . ($r === $range ? ' aria-current="true"' : '') . '>' . $l . '</a>';
     }
     echo '<form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="stats_csv"><input type="hidden" name="r" value="' . $range . '"><button class="btn small ghost">CSV herunterladen</button></form></div>';
     if (!stats_enabled()) {
@@ -198,21 +211,25 @@ function view_stats(array $user): void
 
     // Kennzahlen
     $avg = round($t['v'] / $range, 1);
-    echo '<div class="kpis" style="--n:5">';
-    echo kpi('Besuche', (string)$t['v'], $delta === null ? 'Vorperiode: keine Daten' : ($delta >= 0 ? '↑ ' : '↓ ') . abs($delta) . ' % zur Vorperiode (' . $pt['v'] . ')', $delta === null ? '' : ($delta >= 0 ? 'ok' : 'warn'));
+    echo '<div class="kpis" style="--n:' . ($echt ? 6 : 5) . '">';
+    echo kpi($echt ? 'Echte Besuche' : 'Besuche', (string)$t['v'], $delta === null ? 'Vorperiode: keine Daten' : ($delta >= 0 ? '↑ ' : '↓ ') . abs($delta) . ' % zur Vorperiode (' . $pt['v'] . ')', $delta === null ? '' : ($delta >= 0 ? 'ok' : 'warn'));
+    if ($echt) {
+        $auto = max(0, (int)$t['v_all'] - (int)$t['v']);
+        echo kpi('Ohne Interaktion', (string)$auto, $t['v_all'] ? (int)round($auto / $t['v_all'] * 100) . ' % von ' . $t['v_all'] . ' Besuchen, vermutlich automatisch' : 'keine Besuche');
+    }
     echo kpi('Aufrufe', (string)$t['h'], 'alle Seitenaufrufe');
-    echo kpi('Ø pro Tag', str_replace('.', ',', (string)$avg), 'Besuche');
+    echo kpi('Ø pro Tag', str_replace('.', ',', (string)$avg), $echt ? 'echte Besuche' : 'Besuche');
     echo kpi('Bester Tag', $best !== '' && $vis[$best] > 0 ? (string)$vis[$best] : '–', $best !== '' && $vis[$best] > 0 ? date('d.m.Y', strtotime($best)) : '');
     echo kpi('Englisch', $t['v'] ? (int)round($t['en'] / $t['v'] * 100) . ' %' : '–', $t['en'] . ' von ' . $t['v'] . ' Besuchen');
     echo '</div>';
 
     // Diagramm
-    echo '<section class="card wide"><h2>Besuche im Verlauf <span class="score">' . date('d.m.Y', strtotime($from)) . ' – ' . date('d.m.Y', strtotime($to)) . '</span></h2>';
-    echo stats_chart_svg($vis, array_map(fn($d) => $d['v'], $pdays), $markers);
-    echo '<p class="legend"><span class="lg lg-bar"></span>Besuche <span class="lg lg-avg"></span>Ø 7 Tage <span class="lg lg-prev"></span>Vorperiode <span class="lg lg-mk"></span>Veröffentlichung · <span class="lg lg-we"></span>Wochenende</p>';
-    echo '<details class="fold"><summary>Werte als Tabelle</summary><div class="tbl-scroll"><table class="mini"><thead><tr><th>Datum</th><th>Besuche</th><th>Aufrufe</th><th>Handy</th><th>Tablet</th><th>Rechner</th></tr></thead><tbody>';
+    echo '<section class="card wide"><h2>' . ($echt ? 'Echte Besuche' : 'Besuche') . ' im Verlauf <span class="score">' . date('d.m.Y', strtotime($from)) . ' – ' . date('d.m.Y', strtotime($to)) . '</span></h2>';
+    echo stats_chart_svg($vis, array_map(fn($d) => (int)($d[$vk] ?? 0), $pdays), $markers);
+    echo '<p class="legend"><span class="lg lg-bar"></span>' . ($echt ? 'Echte Besuche' : 'Besuche') . ' <span class="lg lg-avg"></span>Ø 7 Tage <span class="lg lg-prev"></span>Vorperiode <span class="lg lg-mk"></span>Veröffentlichung · <span class="lg lg-we"></span>Wochenende</p>';
+    echo '<details class="fold"><summary>Werte als Tabelle</summary><div class="tbl-scroll"><table class="mini"><thead><tr><th>Datum</th><th>Echte Besuche</th><th>Alle Besuche</th><th>Aufrufe</th><th>Handy</th><th>Tablet</th><th>Rechner</th></tr></thead><tbody>';
     foreach (array_reverse($days, true) as $d => $r) {
-        echo '<tr><td>' . e(wd_de($d) . ' ' . date('d.m.Y', strtotime($d))) . '</td><td>' . $r['v'] . '</td><td>' . $r['h'] . '</td><td>' . $r['m'] . '</td><td>' . $r['t'] . '</td><td>' . $r['d'] . '</td></tr>';
+        echo '<tr><td>' . e(wd_de($d) . ' ' . date('d.m.Y', strtotime($d))) . '</td><td>' . ($r['hv'] ?? 0) . '</td><td>' . $r['v'] . '</td><td>' . $r['h'] . '</td><td>' . $r['m'] . '</td><td>' . $r['t'] . '</td><td>' . $r['d'] . '</td></tr>';
     }
     echo '</tbody></table></div></details></section>';
 
@@ -353,7 +370,7 @@ function view_stats(array $user): void
     // Verwaltung
     echo '<section class="card wide"><h2>Einstellungen &amp; Daten</h2><p class="hint">Stundenwerte werden nach ' . STATS_RAW_DAYS . ' Tagen zu Tageswerten zusammengefasst; Tageswerte bleiben bis zu 2 Jahre erhalten.</p>';
     if ($isOwner) {
-        echo '<div class="actions"><form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="stats_toggle"><button class="btn ghost">' . (stats_enabled() ? 'Statistik ausschalten' : 'Statistik einschalten') . '</button></form> <form method="post" action="' . a() . '" class="inline" data-confirm="Alle gespeicherten Statistikdaten endgültig löschen?">' . csrf_field($user) . '<input type="hidden" name="action" value="stats_delete"><button class="btn danger-o">Alle Statistikdaten löschen</button></form></div>';
+        echo '<div class="actions"><form method="post" action="' . a() . '" class="inline">' . csrf_field($user) . '<input type="hidden" name="action" value="stats_toggle"><button class="btn ghost">' . (stats_enabled() ? 'Statistik ausschalten' : 'Statistik einschalten') . '</button></form> <form method="post" action="' . a() . '" class="inline" data-confirm="Alle gespeicherten Statistikdaten endgültig löschen?">' . csrf_field($user) . '<input type="hidden" name="action" value="stats_delete"><button class="btn danger-o">Alle Statistikdaten löschen</button></form> <form method="post" action="' . a() . '" class="inline" data-confirm="Statistik zum Livegang zurücksetzen? Die bisherigen Daten werden auf dem Server in einen Sicherungsordner verschoben, danach wird neu gezählt.">' . csrf_field($user) . '<input type="hidden" name="action" value="stats_reset"><button class="btn ghost">Zum Livegang zurücksetzen (mit Sicherung)</button></form></div><p class="hint">„Zum Livegang zurücksetzen“ verschiebt die bisherigen Testdaten in den Server-Ordner <code>data/stats-sicherung-…</code> und beginnt neu zu zählen. Der Ordner lässt sich bei Bedarf per FTP löschen.</p>';
     } else {
         echo '<p class="hint">Einschalten, Ausschalten und Löschen können nur Inhaber.</p>';
     }
