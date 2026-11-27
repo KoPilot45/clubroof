@@ -1,6 +1,6 @@
 # Plan: SEO/GEO-CMS für Kundenwebseiten (Agentur-Baukasten)
 
-Stand: 27.11.2026. Grundlage: Erfahrungen aus dem Projekt „antoniarueller.de“ (Onepager mit eigenem PHP-CMS, 105 ausgelieferte Versionen).
+Stand: 27.11.2026 (ergänzt um Datenschutz-Modi mit und ohne Cookies, siehe Abschnitt 9, E10 und Phase 7). Grundlage: Erfahrungen aus dem Projekt „antoniarueller.de“ (Onepager mit eigenem PHP-CMS, 105 ausgelieferte Versionen).
 Zweck dieses Dokuments: Startunterlage für ein neues Claude-Projekt. Es enthält Ziele, Entscheidungen mit Empfehlung, Architektur, Funktionsumfang, Qualitätsregeln, Phasenplan und eine Startvorlage (Abschnitt 17).
 
 ---
@@ -12,7 +12,7 @@ Zweck dieses Dokuments: Startunterlage für ein neues Claude-Projekt. Es enthäl
 **Kern-Versprechen (Verkaufsargumente).**
 1. Technisch saubere Seiten ab Werk: schnell, barrierefrei, korrekte Struktur, Schema.org, Sitemap, hreflang, Redirect-Verwaltung.
 2. GEO (Auffindbarkeit in KI-Antworten): klar strukturierte, zitierfähige Inhalte, FAQ-/Fakten-Bausteine, Autoren- und Quellenangaben, `llms.txt`, Steuerung der KI-Crawler, Auswertung der KI-Crawler-Abrufe.
-3. Datenschutz ohne Cookie-Banner: eigene Schriften, keine Fremd-Embeds, cookielose Statistik.
+3. **Datenschutz in zwei Modi:** *cookiefrei* (eigene Schriften, keine Fremd-Embeds, cookielose Statistik, kein Banner nötig) **oder** *mit Einwilligungsverwaltung* (Cookie-Banner, Analytics, Tag Manager, YouTube/Maps u. a. erst nach Einwilligung). Der Modus wird pro Kunde gewählt.
 4. Redaktion ohne Technikwissen: „Seite anlegen → Abschnitte wählen → Felder ausfüllen“.
 5. Agentur-Vorteil: neue Kundenwebseite = neues Theme-Paket (Design-Tokens + Bausteine), nicht neues CMS.
 
@@ -38,7 +38,7 @@ Zweck dieses Dokuments: Startunterlage für ein neues Claude-Projekt. Es enthäl
 | **Server-Rendering + Seiten-Cache**, kein Frontend-Framework. | Gleich. Schnell, SEO-freundlich, einfach zu hosten. |
 | **Strenge Sicherheit** (CSP, CSRF, Login per E-Mail-Code, Rate-Limit, Uploadprüfung, Audit-Log, wöchentliche Sicherung). | Als Kern übernehmen, nicht pro Kunde neu bauen. |
 | **Selftest gegen echte Datenbank** plus Browserprüfungen (Kontrast, axe, Screenshots). Jede Funktion mit Test. | Pflicht für Kern und jeden Baustein (Abschnitt 12). |
-| **Cookielose Statistik** mit Unterscheidung „echte Besuche“ (Interaktionssignal), Crawler getrennt, 404-Liste, Zurücksetzen zum Livegang mit Sicherung. | Als Standardmodul. Inklusive KI-Crawler-Auswertung (GEO-Argument). |
+| **Cookielose Statistik** mit Unterscheidung „echte Besuche“ (Interaktionssignal), Crawler getrennt, 404-Liste, Zurücksetzen zum Livegang mit Sicherung. | Als **eine von zwei Möglichkeiten** (Modus A „cookiefrei“). Kunden mit Analytics/Tag Manager/Videos brauchen zusätzlich Modus B (Einwilligungsverwaltung, Abschnitt 9). Die eigene Statistik bleibt auch dort nützlich (KI-Crawler, 404, echte Besuche ohne Einwilligung). |
 | **Export/Import der Übersetzungen** mit KI-Prompt und Vorschau-Prüfung. | Standardmodul für Mehrsprachigkeit. |
 | **Mockups als Entscheidungsgrundlage** (HTML-Artefakte, mehrere Varianten, Desktop + Handy). | Fester Schritt im Template-Prozess (Abschnitt 11). |
 | **Pakete + Dokumentation als Gedächtnis.** `CLAUDE.md` + `docs/` tragen den Stand, pro Paket eine Sitzung. | Gleiche Arbeitsweise (Abschnitt 14). |
@@ -101,6 +101,8 @@ Vorbild: Das Antonia-Backend zeigt, dass Redakteurinnen schnell zurechtkommen, w
 | **E7** | Mehrsprachigkeit? | **Deutsch Hauptsprache + weitere Sprachen als Spiegel-Seiten** mit Zuordnung, hreflang automatisch; Übersetzungstabelle und Export/Import. | Erfahrung aus Antonia (de/en). Pro Kunde optional. |
 | **E8** | Updates ausliefern? | **Kern-Version als ZIP und Web-Updater** (Prüfsumme, Sicherung, Migrationen), Kunden-Theme getrennt im Ordner `themes/<kunde>`. | Updates ohne Überschreiben von Kundendaten und Theme. |
 | **E9** | Modulgrenzen für Wiederverwendung des Antonia-Codes? | Teile **extrahieren**, nicht kopieren (Abschnitt 13). | Sonst entstehen zwei Codebasen. |
+| **E10** | Datenschutz-Modus? | **Pro Kunde wählbar: Modus A „cookiefrei“ und Modus B „mit Einwilligung“.** Eigenes, schlankes Einwilligungsmodul (CMP-light) plus Option, eine externe Lösung einzubinden (z. B. Usercentrics, Cookiebot, Borlabs). | Viele Agenturkunden nutzen Analytics, Tag Manager, Werbepixel oder YouTube. Ein reiner Cookie-frei-Ansatz würde sie ausschließen. Beide Modi nutzen dieselbe Integrations-Registry (Abschnitt 9.2). |
+| **E11** | Umfang der ersten Version? | **Basis zuerst, danach skalieren.** Version 1 = tragfähiger Kern + wenige, gut gebaute Bausteine + SEO-Kern + beide Datenschutz-Modi in einfacher Form. Alles Weitere (Mehrsprachigkeit, Updater, Lokales SEO, Importer, Berichte) kommt in späteren Ausbaustufen. | Siehe Abschnitt 15a. Architektur so wählen, dass Erweiterungen (neue Bausteine, Integrationen, Inhaltstypen, Sprachen) **ohne Umbau des Kerns** möglich sind. |
 
 ---
 
@@ -261,14 +263,69 @@ Standortbaustein mit NAP, Öffnungszeiten, Anfahrt, Karte **ohne** automatisches
 
 ---
 
-## 9. Datenschutz und Recht
+## 9. Datenschutz und Recht: zwei Modi (cookiefrei oder mit Einwilligung)
 
-- **Ziel „ohne Cookie-Banner“:** keine Cookies außer technisch notwendigen Sitzungscookies im Backend; eigene Schriften; keine Tracker, keine Fremd-Embeds beim Laden; Videos/Karten nur nach Klick (mit Hinweis).
-- **Statistik** wie im Antonia-Projekt: keine IP-Speicherung, nicht umkehrbarer Stunden-Kurzwert, keine Profile, DNT beachten, anonyme Ereigniszähler, Interaktionssignal für „echte Besuche“. **Datenschutztext wird zusammen mit der Funktion gepflegt** (Lehre: Text und Funktion müssen sich gemeinsam ändern; Migration für Bestandskunden).
-- **Impressum/Datenschutz:** pro Kunde Vorlage + Platzhalter + Prüfhinweis. Rechtstexte sind Sache des Kunden/Anwalts; das CMS liefert Struktur und Hilfen, keine Rechtsberatung.
-- **Auftragsverarbeitung** (Agentur ↔ Kunde, Hoster), Löschkonzept, Datenexport, Backups mit Aufbewahrungsfrist.
-- **Kontaktformular:** keine Speicherung im Klartext in der DB nötig (Versand per E-Mail, Protokoll ohne Inhalt), Spam-Schutz ohne Drittanbieter (Honeypot, Zeitprüfung, Limit), Einwilligungstext konfigurierbar.
-- **Optionale Dienste** (Analytics, Newsletter, Karten) nur über ein **Einwilligungs-Modul** (Klick-zum-Laden), standardmäßig aus.
+**Grundsatz.** Der Datenschutz-Modus ist eine **Einstellung pro Kunde**, kein Umbau. Beide Modi stützen sich auf dieselbe **Integrations-Registry** (9.2). So bleibt der Kern gleich, und Kunden mit Analytics, Tag Manager, Werbepixeln oder YouTube-Videos sind genauso abgedeckt wie Kunden, die bewusst auf Cookies verzichten.
+
+### 9.1 Die Modi
+| | **Modus A · cookiefrei** | **Modus B · mit Einwilligungsverwaltung** |
+|---|---|---|
+| Für wen | Kunden, die ohne Banner arbeiten wollen (Privatpersonen, kleine Firmen, Datenschutz als Marke) | Kunden mit Google Analytics/Tag Manager, Matomo mit Cookies, Werbepixeln, YouTube/Vimeo/Maps, Chat- oder Buchungstools |
+| Statistik | eigene cookielose Statistik (Abschnitt 9.3), optional cookielose Dienste (z. B. Plausible, Matomo ohne Cookies) | eigene Statistik (läuft weiter) **plus** beliebige Dienste nach Einwilligung |
+| Banner | keiner nötig | ja, mit Kategorien und Widerruf |
+| Fremd-Embeds | nur per **Klick-zum-Laden** (2-Klick-Lösung) oder statisches Vorschaubild | nach Einwilligung direkt oder weiterhin per Klick-zum-Laden |
+| Schriften | selbst gehostet | selbst gehostet (empfohlen, auch in Modus B) |
+| Datenschutztext | Vorlage ohne Drittdienste | Vorlage **wird aus den aktiven Integrationen zusammengesetzt** |
+
+Wechsel zwischen den Modi ist jederzeit möglich; beim Wechsel prüft das Backend, welche Integrationen nicht mehr zum Modus passen, und zeigt die Folgen.
+
+### 9.2 Integrations-Registry (gemeinsame Grundlage)
+Jede externe Einbindung ist ein **Eintrag mit Manifest**, nicht eingestreuter Code im Template:
+```json
+{
+  "key": "ga4",
+  "label": "Google Analytics 4",
+  "category": "statistics",                // necessary | functional | statistics | marketing | embed
+  "provider": "Google Ireland Ltd.",
+  "country": "USA/Irland (Drittlandübermittlung)",
+  "cookies": [{"name":"_ga","purpose":"Unterscheidung von Besuchern","duration":"2 Jahre"}],
+  "fields": [{"key":"measurement_id","type":"text","label":"Mess-ID","pattern":"^G-[A-Z0-9]+$"}],
+  "load": "after-consent",                 // always | after-consent | click-to-load
+  "script": "snippet-ga4.js",
+  "privacy_text": "datenschutz/ga4.md",    // Baustein für die Datenschutzerklärung
+  "consent_mode": true
+}
+```
+- **Mitgelieferte Integrationen (Ausbaustufen):** Google Tag Manager, GA4, Matomo (Cloud/Self-hosted, mit/ohne Cookies), Plausible/Fathom (cookielos), Meta-Pixel, LinkedIn Insight, Google Ads Conversion, Microsoft Clarity/Hotjar (optional), YouTube (Standard-Embed und `youtube-nocookie`), Vimeo, Google Maps/OpenStreetMap, Kalender-/Buchungstools, Chat-Widgets, Newsletter-Formulare, reCAPTCHA/Turnstile (falls Spam-Schutz ohne Drittanbieter nicht reicht).
+- **Eigene Integrationen** (benutzerdefiniertes Skript) nur für Agentur-Admins, mit Pflichtfeldern Kategorie, Anbieter, Zweck, Cookies.
+- **Skripte werden erst geladen, wenn die Kategorie erlaubt ist** (serverseitig als `type="text/plain" data-category="…"` ausgeliefert, vom Einwilligungsmodul aktiviert). Das gilt auch für Tag-Manager-Container: Der Container selbst lädt nur nach Einwilligung, oder (Alternative) er wird sofort geladen und arbeitet mit **Google Consent Mode v2**; diese Entscheidung wird pro Kunde dokumentiert.
+- **Cookie-Deklaration** (Tabelle für die Datenschutzerklärung/Cookie-Seite) wird **automatisch** aus den aktiven Integrationen erzeugt.
+- **Embeds als Baustein-Feld** (`video-url`): Der Baustein zeigt Vorschaubild + Hinweis + Knopf; erst nach Klick bzw. Einwilligung wird die Einbettung geladen. Vorschaubild lokal gespeichert (nicht live von YouTube geladen).
+
+### 9.3 Statistik
+- **Eigene cookielose Statistik** (wie im Antonia-Projekt): keine IP-Speicherung, nicht umkehrbarer Stunden-Kurzwert, keine Profile, DNT beachten, anonyme Ereigniszähler, Interaktionssignal für „echte Besuche“, Crawler-/KI-Crawler-Auswertung, 404-Liste, Zurücksetzen zum Livegang mit Sicherung. Sie ist in **beiden** Modi verfügbar und ersetzt Analytics nicht unbedingt, liefert aber ohne Einwilligung belastbare Grundzahlen (Hinweis: ohne Einwilligung keine personenbezogene Wiedererkennung, daher keine Kampagnen-Attribution über mehrere Besuche).
+- **Analytics-Integrationen** laufen nur nach Einwilligung (Modus B) bzw. cookielos (Modus A).
+- **Kampagnen-Messung** (UTM, Conversions) und Ereignisse (Formular, Klick auf Telefonnummer) als Datenschicht (`dataLayer`-Ereignisse) vom CMS bereitgestellt, damit Agentur-Tools sie nutzen können. Sendung nur bei erlaubter Kategorie.
+- **Datenschutztext und Funktion ändern sich gemeinsam** (Lehre aus Antonia): Neue Integration = neuer Textbaustein + Migration für Bestandskunden + Test.
+
+### 9.4 Einwilligungsmodul („CMP-light“) für Modus B
+Mindestanforderungen für Version 1:
+- Banner beim ersten Besuch mit **gleichwertigen Schaltflächen** „Alle akzeptieren“, „Nur notwendige“ und „Einstellungen“ (keine Vorauswahl, keine Verschleierung der Ablehnung).
+- **Kategorien** (notwendig, Funktional, Statistik, Marketing, Externe Inhalte) und Detailansicht je Dienst (Anbieter, Zweck, Cookies, Dauer, Drittland).
+- **Widerruf jederzeit:** fester Link „Cookie-Einstellungen“ in der Fußzeile; Widerruf löscht gesetzte Cookies, soweit technisch möglich.
+- **Speicherung der Entscheidung** im Browser (`localStorage`/Cookie) mit Version und Datum; **neue Abfrage**, wenn sich die Dienste ändern oder nach einer festgelegten Frist (z. B. 6–12 Monate).
+- **Nachweis** (optional): anonymes Einwilligungsprotokoll (Zeitpunkt, Version, Kategorien, ohne IP) für Auskunftsfälle.
+- **Consent Mode v2** für Google-Dienste (Standardzustand „denied“, Update nach Entscheidung), ggf. Anbindung an **TCF** nur bei Werbekunden (sonst externe CMP).
+- Barrierefrei (Tastatur, Fokus, Screenreader), Stil über Design-Tokens, kein Layout-Sprung, kein Blockieren der Inhalte außerhalb des Banners.
+- **Externe CMP als Alternative:** Ein Feld nimmt das CMP-Skript des Anbieters auf; die Integrations-Registry übernimmt dann nur das Blockieren/Aktivieren nach dessen Ereignissen.
+- Rechtlicher Rahmen: Einwilligung nötig, wenn Informationen auf dem Endgerät gespeichert oder ausgelesen werden und das nicht unbedingt erforderlich ist (TDDDG), plus DSGVO für die Verarbeitung. Die konkrete Gestaltung ist je Kunde rechtlich zu prüfen; das CMS liefert die technische Umsetzung, keine Rechtsberatung.
+
+### 9.5 Weitere Datenschutz- und Rechtspunkte
+- **Impressum/Datenschutz:** pro Kunde Vorlage mit Platzhaltern und Prüfhinweis. Im Modus B wird der Abschnitt „Dienste von Drittanbietern“ **aus den aktiven Integrationen erzeugt**. Rechtstexte bleiben Sache des Kunden bzw. seiner Rechtsberatung.
+- **Auftragsverarbeitung** (Agentur ↔ Kunde, Hoster, Dienste), Löschkonzept, Datenexport, Backups mit Aufbewahrungsfrist.
+- **Kontaktformular:** keine Klartext-Speicherung nötig (Versand per E-Mail, Protokoll ohne Inhalt), Spam-Schutz ohne Drittanbieter (Honeypot, Zeitprüfung, Limit), Einwilligungstext konfigurierbar.
+- **Drittlandübermittlung** und Anbieter-Hinweise werden im Integrations-Eintrag gepflegt (Anbieter ändern ihre Bedingungen; deshalb Version und Datum pflegen).
+- **Schriften, Icons, Bibliotheken** lokal ausliefern (gilt in beiden Modi).
 
 ---
 
@@ -331,7 +388,8 @@ Felder mit Grenzen · Varianten · Beispielinhalt · Vorschaubild · leere Zust�
 | `lib/colors.php` (Paletten, Tokens, Lesbarkeitsprüfung) | **Direkt** | Palette je Kunde, Token-Export |
 | `lib/render.php`, Bild-Helfer (`imgvar`), `media.php` | **Kern** | AVIF optional, Fokuspunkt |
 | `lib/seo_files.php` (sitemap, robots, llms) | **Kern** | Mehrere Inhaltstypen, Bilder, hreflang |
-| `lib/stats.php`, `admin/stats_views.php` (cookielos, echte Besuche, Crawler, 404, Reset) | **Direkt als Modul** | Seitenpfade statt fester Seiten, KI-Referrer-Kategorie |
+| `lib/stats.php`, `admin/stats_views.php` (cookielos, echte Besuche, Crawler, 404, Reset) | **Direkt als Modul** (Modus A und Ergänzung in Modus B) | Seitenpfade statt fester Seiten, KI-Referrer-Kategorie, `dataLayer`-Ereignisse |
+| *(neu, nicht im Antonia-Projekt)* Integrations-Registry + Einwilligungsmodul | **Neu bauen** | Siehe 9.2 und 9.4; Datenschutztext-Erzeugung aus Integrationen |
 | `lib/translate_io.php`, `admin/translate.php` | **Direkt** | Mehr Sprachen (Sprachspalte), Glossar |
 | `lib/backup.php`, Papierkorb, Audit | **Direkt** | Updater koppeln |
 | `lib/migrations.php` | **Muster** | Nummerierte Dateien statt eine Funktion; Guards, Tests |
@@ -361,21 +419,30 @@ Größen: S ≈ 1 Sitzung, M ≈ 2–3, L ≈ 4–6 (grobe Schätzung für Claud
 
 | Phase | Inhalt | Ergebnis / Abnahme | Größe |
 |---|---|---|---|
-| **0 · Klärung** | Entscheidungen E1–E9 bestätigen, Zielhoster testen (PHP-Version, `.htaccess`, `ErrorDocument`, Dateirechte), Repository + `CLAUDE.md` + Docs-Gerüst, Namensgebung, Lizenz-/Schriftenfragen | Entscheidungsdokument, Hoster-Testprotokoll | S |
+| **0 · Klärung** | Entscheidungen E1–E11 bestätigen, Zielhoster testen (PHP-Version, `.htaccess`, `ErrorDocument`, Dateirechte), Repository + `CLAUDE.md` + Docs-Gerüst, Namensgebung, Lizenz-/Schriftenfragen | Entscheidungsdokument, Hoster-Testprotokoll | S |
 | **1 · Kern** | Projektgerüst, DB-Schicht + Migrationen, Auth/Rollen/Sitzungen, Audit, Medien (Upload, Bildvarianten), Einstellungen, Backup, Selftest-Gerüst | Anmeldung, Mediathek, Einstellungen, Tests grün auf SQLite und MariaDB | L |
 | **2 · Seiten und Bausteine** | Inhaltstypen, Seiten (hierarchisch), Abschnitte, Block-Registry + Manifest, Feldtypen, Formulargenerator, „Seite anlegen“-Ablauf, Entwurf/Veröffentlichen, Revisionen, Papierkorb, Live-Vorschau, Frontend-Renderer + Cache | Seite mit 8 Basisbausteinen erstellen und veröffentlichen | L |
 | **3 · Basis-Bausteine** | 12–15 Standardbausteine (Hero, Text, Text+Bild, Bildergalerie, Leistungskarten, Zahlen, Zitat, FAQ, CTA, Team, Referenzen, Kontaktformular, Logoleiste, Beitragsliste, Portfolio-Raster), je 2–3 Varianten, Vorschauskript | Katalog mit Vorschaubildern, Qualitätscheckliste erfüllt | L |
 | **4 · SEO-Kern** | Head-Erzeugung, Sitemap, robots, hreflang-Grundlage, Redirect-Manager + 404-Monitor, JSON-LD je Seitentyp, SEO-Panel + Audit-Ampel, OG-Bilder, Performance-Helfer | SEO-Audit grün auf Beispielseiten, Validierungstests | L |
 | **5 · Inhaltstypen und Archive** | Beiträge, Portfolio, Kategorien/Schlagwörter, Archivseiten, Paginierung, Verwandte Inhalte, interne Suche, Menüs/Navigation, Breadcrumbs | Blog + Portfolio funktionsfähig | M–L |
 | **6 · GEO-Paket** | FAQ-/Kurzantwort-/Fakten-/Quellen-Bausteine, Autorenprofile, `llms.txt`, KI-Crawler-Steuerung, KI-Referrer, IndexNow, „Zuletzt aktualisiert“ | GEO-Checkliste, Tests | M |
-| **7 · Statistik** | Statistikmodul (echte Besuche, Crawler, 404, Berichte, Zurücksetzen), Datenschutztext-Kopplung | Auswertung im Backend, Datenschutztests | M |
+| **7 · Statistik und Datenschutz-Modi** | Eigene Statistik (echte Besuche, Crawler, 404, Berichte, Zurücksetzen), **Integrations-Registry**, **Einwilligungsmodul (Modus B)** mit Kategorien, Widerruf und Skript-Blockierung, Klick-zum-Laden-Embeds, erste Integrationen (GTM, GA4, Matomo, Plausible, YouTube, Maps), Datenschutztext-Erzeugung aus aktiven Integrationen, Consent Mode v2 | Beide Modi pro Kunde schaltbar; Test: ohne Einwilligung werden keine Cookies/Drittanfragen ausgelöst (Browsertest) | L |
 | **8 · Mehrsprachigkeit** | Spiegel-Seiten, Zuordnung, hreflang, Übersetzungstabelle, Export/Import (mehrere Sprachen), Sprachumschalter | zweite Sprache vollständig durchspielbar | M |
 | **9 · Theme-System** | `theme.json`, Tokens + Paletten, Kundenbausteine, Theme-Installer/Generator, Beispielinhalte, Kontrast-/axe-Tests im CI | Neuer Kunde in einem Tag aufsetzbar | M–L |
 | **10 · Updater und Betrieb** | Update-ZIP, Prüfsumme, Sicherung, Migration, Rollback, Systemprüfung (PHP, Rechte, HTTPS), Wartungsmodus, Onboarding-Anleitung | Update von Version N auf N+1 mit Test | M |
 | **11 · Pilot** | Antonia-Theme als Referenz **oder** erster echter Kunde; Abnahme, Messung, Lehren einarbeiten | Livegang, Lessons-Learned-Dokument | M–L |
 | **12 · Agentur-Werkzeuge** | Importer (WordPress/CSV), Redirect-Planer, Berichtsvorlagen, Prompt-Monitoring-Vorlage, Preis-/Betriebsmodell | Standardprozess dokumentiert | M |
 
-Empfohlene Reihenfolge der ersten Auslieferung (MVP): Phasen 0 → 1 → 2 → 3 (reduziert auf 8 Bausteine) → 4. Danach 5 und 6, weil sie den Verkaufswert tragen.
+Empfohlene Reihenfolge der ersten Auslieferung (MVP): Phasen 0 → 1 → 2 → 3 (reduziert auf 8 Bausteine) → 4. Danach 5 und 6, weil sie den Verkaufswert tragen. Phase 7 (beide Datenschutz-Modi) gehört vor den ersten echten Kunden, weil jeder Kunde eine Entscheidung dazu braucht.
+
+### 15a. Prinzip „Basis zuerst, dann skalieren“
+Dieses Dokument beschreibt die Zielrichtung, nicht den Umfang von Version 1. Das neue Projekt soll mit einer **tragfähigen Basis** starten und im Lauf der Arbeit erweitern und optimieren. Damit das ohne Umbau geht:
+1. **Erweiterungspunkte statt Sonderfälle:** neue Bausteine (Manifest), Feldtypen, Inhaltstypen, Integrationen, Sprachen, SEO-Prüfungen und Berichte sind jeweils **registrierbare Module** mit einheitlicher Schnittstelle.
+2. **Einfach beginnen, Schnittstellen stabil halten:** z. B. zuerst 8 Bausteine mit je einer Variante und ein einfaches Einwilligungsbanner, aber mit der endgültigen Manifest-/Registry-Struktur.
+3. **Jede Ausbaustufe = Paket mit Test, Doku und Migration.** Nichts „nebenbei“ einbauen.
+4. **Messen vor Optimieren:** Performance-Budget, SEO-Audit und Selftest laufen von Anfang an; Optimierungen werden an Messwerten entschieden.
+5. **Entscheidungen festhalten:** `ENTSCHEIDUNGEN.md` mit Datum; später geänderte Entscheidungen mit Begründung (nicht überschreiben).
+6. **Regelmäßige Rückschau** (z. B. nach jeder dritten Phase): Was war schwer? Was wurde nie benutzt? Was wird gebraucht? Der Plan wird danach angepasst.
 
 ---
 
@@ -387,7 +454,8 @@ Empfohlene Reihenfolge der ersten Auslieferung (MVP): Phasen 0 → 1 → 2 → 3
 | Hoster-Unterschiede brechen Funktionen | Hoster-Testliste, Fallbacks (z. B. 404-Variablen), Systemprüfung im Backend |
 | Updates zerstören Kundenanpassungen | Strikte Trennung Kern/Theme/Daten, Migrationstests, Sicherung vor Update |
 | SEO-/GEO-Versprechen werden nicht gehalten | Ehrliche Kommunikation, Messbarkeit, Berichte (Abschnitt 8) |
-| Rechtliche Risiken (Datenschutz, Barrierefreiheit, Urheberrecht von Schriften/Bildern) | Vorlagen + Prüfhinweise, Schriftenlizenz im Theme dokumentieren, AV-Vertrag |
+| Rechtliche Risiken (Datenschutz, Einwilligung, Barrierefreiheit, Urheberrecht von Schriften/Bildern) | Vorlagen + Prüfhinweise, Schriftenlizenz im Theme dokumentieren, AV-Vertrag, Integrationen mit Anbieterangaben und Datum, rechtliche Prüfung je Kunde |
+| Fremdskripte (Analytics, Pixel, Embeds) beeinträchtigen Performance und Datenschutz | Laden erst nach Einwilligung/Klick, Skripte in der Registry, Performance-Budget mit Warnung, Browsertest „ohne Einwilligung keine Drittanfragen“ |
 | Ein einziger Entwickler/Agentur = Single Point of Failure | Dokumentation als Gedächtnis, Tests, einfache Architektur |
 | Qualität bei vielen Bausteinen sinkt | Verbindliche Checkliste, automatischer Kontrast-/axe-Lauf, Vorschaubild-Pflicht |
 | Performance bei vielen Seiten (JSON-Abschnitte, Listen) | Seitencache, Indizes, Paginierung, Messung im Selftest (Budget) |
@@ -398,7 +466,7 @@ Empfohlene Reihenfolge der ersten Auslieferung (MVP): Phasen 0 → 1 → 2 → 3
 ## 17. Startvorlage für das neue Claude-Projekt
 
 ### 17.1 Erste Nachricht (Vorschlag)
-> Wir bauen ein CMS für Kundenwebseiten einer SEO/GEO-Agentur. Grundlage ist `docs/PLAN.md` (liegt bei). Lies zuerst den Plan, dann lege folgendes an: (1) Repository-Gerüst nach Abschnitt 5.1, (2) `CLAUDE.md` nach Abschnitt 14 (Sprache der Oberfläche: Deutsch), (3) `docs/ENTSCHEIDUNGEN.md` mit den Empfehlungen E1–E9 als „vorgeschlagen“, (4) `docs/PAKETE.md` mit den Phasen 0–4 als Pakete inklusive Abnahmekriterien. Danach zeigst du mir die Entscheidungen E1–E9 zur Bestätigung. Setze noch nichts um, was nicht bestätigt ist.
+> Wir bauen ein CMS für Kundenwebseiten einer SEO/GEO-Agentur. Grundlage ist `docs/PLAN.md` (liegt bei). Lies zuerst den Plan, dann lege folgendes an: (1) Repository-Gerüst nach Abschnitt 5.1, (2) `CLAUDE.md` nach Abschnitt 14 (Sprache der Oberfläche: Deutsch), (3) `docs/ENTSCHEIDUNGEN.md` mit den Empfehlungen E1–E11 als „vorgeschlagen“, (4) `docs/PAKETE.md` mit den Phasen 0–4 als Pakete inklusive Abnahmekriterien. Danach zeigst du mir die Entscheidungen E1–E11 zur Bestätigung. Setze noch nichts um, was nicht bestätigt ist.
 
 ### 17.2 `CLAUDE.md`-Entwurf (Kurzfassung)
 ```
@@ -411,12 +479,14 @@ Regeln:
 - Jede Funktion = Dienst + Route + Test + Bildschirm + Doku + Hilfetext.
 - Migration + Seed gemeinsam; Migration mit Neuinstallations-Guard; Test „frisch = migriert“.
 - Farben/Schriften nur aus Tokens. Bausteine nach Checkliste (docs/BAUSTEINE.md).
+- Externe Dienste nur über die Integrations-Registry (Kategorie, Anbieter, Zweck, Cookies); nie Skripte direkt in Templates. Datenschutz-Modus (A/B) ist eine Kundeneinstellung.
+- Basis zuerst: stabile Schnittstellen, kleiner Umfang, Ausbau in Paketen.
 - Namen und Texte, die ein Kunde pflegt, kommen aus dem Backend und werden nie vom Code überschrieben.
 - Pro Paket eine Sitzung. Screenshots nur wenn nötig. Mockups vor visueller Umsetzung.
 ```
 
 ### 17.3 Material aus dem Antonia-Projekt zum Mitgeben
-Dieses Dokument · Auszüge: `lib/schema.php` (Feldtypen), `lib/styles.php` + `tools/stil-vorschau.js` (Varianten + Vorschaubilder), `lib/colors.php` (Paletten/Lesbarkeit), `lib/stats.php` (cookielose Statistik), `lib/translate_io.php` (Export/Import), `tools/selftest.php` (Teststil), `.htaccess` (Hoster-Erfahrungen) und die Dokumente `docs/antoniarueller-design-pakete.md` und `docs/antoniarueller-seite-und-design-anleitung.pdf` als Beispiel für Paketzuschnitt und Anleitungsstil.
+Dieses Dokument · Auszüge: `lib/schema.php` (Feldtypen), `lib/styles.php` + `tools/stil-vorschau.js` (Varianten + Vorschaubilder), `lib/colors.php` (Paletten/Lesbarkeit), `lib/stats.php` (cookielose Statistik, Modus A), `lib/translate_io.php` (Export/Import), `tools/selftest.php` (Teststil), `.htaccess` (Hoster-Erfahrungen) und die Dokumente `docs/antoniarueller-design-pakete.md` und `docs/antoniarueller-seite-und-design-anleitung.pdf` als Beispiel für Paketzuschnitt und Anleitungsstil.
 
 ---
 
@@ -429,3 +499,5 @@ Dieses Dokument · Auszüge: `lib/schema.php` (Feldtypen), `lib/styles.php` + `t
 5. **Formulare/Shop:** Gibt es Kundenwünsche, die Version 1 sprengen (Terminbuchung, Shop, Mitgliederbereich)? Dann Schnittstellenkonzept statt Eigenbau.
 6. **Markenname und Domain** für das Produkt.
 7. **Pilotkunde:** Antonia-Theme als Referenz nachbauen oder direkt erster echter Kunde?
+8. **Datenschutz-Modus:** Eigenes Einwilligungsmodul (CMP-light) als Standard oder von Beginn an eine externe CMP anbinden? Gibt es Kunden mit Werbebudget (dann TCF/Consent Mode v2 früh nötig)?
+9. **Welche Integrationen** braucht ihr zuerst (z. B. GTM, GA4, Matomo, Meta, YouTube)? Das bestimmt die erste Fassung der Registry.
