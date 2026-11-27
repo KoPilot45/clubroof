@@ -268,6 +268,7 @@ $hpage = req('GET', "$base/")['body'];
 ok(str_contains($hpage, 'data-pg="home"') && str_contains((string)file_get_contents("$root/assets/site.js"), "e: 'human'"), 'Seite meldet Interaktion (data-pg, Skript)');
 $sv = req('GET', "$base/admin/?p=stats")['body'];
 ok(str_contains($sv, 'Echte Besuche') && str_contains($sv, 'Ohne Interaktion') && str_contains($sv, 'Alle Besuche'), 'Statistik: Ansicht „Echte Besuche“ mit Anteil ohne Interaktion');
+ok(str_contains($sv, 'Kontaktquote') && str_contains($sv, 'Klickquote'), 'Statistik: Kontaktquote und Klickquote');
 $sa = req('GET', "$base/admin/?p=stats&m=alle")['body'];
 ok(str_contains($sa, 'enthalten auch automatische Abrufe') && !str_contains($sa, 'Ohne Interaktion'), 'Statistik: Ansicht „Alle Besuche“');
 $hv = stats_human_view(stats_totals(stats_collect(date('Y-m-d'), date('Y-m-d'))));

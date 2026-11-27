@@ -211,7 +211,13 @@ function view_stats(array $user): void
 
     // Kennzahlen
     $avg = round($t['v'] / $range, 1);
-    echo '<div class="kpis" style="--n:' . ($echt ? 6 : 5) . '">';
+    $evq = [];
+    foreach ($t['ev'] as $k => $n) {
+        [$ety, $ekey] = array_pad(explode('|', (string)$k, 2), 2, '');
+        $evq[$ety][$ekey] = $n;
+    }
+    $contactN = array_sum($evq['mail'] ?? []) + array_sum($evq['social'] ?? []) + array_sum($evq['cv'] ?? []);
+    echo '<div class="kpis" style="--n:' . ($echt ? 7 : 6) . '">';
     echo kpi($echt ? 'Echte Besuche' : 'Besuche', (string)$t['v'], $delta === null ? 'Vorperiode: keine Daten' : ($delta >= 0 ? '↑ ' : '↓ ') . abs($delta) . ' % zur Vorperiode (' . $pt['v'] . ')', $delta === null ? '' : ($delta >= 0 ? 'ok' : 'warn'));
     if ($echt) {
         $auto = max(0, (int)$t['v_all'] - (int)$t['v']);
@@ -220,6 +226,7 @@ function view_stats(array $user): void
     echo kpi('Aufrufe', (string)$t['h'], 'alle Seitenaufrufe');
     echo kpi('Ø pro Tag', str_replace('.', ',', (string)$avg), $echt ? 'echte Besuche' : 'Besuche');
     echo kpi('Bester Tag', $best !== '' && $vis[$best] > 0 ? (string)$vis[$best] : '–', $best !== '' && $vis[$best] > 0 ? date('d.m.Y', strtotime($best)) : '');
+    echo kpi('Kontaktquote', $t['v'] ? str_replace('.', ',', (string)round($contactN / $t['v'] * 100, 1)) . ' %' : '–', $contactN . ' Kontaktklicks (E-Mail, Profile, PDF)');
     echo kpi('Englisch', $t['v'] ? (int)round($t['en'] / $t['v'] * 100) . ' %' : '–', $t['en'] . ' von ' . $t['v'] . ' Besuchen');
     echo '</div>';
 
@@ -276,13 +283,13 @@ function view_stats(array $user): void
     foreach (items('clips', false, true) as $c) {
         $titles[(string)$c['_id']] = trim((string)$c['title']) ?: ('Referenz #' . $c['_id']);
     }
-    echo '<section class="card"><h2>Was wird angeklickt?</h2><p class="hint">Anonyme Summen, höchstens ein Klick je Gerät und Stunde.</p>';
+    echo '<section class="card"><h2>Was wird angeklickt?</h2><p class="hint">Anonyme Summen, höchstens ein Klick je Gerät und Stunde. Die Prozentzahl ist der Anteil an den ' . ($echt ? 'echten ' : '') . 'Besuchen (Klickquote).</p>';
     $clipRows = [];
     foreach ($ev['clip'] ?? [] as $id => $n) {
         $clipRows[mb_strimwidth($titles[(string)$id] ?? ('Referenz #' . $id . ' (gelöscht)'), 0, 60, '…')] = $n;
     }
     arsort($clipRows);
-    echo '<h3>Referenzen</h3>' . stat_bar_list(array_slice($clipRows, 0, 10, true), 0);
+    echo '<h3>Referenzen</h3>' . stat_bar_list(array_slice($clipRows, 0, 10, true), $t['v']);
     $contact = [];
     foreach ($ev['mail'] ?? [] as $k => $n) {
         $contact['E-Mail: ' . stat_label('mail', (string)$k)] = $n;
@@ -294,7 +301,7 @@ function view_stats(array $user): void
         $contact['Lebenslauf (PDF)'] = $n;
     }
     arsort($contact);
-    echo '<h3>Kontakt &amp; Profile</h3>' . stat_bar_list($contact, 0);
+    echo '<h3>Kontakt &amp; Profile</h3>' . stat_bar_list($contact, $t['v']);
     $pod = [];
     foreach ($ev['podcast'] ?? [] as $k => $n) {
         $pod[(string)$k] = $n;
