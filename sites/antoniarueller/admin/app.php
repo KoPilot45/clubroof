@@ -285,6 +285,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $back(AR_BASE . '/admin/?p=translate', $n === 0 ? 'Keine Änderungen.' : $n . ($n === 1 ? ' Übersetzung gespeichert.' : ' Übersetzungen gespeichert.'));
         }
 
+        case 'translate_export': {
+            $scope = (string)($_POST['scope'] ?? 'open') === 'all' ? 'all' : 'open';
+            $rowsX = tio_rows($scope, (string)($_POST['area'] ?? ''));
+            $fmt = (string)($_POST['fmt'] ?? 'json') === 'csv' ? 'csv' : 'json';
+            audit($who, 'translate_export', $fmt . ':' . count($rowsX));
+            header('Content-Type: ' . ($fmt === 'csv' ? 'text/csv' : 'application/json') . '; charset=utf-8');
+            header('Content-Disposition: attachment; filename="uebersetzungen-' . date('Y-m-d') . '.' . $fmt . '"');
+            echo $fmt === 'csv' ? tio_export_csv($rowsX) : tio_export_json($rowsX);
+            exit;
+        }
+
+        case 'translate_import_preview': {
+            $raw = (string)($_POST['payload'] ?? '');
+            if (!empty($_FILES['file']['tmp_name']) && is_uploaded_file($_FILES['file']['tmp_name']) && $_FILES['file']['size'] <= 2 * 1048576) {
+                $raw = (string)file_get_contents($_FILES['file']['tmp_name']);
+            }
+            view_translate_io($user, mb_substr($raw, 0, 2 * 1048576), !empty($_POST['overwrite']));
+            exit;
+        }
+
+        case 'translate_import_apply': {
+            [$entriesA, $errA] = tio_parse((string)($_POST['payload'] ?? ''));
+            $n = $errA === '' ? tio_apply(tio_plan($entriesA, !empty($_POST['overwrite']))) : 0;
+            audit($who, 'translate_import', (string)$n);
+            $back(AR_BASE . '/admin/?p=translate', $n === 0 ? 'Es wurde nichts übernommen.' : $n . ($n === 1 ? ' Übersetzung importiert.' : ' Übersetzungen importiert.') . ' Bitte stichprobenartig auf der englischen Seite prüfen.');
+        }
+
         case 'toggle_featured': {
             // Stern in der Liste: immer höchstens ein Eintrag „Featured“; wirkt sofort, ohne andere Entwurfsänderungen zu veröffentlichen
             $it = item((int)($_POST['id'] ?? 0));
@@ -755,6 +782,9 @@ switch ($p) {
         break;
     case 'translate':
         view_translate($user);
+        break;
+    case 'translate_io':
+        view_translate_io($user);
         break;
     case 'ssl_json':
         header('Content-Type: application/json');

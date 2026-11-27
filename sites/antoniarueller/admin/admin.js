@@ -901,6 +901,20 @@
     if (lcBtn) lcBtn.addEventListener('click', function () { var hide = !lcBox.hidden; lcBox.hidden = hide; lcBtn.textContent = hide ? 'Einblenden' : 'Ausblenden'; lcBtn.setAttribute('aria-expanded', hide ? 'false' : 'true'); if (!hide) lcScale(); });
   }
 
+  // ---- Kopieren-Knopf (z. B. Prompt für die KI-Übersetzung) ----
+  $$('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var ta = document.getElementById(b.getAttribute('data-copy')), st = document.getElementById('tioCopied');
+      if (!ta) return;
+      var done = function (ok) { if (st) st.textContent = ok ? 'Kopiert.' : 'Bitte den Text markieren und mit Strg+C kopieren.'; };
+      ta.focus(); ta.select();
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(function () { done(true); }, function () { done(false); });
+        else done(document.execCommand('copy'));
+      } catch (e) { done(false); }
+    });
+  });
+
   // ---- Umschalter (z. B. Externer Link / Beitrag selbst hosten) steuert abhängige Felder ----
   $$('.seg').forEach(function (seg) {
     var inp = $('input[type=hidden]', seg);

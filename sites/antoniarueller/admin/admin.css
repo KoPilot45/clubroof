@@ -732,3 +732,11 @@ input[type=file]:focus-visible{outline:3px solid #f2b705;outline-offset:3px;bord
 .lc-box[hidden]{display:none}
 .lc-box iframe{position:absolute;left:0;top:0;width:1280px;height:640px;border:0;transform-origin:0 0;pointer-events:none}
 @media (max-width:700px){.lc{position:static}.lc-h span{display:none}}
+
+/* Übersetzungen: Export und Import */
+.tio-form{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:end}
+.tio-form label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:14px}
+.tio-prompt{width:100%;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
+table.tio td,table.tio th{vertical-align:top;text-align:left;min-width:120px}
+table.tio td:first-child{min-width:150px}
+table.tio .badge{display:inline-block;padding:2px 8px;border-radius:99px;background:#e8e2d4;color:var(--ink);font-size:12px;font-weight:600}table.tio .badge.ok{background:#d8ecdf;color:#1d6b43}table.tio .badge.warn{background:#fff0c9;color:#6b4a00}

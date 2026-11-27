@@ -490,6 +490,67 @@ $r = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_save',
 ok($r['code'] === 302 && str_contains($r['head'], 'p=translate'), 'Speichern ohne JavaScript leitet zurück');
 ok(req('POST', "$base/admin/", ['action' => 'translate_save', 't' => [$tk => 'x']])['code'] === 403, 'ohne CSRF-Token abgelehnt');
 
+// Export und Import der Übersetzungen
+require_once $root . '/lib/translate_io.php';
+$ioPg = req('GET', "$base/admin/?p=translate_io");
+ok($ioPg['code'] === 200 && str_contains($ioPg['body'], 'name="action" value="translate_export"') && str_contains($ioPg['body'], 'Markennamen werden NICHT übersetzt') && str_contains($ioPg['body'], 'Rückfragen') && str_contains($ioPg['body'], 'data-copy="tioPrompt"'), 'Export/Import-Seite mit Prompt (Markennamen, Rückfragen)');
+ok(str_contains($tp['body'], 'p=translate_io'), 'Übersetzungstabelle verweist auf Export und Import');
+$exAll = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_export', 'scope' => 'all', 'fmt' => 'json']);
+$exJ = json_decode($exAll['body'], true);
+ok($exAll['code'] === 200 && str_contains($exAll['head'], 'application/json') && str_contains($exAll['head'], 'uebersetzungen-') && ($exJ['count'] ?? 0) > 5 && isset($exJ['texts'][0]['key'], $exJ['texts'][0]['de'], $exJ['texts'][0]['en'], $exJ['texts'][0]['max_chars']), 'Export (JSON): alle Texte mit Schlüssel, Kontext, Deutsch, Englisch');
+$exOpen = json_decode(req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_export', 'scope' => 'open', 'fmt' => 'json'])['body'], true);
+$onlyOpen = true;
+foreach ($exOpen['texts'] ?? [] as $xt) {
+    $onlyOpen = $onlyOpen && in_array($xt['status'], ['offen', 'veraltet'], true);
+}
+ok($onlyOpen && ($exOpen['count'] ?? 0) <= ($exJ['count'] ?? 0), 'Export (offen): nur offene und veraltete Texte');
+$exC = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_export', 'scope' => 'all', 'fmt' => 'csv']);
+ok(str_starts_with($exC['body'], "\xEF\xBB\xBFkey;Bereich;Status;Deutsch;Englisch") && str_contains($exC['head'], 'text/csv'), 'Export (CSV) für Excel');
+// Import: Prüfungen
+$io = array_values(array_filter(translation_rows(), fn($r) => trim($r['en']) === '' && !$r['multi'] && !str_contains($r['de'], '*') && !str_contains($r['de'], '=') && mb_strlen($r['de']) > 3 && (int)$r['max'] >= 30));
+ok(count($io) >= 6, 'genug offene Texte für die Import-Prüfung');
+$io1 = $io[0];
+$io2 = $io[1];
+$pl = tio_plan([
+    $io1['key'] => ['en' => 'Translated text', 'de' => $io1['de']],
+    $io2['key'] => ['en' => str_repeat('x', (int)$io2['max'] + 5), 'de' => null],
+    'g:nix:feld' => ['en' => 'x', 'de' => null],
+    $io['2']['key'] => ['en' => 'Text with <b>html</b>', 'de' => null],
+    $io['3']['key'] => ['en' => 'Hello *there*', 'de' => null],
+    $io['4']['key'] => ['en' => 'Changed', 'de' => 'Ganz anderer deutscher Text'],
+    $io['5']['key'] => ['en' => '', 'de' => null],
+], false);
+$st = array_column($pl, 'status', 'key');
+ok($st[$io1['key']] !== 'skip' && $st[$io2['key']] === 'skip' && $st['g:nix:feld'] === 'skip' && $st[$io['2']['key']] === 'skip' && $st[$io['3']['key']] === 'skip' && $st[$io['4']['key']] === 'skip' && $st[$io['5']['key']] === 'skip', 'Import-Prüfung: Länge, unbekannter Schlüssel, HTML, Markierungen, geänderter Text, leere Übersetzung');
+$withEn = null;
+foreach (translation_rows() as $rw) {
+    if (trim($rw['en']) !== '' && empty($rw['stale']) && !$rw['multi']) {
+        $withEn = $rw;
+        break;
+    }
+}
+if ($withEn) {
+    $p1 = tio_plan([$withEn['key'] => ['en' => 'Other wording', 'de' => null]], false)[0];
+    $p2 = tio_plan([$withEn['key'] => ['en' => 'Other wording', 'de' => null]], true)[0];
+    ok($p1['status'] === 'skip' && $p2['status'] !== 'skip', 'Import: vorhandene aktuelle Übersetzung wird nur auf Wunsch überschrieben');
+}
+$pj = tio_parse("```json\n" . json_encode(['texts' => [['key' => $io1['key'], 'en' => 'Hi']]]) . "\n```");
+$pc = tio_parse("key;Bereich;Status;Deutsch;Englisch\n" . $io1['key'] . ";x;offen;\"Zeile 1\nZeile 2\";\"Hello\nthere\"\n");
+ok(($pj[0][$io1['key']]['en'] ?? '') === 'Hi' && ($pc[0][$io1['key']]['en'] ?? '') === "Hello\nthere" && tio_parse('kaputt {')[1] !== '' && tio_parse('')[1] !== '', 'Import liest JSON (auch im Codeblock) und CSV, meldet Fehler');
+$pv = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_import_preview', 'payload' => json_encode(['texts' => [['key' => $io1['key'], 'de' => $io1['de'], 'en' => 'Preview EN']]])]);
+ok($pv['code'] === 200 && str_contains($pv['body'], 'Vorschau des Imports') && str_contains($pv['body'], 'Preview EN') && str_contains($pv['body'], 'translate_import_apply'), 'Import-Vorschau zeigt Änderung und Bestätigen-Knopf');
+$rowBefore = array_values(array_filter(translation_rows(), fn($r) => $r['key'] === $io1['key']))[0]['en'];
+$ap = req('POST', "$base/admin/", ['_csrf' => $tok, 'action' => 'translate_import_apply', 'payload' => json_encode(['texts' => [['key' => $io1['key'], 'de' => $io1['de'], 'en' => 'Imported EN']]]), 'overwrite' => '1']);
+reset_content_cache();
+$rowAfter = array_values(array_filter(translation_rows(), fn($r) => $r['key'] === $io1['key']))[0]['en'];
+ok($ap['code'] === 302 && $rowAfter === 'Imported EN', 'Import speichert die Übersetzung');
+if ($rowBefore !== '') {
+    save_translations([$io1['key'] => $rowBefore]);
+} else {
+    save_translations([$io1['key'] => '']);
+}
+ok(req('POST', "$base/admin/", ['action' => 'translate_import_apply', 'payload' => '{}'])['code'] === 403, 'Import ohne CSRF-Token abgelehnt');
+
 echo "HTTPS-Prüfung\n";
 require_once $root . '/lib/dashboard.php';
 ok(cert_matches_host(['extensions' => ['subjectAltName' => 'DNS:antoniarueller.de, DNS:www.antoniarueller.de']], 'antoniarueller.de'), 'Zertifikat passt zur Domain');
